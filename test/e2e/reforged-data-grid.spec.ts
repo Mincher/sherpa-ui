@@ -1224,7 +1224,8 @@ test('a TEXT column heading offers a filter menu of DevExtreme conditions', asyn
          condition dropdown lives in THAT component's shadow root.
          TRAP T-one-field-one-filter-menu */
       conditions: Array.from(
-        text.querySelector('sherpa-menu')!.shadowRoot!.querySelectorAll('.condition option'),
+        text.querySelector('sherpa-menu')!.shadowRoot!
+          .querySelector('.condition')!.shadowRoot!.querySelectorAll('.control option'),
       ).map((o) => (o as HTMLOptionElement).value),
       // The menu defers behind Apply: a condition and a value are two decisions,
       // and querying on the half-built pair is a query for "contains ''".

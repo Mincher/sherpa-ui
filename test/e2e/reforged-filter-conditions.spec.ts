@@ -45,23 +45,38 @@ test('every value chip opens the FILTER menu, on Equals', async ({ page }) => {
       el.shadowRoot!.querySelector(`sherpa-quick-filter[data-id="${id}"] sherpa-menu`)!;
 
     const tier = menuFor('tier');
-    const select = tier.shadowRoot!.querySelector<HTMLSelectElement>('.condition')!;
-    const box = tier.shadowRoot!.querySelector<HTMLInputElement>('.condition-value')!;
+    /* Both halves are COMPOSED sherpa-input-texts, so the real controls are one
+       shadow root deeper. TRAP T-compose-never-reimplement */
+    const field = (sel: string): HTMLElement => tier.shadowRoot!.querySelector(sel)!;
+    const select = field('.condition').shadowRoot!
+      .querySelector<HTMLSelectElement>('.control')!;
+    const box = field('.condition-value');
 
     return {
       type: tier.getAttribute('data-type'),
       ops: [...select.options].map((o) => o.value),
       op: tier.dataset['op'],
       takes: tier.getAttribute('data-takes'),
-      // The condition leads the header, ABOVE the search box.
-      firstControl: tier.shadowRoot!.querySelector('.header .filter-row, .header .search')!
-        .className,
+      /* The condition and the search share ONE row: the condition leads at
+         40%, the search fills the rest. Measured, because DOM order alone does
+         not prove they are side by side. */
+      oneRow: (() => {
+        const box = field('.condition').getBoundingClientRect();
+        const search = tier.shadowRoot!.querySelector('.search')!.getBoundingClientRect();
+        const mid = (b: DOMRect): number => (b.top + b.bottom) / 2;
+        return {
+          sameLine: Math.abs(mid(box) - mid(search)) < 1.5,
+          inOrder: box.right <= search.left + 1,
+        };
+      })(),
       // The typed box EXISTS from the start; CSS hides it.
       boxShown: getComputedStyle(box).display,
       rowsShown: getComputedStyle(tier.shadowRoot!.querySelector('.rows')!).display,
       // A SELECTOR gets none of it.
       selectorType: menuFor('view').getAttribute('data-type'),
       selectorHasCondition: !!menuFor('view').shadowRoot!.querySelector('.condition'),
+      // The platform's own element, not a re-implemented listbox.
+      control: field('.condition').shadowRoot!.querySelector('.control')!.tagName,
     };
   });
 
@@ -70,7 +85,9 @@ test('every value chip opens the FILTER menu, on Equals', async ({ page }) => {
   expect(r.ops).toEqual(['eq', 'ne', 'contains', 'notcontains', 'startswith', 'endswith']);
   expect(r.op).toBe('eq');
   expect(r.takes).toBe('list');
-  expect(r.firstControl).toBe('filter-row');
+  expect(r.oneRow.sameLine).toBe(true);
+  expect(r.oneRow.inOrder).toBe(true);
+  expect(r.control).toBe('SELECT');
   expect(r.boxShown).toBe('none');
   expect(r.rowsShown).not.toBe('none');
   // A persistent chip is a selector: no condition, and its own plain menu.
@@ -204,7 +221,8 @@ test('a column heading opens the SAME menu, over the column own values', async (
 
     const shape = {
       type: menu.getAttribute('data-type'),
-      ops: [...sr.querySelectorAll<HTMLOptionElement>('.condition option')].map((o) => o.value),
+      ops: [...sr.querySelector('.condition')!.shadowRoot!
+        .querySelectorAll<HTMLOptionElement>('.control option')].map((o) => o.value),
       op: menu.op,
       // The rows are the COLUMN's own distinct values — deduped and sorted.
       rows: [...menu.querySelectorAll('.head-value-label')].map((n) => n.textContent),
@@ -230,4 +248,48 @@ test('a column heading opens the SAME menu, over the column own values', async (
   expect(r.shape.rows).toEqual(['Bronze', 'Gold', 'Silver']);
   // `eq` against a list can never match, so several picks become `in`.
   expect(r.clause).toEqual(['tier', 'in', ['Gold', 'Silver']]);
+});
+
+test('the chip caret names its CONDITION, except the default', async ({ page }) => {
+  await bar(page);
+  const r = await page.evaluate(async () => {
+    const el = document.querySelector('sherpa-quick-filter-toolbar')!;
+    const chip = el.shadowRoot!.querySelector('sherpa-quick-filter[data-id="tier"]')!;
+    const menu = chip.querySelector('sherpa-menu') as HTMLElement & { conditionValue: string };
+    const caret = (): string =>
+      chip.shadowRoot!.querySelector('.caret-label')?.textContent ?? '';
+    const wait = (): Promise<void> => new Promise((res) => { setTimeout(res, 100); });
+    const pick = (op: string): void => {
+      const field = menu.shadowRoot!.querySelector('.condition') as HTMLElement & { value: string };
+      field.value = op;
+      field.shadowRoot!.querySelector('.control')!
+        .dispatchEvent(new Event('change', { bubbles: true }));
+    };
+
+    const gold = [...menu.querySelectorAll('input')].find((i) => i.value === 'gold')!;
+    gold.checked = true;
+    gold.dispatchEvent(new Event('change', { bubbles: true }));
+    // A MULTI menu COMMITS, so the pick lands on Apply.
+    menu.shadowRoot!.querySelector<HTMLElement>('.apply')!.click();
+    await wait();
+    const onEq = caret();
+
+    pick('ne');
+    await wait();
+    const onNe = caret();
+
+    pick('startswith');
+    menu.conditionValue = 'Go';
+    menu.dispatchEvent(new CustomEvent('condition-change', {
+      bubbles: true, composed: true, detail: {},
+    }));
+    await wait();
+    return { onEq, onNe, onTyped: caret() };
+  });
+
+  // `eq` is the DEFAULT, so naming it on every chip would be noise.
+  expect(r.onEq).toBe('Gold');
+  expect(r.onNe).toBe('Does not equal: Gold');
+  // A typing condition answers with what was TYPED, not with ticked rows.
+  expect(r.onTyped).toBe('Starts with: Go');
 });

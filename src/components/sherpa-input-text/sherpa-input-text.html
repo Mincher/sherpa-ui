@@ -32,6 +32,11 @@
       <span class="icon sherpa-icon-box icon-start" part="icon-start" aria-hidden="true"></span>
       <input class="control" part="control" type="text" />
       <span class="icon sherpa-icon-box icon-end" part="icon-end" aria-hidden="true"></span>
+      <!-- Opt-in with data-clearable; CSS reveals it off data-has-value. -->
+      <button class="clear" part="clear" type="button" tabindex="-1"
+              aria-label="Clear">
+        <i class="sherpa-icon-box" data-icon="xmark" aria-hidden="true"></i>
+      </button>
       <span class="actions" part="actions"><slot name="actions"></slot></span>
     </span>
     <span class="message" part="message"></span>
@@ -46,6 +51,33 @@
       <span class="icon sherpa-icon-box icon-start" part="icon-start" aria-hidden="true"></span>
       <textarea class="control" part="control" rows="3"></textarea>
       <span class="icon sherpa-icon-box icon-end" part="icon-end" aria-hidden="true"></span>
+      <!-- Opt-in with data-clearable; CSS reveals it off data-has-value. -->
+      <button class="clear" part="clear" type="button" tabindex="-1"
+              aria-label="Clear">
+        <i class="sherpa-icon-box" data-icon="xmark" aria-hidden="true"></i>
+      </button>
+      <span class="actions" part="actions"><slot name="actions"></slot></span>
+    </span>
+    <span class="message" part="message"></span>
+  </label>
+</template>
+
+<!-- A SELECT is the same field with a different control: one of a known set,
+     so the platform's own element does the work. `populate([{value,label}])`
+     fills it; a caret is drawn in CSS because the native one ignores padding. -->
+<template id="select">
+  <label class="field" part="field">
+    <span class="label" part="label"></span>
+    <span class="description" part="description"></span>
+    <span class="control-row sherpa-border-edges" part="control-row">
+      <span class="icon sherpa-icon-box icon-start" part="icon-start" aria-hidden="true"></span>
+      <select class="control" part="control"></select>
+      <span class="icon sherpa-icon-box icon-end" part="icon-end" aria-hidden="true"></span>
+      <!-- Opt-in with data-clearable; CSS reveals it off data-has-value. -->
+      <button class="clear" part="clear" type="button" tabindex="-1"
+              aria-label="Clear">
+        <i class="sherpa-icon-box" data-icon="xmark" aria-hidden="true"></i>
+      </button>
       <span class="actions" part="actions"><slot name="actions"></slot></span>
     </span>
     <span class="message" part="message"></span>

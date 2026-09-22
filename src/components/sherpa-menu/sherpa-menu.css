@@ -89,20 +89,24 @@
 :host([data-type="filter"]) .header {
   grid-template-areas:
     "heading"
-    "filter"
-    "control";
+    "filter";
 }
 
-/* ONE ROW: the condition leads at 40%, the value it takes fills the rest. A
-   stacked pair took the header's between-sections gap and read as two
-   unrelated controls. */
+/* ONE OBJECT: the condition leads at 40%, what answers it fills the rest, and
+   NO GAP — `.sherpa-group` squares their inner corners so the pair reads as a
+   single control rather than two that happen to sit together. */
 .header .filter-row {
   grid-area: filter;
   display: grid;
   grid-template-columns: 2fr 3fr;
-  gap: var(--sherpa-display-mode-space-2xs, 4px);
   align-items: center;
 }
+
+/* Inside the group the search is a plain child, not the header's control row. */
+:host([data-type="filter"]) .header .search { grid-area: auto; }
+
+/* The two halves are the same height, so the joint reads as one edge. */
+.header .filter-row > * { min-block-size: var(--sherpa-display-mode-size-2xl, 32px); }
 
 
 .header .heading { grid-area: heading; }
@@ -171,85 +175,20 @@
 :host([data-search]) .search { display: block; }
 
 /* ── Condition ── the FILTER type's own row; no other menu stamps it.
+ * Both halves are COMPOSED sherpa-input-texts, which own box, border, caret,
+ * focus ring and Clear — there is nothing to restyle here, only to place.
  * TRAP T-one-field-one-filter-menu
- * `Equals` picks from the rows; a typing condition takes the box instead, and
- * both stay in the DOM so a flip keeps the ticks AND the typing.
  * TRAP T-an-operator-decides-pick-or-type
  */
 .condition-value { display: none; }
 
 :host([data-takes="text"]) .condition-value { display: block; }
 
-/* LIST mode: nothing to type, so the condition spans the row. */
-:host(:not([data-takes="text"])) .filter-row { grid-template-columns: 1fr; }
-
-/* TYPE mode: the value rows and the search step aside for the box. */
+/* TYPE mode: the value rows and the search step aside for the box, which now
+   sits where the search was. */
 :host([data-takes="text"]) .rows { display: none; }
 :host([data-takes="text"]) .search { display: none; }
 
-/* Bare controls: a <select> and an <input> do NOT inherit the page font. */
-.condition,
-.condition-value {
-  inline-size: 100%;
-  min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
-  padding: var(--sherpa-display-mode-space-2xs, 4px)
-    var(--sherpa-display-mode-space-xs, 8px);
-  box-sizing: border-box;
-  font-family: inherit;
-  font-size: var(--sherpa-theme-content-size-base, 14px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
-  background: var(--sherpa-theme-surface-default-base, #ffffff);
-  border-style: solid;
-  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
-  border-block-start-width: var(--sherpa-border-top, 0.5px);
-  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
-  border-inline-start-width: var(--sherpa-border-left, 0.5px);
-  border-inline-end-width: var(--sherpa-border-right, 0.5px);
-  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
-}
-
-/* The NATIVE caret sits hard against the box edge whatever the padding is —
-   padding moves the TEXT, not the browser's own glyph. So the system's own
-   `triangle-down` is masked in instead: the SVG gives the shape, the theme
-   token gives the colour, and it is inset by the card's usual 8px. */
-.condition {
-  appearance: none;
-  padding-inline-end: calc(var(--sherpa-display-mode-space-xs, 8px) * 3);
-}
-
-.condition::-ms-expand { display: none; }
-
-/* The wrapper draws it, because a <select> paints nothing over its own box. */
-.condition-box {
-  position: relative;
-  display: block;
-}
-
-.condition-box::after {
-  content: "";
-  position: absolute;
-  inset-block: 0;
-  inset-inline-end: var(--sherpa-display-mode-space-xs, 8px);
-  inline-size: var(--sherpa-theme-content-size-base, 14px);
-  pointer-events: none;
-  background-color: var(--sherpa-theme-content-body-1, #35353d);
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M6.55898 9.46207C6.83458 9.69455 7.23923 9.6786 7.49514 9.41192L10.2949 6.49447C10.4961 6.28478 10.5552 5.97252 10.4458 5.69901C10.3364 5.4255 10.0827 5.25 9.80055 5.25H4.20107C3.91891 5.25 3.663 5.42778 3.55363 5.70129C3.44427 5.9748 3.50551 6.28706 3.70674 6.49447L6.50648 9.41192L6.55898 9.46207Z'/%3E%3C/svg%3E");
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M6.55898 9.46207C6.83458 9.69455 7.23923 9.6786 7.49514 9.41192L10.2949 6.49447C10.4961 6.28478 10.5552 5.97252 10.4458 5.69901C10.3364 5.4255 10.0827 5.25 9.80055 5.25H4.20107C3.91891 5.25 3.663 5.42778 3.55363 5.70129C3.44427 5.9748 3.50551 6.28706 3.70674 6.49447L6.50648 9.41192L6.55898 9.46207Z'/%3E%3C/svg%3E");
-  mask-repeat: no-repeat;
-  -webkit-mask-repeat: no-repeat;
-  /* The glyph is the size of the text beside it. */
-  mask-size: var(--sherpa-theme-content-size-base, 14px);
-  -webkit-mask-size: var(--sherpa-theme-content-size-base, 14px);
-  mask-position: center;
-  -webkit-mask-position: center;
-}
-
-.condition:focus-visible,
-.condition-value:focus-visible {
-  outline: none;
-  border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
-  box-shadow: var(--sherpa-focus-ring);
-}
 
 /* `display: none`, not a filter class, so a hidden row also leaves the tab
    order and the accessibility tree. */

@@ -75,8 +75,9 @@ export function globalFilters(views, regions = REGIONS, customers = CUSTOMERS, d
       label: 'Created date',
       icon: 'fa-solid fa-calendar',
       kind: 'date',
-      // Opens in RANGE mode — a global date filter is nearly always a span.
-      range: true,
+      /* SINGLE by default, like every other calendar. The reader flips the
+         Range switch when they want a span; opening in range mode makes the
+         common case — one day — take two clicks and a mode change. */
       removable: true,
       /* Only days the DATA covers are pickable, so the caller passes its own.
          The default is the last 90 days, which matched nothing in Records:

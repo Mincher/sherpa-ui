@@ -2220,6 +2220,7 @@ textarea template existed and was unreachable after first render.
 
 - Site: `src/core/sherpa-element.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
 ### T-template-id-read-once-was-permanent
 
 `#stampedTemplate` records the template id currently STAMPED, so a later
@@ -2445,6 +2446,28 @@ at this element and never reaches the toolbar that stamped the rows: see
 `T-native-change-stops-at-the-host`.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+
+### T-a-trigger-click-follows-light-dismiss
+
+A trigger button cannot decide "open or shut?" by asking its own menu. The
+native popover **light-dismisses on `pointerdown`**, which lands BEFORE the
+`click` — so by the time the handler runs an open menu already reports shut,
+and `toggle()` re-opens the thing the user just closed.
+
+The button reads its own `data-open` flag instead. That is set from
+`menu-open` / `menu-close`, so it is still true at `pointerdown`, and the
+handler clears it before deciding.
+
+It then calls `hide()` — it does not merely decline to `show()`. A click that
+did NOT dismiss leaves the menu open, and only the explicit `hide()` closes it.
+Declining alone passed the real-pointer case and left the menu stuck open under
+a synthetic click.
+
+`data-open` is also what CSS reads for the pressed look: real focus has moved
+inside the menu, so `:focus-visible` on the trigger is false.
+
+- Site: `src/components/sherpa-button/sherpa-button.ts`
+- Site: `test/e2e/reforged-button.spec.ts`
 
 ### T-footer-row-raises-on-any-flag
 
@@ -2759,7 +2782,7 @@ Two consequences worth knowing:
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `test/e2e/reforged-view-definition.spec.ts`
-
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 ### T-an-operator-decides-pick-or-type
 
 A filter menu's CONDITION dropdown leads the card, above the search box, and is
@@ -2792,6 +2815,16 @@ same shape `column-filter-change` reports, so one field filtered from either
 menu reaches the data layer identically. One pick is `eq`; several become `in`,
 because `eq` against a list can never match.
 
+**A TYPED answer is a filter, so a chip switches on without a tick.** Deriving
+`data-current` from ticked rows alone left "Starts with Go" showing as an OFF
+chip that filtered nothing — the condition never reached the query, because the
+bar reported `values` and a typed answer is not in there. Three things had to
+agree: the chip's own on-state, the bar relaying `condition-change`, and the
+view reading `clauses` in place of re-deriving them from `values`.
+
+The chip's caret names the condition — "Does not equal: Gold" — but not `eq`,
+which is the default and would be noise on every chip.
+
 - Site: `src/core/store.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
@@ -2802,6 +2835,8 @@ because `eq` against a list can never match.
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `examples/views/records.js`
 ### T-native-change-stops-at-the-host
 
 A native `change` is **NOT COMPOSED**: it stops at `sherpa-menu`, the shadow
@@ -6202,6 +6237,8 @@ sit in the row template and CSS reveals one —
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `test/e2e/reforged-filter-conditions.spec.ts`
 ### T-every-element-in-the-template
 
 Every element a component will EVER show exists in its `.html` from the start.
@@ -7324,7 +7361,8 @@ selector in a test, and nothing outside the component reads it.
 - Site: `scripts/project-tokens.mjs`
 - Site: `src/core/sherpa-group-positions.css`
 - Site: `src/core/sherpa-grouping.css`
-
+- Site: `src/components/sherpa-input-text/sherpa-input-text.css`
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
 ### T-a-shared-edge-is-halved-on-both-sides
 
 Will's ruling, 2026-09-15. An edge SHARED with a neighbour is aliased one step

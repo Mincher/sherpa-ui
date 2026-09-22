@@ -22,7 +22,10 @@ const MIRRORED = [
   'autocomplete',
 ] as const;
 
-type Control = HTMLInputElement | HTMLTextAreaElement;
+type Control = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+
+/** One choice in a `data-type="select"` field. */
+export interface InputOption { value: string; label?: string }
 
 export class SherpaInputText extends SherpaElement {
   static override css = new URL('./sherpa-input-text.css', import.meta.url);
@@ -32,6 +35,14 @@ export class SherpaInputText extends SherpaElement {
      rule is a public API and belongs in one place. */
   static override props = {
     'data-borderless': { type: 'boolean', kind: 'style' },
+    /* Offer a Clear button at the field's trailing edge. OPT-IN: a required
+       field, or one a host owns, must not offer to empty itself. */
+    'data-clearable': { type: 'boolean', kind: 'style' },
+    /* Written BY the field: there is something to clear. */
+    'data-has-value': { type: 'boolean', kind: 'style' },
+    /* Which control the field draws. `select` is one of a known set — the
+       platform's own element, not a re-implemented listbox. */
+    'data-type': { type: 'enum', kind: 'style', values: ['minimal', 'select'] },
   } as const;
 
   /** A form cannot see an <input> through a shadow root. TRAP T-shadow-input-needs-element-internals */
@@ -60,15 +71,66 @@ export class SherpaInputText extends SherpaElement {
 
   /** `minimal` wins: it has no message rows, so multiline is moot there. */
   protected override get templateId(): string | null {
-    if (this.dataset['type'] === 'minimal') return 'minimal';
+    const type = this.dataset['type'];
+    if (type === 'minimal') return 'minimal';
+    if (type === 'select') return 'select';
     return this.hasAttribute('data-multiline') ? 'multiline' : 'default';
+  }
+
+  /**
+   * populate([{ value, label }]) — the choices a SELECT field offers.
+   *
+   * Kept, so a variant re-stamp can put them back: `data-type` replaces the
+   * whole tree and the <option>s with it.
+   * TRAP T-variant-attrs-or-one-way-door
+   */
+  protected override renderData(data: unknown): void {
+    this.#options = Array.isArray(data) ? (data as InputOption[]) : [];
+    this.#syncOptions();
+  }
+
+  #options: InputOption[] = [];
+
+  /** Empty the field and report it, as a keystroke would. */
+  #onClear = (): void => {
+    if (!this.#control || this.#control.value === '') return;
+    this.#control.value = '';
+    this.#syncHasValue();
+    this.#control.dispatchEvent(new Event('input', { bubbles: true }));
+    this.#control.dispatchEvent(new Event('change', { bubbles: true }));
+    this.#control.focus();
+  };
+
+  /** JS writes the flag; CSS owns the Clear button's reveal. */
+  #syncHasValue(): void {
+    this.toggleAttribute('data-has-value', (this.#control?.value ?? '') !== '');
+  }
+
+  /** Write the choices into a select control, keeping the current value. */
+  #syncOptions(): void {
+    const select = this.#control;
+    if (!(select instanceof HTMLSelectElement)) return;
+    const wanted = this.getAttribute('value') ?? select.value;
+    select.replaceChildren(
+      ...this.#options.map((option) => {
+        const el = document.createElement('option');
+        el.value = option.value;
+        el.textContent = option.label ?? option.value;
+        return el;
+      }),
+    );
+    if (wanted && this.#options.some((o) => o.value === wanted)) select.value = wanted;
   }
 
   override onRender(): void {
     this.#control = this.$<Control>('.control');
+    // A re-stamp lost the <option>s; the kept list puts them back.
+    this.#syncOptions();
     this.#syncIds();
     this.#syncText();
     this.#syncAttrs();
+    this.$('.clear')?.addEventListener('click', this.#onClear);
+    this.#syncHasValue();
     this.#control?.addEventListener('input', this.#onInput);
     this.#control?.addEventListener('change', this.#onChange);
     // Blur, not per keystroke — TRAP T-validate-on-blur-then-every-keystroke.
@@ -228,6 +290,8 @@ export class SherpaInputText extends SherpaElement {
   set value(v: string) {
     if (this.#control) this.#control.value = v;
     else this.setAttribute('value', v);
+    // A JS write fires no `input`, so the Clear flag is set here too.
+    this.#syncHasValue();
   }
 
   checkValidity(): boolean {
@@ -241,6 +305,7 @@ export class SherpaInputText extends SherpaElement {
   #onInput = (): void => {
     // The form's copy follows every keystroke; the check only once it has erred.
     this.#syncValue();
+    this.#syncHasValue();
     if (this.dataset['error']) void this.validate();
     this.emit('input', { value: this.value });
   };

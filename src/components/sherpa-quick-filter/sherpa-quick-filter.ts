@@ -5,7 +5,7 @@
  * TRAP T-scope-does-not-stop-inheritance, TRAP T-icon-only-is-purely-css
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
-import { valueSet } from '../../core/store.js';
+import { DEFAULT_OP, OP_LABELS, OP_TAKES, type FilterOp, valueSet } from '../../core/store.js';
 import { NON_VALUE_ROWS } from '../../core/icons.js';
 // Floating, so the count tooltip escapes the toolbar's clipping chip run.
 import '../sherpa-tooltip/sherpa-tooltip.js';
@@ -44,6 +44,8 @@ export class SherpaQuickFilter extends SherpaElement {
     this.$('.caret')?.addEventListener('click', this.#onCaret);
     // The menu lives in the light DOM; its events bubble up through the host.
     this.addEventListener('menu-change', this.#onMenuChange as EventListener);
+    // A FILTER menu's condition is part of what this chip reads back.
+    this.addEventListener('condition-change', this.#onCondition as EventListener);
     this.addEventListener('menu-open', this.#onMenuToggle as EventListener);
     this.addEventListener('menu-close', this.#onMenuToggle as EventListener);
   }
@@ -121,7 +123,8 @@ export class SherpaQuickFilter extends SherpaElement {
   #applySelection(values: string[]): void {
     if (values.length > 1) this.dataset['count'] = String(values.length);
     else delete this.dataset['count'];
-    this.current = values.length > 0;
+    // A TYPING condition answers with text, so the chip is on without a tick.
+    this.current = values.length > 0 || this.#hasTypedAnswer();
     this.#syncLabelForSelection(values);
     this.#syncCountTip(values);
     this.#syncEmpty();
@@ -220,8 +223,25 @@ export class SherpaQuickFilter extends SherpaElement {
   }
 
   /**
+   * The menu's condition changed — the caret says which, and a TYPED answer
+   * switches the chip on by itself.
+   *
+   * Ticked rows are not the only way a filter chip holds a value: "Starts with
+   * Go" narrows just as much, and a chip that stays off while its menu filters
+   * is a chip that lies. TRAP T-an-operator-decides-pick-or-type
+   */
+  #onCondition = (): void => {
+    this.#applySelection((this.menu?.values ?? []) as string[]);
+  };
+
+  /**
    * TRAP T-caret-carries-the-value-not-the-label — the chip label is ALWAYS the
    * field name; the pick reads in the caret, as first + ellipsis beyond one.
+   *
+   * A FILTER menu prepends its CONDITION, so a chip reading "Tier: Gold" and
+   * one reading "Tier: Starts with Go" cannot be mistaken for each other.
+   * `Equals` is left off — it is the default, and saying it on every chip is
+   * noise. TRAP T-an-operator-decides-pick-or-type
    */
   #syncLabelForSelection(values: string[]): void {
     this.#field ??= this.dataset['label'] ?? null;
@@ -229,8 +249,31 @@ export class SherpaQuickFilter extends SherpaElement {
     if (field == null) return;
     this.dataset['label'] = field;
 
+    const menu = this.menu as (HTMLElement & { op?: string; conditionValue?: string }) | null;
+    const op = (menu?.dataset?.['op'] ?? DEFAULT_OP) as FilterOp;
+    const isFilter = menu?.getAttribute('data-type') === 'filter';
+
+    // A TYPING condition answers with what was typed, not with ticked rows.
+    if (isFilter && (OP_TAKES[op] ?? 'list') === 'text') {
+      const typed = (menu?.conditionValue ?? '').trim();
+      this.valueLabel = typed ? `${OP_LABELS[op]}: ${typed}` : '';
+      return;
+    }
+
     const first = values.length ? this.#valueLabel(values[0]!) : '';
-    this.valueLabel = values.length > 1 ? `${first}…` : first;
+    const picked = values.length > 1 ? `${first}…` : first;
+    // `eq` is the default, so naming it on every chip is noise.
+    const name = isFilter && op !== DEFAULT_OP ? `${OP_LABELS[op]}: ` : '';
+    this.valueLabel = picked ? `${name}${picked}` : '';
+  }
+
+  /** Is this chip's menu on a typing condition with something typed? */
+  #hasTypedAnswer(): boolean {
+    const menu = this.menu as (HTMLElement & { conditionValue?: string }) | null;
+    if (menu?.getAttribute('data-type') !== 'filter') return false;
+    const op = (menu.dataset?.['op'] ?? DEFAULT_OP) as FilterOp;
+    if ((OP_TAKES[op] ?? 'list') !== 'text') return false;
+    return (menu.conditionValue ?? '').trim() !== '';
   }
 
   /** The VISIBLE text of a menu row, falling back to the raw value. */

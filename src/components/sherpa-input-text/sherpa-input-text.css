@@ -61,6 +61,14 @@
   padding-inline: var(--sherpa-structure-space-padding, 8px);
   border-style: solid;
   border-color: var(--_border);
+  /* PER EDGE, so a grouped input halves its shared edge like every other
+     control. Without these the row falls back to `medium` — 1px — and a
+     snapped pair draws a doubled joint.
+     TRAP T-grouping-is-an-attribute-and-a-class */
+  border-block-start-width: var(--sherpa-border-top, 0.5px);
+  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
+  border-inline-start-width: var(--sherpa-border-left, 0.5px);
+  border-inline-end-width: var(--sherpa-border-right, 0.5px);
   background: var(--sherpa-theme-surface-default-base, #ffffff);
   transition: border-color 120ms ease, box-shadow 120ms ease;
 }
@@ -89,6 +97,64 @@
 }
 .control::placeholder { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
 .control:focus-visible { outline: none; }
+
+/* ── CLEAR ── opt-in per field, shown only with something to clear. */
+.clear {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  inline-size: var(--sherpa-theme-size-icon-xs, 14px);
+  block-size: var(--sherpa-theme-size-icon-xs, 14px);
+  padding: 0;
+  border: 0;
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  background: transparent;
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  cursor: pointer;
+}
+
+:host([data-clearable][data-has-value]) .clear { display: inline-flex; }
+
+.clear:focus-visible {
+  outline: none;
+  box-shadow: var(--sherpa-focus-ring);
+}
+
+/* ── SELECT ── the platform's own element, with the system's caret.
+ * The NATIVE glyph sits hard against the box edge whatever the padding is —
+ * padding moves the TEXT, not the browser's own arrow — so `triangle-down` is
+ * masked into the ROW, which is the box the group rounds.
+ */
+select.control {
+  appearance: none;
+  /* Room for the glyph on top of the row's own trailing padding. */
+  padding-inline-end: var(--sherpa-structure-space-padding, 8px);
+  cursor: pointer;
+}
+
+select.control::-ms-expand { display: none; }
+
+:host([data-type="select"]) .control-row { position: relative; }
+
+:host([data-type="select"]) .control-row::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: var(--sherpa-structure-space-padding, 8px);
+  inline-size: var(--sherpa-theme-size-icon-xs, 14px);
+  pointer-events: none;
+  background-color: var(--sherpa-theme-content-body-1, #35353d);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M6.55898 9.46207C6.83458 9.69455 7.23923 9.6786 7.49514 9.41192L10.2949 6.49447C10.4961 6.28478 10.5552 5.97252 10.4458 5.69901C10.3364 5.4255 10.0827 5.25 9.80055 5.25H4.20107C3.91891 5.25 3.663 5.42778 3.55363 5.70129C3.44427 5.9748 3.50551 6.28706 3.70674 6.49447L6.50648 9.41192L6.55898 9.46207Z'/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M6.55898 9.46207C6.83458 9.69455 7.23923 9.6786 7.49514 9.41192L10.2949 6.49447C10.4961 6.28478 10.5552 5.97252 10.4458 5.69901C10.3364 5.4255 10.0827 5.25 9.80055 5.25H4.20107C3.91891 5.25 3.663 5.42778 3.55363 5.70129C3.44427 5.9748 3.50551 6.28706 3.70674 6.49447L6.50648 9.41192L6.55898 9.46207Z'/%3E%3C/svg%3E");
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  /* An icon is the size of the text beside it. */
+  mask-size: var(--sherpa-theme-size-icon-xs, 14px);
+  -webkit-mask-size: var(--sherpa-theme-size-icon-xs, 14px);
+  mask-position: center;
+  -webkit-mask-position: center;
+}
 
 /* Focus lives on the row so the whole box (icons + actions) is ringed. */
 .control-row:focus-within {

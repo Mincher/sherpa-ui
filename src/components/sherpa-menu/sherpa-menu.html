@@ -40,6 +40,8 @@
     data-op       FILTER type only: which condition is picked. Defaults to `eq`.
     data-conditions  FILTER type only: a comma-separated op list ('eq,ne,contains')
                   in place of the default text set.
+    data-has-value  written BY the menu: the typed value is not empty, so the
+                  input's Clear button shows.
     data-value    FILTER type only: what was TYPED under a typing condition.
                   An ATTRIBUTE because a variant re-stamp replaces the whole
                   shadow tree, and a value living only in the box is lost.
@@ -137,31 +139,30 @@
       </span>
       <p class="heading" part="heading"></p>
       <slot name="header"></slot>
-      <!--
-        CONDITION — what the rows below MEAN. `Equals` picks from the values;
-        `Contains` and its relatives take the text box under it. One <option>
-        is a cloning prototype. TRAP T-an-operator-decides-pick-or-type
-      -->
-      <div class="filter-row" part="filter-row">
-        <!-- The wrapper draws the caret: a <select> paints nothing over its
-             own box, and the native glyph ignores padding. -->
-        <span class="condition-box">
-          <select class="condition" part="condition" aria-label="Condition">
-            <option></option>
-          </select>
-        </span>
-        <input class="condition-value" part="condition-value" type="text"
-               aria-label="Value" placeholder="Value" />
+      <!-- ONE OBJECT: the condition and whatever answers it are SNAPPED, with
+           no gap, by `.sherpa-group` — the system's own grouping class, which
+           squares the inner corners and halves the shared edge by POSITION.
+           The search box is the last child while the rows are the answer; the
+           input takes its place once a typing condition does.
+           TRAP T-grouping-is-an-attribute-and-a-class -->
+      <div class="filter-row sherpa-group" part="filter-row">
+        <!-- COMPOSED, not re-drawn: sherpa-input-text owns box, border, caret,
+             focus ring and the Clear action for every field in the system.
+             `select` is its own template variant, so the platform's element
+             does the work. TRAP T-compose-never-reimplement -->
+        <sherpa-input-text class="condition" part="condition" data-type="select"
+                           aria-label="Condition"></sherpa-input-text>
+        <sherpa-input-text class="condition-value" part="condition-value"
+                           placeholder="Value" data-clearable
+                           aria-label="Value"></sherpa-input-text>
+        <!-- The SEARCH is the pair's second half while the ROWS are the answer;
+             the input above takes its place once a typing condition does. It
+             is a composed sherpa-input-text, so it owns box, ring and focus. -->
+        <sherpa-input-text class="search" part="search"
+                           data-icon-start="fa-solid fa-magnifying-glass"
+                           placeholder="Search" autocomplete="off"
+                           aria-label="Search this menu"></sherpa-input-text>
       </div>
-      <!--
-        SEARCH — sherpa-input-text composed, so it owns box, ring and focus; there
-        is nothing here to restyle. It filters the rows the menu already has, so a
-        row hidden by a search keeps its ticked state and comes back with it.
-      -->
-      <sherpa-input-text class="search" part="search"
-                         data-icon-start="fa-solid fa-magnifying-glass"
-                         placeholder="Search" autocomplete="off"
-                         aria-label="Search this menu"></sherpa-input-text>
     </div>
 
     <!-- Without this the card collapses to an empty box and reads as broken. -->

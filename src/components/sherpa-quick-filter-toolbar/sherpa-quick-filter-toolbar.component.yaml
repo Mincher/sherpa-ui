@@ -61,7 +61,6 @@ anatomy:
                 data-size: sm
                 data-icon-end: fa-solid fa-caret-down
                 aria-haspopup: menu
-                aria-expanded: "false"
             - el: sherpa-button
               class: act
               attrs:
@@ -217,13 +216,13 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: >-
-      read/write JS properties (active, values, pickedValues, customFilters, groupField, sortField,
-      sortDirection, sortSuspended). See $extensions.sherpa.jsProps.
+      read/write JS properties (active, values, superseded, pickedValues, clauses, customFilters,
+      groupField, sortField, sortDirection, sortSuspended). See $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
     description: >-
-      callable from a view definition's state block (setChipValues, available, addCustomFilter,
-      clearAll, organise). See $extensions.sherpa.methods.
+      callable from a view definition's state block (setChipValues, supersede, setClause, available,
+      addCustomFilter, clearAll, organise). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: quick-filter-change
@@ -231,6 +230,7 @@ events:
     composed: true
     detail:
       active: unknown
+      clauses: unknown
       custom: unknown
       id: unknown
       picked: unknown
@@ -316,6 +316,14 @@ $extensions:
         args: "id: string, picks: readonly string[] | undefined"
         description: Set ONE chip's picks, leaving every other chip alone.
       - $type: method
+        name: supersede
+        args: "ids: readonly string[]"
+        description: supersede([...ids]) — the VIEW now owns these fields.
+      - $type: method
+        name: setClause
+        args: "id: string, clause: readonly [string, FilterOp, unknown] | null"
+        description: setClause(id, clause) — set ONE condition chip from a ready FilterClause.
+      - $type: method
         name: available
         args: "defs: QuickFilterDef[]"
         description: available([...]) — the filters the Add chip offers, over the populate() set.
@@ -330,7 +338,7 @@ $extensions:
       - $type: method
         name: organise
         args: "def: OrganiseDef"
-        description: organise({ group, sort }). TRAP T-organise-chips-lead-the-bar — separate from populate().
+        description: organise({ group, sort }) — how ONE component arranges the rows it draws.
     category: control
     variantAxes:
       - name: Type
@@ -356,7 +364,13 @@ $extensions:
       - name: values
         type: string
         access: read-write
+      - name: superseded
+        type: string
+        access: read
       - name: pickedValues
+        type: string
+        access: read
+      - name: clauses
         type: string
         access: read
       - name: customFilters

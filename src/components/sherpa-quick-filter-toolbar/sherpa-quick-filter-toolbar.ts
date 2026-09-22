@@ -386,6 +386,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.addEventListener('range-select', this.#onDatePicked);
     // sherpa-switch re-dispatches its native change COMPOSED; a bare checkbox does not.
     this.addEventListener('change', this.#onRangeToggle);
+    /* A menu's CONDITION is part of what a chip filters by, so the bar reports
+       it like any other change. TRAP T-an-operator-decides-pick-or-type */
+    this.addEventListener('condition-change', this.#onConditionChanged);
     /* On the SHADOW ROOT, not the host. A native `change` from a bare <select>
        or <input> BUBBLES but is not COMPOSED, so it stops at this component's
        shadow boundary and never reaches `this`. The switch handlers above work
@@ -887,6 +890,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     menu.appendChild(row);
   }
 
+  /** A chip's condition or typed value changed — the bar's filter did too. */
+  #onConditionChanged = (): void => {
+    this.#emitChange();
+  };
+
   /** The Range switch was flipped — swap the menu between its two shapes. */
   #onRangeToggle = (event: Event): void => {
     // The change starts on the switch's inner <input>.
@@ -1107,18 +1115,27 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   get clauses(): Record<string, [string, FilterOp, unknown]> {
     const out: Record<string, [string, FilterOp, unknown]> = {};
-    for (const def of this.#filters) {
-      if (!def.conditions) continue;
-      const op = def.op ?? DEFAULT_OP;
-      const field = def.id;
+    for (const chip of this.#chips()) {
+      const field = chip.dataset['id'];
+      if (!field || chip.hasAttribute('data-superseded')) continue;
+
+      /* The MENU holds the condition — one field, one filter menu, whether a
+         chip or a column heading opened it.
+         TRAP T-one-field-one-filter-menu */
+      const menu = chip.querySelector('sherpa-menu') as
+        (HTMLElement & { conditionValue?: string }) | null;
+      if (menu?.getAttribute('data-type') !== 'filter') continue;
+      const op = (menu.dataset['op'] ?? DEFAULT_OP) as FilterOp;
 
       if ((OP_TAKES[op] ?? 'list') === 'text') {
-        const typed = (def.text ?? '').trim();
+        // A TYPED answer needs no tick, and no `data-current` from a tick.
+        const typed = (menu.conditionValue ?? '').trim();
         if (typed) out[field] = [field, op, typed];
         continue;
       }
 
-      const picks = this.#chipPicksById(field);
+      if (!chip.hasAttribute('data-current')) continue;
+      const picks = this.#chipPicks(chip);
       if (!picks.length) continue;
       /* ONE pick is `eq`; SEVERAL is `in`, because `eq` against a list can
          never match. `ne` inverts the same way. */
@@ -1181,14 +1198,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       menu?.setAttribute('data-takes', OP_TAKES[op] ?? 'list');
       return;
     }
-  }
-
-  /** One chip's ticked values, by id. */
-  #chipPicksById(id: string): string[] {
-    for (const chip of this.#chips()) {
-      if (chip.dataset['id'] === id) return this.#chipPicks(chip);
-    }
-    return [];
   }
 
   /**
@@ -1354,8 +1363,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         this.#toggleFavourite(btn);
         break;
       case 'add':
-        // The button IS the trigger — there is no caret.
-        this.#openAddMenu(btn);
+        // sherpa-button opens its own slotted menu; nothing to do here.
         break;
     }
   };
@@ -1368,19 +1376,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const picked = (event as CustomEvent).detail?.values as string[] | undefined;
     if (picked?.length) this.#addFilters(picked);
   };
-
-  /** Open the Add button's menu. `aria-expanded` is what makes a plain button a valid trigger. */
-  #openAddMenu(btn: HTMLElement): void {
-    const menu = btn.querySelector<HTMLElement & { show?: (t: HTMLElement) => void }>(
-      'sherpa-menu',
-    );
-    if (!menu) return;
-    btn.setAttribute('aria-expanded', 'true');
-    menu.addEventListener('menu-close', () => btn.setAttribute('aria-expanded', 'false'), {
-      once: true,
-    });
-    menu.show?.(btn);
-  }
 
   /** Flip the star. TRAP T-favourite-star-swaps-its-glyph — colour alone cannot carry it. */
   #toggleFavourite(btn: HTMLElement): void {

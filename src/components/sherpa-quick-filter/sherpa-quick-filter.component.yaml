@@ -190,6 +190,9 @@ states:
     name: unsupported
     selector: ":host([data-unsupported])"
   - $type: state
+    name: superseded
+    selector: ":host([data-superseded])"
+  - $type: state
     name: disabled
     selector: ":host([disabled])"
   - $type: state

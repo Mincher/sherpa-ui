@@ -22,6 +22,7 @@ element:
 templates:
   - default
   - multiline
+  - select
   - minimal
 anatomy:
   byTemplate:
@@ -55,6 +56,19 @@ anatomy:
                 part: icon-end
                 attrs:
                   aria-hidden: "true"
+              - el: button
+                class: clear
+                part: clear
+                attrs:
+                  type: button
+                  tabindex: "-1"
+                  aria-label: Clear
+                children:
+                  - el: i
+                    class: sherpa-icon-box
+                    attrs:
+                      data-icon: xmark
+                      aria-hidden: "true"
               - el: span
                 class: actions
                 part: actions
@@ -92,6 +106,67 @@ anatomy:
                 part: icon-end
                 attrs:
                   aria-hidden: "true"
+              - el: button
+                class: clear
+                part: clear
+                attrs:
+                  type: button
+                  tabindex: "-1"
+                  aria-label: Clear
+                children:
+                  - el: i
+                    class: sherpa-icon-box
+                    attrs:
+                      data-icon: xmark
+                      aria-hidden: "true"
+              - el: span
+                class: actions
+                part: actions
+                slot: actions
+          - el: span
+            class: message
+            part: message
+    select:
+      - el: label
+        class: field
+        part: field
+        children:
+          - el: span
+            class: label
+            part: label
+          - el: span
+            class: description
+            part: description
+          - el: span
+            class: control-row sherpa-border-edges
+            part: control-row
+            children:
+              - el: span
+                class: icon sherpa-icon-box icon-start
+                part: icon-start
+                attrs:
+                  aria-hidden: "true"
+              - el: select
+                class: control
+                part: control
+              - el: span
+                class: icon sherpa-icon-box icon-end
+                part: icon-end
+                attrs:
+                  aria-hidden: "true"
+              - el: button
+                class: clear
+                part: clear
+                attrs:
+                  type: button
+                  tabindex: "-1"
+                  aria-label: Clear
+                children:
+                  - el: i
+                    class: sherpa-icon-box
+                    attrs:
+                      data-icon: xmark
+                      aria-hidden: "true"
               - el: span
                 class: actions
                 part: actions
@@ -238,6 +313,9 @@ states:
     name: has-actions
     selector: ":host([data-has-actions])"
   - $type: state
+    name: select
+    selector: ":host([data-type=\"select\"])"
+  - $type: state
     name: icon-start
     selector: ":host([data-icon-start])"
   - $type: state
@@ -289,11 +367,19 @@ tokens:
   control-row.gap: "{sherpa.structure-space-gap}"
   control-row.min-block-size: "{sherpa.display-mode-size-2xl}"
   control-row.padding-inline: "{sherpa.structure-space-padding}"
+  control-row.border-block-start-width: "{sherpa.border-top}"
+  control-row.border-block-end-width: "{sherpa.border-bottom}"
+  control-row.border-inline-start-width: "{sherpa.border-left}"
+  control-row.border-inline-end-width: "{sherpa.border-right}"
   control-row.background: "{sherpa.theme-surface-default-base}"
   control.padding-block: "{sherpa.theme-padding-sm}"
   control.color: "{sherpa.theme-content-body-base}"
   control.font-size: "{sherpa.font-size-body-base}"
   control.line-height: "{sherpa.theme-content-line-height-base}"
+  clear.inline-size: "{sherpa.theme-size-icon-xs}"
+  clear.block-size: "{sherpa.theme-size-icon-xs}"
+  clear.border-radius: "{sherpa.display-mode-border-rounding-base}"
+  clear.color: "{sherpa.theme-content-body-1}"
   icon.--_icon-size: "{sherpa.theme-size-icon-xs}"
   icon.color: "{sherpa.theme-content-body-1}"
   actions.gap: "{sherpa.structure-space-gap}"

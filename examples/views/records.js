@@ -52,8 +52,20 @@ export async function init(root) {
      one column replaces the first rather than fighting it. */
   const columnClauses = new Map();
 
-  const filterFromChips = (values, active = []) => {
+  /**
+   * `ready` are the toolbar's own FilterClauses — a chip's menu holds the
+   * CONDITION, so "Starts with Go" arrives finished and this view does not
+   * re-derive it. A field in `ready` is skipped below.
+   * TRAP T-an-operator-decides-pick-or-type
+   */
+  const filterFromChips = (values, active = [], ready = {}) => {
     const clauses = [];
+    const done = new Set();
+    for (const clause of Object.values(ready)) {
+      if (!Array.isArray(clause)) continue;
+      clauses.push(clause);
+      done.add(clause[0]);
+    }
     /* Each ON toggle contributes its own clause, ANDed with the rest — two
        toggles narrow, they do not widen. */
     for (const id of active) {
@@ -62,7 +74,7 @@ export async function init(root) {
     }
 
     for (const [field, picked] of Object.entries(values ?? {})) {
-      if (!picked?.length) continue;
+      if (!picked?.length || done.has(field)) continue;
       if (picked.length === 2 && dateFields.has(field)) {
         clauses.push([field, 'between', [...picked].sort()]);
       } else if (picked.length === 2 && numberFields.has(field)) {
@@ -303,7 +315,8 @@ export async function init(root) {
      group the source handles itself. */
   source.bind(qft, { steerOnly: true, ignore: ['quick-filter-change'], signal });
   qft.addEventListener('quick-filter-change', (e) => {
-    source.contribute('chips', filterFromChips(e.detail.values, e.detail.active));
+    source.contribute('chips',
+      filterFromChips(e.detail.values, e.detail.active, e.detail.clauses));
     /* A custom chip's body is a TOGGLE: off means "stop applying this", not
        "delete it" — only REMOVE deletes. So this suspends and restores the
        clause and never touches the chip. A custom chip shows in neither
@@ -413,7 +426,7 @@ export async function init(root) {
     qft.supersede(viewFields());
     // The bar's own filters changed shape, so re-read them.
     // `active` is a list of chip IDS, exactly as `quick-filter-change` reports.
-    source.contribute('chips', filterFromChips(qft.values, qft.active));
+    source.contribute('chips', filterFromChips(qft.values, qft.active, qft.clauses));
   };
 
   header?.addEventListener('quick-filter-change', (e) => {

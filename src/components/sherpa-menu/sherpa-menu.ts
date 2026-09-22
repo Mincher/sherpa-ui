@@ -94,6 +94,8 @@ export class SherpaMenu extends SherpaElement {
     this.$('.today')?.addEventListener('click', this.#onToday);
     this.$('.remove')?.addEventListener('click', this.#onRemove);
     this.$('.search')?.addEventListener('input', this.#onSearch);
+    /* Composed sherpa-input-texts, which re-dispatch `change` and `input`
+       from the HOST — so these reach here without a shadow-root listener. */
     this.$('.condition')?.addEventListener('change', this.#onCondition);
     this.$('.condition-value')?.addEventListener('input', this.#onCondition);
   }
@@ -106,13 +108,13 @@ export class SherpaMenu extends SherpaElement {
    * TRAP T-an-operator-decides-pick-or-type
    */
   #onCondition = (event?: Event): void => {
-    const select = this.$<HTMLSelectElement>('.condition');
+    const select = this.#conditionField();
     const op = (select?.value ?? DEFAULT_OP) as FilterOp;
     if (this.dataset['op'] !== op) this.dataset['op'] = op;
     this.setAttribute('data-takes', OP_TAKES[op] ?? 'list');
     // Typing writes through to the attribute, so a re-stamp cannot lose it.
     if (event?.target === this.$('.condition-value')) {
-      this.dataset['value'] = this.$<HTMLInputElement>('.condition-value')?.value ?? '';
+      this.dataset['value'] = this.#valueField()?.value ?? '';
     }
     this.emit('condition-change', { op, value: this.conditionValue });
   };
@@ -137,21 +139,29 @@ export class SherpaMenu extends SherpaElement {
    * the moment `data-type` changes. TRAP T-restamp-does-not-abort
    */
   get conditionValue(): string {
-    return this.$<HTMLInputElement>('.condition-value')?.value
-      ?? this.dataset['value'] ?? '';
+    return this.#valueField()?.value ?? this.dataset['value'] ?? '';
   }
 
   set conditionValue(next: string) {
     if (this.dataset['value'] !== next) this.dataset['value'] = next;
-    const box = this.$<HTMLInputElement>('.condition-value');
+    const box = this.#valueField();
     if (box) box.value = next;
+  }
+
+  /** The composed field that names the condition. */
+  #conditionField(): (HTMLElement & { value: string; populate?: (d: unknown) => unknown }) | null {
+    return this.$('.condition');
+  }
+
+  /** The composed field that holds what was typed. */
+  #valueField(): (HTMLElement & { value: string }) | null {
+    return this.$('.condition-value');
   }
 
   /** Stamp the condition <option>s and keep `data-takes` in step. */
   #syncConditions(): void {
-    const select = this.$<HTMLSelectElement>('.condition');
-    const proto = select?.querySelector('option');
-    if (!select || !proto) return;
+    const select = this.#conditionField();
+    if (!select) return;
 
     /* A comma list names the ops; the default is the text set, which is what
        a field question asks. One vocabulary, in store.ts. */
@@ -162,16 +172,11 @@ export class SherpaMenu extends SherpaElement {
     const ops = wanted.filter((op): op is FilterOp => op in OP_LABELS);
     if (!ops.length) return;
 
-    const current = [...select.options].map((o) => o.value);
-    if (current.join() !== ops.join()) {
-      select.replaceChildren(
-        ...ops.map((op) => {
-          const option = proto.cloneNode(false) as HTMLOptionElement;
-          option.value = op;
-          option.textContent = OP_LABELS[op];
-          return option;
-        }),
-      );
+    // The field keeps its own options across a re-stamp; this only re-sends
+    // them when the SET changed.
+    if (this.#sentOps.join() !== ops.join()) {
+      this.#sentOps = [...ops];
+      void select.populate?.(ops.map((op) => ({ value: op, label: OP_LABELS[op] })));
     }
 
     const op = ops.includes(this.op) ? this.op : (ops[0] ?? DEFAULT_OP);
@@ -180,10 +185,13 @@ export class SherpaMenu extends SherpaElement {
     this.setAttribute('data-takes', OP_TAKES[op] ?? 'list');
 
     // Put back what was typed — a re-stamp blanked the box, not the state.
-    const box = this.$<HTMLInputElement>('.condition-value');
+    const box = this.#valueField();
     const held = this.dataset['value'] ?? '';
     if (box && box.value !== held) box.value = held;
   }
+
+  /** The op set last sent to the condition field. */
+  #sentOps: string[] = [];
 
   /** Narrow rows to a typed substring; a hidden row keeps its tick.
    * TRAP T-menu-search-is-a-substring-find */
@@ -534,6 +542,8 @@ export class SherpaMenu extends SherpaElement {
    * calendar's date attributes. TRAP T-clear-empties-both-body-shapes */
   #onClear = (): void => {
     for (const input of this.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
+    // A FILTER menu's typed value is part of what Clear empties.
+    if (this.dataset['type'] === 'filter') this.conditionValue = '';
     for (const cal of this.querySelectorAll<HTMLElement>('sherpa-calendar')) {
       for (const a of ['data-value', 'data-value-start', 'data-value-end']) cal.removeAttribute(a);
     }

@@ -132,34 +132,30 @@ anatomy:
                 part: heading
               - slot: header
               - el: div
-                class: filter-row
+                class: filter-row sherpa-group
                 part: filter-row
                 children:
-                  - el: span
-                    class: condition-box
-                    children:
-                      - el: select
-                        class: condition
-                        part: condition
-                        attrs:
-                          aria-label: Condition
-                        children:
-                          - el: option
-                  - el: input
+                  - el: sherpa-input-text
+                    class: condition
+                    part: condition
+                    attrs:
+                      data-type: select
+                      aria-label: Condition
+                  - el: sherpa-input-text
                     class: condition-value
                     part: condition-value
                     attrs:
-                      type: text
-                      aria-label: Value
                       placeholder: Value
-              - el: sherpa-input-text
-                class: search
-                part: search
-                attrs:
-                  data-icon-start: fa-solid fa-magnifying-glass
-                  placeholder: Search
-                  autocomplete: "off"
-                  aria-label: Search this menu
+                      data-clearable: ""
+                      aria-label: Value
+                  - el: sherpa-input-text
+                    class: search
+                    part: search
+                    attrs:
+                      data-icon-start: fa-solid fa-magnifying-glass
+                      placeholder: Search
+                      autocomplete: "off"
+                      aria-label: Search this menu
           - el: p
             class: no-matches
             part: no-matches
@@ -237,6 +233,11 @@ props:
     type: string
     kind: content
     description: names the list that was replaced — the breadcrumb's text
+  - $type: prop
+    name: data-has-value
+    type: string
+    kind: style
+    description: "written BY the menu: the typed value is not empty, so the input's Clear button shows."
   - $type: prop
     name: data-heading
     type: string
@@ -336,11 +337,8 @@ states:
     name: commit
     selector: ":host([data-commit])"
   - $type: state
-    name: not-text
-    selector: ":host(:not([data-takes=\"text\"]))"
-  - $type: state
     name: focus-visible
-    selector: .condition:focus-visible
+    selector: ":focus-visible"
 capabilities:
   - $type: capability
     api: js-property-mirror
@@ -410,29 +408,6 @@ tokens:
   heading.font-weight: "{sherpa.font-weight-regular}"
   heading.line-height: "{sherpa.theme-content-line-height-small}"
   heading.letter-spacing: "{sherpa.theme-content-letter-spacing-xs}"
-  condition.min-block-size: "{sherpa.display-mode-size-2xl}"
-  condition.padding: "{sherpa.display-mode-space-2xs}"
-  condition.font-size: "{sherpa.theme-content-size-base}"
-  condition.color: "{sherpa.theme-content-body-1}"
-  condition.background: "{sherpa.theme-surface-default-base}"
-  condition.border-color: "{sherpa.theme-border-default-2}"
-  condition.border-block-start-width: "{sherpa.border-top}"
-  condition.border-block-end-width: "{sherpa.border-bottom}"
-  condition.border-inline-start-width: "{sherpa.border-left}"
-  condition.border-inline-end-width: "{sherpa.border-right}"
-  condition.border-radius: "{sherpa.display-mode-border-rounding-base}"
-  condition-value.min-block-size: "{sherpa.display-mode-size-2xl}"
-  condition-value.padding: "{sherpa.display-mode-space-2xs}"
-  condition-value.font-size: "{sherpa.theme-content-size-base}"
-  condition-value.color: "{sherpa.theme-content-body-1}"
-  condition-value.background: "{sherpa.theme-surface-default-base}"
-  condition-value.border-color: "{sherpa.theme-border-default-2}"
-  condition-value.border-block-start-width: "{sherpa.border-top}"
-  condition-value.border-block-end-width: "{sherpa.border-bottom}"
-  condition-value.border-inline-start-width: "{sherpa.border-left}"
-  condition-value.border-inline-end-width: "{sherpa.border-right}"
-  condition-value.border-radius: "{sherpa.display-mode-border-rounding-base}"
-  condition.padding-inline-end: "{sherpa.display-mode-space-xs}"
   remove.--_status-text: "{sherpa.theme-content-critical-1}"
   remove.--_status-border: "{sherpa.theme-border-critical-2}"
   remove.--_status-icon: "{sherpa.theme-content-critical-1}"
