@@ -1050,7 +1050,12 @@ export class SherpaDataGrid extends SherpaElement {
     const field = this.dataset['sortDirection'] === '' ? undefined : this.dataset['sortField'];
     const group = this.dataset['groupField'];
     if (!field && !group) return rows;
-    const direction: SortDirection = this.dataset['sortDirection'] === 'desc' ? 'desc' : 'asc';
+    /* The shared reader, not a second spelling of it. `?? 'asc'` is the
+       DEFAULT for a column with no direction yet; the suspend is handled on
+       the line above, where the empty string drops the field.
+       TRAP T-one-cycle-for-one-value */
+    const direction: SortDirection =
+      sortDirectionFrom(this.dataset['sortDirection']) ?? 'asc';
 
     const specs: SortSpec[] = [];
     if (group) specs.push({ field: group, direction: group === field ? direction : 'asc' });

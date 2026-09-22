@@ -872,7 +872,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
     const field = this.dataset['sortField'] ?? '';
     const raw = this.dataset['sortDirection'];
-    const direction = raw === 'desc' ? 'desc' : 'asc';
+    // The shared reader — TRAP T-one-cycle-for-one-value.
+    const direction = sortDirectionFrom(raw) ?? 'asc';
     /* An EMPTY direction is a suspended sort: the column is still pushed, so only
        the direction says whether it runs. TRAP T-a-suspended-sort-is-one-owners-job */
     const suspended = raw === '';
