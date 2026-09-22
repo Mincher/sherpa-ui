@@ -5,9 +5,10 @@
  * TRAP T-scope-does-not-stop-inheritance, TRAP T-icon-only-is-purely-css
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
+import { DEFAULT_OP, OP_TAKES, type FilterOp, valueSet } from '../../core/store.js';
 import {
-  DEFAULT_OP, OP_LABELS, OP_SYMBOLS, OP_TAKES, type FilterOp, valueSet,
-} from '../../core/store.js';
+  fieldState, filterFace, type FilterFace, type FilterState,
+} from '../../core/filter-state.js';
 import { NON_VALUE_ROWS } from '../../core/icons.js';
 // Floating, so the count tooltip escapes the toolbar's clipping chip run.
 import '../sherpa-tooltip/sherpa-tooltip.js';
@@ -34,6 +35,9 @@ export class SherpaQuickFilter extends SherpaElement {
        TRAP T-a-superseded-chip-suspends-it-is-never-removed */
     'data-superseded': { type: 'boolean', kind: 'style' },
     'data-count': { type: 'string', kind: 'content', to: '.count' },
+    /* WHICH FIELD this chip filters. The toolbar writes it on every chip and
+       selects on it; the chip reads it to name its own state. */
+    'data-id': { type: 'string', kind: 'style' },
   } as const;
 
   // data-label is hand-written: an absent attribute must leave the template's
@@ -134,7 +138,7 @@ export class SherpaQuickFilter extends SherpaElement {
     // BEFORE the badge: this writes the count's own aria-label and would wipe
     // the condition's. TRAP T-an-operator-decides-pick-or-type
     this.#syncCountTip(values);
-    this.#syncBadge(values.length);
+    this.#syncBadge(filterFace(this.#state(values)));
     this.#syncEmpty();
     this.#syncText();
   }
@@ -224,24 +228,20 @@ export class SherpaQuickFilter extends SherpaElement {
   }
 
   #syncCountTip(values: string[]): void {
-    const labels = values.map((v) => this.#valueLabel(v));
     /* The CONDITION in words, never the sign: a tooltip is where a reader goes
        to find out what `!∷` means, so showing it again answers nothing.
-       TRAP T-an-operator-decides-pick-or-type */
-    const named = this.#conditionName;
-    const menu = this.menu as (HTMLElement & { conditionValue?: string }) | null;
-    const typed = (menu?.conditionValue ?? '').trim();
-    const shown = labels.length ? labels.join(', ') : typed;
-    const text = named && shown ? `${named}: ${shown}` : (shown || named);
+       TRAP T-one-state-per-filtered-field */
+    const face = filterFace(this.#state(values));
 
     // `data-text` is sherpa-tooltip's own API — the component writes the bubble.
     const tip = this.$<HTMLElement>('.count-wrap');
-    if (tip) tip.dataset['text'] = text;
+    if (tip) tip.dataset['text'] = face.tip;
     const badge = this.$('.count');
     if (!badge) return;
-    if (labels.length > 1) {
-      const count = `${labels.length} selected: ${labels.join(', ')}`;
-      badge.setAttribute('aria-label', named ? `${named}, ${count}` : count);
+    if (face.count > 1) {
+      const labels = values.map((v) => this.#valueLabel(v));
+      const count = `${face.count} selected: ${labels.join(', ')}`;
+      badge.setAttribute('aria-label', face.condition ? `${face.condition}, ${count}` : count);
     } else badge.removeAttribute('aria-label');
   }
 
@@ -266,7 +266,7 @@ export class SherpaQuickFilter extends SherpaElement {
     if (!values.length) return;
     this.#syncLabelForSelection(values);
     this.#syncCountTip(values);
-    this.#syncBadge(values.length);
+    this.#syncBadge(filterFace(this.#state(values)));
   };
 
   #onCondition = (): void => {
@@ -274,13 +274,36 @@ export class SherpaQuickFilter extends SherpaElement {
   };
 
   /**
-   * TRAP T-caret-carries-the-value-not-the-label — the chip label is ALWAYS the
-   * field name; the pick reads in the caret, as first + ellipsis beyond one.
+   * This chip's state, read off its menu.
    *
-   * A FILTER menu prepends its CONDITION, so a chip reading "Tier: Gold" and
-   * one reading "Tier: Starts with Go" cannot be mistaken for each other.
-   * `Equals` is left off — it is the default, and saying it on every chip is
-   * noise. TRAP T-an-operator-decides-pick-or-type
+   * ONE read, into the shared model — the badge, the caret, the count and the
+   * tooltip all come back from `filterFace`, so the chip draws rather than
+   * decides. TRAP T-one-state-per-filtered-field
+   */
+  #state(values: string[]): FilterState {
+    const menu = this.menu as (HTMLElement & { conditionValue?: string }) | null;
+    const isFilter = menu?.getAttribute('data-type') === 'filter';
+    const all = [...this.querySelectorAll<HTMLInputElement>('[slot="menu"] input')]
+      .filter((i) => !i.closest(NON_VALUE_ROWS))
+      .map((i) => i.value);
+    return fieldState(
+      {
+        field: this.dataset['id'] ?? this.dataset['label'] ?? '',
+        label: this.#field ?? this.dataset['label'] ?? '',
+        values: all,
+        labels: Object.fromEntries(all.map((v) => [v, this.#valueLabel(v)])),
+      },
+      {
+        picked: values,
+        op: isFilter ? ((menu?.dataset['op'] ?? DEFAULT_OP) as FilterOp) : DEFAULT_OP,
+        text: isFilter ? (menu?.conditionValue ?? '') : '',
+      },
+    );
+  }
+
+  /**
+   * TRAP T-caret-carries-the-value-not-the-label — the chip label is ALWAYS the
+   * field name; the pick reads in the caret.
    */
   #syncLabelForSelection(values: string[]): void {
     this.#field ??= this.dataset['label'] ?? null;
@@ -288,36 +311,10 @@ export class SherpaQuickFilter extends SherpaElement {
     if (field == null) return;
     this.dataset['label'] = field;
 
-    const menu = this.menu as (HTMLElement & { op?: string; conditionValue?: string }) | null;
-    const op = (menu?.dataset?.['op'] ?? DEFAULT_OP) as FilterOp;
-    const isFilter = menu?.getAttribute('data-type') === 'filter';
-
-    /* The BADGE wears the condition as a sign, so the caret keeps the whole
-       width for the VALUE. `eq` is the default and gets none.
-       TRAP T-an-operator-decides-pick-or-type */
-    // `eq` HAS a sign, but a badge on every default chip is noise.
-    const named = isFilter && op !== DEFAULT_OP;
-    this.#condition = named ? OP_SYMBOLS[op] : '';
-    // A screen reader hears the WORD; only the badge wears the sign.
-    this.#conditionName = named ? OP_LABELS[op] : '';
-
-    // A TYPING condition answers with what was typed, not with ticked rows.
-    if (isFilter && (OP_TAKES[op] ?? 'list') === 'text') {
-      this.valueLabel = (menu?.conditionValue ?? '').trim();
-      this.#syncBadge(0);
-      return;
-    }
-
-    const first = values.length ? this.#valueLabel(values[0]!) : '';
-    this.valueLabel = values.length > 1 ? `${first}…` : first;
-    this.#syncBadge(values.length);
+    const face = filterFace(this.#state(values));
+    this.valueLabel = face.value;
+    this.#syncBadge(face);
   }
-
-  /** The condition's sign, or '' for the default. */
-  #condition = '';
-
-  /** The same condition in words, for the badge's accessible name. */
-  #conditionName = '';
 
   /**
    * The badge says how many, or WHICH CONDITION when there is only one value.
@@ -326,15 +323,15 @@ export class SherpaQuickFilter extends SherpaElement {
    * can get elsewhere — the caret already shows the value, and the menu shows
    * the ticks. So several picks keep the number.
    */
-  #syncBadge(count: number): void {
-    if (count > 1) {
-      this.dataset['count'] = String(count);
+  #syncBadge(face: FilterFace): void {
+    if (face.count > 1) {
+      this.dataset['count'] = String(face.count);
       return;
     }
-    if (this.#condition) {
-      this.dataset['count'] = this.#condition;
+    if (face.badge) {
+      this.dataset['count'] = face.badge;
       // A sign announces as nothing; the word is what a reader needs.
-      this.$('.count')?.setAttribute('aria-label', this.#conditionName);
+      this.$('.count')?.setAttribute('aria-label', face.condition);
       return;
     }
     this.$('.count')?.removeAttribute('aria-label');

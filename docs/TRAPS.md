@@ -1512,6 +1512,7 @@ This is the suspend ≠ clear rule as a COLUMN sees it; `T-sort-is-tri-state` an
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/core/filter-state.ts`
 - Site: `test/unit/filter-state.test.mjs`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 ### T-grid-column-width-bounds
 
 `MIN_COL_WIDTH = 96`, `MAX_COL_WIDTH = 480`, `DEFAULT_COL_WIDTH = 160`. All
@@ -2843,6 +2844,11 @@ The rules it settles, once:
 - `suspended` keeps the values and applies nothing
   (`T-grid-suspend-is-not-clear`)
 
+**ADOPTED, not merely available.** `sherpa-quick-filter` reads its badge,
+caret, count and tooltip from `filterFace()`; `sherpa-quick-filter-toolbar`
+exposes `states` and derives `clauses` from it. A module nobody calls is a
+second answer waiting to happen, which is what these were for four commits.
+
 `stateClause()` turns one state into a `FilterClause` — one pick is `eq`,
 several become `in`, because `eq` against a list can never match.
 `filterFace()` turns it into what a control DRAWS: the on/off, the badge sign,
@@ -2860,7 +2866,10 @@ picked values on the right, its unpicked on the left.
 - Site: `src/core/filter-state.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/filter-state.test.mjs`
-
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `test/e2e/reforged-filter-conditions.spec.ts`
+- Site: `test/unit/parity-sweep.test.mjs`
 ### T-one-field-one-filter-menu
 
 A filter CHIP and a COLUMN HEADING ask the same question of the same field, so

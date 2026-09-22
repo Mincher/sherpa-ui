@@ -7,8 +7,10 @@ import { SHARED_PROPS, SherpaElement } from '../../core/sherpa-element.js';
 import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/icons.js';
 import { nextSort, sortDirectionFrom } from '../../core/cycle.js';
 import {
-  DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type FilterOp,
+  DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES,
+  type FilterClause, type FilterOp,
 } from '../../core/store.js';
+import { fieldState, stateClause, type FilterState } from '../../core/filter-state.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-button/sherpa-button.js';
@@ -1077,10 +1079,24 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * field filtered from either place reaches the data layer identically.
    * TRAP T-an-operator-decides-pick-or-type
    */
-  get clauses(): Record<string, [string, FilterOp, unknown]> {
-    const out: Record<string, [string, FilterOp, unknown]> = {};
+  get clauses(): Record<string, FilterClause> {
+    const out: Record<string, FilterClause> = {};
+    for (const [field, state] of Object.entries(this.states)) {
+      const clause = stateClause(state);
+      if (clause) out[field] = clause;
+    }
+    return out;
+  }
+
+  /**
+   * Every filter chip's STATE, by field — the one answer this bar and anything
+   * reading it share. TRAP T-one-state-per-filtered-field
+   */
+  get states(): Record<string, FilterState> {
+    const out: Record<string, FilterState> = {};
     for (const chip of this.#chips()) {
       const field = chip.dataset['id'];
+      // A SUPERSEDED chip is the view's now; it narrows nothing here.
       if (!field || chip.hasAttribute('data-superseded')) continue;
 
       /* The MENU holds the condition — one field, one filter menu, whether a
@@ -1089,22 +1105,22 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const menu = chip.querySelector('sherpa-menu') as
         (HTMLElement & { conditionValue?: string }) | null;
       if (menu?.getAttribute('data-type') !== 'filter') continue;
-      const op = (menu.dataset['op'] ?? DEFAULT_OP) as FilterOp;
 
-      if ((OP_TAKES[op] ?? 'list') === 'text') {
-        // A TYPED answer needs no tick, and no `data-current` from a tick.
-        const typed = (menu.conditionValue ?? '').trim();
-        if (typed) out[field] = [field, op, typed];
-        continue;
-      }
+      const all = [...menu.querySelectorAll<HTMLInputElement>('input')]
+        .filter((i) => !i.closest(NON_VALUE_ROWS))
+        .map((i) => i.value);
+      /* A chip switched OFF keeps its picks but applies none of them — off is
+         not gone. TRAP T-grid-suspend-is-not-clear */
+      const picked = chip.hasAttribute('data-current') ? this.#chipPicks(chip) : [];
 
-      if (!chip.hasAttribute('data-current')) continue;
-      const picks = this.#chipPicks(chip);
-      if (!picks.length) continue;
-      /* ONE pick is `eq`; SEVERAL is `in`, because `eq` against a list can
-         never match. `ne` inverts the same way. */
-      if (picks.length === 1) out[field] = [field, op, picks[0]];
-      else out[field] = [field, op === 'ne' ? 'notin' : 'in', picks];
+      out[field] = fieldState(
+        { field, label: chip.dataset['label'] ?? field, values: all },
+        {
+          picked,
+          op: (menu.dataset['op'] ?? DEFAULT_OP) as FilterOp,
+          text: menu.conditionValue ?? '',
+        },
+      );
     }
     return out;
   }

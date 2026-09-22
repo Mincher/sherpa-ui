@@ -428,12 +428,13 @@ test('the badge is legible, and the tooltip SPELLS the condition', async ({ page
   // The DEFAULT names no condition — there is nothing to explain.
   expect(r.onEq).toEqual({ badge: null, weight: '600', tip: 'Gold' });
   /* A tooltip is where a reader goes to find out what `!∷` MEANS, so it spells
-     the condition rather than repeating the sign. The VALUE is still the ticked
-     "Gold": flipping a condition keeps the ticks, which is the whole point of
-     stamping both bodies.
-     TRAP T-an-operator-decides-pick-or-type */
+     the condition rather than repeating the sign. The VALUE is what was TYPED:
+     a typing condition is answered by its box, not by ticks left over from the
+     list condition — the ticks survive the flip, but they are not the answer
+     while `notcontains` is what the field holds.
+     TRAP T-one-state-per-filtered-field */
   expect(r.onCondition).toEqual({
-    badge: '!∷', weight: '600', tip: 'Does not contain: Gold',
+    badge: '!∷', weight: '600', tip: 'Does not contain: Ravi',
   });
 });
 
