@@ -7703,3 +7703,33 @@ listeners on `window` both before and after five open/close cycles.
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-tooltip/sherpa-tooltip.ts`
 - Site: `test/e2e/reforged-menu.spec.ts`
+
+### T-a-tooltip-is-not-an-axis
+
+An axis COMPACTS because it carries four labels and has no room: `1.3M`, not
+`1250500`. A tooltip carries ONE label and exists **because** the reader wants
+the number.
+
+Four charts shared `formatTick` for both, so a bar worth 1,234 read as
+**"1.2K"** in the one place precision was asked for. Measured on the dashboard
+before the fix:
+
+```
+tips: ["1.2K", "1.3M", "7.3"]      values: 1234, 1250500, 7.25
+axis: ["0", "312.6K", "625.3K", "937.9K", "1.3M"]
+```
+
+`formatValue` is the tooltip's formatter. It groups — 1250500 is unreadable
+without separators — and keeps decimals as they arrive, because `reduceRows`
+returns a mean unrounded on purpose and rounding is a presentation decision the
+caller has already made.
+
+The axis still compacts. Both are correct for their own job; sharing one
+function was the mistake.
+
+- Site: `src/core/format-tick.ts`
+- Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
+- Site: `src/components/sherpa-line-chart/sherpa-line-chart.ts`
+- Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.ts`
+- Site: `src/components/sherpa-sparkline/sherpa-sparkline.ts`
+- Site: `test/e2e/reforged-barchart.spec.ts`

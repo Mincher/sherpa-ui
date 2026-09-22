@@ -3,7 +3,7 @@
  * CSS owns colour, fill and width.
  */
 import { SHARED_PROPS, SherpaElement } from '../../core/sherpa-element.js';
-import { formatTick, seriesBorderVar, seriesVar, tickPercent } from '../../core/format-tick.js';
+import { formatTick, seriesBorderVar, seriesVar, tickPercent, formatValue } from '../../core/format-tick.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 /** Gridlines when data-ticks is absent. */
@@ -169,7 +169,8 @@ export class SherpaLineChart extends SherpaElement {
           const at = this.#labels[i];
           const label = [s.name, at].filter(Boolean).join(' · ');
           tip.querySelector('.chart-tip-label')!.textContent = label;
-          tip.querySelector('.chart-tip-value')!.textContent = formatTick(s.values[i]!);
+          // TRAP T-a-tooltip-is-not-an-axis.
+          tip.querySelector('.chart-tip-value')!.textContent = formatValue(s.values[i]!);
           dot.setAttribute('aria-label', `${label} ${s.values[i]}`.trim());
           hotspots.append(dot, tip);
         });

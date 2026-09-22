@@ -4,10 +4,10 @@ import { test, expect } from './harness';
  * THE SORT INDICATOR IS A TRI-STATE, AND ONE MAP OWNS IT.
  *
  * Will added four icons to the Figma Icons page — group, sort-none,
- * sort-ascending, sort-descending — and chose to map them to Font Awesome
- * rather than ship a local SVG set. The quick-filter toolbar's organise chips
- * took that map first; the data grid kept drawing its own indicator as a
- * pure-CSS triangle made of borders.
+ * sort-ascending, sort-descending. They are now the drawings themselves, in
+ * `src/icons/`. The quick-filter toolbar's organise chips took that map first;
+ * the data grid kept drawing its own indicator as a pure-CSS triangle made of
+ * borders.
  *
  * A border triangle can only point up or down, so a SORTABLE BUT UNSORTED
  * column showed nothing and read as unsortable — the same class of bug the
@@ -53,15 +53,14 @@ test('a sortable header cycles none → asc → desc, each a different painted g
       const cell = th as HTMLElement;
       const chip = cell.querySelector('.head-sort') as HTMLElement;
       const i = chip.shadowRoot!.querySelector('.caret-icon') as HTMLElement | null;
-      const before = i ? getComputedStyle(i, '::before') : null;
+      const ink = i?.querySelector('path')?.getBoundingClientRect();
       return {
         field: cell.dataset['field'],
         sortable: cell.dataset['sortable'],
         cls: chip.dataset['iconStart'] ?? '',
-        // `content: none` means NO RULE MATCHED — the class is absent or not in
-        // this font. A working glyph reports "" (a private-use codepoint), so
-        // testing for an empty string would flag every real icon as broken.
-        paints: !!before && before.content !== 'none',
+        // The PATH, not the wrapper: an icon the set does not hold leaves the
+        // wrapper at its full size with nothing drawn inside it.
+        paints: (ink?.width ?? 0) > 0,
         // An UNSUPPORTED column hides the whole chip, so its box is zero.
         w: Math.round(chip.getBoundingClientRect().width),
       };
@@ -96,8 +95,8 @@ test('a sortable header cycles none → asc → desc, each a different painted g
   const seen = new Set([name(r.unsorted).cls, name(r.asc).cls, name(r.desc).cls]);
   expect(seen.size).toBe(3);
 
-  // Every one of them actually paints. A Pro-only class renders nothing at all,
-  // silently, so the class name alone is not proof.
+  // Every one of them actually paints. An unknown name draws nothing at all,
+  // silently, so the name alone is not proof.
   for (const s of [r.unsorted, r.asc, r.desc]) {
     for (const c of s) {
       if (c.sortable === 'true') expect(c.paints, `${c.field}: ${c.cls}`).toBe(true);

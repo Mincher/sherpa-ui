@@ -249,3 +249,43 @@ test('the x axis labels sit BELOW the baseline, one per bar', async ({ page }) =
   expect(r.allBelowBaseline).toBe(true);
   for (const off of r.centreOffsets) expect(Number(off)).toBeLessThan(1);
 });
+
+/**
+ * A TOOLTIP IS NOT AN AXIS.
+ *
+ * An axis compacts because it has four labels and no room. A tooltip has one
+ * label and exists BECAUSE the reader wants the number. Sharing `formatTick`
+ * made a bar worth 1,234 read as "1.2K" in the one place precision was asked
+ * for.
+ *
+ * TRAP T-a-tooltip-is-not-an-axis
+ */
+test('the tooltip shows the value in full; the axis still compacts', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const chart = document.createElement('sherpa-barchart') as HTMLElement & {
+      rendered?: Promise<void>; populate?: (d: unknown) => void;
+    };
+    document.getElementById('root')!.appendChild(chart);
+    await customElements.whenDefined('sherpa-barchart');
+    await chart.rendered;
+    chart.populate!([
+      { label: 'Big', value: 1234, colorIndex: 1 },
+      { label: 'Huge', value: 1250500, colorIndex: 2 },
+      { label: 'Fractional', value: 7.25, colorIndex: 3 },
+    ]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const sr = chart.shadowRoot!;
+    return {
+      tips: Array.from(sr.querySelectorAll('.chart-tip-value')).map((t) => t.textContent!.trim()),
+      axis: Array.from(sr.querySelectorAll('[class*=tick]'))
+        .map((t) => t.textContent!.trim())
+        .filter(Boolean),
+    };
+  });
+
+  // In FULL, and grouped — 1250500 is unreadable without separators.
+  expect(r.tips).toEqual(['1,234', '1,250,500', '7.25']);
+  // The axis keeps compacting: four labels, no room.
+  expect(r.axis.some((t) => /[KM]$/.test(t))).toBe(true);
+});

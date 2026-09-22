@@ -260,7 +260,7 @@ test('the action cluster is in Figma order, with Figma glyphs', async ({ page })
    that one scans the SOURCE, so it catches a Pro class the moment it is written;
    this one walks what the header actually RENDERS, so it also catches a glyph
    that never reaches the DOM. */
-test('every action glyph actually renders (no Font Awesome PRO classes)', async ({ page }) => {
+test('every action icon actually renders (an unknown name draws NOTHING)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-app-header') as WithRender;
     for (const flag of ['back', 'ai', 'labs', 'theme-toggle', 'account', 'help', 'menu']) {
@@ -269,26 +269,31 @@ test('every action glyph actually renders (no Font Awesome PRO classes)', async 
     el.setAttribute('data-notifications', '3');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    // The webfont has to have loaded before ::before has any content to measure.
-    await document.fonts.ready;
-    // Every action is a composed sherpa-button, so the rendered <i> is inside
-    // ITS shadow root — the host only carries the class list as an attribute.
+    // Every action is a composed sherpa-button, so the drawing is inside ITS
+    // shadow root — the host only carries the icon name as an attribute.
     const hosts = [...el.shadowRoot!.querySelectorAll('sherpa-button[data-icon-start]')];
     await Promise.all(hosts.map((b) => (b as HTMLElement & { rendered?: Promise<void> }).rendered));
-    return hosts.flatMap((b) =>
-      [...(b as HTMLElement & { shadowRoot: ShadowRoot }).shadowRoot.querySelectorAll('i')]
-        .filter((i) => i.className.includes('fa-'))
-        .map((i) => ({
-          cls: i.className.replace(/^icon icon-\w+ /, '').replace('fa-solid fa-', ''),
-          content: getComputedStyle(i, '::before').content,
-        })),
-    );
+    return hosts.map((b) => {
+      const box = (b as HTMLElement & { shadowRoot: ShadowRoot })
+        .shadowRoot.querySelector('.icon-start');
+      const ink = box?.querySelector('path')?.getBoundingClientRect();
+      return {
+        name: b.getAttribute('data-icon-start') ?? '',
+        hasSvg: box?.querySelector('svg') !== null && box?.querySelector('svg') !== undefined,
+        inkW: ink?.width ?? 0,
+        inkH: ink?.height ?? 0,
+      };
+    });
   });
 
-  // A PRO class in the free webfont renders NOTHING — no glyph and no fallback
-  // box, just `content: none` and zero width — so the button goes silently blank.
-  // `fa-bell-on` (Figma's `bell-ring`) is one, and shipped that way until this was
-  // measured in a browser rather than assumed from the class name.
+  // An icon the set does not hold leaves the wrapper EMPTY — no drawing, no
+  // error. `fa-bell-on` (Figma's `bell-ring`) was exactly that as a Pro webfont
+  // class, and shipped blank until it was measured in a browser rather than
+  // assumed from the name. Measuring the PATH is what catches it: the wrapper
+  // is its full size either way.
   expect(r.length).toBeGreaterThan(0);
-  for (const g of r) expect(`${g.cls}: ${g.content}`).not.toContain('none');
+  for (const g of r) {
+    expect(`${g.name}: has drawing`).toBe(`${g.name}: ${g.hasSvg ? 'has drawing' : 'EMPTY'}`);
+    expect(Math.max(g.inkW, g.inkH), `${g.name}: painted nothing`).toBeGreaterThan(0);
+  }
 });

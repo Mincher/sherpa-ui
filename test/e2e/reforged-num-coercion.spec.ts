@@ -337,11 +337,14 @@ test('props: `all` writes EVERY matching node, not just the first', async ({ pag
 /* ── Declared props: icon rendering ───────────────────────────────────────── */
 
 /**
- * Font Awesome draws its glyph from a ::before on a CLASS. So an FA value has to
- * become classes, and a raw character has to become text. Getting that backwards
- * is SILENT — the class list simply prints as the literal string
- * "fa-solid fa-tag", which is what chip, tag, list-item and container-header all
- * did before `as: 'icon'`.
+ * An icon NAME has to become a drawing, and a raw character has to become text.
+ * Getting that backwards is SILENT — the value simply prints as the literal
+ * string "fa-solid fa-tag", which is what chip, tag, list-item and
+ * container-header all did before `as: 'icon'`.
+ *
+ * The drawings are Figma's (`src/icons/`), stamped as a fitted SVG. The `fa-`
+ * spelling still resolves, through ICON_ALIASES, to the Figma icon that means
+ * the same thing — so these call sites did not have to be rewritten.
  */
 for (const [tag, sel] of [
   ['sherpa-chip', '.glyph'],
@@ -349,7 +352,7 @@ for (const [tag, sel] of [
   ['sherpa-list-item', '.icon'],
   ['sherpa-container-header', '.icon'],
 ] as const) {
-  test(`${tag}: an FA class list becomes CLASSES, never literal text`, async ({ page }) => {
+  test(`${tag}: an icon value becomes a DRAWING, never literal text`, async ({ page }) => {
     const got = await page.evaluate(
       async ([t, s]) => {
         const root = document.getElementById('root')!;
@@ -360,14 +363,24 @@ for (const [tag, sel] of [
         await el.rendered;
         await (window as unknown as { __settled: () => Promise<void> }).__settled();
         const icon = el.shadowRoot!.querySelector(s)!;
-        return { text: icon.textContent, classes: [...icon.classList] };
+        const svg = icon.querySelector('svg');
+        return {
+          text: icon.textContent,
+          classes: [...icon.classList],
+          svgs: icon.querySelectorAll('svg').length,
+          // The art must be real: a path that actually measures.
+          painted: svg?.querySelector('path')?.getBoundingClientRect().width ?? 0,
+        };
       },
       [tag, sel] as const,
     );
-    // The bug: the class list printed as text.
+    // The bug: the value printed as text.
     expect(got.text).toBe('');
-    expect(got.classes).toContain('fa-solid');
-    expect(got.classes).toContain('fa-tag');
+    expect(got.svgs).toBe(1);
+    expect(got.classes).toContain('sherpa-icon-box');
+    // No `fa-*` survives — the class was the old delivery, not the icon.
+    expect(got.classes.some((c) => c.startsWith('fa-'))).toBe(false);
+    expect(got.painted).toBeGreaterThan(0);
   });
 
   test(`${tag}: a RAW glyph character still renders as text`, async ({ page }) => {
@@ -390,7 +403,7 @@ for (const [tag, sel] of [
 }
 
 test('icon: swapping the value does not accumulate two icons', async ({ page }) => {
-  const classes = await page.evaluate(async () => {
+  const got = await page.evaluate(async () => {
     const root = document.getElementById('root')!;
     root.innerHTML = '';
     const el = document.createElement('sherpa-tag') as HTMLElement & { rendered?: Promise<void> };
@@ -399,19 +412,20 @@ test('icon: swapping the value does not accumulate two icons', async ({ page }) 
     await el.rendered;
     el.setAttribute('data-icon', 'fa-solid fa-star');
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
-    return [...el.shadowRoot!.querySelector('.glyph')!.classList];
+    const glyph = el.shadowRoot!.querySelector('.glyph')!;
+    return { classes: [...glyph.classList], svgs: glyph.querySelectorAll('svg').length };
   });
-  expect(classes).toContain('fa-star');
-  // The old glyph must be GONE — two fa-* name classes would stack two ::before rules.
-  expect(classes).not.toContain('fa-tag');
+  // ONE drawing, not two stacked — the old one must be gone.
+  expect(got.svgs).toBe(1);
   // The structural class the template gave it must survive.
-  expect(classes).toContain('glyph');
+  expect(got.classes).toContain('glyph');
+  expect(got.classes).toContain('sherpa-icon-box');
 });
 
-test('icon: the glyph actually RENDERS — a Pro-only icon would be zero-width', async ({ page }) => {
-  // FA PRO icons fail SILENTLY on the free CDN: content resolves to `none` and the
-  // element has zero width, with no warning. Probing a real shadow root is the only
-  // way to catch it — a working glyph reports "" for content, so `none` is the test.
+test('icon: the drawing actually RENDERS — an unknown name would be empty', async ({ page }) => {
+  // An icon the set does not hold leaves the wrapper EMPTY rather than drawing
+  // the wrong thing. That is deliberate, and it is why this probe measures the
+  // PATH: a wrapper is 14x14 whether or not anything was stamped into it.
   const probe = await page.evaluate(async () => {
     const root = document.getElementById('root')!;
     root.innerHTML = '';
@@ -420,15 +434,23 @@ test('icon: the glyph actually RENDERS — a Pro-only icon would be zero-width',
     root.appendChild(el);
     await el.rendered;
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
-    await document.fonts.ready;
     const glyph = el.shadowRoot!.querySelector('.glyph')!;
+    const path = glyph.querySelector('path');
+    const box = glyph.getBoundingClientRect();
+    const ink = path?.getBoundingClientRect();
     return {
-      content: getComputedStyle(glyph, '::before').content,
-      width: glyph.getBoundingClientRect().width,
+      hasSvg: glyph.querySelector('svg') !== null,
+      boxW: box.width,
+      inkW: ink?.width ?? 0,
+      inkH: ink?.height ?? 0,
     };
   });
-  expect(probe.content).not.toBe('none');
-  expect(probe.width).toBeGreaterThan(0);
+  expect(probe.hasSvg).toBe(true);
+  expect(probe.boxW).toBeGreaterThan(0);
+  // Real art, not an empty SVG.
+  expect(probe.inkW).toBeGreaterThan(0);
+  // THE RULE: the longest axis fills the square wrapper exactly.
+  expect(Math.max(probe.inkW, probe.inkH)).toBeCloseTo(probe.boxW, 1);
 });
 
 /* ── clone(): one null policy for template prototypes ─────────────────────── */

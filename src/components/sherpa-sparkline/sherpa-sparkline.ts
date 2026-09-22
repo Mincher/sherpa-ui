@@ -5,7 +5,7 @@
  * @method populate(values: number[]) — the single data path; serialises to data-values
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
-import { formatTick } from '../../core/format-tick.js';
+import { formatValue } from '../../core/format-tick.js';
 
 /** Fixed point slots; SLOTS-1 segments between them. */
 const SLOTS = 8;
@@ -91,7 +91,8 @@ export class SherpaSparkline extends SherpaElement {
   #applyTips(values: number[]): void {
     const tips = this.$$<HTMLElement>('.chart-tip .chart-tip-value');
     tips.forEach((tip, i) => {
-      tip.textContent = i < values.length ? formatTick(values[i]!) : '';
+      // TRAP T-a-tooltip-is-not-an-axis.
+      tip.textContent = i < values.length ? formatValue(values[i]!) : '';
     });
   }
 }

@@ -7,7 +7,7 @@
  */
 import type { ChartDatum } from '../../core/chart-datum.js';
 import { SherpaElement } from '../../core/sherpa-element.js';
-import { formatTick, radialArea, ringSegmentPath, seriesBorderVar, seriesVar } from '../../core/format-tick.js';
+import { radialArea, ringSegmentPath, seriesBorderVar, seriesVar, formatValue } from '../../core/format-tick.js';
 
 /** One slice — an alias of the shared `ChartDatum`. */
 export type DonutSlice = ChartDatum;
@@ -129,7 +129,8 @@ export class SherpaDonutChart extends SherpaElement {
         dot.style.setProperty('--_anchor', `--donut-slice-${i}`);
         tip.style.setProperty('--_anchor', `--donut-slice-${i}`);
         tip.querySelector('.chart-tip-label')!.textContent = slice.label;
-        tip.querySelector('.chart-tip-value')!.textContent = formatTick(slice.value);
+        // TRAP T-a-tooltip-is-not-an-axis.
+        tip.querySelector('.chart-tip-value')!.textContent = formatValue(slice.value);
         hotspots.append(dot, tip);
       }
 

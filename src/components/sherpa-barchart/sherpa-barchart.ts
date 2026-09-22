@@ -6,7 +6,7 @@
  */
 import type { ChartDatum } from '../../core/chart-datum.js';
 import { SHARED_PROPS, SherpaElement } from '../../core/sherpa-element.js';
-import { formatTick, seriesBorderVar, seriesVar, tickPercent } from '../../core/format-tick.js';
+import { formatTick, seriesBorderVar, seriesVar, tickPercent, formatValue } from '../../core/format-tick.js';
 
 /** Gridlines when data-ticks is absent — matches the Figma Chart Axis. */
 const DEFAULT_TICKS = 4;
@@ -97,7 +97,8 @@ export class SherpaBarchart extends SherpaElement {
       // TRAP T-chart-tip-is-a-sibling-of-its-dot — JS names the anchor; CSS places it.
       col.style.setProperty('--_anchor', `--bar-mark-${i}`);
       col.querySelector('.chart-tip-label')!.textContent = d.label;
-      col.querySelector('.chart-tip-value')!.textContent = formatTick(d.value);
+      // The exact number, not the axis's compacting — TRAP T-a-tooltip-is-not-an-axis.
+      col.querySelector('.chart-tip-value')!.textContent = formatValue(d.value);
       bars.appendChild(col);
 
       // A SIBLING of the plot, so it lands below the baseline.

@@ -139,22 +139,25 @@ broken, and check that it did.
 
 ## Open work
 
-Carried over when 16 documents were retired into this one, 2026-09-22.
-Each is a real, reported item; none is a plan.
+Carried over when 16 documents were retired into this one, 2026-09-22, then
+**verified one by one** — four were already done and are struck out below.
+Each remaining item is real and reported; none is a plan.
+
+Done, verified in the running app 2026-09-22: **B4** (tooltips showed "1.2K"
+for 1,234 — fixed, they now show the value in full while the axis still
+compacts), **B7** (clicking an indeterminate group box selects all 24 rows and
+the icon follows), **B8** (the 8px token is on the bulk-actions row), **B9**
+(`def.range ?? def.kind === 'number'`), **5** (Add Customer calls
+`store.insert`).
 
 | | |
 |---|---|
-| **B4** | Data-viz tooltips lose their decimals — the tooltip should use the same unit magnitudes as the main value label |
-| **B7** | A group checkbox stays indeterminate-looking after being clicked; clicking an indeterminate box selects all, and the icon should follow |
-| **B8** | Contextual toolbar actions need 8px spacing, from the token |
-| **B9** | Numeric filter chips should default to range in their menu |
 | **D6** | Per-component `-doc.md` files, so the data-grid's comments can be trimmed |
 | **0** | No chart is keyboard-reachable |
 | **1** | Bundle the toolbar + pagination INTO `sherpa-data-grid` |
 | **2** | Pinned columns — an app-header filter change unpins the selection column |
 | **3** | Sparkline sub-pixel gaps |
 | **4** | App header — another design-review pass |
-| **5** | Data grid: Add Customer does not add data |
 
 ---
 

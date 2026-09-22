@@ -17,6 +17,25 @@ export function formatTick(value: number): string {
   return trim(value, abs < 10 ? 1 : 0);
 }
 
+/**
+ * ONE value, in full — what a tooltip shows.
+ *
+ * An axis compacts because it has four labels and no room; a tooltip has one
+ * label and exists BECAUSE the reader wants the number. Sharing `formatTick`
+ * made a bar worth 1,234 read as "1.2K" in the one place precision was asked
+ * for.
+ *
+ * Grouped, because 1250500 is unreadable without separators. Decimals are kept
+ * as they arrive: `reduceRows` returns a mean unrounded on purpose, and
+ * rounding is a PRESENTATION decision the caller has already made.
+ *
+ * TRAP T-a-tooltip-is-not-an-axis
+ */
+export function formatValue(value: number): string {
+  if (!Number.isFinite(value)) return '';
+  return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
+
 /** Round to `places` and drop trailing zeros, so 1.0 reads as "1". */
 function trim(value: number, places = 1): string {
   return String(Number(value.toFixed(places)));

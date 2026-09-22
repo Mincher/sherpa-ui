@@ -1,34 +1,33 @@
 import { test, expect } from './harness';
 
 /**
- * AN ICON'S GLYPH MUST BE THE SIZE OF ITS BOX.
+ * AN ICON'S BOX IS THE CONTRACT; THE DRAWING FILLS IT ON ITS LONGEST AXIS.
  *
- * A Font Awesome icon is a FONT CHARACTER. `inline-size` / `block-size` size the
- * <i> box; only `font-size` scales the glyph inside it. A rule that sets the two
- * size properties from an icon token and leaves font-size to inherit therefore
- * produces a box that tracks the design system and a glyph that tracks whatever
- * text happens to sit beside it.
+ * TRAP T-icon-box-is-not-the-glyph.
  *
- * It fails QUIETLY, and it fails only at the ends of a scale — measured before
- * the fix, sherpa-button agreed at four of its six sizes and was wrong at the
- * two extremes:
+ * A Figma icon is a `content/size/*` SQUARE holding art that varies: `filter`
+ * (17:4701) inks 10.5 x 9.625 inside its 14 frame, `triangle-down` 7 x 4.375.
+ * The square is the layout contract and never moves.
  *
- *   data-size="2xs"   box 10, glyph  8   (rattling inside its square)
- *   data-size="xl"    box 16, glyph 20   (overhanging it)
+ * Will's rule, and what this file enforces:
+ *   - the BOX tracks its own icon-size token, exactly;
+ *   - the drawing's LONGEST axis is 100% of that box;
+ *   - the drawing keeps its 1:1 aspect — never stretched;
+ *   - nothing ever paints outside the box.
  *
- * and sherpa-input-text painted a 16px magnifying glass in a 14px box.
- *
- * Figma binds an icon's width AND height to one variable (Structure/icon-size on
- * the Button set 11:2463; the Input Field atom 935:38549 measures 14 x 14), so
- * one variable has to drive all three properties in code too.
- *
- * This measures the element that ACTUALLY PAINTS a glyph — the one whose
- * ::before carries real content in the Font Awesome face — rather than trusting
- * a class name, because the box and the glyph are not always the same element.
+ * It replaces a rule that a glyph must EQUAL its box, written when icons were a
+ * webfont. That was never true of the art: Font Awesome at `font-size == box`
+ * painted ~101% of it, a third over the Figma vector, and ate the surrounding
+ * air. The filter chip was the visible case — a correct 24 chip, a correct 14
+ * box, and a funnel with no room around it.
  */
 
+/** The sizes a wrapper is asked to be, from `Structure / icon-size` per mode. */
+const BUTTON_SIZES: Record<string, string> = {
+  '2xs': '10px', xs: '10px', sm: '14px', lg: '16px', xl: '16px', default: '14px',
+};
 
-test('every button size paints its glyph at its own icon-size token', async ({ page }) => {
+test('every button size paints its box at its own icon-size token', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const root = document.getElementById('root')!;
     root.innerHTML = ['2xs', 'xs', 'sm', 'lg', 'xl', ''].map((s) =>
@@ -38,39 +37,37 @@ test('every button size paints its glyph at its own icon-size token', async ({ p
       rendered?: Promise<void>; shadowRoot: ShadowRoot;
     })[];
     await Promise.all(btns.map((b) => b.rendered));
-    await document.fonts.ready;
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return btns.map((b) => {
-      const i = b.shadowRoot.querySelector('.icon-start') as HTMLElement;
-      const cs = getComputedStyle(i);
-      const box = i.getBoundingClientRect();
+      const box = b.shadowRoot.querySelector('.icon-start') as HTMLElement;
+      const ink = box.querySelector('path')!.getBoundingClientRect();
+      const rect = box.getBoundingClientRect();
       return {
         mode: b.dataset['m'],
         token: getComputedStyle(b).getPropertyValue('--sherpa-button-size-icon').trim(),
-        boxH: Math.round(box.height * 10) / 10,
-        fontSize: cs.fontSize,
+        boxW: Math.round(rect.width * 10) / 10,
+        boxH: Math.round(rect.height * 10) / 10,
+        inkW: ink.width,
+        inkH: ink.height,
       };
     });
   });
 
-  // The generated region's map, which is Figma's `Structure / icon-size` per
-  // mode (default/sm → content/size/base 14, 2xs/xs → xs 10, lg/xl → large 16).
-  const expected: Record<string, string> = {
-    '2xs': '10px', xs: '10px', sm: '14px', lg: '16px', xl: '16px', default: '14px',
-  };
-
   for (const row of r) {
+    const want = BUTTON_SIZES[row.mode!]!;
     // The token itself must be what Figma says.
-    expect(row.token, `${row.mode}: token`).toBe(expected[row.mode!]);
-    // …and the BOX and the GLYPH must both be that. The glyph is the half that
-    // was missing; a box-only assertion would have passed throughout the bug.
-    expect(`${row.boxH}px`, `${row.mode}: box`).toBe(expected[row.mode!]);
-    expect(row.fontSize, `${row.mode}: glyph font-size`).toBe(expected[row.mode!]);
+    expect(row.token, `${row.mode}: token`).toBe(want);
+    // The BOX is the layout contract — exactly the token, and SQUARE.
+    expect(`${row.boxH}px`, `${row.mode}: box height`).toBe(want);
+    expect(`${row.boxW}px`, `${row.mode}: box width`).toBe(want);
+    // THE RULE: the drawing's longest axis fills that box.
+    expect(Math.max(row.inkW, row.inkH), `${row.mode}: longest axis`)
+      .toBeCloseTo(parseFloat(want), 1);
   }
 });
 
-test('no component paints a glyph at a size its own box disagrees with', async ({ page }) => {
+test('a drawing fills its longest axis, keeps 1:1, and never overflows', async ({ page }) => {
   const bad = await page.evaluate(async () => {
     const root = document.getElementById('root')!;
     const cases: string[] = [
@@ -79,36 +76,49 @@ test('no component paints a glyph at a size its own box disagrees with', async (
       '<sherpa-button data-type="icon" data-size="xl" data-icon-start="fa-solid fa-gear"></sherpa-button>',
       '<sherpa-input-text data-icon-start="fa-solid fa-magnifying-glass" placeholder="x"></sherpa-input-text>',
       '<sherpa-input-text data-icon-end="fa-solid fa-xmark" placeholder="x"></sherpa-input-text>',
+      '<sherpa-quick-filter data-label="Region" data-icon-start="fa-solid fa-filter" data-menu></sherpa-quick-filter>',
+      '<sherpa-toast data-status="success" data-heading="Saved"></sherpa-toast>',
+      '<sherpa-callout data-status="info" data-heading="Note"></sherpa-callout>',
+      '<sherpa-nav-item data-label="Home" data-icon="fa-solid fa-house"></sherpa-nav-item>',
+      '<sherpa-tag data-icon="fa-solid fa-tag">Tag</sherpa-tag>',
+      '<sherpa-chip data-icon="fa-solid fa-tag">Chip</sherpa-chip>',
     ];
-    const out: { html: string; cls: string; boxH: number; fontSize: string }[] = [];
+    const out: { html: string; cls: string; box: string; ink: string; why: string }[] = [];
     for (const html of cases) {
       root.innerHTML = html;
       const el = root.firstElementChild as HTMLElement & {
         rendered?: Promise<void>; shadowRoot: ShadowRoot;
       };
       await el.rendered;
-      await document.fonts.ready;
       await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
-      for (const n of [...el.shadowRoot.querySelectorAll('*')] as HTMLElement[]) {
-        const cs = getComputedStyle(n);
-        const before = getComputedStyle(n, '::before');
-        // Only the element that actually PAINTS: real ::before content, in the
-        // Font Awesome face. A class name alone is not proof of a glyph.
-        const paints = before.content !== 'none' && before.content !== '' &&
-          /Font Awesome/i.test(before.fontFamily || cs.fontFamily);
-        if (!paints) continue;
-        const box = n.getBoundingClientRect();
-        if (box.height === 0) continue;
-        if (Math.abs(parseFloat(cs.fontSize) - box.height) > 0.6) {
-          out.push({ html, cls: String(n.className).slice(0, 44), boxH: box.height, fontSize: cs.fontSize });
+      for (const box of [...el.shadowRoot.querySelectorAll('.sherpa-icon-box')] as HTMLElement[]) {
+        const rect = box.getBoundingClientRect();
+        // A hidden member of a status set has no box to judge.
+        if (rect.width === 0) continue;
+        const shapes = [...box.querySelectorAll('path,rect,circle,polygon,ellipse')];
+        if (shapes.length === 0) continue;
+        // The union of every shape is the drawing's true extent.
+        let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+        for (const s of shapes) {
+          const b = s.getBoundingClientRect();
+          if (b.width === 0 && b.height === 0) continue;
+          x0 = Math.min(x0, b.left); y0 = Math.min(y0, b.top);
+          x1 = Math.max(x1, b.right); y1 = Math.max(y1, b.bottom);
         }
+        if (x1 === -Infinity) continue;
+        const w = x1 - x0, h = y1 - y0;
+        const cls = [...box.classList].join(' ');
+        const note = { html, cls, box: `${rect.width}x${rect.height}`, ink: `${w.toFixed(2)}x${h.toFixed(2)}` };
+        // Half a pixel of slack: a curve's antialiased edge is not geometry.
+        if (w > rect.width + 0.5 || h > rect.height + 0.5) out.push({ ...note, why: 'OVERFLOWS' });
+        else if (Math.abs(Math.max(w, h) - rect.width) > 0.5) out.push({ ...note, why: 'longest axis is not 100%' });
       }
     }
     return out;
   });
 
-  expect(bad, `glyphs painted at a size their own box disagrees with:\n${
-    bad.map((b) => `  ${b.cls}: box ${b.boxH} vs font-size ${b.fontSize}\n    ${b.html}`).join('\n')
+  expect(bad, `icons breaking the fit rule:\n${
+    bad.map((b) => `  ${b.why}: ${b.cls} — box ${b.box}, ink ${b.ink}\n    ${b.html}`).join('\n')
   }`).toEqual([]);
 });
