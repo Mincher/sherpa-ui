@@ -58,6 +58,9 @@ const KNOWN = {
   'sherpa-quick-filter-toolbar.sortDirection': 'ok: data-sort-direction attribute',
   'sherpa-quick-filter-toolbar.sortSuspended': 'ok: data-sort-field="" suspends it',
   'sherpa-quick-filter-toolbar.groupField': 'ok: data-group-field attribute',
+  // The read-back for `supersede([...ids])` — a host that suspended chips has
+  // to be able to ask which ones the bar now holds suspended.
+  'sherpa-quick-filter-toolbar.superseded': 'ok: supersede([...ids]) method',
 };
 
 /** Public getters (two-space indent = class body) and their setters. */

@@ -87,3 +87,30 @@ export function globalFilters(views, regions = REGIONS, customers = CUSTOMERS, d
     // A chip with NO options is dropped, not shown empty.
   ].filter((chip) => chip.id !== 'customer' || customers.length > 0);
 }
+
+/**
+ * What the header's ADD chip offers — VIEW-scope fields not already on the bar.
+ *
+ * These belong to the whole view, so every component narrows by them: a status
+ * or a plan means the same thing to the chart, the tiles and the grid. Group
+ * and Sort are absent on purpose — they arrange ONE component and have no
+ * view-level meaning. TRAP T-group-and-sort-are-component-scope
+ *
+ * `held` are the ids the bar already carries, so a field is never offered twice.
+ */
+export function globalAvailable(fields = {}, held = []) {
+  const taken = new Set(held);
+  const asOptions = (values) =>
+    values.map((v) => ({ value: String(v).toLowerCase(), label: String(v) }));
+
+  return [
+    { id: 'status', label: 'Status', select: 'multiple', removable: true,
+      options: asOptions(fields.status ?? []) },
+    { id: 'plan', label: 'Plan', icon: 'fa-solid fa-tag',
+      select: 'multiple', removable: true, options: asOptions(fields.plan ?? []) },
+    { id: 'tier', label: 'Tier', select: 'multiple', removable: true,
+      options: asOptions(fields.tier ?? []) },
+    { id: 'owner', label: 'Owner', select: 'single', removable: true, commit: true,
+      options: asOptions(fields.owner ?? []) },
+  ].filter((f) => !taken.has(f.id) && f.options.length > 0);
+}

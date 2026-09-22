@@ -11,7 +11,8 @@
  *
  * A field lives in exactly ONE scope at a time. It is offered in the component
  * toolbar only while the view does not already carry it, and adding it to the
- * view MOVES it — carrying whatever the reader had picked.
+ * view SUSPENDS the component's chip — greyed, still holding what the reader
+ * picked, ready to come back.
  *
  * Nothing here knows what a VIEW or a COMPONENT is: they are two sources, one
  * following the other. A card extending a dashboard, or a panel extending a
@@ -90,20 +91,23 @@ export function offerable(
   };
 }
 
-/** What a promotion does: the id that moved, and the value it carried. */
+/** A promoted field: the id the view took, and the value the component chip keeps. */
 export interface Promotion {
   id: string;
   values: string[];
 }
 
 /**
- * Work out what must move when the VIEW gains filters.
+ * Work out which component chips the VIEW has just taken over.
  *
- * Anything the component already held is a PROMOTION: it leaves the component
- * toolbar and arrives in the view's, carrying its value. Adding a filter the
- * component does not hold is a plain add, and returns nothing.
+ * Anything the component already held is a PROMOTION. The component chip is
+ * SUSPENDED, not removed: it keeps its place and its value, and comes back when
+ * the view lets the field go. `values` is what that chip still holds, so a
+ * caller can restore or report it. Adding a filter the component does not hold
+ * is a plain add, and returns nothing.
  *
- * The caller does the moving — this says what, not how.
+ * The caller does the suspending — this says what, not how.
+ * TRAP T-a-superseded-chip-suspends-it-is-never-removed
  */
 export function promotions(
   added: readonly string[],

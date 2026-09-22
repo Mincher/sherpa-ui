@@ -84,6 +84,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   static override props = {
     'data-bounds': SHARED_PROPS['data-bounds'],
     'data-no-actions': { type: 'boolean', kind: 'style' },
+    /* WHICH SCOPE this bar is. `view` narrows every component on the screen;
+       `data` narrows the one component it belongs to. The bar reads it to
+       refuse Group and Sort at view scope.
+       TRAP T-group-and-sort-are-component-scope */
+    'data-type': { type: 'enum', kind: 'style', values: ['view', 'data'] },
   } as const;
 
   /** Sort and group written from outside — unobserved, a grid header click says nothing here. */
@@ -234,7 +239,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-range',
     'data-select',
     'data-search',
-    'data-type',
   ] as const;
 
   /** A folded row was clicked — drill into that filter. */
@@ -407,6 +411,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const out: Record<string, string[]> = {};
     for (const chip of this.#chips()) {
       if (!chip.hasAttribute('data-menu')) continue;
+      /* The VIEW owns this field now, so the chip must not narrow anything on
+         top of it. Its picks SURVIVE in `pickedValues`, which is the whole
+         point of suspending rather than removing.
+         TRAP T-a-superseded-chip-suspends-it-is-never-removed */
+      if (chip.hasAttribute('data-superseded')) continue;
       // OFF = not filtered. The picks survive — see `pickedValues`.
       if (!chip.hasAttribute('data-current')) continue;
       const id = chip.dataset['id'];
@@ -464,6 +473,36 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if (!picks.length) chip.current = false;
       return;
     }
+  }
+
+  /**
+   * supersede([...ids]) — the VIEW now owns these fields.
+   *
+   * The chips are SUSPENDED, never removed: each keeps its value and its place,
+   * and comes back the moment the view lets the field go. Removing them would
+   * throw away what the reader picked, which is the bug this avoids.
+   *
+   * This is the WHOLE set each time — a chip not named here is restored. That
+   * makes the call idempotent, so a host can send the view's field list after
+   * every change without tracking what it sent last.
+   *
+   * TRAP T-a-superseded-chip-suspends-it-is-never-removed
+   */
+  supersede(ids: readonly string[]): void {
+    const taken = new Set(ids);
+    for (const chip of this.#chips()) {
+      const id = chip.dataset['id'];
+      if (!id) continue;
+      chip.toggleAttribute('data-superseded', taken.has(id));
+    }
+  }
+
+  /** The ids this bar currently has suspended. */
+  get superseded(): string[] {
+    return this.#chips()
+      .filter((c) => c.hasAttribute('data-superseded'))
+      .map((c) => c.dataset['id'] ?? '')
+      .filter(Boolean);
   }
 
   /** Every menu chip's picks, on or OFF. The counterpart to `values`. */
@@ -1203,8 +1242,24 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     ...ORGANISE_ICONS,
   } as const;
 
-  /** organise({ group, sort }). TRAP T-organise-chips-lead-the-bar — separate from populate(). */
+  /**
+   * organise({ group, sort }) — how ONE component arranges the rows it draws.
+   *
+   * REFUSED on a `data-type="view"` bar. Group and Sort are not filters and
+   * have no view-level meaning: a view holds a population, and "sorted by
+   * name" is a property of a table, not of a population. Two components in one
+   * view sort differently and are both right.
+   *
+   * A filter chip answers "which rows"; an organise chip answers "in what
+   * order" — which is why this is a separate call from `populate()`.
+   * TRAP T-organise-chips-lead-the-bar
+   * TRAP T-group-and-sort-are-component-scope
+   */
   organise(def: OrganiseDef): void {
+    if (this.dataset['type'] === 'view') {
+      this.#organise = {};
+      return;
+    }
     this.#organise = def ?? {};
     this.#renderOrganise();
   }

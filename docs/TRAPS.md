@@ -4677,6 +4677,68 @@ ignores the field WITHOUT clearing them, so `values` is what is applied and
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-group-and-sort-are-component-scope
+
+`organise({ group, sort })` REFUSES on a `data-type="view"` toolbar: it sets an
+empty organise set and draws nothing.
+
+Group and Sort are not filters, and they have no view-level meaning. A view
+holds a POPULATION; "sorted by name" is a property of a table, not of a
+population. Two components inside one view sort differently and are both right,
+so a view-level Sort chip would have to pick one component to obey and silently
+ignore the rest.
+
+The header toolbar was already correct BY OMISSION — no caller ever passed it an
+organise set — which is not the same as being correct BY RULE. The guard makes a
+future caller's mistake visible as nothing drawn, rather than as a chip that
+steers one arbitrary component.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `examples/views/global-filters.js`
+
+### T-a-bar-offers-only-what-its-scope-holds
+
+A toolbar's ADD chip offers what `available([...])` gave it, and NOTHING when
+nobody called it. The button is then disabled — correct behaviour, and an
+invisible bug when the omission was accidental.
+
+`sherpa-app-header.populate()` accepted `filters` but had no way to pass an
+available list, so the header's Add button was permanently disabled: the reader
+could add filters to the grid and never to the view. `populate({ available })`
+and `header.available([...])` close that, and the list is applied AFTER the
+chips so the menu is built over the bar it will add to.
+
+The two scopes must not offer the same field twice, and a field already on
+either bar is never offered again — `offerable()` in `src/core/filter-scope.ts`
+is the DOM-free rule; the caller supplies the two held-id lists.
+
+- Site: `src/components/sherpa-app-header/sherpa-app-header.ts`
+- Site: `examples/views/records.js`
+
+### T-a-superseded-chip-suspends-it-is-never-removed
+
+When the VIEW takes a field the component bar already held, the component chip
+goes `data-superseded`: greyed, not clickable, and STILL THERE. It is never
+removed.
+
+Removing it throws away what the reader picked. This is the same rule as
+suspend-vs-clear everywhere else in the system: "off" keeps the value, "gone"
+deletes it. Collapsing the two has already cost a user their typed filter once.
+
+Three parts make it work:
+
+- `values` SKIPS a superseded chip, so it stops narrowing on top of the view
+- `pickedValues` still reports it, so the pick survives the whole round trip
+- `supersede([...ids])` takes the WHOLE view field list each time, so a chip not
+  named is restored — which makes the call idempotent and means a host can send
+  the list after every change without tracking what it sent last
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
+- Site: `src/core/filter-scope.ts`
+- Site: `examples/views/records.js`
+
 ### T-unavailable-value-sorts-below-a-divider
 
 `QuickFilterOption.available: false` means still SELECTABLE, but no row carries
@@ -7909,10 +7971,13 @@ may add:
 | component has it | **yes** — that is how it moves up | no |
 | neither | yes | yes |
 
-**Adding a component's field to the view MOVES it**, carrying the value the
-reader already picked. `promotions()` says what must move; the caller does the
-moving. A field held with NO value picked still counts as held — the chip is on
-that bar, and promoting it takes the chip.
+**Adding a component's field to the view SUPERSEDES the component chip.** The
+chip is not removed: it goes `data-superseded` — greyed, not clickable, still
+carrying what the reader picked — and comes back the moment the view lets the
+field go. `promotions()` says which chips are affected and what value each
+holds; the caller suspends them. A field held with NO value picked still counts
+as held: the chip is on that bar either way.
+See `T-a-superseded-chip-suspends-it-is-never-removed`.
 
 Nothing in the module knows what a "view" or a "component" is: they are two
 sources, one following the other. A card extending a dashboard, or a panel
@@ -7920,4 +7985,5 @@ extending a card, is the same relationship with different words.
 
 - Site: `src/core/filter-scope.ts`
 - Site: `src/data.ts`
+- Site: `examples/views/records.js`
 - Site: `test/unit/filter-scope.test.mjs`

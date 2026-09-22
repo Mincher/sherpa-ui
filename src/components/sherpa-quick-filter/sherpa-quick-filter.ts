@@ -27,6 +27,10 @@ export class SherpaQuickFilter extends SherpaElement {
     'data-no-value': { type: 'boolean', kind: 'style' },
     'data-full-value': { type: 'boolean', kind: 'style' },
     'data-unsupported': { type: 'boolean', kind: 'style' },
+    /* A VIEW filter now owns this field, so this chip is SUSPENDED, not gone:
+       it keeps its value and comes back when the view lets the field go.
+       TRAP T-a-superseded-chip-suspends-it-is-never-removed */
+    'data-superseded': { type: 'boolean', kind: 'style' },
     'data-count': { type: 'string', kind: 'content', to: '.count' },
   } as const;
 

@@ -282,6 +282,18 @@
   display: contents;
 }
 
+/* ── Superseded — the VIEW took this field ─────────────────────────── */
+/* Reads as inactive, KEEPS its value, and is not clickable: acting on it would
+   fight the view chip that now owns the field.
+   TRAP T-a-superseded-chip-suspends-it-is-never-removed */
+:host([data-superseded]) :is(.body, .caret) {
+  cursor: not-allowed;
+  pointer-events: none;
+  color: var(--sherpa-theme-content-body-1, #35353d);
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+}
+
 /* ── Disabled — inactive tokens, never opacity ─────────────────────── */
 :host([disabled]) :is(.body, .caret) {
   cursor: not-allowed;

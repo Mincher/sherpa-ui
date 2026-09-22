@@ -10,7 +10,7 @@ import {
 import { customerStore, customersReady, customers, columns, plans, regions, customerOrgs, states }
   from './records-data.js';
 import { RECORDS_VIEWS } from './records-views.js';
-import { globalFilters } from './global-filters.js';
+import { globalFilters, globalAvailable } from './global-filters.js';
 
 export async function init(root) {
   /* The store is the APP's (records outlive a screen); the source is this
@@ -127,6 +127,19 @@ export async function init(root) {
        record in this set falls inside. TRAP T-a-date-chip-names-its-field */
     filters: globalFilters(viewOptions(RECORDS_VIEWS, 'all'), regions, customerOrgs,
       [...new Set(customers.map((c) => c.created))].sort()),
+    /* What the header's ADD chip offers. Without this the button was disabled
+       and the reader could add NOTHING at view scope.
+       TRAP T-a-bar-offers-only-what-its-scope-holds */
+    available: globalAvailable(
+      {
+        status: [...new Set(customers.map((c) => c.status))].sort(),
+        plan: [...new Set(customers.map((c) => c.plan))].sort(),
+        tier: [...new Set(customers.map((c) => c.tier))].sort(),
+        owner: [...new Set(customers.map((c) => c.owner))].sort(),
+      },
+      // Already on the header bar, so never offered again.
+      ['view', 'customer', 'region', 'dateRange'],
+    ),
   });
 
   /* Quick-filter chips. A chip with `options` opens a menu; one without is a
@@ -163,12 +176,9 @@ export async function init(root) {
     // SINGLE-select, COMMITTING: rows are a draft behind Apply/Cancel.
     { id: 'owner', label: 'Owner', type: 'data',
       select: 'single', removable: true, commit: true, options: asOptions('owner') },
-    // `kind` picks the menu's content: a calendar rather than a list of values.
-    // `availableDates` is derived from the records, so only days that hold one
-    // are pickable — a `created` column is a scatter, not a span.
-    { id: 'created', label: 'Created', type: 'data', kind: 'date',
-      removable: true, commit: true, icon: 'fa-solid fa-calendar',
-      availableDates: [...new Set(customers.map((c) => c.created))].sort() },
+    /* No `created` chip here: the header's "Created date" already filters that
+       field at VIEW scope, and one field lives in exactly ONE scope.
+       TRAP T-component-extends-view-never-alters-it */
   ]);
 
   /* What the ADD chip offers — the columns the default set leaves out. These
@@ -381,15 +391,46 @@ export async function init(root) {
      TRAP T-the-header-chips-must-reach-the-query. */
   const HEADER_FIELDS = { customer: 'customer', region: 'region', dateRange: 'created' };
 
+  /* A chip the reader ADDED is named for its own field, so the id IS the field.
+     `view` still narrows nothing — it is the saved-view selector. */
+  const ROW_FIELDS = new Set(Object.keys(customers[0] ?? {}));
+  const headerField = (id) => HEADER_FIELDS[id] ?? (ROW_FIELDS.has(id) ? id : '');
+
+  /* Which FIELDS the header bar holds — every chip ON IT, on or off. A chip
+     sitting off still owns its field, so this follows the chips PRESENT, not
+     `quick-filter-change`, which reports only the ON ones. */
+  const viewFields = () => {
+    const bar = header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
+    return [...(bar?.shadowRoot?.querySelectorAll('sherpa-quick-filter') ?? [])]
+      .map((c) => headerField(c.dataset.id ?? ''))
+      .filter(Boolean);
+  };
+
+  /* The component bar SUSPENDS any field the view took. It keeps the chip and
+     the reader's picks; both come back when the view lets the field go.
+     TRAP T-a-superseded-chip-suspends-it-is-never-removed */
+  const syncScopes = () => {
+    qft.supersede(viewFields());
+    // The bar's own filters changed shape, so re-read them.
+    // `active` is a list of chip IDS, exactly as `quick-filter-change` reports.
+    source.contribute('chips', filterFromChips(qft.values, qft.active));
+  };
+
   header?.addEventListener('quick-filter-change', (e) => {
     const picked = {};
     for (const [id, values] of Object.entries(e.detail.values ?? {})) {
-      const field = HEADER_FIELDS[id];
+      const field = headerField(id);
       if (field && values?.length) picked[field] = values;
     }
     // Its OWN key, so it ANDs with the chips, the columns and a saved view.
     source.contribute('global', filterFromChips(picked, []));
   }, { signal });
+
+  // A field ARRIVING at or LEAVING the header changes which scope owns it.
+  for (const event of ['filter-add', 'filter-remove']) {
+    header?.addEventListener(event, syncScopes, { signal });
+  }
+  syncScopes();
 
   /* SAVED VIEWS — the header's View chip. Each option is a ViewSnapshot holding
      the query AND every component's state, so picking one reconfigures the

@@ -15,6 +15,8 @@ interface FilterChip { id: string; label: string; type?: string; active?: boolea
 interface AppHeaderConfig {
   breadcrumb?: Crumb[];
   filters?: FilterChip[];
+  /** What the header's Add chip offers — VIEW-scope fields not yet on the bar. */
+  available?: FilterChip[];
 }
 
 
@@ -64,7 +66,7 @@ export class SherpaAppHeader extends SherpaElement {
     this.#sync();
   }
 
-  /** populate({ breadcrumb, filters }) — feed the composed children. */
+  /** populate({ breadcrumb, filters, available }) — feed the composed children. */
   protected override renderData(data: unknown): Promise<void> | void {
     const cfg = (data ?? {}) as AppHeaderConfig;
     const waits: Promise<void>[] = [];
@@ -72,7 +74,13 @@ export class SherpaAppHeader extends SherpaElement {
       waits.push(this.#stamp('breadcrumbs', 'sherpa-breadcrumbs', cfg.breadcrumb));
     }
     if (Array.isArray(cfg.filters)) {
-      waits.push(this.#stamp('filters', 'sherpa-quick-filter-toolbar', cfg.filters));
+      waits.push(
+        this.#stamp('filters', 'sherpa-quick-filter-toolbar', cfg.filters)
+          // AFTER the chips, so the Add menu is built over the bar it will add to.
+          .then(() => this.available(cfg.available ?? [])),
+      );
+    } else if (Array.isArray(cfg.available)) {
+      this.available(cfg.available);
     }
     // RETURNED, so `await populate(…)` settles once the chips exist.
     // TRAP T-populate-settles-after-render-data
@@ -93,7 +101,23 @@ export class SherpaAppHeader extends SherpaElement {
     if (bar) bar.values = next;
   }
 
-  #toolbar(): (HTMLElement & { values: Record<string, readonly string[]> }) | null {
+  /**
+   * available([...]) — what the header's Add chip offers.
+   *
+   * Without this the header's Add button is disabled and offers NOTHING, which
+   * is what it did: only the component bar was ever given a list.
+   * TRAP T-a-bar-offers-only-what-its-scope-holds
+   */
+  available(defs: readonly FilterChip[]): void {
+    this.#toolbar()?.available?.([...defs]);
+  }
+
+  #toolbar():
+    | (HTMLElement & {
+        values: Record<string, readonly string[]>;
+        available?: (defs: FilterChip[]) => void;
+      })
+    | null {
     return this.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
   }
 
