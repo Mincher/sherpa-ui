@@ -267,3 +267,49 @@ test('populate takes label, and the old `name` still works', async ({ page }) =>
   expect(r.byName.attr, 'the old spelling is still honoured').toBe('Open alerts');
   expect(r.both.attr).toBe('Wins');
 });
+
+/**
+ * A TOTAL SAYS SO IN ITS LABEL.
+ *
+ * A tile takes a series, so it can show the LAST reading (a current state) or
+ * the SUM (things that accumulate). Two tiles reading "Alerts 1,284" and
+ * "Alerts 37" are indistinguishable, so a total prefixes its own label.
+ *
+ * TRAP T-a-total-says-so-in-its-label
+ */
+test('show: last | total picks the number, and a total names itself', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const one = async (data: unknown) => {
+      const el = document.createElement('sherpa-metric') as HTMLElement & {
+        rendered?: Promise<void>; populate?: (d: unknown) => void;
+      };
+      document.getElementById('root')!.append(el);
+      await customElements.whenDefined('sherpa-metric');
+      await el.rendered;
+      el.populate!(data);
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      return { label: el.dataset['label'], value: el.dataset['value'] };
+    };
+
+    const values = [10, 20, 30, 40];
+    return {
+      // No `show`: the LAST reading, which is what a current-state tile means.
+      fallback: await one({ label: 'Alerts', values }),
+      last: await one({ label: 'Alerts', values, show: 'last' }),
+      total: await one({ label: 'Alerts', values, show: 'total' }),
+      // A label that already says Total is not doubled.
+      already: await one({ label: 'Total spend', values, show: 'total' }),
+      // An explicit value is the CALLER's — deriving over it would disagree.
+      explicit: await one({ label: 'Alerts', value: '999', values, show: 'total' }),
+      // A total runs large, so it is grouped.
+      grouped: await one({ label: 'Spend', values: [1000, 2500, 900], show: 'total' }),
+    };
+  });
+
+  expect(r.fallback).toEqual({ label: 'Alerts', value: '40' });
+  expect(r.last).toEqual({ label: 'Alerts', value: '40' });
+  expect(r.total).toEqual({ label: 'Total alerts', value: '100' });
+  expect(r.already).toEqual({ label: 'Total spend', value: '100' });
+  expect(r.explicit).toEqual({ label: 'Total alerts', value: '999' });
+  expect(r.grouped).toEqual({ label: 'Total spend', value: '4,400' });
+});

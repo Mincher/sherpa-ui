@@ -7807,3 +7807,40 @@ something.
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.css`
 - Site: `test/e2e/reforged-chart-keyboard.spec.ts`
+
+### T-a-total-says-so-in-its-label
+
+A metric tile takes a `values` series, so it can show the LAST reading — what
+a current-state tile means — or the SUM, for things that accumulate. `show:
+'last' | 'total'` picks, defaulting to `last`.
+
+**A total prefixes its own label.** Two tiles reading "Alerts 1,284" and
+"Alerts 37" are indistinguishable on screen; "Total alerts" and "Alerts" are
+not. A label that already begins with "Total" is left alone, so nothing reads
+"Total total spend".
+
+**An explicit `value` always wins.** Deriving over the caller's own number
+would silently disagree with it; `show` only answers when nothing else has.
+
+The derived number is grouped, because a total runs large — a series of
+1000, 2500 and 900 reads `4,400`.
+
+- Site: `src/components/sherpa-metric/sherpa-metric.ts`
+- Site: `test/e2e/reforged-metric.spec.ts`
+
+### T-the-scale-is-as-wide-as-the-ring
+
+`sherpa-gauge-chart` puts min · caption · max on one row beneath the arc, and
+that row took the HOST's width while the ring takes `.gauge-wrap`'s — capped at
+`--_max-size` and holding a 2:1 ratio.
+
+So in a host wider than 320px the ring sits centred with space either side, and
+the 0% and 100% labels landed out in that space, clear of the arc they label.
+Measured on the dashboard: the ring spanned **908–1228** while the labels sat
+at **889** and **1247**. The 50% tick looked right because it is centred, which
+is the same place under either width.
+
+The scale now carries the same `max-inline-size`. After: both labels sit
+exactly at the ring's edges, overhang zero.
+
+- Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.css`

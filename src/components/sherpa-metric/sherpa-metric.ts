@@ -21,9 +21,36 @@ interface MetricData {
   trend?: 'up' | 'down' | 'flat';
   /** When present, the embedded sparkline is shown and fed. */
   values?: number[];
+  /**
+   * Which number the tile SHOWS when `value` is not given.
+   *
+   * `'last'` (the default) is the latest reading — what a "current state"
+   * tile means. `'total'` sums the series, for a tile counting things that
+   * accumulate. A total also prefixes the label with "Total", so the two
+   * readings can never be confused on screen.
+   *
+   * Ignored when `value` is given: an explicit value is the caller's own, and
+   * deriving over the top of it would silently disagree.
+   * TRAP T-a-total-says-so-in-its-label
+   */
+  show?: 'last' | 'total';
 }
 
 type Sparkline = HTMLElement & { populate?: (v: number[]) => void };
+
+/**
+ * The number a tile shows when the caller gave none: the LAST reading, or the
+ * sum. Grouped, because a total runs large. TRAP T-a-total-says-so-in-its-label
+ */
+function deriveValue(values?: number[], show?: 'last' | 'total'): string | null {
+  if (!values?.length) return null;
+  const usable = values.filter((v) => Number.isFinite(v));
+  if (!usable.length) return null;
+  const n = show === 'total'
+    ? usable.reduce((sum, v) => sum + v, 0)
+    : usable[usable.length - 1]!;
+  return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
 
 export class SherpaMetric extends SherpaElement {
   static override css = new URL('./sherpa-metric.css', import.meta.url);
@@ -52,9 +79,19 @@ export class SherpaMetric extends SherpaElement {
   protected override renderData(source: unknown): void {
     const data = (source ?? {}) as MetricData;
 
-    const label = data.label ?? data.name;
+    /* A TOTAL names itself. Two tiles reading "Alerts 1,284" and "Alerts 37"
+       are indistinguishable without it. TRAP T-a-total-says-so-in-its-label */
+    const rawLabel = data.label ?? data.name;
+    const total = data.show === 'total';
+    const label = rawLabel != null && total && !/^total\b/i.test(String(rawLabel))
+      ? `Total ${String(rawLabel).charAt(0).toLowerCase()}${String(rawLabel).slice(1)}`
+      : rawLabel;
     if (label != null) this.dataset['label'] = String(label);
-    if (data.value != null) this.dataset['value'] = String(data.value);
+
+    /* An explicit `value` wins: deriving over the caller's own number would
+       silently disagree with it. Otherwise the series answers. */
+    const derived = data.value ?? deriveValue(data.values, data.show);
+    if (derived != null) this.dataset['value'] = String(derived);
 
     if (data.delta != null) {
       this.dataset['delta'] = data.delta;

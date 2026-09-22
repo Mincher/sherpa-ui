@@ -224,8 +224,14 @@
   align-items: baseline;
   justify-content: space-between;
   gap: var(--sherpa-theme-gap-sm, 4px);
-  /* FULL WIDTH, so min and max sit under the arc's ends at any gauge size. */
+  /* THE RING's width, not the host's. `.gauge-wrap` is capped at --_max-size
+     and holds a 2:1 ratio, so a wider host leaves the ring centred with space
+     either side — and a full-width scale put 0% and 100% out in that space,
+     clear of the arc they label. Measured at 320px: the ring spanned
+     908–1228 while the labels sat at 889 and 1247.
+     TRAP T-the-scale-is-as-wide-as-the-ring */
   inline-size: 100%;
+  max-inline-size: min(100%, var(--_max-size, 320px));
   flex: 0 0 auto;
   font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-variant-numeric: tabular-nums;
