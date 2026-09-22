@@ -23,6 +23,7 @@
  * TRAP T-component-extends-view-never-alters-it
  */
 import type { DataSource } from './data-source.js';
+import type { FieldFacts, FilterState } from './filter-state.js';
 
 /** The named part a component source uses for its view's whole filter. */
 const VIEW_PART = 'scope:view';
@@ -54,13 +55,16 @@ export function followView(
   return off;
 }
 
-/** One field a reader may filter on, in whichever scope holds it. */
-export interface ScopedFilter {
-  /** The chip id, which is also the field unless `field` says otherwise. */
-  id: string;
-  label: string;
-  /** The row field, when it differs from the id. */
-  field?: string;
+/**
+ * One field a reader may filter on, in whichever scope holds it.
+ *
+ * `FieldFacts` is what the rest of the data layer already calls this — a
+ * field, what a reader calls it, and its values — so a scope describes a field
+ * the same way a state does. The extras are whatever a toolbar needs to draw
+ * the chip: an icon, a select mode, options.
+ * TRAP T-one-state-per-filtered-field
+ */
+export interface ScopedFilter extends FieldFacts {
   /** Anything else the toolbar needs — icon, select mode, options. */
   [key: string]: unknown;
 }
@@ -85,35 +89,33 @@ export function offerable(
   return {
     // The view may take anything it does not already hold — including one the
     // component holds, which is what makes PROMOTION possible.
-    view: all.filter((f) => !inView.has(f.id)),
+    view: all.filter((f) => !inView.has(f.field)),
     // The component may take only what the view has left alone.
-    component: all.filter((f) => !inView.has(f.id) && !inComponent.has(f.id)),
+    component: all.filter((f) => !inView.has(f.field) && !inComponent.has(f.field)),
   };
 }
 
-/** A promoted field: the id the view took, and the value the component chip keeps. */
-export interface Promotion {
-  id: string;
-  values: string[];
-}
-
 /**
- * Work out which component chips the VIEW has just taken over.
+ * Which component fields the VIEW has just taken over.
  *
  * Anything the component already held is a PROMOTION. The component chip is
- * SUSPENDED, not removed: it keeps its place and its value, and comes back when
- * the view lets the field go. `values` is what that chip still holds, so a
- * caller can restore or report it. Adding a filter the component does not hold
- * is a plain add, and returns nothing.
+ * SUSPENDED, not removed: it keeps its place and everything it holds, and
+ * comes back when the view lets the field go.
  *
- * The caller does the suspending — this says what, not how.
+ * It returns the component's own `FilterState` for each — the op, the typed
+ * text and every value's state, not just the picks. A promoted field that had
+ * "Starts with Go" must arrive in the view still saying that, and a shape of
+ * `{ id, values }` cannot carry it.
+ *
+ * The caller does the suspending — this says WHAT, not how.
  * TRAP T-a-superseded-chip-suspends-it-is-never-removed
+ * TRAP T-one-state-per-filtered-field
  */
 export function promotions(
   added: readonly string[],
-  componentValues: Readonly<Record<string, readonly string[]>>,
-): Promotion[] {
+  componentStates: Readonly<Record<string, FilterState>>,
+): FilterState[] {
   return added
-    .filter((id) => id in componentValues)
-    .map((id) => ({ id, values: [...(componentValues[id] ?? [])] }));
+    .filter((field) => field in componentStates)
+    .map((field) => componentStates[field]!);
 }

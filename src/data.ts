@@ -187,7 +187,6 @@ export {
   promotions,
   type ScopedFilter,
   type Scope,
-  type Promotion,
 } from './core/data/filter-scope.js';
 
 /* ONE state per filtered field — what a chip, its menu, a column heading and

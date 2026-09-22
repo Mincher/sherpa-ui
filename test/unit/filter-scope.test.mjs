@@ -15,7 +15,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-const { DataSource, ArrayStore, followView, offerable, promotions } =
+const { DataSource, ArrayStore, followView, offerable, promotions, fieldState } =
   await import(new URL('../../dist/data.js', import.meta.url));
 
 const ROWS = [
@@ -88,53 +88,76 @@ test('the teardown stops the following', async () => {
 
 /* ── Which toolbar may OFFER what ───────────────────────────────────── */
 
+/* A scoped filter IS a `FieldFacts` — the shape the rest of the data layer
+   already uses for "a field a reader may filter on". One idea, one name.
+   TRAP T-one-state-per-filtered-field */
 const ALL = [
-  { id: 'tier', label: 'Tier' },
-  { id: 'region', label: 'Region' },
-  { id: 'owner', label: 'Owner' },
+  { field: 'tier', label: 'Tier' },
+  { field: 'region', label: 'Region' },
+  { field: 'owner', label: 'Owner' },
 ];
 
 test('a field already in the VIEW is offered nowhere', () => {
   const o = offerable(ALL, { view: ['region'], component: [] });
-  assert.deepEqual(o.view.map((f) => f.id), ['tier', 'owner']);
-  assert.deepEqual(o.component.map((f) => f.id), ['tier', 'owner']);
+  assert.deepEqual(o.view.map((f) => f.field), ['tier', 'owner']);
+  assert.deepEqual(o.component.map((f) => f.field), ['tier', 'owner']);
 });
 
 test('a field in the COMPONENT is still offered to the view — that is promotion', () => {
   const o = offerable(ALL, { view: [], component: ['tier'] });
   assert.deepEqual(
-    o.view.map((f) => f.id), ['tier', 'region', 'owner'],
+    o.view.map((f) => f.field), ['tier', 'region', 'owner'],
     'the view may take one the component holds, which is how a filter moves UP',
   );
   assert.deepEqual(
-    o.component.map((f) => f.id), ['region', 'owner'],
+    o.component.map((f) => f.field), ['region', 'owner'],
     'but the component does not offer it twice',
   );
 });
 
 test('one field, one home', () => {
   const o = offerable(ALL, { view: ['region'], component: ['tier'] });
-  assert.deepEqual(o.view.map((f) => f.id), ['tier', 'owner']);
-  assert.deepEqual(o.component.map((f) => f.id), ['owner']);
+  assert.deepEqual(o.view.map((f) => f.field), ['tier', 'owner']);
+  assert.deepEqual(o.component.map((f) => f.field), ['owner']);
 });
 
 /* ── What moves ─────────────────────────────────────────────────────── */
 
-test('promoting carries the value the reader already picked', () => {
-  const moved = promotions(['tier'], { tier: ['gold'], owner: ['Ravi'] });
-  assert.deepEqual(moved, [{ id: 'tier', values: ['gold'] }]);
+/** One field's state, as the component holds it. */
+const held = (field, picked, extra = {}) =>
+  fieldState({ field, values: ['gold', 'silver', 'Ravi'] }, { picked, ...extra });
+
+test('promoting carries the WHOLE state, not just the picks', () => {
+  const states = { tier: held('tier', ['gold']), owner: held('owner', ['Ravi']) };
+  const moved = promotions(['tier'], states);
+
+  assert.equal(moved.length, 1);
+  assert.equal(moved[0].field, 'tier');
+  /* The state, not a `{ id, values }` summary: a promoted field that had
+     "Starts with Go" must arrive in the view still saying that. */
+  assert.deepEqual(
+    moved[0].values.filter((v) => v.state === 'picked').map((v) => v.value),
+    ['gold'],
+  );
+});
+
+test('a TYPED condition survives the promotion', () => {
+  const states = { tier: held('tier', [], { op: 'startswith', text: 'Go' }) };
+  const [moved] = promotions(['tier'], states);
+  assert.equal(moved.op, 'startswith');
+  assert.equal(moved.text, 'Go', 'the shape that carries it, which {id,values} could not');
+  assert.equal(moved.fieldState, 'active', 'and it is still filtering');
 });
 
 test('adding a field the component never held moves nothing', () => {
-  assert.deepEqual(promotions(['region'], { tier: ['gold'] }), []);
+  assert.deepEqual(promotions(['region'], { tier: held('tier', ['gold']) }), []);
 });
 
 test('several at once, and an empty value still counts as held', () => {
-  const moved = promotions(['tier', 'owner'], { tier: ['gold'], owner: [] });
-  assert.deepEqual(moved, [
-    { id: 'tier', values: ['gold'] },
-    // Held with nothing picked is still HELD: the chip is on that bar, and
-    // promoting it must take the chip even though there is no value to carry.
-    { id: 'owner', values: [] },
-  ]);
+  const states = { tier: held('tier', ['gold']), owner: held('owner', []) };
+  const moved = promotions(['tier', 'owner'], states);
+  assert.deepEqual(moved.map((s) => s.field), ['tier', 'owner']);
+  // Held with nothing picked is still HELD: the chip is on that bar, and
+  // promoting it must take the chip even though there is no value to carry.
+  assert.equal(moved[1].fieldState, 'off');
 });

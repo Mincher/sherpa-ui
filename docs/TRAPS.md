@@ -2859,6 +2859,14 @@ several become `in`, because `eq` against a list can never match.
 the value, the count and the tooltip. A control that computes any of these
 itself is a second answer, and the two drift.
 
+**AND IT IS THE SHAPE A SCOPE SPEAKS.** `filter-scope` answers a different
+question — which of two sources owns a field — but it described that field its
+own way: a `ScopedFilter` with an `id`, and a `Promotion` of `{ id, values }`.
+Two names for "a field a reader may filter on", and a promotion that lost the
+op and the typed text on the way. `ScopedFilter extends FieldFacts` now, and
+`promotions()` returns `FilterState[]`, so a field promoted while holding
+"Starts with Go" arrives in the view still saying that.
+
 **IT IS NOT A FILTER MODULE.** The same four facts describe any control over a
 set of values — a tab strip, a nav, a chart legend, a select group, a transfer
 list, a calendar's days. Nineteen components hold selection state, and the
@@ -2876,6 +2884,8 @@ picked values on the right, its unpicked on the left.
 - Site: `test/unit/parity-sweep.test.mjs`
 - Site: `src/core/data/legend-filter.ts`
 - Site: `test/unit/legend-filter.test.mjs`
+- Site: `src/core/data/filter-scope.ts`
+- Site: `test/unit/filter-scope.test.mjs`
 ### T-one-field-one-filter-menu
 
 A filter CHIP and a COLUMN HEADING ask the same question of the same field, so
