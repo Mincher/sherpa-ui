@@ -7069,15 +7069,30 @@ the same silent way and were each found by measuring rather than reading:
 shadow root (T-a-document-class-cannot-reach-a-shadow-root), and `@property`
 cannot register from one.
 
-`src/` holds 16 other `@property` rules in component sheets — sparkline (10),
-slider (3), gauge (2), barchart (1). Checked in the browser: all four
-components work anyway, because JS writes a literal (`50%`, `1`) and the CSS
-only reads it back. They gain nothing from the declaration and lose nothing
-without it. Leave them; they are not evidence the trap is survivable, only that
-those four never needed a typed value.
+`src/` used to hold 16 more of these in component sheets — sparkline (10),
+slider (3), gauge (2), barchart (1) — every one commented "typed so it
+animates". **They were deleted 2026-09-22.** Three things were true of all of
+them:
+
+- They never registered, being in adopted sheets.
+- Nothing animates a custom property anywhere in `src/` — grepped.
+- JS writes each as a FINISHED string (`"5"`, `"30%"`, `"18deg"`) and the CSS
+  only reads it back, so no type was needed.
+
+Proof they did nothing: a browser snapshot of `--_v0`, `--_min`, `--_range`,
+`--_len`, `--_pct`, `--_fill-pct`, `--_angle` and `--_h` was taken before and
+after removal and came back **byte-identical**. 576 tests unchanged.
+
+The lesson is the comment, not the code: sixteen blocks claimed to enable an
+animation that does not exist, in a place the feature cannot work. A comment
+that explains a mechanism is worth checking against whether the mechanism runs.
 
 - Site: `src/core/sherpa-grouping.css`
 - Site: `scripts/project-tokens.mjs`
+- Site: `src/components/sherpa-sparkline/sherpa-sparkline.css`
+- Site: `src/components/sherpa-slider/sherpa-slider.css`
+- Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.css`
+- Site: `src/components/sherpa-barchart/sherpa-barchart.css`
 - Site: `test/e2e/reforged-grouping.spec.ts`
 
 ### T-grouping-is-an-attribute-and-a-class

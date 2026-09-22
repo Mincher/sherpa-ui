@@ -3,12 +3,9 @@
  * JS writes each bar's height as --_h; CSS owns the rest.
  */
 
-/* Typed so the bar grow animates; non-Chromium falls back to the var(). */
-@property --_h {
-  syntax: "<percentage>";
-  inherits: false;
-  initial-value: 0%;
-}
+/* No `@property` for --_h. JS sets it as a finished string ("50%") and CSS
+   only reads it back — and a component sheet is ADOPTED, where @property does
+   not register at all. TRAP T-at-property-needs-the-document. */
 
 :host {
   /* `flex`, not `inline-flex`: an inline box cannot shrink, so the y-axis column

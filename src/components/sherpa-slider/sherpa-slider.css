@@ -3,20 +3,10 @@
  * styled track. JS supplies only --_pct; everything else is CSS off data-*.
  */
 
-/* Typed so the fill width animates; inherits so the host-set value reaches .fill.
- * Non-Chromium ignores @property and falls back to the `--_pct: 0%` on :host. */
-@property --_pct {
-  syntax: "<percentage>";
-  inherits: true;
-  initial-value: 0%;
-}
-
-/* Start of the fill. 0 in single mode, so .fill runs from the rail's head. */
-@property --_pct-start {
-  syntax: "<percentage>";
-  inherits: true;
-  initial-value: 0%;
-}
+/* No `@property` for --_pct. JS sets it as a finished string ("30%") and CSS
+   only reads it back, so nothing needs a registered type — and it could not
+   have one: a component sheet is ADOPTED, where @property does not register.
+   TRAP T-at-property-needs-the-document. */
 
 :host {
   display: flex;

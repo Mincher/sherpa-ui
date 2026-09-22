@@ -3,17 +3,11 @@
  * Bands are closed SVG paths (see #renderArcs); the needle rotates by --_angle.
  */
 
-/* Typed so both animate and inherit down to .gauge / .needle. */
-@property --_fill-pct {
-  syntax: "<percentage>";
-  inherits: true;
-  initial-value: 0%;
-}
-@property --_angle {
-  syntax: "<angle>";
-  inherits: true;
-  initial-value: -90deg;
-}
+/* No `@property` for these two. JS sets them as finished strings ("18deg") and
+   CSS only reads them back; the `:host` block below already gives both a
+   default, so the registered initial-value bought nothing. It never applied
+   anyway — a component sheet is ADOPTED, where @property does not register.
+   TRAP T-at-property-needs-the-document. */
 
 :host {
   /* `flex`, not `inline-flex`: an inline box cannot be given a height by its parent. */

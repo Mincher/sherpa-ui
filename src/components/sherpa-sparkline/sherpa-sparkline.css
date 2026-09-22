@@ -3,18 +3,10 @@
  * --_v0..7 plus --_min / --_range on the host; CSS normalises and draws them.
  */
 
-/* Typed so the values animate and inherit to descendants. Non-Chromium falls
- * back to the plain declarations on :host below. */
-@property --_v0 { syntax: "<number>"; inherits: true; initial-value: 0; }
-@property --_v1 { syntax: "<number>"; inherits: true; initial-value: 0; }
-@property --_v2 { syntax: "<number>"; inherits: true; initial-value: 0; }
-@property --_v3 { syntax: "<number>"; inherits: true; initial-value: 0; }
-@property --_v4 { syntax: "<number>"; inherits: true; initial-value: 0; }
-@property --_v5 { syntax: "<number>"; inherits: true; initial-value: 0; }
-@property --_v6 { syntax: "<number>"; inherits: true; initial-value: 0; }
-@property --_v7 { syntax: "<number>"; inherits: true; initial-value: 0; }
-@property --_min { syntax: "<number>"; inherits: true; initial-value: 0; }
-@property --_range { syntax: "<number>"; inherits: true; initial-value: 1; }
+/* No `@property` here. These are set from JS as finished strings — "5", "30%",
+   "18deg" — and CSS only reads them back, so nothing needs a registered type.
+   It could not have one anyway: a component sheet is ADOPTED, and @property
+   does not register from one. TRAP T-at-property-needs-the-document. */
 
 :host {
   display: inline-flex;
