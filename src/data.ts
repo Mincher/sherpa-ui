@@ -173,3 +173,15 @@ export {
   type LegendFilterOptions,
   type LegendFilterBinding,
 } from './core/legend-filter.js';
+
+/* TWO SCOPES: a view filter narrows everything, a component filter narrows one
+   component and extends the view without altering it.
+   TRAP T-component-extends-view-never-alters-it */
+export {
+  followView,
+  offerable,
+  promotions,
+  type ScopedFilter,
+  type Scope,
+  type Promotion,
+} from './core/filter-scope.js';

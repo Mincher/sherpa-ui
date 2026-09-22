@@ -7883,3 +7883,41 @@ cannot all be true at once — which is another sign they were a menu wearing
 toggles.
 
 - Site: `examples/views/records.js`
+
+### T-component-extends-view-never-alters-it
+
+Two filtering scopes on one screen.
+
+A **VIEW** filter narrows everything bound to the view's source — the charts,
+the tiles, the grid. A **COMPONENT** filter narrows one component and leaves
+the rest alone: a reader hunting through a table does not want the charts
+beside it to move.
+
+    component rows = view filter AND component filter
+
+`followView(view, component)` makes the second source contribute the first's
+WHOLE filter as one named part. That is what keeps the two from fighting: a
+view change replaces one part and cannot touch the component's own, so a
+component filter survives the view being cleared entirely.
+
+**A field lives in exactly one scope.** `offerable()` decides what each toolbar
+may add:
+
+| held | offered to the view | offered to the component |
+|---|---|---|
+| view has it | no | no |
+| component has it | **yes** — that is how it moves up | no |
+| neither | yes | yes |
+
+**Adding a component's field to the view MOVES it**, carrying the value the
+reader already picked. `promotions()` says what must move; the caller does the
+moving. A field held with NO value picked still counts as held — the chip is on
+that bar, and promoting it takes the chip.
+
+Nothing in the module knows what a "view" or a "component" is: they are two
+sources, one following the other. A card extending a dashboard, or a panel
+extending a card, is the same relationship with different words.
+
+- Site: `src/core/filter-scope.ts`
+- Site: `src/data.ts`
+- Site: `test/unit/filter-scope.test.mjs`
