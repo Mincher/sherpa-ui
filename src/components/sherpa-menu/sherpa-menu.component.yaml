@@ -25,7 +25,7 @@ anatomy:
   byTemplate:
     default:
       - el: div
-        class: menu sherpa-border-edges
+        class: menu sherpa-border-edges sherpa-border-corners
         part: menu
         attrs:
           popover: auto
@@ -85,7 +85,7 @@ anatomy:
                     class: menu-row-label
     filter:
       - el: div
-        class: menu sherpa-border-edges
+        class: menu sherpa-border-edges sherpa-border-corners
         part: menu
         attrs:
           popover: auto
@@ -368,10 +368,6 @@ tokens:
   menu.padding: "{sherpa.theme-padding-md}"
   menu.padding-block-end: "{sherpa.theme-padding-sm}"
   menu.border-color: "{sherpa.style-border-base}"
-  menu.border-start-start-radius: "{sherpa.border-rounding-top-left}"
-  menu.border-start-end-radius: "{sherpa.border-rounding-top-right}"
-  menu.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
-  menu.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   menu.background: "{sherpa.style-surface-base}"
   menu.color: "{sherpa.theme-content-body-base}"
   menu.font-family: "{sherpa.font-family-body}"

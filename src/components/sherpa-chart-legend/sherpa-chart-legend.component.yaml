@@ -37,7 +37,7 @@ anatomy:
             aria-pressed: "true"
           children:
             - el: span
-              class: swatch
+              class: swatch sherpa-border-corners
               part: swatch
               attrs:
                 aria-hidden: "true"
@@ -94,14 +94,6 @@ tokens:
   legend.column-gap: "{sherpa.display-mode-space-xs}"
   legend.row-gap: "{sherpa.display-mode-space-2xs}"
   legend.padding: "{sherpa.display-mode-space-xs}"
-  item.border-start-start-radius: "{sherpa.border-rounding-top-left}"
-  item.border-start-end-radius: "{sherpa.border-rounding-top-right}"
-  item.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
-  item.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
-  swatch.border-start-start-radius: "{sherpa.border-rounding-top-left}"
-  swatch.border-start-end-radius: "{sherpa.border-rounding-top-right}"
-  swatch.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
-  swatch.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   item.color: "{sherpa.theme-content-body-1}"
   item.font-family: "{sherpa.font-family-mono}"
   item.font-size: "{sherpa.theme-content-size-small}"

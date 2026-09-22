@@ -33,10 +33,6 @@
   background: var(--_surface);
   border-style: solid;
   border-color: var(--_border);
-  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
-  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
-  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
-  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   color: var(--sherpa-style-content-base, #0c0b11);
   /* Figma pins Elevation=lg on the Dialog. */
   box-shadow:

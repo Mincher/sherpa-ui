@@ -56,10 +56,6 @@
   display: inline-flex;
   gap: var(--sherpa-display-mode-space-2xs, 4px);
   padding-inline: var(--sherpa-display-mode-space-2xs, 4px);
-  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
-  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
-  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
-  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);

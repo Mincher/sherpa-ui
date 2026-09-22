@@ -37,7 +37,6 @@ anatomy:
               attrs:
                 aria-hidden: "true"
             - el: span
-              class: drop-text
               children:
                 - el: button
                   class: browse
@@ -90,7 +89,7 @@ anatomy:
             data-index: data-index
           children:
             - el: span
-              class: file-icon
+              class: file-icon sherpa-border-corners
               attrs:
                 aria-hidden: "true"
             - el: span
@@ -109,7 +108,7 @@ anatomy:
                   class: file-status
                   part: file-status
             - el: button
-              class: file-remove sherpa-border-edges
+              class: file-remove sherpa-border-edges sherpa-border-corners
               attrs:
                 type: button
                 aria-label: Remove file
@@ -251,10 +250,6 @@ tokens:
   file-icon.block-size: "{sherpa.theme-size-icon-xl}"
   file-icon.margin-inline-end: "{sherpa.display-mode-space-2xs}"
   file-icon.border-width: "{sherpa.display-mode-border-width-base}"
-  file-icon.border-start-start-radius: "{sherpa.border-rounding-top-left}"
-  file-icon.border-start-end-radius: "{sherpa.border-rounding-top-right}"
-  file-icon.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
-  file-icon.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   file-icon.color: "{sherpa.theme-content-body-1}"
   file-icon.font-size: "{sherpa.theme-content-size-base}"
   file-body.gap: "{sherpa.display-mode-space-3xs}"
@@ -268,10 +263,6 @@ tokens:
   file-remove.inline-size: "{sherpa.structure-height}"
   file-remove.block-size: "{sherpa.structure-height}"
   file-remove.border-color: "{sherpa.style-border-base}"
-  file-remove.border-start-start-radius: "{sherpa.border-rounding-top-left}"
-  file-remove.border-start-end-radius: "{sherpa.border-rounding-top-right}"
-  file-remove.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
-  file-remove.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   file-remove.background: "{sherpa.style-surface-base}"
   file-remove.color: "{sherpa.theme-content-body-1}"
   file-remove.font-size: "{sherpa.theme-content-size-base}"

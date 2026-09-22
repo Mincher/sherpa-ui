@@ -64,10 +64,6 @@
   padding: var(--sherpa-theme-padding-sm, 4px) var(--sherpa-structure-space-padding, 8px);
   border-style: solid;
   border-color: var(--_border);
-  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
-  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
-  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
-  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: var(--sherpa-theme-surface-default-base, #ffffff);
   color: var(--sherpa-theme-content-body-1, #35353d);
   font-family: inherit;

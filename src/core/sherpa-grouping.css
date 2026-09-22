@@ -153,3 +153,19 @@
   border-inline-start-width: var(--sherpa-border-left, 0.5px);
   border-inline-end-width: var(--sherpa-border-right, 0.5px);
 }
+
+/* ── Per-corner rounding ─────────────────────────────────────────────────
+   The twin of the block above, and the other half of what `[data-group]` and
+   `.sherpa-group` write: a grouped item squares the corners it SHARES and
+   keeps the ones on the outside. The same four lines were written verbatim
+   26 times across 21 components.
+
+   LOGICAL properties, so a corner follows the writing direction — `top-left`
+   is the START-START corner, which is top-RIGHT in RTL. The variable names
+   are physical because Figma's are; the properties are not. */
+.sherpa-border-corners {
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
+}

@@ -46,10 +46,6 @@
   padding-block-end: var(--sherpa-theme-padding-sm, 4px);
   border-style: solid;
   border-color: var(--sherpa-style-border-base, #b3b3c3);
-  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
-  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
-  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
-  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: var(--sherpa-style-surface-base, #ffffff);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);

@@ -27,7 +27,7 @@ anatomy:
       attrs:
         aria-hidden: "true"
     - el: dialog
-      class: root sherpa-border-edges
+      class: root sherpa-border-edges sherpa-border-corners
       part: root
       children:
         - el: sherpa-container-header

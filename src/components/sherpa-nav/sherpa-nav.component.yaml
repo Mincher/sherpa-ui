@@ -51,7 +51,7 @@ anatomy:
                   class: product sherpa-truncate
                   part: product
                 - el: button
-                  class: hdr-btn sherpa-border-edges pin
+                  class: hdr-btn sherpa-border-edges sherpa-border-corners pin
                   part: pin
                   attrs:
                     type: button
@@ -63,7 +63,7 @@ anatomy:
                       attrs:
                         aria-hidden: "true"
                 - el: button
-                  class: hdr-btn sherpa-border-edges settings
+                  class: hdr-btn sherpa-border-edges sherpa-border-corners settings
                   part: settings
                   attrs:
                     type: button
@@ -79,7 +79,7 @@ anatomy:
               part: quick-zone
               children:
                 - el: div
-                  class: search sherpa-border-edges
+                  class: search sherpa-border-edges sherpa-border-corners
                   part: search
                   children:
                     - el: i
@@ -221,20 +221,12 @@ tokens:
   product.color: "{sherpa.theme-content-body-1}"
   hdr-btn.--_btn-box: "{sherpa.display-mode-space-xl}"
   hdr-btn.--_btn-glyph: "{sherpa.theme-content-size-small}"
-  hdr-btn.border-start-start-radius: "{sherpa.border-rounding-top-left}"
-  hdr-btn.border-start-end-radius: "{sherpa.border-rounding-top-right}"
-  hdr-btn.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
-  hdr-btn.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   hdr-btn.color: "{sherpa.style-content-base}"
   quick-zone.gap: "{sherpa.display-mode-space-xs}"
   quick-zone.padding: "{sherpa.display-mode-space-xs}"
   search.gap: "{sherpa.display-mode-space-xs}"
   search.padding-inline-start: "{sherpa.structure-space-padding}"
   search.block-size: "{sherpa.display-mode-size-2xl}"
-  search.border-start-start-radius: "{sherpa.border-rounding-top-left}"
-  search.border-start-end-radius: "{sherpa.border-rounding-top-right}"
-  search.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
-  search.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   search.border-color: "{sherpa.style-border-base}"
   search.background: "{sherpa.style-surface-base}"
   search-icon.color: "{sherpa.theme-content-body-1}"

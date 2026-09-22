@@ -27,7 +27,7 @@ anatomy:
           class: language
           part: language
         - el: button
-          class: copy
+          class: copy sherpa-border-corners
           part: copy
           attrs:
             type: button
@@ -112,10 +112,6 @@ tokens:
   language.color: "{sherpa.theme-content-body-1}"
   copy.inline-size: "{sherpa.structure-height}"
   copy.block-size: "{sherpa.structure-height}"
-  copy.border-start-start-radius: "{sherpa.border-rounding-top-left}"
-  copy.border-start-end-radius: "{sherpa.border-rounding-top-right}"
-  copy.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
-  copy.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   copy.color: "{sherpa.theme-content-body-1}"
   copy.font-size: "{sherpa.theme-content-size-base}"
   copied-label.color: "{sherpa.theme-content-success-1}"

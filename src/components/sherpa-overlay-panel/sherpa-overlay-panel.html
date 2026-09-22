@@ -31,7 +31,7 @@
   <!-- A non-modal <dialog> gets no ::backdrop, so the tint is a real element.
        Pointer-transparent by design: the page behind stays clickable. -->
   <div class="scrim" part="scrim" aria-hidden="true"></div>
-  <dialog class="root sherpa-border-edges" part="root">
+  <dialog class="root sherpa-border-edges sherpa-border-corners" part="root">
     <!-- DEFAULT variant, not data-type="panel" — that inks the title link-blue.
          The header's own collapse/dismiss events are re-emitted as the panel's. -->
     <sherpa-container-header class="header" part="header">

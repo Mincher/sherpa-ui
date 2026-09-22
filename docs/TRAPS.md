@@ -7379,9 +7379,17 @@ It is a **custom property on `:host` in `sherpa-base.css`**, not a class:
   change, and after: a real keyboard focus renders
   `rgb(59, 76, 205) 0px 0px 0px 2px inset`, identical to before.
 
-`.sherpa-truncate` and `.sherpa-inert` went in as CLASSES for the opposite
-reason: they apply to inner nodes, where a class is reachable, and they are
-whole rules rather than one value.
+`.sherpa-truncate`, `.sherpa-inert` and `.sherpa-border-corners` went in as
+CLASSES for the opposite reason: they apply to inner nodes, where a class is
+reachable, and they are whole rules rather than one value.
+
+**`.sherpa-border-corners` is the twin of `.sherpa-border-edges`** — the four
+radii beside the four widths, and the other half of what `[data-group]` writes.
+The same four lines existed 26 times across 21 components. Fourteen sites took
+the class; the rest keep their block and must, for the reasons above: a bare
+`:host` (button, container, nav-item), a CONDITIONAL selector
+(`:host([data-state="range-end"]) .content`, `&:focus-visible`) which a class
+cannot express, and `::slotted(...)`, which styles someone else's element.
 
 **`.sherpa-inert` carries only the two INTERACTION declarations.** The colours
 stay per-component, because each picks a different inactive token — and never

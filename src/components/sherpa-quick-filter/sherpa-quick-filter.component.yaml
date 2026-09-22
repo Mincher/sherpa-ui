@@ -29,7 +29,7 @@ anatomy:
           data-floating: ""
           data-anchor: .chip
       - el: button
-        class: body
+        class: body sherpa-border-corners
         part: body
         attrs:
           type: button
@@ -223,10 +223,6 @@ tokens:
   chip.block-size: "{sherpa.display-mode-size-lg}"
   body.gap: "{sherpa.display-mode-space-2xs}"
   body.padding-inline: "{sherpa.display-mode-space-2xs}"
-  body.border-start-start-radius: "{sherpa.border-rounding-top-left}"
-  body.border-start-end-radius: "{sherpa.border-rounding-top-right}"
-  body.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
-  body.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   body.font-size: "{sherpa.font-size-body-base}"
   body.font-weight: "{sherpa.font-weight-regular}"
   body.line-height: "{sherpa.theme-content-line-height-base}"

@@ -26,7 +26,7 @@ templates:
 anatomy:
   root:
     el: dialog
-    class: root sherpa-border-edges
+    class: root sherpa-border-edges sherpa-border-corners
     part: root
     children:
       - el: div
@@ -85,10 +85,6 @@ events:
     bubbles: true
     composed: true
 tokens:
-  root.border-start-start-radius: "{sherpa.border-rounding-top-left}"
-  root.border-start-end-radius: "{sherpa.border-rounding-top-right}"
-  root.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
-  root.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   root.color: "{sherpa.style-content-base}"
   root.box-shadow: "{sherpa.display-mode-size-2xs}"
   heading-text.color: "{sherpa.theme-content-body-base}"

@@ -64,7 +64,7 @@ anatomy:
                     data-icon-start: fa-solid fa-angle-left
                     aria-label: Previous page
             - el: input
-              class: page-input sherpa-border-edges
+              class: page-input sherpa-border-edges sherpa-border-corners
               part: page-input
               attrs:
                 type: number
@@ -162,18 +162,10 @@ tokens:
   pagination.gap: "{sherpa.display-mode-space-base}"
   pagination.padding: "{sherpa.display-mode-space-xs}"
   rows.padding: "{sherpa.theme-padding-sm}"
-  rows.border-start-start-radius: "{sherpa.border-rounding-top-left}"
-  rows.border-start-end-radius: "{sherpa.border-rounding-top-right}"
-  rows.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
-  rows.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   rows.background: "{sherpa.theme-surface-default-base}"
   rows.color: "{sherpa.theme-content-body-1}"
   rows.font-size: "{sherpa.font-size-body-base}"
   page-input.padding: "{sherpa.theme-padding-sm}"
-  page-input.border-start-start-radius: "{sherpa.border-rounding-top-left}"
-  page-input.border-start-end-radius: "{sherpa.border-rounding-top-right}"
-  page-input.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
-  page-input.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
   page-input.background: "{sherpa.theme-surface-default-base}"
   page-input.color: "{sherpa.theme-content-body-1}"
   page-input.font-size: "{sherpa.font-size-body-base}"
