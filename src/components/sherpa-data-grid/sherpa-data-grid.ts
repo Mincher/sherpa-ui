@@ -356,6 +356,9 @@ export class SherpaDataGrid extends SherpaElement {
     const actionsHead = headRow.querySelector('.actions-head');
     if (actionsHead) headRow.appendChild(actionsHead);
 
+    // Every heading is in the table now, so its menu has upgraded.
+    this.#flushItems();
+
     this.#renderFilterRow();
   }
 
@@ -511,9 +514,6 @@ export class SherpaDataGrid extends SherpaElement {
    * TRAP T-one-field-one-filter-menu
    */
   #addColumnValues(menu: HTMLElement, field: string, held?: ColumnFilter): void {
-    const tpl = this.$<HTMLTemplateElement>('template.head-value-row-tpl');
-    if (!tpl) return;
-
     const on = new Set(
       held && (OP_TAKES[held.op as FilterOp] ?? 'list') === 'list'
         ? (held.picks ?? (held.value ? [held.value] : []))
@@ -535,26 +535,35 @@ export class SherpaDataGrid extends SherpaElement {
     const declared = this.#columnValues.get(field);
     const values = declared?.length ? [...declared] : [...present].sort();
 
-    const add = (value: string, available: boolean): void => {
-      const row = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-      const box = row.querySelector('input')!;
-      box.value = value;
-      box.checked = on.has(value);
-      // Dimmed, never disabled: ticking it is how a reader broadens back out.
-      if (!available) row.setAttribute('data-unavailable', '');
-      row.querySelector('.head-value-label')!.textContent = value;
-      menu.appendChild(row);
-    };
+    /* THE MENU draws its own items from this DATA, choosing the control from
+       its own `data-select`. Stamping rows here is what let a column heading
+       and a filter chip end up with different markup over the same field.
+       TRAP T-one-field-one-filter-menu */
+    this.#pendingItems.push([
+      menu,
+      values.map((value) => ({
+        value,
+        selected: on.has(value),
+        available: present.has(value),
+      })),
+    ]);
+  }
 
-    const reachable = values.filter((v) => present.has(v));
-    const unreachable = values.filter((v) => !present.has(v));
-    for (const value of reachable) add(value, true);
-    // Only with something on BOTH sides.
-    if (reachable.length && unreachable.length) {
-      const hr = this.clone('template.head-divider-tpl');
-      if (hr) menu.appendChild(hr);
+  /** Menus whose items wait for their heading to enter the table. */
+  #pendingItems: Array<[HTMLElement, unknown[]]> = [];
+
+  /**
+   * Hand each waiting menu its items.
+   *
+   * A cloned `<sherpa-menu>` upgrades only on entering the page, so an
+   * `items()` call made while its heading was detached stamps nothing.
+   * TRAP T-custom-element-upgrade
+   */
+  #flushItems(): void {
+    for (const [menu, items] of this.#pendingItems) {
+      (menu as HTMLElement & { items?: (i: unknown[]) => void }).items?.(items);
     }
-    for (const value of unreachable) add(value, false);
+    this.#pendingItems = [];
   }
 
   /** The WHOLE column's values, by field — see `data-column-values`. */
@@ -640,9 +649,8 @@ export class SherpaDataGrid extends SherpaElement {
         const fm = chip.querySelector('sherpa-menu');
         if (fm?.getAttribute('data-type') === 'filter') {
           fm.setAttribute('data-value', '');
-          for (const box of fm.querySelectorAll<HTMLInputElement>('.head-value-row input')) {
-            box.checked = false;
-          }
+          // The MENU owns its rows; `values = []` unticks every one.
+          (fm as HTMLElement & { values?: string[] }).values = [];
         }
         for (const box of chip.querySelectorAll<HTMLInputElement>('input[type="text"], input[type="number"]')) {
           box.value = '';
@@ -713,9 +721,9 @@ export class SherpaDataGrid extends SherpaElement {
           .conditionValue ?? '';
         return typed.trim() ? { op, value: typed.trim() } : null;
       }
-      const picks = [...menu.querySelectorAll<HTMLInputElement>('.head-value-row input')]
-        .filter((box) => box.checked)
-        .map((box) => box.value);
+      /* ASK THE MENU. It owns its rows, so reading them here would be a
+         second answer to "what is ticked". TRAP T-one-field-one-filter-menu */
+      const picks = [...((menu as HTMLElement & { values?: string[] }).values ?? [])];
       if (!picks.length) return null;
       // SEVERAL picks is `in` — `eq` against a list can never match.
       return picks.length === 1

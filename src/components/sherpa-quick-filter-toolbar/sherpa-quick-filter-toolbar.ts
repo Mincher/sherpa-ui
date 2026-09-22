@@ -108,7 +108,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   } as const;
 
   /** Sort and group written from outside — unobserved, a grid header click says nothing here. */
-  static override observed = ['data-sort-field', 'data-sort-direction', 'data-group-field'];
+  /** `data-favourite` is observed so a host that owns the favourites list can
+   *  paint the star. TRAP T-the-star-reports-it-does-not-decide */
+  static override observed = [
+    'data-sort-field', 'data-sort-direction', 'data-group-field', 'data-favourite',
+  ];
 
   #filters: QuickFilterDef[] = [];
   #organise: OrganiseDef = {};
@@ -675,6 +679,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       }
     }
 
+    // The MENUS, now their chips are in the list.
+    this.#flushItems();
+
     // These write into the chip's shadow root, so they wait on `el.rendered`.
     for (const [chip, text] of customLabels) {
       const el = chip as HTMLElement & { valueLabel?: string; rendered?: Promise<void> };
@@ -688,9 +695,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** Give a chip its value menu — real checkbox/radio rows in the chip's light DOM. */
   #addMenu(chip: HTMLElement, def: QuickFilterDef, picked?: Set<string>): void {
-    const rowTpl = this.$<HTMLTemplateElement>('template.qf-row-tpl');
     const menu = this.clone('template.qf-menu-tpl');
-    if (!rowTpl || !menu) return;
+    if (!menu) return;
 
     const single = def.select === 'single';
     menu.setAttribute('data-heading', def.label);
@@ -790,31 +796,25 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         ? picked.has(option.value) || option.value === fallback
         : !!option.selected || option.value === fallback;
 
-    const addRow = (option: QuickFilterOption): void => {
-      const row = rowTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-      const input = row.querySelector('input')!;
-      input.type = single ? 'radio' : 'checkbox';
-      input.value = option.value;
-      if (single) input.name = `qf-${def.id}`;
-      input.checked = isOn(option);
-      // Dimmed but still selectable: broadening a filter back out needs the way through.
-      if (option.available === false) row.setAttribute('data-unavailable', '');
-      row.querySelector('.qf-row-label')!.textContent = option.label;
-      menu.appendChild(row);
-    };
+    /* THE MENU draws its own items, from the DATA handed to it: it picks the
+       control from `data-select` and sorts the unreachable below a divider.
+       Stamping them here as well is what let a chip menu and a column heading
+       menu end up with different controls over the same field.
 
-    // Select all (multi only) · available · divider · unavailable. SPLIT, not sorted.
-    if (!single) this.#addSelectAll(menu, options);
+       `items()`, not `populate()`: this chip is a detached clone, so its menu
+       has not upgraded and an awaited populate would never settle.
+       TRAP T-one-field-one-filter-menu
+       TRAP T-custom-element-upgrade */
+    this.#pendingItems.push([
+      menu,
+      options.map((option) => ({
+        value: option.value,
+        label: option.label,
+        selected: isOn(option),
+        available: option.available,
+      })),
+    ]);
 
-    const reachable = options.filter((o) => o.available !== false);
-    const unreachable = options.filter((o) => o.available === false);
-    for (const option of reachable) addRow(option);
-    // Only with something on BOTH sides.
-    if (reachable.length && unreachable.length) {
-      const hr = this.clone('template.qf-divider-tpl');
-      if (hr) menu.appendChild(hr);
-    }
-    for (const option of unreachable) addRow(option);
 
     this.#addRemove(chip, menu, def);
 
@@ -905,16 +905,23 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#emitChange();
   };
 
+
+  /** Menus whose items wait for their chip to enter the list. */
+  #pendingItems: Array<[HTMLElement, unknown[]]> = [];
+
   /**
-   * "Select all / Clear all" at the top of a MULTI-select menu.
+   * Hand each waiting menu its items.
    *
-   * TRAP T-select-all-is-not-a-value — one row, not two.
-   * TRAP T-native-change-stops-at-the-host — stamped here, owned by the menu.
+   * A cloned `<sherpa-menu>` upgrades only on entering the page, so an
+   * `items()` call made while it was detached stamps nothing and is lost. Any
+   * caller of `#addMenu` calls this once its host is in the document.
+   * TRAP T-custom-element-upgrade
    */
-  #addSelectAll(menu: HTMLElement, options: readonly QuickFilterOption[]): void {
-    if (!options.length) return;
-    const row = this.clone('template.qf-all-tpl');
-    if (row) menu.appendChild(row);
+  #flushItems(): void {
+    for (const [menu, items] of this.#pendingItems) {
+      (menu as HTMLElement & { items?: (i: unknown[]) => void }).items?.(items);
+    }
+    this.#pendingItems = [];
   }
 
   /** Give a chip's menu its "Remove" action. TRAP T-remove-is-opt-in-and-a-footer-button */
@@ -980,6 +987,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   override onChange(): void {
     this.#syncSortFromAttrs();
     this.#syncGroupFromAttrs();
+    this.#syncFavouriteFromAttr();
   }
 
   /** Follow `data-sort-field`. TRAP T-a-chip-body-cycles-its-states — no event; empty SUSPENDS. */
@@ -1268,6 +1276,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       commit: true,
       options: this.#available.map((f) => ({ value: f.id, label: f.label })),
     });
+    // Its host is already in the page, so the items can go now.
+    this.#flushItems();
     add.querySelector('sherpa-menu')?.toggleAttribute('data-search', true);
   }
 
@@ -1337,7 +1347,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         this.emit('view-menu-open', {});
         break;
       case 'favourite':
-        this.#toggleFavourite(btn);
+        this.#toggleFavourite();
         break;
       case 'add':
         // sherpa-button opens its own slotted menu; nothing to do here.
@@ -1354,17 +1364,37 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (picked?.length) this.#addFilters(picked);
   };
 
-  /** Flip the star. TRAP T-favourite-star-swaps-its-glyph — colour alone cannot carry it. */
-  #toggleFavourite(btn: HTMLElement): void {
+  /**
+   * The star REPORTS the intent; `data-favourite` is the answer, IN.
+   *
+   * Locked, the bar never writes its own attribute — a host that owns the
+   * favourites list answers by setting it, and the click is only a request.
+   * TRAP T-the-star-reports-it-does-not-decide
+   */
+  #toggleFavourite(): void {
     const on = !this.hasAttribute('data-favourite');
-    this.toggleAttribute('data-favourite', on);
+    if (!this.hasAttribute('data-locked')) {
+      this.toggleAttribute('data-favourite', on);
+      this.#syncFavouriteFromAttr();
+    }
+    this.emit('view-favorite', { favourite: on });
+  }
+
+  /** Paint the star from the attribute.
+   *  TRAP T-favourite-star-swaps-its-glyph — colour alone cannot carry it. */
+  #syncFavouriteFromAttr(): void {
+    const btn = this.$<HTMLElement>('.act[data-act="favourite"]');
+    if (!btn) return;
+    const on = this.hasAttribute('data-favourite');
     // TRAP T-tokens-css-never-reaches-shadow — `active` is a real Style MODE,
     // which is why THIS sheet paints it.
     if (on) btn.setAttribute('data-status', 'active');
     else btn.removeAttribute('data-status');
-    btn.setAttribute('data-icon-start', on ? 'fa-solid fa-star' : 'fa-regular fa-star');
+    /* NAMED, not `fa-solid`/`fa-regular`: the resolver strips the weight token,
+       so both FA spellings resolved to the SAME outline drawing and the star
+       never filled. TRAP T-favourite-star-swaps-its-glyph */
+    btn.setAttribute('data-icon-start', on ? 'star-filled' : 'star');
     btn.setAttribute('aria-pressed', String(on));
-    this.emit('view-favorite', { favourite: on });
   }
 
   /** Put a CUSTOM filter on the bar — one whose value is TYPED, not picked. */
@@ -1505,6 +1535,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       chip.dataset['direction'] = 'asc';
       zone.appendChild(chip);
     }
+    // Both chips are in the zone now, so their menus have upgraded.
+    this.#flushItems();
   }
 
   /** One organise chip: a menu chip with single-select rows. */

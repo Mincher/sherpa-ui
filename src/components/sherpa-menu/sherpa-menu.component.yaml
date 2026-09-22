@@ -72,33 +72,17 @@ anatomy:
             class: rows
             part: rows
             slot: ""
-          - el: sherpa-container-footer
-            class: footer
-            part: footer
-            attrs:
-              data-align: end
+          - el: template
+            class: menu-check-tpl
             children:
-              - el: sherpa-button
-                class: today
-                part: today
-              - el: sherpa-button
-                class: clear
-                part: clear
-              - el: sherpa-button
-                class: remove
-                part: remove
-                attrs:
-                  data-status: critical
-              - el: span
-                class: footer-spacer
-              - el: sherpa-button
-                class: cancel
-                part: cancel
-              - el: sherpa-button
-                class: apply
-                part: apply
-                attrs:
-                  data-look: saturated
+              - el: label
+                class: menu-row
+                children:
+                  - el: input
+                    attrs:
+                      type: checkbox
+                  - el: span
+                    class: menu-row-label
     filter:
       - el: div
         class: menu sherpa-border-edges
@@ -165,33 +149,17 @@ anatomy:
             class: rows
             part: rows
             slot: ""
-          - el: sherpa-container-footer
-            class: footer
-            part: footer
-            attrs:
-              data-align: end
+          - el: template
+            class: menu-check-tpl
             children:
-              - el: sherpa-button
-                class: today
-                part: today
-              - el: sherpa-button
-                class: clear
-                part: clear
-              - el: sherpa-button
-                class: remove
-                part: remove
-                attrs:
-                  data-status: critical
-              - el: span
-                class: footer-spacer
-              - el: sherpa-button
-                class: cancel
-                part: cancel
-              - el: sherpa-button
-                class: apply
-                part: apply
-                attrs:
-                  data-look: saturated
+              - el: label
+                class: menu-row
+                children:
+                  - el: input
+                    attrs:
+                      type: checkbox
+                  - el: span
+                    class: menu-row-label
 props:
   - $type: prop
     name: data-align
@@ -348,7 +316,7 @@ capabilities:
   - $type: capability
     api: js-methods
     description: >-
-      callable from a view definition's state block (show, hide, toggle). See
+      callable from a view definition's state block (show, hide, toggle, items). See
       $extensions.sherpa.methods.
 events:
   - $type: event
@@ -385,6 +353,12 @@ events:
     detail:
       op: unknown
       value: unknown
+  - $type: event
+    name: menu-items
+    bubbles: true
+    composed: true
+    detail:
+      values: unknown
   - $type: event
     name: menu-back
     bubbles: true
@@ -426,6 +400,10 @@ $extensions:
       - $type: method
         name: toggle
         args: "trigger?: HTMLElement"
+      - $type: method
+        name: items
+        args: "next: readonly MenuItem[]"
+        description: items([...]) — the SYNCHRONOUS door, for a caller building a detached tree.
     figmaNodeId: "1156:29240"
     category: overlay
     variantAxes:

@@ -21,6 +21,16 @@ import '../sherpa-input-text/sherpa-input-text.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-container-footer/sherpa-container-footer.js';
 
+/** One item a menu draws for itself. */
+export interface MenuItem {
+  value: string;
+  /** What a reader sees. Defaults to `value`. */
+  label?: string;
+  selected?: boolean;
+  /** `false` sorts it below the divider, dimmed but still selectable. */
+  available?: boolean;
+}
+
 export class SherpaMenu extends SherpaElement {
   static override css = new URL('./sherpa-menu.css', import.meta.url);
   static override html = new URL('./sherpa-menu.html', import.meta.url);
@@ -77,6 +87,11 @@ export class SherpaMenu extends SherpaElement {
 
   override onRender(): void {
     this.#sync();
+    /* Items given BEFORE this element had a shadow tree. A caller building a
+       chip clones an UNUPGRADED <sherpa-menu>, so there is no template to
+       stamp from until it enters the page.
+       TRAP T-custom-element-upgrade */
+    this.#stampItems();
     const card = this.#card();
     if (!card) return;
     card.addEventListener('toggle', this.#onToggle as EventListener);
@@ -294,6 +309,93 @@ export class SherpaMenu extends SherpaElement {
     // The query's comparison — TRAP T-one-comparison-rule-for-query-and-ui.
     const wanted = valueSet(next);
     for (const input of this.#inputs()) input.checked = wanted.has(input.value);
+  }
+
+  /**
+   * populate([{ value, label, selected?, available? }]) — the menu's items.
+   *
+   * THE MENU chooses the markup, from `data-select` and from what each value
+   * is. A caller hands over DATA; handing over markup is what let a chip menu
+   * and a column heading menu drift into different controls over the same
+   * field. TRAP T-one-field-one-filter-menu
+   */
+  protected override renderData(data: unknown): void {
+    this.#items = Array.isArray(data) ? (data as MenuItem[]) : [];
+    this.#stampItems();
+  }
+
+  /**
+   * items([...]) — the SYNCHRONOUS door, for a caller building a detached tree.
+   *
+   * `populate()` awaits `rendered`, and a cloned `<sherpa-menu>` does not
+   * upgrade until it enters the page — so the await never settles and the menu
+   * stays empty. This records the items NOW and stamps what it can; `onRender`
+   * stamps the rest. TRAP T-custom-element-upgrade
+   */
+  items(next: readonly MenuItem[]): void {
+    this.#items = [...next];
+    this.#stampItems();
+  }
+
+  /** The items last given. Kept, so a late render can still stamp them. */
+  #items: MenuItem[] = [];
+
+  /**
+   * Stamp `#items` into the rows slot. Needs the shadow template, so it is
+   * safe to call before this element has one — it simply waits for onRender.
+   */
+  #stampItems(): void {
+    if (!this.#items.length) return;
+    const single = this.dataset['select'] === 'single';
+    const tpl = this.$<HTMLTemplateElement>(
+      single ? 'template.menu-radio-tpl' : 'template.menu-check-tpl',
+    );
+    if (!tpl?.content.firstElementChild) return;
+
+    const name = `sherpa-menu-${this.dataset['heading'] ?? 'group'}`;
+    const stamp = (item: MenuItem): HTMLElement => {
+      const row = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      const box = row.querySelector('input')!;
+      box.value = item.value;
+      box.checked = !!item.selected;
+      if (single) box.name = name;
+      // Dimmed, never disabled: ticking it is how a reader broadens back out.
+      if (item.available === false) row.setAttribute('data-unavailable', '');
+      row.querySelector('.menu-row-label')!.textContent = item.label ?? item.value;
+      return row;
+    };
+
+    /* SELECT ALL is the MENU's row, not the caller's — one of the two used to
+       add its own and the other did not, so the same field read two ways.
+       TRAP T-select-all-is-not-a-value */
+    const all = !single && this.#items.length ? this.clone('template.menu-all-tpl') : null;
+
+    const reachable = this.#items.filter((i) => i.available !== false);
+    const unreachable = this.#items.filter((i) => i.available === false);
+    const out: Element[] = all ? [all, ...reachable.map(stamp)] : reachable.map(stamp);
+    // Only with something on BOTH sides.
+    if (reachable.length && unreachable.length) {
+      const hr = this.clone('template.menu-divider-tpl');
+      if (hr) out.push(hr);
+    }
+    out.push(...unreachable.map(stamp));
+    /* KEEP what the menu does not own. A caller's own rows — a Select-all, a
+       Remove action — live here too, and a blanket replace ate them the moment
+       this stamped late. Only the menu's own items are replaced. */
+    for (const node of [...this.children]) {
+      if (node.classList.contains('menu-row') || node.classList.contains('menu-divider')) {
+        node.remove();
+      }
+    }
+    /* FIRST, keeping whatever the caller put below — in practice a Remove
+       action, which a chip appends after this. */
+    this.prepend(...out);
+
+    /* SAY SO. A host reads its own face off the menu's values, and pre-ticked
+       rows fire no native change — so a chip built before its items arrived
+       would sit with an empty caret over a ticked row.
+       TRAP T-chip-empty-check-waits-for-onconnect */
+    this.emit('menu-items', { values: this.values });
   }
 
   /* ── Private ─────────────────────────────────────────────────────── */

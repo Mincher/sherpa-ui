@@ -99,7 +99,7 @@ anatomy:
                     data-act: favourite
                     data-type: icon
                     data-group: start
-                    data-icon-start: fa-regular fa-star
+                    data-icon-start: star
                     aria-label: Favourite this view
                     aria-pressed: "false"
                 - el: sherpa-button
@@ -145,13 +145,18 @@ props:
   - $type: prop
     name: data-favourite
     type: string
-    kind: style
-    description: the ★ is lit (view type)
+    kind: content
+    description: the ★ is lit (view type) — the value, IN
   - $type: prop
     name: data-group-field
     type: string
     kind: content
     description: the field the Group chip points at (the standard name)
+  - $type: prop
+    name: data-locked
+    type: string
+    kind: style
+    description: the host owns the ★; report the click, never self-set
   - $type: prop
     name: data-no-actions
     type: string

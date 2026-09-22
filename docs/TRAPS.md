@@ -53,6 +53,7 @@ attributes only, written before append.
 - Site: `src/core/sherpa-element.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 ### T-tokens-css-never-reaches-shadow
 
 A bare `[data-status]` rule in `tokens.css` is loaded into the **document** and
@@ -2648,8 +2649,7 @@ under the reader depending on what was ticked. `ALL_LABEL` is "Select all",
 always.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
 ### T-drill-crumbs-carry-no-href
 
 The drill trail is a real `<sherpa-breadcrumbs>`, which draws the separator and
@@ -2983,7 +2983,6 @@ The same non-composed `change` is why select-all is handled in the menu
 its own as composed (`T-range-switch-swaps-not-rebuilds`).
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
 ### T-clear-empties-both-body-shapes
 
@@ -3073,7 +3072,7 @@ for those**. Without replaying them at connect the caret label stayed blank
 until the user opened the menu.
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 ### T-value-label-is-the-callers-words
 
 `valueLabel` is the text shown in the CARET button — the chip's PICKED VALUE.
@@ -4801,7 +4800,15 @@ subscribes. It returns whether it restored, for a caller that wants to tell a
 first-time visitor apart from a returning one.
 
 A stored value outlives the code that wrote it, so a shape this version does not
-understand is DROPPED rather than half-applied.
+understand is DROPPED rather than half-applied — and the unreadable key is
+forgotten, so the next write starts clean.
+
+That took a `guard`. Until it existed this paragraph was a claim the code did
+not keep: `persist` caught a JSON PARSE error and nothing else, so a value that
+parsed into the WRONG SHAPE was restored in full. A boolean survives that gap.
+A list of `{view,label}` rows re-shaped between releases does not — it reaches
+the nav rail as rows with no label. `guard` is optional, and without one the old
+behaviour stands: any parsed value is restored.
 
 This exists because the alternative is what every app was writing: a key constant, a
 try/catch to read, a try/catch to write, and a wrapper to keep the two in step. Four
@@ -5151,7 +5158,100 @@ brand purple from the default ink**, so colour alone cannot carry it.
 `aria-pressed` carries the same fact to a screen reader, which is why the star is
 a TOGGLE button rather than a plain one.
 
+For three months it swapped NOTHING. The two states were written as
+`fa-solid fa-star` and `fa-regular fa-star`, and `iconName()` strips `solid`
+and `regular` as weight tokens before resolving — so both spellings resolved to
+the one `star` drawing. The attribute changed on every click and the path never
+did. The icons are Figma's, and the set holds `star` AND `star-filled` as two
+separate drawings, so the fix is to NAME them:
+
+```ts
+btn.setAttribute('data-icon-start', on ? 'star-filled' : 'star');
+```
+
+A test that reads `data-icon-start` cannot catch this. The test reads the
+rendered `<path d>`.
+
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Test: `test/e2e/reforged-nav-favorites-recents.spec.ts`
+
+### T-the-star-reports-it-does-not-decide
+
+The ★ used to DERIVE its own on/off — it read its own `data-favourite`, flipped
+it, and painted. That is right only while the toolbar is the sole owner of the
+favourites list, and it never is: a favourite is a row in the nav rail, saved
+across sessions, and a reader can remove it from the rail with the toolbar
+nowhere near.
+
+`data-favourite` was also **not observed**, so a host that set it got no
+repaint. The attribute looked like an input and behaved like an output, which
+is what hid the first half.
+
+So the split is the standard one:
+
+| | |
+|---|---|
+| `data-favourite` | the value, IN — observed, and `#syncFavouriteFromAttr` paints it |
+| `view-favorite` | the INTENT, out — a request, not a notification |
+| `data-locked` | the host owns the list; the bar reports and never self-sets |
+
+Unlocked, the bar still flips its own attribute, so a page with no favourites
+list keeps working exactly as before.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- See also: `T-session-list-is-a-view-not-a-copy` — where the list itself lives
+
+### T-an-expandable-row-is-not-a-destination
+
+A nav row with children GROUPS them. It is not a page.
+
+The whole row toggles — not only the chevron. Clicking the body used to
+navigate, so `Favorites` and `Recent` would have opened a view if either had
+ever carried an `href`, and the two behaviours sat a few pixels apart on the
+same row.
+
+An expandable row also drops its `href` even when one is configured. A row
+rendered as `<a href>` that goes nowhere lies to a middle-click, to "open in
+new tab", and to a screen reader reading out a link.
+
+This is a component rule, not a config convention, because a config can always
+be written wrong: a row GAINS children at runtime (Favorites does, on the first
+★) and must stop being a link at the same moment.
+
+- Site: `src/components/sherpa-nav-item/sherpa-nav-item.ts`
+
+### T-session-list-is-a-view-not-a-copy
+
+`session.list(pointer)` returns a VIEW over the stored array, not a copy of it.
+Nothing is cached: `all` reads the pointer every time and hands back a fresh
+copy, and every write goes through `SessionStore.set`, so subscribers fire and
+a persisted pointer reaches storage.
+
+That matters because the obvious alternative — hold the array, mutate it, write
+it back — silently loses whatever another writer did in between, and never
+notifies anyone.
+
+`all` returning a COPY is the other half. A caller that pushes onto it changes
+nothing, which is what you want: the list is edited through `add` / `remove` /
+`toggle` or not at all.
+
+Three options carry the difference between a Favourites rail and a Recents one:
+
+| | |
+|---|---|
+| `by` | the field that IDENTIFIES an entry, so a re-add replaces rather than doubles |
+| `max` | keep at most N — the OLDEST end is trimmed, whichever end that is |
+| `front` | newest FIRST (Recents). Default false — newest last |
+
+Recents is `{ by: 'view', max: 5, front: true }`. Favourites is `{ by: 'view' }`.
+Same class.
+
+Without `by`, identity is deep equality by `JSON.stringify` — right for a stored
+entry, which is plain JSON by definition, and wrong for anything holding a
+function or a Date.
+
+- Site: `src/core/session.ts`
+- Test: `test/unit/session-list.test.mjs`
 
 ### T-clear-all-resets-organise-too
 

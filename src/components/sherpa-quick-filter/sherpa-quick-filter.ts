@@ -46,6 +46,10 @@ export class SherpaQuickFilter extends SherpaElement {
     this.$('.caret')?.addEventListener('click', this.#onCaret);
     // The menu lives in the light DOM; its events bubble up through the host.
     this.addEventListener('menu-change', this.#onMenuChange as EventListener);
+    /* The menu's rows can arrive AFTER this chip connects — a toolbar hands
+       them over once the chip is in the page — and pre-ticked rows fire no
+       native change. TRAP T-chip-empty-check-waits-for-onconnect */
+    this.addEventListener('menu-items', this.#onMenuItems as EventListener);
     // A FILTER menu's condition is part of what this chip reads back.
     this.addEventListener('condition-change', this.#onCondition as EventListener);
     this.addEventListener('menu-open', this.#onMenuToggle as EventListener);
@@ -249,6 +253,22 @@ export class SherpaQuickFilter extends SherpaElement {
    * Go" narrows just as much, and a chip that stays off while its menu filters
    * is a chip that lies. TRAP T-an-operator-decides-pick-or-type
    */
+  /**
+   * The menu just stamped its rows — read this chip's FACE off them.
+   *
+   * The LABEL and the badge only. A chip's on/off is the host's to set — a
+   * filter added from the Add menu arrives ON with nothing ticked, so deriving
+   * it here would switch it straight back off.
+   * TRAP T-chip-empty-check-waits-for-onconnect
+   */
+  #onMenuItems = (): void => {
+    const values = (this.menu?.values ?? []) as string[];
+    if (!values.length) return;
+    this.#syncLabelForSelection(values);
+    this.#syncCountTip(values);
+    this.#syncBadge(values.length);
+  };
+
   #onCondition = (): void => {
     this.#applySelection((this.menu?.values ?? []) as string[]);
   };

@@ -196,6 +196,14 @@
  * `::slotted` is the only way in.
  * TRAP T-unavailable-value-sorts-below-a-divider
  */
+/* The MENU's OWN rows, stamped by populate()/items(). They are LIGHT DOM, so
+   `::slotted` is the only way in. TRAP T-one-field-one-filter-menu */
+.rows ::slotted(.menu-row) {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+}
+
 .rows ::slotted([data-unavailable]) {
   color: var(--sherpa-theme-content-body-2, #b3b3c3);
 }

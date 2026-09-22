@@ -99,6 +99,27 @@
       <slot></slot>
     </div>
 
+    <!-- ITEM PROTOTYPES — the menu stamps into its own rows slot from the DATA
+         it is given, choosing by `data-select` and by what the value is. A
+         caller hands over values; it never hands over markup, which is how a
+         chip menu and a column heading menu drifted into different controls.
+         No `id`, so the multi-template parser leaves them alone.
+         TRAP T-one-field-one-filter-menu -->
+    <template class="menu-check-tpl">
+      <label class="menu-row"><input type="checkbox" /><span class="menu-row-label"></span></label>
+    </template>
+    <template class="menu-radio-tpl">
+      <label class="menu-row"><input type="radio" /><span class="menu-row-label"></span></label>
+    </template>
+    <template class="menu-divider-tpl"><hr class="menu-divider" /></template>
+    <!-- SELECT ALL leads a MULTIPLE menu. Its label never moves, and a single-
+         select menu never gets one. TRAP T-select-all-is-not-a-value -->
+    <template class="menu-all-tpl">
+      <!-- `qf-all` too: it is the name the rest of the system knows this row
+           by, and renaming it would be a change nobody asked for. -->
+      <label class="menu-row menu-all qf-all"><input type="checkbox" /><span class="menu-row-label">Select all</span></label>
+    </template>
+
     <!--
       FOOTER — the composed <sherpa-container-footer>, which owns the action-bar
       geometry and hides itself when empty. All three buttons are the button's
@@ -171,6 +192,27 @@
     <div class="rows" part="rows">
       <slot></slot>
     </div>
+
+    <!-- ITEM PROTOTYPES — the menu stamps into its own rows slot from the DATA
+         it is given, choosing by `data-select` and by what the value is. A
+         caller hands over values; it never hands over markup, which is how a
+         chip menu and a column heading menu drifted into different controls.
+         No `id`, so the multi-template parser leaves them alone.
+         TRAP T-one-field-one-filter-menu -->
+    <template class="menu-check-tpl">
+      <label class="menu-row"><input type="checkbox" /><span class="menu-row-label"></span></label>
+    </template>
+    <template class="menu-radio-tpl">
+      <label class="menu-row"><input type="radio" /><span class="menu-row-label"></span></label>
+    </template>
+    <template class="menu-divider-tpl"><hr class="menu-divider" /></template>
+    <!-- SELECT ALL leads a MULTIPLE menu. Its label never moves, and a single-
+         select menu never gets one. TRAP T-select-all-is-not-a-value -->
+    <template class="menu-all-tpl">
+      <!-- `qf-all` too: it is the name the rest of the system knows this row
+           by, and renaming it would be a change nobody asked for. -->
+      <label class="menu-row menu-all qf-all"><input type="checkbox" /><span class="menu-row-label">Select all</span></label>
+    </template>
 
     <!--
       FOOTER — the composed <sherpa-container-footer>, which owns the action-bar

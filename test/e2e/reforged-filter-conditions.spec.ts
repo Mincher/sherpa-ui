@@ -225,12 +225,14 @@ test('a column heading opens the SAME menu, over the column own values', async (
         .querySelectorAll<HTMLOptionElement>('.control option')].map((o) => o.value),
       op: menu.op,
       // The rows are the COLUMN's own distinct values — deduped and sorted.
-      rows: [...menu.querySelectorAll('.head-value-label')].map((n) => n.textContent),
+      // The MENU's own rows now, the same ones a filter chip gets.
+      rows: [...menu.querySelectorAll('.menu-row:not(.qf-all) .menu-row-label')]
+        .map((n) => n.textContent),
     };
 
     // Tick two and apply: SEVERAL picks read as `in`.
     for (const value of ['Gold', 'Silver']) {
-      const box = [...menu.querySelectorAll<HTMLInputElement>('.head-value-row input')]
+      const box = [...menu.querySelectorAll<HTMLInputElement>('.menu-row input')]
         .find((b) => b.value === value)!;
       box.checked = true;
     }
@@ -451,9 +453,10 @@ test('a column menu offers the WHOLE column, never just the drawn rows', async (
       (window as unknown as { __settled: () => Promise<void> }).__settled();
     const menu = (): HTMLElement =>
       el.shadowRoot!.querySelector('.head-cell[data-field="owner"] .head-filter sherpa-menu')!;
-    const read = (): Array<string> => [...menu().children].map((n) =>
-      n.tagName === 'HR' ? '---'
-        : `${n.querySelector('.head-value-label')?.textContent}${
+    const read = (): Array<string> => [...menu().children]
+      .filter((n) => !n.classList.contains('qf-all'))
+      .map((n) => n.tagName === 'HR' ? '---'
+        : `${n.querySelector('.menu-row-label')?.textContent}${
           n.hasAttribute('data-unavailable') ? ' [dim]' : ''}`);
 
     // EVERY owner is on the page.
