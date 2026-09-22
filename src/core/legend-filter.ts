@@ -27,6 +27,8 @@ interface Contributor {
 interface ChipHost extends EventTarget {
   /** ONE chip, never the whole map — TRAP T-one-field-does-not-own-the-whole-map. */
   setChipValues: (id: string, picks: readonly string[] | undefined) => void;
+  /** Re-announce the whole bar, because `setChipValues` is silent. */
+  report?: () => void;
 }
 
 export interface LegendFilterOptions {
@@ -97,6 +99,12 @@ export function bindLegendFilter(
        does not name, and this binding only owns its own field.
        TRAP T-one-field-does-not-own-the-whole-map */
     chip.el.setChipValues(chip.id, on);
+    /* …and SAY SO. `setChipValues` is silent, which stops an echo but also
+       left the view holding the chip's OLD clause: switching a row back on
+       cleared `legend:plan` while `chips` still said "plan in (the other
+       three)", so the row came back at zero.
+       TRAP T-a-silent-write-still-needs-a-way-to-report */
+    chip.el.report?.();
   };
 
   const onLegendClick = (): void => {

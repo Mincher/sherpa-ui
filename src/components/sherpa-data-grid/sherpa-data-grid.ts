@@ -112,6 +112,8 @@ export class SherpaDataGrid extends SherpaElement {
     'data-filter-fields',
     // What a toolbar chip is matching on, so its hits mark in the cells.
     'data-needles',
+    // The WHOLE column's values, so a filter menu is never a one-way door.
+    'data-column-values',
     'data-selectable',
     // Single vs multiple changes the CONTROL each row draws, so it re-renders.
     'data-select',
@@ -187,6 +189,7 @@ export class SherpaDataGrid extends SherpaElement {
 
   override onChange(): void {
     this.#syncNeedles();
+    this.#syncColumnValues();
     if (this.#columns.length) this.#render();
   }
 
@@ -197,6 +200,7 @@ export class SherpaDataGrid extends SherpaElement {
     this.#rows = Array.isArray(cfg.rows) ? cfg.rows : [];
     this.#key = typeof cfg.key === 'string' ? cfg.key : null;
     this.#syncNeedles();
+    this.#syncColumnValues();
     this.#actions = Array.isArray(cfg.actions) ? cfg.actions : [];
     this.toggleAttribute('data-actions', this.#actions.length > 0);
     // TRAP T-grid-populate-keeps-column-filters — header-row filters clear,
@@ -393,7 +397,12 @@ export class SherpaDataGrid extends SherpaElement {
     menu.setAttribute('data-removable', '');
 
     const label = col.header ?? col.field;
-    menu.setAttribute('data-heading', `Filter ${label}`);
+    /* The FIELD, as a filter chip's own menu heads itself. The card is plainly
+       a filter menu — a condition row, value rows and Apply — so a "Filter "
+       prefix names the verb twice and makes one menu read unlike the other.
+       The CHIP on the heading keeps its `aria-label` of "Filter <field>", which
+       is where that verb belongs. TRAP T-one-field-one-filter-menu */
+    menu.setAttribute('data-heading', label);
     // A top-layer popover escapes the scroller, inside the HOST's named region.
     const bounds = this.dataset['bounds'];
     if (bounds) menu.setAttribute('data-bounds', bounds);
@@ -440,6 +449,12 @@ export class SherpaDataGrid extends SherpaElement {
     if (kind === 'text') {
       menu.setAttribute('data-type', 'filter');
       menu.setAttribute('data-search', '');
+      /* THE SAME MENU a filter chip opens for this field, so it carries the
+         same flags: MULTIPLE values (checkbox rows, and several picks become
+         `in`), and a Clear, which is the only way back to "no filter" once a
+         value is ticked. TRAP T-one-field-one-filter-menu */
+      menu.setAttribute('data-select', 'multiple');
+      menu.setAttribute('data-clearable', '');
       /* `in` / `notin` are how SEVERAL picks read; the menu's own condition
          stays `eq` / `ne`, because its dropdown offers no "is one of" — the
          ticked list IS the "one of". */
@@ -505,20 +520,59 @@ export class SherpaDataGrid extends SherpaElement {
         : [],
     );
 
-    const values = [...new Set(
+    // What the ROWS ON SCREEN carry — everything else is unreachable RIGHT NOW.
+    const present = new Set(
       this.#rows
         .map((row) => row[field])
         .filter((v) => v != null && v !== '')
         .map((v) => String(v)),
-    )].sort();
+    );
 
-    for (const value of values) {
+    /* The WHOLE column, when a host supplies it. Building the list from the
+       drawn rows alone made every filter a one-way door: narrow on another
+       field and three of four owners vanished from the Owner menu, with no way
+       to tick them back. TRAP T-unavailable-value-sorts-below-a-divider */
+    const declared = this.#columnValues.get(field);
+    const values = declared?.length ? [...declared] : [...present].sort();
+
+    const add = (value: string, available: boolean): void => {
       const row = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       const box = row.querySelector('input')!;
       box.value = value;
       box.checked = on.has(value);
+      // Dimmed, never disabled: ticking it is how a reader broadens back out.
+      if (!available) row.setAttribute('data-unavailable', '');
       row.querySelector('.head-value-label')!.textContent = value;
       menu.appendChild(row);
+    };
+
+    const reachable = values.filter((v) => present.has(v));
+    const unreachable = values.filter((v) => !present.has(v));
+    for (const value of reachable) add(value, true);
+    // Only with something on BOTH sides.
+    if (reachable.length && unreachable.length) {
+      const hr = this.clone('template.head-divider-tpl');
+      if (hr) menu.appendChild(hr);
+    }
+    for (const value of unreachable) add(value, false);
+  }
+
+  /** The WHOLE column's values, by field — see `data-column-values`. */
+  #columnValues = new Map<string, string[]>();
+
+  /**
+   * Parse `data-column-values`: `field:a|b|c` per entry, newline separated.
+   *
+   * A pipe inside an entry and a newline between them, because a value may
+   * hold a comma or a space — a customer name is exactly that.
+   */
+  #syncColumnValues(): void {
+    this.#columnValues.clear();
+    for (const entry of (this.dataset['columnValues'] ?? '').split('\n')) {
+      const at = entry.indexOf(':');
+      if (at < 1) continue;
+      const values = entry.slice(at + 1).split('|').filter(Boolean);
+      if (values.length) this.#columnValues.set(entry.slice(0, at), values);
     }
   }
 

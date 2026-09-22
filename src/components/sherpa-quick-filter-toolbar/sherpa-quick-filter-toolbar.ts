@@ -1140,6 +1140,21 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
   }
 
+  /**
+   * report() — re-announce the WHOLE bar, as a reader's own change would.
+   *
+   * `setChipValues` is SILENT so a host writing a chip cannot be echoed back
+   * into its own handler. That silence left a hole: a host that writes one chip
+   * and expects the view to re-query had no way to say "now read me". The
+   * legend binding is the case — it wrote "everything on, so nothing ticked"
+   * and the view kept the old three-of-four clause, hiding the row the reader
+   * had just switched back on.
+   * TRAP T-a-silent-write-still-needs-a-way-to-report
+   */
+  report(): void {
+    this.#emitChange();
+  }
+
   /** One chip's FILTER menu, or null when it has none. */
   #filterMenu(id: string): (HTMLElement & { conditionValue: string }) | null {
     for (const chip of this.#chips()) {

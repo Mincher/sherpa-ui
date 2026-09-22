@@ -553,7 +553,12 @@ export class SherpaMenu extends SherpaElement {
       for (const a of ['data-value', 'data-value-start', 'data-value-end']) cal.removeAttribute(a);
     }
     this.emit('menu-clear', {});
-    if (!this.#commits) this.emit('menu-change', { values: this.values });
+    /* ALWAYS, even on a COMMITTING menu. Clear is an action ON THE FILTER, not
+       an edit to a draft: without this the menu emptied itself and the query
+       kept every value, so the card and the rows disagreed until the reader
+       found Apply. Apply and Cancel still own the row TICKS.
+       TRAP T-every-chip-menu-gets-clear-and-search */
+    this.emit('menu-change', { values: this.values });
   };
 
   /** Drive the slotted calendar to today; stays OPEN.

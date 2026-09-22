@@ -221,8 +221,8 @@ capabilities:
   - $type: capability
     api: js-methods
     description: >-
-      callable from a view definition's state block (setChipValues, supersede, setClause, available,
-      addCustomFilter, clearAll, organise). See $extensions.sherpa.methods.
+      callable from a view definition's state block (setChipValues, supersede, setClause, report,
+      available, addCustomFilter, clearAll, organise). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: quick-filter-change
@@ -323,6 +323,10 @@ $extensions:
         name: setClause
         args: "id: string, clause: readonly [string, FilterOp, unknown] | null"
         description: setClause(id, clause) — set ONE condition chip from a ready FilterClause.
+      - $type: method
+        name: report
+        args: ""
+        description: report() — re-announce the WHOLE bar, as a reader's own change would.
       - $type: method
         name: available
         args: "defs: QuickFilterDef[]"

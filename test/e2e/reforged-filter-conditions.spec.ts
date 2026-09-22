@@ -434,3 +434,69 @@ test('the badge is legible, and the tooltip SPELLS the condition', async ({ page
     badge: '!∷', weight: '600', tip: 'Does not contain: Gold',
   });
 });
+
+test('a column menu offers the WHOLE column, never just the drawn rows', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>; populate(d: unknown): void;
+    };
+    el.setAttribute('data-column-filters', '');
+    /* The WHOLE column, which only the host knows: the grid is handed a PAGE.
+       TRAP T-unavailable-value-sorts-below-a-divider */
+    el.setAttribute('data-column-values', 'owner:Ravi Menon|Dana Whitlock|Unassigned');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+
+    const settle = (): Promise<void> =>
+      (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const menu = (): HTMLElement =>
+      el.shadowRoot!.querySelector('.head-cell[data-field="owner"] .head-filter sherpa-menu')!;
+    const read = (): Array<string> => [...menu().children].map((n) =>
+      n.tagName === 'HR' ? '---'
+        : `${n.querySelector('.head-value-label')?.textContent}${
+          n.hasAttribute('data-unavailable') ? ' [dim]' : ''}`);
+
+    // EVERY owner is on the page.
+    el.populate({
+      columns: [{ field: 'owner', header: 'Owner' }],
+      rows: [{ owner: 'Ravi Menon' }, { owner: 'Dana Whitlock' }, { owner: 'Unassigned' }],
+    });
+    await settle();
+    const whole = read();
+
+    // A filter elsewhere leaves one owner drawn — the other two must STAY.
+    el.populate({
+      columns: [{ field: 'owner', header: 'Owner' }],
+      rows: [{ owner: 'Ravi Menon' }],
+    });
+    await settle();
+    const narrowed = read();
+
+    return {
+      whole, narrowed,
+      // The same flags a filter CHIP's menu carries for the same field.
+      flags: {
+        type: menu().getAttribute('data-type'),
+        select: menu().getAttribute('data-select'),
+        clearable: menu().hasAttribute('data-clearable'),
+        search: menu().hasAttribute('data-search'),
+        heading: menu().getAttribute('data-heading'),
+      },
+      // Dimmed is not DISABLED: ticking it is how a reader broadens back out.
+      stillSelectable: [...menu().querySelectorAll<HTMLInputElement>('.head-value-row input')]
+        .every((b) => !b.disabled),
+    };
+  });
+
+  expect(r.whole).toEqual(['Ravi Menon', 'Dana Whitlock', 'Unassigned']);
+  /* THE POINT: three values still, with the two no drawn row carries sorted
+     below a divider rather than dropped. Dropping them makes the current
+     filter a one-way door. */
+  expect(r.narrowed).toEqual([
+    'Ravi Menon', '---', 'Dana Whitlock [dim]', 'Unassigned [dim]',
+  ]);
+  expect(r.stillSelectable).toBe(true);
+  expect(r.flags).toEqual({
+    type: 'filter', select: 'multiple', clearable: true, search: true, heading: 'Owner',
+  });
+});

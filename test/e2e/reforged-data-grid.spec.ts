@@ -1254,7 +1254,11 @@ test('a TEXT column heading offers a filter menu of DevExtreme conditions', asyn
     'eq', 'ne', 'contains', 'notcontains', 'startswith', 'endswith',
   ]);
   expect(r.commits).toBe(true);
-  expect(r.heading).toBe('Filter Name');
+  /* The FIELD, exactly as a filter CHIP heads its own menu for the same field.
+     The card is plainly a filter menu, so a "Filter " prefix names the verb
+     twice and makes one menu read unlike the other — the chip on the heading
+     keeps that verb in its aria-label. TRAP T-one-field-one-filter-menu */
+  expect(r.heading).toBe('Name');
   expect(r.locked).toBe(true);
 });
 

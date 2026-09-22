@@ -190,6 +190,24 @@
 :host([data-takes="text"]) .search { display: none; }
 
 
+/* ── A value no drawn row carries ──────────────────────────────────────
+ * Dimmed, not disabled: ticking it is how a reader broadens the filter back
+ * out. Ink, not opacity, which compounds in dark mode. Slotted content, so
+ * `::slotted` is the only way in.
+ * TRAP T-unavailable-value-sorts-below-a-divider
+ */
+.rows ::slotted([data-unavailable]) {
+  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+}
+
+.rows ::slotted(hr) {
+  inline-size: 100%;
+  margin-block: var(--sherpa-display-mode-space-2xs, 4px);
+  border: 0;
+  border-block-start: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+    var(--sherpa-style-border-base, #b3b3c3);
+}
+
 /* `display: none`, not a filter class, so a hidden row also leaves the tab
    order and the accessibility tree. */
 .rows ::slotted([data-filtered-out]) { display: none; }

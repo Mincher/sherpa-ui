@@ -1707,6 +1707,39 @@ way.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
+### T-a-silent-write-still-needs-a-way-to-report
+
+A SILENT setter needs a companion that says "now read me".
+
+Silence is right: `setChipValues`, `setColumnFilter`, `select` and `values`
+all write without emitting, so a host that set a value is not echoed back into
+its own handler and a filter is not applied twice. But silence is only half the
+contract. A host that writes one control and needs the VIEW to re-query has no
+way to ask for that, and the two drift apart while both look correct.
+
+The legend binding is the case that proved it. Switching a row back on cleared
+its own `legend:plan` part and wrote "nothing ticked" onto the mirrored chip —
+correctly, since everything-on is no filter. The chip went quiet, so the view
+kept the clause it had built from the chip's LAST state, `plan in (the other
+three)`, and the row came back reading zero. Every visible control said "no
+plan filter" while the query still held one.
+
+`SherpaQuickFilterToolbar.report()` is the door: it re-announces the whole bar,
+exactly as a reader's own change would. The binding writes the chip, then says
+so.
+
+**This is a shape, not one bug.** `sherpa-app-header.values` and the grid's
+`setColumnFilter` / `clearColumnFilter` / `select` are silent with no
+counterpart. Each is a place a host can write state that nothing downstream
+will ever hear about.
+
+See `T-grid-read-without-write-is-half-an-api` for the other half of the same
+idea — a value you can read and not write.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/core/legend-filter.ts`
+- Site: `test/unit/legend-filter.test.mjs`
+
 ### T-grid-read-without-write-is-half-an-api
 
 `setColumnFilter` is the counterpart of `columnClause()`: **a value you can read
@@ -4904,8 +4937,18 @@ Such a value is sorted BELOW A DIVIDER rather than DROPPED, for two reasons:
 - a user cannot broaden a filter back out through a list that hid the way —
   dropping the unreachable values makes the current filter a one-way door
 
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+**A COLUMN heading's menu follows the same rule**, and could not at first: it
+built its list from `this.#rows`, which is the PAGE the grid was handed. Filter
+on another field and three of four owners vanished from the Owner menu. Only
+the host knows the whole column, so it hands it over in `data-column-values`
+and the grid splits it into reachable and unreachable exactly as a chip does.
 
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `examples/views/records.js`
+- Site: `test/e2e/reforged-filter-conditions.spec.ts`
 ### T-number-and-date-lead-with-a-range-switch
 
 `QuickFilterDef.kind` picks what a chip's menu holds:
@@ -4983,7 +5026,7 @@ hundred owners to find one is the case it exists for. A CALENDAR menu is the
 exception (`T-calendar-header-has-no-heading`).
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 ### T-remove-is-opt-in-and-a-footer-button
 
 A chip menu's "Remove" is a FOOTER BUTTON, not a list row: a CALENDAR menu has

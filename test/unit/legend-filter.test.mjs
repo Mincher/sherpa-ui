@@ -35,6 +35,11 @@ const chipStub = () => {
      binding that owns one field must not clobber the others.
      TRAP T-one-field-does-not-own-the-whole-map */
   el.setChipValues = (id, picks) => { if (picks !== undefined) el.values[id] = picks; };
+  /* `setChipValues` is SILENT, so a host that writes a chip needs a way to say
+     "now read me" — without it the view keeps the clause it built from the
+     chip's LAST state. TRAP T-a-silent-write-still-needs-a-way-to-report */
+  el.reported = 0;
+  el.report = () => { el.reported += 1; };
   el.off = (id) => !el.values[id]?.length;
   el.pick = (id, picks) => {
     el.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { values: { [id]: picks } } }));
@@ -249,4 +254,33 @@ test('one legend does not switch off another field\'s chip', () => {
   status.click('churned', false);
   assert.deepEqual(chip.values['plan'], ['Free'], 'plan survived a status change');
   assert.deepEqual(chip.values['status'], ['active', 'trial', 'suspended']);
+});
+
+
+/* ── A silent write still has to be announced ───────────────────────── */
+
+test('the binding REPORTS after it writes the chip', () => {
+  const parts = new Map();
+  const source = { contribute: (k, f) => (f ? parts.set(k, f) : parts.delete(k)) };
+  const legend = legendStub();
+  const chip = chipStub();
+  bindLegendFilter(legend, source, {
+    field: 'plan', values: ['Free', 'Starter', 'Pro'], chip: { el: chip, id: 'plan' },
+  });
+
+  // Switch one off: the chip is written with the OTHER two…
+  legend.click('Starter', false);
+  assert.deepEqual(chip.values['plan'], ['Free', 'Pro']);
+  assert.deepEqual(parts.get('legend:plan'), ['plan', 'ne', 'Starter']);
+  assert.equal(chip.reported, 1, 'the write was announced');
+
+  /* …and back on. Everything-on is NO filter, so the chip is emptied — and
+     that emptying has to be announced too, or the view keeps the clause it
+     built from the chip's LAST state, `plan in (Free, Pro)`, and the row comes
+     back reading zero.
+     TRAP T-a-silent-write-still-needs-a-way-to-report */
+  legend.click('Starter', true);
+  assert.deepEqual(chip.values['plan'], [], 'everything on is no filter');
+  assert.equal(parts.get('legend:plan'), undefined, 'and its own part is gone');
+  assert.equal(chip.reported, 2, 'the CLEARING was announced too');
 });

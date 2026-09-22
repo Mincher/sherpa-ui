@@ -236,6 +236,15 @@ export async function init(root) {
   /* `as` adapts the shape at the binding. `ignore` on filter-change because
      this view owns the whole filter: the grid's secondary header row emits it
      with ONE column's text, which would wipe the chips and the other columns. */
+  /* THE WHOLE COLUMN, not the drawn page. A heading's filter menu built from
+     the rows on screen is a one-way door: narrow on another field and three of
+     four owners vanish from the Owner menu with no way to tick them back.
+     TRAP T-unavailable-value-sorts-below-a-divider */
+  grid.setAttribute('data-column-values', columns
+    .filter((c) => (c.type ?? 'text') === 'text')
+    .map((c) => `${c.field}:${valuesOf(c.field).join('|')}`)
+    .join('\n'));
+
   source.bind(grid, {
     as: (rows) => ({ columns, rows, key: 'email', actions: ROW_ACTIONS }),
     ignore: ['filter-change'],

@@ -26,6 +26,12 @@
                     is narrowing; those columns' headings take data-status="active".
                     Written by SherpaDataSource — a host driving the grid by hand
                     can write it too.
+    data-column-values  the WHOLE column's values, so a filter menu offers them
+                    all even when the drawn rows carry only some: `field:a|b|c`
+                    per entry, NEWLINE separated. A value no drawn row carries
+                    sorts below a divider, dimmed but still selectable — that is
+                    how a reader broadens a filter back out.
+                    TRAP T-unavailable-value-sorts-below-a-divider
     data-needles    what an EXTERNAL filter MATCHED on, so its hits mark in the
                     cells: `field:op:value` per entry, NEWLINE separated. Written
                     by SherpaDataSource beside data-filter-fields. Only substring
@@ -166,6 +172,12 @@
        condition dropdown and its text box live in that menu's template; the
        rows below are this column's own values.
        TRAP T-one-field-one-filter-menu -->
+  <!-- The rule between reachable and unreachable values. An <hr> because it IS
+       a thematic break — a screen reader announces it without ARIA. -->
+  <template class="head-divider-tpl">
+    <hr class="head-divider" />
+  </template>
+
   <template class="head-value-row-tpl">
     <label class="head-value-row" style="display: flex; align-items: center; gap: 8px;">
       <input type="checkbox" style="margin: 0; flex: 0 0 auto;" />
