@@ -97,6 +97,18 @@ field rather than comparing to zero.
 
 ## 4. A custom store implements six methods
 
+**A store is STATELESS.** It reads and writes records and remembers nothing
+about how they are being viewed. Sorting, filtering, grouping and paging are the
+`DataSource`'s job, so ONE store can back several views of the same records
+without them fighting over a shared cursor.
+
+That split is DevExtreme's, so the mental model transfers. What is not borrowed
+is the size: no OData, no remote grouping, no query-builder language. A store
+answers `load(options)` and four CRUD calls, and the interface is identical
+whatever backs it — so a view moves from an in-memory array to an HTTP endpoint
+without touching the components.
+
+
 ```ts
 interface Store {
   load(options?: LoadOptions): Promise<LoadResult>;
@@ -175,6 +187,62 @@ source.bind(chart, { readonly: true, as: byCategory });  // reads only
 **Which lives where:** a **store** is app-level, because records outlive any one
 screen and are shared by every screen showing them. A **source** is view-level,
 because a query is exactly as long-lived as the view asking it.
+
+### The filter is NAMED PARTS, not one value
+
+Several controls narrow one query at once — a toolbar's chips, a grid's column
+headings, a chart legend, a saved view. Each owns a named part, and the source
+ANDs them:
+
+```js
+source.contribute('chips',   ['tier', 'in', ['gold', 'silver']]);
+source.contribute('columns', ['name', 'contains', 'ada']);
+source.contribute('legend',  ['plan', 'ne', 'Free']);
+source.contribute('chips',   undefined);   // that part only, removed
+```
+
+`setFilter()` replaces the WHOLE filter and clears every part, so it is what a
+saved view uses and not what a control uses. A control that calls it wipes
+whatever the others had said.
+
+### Two scopes: a component EXTENDS a view, never alters it
+
+A **view** filter narrows everything bound to its source — the charts, the
+tiles, the grid. A **component** filter narrows one component and leaves the
+rest alone: a reader hunting through a table does not want the charts beside it
+to move.
+
+    component rows = view filter AND component filter
+
+That is two sources, with the component's taking the view's whole filter as one
+named part:
+
+```js
+const view = new DataSource({ store });
+const grid = new DataSource({ store });
+view.addEventListener('change', () => grid.contribute('scope:view', view.state.filter));
+```
+
+Because it arrives as ONE PART, a view change replaces that part and cannot
+touch the component's own — so a component filter survives the view being
+cleared entirely, and the two can never fight.
+
+**A field lives in exactly one scope.** Each toolbar offers only what the other
+has left alone:
+
+| held | offered to the view | offered to the component |
+|---|---|---|
+| view has it | no | no |
+| component has it | **yes** — that is how it moves up | no |
+| neither | yes | yes |
+
+Adding a component's field to the view SUPERSEDES the component's chip: it is
+not removed, it goes inactive holding what the reader picked, and comes back
+when the view lets the field go. Off is not gone.
+
+Nothing here needs to know what a "view" or a "component" is. They are two
+sources, one following the other — a card extending a dashboard, or a panel
+extending a card, is the same relationship with different words.
 
 ---
 

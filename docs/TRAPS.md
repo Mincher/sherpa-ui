@@ -1271,18 +1271,10 @@ a person can edit (`T-storage-access-throws`).
 
 ### T-store-is-stateless
 
-A Store is STATELESS: it reads and writes records and remembers nothing about how
-they are being viewed. Sorting, filtering, grouping and paging are the
-DataSource's job, so ONE store can back several views of the same records without
-them fighting over a shared cursor.
+**The rule is in `docs/DATA-SOURCE-RULES.md`, section 4:** a store is stateless,
+and sorting, filtering, grouping and paging belong to the `DataSource`.
 
-That split is **DevExtreme's**, which Apex already uses — so the mental model
-transfers. What is NOT borrowed is the size: no OData, no remote grouping, no
-query-builder language. A store answers `load(options)` and four CRUD calls, and
-the interface is identical whatever backs it, so a view moves from an in-memory
-array to an HTTP endpoint without touching the components.
-
-Every store extends `EventTarget`, so "tell everyone the records changed" is the
+What belongs here is the part that surprises. Every store extends `EventTarget`, so "tell everyone the records changed" is the
 platform's own `dispatchEvent` rather than a subscriber list written by hand. A
 `change` detail names what happened so a listener can be cheap about it, but a
 DataSource simply RELOADS: deciding whether a changed row still matches the
@@ -2859,14 +2851,6 @@ several become `in`, because `eq` against a list can never match.
 the value, the count and the tooltip. A control that computes any of these
 itself is a second answer, and the two drift.
 
-**AND IT IS THE SHAPE A SCOPE SPEAKS.** `filter-scope` answers a different
-question — which of two sources owns a field — but it described that field its
-own way: a `ScopedFilter` with an `id`, and a `Promotion` of `{ id, values }`.
-Two names for "a field a reader may filter on", and a promotion that lost the
-op and the typed text on the way. `ScopedFilter extends FieldFacts` now, and
-`promotions()` returns `FilterState[]`, so a field promoted while holding
-"Starts with Go" arrives in the view still saying that.
-
 **IT IS NOT A FILTER MODULE.** The same four facts describe any control over a
 set of values — a tab strip, a nav, a chart legend, a select group, a transfer
 list, a calendar's days. Nineteen components hold selection state, and the
@@ -2884,8 +2868,6 @@ picked values on the right, its unpicked on the left.
 - Site: `test/unit/parity-sweep.test.mjs`
 - Site: `src/core/data/legend-filter.ts`
 - Site: `test/unit/legend-filter.test.mjs`
-- Site: `src/core/data/filter-scope.ts`
-- Site: `test/unit/filter-scope.test.mjs`
 ### T-one-field-one-filter-menu
 
 A filter CHIP and a COLUMN HEADING ask the same question of the same field, so
@@ -5015,7 +4997,6 @@ Three parts make it work:
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
-- Site: `src/core/data/filter-scope.ts`
 - Site: `examples/views/records.js`
 
 ### T-unavailable-value-sorts-below-a-divider
@@ -8385,42 +8366,24 @@ toggles.
 
 ### T-component-extends-view-never-alters-it
 
-Two filtering scopes on one screen.
+**The rule lives in `docs/DATA-SOURCE-RULES.md`, section 6** — two scopes, one
+field one scope, and a superseded chip. It is a data-layer rule, so it belongs
+with the other data-layer rules rather than in a trap.
 
-A **VIEW** filter narrows everything bound to the view's source — the charts,
-the tiles, the grid. A **COMPONENT** filter narrows one component and leaves
-the rest alone: a reader hunting through a table does not want the charts
-beside it to move.
+What belongs HERE is why there is no module for it.
 
-    component rows = view filter AND component filter
+`filter-scope.ts` was 121 lines and three functions written before anything
+called them, and nothing ever did: Records has one `DataSource`, so there was
+no second scope to follow. The rule needs no module — a component source takes
+the view's filter as one named part, which `DataSource.contribute()` already
+does, and the wiring is three lines.
 
-`followView(view, component)` makes the second source contribute the first's
-WHOLE filter as one named part. That is what keeps the two from fighting: a
-view change replaces one part and cannot touch the component's own, so a
-component filter survives the view being cleared entirely.
+Guessing an API in advance cost more than waiting for the caller. `promotions()`
+returned `{ id, values }`, which silently dropped the op and the typed text, so
+a field promoted while holding "Starts with Go" would have arrived in the view
+saying only "Go". Nothing caught it, because nothing ran it.
 
-**A field lives in exactly one scope.** `offerable()` decides what each toolbar
-may add:
+See `T-a-superseded-chip-suspends-it-is-never-removed`, which IS implemented,
+on the half a component owns.
 
-| held | offered to the view | offered to the component |
-|---|---|---|
-| view has it | no | no |
-| component has it | **yes** — that is how it moves up | no |
-| neither | yes | yes |
-
-**Adding a component's field to the view SUPERSEDES the component chip.** The
-chip is not removed: it goes `data-superseded` — greyed, not clickable, still
-carrying what the reader picked — and comes back the moment the view lets the
-field go. `promotions()` says which chips are affected and what value each
-holds; the caller suspends them. A field held with NO value picked still counts
-as held: the chip is on that bar either way.
-See `T-a-superseded-chip-suspends-it-is-never-removed`.
-
-Nothing in the module knows what a "view" or a "component" is: they are two
-sources, one following the other. A card extending a dashboard, or a panel
-extending a card, is the same relationship with different words.
-
-- Site: `src/core/data/filter-scope.ts`
-- Site: `src/data.ts`
 - Site: `examples/views/records.js`
-- Site: `test/unit/filter-scope.test.mjs`

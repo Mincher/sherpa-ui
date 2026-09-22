@@ -178,17 +178,6 @@ export {
   type LegendFilterBinding,
 } from './core/data/legend-filter.js';
 
-/* TWO SCOPES: a view filter narrows everything, a component filter narrows one
-   component and extends the view without altering it.
-   TRAP T-component-extends-view-never-alters-it */
-export {
-  followView,
-  offerable,
-  promotions,
-  type ScopedFilter,
-  type Scope,
-} from './core/data/filter-scope.js';
-
 /* ONE state per filtered field — what a chip, its menu, a column heading and
    that heading's menu all read, so none of them derives its own answer.
    TRAP T-one-state-per-filtered-field */
