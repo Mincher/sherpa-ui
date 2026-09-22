@@ -137,17 +137,17 @@ export async function init(root) {
        same gesture. Not the four toggles above: those are one-tap presets, and
        this is the legend's own face.
        TRAP T-a-legend-toggle-is-a-filter */
-    { id: 'status', label: 'Status', type: 'data', icon: 'fa-solid fa-chart-simple',
+    { id: 'status', label: 'Status', type: 'data',
       select: 'multiple', removable: true, options: asOptions('status') },
     // MULTI-select: one pick reads back as "Plan: Pro", two or more show a count.
     { id: 'plan', label: 'Plan', type: 'data', icon: 'fa-solid fa-tag',
       select: 'multiple', removable: true, options: asOptions('plan') },
     // No Region chip: it is a GLOBAL filter in the app header, and two chips for
     // one field would make the reader guess which is in force.
-    { id: 'tier', label: 'Tier', type: 'data', icon: 'fa-solid fa-award',
+    { id: 'tier', label: 'Tier', type: 'data',
       select: 'multiple', removable: true, options: asOptions('tier') },
     // SINGLE-select, COMMITTING: rows are a draft behind Apply/Cancel.
-    { id: 'owner', label: 'Owner', type: 'data', icon: 'fa-solid fa-user',
+    { id: 'owner', label: 'Owner', type: 'data',
       select: 'single', removable: true, commit: true, options: asOptions('owner') },
     // `kind` picks the menu's content: a calendar rather than a list of values.
     // `availableDates` is derived from the records, so only days that hold one
@@ -161,11 +161,11 @@ export async function init(root) {
      four are `kind: 'number'`, not value lists: a column of 240 distinct seat
      counts is not a set anybody picks from. Bounds are the data's own. */
   qft.available([
-    { id: 'seats', label: 'Seats', type: 'data', icon: 'fa-solid fa-chair',
+    { id: 'seats', label: 'Seats', type: 'data',
       kind: 'number', min: 1, max: 240, step: 1 },
-    { id: 'spend', label: 'Spend', type: 'data', icon: 'fa-solid fa-sterling-sign',
+    { id: 'spend', label: 'Spend', type: 'data',
       kind: 'number', min: 120, max: 10000, step: 20 },
-    { id: 'health', label: 'Health', type: 'data', icon: 'fa-solid fa-heart-pulse',
+    { id: 'health', label: 'Health', type: 'data',
       kind: 'number', min: 40, max: 100, step: 1 },
     { id: 'openTickets', label: 'Open tickets', type: 'data', icon: 'fa-solid fa-ticket',
       kind: 'number', min: 0, max: 8, step: 1 },

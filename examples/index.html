@@ -80,7 +80,7 @@
       ],
       sections: [
         { label: 'Views', items: [
-          { id: 'view-records',   label: 'Records',   icon: 'fa-solid fa-table-list',  href: '?view=records' },
+          { id: 'view-records',   label: 'Records',  href: '?view=records' },
         ] },
       ],
       // The settings BUTTON in the nav header swaps the rail to these pages.
@@ -112,7 +112,7 @@
     /* Fallback ONLY, for a view no nav row opens (the assistant, reached from
        "Ask N-zo"). A view with a row always takes the row's label and icon. */
     const HEADLESS_VIEWS = {
-      chat: { label: 'Assistant', icon: 'fa-solid fa-comments' },
+      chat: { label: 'Assistant' },
     };
 
     /* Write the rail's CURRENT row onto the header. The rail is asked what it
@@ -197,13 +197,13 @@
       { id: 'n1', label: 'Northwind renewed', description: 'Enterprise, 3 years',
         icon: 'fa-solid fa-circle-check', time: '2m ago', unread: true },
       { id: 'n2', label: 'Contoso payment failed', description: 'Card declined',
-        icon: 'fa-solid fa-triangle-exclamation', time: '1h ago', unread: true },
+        time: '1h ago', unread: true },
       { id: 'n3', label: 'Fabrikam raised a ticket', description: 'Priority: high',
         icon: 'fa-solid fa-ticket', time: '3h ago', unread: true },
       { id: 'n4', label: 'Tailspin trial ends Friday', description: '14-day trial',
-        icon: 'fa-solid fa-hourglass-half', time: 'Yesterday', unread: true },
+        time: 'Yesterday', unread: true },
       { id: 'n5', label: 'Weekly report ready', description: 'Revenue and churn',
-        icon: 'fa-solid fa-chart-line', time: '2d ago' },
+        time: '2d ago' },
     ], { key: 'id' });
 
     const notificationSource = new DataSource({ store: notificationFeed });

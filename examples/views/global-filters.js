@@ -52,7 +52,6 @@ export function globalFilters(views, regions = REGIONS, customers = CUSTOMERS, d
     {
       id: 'customer',
       label: 'Customer',
-      icon: 'fa-solid fa-building',
       // OFF until a value is picked: ON with nothing chosen paints the amber
       // "filtering nothing" warning before the reader has touched anything.
       removable: true,

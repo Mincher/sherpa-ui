@@ -447,7 +447,7 @@ const NESTED = {
             { id: 'desktops', label: 'Desktops', children: [{ id: 'laptops', label: 'Laptops' }] },
           ],
         },
-        { id: 'health', label: 'Health', icon: 'fa-solid fa-heart-pulse' },
+        { id: 'health', label: 'Health', icon: 'fa-solid fa-gauge' },
       ],
     },
   ],
@@ -738,7 +738,7 @@ test('nav-select carries the row label and icon, and entry() reads them back', a
     await nav.populate({
       quickItems: [],
       sections: [{ label: 'Views', items: [
-        { id: 'records', label: 'Records', icon: 'fa-solid fa-table-list' },
+        { id: 'records', label: 'Records', icon: 'fa-solid fa-list' },
       ] }],
     });
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
@@ -754,11 +754,11 @@ test('nav-select carries the row label and icon, and entry() reads them back', a
     return { detail: detail[0], entry: nav.entry('records'), active: nav.activeEntry };
   });
 
-  expect(r.detail).toEqual({ id: 'records', label: 'Records', icon: 'fa-solid fa-table-list' });
+  expect(r.detail).toEqual({ id: 'records', label: 'Records', icon: 'fa-solid fa-list' });
   // entry() reads the STAMPED row, so it agrees with what is on screen.
-  expect(r.entry).toEqual({ id: 'records', label: 'Records', icon: 'fa-solid fa-table-list' });
+  expect(r.entry).toEqual({ id: 'records', label: 'Records', icon: 'fa-solid fa-list' });
   // activeEntry follows data-active-id, which the click just set.
-  expect(r.active).toEqual({ id: 'records', label: 'Records', icon: 'fa-solid fa-table-list' });
+  expect(r.active).toEqual({ id: 'records', label: 'Records', icon: 'fa-solid fa-list' });
 });
 
 test('a row with NO icon reports none, so a mirror can clear its own', async ({ page }) => {
