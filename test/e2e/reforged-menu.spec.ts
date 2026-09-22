@@ -524,3 +524,45 @@ test('the select-all row cycles ALL → NONE, and reads the set rather than the 
   // value and every count reads one too high.
   expect(r.fromSome.values).not.toContain('on');
 });
+
+/**
+ * A SCROLL LISTENER THAT READS LAYOUT RUNS PER FRAME, NOT PER EVENT.
+ *
+ * `#place()` reads two boxes. Bound with a plain listener it ran on every
+ * scroll event: measured on an open menu in the Records example, 50 scroll
+ * events produced 100 getBoundingClientRect() calls.
+ *
+ * TRAP T-a-layout-read-belongs-in-a-frame
+ */
+test('an open menu coalesces scroll repositioning into one frame', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const menu = document.createElement('sherpa-menu') as HTMLElement & {
+      rendered?: Promise<void>; show?: (t?: HTMLElement) => void;
+    };
+    menu.innerHTML = '<label slot="menu"><input type="checkbox" value="a" />A</label>';
+    const trigger = document.createElement('button');
+    trigger.textContent = 'open';
+    document.getElementById('root')!.append(trigger, menu);
+    await customElements.whenDefined('sherpa-menu');
+    await menu.rendered;
+    menu.show?.(trigger);
+    await new Promise((res) => setTimeout(res, 250));
+
+    let reads = 0;
+    const real = Element.prototype.getBoundingClientRect;
+    Element.prototype.getBoundingClientRect = function (this: Element) {
+      reads++;
+      return real.call(this);
+    };
+    // Fifty events inside one frame. Unthrottled this is 100 reads.
+    for (let i = 0; i < 50; i++) window.dispatchEvent(new Event('scroll'));
+    await new Promise((res) => setTimeout(res, 250));
+    Element.prototype.getBoundingClientRect = real;
+
+    return { open: menu.hasAttribute('open'), reads };
+  });
+
+  // A handful of frames' worth, not fifty events' worth. The exact number
+  // depends on how many frames the 250ms wait spans.
+  expect(r.reads).toBeLessThan(20);
+});

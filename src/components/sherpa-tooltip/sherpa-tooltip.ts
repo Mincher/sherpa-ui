@@ -25,12 +25,14 @@ export class SherpaTooltip extends SherpaElement {
     if (bubble && !bubble.id) bubble.id = `sherpa-tip-${++uid}`;
     if (bubble) this.setAttribute('aria-describedby', bubble.id);
 
-    // On the ANCHOR, so a tooltip can describe a box it does not wrap.
+    /* On the ANCHOR, so a tooltip can describe a box it does not wrap — which
+       is why these need removing and a listener on `this` would not. `on()`
+       carries the disconnect signal, so there is nothing to undo. */
     const anchor = this.#anchor();
-    anchor.addEventListener('pointerenter', this.#onShow);
-    anchor.addEventListener('pointerleave', this.#onHide);
-    anchor.addEventListener('focusin', this.#onShow);
-    anchor.addEventListener('focusout', this.#onHide);
+    this.on(anchor, 'pointerenter', this.#onShow);
+    this.on(anchor, 'pointerleave', this.#onHide);
+    this.on(anchor, 'focusin', this.#onShow);
+    this.on(anchor, 'focusout', this.#onHide);
   }
 
   /** What the bubble describes: this element, or the box `data-anchor` names. */
@@ -42,15 +44,10 @@ export class SherpaTooltip extends SherpaElement {
   }
 
   override onDisconnect(): void {
-    // A popover left open in the top layer outlives the element it belongs to.
+    /* Only the POPOVER needs undoing by hand: one left open in the top layer
+       outlives the element it belongs to. Every listener above carries the
+       disconnect signal. */
     this.#hide();
-    const anchor = this.#anchor();
-    anchor.removeEventListener('pointerenter', this.#onShow);
-    anchor.removeEventListener('pointerleave', this.#onHide);
-    anchor.removeEventListener('focusin', this.#onShow);
-    anchor.removeEventListener('focusout', this.#onHide);
-    window.removeEventListener('scroll', this.#onHide, { capture: true });
-    window.removeEventListener('resize', this.#onHide);
   }
 
   /** Whether this tooltip places itself in the top layer. */
@@ -67,9 +64,14 @@ export class SherpaTooltip extends SherpaElement {
     // SHOW FIRST, then measure: a closed popover is `display: none` and reads 0.
     bubble.showPopover();
     this.#place();
-    // `capture`, because an ancestor's scroll does not bubble.
-    window.addEventListener('scroll', this.#onHide, { capture: true, passive: true });
-    window.addEventListener('resize', this.#onHide, { passive: true });
+    /* While OPEN only — a shut tooltip has nothing to hide. `capture`, because
+       an ancestor's scroll does not bubble. No rAF here: this HIDES rather
+       than re-places, so it reads no layout.
+       TRAP T-a-layout-read-belongs-in-a-frame */
+    this.#openAc = new AbortController();
+    const whileOpen = { while: this.#openAc.signal, passive: true } as const;
+    this.on(window, 'scroll', this.#onHide, { ...whileOpen, capture: true });
+    this.on(window, 'resize', this.#onHide, whileOpen);
   };
 
   #onHide = (): void => {
@@ -81,9 +83,12 @@ export class SherpaTooltip extends SherpaElement {
     const bubble = this.$<HTMLElement>('.bubble');
     // `matches` first: hidePopover() on a closed popover throws.
     if (bubble?.matches(':popover-open')) bubble.hidePopover();
-    window.removeEventListener('scroll', this.#onHide, { capture: true });
-    window.removeEventListener('resize', this.#onHide);
+    this.#openAc?.abort();
+    this.#openAc = null;
   }
+
+  /** Aborts when the bubble shuts — the viewport listeners' own lifetime. */
+  #openAc: AbortController | null = null;
 
   /** Gap between the trigger and the bubble, in px. */
   static readonly OFFSET = 4;

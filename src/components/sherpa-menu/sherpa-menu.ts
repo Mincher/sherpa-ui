@@ -276,16 +276,27 @@ export class SherpaMenu extends SherpaElement {
     const open = (event as ToggleEvent).newState === 'open';
     this.toggleAttribute('open', open);
     if (open) {
-      // capture: ancestor scrolls do not bubble. TRAP T-open-menu-resize-closes
       this.#baseline = this.values;
-      window.addEventListener('scroll', this.#reposition, { capture: true, passive: true });
-      window.addEventListener('resize', this.#onViewportResize, { passive: true });
+      /* These live while the menu is OPEN, which is shorter than the element's
+         life — `while` is that shorter lifetime, and the base class ANDs it
+         with its own disconnect signal.
+
+         `onFrame`, not `on`: #place() reads two boxes, and a scroll listener
+         runs per EVENT. Measured before this, 50 scroll events produced 100
+         getBoundingClientRect() calls.
+         capture: an ancestor's scroll does not bubble.
+         TRAP T-a-layout-read-belongs-in-a-frame
+         TRAP T-open-menu-resize-closes */
+      this.#openAc = new AbortController();
+      const whileOpen = { while: this.#openAc.signal, passive: true } as const;
+      this.onFrame(window, 'scroll', this.#reposition, { ...whileOpen, capture: true });
+      this.on(window, 'resize', this.#onViewportResize, whileOpen);
       this.#cardResize ??= new ResizeObserver(() => this.#place());
       const card = this.#card();
       if (card) this.#cardResize.observe(card);
     } else {
-      window.removeEventListener('scroll', this.#reposition, { capture: true });
-      window.removeEventListener('resize', this.#onViewportResize);
+      this.#openAc?.abort();
+      this.#openAc = null;
       this.#cardResize?.disconnect();
       this.#trigger = null;
     }
@@ -294,6 +305,8 @@ export class SherpaMenu extends SherpaElement {
 
   /** Watches the card's box, so a body that grows re-places. */
   #cardResize: ResizeObserver | null = null;
+  /** Aborts when the menu SHUTS — the viewport listeners' own lifetime. */
+  #openAc: AbortController | null = null;
 
   #reposition = (): void => {
     this.#place();
@@ -304,8 +317,8 @@ export class SherpaMenu extends SherpaElement {
   };
 
   override onDisconnect(): void {
-    window.removeEventListener('scroll', this.#reposition, { capture: true });
-    window.removeEventListener('resize', this.#onViewportResize);
+    // The viewport listeners carry their own signals; only the observer is manual.
+    this.#openAc?.abort();
     this.#cardResize?.disconnect();
   }
 

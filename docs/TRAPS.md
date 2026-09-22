@@ -7657,3 +7657,37 @@ contract.
 
 - Site: `src/components/sherpa-list-item/sherpa-list-item.ts`
 - Site: `scripts/check-props.mjs`
+
+### T-a-layout-read-belongs-in-a-frame
+
+`sherpa-menu` re-places itself on scroll so an open card follows its trigger.
+`#place()` reads two boxes — the trigger's and the card's — and it was bound
+with a plain listener, so it ran **per scroll EVENT** rather than per frame.
+
+Measured on an open chip menu in the Records example: **50 scroll events
+produced 100 `getBoundingClientRect()` calls**. After throttling, **2**.
+
+`SherpaElement.onFrame(target, type, handler, options)` coalesces to one call
+per animation frame. `on()` is the same without the throttle, for a handler
+that reads no layout — `sherpa-tooltip` HIDES on scroll rather than re-placing,
+so it takes `on()`.
+
+Both carry the element's disconnect signal, so nothing needs removing. That
+replaced 22 hand-paired add/remove sites across seven files, two of which
+removed unconditionally on disconnect whether or not anything had been added.
+
+**`while` is the second lifetime.** A popover's viewport listeners live while
+it is OPEN, not while the element exists, so the caller passes its own signal
+and the base class ANDs the two with `AbortSignal.any`. Without it, the
+listeners would outlive every close.
+
+One measuring note, because it wasted a pass here: **an `AbortSignal` removal
+does not call `removeEventListener`**, so wrapping those two methods to count
+live listeners reports a leak that is not there. Count them through CDP's
+`DOMDebugger.getEventListeners` instead — which showed zero scroll and resize
+listeners on `window` both before and after five open/close cycles.
+
+- Site: `src/core/sherpa-element.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-tooltip/sherpa-tooltip.ts`
+- Site: `test/e2e/reforged-menu.spec.ts`

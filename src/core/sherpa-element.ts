@@ -482,6 +482,54 @@ export abstract class SherpaElement extends HTMLElement {
   }
 
   /**
+   * Listen on a target this element does not own, for as long as it is in the
+   * DOM. The base class already aborts `signal` on disconnect, so there is
+   * nothing to remove.
+   *
+   * Seven files hand-paired add/remove across 22 sites, and two of them —
+   * `sherpa-menu` and `sherpa-tooltip` — remove unconditionally on disconnect
+   * whether or not anything was added. That is harmless and hard to read.
+   *
+   * `while` names the shorter lifetime: a popover's listeners live while it is
+   * OPEN, not while the element exists, so it passes its own signal.
+   */
+  protected on<K extends keyof WindowEventMap>(
+    target: EventTarget,
+    type: K | string,
+    handler: EventListenerOrEventListenerObject,
+    options: AddEventListenerOptions & { while?: AbortSignal } = {},
+  ): void {
+    const { while: shorter, ...rest } = options;
+    const signal = shorter
+      ? AbortSignal.any([this.signal, shorter])
+      : this.signal;
+    target.addEventListener(type as string, handler, { ...rest, signal });
+  }
+
+  /**
+   * The same, THROTTLED to one call per frame.
+   *
+   * A scroll or resize listener that reads layout runs per EVENT, not per
+   * frame. Measured on an open `sherpa-menu`: 50 scroll events produced 100
+   * `getBoundingClientRect()` calls, because `#place()` reads two boxes and
+   * nothing coalesced them.
+   *
+   * TRAP T-a-layout-read-belongs-in-a-frame
+   */
+  protected onFrame(
+    target: EventTarget,
+    type: string,
+    handler: () => void,
+    options: AddEventListenerOptions & { while?: AbortSignal } = {},
+  ): void {
+    let pending = 0;
+    this.on(target, type, () => {
+      if (pending) return;
+      pending = requestAnimationFrame(() => { pending = 0; handler(); });
+    }, options);
+  }
+
+  /**
    * Copy native attributes from this host onto the control it wraps.
    *
    * A component wrapping a real `<input>` has to keep the two in step, and
