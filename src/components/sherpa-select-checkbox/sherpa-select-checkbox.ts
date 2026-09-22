@@ -46,11 +46,9 @@ export class SherpaSelectCheckbox extends SherpaElement {
   #syncState(): void {
     const c = this.#control;
     if (!c) return;
-    for (const attr of MIRRORED) {
-      if (attr === 'value') continue; // value is a property, set below
-      if (this.hasAttribute(attr)) c.setAttribute(attr, this.getAttribute(attr) ?? '');
-      else c.removeAttribute(attr);
-    }
+    // The shared loop; `value` is a property, set below.
+    // TRAP T-mirroring-skips-value
+    this.mirrorAttrs(c, MIRRORED);
     c.value = this.getAttribute('value') ?? 'on';
     c.checked = this.hasAttribute('checked');
     c.indeterminate = this.hasAttribute('indeterminate'); // property only — no CSS attr selector

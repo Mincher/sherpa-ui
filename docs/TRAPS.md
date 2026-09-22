@@ -7596,3 +7596,37 @@ The camelCase → kebab mapping matches the props system: `iconStart` becomes
 
 - Site: `src/core/sherpa-element.ts`
 - Site: `test/e2e/reforged-any-component-binds.spec.ts`
+
+### T-mirroring-skips-value
+
+A component wrapping a real `<input>` keeps the two in step by copying native
+attributes down. Three wrote the same loop — `sherpa-select-checkbox`,
+`sherpa-select-radio` and `sherpa-input-text` — so it is now
+`SherpaElement.mirrorAttrs(control, attrs)`.
+
+**`value` is skipped, deliberately.** It is a PROPERTY on a live control, and
+writing the attribute after the reader has typed puts the old text back. Each
+caller assigns `control.value` itself, with its own default: `'on'` for a
+checkbox, `''` for a radio, the typed text for an input.
+
+The LIST stays with the caller. An input mirrors `placeholder`, `pattern`,
+`minlength` and `maxlength`; a checkbox mirrors four attributes. Moving the
+list would mean one component silently mirroring attributes that mean nothing
+to it.
+
+What a wider sweep found, recorded so it is not re-run: across 58 components
+there are **110 runs of four or more identical lines shared by two or more**,
+and after `mirrorAttrs` the largest remaining is three lines of boilerplate
+shared by `sherpa-chip` and `sherpa-tag` — a `templateId` getter and a remove
+handler that fire different events. Both components are 30–40 lines; a shared
+base would cost more than it saves.
+
+`this.clone()` appears at 39 sites in 6 components, and they do genuinely
+different work — a legend swatch, an empty state, a nested nav row. That was
+already settled on 2026-09-17 when `renderRows`/`cloneRow` was built, measured
+to fit only 8 of 28 stamp sites, and removed again.
+
+- Site: `src/core/sherpa-element.ts`
+- Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.ts`
+- Site: `src/components/sherpa-select-radio/sherpa-select-radio.ts`
+- Site: `src/components/sherpa-input-text/sherpa-input-text.ts`

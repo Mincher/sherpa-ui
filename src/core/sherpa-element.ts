@@ -482,6 +482,30 @@ export abstract class SherpaElement extends HTMLElement {
   }
 
   /**
+   * Copy native attributes from this host onto the control it wraps.
+   *
+   * A component wrapping a real `<input>` has to keep the two in step, and
+   * three of them wrote the same loop: `sherpa-select-checkbox`,
+   * `sherpa-select-radio` and `sherpa-input-text`.
+   *
+   * `value` is SKIPPED — it is a property on a live control, and setting the
+   * attribute after the reader has typed would put the old text back. Each
+   * caller assigns `control.value` itself, with its own default: `'on'` for a
+   * checkbox, `''` for a radio, the typed text for an input.
+   *
+   * The LIST stays with the caller: an input mirrors `placeholder` and
+   * `pattern`, a checkbox does not.
+   * TRAP T-mirroring-skips-value
+   */
+  protected mirrorAttrs(control: Element, attrs: readonly string[]): void {
+    for (const attr of attrs) {
+      if (attr === 'value') continue;
+      if (this.hasAttribute(attr)) control.setAttribute(attr, this.getAttribute(attr) ?? '');
+      else control.removeAttribute(attr);
+    }
+  }
+
+  /**
    * Write an attribute from JS, so CSS can react to a data change.
    * TRAP T-set-removes-on-falsy — `null`/`undefined`/`false` REMOVE it.
    */
