@@ -43,7 +43,7 @@
     var(--sherpa-style-surface-shadow, #35353d4c);
 
   &::backdrop {
-    background: color-mix(in srgb, #101014 45%, transparent);
+    background: color-mix(in srgb, var(--sherpa-display-mode-color-neutral-fixed-color-5, #0c0b11) 45%, transparent);
   }
 }
 

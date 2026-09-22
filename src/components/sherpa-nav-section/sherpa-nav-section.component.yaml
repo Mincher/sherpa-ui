@@ -20,7 +20,7 @@ templates:
 anatomy:
   roots:
     - el: span
-      class: label
+      class: label sherpa-truncate
       part: label
     - el: span
       class: rule

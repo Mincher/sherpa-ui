@@ -157,7 +157,7 @@ slot[name="menu"] { display: contents; }
   }
   @supports (color: color-mix(in oklab, red, blue)) {
     &:is(:checked, :indeterminate):hover:not(:disabled)::before {
-      background: color-mix(in oklab, var(--_fill) 88%, #000);
+      background: color-mix(in oklab, var(--_fill) 88%, var(--sherpa-display-mode-color-neutral-fixed-color-5, #0c0b11));
     }
   }
   &:active:not(:disabled) {

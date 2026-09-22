@@ -21,7 +21,7 @@
   inset: 0;
   z-index: var(--_z, 100);
   pointer-events: none;
-  background: color-mix(in srgb, #101014 20%, transparent);
+  background: color-mix(in srgb, var(--sherpa-display-mode-color-neutral-fixed-color-5, #0c0b11) 20%, transparent);
 }
 :host([open]) .scrim { display: block; }
 

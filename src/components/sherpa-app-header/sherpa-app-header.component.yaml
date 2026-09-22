@@ -151,7 +151,7 @@ anatomy:
                     attrs:
                       aria-hidden: "true"
                   - el: h1
-                    class: title
+                    class: title sherpa-truncate
                     part: title
                   - slot: title
               - el: div

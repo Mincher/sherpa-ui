@@ -63,7 +63,7 @@ anatomy:
           aria-label: Choose values
         children:
           - el: span
-            class: caret-label
+            class: caret-label sherpa-truncate
             part: caret-label
           - el: i
             class: caret-glyph sherpa-icon-box

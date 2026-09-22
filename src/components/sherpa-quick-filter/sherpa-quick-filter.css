@@ -210,10 +210,7 @@
   /* The SAME line-height as the chip's own label (both 14 on 20). `line-height:
      1` shares the midpoint but not the baseline, so the texts sit off. */
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
-  white-space: nowrap;
-  /* A long value truncates; the full list is on the hover tip and aria-label. */
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* Truncation is .sherpa-truncate; the full list is on the tip and aria-label. */
   max-inline-size: 12ch;
 }
 
