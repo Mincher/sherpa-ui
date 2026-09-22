@@ -5,7 +5,7 @@
  */
 import {
   DataSource, SherpaToast, persistView, viewOptions, onViewPicked,
-  countBy, reduceRows, bindLegendFilter,
+  countBy, reduceRows, bindLegendFilter, andFilter, picksClause,
 } from '../../dist/index.js';
 import { customerStore, customersReady, customers, columns, plans, regions, customerOrgs, states }
   from './records-data.js';
@@ -84,13 +84,13 @@ export async function init(root) {
         clauses.push([field, 'between', ends]);
       } else if (picked.length === 1 && numberFields.has(field)) {
         clauses.push([field, 'eq', Number(picked[0])]);
-      } else if (picked.length === 1) {
-        clauses.push([field, 'eq', picked[0]]);
       } else {
-        clauses.push([field, 'in', picked]);
+        // ONE rule for picks → a clause: one is `eq`, several are `in`.
+        const clause = picksClause(field, picked);
+        if (clause) clauses.push(clause);
       }
     }
-    return clauses.length === 1 ? clauses[0] : clauses.length ? ['and', ...clauses] : undefined;
+    return andFilter(clauses);
   };
 
   /* THREE WRITERS, THREE NAMED PARTS: the saved view, this page's chips, and
@@ -98,8 +98,7 @@ export async function init(root) {
      them — so no writer has to know about the others. */
   const pushColumns = () => {
     const clauses = [...columnClauses.values()];
-    source.contribute('columns',
-      clauses.length === 1 ? clauses[0] : clauses.length ? ['and', ...clauses] : undefined);
+    source.contribute('columns', andFilter(clauses));
   };
 
   const grid      = root.querySelector('#grid');

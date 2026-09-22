@@ -24,6 +24,7 @@
  */
 import {
   DEFAULT_OP, OP_LABELS, OP_SYMBOLS, OP_TAKES,
+  andFilter, picksClause, valueSet,
   type Filter, type FilterClause, type FilterOp,
 } from './store.js';
 
@@ -90,11 +91,6 @@ export interface FieldReading {
   suspended?: boolean;
 }
 
-/** Compare the way the QUERY does. TRAP T-one-comparison-rule-for-query-and-ui */
-function key(value: unknown): string {
-  return String(value ?? '').trim().toLowerCase();
-}
-
 /**
  * Work out one field's whole state.
  *
@@ -106,18 +102,22 @@ function key(value: unknown): string {
  */
 export function fieldState(facts: FieldFacts, reading: FieldReading = {}): FilterState {
   const all = [...(facts.values ?? [])].map(String);
-  const picked = new Set((reading.picked ?? []).map(key));
+  /* The QUERY's comparison, not an exact one — a chip's option values may be
+     spelled differently from the data. `valueSet` is that rule, and writing a
+     third copy here is how the two drift.
+     TRAP T-one-comparison-rule-for-query-and-ui */
+  const picked = valueSet(reading.picked ?? []);
   // No `present` given means "everything is reachable", not "nothing is".
-  const present = reading.present ? new Set(reading.present.map(key)) : null;
+  const present = reading.present ? valueSet(reading.present) : null;
   const op = reading.op ?? DEFAULT_OP;
   const text = (reading.text ?? '').trim();
 
   const values: ValueEntry[] = all.map((value) => ({
     value,
     label: facts.labels?.[value] ?? value,
-    state: picked.has(key(value))
+    state: picked.has(value)
       ? 'picked'
-      : present && !present.has(key(value))
+      : present && !present.has(value)
         ? 'unavailable'
         : 'unpicked',
   }));
@@ -127,7 +127,8 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
      should look like a filter.
      TRAP T-everything-on-is-no-filter */
   const takesText = (OP_TAKES[op] ?? 'list') === 'text';
-  const answered = takesText ? text !== '' : picked.size > 0 && picked.size < all.length;
+  const chosen = values.filter((v) => v.state === 'picked').length;
+  const answered = takesText ? text !== '' : chosen > 0 && chosen < all.length;
 
   return {
     field: facts.field,
@@ -152,17 +153,17 @@ export function stateClause(state: FilterState): FilterClause | undefined {
     return state.text ? [state.field, state.op, state.text] : undefined;
   }
 
-  const picks = state.values.filter((v) => v.state === 'picked').map((v) => v.value);
-  if (!picks.length) return undefined;
-  if (picks.length === 1) return [state.field, state.op, picks[0]];
-  return [state.field, state.op === 'ne' ? 'notin' : 'in', picks];
+  // ONE rule for picks → a clause, in store.ts beside the grammar it speaks.
+  return picksClause(
+    state.field,
+    state.values.filter((v) => v.state === 'picked').map((v) => v.value),
+    state.op,
+  );
 }
 
 /** Several fields, ANDed — the shape a DataSource part takes. */
 export function statesFilter(states: readonly FilterState[]): Filter | undefined {
-  const clauses = states.map(stateClause).filter((c): c is FilterClause => !!c);
-  if (!clauses.length) return undefined;
-  return clauses.length === 1 ? clauses[0] : (['and', ...clauses] as Filter);
+  return andFilter(states.map(stateClause).filter((c): c is FilterClause => !!c));
 }
 
 /**

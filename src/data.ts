@@ -35,6 +35,8 @@ export {
   filterRows,
   groupRows,
   matchesFilter,
+  andFilter,
+  picksClause,
   readField,
   searchRows,
   sortRows,
@@ -134,6 +136,8 @@ export {
 // Headless — `persist()` degrades to "nothing kept" with no storage.
 export {
   SessionStore,
+  SessionList,
+  type ListOptions as SessionListOptions,
   type PersistOptions as SessionPersistOptions,
 } from './core/session.js';
 export { getPointer, setPointer, pointersOverlap } from './core/pointer.js';
@@ -185,3 +189,20 @@ export {
   type Scope,
   type Promotion,
 } from './core/filter-scope.js';
+
+/* ONE state per filtered field — what a chip, its menu, a column heading and
+   that heading's menu all read, so none of them derives its own answer.
+   TRAP T-one-state-per-filtered-field */
+export {
+  fieldState,
+  stateClause,
+  statesFilter,
+  filterFace,
+  type FieldState,
+  type ValueState,
+  type ValueEntry,
+  type FilterState,
+  type FieldFacts,
+  type FieldReading,
+  type FilterFace,
+} from './core/filter-state.js';

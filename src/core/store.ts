@@ -351,6 +351,35 @@ export function valueSet(values: Iterable<unknown>): { has: (v: unknown) => bool
   return { has: (v: unknown) => keys.has(text(v)) };
 }
 
+/**
+ * Several clauses as ONE filter: bare when there is one, ANDed when there are
+ * more, `undefined` when there are none.
+ *
+ * Five places wrote this by hand, which is four chances for one of them to
+ * decide an empty list means something other than "no filter".
+ */
+export function andFilter(clauses: readonly Filter[]): Filter | undefined {
+  const kept = clauses.filter(Boolean);
+  if (!kept.length) return undefined;
+  return kept.length === 1 ? kept[0]! : (['and', ...kept] as Filter);
+}
+
+/**
+ * One field and the values picked for it, as a clause.
+ *
+ * ONE pick is `eq`; SEVERAL become `in`, because `eq` against a list can never
+ * match. `ne` inverts to `notin` the same way. Nothing picked is no clause.
+ */
+export function picksClause(
+  field: string,
+  picked: readonly unknown[],
+  op: FilterOp = 'eq',
+): FilterClause | undefined {
+  if (!picked.length) return undefined;
+  if (picked.length === 1) return [field, op, picked[0]];
+  return [field, op === 'ne' ? 'notin' : 'in', [...picked]];
+}
+
 /** Rows matching a filter. */
 export function filterRows(rows: readonly Row[], filter?: Filter): Row[] {
   return filter ? rows.filter((r) => matchesFilter(r, filter)) : [...rows];

@@ -4,7 +4,7 @@
  * TRAP T-one-comparator-one-source
  * TRAP T-view-state-lives-in-one-object
  */
-import { filterFields, filterNeedles } from './store.js';
+import { andFilter, filterFields, filterNeedles, picksClause } from './store.js';
 import type { Populatable } from './apply-state.js';
 import type { Filter, LoadOptions, LoadResult, Row, SortDirection, SortSpec, Store } from './store.js';
 
@@ -267,9 +267,7 @@ export class DataSource extends EventTarget {
 
   /** Every named part, ANDed — or undefined when there are none. */
   #composed(): Filter | undefined {
-    const parts = [...this.#parts.values()];
-    if (!parts.length) return undefined;
-    return parts.length === 1 ? parts[0] : (['and', ...parts] as Filter);
+    return andFilter([...this.#parts.values()]);
   }
 
   /** The shared tail of `setFilter` and `contribute`. */
@@ -657,13 +655,13 @@ function filterFromChips(detail: Record<string, unknown>): Filter | undefined {
   const values = detail['values'];
   if (values && typeof values === 'object') {
     for (const [field, picked] of Object.entries(values as Record<string, unknown>)) {
-      if (!Array.isArray(picked) || !picked.length) continue;
-      clauses.push(picked.length === 1 ? [field, 'eq', picked[0]] : [field, 'in', picked]);
+      if (!Array.isArray(picked)) continue;
+      const clause = picksClause(field, picked);
+      if (clause) clauses.push(clause);
     }
   }
 
   // TRAP T-toggle-chips-have-no-field — `active` becomes no clause here.
 
-  if (!clauses.length) return undefined;
-  return clauses.length === 1 ? clauses[0]! : ['and', ...clauses];
+  return andFilter(clauses);
 }
