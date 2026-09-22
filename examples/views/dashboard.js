@@ -6,7 +6,7 @@ import {
   ArrayStore, DataSource, viewOptions, onViewPicked,
   loadSavedViews, saveViewAs,
   // Aggregation lives in the data layer, not here. TRAP T-aggregation-is-data.
-  countBy, bandBy, seriesBy, reduceRows,
+  countBy, bandBy, seriesBy, reduceRows, bindLegendFilter,
 } from '../../dist/index.js';
 import { globalFilters } from './global-filters.js';
 import { DASHBOARD_VIEWS } from './dashboard-views.js';
@@ -27,26 +27,6 @@ export async function init(root) {
     // Options come FROM the views, so a label cannot drift from its view.
     // TRAP T-a-chip-filters-the-values-the-data-has.
     filters: globalFilters(viewOptions(views), undefined, customerOrgs),
-  };
-
-  // ── Metric tiles (with sparkline series). ───────────────────────────
-  const metrics = {
-    'm-endpoints': {
-      label: 'Active endpoints', value: '1,284', deltaPercent: 3.1, trend: 'up',
-      values: [1180, 1195, 1210, 1188, 1230, 1255, 1249, 1270, 1284],
-    },
-    'm-alerts': {
-      label: 'Open alerts', value: '37', deltaPercent: -12.5, trend: 'down',
-      values: [61, 58, 54, 49, 52, 45, 41, 39, 37],
-    },
-    'm-uptime': {
-      label: 'Fleet uptime', value: '99.2%', deltaPercent: 0.4, trend: 'up',
-      values: [98.4, 98.7, 98.5, 99.0, 98.9, 99.1, 99.0, 99.3, 99.2],
-    },
-    'm-patch': {
-      label: 'Patch compliance', value: '87%', deltaPercent: 5.6, trend: 'up',
-      values: [74, 76, 79, 78, 81, 83, 84, 86, 87],
-    },
   };
 
 
@@ -87,12 +67,6 @@ export async function init(root) {
   header?.populate(headerConfig);
   header?.setAttribute('data-notifications', '4');
 
-  // No status here: the metric derives it from its own trend, and a hand-set
-  // one could disagree with the data.
-  for (const [id, data] of Object.entries(metrics)) {
-    root.querySelector(`#${id}`)?.populate(data);
-  }
-
   // ONE SOURCE, EIGHT BOUND COMPONENTS: a filter set once fans out to every
   // visualisation. Each chart is a different summary of the same records,
   // computed by its own `as` adapter. Every bind is readonly — a chart shows
@@ -105,9 +79,13 @@ export async function init(root) {
   const page = new AbortController();
   let content = new AbortController();
 
+  /* Every one of these is a SUMMARY, so `scope: 'all'`: the default bind hands
+     over the page, and this source declares no pageSize only by luck — one day
+     it will, and a chart counting a window looks perfectly reasonable.
+     TRAP T-a-summary-binds-to-all-the-rows */
   const show = (sel, as) => {
     const el = $(sel);
-    if (el) source.bind(el, { readonly: true, as, signal: page.signal });
+    if (el) source.bind(el, { readonly: true, scope: 'all', as, signal: page.signal });
   };
   const bindContent = (el, as) => {
     if (el) source.bind(el, { readonly: true, as, signal: content.signal });
@@ -122,6 +100,29 @@ export async function init(root) {
   // by identity.
   const byCategory = (rows) => countBy(rows, 'category', { order: CATEGORY_ORDER });
   const byOs = (rows) => countBy(rows, 'os', { order: OS_ORDER });
+
+  /* METRIC TILES, derived. They used to be a hardcoded table populated before
+     the source even existed, so a filter never touched them. Each is now the
+     same rows reduced a different way, and the sparkline is a real series over
+     the day field rather than a drawn squiggle. */
+  show('#m-endpoints', (rows) => ({
+    label: 'Alerts', value: rows.length,
+    values: seriesBy(rows, 'day', DAY_ORDER, 'Alerts').values,
+  }));
+  show('#m-alerts', (rows) => ({
+    label: 'Critical', value: rows.filter((r) => r.severity === 'critical').length,
+    values: seriesBy(rows.filter((r) => r.severity === 'critical'),
+      'day', DAY_ORDER, 'Critical').values,
+  }));
+  show('#m-uptime', (rows) => ({
+    label: 'Mean storage', value: `${Math.round(reduceRows(rows, 'mean', 'storage'))}%`,
+    values: DAY_ORDER.map((d) =>
+      Math.round(reduceRows(rows.filter((r) => r.day === d), 'mean', 'storage'))),
+  }));
+  show('#m-patch', (rows) => ({
+    label: 'Categories', value: countBy(rows, 'category').length,
+    values: countBy(rows, 'category', { order: CATEGORY_ORDER }).map((d) => d.value),
+  }));
 
   show('#bar', byCategory);
   show('#bar-legend', byCategory);
@@ -167,24 +168,26 @@ export async function init(root) {
     });
   }
 
-  // ── Legends toggle their chart ──────────────────────────────────────
-  // A legend does not know what it labels, so the page joins them up. Hiding
-  // RE-RENDERS, because both charts derive their scale from visible data.
-  // `indices`, not `index`: a legend rolls its tail into one "Other" row, so
-  // one row can stand for several series.
-  $('#donut-legend')?.addEventListener('legend-item-click', (e) => {
-    for (const i of e.detail.indices) $('#donut')?.setSliceHidden(i, !e.detail.active);
+  /* ── Legends are FILTERS ─────────────────────────────────────────────
+     These used to call setBarHidden() / setSliceHidden(): the bar vanished
+     from that ONE chart and nothing else on the page knew, so the tiles and
+     the other charts kept counting rows the reader had just excluded.
+
+     Each legend now contributes `notin` on the field its labels are values
+     of, so every bound component re-reads together.
+     TRAP T-a-legend-toggle-is-a-filter */
+  bindLegendFilter($('#bar-legend'), source, {
+    field: 'category', values: CATEGORY_ORDER, signal: page.signal,
   });
+  bindLegendFilter($('#donut-legend'), source, {
+    field: 'os', values: OS_ORDER, signal: page.signal,
+  });
+  /* The LINE legend names two SERIES, not values of one field — "Sessions" is
+     every non-critical row. So it stays a per-chart hide: there is no single
+     field whose values those labels are, and inventing one would be a lie.
+     TRAP T-a-legend-toggle-is-a-filter */
   $('#line-legend')?.addEventListener('legend-item-click', (e) => {
     for (const i of e.detail.indices) $('#line')?.setSeriesHidden(i, !e.detail.active);
-  });
-  $('#bar-legend')?.addEventListener('legend-item-click', (e) => {
-    for (const i of e.detail.indices) $('#bar')?.setBarHidden(i, !e.detail.active);
-  });
-  // The legend reports BOTH lists, so there is nothing to diff here.
-  $('#bar-legend')?.addEventListener('legend-breakdown-change', (e) => {
-    for (const i of e.detail.active) $('#bar')?.setBarHidden(i, false);
-    for (const i of e.detail.hidden) $('#bar')?.setBarHidden(i, true);
   });
   // The gauge legend is a KEY, not a filter — a gauge shows one value.
 

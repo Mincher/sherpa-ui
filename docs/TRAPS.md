@@ -7170,12 +7170,15 @@ Three things make it safe:
   particular bind receives, not `#result.rows` — otherwise a summary would be
   skipped whenever the page array happened to be unchanged.
 
-`examples/views/dashboard.js` predates this and is correct only by accident: its
-source declares no `pageSize`, so nothing was ever sliced.
+`examples/views/dashboard.js` predated this and was correct only by accident:
+its source declares no `pageSize`, so nothing was ever sliced. It now says
+`scope: 'all'` outright, because that luck is one added pageSize from running
+out.
 
 - Site: `src/core/data-source.ts`
 - Site: `test/unit/summary-scope.test.mjs`
 - Site: `examples/views/records.js`
+- Site: `examples/views/dashboard.js`
 
 ### T-a-legend-toggle-is-a-filter
 
@@ -7210,14 +7213,17 @@ Four things the rule gets right, each with a test:
 - **Nothing ticked means no constraint**, not "hide everything" — the reading
   the rest of the toolbar already uses.
 
-`examples/views/dashboard.js` still uses the old per-chart calls. That is not
-wrong for a page whose charts are separate summaries of separate questions;
-it is wrong when the legend labels a field the rest of the view also shows.
+`examples/views/dashboard.js` is converted too — clicking "Disk" takes its
+Alerts tile from 1284 to 881 and recounts the donut legend to sum to 881. Its
+LINE legend is the one that stays a per-chart hide: those labels name two
+SERIES ("Sessions" is every non-critical row), not values of one field, so
+there is nothing to filter on and inventing a field would be a lie.
 
 - Site: `src/core/legend-filter.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/legend-filter.test.mjs`
 - Site: `examples/views/records.js`
+- Site: `examples/views/dashboard.js`
 
 ### T-a-legend-remembers-its-off-set-by-label
 
@@ -7236,4 +7242,11 @@ exactly what the filter needs — no lookup table.
 The getter is the read-back door the ownership rule asks for: a host that SET
 something needs to ask what the component now holds.
 
+**A roll-up row records what it FOLDED.** Its own label is "Other", which is a
+value of nothing: recording that dims the row and narrows nothing, which is
+exactly what the dashboard did on the first pass — clicking Other left the
+count at 1284 and `off` reading `["Other"]`. It now records the real
+categories, and reads as ON while any of them is.
+
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
+- Site: `test/e2e/reforged-chart-legend.spec.ts`

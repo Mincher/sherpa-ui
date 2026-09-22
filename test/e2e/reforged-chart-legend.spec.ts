@@ -366,3 +366,98 @@ test('label and value carry two inks, and BOTH grey when the entry is off', asyn
   expect(r.off.label).toBe('rgb(179, 179, 195)');
   expect(r.off.value).toBe('rgb(179, 179, 195)');
 });
+
+/**
+ * The off-set is the legend's PUBLIC state, and it survives a re-populate.
+ *
+ * A source pushes new rows on every filter change. Before this the render
+ * wrote no aria-pressed at all, so each push silently cleared every toggle —
+ * and nothing outside could set them, so a chip over the same field had no way
+ * to push back.
+ *
+ * TRAP T-a-legend-remembers-its-off-set-by-label
+ */
+test('the off-set is kept BY LABEL, and survives a re-populate', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-chart-legend') as HTMLElement & {
+      rendered?: Promise<void>; populate?: (d: unknown) => void; off: string[];
+    };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+
+    el.populate!([
+      { label: 'active', value: 24, colorIndex: 1 },
+      { label: 'trial', value: 25, colorIndex: 2 },
+      { label: 'churned', value: 25, colorIndex: 3 },
+    ]);
+    await settle();
+
+    const rows = () => Array.from(el.shadowRoot!.querySelectorAll<HTMLElement>('.item'));
+    const pressed = () => rows().map((x) => x.getAttribute('aria-pressed'));
+
+    rows()[2]!.click();                       // churned off
+    await settle();
+    const afterClick = { off: [...el.off], pressed: pressed() };
+
+    /* A FILTER re-populate: `active` is gone and every index shifts. An
+       index-keyed off-set would now dim the wrong row. */
+    el.populate!([
+      { label: 'trial', value: 25, colorIndex: 2 },
+      { label: 'churned', value: 0, colorIndex: 3 },
+    ]);
+    await settle();
+    const afterRepopulate = { off: [...el.off], pressed: pressed(),
+      labels: rows().map((x) => x.querySelector('.label')!.textContent) };
+
+    // Set from OUTSIDE — the door a chip over the same field needs.
+    el.off = ['trial'];
+    await settle();
+    const afterSet = { off: [...el.off], pressed: pressed() };
+
+    return { afterClick, afterRepopulate, afterSet };
+  });
+
+  expect(r.afterClick).toEqual({ off: ['churned'], pressed: ['true', 'true', 'false'] });
+
+  // churned is still the OFF one, though it is now index 1 rather than 2.
+  expect(r.afterRepopulate.labels).toEqual(['trial', 'churned']);
+  expect(r.afterRepopulate).toMatchObject({
+    off: ['churned'], pressed: ['true', 'false'],
+  });
+
+  expect(r.afterSet).toEqual({ off: ['trial'], pressed: ['false', 'true'] });
+});
+
+/**
+ * "Other" is a value of nothing. A roll-up row must record the categories it
+ * FOLDED, or a caller filtering on the off-set dims the row and narrows
+ * nothing — which is exactly what happened on the dashboard.
+ * TRAP T-a-legend-remembers-its-off-set-by-label
+ */
+test('a ROLL-UP row records the real labels it folded, not "Other"', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-chart-legend') as HTMLElement & {
+      rendered?: Promise<void>; populate?: (d: unknown) => void; off: string[];
+    };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+
+    // Seven rows: the legend caps at six and folds the tail into "Other".
+    el.populate!(['a', 'b', 'c', 'd', 'e', 'f', 'g'].map((label, i) => ({
+      label, value: i, colorIndex: i + 1,
+    })));
+    await settle();
+
+    const other = el.shadowRoot!.querySelector<HTMLElement>('.rollup-toggle');
+    const label = other?.querySelector('.label')?.textContent;
+    other?.click();
+    await settle();
+    return { label, off: [...el.off].sort() };
+  });
+
+  expect(r.label).toBe('Other');
+  // NOT ['Other'] — those names are what a filter can act on.
+  expect(r.off).toEqual(['f', 'g']);
+});

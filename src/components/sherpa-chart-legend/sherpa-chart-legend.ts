@@ -123,8 +123,14 @@ export class SherpaChartLegend extends SherpaElement {
         swatch.style.setProperty('--_border', seriesBorderVar(i, item.colorIndex));
       }
       entry.querySelector('.label')!.textContent = item.label;
-      // Remembered across a re-populate, so a source push does not clear it.
-      if (!readonly) entry.setAttribute('aria-pressed', String(!this.#off.has(item.label)));
+      /* Remembered across a re-populate, so a source push does not clear it.
+         A roll-up row is ON while ANY of its folded categories is. */
+      if (!readonly) {
+        const on = isRollup
+          ? this.#rolled.some((r) => !this.#off.has(r.item.label))
+          : !this.#off.has(item.label);
+        entry.setAttribute('aria-pressed', String(on));
+      }
       entry.querySelector('.value')!.textContent = item.value != null ? String(item.value) : '';
       // Strip the button semantics; `disabled` would say the wrong thing.
       if (readonly) {
@@ -186,13 +192,21 @@ export class SherpaChartLegend extends SherpaElement {
     // aria-pressed is both the accessible state and the CSS hook for dimming.
     const active = item.getAttribute('aria-pressed') !== 'true';
     item.setAttribute('aria-pressed', String(active));
-    const label = this.#items[Number(raw)]?.label;
-    if (label != null) {
+    const index = Number(raw);
+    const isRollup = this.#rolledUp && index === this.#items.length - 1;
+
+    /* The off-set holds REAL labels. A roll-up row is named "Other", which is
+       a value of nothing — record the categories it folded instead, or a
+       caller filtering on the set would dim the row and narrow nothing.
+       TRAP T-a-legend-remembers-its-off-set-by-label */
+    const labels = isRollup
+      ? this.#rolled.map((r) => r.item.label)
+      : [this.#items[index]?.label];
+    for (const label of labels) {
+      if (label == null) continue;
       if (active) this.#off.delete(label);
       else this.#off.add(label);
     }
-    const index = Number(raw);
-    const isRollup = this.#rolledUp && index === this.#items.length - 1;
 
     // "Other" SUSPENDS its whole group — TRAP T-legend-suspend-remembers-the-set.
     if (isRollup) this.#syncBreakdownBoxes(active);
