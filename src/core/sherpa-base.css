@@ -6,6 +6,28 @@
  * TRAP T-import-dies-in-an-adopted-sheet.
  */
 
+/* ── Functions ───────────────────────────────────────────────────────────
+ * A CSS `@function` is REAL in Chromium and WebKit and absent in Firefox 155,
+ * where it renders NOTHING — silently, which is why this library had none.
+ * `@supports` closes that: the longhand is written first and always, and the
+ * function only replaces it where the engine says it works. Measured in all
+ * three engines, including inside an adopted shadow sheet: Firefox drops the
+ * `@function` rule entirely and keeps the longhand.
+ *
+ * TRAP T-a-css-function-needs-its-longhand-first
+ */
+
+/**
+ * A surface shaded toward its own ink — the hover and pressed states.
+ *
+ * `--amount` is how far it moves, so 8% reads as "one step darker" where
+ * `92%` read as "eight percent of something". The scale is 8% hover,
+ * 16% pressed.
+ */
+@function --shade(--surface, --amount) {
+  result: color-mix(in oklab, var(--surface) calc(100% - var(--amount)), currentColor);
+}
+
 *,
 *::before,
 *::after {

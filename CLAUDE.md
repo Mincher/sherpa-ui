@@ -367,14 +367,32 @@ background: var(--_status-surface-strong, var(--sherpa-surface-control-primary-d
 
 Available: `--_status-surface` (style-surface/base), `--_status-surface-subtle` (+1 — the pale tint, e.g. the Toast card), `--_status-surface-strong` (+2), `--_status-shadow` (style-surface/shadow — status-tinted elevation colour), `--_status-border` (neutral in most modes), `--_status-border-strong` (style-border/base +1 — the status-tinted rule/stroke, e.g. a sparkline), `--_status-text`, `--_status-text-on-color`, `--_status-icon`.
 
-### No CSS `@function` library
+### CSS `@function`: longhand first, function second
 
-The reforged branch has **no** `@function` library — there is no `sherpa-functions.css`,
-and `SherpaElement.sharedStyles` is exactly `src/core/sherpa-base.css` + the Font
-Awesome CDN sheet (see `src/index.ts`). Write transitions, shadows and alpha blends
-longhand from tokens. A CSS `@function` fails SILENTLY where it is unsupported
-(the property falls back to its initial value), which is why focus rings never
-used one.
+A CSS `@function` is REAL in Chromium and WebKit, and absent in Firefox 155
+where a declaration using one renders NOTHING — silently, with no error. That
+is why this library had no function library.
+
+**`@supports` closes it**, and the pattern is always the same two blocks:
+
+```css
+/* 1. The longhand. Every engine, always. */
+&:hover { background: color-mix(in oklab, var(--_surface) 92%, currentColor); }
+
+/* 2. The function. SECOND, so it wins only where it works. */
+@supports (background: --shade(red, 8%)) {
+  &:hover { background: --shade(var(--_surface), 8%); }
+}
+```
+
+Measured in all three engines, including inside an adopted shadow sheet:
+Firefox drops the `@function` rule entirely and keeps the longhand, and the
+three render the same colour to five decimal places.
+
+`--shade(--surface, --amount)` is the first and so far only function, in
+`sherpa-base.css`. Add another only with the same guard and the same
+three-engine proof — a function without its longhand is a rule that vanishes
+for a third of the web. TRAP `T-a-css-function-needs-its-longhand-first`.
 
 For focus rings, always use the explicit fallback pattern — and an INSET ring, so
 the stroke is drawn INSIDE the component's own box rather than bleeding over its

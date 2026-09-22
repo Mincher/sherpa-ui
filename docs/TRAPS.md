@@ -7357,6 +7357,54 @@ delete" is stated once for both.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/cycle.test.mjs`
 
+### T-a-css-function-needs-its-longhand-first
+
+A CSS `@function` renders NOTHING in an engine that lacks it — not a fallback,
+not an error, just an unset property. Measured in Firefox 155: a focus ring
+written as `--ring(2px)` simply does not draw.
+
+That is why this library had no function library, and the ruling that forbade
+one was written before anyone tried the guard.
+
+**`@supports` closes it.** Two blocks, always in this order:
+
+```css
+/* 1. The longhand. Every engine, always. */
+&:hover { background: color-mix(in oklab, var(--_surface) 92%, currentColor); }
+
+/* 2. The function. SECOND, so it wins only where it works. */
+@supports (background: --shade(red, 8%)) {
+  &:hover { background: --shade(var(--_surface), 8%); }
+}
+```
+
+Measured in all three engines, including inside an ADOPTED shadow sheet, which
+is the demanding case because `@import` dies there:
+
+| engine | `@function` rule | renders |
+|---|---|---|
+| Chromium 1xx | kept, `CSSFunctionRule` | via the function |
+| WebKit | kept, `CSSFunctionRule` | via the function |
+| Firefox 155 | **dropped from the sheet** | via the longhand |
+
+Firefox discarding the rule is what makes this safe: there is nothing left to
+half-apply. All three land on the same colour to five decimal places.
+
+**What a function is FOR here.** `--shade(--surface, --amount)` names a step —
+8% hover, 16% pressed — where thirteen components each wrote a raw percentage
+and drifted to five different ones. The function is not shorter; it is NAMED,
+which is the same reason `--sherpa-focus-ring` is a custom property rather than
+48 copies of one value (`T-one-value-one-declaration`).
+
+**Why not a custom property instead?** A property holds one value. This takes
+ARGUMENTS — a different surface and a different step per call — which a
+property cannot express.
+
+- Site: `src/core/sherpa-base.css`
+- Site: `src/components/sherpa-button/sherpa-button.css`
+- Site: `playwright.config.ts`
+- Site: `test/e2e/reforged-css-functions.spec.ts`
+
 ### T-one-value-one-declaration
 
 The focus indicator was written by hand at **48 sites across 29 files** —

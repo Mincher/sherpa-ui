@@ -40,9 +40,14 @@ export default defineConfig({
 
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    // firefox / webkit available for cross-browser runs when needed:
-    // { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-    // { name: 'webkit',  use: { ...devices['Desktop Safari'] } },
+    /* Cross-browser on demand: `npx playwright test --project=firefox`.
+       Not in the default run — it triples the wall clock for a suite whose
+       assertions are engine-agnostic. The ONE place an engine difference is
+       load-bearing is `reforged-css-functions.spec.ts`, which asserts the
+       RESULT rather than the mechanism, so it passes either way.
+       TRAP T-a-css-function-needs-its-longhand-first */
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
   ],
 
   /* TWO servers. The harness needs the repo served statically; the

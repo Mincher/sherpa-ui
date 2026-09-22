@@ -122,6 +122,14 @@
     &:active { background: color-mix(in oklab, var(--_surface) 84%, currentColor); }
   }
 
+  /* The SAME two steps, named. Second, so it wins where `@function` is real
+     and leaves the longhand above standing where it is not.
+     TRAP T-a-css-function-needs-its-longhand-first */
+  @supports (background: --shade(red, 8%)) {
+    &:hover { background: --shade(var(--_surface), 8%); }
+    &:active { background: --shade(var(--_surface), 16%); }
+  }
+
   &:focus-visible {
     outline: none;
     /* Gap ring in style-surface/base, then the accent ring. The token must be a
