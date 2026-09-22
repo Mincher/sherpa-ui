@@ -4,6 +4,7 @@
  * @method populate(data: MetricData) — the single data path
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { formatValue } from '../../core/data/format-tick.js';
 import '../sherpa-sparkline/sherpa-sparkline.js';
 
 interface MetricData {
@@ -49,7 +50,8 @@ function deriveValue(values?: number[], show?: 'last' | 'total'): string | null 
   const n = show === 'total'
     ? usable.reduce((sum, v) => sum + v, 0)
     : usable[usable.length - 1]!;
-  return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  // ONE number format for the library. TRAP T-a-tooltip-is-not-an-axis
+  return formatValue(n);
 }
 
 export class SherpaMetric extends SherpaElement {

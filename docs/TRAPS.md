@@ -8235,7 +8235,7 @@ function was the mistake.
 - Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.ts`
 - Site: `src/components/sherpa-sparkline/sherpa-sparkline.ts`
 - Site: `test/e2e/reforged-barchart.spec.ts`
-
+- Site: `src/components/sherpa-metric/sherpa-metric.ts`
 ### T-a-delta-is-derived-not-declared
 
 `sherpa-metric` derives its TREND from `deltaPercent` and its STATUS from the

@@ -173,8 +173,9 @@ export class SherpaDonutChart extends SherpaElement {
     /* NOT clamped: −5 is what the data says, and a printed total that quietly
        drops it disagrees with the rows behind it.
        TRAP T-one-total-for-the-ring-and-the-label */
-    const sum = datumTotal(shown, { clamp: false });
-    return sum.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    // `formatValue`, which this file already imports — it guards non-finite
+    // too. TRAP T-a-tooltip-is-not-an-axis
+    return formatValue(datumTotal(shown, { clamp: false }));
   }
 
   #onClick = (event: Event): void => {
