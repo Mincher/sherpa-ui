@@ -250,15 +250,19 @@ test('a column heading opens the SAME menu, over the column own values', async (
   expect(r.clause).toEqual(['tier', 'in', ['Gold', 'Silver']]);
 });
 
-test('the chip caret names its CONDITION, except the default', async ({ page }) => {
+test('the BADGE wears the condition sign; the caret keeps the value', async ({ page }) => {
   await bar(page);
   const r = await page.evaluate(async () => {
     const el = document.querySelector('sherpa-quick-filter-toolbar')!;
-    const chip = el.shadowRoot!.querySelector('sherpa-quick-filter[data-id="tier"]')!;
+    const chip = el.shadowRoot!.querySelector('sherpa-quick-filter[data-id="tier"]') as HTMLElement;
     const menu = chip.querySelector('sherpa-menu') as HTMLElement & { conditionValue: string };
-    const caret = (): string =>
-      chip.shadowRoot!.querySelector('.caret-label')?.textContent ?? '';
-    const wait = (): Promise<void> => new Promise((res) => { setTimeout(res, 100); });
+    const wait = (): Promise<void> => new Promise((res) => { setTimeout(res, 120); });
+    const badge = (): Record<string, unknown> => ({
+      sign: chip.dataset['count'] ?? null,
+      // A sign announces as nothing, so the WORD is the accessible name.
+      spoken: chip.shadowRoot!.querySelector('.count')?.getAttribute('aria-label') ?? null,
+      caret: chip.shadowRoot!.querySelector('.caret-label')?.textContent ?? '',
+    });
     const pick = (op: string): void => {
       const field = menu.shadowRoot!.querySelector('.condition') as HTMLElement & { value: string };
       field.value = op;
@@ -266,17 +270,20 @@ test('the chip caret names its CONDITION, except the default', async ({ page }) 
         .dispatchEvent(new Event('change', { bubbles: true }));
     };
 
+    // The menu names both at once: the word and the sign it will wear.
+    const rows = [...menu.shadowRoot!.querySelector('.condition')!.shadowRoot!
+      .querySelectorAll('.control option')].map((o) => o.textContent);
+
     const gold = [...menu.querySelectorAll('input')].find((i) => i.value === 'gold')!;
     gold.checked = true;
     gold.dispatchEvent(new Event('change', { bubbles: true }));
-    // A MULTI menu COMMITS, so the pick lands on Apply.
     menu.shadowRoot!.querySelector<HTMLElement>('.apply')!.click();
     await wait();
-    const onEq = caret();
+    const onEq = badge();
 
     pick('ne');
     await wait();
-    const onNe = caret();
+    const onNe = badge();
 
     pick('startswith');
     menu.conditionValue = 'Go';
@@ -284,12 +291,101 @@ test('the chip caret names its CONDITION, except the default', async ({ page }) 
       bubbles: true, composed: true, detail: {},
     }));
     await wait();
-    return { onEq, onNe, onTyped: caret() };
+    return { rows, onEq, onNe, onTyped: badge() };
   });
 
-  // `eq` is the DEFAULT, so naming it on every chip would be noise.
-  expect(r.onEq).toBe('Gold');
-  expect(r.onNe).toBe('Does not equal: Gold');
-  // A typing condition answers with what was TYPED, not with ticked rows.
-  expect(r.onTyped).toBe('Starts with: Go');
+  // The word says what it does; the sign is what the chip will wear.
+  expect(r.rows).toEqual([
+    'Equals (=)', 'Does not equal (!=)', 'Contains (∷)',
+    'Does not contain (!∷)', 'Starts with (∷*)', 'Ends with (*∷)',
+  ]);
+  // `eq` HAS a sign, but a badge on every default chip would be noise.
+  expect(r.onEq).toEqual({ sign: null, spoken: null, caret: 'Gold' });
+  expect(r.onNe).toEqual({ sign: '!=', spoken: 'Does not equal', caret: 'Gold' });
+  // A typing condition answers with what was TYPED, and the caret keeps it all.
+  expect(r.onTyped).toEqual({ sign: '∷*', spoken: 'Starts with', caret: 'Go' });
+});
+
+test('a TYPED condition survives Apply, and its hits mark', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>; populate(d: unknown): void;
+      clauses: Record<string, unknown>;
+    };
+    document.getElementById('root')!.replaceChildren(el);
+    await customElements.whenDefined('sherpa-quick-filter-toolbar');
+    await el.rendered;
+    el.populate([{
+      id: 'owner', label: 'Owner', select: 'single', removable: true, commit: true,
+      options: [{ value: 'ravi', label: 'Ravi' }, { value: 'dana', label: 'Dana' }],
+    }]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const chip = el.shadowRoot!.querySelector('sherpa-quick-filter[data-id="owner"]')!;
+    const menu = chip.querySelector('sherpa-menu') as HTMLElement & { conditionValue: string };
+    const wait = (): Promise<void> => new Promise((res) => { setTimeout(res, 120); });
+
+    const field = menu.shadowRoot!.querySelector('.condition') as HTMLElement & { value: string };
+    field.value = 'contains';
+    field.shadowRoot!.querySelector('.control')!
+      .dispatchEvent(new Event('change', { bubbles: true }));
+    await wait();
+
+    const input = menu.shadowRoot!.querySelector('.condition-value')!
+      .shadowRoot!.querySelector('.control') as HTMLInputElement;
+    input.value = 'Rav';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    await wait();
+    const typed = chip.hasAttribute('data-current');
+
+    /* APPLY is where this broke: the bar re-derived `data-current` from ticked
+       rows alone, so a typed answer switched its own chip back OFF while still
+       filtering. TRAP T-an-operator-decides-pick-or-type */
+    menu.shadowRoot!.querySelector<HTMLElement>('.apply')!.click();
+    await wait();
+    return { typed, applied: chip.hasAttribute('data-current'), clauses: el.clauses };
+  });
+
+  expect(r.typed).toBe(true);
+  expect(r.applied).toBe(true);
+  expect(r.clauses).toEqual({ owner: ['owner', 'contains', 'Rav'] });
+});
+
+test('the grid marks what a filter matched, from EITHER direction', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>; populate(d: unknown): void;
+    };
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate({
+      columns: [{ field: 'owner', header: 'Owner' }],
+      rows: [{ owner: 'Ravi Menon' }, { owner: 'Dana Whitlock' }],
+    });
+    const settle = (): Promise<void> =>
+      (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await settle();
+    const marks = (): string[] =>
+      [...el.shadowRoot!.querySelectorAll('mark.match')].map((m) => m.textContent ?? '');
+
+    const before = marks().length;
+
+    /* `data-needles` is how a clause set ANYWHERE reaches the cells — the grid
+       cannot see the toolbar that holds the chip.
+       TRAP T-a-needle-comes-from-either-direction */
+    el.setAttribute('data-needles', 'owner:contains:rav');
+    await settle();
+    const external = marks();
+
+    // `eq` matched the WHOLE value, so there is nothing to point at.
+    el.setAttribute('data-needles', 'owner:eq:Ravi Menon');
+    await settle();
+    const exact = marks().length;
+    return { before, external, exact };
+  });
+
+  expect(r.before).toBe(0);
+  // The CELL's casing wins: "rav" against "Ravi" leaves "Rav".
+  expect(r.external).toEqual(['Rav']);
+  expect(r.exact).toBe(0);
 });

@@ -1980,6 +1980,31 @@ written parse went wrong.
 
 - Site: `src/core/sherpa-element.ts`
 
+### T-a-needle-comes-from-either-direction
+
+What a view HIGHLIGHTS is what it FILTERED BY, whichever control set the
+filter. The grid marked only from its own column menus, so a toolbar chip
+reading "Contains Ravi" narrowed a hundred rows to twenty-two and pointed at
+nothing — the grid cannot see the bar that holds the chip.
+
+`filterNeedles()` reads them off the filter itself, in the data layer, and
+`DataSource.push()` writes `data-needles` beside `data-filter-fields`. One
+attribute, `field:op:value` per entry, NEWLINE separated — a comma or a space
+is exactly what a reader types into a filter.
+
+Only the SUBSTRING family appears. `eq` matched the whole value, so a mark
+would circle everything; `ne` and `notcontains` matched by NOT being there, so
+there is nothing to circle. That rule is `MARKABLE_OPS` in `sherpa-element.ts`,
+next to `markNeedle()`, which is the one decision every caller shares:
+needle-or-nothing, then `markMatch`. See `T-mark-match-is-one-shape`.
+
+- Site: `src/core/store.ts`
+- Site: `src/core/data-source.ts`
+- Site: `src/core/sherpa-element.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
+- Site: `test/e2e/reforged-filter-conditions.spec.ts`
+
 ### T-mark-match-is-one-shape
 
 `markMatch` rebuilds an element as before + `<mark class="match">` + after,
@@ -2817,13 +2842,30 @@ because `eq` against a list can never match.
 
 **A TYPED answer is a filter, so a chip switches on without a tick.** Deriving
 `data-current` from ticked rows alone left "Starts with Go" showing as an OFF
-chip that filtered nothing — the condition never reached the query, because the
+chip that filtered nothing. THREE places derived it, and the last one found was
+the toolbar's own commit path: the chip set itself ON and the bar set it back
+OFF in the same Apply, which a mutation trace caught and reading the code did
+not. Anywhere `data-current` is derived has to ask for the typed answer too — the condition never reached the query, because the
 bar reported `values` and a typed answer is not in there. Three things had to
 agree: the chip's own on-state, the bar relaying `condition-change`, and the
 view reading `clauses` in place of re-deriving them from `values`.
 
-The chip's caret names the condition — "Does not equal: Gold" — but not `eq`,
-which is the default and would be noise on every chip.
+**The BADGE wears the condition, the caret keeps the value.** A prefix ate the
+caret's width — "Does not equal: Gold" truncates where "Gold" would not — so
+the sign goes in the count badge instead: `!=`, `∷`, `!∷`, `∷*`, `*∷`, an
+inverse being its own sign with a leading `!`. `OP_SYMBOLS` sits beside
+`OP_LABELS` in `store.ts`.
+
+`eq` HAS a sign, because the condition menu names every row "Equals (=)" so a
+reader meets the word and the sign together once. But the badge skips it: it is
+the default, and a mark on every ordinary chip is noise. Two questions, one
+vocabulary.
+
+A badge shows a COUNT when several values are picked — the count is the thing a
+reader cannot get elsewhere, since the caret already shows the value. And a
+sign announces as nothing, so the badge's `aria-label` carries the WORD.
+Writing it is ordered AFTER `#syncCountTip`, which owns the count's own label
+and would otherwise wipe it.
 
 - Site: `src/core/store.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`

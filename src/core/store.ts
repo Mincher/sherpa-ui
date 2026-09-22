@@ -84,6 +84,33 @@ export const OP_TAKES: Record<FilterOp, 'list' | 'text' | 'range'> = {
 /** The condition a filter menu opens on. A reader picks a value far more often than typing one. */
 export const DEFAULT_OP: FilterOp = 'eq';
 
+/**
+ * Each operator as a BADGE — the short sign a chip wears.
+ *
+ * Signs a reader already knows from spreadsheets and filters, and an inverse
+ * is its own sign with a leading `!`, so the pairs read as pairs. `eq` is
+ * absent on purpose: it is `DEFAULT_OP`, and a badge on every chip is noise.
+ * TRAP T-an-operator-decides-pick-or-type
+ */
+export const OP_SYMBOLS: Record<FilterOp, string> = {
+  /* `eq` HAS a sign — the condition menu names every row "Equals (=)" — but a
+     chip wearing one on every default filter is noise, so the BADGE skips it.
+     Two different questions, one vocabulary. */
+  eq: '=',
+  ne: '!=',
+  lt: '<',
+  lte: '\u2264',
+  gt: '>',
+  gte: '\u2265',
+  contains: '\u2237',
+  notcontains: '!\u2237',
+  startswith: '\u2237*',
+  endswith: '*\u2237',
+  in: '\u2208',
+  notin: '!\u2208',
+  between: '\u2194',
+};
+
 export type FilterClause = [field: string, op: FilterOp, value: unknown];
 export type FilterGroup = ['and' | 'or', ...Filter[]];
 export type Filter = FilterClause | FilterGroup;
@@ -203,6 +230,42 @@ export function filterFields(filter: Filter | undefined): string[] {
   };
   walk(filter);
   return out;
+}
+
+/**
+ * Every SUBSTRING clause in a filter, as `field:op:value`, newline separated.
+ *
+ * What a view highlights is what it filtered by, so the answer comes from the
+ * filter itself rather than from whichever control happened to set it. Only
+ * the markable ops appear: `eq` matched the whole value and `ne` matched by
+ * absence, so neither leaves a span to point at.
+ *
+ * A NEWLINE separates entries, because a typed value may hold a comma or a
+ * space — which is exactly where a reader's own text lands.
+ * TRAP T-a-needle-comes-from-either-direction
+ */
+export function filterNeedles(filter: Filter | undefined): string {
+  const MARKABLE = new Set(['contains', 'startswith', 'endswith']);
+  const out: string[] = [];
+  const seen = new Set<string>();
+  const walk = (f: Filter | undefined): void => {
+    if (!f) return;
+    const [head, ...rest] = f;
+    if (head === 'and' || head === 'or') {
+      (rest as Filter[]).forEach(walk);
+      return;
+    }
+    const [field, op, value] = f as FilterClause;
+    if (typeof field !== 'string' || seen.has(field)) return;
+    if (!MARKABLE.has(op) || value == null) return;
+    const text = String(value);
+    if (!text) return;
+    seen.add(field);
+    // A newline in the value itself would split one entry into two.
+    out.push(`${field}:${op}:${text.replace(/\n/g, ' ')}`);
+  };
+  walk(filter);
+  return out.join('\n');
 }
 
 /** Does one row satisfy one filter? Groups recurse. */

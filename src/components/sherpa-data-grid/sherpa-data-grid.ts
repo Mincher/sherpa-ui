@@ -8,7 +8,7 @@
  * @see TRAP T-grid-reports-never-combines
  */
 import {
-  DATA_PROPS, SHARED_PROPS, SherpaElement, coerceNum, clampNum, markMatch,
+  DATA_PROPS, SHARED_PROPS, SherpaElement, coerceNum, clampNum, markNeedle,
 } from '../../core/sherpa-element.js';
 import { ORGANISE_ICONS } from '../../core/icons.js';
 import { nextSort, sortDirectionAttr, sortDirectionFrom } from '../../core/cycle.js';
@@ -110,6 +110,8 @@ export class SherpaDataGrid extends SherpaElement {
     // Fields an EXTERNAL filter narrows — the only way a column filtered from
     // outside can light its own header.
     'data-filter-fields',
+    // What a toolbar chip is matching on, so its hits mark in the cells.
+    'data-needles',
     'data-selectable',
     // Single vs multiple changes the CONTROL each row draws, so it re-renders.
     'data-select',
@@ -184,6 +186,7 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   override onChange(): void {
+    this.#syncNeedles();
     if (this.#columns.length) this.#render();
   }
 
@@ -193,6 +196,7 @@ export class SherpaDataGrid extends SherpaElement {
     this.#columns = Array.isArray(cfg.columns) ? cfg.columns : [];
     this.#rows = Array.isArray(cfg.rows) ? cfg.rows : [];
     this.#key = typeof cfg.key === 'string' ? cfg.key : null;
+    this.#syncNeedles();
     this.#actions = Array.isArray(cfg.actions) ? cfg.actions : [];
     this.toggleAttribute('data-actions', this.#actions.length > 0);
     // TRAP T-grid-populate-keeps-column-filters — header-row filters clear,
@@ -921,26 +925,48 @@ export class SherpaDataGrid extends SherpaElement {
    * T-grid-mark-is-substring-only — substring ops only, and the CELL's casing wins.
    */
   #fillCell(td: HTMLElement, text: string, col: GridColumn): void {
-    const kind = col.type ?? 'text';
+    if ((col.type ?? 'text') !== 'text') {
+      td.textContent = text;
+      return;
+    }
     const held = this.#columnFilters.get(col.field);
-    // Only SUBSTRING ops leave something to point at: `eq` matched the whole
-    // cell; `ne` and `notcontains` matched by NOT being there.
-    const markable = held && !held.range && !held.suspended
-      && (held.op === 'contains' || held.op === 'startswith' || held.op === 'endswith');
-
-    if (kind !== 'text' || !markable || !held.value) {
-      td.textContent = text;
+    if (held && !held.range && !held.suspended) {
+      markNeedle(td, text, held.value, held.op);
       return;
     }
-
-    const at = text.toLowerCase().indexOf(held.value.toLowerCase());
-    if (at < 0) {
-      td.textContent = text;
+    /* A toolbar chip's condition reaches here through `data-needles`, because
+       the grid cannot see the bar that holds it. Without this a chip filtering
+       "Contains Ravi" narrowed the rows and marked nothing.
+       TRAP T-a-needle-comes-from-either-direction */
+    const outside = this.#needles.get(col.field);
+    if (outside) {
+      markNeedle(td, text, outside.value, outside.op);
       return;
     }
+    td.textContent = text;
+  }
 
-    // The CELL's casing, not the needle's — markMatch slices the haystack.
-    markMatch(td, text, at, held.value.length);
+  /** Needles from OUTSIDE, by field — see `data-needles`. */
+  #needles = new Map<string, { op: string; value: string }>();
+
+  /**
+   * Parse `data-needles`: `field:op:value` per entry, newline separated.
+   *
+   * A newline, because a value may hold a comma or a space and a filter the
+   * reader typed is exactly where that happens.
+   */
+  #syncNeedles(): void {
+    this.#needles.clear();
+    for (const entry of (this.dataset['needles'] ?? '').split('\n')) {
+      const at = entry.indexOf(':');
+      if (at < 1) continue;
+      const rest = entry.slice(at + 1);
+      const opAt = rest.indexOf(':');
+      if (opAt < 1) continue;
+      this.#needles.set(entry.slice(0, at), {
+        op: rest.slice(0, opAt), value: rest.slice(opAt + 1),
+      });
+    }
   }
 
   // TRAP T-grid-thead-sticks-as-one-block — no sticky-offset measurement here.

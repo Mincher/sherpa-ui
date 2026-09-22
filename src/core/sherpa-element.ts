@@ -74,6 +74,37 @@ export function coerceNum(raw: string | null | undefined, fallback: number, opts
 }
 
 /**
+ * Which operators leave something to POINT AT in a cell.
+ *
+ * `eq` matched the whole value, so a mark would circle everything; `ne` and
+ * `notcontains` matched by NOT being there, so there is nothing to circle.
+ * Only the substring family leaves a span worth highlighting.
+ * TRAP T-a-needle-comes-from-either-direction
+ */
+export const MARKABLE_OPS: ReadonlySet<string> =
+  new Set(['contains', 'startswith', 'endswith']);
+
+/**
+ * Mark the first hit of `needle` in `el`, or write plain text when there is
+ * nothing to point at. ONE decision, so every caller highlights alike.
+ *
+ * The CELL's casing wins: "ana" against "Ana" leaves "Ana".
+ * TRAP T-mark-match-is-one-shape
+ */
+export function markNeedle(el: Element, text: string, needle: string, op: string): void {
+  if (!needle || !MARKABLE_OPS.has(op)) {
+    el.textContent = text;
+    return;
+  }
+  const at = text.toLowerCase().indexOf(needle.toLowerCase());
+  if (at < 0) {
+    el.textContent = text;
+    return;
+  }
+  markMatch(el, text, at, needle.length);
+}
+
+/**
  * Rebuild `el` as before + `<mark class="match">` + after, around one hit.
  * TRAP T-mark-match-is-one-shape
  */

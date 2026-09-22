@@ -12,7 +12,7 @@
  */
 import { SHARED_PROPS, SherpaElement } from '../../core/sherpa-element.js';
 import {
-  DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type FilterOp, valueSet,
+  DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_SYMBOLS, OP_TAKES, type FilterOp, valueSet,
 } from '../../core/store.js';
 import { NON_VALUE_ROWS } from '../../core/icons.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
@@ -176,7 +176,12 @@ export class SherpaMenu extends SherpaElement {
     // them when the SET changed.
     if (this.#sentOps.join() !== ops.join()) {
       this.#sentOps = [...ops];
-      void select.populate?.(ops.map((op) => ({ value: op, label: OP_LABELS[op] })));
+      /* "Equals (=)" — the WORD says what it does, the SIGN is what the chip's
+         badge will wear, so a reader meets both together once.
+         TRAP T-an-operator-decides-pick-or-type */
+      void select.populate?.(ops.map((op) => ({
+        value: op, label: `${OP_LABELS[op]} (${OP_SYMBOLS[op]})`,
+      })));
     }
 
     const op = ops.includes(this.op) ? this.op : (ops[0] ?? DEFAULT_OP);

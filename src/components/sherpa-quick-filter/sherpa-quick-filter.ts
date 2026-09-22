@@ -5,7 +5,9 @@
  * TRAP T-scope-does-not-stop-inheritance, TRAP T-icon-only-is-purely-css
  */
 import { SherpaElement } from '../../core/sherpa-element.js';
-import { DEFAULT_OP, OP_LABELS, OP_TAKES, type FilterOp, valueSet } from '../../core/store.js';
+import {
+  DEFAULT_OP, OP_LABELS, OP_SYMBOLS, OP_TAKES, type FilterOp, valueSet,
+} from '../../core/store.js';
 import { NON_VALUE_ROWS } from '../../core/icons.js';
 // Floating, so the count tooltip escapes the toolbar's clipping chip run.
 import '../sherpa-tooltip/sherpa-tooltip.js';
@@ -121,12 +123,14 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** Everything the chip derives from its picks. */
   #applySelection(values: string[]): void {
-    if (values.length > 1) this.dataset['count'] = String(values.length);
-    else delete this.dataset['count'];
     // A TYPING condition answers with text, so the chip is on without a tick.
     this.current = values.length > 0 || this.#hasTypedAnswer();
+    // The badge is written by #syncLabelForSelection, which knows the condition.
     this.#syncLabelForSelection(values);
+    // BEFORE the badge: this writes the count's own aria-label and would wipe
+    // the condition's. TRAP T-an-operator-decides-pick-or-type
     this.#syncCountTip(values);
+    this.#syncBadge(values.length);
     this.#syncEmpty();
     this.#syncText();
   }
@@ -207,7 +211,11 @@ export class SherpaQuickFilter extends SherpaElement {
       return;
     }
     const menu = this.menu;
-    const empty = !!menu && this.current && (menu.values?.length ?? 0) === 0;
+    /* A TYPED condition is an answer, so a chip holding one is not empty —
+       "Contains Ravi" filters, and painting it as "filtering nothing" is a
+       lie. TRAP T-an-operator-decides-pick-or-type */
+    const empty = !!menu && this.current
+      && (menu.values?.length ?? 0) === 0 && !this.#hasTypedAnswer();
     this.toggleAttribute('data-empty', empty);
   }
 
@@ -253,18 +261,53 @@ export class SherpaQuickFilter extends SherpaElement {
     const op = (menu?.dataset?.['op'] ?? DEFAULT_OP) as FilterOp;
     const isFilter = menu?.getAttribute('data-type') === 'filter';
 
+    /* The BADGE wears the condition as a sign, so the caret keeps the whole
+       width for the VALUE. `eq` is the default and gets none.
+       TRAP T-an-operator-decides-pick-or-type */
+    // `eq` HAS a sign, but a badge on every default chip is noise.
+    const named = isFilter && op !== DEFAULT_OP;
+    this.#condition = named ? OP_SYMBOLS[op] : '';
+    // A screen reader hears the WORD; only the badge wears the sign.
+    this.#conditionName = named ? OP_LABELS[op] : '';
+
     // A TYPING condition answers with what was typed, not with ticked rows.
     if (isFilter && (OP_TAKES[op] ?? 'list') === 'text') {
-      const typed = (menu?.conditionValue ?? '').trim();
-      this.valueLabel = typed ? `${OP_LABELS[op]}: ${typed}` : '';
+      this.valueLabel = (menu?.conditionValue ?? '').trim();
+      this.#syncBadge(0);
       return;
     }
 
     const first = values.length ? this.#valueLabel(values[0]!) : '';
-    const picked = values.length > 1 ? `${first}…` : first;
-    // `eq` is the default, so naming it on every chip is noise.
-    const name = isFilter && op !== DEFAULT_OP ? `${OP_LABELS[op]}: ` : '';
-    this.valueLabel = picked ? `${name}${picked}` : '';
+    this.valueLabel = values.length > 1 ? `${first}…` : first;
+    this.#syncBadge(values.length);
+  }
+
+  /** The condition's sign, or '' for the default. */
+  #condition = '';
+
+  /** The same condition in words, for the badge's accessible name. */
+  #conditionName = '';
+
+  /**
+   * The badge says how many, or WHICH CONDITION when there is only one value.
+   *
+   * A count and a condition cannot both fit, and the count is the one a reader
+   * can get elsewhere — the caret already shows the value, and the menu shows
+   * the ticks. So several picks keep the number.
+   */
+  #syncBadge(count: number): void {
+    if (count > 1) {
+      this.dataset['count'] = String(count);
+      return;
+    }
+    if (this.#condition) {
+      this.dataset['count'] = this.#condition;
+      // A sign announces as nothing; the word is what a reader needs.
+      this.$('.count')?.setAttribute('aria-label', this.#conditionName);
+      return;
+    }
+    this.$('.count')?.removeAttribute('aria-label');
+    delete this.dataset['count'];
   }
 
   /** Is this chip's menu on a typing condition with something typed? */

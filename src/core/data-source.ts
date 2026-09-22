@@ -4,7 +4,7 @@
  * TRAP T-one-comparator-one-source
  * TRAP T-view-state-lives-in-one-object
  */
-import { filterFields } from './store.js';
+import { filterFields, filterNeedles } from './store.js';
 import type { Populatable } from './apply-state.js';
 import type { Filter, LoadOptions, LoadResult, Row, SortDirection, SortSpec, Store } from './store.js';
 
@@ -580,6 +580,11 @@ export class DataSource extends EventTarget {
     // TRAP T-push-writes-state-as-attributes
     const fields = filterFields(filter);
     setAttr(el, 'data-filter-fields', fields.length ? fields.join(' ') : undefined);
+    /* …and WHAT it matched on, so a component can point at the hit. A view
+       highlights what it filtered by, whichever control set the filter.
+       TRAP T-a-needle-comes-from-either-direction */
+    const needles = filterNeedles(filter);
+    setAttr(el, 'data-needles', needles || undefined);
     setAttr(el, 'data-page', pageSize ? String(page) : undefined);
     setAttr(el, 'data-total-pages', pageSize ? String(this.totalPages) : undefined);
     setAttr(el, 'data-page-size', pageSize ? String(pageSize) : undefined);

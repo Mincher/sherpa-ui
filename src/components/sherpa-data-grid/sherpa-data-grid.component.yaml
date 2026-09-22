@@ -177,6 +177,15 @@ props:
     kind: content
     description: group rows by this column
   - $type: prop
+    name: data-needles
+    type: string
+    kind: content
+    description: >-
+      what an EXTERNAL filter MATCHED on, so its hits mark in the cells: `field:op:value` per entry,
+      NEWLINE separated. Written by SherpaDataSource beside data-filter-fields. Only substring ops
+      appear — `eq` matched the whole value and `ne` matched by absence, so neither leaves a span to
+      point at. TRAP T-a-needle-comes-from-either-direction
+  - $type: prop
     name: data-page
     type: string
     kind: content
