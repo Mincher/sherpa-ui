@@ -461,3 +461,62 @@ test('a ROLL-UP row records the real labels it folded, not "Other"', async ({ pa
   // NOT ['Other'] — those names are what a filter can act on.
   expect(r.off).toEqual(['f', 'g']);
 });
+
+/**
+ * OFF IS A STATE, NOT A DELETE — the twin of a filter chip, which keeps its
+ * value when switched off.
+ *
+ * A bound legend writes a filter, so the next push omits the rows it excluded
+ * and `countBy` drops that category entirely. The row vanished, and a row that
+ * is gone cannot be switched back on.
+ * TRAP T-a-suspended-legend-row-keeps-its-place
+ */
+test('a SUSPENDED row stays, at the value it last held', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-chart-legend') as HTMLElement & {
+      rendered?: Promise<void>; populate?: (d: unknown) => void; off: string[];
+    };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const read = () => Array.from(el.shadowRoot!.querySelectorAll<HTMLElement>('.item')).map(
+      (x) => `${x.querySelector('.label')!.textContent}=${x.querySelector('.value')!.textContent}` +
+             `[${x.getAttribute('aria-pressed')}]`);
+
+    el.populate!([
+      { label: 'active', value: 24, colorIndex: 1 },
+      { label: 'trial', value: 25, colorIndex: 2 },
+      { label: 'churned', value: 25, colorIndex: 3 },
+    ]);
+    await settle();
+    const start = read();
+
+    // Switch `churned` off, then push what the SOURCE would now send: the
+    // category is filtered out, so it is simply absent.
+    el.shadowRoot!.querySelectorAll<HTMLElement>('.item')[2]!.click();
+    await settle();
+    el.populate!([
+      { label: 'active', value: 24, colorIndex: 1 },
+      { label: 'trial', value: 25, colorIndex: 2 },
+    ]);
+    await settle();
+    const suspended = read();
+
+    // Back ON, and the source sends it again.
+    el.shadowRoot!.querySelectorAll<HTMLElement>('.item')[2]!.click();
+    await settle();
+    el.populate!([
+      { label: 'active', value: 24, colorIndex: 1 },
+      { label: 'trial', value: 25, colorIndex: 2 },
+      { label: 'churned', value: 25, colorIndex: 3 },
+    ]);
+    await settle();
+    return { start, suspended, resumed: read(), off: [...el.off] };
+  });
+
+  expect(r.start).toEqual(['active=24[true]', 'trial=25[true]', 'churned=25[true]']);
+  // STILL THERE, still 25, and in its own place — not appended at the end.
+  expect(r.suspended).toEqual(['active=24[true]', 'trial=25[true]', 'churned=25[false]']);
+  expect(r.resumed).toEqual(['active=24[true]', 'trial=25[true]', 'churned=25[true]']);
+  expect(r.off).toEqual([]);
+});

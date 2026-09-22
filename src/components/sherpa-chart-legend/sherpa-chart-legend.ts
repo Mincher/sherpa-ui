@@ -41,6 +41,13 @@ export class SherpaChartLegend extends SherpaElement {
    * TRAP T-a-legend-remembers-its-off-set-by-label
    */
   #off = new Set<string>();
+  /**
+   * The last row seen for each label, kept so a SUSPENDED one survives.
+   * An off row is filtered out of the data, so the next push omits it — and
+   * a row that vanishes cannot be switched back on.
+   * TRAP T-a-suspended-legend-row-keeps-its-place
+   */
+  #seen = new Map<string, LegendItem>();
   #rolledUp = false;
   /** Folded categories and the on-set, both keyed by SOURCE index. */
   #rolled: Array<{ index: number; item: LegendItem }> = [];
@@ -53,8 +60,30 @@ export class SherpaChartLegend extends SherpaElement {
 
   /** populate([{ label, value?, colorIndex }]). Keeps the off-set. */
   protected override renderData(data: unknown): void {
-    this.#items = this.#cap(Array.isArray(data) ? (data as LegendItem[]) : []);
+    const incoming = Array.isArray(data) ? (data as LegendItem[]) : [];
+    for (const item of incoming) this.#seen.set(item.label, item);
+    this.#items = this.#cap(this.#withSuspended(incoming));
     this.#render();
+  }
+
+  /**
+   * Put every suspended row back, at the value it last held.
+   *
+   * OFF is a state, not a delete — the twin of a filter chip, which keeps its
+   * value when you switch it off. The row is missing because the filter it
+   * wrote removed its rows, so re-adding it here is the only place that knows.
+   * Order follows the last full set, so a row does not jump on its way back.
+   * TRAP T-a-suspended-legend-row-keeps-its-place
+   */
+  #withSuspended(incoming: LegendItem[]): LegendItem[] {
+    if (!this.#off.size) return incoming;
+    const present = new Set(incoming.map((i) => i.label));
+    const missing = [...this.#off].filter((l) => !present.has(l) && this.#seen.has(l));
+    if (!missing.length) return incoming;
+
+    const order = [...this.#seen.keys()];
+    return [...incoming, ...missing.map((l) => this.#seen.get(l)!)]
+      .sort((a, b) => order.indexOf(a.label) - order.indexOf(b.label));
   }
 
   /**

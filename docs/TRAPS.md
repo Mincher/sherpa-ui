@@ -7359,3 +7359,39 @@ one under-described the API.
 - Site: `src/core/sherpa-element.ts`
 - Site: `scripts/check-ownership.mjs`
 - Site: `src/components/sherpa-grid-cell/sherpa-grid-cell.ts`
+
+### T-a-suspended-legend-row-keeps-its-place
+
+Will, 2026-09-22: *"I just want it to be set to an inactive state so that it
+can be toggled back on. Kinda like how we can toggle filter chips without
+losing the chip or set value."*
+
+Once a legend toggle became a FILTER (T-a-legend-toggle-is-a-filter), turning a
+row off deleted it. The chain is short and each link is correct on its own:
+
+1. The click writes `['status', 'ne', 'churned']` into the source.
+2. The source pushes the filtered rows.
+3. `countBy` returns one datum per category **present in those rows** —
+   `includeEmpty` is off by default, because an empty bar for a category
+   nothing matched is normally noise.
+4. `churned` has no rows, so it is absent, so the legend drops it.
+
+A row that is gone cannot be switched back on. Measured: clicking "churned"
+left three rows of four, while `legend.off` still correctly read
+`["churned"]` — the STATE was right and only the drawing was wrong.
+
+The legend now remembers the last datum it saw for each label and re-inserts a
+suspended one, in its original place, at the value it last held. So the row
+reads `churned 25`, greyed, rather than `churned 0` or nothing — the same way a
+filter chip keeps its set value when you switch it off.
+
+**Not fixed with `includeEmpty: true`.** That would show `churned 0`, which is
+a different claim: zero records match, rather than this category is excluded
+from the question. And it would put the burden on every caller.
+
+This is the suspend-versus-clear rule in a new place. "Off" keeps the value;
+"gone" deletes it. Collapsing them has now cost a typed filter, a sort column
+and a legend row.
+
+- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
+- Site: `test/e2e/reforged-chart-legend.spec.ts`
