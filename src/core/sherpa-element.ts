@@ -3,7 +3,7 @@
  * TRAP T-base-class-does-four-things
  */
 
-import { upgradeIcons } from './render-icon.js';
+import { hasIcon, renderIcon, upgradeIcons } from './render-icon.js';
 
 /** id → innerHTML. `null` when the file is a single flat template. */
 type TemplateMap = Map<string, string> | null;
@@ -436,8 +436,39 @@ export abstract class SherpaElement extends HTMLElement {
    * Override to render a data payload. May return a promise, which `populate()` chains.
    * TRAP T-populate-settles-after-render-data
    */
-  protected renderData(_data: unknown): Promise<void> | void {
-    /* no-op by default */
+  protected renderData(data: unknown): Promise<void> | void {
+    this.#renderDeclared(data);
+  }
+
+  /**
+   * The DEFAULT data path: write a payload's keys onto the attributes this
+   * component DECLARES, and let the existing prop sync do the rest.
+   *
+   * Every component can be bound to a DataSource — `bind()` never checked a
+   * type — but only 23 of 58 overrode `renderData`, so the other 35 took a
+   * payload and drew nothing. A tag showing one count is as legitimate a
+   * reader of app data as a grid showing a thousand rows.
+   *
+   * A key is written only when it names a DECLARED prop, so a payload meant
+   * for a grid cannot spray unknown attributes onto a button. A component with
+   * its own `renderData` is untouched — this is what it replaces, not
+   * something it must call.
+   *
+   * TRAP T-any-component-can-be-bound
+   */
+  #renderDeclared(data: unknown): void {
+    if (data == null || typeof data !== 'object' || Array.isArray(data)) return;
+    const Ctor = this.constructor as typeof SherpaElement;
+
+    for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
+      /* `label` → `data-label`, `iconStart` → `data-icon-start`. A key already
+         spelled `data-*` is taken as written. */
+      const attr = key.startsWith('data-')
+        ? key
+        : `data-${key.replace(/([A-Z])/g, (c) => `-${c.toLowerCase()}`)}`;
+      if (!(attr in Ctor.props)) continue;
+      this.set(attr, value as string | number | boolean | null | undefined);
+    }
   }
 
   /* ── Attribute coercion ──────────────────────────────────────────── */
@@ -500,15 +531,19 @@ export abstract class SherpaElement extends HTMLElement {
   }
 
   /**
-   * Render an icon value — a Font Awesome class list OR a single raw glyph.
+   * Render an icon value — an icon NAME becomes a Figma SVG, any other value
+   * is a raw character and stays text.
    * TRAP T-icon-value-takes-two-forms
    * TRAP T-write-icon-is-protected-not-private
    */
   protected writeIcon(el: Element, value: string): void {
+    // A stale `fa-*` class paints nothing now the webfont is gone, but it still
+    // selects — so it is stripped rather than left to accumulate.
     for (const cls of [...el.classList]) if (cls.startsWith('fa-')) el.classList.remove(cls);
-    if (value && /\bfa-/.test(value)) {
-      el.classList.add(...value.split(/\s+/).filter(Boolean));
-      el.textContent = '';
+    el.replaceChildren();
+    if (hasIcon(value)) {
+      el.classList.add('sherpa-icon-box');
+      renderIcon(el, value);
     } else {
       el.textContent = value === 'NaN' ? '' : value;
     }

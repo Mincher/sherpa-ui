@@ -7554,3 +7554,45 @@ next reader does not chase them again:
 
 - Site: `examples/views/global-filters.js`
 - Site: `examples/views/records.js`
+
+### T-any-component-can-be-bound
+
+Will, 2026-09-22: *"Any UI component should be able to ask the data layer. It's
+not restricted to certain components… The same goes for showing data. Granted
+the data may just be 1 text label, or even no data at all gets shown, but the
+capability should be there for any UI component."*
+
+Half of that was already true and half was not, which is the interesting part.
+
+**ASKING was always generic.** `bind()` never checked a type. Measured: a plain
+`sherpa-button`, bound and handed a `sort-change`, steered the query, took
+`data-locked`, and received `data-sort-field="tier"` back. There is no
+allow-list anywhere — `STEERING_EVENTS` names the events, not the elements
+permitted to send them.
+
+**SHOWING was not.** `renderData` defaulted to a no-op, and only 23 of 58
+components overrode it. The other 35 could be bound, would receive a payload,
+and would draw nothing — so the capability looked component-specific when only
+the rendering was.
+
+The base class now has a default: a payload's keys are written onto the
+attributes the component DECLARES, and the existing prop sync does the rest.
+`{ heading: '40 records' }` becomes `data-heading`, which `sherpa-section-header`
+already declares as `kind: 'content'` with `to: '.title'`.
+
+Three constraints make it safe:
+
+- **Only DECLARED keys land.** A payload shaped for a grid, handed to a header,
+  writes its `heading` and drops `totalPages`, `columns` and the rest. Without
+  that, one adapter's keys become another component's attributes.
+- **A component with its own `renderData` is untouched.** This is what it
+  replaces, not something it must call.
+- **A component declaring nothing shows nothing**, which is correct.
+  `sherpa-progress-bar` has no props; `sherpa-tag` takes its label as slotted
+  content. Neither is a gap.
+
+The camelCase → kebab mapping matches the props system: `iconStart` becomes
+`data-icon-start`, and a key already spelled `data-*` is taken as written.
+
+- Site: `src/core/sherpa-element.ts`
+- Site: `test/e2e/reforged-any-component-binds.spec.ts`
