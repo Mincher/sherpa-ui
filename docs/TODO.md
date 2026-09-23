@@ -934,9 +934,43 @@ will not mislead you — `T-writing-a-child-is-not-owning-yourself`.
 
 ### `[ ]` `sherpa-nav-section` is a component nothing uses
 
-`sherpa-nav` draws the same label-plus-rule itself. Measured: **zero**
-references. Either compose it or fold it — the same question as item 28
-(`sherpa-grid-cell`), so answer both in that sweep.
+`sherpa-nav` draws the same label-plus-rule itself. Measured 2026-09-23: **zero**
+components compose it, though it is exported, has 3 passing tests, and maps to a
+real Figma node (`Navigation Section/default`, `32:43134`).
+
+**It is not dead code** — the component works. `data-collapsed` correctly takes
+the label from `display: block` to `none`; both sides draw the same hairline
+from the same two tokens (`--sherpa-border-top` over
+`--sherpa-theme-border-default-2`). What differs is the structure:
+
+| | `sherpa-nav-section` | `sherpa-nav`'s own |
+|---|---|---|
+| label | `<span class="label">` | `<h2 class="section-label">` inside `<section>` |
+| rule | a sibling `<span class="rule">` | an `::after` on the label |
+
+**The blocker for composing is measured, and it is the shadow boundary.** The
+nav collapses its label from `:host([data-nav-state="collapsed"]) .section-label`
+— a rule in the NAV's sheet. Tested by putting a real `<sherpa-nav-section>`
+inside a collapsed nav's shadow root: the child's label stayed
+`rgb(53, 53, 61)` at 10px, untouched. A parent's `:host` rule cannot style a
+child component's shadow content.
+
+So composing costs one `setAttribute` — the nav mirrors its state onto each
+section's own `data-collapsed`, which already works. That is cheap, and it is
+the same shape as `sherpa-app-shell` mirroring the rail's state.
+
+Three ways to go, and this is really item 28's question:
+
+1. **Compose it.** The nav stamps `<sherpa-nav-section>` and mirrors
+   `data-collapsed`. Two components, one drawing, and the Figma link stays
+   meaningful.
+2. **Fold it.** Delete the element, keep the templates and CSS inside
+   `sherpa-nav`. Loses the standalone spec and 3 tests; the Figma component
+   stays a Figma component, as the layout-grid ruling allows.
+3. **Leave it.** It costs 65 lines and is correct.
+
+Answer it with `sherpa-grid-cell` in item 28 — the same question, and the grid
+is the bigger case.
 
 ---
 
