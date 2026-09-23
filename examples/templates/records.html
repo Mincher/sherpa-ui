@@ -10,12 +10,12 @@
        with an `as` adapter, so a filter set anywhere re-computes all of them.
        Nothing here is hardcoded and nothing recounts by hand.
        records.js binds each one with `scope: 'all'`. -->
-  <sherpa-metric id="m-customers" data-span="3"></sherpa-metric>
-  <sherpa-metric id="m-spend" data-span="3"></sherpa-metric>
-  <sherpa-metric id="m-seats" data-span="3"></sherpa-metric>
-  <sherpa-metric id="m-tickets" data-span="3"></sherpa-metric>
+  <sherpa-metric id="m-customers" data-width="xsmall"></sherpa-metric>
+  <sherpa-metric id="m-spend" data-width="xsmall"></sherpa-metric>
+  <sherpa-metric id="m-seats" data-width="xsmall"></sherpa-metric>
+  <sherpa-metric id="m-tickets" data-width="xsmall"></sherpa-metric>
 
-  <sherpa-container data-span="4" data-rows="6">
+  <sherpa-container data-width="medium" data-rows="6">
     <sherpa-container-header slot="header" data-heading="By status"></sherpa-container-header>
     <sherpa-barchart id="r-bar" data-label="Customers by status" data-legend="horizontal">
       <sherpa-chart-legend slot="legend" id="r-bar-legend"
@@ -23,7 +23,7 @@
     </sherpa-barchart>
   </sherpa-container>
 
-  <sherpa-container data-span="4" data-rows="6">
+  <sherpa-container data-width="medium" data-rows="6">
     <sherpa-container-header slot="header" data-heading="By plan"></sherpa-container-header>
     <!-- No data-label: the centre TOTALS what the ring draws, so it follows
          every filter. TRAP T-the-centre-totals-what-the-ring-draws -->
@@ -34,7 +34,7 @@
   </sherpa-container>
 
   <!-- The gauge's legend names its ZONES, not a series, so it is read-only. -->
-  <sherpa-container data-span="4" data-rows="6">
+  <sherpa-container data-width="medium" data-rows="6">
     <sherpa-container-header slot="header" data-heading="Mean risk"></sherpa-container-header>
     <sherpa-gauge-chart
       id="r-gauge"
@@ -52,7 +52,7 @@
        scrolls inside it instead of pushing the pager off screen. No data-rows
        here — the fit grid decides the height. data-padding="none" keeps the
        block inset at zero so each part's own divider meets both card edges. -->
-  <sherpa-container data-span="full" data-grow
+  <sherpa-container data-width="full" data-grow
                     data-padding="none" data-padding-inline="md" data-fill>
 
     <!-- The toolbar brings its own padding and bottom rule, so the container

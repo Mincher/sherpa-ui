@@ -3658,14 +3658,14 @@
               "desktop": {
                 "literal": 12
               },
-              "mobile": 3,
-              "tablet": 6,
+              "mobile": 4,
+              "tablet": 8,
               "wide": {
                 "literal": 12
               }
             },
             "modes": {
-              "tablet": 6,
+              "tablet": 8,
               "desktop": 12,
               "wide": 12
             },
@@ -3677,7 +3677,7 @@
           }
         },
         "$type": "dimension",
-        "$value": 3
+        "$value": 4
       },
       "gap-horizontal": {
         "$description": "Spacing (gap / padding / size).",

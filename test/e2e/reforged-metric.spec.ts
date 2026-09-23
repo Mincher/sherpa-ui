@@ -152,7 +152,8 @@ test('status is derived from the trend, and the card stays white with no border'
       return {
         trend: el.getAttribute('data-trend'),
         status: el.getAttribute('data-status'),
-        bg: rs.backgroundColor,
+        // The HOST carries the surface; the card is fill-none over it.
+        bg: getComputedStyle(el).backgroundColor,
         borderWidth: rs.borderTopWidth,
         deltaColour: getComputedStyle(el.shadowRoot!.querySelector('.delta')!).color,
       };
@@ -177,9 +178,9 @@ test('status is derived from the trend, and the card stays white with no border'
   expect(r.flat['status']).toBeNull();
   expect(r.none['status']).toBeNull();
 
-  // The card binds Style::style-surface/base, which is WHITE in every status mode
-  // — the status shows in the INK and the sparkline stroke, not the surface. And
-  // Figma's card is STROKE NONE, so there is no border on any of them.
+  // The HOST binds Style::style-surface/base, which is WHITE in every status mode
+  // — the status shows in the INK and the shadow, not the surface. And Figma's
+  // card is STROKE NONE, so there is no border on any of them.
   for (const [name, got] of Object.entries(r)) {
     expect(got['bg'], `${name} background`).toBe('rgb(255, 255, 255)');
     expect(got['borderWidth'], `${name} border`).toBe('0px');
@@ -312,4 +313,53 @@ test('show: last | total picks the number, and a total names itself', async ({ p
   expect(r.already).toEqual({ label: 'Total spend', value: '100' });
   expect(r.explicit).toEqual({ label: 'Total alerts', value: '999' });
   expect(r.grouped).toEqual({ label: 'Total spend', value: '4,400' });
+});
+
+/**
+ * IT CONDENSES BY WRAPPING.
+ *
+ * The card wraps and clips, and the sparkline carries a 120px floor. Below its
+ * own content width the sparkline drops to a second line and is cut off,
+ * leaving value and trend — no breakpoint is named anywhere.
+ *
+ * TRAP T-a-metric-condenses-by-wrapping
+ */
+test('the sparkline condenses away, and the tile keeps its height', async ({ page }) => {
+  const rows = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    const out: { w: number; tileH: number; sparkVisible: boolean; valueH: number }[] = [];
+    for (const w of [440, 320, 280, 240, 160, 120]) {
+      root.innerHTML = '<div style="width:' + w + 'px"><sherpa-metric></sherpa-metric></div>';
+      const el = root.querySelector('sherpa-metric') as HTMLElement & {
+        rendered?: Promise<void>; populate?: (d: unknown) => void;
+      };
+      await el.rendered;
+      // A value far longer than any tile, to prove it ellipses rather than wraps.
+      el.populate?.({
+        label: 'Total spend', value: '$1,284,000,000',
+        deltaPercent: 12.5, values: [3, 5, 4, 8, 6, 9, 7, 11],
+      });
+      await new Promise((r) => setTimeout(r, 120));
+      const sr = el.shadowRoot!;
+      const card = sr.querySelector('.row')!.getBoundingClientRect();
+      const spark = sr.querySelector('.spark')!.getBoundingClientRect();
+      out.push({
+        w,
+        tileH: Math.round(el.getBoundingClientRect().height),
+        // Still on the first line, so inside the clip.
+        sparkVisible: spark.top < card.bottom - 1 && spark.width > 0,
+        valueH: Math.round(sr.querySelector('.value')!.getBoundingClientRect().height),
+      });
+    }
+    return out;
+  });
+
+  /* 304px is the arithmetic, not a guess: 16 host padding + 160 figures + 8 gap
+     + the sparkline's own 120 floor. Above it the sparkline is drawn. */
+  const shown = rows.filter((r) => r.sparkVisible).map((r) => r.w);
+  expect(shown, 'drawn above 304, wrapped away below').toEqual([440, 320]);
+
+  // ONE height and ONE value line at every width — the wrap costs nothing.
+  expect(new Set(rows.map((r) => r.tileH)).size, JSON.stringify(rows)).toBe(1);
+  expect(new Set(rows.map((r) => r.valueH)).size, 'the value never wraps').toBe(1);
 });

@@ -3,16 +3,26 @@
  * JS only writes text and toggles data-*; display and colour live here.
  */
 
+/* The HOST carries the surface — style-surface/base, white in every status mode
+   bar active/inactive — so the tile is not tinted by its own trend. */
 :host {
   display: flex;
   flex-direction: column;
   gap: var(--sherpa-display-mode-space-xs, 8px);
   min-inline-size: 0;
+  padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
+  background: var(--sherpa-style-surface-base, #ffffff);
   container: sherpa-metric / inline-size;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
 
   /* Delta colour — neutral until a trend is set. */
   --_delta: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
+
+  /* The card's one-line height: value + gap + trend. */
+  --_line: calc(
+    var(--sherpa-theme-content-line-height-h1, 32px)
+    + var(--sherpa-structure-space-gap, 8px)
+    + var(--sherpa-theme-content-line-height-small, 16px));
 }
 
 /* ── Label — outside the card, uppercase via CSS so the accessible name and
@@ -32,23 +42,46 @@
 }
 
 /* ── Card row: figures + sparkline ───────────────────────────────────────
-   style-surface/base is WHITE in every status mode bar active/inactive, so the
-   card is NOT tinted — the status shows in the delta ink and sparkline stroke. */
+   NO fill and NO padding in Figma — the card is drawn by its rounding and a
+   status-tinted shadow alone, so the tile reads as raised rather than boxed. */
 .row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  align-content: flex-start;
+  flex-wrap: wrap;
+  /* ONE LINE TALL. --_line is the figures' own height — value, gap, trend — so
+     a wrapped sparkline is pushed past the clip rather than growing the tile.
+     A wrapping flex box measures its WRAPPED height, so max-content cannot say
+     this. TRAP T-a-metric-condenses-by-wrapping */
+  flex: 1 1 auto;
+  block-size: var(--_line);
   gap: var(--sherpa-structure-space-gap, 8px);
   min-inline-size: 0;
-  padding: var(--sherpa-structure-space-padding, 8px);
   border-radius: var(--sherpa-display-mode-border-rounding-lg, 8px);
-  background: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
+  /* The shadow follows the trend, as Figma binds it: a rising tile is tinted
+     success, a falling one critical. Same chain as sherpa-toast. */
+  box-shadow:
+    var(--sherpa-elevation-offset-x, 0)
+    var(--sherpa-elevation-offset-y, 1px)
+    var(--sherpa-elevation-blur, 2px)
+    var(--sherpa-elevation-spread, 0)
+    var(--_status-shadow, var(--sherpa-style-surface-shadow, #35353d4c));
+  /* The card CLIPS. Below the sparkline's own minimum it wraps onto a second
+     line and is cut off, leaving value and trend.
+     TRAP T-a-metric-condenses-by-wrapping */
+  overflow: hidden;
 }
 
+/* BOUNDED, 120–160px: it holds its shape as the tile narrows, and stops
+   growing once the sparkline has gone, so the value never sprawls. */
 .figures {
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
+  justify-content: space-between;
   gap: var(--sherpa-structure-space-gap, 8px);
-  min-inline-size: 0;
+  min-inline-size: 120px;
+  max-inline-size: 160px;
 }
 
 /* ── Value ───────────────────────────────────────────────────────────── */
@@ -66,6 +99,12 @@
      Text that FOLLOWS status reaches for the cascade; text that ignores it names
      the Theme token directly. */
   color: var(--sherpa-theme-content-body-base, #0c0b11);
+  /* ONE LINE, ellipsed. A long money value wrapping to two would push the trend
+     out of the card and past its clip. */
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ── Trend + delta ───────────────────────────────────────────────────── */
@@ -76,10 +115,26 @@
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
   color: var(--_delta);
+  min-inline-size: 0;
+  overflow: hidden;
+}
+/* The delta fills its row and ELLIPSES — "+20% Month over month" is longer than
+   any tile, and a wrap would push the card past its height. */
+.delta {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .delta:empty { display: none; }
 
-.arrow { display: none; font-size: var(--sherpa-font-size-body-small, 12px); line-height: 1; }
+.arrow {
+  display: none;
+  flex: 0 0 auto;
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  line-height: 1;
+}
 /* CONTENT tokens — ink, not surface. */
 :host([data-trend="up"]) {
   --_delta: var(--sherpa-theme-content-success-1, #00ad62);
@@ -91,9 +146,12 @@
 }
 
 /* ── Sparkline (only once values have been supplied) ───────────────── */
+/* A FLOOR, not a breakpoint: below 120px the sparkline wraps to a second line
+   and the card's clip hides it, so the tile condenses to value + trend on its
+   own measurements. TRAP T-a-metric-condenses-by-wrapping */
 .spark {
   flex: 1 1 auto;
-  min-inline-size: 0;
+  min-inline-size: 120px;
   display: none;
   align-self: stretch;
 }
@@ -106,11 +164,6 @@
   inline-size: 100%;
   block-size: auto;
   align-self: stretch;
-}
-
-/* Drop the sparkline when the tile gets narrow. */
-@container sherpa-metric (max-width: 220px) {
-  .spark { display: none; }
 }
 
 /* ── Disabled — inactive tokens, never opacity ─────────────────────── */

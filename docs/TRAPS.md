@@ -7276,19 +7276,48 @@ and `round()` never computes. TRAP T-at-property-needs-the-document
 - Site: `scripts/project-tokens.mjs`
 - Site: `test/e2e/reforged-fit-grid.spec.ts`
 
+### T-a-metric-condenses-by-wrapping
+
+A metric tile drops its sparkline at narrow widths, and NO breakpoint says so.
+
+The card is a WRAPPING flex row that CLIPS. The figures block is bounded
+120–160px and the sparkline carries a 120px floor of its own. When the card
+cannot give the sparkline its floor, the sparkline wraps to a second line and
+the clip hides it, leaving value and trend. The threshold falls out of the
+arithmetic — 16 host padding + 160 figures + 8 gap + 120 sparkline = 304px —
+so it moves on its own if any of those tokens change.
+
+This replaced `@container sherpa-metric (max-width: 220px)`, a guessed number
+that had no relationship to what the tile actually holds.
+
+THE CARD NEEDS AN EXPLICIT ONE-LINE HEIGHT (`--_line`, from the value and trend
+line-heights). A wrapping flex box measures its WRAPPED height, so the tile grew
+88 -> 96px the moment the sparkline wrapped, and `min-block-size: max-content`
+does not help — it measures the wrapped height too.
+
+Value and delta both ellipse on one line for the same reason: a wrap would push
+the trend out of the card and past the clip.
+
+- Site: `src/components/sherpa-metric/sherpa-metric.css`
+- Site: `test/e2e/reforged-metric.spec.ts`
+
 ### T-a-container-width-is-named-not-counted
 
 `data-span` is a COUNT, so a view that uses it has to know the column count of
 every breakpoint. `data-width` is a NAME, and the grid works out the count:
 
-| class | 12 cols | 6 cols | 3 cols |
+| class | 12 cols | 8 cols | 4 cols |
 |---|---|---|---|
-| full | 12 | 6 | 3 |
-| large | **6** | 6 | 3 |
-| medium | **4** | **3** | 3 |
-| small | **3** | 3 | 3 |
+| full | 12 | 8 | 4 |
+| large | **6** | 8 | 4 |
+| medium | **4** | **4** | 4 |
+| small | **3** | **4** | 4 |
+| xsmall | **3** | **2** | **1** |
 
-Tablet reads as two columns and mobile as one, whatever the real counts are.
+Tablet reads as two columns and mobile as one, whatever the real counts are —
+except `xsmall`, which stays a quarter at every breakpoint. That is for a row of
+metric tiles, which CONDENSE rather than wrap: four stay four all the way down.
+TRAP T-a-metric-condenses-by-wrapping
 
 Both numbers are COMPUTED from the column count, so a change in Figma needs no
 CSS edit:
@@ -7300,9 +7329,9 @@ span   = floor(cols / across)
 
 `--_w-parts` is how many sit side by side at the widest; `--_w-min` is the
 narrowest track that width may shrink to. A class stops dividing once a part
-would fall below its minimum — which is what collapses `medium` and `small` to
-half at tablet, and all three to full at mobile. `full` sets `--_w-min: 999` so
-it never divides at all.
+would fall below its minimum — which is what collapses `medium` and `small` at
+the narrower counts. The two ends of the range are the minimum: `full` sets
+`--_w-min: 999` so it never divides, and `xsmall` sets `1` so it never stops.
 
 Do not put `data-span` and `data-width` on the same item: both write
 `--_across` and the later rule wins.
@@ -8851,6 +8880,7 @@ arrived and the tile read `-0.6211180124223602%`. **Two decimals** (Will,
 - Site: `src/core/data/aggregate.ts`
 - Site: `src/components/sherpa-metric/sherpa-metric.ts`
 - Site: `examples/views/dashboard.js`
+- Site: `examples/views/records.js`
 
 ### T-a-draft-dies-with-its-menu
 

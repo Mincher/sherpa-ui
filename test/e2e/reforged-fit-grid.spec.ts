@@ -213,7 +213,7 @@ test('a span GROWS when it can no longer share its row', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const root = document.getElementById('root')!;
     const out: Record<string, string> = {};
-    for (const cols of [3, 6, 12]) {
+    for (const cols of [4, 8, 12]) {
       root.innerHTML = '<div class="sherpa-grid" style="--sherpa-layout-grid-columns:'
         + cols + '">'
         + [1, 2, 3, 4, 6, 8, 12].map((n) => '<div data-span="' + n + '">' + n + '</div>').join('')
@@ -230,8 +230,8 @@ test('a span GROWS when it can no longer share its row', async ({ page }) => {
 
   // span -> what it actually takes, per column count.
   //          1 2 3 4 6 8 12
-  expect(r['cols3'], '3 columns').toBe('1 3 3 3 3 3 3');
-  expect(r['cols6'], '6 columns: a span-4 takes the whole row').toBe('1 2 3 6 6 6 6');
+  expect(r['cols4'], '4 columns').toBe('1 2 4 4 4 4 4');
+  expect(r['cols8'], '8 columns: a span-6 takes the whole row').toBe('1 2 4 4 8 8 8');
   expect(r['cols12'], '12 columns: everything fits as declared').toBe('1 2 3 4 6 12 12');
 });
 
@@ -290,10 +290,10 @@ test('a named width resolves per column count', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const root = document.getElementById('root')!;
     const out: Record<string, string> = {};
-    for (const cols of [3, 6, 12]) {
+    for (const cols of [4, 8, 12]) {
       root.innerHTML = '<div class="sherpa-grid" style="--sherpa-layout-grid-columns:'
         + cols + '">'
-        + ['full', 'large', 'medium', 'small']
+        + ['full', 'large', 'medium', 'small', 'xsmall']
           .map((w) => '<div data-width="' + w + '">' + w + '</div>').join('')
         + '</div>';
       await new Promise((r) => setTimeout(r, 120));
@@ -306,8 +306,9 @@ test('a named width resolves per column count', async ({ page }) => {
     return out;
   });
 
-  //                            full large medium small
-  expect(r['cols12'], 'desktop').toBe('12 6 4 3');
-  expect(r['cols6'], 'tablet reads as two columns').toBe('6 6 3 3');
-  expect(r['cols3'], 'mobile reads as one').toBe('3 3 3 3');
+  //                            full large medium small xsmall
+  expect(r['cols12'], 'desktop').toBe('12 6 4 3 3');
+  expect(r['cols8'], 'tablet reads as two columns').toBe('8 8 4 4 2');
+  // xsmall stays a quarter: four metric tiles stay four all the way down.
+  expect(r['cols4'], 'mobile reads as one').toBe('4 4 4 4 1');
 });

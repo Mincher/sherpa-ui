@@ -6,6 +6,7 @@
 import {
   DataSource, SherpaToast, persistView, viewOptions, onViewPicked,
   countBy, reduceRows, bindSelection, andFilter, picksClause, bindFitGrid,
+  seriesBy, deltaPercent,
 } from '../../dist/index.js';
 import { customerStore, customersReady, customers, columns, plans, regions, customerOrgs, states }
   from './records-data.js';
@@ -283,16 +284,36 @@ export async function init(root) {
 
   const money = (n) => `$${Math.round(n).toLocaleString('en-GB')}`;
 
-  summary('#m-customers', (rows) => ({ label: 'Customers', value: rows.length }));
-  summary('#m-spend', (rows) => ({
-    label: 'Total spend', value: money(reduceRows(rows, 'sum', 'spend')),
-  }));
-  summary('#m-seats', (rows) => ({
-    label: 'Seats', value: reduceRows(rows, 'sum', 'seats').toLocaleString('en-GB'),
-  }));
-  summary('#m-tickets', (rows) => ({
-    label: 'Open tickets', value: reduceRows(rows, 'sum', 'openTickets'),
-  }));
+  /* The twelve months of 2024, the range `created` is generated over. A series
+     needs its points declared, or a month nobody joined in would be missing
+     rather than zero and the line would lie about the gap. */
+  const MONTHS = Array.from({ length: 12 },
+    (_, i) => `2024-${String(i + 1).padStart(2, '0')}`);
+  const month = (rows) => rows.map((r) => ({ ...r, month: String(r.created).slice(0, 7) }));
+
+  /* A tile handed only a label and a value is GREY: it derives its trend from
+     the delta and its status from the trend, so without a series there is
+     nothing to colour and no sparkline to draw.
+     TRAP T-a-delta-is-derived-not-declared */
+  const tile = (label, value, values) => ({
+    label, value, values, deltaPercent: deltaPercent(values) ?? undefined,
+  });
+
+  /* Each tile is the same rows over the same months, reduced its own way. */
+  const overMonths = (rows, kind, field) =>
+    seriesBy(month(rows), 'month', MONTHS, 'series', { kind, valueField: field }).values;
+
+  summary('#m-customers', (rows) =>
+    tile('Customers', rows.length, overMonths(rows, 'count')));
+  summary('#m-spend', (rows) =>
+    tile('Total spend', money(reduceRows(rows, 'sum', 'spend')),
+      overMonths(rows, 'sum', 'spend')));
+  summary('#m-seats', (rows) =>
+    tile('Seats', reduceRows(rows, 'sum', 'seats').toLocaleString('en-GB'),
+      overMonths(rows, 'sum', 'seats')));
+  summary('#m-tickets', (rows) =>
+    tile('Open tickets', reduceRows(rows, 'sum', 'openTickets'),
+      overMonths(rows, 'sum', 'openTickets')));
 
   /* A chart and its legend share ONE array — a legend row IS a chart datum.
      Sharing also keeps the source's skip-if-unchanged guard, which compares by

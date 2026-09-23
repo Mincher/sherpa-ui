@@ -1088,7 +1088,7 @@
 @layer layout {
   :root {
   --sherpa-layout-breakpoint: 375px;
-  --sherpa-layout-grid-columns: 3;
+  --sherpa-layout-grid-columns: 4;
   --sherpa-layout-grid-gap-horizontal: var(--sherpa-display-mode-space-base);
   --sherpa-layout-grid-gap-vertical: var(--sherpa-display-mode-space-base);
   --sherpa-layout-grid-max-width: 480px;
@@ -1099,7 +1099,7 @@
   /* tablet — the Layout collection's own mode, as its breakpoint. */
   @media (min-width: 768px) {
     :root {
-      --sherpa-layout-grid-columns: 6;
+      --sherpa-layout-grid-columns: 8;
       --sherpa-layout-grid-gap-horizontal: var(--sherpa-display-mode-space-base);
       --sherpa-layout-grid-gap-vertical: var(--sherpa-display-mode-space-base);
       --sherpa-layout-grid-max-width: 768px;
@@ -1137,7 +1137,7 @@
      `4px` the repeat() was invalid and the whole grid silently did nothing. */
   .sherpa-grid {
     display: grid;
-    grid-template-columns: repeat(var(--sherpa-layout-grid-columns, 3), minmax(0, 1fr));
+    grid-template-columns: repeat(var(--sherpa-layout-grid-columns, 4), minmax(0, 1fr));
     column-gap: var(--sherpa-layout-grid-gap-horizontal, 16px);
     row-gap: var(--sherpa-layout-grid-gap-vertical, 16px);
     /* FILLS ITS PARENT. No max-inline-size.
@@ -1177,8 +1177,8 @@
      not have; sherpa-grouping.css does the same.
      TRAP T-a-span-shares-its-row */
   .sherpa-grid > [data-span] {
-    --_across: max(1, round(down, calc(var(--sherpa-layout-grid-columns, 3) / var(--_span, 1)), 1));
-    grid-column: span round(down, calc(var(--sherpa-layout-grid-columns, 3) / var(--_across)), 1);
+    --_across: max(1, round(down, calc(var(--sherpa-layout-grid-columns, 4) / var(--_span, 1)), 1));
+    grid-column: span round(down, calc(var(--sherpa-layout-grid-columns, 4) / var(--_across)), 1);
   }
   .sherpa-grid > [data-span='1']  { --_span: 1; }
   .sherpa-grid > [data-span='2']  { --_span: 2; }
@@ -1188,18 +1188,20 @@
   .sherpa-grid > [data-span='8']  { --_span: 8; }
   .sherpa-grid > [data-span='12'] { --_span: 12; }
   .sherpa-grid > [data-span='full'] { grid-column: 1 / -1; }
-  /* ── Container widths — full | large | medium | small ────────────────────
+  /* ── Container widths — full | large | medium | small | xsmall ───────────
      A NAMED width, not a column count, so a view says what a card IS and the
      grid decides what that means at each breakpoint:
 
-       class    12 cols   6 cols   3 cols
-       full     12        6        3
-       large     6        6        3
-       medium    4        3        3
-       small     3        3        3
+       class    12 cols   8 cols   4 cols
+       full     12        8        4
+       large     6        8        4
+       medium    4        4        4
+       small     3        4        4
+       xsmall    3        2        1
 
-     Tablet reads as two columns and mobile as one, whatever the real counts
-     are. COMPUTED FROM THE COLUMN COUNT, so a change in Figma needs no CSS:
+     Tablet reads as two columns and mobile as one — except xsmall, which stays
+     a quarter everywhere, for a row of metric tiles that condense rather than
+     wrap. COMPUTED FROM THE COLUMN COUNT, so a change in Figma needs no CSS:
 
        across = clamp(1, floor(cols / --_w-min), --_w-parts)
        span   = floor(cols / across)
@@ -1207,19 +1209,21 @@
      --_w-parts is how many sit side by side at the widest, --_w-min the
      narrowest track that width may shrink to. A class stops dividing once a
      part would fall below its minimum, which is what collapses medium and
-     small to half at tablet and all three to full at mobile.
+     small to half at tablet and both to full at mobile. xsmall sets a minimum
+     of 1, so it never stops dividing.
      round(down, …) stands in for mod(), which Chromium does not have.
      TRAP T-a-container-width-is-named-not-counted */
   .sherpa-grid > [data-width] {
-    --_across: clamp(1, round(down, calc(var(--sherpa-layout-grid-columns, 3)
+    --_across: clamp(1, round(down, calc(var(--sherpa-layout-grid-columns, 4)
                                          / var(--_w-min, 1)), 1), var(--_w-parts, 1));
-    grid-column: span round(down, calc(var(--sherpa-layout-grid-columns, 3)
+    grid-column: span round(down, calc(var(--sherpa-layout-grid-columns, 4)
                                        / var(--_across)), 1);
   }
   .sherpa-grid > [data-width='full']   { --_w-parts: 1; --_w-min: 999; }
   .sherpa-grid > [data-width='large']  { --_w-parts: 2; --_w-min: 6; }
   .sherpa-grid > [data-width='medium'] { --_w-parts: 3; --_w-min: 3; }
   .sherpa-grid > [data-width='small']  { --_w-parts: 4; --_w-min: 3; }
+  .sherpa-grid > [data-width='xsmall'] { --_w-parts: 4; --_w-min: 1; }
 
   /* ── Row sizing — two variants, and the default is neither ───────────────
      No attribute: rows size to their CONTENT and the page scrolls, which is
