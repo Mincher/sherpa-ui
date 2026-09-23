@@ -255,7 +255,7 @@ export class SherpaInputText extends SherpaElement {
     this.#syncIcon('.icon-end', this.dataset['iconEnd']);
   }
 
-  /** One icon: a Font Awesome class list, or a raw character via `data-glyph`.
+  /** One icon: an icon name, or a raw character via `data-glyph`.
    *  NOT `SherpaElement.writeIcon` — TRAP T-input-icon-sink-is-data-glyph. */
   #syncIcon(sel: string, value: string | undefined): void {
     const el = this.$(sel);

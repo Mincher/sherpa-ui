@@ -32,7 +32,7 @@ export interface Notification {
   /** @deprecated The old spelling of `label`. Still read, so nothing breaks. */
   title?: string;
   description?: string;
-  /** A Font Awesome class list for the leading glyph. */
+  /** An icon name for the leading glyph. */
   icon?: string;
   /** Already-formatted, e.g. "2m ago" — this component does not format time. */
   time?: string;
@@ -126,7 +126,7 @@ export class SherpaNotifications extends SherpaElement {
       ownSel: '.menu > .notification, .menu > .empty',
       after: (node, item) => {
         const icon = node.querySelector<HTMLElement>('.notification-icon');
-        if (icon) icon.className = `notification-icon ${item.icon ?? 'fa-solid fa-circle-info'}`;
+        if (icon) icon.className = `notification-icon ${item.icon ?? 'status-info'}`;
       },
     });
   }

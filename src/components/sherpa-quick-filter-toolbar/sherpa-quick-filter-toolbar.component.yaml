@@ -44,7 +44,7 @@ anatomy:
           part: overflow-chip
           attrs:
             data-label: More
-            data-icon-start: fa-solid fa-filter
+            data-icon-start: filter
             data-current: ""
             data-persistent: ""
             data-no-value: ""
@@ -59,7 +59,7 @@ anatomy:
               attrs:
                 data-act: add
                 data-size: sm
-                data-icon-end: fa-solid fa-caret-down
+                data-icon-end: triangle-down
                 aria-haspopup: menu
             - el: sherpa-button
               class: act
@@ -67,7 +67,7 @@ anatomy:
                 data-size: sm
                 data-act: ai
                 data-type: icon
-                data-icon-start: fa-solid fa-wand-magic-sparkles
+                data-icon-start: wand-magic-sparkles
                 aria-label: Filter with AI
             - el: sherpa-button
               class: act
@@ -75,7 +75,7 @@ anatomy:
                 data-size: sm
                 data-act: clear
                 data-type: icon
-                data-icon-start: fa-solid fa-arrow-rotate-left
+                data-icon-start: arrow-rotate-left
                 aria-label: Reset filters
             - el: sherpa-button
               class: act
@@ -83,7 +83,7 @@ anatomy:
                 data-size: sm
                 data-act: configure
                 data-type: icon
-                data-icon-start: fa-solid fa-sliders
+                data-icon-start: sliders-up
                 aria-label: Configure filters
             - el: span
               class: act-divider
@@ -108,7 +108,7 @@ anatomy:
                     data-size: sm
                     data-act: save
                     data-group: mid
-                    data-icon-start: fa-solid fa-upload
+                    data-icon-start: upload
                 - el: sherpa-button
                   class: act
                   attrs:
@@ -116,7 +116,7 @@ anatomy:
                     data-act: view-menu
                     data-type: icon
                     data-group: end
-                    data-icon-start: fa-solid fa-caret-down
+                    data-icon-start: triangle-down
                     aria-label: View options
                     aria-haspopup: menu
             - el: sherpa-button
@@ -125,7 +125,7 @@ anatomy:
                 data-size: sm
                 data-act: refresh
                 data-type: icon
-                data-icon-start: fa-solid fa-arrows-rotate
+                data-icon-start: cw-circle-arrow
                 aria-label: Refresh data
             - el: sherpa-button
               class: act
@@ -133,7 +133,7 @@ anatomy:
                 data-size: sm
                 data-act: overflow
                 data-type: icon
-                data-icon-start: fa-solid fa-ellipsis-vertical
+                data-icon-start: ellipses-vertical
                 aria-label: More actions
                 aria-haspopup: menu
     - el: template

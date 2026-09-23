@@ -1474,7 +1474,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** TRAP T-organise-glyphs-are-named-not-inline — `view` stays here, the shared four in core/icons. */
   static readonly #icons = {
-    view: 'fa-solid fa-desktop',
+    view: 'desktop',
     ...ORGANISE_ICONS,
   } as const;
 

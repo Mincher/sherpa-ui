@@ -32,7 +32,7 @@ test('every button size paints its box at its own icon-size token', async ({ pag
     const root = document.getElementById('root')!;
     root.innerHTML = ['2xs', 'xs', 'sm', 'lg', 'xl', ''].map((s) =>
       `<sherpa-button data-type="icon" ${s ? `data-size="${s}"` : ''}` +
-      ` data-icon-start="fa-solid fa-gear" data-m="${s || 'default'}"></sherpa-button>`).join('');
+      ` data-icon-start="gear" data-m="${s || 'default'}"></sherpa-button>`).join('');
     const btns = [...root.querySelectorAll('sherpa-button')] as (HTMLElement & {
       rendered?: Promise<void>; shadowRoot: ShadowRoot;
     })[];
@@ -77,17 +77,17 @@ test('a drawing fills its longest axis, keeps 1:1, and never overflows', async (
   const bad = await page.evaluate(async () => {
     const root = document.getElementById('root')!;
     const cases: string[] = [
-      '<sherpa-button data-icon-start="fa-solid fa-gear">Go</sherpa-button>',
-      '<sherpa-button data-type="icon" data-size="2xs" data-icon-start="fa-solid fa-gear"></sherpa-button>',
-      '<sherpa-button data-type="icon" data-size="xl" data-icon-start="fa-solid fa-gear"></sherpa-button>',
-      '<sherpa-input-text data-icon-start="fa-solid fa-magnifying-glass" placeholder="x"></sherpa-input-text>',
-      '<sherpa-input-text data-icon-end="fa-solid fa-xmark" placeholder="x"></sherpa-input-text>',
-      '<sherpa-quick-filter data-label="Region" data-icon-start="fa-solid fa-filter" data-menu></sherpa-quick-filter>',
+      '<sherpa-button data-icon-start="gear">Go</sherpa-button>',
+      '<sherpa-button data-type="icon" data-size="2xs" data-icon-start="gear"></sherpa-button>',
+      '<sherpa-button data-type="icon" data-size="xl" data-icon-start="gear"></sherpa-button>',
+      '<sherpa-input-text data-icon-start="magnifying-glass" placeholder="x"></sherpa-input-text>',
+      '<sherpa-input-text data-icon-end="cross" placeholder="x"></sherpa-input-text>',
+      '<sherpa-quick-filter data-label="Region" data-icon-start="filter" data-menu></sherpa-quick-filter>',
       '<sherpa-toast data-status="success" data-heading="Saved"></sherpa-toast>',
       '<sherpa-callout data-status="info" data-heading="Note"></sherpa-callout>',
-      '<sherpa-nav-item data-label="Home" data-icon="fa-solid fa-house"></sherpa-nav-item>',
-      '<sherpa-tag data-icon="fa-solid fa-tag">Tag</sherpa-tag>',
-      '<sherpa-chip data-icon="fa-solid fa-tag">Chip</sherpa-chip>',
+      '<sherpa-nav-item data-label="Home" data-icon="home"></sherpa-nav-item>',
+      '<sherpa-tag data-icon="price-tag">Tag</sherpa-tag>',
+      '<sherpa-chip data-icon="price-tag">Chip</sherpa-chip>',
     ];
     const out: { html: string; cls: string; box: string; ink: string; why: string }[] = [];
     for (const html of cases) {

@@ -447,8 +447,9 @@ test('the star toggles, swaps its glyph, and reports both ways', async ({ page }
   expect(r.first).toMatchObject({ on: true, icon: 'star-filled', pressed: 'true' });
   expect(r.second).toMatchObject({ on: false, icon: 'star', pressed: 'false' });
   /* The PATH must differ. Asserting the name alone is what let the two states
-     resolve to one outline drawing for three months — `fa-solid fa-star` and
-     `fa-regular fa-star` both lose their weight token in `iconName()`. */
+     resolve to one outline drawing for three months: the two weights were one
+     Font Awesome name, and the weight token was dropped on the way in. They are
+     two SEPARATE Figma drawings now — `star` and `star-filled`. */
   expect(r.first.d).toBeTruthy();
   expect(r.second.d).toBeTruthy();
   expect(r.first.d).not.toBe(r.second.d);
@@ -1152,7 +1153,7 @@ test('the VIEW selector keeps its own icon, whatever the app passes', async ({ p
           ...(icon ? { icon } : {}),
           options: [{ value: 'all', label: 'All', selected: true }] },
         // A normal chip beside it still takes the icon it was given.
-        { id: 'plan', label: 'Plan', icon: 'fa-solid fa-tag', options: [{ value: 'pro', label: 'Pro' }] },
+        { id: 'plan', label: 'Plan', icon: 'price-tag', options: [{ value: 'pro', label: 'Pro' }] },
       ]);
       await (window as unknown as { __settled: () => Promise<void> }).__settled();
       const chips = [...bar.shadowRoot!.querySelectorAll('sherpa-quick-filter')];
@@ -1160,16 +1161,16 @@ test('the VIEW selector keeps its own icon, whatever the app passes', async ({ p
     };
     return {
       // An app passing its own page icon must NOT override the view glyph…
-      overridden: await read('fa-solid fa-gauge-high'),
+      overridden: await read('gauge'),
       // …and passing none gets it anyway.
       absent: await read(),
     };
   });
 
   for (const pair of [got.overridden, got.absent]) {
-    expect(pair[0]).toBe('fa-solid fa-desktop');
+    expect(pair[0]).toBe('desktop');
     // The neighbouring chip is untouched.
-    expect(pair[1]).toBe('fa-solid fa-tag');
+    expect(pair[1]).toBe('price-tag');
   }
 });
 

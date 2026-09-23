@@ -36,7 +36,7 @@ anatomy:
               data-type: icon
               data-size: xs
               data-look: transparent
-              data-icon-start: fa-solid fa-grip-vertical
+              data-icon-start: drag-handle-vertical
               aria-label: Drag to reorder
           - el: span
             class: icon
@@ -70,7 +70,7 @@ anatomy:
                   data-type: icon
                   data-size: xs
                   data-look: transparent
-                  data-icon-start: fa-solid fa-chevron-up
+                  data-icon-start: chevron-up
                   aria-expanded: "true"
                   aria-label: Collapse
               - el: sherpa-button
@@ -80,7 +80,7 @@ anatomy:
                   data-type: icon
                   data-size: xs
                   data-look: transparent
-                  data-icon-start: fa-solid fa-xmark
+                  data-icon-start: cross
                   aria-label: Close
       - el: div
         class: metadata

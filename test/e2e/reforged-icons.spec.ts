@@ -3,32 +3,31 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * Every Font Awesome class in the repo must actually RENDER.
+ * Every icon NAME written in the repo must draw something.
  *
- * This exists because a PRO class in the free webfont fails SILENTLY: no glyph,
- * no fallback box, no console warning — `content: none` and zero width, so the
- * button ships blank and looks like a spacing bug. Two shipped that way before
- * anyone noticed:
+ * An unknown name fails SILENTLY: `renderIcon` leaves the wrapper empty rather
+ * than drawing the wrong thing, so the button ships blank and reads as a
+ * spacing bug. That is the same failure the Font Awesome era had — a Pro class
+ * in the free webfont gave `content: none`, zero width and no warning — and
+ * `fa-bell-on` and `fa-sliders-up` both shipped that way before anyone noticed.
  *
- *   fa-bell-on    (app header notifications) — Figma's `bell-ring`
- *   fa-sliders-up (filter toolbar configure) — Figma's `sliders-up`
+ * The names are Figma's now (`src/icons/`, baked into `icon-paths.ts` with each
+ * drawing's own ink box). The `fa-` spelling and its alias map are gone.
  *
- * Both are real icons; both are Pro. The class name gives no hint, which is why
- * this has to be MEASURED rather than reviewed.
- *
- * The test scans the source itself rather than taking a hand-kept list, so a new
- * icon is covered the moment it is written.
+ * The test scans the source itself rather than taking a hand-kept list, so a
+ * new icon is covered the moment it is written.
  */
 
 const HARNESS = '/test/reforged/harness.html';
 
 const ROOT = join(import.meta.dirname, '../..');
 const SCAN = ['src', 'examples'];
-const EXT = /\.(html|ts|js|css)$/;
-const FA = /fa-(?:solid|regular|brands) fa-[a-z0-9-]+/g;
+const EXT = /\.(html|ts|js)$/;
+/** `data-icon="x"`, `data-icon-start="x"`, `data-icon-end="x"`, `icon: 'x'`. */
+const NAMED = /(?:data-icon(?:-start|-end)?=|icon:\s*)['"]([a-z0-9][a-z0-9-]*)['"]/g;
 
-/** Every `fa-<style> fa-<name>` pair written anywhere in the scanned trees. */
-function collectClasses(): string[] {
+/** Every icon name written anywhere in the scanned trees. */
+function collectNames(): string[] {
   const found = new Set<string>();
   const walk = (dir: string): void => {
     for (const entry of readdirSync(dir)) {
@@ -36,7 +35,7 @@ function collectClasses(): string[] {
       const path = join(dir, entry);
       if (statSync(path).isDirectory()) walk(path);
       else if (EXT.test(entry)) {
-        for (const m of readFileSync(path, 'utf8').matchAll(FA)) found.add(m[0]);
+        for (const m of readFileSync(path, 'utf8').matchAll(NAMED)) found.add(m[1]!);
       }
     }
   };
@@ -51,41 +50,48 @@ test.beforeEach(async ({ page }) => {
   );
 });
 
-test('every Font Awesome class in the repo renders a real glyph', async ({ page }) => {
-  const classes = collectClasses();
+test('every icon name in the repo draws a real glyph', async ({ page }) => {
+  const names = collectNames();
   // A scan that finds nothing would pass vacuously.
-  expect(classes.length).toBeGreaterThan(20);
+  expect(names.length).toBeGreaterThan(20);
 
   const broken = await page.evaluate(async (list: string[]) => {
-    // Measured inside a COMPONENT's shadow root, not the document: the Font
-    // Awesome sheet is adopted through SherpaElement.sharedStyles and is not in
-    // the harness document at all, so probing there reports every class missing.
-    const btn = document.createElement('sherpa-button') as HTMLElement & {
-      rendered?: Promise<void>;
-    };
-    btn.setAttribute('data-type', 'icon');
-    document.getElementById('root')!.appendChild(btn);
-    await btn.rendered;
-    await document.fonts.ready;
+    const mod = await import('/dist/core/ui/render-icon.js');
+    const box = document.createElement('span');
+    document.getElementById('root')!.appendChild(box);
 
-    const i = btn.shadowRoot!.querySelector('i.icon-start')!;
-    const bad: { cls: string; content: string }[] = [];
-    for (const cls of list) {
-      i.className = `icon icon-start ${cls}`;
-      // Force a style recalculation between probes.
-      void (i as HTMLElement).offsetWidth;
-      const content = getComputedStyle(i, '::before').content;
-      // `none` means NO RULE MATCHED — the class does not exist in this font.
-      //
-      // NOT a test for `""`: a working glyph also reports `""`, because its
-      // codepoint is in a private-use area that does not print. Checking for an
-      // empty string flags every icon in the repo as broken.
-      if (content === 'none') bad.push({ cls, content });
+    const bad: string[] = [];
+    for (const name of list) {
+      box.replaceChildren();
+      mod.renderIcon(box, name);
+      // An unknown name leaves the wrapper EMPTY — that is the silent failure.
+      const path = box.querySelector('svg path, svg circle, svg rect');
+      if (!path) bad.push(name);
     }
     return bad;
-  }, classes);
+  }, names);
 
-  expect(broken, `Font Awesome classes that render NOTHING (likely Pro-only):\n${
-    broken.map((b) => `  ${b.cls}`).join('\n')
-  }`).toEqual([]);
+  expect(broken, `icon names that draw NOTHING:\n${broken.map((b) => `  ${b}`).join('\n')}`)
+    .toEqual([]);
+});
+
+test('the Font Awesome vocabulary is gone', async () => {
+  // The alias map resolved 28 FA names to Figma drawings while call sites were
+  // migrated. Every one has been renamed, so a new `fa-` value would resolve to
+  // nothing at all rather than silently falling back.
+  const FA = /fa-(?:solid|regular|brands) fa-[a-z0-9-]+/g;
+  const hits: string[] = [];
+  const walk = (dir: string): void => {
+    for (const entry of readdirSync(dir)) {
+      if (entry === 'node_modules' || entry === 'dist' || entry.startsWith('.')) continue;
+      const path = join(dir, entry);
+      if (statSync(path).isDirectory()) walk(path);
+      else if (EXT.test(entry)) {
+        for (const m of readFileSync(path, 'utf8').matchAll(FA)) hits.push(`${path}: ${m[0]}`);
+      }
+    }
+  };
+  for (const d of SCAN) walk(join(ROOT, d));
+
+  expect(hits, `Font Awesome class pairs left:\n${hits.join('\n')}`).toEqual([]);
 });

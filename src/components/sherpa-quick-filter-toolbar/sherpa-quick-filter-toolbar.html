@@ -70,7 +70,7 @@
       folded chips, each opening a submenu carrying that chip's real menu.
     -->
     <sherpa-quick-filter class="overflow-chip" part="overflow-chip"
-                         data-label="More" data-icon-start="fa-solid fa-filter"
+                         data-label="More" data-icon-start="filter"
                          data-current data-persistent data-no-value
                          data-locked></sherpa-quick-filter>
     <!--
@@ -91,20 +91,17 @@
         default slot it lands inside the label and widens the box.
       -->
       <sherpa-button class="act add-btn" data-act="add" data-size="sm"
-                     data-icon-end="fa-solid fa-caret-down"
+                     data-icon-end="triangle-down"
                      aria-haspopup="menu">Add filter</sherpa-button>
 
       <sherpa-button class="act" data-size="sm" data-act="ai" data-type="icon"
-                     data-icon-start="fa-solid fa-wand-magic-sparkles"
+                     data-icon-start="wand-magic-sparkles"
                      aria-label="Filter with AI"></sherpa-button>
       <sherpa-button class="act" data-size="sm" data-act="clear" data-type="icon"
-                     data-icon-start="fa-solid fa-arrow-rotate-left"
+                     data-icon-start="arrow-rotate-left"
                      aria-label="Reset filters"></sherpa-button>
-      <!-- Figma's glyph is `sliders-up`, which is Font Awesome PRO — a Pro class
-           in the free webfont renders NOTHING (content: none, zero glyph).
-           `fa-sliders` is the Free equivalent. -->
       <sherpa-button class="act" data-size="sm" data-act="configure" data-type="icon"
-                     data-icon-start="fa-solid fa-sliders"
+                     data-icon-start="sliders-up"
                      aria-label="Configure filters"></sherpa-button>
 
       <span class="act-divider" aria-hidden="true"></span>
@@ -116,17 +113,17 @@
                        data-group="start" data-icon-start="star"
                        aria-label="Favourite this view" aria-pressed="false"></sherpa-button>
         <sherpa-button class="act" data-size="sm" data-act="save"
-                       data-group="mid" data-icon-start="fa-solid fa-upload">Save</sherpa-button>
+                       data-group="mid" data-icon-start="upload">Save</sherpa-button>
         <sherpa-button class="act" data-size="sm" data-act="view-menu" data-type="icon"
-                       data-group="end" data-icon-start="fa-solid fa-caret-down"
+                       data-group="end" data-icon-start="triangle-down"
                        aria-label="View options" aria-haspopup="menu"></sherpa-button>
       </span>
 
       <sherpa-button class="act" data-size="sm" data-act="refresh" data-type="icon"
-                     data-icon-start="fa-solid fa-arrows-rotate"
+                     data-icon-start="cw-circle-arrow"
                      aria-label="Refresh data"></sherpa-button>
       <sherpa-button class="act" data-size="sm" data-act="overflow" data-type="icon"
-                     data-icon-start="fa-solid fa-ellipsis-vertical"
+                     data-icon-start="ellipses-vertical"
                      aria-label="More actions" aria-haspopup="menu"></sherpa-button>
     </div>
   </div>
@@ -151,7 +148,7 @@
       <sherpa-button class="qf-folded-caret" slot="trailing" data-type="icon"
                      data-size="xs" data-look="transparent" tabindex="-1"
                      aria-hidden="true"
-                     data-icon-start="fa-solid fa-chevron-right"></sherpa-button>
+                     data-icon-start="chevron-right"></sherpa-button>
     </sherpa-list-item>
   </template>
 

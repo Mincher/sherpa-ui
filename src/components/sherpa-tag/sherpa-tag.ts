@@ -5,7 +5,7 @@ import '../sherpa-button/sherpa-button.js';
 export class SherpaTag extends SherpaElement {
   static override css = new URL('./sherpa-tag.css', import.meta.url);
   static override html = new URL('./sherpa-tag.html', import.meta.url);
-  /** data-icon: a Font Awesome class list or a single raw glyph character. */
+  /** data-icon: an icon name, or a single raw glyph character. */
   static override props = {
     'data-type': { type: 'enum', kind: 'style', values: ['dot'] },
     'data-icon': { type: 'string', kind: 'content', to: '.glyph', as: 'icon' },

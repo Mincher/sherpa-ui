@@ -87,9 +87,9 @@ test('a sortable header cycles none → asc → desc, each a different painted g
 
   // THE THIRD STATE, which the border triangle could not express: a sortable
   // column that is not the current sort still says so.
-  expect(name(r.unsorted).cls).toContain('fa-sort');
-  expect(name(r.asc).cls).toContain('fa-arrow-up-wide-short');
-  expect(name(r.desc).cls).toContain('fa-arrow-down-wide-short');
+  expect(name(r.unsorted).cls).toContain('sort-none');
+  expect(name(r.asc).cls).toContain('sort-ascending');
+  expect(name(r.desc).cls).toContain('sort-descending');
 
   // All three are DIFFERENT — the failure mode here is two states sharing a glyph.
   const seen = new Set([name(r.unsorted).cls, name(r.asc).cls, name(r.desc).cls]);
@@ -104,7 +104,7 @@ test('a sortable header cycles none → asc → desc, each a different painted g
   }
 
   // A column that is not the current sort stays on sort-none while another sorts.
-  expect(other(r.asc).cls).toContain('fa-sort');
+  expect(other(r.asc).cls).toContain('sort-none');
 
   // A NON-sortable column carries no control AND no box — an empty square
   // would hold its label short of every sortable column's and the headings

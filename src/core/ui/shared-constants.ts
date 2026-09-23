@@ -13,10 +13,10 @@
  * itself without claiming to be active.
  */
 export const ORGANISE_ICONS = {
-  group: 'fa-solid fa-layer-group',
-  sortNone: 'fa-solid fa-sort',
-  sortAsc: 'fa-solid fa-arrow-up-wide-short',
-  sortDesc: 'fa-solid fa-arrow-down-wide-short',
+  group: 'group',
+  sortNone: 'sort-none',
+  sortAsc: 'sort-ascending',
+  sortDesc: 'sort-descending',
 } as const;
 
 

@@ -190,7 +190,7 @@ export async function init(root) {
     { id: 'status', label: 'Status', type: 'data',
       select: 'multiple', removable: true, options: asOptions('status') },
     // MULTI-select: one pick reads back as "Plan: Pro", two or more show a count.
-    { id: 'plan', label: 'Plan', type: 'data', icon: 'fa-solid fa-tag',
+    { id: 'plan', label: 'Plan', type: 'data', icon: 'price-tag',
       select: 'multiple', removable: true, options: asOptions('plan') },
     // No Region chip: it is a GLOBAL filter in the app header, and two chips for
     // one field would make the reader guess which is in force.
@@ -214,7 +214,7 @@ export async function init(root) {
       kind: 'number', min: 120, max: 10000, step: 20 },
     { id: 'health', label: 'Health', type: 'data',
       kind: 'number', min: 40, max: 100, step: 1 },
-    { id: 'openTickets', label: 'Open tickets', type: 'data', icon: 'fa-solid fa-ticket',
+    { id: 'openTickets', label: 'Open tickets', type: 'data', icon: 'ticket',
       kind: 'number', min: 0, max: 8, step: 1 },
   ]);
 
@@ -247,8 +247,8 @@ export async function init(root) {
      so the two cannot disagree. `multi` is what survives a multi-row
      selection — deleting five is one action, editing five is not. */
   const ROW_ACTIONS = [
-    { id: 'edit', label: 'Edit', icon: 'fa-solid fa-pen' },
-    { id: 'delete', label: 'Delete', icon: 'fa-solid fa-trash', multi: true, danger: true },
+    { id: 'edit', label: 'Edit', icon: 'pencil' },
+    { id: 'delete', label: 'Delete', icon: 'trash', multi: true, danger: true },
   ];
 
   /* `as` adapts the shape at the binding. `ignore` on filter-change because

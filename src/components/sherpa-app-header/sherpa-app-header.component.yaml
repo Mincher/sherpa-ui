@@ -45,7 +45,7 @@ anatomy:
                       data-type: icon
                       data-size: xs
                       data-look: transparent
-                      data-icon-start: fa-solid fa-arrow-left
+                      data-icon-start: arrow-left
                       aria-label: Back
                   - slot: breadcrumbs
               - el: div
@@ -58,7 +58,7 @@ anatomy:
                     part: ai
                     attrs:
                       data-size: sm
-                      data-icon-start: fa-solid fa-wand-magic-sparkles
+                      data-icon-start: wand-magic-sparkles
                     children:
                       - el: span
                         class: ai-label
@@ -69,7 +69,7 @@ anatomy:
                       data-type: icon
                       data-size: sm
                       data-look: transparent
-                      data-icon-start: fa-solid fa-flask
+                      data-icon-start: beaker
                       aria-label: Labs
                   - el: span
                     class: divider divider-labs
@@ -82,7 +82,7 @@ anatomy:
                       data-type: icon
                       data-size: sm
                       data-look: transparent
-                      data-icon-start: fa-solid fa-moon
+                      data-icon-start: moon
                       aria-label: Toggle theme
                   - el: span
                     class: divider divider-tools
@@ -99,7 +99,7 @@ anatomy:
                           data-type: icon
                           data-size: sm
                           data-look: transparent
-                          data-icon-start: fa-solid fa-bell
+                          data-icon-start: notifications
                           aria-label: Notifications
                       - el: span
                         class: notif-badge
@@ -113,7 +113,7 @@ anatomy:
                       data-type: icon
                       data-size: sm
                       data-look: transparent
-                      data-icon-start: fa-solid fa-user-gear
+                      data-icon-start: user-settings
                       aria-label: Account
                   - el: sherpa-button
                     class: help
@@ -122,7 +122,7 @@ anatomy:
                       data-type: icon
                       data-size: sm
                       data-look: transparent
-                      data-icon-start: fa-solid fa-headset
+                      data-icon-start: headset
                       aria-label: Support
                   - el: span
                     class: divider divider-menu
@@ -135,7 +135,7 @@ anatomy:
                       data-type: icon
                       data-size: sm
                       data-look: transparent
-                      data-icon-start: fa-solid fa-grip
+                      data-icon-start: drag-handle-horizontal
                       aria-label: Switch app
           - el: div
             class: row-view
@@ -209,7 +209,7 @@ props:
     type: string
     observed: true
     kind: style
-    description: the view icon — an FA class list ("fa-solid fa-gauge")
+    description: the view icon — an icon name ("gauge")
   - $type: prop
     name: data-labs
     type: string

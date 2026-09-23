@@ -4,7 +4,7 @@
   Public API:
     data-heading        the view title (row 2)
     data-title          accepted as an alias for data-heading
-    data-icon           the view icon — an FA class list ("fa-solid fa-gauge")
+    data-icon           the view icon — an icon name ("gauge")
     data-back           show the back button
     data-ai             show the "Ask N-zo" AI button
     data-ai-label       its label (default "Ask N-zo")
@@ -47,7 +47,7 @@
           <!-- xs, not sm: the back button belongs to the 16-tall breadcrumb
                line, not the 24-tall actions row. -->
           <sherpa-button class="back" part="back" data-type="icon" data-size="xs"
-                         data-look="transparent" data-icon-start="fa-solid fa-arrow-left"
+                         data-look="transparent" data-icon-start="arrow-left"
                          aria-label="Back"></sherpa-button>
           <slot name="breadcrumbs"></slot>
         </div>
@@ -58,19 +58,19 @@
           <!-- The one action that is not transparent — the default border sets
                it apart from the icon run beside it. -->
           <sherpa-button class="ai" part="ai" data-size="sm"
-                         data-icon-start="fa-solid fa-wand-magic-sparkles">
+                         data-icon-start="wand-magic-sparkles">
             <span class="ai-label">Ask N-zo</span>
           </sherpa-button>
 
           <!-- Order and dividers are Figma's (App Header 150:3690). -->
           <sherpa-button class="labs" part="labs" data-type="icon" data-size="sm"
-                         data-look="transparent" data-icon-start="fa-solid fa-flask"
+                         data-look="transparent" data-icon-start="beaker"
                          aria-label="Labs"></sherpa-button>
 
           <span class="divider divider-labs" aria-hidden="true"></span>
 
           <sherpa-button class="theme-toggle" part="theme-toggle" data-type="icon" data-size="sm"
-                         data-look="transparent" data-icon-start="fa-solid fa-moon"
+                         data-look="transparent" data-icon-start="moon"
                          aria-label="Toggle theme"></sherpa-button>
 
           <span class="divider divider-tools" aria-hidden="true"></span>
@@ -79,21 +79,21 @@
             <!-- `fa-bell`, not `fa-bell-on`: the Pro glyph renders nothing at
                  all in the free webfont — zero width, no warning. -->
             <sherpa-button class="notif-btn" part="notif-btn" data-type="icon" data-size="sm"
-                           data-look="transparent" data-icon-start="fa-solid fa-bell"
+                           data-look="transparent" data-icon-start="notifications"
                            aria-label="Notifications"></sherpa-button>
             <span class="notif-badge" part="notif-badge" aria-hidden="true"></span>
           </span>
           <sherpa-button class="account" part="account" data-type="icon" data-size="sm"
-                         data-look="transparent" data-icon-start="fa-solid fa-user-gear"
+                         data-look="transparent" data-icon-start="user-settings"
                          aria-label="Account"></sherpa-button>
           <sherpa-button class="help" part="help" data-type="icon" data-size="sm"
-                         data-look="transparent" data-icon-start="fa-solid fa-headset"
+                         data-look="transparent" data-icon-start="headset"
                          aria-label="Support"></sherpa-button>
 
           <span class="divider divider-menu" aria-hidden="true"></span>
 
           <sherpa-button class="menu" part="menu" data-type="icon" data-size="sm"
-                         data-look="transparent" data-icon-start="fa-solid fa-grip"
+                         data-look="transparent" data-icon-start="drag-handle-horizontal"
                          aria-label="Switch app"></sherpa-button>
         </div>
       </div>

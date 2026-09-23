@@ -114,7 +114,7 @@ anatomy:
                 data-type: icon
                 data-size: xs
                 data-look: transparent
-                data-icon-start: fa-solid fa-xmark
+                data-icon-start: cross
                 aria-label: Remove file
 props:
   - $type: prop

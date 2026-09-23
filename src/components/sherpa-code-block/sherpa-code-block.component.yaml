@@ -34,12 +34,14 @@ anatomy:
             aria-label: Copy code
           children:
             - el: i
-              class: copy-label fa-solid fa-copy
+              class: copy-label sherpa-icon-box
               attrs:
+                data-icon: copy
                 aria-hidden: "true"
             - el: i
-              class: copied-label fa-solid fa-circle-check
+              class: copied-label sherpa-icon-box
               attrs:
+                data-icon: status-ok
                 aria-hidden: "true"
     - el: pre
       class: pre

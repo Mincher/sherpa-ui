@@ -56,7 +56,7 @@ anatomy:
             data-type: icon
             data-size: sm
             data-group: end
-            data-icon-start: fa-solid fa-caret-down
+            data-icon-start: triangle-down
             aria-haspopup: menu
             aria-expanded: "false"
             aria-label: Selection options

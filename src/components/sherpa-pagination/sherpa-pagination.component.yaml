@@ -52,7 +52,7 @@ anatomy:
                     data-type: icon
                     data-look: transparent
                     data-group: start
-                    data-icon-start: fa-solid fa-angles-left
+                    data-icon-start: double-chevron-left
                     aria-label: First page
                 - el: sherpa-button
                   class: btn prev
@@ -61,7 +61,7 @@ anatomy:
                     data-type: icon
                     data-look: transparent
                     data-group: end
-                    data-icon-start: fa-solid fa-angle-left
+                    data-icon-start: chevron-left
                     aria-label: Previous page
             - el: input
               class: page-input sherpa-border-edges sherpa-border-corners
@@ -87,7 +87,7 @@ anatomy:
                     data-type: icon
                     data-look: transparent
                     data-group: start
-                    data-icon-start: fa-solid fa-angle-right
+                    data-icon-start: chevron-right
                     aria-label: Next page
                 - el: sherpa-button
                   class: btn last
@@ -96,7 +96,7 @@ anatomy:
                     data-type: icon
                     data-look: transparent
                     data-group: end
-                    data-icon-start: fa-solid fa-angles-right
+                    data-icon-start: double-chevron-right
                     aria-label: Last page
     - el: template
       class: rows-opt-tpl

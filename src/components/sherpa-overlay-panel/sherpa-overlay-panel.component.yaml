@@ -54,7 +54,7 @@ anatomy:
                     data-type: icon
                     data-size: xs
                     data-look: transparent
-                    data-icon-start: fa-solid fa-up-right-and-down-left-from-center
+                    data-icon-start: fullscreen
                     aria-label: Expand
                 - el: sherpa-button
                   class: external
@@ -63,7 +63,7 @@ anatomy:
                     data-type: icon
                     data-size: xs
                     data-look: transparent
-                    data-icon-start: fa-solid fa-arrow-up-right-from-square
+                    data-icon-start: arrow-up-right-from-square
                     aria-label: Open externally
         - el: div
           class: body

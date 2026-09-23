@@ -12,7 +12,7 @@
   collapse with the rail. The icon and dot sit outside it and survive collapse.
 
   Public API:
-    data-icon        leading icon — a Font Awesome class list ("fa-solid fa-house");
+    data-icon        leading icon — an icon name ("home");
                      any other value renders as a literal text glyph
     data-tier        nesting depth 2 | 3 — indents the row to the Figma indent tier
                      (tier 1 is the default, no attribute needed)
@@ -50,7 +50,7 @@
   <!-- Figma's trailing chevron, last child of `content`; a sibling here so it
        can be its own control. -->
   <button class="expand" part="expand" type="button" aria-label="Expand" aria-expanded="false">
-    <i class="expand-chevron fa-solid fa-chevron-down" aria-hidden="true"></i>
+    <i class="expand-chevron sherpa-icon-box" data-icon="chevron-down" aria-hidden="true"></i>
   </button>
 
   <!-- Indicator (atom)/Type=dot — outside `content`, so it survives collapse. -->
@@ -64,7 +64,7 @@
       <span class="promo-heading" part="heading"></span>
       <span class="promo-description" part="description"></span>
     </span>
-    <i class="promo-chevron fa-solid fa-chevron-right" part="chevron" aria-hidden="true"></i>
+    <i class="promo-chevron sherpa-icon-box" data-icon="chevron-right" part="chevron" aria-hidden="true"></i>
   </button>
   <a class="promo sherpa-border-edges promo-link" part="row">
     <span class="promo-icon" part="icon" aria-hidden="true"></span>
@@ -72,6 +72,6 @@
       <span class="promo-heading" part="heading"></span>
       <span class="promo-description" part="description"></span>
     </span>
-    <i class="promo-chevron fa-solid fa-chevron-right" part="chevron" aria-hidden="true"></i>
+    <i class="promo-chevron sherpa-icon-box" data-icon="chevron-right" part="chevron" aria-hidden="true"></i>
   </a>
 </template>

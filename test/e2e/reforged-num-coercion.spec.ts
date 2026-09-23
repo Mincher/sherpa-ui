@@ -339,12 +339,12 @@ test('props: `all` writes EVERY matching node, not just the first', async ({ pag
 /**
  * An icon NAME has to become a drawing, and a raw character has to become text.
  * Getting that backwards is SILENT — the value simply prints as the literal
- * string "fa-solid fa-tag", which is what chip, tag, list-item and
- * container-header all did before `as: 'icon'`.
+ * string "price-tag", which is what chip, tag, list-item and container-header
+ * all did before `as: 'icon'`.
  *
- * The drawings are Figma's (`src/icons/`), stamped as a fitted SVG. The `fa-`
- * spelling still resolves, through ICON_ALIASES, to the Figma icon that means
- * the same thing — so these call sites did not have to be rewritten.
+ * The drawings are Figma's (`src/icons/`), stamped as a fitted SVG, and the
+ * value is the drawing's own name — the `fa-` spelling and its alias map were
+ * removed once every call site had been renamed.
  */
 for (const [tag, sel] of [
   ['sherpa-chip', '.glyph'],
@@ -358,7 +358,7 @@ for (const [tag, sel] of [
         const root = document.getElementById('root')!;
         root.innerHTML = '';
         const el = document.createElement(t) as HTMLElement & { rendered?: Promise<void> };
-        el.setAttribute('data-icon', 'fa-solid fa-tag');
+        el.setAttribute('data-icon', 'price-tag');
         root.appendChild(el);
         await el.rendered;
         await (window as unknown as { __settled: () => Promise<void> }).__settled();
@@ -407,10 +407,10 @@ test('icon: swapping the value does not accumulate two icons', async ({ page }) 
     const root = document.getElementById('root')!;
     root.innerHTML = '';
     const el = document.createElement('sherpa-tag') as HTMLElement & { rendered?: Promise<void> };
-    el.setAttribute('data-icon', 'fa-solid fa-tag');
+    el.setAttribute('data-icon', 'price-tag');
     root.appendChild(el);
     await el.rendered;
-    el.setAttribute('data-icon', 'fa-solid fa-star');
+    el.setAttribute('data-icon', 'star');
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const glyph = el.shadowRoot!.querySelector('.glyph')!;
     return { classes: [...glyph.classList], svgs: glyph.querySelectorAll('svg').length };
@@ -430,7 +430,7 @@ test('icon: the drawing actually RENDERS — an unknown name would be empty', as
     const root = document.getElementById('root')!;
     root.innerHTML = '';
     const el = document.createElement('sherpa-tag') as HTMLElement & { rendered?: Promise<void> };
-    el.setAttribute('data-icon', 'fa-solid fa-tag');
+    el.setAttribute('data-icon', 'price-tag');
     root.appendChild(el);
     await el.rendered;
     await (window as unknown as { __settled: () => Promise<void> }).__settled();

@@ -122,7 +122,7 @@ props:
     type: string
     observed: true
     kind: style
-    description: leading icon — an FA class list (Figma default is a funnel)
+    description: leading icon — an icon name (Figma default is a funnel)
   - $type: prop
     name: data-indicator
     type: string

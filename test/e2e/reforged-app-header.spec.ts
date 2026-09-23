@@ -243,18 +243,23 @@ test('the action cluster is in Figma order, with Figma glyphs', async ({ page })
   // design's, not a convenience: beaker stands alone and moon stands alone, which
   // is why the dividers fall where they do. The code used to group
   // chat+beaker+moon, with a chat button Figma does not have.
+  /* These ARE the Figma names now. Each used to be a Font Awesome class with a
+     comment saying which drawing it stood in for — `fa-flask` for beaker,
+     `fa-user-gear` for user-settings — and the alias map did the translating.
+     The names were migrated and the map deleted, so the comment and the value
+     can no longer disagree. */
   expect(r.order).toEqual([
-    'wand-magic-sparkles', // Ask N-zo (AI)
-    'flask',               // beaker
+    'wand-magic-sparkles',      // Ask N-zo (AI)
+    'beaker',
     '|',
     'moon',
     '|',
-    'bell',                // Figma: bell-ring — fa-bell-on is PRO and renders nothing
+    'notifications',
     'badge',
-    'user-gear',           // Figma: user-settings — it opens SETTINGS
-    'headset',             // Figma: headset — talk to support, not read docs
+    'user-settings',            // it opens SETTINGS, not a profile
+    'headset',                  // talk to support, not read docs
     '|',
-    'grip',                // Figma: app-switcher — a grid, not a hamburger
+    'drag-handle-horizontal',   // app switcher — a grid, not a hamburger
   ]);
 });
 

@@ -50,9 +50,9 @@ export type NavState = 'collapsed' | 'hover' | 'default' | 'pinned' | 'settings'
 
 /** The quick rows a nav opens with, unless config.quickItems overrides them. */
 const DEFAULT_QUICK: NavEntry[] = [
-  { id: 'home', label: 'Home', icon: 'fa-solid fa-house' },
-  { id: 'recent', label: 'Recent', icon: 'fa-solid fa-clock-rotate-left' },
-  { id: 'favorites', label: 'Favorites', icon: 'fa-solid fa-star' },
+  { id: 'home', label: 'Home', icon: 'home' },
+  { id: 'recent', label: 'Recent', icon: 'ccw-circle-arrow-w-clock' },
+  { id: 'favorites', label: 'Favorites', icon: 'star' },
 ];
 
 /** Modes in which the rail is open, i.e. not the 40px icon rail. */

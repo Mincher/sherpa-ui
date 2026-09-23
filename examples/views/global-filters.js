@@ -61,7 +61,7 @@ export function globalFilters(views, regions = REGIONS, customers = CUSTOMERS, d
     {
       id: 'region',
       label: 'Region',
-      icon: 'fa-solid fa-globe',
+      icon: 'globe',
       removable: true,
       select: 'multiple',
       // The VALUE is what the record holds; the label is only what a reader sees.
@@ -73,7 +73,7 @@ export function globalFilters(views, regions = REGIONS, customers = CUSTOMERS, d
          and a reader cannot act on a chip that does not say which date.
          TRAP T-a-date-chip-names-its-field */
       label: 'Created date',
-      icon: 'fa-solid fa-calendar',
+      icon: 'calendar',
       kind: 'date',
       /* SINGLE by default, like every other calendar. The reader flips the
          Range switch when they want a span; opening in range mode makes the
@@ -109,7 +109,7 @@ export function globalAvailable(fields = {}, held = []) {
   return [
     { id: 'status', label: 'Status', select: 'multiple', removable: true,
       options: asOptions(fields.status ?? []) },
-    { id: 'plan', label: 'Plan', icon: 'fa-solid fa-tag',
+    { id: 'plan', label: 'Plan', icon: 'price-tag',
       select: 'multiple', removable: true, options: asOptions(fields.plan ?? []) },
     { id: 'tier', label: 'Tier', select: 'multiple', removable: true,
       options: asOptions(fields.tier ?? []) },

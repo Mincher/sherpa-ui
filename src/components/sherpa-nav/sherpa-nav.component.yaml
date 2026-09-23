@@ -46,7 +46,9 @@ anatomy:
                     - slot: brand-icon
                       children:
                         - el: i
-                          class: fa-solid fa-cubes
+                          class: sherpa-icon-box
+                          attrs:
+                            data-icon: group
                 - el: span
                   class: product sherpa-truncate
                   part: product
@@ -59,8 +61,9 @@ anatomy:
                     aria-label: Pin navigation
                   children:
                     - el: i
-                      class: fa-solid fa-thumbtack
+                      class: sherpa-icon-box
                       attrs:
+                        data-icon: pin
                         aria-hidden: "true"
                 - el: button
                   class: hdr-btn sherpa-border-edges sherpa-border-corners settings
@@ -71,8 +74,9 @@ anatomy:
                     aria-label: Settings
                   children:
                     - el: i
-                      class: fa-solid fa-gear
+                      class: sherpa-icon-box
                       attrs:
+                        data-icon: gear
                         aria-hidden: "true"
             - el: div
               class: quick-zone
@@ -83,8 +87,9 @@ anatomy:
                   part: search
                   children:
                     - el: i
-                      class: search-icon fa-solid fa-magnifying-glass
+                      class: search-icon sherpa-icon-box
                       attrs:
+                        data-icon: magnifying-glass
                         aria-hidden: "true"
                     - el: input
                       class: search-input
@@ -101,8 +106,9 @@ anatomy:
                         aria-label: Clear search
                       children:
                         - el: i
-                          class: fa-solid fa-xmark
+                          class: sherpa-icon-box
                           attrs:
+                            data-icon: cross
                             aria-hidden: "true"
                 - el: ul
                   class: quick

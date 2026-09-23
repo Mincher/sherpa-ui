@@ -47,7 +47,7 @@ export interface PropDef {
   fallbackAttr?: string;
   /**
    * How the value is RENDERED. Default is plain text.
-   * TRAP T-icon-value-takes-two-forms — `'icon'` or an FA class list prints literally.
+   * TRAP T-icon-value-takes-two-forms — `'icon'` or an icon name prints literally.
    */
   as?: 'text' | 'icon';
   /** Allowed values for an `enum`. Spec parity only; not enforced at runtime. */

@@ -78,8 +78,9 @@ anatomy:
           aria-expanded: "false"
         children:
           - el: i
-            class: expand-chevron fa-solid fa-chevron-down
+            class: expand-chevron sherpa-icon-box
             attrs:
+              data-icon: chevron-down
               aria-hidden: "true"
       - el: span
         class: dot
@@ -108,9 +109,10 @@ anatomy:
                 class: promo-description
                 part: description
           - el: i
-            class: promo-chevron fa-solid fa-chevron-right
+            class: promo-chevron sherpa-icon-box
             part: chevron
             attrs:
+              data-icon: chevron-right
               aria-hidden: "true"
       - el: a
         class: promo sherpa-border-edges promo-link
@@ -131,9 +133,10 @@ anatomy:
                 class: promo-description
                 part: description
           - el: i
-            class: promo-chevron fa-solid fa-chevron-right
+            class: promo-chevron sherpa-icon-box
             part: chevron
             attrs:
+              data-icon: chevron-right
               aria-hidden: "true"
 props:
   - $type: prop
@@ -177,9 +180,7 @@ props:
     type: string
     observed: true
     kind: visibility
-    description: >-
-      leading icon — a Font Awesome class list ("fa-solid fa-house"); any other value renders as a
-      literal text glyph
+    description: leading icon — an icon name ("home"); any other value renders as a literal text glyph
   - $type: prop
     name: data-label
     type: string

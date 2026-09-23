@@ -77,7 +77,7 @@ export class SherpaButton extends SherpaElement {
   }
 
   /**
-   * data-icon-* is an FA class string ("fa-solid fa-floppy-disk").
+   * data-icon-* is an FA class string ("floppy-disk").
    *
    * `writeIcon` strips only the `fa-*` classes — rebuilding className from a
    * base string silently drops the structural `icon icon-start|end`.

@@ -81,7 +81,7 @@ export class SherpaNavItem extends SherpaElement {
     const promo = this.dataset['type'] === 'promo';
 
     // TRAP T-nav-item-writes-to-both-rows — $$ everywhere. The icon is out of
-    // setAll because an FA class list is not text.
+    // setAll because an icon name is not text.
     const setAll = (sel: string, text: string): void => {
       for (const el of this.$$(sel)) el.textContent = text;
     };

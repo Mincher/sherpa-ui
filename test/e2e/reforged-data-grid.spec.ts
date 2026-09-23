@@ -2235,8 +2235,8 @@ test('row actions: a pinned trailing column, one shared menu, and a report', asy
         { email: 'b@x', name: 'Bo' },
       ],
       actions: [
-        { id: 'edit', label: 'Edit', icon: 'fa-regular fa-pen' },
-        { id: 'delete', label: 'Delete', icon: 'fa-regular fa-trash', multi: true, danger: true },
+        { id: 'edit', label: 'Edit', icon: 'pencil' },
+        { id: 'delete', label: 'Delete', icon: 'trash', multi: true, danger: true },
       ],
     });
     await settled();

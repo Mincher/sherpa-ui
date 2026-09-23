@@ -35,7 +35,7 @@ anatomy:
               attrs:
                 data-type: icon
                 data-group: start
-                data-icon-start: fa-solid fa-chevron-left
+                data-icon-start: chevron-left
                 aria-label: Previous
             - el: sherpa-button
               class: cal-label
@@ -49,7 +49,7 @@ anatomy:
               attrs:
                 data-type: icon
                 data-group: end
-                data-icon-start: fa-solid fa-chevron-right
+                data-icon-start: chevron-right
                 aria-label: Next
         - el: div
           class: cal-weekdays
@@ -152,7 +152,7 @@ anatomy:
                   --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base,
                   4px); --sherpa-border-rounding-bottom-left:
                   var(--sherpa-display-mode-border-rounding-base, 4px);
-                data-icon-start: fa-solid fa-chevron-left
+                data-icon-start: chevron-left
                 aria-label: Previous
             - el: sherpa-button
               class: cal-label
@@ -171,7 +171,7 @@ anatomy:
                   var(--sherpa-display-mode-border-rounding-base, 4px);
                   --sherpa-border-rounding-bottom-right:
                   var(--sherpa-display-mode-border-rounding-base, 4px);
-                data-icon-start: fa-solid fa-chevron-right
+                data-icon-start: chevron-right
                 aria-label: Next
 props:
   - $type: prop

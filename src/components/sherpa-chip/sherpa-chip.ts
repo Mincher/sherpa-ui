@@ -13,7 +13,7 @@ export class SherpaChip extends SherpaElement {
   static override css = new URL('./sherpa-chip.css', import.meta.url);
   static override html = new URL('./sherpa-chip.html', import.meta.url);
   /**
-   * data-icon takes a Font Awesome class list ("fa-solid fa-tag") or a single raw
+   * data-icon takes an icon name ("price-tag") or a single raw
    * glyph character. CSS `:host(:not([data-icon]))` gates visibility.
    */
   static override props = {

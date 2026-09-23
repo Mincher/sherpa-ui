@@ -1,41 +1,22 @@
 /**
  * Stamp an icon into a wrapper as a fitted SVG.
  *
- * The viewBox is the drawing's own INK bbox, so `preserveAspectRatio` puts the
+ * The viewBox is the drawing's own INK bbox — which the `.svg` FILES do not
+ * carry: all 214 say `viewBox="0 0 14 14"`, and 206 have a tighter real box.
+ * That is why this module is generated rather than the files being loaded.
+ * `preserveAspectRatio` then puts the
  * art's LONGEST axis at exactly 100% of the square wrapper, keeps it 1:1, and
  * makes overflow impossible at any wrapper size.
  * TRAP T-icon-box-is-not-the-glyph
  */
 import { ICON_PATHS } from './icon-paths.js';
-import { ICON_ALIASES } from './icon-aliases.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
-/**
- * A `fa-*` token that names a STYLE or a modifier, not an icon. The `fa-`
- * syntax is still the value 88 call sites pass; the name inside it is now
- * resolved against the Figma icon set, not a webfont.
- */
-const NOT_A_NAME = new Set(['solid', 'regular', 'brands', 'light', 'thin', 'duotone',
-  'fw', 'lg', 'sm', 'xs', '2xs', 'xl', '2xl', 'spin', 'pulse', 'border',
-  'rotate-90', 'rotate-180', 'rotate-270', 'flip-horizontal', 'flip-vertical']);
-
-/**
- * `"fa-solid fa-filter"` → `"filter"`. A bare `"filter"` is returned as-is.
- * A Font Awesome name resolves through ICON_ALIASES to its Figma drawing.
- */
-export function iconName(value: string): string | null {
+/** A name the set holds: ONE token. Anything else is not an icon name. */
+function iconName(value: string): string | null {
   const tokens = value.trim().split(/\s+/).filter(Boolean);
-  for (const token of tokens) {
-    if (!token.startsWith('fa-')) continue;
-    const name = token.slice(3);
-    if (!NOT_A_NAME.has(name)) return ICON_ALIASES[name] ?? name;
-  }
-  // No `fa-` prefix anywhere: a plain name, which is what new code should pass.
-  if (tokens.length === 1 && tokens[0] !== undefined && !tokens[0].startsWith('fa-')) {
-    return ICON_ALIASES[tokens[0]] ?? tokens[0];
-  }
-  return null;
+  return tokens.length === 1 ? (tokens[0] ?? null) : null;
 }
 
 /** Is this a name the icon set actually holds? */
@@ -77,15 +58,10 @@ export function renderIcon(el: Element, value: string): void {
  * per stamp; an element that already holds its SVG is skipped.
  */
 export function upgradeIcons(root: ParentNode): void {
-  for (const el of root.querySelectorAll('[class*="fa-"], [data-icon]')) {
+  for (const el of root.querySelectorAll('[data-icon]')) {
     if (el.querySelector('svg')) continue;
-    // `data-icon` is the plain Figma name and wins; a `fa-*` class is the
-    // legacy spelling. `className` is an object on an SVG element, so the
-    // class list is read through classList, which is always strings.
-    const declared = el.getAttribute('data-icon');
-    const name = iconName(declared ?? [...el.classList].join(' '));
+    const name = iconName(el.getAttribute('data-icon') ?? '');
     if (name === null || !(name in ICON_PATHS)) continue;
-    for (const cls of [...el.classList]) if (cls.startsWith('fa-')) el.classList.remove(cls);
     el.classList.add('sherpa-icon-box');
     renderIcon(el, name);
   }

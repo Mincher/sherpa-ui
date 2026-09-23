@@ -56,7 +56,7 @@
        full-page view uses. -->
   <sherpa-overlay-panel id="assistant"
                         data-title="Assistant"
-                        data-icon="fa-solid fa-wand-magic-sparkles"
+                        data-icon="wand-magic-sparkles"
                         data-dismissible></sherpa-overlay-panel>
 
   <script type="module">
@@ -102,15 +102,15 @@
     // Home opens the dashboard, so no separate Dashboard row is needed. Every
     // row links to a REAL page; the nav's own tests cover nesting and badges.
     const navConfig = {
-      product: { name: 'N-central', icon: 'fa-solid fa-cubes' },
+      product: { name: 'N-central', icon: 'group' },
       quickItems: [
         // The component's default Home carries no href — it cannot know where a
         // product's home lives — so the app supplies it.
-        { id: 'home', label: 'Home', icon: 'fa-solid fa-house', href: '?view=dashboard' },
+        { id: 'home', label: 'Home', icon: 'home', href: '?view=dashboard' },
         /* Recent and Favorites are PARENTS. Their children are stamped from the
            stored lists by refreshNav() below, so they start empty here. */
-        { id: 'recent', label: 'Recent', icon: 'fa-solid fa-clock-rotate-left' },
-        { id: 'favorites', label: 'Favorites', icon: 'fa-solid fa-star' },
+        { id: 'recent', label: 'Recent', icon: 'ccw-circle-arrow-w-clock' },
+        { id: 'favorites', label: 'Favorites', icon: 'star' },
       ],
       sections: [
         { label: 'Views', items: [
@@ -120,7 +120,7 @@
       // The settings BUTTON in the nav header swaps the rail to these pages.
       settingsSections: [
         { label: 'Account', items: [
-          { id: 'view-settings', label: 'Preferences', icon: 'fa-solid fa-sliders', href: '?view=settings' },
+          { id: 'view-settings', label: 'Preferences', icon: 'sliders-up', href: '?view=settings' },
         ] },
       ],
     };
@@ -316,11 +316,11 @@
        change a real app makes. */
     const notificationFeed = new ArrayStore([
       { id: 'n1', label: 'Northwind renewed', description: 'Enterprise, 3 years',
-        icon: 'fa-solid fa-circle-check', time: '2m ago', unread: true },
+        icon: 'status-ok', time: '2m ago', unread: true },
       { id: 'n2', label: 'Contoso payment failed', description: 'Card declined',
         time: '1h ago', unread: true },
       { id: 'n3', label: 'Fabrikam raised a ticket', description: 'Priority: high',
-        icon: 'fa-solid fa-ticket', time: '3h ago', unread: true },
+        icon: 'ticket', time: '3h ago', unread: true },
       { id: 'n4', label: 'Tailspin trial ends Friday', description: '14-day trial',
         time: 'Yesterday', unread: true },
       { id: 'n5', label: 'Weekly report ready', description: 'Revenue and churn',
@@ -414,7 +414,7 @@
       const btn = document.querySelector('sherpa-app-header')?.shadowRoot
         ?.querySelector('.theme-toggle');
       btn?.setAttribute('data-icon-start',
-        mode === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon');
+        mode === 'dark' ? 'sun' : 'moon');
       btn?.setAttribute('aria-label',
         mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
     });

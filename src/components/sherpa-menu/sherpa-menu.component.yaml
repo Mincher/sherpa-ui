@@ -46,7 +46,7 @@ anatomy:
                       data-type: icon
                       data-size: xs
                       data-look: transparent
-                      data-icon-start: fa-solid fa-arrow-left
+                      data-icon-start: arrow-left
                       aria-label: Back
                   - el: sherpa-breadcrumbs
                     class: drill-crumbs
@@ -59,7 +59,7 @@ anatomy:
                 class: search
                 part: search
                 attrs:
-                  data-icon-start: fa-solid fa-magnifying-glass
+                  data-icon-start: magnifying-glass
                   placeholder: Search
                   autocomplete: "off"
                   aria-label: Search this menu
@@ -106,7 +106,7 @@ anatomy:
                       data-type: icon
                       data-size: xs
                       data-look: transparent
-                      data-icon-start: fa-solid fa-arrow-left
+                      data-icon-start: arrow-left
                       aria-label: Back
                   - el: sherpa-breadcrumbs
                     class: drill-crumbs
@@ -136,7 +136,7 @@ anatomy:
                     class: search
                     part: search
                     attrs:
-                      data-icon-start: fa-solid fa-magnifying-glass
+                      data-icon-start: magnifying-glass
                       placeholder: Search
                       autocomplete: "off"
                       aria-label: Search this menu

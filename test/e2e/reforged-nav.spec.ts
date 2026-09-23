@@ -130,7 +130,7 @@ test('the rail starts collapsed: 40px, no product name or section labels, search
     };
     document.getElementById('root')!.appendChild(nav);
     await nav.rendered;
-    nav.populate!({ product: { name: 'Sherpa' }, sections: [{ label: 'Main', items: [{ id: 'home', label: 'Home', icon: 'fa-regular fa-house' }] }] });
+    nav.populate!({ product: { name: 'Sherpa' }, sections: [{ label: 'Main', items: [{ id: 'home', label: 'Home', icon: 'home' }] }] });
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const s = nav.shadowRoot!;
     return {
@@ -438,7 +438,7 @@ const NESTED = {
         {
           id: 'endpoints',
           label: 'Endpoints',
-          icon: 'fa-solid fa-desktop',
+          icon: 'desktop',
           badge: '1284',
           children: [
             { id: 'servers', label: 'Servers' },
@@ -447,7 +447,7 @@ const NESTED = {
             { id: 'desktops', label: 'Desktops', children: [{ id: 'laptops', label: 'Laptops' }] },
           ],
         },
-        { id: 'health', label: 'Health', icon: 'fa-solid fa-gauge' },
+        { id: 'health', label: 'Health', icon: 'gauge' },
       ],
     },
   ],
@@ -738,7 +738,7 @@ test('nav-select carries the row label and icon, and entry() reads them back', a
     await nav.populate({
       quickItems: [],
       sections: [{ label: 'Views', items: [
-        { id: 'records', label: 'Records', icon: 'fa-solid fa-list' },
+        { id: 'records', label: 'Records', icon: 'list' },
       ] }],
     });
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
@@ -754,11 +754,11 @@ test('nav-select carries the row label and icon, and entry() reads them back', a
     return { detail: detail[0], entry: nav.entry('records'), active: nav.activeEntry };
   });
 
-  expect(r.detail).toEqual({ id: 'records', label: 'Records', icon: 'fa-solid fa-list' });
+  expect(r.detail).toEqual({ id: 'records', label: 'Records', icon: 'list' });
   // entry() reads the STAMPED row, so it agrees with what is on screen.
-  expect(r.entry).toEqual({ id: 'records', label: 'Records', icon: 'fa-solid fa-list' });
+  expect(r.entry).toEqual({ id: 'records', label: 'Records', icon: 'list' });
   // activeEntry follows data-current-id, which the click just set.
-  expect(r.active).toEqual({ id: 'records', label: 'Records', icon: 'fa-solid fa-list' });
+  expect(r.active).toEqual({ id: 'records', label: 'Records', icon: 'list' });
 });
 
 test('a row with NO icon reports none, so a mirror can clear its own', async ({ page }) => {
@@ -773,7 +773,7 @@ test('a row with NO icon reports none, so a mirror can clear its own', async ({ 
     await nav.populate({
       quickItems: [],
       sections: [{ items: [
-        { id: 'reports', label: 'Reports', icon: 'fa-solid fa-chart-pie', expanded: true,
+        { id: 'reports', label: 'Reports', icon: 'chart-pie', expanded: true,
           children: [{ id: 'monthly', label: 'Monthly rollup' }] },
       ] }],
     });
@@ -805,7 +805,7 @@ test('setting state to settings swaps the section list, and announces it', async
     document.getElementById('root')!.appendChild(nav);
     await nav.populate({
       product: { name: 'N-central' },
-      quickItems: [{ id: 'home', label: 'Home', icon: 'fa-solid fa-house' }],
+      quickItems: [{ id: 'home', label: 'Home', icon: 'home' }],
       sections: [{ label: 'Views', items: [{ id: 'records', label: 'Records' }] }],
       settingsSections: [{ label: 'Account', items: [{ id: 'prefs', label: 'Preferences' }] }],
     });

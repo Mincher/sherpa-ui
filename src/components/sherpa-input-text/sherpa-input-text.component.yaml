@@ -67,7 +67,7 @@ anatomy:
                   - el: i
                     class: sherpa-icon-box
                     attrs:
-                      data-icon: xmark
+                      data-icon: cross
                       aria-hidden: "true"
               - el: span
                 class: actions
@@ -117,7 +117,7 @@ anatomy:
                   - el: i
                     class: sherpa-icon-box
                     attrs:
-                      data-icon: xmark
+                      data-icon: cross
                       aria-hidden: "true"
               - el: span
                 class: actions
@@ -165,7 +165,7 @@ anatomy:
                   - el: i
                     class: sherpa-icon-box
                     attrs:
-                      data-icon: xmark
+                      data-icon: cross
                       aria-hidden: "true"
               - el: span
                 class: actions

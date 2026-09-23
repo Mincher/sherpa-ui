@@ -48,7 +48,7 @@ export interface GridAction {
   /** What `row-action` carries back. */
   id: string;
   label: string;
-  /** A Font Awesome class list, e.g. `'fa-regular fa-pen'`. */
+  /** An icon name, e.g. `'pencil'`. */
   icon?: string;
   /** Can apply to MANY rows at once — a bulk toolbar offers only these. */
   multi?: boolean;
