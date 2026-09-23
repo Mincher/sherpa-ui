@@ -3228,6 +3228,21 @@ This is the `data-locked` half of the state-ownership rule: `data-<thing>` in,
 `<thing>-change` out, and `data-locked` when the host owns the value.
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+
+**A PERSISTENT chip is a locked chip.** "Always on, and its body does not flip
+it" — the toolbar's own words at its `data-persistent` site — is exactly what
+`data-locked` means. Until 2026-09-23 the toolbar set only `data-persistent`,
+so the chip flipped itself off and the toolbar wrote it back on the next line:
+*"A persistent chip has ALREADY flipped itself off by now, so put it back."*
+
+Measured with a real mouse click on a persistent chip with no menu: **two
+`data-current` writes for one click**. With `data-locked` set alongside:
+**zero**, and the chip stays current. One owner, as the convention says.
+
+`data-persistent` still earns its place — it says the chip stays on the bar when
+off, which is a different fact from who owns its state.
 
 ### T-empty-flag-needs-rows-to-count
 

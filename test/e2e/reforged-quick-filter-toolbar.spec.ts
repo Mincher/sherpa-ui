@@ -2348,3 +2348,50 @@ test('the Group chip BODY toggles grouping, and reports it', async ({ page }) =>
   expect(r.fired).toContain('team');
   expect(r.fired).toContain(null);
 });
+
+/**
+ * A PERSISTENT CHIP HAS ONE OWNER.
+ *
+ * "Always on, and its body does not flip it" is exactly what `data-locked`
+ * means. Without it the chip flipped itself off and the toolbar wrote it back —
+ * TWO writes for one click, the two-owner pattern the convention exists to
+ * prevent. TRAP T-locked-chip-relays-and-nothing-else
+ */
+test('a persistent chip is LOCKED, so one click writes data-current once', async ({ page }) => {
+  const box = await page.evaluate(async () => {
+    const t = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>; populate(d: unknown): void;
+    };
+    t.setAttribute('data-type', 'data');
+    document.getElementById('root')!.replaceChildren(t);
+    await t.rendered;
+    // No `options`, so no menu — the chip CAN reach its own flip.
+    t.populate([{ id: 'sel', label: 'Selector', type: 'data', persistent: true }]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const chip = t.shadowRoot!.querySelector('.chip') as HTMLElement;
+    const w = window as unknown as { __chip: HTMLElement; __writes: boolean[] };
+    w.__chip = chip;
+    w.__writes = [];
+    new MutationObserver(() => w.__writes.push(chip.hasAttribute('data-current')))
+      .observe(chip, { attributes: true, attributeFilter: ['data-current'] });
+    const r = chip.getBoundingClientRect();
+    return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+  });
+
+  // A REAL click. `.click()` on a shadow node does not reach the handler.
+  await page.mouse.click(box.x, box.y);
+  const r = await page.evaluate(() => {
+    const w = window as unknown as { __chip: HTMLElement; __writes: boolean[] };
+    return {
+      writes: w.__writes.length,
+      locked: w.__chip.hasAttribute('data-locked'),
+      current: w.__chip.hasAttribute('data-current'),
+    };
+  });
+
+  expect(r.locked).toBe(true);
+  // ZERO, not one: a locked chip reports the click and writes nothing.
+  expect(r.writes).toBe(0);
+  expect(r.current).toBe(true);
+});
