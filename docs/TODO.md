@@ -8,7 +8,7 @@ Status: `[ ]` open · `[~]` in progress · `[x]` done
 
 ## The order to do them in
 
-38 items. Ordered so that nothing is built twice.
+39 items. Ordered so that nothing is built twice.
 
 Includes the six findings the 2026-09-23 component audit left open; its other 13
 are done. `docs/COMPONENT-AUDIT.md` keeps the measurements behind every one.
@@ -160,6 +160,7 @@ Last, because they touch everything and block nothing.
 | 28 | A Figma component is NOT always a web component (sweep, then fold `sherpa-grid-cell`) |
 | 29 | Rename `src/index.ts` to `src/app.ts` |
 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? |
+| 31 | The 8px grid and 4px sub-grid should be TOKENS |
 
 Item 29 dead last. It is a rename across the whole repo, so it is cheapest when
 no other work is in flight.
@@ -850,6 +851,62 @@ references. Either compose it or fold it — the same question as item 28
 ---
 
 ## Tokens
+
+### `[ ]` The 8px grid and 4px sub-grid should be TOKENS
+
+Will, 2026-09-23: *"This will allow us to easily adjust them for new themes &
+token sets in the future."*
+
+**Today the grid is a number in a SCRIPT.** `scripts/lint-css.mjs:126` is the
+whole rule:
+
+```js
+if (v <= 1 || v === 999) continue;   // strokes + the pill idiom
+if (v % 2 === 0) continue;           // <- the grid, hard-coded
+```
+
+So the spacing SCALE lives in Figma and the grid it is meant to sit on lives in
+a build script, and the script cannot read the tokens. A new theme moves one and
+not the other.
+
+**And the grid is not one number.** Measured 2026-09-23 — `--sherpa-display-mode-space-*`
+across the three density modes:
+
+| token | compact | default | comfortable |
+|---|---:|---:|---:|
+| `space-sm` | 12 | 8 | 16 |
+| `space-2xl` | 32 | 28 | 36 |
+
+A compact theme is effectively on a 4px grid, and `2xl` is off the 8px grid in
+two of the three modes. The rule as written — "even px is fine" — is loose
+enough to pass all of that, which is why `lint:css` reports zero off-grid
+literals while the scale itself is mixed.
+
+**What to do.** Emit the grid from Figma as two properties, so a theme states
+its own:
+
+```css
+--sherpa-grid-step: 8px;      /* sizing, spacing, radius */
+--sherpa-grid-substep: 4px;   /* text and icon alignment */
+```
+
+Then:
+
+1. `lint-css.mjs` READS them out of `tokens.css` instead of hard-coding `% 2`.
+   One source, and a theme that changes the step changes the lint.
+2. CSS can consume them directly where a value is computed rather than taken
+   from the scale — `round(var(--_measured), var(--sherpa-grid-step))` is
+   exactly the dynamic case `T-round-is-for-dynamic-sizes-only` describes.
+3. The SCALE can then be checked against its own grid. `space-2xl: 36px` is not
+   on an 8px step; today nothing says so.
+
+Decide first whether the step is per-MODE (compact 4, default 8) or one value
+the modes all sit on. The measurements above say per-mode, but that is Figma's
+call, not the code's.
+
+Base CSS or tokens? **Tokens.** `sherpa-base.css` is adopted into shadow roots;
+the linter reads a file on disk, and `tokens.css` is the file it can read.
+
 
 ### `[ ]` Consume the tweaked Style/Transparent content aliases
 
