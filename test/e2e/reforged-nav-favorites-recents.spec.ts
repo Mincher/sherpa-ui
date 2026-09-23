@@ -235,7 +235,7 @@ test('a Favorites child OPENS its view, and the real row stays the active one',
 
     // The REAL Records row is current, not the favourite copy.
     await expect.poll(() => page.evaluate(() =>
-      document.querySelector('sherpa-nav')?.getAttribute('data-active-id')))
+      document.querySelector('sherpa-nav')?.getAttribute('data-current-id')))
       .toBe('view-records');
   });
 

@@ -216,7 +216,7 @@ three or more uses:
 |---|---|
 | `all` | the target repeats in the template (list-item writes `.title` twice) |
 | `skipWhen` | content the component owns — a filled `<slot>`, a search `<mark>` |
-| `fallbackAttr` | a legacy alias (`data-label` → `data-heading`) |
+| `fallbackAttr` | a legacy alias, pointing AT the tier's own name (see below) |
 | `default` | a real default string (`'Available'`, `'Ask N-zo'`) |
 
 `skipWhen` on a `<slot>` guards only when the slot is **filled** — a `<slot>` in the
@@ -230,7 +230,22 @@ or a value derived from something other than the attribute (`sherpa-list`'s row 
 
 Components expose their entire public API through `data-*` attributes. CSS selects on them via `:host([data-*])`; JS reads/writes `this.dataset`. Native HTML attributes (`disabled`, `hidden`, `name`, `value`, etc.) stay un-prefixed.
 
-Standard names: `data-variant`, `data-size`, `data-status`, `data-type`, `data-layout`, `data-active`, `data-selected`, `data-elevation`, `data-label`, `data-description`, `data-icon-start`, `data-icon-end`.
+Standard names: `data-variant`, `data-size`, `data-status`, `data-type`, `data-layout`, `data-current`, `data-selected`, `data-elevation`, `data-label`, `data-heading`, `data-description`, `data-icon-start`, `data-icon-end`.
+
+**The text on a thing has two names, and the split is by TIER.** A CONTROL you
+operate takes `data-label` — button, input, slider, checkbox, metric,
+progress-bar. A CONTAINER that holds other things takes `data-heading` —
+dialog, panel, accordion, toast, menu, app-header. Measured 2026-09-23: 19
+components on one side, 14 on the other, and **zero** on the wrong one.
+
+An alias always points AT its tier's own name, never away:
+`sherpa-list-item` takes `data-label` with `data-heading` as the fallback;
+`sherpa-app-header` takes `data-heading` with `data-title` as the fallback.
+
+**And `data-current` vs `data-selected` are not synonyms.** `data-current` is
+one-of-many — which row you are on. `data-selected` is any-of-many — whether
+its control is ticked. `sherpa-list-item` declares both, because a row can be
+current AND selected. The host-level pointer is `data-current-id`.
 
 ### Naming contract (ratified — Phase 0.5)
 

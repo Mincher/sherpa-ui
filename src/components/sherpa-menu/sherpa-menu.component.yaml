@@ -316,7 +316,7 @@ capabilities:
   - $type: capability
     api: js-methods
     description: >-
-      callable from a view definition's state block (show, hide, toggle, items). See
+      callable from a view definition's state block (show, hide, close, toggle, items). See
       $extensions.sherpa.methods.
 events:
   - $type: event
@@ -379,7 +379,7 @@ tokens:
   menu.background: "{sherpa.style-surface-base}"
   menu.color: "{sherpa.theme-content-body-base}"
   menu.font-family: "{sherpa.font-family-body}"
-  menu.box-shadow: "{sherpa.display-mode-size-2xs}"
+  menu.box-shadow: "{sherpa.shadow-md}"
   heading.padding-inline: "{sherpa.theme-padding-none}"
   heading.color: "{sherpa.theme-content-body-1}"
   heading.font-size: "{sherpa.theme-content-size-small}"
@@ -401,6 +401,10 @@ $extensions:
       - $type: method
         name: hide
         args: ""
+      - $type: method
+        name: close
+        args: ""
+        description: TRAP T-one-verb-proxies-to-the-native-one
       - $type: method
         name: toggle
         args: "trigger?: HTMLElement"

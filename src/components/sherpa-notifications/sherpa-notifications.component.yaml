@@ -83,7 +83,7 @@ capabilities:
   - $type: capability
     api: js-methods
     description: >-
-      callable from a view definition's state block (show, hide, toggle). See
+      callable from a view definition's state block (show, hide, close, toggle). See
       $extensions.sherpa.methods.
 events:
   - $type: event
@@ -121,6 +121,10 @@ $extensions:
       - $type: method
         name: hide
         args: ""
+      - $type: method
+        name: close
+        args: ""
+        description: TRAP T-one-verb-proxies-to-the-native-one
       - $type: method
         name: toggle
         args: "trigger?: HTMLElement"

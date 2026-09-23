@@ -63,7 +63,7 @@ const LATCHED: ReadonlySet<string> = new Set<NavState>(['pinned', 'settings']);
 export class SherpaNav extends SherpaElement {
   static override css = new URL('./sherpa-nav.css', import.meta.url);
   static override html = new URL('./sherpa-nav.html', import.meta.url);
-  static override observed = ['data-active-id', 'data-nav-state'];
+  static override observed = ['data-current-id', 'data-nav-state'];
 
   #config: NavConfig = {};
 
@@ -96,7 +96,7 @@ export class SherpaNav extends SherpaElement {
   }
 
   override onChange(name: string, oldValue: string | null, newValue: string | null): void {
-    if (name === 'data-active-id') this.#applyActive();
+    if (name === 'data-current-id') this.#applyActive();
     if (name === 'data-nav-state') {
       this.#applyState();
       // Only the settings edge re-stamps; every other mode is CSS.
@@ -303,7 +303,7 @@ export class SherpaNav extends SherpaElement {
   }
 
   #applyActive(): void {
-    const active = this.dataset['activeId'];
+    const active = this.dataset['currentId'];
     for (const row of this.$$('.nav-row')) {
       const item = row.querySelector('sherpa-nav-item');
       item?.toggleAttribute('data-current', row.dataset['id'] === active);
@@ -321,7 +321,7 @@ export class SherpaNav extends SherpaElement {
   }
 
   get activeEntry(): NavRowInfo | null {
-    const id = this.dataset['activeId'];
+    const id = this.dataset['currentId'];
     return id ? this.entry(id) : null;
   }
 
@@ -329,7 +329,7 @@ export class SherpaNav extends SherpaElement {
     const row = (event.target as HTMLElement).closest<HTMLElement>('.nav-row');
     const id = row?.dataset['id'];
     if (!id) return;
-    this.setAttribute('data-active-id', id);
+    this.setAttribute('data-current-id', id);
     this.emit('nav-select', { id, ...this.entry(id) });
   };
 

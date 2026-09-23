@@ -144,7 +144,9 @@ capabilities:
     description: read/write JS properties (open). See $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
-    description: callable from a view definition's state block (show, close). See $extensions.sherpa.methods.
+    description: >-
+      callable from a view definition's state block (show, hide, close). See
+      $extensions.sherpa.methods.
 events:
   - $type: event
     name: panel-collapse
@@ -169,7 +171,7 @@ tokens:
   root.border-start-start-radius: "{sherpa.border-rounding-top-left}"
   root.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
   root.color: "{sherpa.style-content-base}"
-  root.box-shadow: "{sherpa.display-mode-size-2xs}"
+  root.box-shadow: "{sherpa.shadow-lg}"
   toolbar.gap: "{sherpa.theme-gap-sm}"
 $extensions:
   sherpa:
@@ -180,9 +182,12 @@ $extensions:
         args: ""
         description: Open as a non-modal floating panel (no backdrop, no focus trap).
       - $type: method
+        name: hide
+        args: ""
+        description: Close it. `hide()` is Sherpa's verb across every component that opens;
+      - $type: method
         name: close
         args: ""
-        description: Close the panel.
     category: container
     divergence:
       note: >-

@@ -48,7 +48,7 @@ const KNOWN = {
   'sherpa-file-upload.files':
     'platform: a File list can only come from a real picker or drop; ' +
     'script cannot forge one, so there is nothing to call',
-  'sherpa-nav.activeEntry': 'ok: data-active-id attribute',
+  'sherpa-nav.activeEntry': 'ok: data-current-id attribute',
   'sherpa-notifications.unreadCount': 'ok: populate() — derived from the items',
   'sherpa-quick-filter.menu': 'ok: the slotted <… slot="menu"> element IS the write',
   'sherpa-quick-filter-toolbar.active': 'ok: populate() — a def carries `active: true`',

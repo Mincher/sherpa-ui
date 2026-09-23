@@ -132,7 +132,7 @@ anatomy:
                 role: list
 props:
   - $type: prop
-    name: data-active-id
+    name: data-current-id
     type: string
     kind: content
     description: id of the current item

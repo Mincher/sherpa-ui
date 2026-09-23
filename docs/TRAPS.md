@@ -7246,6 +7246,42 @@ way up, since −5 is a fifth of the 25 span), the negative bar from 36 down to
 - Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
 - Site: `test/e2e/reforged-barchart.spec.ts`
 
+### T-one-verb-proxies-to-the-native-one
+
+Four components open and close, and each wraps a different platform API:
+
+| component | wraps | the native verb |
+|---|---|---|
+| dialog, overlay-panel | `<dialog>` | `close()` |
+| menu, notifications | `popover` | `hidePopover()` |
+
+Left alone, that leaks into the public surface: an app author writes
+`dialog.close()` on one line and `notifications.hide()` on the next, for the
+same intent. `examples/` did exactly that.
+
+**Sherpa's pair is `show()` / `hide()`**, and every one of the four accepts
+both that and `close()`. The alias delegates — it never re-implements — so
+there is one place the work happens:
+
+```ts
+hide(): void { … }                 // the logic
+close(): void { this.hide(); }     // the platform spelling
+```
+
+The native API is still there and still used INSIDE; nothing is reinvented.
+What is added is one vocabulary so a caller does not have to know which
+platform primitive a component happens to wrap.
+
+**`dismiss()` is not a synonym.** On callout and toast it REMOVES the element
+from the DOM. Folding it into `hide()` would give a caller a method that
+sometimes hides and sometimes destroys.
+
+- Site: `src/components/sherpa-dialog/sherpa-dialog.ts`
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-notifications/sherpa-notifications.ts`
+- Site: `test/e2e/reforged-open-close-verbs.spec.ts`
+
 ### T-an-elevation-pin-cannot-reach-a-shadow-root
 
 `--sherpa-shadow-sm/md/lg` resolved to `0px 0px 0px 0px` — an invisible shadow

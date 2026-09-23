@@ -49,11 +49,21 @@ export class SherpaDialog extends SherpaElement {
     this.toggleAttribute('open', true);
   }
 
-  /** Close the dialog. */
-  close(): void {
+  /**
+   * Close it. `hide()` is Sherpa's verb across every component that opens;
+   * `close()` is kept as an alias because this wraps a native <dialog>, whose
+   * own method is close().
+   * TRAP T-one-verb-proxies-to-the-native-one
+   */
+  hide(): void {
     const dialog = this.#dialog();
     if (dialog?.open) dialog.close();
     this.toggleAttribute('open', false);
+  }
+
+  /** @see hide — the native <dialog> spelling. */
+  close(): void {
+    this.hide();
   }
 
   #onClose = (): void => {

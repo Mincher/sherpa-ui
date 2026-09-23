@@ -15,7 +15,7 @@ test('legacy array populate() renders items and marks the active one', async ({ 
       rendered?: Promise<void>;
       populate?: (d: unknown) => void;
     };
-    nav.setAttribute('data-active-id', 'reports');
+    nav.setAttribute('data-current-id', 'reports');
     document.getElementById('root')!.appendChild(nav);
     await nav.rendered;
     nav.populate!([
@@ -31,7 +31,7 @@ test('legacy array populate() renders items and marks the active one', async ({ 
     return { count: rows.length, activeLabel: activeRow?.dataset['label'] };
   });
   expect(r.count).toBe(3); // legacy array → one unlabelled section of 3
-  expect(r.activeLabel).toBe('Reports'); // data-active-id → the matching item
+  expect(r.activeLabel).toBe('Reports'); // data-current-id → the matching item
 });
 
 test('rich config renders brand, sections with labels, and quick items', async ({ page }) => {
@@ -93,7 +93,7 @@ test('clicking an item fires nav-select and updates the active id', async ({ pag
     (item.shadowRoot!.querySelector('.nav-button, .nav-link') as HTMLElement).click();
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
-    return { selected, activeId: nav.getAttribute('data-active-id') };
+    return { selected, activeId: nav.getAttribute('data-current-id') };
   });
   expect(r.selected).toBe('reports');
   expect(r.activeId).toBe('reports'); // click reflected the active id
@@ -757,7 +757,7 @@ test('nav-select carries the row label and icon, and entry() reads them back', a
   expect(r.detail).toEqual({ id: 'records', label: 'Records', icon: 'fa-solid fa-list' });
   // entry() reads the STAMPED row, so it agrees with what is on screen.
   expect(r.entry).toEqual({ id: 'records', label: 'Records', icon: 'fa-solid fa-list' });
-  // activeEntry follows data-active-id, which the click just set.
+  // activeEntry follows data-current-id, which the click just set.
   expect(r.active).toEqual({ id: 'records', label: 'Records', icon: 'fa-solid fa-list' });
 });
 

@@ -2,7 +2,7 @@
  * sherpa-tabs.css — tab strip and panel presentation.
  *
  * Panel visibility is pure CSS: every slotted [data-tab] is hidden and only the
- * one carrying data-tab-active shows. JS stamps buttons and reflects ids only.
+ * one carrying data-current shows. JS stamps buttons and reflects ids only.
  */
 
 :host {
@@ -82,4 +82,4 @@
   padding-block-start: var(--sherpa-display-mode-space-base, 16px);
 }
 ::slotted([data-tab]) { display: none; }
-::slotted([data-tab-active]) { display: block; }
+::slotted([data-current]) { display: block; }

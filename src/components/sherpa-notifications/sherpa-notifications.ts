@@ -76,6 +76,14 @@ export class SherpaNotifications extends SherpaElement {
     this.#menu()?.hide();
   }
 
+  /**
+   * @see hide — accepted so one verb closes every Sherpa component.
+   * TRAP T-one-verb-proxies-to-the-native-one
+   */
+  close(): void {
+    this.hide();
+  }
+
   /** Open if shut, shut if open — what a bell click does. */
   toggle(trigger?: HTMLElement): void {
     this.#menu()?.toggle(trigger);

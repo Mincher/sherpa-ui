@@ -253,6 +253,14 @@ export class SherpaMenu extends SherpaElement {
     this.#card()?.hidePopover();
   }
 
+  /**
+   * @see hide — accepted so one verb closes every Sherpa component.
+   * TRAP T-one-verb-proxies-to-the-native-one
+   */
+  close(): void {
+    this.hide();
+  }
+
   toggle(trigger?: HTMLElement): void {
     if (this.open) this.hide();
     else this.show(trigger);

@@ -90,7 +90,7 @@ export class SherpaTabs extends SherpaElement {
 
     // Panels are the consumer's light DOM; CSS reveals the marked one.
     for (const panel of this.#panels()) {
-      panel.toggleAttribute('data-tab-active', panel.dataset['tab'] === active);
+      panel.toggleAttribute('data-current', panel.dataset['tab'] === active);
       panel.setAttribute('role', 'tabpanel');
       panel.id = `panel-${panel.dataset['tab'] ?? ''}`;
       panel.setAttribute('aria-labelledby', `tab-${panel.dataset['tab'] ?? ''}`);

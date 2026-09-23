@@ -1019,6 +1019,84 @@ separate decision. `TRAP T-an-elevation-pin-cannot-reach-a-shadow-root`.
 
 ---
 
+### 15 — The naming rulings
+
+Three decisions. Two of the audit's three findings turned out to be wrong once
+measured, which is the useful part.
+
+#### Verbs: one Sherpa vocabulary, proxying to native
+
+The audit called `show`/`close`/`hide`/`dismiss` "three antonyms for one
+concept". Each actually mirrors a different platform API:
+
+| component | wraps | native verb |
+|---|---|---|
+| dialog, overlay-panel | `<dialog>` | `close()` |
+| menu, notifications | `popover` | `hidePopover()` |
+| callout, toast | neither | removes the element |
+
+Will's ruling: a user of Sherpa should not have to learn which primitive a
+component happens to wrap. So **`show()` / `hide()` is Sherpa's pair**, and all
+four openers accept `close()` too. The alias delegates — one place does the
+work:
+
+```ts
+hide(): void { … }                 // the logic
+close(): void { this.hide(); }     // the platform spelling
+```
+
+`examples/` had the problem this fixes: `dialog.close()` on one line,
+`notifications.hide()` on the next, for the same intent.
+
+**`dismiss()` stays separate** because it REMOVES the element. A method that
+sometimes hides and sometimes destroys would be worse than two names.
+`TRAP T-one-verb-proxies-to-the-native-one`, and a test that proves all three
+verbs reach the same place without recursing.
+
+#### Selection: two small renames, and one merge NOT done
+
+`data-active-id` → `data-current-id` (12 sites) and `data-tab-active` →
+`data-current` (3 sites). Those were the real faults: two names for the host
+pointer, and `sherpa-tabs` using two names one line apart.
+
+The merge of `data-selected` into `data-current` was chosen and then **not
+done**, because checking what they mean showed they are orthogonal, not
+synonyms. `sherpa-list-item` declares both and documents them separately:
+
+> `data-current` — current-row state
+> `data-selected` — selection state (for the leading control)
+
+A row can be current AND selected. `sherpa-select-card` is explicitly
+multi-select. Merging would have made that unexpressible.
+
+**The rename broke two things, both the same shape.** An attribute rename does
+not touch its camelCase `dataset` form:
+
+```
+src/components/sherpa-nav/sherpa-nav.ts   this.dataset['activeId']
+examples/index.html:193                   nav.dataset.activeId = …
+```
+
+The first was caught by a failing nav test; the second only by a favourites
+test that passed before the rename and failed after. Both now read `currentId`.
+A `grep` for the kebab-case attribute finds neither.
+
+#### Label vs heading: the rule was already being followed
+
+Measured across all 33 components: **zero** are on the wrong side. Controls
+take `data-label`, containers take `data-heading`, and all three `fallbackAttr`
+aliases already point at their own tier's name.
+
+The audit read that as "aliases point in opposite directions" — they do, and
+that is the rule working. What was missing was the rule being written down.
+
+CLAUDE.md had it backwards in one place (`fallbackAttr` documented as
+`data-label → data-heading`) and omitted `data-heading` from the standard-names
+list entirely. Both fixed, along with the `data-current` / `data-selected`
+distinction.
+
+---
+
 ### The suite has load-dependent flakiness, and it will mislead you
 
 Full suite after this work: **1923 passed, 13 failed, 2 flaky** — the same
@@ -1071,7 +1149,7 @@ Same property shape as the card surface would fix it, and would give
 changes what nine components paint — it wants its own pass and its own
 before/after measurement.
 
-### 2 — The naming rulings
+### 2 — The naming rulings — DONE, see above
 
 These need a decision before code, because each one picks a winner:
 

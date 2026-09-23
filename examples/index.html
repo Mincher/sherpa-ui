@@ -190,7 +190,7 @@
       if (typeof cleanup === 'function') { try { cleanup(); } catch { /* noop */ } cleanup = null; }
 
       // Found by href, so Home lights up for the dashboard.
-      nav.dataset.activeId = navRowIdForView(name) ?? idForView(name);
+      nav.dataset.currentId = navRowIdForView(name) ?? idForView(name);
 
       /* Through the rail's OWN setter, not a raw dataset write: the setter
          announces the change, so the app-shell's content inset follows.
@@ -237,7 +237,7 @@
        title off a stamped ROW. */
     /* A child row's id must be STABLE and distinct from the view's own row, or
        starring Records would give two rows claiming id `view-records` and
-       `data-active-id` would light both. */
+       `data-current-id` would light both. */
     const childId = (parent, view) => `${parent}:${view}`;
 
     /** A stored row → a nav child. No icon: TRAP T-nav-child-rows-carry-no-icon. */
