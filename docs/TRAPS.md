@@ -7246,6 +7246,37 @@ way up, since −5 is a fifth of the 25 span), the negative bar from 36 down to
 - Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
 - Site: `test/e2e/reforged-barchart.spec.ts`
 
+### T-rendered-settles-even-when-the-markup-does-not
+
+`#bootstrap()` awaits the component's stylesheet and its `.html` together, then
+stamps and calls `#resolveRendered()`. An unguarded `await` skipped that last
+call whenever the markup fetch REJECTED, so `rendered` stayed pending for the
+life of the page.
+
+There are **557** `await el.rendered` sites across `src/`, `test/` and
+`examples/`. Every one hung — no error, no timeout, no warning.
+
+Measured, not argued. Two failure modes behave differently and only one was a
+hang:
+
+| the server does | `fetch` | before the fix |
+|---|---|---|
+| drops the connection | REJECTS | `rendered` pending forever |
+| answers 404 | RESOLVES | stamped the error page as the template |
+
+The 404 case is why `loadHtml` now checks `r.ok`: `fetch` treats any response
+as success, so `r.text()` handed back whatever the server wrote — silently,
+with no template and no complaint.
+
+`#bootstrap` now catches, logs the component's own tag name, and stamps empty.
+A blank element is a fault a person can see; a promise that never settles is
+not.
+
+`#adoptStyles` already had this defence (`allSettled`, see
+T-shared-sheets-settle-independently). The markup leg never got one.
+
+- Site: `src/core/ui/sherpa-element.ts`
+
 ### T-an-event-name-is-not-always-a-literal
 
 `generate-component-spec.mjs` learns what a component fires by scanning its TS

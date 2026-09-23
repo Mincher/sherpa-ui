@@ -10,7 +10,6 @@ import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';
 
 export class SherpaContainerHeader extends SherpaElement {
-  static override tier = 'sub-component' as const;
   static override css = new URL('./sherpa-container-header.css', import.meta.url);
   static override html = new URL('./sherpa-container-header.html', import.meta.url);
   static override props = {

@@ -26,7 +26,6 @@ export type LegendItem = LegendDatum;
 
 /** @tier sub-component — renders inside charts; excluded from the public catalog. */
 export class SherpaChartLegend extends SherpaElement {
-  static override tier = 'sub-component' as const;
   static override css = new URL('./sherpa-chart-legend.css', import.meta.url);
   static override html = new URL('./sherpa-chart-legend.html', import.meta.url);
 

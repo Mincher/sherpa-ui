@@ -22,7 +22,6 @@ import { SherpaElement, markMatch } from '../../core/ui/sherpa-element.js';
 let uid = 0;
 
 export class SherpaNavItem extends SherpaElement {
-  static override tier = 'sub-component' as const;
   static override css = new URL('./sherpa-nav-item.css', import.meta.url);
   static override html = new URL('./sherpa-nav-item.html', import.meta.url);
 

@@ -33,7 +33,11 @@ function loadSheet(url: string): Promise<CSSStyleSheet> {
 function loadHtml(url: string): Promise<string> {
   let pending = htmlCache.get(url);
   if (!pending) {
-    pending = fetch(url).then((r) => r.text());
+    pending = fetch(url).then((r) => {
+      // A 404 RESOLVES, so without this the body is the server's error page.
+      if (!r.ok) throw new Error(`${r.status} ${r.statusText} for ${url}`);
+      return r.text();
+    });
     htmlCache.set(url, pending);
   }
   return pending;
@@ -43,7 +47,7 @@ function loadHtml(url: string): Promise<string> {
  * Parse `<template id="...">` → innerHTML. Null when there are no id'd templates.
  * TRAP T-cloning-prototypes-have-no-id — an item prototype must carry no `id`.
  */
-export function parseTemplates(html: string): TemplateMap {
+function parseTemplates(html: string): TemplateMap {
   const doc = new DOMParser().parseFromString(html, 'text/html');
   const templates = doc.querySelectorAll('template[id]');
   if (templates.length === 0) return null;
@@ -81,7 +85,7 @@ export function coerceNum(raw: string | null | undefined, fallback: number, opts
  * Only the substring family leaves a span worth highlighting.
  * TRAP T-a-needle-comes-from-either-direction
  */
-export const MARKABLE_OPS: ReadonlySet<string> =
+const MARKABLE_OPS: ReadonlySet<string> =
   new Set(['contains', 'startswith', 'endswith']);
 
 /**
@@ -175,13 +179,6 @@ export type PropMap = Readonly<Record<string, PropDef>>;
 /* "items", not "rows" — only one of the twelve stamping components has rows.
  * TRAP T-the-base-class-names-nothing-visual */
 
-/**
- * The vocabulary `renderItems()` reads off a cloned prototype. An ITEM is
- * whatever the component repeats: a bar, a tab, a crumb, a swatch, a row.
- * TRAP T-item-template-cannot-compute
- */
-export type ItemTemplate = 'declarative';
-
 /* The item-template attributes, in the order they are applied. */
 const ITEM_TEXT = 'data-text';
 const ITEM_ICON = 'data-icon';
@@ -208,8 +205,6 @@ export abstract class SherpaElement extends HTMLElement {
   static html?: URL;
   /** Attribute names to observe. Subclasses override (merge with super if extending). */
   static observed: string[] = [];
-  /** `sub-component` = registered but hidden from the catalog / sandbox picker. */
-  static tier: 'standalone' | 'sub-component' = 'standalone';
   /** Shared stylesheet URLs adopted into every shadow root (set once at app init). */
   static sharedStyles: URL[] = [];
 
@@ -381,7 +376,19 @@ export abstract class SherpaElement extends HTMLElement {
     // Styles awaited before any DOM write — no flash of unstyled content.
     const styling = this.#adoptStyles(Ctor);
     const markup = Ctor.html ? loadHtml(Ctor.html.href) : Promise.resolve('');
-    const [, html] = await Promise.all([styling, markup]);
+
+    /* THE MARKUP LEG MUST NOT LEAVE `rendered` PENDING. A dropped connection
+       rejects the fetch, and an unguarded await here skipped
+       #resolveRendered() — so all 557 `await el.rendered` sites hung with no
+       error and no timeout. Stamp empty and carry on: the element is visibly
+       blank, which is a fault a person can see.
+       TRAP T-rendered-settles-even-when-the-markup-does-not */
+    let html = '';
+    try {
+      [, html] = await Promise.all([styling, markup]);
+    } catch (error) {
+      console.error(`[${this.localName}] template failed to load`, error);
+    }
 
     const [body, id] = this.#resolveTemplate(Ctor, html);
     this.#stamp(body, id);
@@ -437,7 +444,11 @@ export abstract class SherpaElement extends HTMLElement {
   #wireSlots(): void {
     for (const slot of this.root.querySelectorAll('slot')) {
       const update = (): void => this.#reflectSlot(slot);
-      slot.addEventListener('slotchange', update);
+      /* CARRY THE SIGNAL. A variant re-stamp replaces every slot node, so each
+         stamp wired a FRESH closure to a FRESH element — nothing for
+         addEventListener's repeat-discard to dedupe, unlike the host listeners
+         T-restamp-does-not-abort reasons about. */
+      slot.addEventListener('slotchange', update, { signal: this.signal });
       update();
     }
   }
@@ -629,10 +640,6 @@ export abstract class SherpaElement extends HTMLElement {
   }
 
   /** Did the event pass through an element matching `selector`? */
-  protected pathHas(event: Event, selector: string): boolean {
-    return this.pathFind(event, selector) !== null;
-  }
-
   /**
    * Render an icon value — an icon NAME becomes a Figma SVG, any other value
    * is a raw character and stays text.
@@ -725,7 +732,9 @@ export abstract class SherpaElement extends HTMLElement {
 
   /**
    * Stamp a list DECLARATIVELY — the prototype's attributes say what fills what,
-   * so there is no `fill` callback. See `ItemTemplate` for the vocabulary.
+   * so there is no `fill` callback. An ITEM is whatever the component repeats:
+   * a bar, a tab, a crumb, a swatch, a row.
+   * TRAP T-item-template-cannot-compute
    * TRAP T-custom-element-upgrade — writes are ATTRIBUTES, never properties.
    * TRAP T-row-fragment-cloned-whole — `after` is the escape hatch.
    */

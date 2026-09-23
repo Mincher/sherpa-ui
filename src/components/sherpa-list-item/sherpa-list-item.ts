@@ -19,7 +19,6 @@ import { SherpaElement } from '../../core/ui/sherpa-element.js';
 export class SherpaListItem extends SherpaElement {
   static override css = new URL('./sherpa-list-item.css', import.meta.url);
   static override html = new URL('./sherpa-list-item.html', import.meta.url);
-  static override tier = 'sub-component' as const;
   static override props = {
     /* No `data-heading` entry: `data-label` below declares it as its
        `fallbackAttr`, which is the back-compat alias. A second entry writing

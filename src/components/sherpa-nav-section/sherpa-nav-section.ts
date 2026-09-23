@@ -12,7 +12,6 @@ import { SherpaElement } from '../../core/ui/sherpa-element.js';
 export class SherpaNavSection extends SherpaElement {
   static override css = new URL('./sherpa-nav-section.css', import.meta.url);
   static override html = new URL('./sherpa-nav-section.html', import.meta.url);
-  static override tier = 'sub-component' as const;
   static override props = {
     'data-collapsed': { type: 'boolean', kind: 'style' },
     'data-label': { type: 'string', kind: 'content', to: '.label' },

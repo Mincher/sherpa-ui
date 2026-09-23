@@ -823,6 +823,61 @@ on the header — under the one name.
 
 ---
 
+### 11 — `sherpa-element.ts`: two real bugs, and some subtraction
+
+**A template that fails to load hung 557 await sites.**
+
+`#bootstrap()` awaits the stylesheet and the `.html` together, then stamps and
+calls `#resolveRendered()`. An unguarded `await` skipped that last call when the
+markup fetch rejected, so `rendered` stayed pending for the life of the page.
+
+Two failure modes, and only one was a hang — measured, not assumed:
+
+| the server does | `fetch` | before |
+|---|---|---|
+| drops the connection | **rejects** | `rendered` pending forever |
+| answers 404 | **resolves** | stamped the error page as the template |
+
+`loadHtml` now checks `r.ok`, and `#bootstrap` catches, logs the component's own
+tag, and stamps empty. A blank element is a fault a person can see; a promise
+that never settles is not.
+
+`#adoptStyles` already had this defence (`allSettled`). The markup leg never
+got one. `TRAP T-rendered-settles-even-when-the-markup-does-not`.
+
+`reforged-bootstrap-failure.spec.ts` covers both. Verified it catches the bug:
+reverted the fix, and the test failed.
+
+**Slot listeners leaked on every variant re-stamp.**
+
+`#wireSlots` was the only listener registration in the file that did not carry
+`this.signal`. A re-stamp replaces every slot node, so each stamp wired a fresh
+closure to a fresh element — nothing for `addEventListener`'s repeat-discard to
+dedupe. Six components have `variantAttrs` and slots. One argument fixes it.
+
+This is a real gap in `T-restamp-does-not-abort`, which reasons only about
+**host** listeners being stable arrow fields.
+
+**`static tier` was a config knob nobody read.**
+
+Declared on the base class, set by 5 components, read by **zero** — verified
+across `src/`, `scripts/`, `mcp-server/`, `sandbox/`, `test/`. Its comment
+claimed it hid a component from "the catalog / sandbox picker"; the picker never
+consulted it. The concept survives in `scripts/figma-data/name-map.yaml`, which
+is what the tooling actually reads and covers 16 components rather than 5.
+Deleted, 6 sites.
+
+**Dead surface removed:** `ItemTemplate` (a type no signature referenced),
+`pathHas` (a two-line wrapper with zero callers), and the `export` dropped from
+`MARKABLE_OPS` and `parseTemplates` — neither is used outside the file, and the
+`parseTemplates` in `scripts/lib/html-structure.mjs` is a different function
+that happens to share the name.
+
+`ItemTemplate`'s JSDoc carried two gated TRAP citations, so its text moved onto
+`renderItems` — which already pointed at it for the vocabulary.
+
+---
+
 ### The suite has load-dependent flakiness, and it will mislead you
 
 Full suite after this work: **1923 passed, 13 failed, 2 flaky** — the same
@@ -912,7 +967,49 @@ Alongside it, a convention for **all** TS: imports, then constants and
 module-level variables, then functions — and functions ordered sensibly rather
 than by accretion. Worth a gate if it can be expressed mechanically.
 
-### 6 — The flaky suite
+**The constraint that shapes this** (Will): a web component already has a
+lifecycle, states and hooks. Do not reinvent them — extend them where it makes
+sense.
+
+Measured against that, the base class is in good shape already:
+
+- It leans on the platform rather than replacing it: `adoptedStyleSheets`,
+  `AbortController` for teardown, `<template>` cloning, `slotchange`,
+  `assignedNodes`, `requestAnimationFrame`.
+- Its four hooks are not renames of the native callbacks. Each native callback
+  does real work *first* — abort the controller, re-sync declared props,
+  re-stamp on a variant change — and then calls the hook. A component that
+  overrode `disconnectedCallback` directly would silently skip the abort.
+- **Zero components override a native callback.** All 58 use the hooks, which
+  is the pattern working as intended.
+
+So the work here is ordering and comment weight, not architecture.
+
+**Where the ordering rule needs care.** Five other files declare things after
+their class, and not all are wrong: `core/data/stores.ts` interleaves three
+classes with their own `*Options` interface each, which keeps a class beside its
+own config. The rule should be *per class* — constants, then the class, then
+nothing — rather than *per file*.
+
+### 6 — The icon modules
+
+Will's note, 2026-09-23: three icon scripts looks like overkill for putting
+some SVGs into components.
+
+First measurement, before judging: there are **four** files, 390 lines, and they
+are a chain rather than three parallel doors.
+
+| file | lines | what |
+|---|---:|---|
+| `icon-paths.ts` | 231 | **generated**, 307 KB of path data — "do not edit" |
+| `icon-aliases.ts` | 41 | FA name → Figma name |
+| `render-icon.ts` | 92 | the writer: `renderIcon`, `hasIcon`, `upgradeIcons` |
+| `icons.ts` | 26 | shared constants (4 importers) |
+
+So the question is whether the aliases and the constants earn their own files,
+not whether three writers exist. Needs a proper pass.
+
+### 7 — The flaky suite
 
 13 failures that are not deterministic — see the section above. Worth a pass of
 its own, since it makes every other change harder to verify.
