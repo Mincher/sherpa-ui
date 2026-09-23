@@ -1158,367 +1158,76 @@ longer exist, because the `--tint` pair now lives once, inside `sherpa-button`.
 
 #### Still to do
 
-| case | cost |
-|---|---|
-| `sherpa-file-upload` | 4 buttons, 65 of its 275 CSS lines |
-| `sherpa-calendar` | footer Today/Cancel/Apply, 63 lines — and it already composes `sherpa-button` for its stepper three lines earlier |
-| `sherpa-prompt-composer` | 3 buttons with inline `<svg>`, the only non-chart component doing that |
-| `sherpa-grid-cell` | an orphan — every part re-implemented inside `sherpa-data-grid`, and the two disagree on what `sort-change` and `group-toggle` mean |
+Everything in the original list is either done or measured. What genuinely
+remains:
 
----
+### 1 — State ownership: two gate gaps, and a finding that shrank
 
-### 17 — `sherpa-file-upload`: three buttons composed, one left alone
+Investigated further. The picture is more nuanced than "15 unguarded writes".
 
-Four raw `<button>` elements, 65 of its 275 CSS lines. Three were re-derivations
-of `sherpa-button`; one was not, and telling them apart mattered.
+**The gate under-reports by construction.** `check-ownership.mjs:68` matches
+`setAttribute` but not `toggleAttribute` or `removeAttribute`. Widening it to
+`(?:set|toggle|remove)Attribute` takes the count from 5 to **24**, of which 15
+are in `sherpa-quick-filter-toolbar` — exactly matching an independent grep, so
+both numbers are confirmed.
 
-| button | what it is | done |
-|---|---|---|
-| `.clear-all` + `.upload` | a secondary/primary action pair | composed — `data-look="saturated"` on the primary |
-| `.file-remove` | the same close button as callout/toast/tag/chip | composed — `data-type="icon"` |
-| `.browse` | **an inline text link inside a sentence** | left as a raw `<button>` |
+That widening is **not applied**: the gate runs pre-commit, and leaving it red
+would block every commit in the tree, including the other agent's. It is a
+one-regex change when someone is ready to work through the 24.
 
-`.browse` sits mid-sentence — *"Drag and drop files here, or browse"*. Wrapping
-it in a button box would be the opposite of the fix.
+**And the rule does not mean what the raw count implies.** Declaring
+`data-current` in `DATA_PROPS` surfaced 5 writes; reading them showed all five
+write to a **child chip**, not to the component itself. `sherpa-data-grid.html`
+declares those chips `data-locked` in its own markup, with the reason stated:
 
-**CSS 275 → 214 lines.** The `.clear-all`/`.upload` block alone was a complete
-secondary/primary pair written by hand: box, radius, focus ring, hover, and a
-disabled rule. `sherpa-button` carries all of it as `data-look` tiers.
+> `data-locked` is required: a chip derives its on-state from CHECKED ROWS, and
+> this menu has none, so unlocked it switches itself off the instant Apply
+> closes.
 
-The delegated remove handler needed a real change, not just a rename:
+So the grid locks its chips **precisely so that it can own them**, and writing
+to them is correct. The gate's guard-window heuristic looks for `data-locked`
+near the write; it cannot see a lock declared in a template.
 
-```ts
-// before — event.target, which happens to work
-const btn = (event.target as HTMLElement).closest('.file-remove');
-// after — the composed path, which is the honest place to look
-const btn = this.pathFind(event, '.file-remove');
-```
+`data-current` was therefore **not** left in `DATA_PROPS` — a rule about "a
+component writing what a host owns" does not describe a parent configuring its
+own locked child.
 
-A composed `sherpa-button` retargets its event to the host, so `target.closest`
-would have worked by luck. `pathFind` walks `composedPath()` and is what the
-base class offers for exactly this.
+**What remains real**, and needs per-case judgement rather than a sweep:
 
-#### The same probe mistake, twice
+- The 15 toolbar writes still have no lock check, and at least one is
+  load-bearing (`#onOrganiseChange` records that *"an off chip could never
+  commit itself on — every date chip's first pick"*).
+- `#onOrganiseChange` is registered in CAPTURE and calls
+  `stopImmediatePropagation()` before writing, so a chip that deferred
+  correctly has its answer overwritten AND the event never reaches the host.
 
-I reported `.upload` had **lost its blue** — `rgba(0,0,0,0)` against a baseline
-of `rgb(59,76,205)`. It had not: a composed button paints on its inner
-`.trigger`, and the host is transparent by design. The trigger was
-`rgb(59, 76, 205)` throughout.
+Two separate pieces of work: teach the gate to see a template-declared lock,
+and decide per site whether the toolbar is an owner or a reporter.
 
-That is the second time in two commits that measuring the host instead of the
-trigger produced a false alarm. It is now written into the test helper:
-
-```ts
-/** Click a composed sherpa-button: await its own render, hit its inner trigger. */
-async function pressComposed(host: Element | null): Promise<void> { … }
-```
-
-Three existing tests needed it too.
 
-**One real visual change:** the actions are 24px tall (the `sm` token) rather
-than the hand-written 32px, and `.clear-all` gained the default button's white
-surface instead of transparent. Both are the design system's own secondary
-style — `examples/templates/records.html:115` uses a bare
-`<sherpa-button>Cancel</sherpa-button>` for the same role.
+### 2 — `render-icon.ts` and the alias map
 
----
+Will's question, recorded above with measurements. The viewBox is the part that
+resists being a static template — 88 distinct ink boxes across 214 icons — and
+the alias map covers 88 call sites still naming icons in Font Awesome's
+vocabulary. Three questions to answer before starting.
 
-### 18 — Calendar and prompt-composer: the last two button cases
-
-**`sherpa-calendar` — 281 → 212 CSS lines.**
+### 3 — `sherpa-data-grid` rebuild
 
-Its footer hand-drew Today / Cancel / Apply while `sherpa-menu` composes the
-identical row three files away — and the calendar itself composes
-`sherpa-button` for its stepper, sixteen lines earlier in the same template.
+`name-map.yaml` has it as `status: needs-rebuild`: Figma reduced Data Grid to a
+single **Grid Cell** in the 2026-08-27 resync, and the grid is meant to be
+composed from them. The two now agree on their shared event shapes, which was
+the prerequisite. The rebuild itself is a dedicated session.
 
-Now the same shape the menu uses: `sherpa-container-footer` with
-`data-align="between"`, which puts Today on the left and the actions on the
-right without a `.cal-footer` flex rule at all.
+### 4 — The flaky suite
 
-The CSS the component keeps is four lines — the actions cluster. The rest (row
-geometry, the top rule, each button's box, ring, hover and disabled ink) is
-owned by the two composed components.
-
-Worth noting the footer is only ever seen standalone: both real consumers
-(`sherpa-data-grid`, `sherpa-quick-filter-toolbar`) embed the calendar with
-`data-embedded`, and the CSS comment records why — *"Without the footer, a date
-filter chip showed two Apply/Cancel pairs stacked."*
-
-**`sherpa-prompt-composer` — 150 → 130 CSS lines, and no more inline SVG.**
-
-It was the only non-chart component in the library with `<svg>` in its
-template: two hand-drawn paths for Attach and Lab, plus a `&#8593;` arrow for
-Send. All three icons already existed in the Figma set — `paperclip`, `beaker`
-(which `flask` aliases to), `arrow-up` — so the hand-drawing was never needed.
-
-Verified they draw rather than assuming: each button now renders a real path
-from `icon-paths.ts`, 24×24.
-
-```
-.attach   24x24 path:drawn(M2.625 3.59722…)
-.lab      24x24 path:drawn(M3.60893 1.257…)
-.send     24x24 path:drawn(M7.25755 0.986…)
-```
-
-The `type="submit"` on Send looked like a problem — a composed button does not
-submit a form natively. It was not: `.send` already had its own `click` handler
-calling `#submit()`, so the native path was redundant, which the audit had also
-flagged.
-
-#### Composition, totalled
-
-| case | CSS before | after |
-|---|---:|---:|
-| close button × 4 | ~153 | 16 |
-| `sherpa-file-upload` | 275 | 214 |
-| `sherpa-calendar` | 281 | 212 |
-| `sherpa-prompt-composer` | 150 | 130 |
-
-**−313 lines**, 14 buttons composed, one text link and one in-sentence link
-deliberately left raw.
-
-Three things came back for free each time: the icon system instead of a raw
-glyph, `button-click` (so a **disabled** button suppresses its own event), and
-one size scale instead of hand-written pixels.
-
-One case remains: `sherpa-grid-cell` is an orphan whose every part is
-re-implemented inside `sherpa-data-grid`, and the two disagree about what
-`sort-change` and `group-toggle` mean. That is a bigger question than a button
-swap — it is whether the component should exist.
-
----
-
-### 19 — State ownership: measured, and worse than the audit said
-
-The audit reported that a locked `sherpa-quick-filter` defers correctly, then
-the toolbar overwrites it. Checking that claim took two probes, and the first
-one **cleared the toolbar wrongly**: a synthetic chip started already-current,
-so `before=true after=true` proved nothing. Starting from off gave
-`before=false after=false` — that path really does respect the lock.
-
-The path the audit meant is a different one, and a mechanical sweep is what
-found it. Every `data-current` write in the toolbar, with the question "is
-there a lock check within 14 lines above it":
-
-```
-line 248   lock-checked: no      line 1010  lock-checked: no
-line 249   lock-checked: no      line 1021  lock-checked: no
-line 311   lock-checked: no      line 1034  lock-checked: no
-line 657   lock-checked: no      line 1042  lock-checked: no
-line 664   lock-checked: no      line 1228  lock-checked: no
-line 983   lock-checked: no      line 1249  lock-checked: no
-line 1452  lock-checked: no      line 1456  lock-checked: no
-line 1621  lock-checked: no
-```
+12 failures that are not deterministic, plus a webkit-only border-edges failure
+(20 components resolving 0.5px where 1px is wanted) that belongs to
+border-token work in progress elsewhere in the tree. Worth its own pass, since
+it makes every other change harder to verify.
 
-**15 writes, zero checks.**
+### 5 — The smaller naming questions
 
-`#onOrganiseChange` (`:1595`) is the sharpest, because it is registered in
-CAPTURE and calls `stopImmediatePropagation()` before writing — so a chip that
-correctly deferred has its answer overwritten and the event never reaches the
-host that owns it.
-
-#### Why no gate caught it
-
-`check-ownership.mjs:30` reads its vocabulary from `DATA_PROPS`, which holds
-seven attributes: `data-sort-field`, `data-sort-direction`, `data-group-field`,
-`data-filter-fields`, `data-page`, `data-total-pages`, `data-page-size`.
-`data-current` is not among them, so the gate reports "7 owned attributes, no
-unguarded writes" while fifteen sit outside its reach.
-
-Five components implement `data-locked` — data-grid, grid-cell, pagination,
-quick-filter, quick-filter-toolbar — and the guard is one line:
-
-```ts
-if (!this.hasAttribute('data-locked')) this.setAttribute('data-page', String(next));
-```
-
-The toolbar's case is harder than that, and this is the part that needs a
-decision rather than a patch: it writes `data-current` onto **child chips**, so
-it must read each chip's lock, not its own. And at least one of the fifteen is
-load-bearing — `#onOrganiseChange`'s comment records that *"an off chip could
-never commit itself on — every date chip's first pick"*, so a blanket guard
-would break date filters.
-
-**Proposed, not done:** add `data-current` to `DATA_PROPS` so the gate sees it,
-then work through the fifteen individually. Some want
-`if (!chip.hasAttribute('data-locked'))`; the organise path may genuinely need
-to write and should say so. That is a component-by-component judgement, not a
-sweep, and it is the kind of change that wants its own commit and its own
-before/after measurements.
-
----
-
-### The suite has load-dependent flakiness, and it will mislead you
-
-Full suite after this work: **1923 passed, 13 failed, 2 flaky** — the same
-count as before any of it started.
-
-The 13 are not deterministic. Running one identical five-file batch three times
-against one unchanged build:
-
-```
-3 failed   228 passed
-2 failed   1 flaky   228 passed
-3 failed   228 passed
-```
-
-Same build, same command, different answer. Every one of them passes when its
-spec file is run alone.
-
-**Why this matters when you are changing things.** Twice during this work a
-failure appeared that looked caused by the change and was not:
-
-- After the shade migration, a nav test failed on a **width** — 187px where 24
-  was expected — from a diff that only touched colour. Run alone it passed
-  three times with the change and three times without.
-- After the card lift, `reforged-accordion` joined the failing list. The test
-  checks that a summary click fires a composed `toggle`; the change was four
-  colour declarations. Reverting just that file still left the batch failing.
-
-The method that settles it every time: **run the spec alone, then run the same
-batch on the reverted build.** If the batch fails either way, it is the suite.
-
-The affected specs cluster in `nav-pin-persist`, `quick-filter-toolbar`,
-`grouping`, `data-grid`, `app-shell` — hover, click-timing and persistence
-tests. Worth its own pass; `sherpa-playwright-suite-is-flaky` in memory records
-an earlier round of the same.
-
----
-
-## Still to do
-
-Four of the original five are done. What is left, in the order I would take it:
-
-### 1 — Elevation — DONE, see above
-
-Nine components each hand-write a `box-shadow`, each with its own comment
-explaining that a `[data-elevation]` pin is a bare selector in `tokens.css` and
-never reaches a shadow root. Nine independent workarounds for one gap.
-
-Same property shape as the card surface would fix it, and would give
-`sherpa-panel` a `data-elevation` it cannot have today. Held back because it
-changes what nine components paint — it wants its own pass and its own
-before/after measurement.
-
-### 2 — The naming rulings — DONE, see above
-
-These need a decision before code, because each one picks a winner:
-
-| concept | names in use | note |
-|---|---|---|
-| which one is picked | `data-active-id` · `data-current-id` · `data-current` · `data-tab-active` | tabs uses two of them one line apart |
-| the user picked one | `nav-select` · `tab-change` · `breadcrumb-select` | breadcrumbs settled — `nav-select` vs `tab-change` remain |
-| make this go away | `close()` · `hide()` · `dismiss()` | three antonyms for one `show()` |
-| the text on this | `data-label` (19) · `data-heading` (14) | the split is control-vs-container, and two components declare both |
-
-The breadcrumbs half is done — see "Breadcrumbs: one name" above.
-
-### 3 — Composition — DONE except sherpa-grid-cell
-
-- `sherpa-file-upload` hand-draws four buttons (~95 of its 279 CSS lines)
-- `sherpa-calendar` re-implements the menu's card and footer (~76 lines)
-- `sherpa-prompt-composer` is the only non-chart component with inline `<svg>`
-- `sherpa-grid-cell` is an orphan — every part re-implemented inside the grid,
-  and the two disagree about what `sort-change` and `group-toggle` mean
-
-### 4 — State ownership — MEASURED, see above
-
-`data-locked` is implemented by 5 components and ignored by the rest, and the
-gate only examines the ones that opted in. The sharpest case: a locked
-`sherpa-quick-filter` defers correctly, then the toolbar catches the event in
-capture, stops propagation, and writes `data-current` itself.
-
-### 5 — `sherpa-element.ts`, and a file-ordering convention
-
-Will's request, 2026-09-23: the base class carries a lot of code and comment,
-and wants a deep assessment with refactoring where it earns it.
-
-Alongside it, a convention for **all** TS: imports, then constants and
-module-level variables, then functions — and functions ordered sensibly rather
-than by accretion. Worth a gate if it can be expressed mechanically.
-
-**The constraint that shapes this** (Will): a web component already has a
-lifecycle, states and hooks. Do not reinvent them — extend them where it makes
-sense.
-
-Measured against that, the base class is in good shape already:
-
-- It leans on the platform rather than replacing it: `adoptedStyleSheets`,
-  `AbortController` for teardown, `<template>` cloning, `slotchange`,
-  `assignedNodes`, `requestAnimationFrame`.
-- Its four hooks are not renames of the native callbacks. Each native callback
-  does real work *first* — abort the controller, re-sync declared props,
-  re-stamp on a variant change — and then calls the hook. A component that
-  overrode `disconnectedCallback` directly would silently skip the abort.
-- **Zero components override a native callback.** All 58 use the hooks, which
-  is the pattern working as intended.
-
-So the work here is ordering and comment weight, not architecture.
-
-**Where the ordering rule needs care.** Five other files declare things after
-their class, and not all are wrong: `core/data/stores.ts` interleaves three
-classes with their own `*Options` interface each, which keeps a class beside its
-own config. The rule should be *per class* — constants, then the class, then
-nothing — rather than *per file*.
-
-### 6 — The icon modules — rename DONE; render-icon under review
-
-Will, 2026-09-23: *"Is render-icon.ts really needed? We're just wrapping an SVG
-in a div and applying CSS classes to get sizing and styling. Icon variants could
-be HTML templates that we put into the relevant slots. So we won't need the
-aliasing script either."*
-
-First measurement, before judging. `render-icon.ts` is 92 lines and does four
-things, only one of which is wrapping:
-
-| | |
-|---|---|
-| `iconName()` | `"fa-solid fa-filter"` → `"filter"`, then through the alias map |
-| `hasIcon()` | does the set hold it |
-| `renderIcon()` | build the `<svg>`, set its **viewBox**, inject the body |
-| `upgradeIcons()` | do that for every icon in a freshly stamped template |
-
-**The viewBox is the part that resists being a static template.** Each icon
-carries its own ink bounding box, and there are **88 distinct ink boxes across
-214 icons**. The viewBox is what makes the drawing's longest axis land at
-exactly 100% of a square wrapper at any size — `T-icon-box-is-not-the-glyph`
-records that `font-size` and `minmax()` both failed at this.
-
-So a static `<template>` per icon would still need its own per-icon viewBox
-baked in. That is possible — `icon-paths.ts` is already generated, so it could
-emit 214 templates instead of 214 path records. The questions to answer:
-
-1. Where do 214 templates live so a component can reach one? A `<template>` in
-   the document cannot be cloned into a shadow root by CSS alone.
-2. `upgradeIcons` exists because a component's own template says
-   `data-icon="paperclip"` and something must turn that into the drawing. With
-   static templates, what does that, and when?
-3. The alias map is 28 hand-made judgements (`house` → `home`, `xmark` →
-   `cross`) covering **88 call sites** that still name icons in Font Awesome's
-   vocabulary. Those call sites have to be rewritten first, or the aliases have
-   to survive in some form.
-
-Not a no — but it is a bigger change than deleting a wrapper, and the viewBox
-is the reason. Worth its own pass.
-
-Will's note, 2026-09-23: three icon scripts looks like overkill for putting
-some SVGs into components.
-
-First measurement, before judging: there are **four** files, 390 lines, and they
-are a chain rather than three parallel doors.
-
-| file | lines | what |
-|---|---:|---|
-| `icon-paths.ts` | 231 | **generated**, 307 KB of path data — "do not edit" |
-| `icon-aliases.ts` | 41 | FA name → Figma name |
-| `render-icon.ts` | 92 | the writer: `renderIcon`, `hasIcon`, `upgradeIcons` |
-| `icons.ts` | 26 | shared constants (4 importers) |
-
-So the question is whether the aliases and the constants earn their own files,
-not whether three writers exist. Needs a proper pass.
-
-### 7 — The flaky suite
-
-13 failures that are not deterministic — see the section above. Worth a pass of
-its own, since it makes every other change harder to verify.
+`nav-select` vs `tab-change` for the same gesture, and whether `data-type`
+should be reserved for template selection (it currently means nine different
+things). Neither is a bug; both are rulings.
