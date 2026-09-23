@@ -32,7 +32,7 @@ meet a problem and then hunt for its resolution 500 lines later.
 | 8 | State ownership — the named recurring bug | 🔶 Open — and the count shrank on inspection |
 | 9 | `sherpa-switch` declares nothing | ✅ Fixed |
 | 10 | `data-size` has two contradictory contracts | ✅ Fixed — and the finding changed shape |
-| 11 | Three holes in `check-props` | 🔶 Open |
+| 11 | Three holes in `check-props` | ✅ Fixed — two were real, one was not |
 | 12 | `sherpa-element.ts` — two real bugs | ✅ Fixed |
 | 13 | Icons: four files, one bad name | ✅ Fixed |
 | 14 | `kind: content` is overloaded to mean "observed" — 156 props | ✅ Fixed |
@@ -1106,19 +1106,74 @@ silently. The declaration now carries the warning.
 
 ---
 
-### 11. Three holes in `check-props` — 🔶 Open
+### 11. Three holes in `check-props` — ✅ Fixed; two were real, one was not
 
-Found by running the gate rather than reading it. It passes while real public
-API goes undeclared:
+Found by running the gate rather than reading it. Each was re-measured before
+being acted on, and the counts moved in both directions.
 
-| hole | effect |
-|---|---|
-| the scan slices off everything above `/* == end sherpa:tokens == */` | hides `sherpa-switch`'s `data-type`, `sherpa-button`'s `data-look` + `data-size` |
-| the read-scan only matches `this.dataset['x']` | misses `hasAttribute` / `toggleAttribute` — `data-dragover`, `data-loading` |
-| the `data-has-*` skip | meant for base-class slot writes, also exempts hand-written ones — `data-has-files` |
+#### Hole 1 — the token region ✅ real, but smaller than claimed
 
-Fixing the first alone surfaces three attributes on the two most-used controls
-in the system.
+The scan sliced a component's CSS at `/* == end sherpa:tokens == */` and read
+only what lay below, borrowing the rule from `lint:css`. That rule is right for
+**linting** — the region is Figma's, and a hand-edit is undone by the next
+projection — and wrong for a **contract**: a `:host([data-x])` rule is public
+API wherever it sits.
+
+The audit named three attributes. Measured, it hides exactly **two**:
+
+| component | attribute | why it was hidden |
+|---|---|---|
+| `sherpa-button` | `data-size` | the rule is at line 15; the marker is at line 60 |
+| `sherpa-input-text` | `data-state` | same shape |
+
+`data-look` was **not** one. Its rule sits at line 139, below the marker, and
+the gate passes it because `data-look` is in `CASCADES` — set by an ancestor and
+owned by the token layer, which is correct.
+
+`TRAP T-a-generated-region-still-declares-api`.
+
+#### Hole 2 — `*Attribute()` ✅ real, and much bigger than claimed
+
+`this.hasAttribute('data-locked')` is the same event as reading `this.dataset`:
+a host set the attribute and the component is obeying. The gate caught one form
+and not the other.
+
+But the widening has to be **reads only**. Measured across all 58:
+
+| | count | what they are |
+|---|---:|---|
+| read-only | **14** | a host sets it — public API |
+| write-only | 25 | the component's own transient state — `data-copied`, `data-resizing`, `data-leaving` |
+| both | 4 | reads back what it wrote |
+
+Gating the writes would ask a component to declare its own private flags as
+API. Gating the reads found the thing that matters: **five of the 14 are
+`data-locked`** — the attribute the entire state-ownership convention rests on,
+undeclared by every component that obeys it.
+
+`TRAP T-a-read-is-public-api-a-write-is-not`.
+
+#### Hole 3 — the `data-has-*` skip ⬜ not a hole
+
+The claim was that a skip meant for base-class slot writes also exempts
+hand-written ones. The skip does do that, and there are **seven**:
+`data-has-files`, `data-has-value`, `data-has-y-axis` (×2), `data-has-values`,
+`data-has-query`, `data-has-organise`.
+
+All seven are written by the component and read **only by its own CSS** —
+`read-by-TS: 0` for every one. Never read from a host, so never public API, so
+correctly exempt under the read-vs-write rule above. Not a hole.
+
+#### The fix
+
+The widened gate went red with **20** problems. All 20 are now **declared, not
+suppressed** — four components (`button`, `pagination`, `file-upload`,
+`calendar`) gained their first `static props` block.
+
+**Zero specs changed.** The contracts were already right, because the generator
+reads the HTML `Public API:` comment. The gap was one-sided: the TypeScript
+never declared them, so JS had no typed door and `this.set(attr, …)` would not
+work on any of the 20.
 
 ---
 
@@ -1385,12 +1440,11 @@ Ordered by what unblocks the most.
 | # | work | why it is next |
 |---:|---|---|
 | 1 | **State ownership** — teach `check-ownership.mjs` to see a template-declared lock, then judge the 15 toolbar writes per site | the named recurring bug; the gate under-reports by construction |
-| 2 | **Three `check-props` holes** | a gate that passes while public API goes undeclared |
-| 3 | **Three dead-code items** | small, but each needs a read — the calendar one may be a *missing* stylesheet |
-| 4 | **`render-icon.ts` / the alias map** | 88 distinct ink boxes across 214 icons is the blocker; three questions first |
-| 5 | **`sherpa-data-grid` rebuild onto Grid Cell** | a dedicated session; the prerequisite (agreeing event shapes) is done |
-| 6 | **The flaky suite** | 12 non-deterministic failures, plus a webkit border-edges failure belonging to work elsewhere in the tree; it makes every other change harder to verify |
-| 7 | **The remaining naming rulings** | `data-type`'s nine meanings, `data-empty`'s three, and the detail-shape sweep across all 75 events. Decisions, not bugs |
+| 2 | **Three dead-code items** | small, but each needs a read — the calendar one may be a *missing* stylesheet |
+| 3 | **`render-icon.ts` / the alias map** | 88 distinct ink boxes across 214 icons is the blocker; three questions first |
+| 4 | **`sherpa-data-grid` rebuild onto Grid Cell** | a dedicated session; the prerequisite (agreeing event shapes) is done |
+| 5 | **The flaky suite** | 12 non-deterministic failures, plus a webkit border-edges failure belonging to work elsewhere in the tree; it makes every other change harder to verify |
+| 6 | **The remaining naming rulings** | `data-type`'s nine meanings, `data-empty`'s three, and the detail-shape sweep across all 75 events. Decisions, not bugs |
 
 ### Detail on the larger ones
 
