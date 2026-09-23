@@ -9272,3 +9272,33 @@ declaration.
 - Site: `scripts/lib/ts-facts.mjs`
 - Site: `scripts/lib/generation/compile-def.mjs`
 - Site: `scripts/generate-component-spec.mjs`
+
+### T-a-shared-enum-is-not-every-enum
+
+`SHARED_PROPS` says its entries have a shape "identical wherever they appear".
+For `data-size` that is true of the three components that import it —
+`empty-state`, `loader` and `section-header` all ship `sm | md | lg` — and NOT
+true of the library as a whole.
+
+`sherpa-button` ships **five**: `2xs xs sm lg xl`. It does not import
+`SHARED_PROPS`, and it must not: adopting the shared entry would hand the
+system's most-used control an enum missing three of its sizes.
+
+The two never meet in code today, so nothing is broken. What the audit found is
+an invitation: a future component that reaches for the shared entry because the
+name matches inherits the smaller vocabulary silently, and nothing at runtime
+validates an enum.
+
+Two related facts worth keeping together:
+
+- **`md` was missing from the shared entry.** All three importers document it as
+  the default, and their CSS draws it on the bare `:host` — `sherpa-loader.css`
+  says so in its own comment, `/* Sizes (unset = md) */`. The specs were right
+  (they read the HTML comment); only the TS declaration was short. Listing a
+  default in the enum is the house pattern — `data-sort-direction` already
+  carries `''` for the same reason.
+- **A size enum is per-tier, not global.** A control and a container do not have
+  the same size vocabulary, in the same way that `data-label` and
+  `data-heading` split by tier.
+
+- Site: `src/core/ui/sherpa-element.ts`

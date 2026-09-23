@@ -110,7 +110,12 @@ export const DATA_PROPS = {
  * TRAP T-a-host-attribute-is-declared-once
  */
 export const SHARED_PROPS = {
-  'data-size': { type: 'enum', kind: 'style', values: ['sm', 'lg'] },
+  /**
+   * `md` is the DEFAULT, drawn by the bare `:host`; sm and lg are overrides.
+   * `sherpa-button` ships five (2xs xs sm lg xl) and declares its OWN — do not
+   * adopt this one there. TRAP T-a-shared-enum-is-not-every-enum
+   */
+  'data-size': { type: 'enum', kind: 'style', values: ['sm', 'md', 'lg'] },
   'data-orientation': { type: 'enum', kind: 'style', values: ['horizontal', 'vertical'] },
   /** Where a chart puts its legend. */
   'data-legend': { type: 'enum', kind: 'style', values: ['horizontal', 'vertical'] },
