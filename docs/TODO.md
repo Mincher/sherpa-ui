@@ -8,7 +8,7 @@ Status: `[ ]` open · `[~]` in progress · `[x]` done
 
 ## The order to do them in
 
-42 items. Ordered so that nothing is built twice.
+43 items. Ordered so that nothing is built twice.
 
 Includes the six findings the 2026-09-23 component audit left open; its other 13
 are done. `docs/COMPONENT-AUDIT.md` keeps the measurements behind every one.
@@ -120,6 +120,7 @@ primitive, then build on it.
 | 19 | Rework the filter menu — two modes, and MANY conditions |
 | 20 | An inactive chip must say where its filter is applied |
 | 20b | The Created-date filter should be a top-level date RANGE |
+| 20c | **BUG** — a range filter refuses its default max; the chip stays inactive |
 | 21 | A filter PANEL, as an alternative to the toolbars |
 
 Item 21 is undesigned. Do it last of the three, once the menu is settled — the
@@ -281,6 +282,35 @@ the scope being STATED and enforced, the same as every other component filter.
 
 Check the same question for every control that filters its own component: a
 grid column filter, a metric's own scope, a chart's segment mode.
+
+### `[ ]` BUG — a range filter refuses its default max, and the chip stays inactive
+
+Will, 2026-09-23, two faults in one flow:
+
+1. **The default MAX range is not accepted.** Picking the full span the filter
+   offers is rejected, so the widest selection is the one you cannot make.
+2. **The chip does not go active on Apply.** `data-current` is not set, so the
+   bar reads as unfiltered while the filter is applied.
+
+Where to start, from a scan 2026-09-23:
+
+- `sherpa-quick-filter-toolbar.ts:909` — `#onRangeToggle` swaps the menu between
+  its two shapes with `menu.toggleAttribute('data-range', on)`.
+- `:891` sets `data-range` when a chip is stamped in range mode.
+- `#onDatePicked` handles both `datetime-change` and `range-select` (`:395-396`),
+  so a date range and a single date arrive on different events.
+- `#onRangeToggle` listens for a bare `change` (`:398`) — the comment notes a
+  `sherpa-switch` re-dispatches composed while a bare checkbox does not, which
+  is a likely place for one of the two paths to be missed.
+
+Only ONE range-capable chip exists in the Records example today — `Created date`
+— and its menu carries no `data-range`, so the second fault may only show after
+the Range switch is flipped. Reproduce that first: flip Range, pick the full
+span, press Apply, and watch `data-current` on the chip.
+
+Fault 2 is the same shape as the persistent-chip finding in 11f: a chip that
+should be current and is not. Check whether the Apply path writes
+`data-current` at all, or whether it writes and something clears it.
 
 ### `[ ]` The Created-date filter should be a top-level date RANGE
 
