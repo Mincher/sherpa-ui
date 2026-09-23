@@ -52,6 +52,110 @@ function trim(value: number, places = 1): string {
   return String(Number(value.toFixed(places)));
 }
 
+/* ── Scale ────────────────────────────────────────────────────────────── */
+
+/** A value axis: what it spans, where a value sits, and how it divides. */
+export interface ChartScale {
+  min: number;
+  max: number;
+  /** `max - min`, never zero — a flat series still needs somewhere to draw. */
+  span: number;
+  /** Where a value sits, 0..100 from the bottom. Clamped. */
+  percent: (value: number) => number;
+  /** How many gridline BANDS divide it, so every line is a round number. */
+  bands: number;
+  /** What one band is worth. `max === min + step * bands`. */
+  step: number;
+}
+
+/**
+ * The axis a set of values needs.
+ *
+ * Three charts worked this out three different ways, so a bar and a sparkline
+ * over the same data drew different heights. The FLOOR is the difference that
+ * matters: a bar measured from zero is the only honest bar, while a sparkline
+ * shows a shape and fits its own range.
+ *
+ * `min`/`max` override either end. `zero: false` fits the data instead.
+ * TRAP T-one-scale-for-every-chart
+ */
+export function chartScale(
+  values: readonly number[],
+  options: { min?: number; max?: number; zero?: boolean; nice?: boolean; bands?: number } = {},
+): ChartScale {
+  const real = values.filter((v) => Number.isFinite(v));
+  const zero = options.zero ?? true;
+
+  const lo = Number.isFinite(options.min as number)
+    ? (options.min as number)
+    : zero ? Math.min(0, ...real) : Math.min(...real);
+  const hi = Number.isFinite(options.max as number)
+    ? (options.max as number)
+    : zero ? Math.max(1, ...real) : Math.max(...real);
+
+  // An empty set, or every value the same, still needs a span to divide by.
+  const min = Number.isFinite(lo) ? lo : 0;
+  const raw = Number.isFinite(hi) && hi > min ? hi : min + 1;
+  /* A NICE TOP, always UP: 403 reads 500 and 59 reads 60, so the axis names a
+     number a reader recognises and no bar touches the ceiling. The bands then
+     divide the range equally. An explicit max is the caller's own.
+     TRAP T-the-top-gridline-rounds-to-its-magnitude */
+  const want = options.bands ?? 4;
+  const axis = options.nice !== false && !Number.isFinite(options.max as number)
+    ? niceAxis(min, raw, want)
+    : { max: raw, bands: want, step: (raw - min) / want };
+  const span = axis.max - min;
+
+  return {
+    min,
+    max: axis.max,
+    span,
+    bands: axis.bands,
+    step: axis.step,
+    percent: (value) =>
+      Math.max(0, Math.min(100, ((value - min) / span) * 100)),
+  };
+}
+
+/** The round step sizes an axis is allowed to use, per power of ten. */
+const NICE_STEPS = [1, 2, 2.5, 5, 10] as const;
+
+/** How many gridline bands an axis will consider. Four is the usual answer. */
+const BAND_RANGE = [3, 4, 5, 6] as const;
+
+/**
+ * An axis where EVERY gridline is a round number.
+ *
+ * Rounding only the top is not enough: 403 rounds to 500, and four equal bands
+ * of that are 125, 250, 375 — nobody reads an axis in 125s. The STEP is what
+ * gets rounded, to 1, 2, 2½ or 5 times a power of ten, and the BAND COUNT
+ * moves with it: 403 becomes five bands of 100, not four of 125.
+ *
+ * Always UP, so no bar reaches the ceiling, and the tightest fit wins so the
+ * plot is not half empty.
+ * TRAP T-the-top-gridline-rounds-to-its-magnitude
+ */
+function niceAxis(min: number, hi: number, want: number): { max: number; bands: number; step: number } {
+  const span = hi - min;
+  const plain = { max: hi, bands: want, step: span / want };
+  if (!Number.isFinite(span) || span <= 0 || want <= 0) return plain;
+
+  const unit = 10 ** Math.floor(Math.log10(span / want));
+  const steps = [unit / 10, unit, unit * 10].flatMap((u) => NICE_STEPS.map((m) => m * u));
+
+  const fits = steps
+    .flatMap((step) => BAND_RANGE.map((bands) => ({ step, bands, max: min + step * bands })))
+    .filter((c) => c.max >= hi && Number.isFinite(c.max));
+
+  if (!fits.length) return plain;
+  /* The TIGHTEST top wins; ties go to the band count the caller asked for, so
+     an axis that fits either way looks like every other one. */
+  fits.sort((a, b) =>
+    (a.max - b.max) || (Math.abs(a.bands - want) - Math.abs(b.bands - want)));
+  const best = fits[0]!;
+  return { max: Number(best.max.toPrecision(12)), bands: best.bands, step: best.step };
+}
+
 /**
  * Where the i-th of `steps` divisions sits, as a percentage UP from the bottom.
  *

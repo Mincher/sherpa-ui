@@ -5,8 +5,9 @@
  * TRAP T-hiding-a-series-rescales-the-axis — the y-max comes from what is left.
  */
 import type { ChartDatum } from '../../core/data/chart-datum.js';
+import type { ChartScale } from '../../core/data/format-tick.js';
 import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
-import { formatTick, seriesBorderVar, seriesVar, tickPercent, formatValue } from '../../core/data/format-tick.js';
+import { chartScale, formatTick, seriesBorderVar, seriesVar, tickPercent, formatValue } from '../../core/data/format-tick.js';
 
 /** Gridlines when data-ticks is absent — matches the Figma Chart Axis. */
 const DEFAULT_TICKS = 4;
@@ -74,15 +75,29 @@ export class SherpaBarchart extends SherpaElement {
       .map((d, i) => ({ d, i }))
       .filter(({ i }) => !this.#hidden.has(i));
 
-    // TRAP T-nan-is-the-not-given-sentinel — an absent max is DERIVED.
+    /* ONE scale rule for every chart. TRAP T-nan-is-the-not-given-sentinel: an
+       absent max is derived. TRAP T-one-scale-for-every-chart */
     const explicitMax = this.num('data-max', NaN);
-    const max = Number.isFinite(explicitMax) && explicitMax > 0
-      ? explicitMax
-      : Math.max(1, ...shown.map(({ d }) => d.value));
+    const scale = chartScale(shown.map(({ d }) => d.value), {
+      // `data-ticks` is the PREFERRED band count; the scale may use one either
+      // side to land every gridline on a round number.
+      bands: this.num('data-ticks', DEFAULT_TICKS, { min: 0, int: true }),
+      ...(explicitMax > 0 ? { max: explicitMax } : {}),
+    });
 
-    this.#renderYAxis(max, shown.length);
+    /* WHERE ZERO SITS. A chart of positive values has it on the baseline and
+       draws exactly as before; one that goes negative lifts the line and lets
+       a bar hang beneath it. TRAP T-a-bar-hangs-from-the-zero-line */
+    const zero = scale.percent(0);
+    this.toggleAttribute('data-below-zero', scale.min < 0);
+    this.style.setProperty('--_zero', `${zero}%`);
 
+    this.#renderYAxis(scale, shown.length);
+
+    // The zero line is the bars' own child, so it survives the re-stamp.
+    const zeroLine = bars.querySelector('.bars-zero');
     bars.replaceChildren();
+    if (zeroLine) bars.appendChild(zeroLine);
     xAxis?.replaceChildren();
     for (const { d, i } of shown) {
       const col = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
@@ -90,7 +105,13 @@ export class SherpaBarchart extends SherpaElement {
       col.dataset['index'] = String(i);
       const hue = seriesVar(i, d.colorIndex);
       const bar = col.querySelector<HTMLElement>('.bar')!;
-      bar.style.setProperty('--_h', `${Math.max(0, Math.min(100, (d.value / max) * 100))}%`);
+      /* A bar is the distance from ZERO to its value, and it grows away from
+         the line in whichever direction the value points.
+         TRAP T-a-bar-hangs-from-the-zero-line */
+      const at = scale.percent(d.value);
+      col.dataset['sign'] = d.value < 0 ? '-' : '+';
+      bar.style.setProperty('--_h', `${Math.abs(at - zero)}%`);
+      bar.style.setProperty('--_base', `${zero}%`);
       bar.style.setProperty('--_hue', hue);
       bar.style.setProperty('--_border', seriesBorderVar(i, d.colorIndex));
 
@@ -110,13 +131,15 @@ export class SherpaBarchart extends SherpaElement {
     }
   }
 
-  /** Stamp the y-axis values, top (max) to bottom (0). */
-  #renderYAxis(max: number, shownCount: number): void {
+  /** Stamp the y-axis values, top (max) to bottom (min). */
+  #renderYAxis(scale: ChartScale, shownCount: number): void {
     const axis = this.$('.y-axis');
     const tpl = this.$<HTMLTemplateElement>('template.ytick-tpl');
     if (!axis || !tpl) return;
 
-    const steps = this.num('data-ticks', DEFAULT_TICKS, { min: 0, int: true });
+    const steps = this.num('data-ticks', DEFAULT_TICKS, { min: 0, int: true }) > 0
+      ? scale.bands
+      : 0;
     // TRAP T-y-axis-width-is-fixed-not-measured — clear BEFORE the early return.
     axis.replaceChildren();
     this.toggleAttribute('data-has-y-axis', steps > 0 && shownCount > 0);
@@ -126,7 +149,10 @@ export class SherpaBarchart extends SherpaElement {
     const boundaries = Array.from({ length: steps + 1 }, (_, i) => i);
     this.renderList('.y-axis', 'template.ytick-tpl', boundaries, (tick, i) => {
       tick.style.setProperty('--_at', `${tickPercent(i, steps)}%`);
-      tick.querySelector('.y-value')!.textContent = formatTick((max * i) / steps);
+      /* `min + step * i`, never `max * i / steps` — the SCALE decided where
+         its lines fall. TRAP T-the-top-gridline-rounds-to-its-magnitude */
+      tick.querySelector('.y-value')!.textContent =
+        formatTick(scale.min + scale.step * i);
     });
   }
 

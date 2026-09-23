@@ -7158,6 +7158,93 @@ still returns rows.
 - Site: `src/core/data/aggregate.ts`
 - Site: `examples/views/dashboard.js`
 
+### T-one-scale-for-every-chart
+
+Three charts worked out their own value axis, three different ways:
+
+| chart | floor | ceiling |
+|---|---|---|
+| line | `Math.min(0, …)` | `Math.max(1, …)` |
+| bar | none at all | `Math.max(1, …)` |
+| sparkline | `Math.min(…)` | `Math.max(…)` |
+
+So a bar and a sparkline over the same numbers drew different heights, and
+nothing said which was right.
+
+`chartScale(values, { min?, max?, zero? })` is the one answer: `{ min, max,
+span, percent(v) }`, with `percent` clamped at both ends. The FLOOR is the
+difference that matters and it is a real choice, not an accident — a bar
+measured from zero is the only honest bar, while a sparkline shows a SHAPE and
+fits its own range (`zero: false`).
+
+It survives what a chart actually gets handed: an empty set, every value the
+same, a NaN among them, and an explicit end of either kind.
+
+- Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
+- Site: `src/components/sherpa-line-chart/sherpa-line-chart.ts`
+- Site: `src/components/sherpa-sparkline/sherpa-sparkline.ts`
+- Site: `src/core/data/format-tick.ts`
+- Site: `test/unit/chart-scale.test.mjs`
+
+### T-the-top-gridline-rounds-to-its-magnitude
+
+Will, 2026-09-23: *"The top gridline in a chart's value axis should round to
+the nearest unit at that magnitude… all other gridlines between 0 and the max
+value should divide that range equally"* — and then *"it should always round
+up. So 403 becomes 500."*
+
+**Rounding the TOP alone is not enough.** 403 rounds to 500, and four equal
+bands of that are 125, 250 and 375. Nobody reads an axis in 125s, so the top
+was round and every line under it was not.
+
+The STEP is what gets rounded — to 1, 2, 2½ or 5 times a power of ten — and the
+BAND COUNT moves with it. 403 becomes FIVE bands of 100, not four of 125. A
+step of 2½ is kept on purpose: 25s and 250s are quarters, which is how a reader
+already divides 100 and 1000.
+
+Always up, so no bar reaches the ceiling, and the tightest fitting top wins so
+the plot is not half empty.
+
+An EXPLICIT `data-max` is never rounded: a caller who names a max meant it.
+`data-ticks` is the PREFERRED band count, not a fixed one — the scale may use
+one either side of it to land on round numbers.
+
+Measured live after the change:
+
+```
+dashboard bar    0 125 250 375 500   ->   0 100 200 300 400 500
+dashboard line   0  50 100 150 200   ->   0  20  40  60  80 100 120
+```
+
+- Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
+- Site: `src/components/sherpa-line-chart/sherpa-line-chart.ts`
+- Site: `src/core/data/format-tick.ts`
+- Site: `test/unit/chart-scale.test.mjs`
+
+### T-a-bar-hangs-from-the-zero-line
+
+A bar measured from the plot floor, so a NEGATIVE value drew an empty column
+and said nothing at all.
+
+Now the scale fits the data, and where it dips below zero the baseline lifts
+off the floor: `--_zero` is how far up zero sits, `data-below-zero` says the
+chart is in that mode, and a negative bar hangs beneath the line.
+
+**Flex cannot place it.** A bar that starts part-way up the plot has no flex
+expression — the first attempt used `margin-block-end`, and the column's
+remaining space squashed the tallest bar to 98px where it wanted 144. Only in
+this mode the bar is positioned against its column instead: `inset-block-end`
+for a positive one, and `inset-block-start` for a negative, whose TOP edge is
+the line. A chart of positive values keeps the flex layout untouched.
+
+Measured on a 180px plot with `[-5, 10, 20]`: the line at 36px (a fifth of the
+way up, since −5 is a fifth of the 25 span), the negative bar from 36 down to
+0, and 20 drawing exactly twice 10.
+
+- Site: `src/components/sherpa-barchart/sherpa-barchart.css`
+- Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
+- Site: `test/e2e/reforged-barchart.spec.ts`
+
 ### T-a-band-label-names-what-it-counts
 
 `bandBy` cuts a continuous field into bands. They are HALF-OPEN — `[0,20)`,

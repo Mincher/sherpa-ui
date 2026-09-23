@@ -289,3 +289,86 @@ test('the tooltip shows the value in full; the axis still compacts', async ({ pa
   // The axis keeps compacting: four labels, no room.
   expect(r.axis.some((t) => /[KM]$/.test(t))).toBe(true);
 });
+
+/**
+ * A BAR HANGS FROM THE ZERO LINE.
+ *
+ * Every bar used to measure from the plot's bottom, so a negative value drew
+ * an empty column and said nothing. `chartScale` fits the data, and where it
+ * dips below zero the baseline lifts off the floor and a negative bar hangs
+ * beneath it.
+ *
+ * TRAP T-a-bar-hangs-from-the-zero-line
+ */
+test('a NEGATIVE value hangs below a lifted zero line', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-barchart') as HTMLElement & {
+      rendered?: Promise<void>; populate?: (d: unknown) => void;
+    };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.populate!([
+      { label: 'A', value: -5 }, { label: 'B', value: 10 }, { label: 'C', value: 20 },
+    ]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const plot = el.shadowRoot!.querySelector('.bars')!.getBoundingClientRect();
+    const line = el.shadowRoot!.querySelector('.bars-zero')!;
+    const up = (n: number): number => Math.round(plot.bottom - n);
+
+    return {
+      flagged: el.hasAttribute('data-below-zero'),
+      lineShown: getComputedStyle(line).display,
+      // The scale runs -5..20, so zero sits a fifth of the way up.
+      lineAt: up(line.getBoundingClientRect().bottom),
+      plotH: Math.round(plot.height),
+      bars: [...el.shadowRoot!.querySelectorAll<HTMLElement>('.bar-col')].map((c) => {
+        const box = c.querySelector('.bar')!.getBoundingClientRect();
+        return { sign: c.dataset['sign'], top: up(box.top), bottom: up(box.bottom) };
+      }),
+    };
+  });
+
+  expect(r.flagged).toBe(true);
+  expect(r.lineShown).toBe('block');
+  // -5 of a 25 span is a fifth: 36 of 180.
+  expect(r.lineAt).toBe(Math.round(r.plotH * 0.2));
+
+  // A hangs BELOW: its top is the line, its bottom is the floor.
+  expect(r.bars[0]!.sign).toBe('-');
+  expect(r.bars[0]!.top).toBe(r.lineAt);
+  expect(r.bars[0]!.bottom).toBe(0);
+
+  // B and C stand ON the line, and C is exactly twice B.
+  expect(r.bars[1]!.bottom).toBe(r.lineAt);
+  expect(r.bars[2]!.bottom).toBe(r.lineAt);
+  const b = r.bars[1]!.top - r.bars[1]!.bottom;
+  const c = r.bars[2]!.top - r.bars[2]!.bottom;
+  expect(c, 'twice the value is twice the bar').toBe(b * 2);
+});
+
+test('a chart of POSITIVE values is untouched — no line, bars on the floor', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-barchart') as HTMLElement & {
+      rendered?: Promise<void>; populate?: (d: unknown) => void;
+    };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.populate!([{ label: 'A', value: 10 }, { label: 'B', value: 20 }]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const plot = el.shadowRoot!.querySelector('.bars')!.getBoundingClientRect();
+    const line = el.shadowRoot!.querySelector('.bars-zero')!;
+    return {
+      flagged: el.hasAttribute('data-below-zero'),
+      lineShown: getComputedStyle(line).display,
+      // Bars sit on the plot floor, within the 1px baseline border.
+      feet: [...el.shadowRoot!.querySelectorAll('.bar')]
+        .map((n) => Math.round(plot.bottom - n.getBoundingClientRect().bottom)),
+    };
+  });
+
+  expect(r.flagged).toBe(false);
+  expect(r.lineShown, 'nothing is drawn for a chart that never dips').toBe('none');
+  expect(r.feet.every((f) => f <= 1)).toBe(true);
+});

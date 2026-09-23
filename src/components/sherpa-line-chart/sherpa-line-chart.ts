@@ -3,7 +3,8 @@
  * CSS owns colour, fill and width.
  */
 import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
-import { formatTick, seriesBorderVar, seriesVar, tickPercent, formatValue } from '../../core/data/format-tick.js';
+import { chartScale, formatTick, seriesBorderVar, seriesVar, tickPercent, formatValue,
+  type ChartScale } from '../../core/data/format-tick.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 /** Gridlines when data-ticks is absent. */
@@ -93,20 +94,24 @@ export class SherpaLineChart extends SherpaElement {
     const all = this.#series
       .filter((_, i) => !this.#hidden.has(i))
       .flatMap((s) => s.values);
-    // NaN is the not-given sentinel; Number('') would be 0.
-    // TRAP T-nan-is-the-not-given-sentinel
-    const explicitMin = this.num('data-min', NaN);
-    const explicitMax = this.num('data-max', NaN);
-    const min = Number.isFinite(explicitMin) ? explicitMin : Math.min(0, ...all);
-    const max = Number.isFinite(explicitMax) ? explicitMax : Math.max(1, ...all);
-    const span = max - min || 1;
+    /* ONE scale rule for every chart. NaN is the not-given sentinel; Number('')
+       would be 0. TRAP T-nan-is-the-not-given-sentinel
+       TRAP T-one-scale-for-every-chart */
+    const scale = chartScale(all, {
+      min: this.num('data-min', NaN),
+      max: this.num('data-max', NaN),
+      // The PREFERRED band count; the scale may use one either side so every
+      // gridline is a round number.
+      bands: this.#tickSteps(),
+    });
+    const { min, span } = scale;
 
-    this.#renderYAxis(min, max);
+    this.#renderYAxis(scale);
 
     // From i=1, inclusive of `bands`, so a line meets the top label.
     // TRAP T-gridlines-run-to-the-top-label
     grid.replaceChildren();
-    const bands = this.#tickSteps();
+    const bands = this.#tickSteps() > 0 ? scale.bands : 0;
     for (let i = 1; i <= bands; i++) {
       const y = 100 - tickPercent(i, bands);
       const line = document.createElementNS(SVG_NS, 'line');
@@ -191,12 +196,12 @@ export class SherpaLineChart extends SherpaElement {
     return this.num('data-ticks', DEFAULT_TICKS, { min: 0, int: true });
   }
 
-  #renderYAxis(min: number, max: number): void {
+  #renderYAxis(scale: ChartScale): void {
     const axis = this.$('.y-axis');
     const tpl = this.$<HTMLTemplateElement>('template.ytick-tpl');
     if (!axis || !tpl) return;
 
-    const steps = this.#tickSteps();
+    const steps = this.#tickSteps() > 0 ? scale.bands : 0;
     axis.replaceChildren();
     // Written, never inferred by measuring.
     // TRAP T-y-axis-width-is-fixed-not-measured
@@ -206,7 +211,10 @@ export class SherpaLineChart extends SherpaElement {
     for (let i = 0; i <= steps; i++) {
       const tick = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       tick.style.setProperty('--_at', `${tickPercent(i, steps)}%`);
-      tick.querySelector('.y-value')!.textContent = formatTick(min + ((max - min) * i) / steps);
+      /* The SCALE decided where its lines fall.
+         TRAP T-the-top-gridline-rounds-to-its-magnitude */
+      tick.querySelector('.y-value')!.textContent =
+        formatTick(scale.min + scale.step * i);
       axis.appendChild(tick);
     }
   }

@@ -93,6 +93,27 @@
   cursor: pointer;
 }
 
+/* THE ZERO LINE, where the scale dips below zero. `--_zero` is how far UP the
+   plot zero sits; without a negative value it is 0 and this rule never fires,
+   so an ordinary chart draws exactly as before.
+   TRAP T-a-bar-hangs-from-the-zero-line */
+.bars-zero {
+  display: none;
+}
+:host([data-below-zero]) .bars-zero {
+  display: block;
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: var(--_zero, 0%);
+  border-block-start: var(--sherpa-display-mode-border-width-base, 1px) solid
+    var(--sherpa-style-border-base, #b3b3c3);
+}
+/* The baseline moves ONTO that line, so the axis is not drawn twice. */
+:host([data-below-zero]) .bars {
+  position: relative;
+  border-block-end: none;
+}
+
 /* The category-label row mirrors `.bars` exactly — same flex, same gap, same
    `flex: 1 1 0` — so label N sits under bar N. */
 .x-axis-row {
@@ -120,6 +141,27 @@
   background: var(--_hue, var(--sherpa-data-viz-series-1, #8364c880));
   box-sizing: border-box;
   transition: filter 100ms ease, block-size 300ms ease;
+}
+
+/* BELOW ZERO: flex cannot place a bar that starts part-way up the plot, so the
+   bar is positioned against the column instead. Only in this mode — a chart of
+   positive values keeps the flex layout untouched.
+   TRAP T-a-bar-hangs-from-the-zero-line */
+:host([data-below-zero]) .bar-col { position: relative; }
+:host([data-below-zero]) .bar {
+  position: absolute;
+  inset-inline: 0;
+  margin: 0 auto;
+  /* Grows UP from the zero line. */
+  inset-block-end: var(--_base, 0%);
+}
+/* A NEGATIVE bar hangs BELOW the line: its top edge is the line, so it is
+   placed from the top instead, and its rounded corners are at the bottom. */
+:host([data-below-zero]) .bar-col[data-sign="-"] .bar {
+  inset-block-end: auto;
+  inset-block-start: calc(100% - var(--_base, 0%));
+  border-radius: 0 0 var(--sherpa-display-mode-border-rounding-sm, 2px)
+    var(--sherpa-display-mode-border-rounding-sm, 2px);
 }
 
 .bar-col:hover .bar { filter: brightness(1.08); }

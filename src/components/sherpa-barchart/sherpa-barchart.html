@@ -25,7 +25,10 @@
 
       <div class="plot" part="plot" role="img" aria-label="Bar chart">
         <div class="gridlines" part="gridlines" aria-hidden="true"></div>
-        <div class="bars" part="bars"></div>
+        <div class="bars" part="bars">
+          <!-- Only drawn when the scale dips below zero; see data-below-zero. -->
+          <div class="bars-zero" part="zero-line" aria-hidden="true"></div>
+        </div>
       </div>
 
       <!-- Sibling row, not inside .bar-col: it shares the plot's column tracks via

@@ -6,6 +6,7 @@
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import { formatValue } from '../../core/data/format-tick.js';
+import { chartScale } from '../../core/data/format-tick.js';
 
 /** Fixed point slots; SLOTS-1 segments between them. */
 const SLOTS = 8;
@@ -63,10 +64,12 @@ export class SherpaSparkline extends SherpaElement {
 
     if (count === 0) return;
 
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const spread = max - min || 1;
+    /* FITS ITS OWN RANGE — a sparkline shows a SHAPE, so `zero: false`: a
+       floor at zero would flatten a series that never goes near it.
+       TRAP T-one-scale-for-every-chart */
+    const { min, span: spread } = chartScale(values, { zero: false });
 
+    // The PADDING is this chart's own: the line sits in the middle 62%.
     const extra = spread / LINE_SHARE - spread;
     const below = extra * 0.8;
     const paddedMin = min - below;

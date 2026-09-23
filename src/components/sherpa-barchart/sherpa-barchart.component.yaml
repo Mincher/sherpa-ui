@@ -56,6 +56,12 @@ anatomy:
                 - el: div
                   class: bars
                   part: bars
+                  children:
+                    - el: div
+                      class: bars-zero
+                      part: zero-line
+                      attrs:
+                        aria-hidden: "true"
             - el: div
               class: x-axis-row
               part: x-axis
@@ -96,6 +102,9 @@ states:
   - $type: state
     name: vertical
     selector: ":host([data-legend=\"vertical\"])"
+  - $type: state
+    name: below-zero
+    selector: ":host([data-below-zero])"
   - $type: state
     name: has-y-axis
     selector: ":host([data-has-y-axis])"
