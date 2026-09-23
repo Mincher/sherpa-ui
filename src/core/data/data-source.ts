@@ -130,12 +130,9 @@ export class DataSource extends EventTarget {
   /** The filter's named parts, in contribution order. TRAP T-parts-order-must-be-stable */
   #parts = new Map<string, Filter>();
   /**
-   * WHAT IS SELECTED, BY FIELD — not by which control did the selecting.
-   *
-   * A field is drawn in several places at once: a filter chip, a column
-   * heading, a chart legend. Each used to keep its own copy, so two controls
-   * over one field could show two answers. This is the one reading they all
-   * read and write. TRAP T-one-field-one-filter-menu
+   * WHAT IS SELECTED, BY FIELD — not by which control did the selecting, so a
+   * chip, a column heading and a legend cannot show two answers.
+   * TRAP T-one-field-one-filter-menu
    */
   #readings = new Map<string, FieldReading>();
   /** Every value a field can take, for the controls that draw its rows. */
@@ -287,9 +284,7 @@ export class DataSource extends EventTarget {
    * lets two controls share one selection.
    */
   declareValues(field: string, values: readonly unknown[]): void {
-    /* KEPT AS THE DATA HOLDS THEM. `values.map(String)` turned every number
-       into text and every object into "[object Object]" — so two owners became
-       one value. De-duplicated by KEY, which is the string form.
+    /* Kept AS THE DATA HOLDS THEM, de-duplicated by key.
        TRAP T-a-value-can-be-an-object */
     const seen = new Map<string, unknown>();
     for (const v of values) if (!seen.has(valueKey(v))) seen.set(valueKey(v), v);
@@ -309,18 +304,13 @@ export class DataSource extends EventTarget {
   }
 
   /**
-   * Select values for a FIELD. Every control over that field reads the same
-   * answer back from `selection()`, so none of them has to hear about the
-   * others. An empty list clears it.
-   *
-   * `reading` carries the rest of the question — the condition and its typed
-   * text — for the controls that offer one.
+   * Select values for a FIELD. Every control over it reads the same answer
+   * back from `selection()`; an empty list clears it. `reading` carries the
+   * rest of the question — the condition and its typed text.
    */
   select(field: string, picked: readonly unknown[], reading: FieldReading = {}): void {
-    /* A CONTROL HANDS BACK THE KEY IT WAS GIVEN. `ValueEntry.value` is the
-       string form, because that is what fits in an attribute — so a key is
-       mapped back to the value the row actually holds before it reaches the
-       query. A caller passing the raw value is left alone.
+    /* A control hands back the KEY it was given, so it maps to the value the
+       row holds. A raw value is left alone.
        TRAP T-a-value-can-be-an-object */
     const declared = this.#domainByKey(field);
     const raws = picked.map((v) => declared.get(valueKey(v)) ?? v);
@@ -329,8 +319,7 @@ export class DataSource extends EventTarget {
     if (answered) this.#readings.set(field, next);
     else this.#readings.delete(field);
     this.#setFilterValue(this.#composed());
-    /* AFTER the requery, so a listener reading `selection()` sees the state
-       the rows were fetched for. */
+    // AFTER the requery, so a listener sees the state the rows were fetched for.
     this.dispatchEvent(new CustomEvent('selection-change', { detail: { field } }));
   }
 

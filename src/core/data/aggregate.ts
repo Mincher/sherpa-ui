@@ -58,12 +58,9 @@ export function reduceRows(
 
 export interface AggregateOptions {
   /**
-   * The categories, in order. Given, a category keeps its slot and its
-   * `colorIndex` whatever the data does; omitted, the order is first-seen.
-   *
-   * These are the GROUP KEYS, which for an object field means
-   * `order: [DANA, RAVI].map(valueKey)` — a label is always a string, because
-   * an axis and a legend row are.
+   * The categories, in order — the GROUP KEYS, so an object field wants
+   * `[DANA, RAVI].map(valueKey)`. Given, a category keeps its slot and its
+   * `colorIndex`; omitted, the order is first-seen.
    * TRAP T-a-category-keeps-its-colour
    * TRAP T-a-value-can-be-an-object
    */
@@ -144,11 +141,8 @@ export function bandBy(
   }
 
   return counts.map((value, i) => ({
-    /* THE LABEL NAMES THE BAND IT COUNTS. A band is half-open — [0,20), and
-       the last one closed — so with edges 0,20,40 a value of 20 belongs to the
-       SECOND band. The labels used to read "0-20" and "21-40", so a reader
-       looking for 20 read the first bar and it was counted in the second.
-       Every band but the last now stops one below its top edge.
+    /* THE LABEL NAMES WHAT IT COUNTS, so every band but the last stops one
+       below its top edge — bands are half-open.
        TRAP T-a-band-label-names-what-it-counts */
     label: options.labels?.[i]
       ?? `${edges[i]}-${i === count - 1 ? edges[i + 1] : edges[i + 1]! - 1}`,
@@ -158,16 +152,12 @@ export function bandBy(
 }
 
 /**
- * The change from the first point to the last, as a percentage.
- *
- * A metric tile derives its TREND from this, and its status from the trend
- * (T-metric-status-follows-the-trend) — so a tile handed only a label and a
- * value is grey, whatever the numbers did. The dashboard's tiles were exactly
- * that after they stopped being hardcoded.
+ * The change from the first point to the last, as a percentage. A metric tile
+ * derives its trend from this, and its status from the trend, so a tile handed
+ * no series is grey.
  *
  * `null` when there is nothing to compare: fewer than two points, or a first
  * point of zero, where the change is undefined rather than infinite.
- *
  * TRAP T-a-delta-is-derived-not-declared
  */
 export function deltaPercent(values: readonly number[]): number | null {
@@ -203,9 +193,8 @@ export function seriesBy(
   const groups = new Map(groupRows(rows, field).map((g) => [g.key, g.rows]));
   const series: Series = {
     name,
-    /* `valueKey`, the same rule `groupRows` keyed by — `String` agreed for a
-       string or a number and would have drifted the moment a point was
-       anything else. TRAP T-a-value-can-be-an-object */
+    // `valueKey`, the same rule `groupRows` keyed by.
+    // TRAP T-a-value-can-be-an-object
     values: points.map((p) => reduceRows(groups.get(valueKey(p)) ?? [], kind, valueField)),
   };
   if (colorIndex != null) series.colorIndex = colorIndex;

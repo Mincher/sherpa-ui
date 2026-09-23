@@ -207,10 +207,8 @@ export function filterFace(state: FilterState): FilterFace {
 /* ── Binding a control to a field ──────────────────────────────────────── */
 
 /**
- * Enough of a DataSource to own a FIELD's selection.
- *
- * Not `contribute`: a control keyed by WRITER can hold a different answer from
- * the next one over the same field, and both reach the query.
+ * Enough of a DataSource to own a FIELD's selection. Not `contribute`: keyed
+ * by WRITER, two controls over one field both reach the query.
  * TRAP T-one-field-one-filter-menu
  */
 export interface Selector extends EventTarget {
@@ -246,12 +244,10 @@ export interface BoundSelection {
 }
 
 /**
- * Join a control to a FIELD on a source.
- *
- * The loop every control over a field needs, once: declare the values, draw
- * what the source says, write what the reader does, and re-draw when anyone
- * else changes the same field. No control hears about another — they read the
- * same answer. TRAP T-one-field-one-filter-menu
+ * Join a control to a FIELD on a source — the loop every control needs, once:
+ * declare the values, draw what the source says, write what the reader does,
+ * re-draw when anyone else changes the field. No control hears about another.
+ * TRAP T-one-field-one-filter-menu
  */
 export function bindSelection<T extends EventTarget>(
   control: T,
@@ -268,13 +264,11 @@ export function bindSelection<T extends EventTarget>(
 
   const redraw = (): void => { draw(control, picked()); };
 
-  /** Write what the control now says. A control that REFUSES a change never
-   *  reports it — visibility and its own floors are the component's concern. */
+  /** Write what the control now says. One that REFUSES a change never reports
+   *  it — its own floors are the component's concern. */
   const write = (next: readonly string[]): void => {
     const want = next.filter((v) => known.has(v));
-    /* EVERYTHING picked is no constraint, so an EMPTY selection — not every
-       value, which says the same thing in a way that looks like a filter.
-       TRAP T-everything-on-is-no-filter */
+    // EVERYTHING picked is no constraint. TRAP T-everything-on-is-no-filter
     source.select(field, want.length === values.length ? [] : want);
   };
 

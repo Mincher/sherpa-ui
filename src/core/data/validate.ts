@@ -6,8 +6,8 @@
  *
  * TRAP T-standard-schema-is-duck-typed
  */
-// The ONE rule for "what is this value, as a string" — `oneOf` compares with
-// it, so a schema and a query agree about what two values being the same means.
+// `oneOf` compares with `valueKey`, so a schema and a query agree about
+// what two values being the same means.
 import { valueKey } from './store.js';
 
 /* ── The answer ─────────────────────────────────────────────────────── */
@@ -91,11 +91,8 @@ export function required(message = 'Required'): Rule {
 /**
  * A rule that only speaks when there IS a value.
  *
- * EVERY rule but `required` passes an absent value: "must be a number" has
- * nothing to say about a field nobody filled in, and saying it would make every
- * optional field fail. Six rules opened with the same guard, which is six
- * chances for a seventh to forget it and reject an empty optional field.
- *
+ * EVERY rule but `required` passes an absent one — "must be a number" has
+ * nothing to say about a field nobody filled in.
  * TRAP T-every-rule-but-required-passes-absent
  */
 function whenPresent(check: (value: unknown) => string | undefined): Rule {
@@ -164,13 +161,9 @@ export function url(message = 'Enter a valid URL'): Rule {
 }
 
 /**
- * One of these. Compared as STRINGS, as an attribute would — so `'2'` passes
- * `oneOf([1, 2, 3])`, which is the point.
- *
- * `valueKey`, not `String`: an object is its own fields and values. With
- * `String` every object was "[object Object]", so `oneOf([RAVI, DANA])`
- * accepted ANY object — a rule that lets everything through.
- * TRAP T-a-value-can-be-an-object
+ * One of these, compared as STRINGS as an attribute would — so `'2'` passes
+ * `oneOf([1, 2, 3])`, which is the point. `valueKey`, not `String`: an object
+ * is its own fields and values. TRAP T-a-value-can-be-an-object
  */
 export function oneOf(allowed: readonly unknown[], message?: string): Rule {
   const set = new Set(allowed.map(valueKey));
