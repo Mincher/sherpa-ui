@@ -21,21 +21,17 @@
     <textarea class="input" part="input" rows="1" spellcheck="true"></textarea>
     <div class="tools" part="tools">
       <div class="leading" part="leading">
-        <button type="button" class="lead-btn attach" part="attach" aria-label="Attach">
-          <svg class="glyph" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21.44 11.05 12.25 20.24a5 5 0 0 1-7.07-7.07l9.19-9.19a3 3 0 0 1 4.24 4.24l-9.2 9.19a1 1 0 0 1-1.41-1.41l8.49-8.49" />
-          </svg>
-        </button>
-        <button type="button" class="lead-btn lab" part="lab" aria-label="Lab">
-          <svg class="glyph" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 3h6M10 3v6.5L4.6 18.1A2 2 0 0 0 6.3 21h11.4a2 2 0 0 0 1.7-2.9L14 9.5V3M8 15h8" />
-          </svg>
-        </button>
+        <sherpa-button class="lead-btn attach" part="attach" data-type="icon" data-size="sm"
+                       data-look="transparent" data-icon-start="paperclip"
+                       aria-label="Attach"></sherpa-button>
+        <sherpa-button class="lead-btn lab" part="lab" data-type="icon" data-size="sm"
+                       data-look="transparent" data-icon-start="beaker"
+                       aria-label="Lab"></sherpa-button>
         <div class="extras" part="extras"><slot name="extras"></slot></div>
       </div>
-      <button type="submit" class="send" part="send" aria-label="Send">
-        <span class="send-glyph" aria-hidden="true">&#8593;</span>
-      </button>
+      <sherpa-button class="send" part="send" data-type="icon" data-size="sm"
+                     data-look="saturated" data-icon-start="arrow-up"
+                     aria-label="Send"></sherpa-button>
     </div>
   </form>
 </template>

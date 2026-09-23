@@ -4,6 +4,7 @@
  * Enter submits, Shift+Enter newlines. Empty text is never submitted.
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import '../sherpa-button/sherpa-button.js';
 
 const MAX_HEIGHT = 160;
 
@@ -27,9 +28,9 @@ export class SherpaPromptComposer extends SherpaElement {
     this.$('.form')?.addEventListener('submit', this.#onSubmit);
     this.#input?.addEventListener('input', this.#autoresize);
     this.#input?.addEventListener('keydown', this.#onKeyDown);
-    this.$('.send')?.addEventListener('click', this.#onSend);
-    this.$('.attach')?.addEventListener('click', () => this.#onLeading('composer-attach'));
-    this.$('.lab')?.addEventListener('click', () => this.#onLeading('composer-lab'));
+    this.$('.send')?.addEventListener('button-click', this.#onSend);
+    this.$('.attach')?.addEventListener('button-click', () => this.#onLeading('composer-attach'));
+    this.$('.lab')?.addEventListener('button-click', () => this.#onLeading('composer-lab'));
   }
 
   override onChange(name: string): void {

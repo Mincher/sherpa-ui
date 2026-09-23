@@ -44,67 +44,37 @@ anatomy:
             class: leading
             part: leading
             children:
-              - el: button
+              - el: sherpa-button
                 class: lead-btn attach
                 part: attach
                 attrs:
-                  type: button
+                  data-type: icon
+                  data-size: sm
+                  data-look: transparent
+                  data-icon-start: paperclip
                   aria-label: Attach
-                children:
-                  - el: svg
-                    class: glyph
-                    attrs:
-                      viewBox: 0 0 24 24
-                      aria-hidden: "true"
-                      fill: none
-                      stroke: currentColor
-                      stroke-width: "2"
-                      stroke-linecap: round
-                      stroke-linejoin: round
-                    children:
-                      - el: path
-                        attrs:
-                          d: >-
-                            M21.44 11.05 12.25 20.24a5 5 0 0 1-7.07-7.07l9.19-9.19a3 3 0 0 1 4.24
-                            4.24l-9.2 9.19a1 1 0 0 1-1.41-1.41l8.49-8.49
-              - el: button
+              - el: sherpa-button
                 class: lead-btn lab
                 part: lab
                 attrs:
-                  type: button
+                  data-type: icon
+                  data-size: sm
+                  data-look: transparent
+                  data-icon-start: beaker
                   aria-label: Lab
-                children:
-                  - el: svg
-                    class: glyph
-                    attrs:
-                      viewBox: 0 0 24 24
-                      aria-hidden: "true"
-                      fill: none
-                      stroke: currentColor
-                      stroke-width: "2"
-                      stroke-linecap: round
-                      stroke-linejoin: round
-                    children:
-                      - el: path
-                        attrs:
-                          d: >-
-                            M9 3h6M10 3v6.5L4.6 18.1A2 2 0 0 0 6.3 21h11.4a2 2 0 0 0 1.7-2.9L14
-                            9.5V3M8 15h8
               - el: div
                 class: extras
                 part: extras
                 slot: extras
-          - el: button
+          - el: sherpa-button
             class: send
             part: send
             attrs:
-              type: submit
+              data-type: icon
+              data-size: sm
+              data-look: saturated
+              data-icon-start: arrow-up
               aria-label: Send
-            children:
-              - el: span
-                class: send-glyph
-                attrs:
-                  aria-hidden: "true"
 props:
   - $type: prop
     name: data-no-leading-actions
@@ -163,10 +133,6 @@ tokens:
   input.line-height: "{sherpa.theme-content-line-height-base}"
   input.color: "{sherpa.theme-content-body-1}"
   tools.gap: "{sherpa.display-mode-space-2xs}"
-  lead-btn.color: "{sherpa.theme-content-body-1}"
-  send.background: "{sherpa.theme-surface-accent-2}"
-  send.color: "{sherpa.theme-content-body-base-fixed}"
-  send-glyph.font-size: "{sherpa.theme-content-size-base}"
 $extensions:
   sherpa:
     figmaName: Prompt Composer

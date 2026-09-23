@@ -1223,6 +1223,71 @@ style — `examples/templates/records.html:115` uses a bare
 
 ---
 
+### 18 — Calendar and prompt-composer: the last two button cases
+
+**`sherpa-calendar` — 281 → 212 CSS lines.**
+
+Its footer hand-drew Today / Cancel / Apply while `sherpa-menu` composes the
+identical row three files away — and the calendar itself composes
+`sherpa-button` for its stepper, sixteen lines earlier in the same template.
+
+Now the same shape the menu uses: `sherpa-container-footer` with
+`data-align="between"`, which puts Today on the left and the actions on the
+right without a `.cal-footer` flex rule at all.
+
+The CSS the component keeps is four lines — the actions cluster. The rest (row
+geometry, the top rule, each button's box, ring, hover and disabled ink) is
+owned by the two composed components.
+
+Worth noting the footer is only ever seen standalone: both real consumers
+(`sherpa-data-grid`, `sherpa-quick-filter-toolbar`) embed the calendar with
+`data-embedded`, and the CSS comment records why — *"Without the footer, a date
+filter chip showed two Apply/Cancel pairs stacked."*
+
+**`sherpa-prompt-composer` — 150 → 130 CSS lines, and no more inline SVG.**
+
+It was the only non-chart component in the library with `<svg>` in its
+template: two hand-drawn paths for Attach and Lab, plus a `&#8593;` arrow for
+Send. All three icons already existed in the Figma set — `paperclip`, `beaker`
+(which `flask` aliases to), `arrow-up` — so the hand-drawing was never needed.
+
+Verified they draw rather than assuming: each button now renders a real path
+from `icon-paths.ts`, 24×24.
+
+```
+.attach   24x24 path:drawn(M2.625 3.59722…)
+.lab      24x24 path:drawn(M3.60893 1.257…)
+.send     24x24 path:drawn(M7.25755 0.986…)
+```
+
+The `type="submit"` on Send looked like a problem — a composed button does not
+submit a form natively. It was not: `.send` already had its own `click` handler
+calling `#submit()`, so the native path was redundant, which the audit had also
+flagged.
+
+#### Composition, totalled
+
+| case | CSS before | after |
+|---|---:|---:|
+| close button × 4 | ~153 | 16 |
+| `sherpa-file-upload` | 275 | 214 |
+| `sherpa-calendar` | 281 | 212 |
+| `sherpa-prompt-composer` | 150 | 130 |
+
+**−313 lines**, 14 buttons composed, one text link and one in-sentence link
+deliberately left raw.
+
+Three things came back for free each time: the icon system instead of a raw
+glyph, `button-click` (so a **disabled** button suppresses its own event), and
+one size scale instead of hand-written pixels.
+
+One case remains: `sherpa-grid-cell` is an orphan whose every part is
+re-implemented inside `sherpa-data-grid`, and the two disagree about what
+`sort-change` and `group-toggle` mean. That is a bigger question than a button
+swap — it is whether the component should exist.
+
+---
+
 ### The suite has load-dependent flakiness, and it will mislead you
 
 Full suite after this work: **1923 passed, 13 failed, 2 flaky** — the same
@@ -1288,7 +1353,7 @@ These need a decision before code, because each one picks a winner:
 
 The breadcrumbs half is done — see "Breadcrumbs: one name" above.
 
-### 3 — Composition — close button + file-upload DONE, two cases left
+### 3 — Composition — DONE except sherpa-grid-cell
 
 - `sherpa-file-upload` hand-draws four buttons (~95 of its 279 CSS lines)
 - `sherpa-calendar` re-implements the menu's card and footer (~76 lines)

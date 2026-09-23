@@ -5,6 +5,7 @@
  * data-view is the code's own zoom.
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import '../sherpa-container-footer/sherpa-container-footer.js';
 import '../sherpa-calendar-cell/sherpa-calendar-cell.js';
 import '../sherpa-button/sherpa-button.js';
 
@@ -60,9 +61,9 @@ export class SherpaCalendar extends SherpaElement {
     this.$('.cal-months')?.addEventListener('click', this.#onMonthClick);
     this.$('.cal-years')?.addEventListener('click', this.#onYearClick);
     this.$('.cal-time')?.addEventListener('input', this.#onTimeInput);
-    this.$('.cal-today')?.addEventListener('click', this.#onToday);
-    this.$('.cal-cancel')?.addEventListener('click', this.#onCancel);
-    this.$('.cal-apply')?.addEventListener('click', this.#onApply);
+    this.$('.cal-today')?.addEventListener('button-click', this.#onToday);
+    this.$('.cal-cancel')?.addEventListener('button-click', this.#onCancel);
+    this.$('.cal-apply')?.addEventListener('button-click', this.#onApply);
     this.#syncTimeInput();
     this.#render();
   }

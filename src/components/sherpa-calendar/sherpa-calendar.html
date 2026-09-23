@@ -61,13 +61,17 @@
       </label>
     </div>
 
-    <div class="cal-footer" part="footer">
-      <button type="button" class="cal-today" part="today">Today</button>
+    <!-- The same composed row sherpa-menu uses: the footer owns the action-bar
+         geometry, `between` puts Today on the left. -->
+    <sherpa-container-footer class="cal-footer" part="footer" data-align="between">
+      <sherpa-button class="cal-today" part="today" data-size="sm"
+                     data-look="transparent">Today</sherpa-button>
       <div class="cal-actions" part="actions">
-        <button type="button" class="cal-cancel" part="cancel">Cancel</button>
-        <button type="button" class="cal-apply sherpa-border-edges" part="apply">Apply</button>
+        <sherpa-button class="cal-cancel" part="cancel" data-size="sm">Cancel</sherpa-button>
+        <sherpa-button class="cal-apply" part="apply" data-size="sm"
+                       data-look="saturated">Apply</sherpa-button>
       </div>
-    </div>
+    </sherpa-container-footer>
   </div>
 
   <!--

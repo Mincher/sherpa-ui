@@ -197,82 +197,13 @@
 /* Without the footer, a date filter chip showed two Apply/Cancel pairs stacked. */
 :host([data-embedded]) :is(.cal-header, .cal-footer) { display: none; }
 
-/* ── Footer action row — Today link | Cancel / Apply ────────────────────── */
-.cal-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sherpa-theme-gap-md, 8px);
-  margin-block-start: var(--sherpa-display-mode-space-3xs, 2px);
-  padding-block-start: var(--sherpa-theme-gap-md, 8px);
-  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_border);
-}
-
+/* ── Footer action row ──────────────────────────────────────────────────
+   sherpa-container-footer owns the row, its rule and its inset;
+   sherpa-button owns each control. Only the actions cluster is local. */
 .cal-actions {
   display: inline-flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
-}
-
-/* Today — a text-only link, no chrome. */
-.cal-today {
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: var(--_accent);
-  font-family: inherit;
-  font-size: var(--sherpa-font-size-body-base, 14px);
-  font-weight: var(--sherpa-font-weight-medium, 500);
-  cursor: pointer;
-
-  &:hover { text-decoration: underline; }
-  &:focus-visible {
-    outline: none;
-    box-shadow: var(--sherpa-focus-ring);
-    border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
-  }
-}
-
-/* Cancel / Apply share a button shell; Apply gets the accent fill. */
-.cal-cancel,
-.cal-apply {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  block-size: var(--sherpa-structure-height, 32px);
-  padding-block: var(--sherpa-display-mode-space-3xs, 2px);
-  padding-inline: var(--sherpa-theme-padding-lg, 16px);
-  border-style: solid;
-  border-color: var(--_border);
-  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
-  background: var(--sherpa-style-surface-base, #ffffff);
-  color: var(--sherpa-theme-content-body-1, #35353d);
-  font-family: inherit;
-  font-size: var(--sherpa-font-size-body-base, 14px);
-  font-weight: var(--sherpa-font-weight-medium, 500);
-  cursor: pointer;
-  transition: background-color 100ms ease, color 100ms ease, border-color 100ms ease;
-
-  &:hover {
-    /* Figma's hover fill is #FFFFFF00 — fully clear, so no token is needed. */
-    background: transparent;
-  }
-  &:focus-visible {
-    outline: none;
-    box-shadow: var(--sherpa-focus-ring);
-  }
-}
-
-.cal-apply {
-  border-color: var(--_accent);
-  background: var(--_accent);
-  color: var(--_accent-on);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-
-  &:hover {
-    background: var(--_accent);
-    color: var(--_accent-on);
-  }
 }
 
 

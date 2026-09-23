@@ -95,19 +95,6 @@
 }
 
 /* Leading buttons — Figma Button/Type=icon, Structure sm, Transparent look. */
-.lead-btn {
-  padding: 0;
-  background: transparent;
-  color: var(--sherpa-theme-content-body-1, #35353d);
-  transition: background-color 120ms ease, color 120ms ease;
-
-  &:hover { background: var(--sherpa-theme-surface-default-2, #b3b3c3); }
-  /* The press surface is dark, so the glyph flips to fixed light ink. */
-  &:active {
-    background: var(--sherpa-theme-surface-default-3, #35353d);
-    color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
-  }
-}
 .lead-btn .glyph {
   inline-size: var(--sherpa-theme-content-size-base, 14px);
   block-size: var(--sherpa-theme-content-size-base, 14px);
@@ -117,17 +104,10 @@
 :host([data-no-leading-actions]) .lead-btn { display: none; }
 
 /* ── Send — accent primary action ──────────────────────────────────── */
-.send {
-  /* The strong step, not -base: -base is the pale #8aa3ff, too light under a
-     white glyph. */
-  background: var(--sherpa-theme-surface-accent-2, #3b4ccd);
-  color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
-  transition: background-color 120ms ease;
-
-  &:hover { background: var(--sherpa-theme-surface-accent-3, #2b34b4); }
-  &:active { background: var(--sherpa-theme-surface-accent-4, #1e189c); }
-}
-.send-glyph { font-size: var(--sherpa-theme-content-size-base, 14px); line-height: 1; }
+/* sherpa-button owns each control's box, ring, hover and press ink; the row
+   only says they must not shrink. */
+.lead-btn,
+.send { flex-shrink: 0; }
 
 /* ── Disabled — inactive tokens, never opacity ──────────────────────── */
 /* NOT `.sherpa-inert`: that class is static markup, so it cannot follow

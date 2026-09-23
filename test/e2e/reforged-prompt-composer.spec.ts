@@ -38,7 +38,12 @@ test('the send button fires prompt-submit with the text and clears the field', a
 
     const input = el.shadowRoot!.querySelector('.input') as HTMLTextAreaElement;
     input.value = '  hello world  ';
-    (el.shadowRoot!.querySelector('.send') as HTMLButtonElement).click();
+    // A composed sherpa-button: its own render to await, and the click target
+    // is its inner trigger, not the host.
+    const send = el.shadowRoot!.querySelector('.send') as HTMLElement & {
+      shadowRoot: ShadowRoot; rendered: Promise<void> };
+    await send.rendered;
+    (send.shadowRoot.querySelector('button') as HTMLElement).click();
 
     return { text: (detail as { text?: string } | null)?.text, cleared: el.value };
   });
@@ -93,7 +98,12 @@ test('an empty (whitespace-only) submit is a no-op', async ({ page }) => {
 
     const input = el.shadowRoot!.querySelector('.input') as HTMLTextAreaElement;
     input.value = '   ';
-    (el.shadowRoot!.querySelector('.send') as HTMLButtonElement).click();
+    // A composed sherpa-button: its own render to await, and the click target
+    // is its inner trigger, not the host.
+    const send = el.shadowRoot!.querySelector('.send') as HTMLElement & {
+      shadowRoot: ShadowRoot; rendered: Promise<void> };
+    await send.rendered;
+    (send.shadowRoot.querySelector('button') as HTMLElement).click();
     return n;
   });
   expect(count).toBe(0);
