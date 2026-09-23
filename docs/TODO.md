@@ -73,7 +73,7 @@ inherit the answers.
 
 | # | Item |
 |---|---|
-| 11b | Grouping — two files, and 160 unused lines |
+| 11b | `sherpa-group` — a wrapper component, and grouping props on `sherpa-element` |
 | 11c | Shared constants — sweep for anything a second component must agree on |
 | 11d | `data-type` means nine things; `data-empty` means three |
 | 11e | Event detail shapes disagree across 75 events |
@@ -625,26 +625,58 @@ The audit closed 13 of 15 findings — the fixes are in git, and
 `docs/COMPONENT-AUDIT.md` holds the measurements behind each one. These six are
 what it left open.
 
-### `[ ]` Grouping — two files, and 160 unused lines
+### `[ ]` `sherpa-group` — a wrapper component, and grouping props on the base class
+
+**Will's proposal, and it is the right shape.** Make a group a WRAPPER COMPONENT
+that applies position and gap to its own children, the same way
+`sherpa-layout-grid` wraps the layout grid. Then a grouped row, column or grid
+needs no per-item bookkeeping: the wrapper owns it.
+
+`sherpa-element` gains the grouping props so ANY component can be grouped. Not
+every component will be, but it is generic enough to be worth it.
+
+#### Proved before proposing — measured 2026-09-23
+
+A wrapper CAN style its slotted children by position. Three results, all three
+engines:
+
+| | result |
+|---|---|
+| Corners by position | `4px/0px` · `0px/0px` · `0px/4px` — ends keep their outer corners |
+| The halved shared edge | `0.5/0.25` · `0.25/0.25` · `0.25/0.5` — the Figma pattern |
+| GRID position from `sibling-index()` | `0,0 1,0 2,0 0,1 1,1 2,1` — exact in Chromium, Firefox AND WebKit |
+
+Two things make it work, and both are already in place:
+
+- `::slotted()` sets CUSTOM PROPERTIES, which inherit through the child's own
+  shadow boundary. That is why the existing classes work at all.
+- The five `--sherpa-group-*` are registered with `@property` in `tokens.css`,
+  which is the DOCUMENT — so the maths resolves. Unregistered, the property
+  stores the expression as text and nothing computes.
+  `T-at-property-needs-the-document`.
+
+An escape hatch exists: an inline style on a child beats the wrapper, so a
+component that must not be grouped can say so.
+
+#### What it replaces
 
 `src/core/sherpa-grouping.css` (173 lines, hand-written) and
-`src/core/sherpa-group-positions.css` (231 lines, generated) both exist, and the
-generated blocks are ALSO written into `tokens.css`. Measured 2026-09-23.
-
-**The two files are not duplicates.** They are two doors onto one idea:
+`src/core/sherpa-group-positions.css` (231 lines, generated), whose blocks are
+ALSO written into `tokens.css`. Today there are two doors:
 
 | | what | sites |
 |---|---|---|
-| `data-group="start"` | the position STATED — works from a template or a JS property | **15** |
-| `.sherpa-group` on a wrapper | the position DERIVED, so a re-order needs nothing | **8** |
+| `data-group="start"` | the position STATED | **15** |
+| `.sherpa-group` on a wrapper | the position DERIVED | **8** |
 
 `T-grouping-is-an-attribute-and-a-class` explains why the generated blocks are
 emitted twice: a bare `[data-group]` rule in `tokens.css` cannot reach a shadow
-root, and the same rule in an adopted sheet cannot reach the page. Removing
-either copy silently un-joins one of the two. That part is sound.
+root, and the same rule in an adopted sheet cannot reach the page. **A wrapper
+COMPONENT collapses that** — its own shadow sheet reaches its slotted children
+wherever they are, so one copy serves both cases.
 
-**What is NOT sound is the size.** The generator emits all 21 positions from the
-Figma Grouping matrix. Only four are used:
+**And it retires the dead weight.** The generator emits all 21 Figma positions;
+only four have callers:
 
 | position | real callers |
 |---|---:|
@@ -653,26 +685,30 @@ Figma Grouping matrix. Only four are used:
 | `solo` | 0 — generated only |
 | the 16 `grid-*` and `vertical-*` | **0** |
 
-So **160 of 200 generated lines are dead**, in two copies — ~320 lines adopted
-into every one of 59 shadow roots for nothing.
+**160 of 200 generated lines are dead**, in two copies — ~320 lines adopted into
+all 59 shadow roots for nothing. A wrapper derives those positions instead of
+enumerating them.
 
-Also note `sherpa-grouping.css` is not only grouping: it carries
-`.sherpa-border-edges` and `.sherpa-border-corners`, which **21 components** use
-and which replaced 26 hand-written copies. That half earns its place.
+#### The work
 
-Three questions to answer, in order:
+1. **`sherpa-element`** — add the grouping props to `SHARED_PROPS`, which is
+   already "shared style attributes whose shape is identical wherever they
+   appear". `data-group` is declared by NOTHING today: 15 sites use it and it
+   works only through a document CSS rule, so it is invisible to every spec.
+2. **`sherpa-group`** — the wrapper. `data-direction="row|column|grid"` and
+   `data-col-count` for the grid. Its shadow sheet does the `::slotted()` work.
+3. **Keep the attribute door** for a host that states a position in its own
+   markup — but the wrapper becomes the recommended way, and the generated
+   `grid-*` / `vertical-*` blocks can go.
+4. **`.sherpa-border-edges` and `.sherpa-border-corners` are NOT grouping.**
+   They are the per-edge primitives grouping happens to use, and **21
+   components** use them directly — they replaced 26 hand-written copies. Move
+   them to their own `sherpa-borders.css` rather than leaving them in a file
+   that will no longer be about grouping.
 
-1. **Does Figma still need 21 positions?** The `grid-*` set exists for the
-   `.sherpa-group-grid` CSS, which computes position from `sibling-index()` and
-   needs no attribute at all. If nothing will ever state a grid position in
-   markup, the generator should stop emitting those 12.
-2. **Should the file split by JOB rather than by origin?** `border-edges` and
-   `border-corners` are not grouping; they are the per-edge primitives grouping
-   happens to use. A `sherpa-borders.css` would say so.
-3. **Is `solo` worth keeping?** It is the default state with no rule needed.
-
-Do not delete a door. Both are used, in nearly the same five components, and the
-trap records what breaks if either copy goes.
+Name it `sherpa-group`, not `sherpa-grouping`: it is the thing, not the idea.
+The same ruling as `sherpa-layout-grid`, which is a util component with no Figma
+node — see `docs/COMPONENT-AUDIT.md` finding 15.
 
 ### `[ ]` Shared constants — sweep for the rest
 
