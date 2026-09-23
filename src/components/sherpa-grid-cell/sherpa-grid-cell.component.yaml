@@ -145,6 +145,7 @@ events:
     composed: true
     detail:
       direction: unknown
+      field: string
   - $type: event
     name: menu-open
     bubbles: true
@@ -154,7 +155,8 @@ events:
     bubbles: true
     composed: true
     detail:
-      expanded: unknown
+      collapsed: boolean
+      value: string
 tokens:
   cell.gap: "{sherpa.display-mode-space-xs}"
   cell.padding: "{sherpa.theme-padding-sm}"

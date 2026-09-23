@@ -67,7 +67,9 @@ test('group toggle flips data-expanded and fires group-toggle', async ({ page })
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     let expanded: boolean | null = null;
-    el.addEventListener('group-toggle', (e) => (expanded = (e as CustomEvent).detail.expanded));
+    // `collapsed`, matching sherpa-data-grid — one event name, one shape.
+    el.addEventListener('group-toggle',
+      (e) => (expanded = !(e as CustomEvent).detail.collapsed));
     const toggle = el.shadowRoot!.querySelector<HTMLButtonElement>('.toggle')!;
     const toggleShown = getComputedStyle(toggle).display !== 'none';
     toggle.click();

@@ -13,10 +13,13 @@
     (default) — the cell content
     selection — a custom selection control (else a native checkbox is used)
 
+    data-field         the column this cell belongs to (rides out in sort-change)
+    data-value         the group value this cell heads (rides out in group-toggle)
+
   Fires:
-    sort-change  (detail: { direction })   — the sort button is clicked (header)
+    sort-change  (detail: { field, direction })   — the sort button is clicked (header)
     menu-open    (detail: {})              — the menu button is clicked
-    group-toggle (detail: { expanded })    — the group toggle is clicked (group)
+    group-toggle (detail: { value, collapsed }) — the group toggle is clicked (group)
 -->
 <template id="default">
   <div class="cell sherpa-border-edges" part="cell">

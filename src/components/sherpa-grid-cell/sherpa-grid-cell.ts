@@ -15,6 +15,10 @@ export class SherpaGridCell extends SherpaElement {
   static override props = {
     'data-sort-direction': DATA_PROPS['data-sort-direction'],
     'data-type': { type: 'enum', kind: 'style', values: ['filter', 'group', 'header'] },
+    /* The column this cell belongs to, and the group value it heads. Both ride
+       out in an event detail so a listener above the cell can act on it. */
+    'data-field': { type: 'string', kind: 'style' },
+    'data-value': { type: 'string', kind: 'style' },
   } as const;
 
   override onRender(): void {
@@ -32,7 +36,9 @@ export class SherpaGridCell extends SherpaElement {
     event.stopPropagation();
     const next = this.dataset['sortDirection'] === 'asc' ? 'desc' : 'asc';
     if (!this.hasAttribute('data-locked')) this.dataset['sortDirection'] = next;
-    this.emit('sort-change', { direction: next });
+    // `field` too: the grid's own sort-change carries it, and a detail without
+    // one cannot be read by any listener above a single cell.
+    this.emit('sort-change', { field: this.dataset['field'] ?? '', direction: next });
   };
 
   #onMenu = (event: Event): void => {
@@ -40,11 +46,15 @@ export class SherpaGridCell extends SherpaElement {
     this.emit('menu-open', {});
   };
 
+  /* `collapsed`, NOT `expanded`: sherpa-data-grid emits the same event name with
+     the opposite sense, so a host listening over a subtree that holds both got
+     contradictory answers for one gesture.
+     TRAP T-one-event-name-one-detail-shape */
   #onToggle = (event: Event): void => {
     event.stopPropagation();
     const expanded = !this.hasAttribute('data-expanded');
     this.toggleAttribute('data-expanded', expanded);
-    this.emit('group-toggle', { expanded });
+    this.emit('group-toggle', { value: this.dataset['value'] ?? '', collapsed: !expanded });
   };
 }
 

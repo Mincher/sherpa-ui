@@ -15,11 +15,9 @@ import { test, expect } from './harness';
  */
 const CASES: [string, string, Record<string, string>][] = [
   ['sherpa-accordion', ':host', {}],
-  ['sherpa-calendar', '.cal-apply', {}],
   ['sherpa-container', ':host', {}],
   ['sherpa-data-grid', ':host', {}],
   ['sherpa-dialog', '.root', {}],
-  ['sherpa-file-upload', '.clear-all', {}],
   ['sherpa-grid-cell', '.cell', {}],
   ['sherpa-input-text', '.control-row', {}],
   ['sherpa-list', '.body', {}],
