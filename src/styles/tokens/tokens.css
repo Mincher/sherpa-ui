@@ -1670,7 +1670,7 @@
 @layer style {
   :root {
   --sherpa-style-border-base: var(--sherpa-theme-border-default-2);
-  --sherpa-style-border-base-1: var(--sherpa-theme-border-default-3);
+  --sherpa-style-border-base-1: var(--sherpa-theme-border-default-2);
   --sherpa-style-border-width: var(--sherpa-display-mode-border-width-sm);
   --sherpa-style-border-data-viz: var(--sherpa-theme-data-viz-sequence-1);
   --sherpa-style-content-base: var(--sherpa-theme-content-body-base);
@@ -1805,7 +1805,7 @@
   }
 
   [data-status="active"] {
-    --_status-surface: var(--sherpa-theme-surface-active-base);
+    --_status-surface: var(--sherpa-theme-border-default-base);
     --_status-surface-subtle: var(--sherpa-theme-surface-active-base);
     --_status-surface-strong: var(--sherpa-theme-surface-active-1);
     --_status-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-brand-color-5) 30%, transparent);
@@ -1813,9 +1813,9 @@
     --_status-border-strong: var(--sherpa-theme-border-active-2);
     --_status-data-viz: var(--sherpa-theme-data-viz-sequence-1);
     --_status-data-viz-border: var(--sherpa-theme-data-viz-sequence-1);
-    --_status-text: var(--sherpa-theme-content-active-1);
+    --_status-text: var(--sherpa-theme-content-active-base);
     --_status-text-on-color: var(--sherpa-theme-content-body-4);
-    --_status-icon: var(--sherpa-theme-content-active-1);
+    --_status-icon: var(--sherpa-theme-surface-accent-4);
   }
 
   [data-status="inactive"] {

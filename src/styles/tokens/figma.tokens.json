@@ -9323,7 +9323,7 @@
                 "reference": "{theme.border.critical.+2}"
               },
               "default": {
-                "reference": "{theme.border.default.+1}"
+                "reference": "{theme.border.default.+2}"
               },
               "inactive": {
                 "reference": "{theme.border.default.+2}"
@@ -9358,7 +9358,7 @@
           }
         },
         "$type": "color",
-        "$value": "{theme.border.default.+3}"
+        "$value": "{theme.border.default.+2}"
       },
       "width": {
         "$description": "Border / stroke colour.",
@@ -9450,7 +9450,7 @@
             "lastSyncedAt": "2026-09-11T10:40:00.000Z",
             "lastSyncedValue": {
               "active": {
-                "reference": "{theme.content.active.+1}"
+                "reference": "{theme.content.active.base}"
               },
               "critical": {
                 "reference": "{theme.content.critical.+1}"
@@ -9480,7 +9480,7 @@
               "warning": "{theme.content.body.base}",
               "urgent": "{theme.content.urgent.+1}",
               "success": "{theme.content.success.+1}",
-              "active": "{theme.content.active.+1}",
+              "active": "{theme.content.active.base}",
               "inactive": "{theme.content.body.+1}"
             },
             "primaryMode": "default",
@@ -9615,13 +9615,13 @@
                 "reference": "{theme.content.body.+2}"
               },
               "warning": {
-                "reference": "{theme.content.body.+1}"
+                "reference": "{theme.content.body.+2}"
               }
             },
             "modes": {
               "info": "{theme.content.body.+2}",
               "critical": "{theme.content.body.+2}",
-              "warning": "{theme.content.body.+1}",
+              "warning": "{theme.content.body.+2}",
               "urgent": "{theme.content.body.+2}",
               "success": "{theme.content.body.+2}",
               "active": "{theme.content.body.+2}",
@@ -9644,7 +9644,7 @@
             "lastSyncedAt": "2026-09-09T09:43:47.989Z",
             "lastSyncedValue": {
               "active": {
-                "reference": "{theme.content.active.+1}"
+                "reference": "{theme.surface.accent.+4}"
               },
               "critical": {
                 "reference": "{theme.surface.critical.+3}"
@@ -9674,7 +9674,7 @@
               "warning": "{theme.surface.warning.+3}",
               "urgent": "{theme.surface.urgent.+3}",
               "success": "{theme.surface.success.+3}",
-              "active": "{theme.content.active.+1}",
+              "active": "{theme.surface.accent.+4}",
               "inactive": "{theme.surface.default.+2}"
             },
             "primaryMode": "default",
@@ -9699,7 +9699,7 @@
             "lastSyncedAt": "2026-09-09T09:43:47.989Z",
             "lastSyncedValue": {
               "active": {
-                "reference": "{theme.surface.active.base}"
+                "reference": "{theme.border.default.base}"
               },
               "critical": {
                 "reference": "{theme.surface.default.base}"
@@ -9729,7 +9729,7 @@
               "warning": "{theme.surface.default.base}",
               "urgent": "{theme.surface.default.base}",
               "success": "{theme.surface.default.base}",
-              "active": "{theme.surface.active.base}",
+              "active": "{theme.border.default.base}",
               "inactive": "{theme.surface.default.+2}"
             },
             "primaryMode": "default",
