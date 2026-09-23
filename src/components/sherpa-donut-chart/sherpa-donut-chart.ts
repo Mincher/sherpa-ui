@@ -106,7 +106,12 @@ export class SherpaDonutChart extends SherpaElement {
           outer,
           startDeg: acc * 360,
           endDeg: (acc + share) * 360,
-          radius: CORNER,
+          /* A PIE SLICE HAS NO ROUNDING. Its two straight edges meet at the
+             centre, and a corner radius there rounds the point off — the path
+             started at 49 rather than the centre's 50. A donut's corners round
+             because they sit on two ARCS, which is a different join.
+             TRAP T-a-pie-slice-has-no-rounded-corner */
+          radius: pie ? 0 : CORNER,
         }),
       );
       arc.setAttribute('stroke-width', String(OUTLINE));

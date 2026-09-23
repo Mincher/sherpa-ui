@@ -9915,3 +9915,22 @@ Both radial charts need it — donut `.slice` and gauge `.zone`.
 - Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.css`
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.css`
 - Site: `test/e2e/reforged-donut-chart.spec.ts`
+
+### T-a-pie-slice-has-no-rounded-corner
+
+`sherpa-donut-chart` passed `radius: CORNER` to `ringSegmentPath()` for every
+slice, including `data-type="pie"`. A donut's corners round because they sit on
+two ARCS; a pie slice's two straight edges meet at the CENTRE, and a radius
+there rounds the point off.
+
+Measured: a pie path began `M 50.0000 49.0000` — one unit short of the centre of
+the 100-unit box — and carried an `A 1 1` corner arc. After `radius: pie ? 0 :
+CORNER` it begins `M 50.0000 50.0000` with no corner arc, and the donut is
+unchanged at six arcs including its rounding.
+
+Will stated the rule: *"Pie segments will have 0 inner radius and no corner
+rounding on segments."* The inner radius was already right; the rounding was
+not.
+
+- Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.ts`
+- Site: `test/e2e/reforged-donut-chart.spec.ts`

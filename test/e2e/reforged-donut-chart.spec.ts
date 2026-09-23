@@ -379,3 +379,41 @@ test('clicking a slice leaves no focus ring; tabbing to one draws it', async ({ 
   expect(afterTab?.visible).toBe(true);
   expect(afterTab?.width).toBe('2px');
 });
+
+/**
+ * A PIE SLICE HAS NO ROUNDED CORNER.
+ *
+ * A donut's corners round because they sit on two ARCS. A pie slice's two
+ * straight edges meet at the CENTRE, and a radius there rounds the point off —
+ * measured before the fix, the path began at 49 rather than the centre's 50.
+ * TRAP T-a-pie-slice-has-no-rounded-corner
+ */
+test('a pie slice reaches the centre with a sharp point; a donut keeps its rounding',
+  async ({ page }) => {
+    const r = await page.evaluate(async () => {
+      const draw = async (type: string | null): Promise<string> => {
+        const el = document.createElement('sherpa-donut-chart') as HTMLElement & {
+          rendered?: Promise<void>; populate?: (d: unknown) => void;
+        };
+        if (type) el.setAttribute('data-type', type);
+        document.getElementById('root')!.replaceChildren(el);
+        await el.rendered;
+        el.populate!([{ label: 'a', value: 3 }, { label: 'b', value: 1 }]);
+        await (window as unknown as { __settled: () => Promise<void> }).__settled();
+        return el.shadowRoot!.querySelector('.slice')!.getAttribute('d') ?? '';
+      };
+      const donut = await draw(null);
+      const pie = await draw('pie');
+      // `A 1 1` is a corner arc at the CORNER radius — the tell for rounding.
+      return {
+        donutRounded: /A 1 1 /.test(donut),
+        pieRounded: /A 1 1 /.test(pie),
+        pieStart: pie.slice(0, 17),
+      };
+    });
+
+    expect(r.donutRounded).toBe(true);
+    expect(r.pieRounded).toBe(false);
+    // Straight to the centre of the 100-unit box.
+    expect(r.pieStart).toBe('M 50.0000 50.0000');
+  });
