@@ -9364,3 +9364,27 @@ API, so correctly exempt. The audit had listed the skip as a third hole; it is
 not one.
 
 - Site: `scripts/check-props.mjs`
+
+### T-writing-a-child-is-not-owning-yourself
+
+`check-ownership` flags a component that writes a value the `DataSource` owns.
+Its write regex was unanchored, so `chip.setAttribute('data-current', …)` read
+the same as `this.setAttribute('data-current', …)`.
+
+They are opposites. A parent writing a CHILD's attribute is configuring
+something it owns — and the two components that do it most,
+`sherpa-quick-filter-toolbar` and `sherpa-data-grid`, declare those chips
+`data-locked` **in their own markup** precisely so that they can. The grid says
+so beside the declaration: a chip derives its on-state from checked rows, and
+this menu has none, so unlocked it switches itself off the instant Apply closes.
+
+Measured across the tree: **25 `data-current` writes, 22 of them to a child**.
+The remaining 3 are all inside a `set current(v)` accessor, which the gate
+already exempts — a setter is the host's own door for writing the value.
+
+So adding `data-current` to `DATA_PROPS` with the old regex would have reported
+22 faults and zero real ones. The regex now requires `this.`, and covers
+`toggleAttribute` and `removeAttribute` as well as `setAttribute` — a gap that
+had hidden real self-writes, verified by planting one and watching it fail.
+
+- Site: `scripts/check-ownership.mjs`

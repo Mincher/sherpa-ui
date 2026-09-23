@@ -62,10 +62,16 @@ for (const file of globSync('src/components/*/*.ts', { cwd: ROOT })) {
 
     for (const attr of OWNED) {
       const prop = camel(attr);
+      /* ON ITSELF. `chip.setAttribute('data-current', …)` is a parent
+         configuring a CHILD it owns, which is the opposite of the bug — the
+         grid and the toolbar both declare those chips `data-locked` in their
+         own markup precisely so they can. Measured: 22 of the 25 `data-current`
+         writes in the tree go to a child. An unanchored regex called all 22 a
+         fault. TRAP T-writing-a-child-is-not-owning-yourself */
       const writes =
-        new RegExp(`dataset\\['${prop}'\\]\\s*=(?!=)`).test(line) ||
-        new RegExp(`dataset\\.${prop}\\s*=(?!=)`).test(line) ||
-        new RegExp(`setAttribute\\(\\s*'${attr}'`).test(line) ||
+        new RegExp(`this\\.dataset\\['${prop}'\\]\\s*=(?!=)`).test(line) ||
+        new RegExp(`this\\.dataset\\.${prop}\\s*=(?!=)`).test(line) ||
+        new RegExp(`this\\.(?:set|toggle|remove)Attribute\\(\\s*'${attr}'`).test(line) ||
         new RegExp(`this\\.set\\(\\s*'${attr}'`).test(line);
       if (!writes) continue;
       if (inSetter[i]) continue;
