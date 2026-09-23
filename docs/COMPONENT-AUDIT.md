@@ -30,11 +30,12 @@ meet a problem and then hunt for its resolution 500 lines later.
 | 6 | One vocabulary, many spellings | ✅ Fixed (verbs, selection, label/heading, breadcrumbs) · 🔶 Open (`data-type`, `data-empty`, detail shapes) |
 | 7 | Composition, skipped in five places | ✅ Fixed (4 close buttons, file-upload, calendar, composer) · 🔶 Open (grid-cell, nav-section) |
 | 8 | State ownership — the named recurring bug | 🔶 Open — and the count shrank on inspection |
-| 9 | `sherpa-switch` declares nothing | 🔶 Open |
+| 9 | `sherpa-switch` declares nothing | ✅ Fixed |
 | 10 | `data-size` has two contradictory contracts | 🔶 Open |
 | 11 | Three holes in `check-props` | 🔶 Open |
 | 12 | `sherpa-element.ts` — two real bugs | ✅ Fixed |
 | 13 | Icons: four files, one bad name | ✅ Fixed |
+| 14 | `kind: content` is overloaded to mean "observed" — 156 props | 🔶 Open |
 | — | What is genuinely clean | ⬜ Not a fault |
 
 ---
@@ -1032,17 +1033,39 @@ and decide per site whether the toolbar is an owner or a reporter.
 
 ---
 
-### 9. `sherpa-switch` declares nothing, so its attributes are inert — 🔶 Open
+### 9. `sherpa-switch` declares nothing, so its attributes are inert — ✅ Fixed
 
-No `static props`, no `static observed`, no `variantAttrs` — re-confirmed by
-grep 2026-09-23, still **zero**. `observedAttributes` is built from the union of
-those three (`sherpa-element.ts:229`), so it is `[]`.
+No `static props`, no `static observed`, no `variantAttrs`.
+`observedAttributes` is built from the union of those three
+(`sherpa-element.ts:229`), so it was `[]`.
 
 Setting `checked` or `disabled` **as an attribute** after first render never
-reaches the inner `<input>`. The JS property setters do work, so this is the
+reached the inner `<input>`. The JS property setters did work, so this was the
 attribute path only — but every other control in the family observes its
 natives. Its `data-type="simple"` is also real, documented and in the spec, yet
-declared in no TS.
+was declared in no TS.
+
+**Measured in a real browser before the fix**, because "observedAttributes is
+empty" predicts the bug but does not prove the user-visible effect:
+
+| after first render | inner input, before | after |
+|---|---|---|
+| `setAttribute('checked')` | `false` | **`true`** |
+| `setAttribute('disabled')` | `false` | **`true`** |
+| `removeAttribute('checked')` | — | unsets |
+
+#### The fix
+
+Copied `sherpa-select-checkbox`'s shape, which is the family's existing answer:
+`observed` lists the natives, and one `#syncState()` serves both `onRender` and
+`onChange`. `data-type` is declared too — CSS-only, so it gains no JS branch,
+which is what CLAUDE.md means by *the typed door*.
+
+The one risk was a loop: `#onChange` writes `checked` back onto the host, which
+now re-enters `onChange`. It is idempotent, and that was verified rather than
+assumed — a click still sticks, one event fires per click with detail
+`[true, false, true]` over three clicks, and there are no page errors. 18 switch
+tests pass across three engines.
 
 ---
 
@@ -1232,6 +1255,45 @@ vocabulary. Three questions to answer before starting.
 
 ---
 
+### 14. `kind: content` is overloaded to mean "observed" — 🔶 Open
+
+Found while regenerating `sherpa-switch`'s spec. Declaring its natives moved
+three props from no kind (and `data-type` from `kind: style`) to
+**`kind: content`** — which is false. None of the three writes text into the
+shadow DOM, and CLAUDE.md defines the vocabulary plainly:
+
+| `kind` | meaning |
+|---|---|
+| `content` | JS writes text into the shadow DOM |
+| `style` | CSS selects on it — declared only |
+| `visibility` | presence toggles a CSS rule — declared only |
+
+The generator says why, in its own comment
+(`scripts/generate-component-spec.mjs:641`):
+
+> *compileDef derives `observed` from props whose kind !== 'style', so an
+> unobserved `data-*` prop MUST be kind:style or the round-trip mismatches.*
+
+So `kind` is carrying two meanings at once: the documented one, and "is this
+observed at runtime" — because the round-trip has no other channel for it. A
+CSS-only attribute that happens to be observed is forced to claim it writes
+content.
+
+**Measured repo-wide: 156 props across 39 components** carry `kind: content`
+with no `to:` selector behind it. 153 of those pre-date this work; the switch
+added 3. So this is not a regression — it is a pre-existing overload that the
+switch fix made visible.
+
+The consequence is for readers, not renders: the MCP server and any agent
+reading a spec are told 156 attributes write text, and they do not. Nothing is
+broken today.
+
+Fixing it means giving the round-trip its own `observed` signal so `kind` can
+go back to meaning one thing, then regenerating 39 specs. That is its own pass,
+and it should land before anything else starts trusting `kind`.
+
+---
+
 ### What is genuinely clean — ⬜ Not a fault
 
 Worth stating, because the audit could read as a list of faults.
@@ -1263,7 +1325,7 @@ Ordered by what unblocks the most.
 | # | work | why it is next |
 |---:|---|---|
 | 1 | **State ownership** — teach `check-ownership.mjs` to see a template-declared lock, then judge the 15 toolbar writes per site | the named recurring bug; the gate under-reports by construction |
-| 2 | **`sherpa-switch` declares nothing** | one component, contained, and its attributes are silently inert today |
+| 2 | **`kind: content` is overloaded** — give the round-trip its own `observed` signal, then regenerate 39 specs | 156 props claim they write text and do not; every agent reading a spec is misled |
 | 3 | **`data-size`: 2 vs 5** | a contradiction between the base class and the most-used control |
 | 4 | **Three `check-props` holes** | a gate that passes while public API goes undeclared |
 | 5 | **Three dead-code items** | small, but each needs a read — the calendar one may be a *missing* stylesheet |
