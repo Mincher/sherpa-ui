@@ -45,7 +45,6 @@ anatomy:
           - slot: selection
             children:
               - el: input
-                class: check
                 attrs:
                   type: checkbox
       - el: span

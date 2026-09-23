@@ -9,7 +9,6 @@
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   max-block-size: 100%; /* max, not fixed — an unsized parent keeps natural size */
   min-block-size: 0;
-  --_size: 200px; /* Figma Donut Chart: 200×200 unconstrained */
   --_max-size: 320px; /* past ~320 it is a big empty circle. Will's number */
   /* No CSS mask for the hole — the TS derives arc radius and stroke width from
      arcData.innerRadius, as they also depend on donut vs pie. */

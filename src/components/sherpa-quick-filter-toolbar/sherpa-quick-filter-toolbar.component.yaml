@@ -103,7 +103,7 @@ anatomy:
                     aria-label: Favourite this view
                     aria-pressed: "false"
                 - el: sherpa-button
-                  class: act save-btn
+                  class: act
                   attrs:
                     data-size: sm
                     data-act: save

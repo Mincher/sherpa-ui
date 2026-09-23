@@ -15,14 +15,14 @@
 -->
 <template id="default">
   <div class="shell">
-    <div class="region nav" part="nav">
+    <div class="nav" part="nav">
       <slot name="nav"><sherpa-nav></sherpa-nav></slot>
     </div>
     <!-- The header must be the scroller's sticky first child — as a grid row
          above it, `position: sticky` and `scroll-state(stuck: top)` silently
          do nothing. -->
     <div class="frame" part="frame">
-      <main class="region content" part="content">
+      <main class="content" part="content">
         <header class="header" part="header">
           <slot name="header"><sherpa-app-header></sherpa-app-header></slot>
         </header>

@@ -73,13 +73,20 @@
 
 /* ── A reading measure — capped in `ch`, since a measure is characters/line ── */
 :host([data-measure]) .run {
-  max-inline-size: var(--_measure, 90ch);
+  max-inline-size: 90ch;
   margin-inline: auto;
   inline-size: 100%;
 }
 
 /* ── Wrapping rows — basis --_min-item + grow 1 is the whole mechanism ───── */
 :host([data-wrap]) .run { flex-wrap: wrap; }
+/* The floor was documented and never wired: --_min-item kept its 200px
+   default whatever the attribute said. An enum, so the sizes stay on the
+   grid — a free-form length would let any value in. */
+:host([data-min-item="sm"]) { --_min-item: 120px; }
+:host([data-min-item="md"]) { --_min-item: 200px; }
+:host([data-min-item="lg"]) { --_min-item: 280px; }
+:host([data-min-item="xl"]) { --_min-item: 360px; }
 :host([data-wrap]) ::slotted(*) {
   flex: 1 1 var(--_min-item);
   min-inline-size: 0;

@@ -23,7 +23,7 @@ anatomy:
     class: shell
     children:
       - el: div
-        class: region nav
+        class: nav
         part: nav
         children:
           - slot: nav
@@ -34,7 +34,7 @@ anatomy:
         part: frame
         children:
           - el: main
-            class: region content
+            class: content
             part: content
             children:
               - el: header

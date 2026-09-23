@@ -84,7 +84,9 @@ props:
     type: string
     kind: style
     default: 200px
-    description: "with data-wrap: the floor an item may shrink to"
+    description: >-
+      with data-wrap: the floor an item may shrink to — sm (120) | md (200, default) | lg (280) | xl
+      (360)
   - $type: prop
     name: data-scroll
     type: string
@@ -143,6 +145,18 @@ states:
   - $type: state
     name: wrap
     selector: ":host([data-wrap])"
+  - $type: state
+    name: sm
+    selector: ":host([data-min-item=\"sm\"])"
+  - $type: state
+    name: md
+    selector: ":host([data-min-item=\"md\"])"
+  - $type: state
+    name: lg
+    selector: ":host([data-min-item=\"lg\"])"
+  - $type: state
+    name: xl
+    selector: ":host([data-min-item=\"xl\"])"
   - $type: state
     name: fill
     selector: ":host([data-fill])"

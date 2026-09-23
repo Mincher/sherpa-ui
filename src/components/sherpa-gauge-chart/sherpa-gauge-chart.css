@@ -22,7 +22,6 @@
      Unitless: a `%` would resolve against whichever box it landed in. */
   --_ring: 0.3;
   --_fill: var(--_status-surface-strong, #3b4ccd);
-  --_fill-pct: 0%;
   --_angle: -90deg;
 }
 

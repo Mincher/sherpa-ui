@@ -632,6 +632,54 @@ Also recorded the rule that explains the shape of these sheets: **a `:host`
 cannot wear a class from its own sheet**, which is why a repeating host-level
 block has to become an inherited custom property rather than a class.
 
+### 6 — Dead code removed
+
+Six class tokens and three custom properties, each verified unreferenced in CSS,
+TS, tests and examples before removal. **Every element stayed** — only the
+unused token went, because a class with no rule reads as a styling hook that
+already works.
+
+| removed | from |
+|---|---|
+| `.label` | chip, tag |
+| `.check` | grid-cell |
+| `.save-btn` | quick-filter-toolbar |
+| `.pair-back`, `.pair-fwd` | pagination |
+| `.menu-all` | menu (its sibling `.qf-all` is live) |
+| `.region` | app-shell |
+| `--_size` | donut-chart |
+| `--_fill-pct` | gauge-chart (left over from a stroke-dash implementation) |
+| `--_focus` | select-checkbox |
+
+**One removal was wrong and got reverted.** `.label` in `sherpa-tabs` looked
+identical to the chip and tag cases — no rule in its CSS, no reference in its
+TS. But `reforged-tabs.spec.ts:44` queries `.tab[data-current] .label`, and two
+tests failed immediately.
+
+My check had scanned CSS and TS and not the test files. A class can be load-
+bearing for a test without being load-bearing for a render. I re-ran the check
+across `test/` and `examples/` for all seven; only tabs was affected.
+
+### 7 — `data-min-item` now does something
+
+`sherpa-stack` documented it as "the floor an item may shrink to (default
+200px)". No rule mapped the attribute to `--_min-item`, so the 200px default
+applied whatever you set — and `examples/templates/settings.html:81` carries a
+comment claiming the row "reflows the cards at data-min-item", which it never
+did.
+
+Wired as an enum, matching `data-gap` beside it, so the sizes stay on the grid:
+
+```css
+:host([data-min-item="sm"]) { --_min-item: 120px; }
+:host([data-min-item="md"]) { --_min-item: 200px; }   /* the old default */
+:host([data-min-item="lg"]) { --_min-item: 280px; }
+:host([data-min-item="xl"]) { --_min-item: 360px; }
+```
+
+Also dropped `var(--_measure, 90ch)` to a plain `90ch`: the property was never
+declared, so the fallback was the only value it ever had.
+
 ---
 
 ## Still to do

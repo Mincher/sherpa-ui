@@ -16,7 +16,6 @@
   --_surface: var(--sherpa-theme-surface-default-base, #ffffff);
   /* Checked indicator fill; a status context re-tints it. */
   --_fill: var(--_status-surface, var(--sherpa-style-indicator-accent, #3b4ccd));
-  --_focus: var(--sherpa-style-border-base, #b3b3c3);
 }
 
 /* ── The ADVANCED group (Figma `Checkbox - Advanced`) ────────────────────

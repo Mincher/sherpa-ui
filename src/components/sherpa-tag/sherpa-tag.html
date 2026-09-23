@@ -17,14 +17,14 @@
 <template id="default">
   <span class="pill sherpa-border-edges" part="pill">
     <span class="icon" part="icon" aria-hidden="true"><slot name="icon"><i class="glyph"></i></slot></span>
-    <span class="label"><slot></slot></span>
+    <span><slot></slot></span>
   </span>
 </template>
 
 <template id="dismissible">
   <span class="pill sherpa-border-edges" part="pill">
     <span class="icon" part="icon" aria-hidden="true"><slot name="icon"><i class="glyph"></i></slot></span>
-    <span class="label"><slot></slot></span>
+    <span><slot></slot></span>
     <button class="close" part="close" type="button" aria-label="Remove">
       <span aria-hidden="true">&#215;</span>
     </button>

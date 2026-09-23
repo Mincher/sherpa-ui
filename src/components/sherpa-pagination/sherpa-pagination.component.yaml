@@ -43,7 +43,7 @@ anatomy:
             aria-label: Pagination
           children:
             - el: span
-              class: pair pair-back sherpa-group
+              class: pair sherpa-group
               children:
                 - el: sherpa-button
                   class: btn first
@@ -78,7 +78,7 @@ anatomy:
               attrs:
                 aria-hidden: "true"
             - el: span
-              class: pair pair-fwd sherpa-group
+              class: pair sherpa-group
               children:
                 - el: sherpa-button
                   class: btn next
