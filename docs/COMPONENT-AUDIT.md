@@ -1601,9 +1601,27 @@ All three views render with zero page errors, and the records grid measures
 version — the same eight sizes to the pixel.
 
 Named `sherpa-layout-grid`, not `sherpa-grid`, so it cannot read as a data grid.
-A `sherpa-layout-canvas` is planned alongside it. `figmaName` is provisional:
-whether Figma has a Layout Grid **component**, or whether this is chrome like
-App Shell, is recorded in the spec as needing confirmation.
+A `sherpa-layout-canvas` is planned alongside it, on the same footing.
+
+**Will's ruling on the Figma question: there is no Layout Grid component, and
+that is the answer, not a gap.** It is a layout CONCEPT expressed as a util
+component. So the spec carries **no `figmaName`** — which is exactly what tells
+`resync-figma.mjs` there is nothing to match — while the `layout` VARIABLE
+collection stays the source for the tracks. It is the first of the 59 specs to
+omit that field, and both consumers (`resync-figma`, `figma-harvest-colours`)
+skip a spec without one.
+
+That also names the exception the 2026-08-14 rule needed. "Code components must
+map to a Figma component" removed the original `sherpa-layout-grid`; a **util
+component** is the case that rule did not cover.
+
+#### And the script moved with it
+
+`fit-grid.ts` now lives at
+`src/components/sherpa-layout-grid/fit-grid.ts`, beside its only caller, and the
+two spec files became one. Wrapping a script in a component and leaving the
+script in `src/core/ui/` is half a refactor — the replaced thing has to go in the
+same change, or there are two places the truth lives.
 
 #### `data-has-content` → `data-has-content-slot`
 
