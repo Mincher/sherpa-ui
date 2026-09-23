@@ -160,14 +160,6 @@
  * a plain descendant selector from here reaches them at all.
  */
 
-/* `border-block-start`, not the <hr>'s UA border, which is a 3D groove. */
-.chip .qf-divider {
-  margin: var(--sherpa-display-mode-space-2xs, 4px) 0;
-  border: 0;
-  border-block-start: var(--sherpa-border-top, 0.5px) solid
-    var(--sherpa-style-border-base, #b3b3c3);
-}
-
 /* ── The condition row, and the two bodies it chooses between ────────
  * The menu carries `data-takes` = list | text, written from the <select>.
  * BOTH bodies stay in the DOM, so flipping the condition keeps the reader's

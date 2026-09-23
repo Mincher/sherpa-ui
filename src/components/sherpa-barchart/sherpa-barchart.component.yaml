@@ -84,12 +84,6 @@ props:
     kind: content
     description: y-axis caption (shown when set)
   - $type: prop
-    name: data-label
-    type: string
-    observed: false
-    kind: style
-    description: chart title
-  - $type: prop
     name: data-max
     type: string
     observed: true

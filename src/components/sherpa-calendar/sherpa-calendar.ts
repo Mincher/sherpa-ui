@@ -240,8 +240,8 @@ export class SherpaCalendar extends SherpaElement {
       cell.setAttribute('data-label', String(d));
       cell.dataset['value'] = iso;
       cell.dataset['iso'] = iso;
-      // TRAP T-cell-state-is-the-only-paint — the older flags stay for the
-      // month and year grids' own CSS.
+      // `data-state` paints; the flags beside it are a TEST query surface and
+      // are read by no CSS. TRAP T-cell-state-is-the-only-paint
       if (iso === todayIso) {
         cell.setAttribute('data-today', '');
         cell.setAttribute('data-state', 'today');

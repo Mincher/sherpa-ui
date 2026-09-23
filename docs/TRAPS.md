@@ -3358,8 +3358,25 @@ axis, and **the only thing the cell paints from**. `data-today` and
 current month and the current year looked like every other one in the month and
 year grids.
 
-Both sets are written: the flags stay alongside `data-state` because the
-calendar's own CSS still reads them for those two grids.
+Both sets are written, and the reason is **not** the one this trap used to
+give. It said the calendar's own CSS still reads the flags for those two grids.
+Measured 2026-09-23: it reads **none** of them. `data-state` is the only paint
+source anywhere, exactly as the heading says.
+
+The flags stay because they are a **query surface**, which is a different job.
+Eight assertions in `reforged-calendar.spec.ts` use them to count what the grid
+drew, and each one is a single selector where `data-state` needs the values
+OR'd:
+
+```
+[data-in-range]                                  one selector
+[data-state="range-mid"], [data-state="range-start"], …   three
+```
+
+So: `data-state` PAINTS, the flags are read by TESTS, and no CSS reads the
+flags. A flag that renders nothing is not automatically dead — check `test/`
+and `examples/` before removing one. Removing `.label` from `sherpa-tabs`
+earlier in this same audit failed for exactly that reason.
 
 Order is **TODAY first, SELECTED second** in all three grids, so a cell that is
 both reads as selected.

@@ -139,31 +139,6 @@
   <template class="qf-menu-tpl">
     <sherpa-menu slot="menu"></sherpa-menu>
   </template>
-  <!-- The input's margin is INLINE by necessity: the row is cloned into the
-       CHIP's light DOM and slotted into the menu, so neither shadow tree's
-       stylesheet reaches it and the browser's asymmetric control margin
-       (3px 3px 0 5px) would push the box below the label text. -->
-  <template class="qf-row-tpl">
-    <label><input type="checkbox" style="margin: 0; flex: 0 0 auto;" /><span class="qf-row-label"></span></label>
-  </template>
-
-  <!-- SELECT ALL — first row of a MULTI-select menu. Same label+checkbox shape
-       as a value row; INDETERMINATE when only some values are on. Clicking it
-       turns everything on, or off when all are already on. Single-select menus
-       never get one. -->
-  <template class="qf-all-tpl">
-    <label class="qf-all">
-      <input type="checkbox" style="margin: 0; flex: 0 0 auto;" />
-      <span class="qf-row-label"></span>
-    </label>
-  </template>
-
-  <!-- The rule between reachable and unreachable values. A <hr> because it IS a
-       thematic break — a screen reader announces it without ARIA. -->
-  <template class="qf-divider-tpl">
-    <hr class="qf-divider" />
-  </template>
-
   <!-- One row of the OVERFLOW chip's menu: a folded filter with a count badge.
        It is a DOOR — clicking it swaps the menu's list for that filter's rows.
        `data-expandable` is the wrong thing here: its toggle sits on the LEADING
