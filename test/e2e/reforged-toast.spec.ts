@@ -88,7 +88,12 @@ test('the close button fires toast-dismiss and removes the toast', async ({ page
 
     let dismissed = 0;
     el.addEventListener('toast-dismiss', () => dismissed++);
-    el.shadowRoot!.querySelector<HTMLElement>('.close')!.click();
+    // A composed sherpa-button: its own render to await, and the click target
+    // is the inner trigger, not the host.
+    const close = el.shadowRoot!.querySelector('.close') as HTMLElement & {
+      shadowRoot: ShadowRoot; rendered: Promise<void> };
+    await close.rendered;
+    (close.shadowRoot.querySelector('button') as HTMLElement).click();
     // The event fires straight away; the node leaves after the slide-out animation.
     const leavingImmediately = el.hasAttribute('data-leaving');
     await new Promise((res) => setTimeout(res, 300));

@@ -1097,6 +1097,76 @@ distinction.
 
 ---
 
+### 16 — Composition: the close button, four times over
+
+The audit named four composition violations. Measured first, because "62 raw
+`<button>` across 26 components" overstates it — a chart bar, a calendar cell, a
+nav row and a tab are all *meant* to be raw. Filtering to buttons that duplicate
+what `sherpa-button` styles leaves four real cases.
+
+**Started with the close button: 4 components, ~153 CSS lines, one shape.**
+
+`callout`, `toast`, `tag` and `chip` each carried byte-identical markup —
+
+```html
+<button class="close" part="close" type="button" aria-label="Dismiss">
+  <span aria-hidden="true">&#215;</span>
+</button>
+```
+
+— and ~38 lines of CSS each re-deriving box, radius, hover, active and focus
+ring. Meanwhile `sherpa-container-header` composes a real `sherpa-button` for
+the identical job, and its `.close` rule is **three lines**, because the button
+owns all of that.
+
+| | before | after |
+|---|---:|---:|
+| `.close` CSS, per component | 37–39 lines | **4** |
+| total | ~153 | 16 |
+
+Net **−163 lines** across 16 files.
+
+Three things improved beyond the line count:
+
+- The `&#215;` glyph is gone. All four now draw `fa-xmark` through the icon
+  system, so they follow the Figma set and re-theme like everything else.
+- They listen for `button-click`, not `click` — a **disabled** `sherpa-button`
+  suppresses its own event, which the hand-rolled version could not do.
+- One size. All four were hand-set (20px on callout, 10px on the others,
+  matching no token); they now use `data-size="xs"` like the reference, so all
+  five close buttons in the library agree.
+
+#### What went wrong, and what it taught
+
+My first verification said **0×0, not firing** — apparently a total break. It
+was the probe: a composed `sherpa-button` has its own render to await, and
+`.click()` on the host does nothing because the real target is its inner
+trigger. The button was 24×24 and upgraded the whole time.
+
+The same mistake was in four existing tests, which is why they failed. The fix
+was already written down — `reforged-container-header.spec.ts:145` carries the
+comment *"`el.rendered` only covers the HEADER; the button is a child component
+with its own render to wait for."*
+
+**That is the real cost of composing**, and it is worth stating plainly: a
+composed child moves the click target and adds a render to await. It is not
+free, and every test that reaches into a shadow root has to know.
+
+`check:traps` caught the rest — four `Site:` entries for
+`T-a-css-function-needs-its-longhand-first` pointed at CSS blocks that no
+longer exist, because the `--tint` pair now lives once, inside `sherpa-button`.
+
+#### Still to do
+
+| case | cost |
+|---|---|
+| `sherpa-file-upload` | 4 buttons, 65 of its 275 CSS lines |
+| `sherpa-calendar` | footer Today/Cancel/Apply, 63 lines — and it already composes `sherpa-button` for its stepper three lines earlier |
+| `sherpa-prompt-composer` | 3 buttons with inline `<svg>`, the only non-chart component doing that |
+| `sherpa-grid-cell` | an orphan — every part re-implemented inside `sherpa-data-grid`, and the two disagree on what `sort-change` and `group-toggle` mean |
+
+---
+
 ### The suite has load-dependent flakiness, and it will mislead you
 
 Full suite after this work: **1923 passed, 13 failed, 2 flaky** — the same
@@ -1162,7 +1232,7 @@ These need a decision before code, because each one picks a winner:
 
 The breadcrumbs half is done — see "Breadcrumbs: one name" above.
 
-### 3 — Composition, four places
+### 3 — Composition — close button DONE, three cases left
 
 - `sherpa-file-upload` hand-draws four buttons (~95 of its 279 CSS lines)
 - `sherpa-calendar` re-implements the menu's card and footer (~76 lines)

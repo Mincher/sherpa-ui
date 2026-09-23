@@ -8,6 +8,7 @@
  *
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import '../sherpa-button/sherpa-button.js';
 
 export class SherpaCallout extends SherpaElement {
   static override css = new URL('./sherpa-callout.css', import.meta.url);
@@ -19,7 +20,7 @@ export class SherpaCallout extends SherpaElement {
 
   override onRender(): void {
     if (!this.hasAttribute('role')) this.setAttribute('role', 'status');
-    this.$('.close')?.addEventListener('click', this.#onDismiss);
+    this.$('.close')?.addEventListener('button-click', this.#onDismiss);
   }
 
   /** Dismiss the callout: emit the event and remove the element. */

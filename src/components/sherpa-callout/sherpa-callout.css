@@ -91,40 +91,7 @@
 /* ── Dismiss button ──────────────────────────────────────────────────── */
 .close {
   flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  inline-size: var(--sherpa-theme-size-icon-md, 20px);
-  block-size: var(--sherpa-theme-size-icon-md, 20px);
-  padding: 0;
   margin-inline-start: var(--sherpa-display-mode-space-2xs, 4px);
-  border: none;
-  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
-  background: transparent;
-  color: var(--_content);
-  font-size: 18px;
-  line-height: 1;
-  cursor: pointer;
-  transition:
-    background-color 100ms ease,
-    color 100ms ease;
-
-  @supports (color: color-mix(in oklab, red, blue)) {
-    &:hover { background: color-mix(in oklab, currentColor 16%, transparent); }
-    &:active { background: color-mix(in oklab, currentColor 24%, transparent); }
-  }
-
-  /* The same two steps, NAMED. Second, so it wins where `@function` is real
-     and leaves the longhand standing where it is not.
-     TRAP T-a-css-function-needs-its-longhand-first */
-  @supports (background: --tint(16%)) {
-    &:hover { background: --tint(16%); }
-    &:active { background: --tint(24%); }
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: var(--sherpa-focus-ring);
-  }
 }
+
 :host(:not([data-dismissible])) .close { display: none; }

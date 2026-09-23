@@ -151,7 +151,12 @@ test('clicking close fires callout-dismiss and removes the element', async ({ pa
 
     let fired = 0;
     el.addEventListener('callout-dismiss', () => fired++);
-    el.shadowRoot!.querySelector<HTMLElement>('.close')!.click();
+    // A composed sherpa-button: its own render to await, and the click target
+    // is the inner trigger, not the host.
+    const close = el.shadowRoot!.querySelector('.close') as HTMLElement & {
+      shadowRoot: ShadowRoot; rendered: Promise<void> };
+    await close.rendered;
+    (close.shadowRoot.querySelector('button') as HTMLElement).click();
 
     return { fired, connected: el.isConnected };
   });

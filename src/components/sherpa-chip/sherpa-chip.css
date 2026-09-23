@@ -53,44 +53,10 @@
 
 /* ── Removable close button ────────────────────────────────────────── */
 .close {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  inline-size: var(--sherpa-theme-size-icon-2xs, 10px);
-  block-size: var(--sherpa-theme-size-icon-2xs, 10px);
-  margin-inline-start: var(--sherpa-theme-gap-sm, 4px);
-  padding: 0;
-  border: none;
-  border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
-  background: transparent;
-  color: inherit;
-  font-size: var(--sherpa-font-size-body-base, 14px);
-  line-height: 1;
-  cursor: pointer;
-  transition:
-    background-color 100ms ease,
-    color 100ms ease;
-
-  @supports (color: color-mix(in oklab, red, blue)) {
-    &:hover { background: color-mix(in oklab, currentColor 16%, transparent); }
-    &:active { background: color-mix(in oklab, currentColor 24%, transparent); }
-  }
-
-  /* The same two steps, NAMED. Second, so it wins where `@function` is real
-     and leaves the longhand standing where it is not.
-     TRAP T-a-css-function-needs-its-longhand-first */
-  @supports (background: --tint(16%)) {
-    &:hover { background: --tint(16%); }
-    &:active { background: --tint(24%); }
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: var(--sherpa-focus-ring);
-  }
+  flex-shrink: 0;
+  margin-inline-start: var(--sherpa-display-mode-space-2xs, 4px);
 }
 
-/* ── Disabled — inactive tokens, never opacity ─────────────────────── */
 :host([disabled]) .chip {
   cursor: not-allowed;
   /* Figma inactive (Style: inactive) keeps the label dark ink; only the

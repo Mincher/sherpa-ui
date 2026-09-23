@@ -55,8 +55,12 @@ test('dismissible shows a close button that fires chip-remove', async ({ page })
     await el.rendered;
     let fired = false;
     el.addEventListener('chip-remove', () => (fired = true));
-    const close = el.shadowRoot!.querySelector<HTMLButtonElement>('.close')!;
-    close.click();
+    // A composed sherpa-button: its own render to await, and the click target
+    // is the inner trigger, not the host.
+    const close = el.shadowRoot!.querySelector('.close') as HTMLElement & {
+      shadowRoot: ShadowRoot; rendered: Promise<void> };
+    await close.rendered;
+    (close.shadowRoot.querySelector('button') as HTMLElement).click();
     return { hasClose: !!close, fired };
   });
   expect(r.hasClose).toBe(true);

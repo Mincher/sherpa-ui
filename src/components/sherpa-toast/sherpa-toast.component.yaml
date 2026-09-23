@@ -78,16 +78,15 @@ anatomy:
             part: action
             attrs:
               type: button
-      - el: button
+      - el: sherpa-button
         class: close
         part: close
         attrs:
-          type: button
+          data-type: icon
+          data-size: xs
+          data-look: transparent
+          data-icon-start: fa-solid fa-xmark
           aria-label: Dismiss
-        children:
-          - el: span
-            attrs:
-              aria-hidden: "true"
 props:
   - $type: prop
     name: data-action
@@ -139,9 +138,6 @@ states:
   - $type: state
     name: action
     selector: ":host([data-action])"
-  - $type: state
-    name: focus-visible
-    selector: .action:focus-visible
 capabilities:
   - $type: capability
     api: js-methods
@@ -161,7 +157,6 @@ events:
 tokens:
   toast.gap: "{sherpa.display-mode-space-sm}"
   toast.padding: "{sherpa.theme-padding-lg}"
-  toast.box-shadow: "{sherpa.display-mode-size-2xs}"
   icon.--_icon-size: "{sherpa.theme-content-size-base}"
   icon.margin-block-start: "{sherpa.display-mode-space-3xs}"
   content.gap: "{sherpa.theme-gap-sm}"
@@ -169,12 +164,7 @@ tokens:
   heading.font-size: "{sherpa.font-size-body-base}"
   heading.font-weight: "{sherpa.font-weight-semibold}"
   heading.line-height: "{sherpa.theme-content-line-height-base}"
-  close.inline-size: "{sherpa.theme-size-icon-2xs}"
-  close.block-size: "{sherpa.theme-size-icon-2xs}"
-  close.margin-block-start: "{sherpa.display-mode-space-2xs}"
-  close.border-radius: "{sherpa.display-mode-border-rounding-full}"
-  close.color: "{sherpa.theme-content-body-1}"
-  close.font-size: "{sherpa.font-size-body-base}"
+  close.margin-inline-start: "{sherpa.display-mode-space-2xs}"
 $extensions:
   sherpa:
     figmaName: Toast

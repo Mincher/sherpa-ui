@@ -7,6 +7,7 @@
  * mirroring the data-icon glyph value.
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import '../sherpa-button/sherpa-button.js';
 
 export class SherpaChip extends SherpaElement {
   static override css = new URL('./sherpa-chip.css', import.meta.url);
@@ -28,7 +29,7 @@ export class SherpaChip extends SherpaElement {
   }
 
   override onRender(): void {
-    this.$('.close')?.addEventListener('click', this.#onRemove);
+    this.$('.close')?.addEventListener('button-click', this.#onRemove);
   }
 
   #onRemove = (event: Event): void => {

@@ -36,16 +36,15 @@ anatomy:
                 class: glyph
       - el: span
         slot: ""
-      - el: button
+      - el: sherpa-button
         class: close
         part: close
         attrs:
-          type: button
+          data-type: icon
+          data-size: xs
+          data-look: transparent
+          data-icon-start: fa-solid fa-xmark
           aria-label: Remove
-        children:
-          - el: span
-            attrs:
-              aria-hidden: "true"
         showWhen: dismissible
 props:
   - $type: prop
@@ -82,9 +81,6 @@ states:
   - $type: state
     name: not-icon
     selector: ":host(:not([data-icon]))"
-  - $type: state
-    name: focus-visible
-    selector: .close:focus-visible
 capabilities:
   - $type: capability
     api: js-property-mirror
@@ -107,11 +103,7 @@ tokens:
   pill.line-height: "{sherpa.theme-content-line-height-xs}"
   icon.inline-size: "{sherpa.theme-size-icon-2xs}"
   icon.block-size: "{sherpa.theme-size-icon-2xs}"
-  close.inline-size: "{sherpa.theme-size-icon-2xs}"
-  close.block-size: "{sherpa.theme-size-icon-2xs}"
-  close.margin-inline-start: "{sherpa.theme-gap-sm}"
-  close.border-radius: "{sherpa.display-mode-border-rounding-full}"
-  close.font-size: "{sherpa.font-size-body-base}"
+  close.margin-inline-start: "{sherpa.display-mode-space-2xs}"
 $extensions:
   sherpa:
     figmaName: Tag

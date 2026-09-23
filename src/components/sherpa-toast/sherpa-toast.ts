@@ -5,6 +5,7 @@
  * corner and both animations.
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import '../sherpa-button/sherpa-button.js';
 
 /** Options for the static factory helpers. */
 export interface ToastOptions {
@@ -42,7 +43,7 @@ export class SherpaToast extends SherpaElement {
   #timer: ReturnType<typeof setTimeout> | null = null;
 
   override onRender(): void {
-    this.$('.close')?.addEventListener('click', () => this.dismiss());
+    this.$('.close')?.addEventListener('button-click', () => this.dismiss());
     this.$('.action')?.addEventListener('click', () => this.emit('toast-action', {}));
   }
 

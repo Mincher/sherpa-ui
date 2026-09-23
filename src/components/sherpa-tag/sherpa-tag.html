@@ -25,8 +25,8 @@
   <span class="pill sherpa-border-edges" part="pill">
     <span class="icon" part="icon" aria-hidden="true"><slot name="icon"><i class="glyph"></i></slot></span>
     <span><slot></slot></span>
-    <button class="close" part="close" type="button" aria-label="Remove">
-      <span aria-hidden="true">&#215;</span>
-    </button>
+    <sherpa-button class="close" part="close" data-type="icon" data-size="xs"
+                   data-look="transparent" data-icon-start="fa-solid fa-xmark"
+                   aria-label="Remove"></sherpa-button>
   </span>
 </template>

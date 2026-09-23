@@ -7979,15 +7979,11 @@ property cannot express.
 - Site: `src/components/sherpa-button/sherpa-button.css`
 - Site: `playwright.config.ts`
 - Site: `test/e2e/reforged-css-functions.spec.ts`
-- Site: `src/components/sherpa-toast/sherpa-toast.css`
-- Site: `src/components/sherpa-tag/sherpa-tag.css`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
 - Site: `src/components/sherpa-nav-item/sherpa-nav-item.css`
 - Site: `src/components/sherpa-nav/sherpa-nav.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-file-upload/sherpa-file-upload.css`
-- Site: `src/components/sherpa-chip/sherpa-chip.css`
-- Site: `src/components/sherpa-callout/sherpa-callout.css`
 ### T-one-value-one-declaration
 
 The focus indicator was written by hand at **48 sites across 29 files** —

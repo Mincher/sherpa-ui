@@ -64,7 +64,10 @@ test('dismissible template adds a close button that fires tag-remove', async ({ 
     let removed = 0;
     el.addEventListener('tag-remove', () => removed++);
     const close = el.shadowRoot!.querySelector<HTMLElement>('.close');
-    close?.click();
+    // The close button is a composed sherpa-button: it has its own render, and
+    // the click target is its inner trigger, not the host.
+    await (close as HTMLElement & { rendered?: Promise<void> })?.rendered;
+    (close?.shadowRoot?.querySelector('button') as HTMLElement | null)?.click();
 
     return { hasClose: !!close, removed };
   });

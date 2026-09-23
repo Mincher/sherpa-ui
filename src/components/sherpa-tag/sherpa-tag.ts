@@ -1,5 +1,6 @@
 /** sherpa-tag — a small pill with a label. CSS owns the look; JS only fires tag-remove. */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import '../sherpa-button/sherpa-button.js';
 
 export class SherpaTag extends SherpaElement {
   static override css = new URL('./sherpa-tag.css', import.meta.url);
@@ -18,7 +19,7 @@ export class SherpaTag extends SherpaElement {
   }
 
   override onRender(): void {
-    this.$('.close')?.addEventListener('click', this.#onRemove);
+    this.$('.close')?.addEventListener('button-click', this.#onRemove);
   }
 
   #onRemove = (event: Event): void => {
