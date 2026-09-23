@@ -1017,14 +1017,49 @@ default scale   0  2  4  8  12  16  20  24  32  40  48  56  64
 | compact | the PREVIOUS step | **10 of 13** |
 | comfortable | the NEXT step | **9 of 13** |
 
-The exceptions are where it breaks: `xl` comfortable is `28`, `2xl` compact is
-`28` and comfortable `36` — values that are on no step at all. That is where the
-off-grid spacing measured earlier comes from, and a step-shift rule would
-remove them by construction.
+The exceptions are smaller than they look, and one is fine. Re-measured against
+BOTH scales:
+
+| value | on the space scale | on the size scale | on the 4px sub-grid |
+|---|---|---|---|
+| `28px` | no | **yes** (`size-xl`) | yes |
+| `36px` | no | no | yes |
+
+So `28` is a real step that the space scale simply does not carry — a density
+mode borrowing it is reasonable. Only `36` sits on neither scale.
+
+#### And it must keep the grid — Will, 2026-09-23
+
+This is the argument that settles step-vs-multiplier, and it is measurable.
+
+**A multiplier leaves the grid immediately.** Applied to the space scale:
+
+| multiplier | values off the 4px sub-grid |
+|---|---|
+| ×0.75 | 8 of 12 |
+| ×0.8 | **10 of 12** — including `9.600000000000001` |
+| ×0.875 | 10 of 12 |
+| ×1.25 | 8 of 12 |
+
+**A step shift cannot leave it**, because every result IS a scale value. And
+both scales are already clean — measured, **zero off-grid steps**:
+
+```
+space   0  2  4  8  12  16  20  24  32  40  48  56  64
+size    0  2  4  8  12  16  20  24  28  32  40  48  56  64
+        └ 2px edge cases ┘ └── 4px sub-grid ──┘ └─ 8px grid ─┘
+```
+
+The gaps widen 2 → 4 → 8 as the scale climbs, which is what keeps a small step
+on the sub-grid and a large one on the 8px grid.
+
+So: **steps, not multipliers**, for both the breakpoint and the mode. `round()`
+is not needed either — `T-round-is-for-dynamic-sizes-only` says it is for
+dynamic content, and a step offset is not dynamic.
 
 So "mode scaling" is better expressed as `--sherpa-scale-step: -1 | 0 | +1`
 against one scale, not a multiplier against a value. A multiplier on `12px`
-gives `10.8`; a step gives `8`.
+gives `10.8`; a step gives `8`, which is on the grid.
 
 #### Breakpoint scaling does not exist yet
 
@@ -1038,8 +1073,9 @@ already does.
 
 #### Order of work
 
-1. **Settle the step rule** and fix the four off-step values in Figma, or accept
-   them as deliberate. A rule with exceptions is not a rule.
+1. **Settle the step rule.** `28px` is already a size step, so the space scale
+   may simply be missing it; `36px` is on no scale and is the one real
+   exception. A rule with exceptions is not a rule.
 2. **Emit the scale ONCE** plus a step offset, rather than three full copies of
    every space and size token. `tokens.css` currently carries the whole scale
    three times.
