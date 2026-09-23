@@ -7246,6 +7246,89 @@ way up, since −5 is a fifth of the 25 span), the negative bar from 36 down to
 - Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
 - Site: `test/e2e/reforged-barchart.spec.ts`
 
+### T-a-span-shares-its-row
+
+`data-span` is a count of the CURRENT breakpoint's columns, and the counts
+changed in Figma on 2026-09-23: mobile 4 -> 3, tablet 8 -> 6.
+
+A span that no longer fits beside another of its kind used to sit alone with
+the rest of the row empty. Measured on Records at tablet: each span-4 chart
+took 547 of 828px, three rows running — a third of the width wasted each time.
+
+A span now SHARES its row. `across` is how many fit side by side, at least one;
+the span takes `columns / across`, floored:
+
+| span | 3 cols | 6 cols | 12 cols |
+|---|---|---|---|
+| 2 | 3 | 2 | 2 |
+| 3 | 3 | 3 | 3 |
+| 4 | 3 | **6** | 4 |
+| 8 | 3 | 6 | **12** |
+
+So a span-4 chart is 4 of 12 on desktop and the whole row on tablet, and every
+row on Records is now 100% full at every breakpoint.
+
+`round(down, …)` stands in for `mod()`, which Chromium does not have —
+`sherpa-grouping.css` does the same. `--_across` and `--_span` are REGISTERED
+in tokens.css, because an unregistered custom property keeps its literal text
+and `round()` never computes. TRAP T-at-property-needs-the-document
+
+- Site: `scripts/project-tokens.mjs`
+- Site: `test/e2e/reforged-fit-grid.spec.ts`
+
+### T-a-container-width-is-named-not-counted
+
+`data-span` is a COUNT, so a view that uses it has to know the column count of
+every breakpoint. `data-width` is a NAME, and the grid works out the count:
+
+| class | 12 cols | 6 cols | 3 cols |
+|---|---|---|---|
+| full | 12 | 6 | 3 |
+| large | **6** | 6 | 3 |
+| medium | **4** | **3** | 3 |
+| small | **3** | 3 | 3 |
+
+Tablet reads as two columns and mobile as one, whatever the real counts are.
+
+Both numbers are COMPUTED from the column count, so a change in Figma needs no
+CSS edit:
+
+```
+across = clamp(1, floor(cols / --_w-min), --_w-parts)
+span   = floor(cols / across)
+```
+
+`--_w-parts` is how many sit side by side at the widest; `--_w-min` is the
+narrowest track that width may shrink to. A class stops dividing once a part
+would fall below its minimum — which is what collapses `medium` and `small` to
+half at tablet, and all three to full at mobile. `full` sets `--_w-min: 999` so
+it never divides at all.
+
+Do not put `data-span` and `data-width` on the same item: both write
+`--_across` and the later rule wins.
+
+Measured in Chromium, WebKit and Firefox — the table above is what all three
+lay out.
+
+- Site: `scripts/project-tokens.mjs`
+- Site: `test/e2e/reforged-fit-grid.spec.ts`
+
+### T-fit-is-a-desktop-mode
+
+`data-rows="fit"` applies from 1280 up and nowhere else.
+
+At tablet and mobile a view is READ BY SCROLLING: pinning it to the fold would
+squeeze every card on the way down, and the one that takes the remainder would
+sit at its floor with everything above it crushed. Below the breakpoint the
+rule simply does not apply, so the grid behaves as the default does.
+
+The JS still measures and writes `--_fit-rows` at every width. That is
+harmless — nothing reads it below 1280 — and it means a resize past the
+breakpoint needs no second code path.
+
+- Site: `scripts/project-tokens.mjs`
+- Site: `test/e2e/reforged-fit-grid.spec.ts`
+
 ### T-a-content-grid-has-two-row-modes
 
 `.sherpa-grid` is a layout MIXIN — it works in any sized box, with or without

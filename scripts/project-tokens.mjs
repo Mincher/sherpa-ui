@@ -377,6 +377,8 @@ function scopeCheck(leaf) {
    TRAP T-at-property-needs-the-document. */
 const propertyRegistrations = `/* Registered HERE because a shadow root cannot.
    TRAP T-at-property-needs-the-document. */
+@property --_across { syntax: "<number>"; inherits: false; initial-value: 1; }
+@property --_span { syntax: "<number>"; inherits: false; initial-value: 1; }
 @property --sherpa-group-index { syntax: "<number>"; inherits: false; initial-value: 0; }
 @property --sherpa-group-col { syntax: "<number>"; inherits: false; initial-value: 0; }
 @property --sherpa-group-row { syntax: "<number>"; inherits: false; initial-value: 0; }
@@ -1156,7 +1158,7 @@ const gridUtilityBlock = `  /* Layout grid — the track system views place thei
      \`4px\` the repeat() was invalid and the whole grid silently did nothing. */
   .sherpa-grid {
     display: grid;
-    grid-template-columns: repeat(var(--sherpa-layout-grid-columns, 4), minmax(0, 1fr));
+    grid-template-columns: repeat(var(--sherpa-layout-grid-columns, 3), minmax(0, 1fr));
     column-gap: var(--sherpa-layout-grid-gap-horizontal, 16px);
     row-gap: var(--sherpa-layout-grid-gap-vertical, 16px);
     /* FILLS ITS PARENT. No max-inline-size.
@@ -1184,10 +1186,20 @@ const gridUtilityBlock = `  /* Layout grid — the track system views place thei
     padding: var(--sherpa-layout-grid-padding, 16px);
     box-sizing: border-box;
   }
-  /* Span helpers — a child claims N of the current breakpoint's columns, clamped
-     so a span wider than the grid wraps rather than overflowing it. */
+  /* Span helpers — a child claims N of the current breakpoint's columns.
+
+     A SPAN SHARES ITS ROW. At a narrower breakpoint a span that no longer fits
+     beside another of its kind grows to take the space rather than stranding a
+     gap: on 6 columns a span-4 chart used 547 of 828px, three rows running.
+
+     across is how many fit side by side (at least one); fit shares the row
+     between them. So span-4 is 4 of 12, 6 of 6, and 3 of 3 — and a small span
+     is untouched. round(down, …) stands in for mod(), which Chromium does
+     not have; sherpa-grouping.css does the same.
+     TRAP T-a-span-shares-its-row */
   .sherpa-grid > [data-span] {
-    grid-column: span min(var(--_span), var(--sherpa-layout-grid-columns, 4));
+    --_across: max(1, round(down, calc(var(--sherpa-layout-grid-columns, 3) / var(--_span, 1)), 1));
+    grid-column: span round(down, calc(var(--sherpa-layout-grid-columns, 3) / var(--_across)), 1);
   }
   .sherpa-grid > [data-span='1']  { --_span: 1; }
   .sherpa-grid > [data-span='2']  { --_span: 2; }
@@ -1197,6 +1209,38 @@ const gridUtilityBlock = `  /* Layout grid — the track system views place thei
   .sherpa-grid > [data-span='8']  { --_span: 8; }
   .sherpa-grid > [data-span='12'] { --_span: 12; }
   .sherpa-grid > [data-span='full'] { grid-column: 1 / -1; }
+  /* ── Container widths — full | large | medium | small ────────────────────
+     A NAMED width, not a column count, so a view says what a card IS and the
+     grid decides what that means at each breakpoint:
+
+       class    12 cols   6 cols   3 cols
+       full     12        6        3
+       large     6        6        3
+       medium    4        3        3
+       small     3        3        3
+
+     Tablet reads as two columns and mobile as one, whatever the real counts
+     are. COMPUTED FROM THE COLUMN COUNT, so a change in Figma needs no CSS:
+
+       across = clamp(1, floor(cols / --_w-min), --_w-parts)
+       span   = floor(cols / across)
+
+     --_w-parts is how many sit side by side at the widest, --_w-min the
+     narrowest track that width may shrink to. A class stops dividing once a
+     part would fall below its minimum, which is what collapses medium and
+     small to half at tablet and all three to full at mobile.
+     round(down, …) stands in for mod(), which Chromium does not have.
+     TRAP T-a-container-width-is-named-not-counted */
+  .sherpa-grid > [data-width] {
+    --_across: clamp(1, round(down, calc(var(--sherpa-layout-grid-columns, 3)
+                                         / var(--_w-min, 1)), 1), var(--_w-parts, 1));
+    grid-column: span round(down, calc(var(--sherpa-layout-grid-columns, 3)
+                                       / var(--_across)), 1);
+  }
+  .sherpa-grid > [data-width='full']   { --_w-parts: 1; --_w-min: 999; }
+  .sherpa-grid > [data-width='large']  { --_w-parts: 2; --_w-min: 6; }
+  .sherpa-grid > [data-width='medium'] { --_w-parts: 3; --_w-min: 3; }
+  .sherpa-grid > [data-width='small']  { --_w-parts: 4; --_w-min: 3; }
 
   /* ── Row sizing — two variants, and the default is neither ───────────────
      No attribute: rows size to their CONTENT and the page scrolls, which is
@@ -1217,30 +1261,37 @@ const gridUtilityBlock = `  /* Layout grid — the track system views place thei
   /* FIT — rows hug their content, the grid fills its area exactly, and one
      item takes what is left. Nothing scrolls.
 
+     DESKTOP AND UP ONLY. At tablet and mobile a view is read by scrolling, and
+     pinning it to the fold would squeeze every card to nothing on the way down.
+     Below 1280 the rule simply does not apply and the grid behaves as the
+     default does. TRAP T-fit-is-a-desktop-mode
+
      --_fit-rows is the ROW COUNT BEFORE THE FILLER, written by JS because CSS
      cannot see it. A grid item can never be taller than its row, so the ROW
      must be 1fr — and there is no way to name the last auto row. Seven shapes
      were measured; the trap lists them.
      TRAP T-a-fit-grid-needs-its-row-count */
-  .sherpa-grid[data-rows='fit'] {
-    block-size: 100%;
-    min-block-size: 0;
-    /* AUTO, not hidden: when the rows above already exceed the area the filler
-       hits its floor and the grid scrolls rather than crushing it. Content is
-       never lost — at that size it simply behaves like the default mode. */
-    overflow-y: auto;
-    grid-template-rows: repeat(var(--_fit-rows, 0), min-content) 1fr;
-  }
-  /* The filler, named by data-grow; with none, the LAST child fills.
-     Its FLOOR is two grid rows: below that there is no room for a header and a
-     line of content, so scrolling is the honest answer. */
-  .sherpa-grid[data-rows='fit'] > [data-grow],
-  .sherpa-grid[data-rows='fit']:not(:has(> [data-grow])) > :last-child {
-    min-block-size: calc(
-      2 * var(--sherpa-layout-grid-row-height, 64px)
-      + var(--sherpa-layout-grid-gap-vertical, 16px)
-    );
-    block-size: 100%;
+  @media (min-width: 1280px) {
+    .sherpa-grid[data-rows='fit'] {
+      block-size: 100%;
+      min-block-size: 0;
+      /* AUTO, not hidden: when the rows above already exceed the area the
+         filler hits its floor and the grid scrolls rather than crushing it.
+         Content is never lost — at that size it behaves like the default. */
+      overflow-y: auto;
+      grid-template-rows: repeat(var(--_fit-rows, 0), min-content) 1fr;
+    }
+    /* The filler, named by data-grow; with none, the LAST child fills.
+       Its FLOOR is two grid rows: below that there is no room for a header and
+       a line of content, so scrolling is the honest answer. */
+    .sherpa-grid[data-rows='fit'] > [data-grow],
+    .sherpa-grid[data-rows='fit']:not(:has(> [data-grow])) > :last-child {
+      min-block-size: calc(
+        2 * var(--sherpa-layout-grid-row-height, 64px)
+        + var(--sherpa-layout-grid-gap-vertical, 16px)
+      );
+      block-size: 100%;
+    }
   }`;
 
 const layoutLayer = `@layer layout {

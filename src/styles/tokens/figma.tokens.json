@@ -3653,23 +3653,19 @@
           "figma-console-mcp": {
             "collectionId": "VariableCollectionId:63:1849",
             "figmaResolvedType": "FLOAT",
-            "lastSyncedAt": "2026-09-09T09:43:47.989Z",
+            "lastSyncedAt": "2026-09-23T10:24:47.640Z",
             "lastSyncedValue": {
               "desktop": {
                 "literal": 12
               },
-              "mobile": {
-                "literal": 4
-              },
-              "tablet": {
-                "literal": 8
-              },
+              "mobile": 3,
+              "tablet": 6,
               "wide": {
                 "literal": 12
               }
             },
             "modes": {
-              "tablet": 8,
+              "tablet": 6,
               "desktop": 12,
               "wide": 12
             },
@@ -3681,7 +3677,7 @@
           }
         },
         "$type": "dimension",
-        "$value": 4
+        "$value": 3
       },
       "gap-horizontal": {
         "$description": "Spacing (gap / padding / size).",

@@ -196,3 +196,118 @@ test('…and a grid that DOES fit still does not scroll', async ({ page }) => {
   expect(r.scrolls).toBe(false);
   expect(r.gridH).toBe(500);
 });
+
+/* ── A span shares its row ──────────────────────────────────────────── */
+
+/**
+ * A SPAN SHARES ITS ROW.
+ *
+ * At a narrower breakpoint a span that no longer fits beside another of its
+ * kind grows to take the space, rather than stranding a gap. Measured on
+ * Records before the change: a span-4 chart used 547 of 828px on tablet —
+ * a third of the row wasted, three rows running.
+ *
+ * TRAP T-a-span-shares-its-row
+ */
+test('a span GROWS when it can no longer share its row', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    const out: Record<string, string> = {};
+    for (const cols of [3, 6, 12]) {
+      root.innerHTML = '<div class="sherpa-grid" style="--sherpa-layout-grid-columns:'
+        + cols + '">'
+        + [1, 2, 3, 4, 6, 8, 12].map((n) => '<div data-span="' + n + '">' + n + '</div>').join('')
+        + '</div>';
+      await new Promise((r) => setTimeout(r, 120));
+      const grid = root.querySelector('.sherpa-grid')!;
+      const track = (grid.clientWidth - 32 + 16) / cols;  // one column plus its gap
+      out['cols' + cols] = [...grid.children]
+        .map((c) => Math.round((c.getBoundingClientRect().width + 16) / track))
+        .join(' ');
+    }
+    return out;
+  });
+
+  // span -> what it actually takes, per column count.
+  //          1 2 3 4 6 8 12
+  expect(r['cols3'], '3 columns').toBe('1 3 3 3 3 3 3');
+  expect(r['cols6'], '6 columns: a span-4 takes the whole row').toBe('1 2 3 6 6 6 6');
+  expect(r['cols12'], '12 columns: everything fits as declared').toBe('1 2 3 4 6 12 12');
+});
+
+/**
+ * FIT IS A DESKTOP MODE.
+ *
+ * At tablet and mobile a view is read by SCROLLING, and pinning it to the fold
+ * would squeeze every card to nothing on the way down.
+ *
+ * TRAP T-fit-is-a-desktop-mode
+ */
+test('below 1280 a fit grid is not pinned — it scrolls', async ({ page }) => {
+  const measure = async (width: number): Promise<{ gridH: number; parentH: number }> => {
+    await page.setViewportSize({ width, height: 600 });
+    return page.evaluate(async () => {
+      const { bindFitGrid } = await import('/dist/index.js') as {
+        bindFitGrid: (el: HTMLElement) => () => void;
+      };
+      const root = document.getElementById('root')!;
+      root.style.cssText = '';
+      root.innerHTML = '<div style="height:400px">'
+        + '<div class="sherpa-grid" data-rows="fit">'
+        + '<div data-span="full" style="height:300px">a</div>'
+        + '<div data-span="full" style="height:300px">b</div>'
+        + '<div data-span="full" data-grow>F</div></div></div>';
+      const grid = root.querySelector<HTMLElement>('.sherpa-grid')!;
+      bindFitGrid(grid);
+      await new Promise((r) => setTimeout(r, 200));
+      return {
+        gridH: Math.round(grid.getBoundingClientRect().height),
+        parentH: Math.round(grid.parentElement!.getBoundingClientRect().height),
+      };
+    });
+  };
+
+  const tablet = await measure(900);
+  expect(tablet.gridH, 'it grows past its box and the page scrolls')
+    .toBeGreaterThan(tablet.parentH);
+
+  const desktop = await measure(1400);
+  expect(desktop.gridH, 'pinned to its box').toBe(desktop.parentH);
+});
+
+/* ── A named container width ────────────────────────────────────────── */
+
+/**
+ * A CONTAINER WIDTH IS NAMED, NOT COUNTED.
+ *
+ * A view says what a card IS — full, large, medium, small — and the grid
+ * works out the span from the breakpoint's column count. Tablet reads as two
+ * columns and mobile as one, whatever the real counts are.
+ *
+ * TRAP T-a-container-width-is-named-not-counted
+ */
+test('a named width resolves per column count', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    const out: Record<string, string> = {};
+    for (const cols of [3, 6, 12]) {
+      root.innerHTML = '<div class="sherpa-grid" style="--sherpa-layout-grid-columns:'
+        + cols + '">'
+        + ['full', 'large', 'medium', 'small']
+          .map((w) => '<div data-width="' + w + '">' + w + '</div>').join('')
+        + '</div>';
+      await new Promise((r) => setTimeout(r, 120));
+      const grid = root.querySelector('.sherpa-grid')!;
+      const track = (grid.clientWidth - 32 + 16) / cols;  // one column plus its gap
+      out['cols' + cols] = [...grid.children]
+        .map((c) => Math.round((c.getBoundingClientRect().width + 16) / track))
+        .join(' ');
+    }
+    return out;
+  });
+
+  //                            full large medium small
+  expect(r['cols12'], 'desktop').toBe('12 6 4 3');
+  expect(r['cols6'], 'tablet reads as two columns').toBe('6 6 3 3');
+  expect(r['cols3'], 'mobile reads as one').toBe('3 3 3 3');
+});
