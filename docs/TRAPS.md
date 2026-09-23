@@ -4341,6 +4341,14 @@ longer existed. An undefined custom property paints NOTHING at all, with no erro
 which is why the wrap is one exported constant and both `seriesVar` and
 `seriesBorderVar` go through it. An eleventh series reuses the first hue.
 
+**ZERO was the hole the constant did not close.** The wrap guarded a number
+too BIG and not one too small, so `colorIndex: 0` asked for
+`--sherpa-data-viz-series-0` — the same undefined property, the same silent
+nothing, reached from the other end. `seriesSlot` wraps from either direction
+now: 0 is slot 10 exactly as 11 is slot 1, because the sequence is a ring.
+A fraction truncates and a non-number is slot 1, so there is no input that
+paints nothing.
+
 `seriesBorderVar` falls back to the series fill, and the collection's `border`
 aliases to colour 5 of whichever sequence is active: a mark's FILL moves along its
 ramp, its BORDER does not. The border is the series' identity, so it stays put
@@ -4348,6 +4356,7 @@ whatever the fill is doing — and it is what keeps a translucent mark legible o
 surface.
 
 - Site: `src/core/data/format-tick.ts`
+- Site: `test/unit/format-tick.test.mjs`
 
 ### T-one-total-for-the-ring-and-the-label
 
@@ -8461,6 +8470,14 @@ An axis COMPACTS because it carries four labels and has no room: `1.3M`, not
 `1250500`. A tooltip carries ONE label and exists **because** the reader wants
 the number.
 
+**And the compaction itself had an edge.** Rounding crosses the threshold the
+test just passed: 999,999 is under a million, so the M tier was skipped, and a
+tenth of a K rounded it to 1000 — the axis read **"1000K"**. Same one tier
+down, where 999.5 read "1000" rather than "1K". `formatTick` tries the units
+SMALLEST first and hands a value that rounds out of its own tier to the next;
+largest-first cannot work, because the bigger tier is skipped before the
+smaller one discovers the overflow.
+
 Four charts shared `formatTick` for both, so a bar worth 1,234 read as
 **"1.2K"** in the one place precision was asked for. Measured on the dashboard
 before the fix:
@@ -8478,13 +8495,14 @@ caller has already made.
 The axis still compacts. Both are correct for their own job; sharing one
 function was the mistake.
 
-- Site: `src/core/data/format-tick.ts`
 - Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
-- Site: `src/components/sherpa-line-chart/sherpa-line-chart.ts`
 - Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.ts`
-- Site: `src/components/sherpa-sparkline/sherpa-sparkline.ts`
-- Site: `test/e2e/reforged-barchart.spec.ts`
+- Site: `src/components/sherpa-line-chart/sherpa-line-chart.ts`
 - Site: `src/components/sherpa-metric/sherpa-metric.ts`
+- Site: `src/components/sherpa-sparkline/sherpa-sparkline.ts`
+- Site: `src/core/data/format-tick.ts`
+- Site: `test/e2e/reforged-barchart.spec.ts`
+- Site: `test/unit/format-tick.test.mjs`
 ### T-a-delta-is-derived-not-declared
 
 `sherpa-metric` derives its TREND from `deltaPercent` and its STATUS from the

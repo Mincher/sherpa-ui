@@ -11,11 +11,35 @@
 export function formatTick(value: number): string {
   if (!Number.isFinite(value)) return '';
   const abs = Math.abs(value);
-  if (abs >= 1_000_000) return `${trim(value / 1_000_000)}M`;
-  if (abs >= 1_000) return `${trim(value / 1_000)}K`;
+
+  /* ROUNDING CROSSES THE THRESHOLD the test just passed. 999,999 is under a
+     million, but a tenth of a K rounds it to 1000, so the axis read "1000K"
+     where it means "1M" — and 999.5 read "1000" where it means "1K". Largest
+     unit first, and a value that rounds UP out of its own tier was really in
+     the next one. */
+  /* SMALLEST FIRST, and a tier that rounds up to 1000 hands over to the next.
+     Largest-first cannot work: 999,999 is under a million, so the M tier is
+     skipped before the K tier discovers it rounds out of its own range. */
+  for (let i = 0; i < UNITS.length; i++) {
+    const [size, suffix] = UNITS[i]!;
+    if (abs < size) break;
+    const scaled = trim(value / size);
+    if (Math.abs(Number(scaled)) < 1_000 || i === UNITS.length - 1) {
+      return `${scaled}${suffix}`;
+    }
+    // Rounded up out of this tier — it belongs to the next one.
+    const [bigger, bigSuffix] = UNITS[i + 1]!;
+    return `${trim(value / bigger)}${bigSuffix}`;
+  }
+
   // Below 10, a 0–1 ratio axis without the decimal is just "0" and "1".
-  return trim(value, abs < 10 ? 1 : 0);
+  const whole = trim(value, abs < 10 ? 1 : 0);
+  // …and the same crossing at the bottom: 999.5 is "1K", not "1000".
+  return Math.abs(Number(whole)) >= 1_000 ? `${trim(value / 1_000)}K` : whole;
 }
+
+/** SMALLEST first — `formatTick` steps up when a tier rounds out of its range. */
+const UNITS = [[1_000, 'K'], [1_000_000, 'M']] as const;
 
 /**
  * ONE value, in full — what a tooltip shows.
@@ -184,8 +208,7 @@ const SERIES_COUNT = 10;
  * TRAP T-series-count-is-ten-not-eleven
  */
 export function seriesVar(index: number, colorIndex?: number): string {
-  const n = ((colorIndex ?? index + 1) - 1) % SERIES_COUNT + 1;
-  return `var(--sherpa-data-viz-series-${n})`;
+  return `var(--sherpa-data-viz-series-${seriesSlot(index, colorIndex)})`;
 }
 
 /**
@@ -195,6 +218,25 @@ export function seriesVar(index: number, colorIndex?: number): string {
  * TRAP T-series-count-is-ten-not-eleven
  */
 export function seriesBorderVar(index: number, colorIndex?: number): string {
-  const n = ((colorIndex ?? index + 1) - 1) % SERIES_COUNT + 1;
+  const n = seriesSlot(index, colorIndex);
   return `var(--sherpa-data-viz-series-border-${n}, var(--sherpa-data-viz-series-${n}))`;
+}
+
+/**
+ * Which of the ten slots a mark paints with — always 1..10, whatever arrives.
+ *
+ * The wrap was written twice and neither copy guarded ZERO or a negative:
+ * `colorIndex: 0` gave `--sherpa-data-viz-series-0`, a token that does not
+ * exist, so the mark painted NOTHING with no fallback to show for it.
+ *
+ * It wraps from either direction, so 0 is slot 10 exactly as 11 is slot 1 —
+ * the sequence is a ring, and stepping back off the start lands at the end.
+ * TRAP T-series-count-is-ten-not-eleven
+ */
+function seriesSlot(index: number, colorIndex?: number): number {
+  const asked = colorIndex ?? index + 1;
+  if (!Number.isFinite(asked)) return 1;
+  // Floor to a whole slot, then wrap into 1..10 from EITHER direction.
+  const n = Math.trunc(asked);
+  return ((n - 1) % SERIES_COUNT + SERIES_COUNT) % SERIES_COUNT + 1;
 }
