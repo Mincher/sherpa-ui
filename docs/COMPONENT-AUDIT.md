@@ -1670,7 +1670,7 @@ Ordered by what unblocks the most.
 | 1 | **State ownership** — decide per site whether the 3 menu-less toggle chips are owners or reporters | the gate is fixed; what is left is 3 sites, not 15, and nothing is visibly broken |
 | 2 | **Sweep for other shared constants** — anything a second component must agree on belongs in `shared-constants.ts` | Will's ask; do it at the END of the audit, once everything else has settled |
 | 3 | **`sherpa-data-grid` rebuild onto Grid Cell** | a dedicated session; the prerequisite (agreeing event shapes) is done |
-| 4 | **The last suite failures** — 8, down from 13 | **They were not flaky.** Five were engine gaps the code already handled, two were real races, one a tolerance. What remains needs the same per-case treatment |
+| 4 | **The last 2 suite failures** — down from 13 | Both diagnosed, neither fixed. The chip fold is a 2px integer-rounding miss in Firefox; see below before spending time on it |
 | 5 | **The remaining naming rulings** | `data-type`'s nine meanings, `data-empty`'s three, and the detail-shape sweep across all 75 events. Decisions, not bugs |
 
 ### Detail on the larger ones
@@ -1712,6 +1712,39 @@ by 0.00003px.
 Traps: `T-scroll-state-is-chromium-only`, `T-a-hairline-resolves-by-density`,
 `T-a-grid-group-needs-css-if`, `T-settled-waits-for-renders-not-transitions`,
 `T-an-svg-path-box-rounds-by-a-hundredth`, `T-a-shadow-root-precedes-its-template`.
+
+#### The last two — diagnosed, deliberately not fixed
+
+**a. The chip fold rests 2px overflowing (Firefox, first paint only).**
+
+Measured to the bottom:
+
+| | |
+|---|---|
+| the `.chips` box | **47.78px** |
+| the one unfolded chip | **49.95px** |
+| what `scrollWidth` / `clientWidth` report | 50 / 48 |
+| the slack in `#overflowing()` | 1px |
+
+So the chip can never fit, but the INTEGER properties read the miss as 2px and
+the 1px slack swallows the rest of it. The fold stops after 3 chips where it
+should take all 4. Reproducible on demand: **2 of 8 fresh pages**, and never
+after the first toolbar on a page.
+
+Two fixes were tried and both reverted:
+
+- summing the visible children's fractional rects — **worse** (5 failures), because
+  `.chips` is a flex row and the sum misses its gaps;
+- comparing `scrollWidth` against the box's fractional `getBoundingClientRect()`
+  — better (98 passed, 1 failed in-file) but still **2 of 8 bad** under stress.
+
+It is cosmetic, one engine, and only on a first paint. The real fix is probably
+to stop rounding on both sides at once, which means changing what
+`T-overflowing-needs-1px-slack` guards — worth a deliberate pass, not an
+incidental one.
+
+**b. `a NUMBER chip flips between a single field and a two-ended slider`
+(WebKit).** Not yet investigated.
 
 #### The remaining eight
 
