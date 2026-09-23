@@ -7268,8 +7268,9 @@ the span takes `columns / across`, floored:
 So a span-4 chart is 4 of 12 on desktop and the whole row on tablet, and every
 row on Records is now 100% full at every breakpoint.
 
-`round(down, …)` stands in for `mod()`, which Chromium does not have —
-`sherpa-grouping.css` does the same. `--_across` and `--_span` are REGISTERED
+`round(down, …)` is INTEGER DIVISION here, which is what a span needs.
+(`mod()` and `rem()` do work in all three engines — measured 2026-09-23 — they
+just answer a different question.) `sherpa-grouping.css` does the same. `--_across` and `--_span` are REGISTERED
 in tokens.css, because an unregistered custom property keeps its literal text
 and `round()` never computes. TRAP T-at-property-needs-the-document
 
@@ -7300,6 +7301,52 @@ the trend out of the card and past the clip.
 
 - Site: `src/components/sherpa-metric/sherpa-metric.css`
 - Site: `test/e2e/reforged-metric.spec.ts`
+
+### T-a-stranded-container-fills-its-row
+
+When the last container of a width class sits alone on its final row, it takes
+what is left rather than stranding a gap. Measured on Records at tablet: the
+gauge used 406 of 828px, half the row empty.
+
+`:nth-child(An + 1 of S)` is what makes this possible. The `of S` argument
+counts only siblings matching S — only items of the SAME width — which is
+exactly what `sibling-count()` refuses to do (it counts every child of the
+grid, so at tablet the four metric tiles made the three charts uncountable).
+`A` is `across`, how many fit side by side, so `An + 1` means "starts a row".
+
+Three parts, all required:
+
+| part | says |
+|---|---|
+| `:nth-last-child(1 of S)` | I am the last of my width |
+| `:nth-child(An + 1 of S)` | I start a row, so I am alone on it |
+| `:not(:nth-child(1 of S))` | I am not the ONLY one of my width |
+
+The third keeps a LONE container at its declared width. Without it a grid
+holding one of each class stretched every single item to full width, since each
+was simultaneously first and last of its kind.
+
+RANGE-SCOPED, NOT `min-width`. A `min-width` block stays true at every wider
+size, so the tablet rule (`2n + 1`) was still matching at desktop and stretched
+a third-width chart to the whole row — measured at 65% row fill where thirds
+were wanted. Each band is `(min-width: A) and (max-width: B - 1)`.
+
+Two things CSS still cannot do here, both measured rather than assumed:
+
+- **Count within a RUN.** Indices count among all matching siblings, so a
+  different width sitting BETWEEN two mediums desynchronises the parity. Fine
+  while each width's containers are contiguous, which is how views are written.
+- **`minmax()` in a span.** It is a track-sizing function and a span is an
+  integer; the parser rejects `grid-column: span minmax(4, 8)`. `span N / -1`
+  does not stretch either — the item already ended at the last line.
+
+`mod()` and `rem()` DO work in all three engines (measured 2026-09-23, an
+earlier note in this file said otherwise). They were not needed: the `of S`
+selector answers the question directly, needs no `@property` registration, and
+is more widely supported than `sibling-index()`.
+
+- Site: `scripts/project-tokens.mjs`
+- Site: `test/e2e/reforged-fit-grid.spec.ts`
 
 ### T-a-container-width-is-named-not-counted
 
@@ -8004,7 +8051,8 @@ allowed. Set `--cols` on the wrapper; each cell derives the rest:
 --sherpa-group-last-row: calc(round(up, calc(sibling-count() / var(--cols)), 1) - 1);
 ```
 
-`round(down, …)` stands in for `mod()`, which Chromium does not have.
+`round(down, …)` is INTEGER DIVISION, which is what a span needs; `mod()` and
+`rem()` do work in all three engines, they answer a different question.
 `if(style(--sherpa-group-col: 0): …; else: …)` then picks each edge. Verified
 in Chromium 153 and WebKit 26 on a 3x2 grid and on 7 cells in 3 columns — the
 partial last row lands correctly, because `--sherpa-group-last-row` comes from

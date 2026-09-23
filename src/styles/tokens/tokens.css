@@ -1277,6 +1277,26 @@
     }
   }
 
+  @media (min-width: 768px) and (max-width: 1279px) {
+    .sherpa-grid > [data-width='medium']:nth-last-child(1 of [data-width='medium']):nth-child(2n + 1 of [data-width='medium']):not(:nth-child(1 of [data-width='medium'])) { grid-column: 1 / -1; }
+    .sherpa-grid > [data-width='small']:nth-last-child(1 of [data-width='small']):nth-child(2n + 1 of [data-width='small']):not(:nth-child(1 of [data-width='small'])) { grid-column: 1 / -1; }
+    .sherpa-grid > [data-width='xsmall']:nth-last-child(1 of [data-width='xsmall']):nth-child(4n + 1 of [data-width='xsmall']):not(:nth-child(1 of [data-width='xsmall'])) { grid-column: 1 / -1; }
+  }
+
+  @media (min-width: 1280px) and (max-width: 1919px) {
+    .sherpa-grid > [data-width='large']:nth-last-child(1 of [data-width='large']):nth-child(2n + 1 of [data-width='large']):not(:nth-child(1 of [data-width='large'])) { grid-column: 1 / -1; }
+    .sherpa-grid > [data-width='medium']:nth-last-child(1 of [data-width='medium']):nth-child(3n + 1 of [data-width='medium']):not(:nth-child(1 of [data-width='medium'])) { grid-column: 1 / -1; }
+    .sherpa-grid > [data-width='small']:nth-last-child(1 of [data-width='small']):nth-child(4n + 1 of [data-width='small']):not(:nth-child(1 of [data-width='small'])) { grid-column: 1 / -1; }
+    .sherpa-grid > [data-width='xsmall']:nth-last-child(1 of [data-width='xsmall']):nth-child(4n + 1 of [data-width='xsmall']):not(:nth-child(1 of [data-width='xsmall'])) { grid-column: 1 / -1; }
+  }
+
+  @media (min-width: 1920px) {
+    .sherpa-grid > [data-width='large']:nth-last-child(1 of [data-width='large']):nth-child(2n + 1 of [data-width='large']):not(:nth-child(1 of [data-width='large'])) { grid-column: 1 / -1; }
+    .sherpa-grid > [data-width='medium']:nth-last-child(1 of [data-width='medium']):nth-child(3n + 1 of [data-width='medium']):not(:nth-child(1 of [data-width='medium'])) { grid-column: 1 / -1; }
+    .sherpa-grid > [data-width='small']:nth-last-child(1 of [data-width='small']):nth-child(4n + 1 of [data-width='small']):not(:nth-child(1 of [data-width='small'])) { grid-column: 1 / -1; }
+    .sherpa-grid > [data-width='xsmall']:nth-last-child(1 of [data-width='xsmall']):nth-child(4n + 1 of [data-width='xsmall']):not(:nth-child(1 of [data-width='xsmall'])) { grid-column: 1 / -1; }
+  }
+
   /* View frame utility — the light-DOM app shell renderView() wraps a view in. */
   .sherpa-view {
     --sherpa-view-nav-collapsed: var(--sherpa-display-mode-size-3xl, 40px);

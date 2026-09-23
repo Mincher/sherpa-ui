@@ -1124,6 +1124,48 @@ ${darkBlocks(layers.theme.rootDark)}
 // The Layout collection's modes ARE the breakpoints, and a mode pin has no meaning
 // in CSS on its own — a viewport mode IS a media query. Emitted as
 // `@media (min-width: …)` in ascending order.
+/* The named container widths. `parts` is how many sit side by side at the
+   widest; `track` is the narrowest column count that width may shrink to. The
+   same two numbers the reading rule below uses. */
+const WIDTH_CLASSES = [
+  { name: 'large', parts: 2, track: 6 },
+  { name: 'medium', parts: 3, track: 3 },
+  { name: 'small', parts: 4, track: 3 },
+  { name: 'xsmall', parts: 4, track: 1 },
+];
+
+/* A STRANDED CONTAINER FILLS ITS ROW.
+
+   Inside one breakpoint `across` is a constant, so `:nth-child(An + 1 of S)`
+   means "starts a row" — and `of S` counts only items of the SAME width, which
+   `sibling-count()` cannot do. Last of its kind AND starting a row means it
+   sits alone, so it takes what is left.
+
+   `:not(:nth-child(1 of S))` keeps a LONE container at its declared width: the
+   first of its kind has no run-mates to be stranded after, so a single chart
+   stays a third rather than filling the row.
+
+   RANGE-SCOPED, not min-width: a `min-width` block stays true at every wider
+   size, so the tablet rule fired at desktop and stretched a third-width chart
+   to the full row. TRAP T-a-stranded-container-fills-its-row */
+const strandedBlock = (cols, min, max) => {
+  const rules = WIDTH_CLASSES.map(({ name, parts, track }) => {
+    const across = Math.max(1, Math.min(parts, Math.floor(cols / track)));
+    // One per row already fills it — nothing to rescue.
+    if (across < 2) return null;
+    const sel = "[data-width='" + name + "']";
+    return '    .sherpa-grid > ' + sel + ':nth-last-child(1 of ' + sel + ')'
+      + ':nth-child(' + across + 'n + 1 of ' + sel + ')'
+      + ':not(:nth-child(1 of ' + sel + '))'
+      + ' { grid-column: 1 / -1; }';
+  }).filter(Boolean);
+  if (!rules.length) return null;
+  const query = max == null
+    ? '(min-width: ' + min + 'px)'
+    : '(min-width: ' + min + 'px) and (max-width: ' + (max - 1) + 'px)';
+  return '  @media ' + query + ' {\n' + rules.join('\n') + '\n  }';
+};
+
 const layoutBreakpointBlocks = (() => {
   const leaves = [...walkLeaves(doc.layout ?? {}, ['layout'])];
   const bp = leaves.find((l) => l.rawPath === 'layout/breakpoint');
@@ -1149,6 +1191,28 @@ const layoutBreakpointBlocks = (() => {
     return `  /* ${mode} — the Layout collection's own mode, as its breakpoint. */\n` +
       `  @media (min-width: ${min}px) {\n    :root {\n${lines.join('\n')}\n    }\n  }`;
   }).filter(Boolean);
+})();
+
+/* The stranded-row rules, one RANGE-SCOPED block per breakpoint. Separate from
+   the :root blocks above, which cascade on purpose — these must not. */
+const strandedBlocks = (() => {
+  const leaves = [...walkLeaves(doc.layout ?? {}, ['layout'])];
+  const bp = leaves.find((l) => l.rawPath === 'layout/breakpoint');
+  const cols = leaves.find((l) => l.rawPath === 'layout/layout-grid/columns');
+  if (!bp || !cols) return [];
+
+  const bands = Object.entries(bp.modes)
+    .map(([mode, value]) => ({
+      mode,
+      min: Number(String(toCss(value, 'dimension') ?? '').replace('px', '')),
+      cols: Number(String(cols.modes?.[mode] ?? cols.value ?? '').replace('px', '')),
+    }))
+    .filter((b) => Number.isFinite(b.min) && Number.isFinite(b.cols) && b.cols > 0)
+    .sort((a, b) => a.min - b.min);
+
+  return bands
+    .map((b, i) => strandedBlock(b.cols, b.min, bands[i + 1]?.min))
+    .filter(Boolean);
 })();
 
 // The grid utility views lay themselves out on. It consumes the projected values, so
@@ -1302,7 +1366,7 @@ const layoutLayer = `@layer layout {
 ${rootBlock(layers.layout.root)}
 ${layoutBreakpointBlocks.length ? '\n' + layoutBreakpointBlocks.join('\n\n') + '\n' : ''}
 ${gridUtilityBlock}
-
+${strandedBlocks.length ? '\n' + strandedBlocks.join('\n\n') + '\n' : ''}
   /* View frame utility — the light-DOM app shell renderView() wraps a view in. */
 ${viewFrameBlock}
 }`;

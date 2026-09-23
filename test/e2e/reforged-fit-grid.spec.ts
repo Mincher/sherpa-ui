@@ -312,3 +312,54 @@ test('a named width resolves per column count', async ({ page }) => {
   // xsmall stays a quarter: four metric tiles stay four all the way down.
   expect(r['cols4'], 'mobile reads as one').toBe('4 4 4 4 1');
 });
+
+/**
+ * A STRANDED CONTAINER FILLS ITS ROW.
+ *
+ * When the last container of a width class sits alone on its final row, it
+ * takes what is left rather than stranding a gap. Measured on Records at
+ * tablet before the change: the gauge used 406 of 828px, half the row empty.
+ *
+ * `:nth-child(An + 1 of S)` is what makes this possible — `of S` counts only
+ * siblings of the SAME width, which `sibling-count()` cannot do.
+ *
+ * TRAP T-a-stranded-container-fills-its-row
+ */
+test('the last of a width class fills its row when alone', async ({ page }) => {
+  const measure = async (width: number, run: number): Promise<string[]> => {
+    await page.setViewportSize({ width, height: 800 });
+    return page.evaluate((run) => {
+      const root = document.getElementById('root')!;
+      root.innerHTML = '<div class="sherpa-grid">'
+        + '<div data-width="medium">m</div>'.repeat(run) + '</div>';
+      const grid = root.querySelector('.sherpa-grid')! as HTMLElement;
+      // The CONTENT box: the grid carries its own side padding, so the outer
+      // width never reaches 100% and a full row reads as 96%.
+      const cs = getComputedStyle(grid);
+      const gw = grid.clientWidth
+        - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      const rows = new Map<number, Element[]>();
+      for (const c of grid.children) {
+        const t = Math.round(c.getBoundingClientRect().top);
+        if (!rows.has(t)) rows.set(t, []);
+        rows.get(t)!.push(c);
+      }
+      // Percentage of the grid each ROW occupies.
+      return [...rows.values()].map((row) => {
+        const used = row.reduce((a, c) => a + c.getBoundingClientRect().width, 0)
+          + (row.length - 1) * 16;
+        return Math.round(used / gw * 100) + '%';
+      });
+    }, run);
+  };
+
+  // Tablet is 8 columns, so a medium is 2-across: an odd run strands the last.
+  expect(await measure(900, 2), 'a full row needs no rescue').toEqual(['100%']);
+  expect(await measure(900, 3), 'the third fills the second row').toEqual(['100%', '100%']);
+  expect(await measure(900, 4)).toEqual(['100%', '100%']);
+
+  // Desktop is 12 columns, so a medium is 3-across — and the TABLET rule must
+  // not leak up here, which is why each band is range-scoped.
+  expect(await measure(1400, 3), 'three thirds, nothing stretched').toEqual(['100%']);
+  expect(await measure(1400, 4), 'the fourth is alone, so it fills').toEqual(['100%', '100%']);
+});
