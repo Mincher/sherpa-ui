@@ -8,16 +8,13 @@
 import { datumTotal, type ChartDatum } from '../../core/data/chart-datum.js';
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import { radialArea, ringSegmentPath, seriesBorderVar, seriesVar, formatValue } from '../../core/data/format-tick.js';
+import { RADIAL_CENTRE as CENTRE, RADIAL_CORNER as CORNER,
+  RADIAL_OUTLINE as OUTLINE } from '../../core/ui/shared-constants.js';
 
 /** One slice — an alias of the shared `ChartDatum`. */
 export type DonutSlice = ChartDatum;
 
-/* Geometry in viewBox units of a 100×100 box. */
-const BOX = 100;
-const CENTRE = BOX / 2;
-const CORNER = 1;
 const MIN_SHARE = 0.005;
-const OUTLINE = 0.5;
 
 export class SherpaDonutChart extends SherpaElement {
   static override css = new URL('./sherpa-donut-chart.css', import.meta.url);

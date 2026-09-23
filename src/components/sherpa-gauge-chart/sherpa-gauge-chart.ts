@@ -6,6 +6,8 @@
  */
 import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import { formatTick, radialArea, ringSegmentPath } from '../../core/data/format-tick.js';
+import { RADIAL_CENTRE as CENTRE, RADIAL_CORNER as CORNER,
+  RADIAL_OUTLINE as OUTLINE } from '../../core/ui/shared-constants.js';
 
 /** One resolved zone band, as a fraction (0–1) of the scale and a colour. */
 interface Zone {
@@ -25,18 +27,13 @@ interface Zone {
 /** TRAP T-gauge-status-is-named — resolved BY NAME, never by position. */
 const STATUS_ORDER = ['success', 'warning', 'urgent', 'critical', 'info'] as const;
 
-/** Centre of the 100-unit circle. Only its TOP half is inside the viewBox. */
-const CENTRE = 50;
 
 /* Path geometry in viewBox units — an SVG `d` cannot read a custom property, so
    none of these can move to CSS. */
 
 const RING_WIDTH = 15;
 
-const CORNER = 1;
 
-/** Outline thickness, aligned INSIDE as in Figma. */
-const OUTLINE = 0.5;
 
 /** Zero and span, clockwise from 12 o'clock: 9 o'clock to 3. */
 const START_DEG = 270;

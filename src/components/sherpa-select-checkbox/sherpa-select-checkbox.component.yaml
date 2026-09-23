@@ -90,7 +90,7 @@ props:
   - $type: prop
     name: disabled
     type: boolean
-    observed: true
+    observed: false
     native: true
     default: false
     description: native attributes, mirrored to the inner control
@@ -103,20 +103,13 @@ props:
   - $type: prop
     name: name
     type: string
-    observed: true
+    observed: false
     native: true
-    description: native attributes, mirrored to the inner control
-  - $type: prop
-    name: required
-    type: boolean
-    observed: true
-    native: true
-    default: false
     description: native attributes, mirrored to the inner control
   - $type: prop
     name: value
     type: string
-    observed: true
+    observed: false
     native: true
     default: "\"on\""
     description: submitted value when checked

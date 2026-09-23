@@ -2,9 +2,7 @@
  * sherpa-select-radio — a labelled wrapper around a native radio input.
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
-
-/** Native attributes mirrored verbatim from the host onto the inner control. */
-const MIRRORED = ['name', 'value', 'required', 'disabled'] as const;
+import { MIRRORED_CONTROL_ATTRS as MIRRORED } from '../../core/ui/shared-constants.js';
 
 export class SherpaSelectRadio extends SherpaElement {
   static override css = new URL('./sherpa-select-radio.css', import.meta.url);

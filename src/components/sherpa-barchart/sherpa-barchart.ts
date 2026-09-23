@@ -8,9 +8,8 @@ import type { ChartDatum } from '../../core/data/chart-datum.js';
 import type { ChartScale } from '../../core/data/format-tick.js';
 import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import { chartScale, formatTick, seriesBorderVar, seriesVar, tickPercent, formatValue } from '../../core/data/format-tick.js';
+import { DEFAULT_TICKS } from '../../core/ui/shared-constants.js';
 
-/** Gridlines when data-ticks is absent — matches the Figma Chart Axis. */
-const DEFAULT_TICKS = 4;
 
 /** One bar. TRAP T-chart-datum-aliases-are-not-copies — an alias, not a copy. */
 export type BarDatum = ChartDatum;

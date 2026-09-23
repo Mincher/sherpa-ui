@@ -4,12 +4,10 @@
  * JS mirrors attributes onto a real checkbox and re-fires change; CSS owns the look.
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { MIRRORED_CONTROL_ATTRS as MIRRORED } from '../../core/ui/shared-constants.js';
 // The template stamps these even when `data-advanced` is off — T-every-element-in-the-template.
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-menu/sherpa-menu.js';
-
-/** Native attributes mirrored verbatim from the host onto the inner control. */
-const MIRRORED = ['name', 'value', 'required', 'disabled'] as const;
 
 export class SherpaSelectCheckbox extends SherpaElement {
   static override css = new URL('./sherpa-select-checkbox.css', import.meta.url);

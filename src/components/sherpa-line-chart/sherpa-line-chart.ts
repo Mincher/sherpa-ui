@@ -5,10 +5,9 @@
 import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import { chartScale, formatTick, seriesBorderVar, seriesVar, tickPercent, formatValue,
   type ChartScale } from '../../core/data/format-tick.js';
+import { DEFAULT_TICKS } from '../../core/ui/shared-constants.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
-/** Gridlines when data-ticks is absent. */
-const DEFAULT_TICKS = 4;
 
 interface Series {
   name?: string;
