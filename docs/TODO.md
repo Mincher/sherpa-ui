@@ -8,7 +8,7 @@ Status: `[ ]` open · `[~]` in progress · `[x]` done
 
 ## The order to do them in
 
-41 items. Ordered so that nothing is built twice.
+42 items. Ordered so that nothing is built twice.
 
 Includes the six findings the 2026-09-23 component audit left open; its other 13
 are done. `docs/COMPONENT-AUDIT.md` keeps the measurements behind every one.
@@ -77,7 +77,7 @@ inherit the answers.
 | 11c | ~~Shared constants — sweep~~ **DONE 2026-09-23 — 5 folded in** |
 | 11d | `data-type` means nine things; `data-empty` means three |
 | 11e | ~~Event detail shapes~~ **SWEPT 2026-09-23 — nothing to fix** |
-| 11f | 3 toggle chips: owner or reporter? |
+| 11f | ~~3 toggle chips: owner or reporter?~~ **FIXED 2026-09-23 — it was the PERSISTENT chips** |
 | 11g | `sherpa-nav-section` — measured; it is item 28's question |
 
 ### Wave 4 — the data-to-UI faults
@@ -119,6 +119,7 @@ primitive, then build on it.
 |---|---|
 | 19 | Rework the filter menu — two modes, and MANY conditions |
 | 20 | An inactive chip must say where its filter is applied |
+| 20b | The Created-date filter should be a top-level date RANGE |
 | 21 | A filter PANEL, as an alternative to the toolbars |
 
 Item 21 is undesigned. Do it last of the three, once the menu is settled — the
@@ -280,6 +281,42 @@ the scope being STATED and enforced, the same as every other component filter.
 
 Check the same question for every control that filters its own component: a
 grid column filter, a metric's own scope, a chart's segment mode.
+
+### `[ ]` The Created-date filter should be a top-level date RANGE
+
+Will, 2026-09-23: it should be a top-level date range filter that slices the
+records to a subset across the whole view.
+
+**Where it is today.** `examples/views/global-filters.js:74` — it IS already at
+view scope, in `globalFilters()`, so the scope half is right. What is wrong is
+the SHAPE:
+
+| | today | wanted |
+|---|---|---|
+| kind | `date` | a date RANGE |
+| opens as | SINGLE, with a Range switch to flip | a range |
+| offers | `availableDates` — the discrete days the data carries | a span |
+
+The chip's own comment argues for single: *"opening in range mode makes the
+common case — one day — take two clicks and a mode change."* That reasoning
+holds for a COMPONENT-scope date chip. It does not hold for a view-level slice,
+where "records created between X and Y" is the common case and a single day is
+the rare one.
+
+So this is not "change the default everywhere" — it is that a VIEW-scope date
+filter and a component-scope one want different defaults.
+
+Things to settle:
+
+1. **Does `kind: 'date'` gain a range variant**, or does the chip take
+   `data-range` (which `sherpa-menu` already has — see its `data-range` prop)?
+2. **`availableDates` is a SET of days.** A range wants bounds — min and max —
+   which the same data gives for free (`dates[0]` and `dates.at(-1)`). The
+   calendar already accepts both; `T-a-date-chip-names-its-field` records why
+   the default last-90-days matched nothing here.
+3. **It cascades DOWN.** Once it is a view-scope range, every component in the
+   view reads the subset — which is the rule in "A filter applies DOWN its scope
+   only", and the same ruling as the legend toggle.
 
 ### `[ ]` A filter PANEL, as an alternative to the toolbars
 
@@ -933,7 +970,30 @@ of the extra five was a parser artefact — a ternary's `null` read as a key, a
 multi-line object read as two. The AST reports 3. A regex over TypeScript
 answers a question about the regex.
 
-### `[ ]` 3 toggle chips: owner or reporter?
+### `[x]` Toggle chips: owner or reporter? — fixed, and it was a different chip
+
+**The audit's three menu-less toggle chips are fine.** Measured with a real
+mouse click: one click, ONE `data-current` write. They are not persistent, so
+the toolbar never overwrites them.
+
+**The real two-owner case was the PERSISTENT chips**, which the audit did not
+mention. The toolbar's own comment said "A selector: always on, and its body
+does not flip it" — which is what `data-locked` means — but it set only
+`data-persistent`, so the chip flipped itself off and the toolbar wrote it back
+on the next line.
+
+| | writes per click |
+|---|---|
+| before | **2** — the chip flips, the toolbar undoes it |
+| after | **0**, and the chip stays current |
+
+Fixed by setting `data-locked` alongside `data-persistent`. `data-persistent`
+keeps its own job: it says the chip stays on the bar when off, which is a
+different fact from who owns its state.
+
+#### The original text, for the record
+
+
 
 The audit's "15 unguarded `data-current` writes" measured down to **3**. A chip
 WITH a menu returns before the self-flip line, so only the three menu-less
