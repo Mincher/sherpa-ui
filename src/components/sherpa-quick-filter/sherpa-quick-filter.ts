@@ -4,7 +4,7 @@
  * @see TRAP T-chip-menu-is-a-boolean-state, TRAP T-one-pick-reads-field-and-value,
  * TRAP T-scope-does-not-stop-inheritance, TRAP T-icon-only-is-purely-css
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { DATA_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import { DEFAULT_OP, OP_TAKES, type FilterOp, valueSet } from '../../core/data/store.js';
 import {
   fieldState, filterFace, type FilterFace, type FilterState,
@@ -38,6 +38,9 @@ export class SherpaQuickFilter extends SherpaElement {
     /* WHICH FIELD this chip filters. The toolbar writes it on every chip and
        selects on it; the chip reads it to name its own state. */
     'data-id': { type: 'string', kind: 'style' },
+    'data-locked': DATA_PROPS['data-locked'],
+    /* The chip stays on the bar when off, instead of being removed. */
+    'data-persistent': { type: 'boolean', kind: 'style' },
   } as const;
 
   // data-label is hand-written: an absent attribute must leave the template's

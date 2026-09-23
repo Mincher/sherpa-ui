@@ -9,6 +9,11 @@ import '../sherpa-button/sherpa-button.js';
 export class SherpaFileUpload extends SherpaElement {
   static override css = new URL('./sherpa-file-upload.css', import.meta.url);
   static override html = new URL('./sherpa-file-upload.html', import.meta.url);
+  static override props = {
+    /* An upload is in flight — the host sets it, CSS shows the bar. */
+    'data-loading': { type: 'boolean', kind: 'style' },
+  } as const;
+
   static override observed = ['data-label', 'data-helper', 'data-max-size', 'data-accept', 'data-multiple', 'disabled'];
 
   #input: HTMLInputElement | null = null;

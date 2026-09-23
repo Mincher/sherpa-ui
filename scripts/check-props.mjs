@@ -31,10 +31,12 @@ const problems = [];
 
 for (const file of globSync('src/components/*/*.css', { cwd: ROOT })) {
   const comp = file.split('/')[2];
-  let css = readFileSync(join(ROOT, file), 'utf8');
-  // Everything above the marker belongs to Figma.
-  const marker = css.indexOf('/* == end sherpa:tokens == */');
-  if (marker !== -1) css = css.slice(marker);
+  const css = readFileSync(join(ROOT, file), 'utf8');
+  /* The WHOLE file. Everything above `/* == end sherpa:tokens == *\/` is
+     Figma's to EDIT, which is why lint:css stops there — but a `:host([data-x])`
+     rule in it is still public API, and slicing it off hid `data-size` on
+     sherpa-button and `data-state` on sherpa-input-text.
+     TRAP T-a-generated-region-still-declares-api */
 
   let ts;
   try {
@@ -80,11 +82,21 @@ for (const file of globSync('src/components/*/*.ts', { cwd: ROOT })) {
   }
 
   const seen = new Set();
-  for (const m of ts.matchAll(/\bthis\.dataset\['(\w+)'\]/g)) {
-    const attr = `data-${m[1].replace(/([A-Z])/g, (c) => `-${c.toLowerCase()}`)}`;
-    if (declared.has(attr) || seen.has(attr)) continue;
+  const report = (attr, how) => {
+    if (declared.has(attr) || seen.has(attr)) return;
     seen.add(attr);
-    problems.push(`${relative(ROOT, file)}  reads this.dataset for ${attr}, which it does not declare`);
+    problems.push(`${relative(ROOT, file)}  reads ${how} for ${attr}, which it does not declare`);
+  };
+  for (const m of ts.matchAll(/\bthis\.dataset\['(\w+)'\]/g)) {
+    report(`data-${m[1].replace(/([A-Z])/g, (c) => `-${c.toLowerCase()}`)}`, 'this.dataset');
+  }
+  /* READS ONLY. `this.hasAttribute('data-locked')` is the same event as reading
+     `this.dataset` — a host set it and the component is obeying. A WRITE is not:
+     25 components toggle their own transient state this way (`data-copied`,
+     `data-resizing`, `data-leaving`), which is internal, not public API.
+     TRAP T-a-read-is-public-api-a-write-is-not */
+  for (const m of ts.matchAll(/\bthis\.(?:has|get)Attribute\('(data-[\w-]+)'/g)) {
+    report(m[1], 'hasAttribute/getAttribute');
   }
 }
 

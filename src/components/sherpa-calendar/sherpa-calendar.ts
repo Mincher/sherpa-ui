@@ -36,6 +36,11 @@ function parseIso(iso: string | null | undefined): [number, number, number] | nu
 export class SherpaCalendar extends SherpaElement {
   static override css = new URL('./sherpa-calendar.css', import.meta.url);
   static override html = new URL('./sherpa-calendar.html', import.meta.url);
+  static override props = {
+    /* Drawn inline rather than in a popover — no card, no footer. */
+    'data-embedded': { type: 'boolean', kind: 'style' },
+  } as const;
+
   static override observed = [
     'data-value', 'data-value-start', 'data-value-end',
     'data-min', 'data-max', 'data-available', 'data-view', 'data-type', 'data-has-time',

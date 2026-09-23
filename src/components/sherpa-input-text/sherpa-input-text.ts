@@ -43,6 +43,8 @@ export class SherpaInputText extends SherpaElement {
     /* Which control the field draws. `select` is one of a known set — the
        platform's own element, not a re-implemented listbox. */
     'data-type': { type: 'enum', kind: 'style', values: ['minimal', 'select'] },
+    /* The VALIDATION state a host reports, styled by the token region. */
+    'data-state': { type: 'enum', kind: 'style', values: ['error', 'success', 'warning'] },
   } as const;
 
   /** A form cannot see an <input> through a shadow root. TRAP T-shadow-input-needs-element-internals */

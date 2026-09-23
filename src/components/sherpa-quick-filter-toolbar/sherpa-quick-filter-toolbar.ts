@@ -3,7 +3,7 @@
  *
  * TRAP T-actions-were-a-slot
  */
-import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import { DATA_PROPS, SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
 import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
 import {
@@ -107,6 +107,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        refuse Group and Sort at view scope.
        TRAP T-group-and-sort-are-component-scope */
     'data-type': { type: 'enum', kind: 'style', values: ['view', 'data'] },
+    /* The HOST owns this component's state; report, never write. */
+    'data-locked': DATA_PROPS['data-locked'],
+    /* Clear the chips when a new field set arrives, rather than keeping them. */
+    'data-reset-on-populate': { type: 'boolean', kind: 'style' },
   } as const;
 
   /** Sort and group written from outside — unobserved, a grid header click says nothing here. */

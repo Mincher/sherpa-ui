@@ -38,6 +38,8 @@ export class SherpaToast extends SherpaElement {
     },
     'data-value': { type: 'string', kind: 'content', to: '.value' },
     'data-action': { type: 'string', kind: 'content', to: '.action' },
+    /* Written BY the toast for the duration of its exit animation. */
+    'data-leaving': { type: 'boolean', kind: 'style' },
   } as const;
 
   #timer: ReturnType<typeof setTimeout> | null = null;

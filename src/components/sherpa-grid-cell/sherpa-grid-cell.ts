@@ -19,6 +19,9 @@ export class SherpaGridCell extends SherpaElement {
        out in an event detail so a listener above the cell can act on it. */
     'data-field': { type: 'string', kind: 'style' },
     'data-value': { type: 'string', kind: 'style' },
+    'data-locked': DATA_PROPS['data-locked'],
+    /* A group header cell reports whether its group is open. */
+    'data-expanded': { type: 'boolean', kind: 'style' },
   } as const;
 
   override onRender(): void {

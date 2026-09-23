@@ -33,6 +33,8 @@ export class SherpaListItem extends SherpaElement {
     'data-label': { type: 'string', kind: 'content', to: '.title', all: true, fallbackAttr: 'data-heading' },
     'data-description': { type: 'string', kind: 'content', to: '.description', all: true },
     'data-icon': { type: 'string', kind: 'content', to: '.icon', as: 'icon' },
+    /* Current-row state. Written by the row AND set by a host. */
+    'data-current': { type: 'boolean', kind: 'style' },
   } as const;
 
   static override observed = ['data-expanded', 'data-selected'];

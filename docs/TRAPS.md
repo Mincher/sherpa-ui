@@ -9302,3 +9302,48 @@ Two related facts worth keeping together:
   `data-heading` split by tier.
 
 - Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/components/sherpa-button/sherpa-button.ts`
+
+### T-a-generated-region-still-declares-api
+
+`check-props` used to slice a component's CSS at
+`/* == end sherpa:tokens == */` and scan only what lay below, borrowing the rule
+from `lint:css`.
+
+That rule is right for LINTING — everything above the marker is Figma's, and
+hand-editing it is undone by the next projection. It is wrong for a CONTRACT. A
+`:host([data-size])` rule is public API wherever it sits, and the projection
+puts several there: `data-size` on `sherpa-button` (the five-value enum, at line
+15 of a file whose marker is at line 60) and `data-state` on
+`sherpa-input-text` were both invisible to the gate for that reason.
+
+Scan the whole file. Edit the region in Figma.
+
+- Site: `scripts/check-props.mjs`
+
+### T-a-read-is-public-api-a-write-is-not
+
+`this.hasAttribute('data-locked')` is a host's instruction arriving. The
+component did not put it there, so the attribute is public API and belongs in
+the spec — the same event as reading `this.dataset`, which the gate already
+caught.
+
+`this.setAttribute('data-copied', '')` is not. 25 components toggle their own
+transient state this way — `data-resizing`, `data-leaving`, `data-dragover` —
+and a gate that flagged those would be asking a component to declare its own
+private flags as API.
+
+So the read half of `*Attribute()` is gated and the write half is not.
+Measured when the rule was written: 43 undeclared attributes in total, splitting
+14 read-only, 25 write-only and 4 both. The 14 were the real gap, and five of
+them were `data-locked` — the attribute the whole state-ownership convention
+rests on, undeclared by every component that obeys it.
+
+**The `data-has-*` skip survives this rule**, which was not obvious. All seven
+hand-written ones — `data-has-files`, `data-has-value`, `data-has-y-axis`,
+`data-has-values`, `data-has-query`, `data-has-organise` — are written by the
+component and read only by its own CSS. Never read from a host, so never public
+API, so correctly exempt. The audit had listed the skip as a third hole; it is
+not one.
+
+- Site: `scripts/check-props.mjs`

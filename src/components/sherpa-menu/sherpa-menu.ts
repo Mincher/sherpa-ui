@@ -44,6 +44,9 @@ export class SherpaMenu extends SherpaElement {
     'data-conditions': { type: 'string', kind: 'style' },
     'data-takes': { type: 'enum', kind: 'style', values: ['list', 'text'] },
     'data-heading': { type: 'string', kind: 'content', to: '.heading' },
+    /* A RANGE body offers two ends; `data-commit` holds its Apply until asked. */
+    'data-range': { type: 'boolean', kind: 'style' },
+    'data-commit': { type: 'boolean', kind: 'style' },
   } as const;
 
   static override observed = [

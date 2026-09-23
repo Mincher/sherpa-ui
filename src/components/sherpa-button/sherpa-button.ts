@@ -18,6 +18,15 @@ interface MenuLike extends HTMLElement {
 export class SherpaButton extends SherpaElement {
   static override css = new URL('./sherpa-button.css', import.meta.url);
   static override html = new URL('./sherpa-button.html', import.meta.url);
+  static override props = {
+    /* CSS-only, and declared here rather than in `observed`: the base class
+       need not watch a value only a selector reads. `2xs`-`xl`, NOT the shared
+       three. TRAP T-a-shared-enum-is-not-every-enum */
+    'data-size': { type: 'enum', kind: 'style', values: ['2xs', 'xs', 'sm', 'lg', 'xl'] },
+    /* Written BY the button while its slotted menu is open. */
+    'data-open': { type: 'boolean', kind: 'style' },
+  } as const;
+
   static override observed = [
     'data-label',
     'data-icon-start',

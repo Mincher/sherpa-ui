@@ -101,6 +101,7 @@ export class SherpaDataGrid extends SherpaElement {
     'data-total-pages': DATA_PROPS['data-total-pages'],
     'data-column-filters': { type: 'boolean', kind: 'style' },
     'data-filterable': { type: 'boolean', kind: 'style' },
+    'data-locked': DATA_PROPS['data-locked'],
   } as const;
   // data-selectable is observed though CSS owns its reveal: the pin offset is a
   // MEASURED width, so it must re-run #syncPinned().

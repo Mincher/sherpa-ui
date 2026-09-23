@@ -33,6 +33,8 @@ export class SherpaChartLegend extends SherpaElement {
      rule is a public API and belongs in one place. */
   static override props = {
     'data-orientation': SHARED_PROPS['data-orientation'],
+    /* Report clicks, never toggle a series — the host owns the selection. */
+    'data-readonly': { type: 'boolean', kind: 'style' },
   } as const;
 
   #items: LegendItem[] = [];

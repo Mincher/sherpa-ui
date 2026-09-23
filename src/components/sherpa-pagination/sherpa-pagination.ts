@@ -6,12 +6,17 @@
  * @prop {number} pageSize    — rows per page (read/write)
  * @method goToPage(n) — navigate to a page (clamped), emitting page-change
  */
-import { SherpaElement, clampNum } from '../../core/ui/sherpa-element.js';
+import { DATA_PROPS, SherpaElement, clampNum } from '../../core/ui/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';
 
 export class SherpaPagination extends SherpaElement {
   static override css = new URL('./sherpa-pagination.css', import.meta.url);
   static override html = new URL('./sherpa-pagination.html', import.meta.url);
+  static override props = {
+    /* The HOST owns the page; report the intent, never write it. */
+    'data-locked': DATA_PROPS['data-locked'],
+  } as const;
+
   static override observed = ['data-page', 'data-total-pages', 'data-page-size', 'data-rows-options'];
 
   override onRender(): void {

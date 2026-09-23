@@ -14,6 +14,9 @@ export class SherpaTooltip extends SherpaElement {
     'data-anchor': { type: 'string', kind: 'style' },
     
     'data-text': { type: 'string', kind: 'content', to: '.tip-text' },
+    /* Written BY the tooltip: it is positioned, and it has a tip to show. */
+    'data-floating': { type: 'boolean', kind: 'style' },
+    'data-has-tip': { type: 'boolean', kind: 'style' },
   } as const;
 
   static override observed = ['data-placement'];
