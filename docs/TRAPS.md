@@ -4355,6 +4355,7 @@ ramp, its BORDER does not. The border is the series' identity, so it stays put
 whatever the fill is doing — and it is what keeps a translucent mark legible on any
 surface.
 
+- Site: `src/core/data/chart-datum.ts`
 - Site: `src/core/data/format-tick.ts`
 - Site: `test/unit/format-tick.test.mjs`
 

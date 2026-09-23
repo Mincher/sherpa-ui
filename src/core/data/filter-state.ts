@@ -1,24 +1,15 @@
 /**
  * filter-state.ts — ONE state per field, for every control that draws it.
  *
- * A field is drawn in several places at once, and each control used to WORK
- * OUT what it showed, so the same field could read several ways at once.
+ * A field is drawn in several places at once, and each control used to work
+ * out what it showed, so one field could read several ways. `fieldState()` is
+ * the answer they all read: which field, whether it narrows anything, and
+ * every value it has with what that value is doing.
  *
- * This is the one answer they all read:
+ * NOT ONLY FILTERS — a tab strip, a legend, a select group and a transfer list
+ * ask the same question. `stateClause()` is the only part that speaks filters.
  *
- *     field        which field
- *     fieldState   is it narrowing anything, and how
- *     values       every value the field HAS
- *     valueStates  what each value is doing
- *
- * NOT ONLY FILTERS. The same four facts describe any control over a set of
- * values: a tab strip, a nav, a chart legend, a select group, a transfer
- * list, a calendar's days. Nineteen components hold selection state, and the
- * question is the same in all of them — which values exist, which are chosen,
- * and which cannot be chosen right now. `stateClause()` is the only part that
- * speaks filters; the rest is selection.
- *
- * Nothing here touches the DOM. It is the rule, not the wiring.
+ * DOM-free: the rule, not the wiring.
  *
  * TRAP T-one-state-per-filtered-field
  */
@@ -49,13 +40,8 @@ export type ValueState =
 
 /** One value, and what it is doing. */
 export interface ValueEntry {
-  /**
-   * The value as a STRING, because a control puts it in an attribute.
-   *
-   * A value can be a string, a number or an object, and only this form fits
-   * in `input.value`. `raw` is the one the row actually holds.
-   * TRAP T-a-value-can-be-an-object
-   */
+  /** The value as a STRING — the only form that fits in `input.value`.
+   *  TRAP T-a-value-can-be-an-object */
   value: string;
   /** The value as the data holds it — a number stays a number, an object an object. */
   raw: unknown;
@@ -104,25 +90,17 @@ export interface FieldReading {
 }
 
 /**
- * Work out one field's whole state.
- *
- * This is the ONLY place that decides whether a field is filtering, which
- * values are picked, and which are out of reach. A control that decides for
- * itself is a second answer, and the two drift.
- *
+ * Work out one field's whole state — the ONLY place that decides whether a
+ * field is filtering, which values are picked, and which are out of reach.
  * TRAP T-one-state-per-filtered-field
  */
 export function fieldState(facts: FieldFacts, reading: FieldReading = {}): FilterState {
-  /* KEEP THE RAW VALUE. A value can be a string, a number or an object, and
-     `String(anObject)` is "[object Object]" — which made every object the same
-     value. The string form is what a control puts in an attribute; `raw` is
-     what the row holds. TRAP T-a-value-can-be-an-object */
+  /* The string form is what a control puts in an attribute; `raw` is what the
+     row holds. TRAP T-a-value-can-be-an-object */
   const raws = [...(facts.values ?? [])];
   const all = raws.map(valueKey);
-  /* The QUERY's comparison, not an exact one — a chip's option values may be
-     spelled differently from the data. `valueSet` is that rule, and writing a
-     third copy here is how the two drift.
-     TRAP T-one-comparison-rule-for-query-and-ui */
+  /* The QUERY's comparison — a chip's option values may be spelled differently
+     from the data. TRAP T-one-comparison-rule-for-query-and-ui */
   const picked = valueSet(reading.picked ?? []);
   // No `present` given means "everything is reachable", not "nothing is".
   const present = reading.present ? valueSet(reading.present) : null;
@@ -131,7 +109,6 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
 
   const values: ValueEntry[] = all.map((value, i) => ({
     value,
-    // The value as the ROW holds it — a number stays a number, an object an object.
     raw: raws[i],
     label: facts.labels?.[value] ?? value,
     state: picked.has(raws[i])
@@ -141,10 +118,8 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
         : 'unpicked',
   }));
 
-  /* A TYPED condition filters with nothing ticked, and EVERYTHING ticked
-     filters nothing — the same rows as no filter at all, so only one of them
-     should look like a filter.
-     TRAP T-everything-on-is-no-filter */
+  /* A TYPED condition filters with nothing ticked; EVERYTHING ticked filters
+     nothing. TRAP T-everything-on-is-no-filter */
   const takesText = (OP_TAKES[op] ?? 'list') === 'text';
   const chosen = values.filter((v) => v.state === 'picked').length;
   const answered = takesText ? text !== '' : chosen > 0 && chosen < all.length;
@@ -172,9 +147,7 @@ export function stateClause(state: FilterState): FilterClause | undefined {
     return state.text ? [state.field, state.op, state.text] : undefined;
   }
 
-  /* ONE rule for picks → a clause, in store.ts beside the grammar it speaks.
-     `raw`, not `value`: the clause is tested against real rows, and a row holds
-     a number or an object, not the string a control put in an attribute.
+  /* `raw`, not `value`: the clause is tested against real ROWS.
      TRAP T-a-value-can-be-an-object */
   return picksClause(
     state.field,
@@ -185,10 +158,8 @@ export function stateClause(state: FilterState): FilterClause | undefined {
 
 /**
  * What a control SHOWS for a field — the same six facts whatever draws them.
- *
- * A chip puts `badge` in its count and `value` in its caret; a tab strip might
- * use `value` alone; a legend uses `current` per row. None of them works any
- * of it out.
+ * A chip uses `badge` and `value`; a legend uses `current` per row. None of
+ * them works any of it out.
  */
 export interface FilterFace {
   /** Is this control ON — narrowing, selected, active. */
@@ -206,11 +177,8 @@ export interface FilterFace {
 }
 
 /**
- * How one field's state READS, in one place, for any control that draws it.
- *
- * `eq` never shows a badge: it is the default, and a mark on every ordinary
- * control is noise.
- *
+ * How one field's state READS, for any control that draws it. `eq` shows no
+ * badge — a mark on every ordinary control is noise.
  * TRAP T-one-state-per-filtered-field
  */
 export function filterFace(state: FilterState): FilterFace {

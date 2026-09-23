@@ -12,14 +12,10 @@ export function formatTick(value: number): string {
   if (!Number.isFinite(value)) return '';
   const abs = Math.abs(value);
 
-  /* ROUNDING CROSSES THE THRESHOLD the test just passed. 999,999 is under a
-     million, but a tenth of a K rounds it to 1000, so the axis read "1000K"
-     where it means "1M" — and 999.5 read "1000" where it means "1K". Largest
-     unit first, and a value that rounds UP out of its own tier was really in
-     the next one. */
-  /* SMALLEST FIRST, and a tier that rounds up to 1000 hands over to the next.
-     Largest-first cannot work: 999,999 is under a million, so the M tier is
-     skipped before the K tier discovers it rounds out of its own range. */
+  /* SMALLEST unit first: rounding can push a value out of the tier it just
+     tested into, and largest-first skips the bigger tier before the smaller
+     one discovers it. 999,999 is under a million, yet reads "1M".
+     TRAP T-a-tooltip-is-not-an-axis */
   for (let i = 0; i < UNITS.length; i++) {
     const [size, suffix] = UNITS[i]!;
     if (abs < size) break;
@@ -27,32 +23,23 @@ export function formatTick(value: number): string {
     if (Math.abs(Number(scaled)) < 1_000 || i === UNITS.length - 1) {
       return `${scaled}${suffix}`;
     }
-    // Rounded up out of this tier — it belongs to the next one.
     const [bigger, bigSuffix] = UNITS[i + 1]!;
     return `${trim(value / bigger)}${bigSuffix}`;
   }
 
   // Below 10, a 0–1 ratio axis without the decimal is just "0" and "1".
   const whole = trim(value, abs < 10 ? 1 : 0);
-  // …and the same crossing at the bottom: 999.5 is "1K", not "1000".
+  // The same crossing at the bottom: 999.5 is "1K", not "1000".
   return Math.abs(Number(whole)) >= 1_000 ? `${trim(value / 1_000)}K` : whole;
 }
 
-/** SMALLEST first — `formatTick` steps up when a tier rounds out of its range. */
 const UNITS = [[1_000, 'K'], [1_000_000, 'M']] as const;
 
 /**
  * ONE value, in full — what a tooltip shows.
  *
- * An axis compacts because it has four labels and no room; a tooltip has one
- * label and exists BECAUSE the reader wants the number. Sharing `formatTick`
- * made a bar worth 1,234 read as "1.2K" in the one place precision was asked
- * for.
- *
- * Grouped, because 1250500 is unreadable without separators. Decimals are kept
- * as they arrive: `reduceRows` returns a mean unrounded on purpose, and
- * rounding is a PRESENTATION decision the caller has already made.
- *
+ * Grouped, and decimals kept as they arrive — `reduceRows` returns a mean
+ * unrounded on purpose, and rounding is the caller's decision.
  * TRAP T-a-tooltip-is-not-an-axis
  */
 export function formatValue(value: number): string {
@@ -194,29 +181,17 @@ export function ringSegmentPath(options: RingSegmentOptions): string {
 
 /* ── Series colours ───────────────────────────────────────────────────── */
 
-/**
- * How many data-viz series the token layer defines.
- *
- * TRAP T-series-count-is-ten-not-eleven
- */
+/** How many data-viz series the token layer defines. */
 const SERIES_COUNT = 10;
 
-/**
- * The custom property a mark paints with. `index` is 0-based; an explicit
- * `colorIndex` from the data is 1-based. Wraps.
- *
- * TRAP T-series-count-is-ten-not-eleven
- */
+/** The custom property a mark paints with. `index` is 0-based; an explicit
+ *  `colorIndex` from the data is 1-based. Wraps — see `seriesSlot`. */
 export function seriesVar(index: number, colorIndex?: number): string {
   return `var(--sherpa-data-viz-series-${seriesSlot(index, colorIndex)})`;
 }
 
-/**
- * The mark's OUTLINE for the same series — the fill moves along its ramp, the
- * border is the series' identity and stays put.
- *
- * TRAP T-series-count-is-ten-not-eleven
- */
+/** The mark's OUTLINE for the same series — the fill moves along its ramp, the
+ *  border is the series' identity and stays put. */
 export function seriesBorderVar(index: number, colorIndex?: number): string {
   const n = seriesSlot(index, colorIndex);
   return `var(--sherpa-data-viz-series-border-${n}, var(--sherpa-data-viz-series-${n}))`;
@@ -225,18 +200,13 @@ export function seriesBorderVar(index: number, colorIndex?: number): string {
 /**
  * Which of the ten slots a mark paints with — always 1..10, whatever arrives.
  *
- * The wrap was written twice and neither copy guarded ZERO or a negative:
- * `colorIndex: 0` gave `--sherpa-data-viz-series-0`, a token that does not
- * exist, so the mark painted NOTHING with no fallback to show for it.
- *
- * It wraps from either direction, so 0 is slot 10 exactly as 11 is slot 1 —
- * the sequence is a ring, and stepping back off the start lands at the end.
- * TRAP T-series-count-is-ten-not-eleven
+ * The sequence is a RING: 0 is slot 10 as 11 is slot 1. An unwrapped 0 asked
+ * for `--sherpa-data-viz-series-0`, which does not exist, so the mark painted
+ * nothing. TRAP T-series-count-is-ten-not-eleven
  */
 function seriesSlot(index: number, colorIndex?: number): number {
   const asked = colorIndex ?? index + 1;
   if (!Number.isFinite(asked)) return 1;
-  // Floor to a whole slot, then wrap into 1..10 from EITHER direction.
   const n = Math.trunc(asked);
   return ((n - 1) % SERIES_COUNT + SERIES_COUNT) % SERIES_COUNT + 1;
 }

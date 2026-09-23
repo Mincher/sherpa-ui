@@ -57,13 +57,8 @@ export const OPS_FOR_TYPE: Record<string, readonly FilterOp[]> = {
 /**
  * WHAT a reader gives an operator: a value they PICK, or one they TYPE.
  *
- * `eq`/`ne` over a field with known values is a list — the reader picks Gold,
- * not types it, and a typo cannot match nothing silently. `contains` and its
- * relatives are a typed fragment: no list can hold every substring.
- *
- * This is the rule both filter menus follow, so the condition dropdown swaps
- * the body beneath it rather than each menu deciding for itself.
- * TRAP T-an-operator-decides-pick-or-type
+ * Both filter menus follow this, so the condition dropdown swaps the body
+ * beneath it. TRAP T-an-operator-decides-pick-or-type
  */
 export const OP_TAKES: Record<FilterOp, 'list' | 'text' | 'range'> = {
   eq: 'list',
@@ -85,17 +80,13 @@ export const OP_TAKES: Record<FilterOp, 'list' | 'text' | 'range'> = {
 export const DEFAULT_OP: FilterOp = 'eq';
 
 /**
- * Each operator as a BADGE — the short sign a chip wears.
- *
- * Signs a reader already knows from spreadsheets and filters, and an inverse
- * is its own sign with a leading `!`, so the pairs read as pairs. `eq` is
- * absent on purpose: it is `DEFAULT_OP`, and a badge on every chip is noise.
+ * Each operator as a BADGE — the short sign a chip wears. An inverse is its
+ * own sign with a leading `!`, so the pairs read as pairs.
  * TRAP T-an-operator-decides-pick-or-type
  */
 export const OP_SYMBOLS: Record<FilterOp, string> = {
-  /* `eq` HAS a sign — the condition menu names every row "Equals (=)" — but a
-     chip wearing one on every default filter is noise, so the BADGE skips it.
-     Two different questions, one vocabulary. */
+  // `eq` has a sign for the condition menu; `filterFace` omits it from a BADGE,
+  // where it would be on every default chip.
   eq: '=',
   ne: '!=',
   lt: '<',
@@ -188,11 +179,8 @@ export function compareValues(a: unknown, b: unknown): number {
   if (typeof a === 'number' && typeof b === 'number') return a - b;
   if (typeof a === 'boolean' && typeof b === 'boolean') return Number(a) - Number(b);
   if (a instanceof Date && b instanceof Date) return a.getTime() - b.getTime();
-  /* `String(anObject)` is "[object Object]", so sorting BY an object field
-     compared every row equal and left the order untouched. Its own fields, in
-     a stable order, at least sort deterministically — though a caller usually
-     wants a dotted path (`owner.name`) to pick the field that reads.
-     TRAP T-a-value-can-be-an-object */
+  // An object sorts by its own fields — a dotted path picks the one that reads.
+  // TRAP T-a-value-can-be-an-object
   return collator.compare(valueKey(a), valueKey(b));
 }
 
@@ -238,15 +226,11 @@ export function filterFields(filter: Filter | undefined): string[] {
 }
 
 /**
- * Every SUBSTRING clause in a filter, as `field:op:value`, newline separated.
+ * Every SUBSTRING clause in a filter, as `field:op:value`, NEWLINE separated —
+ * a typed value may hold a comma or a space.
  *
- * What a view highlights is what it filtered by, so the answer comes from the
- * filter itself rather than from whichever control happened to set it. Only
- * the markable ops appear: `eq` matched the whole value and `ne` matched by
+ * Only the markable ops: `eq` matched the whole value and `ne` matched by
  * absence, so neither leaves a span to point at.
- *
- * A NEWLINE separates entries, because a typed value may hold a comma or a
- * space — which is exactly where a reader's own text lands.
  * TRAP T-a-needle-comes-from-either-direction
  */
 export function filterNeedles(filter: Filter | undefined): string {
@@ -323,12 +307,8 @@ export function matchesFilter(row: Row, filter: Filter | undefined): boolean {
 /**
  * ONE comparison rule for the whole system — the query and the UI must agree.
  *
- * The data layer has always compared loosely, so `['plan','in',['free']]`
- * matches a row holding `'Free'`. Three components compared EXACTLY, so a
- * value round-tripping back from the query never ticked its own menu row: the
- * filter worked and the control that set it looked untouched.
- * Exported alongside `valueSet`, which is what a control usually wants: this
- * is the single-value form of the same rule.
+ * LOOSE: `['plan','in',['free']]` matches a row holding `'Free'`. `valueSet`
+ * is the set form, and is what a control usually wants.
  * TRAP T-one-comparison-rule-for-query-and-ui
  */
 function looseEqual(a: unknown, b: unknown): boolean {
@@ -341,23 +321,15 @@ function looseEqual(a: unknown, b: unknown): boolean {
 /**
  * Do two KEYS name the same row?
  *
- * A key arrives as a string far more often than not — from an attribute, a
- * URL, a `data-id` — and `'7' === 7` is false, which would report a row as
- * MISSING. So numbers and numeric strings compare equal by stringifying both.
- *
- * NOT `looseEqual`: a key is case-SENSITIVE, because two rows keyed `Ada` and
- * `ada` are two rows. Values are the other way round, which is why the two
- * helpers live side by side rather than one calling the other.
- *
+ * A key arrives as a string far more often than not, and `'7' === 7` is false,
+ * so both are stringified. NOT `looseEqual`: a key is case-SENSITIVE, because
+ * rows keyed `Ada` and `ada` are two rows.
  * TRAP T-numeric-keys-compare-as-strings
  */
 export function sameKey(a: unknown, b: unknown): boolean {
   if (a === b) return true;
   if (a == null || b == null) return false;
-  /* A COMPOUND KEY is an object, and `String(anObject)` is "[object Object]" —
-     so every row matched the first one asked for, and `byKey` returned the
-     wrong record with nothing to show for it.
-     TRAP T-a-value-can-be-an-object */
+  // A COMPOUND key is an object — TRAP T-a-value-can-be-an-object.
   return valueKey(a) === valueKey(b);
 }
 
@@ -369,13 +341,10 @@ function text(v: unknown): string {
 /**
  * A value as the string a CONTROL can put in an attribute.
  *
- * A string or number is itself. AN OBJECT IS ITS OWN FIELDS AND VALUES — not
- * "[object Object]", which is what every object used to collapse to, so any
- * two of them compared EQUAL and picking one marked them all. Keys are sorted
- * so two equal objects always give one key, and it recurses because a value
- * inside an object is a value too. An array is its items in order; a Date is a
- * VALUE rather than a bag of fields, so it is its timestamp.
- * TRAP T-a-value-can-be-an-object
+ * An object is its own fields and values, keys sorted so two equal ones agree,
+ * recursing because a value inside an object is a value too. An array is its
+ * items in order; a Date is its timestamp, being a value and not a bag of
+ * fields. TRAP T-a-value-can-be-an-object
  */
 export function valueKey(v: unknown): string {
   if (v == null) return '';

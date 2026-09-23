@@ -8,32 +8,26 @@
 export interface ChartDatum {
   /** Shown on the axis, in the legend, in the tip. */
   label: string;
-  /** A NUMBER here; `LegendDatum` widens it — TRAP T-one-datum-shape-for-chart-and-legend. */
+  /** A NUMBER here; `LegendDatum` widens it. */
   value: number;
   /**
-   * Categorical colour, 1-based into the data-viz sequence. Omitted means "the
-   * next one"; set it when two charts must agree about a category's colour.
+   * Categorical colour, 1-based into the ten data-viz sequences and wrapping
+   * either way. Omitted means "the next one"; set it when two charts must
+   * agree about a category's colour. TRAP T-series-count-is-ten-not-eleven
    */
   colorIndex?: number;
 }
 
-/** `ChartDatum` plus the two things only a legend has — TRAP T-one-datum-shape-for-chart-and-legend. */
+/** `ChartDatum` plus the two things only a legend has. */
 export interface LegendDatum extends Omit<ChartDatum, 'value'> {
   /** Preformatted is allowed here — a legend prints, it does not plot. */
   value?: string | number;
-  /**
-   * A STATUS swatch instead of a categorical one — a gauge's bands are
-   * thresholds, not a series. Set this OR colorIndex, not both.
-   */
+  /** A STATUS swatch instead of a categorical one — a gauge's bands are
+   *  thresholds, not a series. Set this OR colorIndex, not both. */
   status?: 'success' | 'warning' | 'critical' | 'info' | 'urgent';
 }
 
-/**
- * One datum's value as a NUMBER, or 0.
- *
- * A legend widens `value` to `string | number`, and a caller may hand over
- * anything, so every reader coerced it its own way.
- */
+/** One datum's value as a NUMBER, or 0. A legend widens `value` to a string. */
 export function datumValue(datum: { value?: string | number }): number {
   const n = typeof datum.value === 'number' ? datum.value : Number(datum.value);
   return Number.isFinite(n) ? n : 0;
@@ -42,14 +36,8 @@ export function datumValue(datum: { value?: string | number }): number {
 /**
  * What a set of data ADDS UP TO — one answer, for the ring and for the label.
  *
- * Three sums existed across two components and DISAGREED: a donut's ring
- * clamped negatives to zero while its own centre label kept them, so three
- * slices of 10, −5 and 20 drew a total of 30 under a label reading 25.
- *
- * `clamp` is the difference, made explicit. A ring must clamp — a negative arc
- * is not a shape — while a printed total must not, because −5 is what the data
- * says. Neither is a default, so a caller has to decide.
- *
+ * `clamp` has no default: a ring must clamp, because a negative arc is not a
+ * shape, and a printed total must not, because −5 is what the data says.
  * TRAP T-one-total-for-the-ring-and-the-label
  */
 export function datumTotal(
