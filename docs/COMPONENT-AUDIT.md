@@ -6,6 +6,11 @@ Every claim below was measured or grepped, not inferred. Where a first reading
 was wrong, the correction is kept — the wrong version is usually the more
 tempting one.
 
+> **The open work moved.** This file is the RECORD — what was measured, what
+> was found, and what each fix changed. The six findings it did not close are
+> now items in [docs/TODO.md](TODO.md), Wave 3b, alongside the other 31. One
+> list to work from; this one to check why.
+
 **Each finding carries its own outcome.** A finding and what happened to it are
 one section, not two halves of the document, because the split made a reader
 meet a problem and then hunt for its resolution 500 lines later.
@@ -1661,17 +1666,23 @@ Worth stating, because the audit could read as a list of faults.
 
 ---
 
-## Open work — the queue
+## Open work — moved to docs/TODO.md
 
-Ordered by what unblocks the most.
+Six findings stayed open, and they now live in [docs/TODO.md](TODO.md) as
+Wave 3b, ordered against the other 31 items rather than in a list of their own:
 
-| # | work | why it is next |
-|---:|---|---|
-| 1 | **State ownership** — decide per site whether the 3 menu-less toggle chips are owners or reporters | the gate is fixed; what is left is 3 sites, not 15, and nothing is visibly broken |
-| 2 | **Sweep for other shared constants** — anything a second component must agree on belongs in `shared-constants.ts` | Will's ask; do it at the END of the audit, once everything else has settled |
-| 3 | **`sherpa-data-grid` rebuild onto Grid Cell** | a dedicated session; the prerequisite (agreeing event shapes) is done |
-| 4 | **The last 2 suite failures** — down from 13 | Both diagnosed, neither fixed. The chip fold is a 2px integer-rounding miss in Firefox; see below before spending time on it |
-| 5 | **The remaining naming rulings** | `data-type`'s nine meanings, `data-empty`'s three, and the detail-shape sweep across all 75 events. Decisions, not bugs |
+| | |
+|---|---|
+| 11b | Grouping — two files, and 160 unused lines |
+| 11c | Shared constants — sweep for the rest |
+| 11d | `data-type` means nine things; `data-empty` means three |
+| 11e | Event detail shapes disagree across 75 events |
+| 11f | 3 toggle chips: owner or reporter? |
+| 11g | `sherpa-nav-section` is a component nothing uses |
+
+Two more are already there under their own names: `sherpa-grid-cell` is item 28
+(a Figma component is not always a web component), and the data-grid rebuild
+waits on that ruling.
 
 ### Detail on the larger ones
 
