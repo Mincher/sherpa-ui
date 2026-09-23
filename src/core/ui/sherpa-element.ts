@@ -124,6 +124,22 @@ export const SHARED_PROPS = {
    * falls back to the viewport — wrong inside a scroller.
    */
   'data-bounds': { type: 'string', kind: 'style' },
+  /**
+   * This item's POSITION in a group, so the row reads as one object. Stated
+   * here; `<sherpa-group>` derives it instead, which survives a re-order.
+   * CSS-only — the rules live in the grouping sheet.
+   * TRAP T-grouping-is-an-attribute-and-a-class
+   */
+  'data-group': {
+    type: 'enum', kind: 'style',
+    values: [
+      'solo', 'start', 'mid', 'end',
+      'vertical-solo', 'vertical-start', 'vertical-mid', 'vertical-end',
+      'grid-top-solo', 'grid-top-start', 'grid-top-mid', 'grid-top-end',
+      'grid-mid-solo', 'grid-mid-start', 'grid-mid-mid', 'grid-mid-end',
+      'grid-bottom-solo', 'grid-bottom-start', 'grid-bottom-mid', 'grid-bottom-end',
+    ],
+  },
 } as const satisfies PropMap;
 
 /** Fetch a stylesheet URL once; every element adopting it shares one sheet object. */

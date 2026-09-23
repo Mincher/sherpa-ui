@@ -24,31 +24,31 @@
 
     <!-- Figma Pagination 48:65826: two snapped Button pairs around the page field. -->
     <nav class="controls" part="controls" aria-label="Pagination">
-      <span class="pair sherpa-group">
+      <sherpa-group class="pair">
         <sherpa-button class="btn first" data-action="first" data-type="icon"
-                       data-look="transparent" data-group="start"
+                       data-look="transparent"
                        data-icon-start="double-chevron-left"
                        aria-label="First page"></sherpa-button>
         <sherpa-button class="btn prev" data-action="prev" data-type="icon"
-                       data-look="transparent" data-group="end"
+                       data-look="transparent"
                        data-icon-start="chevron-left"
                        aria-label="Previous page"></sherpa-button>
-      </span>
+      </sherpa-group>
 
       <input class="page-input sherpa-border-edges sherpa-border-corners" type="number" inputmode="numeric" min="1" step="1"
              part="page-input" aria-label="Page number" />
       <span class="total" part="total" aria-hidden="true">of 1</span>
 
-      <span class="pair sherpa-group">
+      <sherpa-group class="pair">
         <sherpa-button class="btn next" data-action="next" data-type="icon"
-                       data-look="transparent" data-group="start"
+                       data-look="transparent"
                        data-icon-start="chevron-right"
                        aria-label="Next page"></sherpa-button>
         <sherpa-button class="btn last" data-action="last" data-type="icon"
-                       data-look="transparent" data-group="end"
+                       data-look="transparent"
                        data-icon-start="double-chevron-right"
                        aria-label="Last page"></sherpa-button>
-      </span>
+      </sherpa-group>
     </nav>
   </div>
 

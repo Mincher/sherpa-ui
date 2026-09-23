@@ -42,8 +42,8 @@ anatomy:
           attrs:
             aria-label: Pagination
           children:
-            - el: span
-              class: pair sherpa-group
+            - el: sherpa-group
+              class: pair
               children:
                 - el: sherpa-button
                   class: btn first
@@ -51,7 +51,6 @@ anatomy:
                     data-action: first
                     data-type: icon
                     data-look: transparent
-                    data-group: start
                     data-icon-start: double-chevron-left
                     aria-label: First page
                 - el: sherpa-button
@@ -60,7 +59,6 @@ anatomy:
                     data-action: prev
                     data-type: icon
                     data-look: transparent
-                    data-group: end
                     data-icon-start: chevron-left
                     aria-label: Previous page
             - el: input
@@ -77,8 +75,8 @@ anatomy:
               part: total
               attrs:
                 aria-hidden: "true"
-            - el: span
-              class: pair sherpa-group
+            - el: sherpa-group
+              class: pair
               children:
                 - el: sherpa-button
                   class: btn next
@@ -86,7 +84,6 @@ anatomy:
                     data-action: next
                     data-type: icon
                     data-look: transparent
-                    data-group: start
                     data-icon-start: chevron-right
                     aria-label: Next page
                 - el: sherpa-button
@@ -95,7 +92,6 @@ anatomy:
                     data-action: last
                     data-type: icon
                     data-look: transparent
-                    data-group: end
                     data-icon-start: double-chevron-right
                     aria-label: Last page
     - el: template

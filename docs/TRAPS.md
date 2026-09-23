@@ -8170,6 +8170,8 @@ the APP links, `src/core/` is what a COMPONENT adopts.** A class belongs in
 - Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.ts`
 - Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.html`
 - Site: `test/e2e/reforged-layout-grid.spec.ts`
+- Site: `src/components/sherpa-group/sherpa-group.css`
+- Site: `test/e2e/reforged-group.spec.ts`
 
 ### T-import-dies-in-an-adopted-sheet
 
@@ -8239,6 +8241,7 @@ it. `.sherpa-group` now sets both.
 
 - Site: `src/core/sherpa-grouping.css`
 - Site: `test/e2e/reforged-grouping.spec.ts`
+- Site: `src/components/sherpa-group/sherpa-group.css`
 
 ### T-at-property-needs-the-document
 
@@ -8290,6 +8293,7 @@ that explains a mechanism is worth checking against whether the mechanism runs.
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.css`
 - Site: `src/components/sherpa-barchart/sherpa-barchart.css`
 - Site: `test/e2e/reforged-grouping.spec.ts`
+- Site: `src/components/sherpa-group/sherpa-group.css`
 
 ### T-grouping-is-an-attribute-and-a-class
 
@@ -8333,6 +8337,9 @@ selector in a test, and nothing outside the component reads it.
 - Site: `src/core/sherpa-grouping.css`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/components/sherpa-group/sherpa-group.css`
+
 ### T-a-shared-edge-is-halved-on-both-sides
 
 Will's ruling, 2026-09-15. An edge SHARED with a neighbour is aliased one step
@@ -8352,6 +8359,8 @@ and let the neighbour keep a full one. The `[data-group]` tokens, which come
 from Figma, are what caught it.
 
 - Site: `src/core/sherpa-grouping.css`
+- Site: `src/components/sherpa-group/sherpa-group.css`
+- Site: `test/e2e/reforged-group.spec.ts`
 
 ### T-a-summary-binds-to-all-the-rows
 
@@ -9471,6 +9480,8 @@ and assert the documented fallback where it is absent, rather than asserting the
 joined result everywhere.
 
 - Site: `test/e2e/reforged-grouping.spec.ts`
+- Site: `src/components/sherpa-group/sherpa-group.css`
+- Site: `test/e2e/reforged-group.spec.ts`
 
 ### T-settled-waits-for-renders-not-transitions
 

@@ -8,6 +8,7 @@
  */
 import { DATA_PROPS, SherpaElement, clampNum } from '../../core/ui/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';
+import '../sherpa-group/sherpa-group.js';
 
 export class SherpaPagination extends SherpaElement {
   static override css = new URL('./sherpa-pagination.css', import.meta.url);

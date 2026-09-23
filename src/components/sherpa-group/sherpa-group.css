@@ -1,0 +1,170 @@
+/**
+ * sherpa-group.css — position, derived.
+ *
+ * Every rule sets CUSTOM PROPERTIES on a slotted child, never a border. The
+ * child's own CSS already reads `--sherpa-border-*`, and a custom property
+ * crosses a shadow boundary where a class cannot.
+ * TRAP T-a-document-class-cannot-reach-a-shadow-root
+ *
+ * The `.sherpa-group*` classes and the `data-group` attribute both remain: a
+ * host that states a position in its own markup still needs them.
+ * TRAP T-grouping-is-an-attribute-and-a-class
+ */
+
+:host {
+  display: inline-flex;
+  align-items: center;
+  /* A shared edge LAPS rather than gaps — `gap` cannot go negative, so the
+     lap is a margin on every child but the first, below. */
+  gap: 0;
+}
+
+:host([hidden]) { display: none; }
+
+:host([data-direction='column']) {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+:host([data-direction='grid']) {
+  display: grid;
+  grid-template-columns: repeat(var(--_cols, 3), minmax(0, 1fr));
+  align-items: stretch;
+}
+
+/* ── Every child loses every inner corner; the ends put theirs back ─────── */
+::slotted(*) {
+  --sherpa-border-rounding-top-left: 0px;
+  --sherpa-border-rounding-top-right: 0px;
+  --sherpa-border-rounding-bottom-left: 0px;
+  --sherpa-border-rounding-bottom-right: 0px;
+}
+
+/* The snapped lap, from the Figma Structure collection. */
+:host(:not([data-direction='grid'])) ::slotted(:not(:first-child)) {
+  margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
+}
+:host([data-direction='column']) ::slotted(:not(:first-child)) {
+  margin-inline-start: 0;
+  margin-block-start: var(--sherpa-structure-space-snapped, 0px);
+}
+
+/* ── Row (the default) ───────────────────────────────────────────────────
+   A shared edge is HALVED on BOTH sides: each neighbour draws 0.25px and the
+   joint reads 0.5px, the same weight as the group's outer border.
+   TRAP T-a-shared-edge-is-halved-on-both-sides */
+:host(:not([data-direction])) ::slotted(*),
+:host([data-direction='row']) ::slotted(*) {
+  --sherpa-border-left: var(--sherpa-display-mode-border-width-xs, 0.25px);
+  --sherpa-border-right: var(--sherpa-display-mode-border-width-xs, 0.25px);
+}
+:host(:not([data-direction])) ::slotted(:first-child),
+:host([data-direction='row']) ::slotted(:first-child) {
+  --sherpa-border-left: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
+:host(:not([data-direction])) ::slotted(:last-child),
+:host([data-direction='row']) ::slotted(:last-child) {
+  --sherpa-border-right: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
+
+/* ── Column ──────────────────────────────────────────────────────────────── */
+:host([data-direction='column']) ::slotted(*) {
+  --sherpa-border-left: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-right: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-top: var(--sherpa-display-mode-border-width-xs, 0.25px);
+  --sherpa-border-bottom: var(--sherpa-display-mode-border-width-xs, 0.25px);
+}
+:host([data-direction='column']) ::slotted(:first-child) {
+  --sherpa-border-top: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
+:host([data-direction='column']) ::slotted(:last-child) {
+  --sherpa-border-bottom: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
+
+/* ── Grid ────────────────────────────────────────────────────────────────
+   Both axes at once. Each cell works out its OWN column and row from
+   `sibling-index()`, because `:nth-child()` will not take a `var()` — the
+   selector is dropped silently. The position is computed in a VALUE instead.
+
+   The five `--sherpa-group-*` are registered with `@property` in tokens.css,
+   NOT here: an `@property` in an adopted sheet does nothing at all.
+   TRAP T-at-property-needs-the-document
+   TRAP T-a-grid-group-computes-its-own-position */
+:host([data-direction='grid']) ::slotted(*) {
+  --sherpa-group-index: calc(sibling-index() - 1);
+  --sherpa-group-col: calc(
+    var(--sherpa-group-index) - var(--_cols) * round(down, calc(var(--sherpa-group-index) / var(--_cols)), 1)
+  );
+  --sherpa-group-row: round(down, calc(var(--sherpa-group-index) / var(--_cols)), 1);
+  --sherpa-group-last-col: calc(var(--_cols) - 1);
+  --sherpa-group-last-row: calc(round(up, calc(sibling-count() / var(--_cols)), 1) - 1);
+  /* Every cell an outer box, CORNERS INCLUDED — the base rule above zeroed
+     them for the row case. Without this a Firefox grid drew six square cells
+     rather than six rounded ones, which is not what the class does.
+     The gate below joins them where `if()` exists. */
+  --sherpa-border-left: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-right: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-top: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-bottom: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
+
+/* `if()` is Chromium and WebKit only. Without it every cell keeps the outer
+   box above — correct, just not joined.
+   TRAP T-a-grid-group-needs-css-if */
+@supports (width: if(style(--x: 1): 1px; else: 2px)) {
+  :host([data-direction='grid']) ::slotted(*) {
+    --sherpa-border-left: if(
+      style(--sherpa-group-col: 0): var(--sherpa-display-mode-border-width-sm, 0.5px);
+      else: var(--sherpa-display-mode-border-width-xs, 0.25px)
+    );
+    --sherpa-border-right: if(
+      style(--sherpa-group-col: var(--sherpa-group-last-col)):
+        var(--sherpa-display-mode-border-width-sm, 0.5px);
+      else: var(--sherpa-display-mode-border-width-xs, 0.25px)
+    );
+    --sherpa-border-top: if(
+      style(--sherpa-group-row: 0): var(--sherpa-display-mode-border-width-sm, 0.5px);
+      else: var(--sherpa-display-mode-border-width-xs, 0.25px)
+    );
+    --sherpa-border-bottom: if(
+      style(--sherpa-group-row: var(--sherpa-group-last-row)):
+        var(--sherpa-display-mode-border-width-sm, 0.5px);
+      else: var(--sherpa-display-mode-border-width-xs, 0.25px)
+    );
+    /* Only the four outer corners round. */
+    --sherpa-border-rounding-top-left: if(
+      style(--sherpa-group-col: 0) and style(--sherpa-group-row: 0):
+        var(--sherpa-display-mode-border-rounding-base, 4px);
+      else: 0px
+    );
+    --sherpa-border-rounding-top-right: if(
+      style(--sherpa-group-col: var(--sherpa-group-last-col)) and style(--sherpa-group-row: 0):
+        var(--sherpa-display-mode-border-rounding-base, 4px);
+      else: 0px
+    );
+    --sherpa-border-rounding-bottom-left: if(
+      style(--sherpa-group-col: 0) and style(--sherpa-group-row: var(--sherpa-group-last-row)):
+        var(--sherpa-display-mode-border-rounding-base, 4px);
+      else: 0px
+    );
+    --sherpa-border-rounding-bottom-right: if(
+      style(--sherpa-group-col: var(--sherpa-group-last-col))
+        and style(--sherpa-group-row: var(--sherpa-group-last-row)):
+        var(--sherpa-display-mode-border-rounding-base, 4px);
+      else: 0px
+    );
+  }
+}

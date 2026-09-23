@@ -1,0 +1,15 @@
+<!--
+  sherpa-group — a row, column or grid of controls that reads as ONE object.
+
+  The wrapper owns the bookkeeping. Children stay as they are: no per-item
+  `data-group`, and a re-order, insert or delete needs nothing from anyone.
+  Position is DERIVED — `:first-child` / `:last-child` for a row or column, and
+  `sibling-index()` for a grid.
+
+  Public API:
+    data-direction  row (default) | column | grid
+    data-col-count  the grid's column count (2|3|4|5|6|8|10|12); grid only
+-->
+<template id="default">
+  <slot></slot>
+</template>
