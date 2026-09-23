@@ -9222,3 +9222,20 @@ See `T-a-superseded-chip-suspends-it-is-never-removed`, which IS implemented,
 on the half a component owns.
 
 - Site: `examples/views/records.js`
+
+### T-a-constructed-event-is-not-a-dispatched-one
+
+`new CustomEvent(...)` builds an object. Only `dispatchEvent` makes it public.
+
+The spec generator scanned for `new CustomEvent('name'` and wrote every hit
+into the contract as an event. `sherpa-data-grid` constructs
+`new CustomEvent('menu-clear', { detail: {}, bubbles: false })` and passes it
+straight to a handler as a plain argument — it is never dispatched — so the
+grid's contract carried a tenth event that no listener could ever receive.
+
+`bubbles: true` is the tell, and it is already the house rule: every public
+Sherpa event sets it, and `emit()` sets it for you. So the scan now requires
+`bubbles: true` on the constructor call. A private event object built for a
+handler does not set it, and is correctly left out of the contract.
+
+- Site: `scripts/generate-component-spec.mjs`

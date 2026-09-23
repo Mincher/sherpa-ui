@@ -370,10 +370,6 @@ events:
     detail:
       page: unknown
       pages: unknown
-  - $type: event
-    name: menu-clear
-    bubbles: true
-    composed: true
 tokens:
   head.background: "{sherpa.theme-surface-default-1}"
   head-row.background: "{sherpa.theme-surface-default-1}"

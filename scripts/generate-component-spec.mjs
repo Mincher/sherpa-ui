@@ -349,7 +349,12 @@ function emittedEvents(ts) {
   if (!ts) return out;
   const patterns = [
     /\bemit\(\s*['"`]([a-z][\w-]*)['"`]/g,
-    /new CustomEvent\(\s*['"`]([a-z][\w-]*)['"`]/g,
+    /* `bubbles: true` is what makes a CustomEvent PUBLIC. sherpa-data-grid
+       constructs `new CustomEvent('menu-clear', { bubbles: false })` and passes
+       it straight to a handler as an argument — never dispatched — and a bare
+       `new CustomEvent` scan wrote it into the contract as a tenth event.
+       TRAP T-a-constructed-event-is-not-a-dispatched-one */
+    /new CustomEvent\(\s*['"`]([a-z][\w-]*)['"`][^)]*bubbles:\s*true/g,
     /new Event\(\s*['"`]([a-z][\w-]*)['"`]/g,
   ];
   for (const re of patterns) {

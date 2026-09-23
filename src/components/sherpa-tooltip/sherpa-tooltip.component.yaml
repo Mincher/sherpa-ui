@@ -89,7 +89,7 @@ tokens:
   bubble.font-weight: "{sherpa.font-weight-regular}"
   bubble.line-height: "{sherpa.theme-content-line-height-small}"
   bubble.border-radius: "{sherpa.display-mode-border-rounding-base}"
-  bubble.box-shadow: "{sherpa.display-mode-size-2xs}"
+  bubble.box-shadow: "{sherpa.shadow-md}"
   bubble.transition: "{sherpa.motion-base}"
 $extensions:
   sherpa:
