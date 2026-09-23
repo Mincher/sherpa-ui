@@ -26,7 +26,7 @@ meet a problem and then hunt for its resolution 500 lines later.
 | 2 | A phantom event in the data-grid's contract | ✅ Fixed |
 | 3 | `@fires` is a dead convention | ✅ Fixed |
 | 4 | Repeated CSS blocks past the "third component" rule | ✅ Fixed (hover, card, elevation) · 🔶 Open (disabled — and it shrank) |
-| 5 | Dead code that actively misleads | ✅ Fixed (9 tokens) · 🔶 Open (3 items) |
+| 5 | Dead code that actively misleads | ✅ Fixed — 2 of the last 3 removed, 1 kept for a better reason |
 | 6 | One vocabulary, many spellings | ✅ Fixed (verbs, selection, label/heading, breadcrumbs) · 🔶 Open (`data-type`, `data-empty`, detail shapes) |
 | 7 | Composition, skipped in five places | ✅ Fixed (4 close buttons, file-upload, calendar, composer) · 🔶 Open (grid-cell, nav-section) |
 | 8 | State ownership — the named recurring bug | 🔶 Open — and the count shrank on inspection |
@@ -686,16 +686,55 @@ declared, so the fallback was the only value it ever had.
 
 ---
 
-#### 🔶 Still open — three items, re-checked 2026-09-23
+#### The last three — ✅ resolved, and they did not end the same way
 
-| what | where | measured now |
-|---|---|---|
-| `data-label` on line-chart | `sherpa-line-chart.html:5` documents it as "chart title" | **0** references in its TS or CSS |
-| 4 calendar cell attributes | `data-today`, `data-selected`, `data-range-end`, `data-in-range` | written at **9+ sites** in the TS, read by **0** CSS rules |
-| 3 toolbar cloning prototypes | `qf-row-tpl`, `qf-all-tpl`, `qf-divider-tpl` | declared in the HTML, referenced **nowhere** in `src/`, `test/` or `examples/` |
+Each needed a read rather than a sweep. One was kept.
 
-Each needs a read rather than a sweep: the calendar attributes may be a missing
-stylesheet rather than dead writes, and that is the opposite fix.
+**1. `data-label` on both charts — removed.** `sherpa-barchart` and
+`sherpa-line-chart` documented it as "chart title"; nothing read it, and
+**three** example call sites set a heading that never rendered.
+
+The visible heading comes from the sibling `<sherpa-container-header>`, and the
+question worth answering before deleting was whether the title stays settable
+from JS. It does — measured in a live browser rather than reasoned about:
+
+| on `sherpa-container-header` | result |
+|---|---|
+| `setAttribute('data-heading', …)` | updates `.title` |
+| `.set('data-heading', …)` | updates `.title` |
+| `.dataset.heading = …` | updates `.title` |
+| `sherpa-barchart` `data-label` | renders `""` |
+
+A chart that wants its own inner title has the `title` **slot**, which works.
+
+**2. The four calendar cell flags — kept, and the reason corrected.**
+`T-cell-state-is-the-only-paint` said the calendar's own CSS still reads
+`data-today`, `data-selected`, `data-in-range` and `data-range-end`. Measured:
+it reads **none** of them. `data-state` is the only paint source anywhere.
+
+But **eight assertions** in `reforged-calendar.spec.ts` query them, and each is
+one selector where `data-state` needs three values OR'd:
+
+```
+[data-in-range]                                            one
+[data-state="range-mid"], [data-state="range-start"], …    three
+```
+
+So they are a **test query surface**, not dead code. The trap and the code
+comment now say that instead of the stale claim. This is the same lesson as
+`.label` in `sherpa-tabs` earlier in this audit: check `test/` and `examples/`
+before removing something that renders nothing.
+
+**3. The three toolbar prototypes — removed.** `qf-row-tpl`, `qf-all-tpl` and
+`qf-divider-tpl` were superseded when stamping moved into `sherpa-menu`, which
+owns `menu-check-tpl`, `menu-radio-tpl` and `menu-all-tpl` — and deliberately
+keeps the `qf-all` class, with a comment saying it is "the name the rest of the
+system knows this row by".
+
+The divider went further than superseded. `sherpa-menu`'s own
+`T-unavailable-value-sorts-below-a-divider` records that the idea was
+**dropped**: a divider plus a grey row "said it a second, noisier way". Nothing
+creates a `qf-divider` node, so the orphaned `.chip .qf-divider` rule went too.
 
 
 ---
@@ -1440,11 +1479,10 @@ Ordered by what unblocks the most.
 | # | work | why it is next |
 |---:|---|---|
 | 1 | **State ownership** — teach `check-ownership.mjs` to see a template-declared lock, then judge the 15 toolbar writes per site | the named recurring bug; the gate under-reports by construction |
-| 2 | **Three dead-code items** | small, but each needs a read — the calendar one may be a *missing* stylesheet |
-| 3 | **`render-icon.ts` / the alias map** | 88 distinct ink boxes across 214 icons is the blocker; three questions first |
-| 4 | **`sherpa-data-grid` rebuild onto Grid Cell** | a dedicated session; the prerequisite (agreeing event shapes) is done |
-| 5 | **The flaky suite** | 12 non-deterministic failures, plus a webkit border-edges failure belonging to work elsewhere in the tree; it makes every other change harder to verify |
-| 6 | **The remaining naming rulings** | `data-type`'s nine meanings, `data-empty`'s three, and the detail-shape sweep across all 75 events. Decisions, not bugs |
+| 2 | **`render-icon.ts` / the alias map** | 88 distinct ink boxes across 214 icons is the blocker; three questions first |
+| 3 | **`sherpa-data-grid` rebuild onto Grid Cell** | a dedicated session; the prerequisite (agreeing event shapes) is done |
+| 4 | **The flaky suite** | 12 non-deterministic failures, plus a webkit border-edges failure belonging to work elsewhere in the tree; it makes every other change harder to verify |
+| 5 | **The remaining naming rulings** | `data-type`'s nine meanings, `data-empty`'s three, and the detail-shape sweep across all 75 events. Decisions, not bugs |
 
 ### Detail on the larger ones
 
