@@ -1,6 +1,8 @@
 /**
- * Shared constants that MORE THAN ONE component must agree on.
+ * shared-constants.ts — values MORE THAN ONE component must agree on.
  *
+ * Not icons, despite one of them being icon names: `NON_VALUE_ROWS` is a CSS
+ * selector, and three of the four importers want only that.
  * TRAP T-shared-values-two-components-must-agree-on
  */
 

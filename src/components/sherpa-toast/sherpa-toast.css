@@ -56,12 +56,9 @@
   border-color: var(--_border);
   background: var(--_surface);
   color: var(--_content);
-  box-shadow:
-    var(--sherpa-display-mode-size-2xs, 8px)
-    var(--sherpa-display-mode-size-2xs, 8px)
-    var(--sherpa-display-mode-size-sm, 16px)
-    -4px
-    var(--_shadow-color);
+  /* md geometry, but the toast's own status-tinted colour — so the shape is
+     written out rather than read from --sherpa-shadow-md. */
+  box-shadow: 8px 8px 16px -4px var(--_shadow-color);
 }
 
 /* ── Status icon ───────────────────────────────────────────────────── */

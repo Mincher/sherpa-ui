@@ -10,7 +10,7 @@
 import {
   DATA_PROPS, SHARED_PROPS, SherpaElement, coerceNum, clampNum, markNeedle,
 } from '../../core/ui/sherpa-element.js';
-import { ORGANISE_ICONS } from '../../core/ui/icons.js';
+import { ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
 import { nextSort, sortDirectionAttr, sortDirectionFrom } from '../../core/data/cycle.js';
 import { reduceRows } from '../../core/data/aggregate.js';
 import {

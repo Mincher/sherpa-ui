@@ -937,12 +937,20 @@ const densityComfortable = densityBlock('display-comfortable', 'comfortable');
 
 // ── elevation shadow convenience aliases ────────────────────────────────────
 const shadowAliasLines = [
-  // The shadow COLOUR is style-surface/shadow directly: Elevation carries geometry
-  // only, so `--sherpa-elevation-color` does not exist. One token also means a
-  // status re-point moves every shadow in the system together.
-  '  --sherpa-shadow-sm: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 1px) var(--sherpa-elevation-blur, 2px) var(--sherpa-elevation-spread, 0) var(--sherpa-style-surface-shadow, #35353d4c);',
-  '  --sherpa-shadow-md: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 4px) var(--sherpa-elevation-blur, 12px) var(--sherpa-elevation-spread, 0) var(--sherpa-style-surface-shadow, #35353d4c);',
-  '  --sherpa-shadow-lg: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 12px) var(--sherpa-elevation-blur, 32px) var(--sherpa-elevation-spread, 0) var(--sherpa-style-surface-shadow, #35353d4c);',
+  // GEOMETRY WRITTEN OUT, not read from --sherpa-elevation-*. Those default to
+  // `size-none` on :root and take a real value only from `[data-elevation=…]`,
+  // a bare selector that cannot cross a shadow boundary — so every one of these
+  // aliases resolved to `0px 0px 0px 0px` inside a component. Nine components
+  // hand-wrote the same three shapes as a result, and all nine matched the
+  // Figma values below, which is how the fault stayed invisible.
+  //
+  // The numbers are Elevation's own per-mode values (offset/blur/spread
+  // primitives, sm|md|lg). The COLOUR stays a var so a status re-point moves
+  // every shadow together.
+  // TRAP T-an-elevation-pin-cannot-reach-a-shadow-root
+  '  --sherpa-shadow-sm: 2px 2px 8px -4px var(--sherpa-style-surface-shadow, #35353d4c);',
+  '  --sherpa-shadow-md: 8px 8px 16px -4px var(--sherpa-style-surface-shadow, #35353d4c);',
+  '  --sherpa-shadow-lg: 8px 8px 32px -8px var(--sherpa-style-surface-shadow, #35353d4c);',
 ];
 
 // ── .sherpa-view frame utility — NO CONSUMER as of 2026-09-18 ───────────────

@@ -35,12 +35,7 @@
   border-color: var(--_border);
   color: var(--sherpa-style-content-base, #0c0b11);
   /* Figma pins Elevation=lg on the Dialog. */
-  box-shadow:
-    var(--sherpa-display-mode-size-2xs, 8px)
-    var(--sherpa-display-mode-size-2xs, 8px)
-    var(--sherpa-display-mode-size-2xl, 32px)
-    -8px
-    var(--sherpa-style-surface-shadow, #35353d4c);
+  box-shadow: var(--sherpa-shadow-lg);
 
   &::backdrop {
     background: color-mix(in srgb, var(--sherpa-display-mode-color-neutral-fixed-color-5, #0c0b11) 45%, transparent);

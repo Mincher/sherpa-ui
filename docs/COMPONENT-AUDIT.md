@@ -940,6 +940,85 @@ paired with its own `*Options` interface, which keeps a class beside its config.
 
 ---
 
+### 13 — Icons: four files, and only the name was wrong
+
+Will's note said three icon scripts looked like overkill. Measured, there are
+four, and they are a chain with one entry point rather than three overlapping
+doors:
+
+```
+icon-paths.ts    231 lines, 307 KB, GENERATED — "do not edit"
+icon-aliases.ts   41 lines, hand-written FA → Figma judgements
+   ↓
+render-icon.ts    92 lines — the one writer (renderIcon, hasIcon, upgradeIcons)
+   ↓
+components        2 importers
+```
+
+No redundancy to remove: 307 KB of generated path data and 28 hand-made
+judgements about what two icons *mean* are genuinely different things from the
+writer that stamps them.
+
+The real fault was the fourth file's **name**. `icons.ts` was imported by four
+components, and **three of them wanted `NON_VALUE_ROWS`** — a CSS selector, not
+an icon. Its own header already said "shared constants that more than one
+component must agree on", which is accurate.
+
+Renamed to `shared-constants.ts`; 5 import lines followed, including one in a
+test that a `src/`-only grep would have missed.
+
+**The traps gate caught the rename.** Two `Site:` entries still pointed at
+`src/core/ui/icons.ts`, and the count went 7 → 11 until they were updated —
+exactly the silent rot it exists to prevent.
+
+### 14 — Elevation was broken, not duplicated
+
+Nine components hand-write a `box-shadow`, each with a comment explaining that
+a `[data-elevation]` pin never reaches a shadow root. That reads as duplication.
+It is a **bug**, and the comments are nine people describing it.
+
+`--sherpa-shadow-sm/md/lg` resolved to `0px 0px 0px 0px` — an invisible shadow
+— inside every component, at every elevation. Measured on a real host:
+
+```
+before   --sherpa-shadow-sm = 0px 0px 0px 0px color-mix(…)
+after    --sherpa-shadow-sm = 2px 2px 8px -4px color-mix(…)
+```
+
+The aliases were built from `--sherpa-elevation-*`, which default to
+`size-none` on `:root` and take a real value only from `[data-elevation=…]` — a
+bare selector that cannot cross a shadow boundary.
+
+**The projector already documented the failure** in its `MODE_ALIAS_TARGETS`
+comment — *"resolves against :root… all zeros — so the shadow silently
+vanished"* — and had patched the Navigation collection only.
+
+Fixed by emitting Elevation's own per-mode geometry as literals, read from the
+Figma dump:
+
+| tier | offset | blur | spread |
+|---|---|---|---|
+| sm | 2px | 8px | −4px |
+| md | 8px | 16px | −4px |
+| lg | 8px | 32px | −8px |
+
+Those are **exactly** what the nine components had written by hand, which is
+why nothing ever looked wrong — the token was simply never used.
+`grep var(--sherpa-shadow-` across components returned zero.
+
+Six now read a token: dialog, overlay-panel (lg); menu, tooltip, app-shell
+(md); toast keeps the geometry inline because it tints the colour by status.
+`sherpa-nav` and `sherpa-metric` keep their own — nav uses its own projected
+`navigation-nav-shadow-*`, metric tints by trend.
+
+Painted shadows captured before and after: identical to the last decimal.
+
+`data-elevation` stays unwired — no component declares it, no example sets it.
+Making it work needs a per-component `:host([data-elevation])` rule, which is a
+separate decision. `TRAP T-an-elevation-pin-cannot-reach-a-shadow-root`.
+
+---
+
 ### The suite has load-dependent flakiness, and it will mislead you
 
 Full suite after this work: **1923 passed, 13 failed, 2 flaky** — the same
@@ -981,7 +1060,7 @@ an earlier round of the same.
 
 Four of the original five are done. What is left, in the order I would take it:
 
-### 1 — Elevation (9 components)
+### 1 — Elevation — DONE, see above
 
 Nine components each hand-write a `box-shadow`, each with its own comment
 explaining that a `[data-elevation]` pin is a bare selector in `tokens.css` and
@@ -1053,7 +1132,7 @@ classes with their own `*Options` interface each, which keeps a class beside its
 own config. The rule should be *per class* — constants, then the class, then
 nothing — rather than *per file*.
 
-### 6 — The icon modules
+### 6 — The icon modules — DONE, see above
 
 Will's note, 2026-09-23: three icon scripts looks like overkill for putting
 some SVGs into components.

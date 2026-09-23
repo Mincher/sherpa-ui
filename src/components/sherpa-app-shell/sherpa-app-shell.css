@@ -66,12 +66,7 @@
    itself on the way back up — no JS. */
 @container scroll-state(stuck: top) {
   .header ::slotted(*) {
-    box-shadow:
-      var(--sherpa-display-mode-size-2xs, 8px)
-      var(--sherpa-display-mode-size-2xs, 8px)
-      var(--sherpa-display-mode-size-sm, 16px)
-      -4px
-      var(--sherpa-style-surface-shadow, #35353d4c);
+    box-shadow: var(--sherpa-shadow-md);
   }
 }
 

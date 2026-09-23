@@ -14,7 +14,7 @@ import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import {
   DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_SYMBOLS, OP_TAKES, type FilterOp, valueSet,
 } from '../../core/data/store.js';
-import { NON_VALUE_ROWS } from '../../core/ui/icons.js';
+import { NON_VALUE_ROWS } from '../../core/ui/shared-constants.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-breadcrumbs/sherpa-breadcrumbs.js';
 import '../sherpa-input-text/sherpa-input-text.js';

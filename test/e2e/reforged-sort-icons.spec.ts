@@ -118,7 +118,7 @@ test('the grid and the toolbar read ONE glyph map, not two that match', async ({
   // There is now one map in core/icons.ts and both components import it, so the
   // real assertion is IDENTITY: the same object, not two that happen to agree.
   const r = await page.evaluate(async () => {
-    const { ORGANISE_ICONS } = await import('/dist/core/ui/icons.js') as {
+    const { ORGANISE_ICONS } = await import('/dist/core/ui/shared-constants.js') as {
       ORGANISE_ICONS: Record<string, string>;
     };
     const grid = customElements.get('sherpa-data-grid') as unknown as {

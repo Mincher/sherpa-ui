@@ -59,12 +59,7 @@
   border-end-end-radius: 0;
   color: var(--sherpa-style-content-base, #0c0b11);
   /* Figma pins Elevation=lg. */
-  box-shadow:
-    var(--sherpa-display-mode-size-2xs, 8px)
-    var(--sherpa-display-mode-size-2xs, 8px)
-    var(--sherpa-display-mode-size-2xl, 32px)
-    -8px
-    var(--sherpa-style-surface-shadow, #35353d4c);
+  box-shadow: var(--sherpa-shadow-lg);
 }
 
 .root[open] { display: flex; }

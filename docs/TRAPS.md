@@ -4925,7 +4925,7 @@ duplication was the problem.
 A glyph used by ONE component stays in that component. This is a shared vocabulary,
 not a dumping ground for every icon in the system.
 
-- Site: `src/core/ui/icons.ts`
+- Site: `src/core/ui/shared-constants.ts`
 
 ### T-non-value-rows-is-one-selector
 
@@ -4944,7 +4944,7 @@ while the toolbar and quick-filter excluded only `.qf-all`. Harmless at the time
 chip loop does not reach — but the two were one refactor apart from disagreeing about
 what a pick is.
 
-- Site: `src/core/ui/icons.ts`
+- Site: `src/core/ui/shared-constants.ts`
 
 ### T-pointer-stays-out-of-session
 
@@ -7245,6 +7245,43 @@ way up, since −5 is a fifth of the 25 span), the negative bar from 36 down to
 - Site: `src/components/sherpa-barchart/sherpa-barchart.css`
 - Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
 - Site: `test/e2e/reforged-barchart.spec.ts`
+
+### T-an-elevation-pin-cannot-reach-a-shadow-root
+
+`--sherpa-shadow-sm/md/lg` resolved to `0px 0px 0px 0px` — an invisible shadow
+— inside every component, at every elevation.
+
+The aliases were built from `--sherpa-elevation-offset-x/-y/blur/spread`. Those
+default to `size-none` on `:root` and take a real value only from
+`[data-elevation="sm|md|lg"]`, a BARE attribute selector in `tokens.css`. A bare
+selector cannot cross a shadow boundary, so inside a component the four
+geometry values were always zero and the alias built a shadow of nothing.
+
+Measured, not reasoned about: `getComputedStyle` on a `sherpa-container` host
+returned `0px 0px 0px 0px` for `--sherpa-shadow-sm` with and without
+`data-elevation` set.
+
+**The fault was invisible because everyone worked around it.** Nine components
+hand-wrote a `box-shadow`, each with a comment explaining that a
+`[data-elevation]` pin never reaches the shadow root. All nine landed on the
+Figma geometry anyway, so nothing looked wrong — the token was simply never
+used. `grep var(--sherpa-shadow-` across `src/components/` returned zero.
+
+The projector already knew: its `MODE_ALIAS_TARGETS` comment says
+*"`var(--sherpa-elevation-blur)` resolves against :root, i.e. the PRIMARY mode
+— `passthrough`, all zeros — so the shadow silently vanished"*. It patched the
+Navigation collection only.
+
+The aliases now carry Elevation's own per-mode geometry as literals — 2/2/8/-4,
+8/8/16/-4, 8/8/32/-8, read from the Figma dump, identical to what the nine
+components had written by hand. The COLOUR stays a `var` so a status re-point
+still moves every shadow together.
+
+`data-elevation` remains unwired: no component declares it and no example sets
+it. Making it work needs a per-component `:host([data-elevation])` rule, which
+is a separate decision.
+
+- Site: `scripts/project-tokens.mjs`
 
 ### T-rendered-settles-even-when-the-markup-does-not
 

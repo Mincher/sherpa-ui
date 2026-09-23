@@ -4,7 +4,7 @@
  * TRAP T-actions-were-a-slot
  */
 import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
-import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/icons.js';
+import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
 import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
 import {
   DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES,

@@ -50,12 +50,7 @@
   color: var(--sherpa-theme-content-body-base, #0c0b11);
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   /* Elevation=md. */
-  box-shadow:
-    var(--sherpa-display-mode-size-2xs, 8px)
-    var(--sherpa-display-mode-size-2xs, 8px)
-    var(--sherpa-display-mode-size-sm, 16px)
-    -4px
-    var(--sherpa-style-surface-shadow, #35353d4c);
+  box-shadow: var(--sherpa-shadow-md);
 }
 
 .menu:popover-open {

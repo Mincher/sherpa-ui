@@ -40,12 +40,7 @@
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   /* Elevation=md, written out: a [data-elevation] pin is a bare selector in
      tokens.css and never reaches this shadow root. */
-  box-shadow:
-    var(--sherpa-display-mode-size-2xs, 8px)
-    var(--sherpa-display-mode-size-2xs, 8px)
-    var(--sherpa-display-mode-size-sm, 16px)
-    -4px
-    var(--sherpa-style-surface-shadow, #35353d4c);
+  box-shadow: var(--sherpa-shadow-md);
 
   /* Hidden state — unreadable to AT, no pointer capture. */
   visibility: hidden;

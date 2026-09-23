@@ -9,7 +9,7 @@ import { DEFAULT_OP, OP_TAKES, type FilterOp, valueSet } from '../../core/data/s
 import {
   fieldState, filterFace, type FilterFace, type FilterState,
 } from '../../core/data/filter-state.js';
-import { NON_VALUE_ROWS } from '../../core/ui/icons.js';
+import { NON_VALUE_ROWS } from '../../core/ui/shared-constants.js';
 // Floating, so the count tooltip escapes the toolbar's clipping chip run.
 import '../sherpa-tooltip/sherpa-tooltip.js';
 

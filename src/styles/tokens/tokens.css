@@ -2105,9 +2105,9 @@
   --sherpa-elevation-spread: var(--sherpa-display-mode-size-none);
 
     /* elevation shadow convenience aliases */
-  --sherpa-shadow-sm: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 1px) var(--sherpa-elevation-blur, 2px) var(--sherpa-elevation-spread, 0) var(--sherpa-style-surface-shadow, #35353d4c);
-  --sherpa-shadow-md: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 4px) var(--sherpa-elevation-blur, 12px) var(--sherpa-elevation-spread, 0) var(--sherpa-style-surface-shadow, #35353d4c);
-  --sherpa-shadow-lg: var(--sherpa-elevation-offset-x, 0) var(--sherpa-elevation-offset-y, 12px) var(--sherpa-elevation-blur, 32px) var(--sherpa-elevation-spread, 0) var(--sherpa-style-surface-shadow, #35353d4c);
+  --sherpa-shadow-sm: 2px 2px 8px -4px var(--sherpa-style-surface-shadow, #35353d4c);
+  --sherpa-shadow-md: 8px 8px 16px -4px var(--sherpa-style-surface-shadow, #35353d4c);
+  --sherpa-shadow-lg: 8px 8px 32px -8px var(--sherpa-style-surface-shadow, #35353d4c);
   }
 
   [data-elevation="sm"] {
