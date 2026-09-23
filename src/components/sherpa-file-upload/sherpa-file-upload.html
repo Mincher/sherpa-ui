@@ -39,8 +39,9 @@
 
     <div class="actions" part="actions">
       <slot name="actions"></slot>
-      <button class="clear-all sherpa-border-edges" part="clear-all" type="button">Clear all</button>
-      <button class="upload" part="upload" type="button">Upload</button>
+      <sherpa-button class="clear-all" part="clear-all" data-size="sm">Clear all</sherpa-button>
+      <sherpa-button class="upload" part="upload" data-size="sm"
+                     data-look="saturated">Upload</sherpa-button>
     </div>
 
     <span class="helper" part="helper"></span>
@@ -58,7 +59,9 @@
         </span>
         <span class="file-status" part="file-status"></span>
       </span>
-      <button class="file-remove sherpa-border-edges sherpa-border-corners" type="button" aria-label="Remove file">×</button>
+      <sherpa-button class="file-remove" data-type="icon" data-size="xs"
+                      data-look="transparent" data-icon-start="fa-solid fa-xmark"
+                      aria-label="Remove file"></sherpa-button>
     </li>
   </template>
 </template>

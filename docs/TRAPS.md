@@ -7983,7 +7983,6 @@ property cannot express.
 - Site: `src/components/sherpa-nav-item/sherpa-nav-item.css`
 - Site: `src/components/sherpa-nav/sherpa-nav.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
-- Site: `src/components/sherpa-file-upload/sherpa-file-upload.css`
 ### T-one-value-one-declaration
 
 The focus indicator was written by hand at **48 sites across 29 files** —

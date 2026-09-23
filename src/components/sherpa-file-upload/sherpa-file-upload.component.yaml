@@ -61,16 +61,17 @@ anatomy:
           part: actions
           children:
             - slot: actions
-            - el: button
-              class: clear-all sherpa-border-edges
+            - el: sherpa-button
+              class: clear-all
               part: clear-all
               attrs:
-                type: button
-            - el: button
+                data-size: sm
+            - el: sherpa-button
               class: upload
               part: upload
               attrs:
-                type: button
+                data-size: sm
+                data-look: saturated
         - el: span
           class: helper
           part: helper
@@ -107,10 +108,13 @@ anatomy:
                 - el: span
                   class: file-status
                   part: file-status
-            - el: button
-              class: file-remove sherpa-border-edges sherpa-border-corners
+            - el: sherpa-button
+              class: file-remove
               attrs:
-                type: button
+                data-type: icon
+                data-size: xs
+                data-look: transparent
+                data-icon-start: fa-solid fa-xmark
                 aria-label: Remove file
 props:
   - $type: prop
@@ -162,9 +166,6 @@ states:
   - $type: state
     name: has-files
     selector: ":host([data-has-files])"
-  - $type: state
-    name: loading
-    selector: ":host([data-loading])"
   - $type: state
     name: disabled
     selector: ":host([disabled])"
@@ -260,12 +261,6 @@ tokens:
   file-status.font-size: "{sherpa.font-size-body-small}"
   file-status.line-height: "{sherpa.theme-content-line-height-small}"
   file-status.color: "{sherpa.theme-content-body-1}"
-  file-remove.inline-size: "{sherpa.structure-height}"
-  file-remove.block-size: "{sherpa.structure-height}"
-  file-remove.border-color: "{sherpa.style-border-base}"
-  file-remove.background: "{sherpa.style-surface-base}"
-  file-remove.color: "{sherpa.theme-content-body-1}"
-  file-remove.font-size: "{sherpa.theme-content-size-base}"
   max-size.font-size: "{sherpa.font-size-body-small}"
   max-size.line-height: "{sherpa.theme-content-line-height-small}"
   max-size.color: "{sherpa.theme-content-body-1}"
@@ -273,22 +268,6 @@ tokens:
   allowed-types.line-height: "{sherpa.theme-content-line-height-small}"
   allowed-types.color: "{sherpa.theme-content-body-1}"
   actions.gap: "{sherpa.display-mode-space-base}"
-  clear-all.gap: "{sherpa.display-mode-space-xs}"
-  clear-all.min-block-size: "{sherpa.display-mode-size-2xl}"
-  clear-all.padding-inline: "{sherpa.display-mode-space-sm}"
-  clear-all.border-radius: "{sherpa.display-mode-border-rounding-base}"
-  clear-all.font-size: "{sherpa.font-size-body-base}"
-  clear-all.font-weight: "{sherpa.font-weight-medium}"
-  upload.gap: "{sherpa.display-mode-space-xs}"
-  upload.min-block-size: "{sherpa.display-mode-size-2xl}"
-  upload.padding-inline: "{sherpa.display-mode-space-sm}"
-  upload.border-radius: "{sherpa.display-mode-border-rounding-base}"
-  upload.font-size: "{sherpa.font-size-body-base}"
-  upload.font-weight: "{sherpa.font-weight-medium}"
-  clear-all.border-color: "{sherpa.theme-border-default-2}"
-  clear-all.color: "{sherpa.theme-content-body-1}"
-  upload.background: "{sherpa.style-indicator-accent}"
-  upload.color: "{sherpa.theme-content-body-base-fixed}"
 $extensions:
   sherpa:
     figmaName: File Uploader

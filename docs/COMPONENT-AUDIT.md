@@ -1167,6 +1167,62 @@ longer exist, because the `--tint` pair now lives once, inside `sherpa-button`.
 
 ---
 
+### 17 — `sherpa-file-upload`: three buttons composed, one left alone
+
+Four raw `<button>` elements, 65 of its 275 CSS lines. Three were re-derivations
+of `sherpa-button`; one was not, and telling them apart mattered.
+
+| button | what it is | done |
+|---|---|---|
+| `.clear-all` + `.upload` | a secondary/primary action pair | composed — `data-look="saturated"` on the primary |
+| `.file-remove` | the same close button as callout/toast/tag/chip | composed — `data-type="icon"` |
+| `.browse` | **an inline text link inside a sentence** | left as a raw `<button>` |
+
+`.browse` sits mid-sentence — *"Drag and drop files here, or browse"*. Wrapping
+it in a button box would be the opposite of the fix.
+
+**CSS 275 → 214 lines.** The `.clear-all`/`.upload` block alone was a complete
+secondary/primary pair written by hand: box, radius, focus ring, hover, and a
+disabled rule. `sherpa-button` carries all of it as `data-look` tiers.
+
+The delegated remove handler needed a real change, not just a rename:
+
+```ts
+// before — event.target, which happens to work
+const btn = (event.target as HTMLElement).closest('.file-remove');
+// after — the composed path, which is the honest place to look
+const btn = this.pathFind(event, '.file-remove');
+```
+
+A composed `sherpa-button` retargets its event to the host, so `target.closest`
+would have worked by luck. `pathFind` walks `composedPath()` and is what the
+base class offers for exactly this.
+
+#### The same probe mistake, twice
+
+I reported `.upload` had **lost its blue** — `rgba(0,0,0,0)` against a baseline
+of `rgb(59,76,205)`. It had not: a composed button paints on its inner
+`.trigger`, and the host is transparent by design. The trigger was
+`rgb(59, 76, 205)` throughout.
+
+That is the second time in two commits that measuring the host instead of the
+trigger produced a false alarm. It is now written into the test helper:
+
+```ts
+/** Click a composed sherpa-button: await its own render, hit its inner trigger. */
+async function pressComposed(host: Element | null): Promise<void> { … }
+```
+
+Three existing tests needed it too.
+
+**One real visual change:** the actions are 24px tall (the `sm` token) rather
+than the hand-written 32px, and `.clear-all` gained the default button's white
+surface instead of transparent. Both are the design system's own secondary
+style — `examples/templates/records.html:115` uses a bare
+`<sherpa-button>Cancel</sherpa-button>` for the same role.
+
+---
+
 ### The suite has load-dependent flakiness, and it will mislead you
 
 Full suite after this work: **1923 passed, 13 failed, 2 flaky** — the same
@@ -1232,7 +1288,7 @@ These need a decision before code, because each one picks a winner:
 
 The breadcrumbs half is done — see "Breadcrumbs: one name" above.
 
-### 3 — Composition — close button DONE, three cases left
+### 3 — Composition — close button + file-upload DONE, two cases left
 
 - `sherpa-file-upload` hand-draws four buttons (~95 of its 279 CSS lines)
 - `sherpa-calendar` re-implements the menu's card and footer (~76 lines)

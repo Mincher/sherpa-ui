@@ -4,6 +4,7 @@
  * CSS owns the drag highlight and the disabled look; JS holds the files.
  */
 import { SherpaElement, coerceNum } from '../../core/ui/sherpa-element.js';
+import '../sherpa-button/sherpa-button.js';
 
 export class SherpaFileUpload extends SherpaElement {
   static override css = new URL('./sherpa-file-upload.css', import.meta.url);
@@ -29,9 +30,9 @@ export class SherpaFileUpload extends SherpaElement {
     zone?.addEventListener('drop', this.#onDrop);
 
     this.#input?.addEventListener('change', this.#onInputChange);
-    this.$('.file-list')?.addEventListener('click', this.#onListClick);
-    this.$('.clear-all')?.addEventListener('click', this.#onClearAll);
-    this.$('.upload')?.addEventListener('click', this.#onUpload);
+    this.$('.file-list')?.addEventListener('button-click', this.#onListClick);
+    this.$('.clear-all')?.addEventListener('button-click', this.#onClearAll);
+    this.$('.upload')?.addEventListener('button-click', this.#onUpload);
   }
 
   override onChange(name: string): void {
@@ -121,7 +122,9 @@ export class SherpaFileUpload extends SherpaElement {
   }
 
   #onListClick = (event: Event): void => {
-    const btn = (event.target as HTMLElement).closest('.file-remove');
+    // pathFind, not target.closest: a composed sherpa-button retargets its
+    // event to the host, so the path is the honest place to look.
+    const btn = this.pathFind(event, '.file-remove');
     if (!btn) return;
     const row = btn.closest<HTMLElement>('.file-item');
     // -1, not Number(): `Number(null)` is 0, which would splice the FIRST file.

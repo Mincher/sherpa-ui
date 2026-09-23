@@ -168,29 +168,6 @@
 /* Dismiss — Figma Button/Type=icon, default look. */
 .file-remove {
   flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  inline-size: var(--sherpa-structure-height, 32px);
-  block-size: var(--sherpa-structure-height, 32px);
-  /* border-style + per-edge widths: .sherpa-border-edges in the template. */
-  border-color: var(--sherpa-style-border-base, #b3b3c3);
-  background: var(--sherpa-style-surface-base, #ffffff);
-  color: var(--sherpa-theme-content-body-1, #35353d);
-  font-size: var(--sherpa-theme-content-size-base, 14px);
-  line-height: 1;
-  cursor: pointer;
-
-  /* Hover and pressed come from sherpa-base.css. `currentColor` resolves where
-     the property is USED, so one declaration shades every component in its own
-     ink — and a color-mix IS the longhand, so there is no function to guard.
-     TRAP T-a-css-function-needs-its-longhand-first */
-  &:hover { background: var(--sherpa-shade-hover); }
-  &:active { background: var(--sherpa-shade-active); }
-  &:focus-visible {
-    outline: none;
-    box-shadow: var(--sherpa-focus-ring);
-  }
 }
 
 /* ── Disabled — inactive tokens, never opacity ───────────────────────── */
@@ -232,44 +209,6 @@
 
 .clear-all,
 .upload {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sherpa-display-mode-space-xs, 8px);
-  min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
-  padding-inline: var(--sherpa-display-mode-space-sm, 12px);
-  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
-  font-size: var(--sherpa-font-size-body-base, 14px);
-  font-weight: var(--sherpa-font-weight-medium, 500);
-  cursor: pointer;
-  transition: background-color 100ms ease, border-color 100ms ease;
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: var(--sherpa-focus-ring);
-  }
-}
-/* Clear all — secondary */
-.clear-all {
-  /* border-style + per-edge widths: .sherpa-border-edges in the template. */
-  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
-  background: transparent;
-  color: var(--sherpa-theme-content-body-1, #35353d);
-
-  &:hover { background: transparent; }
-}
-/* Upload — primary */
-.upload {
-  border: none;
-  background: var(--sherpa-style-indicator-accent, #3b4ccd);
-  color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
-
-  &:hover { background: var(--sherpa-theme-surface-accent-hover, #2f4bc4); }
-}
-:host([data-loading]) .upload,
-:host([disabled]) :is(.clear-all, .upload) {
-  pointer-events: none;
-  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
-  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+  /* sherpa-button owns the box, ring, hover and disabled ink. */
+  flex-shrink: 0;
 }
