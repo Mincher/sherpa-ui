@@ -607,6 +607,14 @@ two different rings from one function.
 `data-type="donut | pie"`, where pie fills to the centre. So this is folding
 TWO components, not building a third mode.
 
+Will's rule for it — *"0 inner radius and no corner rounding on segments"* —
+found a live bug on the way in: the inner radius was right, but `radius: CORNER`
+went to every slice, so a pie's point was rounded off and its path began one
+unit short of the centre. Fixed 2026-09-23,
+`T-a-pie-slice-has-no-rounded-corner`. The consolidated component needs the same
+rule: rounding belongs to a corner that sits on two ARCS, not to one where two
+straight edges meet.
+
 What is actually different, measured:
 
 | | donut | gauge |
