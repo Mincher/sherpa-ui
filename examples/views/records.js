@@ -5,7 +5,7 @@
  */
 import {
   DataSource, SherpaToast, persistView, viewOptions, onViewPicked,
-  countBy, reduceRows, bindSelection, andFilter, picksClause,
+  countBy, reduceRows, bindSelection, andFilter, picksClause, bindFitGrid,
 } from '../../dist/index.js';
 import { customerStore, customersReady, customers, columns, plans, regions, customerOrgs, states }
   from './records-data.js';
@@ -100,6 +100,11 @@ export async function init(root) {
     const clauses = [...columnClauses.values()];
     source.contribute('columns', andFilter(clauses));
   };
+
+  /* The content grid FITS its area: rows hug, and the last card takes the
+     remainder. CSS owns the layout; this supplies the one number it cannot
+     see. TRAP T-a-fit-grid-needs-its-row-count */
+  const contentGrid = root.querySelector('.sherpa-grid[data-rows="fit"]');
 
   const grid      = root.querySelector('#grid');
   const qft       = root.querySelector('#qft');
@@ -233,6 +238,8 @@ export async function init(root) {
      pushing rows into components the router has already removed. */
   const page = new AbortController();
   const signal = page.signal;
+
+  if (contentGrid) bindFitGrid(contentGrid, { signal });
 
   /* ROW ACTIONS declared ONCE. The grid draws them in its pinned trailing
      column and the toolbar reads the same list back via `grid.actionsFor(n)`,

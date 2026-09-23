@@ -42,7 +42,7 @@
   display: grid;
   grid-template-rows: 1fr;
   block-size: 100%;
-  min-block-size: 100vh;
+  min-block-size: 0;
   margin-inline-start: var(--_content-inset);
   transition: margin-inline-start 160ms ease;
 }
@@ -85,6 +85,12 @@
   position: relative;
   z-index: 1;
   isolation: isolate;
+  /* A COLUMN, so `.view` takes what the sticky header leaves rather than the
+     whole scroller. As a plain block a `block-size: 100%` view started BELOW
+     the header and still ran a header's height past the fold.
+     TRAP T-a-fit-grid-needs-a-sized-parent */
+  display: flex;
+  flex-direction: column;
 }
 
 /* The inset follows the rail's LATCHED state only — hover reveals over the top. */
@@ -107,6 +113,16 @@
   flex: 1 1 auto;
   min-block-size: 0;
 }
+
+/* THE SHELL ALWAYS FITS THE VIEWPORT. The CONTENT decides whether it scrolls
+   or fits — `.content` is the scroller either way, and a view that fits simply
+   does not overflow it.
+
+   `min-block-size: 100vh` on .frame made the shell GROW with its content, so a
+   `100%` inside a view resolved against that growth (1809px in a 900px area)
+   and a fit grid had nothing to measure against.
+   TRAP T-a-fit-grid-needs-a-sized-parent */
+.view { flex: 1 1 auto; }
 
 /* ── Optional regions ───────────────────────────────────────────────────
    Dropping the rail must also drop the inset, or the content keeps a gutter

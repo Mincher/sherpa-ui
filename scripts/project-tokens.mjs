@@ -1196,7 +1196,52 @@ const gridUtilityBlock = `  /* Layout grid — the track system views place thei
   .sherpa-grid > [data-span='6']  { --_span: 6; }
   .sherpa-grid > [data-span='8']  { --_span: 8; }
   .sherpa-grid > [data-span='12'] { --_span: 12; }
-  .sherpa-grid > [data-span='full'] { grid-column: 1 / -1; }`;
+  .sherpa-grid > [data-span='full'] { grid-column: 1 / -1; }
+
+  /* ── Row sizing — two variants, and the default is neither ───────────────
+     No attribute: rows size to their CONTENT and the page scrolls, which is
+     how every view behaved before these existed.
+     TRAP T-a-content-grid-has-two-row-modes */
+
+  /* FIXED — every row one grid row high, and the area scrolls.
+
+     block-size: 100% is what makes overflow mean anything: without it the grid
+     grew to 656px inside a 500px parent and scrolled nothing. */
+  .sherpa-grid[data-rows='fixed'] {
+    grid-auto-rows: var(--sherpa-layout-grid-row-height, 64px);
+    block-size: 100%;
+    min-block-size: 0;
+    overflow-y: auto;
+  }
+
+  /* FIT — rows hug their content, the grid fills its area exactly, and one
+     item takes what is left. Nothing scrolls.
+
+     --_fit-rows is the ROW COUNT BEFORE THE FILLER, written by JS because CSS
+     cannot see it. A grid item can never be taller than its row, so the ROW
+     must be 1fr — and there is no way to name the last auto row. Seven shapes
+     were measured; the trap lists them.
+     TRAP T-a-fit-grid-needs-its-row-count */
+  .sherpa-grid[data-rows='fit'] {
+    block-size: 100%;
+    min-block-size: 0;
+    /* AUTO, not hidden: when the rows above already exceed the area the filler
+       hits its floor and the grid scrolls rather than crushing it. Content is
+       never lost — at that size it simply behaves like the default mode. */
+    overflow-y: auto;
+    grid-template-rows: repeat(var(--_fit-rows, 0), min-content) 1fr;
+  }
+  /* The filler, named by data-grow; with none, the LAST child fills.
+     Its FLOOR is two grid rows: below that there is no room for a header and a
+     line of content, so scrolling is the honest answer. */
+  .sherpa-grid[data-rows='fit'] > [data-grow],
+  .sherpa-grid[data-rows='fit']:not(:has(> [data-grow])) > :last-child {
+    min-block-size: calc(
+      2 * var(--sherpa-layout-grid-row-height, 64px)
+      + var(--sherpa-layout-grid-gap-vertical, 16px)
+    );
+    block-size: 100%;
+  }`;
 
 const layoutLayer = `@layer layout {
 ${rootBlock(layers.layout.root)}

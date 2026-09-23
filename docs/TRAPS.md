@@ -737,6 +737,7 @@ tears down every binding, listener and persister a view made.
 - Site: `src/core/browser/persist-view.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/filter-state.ts`
+- Site: `src/core/ui/fit-grid.ts`
 
 ### T-steer-only-populate-means-chips
 
@@ -7245,6 +7246,92 @@ way up, since −5 is a fifth of the 25 span), the negative bar from 36 down to
 - Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
 - Site: `test/e2e/reforged-barchart.spec.ts`
 
+### T-a-content-grid-has-two-row-modes
+
+`.sherpa-grid` is a layout MIXIN — it works in any sized box, with or without
+an app shell, and `data-rows` picks how its rows are sized:
+
+| | |
+|---|---|
+| (none) | rows hug their content and the grid OVERFLOWS its parent — how every view behaved before these existed |
+| `fixed` | every row one grid row high; the grid fills its parent and SCROLLS |
+| `fit` | rows hug, the grid fills its parent exactly, and one item takes the rest |
+
+`block-size: 100%` is what makes `overflow` mean anything in `fixed`: without
+it the grid grew to 656px inside a 500px parent and scrolled nothing.
+
+**WHEN A FIT GRID CANNOT FIT, IT SCROLLS.** The rows above the filler may
+already exceed the area — three `data-rows="6"` cards at 464px each in a 768px
+window need 1288px. Crushing the filler to 2px loses content, so it has a FLOOR
+of two grid rows and `overflow-y: auto` takes over below that. The page then
+behaves like the default mode at that size, which is the honest answer.
+
+The DEFAULT is neither, so nothing that existed before changed.
+
+- Site: `examples/templates/records.html`
+- Site: `scripts/project-tokens.mjs`
+- Site: `test/e2e/reforged-fit-grid.spec.ts`
+
+### T-a-fit-grid-needs-its-row-count
+
+A grid item can never be taller than its ROW, so filling the remainder means
+the row itself must be `1fr` — and CSS has no way to name the last auto row.
+
+Seven shapes were measured before settling. Every one of them failed:
+
+| tried | result |
+|---|---|
+| `grid-auto-rows: min-content` | filler 18px — a min-content row cannot grow |
+| `grid-auto-rows: auto` | 242px — every row splits the slack equally |
+| `grid-auto-rows: minmax(64px, auto)` | the same 242px |
+| `grid-auto-rows: min-content 1fr` | the pattern REPEATS — right only on an even row |
+| `grid-row: sibling-index() / -1` | supported, but that is a CHILD index: four metrics on one row make index 5 = row 2 |
+| `align-self: stretch` + `height: 100%` | 18px — it stretches WITHIN its own row |
+| flex-wrap, spans as basis | 242px — `align-content` splits between LINES |
+
+`grid-template-rows: repeat(n-1, min-content) 1fr` works, and `n` is the one
+number CSS cannot see: the row count depends on how the spans WRAPPED, which
+is resolved during layout. `bindFitGrid` supplies it as `--_fit-rows` and
+nothing else.
+
+It is counted from laid-out POSITIONS, never by adding up `data-span` values —
+that re-implements wrapping, wrongly, the moment a span wraps. And it is
+measured with `grid-template-rows: none` for one frame, because leaving the
+template on measures the layout the count itself produced: with
+`--_fit-rows: 0` the template is a lone `1fr`, four quarter-width items wrapped
+onto TWO rows, and the count came back one too many.
+
+The filler is `data-grow`; with none, the LAST child fills.
+
+- Site: `examples/views/records.js`
+- Site: `scripts/project-tokens.mjs`
+- Site: `src/core/ui/fit-grid.ts`
+- Site: `src/index.ts`
+- Site: `test/e2e/reforged-fit-grid.spec.ts`
+
+### T-a-fit-grid-needs-a-sized-parent
+
+`block-size: 100%` needs an unbroken chain of sized ancestors, and an app
+shell built to SCROLL does not have one.
+
+`sherpa-app-shell` had `min-block-size: 100vh` on its frame, so the shell GREW
+with its content; a view's `100%` then resolved against that growth — 1809px
+inside a 900px area — and a fit grid had nothing to measure.
+
+Will's ruling: **the shell always fits the viewport; the CONTENT decides
+whether it scrolls or fits.** So the frame caps at `100%`, `.view` passes the
+height through, and a scrolling view simply overflows `.content` as it always
+did. There is no `data-fit` on the shell — that put the choice at the wrong
+level.
+
+`.content` is a FLEX COLUMN, which is the half that is easy to miss: as a
+plain block, a `block-size: 100%` view took the whole scroller and started
+BELOW the 120px sticky header, so it ran a header's height past the fold.
+`.view` takes what the header leaves instead.
+
+- Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
+- Site: `test/e2e/reforged-fit-grid.spec.ts`
+
 ### T-a-band-label-names-what-it-counts
 
 `bandBy` cuts a continuous field into bands. They are HALF-OPEN — `[0,20)`,
@@ -8374,6 +8461,7 @@ answer. `legend-breakdown-change` still fires for a caller who wants the
 narrower detail.
 
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
+- Site: `test/e2e/reforged-chart-legend.spec.ts`
 
 ### T-a-horizontal-legend-is-three-by-two
 

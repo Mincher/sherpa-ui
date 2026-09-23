@@ -33,8 +33,15 @@
                                    data-reset-on-populate></sherpa-quick-filter-toolbar>
     </sherpa-app-header>
 
-    <!-- The per-view content is fetched + injected here by the router. -->
-    <main id="view-root"></main>
+    <!-- The per-view content is fetched + injected here by the router.
+
+         `block-size: 100%` PASSES THE SHELL'S HEIGHT THROUGH. Without it a
+         `data-rows="fit"` grid has nothing to measure against: `100%` needs an
+         unbroken chain of sized ancestors, and this wrapper broke it — the
+         grid resolved against its own 1809px content instead of the 900px
+         area. A scrolling view is unaffected; it overflows this box exactly as
+         it overflowed the shell. TRAP T-a-fit-grid-needs-a-sized-parent -->
+    <main id="view-root" style="min-block-size: 0"></main>
   </sherpa-app-shell>
 
   <!-- Outside the app shell on purpose: the menu is a popover in the top layer,
@@ -205,6 +212,7 @@
 
       // 2) Inject into the app-shell content slot.
       viewRoot.innerHTML = markup;
+
 
       // 3) Wait for the shell chrome to define, then import + run the view module.
       await customElements.whenDefined('sherpa-app-shell');

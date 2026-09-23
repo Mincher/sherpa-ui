@@ -1,7 +1,11 @@
 <!-- Content-only markup for the "records" view, injected into the app-shell's
      content slot by the SPA router. views/records.js wires the data.
      No section header: the APP HEADER owns the view's name. -->
-<div class="sherpa-grid">
+<!-- data-rows="fit": the rows hug their content and the LAST card takes the
+     remainder, so the view fills the content area and nothing scrolls but the
+     grid inside its own card. records.js calls bindFitGrid on it.
+     TRAP T-a-content-grid-has-two-row-modes -->
+<div class="sherpa-grid" data-rows="fit">
   <!-- SUMMARIES OF THE SAME ROWS. Every one is bound to the view's DataSource
        with an `as` adapter, so a filter set anywhere re-computes all of them.
        Nothing here is hardcoded and nothing recounts by hand.
@@ -44,10 +48,11 @@
     </sherpa-gauge-chart>
   </sherpa-container>
 
-  <!-- data-rows="8" fixes the card height so the grid SCROLLS inside it instead
-       of pushing the pager off screen. data-padding="none" keeps the block inset
-       at zero so each part's own divider meets both card edges. -->
-  <sherpa-container data-span="full" data-rows="8"
+  <!-- data-grow: this card takes whatever the rows above leave, so the grid
+       scrolls inside it instead of pushing the pager off screen. No data-rows
+       here — the fit grid decides the height. data-padding="none" keeps the
+       block inset at zero so each part's own divider meets both card edges. -->
+  <sherpa-container data-span="full" data-grow
                     data-padding="none" data-padding-inline="md" data-fill>
 
     <!-- The toolbar brings its own padding and bottom rule, so the container

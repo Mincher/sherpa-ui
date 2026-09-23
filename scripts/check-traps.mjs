@@ -30,6 +30,9 @@ const SOURCES = [
   // The example TEMPLATES too. A citation in the Add-customer dialog was
   // unchecked, which is how a missing form field went unnoticed.
   'examples/templates/*.html',
+  // The two ENTRY POINTS. Both carry citations and neither was scanned.
+  'src/index.ts',
+  'src/data.ts',
 ];
 
 const HEADING = /^###\s+(T-[a-z0-9-]+)\s*$/;
