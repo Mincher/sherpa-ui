@@ -99,6 +99,11 @@ props:
       saturated (primary) | transparent (tertiary) (omitted = default / "secondary": white surface,
       grey border, dark ink)
   - $type: prop
+    name: data-open
+    type: string
+    kind: style
+    description: set by JS while its slotted menu is open — CSS only
+  - $type: prop
     name: data-size
     type: enum
     kind: style
@@ -141,6 +146,9 @@ states:
     name: transparent
     selector: ":host([data-look=\"transparent\"])"
   - $type: state
+    name: open
+    selector: ":host([data-open])"
+  - $type: state
     name: icon
     selector: ":host([data-type=\"icon\"])"
   - $type: state
@@ -165,6 +173,9 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: read/write JS properties (templateId). See $extensions.sherpa.jsProps.
+  - $type: capability
+    api: js-methods
+    description: callable from a view definition's state block (show, hide). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: button-click
@@ -184,6 +195,13 @@ tokens:
 $extensions:
   sherpa:
     figmaName: Button
+    methods:
+      - $type: method
+        name: show
+        args: "trigger?: HTMLElement"
+      - $type: method
+        name: hide
+        args: ""
     category: control
     variantAxes:
       - name: Type

@@ -165,6 +165,7 @@ events:
     bubbles: true
     composed: true
 tokens:
+  scrim.background: "{sherpa.display-mode-color-neutral-fixed-color-5}"
   root.border-start-start-radius: "{sherpa.border-rounding-top-left}"
   root.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
   root.color: "{sherpa.style-content-base}"

@@ -335,27 +335,48 @@ re-export, re-project — never hand-edit `tokens.css`. Activate a theme via
 `ThemeManager` handles persistence. There is no `light-dark()` in component CSS — the
 display-mode layer owns mode handling.
 
-### Shared CSS lives in `sherpa-base.css`
+### Shared CSS lives in SEVEN sheets
 
-It is adopted into EVERY shadow root, so a class defined there works in all 58
-components. Reach for it when the same rule appears in a third component —
-`.chart-tip` (the five charts) and `.sherpa-snap-group` both got there that way.
+`src/index.ts` puts seven stylesheets into `SherpaElement.sharedStyles`, and
+every one is adopted into every shadow root:
 
-`.sherpa-snap-group` on a WRAPPER squares its children's inner corners so a row
-of controls reads as one object. By POSITION (`:first-child` / `:last-child`),
-not by `[data-snap]`, so a re-order survives. Each child keeps its own
-`data-snap` as the honest description of what it is.
+| sheet | holds |
+|---|---|
+| `sherpa-base.css` | `:host` defaults, `--shade()` / `--tint()`, `.sherpa-truncate`, `.sherpa-inert` |
+| `sherpa-typography.css` | **generated** — the type scale |
+| `sherpa-grouping.css` | `.sherpa-group*`, `.sherpa-border-edges`, `.sherpa-border-corners` |
+| `sherpa-icon.css` | `.sherpa-icon-box` |
+| `sherpa-group-positions.css` | **generated** — grouping positions |
+| `sherpa-anchor.css` | `.chart-tip`, `.sherpa-tip`, `.chart-mark` |
+| `sherpa-motion.css` | durations, shared keyframes |
 
-**What does NOT belong there: a `:host` rule.** Only 22 of the 58 components
-want a border at all, so a blanket `:host` rule draws one on 36 that do not.
-Shared CSS is opt-in by class.
+Reach for a shared sheet when the same rule appears in a THIRD component —
+`.chart-tip` (the five charts) got into `sherpa-anchor.css` that way. Pick the
+sheet by job: `base` is what every component needs, the rest are opt-in by
+class.
 
-**And the per-edge border chain is NOT duplication, though it looks it.** The
-four `border-*-width: var(--sherpa-border-{top,bottom,left,right})` lines appear
-in 21 components and cannot become a `border-width` shorthand: the edges
-genuinely differ in 17 of the 21 `[data-group]` modes, so a `grid-mid-start`
-cell shares a hairline with its neighbour instead of doubling it. The VALUES are
-defined once, in `tokens.css`. Leave them.
+`.sherpa-group` on a WRAPPER squares its children's inner corners so a row of
+controls reads as one object. By POSITION (`:first-child` / `:last-child`), so
+a re-order survives. (It was called `.sherpa-snap-group` once, alongside a
+`data-snap` attribute; both names are gone.)
+
+**What does NOT belong in a shared sheet: a `:host` rule.** Only 22 of the 58
+components want a border at all, so a blanket `:host` rule draws one on 36 that
+do not. Shared CSS is opt-in by class — with one exception, below.
+
+**A `:host` cannot wear a class from its own sheet.** That is why the shared
+sheets also carry inherited custom properties: `--sherpa-focus-ring` replaced
+48 hand-written sites across 29 files, and a property is the only shape that
+reaches a bare `:host`. When a block repeats and its target is the host, make
+it a property, not a class.
+
+**The per-edge border chain has already been lifted.** The four
+`border-*-width` lines and the four per-corner radii were written verbatim 26
+times across 21 components; they now live once, as `.sherpa-border-edges` and
+`.sherpa-border-corners` in `sherpa-grouping.css`, on LOGICAL properties so a
+corner follows the writing direction. The edges genuinely differ per
+`[data-group]` mode, which is why they cannot collapse to a `border-width`
+shorthand — but that is an argument for the shared class, not for 21 copies.
 
 ### Status cascade (`[data-status]`)
 
@@ -473,7 +494,7 @@ Always `bubbles: true`. Add `composed: true` for events that must cross shadow D
 ```ts
 this.dispatchEvent(new CustomEvent('card-click', { bubbles: true, composed: true, detail: {} }));
 ```
-Prefer the base-class `this.emit(name, detail)` helper (sets `bubbles`+`composed`). Event **names** follow the ratified naming contract above: unprefixed `noun-verb`, no `sherpa-` prefix. Every dispatched event must have a matching `@fires` tag in the component's JSDoc (the MCP parses these into the component schema — keep them in sync). Document-level broadcasts via `document.dispatchEvent` are the one case where `bubbles` is moot.
+Prefer the base-class `this.emit(name, detail)` helper (sets `bubbles`+`composed`). Event **names** follow the ratified naming contract above: unprefixed `noun-verb`, no `sherpa-` prefix. Every dispatched event must appear in the component HTML's `Fires:` block, one event per line — that comment is what the spec generator intersects with the code, so an event missing from it is dropped from the contract, and two events sharing a line are read as one name. (An `@fires` JSDoc tag does nothing: the MCP does not read it, and exactly one exists in the whole repo.) Document-level broadcasts via `document.dispatchEvent` are the one case where `bubbles` is moot.
 
 ### CRUD flows
 

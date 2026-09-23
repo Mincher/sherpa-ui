@@ -355,6 +355,34 @@ function emittedEvents(ts) {
   for (const re of patterns) {
     for (const m of ts.matchAll(re)) out.add(m[1]);
   }
+
+  /* A NAME IS NOT ALWAYS A LITERAL AT THE CALL. Two components emit through an
+     expression, and a literal-only scan read them as silent:
+
+       emit(open ? 'menu-open' : 'menu-close', {})   a ternary
+       emit(event, {})                               a name from a table
+
+     sherpa-app-header published ONE of its nine events that way. So read the
+     literals inside the emit() ARGUMENT too — narrowly, because scanning every
+     string in the file swept up `data-anchor` and `aria-describedby` and
+     invented events across all 58 components.
+     TRAP T-an-event-name-is-not-always-a-literal */
+  for (const m of ts.matchAll(/\bemit\(([^,)]*)/g)) {
+    for (const lit of m[1].matchAll(/['"`]([a-z][\w]*(?:-[a-z][\w]*)+)['"`]/g)) {
+      out.add(lit[1]);
+    }
+  }
+
+  /* …AND THE NAME MAY LIVE IN A TABLE. sherpa-app-header pairs a selector with
+     an event name and emits in a loop, so `emit(event, {})` carries no literal
+     at all and eight public events read as silent. Read the second column of a
+     `['.selector', 'noun-verb']` pair: the selector half anchors it, so an
+     ordinary array of strings cannot match. */
+  for (const m of ts.matchAll(
+    /\[\s*['"`][.#][^'"`]*['"`]\s*,\s*['"`]([a-z][\w]*(?:-[a-z][\w]*)+)['"`]\s*\]/g,
+  )) {
+    out.add(m[1]);
+  }
   return out;
 }
 

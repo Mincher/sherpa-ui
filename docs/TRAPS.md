@@ -7246,6 +7246,38 @@ way up, since −5 is a fifth of the 25 span), the negative bar from 36 down to
 - Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
 - Site: `test/e2e/reforged-barchart.spec.ts`
 
+### T-an-event-name-is-not-always-a-literal
+
+`generate-component-spec.mjs` learns what a component fires by scanning its TS
+for `emit('name')`. Two components do not write the name at the call, and a
+literal-only scan read them as silent:
+
+```ts
+emit(open ? 'menu-open' : 'menu-close', {})   // a ternary
+emit(event, {})                               // a name from a table
+```
+
+`sherpa-app-header` published **one of its nine events** that way. The other
+eight were invisible to the spec, to the MCP, and to any agent reading either —
+while the `Fires:` comment named eight further events that existed nowhere, so
+the intersection that guards against invented events came out empty.
+
+The scan now also reads the literals inside an `emit()` ARGUMENT, and the second
+column of a `['.selector', 'noun-verb']` pair. The selector half anchors the
+table rule, so an ordinary array of strings cannot match it.
+
+DO NOT widen this to every string in the file. That was the first attempt: it
+swept up `data-anchor` and `aria-describedby` and invented events across all 58
+components — the exact bug the intersection exists to prevent. 2401 lines of
+phantom contract, from one over-broad regex.
+
+Two smaller cases of the same family, both fixed in the comment rather than the
+scanner: a `Fires:` line reading `menu-open / menu-close` is one name, not two,
+and an event missing from the comment is dropped however clearly the code emits
+it.
+
+- Site: `scripts/generate-component-spec.mjs`
+
 ### T-a-metric-condenses-by-wrapping
 
 A metric tile drops its sparkline at narrow widths, and NO breakpoint says so.

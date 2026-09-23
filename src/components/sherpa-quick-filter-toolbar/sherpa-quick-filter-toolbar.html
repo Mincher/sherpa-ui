@@ -31,7 +31,9 @@
 
   Fires:
     quick-filter-change  — detail: { active, values, picked }
-    group-change / sort-change
+    group-change         — detail: { field }
+    sort-change          — detail: { field, direction }
+    filter-remove        — a chip was removed. detail: { id, filter }
     filter-add           — the Add chip's body was clicked
     filter-clear         — the undo button: every chip reset
     ai-filter-request    — the AI button

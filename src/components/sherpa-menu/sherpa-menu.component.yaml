@@ -347,6 +347,14 @@ events:
       label: string
       value: unknown
   - $type: event
+    name: menu-open
+    bubbles: true
+    composed: true
+  - $type: event
+    name: menu-close
+    bubbles: true
+    composed: true
+  - $type: event
     name: condition-change
     bubbles: true
     composed: true

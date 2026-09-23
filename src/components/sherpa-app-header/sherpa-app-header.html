@@ -27,8 +27,15 @@
     filters      the quick-filter toolbar (row 2)
 
   Fires:
-    header-back · header-ai · header-labs · header-theme
-    header-notifications · header-account · header-help · header-menu
+    back-click — detail: {}
+    ai-click — detail: {}
+    labs-click — detail: {}
+    theme-toggle — detail: {}
+    notifications-open — detail: {}
+    account-click — detail: {}
+    help-click — detail: {}
+    menu-click — detail: {}
+    breadcrumb-click — detail: { index, label, href }
 -->
 <template id="default">
   <header class="bar" part="bar">

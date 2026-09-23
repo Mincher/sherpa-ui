@@ -13,9 +13,9 @@
     value-start / value-end — the range ends (data-type="range" only)
     disabled         — disabled state
 
-  Events: input (while dragging / typing), change (on commit).
-    single: detail { value }
-    range:  detail { start, end }
+  Fires:
+    input — while dragging / typing. detail: { value } | { start, end }
+    change — on commit. detail: { value } | { start, end }
 
   RANGE is two stacked native inputs — there is no two-thumb native control.
   CSS gives pointer events to the THUMBS only, so a click on bare track never

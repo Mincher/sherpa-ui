@@ -283,6 +283,38 @@ capabilities:
     description: callable from a view definition's state block (available). See $extensions.sherpa.methods.
 events:
   - $type: event
+    name: back-click
+    bubbles: true
+    composed: true
+  - $type: event
+    name: ai-click
+    bubbles: true
+    composed: true
+  - $type: event
+    name: labs-click
+    bubbles: true
+    composed: true
+  - $type: event
+    name: theme-toggle
+    bubbles: true
+    composed: true
+  - $type: event
+    name: notifications-open
+    bubbles: true
+    composed: true
+  - $type: event
+    name: account-click
+    bubbles: true
+    composed: true
+  - $type: event
+    name: help-click
+    bubbles: true
+    composed: true
+  - $type: event
+    name: menu-click
+    bubbles: true
+    composed: true
+  - $type: event
     name: breadcrumb-click
     bubbles: true
     composed: true

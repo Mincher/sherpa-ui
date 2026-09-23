@@ -250,6 +250,20 @@ events:
     detail:
       field: unknown
   - $type: event
+    name: sort-change
+    bubbles: true
+    composed: true
+    detail:
+      direction: unknown
+      field: unknown
+  - $type: event
+    name: filter-remove
+    bubbles: true
+    composed: true
+    detail:
+      filter: unknown
+      id: unknown
+  - $type: event
     name: filter-add
     bubbles: true
     composed: true
@@ -290,20 +304,6 @@ events:
     name: filter-overflow
     bubbles: true
     composed: true
-  - $type: event
-    name: sort-change
-    bubbles: true
-    composed: true
-    detail:
-      direction: unknown
-      field: unknown
-  - $type: event
-    name: filter-remove
-    bubbles: true
-    composed: true
-    detail:
-      filter: unknown
-      id: unknown
 tokens:
   bar.gap: "{sherpa.display-mode-space-xs}"
   bar.padding-block: "{sherpa.display-mode-space-2xs}"

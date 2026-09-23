@@ -83,6 +83,9 @@ states:
   - $type: state
     name: not-has-legend
     selector: ":host(:not([data-has-legend]))"
+  - $type: state
+    name: focus-visible
+    selector: ":focus-visible"
 capabilities:
   - $type: capability
     api: js-property-mirror
