@@ -35,7 +35,7 @@ meet a problem and then hunt for its resolution 500 lines later.
 | 11 | Three holes in `check-props` | 🔶 Open |
 | 12 | `sherpa-element.ts` — two real bugs | ✅ Fixed |
 | 13 | Icons: four files, one bad name | ✅ Fixed |
-| 14 | `kind: content` is overloaded to mean "observed" — 156 props | 🔶 Open |
+| 14 | `kind: content` is overloaded to mean "observed" — 156 props | ✅ Fixed |
 | — | What is genuinely clean | ⬜ Not a fault |
 
 ---
@@ -1255,7 +1255,7 @@ vocabulary. Three questions to answer before starting.
 
 ---
 
-### 14. `kind: content` is overloaded to mean "observed" — 🔶 Open
+### 14. `kind: content` is overloaded to mean "observed" — ✅ Fixed
 
 Found while regenerating `sherpa-switch`'s spec. Declaring its natives moved
 three props from no kind (and `data-type` from `kind: style`) to
@@ -1288,9 +1288,43 @@ The consequence is for readers, not renders: the MCP server and any agent
 reading a spec are told 156 attributes write text, and they do not. Nothing is
 broken today.
 
-Fixing it means giving the round-trip its own `observed` signal so `kind` can
-go back to meaning one thing, then regenerating 39 specs. That is its own pass,
-and it should land before anything else starts trusting `kind`.
+#### The fix
+
+Three changes, because the overload had three causes:
+
+- **The schema gained `observed`**, an explicit boolean, and `kind`'s own
+  description now says it is not a statement about observation.
+- **`compileDef` reads `observed`**, falling back to the old `kind !== 'style'`
+  signal for a spec written before the field existed. That fallback is what lets
+  the change land without a flag day.
+- **`parsePropKinds` reads `static override props`** — the only honest source
+  for `kind`. An entry with a `to:` selector *is* content, because that is what
+  `to` means to the base class. The TS beats a prior spec's inferred kind, which
+  is how the 153 bad values get cleared rather than carried forward.
+
+**After: 43 `kind: content` props remain, and every one is backed by a real
+declaration** — verified by re-deriving each from its TS rather than trusting
+the count.
+
+The new field also expresses something the old rule could not. `sherpa-switch`'s
+`data-type` is CSS-only **and** observed; under `kind !== 'style'` those two
+facts contradicted each other, and now they do not:
+
+```
+sherpa-switch          -> 'data-type', 'checked', 'disabled'
+sherpa-select-checkbox -> 'data-advanced', 'checked', 'disabled', …
+```
+
+#### A gate gap it surfaced
+
+`check-traps` scans `scripts/*.mjs` — one level deep. Two of the three files
+citing the new trap live in `scripts/lib/`, so the gate could not see them and
+reported **its own Site list as uncited**. Widened to `scripts/lib/*.mjs` and
+`scripts/lib/*/*.mjs`. Only the two new citations were affected, so no backlog
+surfaced — but any future citation in the build library would have been
+invisible.
+
+`TRAP T-kind-says-how-not-whether`.
 
 ---
 
@@ -1325,14 +1359,13 @@ Ordered by what unblocks the most.
 | # | work | why it is next |
 |---:|---|---|
 | 1 | **State ownership** — teach `check-ownership.mjs` to see a template-declared lock, then judge the 15 toolbar writes per site | the named recurring bug; the gate under-reports by construction |
-| 2 | **`kind: content` is overloaded** — give the round-trip its own `observed` signal, then regenerate 39 specs | 156 props claim they write text and do not; every agent reading a spec is misled |
-| 3 | **`data-size`: 2 vs 5** | a contradiction between the base class and the most-used control |
-| 4 | **Three `check-props` holes** | a gate that passes while public API goes undeclared |
-| 5 | **Three dead-code items** | small, but each needs a read — the calendar one may be a *missing* stylesheet |
-| 6 | **`render-icon.ts` / the alias map** | 88 distinct ink boxes across 214 icons is the blocker; three questions first |
-| 7 | **`sherpa-data-grid` rebuild onto Grid Cell** | a dedicated session; the prerequisite (agreeing event shapes) is done |
-| 8 | **The flaky suite** | 12 non-deterministic failures, plus a webkit border-edges failure belonging to work elsewhere in the tree; it makes every other change harder to verify |
-| 9 | **The remaining naming rulings** | `data-type`'s nine meanings, `data-empty`'s three, and the detail-shape sweep across all 75 events. Decisions, not bugs |
+| 2 | **`data-size`: 2 vs 5** | a contradiction between the base class and the most-used control |
+| 3 | **Three `check-props` holes** | a gate that passes while public API goes undeclared |
+| 4 | **Three dead-code items** | small, but each needs a read — the calendar one may be a *missing* stylesheet |
+| 5 | **`render-icon.ts` / the alias map** | 88 distinct ink boxes across 214 icons is the blocker; three questions first |
+| 6 | **`sherpa-data-grid` rebuild onto Grid Cell** | a dedicated session; the prerequisite (agreeing event shapes) is done |
+| 7 | **The flaky suite** | 12 non-deterministic failures, plus a webkit border-edges failure belonging to work elsewhere in the tree; it makes every other change harder to verify |
+| 8 | **The remaining naming rulings** | `data-type`'s nine meanings, `data-empty`'s three, and the detail-shape sweep across all 75 events. Decisions, not bugs |
 
 ### Detail on the larger ones
 
