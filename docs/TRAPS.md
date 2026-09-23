@@ -9388,3 +9388,73 @@ So adding `data-current` to `DATA_PROPS` with the old regex would have reported
 had hidden real self-writes, verified by planting one and watching it fail.
 
 - Site: `scripts/check-ownership.mjs`
+
+### T-scroll-state-is-chromium-only
+
+`container-type: scroll-state` and `@container scroll-state(stuck: top)` are
+**Chromium only**. Measured in all three engines 2026-09-23: Firefox and WebKit
+drop the property and report `containerType: "normal"`.
+
+`sherpa-app-shell` uses it to give its sticky header a drop shadow once content
+slides underneath, with no JS. That degrades correctly — the header is still
+`position: sticky`, still `z-index: 1`, still opaque, in every engine. Only the
+shadow is missing.
+
+So the CODE needed nothing. The TEST asserted
+`containerType` contains `scroll-state` in all three engines and failed two of
+them. It now asserts the stronger thing, which is the same shape
+`reforged-css-functions.spec.ts` already uses for `@function`:
+
+```ts
+expect(r.headerIsScrollState.includes('scroll-state')).toBe(r.supportsScrollState);
+```
+
+The guard and the engine must AGREE. That catches Chromium losing the feature
+as well as an engine gaining it, which a hardcoded expectation cannot.
+
+- Site: `test/e2e/reforged-app-shell.spec.ts`
+
+### T-a-hairline-resolves-by-density
+
+The border token is `0.5px`, and what a browser resolves that to depends on the
+DISPLAY, not only on the engine. Measured in all four combinations:
+
+| engine | dpr 1 | dpr 2 |
+|---|---|---|
+| Chromium | 1px | 1px |
+| WebKit | 1px | **0.5px** |
+
+WebKit at `deviceScaleFactor: 2` is the honest one — half a CSS pixel is exactly
+one device pixel there, so there is nothing to round up. Playwright's
+`devices['Desktop Safari']` sets `deviceScaleFactor: 2`, which is why only the
+webkit project saw it, and why it looked like a flaky failure that "belonged to
+border-token work".
+
+`reforged-border-edges.spec.ts` hardcoded `1px/1px/1px/1px` and reported all 20
+sites as broken on webkit. It now resolves the token once in the page and
+compares every site against that, plus a bound that keeps the real regression
+caught: a `border-style` with no width falls back to `medium` (3px), which is
+what the test was written for. Verified by planting `border-width: medium` on
+`sherpa-tag` and watching it fail.
+
+- Site: `test/e2e/reforged-border-edges.spec.ts`
+
+### T-a-grid-group-needs-css-if
+
+`.sherpa-group-grid` computes each cell's column and row in a VALUE, then picks
+its edges with CSS `if()` and `style()` queries. `if()` is **Chromium and WebKit
+only** — Firefox has none.
+
+`sherpa-grouping.css` already handles this, and says so beside the gate: *"The
+`@supports` gate is for `if()`; without it every cell keeps the outer box below,
+which is correct, just not joined."* So in Firefox a grid draws six separate
+boxes rather than one joined block. That is the intended fallback, not a bug.
+
+A ROW or a COLUMN group does not need `if()` — those use `:first-child` /
+`:last-child` — which is why only the two grid tests failed.
+
+The tests now branch on `CSS.supports('width', 'if(style(--x: 1): 1px; else: 2px)')`
+and assert the documented fallback where it is absent, rather than asserting the
+joined result everywhere.
+
+- Site: `test/e2e/reforged-grouping.spec.ts`

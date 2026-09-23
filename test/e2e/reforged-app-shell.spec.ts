@@ -41,6 +41,10 @@ test('the nav rail is a full-height overlay; the header is sticky inside the scr
       // The header is its own scroll-state container: such a container styles its
       // DESCENDANTS, so it must BE the sticky element rather than the scroller.
       headerIsScrollState: getComputedStyle(q('.header')).containerType,
+      // CHROMIUM ONLY. Firefox and WebKit drop the property and report
+      // "normal"; the header still sticks, it just never gains the stuck
+      // shadow. TRAP T-scroll-state-is-chromium-only
+      supportsScrollState: CSS.supports('container-type', 'scroll-state'),
       // The view's inset moved off .content, so the sticky header bleeds full
       // width while the content below it stays on the layout grid.
       contentPadding: getComputedStyle(q('.content')).paddingTop,
@@ -56,7 +60,8 @@ test('the nav rail is a full-height overlay; the header is sticky inside the scr
   expect(r.atLeftEdge).toBe(true);
   expect(r.headerInsideScroller).toBe(true);
   expect(r.headerSticky).toBe('sticky');
-  expect(r.headerIsScrollState).toContain('scroll-state');
+  // The guard and the engine must AGREE — that is the whole safety of it.
+  expect(r.headerIsScrollState.includes('scroll-state')).toBe(r.supportsScrollState);
   // NEITHER region pads. The LAYOUT GRID owns the view's inset — `.sherpa-grid`
   // already applies --sherpa-layout-grid-padding, and the shell applying it too
   // inset the content TWICE, so a card sat 32px off the rail instead of 16.

@@ -51,6 +51,18 @@ test('every bordered site still resolves a width', async ({ page }) => {
     }
     return out;
   }, CASES);
+  /* The token is 0.5px, and what a browser RESOLVES that to depends on the
+     display. WebKit at deviceScaleFactor 2 keeps 0.5px — one real device pixel,
+     and the honest answer; every other engine/density pair rounds up to 1px.
+     Measured in all four combinations. TRAP T-a-hairline-resolves-by-density */
+  const expected = await page.evaluate(() => {
+    const d = document.createElement('div');
+    d.style.cssText = 'border-style: solid; border-width: var(--sherpa-border-top, 0.5px)';
+    document.getElementById('root')!.appendChild(d);
+    const w = getComputedStyle(d).borderTopWidth;
+    d.remove();
+    return w;
+  });
   for (const r of rows) console.log(`  ${r}`);
   // EVERY site resolves to the token's own 1px on all four edges, solid.
   //
@@ -58,6 +70,11 @@ test('every bordered site still resolves a width', async ({ page }) => {
   // sherpa-tag left `.pill` at 3px — the browser's `medium` default for a
   // `border-style` with no width — which a not-zero check waves through. The
   // regression is a WRONG width just as much as a missing one.
-  const bad = rows.filter((r) => !r.endsWith(':: 1px/1px/1px/1px solid'));
-  expect(bad).toEqual([]);
+  const want = `:: ${expected}/${expected}/${expected}/${expected} solid`;
+  const bad = rows.filter((r) => !r.endsWith(want));
+  expect(bad, `every edge must resolve the token (${expected})`).toEqual([]);
+  // And the token must still be a HAIRLINE. `medium` (3px) is what a
+  // `border-style` with no width falls back to, which is the regression above.
+  expect(Number.parseFloat(expected)).toBeLessThanOrEqual(1);
+  expect(Number.parseFloat(expected)).toBeGreaterThan(0);
 });

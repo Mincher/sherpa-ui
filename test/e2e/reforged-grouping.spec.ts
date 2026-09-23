@@ -75,6 +75,16 @@ async function edges(
   );
 }
 
+/**
+ * The GRID axis needs CSS `if()` with `style()` queries; a row or a column does
+ * not, because those use :first-child / :last-child. Firefox has no `if()`, so
+ * every cell keeps the full outer box the base rule gives it — correct, just
+ * not joined, exactly as sherpa-grouping.css says.
+ * TRAP T-a-grid-group-needs-css-if
+ */
+const hasCssIf = (page: import('@playwright/test').Page) =>
+  page.evaluate(() => CSS.supports('width', 'if(style(--x: 1): 1px; else: 2px)'));
+
 const THICK = '0.5px'; // an outer edge
 const THIN = '0.25px'; // a shared hairline, drawn once
 const ROUND = '4px';
@@ -104,6 +114,13 @@ test('a vertical group does the same along the block axis', async ({ page }) => 
 test('a 3x2 grid draws four outer corners and shares every inner edge', async ({ page }) => {
   const cells = await edges(page, 'sherpa-group-grid', 6, 3);
 
+  if (!(await hasCssIf(page))) {
+    // The documented fallback: every cell is its own outer box.
+    expect(cells.map((c) => c.left)).toEqual(Array(6).fill(THICK));
+    expect(cells.map((c) => c.tl)).toEqual(Array(6).fill(ROUND));
+    return;
+  }
+
   // Column 0 owns the outer start edge; row 0 owns the outer top edge.
   expect(cells.map((c) => c.left)).toEqual([THICK, THIN, THIN, THICK, THIN, THIN]);
   expect(cells.map((c) => c.top)).toEqual([THICK, THICK, THICK, THIN, THIN, THIN]);
@@ -120,6 +137,11 @@ test('a 3x2 grid draws four outer corners and shares every inner edge', async ({
 test('a PARTIAL last row still finds its bottom corner', async ({ page }) => {
   // 7 cells in 3 columns: the last row holds one cell, at column 0.
   const cells = await edges(page, 'sherpa-group-grid', 7, 3);
+
+  if (!(await hasCssIf(page))) {
+    expect(cells.map((c) => c.bl)).toEqual(Array(7).fill(ROUND));
+    return;
+  }
 
   // The last row is derived from sibling-count(), so it is row 2, not row 1.
   expect(cells[6]!.bl).toBe(ROUND);
