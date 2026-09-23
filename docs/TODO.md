@@ -8,7 +8,7 @@ Status: `[ ]` open · `[~]` in progress · `[x]` done
 
 ## The order to do them in
 
-39 items. Ordered so that nothing is built twice.
+40 items. Ordered so that nothing is built twice.
 
 Includes the six findings the 2026-09-23 component audit left open; its other 13
 are done. `docs/COMPONENT-AUDIT.md` keeps the measurements behind every one.
@@ -161,6 +161,7 @@ Last, because they touch everything and block nothing.
 | 29 | Rename `src/index.ts` to `src/app.ts` |
 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? |
 | 31 | The 8px grid and 4px sub-grid should be TOKENS |
+| 32 | Fold donut + gauge into ONE radial chart |
 
 Item 29 dead last. It is a rename across the whole repo, so it is cheapest when
 no other work is in flight.
@@ -579,6 +580,66 @@ the first is likely, because the gutter is the layout grid's to give up.
 ---
 
 ## Architecture — component boundaries
+
+### `[ ]` Fold donut + gauge into ONE radial chart
+
+Will, 2026-09-23: *"the donut and gauge could be consolidated into a single
+chart component (and also support pie charts) if we add an inner radius, sweep
+start angle and sweep angle variables. Booleans for the gauge needle etc and
+we're golden."*
+
+**The drawing engine is ALREADY one thing**, and it already takes every
+variable named. `RingSegmentOptions` in `src/core/data/format-tick.ts:204`:
+
+| option | what it is |
+|---|---|
+| `inner` | inner radius — *"0 draws a solid wedge — a pie slice"*, its own comment |
+| `outer` | outer radius |
+| `startDeg` / `endDeg` | the sweep, clockwise from 12 o'clock |
+| `radius` | corner rounding |
+
+Both components call `ringSegmentPath()` with the same three geometry constants,
+which is why those moved to `shared-constants.ts` as `RADIAL_CENTRE`,
+`RADIAL_CORNER` and `RADIAL_OUTLINE` — a value that drifted in one would draw
+two different rings from one function.
+
+**And pie already exists.** `sherpa-donut-chart` takes
+`data-type="donut | pie"`, where pie fills to the centre. So this is folding
+TWO components, not building a third mode.
+
+What is actually different, measured:
+
+| | donut | gauge |
+|---|---:|---:|
+| TS | 188 | 290 |
+| CSS | 161 | 304 |
+| HTML | 55 | 103 |
+
+The gauge's extra ~290 lines are its own features, not a different ring:
+`data-value` with a needle, `data-min` / `data-max` bounds, `data-caption`, and
+a `caption` slot. Those become the booleans and attributes Will describes.
+
+Proposed shape:
+
+```html
+<sherpa-radial-chart data-type="donut">   <!-- default -->
+<sherpa-radial-chart data-type="pie">     <!-- inner: 0 -->
+<sherpa-radial-chart data-type="gauge" data-value="60" data-min="0" data-max="100">
+```
+
+with `data-sweep-start` and `data-sweep` for the arc, since a gauge is a donut
+that stops short — today that is hard-coded as the top half.
+
+Three things to settle first:
+
+1. **The name.** `sherpa-radial-chart` says what it draws. `sherpa-chart` is too
+   broad — bar and line are not radial.
+2. **Does it fold, or does the gauge compose the donut?** The same question as
+   item 28 (a Figma component is not always a web component). A gauge that
+   wraps a donut keeps both specs; a fold leaves one.
+3. **The Figma side.** Donut and Gauge are separate components there. This is a
+   CODE consolidation unless Figma follows — see the layout-grid ruling for the
+   precedent that a code component need not map 1:1.
 
 ### `[ ]` Do we still need `icon-paths.ts` and `render-icon.ts`?
 
