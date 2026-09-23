@@ -9506,3 +9506,33 @@ a wrong token is pixels out, not hundredths. Verified by forcing `.icon-start`
 to 9px and watching the box assertions fail.
 
 - Site: `test/e2e/reforged-icon-sizes.spec.ts`
+
+### T-a-shadow-root-precedes-its-template
+
+`el.shadowRoot` is non-null as soon as the root is attached. The TEMPLATE lands
+in it later, and the component's own attributes — the ones a default is written
+into — later still.
+
+So `waitForFunction(() => !!document.querySelector('sherpa-nav')?.shadowRoot)`
+is not a readiness check. It waits for the container, not the contents.
+
+Traced in Firefox against the live app: at t=0 the rail has a shadowRoot, **no
+`.pin` and no `data-nav-state`**; by t=40ms both exist. Chromium has both on the
+same tick, which is why only one engine failed and it read as flakiness.
+`reforged-nav-pin-persist.spec.ts` then read a null state and clicked a `.pin`
+that was not there, three times over — the same weak condition copied into three
+`beforeEach`-style blocks.
+
+Wait for what the test actually USES:
+
+```ts
+await page.waitForFunction(() => {
+  const nav = document.querySelector('sherpa-nav');
+  return !!nav?.shadowRoot?.querySelector('.pin') && !!nav.getAttribute('data-nav-state');
+});
+```
+
+Inside the harness, `__settled()` already does this properly. This trap is for
+the specs that drive the real app on :4200, which have no harness.
+
+- Site: `test/e2e/reforged-nav-pin-persist.spec.ts`
