@@ -61,9 +61,15 @@ test('every button size paints its box at its own icon-size token', async ({ pag
     // The BOX is the layout contract — exactly the token, and SQUARE.
     expect(`${row.boxH}px`, `${row.mode}: box height`).toBe(want);
     expect(`${row.boxW}px`, `${row.mode}: box width`).toBe(want);
-    // THE RULE: the drawing's longest axis fills that box.
-    expect(Math.max(row.inkW, row.inkH), `${row.mode}: longest axis`)
-      .toBeCloseTo(parseFloat(want), 1);
+    /* THE RULE: the drawing's longest axis fills that box.
+       0.1px, not toBeCloseTo(…, 1): Firefox rounds an SVG path's bounding box
+       up by as much as 0.05px, where Chromium and WebKit are exact. Measured
+       across all six sizes in all three engines — the worst case is +0.05, and
+       `toBeCloseTo(14, 1)` demands < 0.05, so it failed by 0.00003px.
+       A wrong TOKEN is pixels out, not hundredths.
+       TRAP T-an-svg-path-box-rounds-by-a-hundredth */
+    expect(Math.abs(Math.max(row.inkW, row.inkH) - parseFloat(want)),
+      `${row.mode}: longest axis`).toBeLessThanOrEqual(0.1);
   }
 });
 

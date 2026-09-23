@@ -9458,3 +9458,51 @@ and assert the documented fallback where it is absent, rather than asserting the
 joined result everywhere.
 
 - Site: `test/e2e/reforged-grouping.spec.ts`
+
+### T-settled-waits-for-renders-not-transitions
+
+`__settled()` waits for every `sherpa-*` element's `rendered` promise, drains
+the microtask queue between passes, and then waits two animation frames. None of
+that waits for a CSS **transition**.
+
+`sherpa-nav` animates its own `inline-size` over 160ms as it settles to the
+collapsed 40px. A measurement taken after those two frames can still catch the
+host mid-flight — 292px, or 232px, on the way to 40 — and the search row inside
+it then measures 216px instead of 24px.
+
+It looked like flakiness because it only appears under CONCURRENCY. Measured
+with twelve pages driven at once, same code, only the harness differing:
+
+| | bad runs |
+|---|---|
+| before | **4 of 12** — `host: 232, searchW: 216` |
+| after | 0 of 12 |
+
+`__settled()` now also awaits `document.getAnimations()`. A rejection means the
+animation was cancelled, which is settled too, so each is caught.
+
+A test that measures a box on a component with a `transition` cannot rely on
+frames alone. `Animation.finished` is the only thing that waits for one.
+
+- Site: `test/reforged/harness.html`
+
+### T-an-svg-path-box-rounds-by-a-hundredth
+
+`getBoundingClientRect()` on an SVG `<path>` does not agree to the last decimal
+across engines. Measured over all six button sizes:
+
+| engine | worst delta from the token |
+|---|---|
+| Chromium | +0.0001 |
+| WebKit | +0.0001 |
+| Firefox | **+0.05** |
+
+`reforged-icon-sizes.spec.ts` used `toBeCloseTo(14, 1)`, which demands a
+difference **strictly below 0.05** — so Firefox failed by 0.00003px on a test
+about whether an icon fills its box.
+
+It now asserts the difference is at most 0.1px. That keeps what the test is for:
+a wrong token is pixels out, not hundredths. Verified by forcing `.icon-start`
+to 9px and watching the box assertions fail.
+
+- Site: `test/e2e/reforged-icon-sizes.spec.ts`

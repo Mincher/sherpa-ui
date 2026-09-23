@@ -191,6 +191,16 @@
       }
       // Two frames: one for the last render to paint, one for style to apply.
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      /* AND every running CSS transition. sherpa-nav animates its own
+         `inline-size` over 160ms as it settles to the collapsed 40px, so a
+         measurement taken after the frames above can still catch the host
+         mid-flight — 292px on the way to 40. Frames do not wait for a
+         transition; `Animation.finished` does.
+         A rejection means the animation was cancelled, which is settled too.
+         TRAP T-settled-waits-for-renders-not-transitions */
+      await Promise.all(
+        document.getAnimations().map((a) => a.finished.catch(() => {})),
+      );
     };
   </script>
 </body>
