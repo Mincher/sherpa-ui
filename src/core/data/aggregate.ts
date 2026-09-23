@@ -9,7 +9,7 @@
  * TRAP T-an-aggregate-returns-the-number
  * TRAP T-aggregation-is-data
  */
-import { readField, groupRows, type Row } from './store.js';
+import { readField, groupRows, valueKey, type Row } from './store.js';
 import type { ChartDatum } from './chart-datum.js';
 
 /* ── Reducers ──────────────────────────────────────────────────────────── */
@@ -60,7 +60,12 @@ export interface AggregateOptions {
   /**
    * The categories, in order. Given, a category keeps its slot and its
    * `colorIndex` whatever the data does; omitted, the order is first-seen.
+   *
+   * These are the GROUP KEYS, which for an object field means
+   * `order: [DANA, RAVI].map(valueKey)` — a label is always a string, because
+   * an axis and a legend row are.
    * TRAP T-a-category-keeps-its-colour
+   * TRAP T-a-value-can-be-an-object
    */
   order?: readonly string[];
   /** Keep unmentioned categories at zero. Needs `order`. For a fixed scale,
@@ -139,9 +144,14 @@ export function bandBy(
   }
 
   return counts.map((value, i) => ({
-    // "0-20", "21-40" — one above the previous edge, since "20-40" would read
-    // as overlapping.
-    label: options.labels?.[i] ?? `${i === 0 ? edges[0] : edges[i]! + 1}-${edges[i + 1]}`,
+    /* THE LABEL NAMES THE BAND IT COUNTS. A band is half-open — [0,20), and
+       the last one closed — so with edges 0,20,40 a value of 20 belongs to the
+       SECOND band. The labels used to read "0-20" and "21-40", so a reader
+       looking for 20 read the first bar and it was counted in the second.
+       Every band but the last now stops one below its top edge.
+       TRAP T-a-band-label-names-what-it-counts */
+    label: options.labels?.[i]
+      ?? `${edges[i]}-${i === count - 1 ? edges[i + 1] : edges[i + 1]! - 1}`,
     value,
     colorIndex: i + 1,
   }));
@@ -193,7 +203,10 @@ export function seriesBy(
   const groups = new Map(groupRows(rows, field).map((g) => [g.key, g.rows]));
   const series: Series = {
     name,
-    values: points.map((p) => reduceRows(groups.get(String(p)) ?? [], kind, valueField)),
+    /* `valueKey`, the same rule `groupRows` keyed by — `String` agreed for a
+       string or a number and would have drifted the moment a point was
+       anything else. TRAP T-a-value-can-be-an-object */
+    values: points.map((p) => reduceRows(groups.get(valueKey(p)) ?? [], kind, valueField)),
   };
   if (colorIndex != null) series.colorIndex = colorIndex;
   return series;

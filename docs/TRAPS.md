@@ -4370,9 +4370,10 @@ different and both are right:
 `string | number`, so a numeric string counts and anything else is 0 rather
 than a NaN that poisons the sum.
 
-- Site: `src/core/data/chart-datum.ts`
-- Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.ts`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
+- Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.ts`
+- Site: `src/core/data/chart-datum.ts`
+- Site: `src/data.ts`
 - Site: `test/unit/chart-datum.test.mjs`
 
 ### T-one-datum-shape-for-chart-and-legend
@@ -7147,6 +7148,30 @@ still returns rows.
 - Site: `src/core/data/aggregate.ts`
 - Site: `examples/views/dashboard.js`
 
+### T-a-band-label-names-what-it-counts
+
+`bandBy` cuts a continuous field into bands. They are HALF-OPEN — `[0,20)`,
+`[20,40)` — except the last, which owns its top edge, because that is what a
+histogram means and a value has to land somewhere.
+
+The LABELS said otherwise. With edges `0,20,40` they read "0-20" and "21-40",
+so a value of exactly 20 was counted in the second band while the first bar
+claimed it. A reader looking up 20 read the wrong bar, and every boundary
+value in the dashboard's storage histogram — 20, 40, 60, 80 — was off by one
+bar in exactly the same way.
+
+Nothing about the counting was wrong. The label was, and a label is the only
+part a reader can see, which is why this survived: the bars were the right
+height all along.
+
+Every band but the last now stops ONE BELOW its top edge — "0-19", "20-39",
+"40-60". A caller's own `labels` option still wins, and is the right answer
+when the bands mean something the numbers do not say.
+
+- Site: `src/core/data/aggregate.ts`
+- Site: `test/unit/aggregate.test.mjs`
+- Site: `test/unit/band-labels.test.mjs`
+
 ### T-an-aggregate-returns-the-number
 
 Nothing in `aggregate.ts` rounds or formats. A mean of 49.977… is returned as
@@ -7196,9 +7221,10 @@ wrong value.
 A missing health score is not a health score of nought, and averaging it in
 drags the mean toward zero in proportion to how much data is absent.
 
-- Site: `src/core/data/aggregate.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/core/data/aggregate.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
+- Site: `test/unit/band-labels.test.mjs`
 ### T-a-category-keeps-its-colour
 
 Without a declared order, categories come out of an aggregation in first-seen
@@ -7220,9 +7246,9 @@ countBy(rows, 'sev', { order: ['critical', 'warning', 'info'] })
 category nothing matched is noise, unless the categories are a fixed scale
 (severity levels, storage bands) where a missing one is itself the finding.
 
-- Site: `src/core/data/aggregate.ts`
 - Site: `examples/views/dashboard-data.js`
 - Site: `examples/views/records.js`
+- Site: `src/core/data/aggregate.ts`
 
 ### T-the-last-band-includes-its-top
 
@@ -8153,6 +8179,7 @@ which maps every value through `String`. That is deliberate for a menu row,
 whose value has to be a string to live in an attribute — but a control wanting
 to right-align or sort numerically must read the row, not the state.
 
+- Site: `src/core/data/aggregate.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/store.ts`

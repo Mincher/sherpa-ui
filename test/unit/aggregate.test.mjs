@@ -110,12 +110,17 @@ test('includeEmpty keeps a category nothing matched, at zero', () => {
 
 test('bandBy: half-open bands, and the LAST one includes its top', () => {
   const bands = bandBy(ROWS, 'storage', [0, 20, 40, 60, 80, 100]);
+  /* The LABELS used to read "0-20", "21-40" … which contradicts half-open:
+     a value of exactly 20 is counted in the SECOND band, and the first bar
+     claimed it. The counts here are unchanged — only the labels moved, so
+     each one now names what its bar actually holds.
+     TRAP T-a-band-label-names-what-it-counts */
   assert.deepEqual(bands.map((d) => [d.label, d.value]), [
-    ['0-20', 2],   // 10 and 0
-    ['21-40', 0],
-    ['41-60', 1],  // 55
-    ['61-80', 0],
-    ['81-100', 2], // 81 and 100 — the TOP edge lands in the last band, not off
+    ['0-19', 2],   // 10 and 0
+    ['20-39', 0],
+    ['40-59', 1],  // 55
+    ['60-79', 0],
+    ['80-100', 2], // 81 and 100 — the TOP edge lands in the last band, not off
   ]);
 });
 

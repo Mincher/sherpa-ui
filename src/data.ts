@@ -147,8 +147,17 @@ export {
   type PersistOptions as SessionPersistOptions,
 } from './core/browser/session.js';
 export { getPointer, setPointer, pointersOverlap } from './core/data/pointer.js';
-// The one datum shape every chart and legend shares.
-export type { ChartDatum, LegendDatum } from './core/data/chart-datum.js';
+/* The one datum shape every chart and legend shares — and the two rules for
+   reading it. A legend widens `value` to `string | number`, so a caller adding
+   up data for itself needs the same coercion and the same clamp the ring uses,
+   or its total disagrees with the chart's.
+   TRAP T-one-total-for-the-ring-and-the-label */
+export {
+  datumValue,
+  datumTotal,
+  type ChartDatum,
+  type LegendDatum,
+} from './core/data/chart-datum.js';
 
 /* ROWS → the shape a chart draws. Aggregation lives HERE and not in a view,
    so a server can pre-compute it, an MCP tool can answer "count by category",
