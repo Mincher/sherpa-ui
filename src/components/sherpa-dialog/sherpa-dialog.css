@@ -7,13 +7,13 @@
   /* Zero-box anchor; the real surface is the <dialog> in the top layer. */
   display: contents;
 
-  --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
-  --_border: var(--_status-border, var(--sherpa-style-border-base, #b3b3c3));
+  --_surface: var(--sherpa-card-surface);
+  --_border: var(--sherpa-card-border);
   /* Divider is a lighter neutral than the outer border (Figma: +1 vs +2). */
-  --_divider: var(--sherpa-theme-border-default-1, #e8e8f6);
+  --_divider: var(--sherpa-card-divider);
   /* The whole rule: three regions draw the same line, on different edges. */
   --_rule: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
-  --_pad: var(--sherpa-theme-padding-lg, 16px);
+  --_pad: var(--sherpa-card-pad);
 }
 
 .root {

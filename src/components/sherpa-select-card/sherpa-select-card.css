@@ -7,15 +7,15 @@
   display: block;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
 
-  --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
+  --_surface: var(--sherpa-card-surface);
   --_border: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
   --_content: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
   /* Dividers are a lighter neutral than the outer border, per the container family. */
-  --_divider: var(--sherpa-theme-border-default-1, #e8e8f6);
+  --_divider: var(--sherpa-card-divider);
   /* The whole stroke — three rules draw the same one on different edges. */
   --_divider-rule: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
   --_accent: var(--sherpa-theme-surface-accent-2, #3b4ccd);
-  --_pad: var(--sherpa-theme-padding-lg, 16px);
+  --_pad: var(--sherpa-card-pad);
   --_radius: var(--sherpa-border-rounding-top-left, 4px);
 }
 

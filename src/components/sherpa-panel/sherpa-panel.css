@@ -10,11 +10,11 @@
   align-self: stretch;
   block-size: 100%;
 
-  --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
-  --_border: var(--_status-border, var(--sherpa-style-border-base, #b3b3c3));
+  --_surface: var(--sherpa-card-surface);
+  --_border: var(--sherpa-card-border);
   /* Divider is one step lighter than the outer box border, as in the container. */
-  --_divider: var(--sherpa-theme-border-default-1, #e8e8f6);
-  --_pad: var(--sherpa-theme-padding-lg, 16px);
+  --_divider: var(--sherpa-card-divider);
+  --_pad: var(--sherpa-card-pad);
 
   background: var(--_surface);
   /* Strokes on the left/right edges only — the panel sits flush between other

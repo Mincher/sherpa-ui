@@ -84,6 +84,23 @@
   --_shade-base: var(--_surface, var(--sherpa-style-surface-base, #ffffff));
   --sherpa-shade-hover: color-mix(in oklab, var(--_shade-base) 92%, currentColor);
   --sherpa-shade-active: color-mix(in oklab, var(--_shade-base) 84%, currentColor);
+
+  /* A CARD's four values — the box that holds other things. Six components had
+     these four lines verbatim: accordion, container, dialog, overlay-panel,
+     panel, select-card.
+
+     Properties, not a class: five of the six declare them on `:host`, and a
+     `:host` cannot wear a class from its own sheet.
+
+     A component that means something ELSE by its surface simply keeps its own
+     declaration — callout is deliberately status-blind, toast uses the subtle
+     tier, checkbox and radio use a different token. Its own `:host` rule wins
+     over this one, being the later sheet. */
+  --sherpa-card-surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
+  --sherpa-card-border: var(--_status-border, var(--sherpa-style-border-base, #b3b3c3));
+  /* One step lighter than the outer border, so an inner rule reads as quieter. */
+  --sherpa-card-divider: var(--sherpa-theme-border-default-1, #e8e8f6);
+  --sherpa-card-pad: var(--sherpa-theme-padding-lg, 16px);
 }
 
 :host([hidden]) {

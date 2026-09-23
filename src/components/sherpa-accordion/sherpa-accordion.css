@@ -7,10 +7,10 @@
   display: block;
   min-inline-size: 0;
 
-  --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
-  --_border: var(--_status-border, var(--sherpa-style-border-base, #b3b3c3));
+  --_surface: var(--sherpa-card-surface);
+  --_border: var(--sherpa-card-border);
   /* Divider is one step lighter than the outer border (Figma: default/+1 vs +2). */
-  --_divider: var(--sherpa-theme-border-default-1, #e8e8f6);
+  --_divider: var(--sherpa-card-divider);
 
   background: var(--_surface);
   border-style: solid;
@@ -23,7 +23,7 @@
   border-radius: 0;
   color: var(--sherpa-style-content-base, #0c0b11);
 
-  --_pad: var(--sherpa-theme-padding-lg, 16px);
+  --_pad: var(--sherpa-card-pad);
 }
 
 .root {

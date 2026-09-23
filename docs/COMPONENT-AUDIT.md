@@ -738,6 +738,63 @@ work. The first reading — "1 flaky became 2 failed" — was itself noise.
 
 ---
 
+### 9 — The card quartet, lifted opt-in
+
+Six components declared the same four values verbatim — accordion, container,
+dialog, overlay-panel, panel, select-card. They now read a shared default:
+
+```css
+/* sherpa-base.css :host */
+--sherpa-card-surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
+--sherpa-card-border:  var(--_status-border,  var(--sherpa-style-border-base, #b3b3c3));
+--sherpa-card-divider: var(--sherpa-theme-border-default-1, #e8e8f6);
+--sherpa-card-pad:     var(--sherpa-theme-padding-lg, 16px);
+```
+
+**Properties, not a class.** Five of the six declare these on `:host`, and a
+`:host` cannot wear a class from its own sheet — the same constraint that made
+`--sherpa-focus-ring` a property.
+
+**Public names, private aliases kept.** Each component keeps
+`--_surface: var(--sherpa-card-surface)`, so every rule body that already reads
+`--_surface` is untouched, and `--_*` keeps meaning "private".
+
+**Opt-in by omission.** Six *other* components use `--_surface` to mean
+something different on purpose: callout is deliberately status-blind, toast uses
+the subtle tier, checkbox and radio use a different token. Their own `:host`
+rule wins over the shared one — verified in all three engines — so they simply
+keep their declaration and nothing about them changes. Confirmed: only six files
+were touched.
+
+`select-card` kept its own `--_border`: its fallback is
+`theme-border-default-2`, not `style-border-base`. That is a real divergence and
+normalising it would have changed a colour silently.
+
+Values proved unchanged the same way as the shade: resolved all four properties
+on all six components, reverted, rebuilt, resolved again. Identical.
+
+### Measured and NOT lifted
+
+Two candidates from the audit turned out not to be duplication once counted.
+
+**The disabled-token triple — 14 components, and the count is misleading.**
+Only **45%** of the 110 uses sit inside a `[disabled]` selector.
+`border-default-2` alone appears 61 times across 32 files, mostly as an ordinary
+border. The three tokens do not cluster: of the 14 files, one uses all three
+once and the rest use them in wildly different proportions.
+
+The *values* are already centralised in `tokens.css`. What repeats is which
+property each component paints for its own disabled state, and that genuinely
+differs — `sherpa-pagination` even documents why `.sherpa-inert` cannot serve
+it (it kills `pointer-events`, which those fields keep).
+
+**Elevation.** Left for now: nine components each hand-write a `box-shadow`
+because `[data-elevation]` is a bare selector in `tokens.css` that never reaches
+a shadow root. That is a real gap and the fix is the same property shape — but
+it changes what nine components paint, so it wants its own pass.
+
+---
+
 ## Still to do
 
 ### If you fix five things
