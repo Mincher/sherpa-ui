@@ -331,3 +331,51 @@ test('the centre derives the total, follows a hidden slice, and yields to data-l
   expect(r.named).toBe('Fleet');
   expect(r.empty).toBe('');
 });
+
+/**
+ * A DATUM'S FOCUS RING IS FOR THE KEYBOARD ONLY.
+ *
+ * A slice carries `tabindex="0"` so a reader with no pointer can reach it, so
+ * CLICKING one leaves it focused and the browser paints its own ring — a 5px
+ * blue halo over the chart. `:focus` without `:focus-visible` is the mouse
+ * case. TRAP T-a-datum-focus-ring-is-for-the-keyboard-only
+ */
+test('clicking a slice leaves no focus ring; tabbing to one draws it', async ({ page }) => {
+  const box = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-donut-chart') as HTMLElement & {
+      rendered?: Promise<void>; populate?: (d: unknown) => void;
+    };
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate!([{ label: 'a', value: 3 }, { label: 'b', value: 1 }]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const slice = el.shadowRoot!.querySelector('.slice')!;
+    const r = slice.getBoundingClientRect();
+    return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+  });
+
+  await page.mouse.click(box.x, box.y);
+  const afterClick = await page.evaluate(() => {
+    const s = document.querySelector('sherpa-donut-chart')!.shadowRoot!.querySelector('.slice')!;
+    return { focused: s.matches(':focus'), outline: getComputedStyle(s).outlineStyle };
+  });
+  /* NO RING, whether or not the click focused it. Whether a mouse click focuses
+     an SVG <path> is engine-specific — Chromium does it in the real app and no
+     engine does it in this harness — so asserting `focused` asserts the engine,
+     not the fix. What must hold everywhere is that nothing is drawn. */
+  expect(afterClick.outline).toBe('none');
+
+  await page.keyboard.press('Tab');
+  const afterTab = await page.evaluate(() => {
+    const root = document.querySelector('sherpa-donut-chart')!.shadowRoot!;
+    const a = root.activeElement;
+    if (!a) return null;
+    const cs = getComputedStyle(a);
+    return { cls: a.getAttribute('class'), width: cs.strokeWidth, visible: a.matches(':focus-visible') };
+  });
+  // A keyboard reader still gets a ring, drawn as a stroke — an SVG path has no
+  // box to shadow, so the controls' inset-ring idiom does not apply.
+  expect(afterTab?.cls).toContain('slice');
+  expect(afterTab?.visible).toBe(true);
+  expect(afterTab?.width).toBe('2px');
+});

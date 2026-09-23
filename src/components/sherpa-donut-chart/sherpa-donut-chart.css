@@ -70,10 +70,22 @@
   cursor: pointer;
 }
 
-/* No `:focus-visible` rule: nothing here is tabbable — the contract is
-   `role="img"` + `aria-label`. Mark-level keyboard access is a known gap across
-   all five charts; see docs/HANDOVER-BACKLOG.md. */
 .slice:hover { fill-opacity: 1; }
+
+/* A CLICKED slice keeps focus — it carries `tabindex` so a reader with no
+   pointer can reach it — but a pointer user has no use for the ring, and the
+   browser's default is a 5px blue halo over the chart.
+   `:focus` without `:focus-visible` IS the mouse case: measured after a real
+   click, the slice matched `:focus` and not `:focus-visible`.
+   TRAP T-a-datum-focus-ring-is-for-the-keyboard-only */
+.slice:focus:not(:focus-visible) { outline: none; }
+
+/* The keyboard ring stays, and is drawn rather than left to the UA. */
+.slice:focus-visible {
+  outline: none;
+  stroke: var(--sherpa-theme-border-accent-2, #3b4ccd);
+  stroke-width: 2;
+}
 
 .centre {
   position: absolute;

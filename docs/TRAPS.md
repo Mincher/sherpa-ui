@@ -9883,3 +9883,35 @@ in the Style collection were found — see the commit that removed the purple
 active fill.
 
 - Site: `scripts/project-tokens.mjs`
+
+### T-a-datum-focus-ring-is-for-the-keyboard-only
+
+A chart datum carries `tabindex="0"` so a reader with no pointer can reach it —
+`T-a-chart-datum-is-reachable-without-a-pointer`. The cost is that CLICKING one
+leaves it focused, and the browser paints its default ring: measured on a donut
+slice, `rgb(0, 95, 204) auto 5px`, a blue halo across the chart.
+
+`:focus` without `:focus-visible` IS the mouse case. Measured after a real mouse
+click on a slice: `matches(':focus')` true, `matches(':focus-visible')` false —
+and the UA outline was painted anyway.
+
+So suppress that one, and DRAW the keyboard ring rather than leaving it to the
+UA:
+
+```css
+.slice:focus:not(:focus-visible) { outline: none; }
+.slice:focus-visible {
+  outline: none;
+  stroke: var(--sherpa-theme-border-accent-2, #3b4ccd);
+  stroke-width: 2;
+}
+```
+
+A `stroke`, not a `box-shadow`: an SVG `<path>` has no box to shadow, and the
+inset-ring idiom the controls use does not apply.
+
+Both radial charts need it — donut `.slice` and gauge `.zone`.
+
+- Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.css`
+- Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.css`
+- Site: `test/e2e/reforged-donut-chart.spec.ts`

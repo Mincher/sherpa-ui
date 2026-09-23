@@ -145,6 +145,17 @@
   fill-opacity: 1;
 }
 
+/* A clicked zone keeps focus but a pointer user has no use for the ring — see
+   the twin rule in sherpa-donut-chart.css.
+   TRAP T-a-datum-focus-ring-is-for-the-keyboard-only */
+.zone:focus:not(:focus-visible) { outline: none; }
+
+.zone:focus-visible {
+  outline: none;
+  stroke: var(--sherpa-theme-border-accent-2, #3b4ccd);
+  stroke-width: 2;
+}
+
 /* NO FULL-LENGTH TRACK — #renderArcs appends the grey remainder as a band through
    the same code path, so it cannot drift from the coloured ones' geometry. */
 .zone[data-rest] {

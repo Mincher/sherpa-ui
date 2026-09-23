@@ -88,7 +88,7 @@ states:
     selector: ":host(:not([data-has-legend]))"
   - $type: state
     name: focus-visible
-    selector: ":focus-visible"
+    selector: .slice:focus-visible
 capabilities:
   - $type: capability
     api: js-property-mirror
