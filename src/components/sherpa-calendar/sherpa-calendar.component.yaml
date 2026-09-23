@@ -177,7 +177,8 @@ props:
   - $type: prop
     name: data-available
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: >-
       comma-separated ISO days that EXIST in the data; every other day is disabled. A SET, not a
       span — a column of dates is a scatter, and min/max would leave the empty days between them
@@ -186,6 +187,7 @@ props:
   - $type: prop
     name: data-embedded
     type: boolean
+    observed: false
     kind: style
     default: false
     description: >-
@@ -195,23 +197,27 @@ props:
   - $type: prop
     name: data-has-time
     type: boolean
-    kind: content
+    observed: true
+    kind: style
     default: false
     description: show a native <input type=time> in the footer
   - $type: prop
     name: data-max
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: latest selectable day (ISO); later days are disabled
   - $type: prop
     name: data-min
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: earliest selectable day (ISO); earlier days are disabled
   - $type: prop
     name: data-type
     type: enum
-    kind: content
+    observed: true
+    kind: style
     values:
       - single
       - range
@@ -220,22 +226,26 @@ props:
   - $type: prop
     name: data-value
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: selected day, ISO YYYY-MM-DD (single mode); YYYY-MM-DDThh:mm when data-has-time is set
   - $type: prop
     name: data-value-end
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: range end, ISO YYYY-MM-DD (range mode)
   - $type: prop
     name: data-value-start
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: range start, ISO YYYY-MM-DD (range mode)
   - $type: prop
     name: data-view
     type: enum
-    kind: content
+    observed: true
+    kind: style
     values:
       - day
       - month

@@ -42,16 +42,19 @@ props:
   - $type: prop
     name: data-collapsed
     type: string
+    observed: false
     kind: style
     description: — boolean; hides the body/footer, leaving the header
   - $type: prop
     name: data-heading
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: — convenience header label (a slotted [slot=header] overrides it)
   - $type: prop
     name: data-status
     type: string
+    observed: false
     kind: style
     description: — status colour cascade (critical | warning | success | info | urgent)
 states:

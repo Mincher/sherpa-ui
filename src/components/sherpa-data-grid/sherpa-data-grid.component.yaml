@@ -149,6 +149,7 @@ props:
   - $type: prop
     name: data-actions
     type: string
+    observed: false
     kind: style
     description: >-
       set BY populate() when `actions` is non-empty; reveals the pinned trailing column. A host does
@@ -156,12 +157,14 @@ props:
   - $type: prop
     name: data-column-filters
     type: string
+    observed: false
     kind: style
     description: a filter button in each column heading
   - $type: prop
     name: data-column-values
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: >-
       the WHOLE column's values, so a filter menu offers them all even when the drawn rows carry
       only some: `field:a|b|c` per entry, NEWLINE separated. A value no drawn row carries sorts
@@ -170,7 +173,8 @@ props:
   - $type: prop
     name: data-filter-fields
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: >-
       space-separated fields an EXTERNAL filter is narrowing; those columns' headings take
       data-status="active". Written by SherpaDataSource — a host driving the grid by hand can write
@@ -178,17 +182,20 @@ props:
   - $type: prop
     name: data-filterable
     type: string
+    observed: false
     kind: style
     description: show a secondary header row of filter inputs
   - $type: prop
     name: data-group-field
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: group rows by this column
   - $type: prop
     name: data-needles
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: >-
       what an EXTERNAL filter MATCHED on, so its hits mark in the cells: `field:op:value` per entry,
       NEWLINE separated. Written by SherpaDataSource beside data-filter-fields. Only substring ops
@@ -197,7 +204,8 @@ props:
   - $type: prop
     name: data-page
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: >-
       the visual page, WHILE GROUPED only — a page is data-page-size screen LINES, and a shut group
       is one. Written by SherpaDataSource; the grid reports back the page count it arrives at and
@@ -205,7 +213,8 @@ props:
   - $type: prop
     name: data-page-size
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: >-
       the visual page, WHILE GROUPED only — a page is data-page-size screen LINES, and a shut group
       is one. Written by SherpaDataSource; the grid reports back the page count it arrives at and
@@ -213,7 +222,8 @@ props:
   - $type: prop
     name: data-select
     type: enum
-    kind: content
+    observed: true
+    kind: style
     values:
       - multiple
       - single
@@ -223,21 +233,25 @@ props:
   - $type: prop
     name: data-selectable
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: show a leading selection column
   - $type: prop
     name: data-sort-direction
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: current sort (asc | desc)
   - $type: prop
     name: data-sort-field
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: current sort (asc | desc)
   - $type: prop
     name: data-total-pages
     type: string
+    observed: false
     kind: style
     description: >-
       how many pages the host believes there are. READ ONLY, and only to avoid re-reporting a count

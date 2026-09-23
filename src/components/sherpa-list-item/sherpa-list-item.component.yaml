@@ -104,65 +104,77 @@ props:
   - $type: prop
     name: data-current
     type: string
+    observed: false
     kind: style
     default: false
     description: current-row state
   - $type: prop
     name: data-description
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: secondary text
   - $type: prop
     name: data-draggable
     type: string
+    observed: false
     kind: style
     description: show the drag handle
   - $type: prop
     name: data-expandable
     type: string
+    observed: false
     kind: style
     description: show the expand toggle
   - $type: prop
     name: data-expanded
     type: string
-    kind: content
+    observed: true
+    kind: style
     default: false
     description: expanded state (the toggle reflects it)
   - $type: prop
     name: data-heading
     type: string
+    observed: false
     kind: style
     description: primary text
   - $type: prop
     name: data-icon
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: a leading icon glyph
   - $type: prop
     name: data-interactive
     type: string
+    observed: false
     kind: style
     default: false
     description: hover + click behaviour
   - $type: prop
     name: data-label
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: primary text (data-heading is a back-compat alias)
   - $type: prop
     name: data-selectable
     type: string
+    observed: false
     kind: style
     description: show a leading selection control (checkbox affordance)
   - $type: prop
     name: data-selected
     type: string
-    kind: content
+    observed: true
+    kind: style
     default: false
     description: selection state (for the leading control)
   - $type: prop
     name: disabled
     type: boolean
+    observed: false
     native: true
     default: false
     description: disabled state

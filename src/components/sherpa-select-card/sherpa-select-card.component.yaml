@@ -55,21 +55,25 @@ props:
   - $type: prop
     name: data-description
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: helper line under the title
   - $type: prop
     name: data-footer
     type: string
+    observed: false
     kind: style
     description: none → hide the footer region entirely (CSS-only)
   - $type: prop
     name: data-label
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: header title (used when no header slot is given)
   - $type: prop
     name: data-orientation
     type: enum
+    observed: false
     kind: style
     values:
       - vertical
@@ -79,7 +83,8 @@ props:
   - $type: prop
     name: data-select-mode
     type: enum
-    kind: content
+    observed: true
+    kind: style
     values:
       - radio
       - checkbox
@@ -90,27 +95,28 @@ props:
   - $type: prop
     name: data-selected
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: present → the card is selected (also a JS property)
   - $type: prop
     name: disabled
     type: boolean
+    observed: true
     native: true
-    kind: content
     default: false
     description: native — dims + blocks interaction
   - $type: prop
     name: name
     type: string
+    observed: true
     native: true
-    kind: content
     default: footer
     description: radio group name
   - $type: prop
     name: value
     type: string
+    observed: true
     native: true
-    kind: content
     description: submitted / reported value when selected
 states:
   - $type: state

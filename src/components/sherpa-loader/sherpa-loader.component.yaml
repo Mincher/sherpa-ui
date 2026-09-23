@@ -32,6 +32,7 @@ props:
   - $type: prop
     name: data-orientation
     type: enum
+    observed: false
     kind: style
     values:
       - horizontal
@@ -40,12 +41,14 @@ props:
   - $type: prop
     name: data-panel
     type: boolean
+    observed: false
     kind: style
     default: false
     description: render a solid surface background behind the loader
   - $type: prop
     name: data-size
     type: enum
+    observed: false
     kind: style
     values:
       - sm

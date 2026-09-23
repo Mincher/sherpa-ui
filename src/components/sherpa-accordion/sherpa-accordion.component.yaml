@@ -62,23 +62,26 @@ props:
   - $type: prop
     name: data-description
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: — optional secondary line under the title (fallback to slotted [slot=description])
   - $type: prop
     name: data-heading
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: — the summary title (fallback to slotted [slot=heading])
   - $type: prop
     name: data-status
     type: string
+    observed: false
     kind: style
     description: — status colour cascade (critical | warning | success | info | urgent)
   - $type: prop
     name: open
     type: boolean
+    observed: true
     native: true
-    kind: content
     default: false
     description: — native boolean (current disclosure state; drives [open] visuals)
 states:

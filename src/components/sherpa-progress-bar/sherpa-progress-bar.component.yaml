@@ -32,7 +32,8 @@ props:
   - $type: prop
     name: data-indeterminate
     type: string
-    kind: content
+    observed: true
+    kind: style
     default: false
     description: >-
       animated sweep for unknown-duration work (boolean; renders a native indeterminate <progress> —
@@ -40,11 +41,13 @@ props:
   - $type: prop
     name: data-label
     type: string
+    observed: true
     kind: visibility
     description: accessible task label (shown above the bar; drives aria-label)
   - $type: prop
     name: data-status
     type: enum
+    observed: false
     kind: style
     values:
       - critical
@@ -55,13 +58,14 @@ props:
   - $type: prop
     name: data-value
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: 0–100 completion percentage (determinate)
   - $type: prop
     name: value
     type: string
+    observed: true
     native: true
-    kind: content
     description: 0–100 completion (native <progress value>); read/write
 states:
   - $type: state

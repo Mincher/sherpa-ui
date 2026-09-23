@@ -39,6 +39,7 @@ props:
   - $type: prop
     name: data-orientation
     type: enum
+    observed: false
     kind: style
     values:
       - horizontal

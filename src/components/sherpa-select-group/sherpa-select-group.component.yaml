@@ -57,38 +57,44 @@ props:
   - $type: prop
     name: data-description
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: helper line under the heading
   - $type: prop
     name: data-error
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: validation message; present → validation row shown
   - $type: prop
     name: data-label
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: group heading (hidden when empty)
   - $type: prop
     name: data-multiple
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: present → checkboxes (multi-select); absent → radios
   - $type: prop
     name: data-status
     type: string
+    observed: false
     kind: style
     description: status cascade re-inks heading + validation (critical/…)
   - $type: prop
     name: disabled
     type: boolean
+    observed: true
     native: true
-    kind: content
     default: false
     description: disable every option
   - $type: prop
     name: value
     type: string
+    observed: false
     native: true
     description: "property: string[] when multiple, else string | null"
 states:

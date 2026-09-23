@@ -39,6 +39,7 @@ props:
   - $type: prop
     name: data-density
     type: enum
+    observed: false
     kind: style
     values:
       - comfortable
@@ -47,6 +48,7 @@ props:
   - $type: prop
     name: data-type
     type: enum
+    observed: false
     kind: style
     values:
       - plain

@@ -82,41 +82,49 @@ props:
   - $type: prop
     name: data-collapsed
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: collapsed state (body/footer hidden; the collapse toggle reflects it)
   - $type: prop
     name: data-collapsible
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: show the collapse toggle
   - $type: prop
     name: data-dismissible
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: show the close button
   - $type: prop
     name: data-expandable
     type: string
+    observed: false
     kind: style
     description: show the expand button
   - $type: prop
     name: data-external
     type: string
+    observed: false
     kind: style
     description: show the external-link button
   - $type: prop
     name: data-heading
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: link-style header title text (rendered into .title)
   - $type: prop
     name: data-icon
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: a glyph before the title (shows the icon slot area)
   - $type: prop
     name: data-status
     type: string
+    observed: false
     kind: style
     description: >-
       status colour cascade (critical | warning | success | info | urgent) Toolbar buttons are shown
@@ -124,8 +132,8 @@ props:
   - $type: prop
     name: open
     type: boolean
+    observed: true
     native: true
-    kind: content
     default: false
     description: native boolean (read reflects dialog.open; set → show()/close())
 states:

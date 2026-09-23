@@ -57,36 +57,43 @@ props:
   - $type: prop
     name: data-author
     type: string
+    observed: true
     kind: visibility
     description: optional author name shown above the bubble
   - $type: prop
     name: data-content
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: optional text body (the default slot overrides it when slotted)
   - $type: prop
     name: data-message
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: "optional text body (the default slot overrides it when slotted) (alias: data-content)"
   - $type: prop
     name: data-name
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: "optional author name shown above the bubble (alias: data-author)"
   - $type: prop
     name: data-time
     type: string
+    observed: true
     kind: visibility
     description: optional timestamp shown beside the author
   - $type: prop
     name: data-timestamp
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: "optional timestamp shown beside the name (alias: data-time)"
   - $type: prop
     name: data-type
     type: enum
+    observed: false
     kind: style
     values:
       - assistant

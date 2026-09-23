@@ -120,43 +120,50 @@ props:
   - $type: prop
     name: data-accept
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: comma-separated MIME types / extensions → native accept + hint
   - $type: prop
     name: data-dragover
     type: string
+    observed: false
     kind: style
     description: set automatically while a drag is over the zone (CSS hook)
   - $type: prop
     name: data-helper
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: helper text under the list (hidden when empty)
   - $type: prop
     name: data-label
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: label above the drop zone (hidden when empty)
   - $type: prop
     name: data-loading
     type: string
+    observed: false
     kind: style
     description: in-flight state (disables the upload button)
   - $type: prop
     name: data-max-size
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: maximum file-size hint (e.g. "4 MB") shown in details
   - $type: prop
     name: data-multiple
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: allow selecting more than one file → native multiple
   - $type: prop
     name: disabled
     type: boolean
+    observed: true
     native: true
-    kind: content
     default: false
     description: disabled state
 states:

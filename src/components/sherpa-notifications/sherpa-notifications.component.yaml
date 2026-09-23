@@ -69,7 +69,8 @@ props:
   - $type: prop
     name: data-empty-text
     type: string
-    kind: content
+    observed: true
+    kind: style
     default: "\"No notifications\""
     description: what to say when there is nothing
 states:

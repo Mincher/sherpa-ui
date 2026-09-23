@@ -42,6 +42,7 @@ props:
   - $type: prop
     name: data-floating
     type: string
+    observed: false
     kind: style
     description: >-
       place the bubble in the TOP LAYER from measured coordinates rather than relative to the host.
@@ -50,7 +51,8 @@ props:
   - $type: prop
     name: data-placement
     type: enum
-    kind: content
+    observed: true
+    kind: style
     values:
       - top
       - bottom
@@ -60,7 +62,8 @@ props:
   - $type: prop
     name: data-text
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: tip text (or use the `tip` slot)
 states:
   - $type: state

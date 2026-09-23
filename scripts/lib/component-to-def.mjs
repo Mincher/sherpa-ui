@@ -57,12 +57,14 @@ export function refToToken(ref) {
 }
 
 // ── props: strip $type, keep the fields compileDef reads ───────────────────────
-// compileDef reads: p.kind (observed = kind!=='style'; template prop = kind==='template'
-// and p.template), p.name. It also reads p.kind==='visibility' + p.name for CSS.
+// compileDef reads: p.observed (falling back to kind!=='style' for a spec written
+// before the field existed), p.kind==='template' + p.template for the template prop,
+// p.kind==='visibility' + p.name for CSS, and p.name.
 function specPropToDef(p) {
   const out = { name: p.name };
   if ('type' in p) out.type = p.type;
   if ('kind' in p) out.kind = p.kind;
+  if ('observed' in p) out.observed = p.observed;
   if ('values' in p) out.values = p.values;
   if ('default' in p) out.default = p.default;
   if ('template' in p) out.template = p.template;
@@ -99,7 +101,7 @@ export function specToDef(spec) {
   // data-* content/visibility props). This is faithful, not a fudge: compileDef
   // has genuinely nothing to emit for such a prop.
   def.props = (spec.props ?? [])
-    .filter((p) => !(p.native === true && !p.kind))
+    .filter((p) => !(p.native === true && !p.kind && p.observed !== true))
     .map(specPropToDef);
   def.events = (spec.events ?? []).map((e) => {
     const ev = { name: e.name };

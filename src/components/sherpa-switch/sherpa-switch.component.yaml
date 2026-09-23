@@ -41,20 +41,21 @@ props:
   - $type: prop
     name: data-type
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: — default (rectangular, ON/OFF label, square thumb) | simple  (pill, no label, round thumb)
   - $type: prop
     name: checked
     type: boolean
+    observed: true
     native: true
-    kind: content
     default: false
     description: — native boolean       (current value; drives :checked visuals)
   - $type: prop
     name: disabled
     type: boolean
+    observed: true
     native: true
-    kind: content
     default: false
     description: — native boolean       (reflected onto the inner input)
 states:

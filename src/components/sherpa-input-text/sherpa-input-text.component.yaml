@@ -191,122 +191,131 @@ props:
   - $type: prop
     name: data-borderless
     type: string
+    observed: false
     kind: style
     description: drop the control border (minimal style)
   - $type: prop
     name: data-description
     type: string
-    kind: content
+    observed: true
+    kind: style
     default: style
     description: helper text under the label
   - $type: prop
     name: data-error
     type: string
-    kind: content
+    observed: true
+    kind: style
     default: style
     description: validation message — shown as a filled critical bar
   - $type: prop
     name: data-icon-end
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: trailing icon glyph inside the control row (CSS-gated)
   - $type: prop
     name: data-icon-start
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: leading icon glyph inside the control row (CSS-gated)
   - $type: prop
     name: data-label
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: field label (hidden when empty)
   - $type: prop
     name: data-multiline
     type: string
+    observed: false
     kind: style
     default: style only
     description: auto-growing <textarea>
   - $type: prop
     name: data-rules
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: >-
       names a validation rule the platform has no idea about (e.g. "email") — see the TS for the
       rule set
   - $type: prop
     name: data-type
     type: string
+    observed: false
     kind: style
     default: is the full molecule
     description: "\"minimal\" for the bare inline field"
   - $type: prop
     name: autocomplete
     type: string
+    observed: true
     native: true
-    kind: content
     description: native attributes, reflected to the inner control
   - $type: prop
     name: disabled
     type: boolean
+    observed: true
     native: true
-    kind: content
     default: false
     description: native attributes, reflected to the inner control
   - $type: prop
     name: inputmode
     type: string
+    observed: true
     native: true
-    kind: content
     description: native attributes, reflected to the inner control
   - $type: prop
     name: maxlength
     type: string
+    observed: true
     native: true
-    kind: content
     description: native attributes, reflected to the inner control
   - $type: prop
     name: minlength
     type: string
+    observed: true
     native: true
-    kind: content
     description: native attributes, reflected to the inner control
   - $type: prop
     name: name
     type: string
+    observed: true
     native: true
-    kind: content
     description: native attributes, reflected to the inner control
   - $type: prop
     name: pattern
     type: string
+    observed: true
     native: true
-    kind: content
     description: native attributes, reflected to the inner control
   - $type: prop
     name: placeholder
     type: string
+    observed: true
     native: true
-    kind: content
     description: native placeholder
   - $type: prop
     name: readonly
     type: boolean
+    observed: true
     native: true
-    kind: content
     default: false
     description: native attributes, reflected to the inner control
   - $type: prop
     name: required
     type: boolean
+    observed: true
     native: true
-    kind: content
     default: false
     description: native attributes, reflected to the inner control
   - $type: prop
     name: value
     type: string
+    observed: true
     native: true
-    kind: content
     description: native value (also a JS property)
 states:
   - $type: state

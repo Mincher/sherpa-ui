@@ -71,26 +71,31 @@ props:
   - $type: prop
     name: data-badge
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: trailing badge glyph/text value (or slot a node into "badge")
   - $type: prop
     name: data-icon-end
     type: string
+    observed: true
     kind: visibility
     description: icon glyph value
   - $type: prop
     name: data-icon-start
     type: string
+    observed: true
     kind: visibility
     description: icon glyph value
   - $type: prop
     name: data-label
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: label text (or use the default slot)
   - $type: prop
     name: data-look
     type: enum
+    observed: false
     kind: style
     values:
       - saturated
@@ -101,11 +106,13 @@ props:
   - $type: prop
     name: data-open
     type: string
+    observed: false
     kind: style
     description: set by JS while its slotted menu is open — CSS only
   - $type: prop
     name: data-size
     type: enum
+    observed: false
     kind: style
     values:
       - 2xs
@@ -118,6 +125,7 @@ props:
   - $type: prop
     name: data-status
     type: enum
+    observed: false
     kind: style
     values:
       - critical
@@ -129,13 +137,14 @@ props:
   - $type: prop
     name: data-type
     type: string
+    observed: false
     kind: style
     description: icon
   - $type: prop
     name: disabled
     type: boolean
+    observed: true
     native: true
-    kind: content
     default: false
     description: native disabled state
 states:

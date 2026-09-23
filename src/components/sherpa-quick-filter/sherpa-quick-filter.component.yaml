@@ -87,7 +87,8 @@ props:
   - $type: prop
     name: data-count
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: >-
       leading count chip (shown when present). A menu sets it only at TWO or more picked values — at
       one the label already names the value, so a "1" badge would be noise. Hovering the badge
@@ -97,17 +98,20 @@ props:
   - $type: prop
     name: data-current
     type: boolean
-    kind: content
+    observed: true
+    kind: style
     default: false
     description: selected/on state
   - $type: prop
     name: data-icon
     type: string
+    observed: false
     kind: style
     description: start leading icon — an FA class list (Figma default is a funnel)
   - $type: prop
     name: data-icon-only
     type: string
+    observed: false
     kind: style
     description: >-
       the chip reduced to JUST its menu button — a 24 square with a funnel. Body, count, indicator
@@ -116,29 +120,34 @@ props:
   - $type: prop
     name: data-icon-start
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: leading icon — an FA class list (Figma default is a funnel)
   - $type: prop
     name: data-indicator
     type: string
+    observed: false
     kind: style
     description: show the leading status dot (Figma "Indicator (atom)", opt-in)
   - $type: prop
     name: data-label
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: >-
       chip text (or use the default slot). Rewritten to "Field: Value" while exactly ONE menu value
       is picked; two or more revert to the field name plus the count badge.
   - $type: prop
     name: data-menu
     type: string
+    observed: false
     kind: style
     default: false
     description: Figma State=menu — snap on the caret button
   - $type: prop
     name: data-persistent
     type: string
+    observed: false
     kind: style
     description: >-
       a SELECTOR rather than a toggle: always on, and never "empty". Set by
@@ -148,6 +157,7 @@ props:
   - $type: prop
     name: data-type
     type: enum
+    observed: false
     kind: style
     values:
       - default

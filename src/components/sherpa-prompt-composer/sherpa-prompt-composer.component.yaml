@@ -79,18 +79,20 @@ props:
   - $type: prop
     name: data-no-leading-actions
     type: string
+    observed: false
     kind: style
     description: — hide the two default leading buttons (attach + lab)
   - $type: prop
     name: data-placeholder
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: — textarea placeholder
   - $type: prop
     name: disabled
     type: boolean
+    observed: true
     native: true
-    kind: content
     default: false
     description: — disables the input, leading buttons + send button
 states:

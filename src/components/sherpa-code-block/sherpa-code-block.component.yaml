@@ -62,17 +62,20 @@ props:
   - $type: prop
     name: data-code
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: the code to show (also settable via the default slot)
   - $type: prop
     name: data-language
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: a short language label shown in the header (e.g. "bash")
   - $type: prop
     name: data-line-numbers
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: >-
       boolean — render a line-number gutter beside the code. Numbers derive from the code's line
       count; CSS-gated.

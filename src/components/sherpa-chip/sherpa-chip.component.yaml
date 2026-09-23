@@ -50,16 +50,19 @@ props:
   - $type: prop
     name: data-dismissible
     type: string
+    observed: false
     kind: style
     description: show the close button (selects the dismissible template)
   - $type: prop
     name: data-icon
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: leading icon glyph value (shown when present; or slot "icon")
   - $type: prop
     name: data-status
     type: enum
+    observed: false
     kind: style
     values:
       - info

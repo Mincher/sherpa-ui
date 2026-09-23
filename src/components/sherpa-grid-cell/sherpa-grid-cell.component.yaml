@@ -80,23 +80,27 @@ props:
   - $type: prop
     name: data-expanded
     type: string
+    observed: false
     kind: style
     description: group is open (boolean; drives the toggle caret)
   - $type: prop
     name: data-has-actions
     type: boolean
+    observed: false
     kind: style
     default: false
     description: show the trailing sort + menu buttons
   - $type: prop
     name: data-has-checkbox
     type: boolean
+    observed: false
     kind: style
     default: false
     description: show the leading selection checkbox
   - $type: prop
     name: data-sort-direction
     type: enum
+    observed: false
     kind: style
     values:
       - asc
@@ -105,6 +109,7 @@ props:
   - $type: prop
     name: data-type
     type: enum
+    observed: false
     kind: style
     values:
       - cell

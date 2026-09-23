@@ -91,27 +91,32 @@ props:
   - $type: prop
     name: data-action
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: an action link label (shown when present; fires toast-action)
   - $type: prop
     name: data-duration
     type: string
+    observed: false
     kind: style
     default: 5000; 0 disables
     description: auto-dismiss delay in ms
   - $type: prop
     name: data-heading
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: the primary line (or the default slot)
   - $type: prop
     name: data-message
     type: string
+    observed: false
     kind: style
     description: the message text (or slot content)
   - $type: prop
     name: data-status
     type: enum
+    observed: false
     kind: style
     values:
       - info
@@ -123,7 +128,8 @@ props:
   - $type: prop
     name: data-value
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: the supporting detail line (shown when present)
 states:
   - $type: state

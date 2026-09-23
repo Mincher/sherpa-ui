@@ -30,6 +30,7 @@ props:
   - $type: prop
     name: data-align
     type: enum
+    observed: false
     kind: style
     values:
       - start
@@ -43,6 +44,7 @@ props:
   - $type: prop
     name: data-direction
     type: enum
+    observed: false
     kind: style
     values:
       - block
@@ -51,6 +53,7 @@ props:
   - $type: prop
     name: data-fill
     type: string
+    observed: false
     kind: style
     description: >-
       take the parent's height and hand the spare space to the child marked data-grow. Without it
@@ -58,6 +61,7 @@ props:
   - $type: prop
     name: data-gap
     type: enum
+    observed: false
     kind: style
     values:
       - sm
@@ -69,6 +73,7 @@ props:
   - $type: prop
     name: data-grow
     type: string
+    observed: false
     kind: style
     description: >-
       with data-fill on the stack, this item takes the spare space and the others keep their natural
@@ -77,11 +82,13 @@ props:
   - $type: prop
     name: data-measure
     type: string
+    observed: false
     kind: style
     description: "cap the run's width at a reading measure (90ch) and centre it On a CHILD (not on the stack):"
   - $type: prop
     name: data-min-item
     type: string
+    observed: false
     kind: style
     default: 200px
     description: >-
@@ -90,6 +97,7 @@ props:
   - $type: prop
     name: data-scroll
     type: string
+    observed: false
     kind: style
     description: >-
       the run scrolls when it is taller than its room, instead of pushing the page. It caps the
@@ -97,6 +105,7 @@ props:
   - $type: prop
     name: data-wrap
     type: string
+    observed: false
     kind: style
     description: "inline only: items wrap and share the line"
 states:

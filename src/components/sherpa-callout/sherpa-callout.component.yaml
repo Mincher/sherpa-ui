@@ -82,16 +82,19 @@ props:
   - $type: prop
     name: data-dismissible
     type: string
+    observed: false
     kind: style
     description: show the close button (fires callout-dismiss)
   - $type: prop
     name: data-heading
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: heading text (rendered into .title)
   - $type: prop
     name: data-status
     type: enum
+    observed: false
     kind: style
     values:
       - info

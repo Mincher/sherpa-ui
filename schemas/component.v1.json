@@ -203,8 +203,12 @@
           "enum": ["enum", "boolean", "string", "number"]
         },
         "kind": {
-          "description": "The variant mechanism: how the prop is realised. Native attrs may omit this.",
+          "description": "The variant mechanism: how the prop is REALISED. content = JS writes text into the shadow DOM; style = CSS selects on it; visibility = its presence toggles a rule; template = it picks a template. Native attrs may omit this. It is NOT a statement about observation — see `observed`.",
           "enum": ["style", "content", "visibility", "template"]
+        },
+        "observed": {
+          "description": "true = the component lists this in observedAttributes. Independent of `kind`: a CSS-only (kind:style) attribute may still be observed, and an observed native attr needs no kind at all.",
+          "type": "boolean"
         },
         "native": {
           "description": "true = a bare native HTML attribute (disabled, name…), not a data-* one.",

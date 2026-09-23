@@ -71,21 +71,25 @@ props:
   - $type: prop
     name: data-description
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: message text (rendered into .message-text)
   - $type: prop
     name: data-heading
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: heading text (rendered into .title)
   - $type: prop
     name: data-illustration
     type: string
+    observed: false
     kind: style
     description: "built-in glyph: empty  | search | folder | data | error | success"
   - $type: prop
     name: data-size
     type: enum
+    observed: false
     kind: style
     values:
       - sm
@@ -95,7 +99,8 @@ props:
   - $type: prop
     name: data-small-print
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: fine-print / help text (rendered into .small-print-text)
 states:
   - $type: state

@@ -50,17 +50,20 @@ props:
   - $type: prop
     name: data-divider
     type: string
+    observed: false
     kind: style
     default: false
     description: bottom divider; shown by DEFAULT — set data-divider="none" to hide it
   - $type: prop
     name: data-heading
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: heading text (rendered into .title)
   - $type: prop
     name: data-size
     type: enum
+    observed: false
     kind: style
     values:
       - sm

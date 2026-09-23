@@ -170,74 +170,88 @@ props:
   - $type: prop
     name: data-account
     type: string
+    observed: false
     kind: style
     description: show the account button
   - $type: prop
     name: data-ai
     type: string
+    observed: false
     kind: style
     description: show the "Ask N-zo" AI button
   - $type: prop
     name: data-ai-label
     type: string
-    kind: style
+    observed: false
+    kind: content
     default: "\"Ask N-zo\""
     description: its label
   - $type: prop
     name: data-back
     type: string
+    observed: false
     kind: style
     description: show the back button
   - $type: prop
     name: data-heading
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: the view title (row 2)
   - $type: prop
     name: data-help
     type: string
+    observed: false
     kind: style
     description: show the support button
   - $type: prop
     name: data-icon
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: the view icon — an FA class list ("fa-solid fa-gauge")
   - $type: prop
     name: data-labs
     type: string
+    observed: false
     kind: style
     description: show the labs/beaker button
   - $type: prop
     name: data-loading
     type: string
+    observed: false
     kind: style
     description: run the indeterminate loading bar
   - $type: prop
     name: data-menu
     type: string
+    observed: false
     kind: style
     description: show the app-switcher button
   - $type: prop
     name: data-notifications
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: unread count — shows the bell + its badge
   - $type: prop
     name: data-notifications-open
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: >-
       the HOST's panel is open, so the bell wears its open ring. The header emits the intent; the
       host owns the panel and reports the state back. TRAP T-a-trigger-shows-what-it-opened
   - $type: prop
     name: data-theme-toggle
     type: string
+    observed: false
     kind: style
     description: show the light/dark (moon) button
   - $type: prop
     name: data-title
     type: string
+    observed: false
     kind: style
     description: accepted as an alias for data-heading
 states:

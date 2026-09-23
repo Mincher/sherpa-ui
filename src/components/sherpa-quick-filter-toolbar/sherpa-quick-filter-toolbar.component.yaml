@@ -145,27 +145,32 @@ props:
   - $type: prop
     name: data-favourite
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: the ★ is lit (view type) — the value, IN
   - $type: prop
     name: data-group-field
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: the field the Group chip points at (the standard name)
   - $type: prop
     name: data-locked
     type: string
+    observed: false
     kind: style
     description: the host owns the ★; report the click, never self-set
   - $type: prop
     name: data-no-actions
     type: string
+    observed: false
     kind: style
     description: hide the built-in cluster entirely (host owns the trailing end)
   - $type: prop
     name: data-sort-direction
     type: enum
-    kind: content
+    observed: true
+    kind: style
     values:
       - asc
       - desc
@@ -173,11 +178,13 @@ props:
   - $type: prop
     name: data-sort-field
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: the field the Sort chip points at (the standard name)
   - $type: prop
     name: data-type
     type: enum
+    observed: false
     kind: style
     values:
       - data

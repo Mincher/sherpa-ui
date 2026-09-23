@@ -60,7 +60,8 @@ props:
   - $type: prop
     name: data-current-step
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: — 0-based index of the active step
 states:
   - $type: state

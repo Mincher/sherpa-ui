@@ -65,56 +65,59 @@ props:
   - $type: prop
     name: data-advanced
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: show the caret + its slotted menu
   - $type: prop
     name: data-description
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: helper line below the label
   - $type: prop
     name: data-label
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: label text to the right of the box (or default slot)
   - $type: prop
     name: checked
     type: boolean
+    observed: true
     native: true
-    kind: content
     default: false
     description: native checked state (also a JS property)
   - $type: prop
     name: disabled
     type: boolean
+    observed: true
     native: true
-    kind: content
     default: false
     description: native attributes, mirrored to the inner control
   - $type: prop
     name: indeterminate
     type: string
+    observed: true
     native: true
-    kind: content
     description: mixed state (JS property → input.indeterminate; CSS :indeterminate)
   - $type: prop
     name: name
     type: string
+    observed: true
     native: true
-    kind: content
     description: native attributes, mirrored to the inner control
   - $type: prop
     name: required
     type: boolean
+    observed: true
     native: true
-    kind: content
     default: false
     description: native attributes, mirrored to the inner control
   - $type: prop
     name: value
     type: string
+    observed: true
     native: true
-    kind: content
     default: "\"on\""
     description: submitted value when checked
 states:

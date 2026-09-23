@@ -62,6 +62,7 @@ props:
   - $type: prop
     name: data-elevation
     type: enum
+    observed: false
     kind: style
     values:
       - none
@@ -72,6 +73,7 @@ props:
   - $type: prop
     name: data-fill
     type: string
+    observed: false
     kind: style
     description: >-
       with data-row-span AND several body children: only the child marked data-grow takes the spare
@@ -82,12 +84,14 @@ props:
   - $type: prop
     name: data-loading
     type: string
+    observed: false
     kind: style
     default: false
     description: show the loading overlay (ratified boolean-verb state)
   - $type: prop
     name: data-padding
     type: enum
+    observed: false
     kind: style
     values:
       - none
@@ -98,6 +102,7 @@ props:
   - $type: prop
     name: data-row-span
     type: enum
+    observed: false
     kind: style
     values:
       - "4"

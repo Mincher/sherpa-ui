@@ -61,17 +61,20 @@ props:
   - $type: prop
     name: data-label
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: centre big text
   - $type: prop
     name: data-sublabel
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: centre small text
   - $type: prop
     name: data-type
     type: enum
-    kind: content
+    observed: true
+    kind: style
     values:
       - donut
       - pie

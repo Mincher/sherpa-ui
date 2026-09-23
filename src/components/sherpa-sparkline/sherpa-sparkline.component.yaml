@@ -256,12 +256,14 @@ props:
   - $type: prop
     name: data-type
     type: string
+    observed: false
     kind: style
     description: — line  | bar (flat-topped columns)
   - $type: prop
     name: data-values
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: — comma-separated or JSON array (e.g. "10,25,15,30")
 states:
   - $type: state

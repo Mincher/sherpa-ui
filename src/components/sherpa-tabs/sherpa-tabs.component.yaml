@@ -58,7 +58,8 @@ props:
   - $type: prop
     name: data-current-id
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: — id of the currently active tab / panel
 states:
   - $type: state

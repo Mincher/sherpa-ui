@@ -24,7 +24,7 @@ import { specToDef } from './lib/component-to-def.mjs';
 import { compileDef } from './lib/generation/compile-def.mjs';
 import { authoredCss, extractBindings, parseStates } from './lib/css-reader.mjs';
 import { parseTemplates, htmlDiff } from './lib/html-structure.mjs';
-import { parseObserved } from './lib/ts-facts.mjs';
+import { parseObserved, parsePropKinds } from './lib/ts-facts.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const C = join(ROOT, 'src', 'components');
@@ -521,6 +521,9 @@ function generateSpec(name) {
   // The TS `observed` list is the ground truth for which data-* props are
   // reactive; a prior spec's stale kind loses to it.
   const tsObserved = parseObserved(ts);
+  // `static props` is the only honest source for `kind`; a prior spec's kind was
+  // inferred from observation and is wrong on 39 components.
+  const tsKinds = parsePropKinds(ts);
 
   const comment = html ? htmlComment(html) : '';
   const apiProps = comment ? parsePublicApi(comment) : {};
@@ -638,21 +641,19 @@ function generateSpec(name) {
     p.type = fromApi.type || fromPrior.type || 'string';
     let kind = fromPrior.kind;
     const native = fromApi.native === true || (!nm.startsWith('data-') && NATIVE_ATTRS.has(nm));
-    // compileDef derives `observed` from props whose kind !== 'style', so an
-    // unobserved data-* prop MUST be kind:style or the round-trip mismatches.
-    // The prior spec's kind loses. Applied only when a TS file exists — its
-    // observed list, even empty, is the ground truth.
-    if (nm.startsWith('data-') && ts) {
-      if (tsObserved.includes(nm)) { if (!kind || kind === 'style') kind = 'content'; }
-      else kind = 'style'; // not observed at runtime → contributes nothing to observed
-    }
-    if (native) {
-      p.native = true;
-      // specToDef drops native attrs with no kind, so an observed one needs one
-      if (ts && tsObserved.includes(nm)) p.kind = 'content';
-    }
-    else if (kind && kind !== 'style') p.kind = kind;
-    else if (kind === 'style') p.kind = 'style';
+    // `kind` says HOW a prop is realised; `observed` says WHETHER the component
+    // watches it. They are independent — a CSS-only attribute is routinely
+    // observed. TRAP T-kind-says-how-not-whether
+    if (ts) p.observed = tsObserved.includes(nm);
+    if (native) p.native = true;
+    // The TS declaration wins. A prior spec's kind was inferred from the
+    // observed list and cannot be trusted where the TS disagrees.
+    if (ts && nm in tsKinds) kind = tsKinds[nm];
+    else if (ts && kind === 'content' && !(nm in tsKinds)) kind = undefined;
+    // A data-* prop the TS does not declare is CSS-only: that is what a bare
+    // attribute selector is, and it holds whether or not it is observed.
+    if (!kind && nm.startsWith('data-')) kind = 'style';
+    if (kind) p.kind = kind;
     if (p.type === 'enum') {
       if (fromApi.values && fromApi.values.length) p.values = fromApi.values;
       else if (fromPrior.values && fromPrior.values.length) p.values = fromPrior.values;

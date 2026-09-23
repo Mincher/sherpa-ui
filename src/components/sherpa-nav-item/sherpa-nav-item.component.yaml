@@ -139,36 +139,43 @@ props:
   - $type: prop
     name: data-badge
     type: string
+    observed: true
     kind: visibility
     description: the trailing Tag's text (Figma hasTag)
   - $type: prop
     name: data-current
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: current item in the nav set
   - $type: prop
     name: data-description
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: promo description (promo variant only)
   - $type: prop
     name: data-expandable
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: the item has children — shows the chevron (Figma hasChildren)
   - $type: prop
     name: data-expanded
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: expanded state — rotates the chevron
   - $type: prop
     name: data-href
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: render the row as a link
   - $type: prop
     name: data-icon
     type: string
+    observed: true
     kind: visibility
     description: >-
       leading icon — a Font Awesome class list ("fa-solid fa-house"); any other value renders as a
@@ -176,16 +183,19 @@ props:
   - $type: prop
     name: data-label
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: row label text
   - $type: prop
     name: data-status-dot
     type: string
+    observed: false
     kind: style
     description: render the trailing Indicator (atom) dot
   - $type: prop
     name: data-tier
     type: string
+    observed: false
     kind: style
     description: >-
       nesting depth 2 | 3 — indents the row to the Figma indent tier (tier 1 is the default, no
@@ -193,11 +203,13 @@ props:
   - $type: prop
     name: data-type
     type: string
+    observed: false
     kind: style
     description: "\"promo\" for the CTA row"
   - $type: prop
     name: disabled
     type: boolean
+    observed: false
     native: true
     default: false
     description: disabled state

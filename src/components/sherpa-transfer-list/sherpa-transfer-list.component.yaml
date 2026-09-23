@@ -110,13 +110,15 @@ props:
   - $type: prop
     name: data-source-heading
     type: string
-    kind: style
+    observed: false
+    kind: content
     default: "\"Available\""
     description: heading for the available pane
   - $type: prop
     name: data-target-heading
     type: string
-    kind: style
+    observed: false
+    kind: content
     default: "\"Selected\""
     description: heading for the selected pane
 states:

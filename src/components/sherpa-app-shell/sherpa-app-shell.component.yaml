@@ -51,7 +51,8 @@ props:
   - $type: prop
     name: data-nav-state
     type: enum
-    kind: content
+    observed: true
+    kind: style
     values:
       - collapsed
       - hover
@@ -64,13 +65,15 @@ props:
   - $type: prop
     name: data-no-header
     type: boolean
-    kind: content
+    observed: true
+    kind: style
     default: false
     description: let the content span the full height (no header row)
   - $type: prop
     name: data-no-nav
     type: boolean
-    kind: content
+    observed: true
+    kind: style
     default: false
     description: drop the nav rail; the content spans the full width
 states:

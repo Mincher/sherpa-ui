@@ -164,7 +164,8 @@ props:
   - $type: prop
     name: data-align
     type: enum
-    kind: content
+    observed: true
+    kind: style
     values:
       - start
       - end
@@ -172,18 +173,21 @@ props:
   - $type: prop
     name: data-clearable
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: >-
       show a Clear button in the footer that empties the selection (a CALENDAR menu shows Today
       there instead — see the footer)
   - $type: prop
     name: data-commit
     type: string
+    observed: false
     kind: style
     description: show the Apply / Cancel footer and DEFER changes until Apply
   - $type: prop
     name: data-conditions
     type: string
+    observed: false
     kind: style
     description: >-
       FILTER type only: a comma-separated op list ('eq,ne,contains') in place of the default text
@@ -191,6 +195,7 @@ props:
   - $type: prop
     name: data-drill
     type: string
+    observed: false
     kind: style
     description: >-
       the list has been replaced by a SUB-LIST — shows a back arrow and a breadcrumb in the header.
@@ -199,36 +204,43 @@ props:
   - $type: prop
     name: data-drill-from
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: names the list that was replaced — the breadcrumb's text
   - $type: prop
     name: data-has-value
     type: string
+    observed: false
     kind: style
     description: "written BY the menu: the typed value is not empty, so the input's Clear button shows."
   - $type: prop
     name: data-heading
     type: string
+    observed: true
     kind: content
     description: optional heading (rendered upper-case at 10/16)
   - $type: prop
     name: data-op
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: "FILTER type only: which condition is picked. Defaults to `eq`."
   - $type: prop
     name: data-removable
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: show a "Remove" button in the footer (after Today); it emits menu-select with value="remove"
   - $type: prop
     name: data-search
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: show a search input under the heading that filters the rows
   - $type: prop
     name: data-select
     type: enum
+    observed: false
     kind: style
     values:
       - multiple
@@ -237,6 +249,7 @@ props:
   - $type: prop
     name: data-takes
     type: string
+    observed: false
     kind: style
     description: >-
       written BY the menu from data-op: list | text. CSS reads it to reveal the rows or the text
@@ -244,7 +257,8 @@ props:
   - $type: prop
     name: data-type
     type: enum
-    kind: content
+    observed: true
+    kind: style
     values:
       - list
       - calendar
@@ -259,15 +273,16 @@ props:
   - $type: prop
     name: data-value
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: >-
       FILTER type only: what was TYPED under a typing condition. An ATTRIBUTE because a variant
       re-stamp replaces the whole shadow tree, and a value living only in the box is lost.
   - $type: prop
     name: open
     type: boolean
+    observed: true
     native: true
-    kind: content
     default: false
     description: "native-ish boolean: reflects/controls the popover"
 states:

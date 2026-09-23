@@ -30,6 +30,7 @@ props:
   - $type: prop
     name: data-align
     type: enum
+    observed: false
     kind: style
     values:
       - start

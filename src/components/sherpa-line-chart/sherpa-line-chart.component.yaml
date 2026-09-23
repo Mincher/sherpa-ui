@@ -82,33 +82,39 @@ props:
   - $type: prop
     name: data-axis-label
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: y-axis caption (shown when set)
   - $type: prop
     name: data-label
     type: string
+    observed: false
     kind: style
     description: chart title
   - $type: prop
     name: data-max
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: y-scale bounds (else derived)
   - $type: prop
     name: data-min
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: y-scale bounds (else derived)
   - $type: prop
     name: data-ticks
     type: string
-    kind: content
+    observed: true
+    kind: style
     default: "4"
     description: number of y gridlines/values
   - $type: prop
     name: data-type
     type: enum
-    kind: content
+    observed: true
+    kind: style
     values:
       - line
       - area
@@ -116,7 +122,8 @@ props:
   - $type: prop
     name: data-x-axis-label
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: x-axis caption (shown when set)
 states:
   - $type: state

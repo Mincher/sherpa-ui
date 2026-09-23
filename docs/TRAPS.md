@@ -9239,3 +9239,36 @@ Sherpa event sets it, and `emit()` sets it for you. So the scan now requires
 handler does not set it, and is correctly left out of the contract.
 
 - Site: `scripts/generate-component-spec.mjs`
+
+### T-kind-says-how-not-whether
+
+A prop's `kind` says **how** it is realised. `observed` says **whether** the
+component watches it. They are independent, and for a long time one field
+carried both meanings.
+
+`compileDef` derived the observed list from `kind !== 'style'`, because the spec
+had no other channel for it. So the generator was forced to write `kind:
+content` onto any attribute a component observed — including CSS-only ones,
+which write no text at all. Measured before the fix: **156 props across 39
+components** claimed `kind: content` with nothing in their TS to back it.
+
+Nothing rendered wrong. What was wrong is what a reader was told: the MCP
+server, and any agent reading a spec, saw 156 attributes that write text into
+the shadow DOM and do not.
+
+Three changes close it:
+
+- the schema gained `observed`, and `kind`'s description now says it is not a
+  statement about observation;
+- `compileDef` reads `observed` when a spec carries one, falling back to the old
+  `kind !== 'style'` signal for a spec written before the field existed;
+- `parsePropKinds` reads `static override props`, which is the only honest
+  source for `kind` — an entry with a `to:` selector IS content, because that is
+  what `to` means to the base class. The TS beats a prior spec's inferred kind.
+
+Afterwards: 43 `kind: content` props remain, and every one is backed by a real
+declaration.
+
+- Site: `scripts/lib/ts-facts.mjs`
+- Site: `scripts/lib/generation/compile-def.mjs`
+- Site: `scripts/generate-component-spec.mjs`

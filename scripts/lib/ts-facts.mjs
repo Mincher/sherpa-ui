@@ -1,7 +1,7 @@
 /**
  * ts-facts.mjs — read the facts a spec DETERMINES out of a component's TypeScript.
  *
- * Today that is the `observed` list. It lives here rather than in the spec
+ * Today that is the `observed` list and the declared `kind` of each prop. It lives here rather than in the spec
  * generator because two things need it and only one had the fixes: the generator
  * and `roundtrip-component.mjs` each had their own reader, and the fork's was the
  * naive `/static override observed = \[([^\]]*)\]/` regex. Both of the bugs
@@ -73,3 +73,33 @@ export function expandArrayConst(src, name) {
     .map((x) => x.slice(1, -1));
 }
 
+
+/**
+ * The declared `kind` of each prop, from `static override props`.
+ *
+ * This is the only honest source for `kind`. Before it existed the generator
+ * inferred one from the observed list, because compileDef derived `observed`
+ * from `kind !== 'style'` and had no other channel — so a CSS-only attribute
+ * that happened to be observed was written into 39 specs as `kind: content`,
+ * claiming it wrote text it never wrote.
+ * TRAP T-kind-says-how-not-whether
+ *
+ * An entry with a `to:` selector and no explicit kind IS content — that is what
+ * `to` means to the base class.
+ *
+ * @returns {Record<string, string>} attribute name → kind
+ */
+export function parsePropKinds(ts) {
+  const src = ts ?? '';
+  const m = /static override props\s*=\s*\{([\s\S]*?)\n\s*\}\s*as const;/.exec(src);
+  if (!m) return {};
+  const body = m[1].replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+  const out = {};
+  for (const e of body.matchAll(/['"]([^'"]+)['"]\s*:\s*\{([^}]*)\}/g)) {
+    const [, name, fields] = e;
+    const kind = /\bkind\s*:\s*['"]([a-z]+)['"]/.exec(fields);
+    if (kind) out[name] = kind[1];
+    else if (/\bto\s*:/.test(fields)) out[name] = 'content';
+  }
+  return out;
+}

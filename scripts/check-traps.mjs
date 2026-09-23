@@ -26,6 +26,10 @@ const SOURCES = [
   'test/e2e/*.ts',
   'test/unit/*.mjs',
   'scripts/*.mjs',
+  // The build LIBRARY too. `scripts/*.mjs` is one level deep, so a citation in
+  // scripts/lib/ was invisible and the gate reported its own Site as uncited.
+  'scripts/lib/*.mjs',
+  'scripts/lib/*/*.mjs',
   'examples/views/*.js',
   // The example TEMPLATES too. A citation in the Add-customer dialog was
   // unchecked, which is how a missing form field went unnoticed.

@@ -93,42 +93,50 @@ props:
   - $type: prop
     name: data-collapsed
     type: string
-    kind: content
+    observed: true
+    kind: style
     default: false
     description: collapsed state (opt-in; absent = expanded default; the toggle reflects it)
   - $type: prop
     name: data-collapsible
     type: string
+    observed: false
     kind: style
     description: show the collapse toggle
   - $type: prop
     name: data-description
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: secondary text (rendered into .description)
   - $type: prop
     name: data-dismissible
     type: string
+    observed: false
     kind: style
     description: show the close button
   - $type: prop
     name: data-draggable
     type: string
+    observed: false
     kind: style
     description: show the drag handle
   - $type: prop
     name: data-heading
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: heading text (rendered into .title)
   - $type: prop
     name: data-icon
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: a glyph before the title (shows the icon slot)
   - $type: prop
     name: data-type
     type: enum
+    observed: false
     kind: style
     values:
       - default

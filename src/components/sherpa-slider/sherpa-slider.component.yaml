@@ -72,67 +72,74 @@ props:
   - $type: prop
     name: data-label
     type: string
-    kind: style
+    observed: false
+    kind: content
     description: — label text above the slider (shown when set)
   - $type: prop
     name: data-show-value
     type: boolean
+    observed: false
     kind: style
     default: false
     description: — show the editable value input beside the track
   - $type: prop
     name: data-type
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: — single  | range — two thumbs and two value fields
   - $type: prop
     name: data-value
     type: string
+    observed: false
     kind: style
     description: — current value
   - $type: prop
     name: data-value-readonly
     type: string
-    kind: content
+    observed: true
+    kind: style
     description: — make the value display read-only (no typing)
   - $type: prop
     name: value-end
     type: string
+    observed: true
     description: the range ends (data-type="range" only)
   - $type: prop
     name: value-start
     type: string
+    observed: true
     description: the range ends (data-type="range" only)
   - $type: prop
     name: disabled
     type: boolean
+    observed: true
     native: true
-    kind: content
     default: false
     description: — disabled state
   - $type: prop
     name: max
     type: string
+    observed: true
     native: true
-    kind: content
     description: — maximum value (native, default 100)
   - $type: prop
     name: min
     type: string
+    observed: true
     native: true
-    kind: content
     description: — minimum value (native, default 0)
   - $type: prop
     name: step
     type: string
+    observed: true
     native: true
-    kind: content
     description: — step increment (native, default 1)
   - $type: prop
     name: value
     type: string
+    observed: true
     native: true
-    kind: content
     description: — current value (native)
 states:
   - $type: state
