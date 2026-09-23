@@ -913,13 +913,41 @@ the linter reads a file on disk, and `tokens.css` is the file it can read.
 The Style/Transparent content colour aliases changed in Figma. Apply the new
 values across the CSS that uses them.
 
-**Blocked.** `src/styles/tokens/figma.tokens.json` is stale — it does not hold
-the tweak. Checked 2026-09-23: re-running `node scripts/project-tokens.mjs`
-rewrote `tokens.css` byte-identical, so nothing has arrived.
+**The block is NOT the variables export.** Re-checked 2026-09-23 against live
+Figma, and the diagnosis was wrong.
+
+The look tiers do not come from `figma.tokens.json` at all. They come from
+`src/styles/tokens/figma.extensions.json`, which
+`scripts/project-tokens.mjs:820` reads — *"Values are literal hex (extension
+overrides don't serialise as refs)."* That file is dated **2026-09-15**, eight
+days stale, and no script writes it.
+
+**Measured drift, cache vs live: 11 values.** Exactly the ones this item names:
+
+| variable | mode | cache | live |
+|---|---|---|---|
+| `style-content/base` | default | `#35353d` | `#0c0b11` |
+| `style-content/base` | critical | `#701100` | `#b72200` |
+| `style-content/base` | warning | `#a27500` | `#0c0b11` |
+| `style-content/base` | active | `#8300b6` | `#240036` |
+| `style-content/tertiary` | warning | `#35353d` | `#b3b3c3` |
+| `style-indicator/accent` | info · critical · warning · urgent · success · active | all darker | all the mid ramp |
+
+**Why it cannot be read back through the plugin API.** A look collection's
+`variableIds` point at the STYLE collection's variables — their `valuesByMode`
+is keyed by Style's mode ids (`18:2`, `951:27`…), not the look's own
+(`951:90`…). Reading them live returns the BASE value, which is why
+`Transparent` and `Saturated` come back identical when they are not: the cache
+has `#ffffff00` for a transparent surface and `#3b4ccd` for a saturated one.
+
+So the override lives at the collection's mode ids and the variable does not
+carry it. Regenerating the cache needs whatever produced it — a Figma plugin
+export, not `figma_export_tokens` and not `getVariableByIdAsync`.
 
 Order of work:
-1. Export the variables from Figma to `src/styles/tokens/figma.tokens.json`.
-2. `node scripts/project-tokens.mjs`.
-3. Apply the new `--_status-text` / `--_status-text-on-color` / `--_status-icon`
-   values under `[data-look="transparent"]` across the component CSS that uses
-   them.
+1. **Find or rebuild the extension-cache exporter.** It is the blocker, and
+   nothing in `scripts/` writes `figma.extensions.json`.
+2. Regenerate the cache, then `node scripts/project-tokens.mjs`.
+3. The 11 values above land in `[data-look="transparent"]` in `tokens.css`
+   automatically — no component CSS needs touching, because the look block
+   re-points `--_status-*` and the components already read those.

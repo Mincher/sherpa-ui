@@ -9848,3 +9848,38 @@ the only lever it has.
 
 - Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.css`
 - Site: `test/e2e/reforged-layout-grid.spec.ts`
+
+### T-a-look-override-is-not-on-the-variable
+
+A LOOK collection — `Transparent`, `Saturated` — does not own its variables. Its
+`variableIds` point at the **Style** collection's variables, and their
+`valuesByMode` is keyed by **Style's** mode ids (`18:2`, `951:27`…), never the
+look's own (`951:90`…).
+
+So reading a look's values through the plugin API returns the BASE value, and
+every look looks identical. Measured 2026-09-23: `Transparent` and `Saturated`
+came back byte-for-byte the same, while the cache they are projected from has
+`#ffffff00` for a transparent surface and `#3b4ccd` for a saturated one.
+
+That is why `src/styles/tokens/figma.extensions.json` exists, and why
+`project-tokens.mjs` says *"extension overrides don't serialise as refs"*. The
+override lives at the collection's mode id; the variable does not carry it.
+
+**Two consequences.**
+
+`figma_export_tokens` cannot produce it. A fresh export writes
+`style-transparent: { $extensions: … }` with no variables, which matches the
+API and is still useless — and its `lastSyncedValue` is a cache of its own,
+dated 2026-09-09, so a "fresh" export can assert a stale alias. Diffing one
+against the repo showed 363 differences that were almost all that staleness.
+
+And the cache goes stale SILENTLY. Nothing in `scripts/` writes it, `lint:css`
+cannot see it, and `project-tokens.mjs` re-projects byte-identically from a
+stale copy — which reads exactly like "nothing changed in Figma".
+
+**To read a variable's true per-mode alias, use `getLocalVariablesAsync` and the
+collection that DECLARES it.** That is authoritative, and it is how five drifts
+in the Style collection were found — see the commit that removed the purple
+active fill.
+
+- Site: `scripts/project-tokens.mjs`
