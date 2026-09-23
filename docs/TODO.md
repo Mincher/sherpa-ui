@@ -8,7 +8,7 @@ Status: `[ ]` open · `[~]` in progress · `[x]` done
 
 ## The order to do them in
 
-37 items. Ordered so that nothing is built twice.
+38 items. Ordered so that nothing is built twice.
 
 Includes the six findings the 2026-09-23 component audit left open; its other 13
 are done. `docs/COMPONENT-AUDIT.md` keeps the measurements behind every one.
@@ -73,7 +73,7 @@ inherit the answers.
 
 | # | Item |
 |---|---|
-| 11b | `sherpa-group` — a wrapper component, and grouping props on `sherpa-element` |
+| 11b | ~~`sherpa-group` — a wrapper component~~ **BUILT 2026-09-23** |
 | 11c | Shared constants — sweep for anything a second component must agree on |
 | 11d | `data-type` means nine things; `data-empty` means three |
 | 11e | Event detail shapes disagree across 75 events |
@@ -159,6 +159,7 @@ Last, because they touch everything and block nothing.
 |---|---|
 | 28 | A Figma component is NOT always a web component (sweep, then fold `sherpa-grid-cell`) |
 | 29 | Rename `src/index.ts` to `src/app.ts` |
+| 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? |
 
 Item 29 dead last. It is a rename across the whole repo, so it is cheapest when
 no other work is in flight.
@@ -548,9 +549,60 @@ stitched object.
 - Every content container uses the MID grouping rounding (`0px`) on its borders.
 - Only the TOP-MOST container keeps its own rounding.
 
+**Will's ruling: this is `sherpa-group` applied to the layout grid.** The
+wrapper already derives grid position from `sibling-index()` and rounds only the
+four outer corners — which is exactly what "one stitched object" means. Built
+2026-09-23 and proved equivalent to the class in all three engines.
+
+So the work is not a new mode's CSS. It is deciding how the two wrappers meet:
+`<sherpa-layout-grid>` owns the tracks and `<sherpa-group data-direction="grid">`
+owns the joins. Either the layout grid gains a `data-grouped` that turns its own
+gaps to 0 and applies the group rules, or a group wraps a layout grid. Try both;
+the first is likely, because the gutter is the layout grid's to give up.
+
 ---
 
 ## Architecture — component boundaries
+
+### `[ ]` Do we still need `icon-paths.ts` and `render-icon.ts`?
+
+Will, twice: *"HTML & CSS should be handling this."*
+
+**Measured 2026-09-23, and the first answer was "keep both".** Worth re-opening
+with what has changed since, but start from these numbers rather than re-deriving
+them.
+
+`icon-paths.ts` (231 lines, 307KB, generated) carries the drawings AND each
+one's INK BOX. The `.svg` files do not:
+
+| | |
+|---|---|
+| `.svg` files saying `viewBox="0 0 14 14"` | **all 214** |
+| whose real ink box is tighter | **206** |
+| a 24px wrapper, using the ink box | fills it — 25.2px |
+| a 24px wrapper, using the file's frame | **20.4px — 15% small** |
+
+`dist/icons/` does not exist either: the files never ship, so a runtime fetch
+would mean 214 requests and an async icon API in a zero-dependency library.
+
+`render-icon.ts` (68 lines) is the writer. 48 of 76 icon sites take a name from
+OUTSIDE the component — `data-icon-start="gear"` on a host — which a static
+template cannot cover.
+
+**What would change the answer.** Any of these makes the TS unnecessary:
+
+1. **Ship the SVGs with a corrected `viewBox`.** If `generate-icons.mjs` wrote
+   the ink box INTO each file, a `<img>` or an `<svg><use>` would fit correctly
+   with no JS. 214 files, one generator change. This is the strongest option.
+2. **One sprite sheet.** All 214 in a single `<symbol>` file, referenced by
+   `<use href="#gear">`. One request, no per-icon module, and the viewBox lives
+   on the symbol. But `<use>` across a shadow boundary needs checking.
+3. **A CSS `mask-image` set.** Each icon a masked box, coloured by
+   `background-color` so `currentColor` still works. No SVG in the DOM at all.
+
+Measure before choosing. The thing that decides it is whether the chosen route
+keeps the ink box — that is the whole reason the TS exists, and
+`T-icon-box-is-not-the-glyph` records what a 15%-small icon looked like.
 
 ### `[ ]` A consumer can supply their OWN templates and CSS
 
@@ -627,7 +679,24 @@ what it left open.
 
 ### `[ ]` `sherpa-group` — a wrapper component, and grouping props on the base class
 
-**Will's proposal, and it is the right shape.** Make a group a WRAPPER COMPONENT
+**BUILT 2026-09-23.** `<sherpa-group>` ships with `data-direction="row|column|grid"`
+and `data-col-count`, proved equivalent to the `.sherpa-group` class in all
+three engines, and `sherpa-pagination` is retrofitted — 4 `data-group`
+attributes gone, geometry byte-identical. `data-group` is now declared in
+`SHARED_PROPS`; it was used at 15 sites and declared by nothing.
+
+**What is LEFT of this item**, and why it is still open:
+
+1. The generated `grid-*` / `vertical-*` blocks — 160 of 200 lines, in two
+   copies — can now go, because the wrapper derives those positions.
+2. `.sherpa-border-edges` / `.sherpa-border-corners` belong in their own
+   `sherpa-borders.css`. **21 components** use them and they are not grouping.
+3. The rest of the callers (calendar, menu, quick-filter-toolbar,
+   select-checkbox) still use the class.
+
+---
+
+**The original proposal, kept for the reasoning.** Make a group a WRAPPER COMPONENT
 that applies position and gap to its own children, the same way
 `sherpa-layout-grid` wraps the layout grid. Then a grouped row, column or grid
 needs no per-item bookkeeping: the wrapper owns it.
