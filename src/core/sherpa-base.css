@@ -69,6 +69,21 @@
      files wrote this by hand. */
   --sherpa-focus-ring: inset 0 0 0 2px var(--sherpa-theme-border-accent-2, #3b4ccd);
 
+  /* The hover and pressed surfaces, one step and two steps toward the ink.
+
+     `currentColor` resolves where the property is USED, not where it is
+     declared, so one declaration shades correctly in a component with its own
+     ink — measured identical to the longhand it replaces, in all three
+     engines.
+
+     Set `--_surface` first and these follow it; leave it and they shade the
+     base surface. This REPLACES the two-block @supports dance at each site: a
+     `color-mix()` is already the longhand, so there is no function to guard and
+     no longhand for a copy to lose.
+     TRAP T-a-css-function-needs-its-longhand-first */
+  --_shade-base: var(--_surface, var(--sherpa-style-surface-base, #ffffff));
+  --sherpa-shade-hover: color-mix(in oklab, var(--_shade-base) 92%, currentColor);
+  --sherpa-shade-active: color-mix(in oklab, var(--_shade-base) 84%, currentColor);
 }
 
 :host([hidden]) {

@@ -202,16 +202,12 @@
   cursor: pointer;
   transition: background-color 100ms ease, border-color 100ms ease, color 100ms ease;
 
-  @supports (color: color-mix(in oklab, red, blue)) {
-    &:hover { background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor); }
-    &:active { background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 84%, currentColor); }
-  }
-
-  /* The same two steps, NAMED. TRAP T-a-css-function-needs-its-longhand-first */
-  @supports (background: --shade(red, 8%)) {
-    &:hover { background: --shade(var(--sherpa-style-surface-base, #ffffff), 8%); }
-    &:active { background: --shade(var(--sherpa-style-surface-base, #ffffff), 16%); }
-  }
+  /* Hover and pressed come from sherpa-base.css. `currentColor` resolves where
+     the property is USED, so one declaration shades every component in its own
+     ink — and a color-mix IS the longhand, so there is no function to guard.
+     TRAP T-a-css-function-needs-its-longhand-first */
+  &:hover { background: var(--sherpa-shade-hover); }
+  &:active { background: var(--sherpa-shade-active); }
   &:focus-visible {
     outline: none;
     box-shadow: var(--sherpa-focus-ring);
@@ -303,16 +299,12 @@
   line-height: 1;
   cursor: pointer;
 
-  @supports (color: color-mix(in oklab, red, blue)) {
-    &:hover { background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor); }
-    &:active { background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 84%, currentColor); }
-  }
-
-  /* The same two steps, NAMED. TRAP T-a-css-function-needs-its-longhand-first */
-  @supports (background: --shade(red, 8%)) {
-    &:hover { background: --shade(var(--sherpa-style-surface-base, #ffffff), 8%); }
-    &:active { background: --shade(var(--sherpa-style-surface-base, #ffffff), 16%); }
-  }
+  /* Hover and pressed come from sherpa-base.css. `currentColor` resolves where
+     the property is USED, so one declaration shades every component in its own
+     ink — and a color-mix IS the longhand, so there is no function to guard.
+     TRAP T-a-css-function-needs-its-longhand-first */
+  &:hover { background: var(--sherpa-shade-hover); }
+  &:active { background: var(--sherpa-shade-active); }
   &:focus-visible {
     outline: none;
     box-shadow: var(--sherpa-focus-ring);

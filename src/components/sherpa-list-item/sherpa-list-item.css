@@ -145,11 +145,7 @@
 
 /* ── Interactive: hover + focus ────────────────────────────────────── */
 :host([data-interactive]) .row { cursor: pointer; }
-@supports (color: color-mix(in oklab, red, blue)) {
-  :host([data-interactive]:hover) .row {
-    background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor);
-  }
-}
+:host([data-interactive]:hover) .row { background: var(--sherpa-shade-hover); }
 /* Focus lands on the inner <button>, not the host — ring it there. */
 .content-button:focus-visible {
   outline: none;

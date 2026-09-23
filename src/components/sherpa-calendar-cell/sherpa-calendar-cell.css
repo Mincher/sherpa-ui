@@ -49,11 +49,7 @@
 }
 
 /* Hover sits one step under the selected tint so the two never read the same. */
-@supports (color: color-mix(in oklab, red, blue)) {
-  .cell:hover:not(:disabled) .content {
-    background: color-mix(in oklab, var(--sherpa-style-surface-base, #ffffff) 92%, currentColor);
-  }
-}
+.cell:hover:not(:disabled) .content { background: var(--sherpa-shade-hover); }
 
 /* Today is a statement of fact, not a selection — info tint, not active. */
 :host([data-state="today"]) .content {

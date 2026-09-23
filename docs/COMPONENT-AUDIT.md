@@ -682,6 +682,62 @@ declared, so the fallback was the only value it ever had.
 
 ---
 
+### 8 — The hover shade is one declaration, not 17
+
+Every interactive control wrote the same two `@supports` blocks: a `color-mix`
+longhand, then the named `--shade()` function second so it wins where
+`@function` is real. Eleven lines, 17 times, across 8 components.
+
+```css
+/* what each site used to carry */
+@supports (color: color-mix(in oklab, red, blue)) {
+  &:hover  { background: color-mix(in oklab, var(--_surface) 92%, currentColor); }
+  &:active { background: color-mix(in oklab, var(--_surface) 84%, currentColor); }
+}
+@supports (background: --shade(red, 8%)) {
+  &:hover  { background: --shade(var(--_surface), 8%); }
+  &:active { background: --shade(var(--_surface), 16%); }
+}
+```
+
+Now two inherited properties in `sherpa-base.css`, and each site reads them:
+
+```css
+&:hover  { background: var(--sherpa-shade-hover); }
+&:active { background: var(--sherpa-shade-active); }
+```
+
+**Why a property works here.** `currentColor` resolves where the property is
+*used*, not where it is declared — measured directly: two siblings with
+different ink shade differently from one declaration. And `--_shade-base` reads
+`var(--_surface, …)`, so a component that sets its own surface keeps shading it.
+Verified on `sherpa-button`, whose three looks resolve to `#fff`, `#3b4ccd` and
+transparent respectively.
+
+**The `@supports` pair disappears entirely.** A `color-mix()` *is* the longhand,
+so there is no function to guard and no longhand for a copy to lose — which was
+the whole reason for `T-a-css-function-needs-its-longhand-first`.
+
+Proved identical rather than assumed: the painted `backgroundColor` was captured
+on hover for four controls, then the change was reverted, rebuilt, and captured
+again. Same values to the last decimal in all three engines.
+
+**Net −41 lines.**
+
+#### A failure I had to chase down
+
+After the migration the batch reported 2 failed where it had shown 1 failed +
+1 flaky. The diff was colour-only and the failure was a *width* — 187px where
+24px was expected — so it looked unrelated, which is exactly when it is worth
+checking rather than waving through.
+
+Run alone, the test passed three times with the change and three times without.
+Run in the 9-file batch on the **unchanged** build, it failed twice then once.
+So it is load-dependent flakiness in a hover-timing test, and it predates this
+work. The first reading — "1 flaky became 2 failed" — was itself noise.
+
+---
+
 ## Still to do
 
 ### If you fix five things
