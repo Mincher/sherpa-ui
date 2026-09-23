@@ -8,7 +8,7 @@
  * Fires: nothing — a grid has no interactions of its own.
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
-import { bindFitGrid } from '../../core/ui/fit-grid.js';
+import { bindFitGrid } from './fit-grid.js';
 
 export class SherpaLayoutGrid extends SherpaElement {
   static override css = new URL('./sherpa-layout-grid.css', import.meta.url);

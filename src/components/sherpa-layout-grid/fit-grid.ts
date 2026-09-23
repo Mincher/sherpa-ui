@@ -1,6 +1,10 @@
 /**
  * fit-grid.ts — the ONE number a `data-rows="fit"` grid cannot work out itself.
  *
+ * Lives beside sherpa-layout-grid because that is its only caller; it stays a
+ * separate module because it is also EXPORTED, for a `.sherpa-grid` div that is
+ * not the element.
+ *
  * CSS owns every visual decision. This supplies `--_fit-rows`: how many rows
  * sit above the filler, so the grid can say
  * `repeat(var(--_fit-rows), min-content) 1fr`.

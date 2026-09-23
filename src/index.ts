@@ -68,7 +68,7 @@ export { SherpaElement } from './core/ui/sherpa-element.js';
 export { applyState, type Populatable } from './core/ui/apply-state.js';
 /* A `data-rows="fit"` grid needs its row count, which CSS cannot see.
    TRAP T-a-fit-grid-needs-its-row-count */
-export { bindFitGrid, measureFitGrid } from './core/ui/fit-grid.js';
+export { bindFitGrid, measureFitGrid } from './components/sherpa-layout-grid/fit-grid.js';
 // A saved view's content is MARKUP, parsed through an allow-list on the way in.
 // TRAP T-saved-markup-is-untrusted-input.
 export {

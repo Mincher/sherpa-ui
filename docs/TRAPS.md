@@ -739,7 +739,7 @@ tears down every binding, listener and persister a view made.
 - Site: `src/core/browser/persist-view.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/filter-state.ts`
-- Site: `src/core/ui/fit-grid.ts`
+- Site: `src/components/sherpa-layout-grid/fit-grid.ts`
 
 ### T-steer-only-populate-means-chips
 
@@ -7522,7 +7522,7 @@ selector answers the question directly, needs no `@property` registration, and
 is more widely supported than `sibling-index()`.
 
 - Site: `scripts/project-tokens.mjs`
-- Site: `test/e2e/reforged-fit-grid.spec.ts`
+- Site: `test/e2e/reforged-layout-grid.spec.ts`
 
 ### T-a-container-width-is-named-not-counted
 
@@ -7553,7 +7553,7 @@ author hold the column count in their head, and it silently skipped the
 responsive collapse a name gives.
 
 - Site: `scripts/project-tokens.mjs`
-- Site: `test/e2e/reforged-fit-grid.spec.ts`
+- Site: `test/e2e/reforged-layout-grid.spec.ts`
 
 ### T-fit-is-a-desktop-mode
 
@@ -7569,7 +7569,7 @@ harmless — nothing reads it below 1280 — and it means a resize past the
 breakpoint needs no second code path.
 
 - Site: `scripts/project-tokens.mjs`
-- Site: `test/e2e/reforged-fit-grid.spec.ts`
+- Site: `test/e2e/reforged-layout-grid.spec.ts`
 
 ### T-a-content-grid-has-two-row-modes
 
@@ -7595,7 +7595,7 @@ The DEFAULT is neither, so nothing that existed before changed.
 
 - Site: `examples/templates/records.html`
 - Site: `scripts/project-tokens.mjs`
-- Site: `test/e2e/reforged-fit-grid.spec.ts`
+- Site: `test/e2e/reforged-layout-grid.spec.ts`
 
 ### T-a-fit-grid-needs-its-row-count
 
@@ -7629,9 +7629,9 @@ onto TWO rows, and the count came back one too many.
 The filler is `data-grow`; with none, the LAST child fills.
 
 - Site: `scripts/project-tokens.mjs`
-- Site: `src/core/ui/fit-grid.ts`
+- Site: `src/components/sherpa-layout-grid/fit-grid.ts`
 - Site: `src/index.ts`
-- Site: `test/e2e/reforged-fit-grid.spec.ts`
+- Site: `test/e2e/reforged-layout-grid.spec.ts`
 - Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.ts`
 
 ### T-a-fit-grid-needs-a-sized-parent
@@ -7655,7 +7655,7 @@ BELOW the 120px sticky header, so it ran a header's height past the fold.
 `.view` takes what the header leaves instead.
 
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
-- Site: `test/e2e/reforged-fit-grid.spec.ts`
+- Site: `test/e2e/reforged-layout-grid.spec.ts`
 
 ### T-a-band-label-names-what-it-counts
 
@@ -9575,3 +9575,4 @@ leave no text, and `★` must stay text.
 
 - Site: `src/components/sherpa-nav/sherpa-nav.ts`
 - Site: `test/e2e/reforged-nav.spec.ts`
+- Site: `test/e2e/reforged-icons.spec.ts`
