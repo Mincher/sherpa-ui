@@ -1288,6 +1288,67 @@ swap — it is whether the component should exist.
 
 ---
 
+### 19 — State ownership: measured, and worse than the audit said
+
+The audit reported that a locked `sherpa-quick-filter` defers correctly, then
+the toolbar overwrites it. Checking that claim took two probes, and the first
+one **cleared the toolbar wrongly**: a synthetic chip started already-current,
+so `before=true after=true` proved nothing. Starting from off gave
+`before=false after=false` — that path really does respect the lock.
+
+The path the audit meant is a different one, and a mechanical sweep is what
+found it. Every `data-current` write in the toolbar, with the question "is
+there a lock check within 14 lines above it":
+
+```
+line 248   lock-checked: no      line 1010  lock-checked: no
+line 249   lock-checked: no      line 1021  lock-checked: no
+line 311   lock-checked: no      line 1034  lock-checked: no
+line 657   lock-checked: no      line 1042  lock-checked: no
+line 664   lock-checked: no      line 1228  lock-checked: no
+line 983   lock-checked: no      line 1249  lock-checked: no
+line 1452  lock-checked: no      line 1456  lock-checked: no
+line 1621  lock-checked: no
+```
+
+**15 writes, zero checks.**
+
+`#onOrganiseChange` (`:1595`) is the sharpest, because it is registered in
+CAPTURE and calls `stopImmediatePropagation()` before writing — so a chip that
+correctly deferred has its answer overwritten and the event never reaches the
+host that owns it.
+
+#### Why no gate caught it
+
+`check-ownership.mjs:30` reads its vocabulary from `DATA_PROPS`, which holds
+seven attributes: `data-sort-field`, `data-sort-direction`, `data-group-field`,
+`data-filter-fields`, `data-page`, `data-total-pages`, `data-page-size`.
+`data-current` is not among them, so the gate reports "7 owned attributes, no
+unguarded writes" while fifteen sit outside its reach.
+
+Five components implement `data-locked` — data-grid, grid-cell, pagination,
+quick-filter, quick-filter-toolbar — and the guard is one line:
+
+```ts
+if (!this.hasAttribute('data-locked')) this.setAttribute('data-page', String(next));
+```
+
+The toolbar's case is harder than that, and this is the part that needs a
+decision rather than a patch: it writes `data-current` onto **child chips**, so
+it must read each chip's lock, not its own. And at least one of the fifteen is
+load-bearing — `#onOrganiseChange`'s comment records that *"an off chip could
+never commit itself on — every date chip's first pick"*, so a blanket guard
+would break date filters.
+
+**Proposed, not done:** add `data-current` to `DATA_PROPS` so the gate sees it,
+then work through the fifteen individually. Some want
+`if (!chip.hasAttribute('data-locked'))`; the organise path may genuinely need
+to write and should say so. That is a component-by-component judgement, not a
+sweep, and it is the kind of change that wants its own commit and its own
+before/after measurements.
+
+---
+
 ### The suite has load-dependent flakiness, and it will mislead you
 
 Full suite after this work: **1923 passed, 13 failed, 2 flaky** — the same
@@ -1361,7 +1422,7 @@ The breadcrumbs half is done — see "Breadcrumbs: one name" above.
 - `sherpa-grid-cell` is an orphan — every part re-implemented inside the grid,
   and the two disagree about what `sort-change` and `group-toggle` mean
 
-### 4 — State ownership
+### 4 — State ownership — MEASURED, see above
 
 `data-locked` is implemented by 5 components and ignored by the rest, and the
 gate only examines the ones that opted in. The sharpest case: a locked
@@ -1401,7 +1462,45 @@ classes with their own `*Options` interface each, which keeps a class beside its
 own config. The rule should be *per class* — constants, then the class, then
 nothing — rather than *per file*.
 
-### 6 — The icon modules — DONE, see above
+### 6 — The icon modules — rename DONE; render-icon under review
+
+Will, 2026-09-23: *"Is render-icon.ts really needed? We're just wrapping an SVG
+in a div and applying CSS classes to get sizing and styling. Icon variants could
+be HTML templates that we put into the relevant slots. So we won't need the
+aliasing script either."*
+
+First measurement, before judging. `render-icon.ts` is 92 lines and does four
+things, only one of which is wrapping:
+
+| | |
+|---|---|
+| `iconName()` | `"fa-solid fa-filter"` → `"filter"`, then through the alias map |
+| `hasIcon()` | does the set hold it |
+| `renderIcon()` | build the `<svg>`, set its **viewBox**, inject the body |
+| `upgradeIcons()` | do that for every icon in a freshly stamped template |
+
+**The viewBox is the part that resists being a static template.** Each icon
+carries its own ink bounding box, and there are **88 distinct ink boxes across
+214 icons**. The viewBox is what makes the drawing's longest axis land at
+exactly 100% of a square wrapper at any size — `T-icon-box-is-not-the-glyph`
+records that `font-size` and `minmax()` both failed at this.
+
+So a static `<template>` per icon would still need its own per-icon viewBox
+baked in. That is possible — `icon-paths.ts` is already generated, so it could
+emit 214 templates instead of 214 path records. The questions to answer:
+
+1. Where do 214 templates live so a component can reach one? A `<template>` in
+   the document cannot be cloned into a shadow root by CSS alone.
+2. `upgradeIcons` exists because a component's own template says
+   `data-icon="paperclip"` and something must turn that into the drawing. With
+   static templates, what does that, and when?
+3. The alias map is 28 hand-made judgements (`house` → `home`, `xmark` →
+   `cross`) covering **88 call sites** that still name icons in Font Awesome's
+   vocabulary. Those call sites have to be rewritten first, or the aliases have
+   to survive in some form.
+
+Not a no — but it is a bigger change than deleting a wrapper, and the viewBox
+is the reason. Worth its own pass.
 
 Will's note, 2026-09-23: three icon scripts looks like overkill for putting
 some SVGs into components.
