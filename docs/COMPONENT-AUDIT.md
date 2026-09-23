@@ -36,6 +36,7 @@ meet a problem and then hunt for its resolution 500 lines later.
 | 12 | `sherpa-element.ts` — two real bugs | ✅ Fixed |
 | 13 | Icons: four files, one bad name | ✅ Fixed — and the alias map is now gone too |
 | 14 | `kind: content` is overloaded to mean "observed" — 156 props | ✅ Fixed |
+| 15 | The layout grid was CSS + a loose script | ✅ Fixed — `sherpa-layout-grid` |
 | — | What is genuinely clean | ⬜ Not a fault |
 
 ---
@@ -1546,6 +1547,75 @@ surfaced — but any future citation in the build library would have been
 invisible.
 
 `TRAP T-kind-says-how-not-whether`.
+
+---
+
+### 15. The layout grid was CSS plus a loose script — ✅ Fixed
+
+Will's observation: `fit-grid.ts` is its own module for something that belongs
+to the layout grid, and `sherpa-layout-grid` used to be a component.
+
+**Why it had been split.** The component was removed 2026-08-14 for having no
+Figma counterpart — the same commit that removed `sherpa-app-shell`, which came
+back once Figma gained an App Shell. The `.sherpa-grid` CSS utility stayed and
+is projected from Figma's `layout` variable collection.
+
+**What the split cost.** An app had to import `bindFitGrid`, find its own grid
+element, and remember to call it with a signal — three steps for one number:
+
+```js
+const contentGrid = root.querySelector('.sherpa-grid[data-rows="fit"]');
+if (contentGrid) bindFitGrid(contentGrid, { signal });
+```
+
+#### The measurement that shaped it
+
+The obvious build — a shadow `<div class="sherpa-grid">` — does not work:
+
+| `.sherpa-grid` | result |
+|---|---|
+| in a **shadow** root | `display: block`, **no columns** |
+| on the **host** | `display: grid`, 12 columns, real gap, child spans resolving |
+
+`T-a-document-class-cannot-reach-a-shadow-root`. So the host **wears** the
+projected class and its children stay in the **light DOM** — which means every
+`.sherpa-grid > [data-col-span]` rule still matches, and a re-projection reaches
+the component with no code change. **Zero CSS was copied.**
+
+Two more things were checked before building: slotted children *do* become grid
+items and take their spans (636px vs 314px in a 4-track test), and `::slotted()`
+cannot reach a nested grid — which costs nothing, because no template nests one.
+
+#### A real bug it surfaced
+
+Bound in `onRender`, a grid that a router detaches and re-attaches kept an
+**already-aborted signal** and silently stopped re-measuring — `1` where `2` was
+correct. `signal` is a fresh `AbortController` per connect
+(`T-abort-controller-per-connect`), so the bind moved to `onConnect`. The
+re-attach test fails without the fix; verified by reverting it.
+
+#### Verified against the live app
+
+All three views render with zero page errors, and the records grid measures
+`--_fit-rows: 2` by itself. **Card geometry is byte-identical** to the hand-wired
+version — the same eight sizes to the pixel.
+
+Named `sherpa-layout-grid`, not `sherpa-grid`, so it cannot read as a data grid.
+A `sherpa-layout-canvas` is planned alongside it. `figmaName` is provisional:
+whether Figma has a Layout Grid **component**, or whether this is chrome like
+App Shell, is recorded in the spec as needing confirmation.
+
+#### `data-has-content` → `data-has-content-slot`
+
+Will asked whether the attribute is meaningful on a layout element. Measured: it
+changes nothing there — `display: grid`, 12 columns, with or without it — and it
+is not in the contract. But the base class writes it for **any** unnamed slot,
+so 26 components carry one.
+
+Renamed across the base class, 5 components and 5 specs. The attribute says
+**the default slot is filled**, which is not the same as the element having
+content. No slot is named `content`, so it cannot collide with the
+`data-has-{name}` pattern.
 
 ---
 
