@@ -37,6 +37,45 @@ function rowsAbove(grid: HTMLElement, item: HTMLElement): number {
   return tops.size;
 }
 
+/**
+ * Write each child's POSITION in the grid, for `data-grouped`.
+ *
+ * Measured from laid-out geometry, never from spans. `grid-column-start`
+ * reports `span 4`, not the track auto-placement chose — verified in all three
+ * engines — so CSS alone cannot find the first or last item in a row once a
+ * span wraps. TRAP T-a-wrapping-span-hides-its-own-row
+ */
+export function measureGroupedGrid(grid: HTMLElement): void {
+  const kids = [...grid.children].filter((c): c is HTMLElement => c instanceof HTMLElement);
+  if (!grid.hasAttribute('data-grouped')) {
+    for (const kid of kids) kid.removeAttribute('data-group');
+    return;
+  }
+  // Group by row: same top edge, within half a pixel of rounding.
+  const rows = new Map<number, HTMLElement[]>();
+  for (const kid of kids) {
+    const top = Math.round(kid.getBoundingClientRect().top);
+    const row = rows.get(top) ?? [];
+    row.push(kid);
+    rows.set(top, row);
+  }
+  const tops = [...rows.keys()].sort((a, b) => a - b);
+  for (const [index, top] of tops.entries()) {
+    const row = rows.get(top)!;
+    const band = tops.length === 1 ? 'grid-top'
+      : index === 0 ? 'grid-top'
+      : index === tops.length - 1 ? 'grid-bottom'
+      : 'grid-mid';
+    for (const [place, kid] of row.entries()) {
+      const across = row.length === 1 ? 'solo'
+        : place === 0 ? 'start'
+        : place === row.length - 1 ? 'end'
+        : 'mid';
+      kid.setAttribute('data-group', `${band}-${across}`);
+    }
+  }
+}
+
 /** Write `--_fit-rows`, or clear it when the grid is not in fit mode. */
 export function measureFitGrid(grid: HTMLElement): void {
   if (grid.dataset['rows'] !== 'fit') {
@@ -74,7 +113,10 @@ export function bindFitGrid(
   const schedule = (): void => {
     // COALESCED: a resize and a mutation in one tick are one measurement.
     cancelAnimationFrame(frame);
-    frame = requestAnimationFrame(() => measureFitGrid(grid));
+    frame = requestAnimationFrame(() => {
+      measureFitGrid(grid);
+      measureGroupedGrid(grid);
+    });
   };
 
   const resize = new ResizeObserver(schedule);
@@ -87,9 +129,13 @@ export function bindFitGrid(
     for (const child of grid.children) resize.observe(child);
     schedule();
   });
-  mutations.observe(grid, { childList: true, attributeFilter: ['data-col-span', 'data-row-span', 'data-grow'] });
+  mutations.observe(grid, {
+    childList: true,
+    attributeFilter: ['data-col-span', 'data-row-span', 'data-grow', 'data-grouped'],
+  });
 
   measureFitGrid(grid);
+  measureGroupedGrid(grid);
 
   const destroy = (): void => {
     cancelAnimationFrame(frame);

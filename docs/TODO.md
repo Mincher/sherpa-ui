@@ -263,6 +263,21 @@ Two scopes. The same filter in each scope gives a different result.
 - A component filter is already blocked when the View scope applies that same
   filter. Keep that.
 
+**A LEGEND TOGGLE is a component-scope filter.** Will, 2026-09-23. Switching a
+series off in `sherpa-chart-legend` filters THAT chart and nothing else — it
+does not trickle down to a sibling chart, a grid or a metric. And it is still
+subject to the View filter, which does cascade down: a series the View has
+already filtered out cannot be switched back on by its legend.
+
+So it is an instance of this rule, not a separate feature. The mechanism is
+already right — the legend emits `legend-item-click` and the PAGE calls the
+filter, which is why `bindLegendFilter` was deleted in favour of
+`bindSelection` (`T-readonly-legend-is-a-key-not-a-filter`). What is missing is
+the scope being STATED and enforced, the same as every other component filter.
+
+Check the same question for every control that filters its own component: a
+grid column filter, a metric's own scope, a chart's segment mode.
+
 ### `[ ]` A filter PANEL, as an alternative to the toolbars
 
 A panel in the content area, toggled from the options button (the sliders icon).

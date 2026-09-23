@@ -514,3 +514,91 @@ test('data-col-count overrides the breakpoint', async ({ page }) => {
   await mount(page, '<div>a</div><div>b</div>', 'data-col-count=4');
   expect((await read(page)).columns).toBe(4);
 });
+
+/* ── data-grouped ─────────────────────────────────────────────────────── */
+
+/**
+ * GROUPED: every container reads as ONE stitched object.
+ *
+ * Will's ruling — this is grouping applied to the layout grid, not a second
+ * mechanism. It writes each child's `data-group` and the existing grouping
+ * blocks do the rest.
+ *
+ * The position is MEASURED, never derived from spans. `grid-column-start`
+ * reports `span 4`, not the track auto-placement chose — verified in all three
+ * engines — so CSS alone cannot find the first or last item in a row once a
+ * span wraps. TRAP T-a-wrapping-span-hides-its-own-row
+ */
+const grouped = (page: import('@playwright/test').Page, on: boolean) =>
+  page.evaluate(async (on) => {
+    await import('/dist/index.js');
+    const root = document.getElementById('root')!;
+    const g = document.createElement('sherpa-layout-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+    };
+    if (on) g.setAttribute('data-grouped', '');
+    // Three thirds, then a full-width row — the wrapping-span case.
+    g.innerHTML =
+      '<sherpa-container data-col-span="medium">a</sherpa-container>' +
+      '<sherpa-container data-col-span="medium">b</sherpa-container>' +
+      '<sherpa-container data-col-span="medium">c</sherpa-container>' +
+      '<sherpa-container data-col-span="full">d</sherpa-container>';
+    root.replaceChildren(g);
+    await g.rendered;
+    await Promise.all(
+      [...g.children].map((c) => (c as HTMLElement & { rendered?: Promise<void> }).rendered),
+    );
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    /* The measuring runs on a FRAME, and it re-runs when a child resizes — and
+       four sherpa-containers finish rendering at their own pace. Wait for the
+       answer to stop changing rather than for one frame. */
+    if (on) {
+      let last = '';
+      for (let i = 0; i < 60; i++) {
+        await new Promise((r) => requestAnimationFrame(r));
+        const now = [...g.children].map((c) => c.getAttribute('data-group')).join();
+        if (now === last && !now.includes('null')) break;
+        last = now;
+      }
+    }
+    const cs = getComputedStyle(g);
+    return {
+      gap: `${cs.columnGap}/${cs.rowGap}`,
+      groups: [...g.children].map((c) => c.getAttribute('data-group')),
+      corners: [...g.children].map((c) => {
+        const s = getComputedStyle(c);
+        return [s.borderTopLeftRadius, s.borderTopRightRadius,
+                s.borderBottomLeftRadius, s.borderBottomRightRadius].join(' ');
+      }),
+    };
+  }, on);
+
+test('without data-grouped the gutters stay and no child is positioned', async ({ page }) => {
+  const r = await grouped(page, false);
+  expect(r.gap).not.toBe('0px/0px');
+  expect(r.groups).toEqual([null, null, null, null]);
+});
+
+test('data-grouped drops the gutters and positions every child', async ({ page }) => {
+  const r = await grouped(page, true);
+
+  /* The gutters go via the TOKENS, not `column-gap`. `.sherpa-grid` is a
+     DOCUMENT rule and a document rule beats an adopted `:host` one at any
+     specificity. TRAP T-a-document-rule-outranks-an-adopted-host-rule */
+  expect(r.gap).toBe('0px/0px');
+
+  // Three across the top, then one alone on the bottom row.
+  expect(r.groups).toEqual([
+    'grid-top-start', 'grid-top-mid', 'grid-top-end', 'grid-bottom-solo',
+  ]);
+});
+
+test('a grouped grid rounds only its four outer corners', async ({ page }) => {
+  const r = await grouped(page, true);
+
+  // tl on the first, tr on the third, and both bottom corners on the last row.
+  expect(r.corners[0]).toBe('4px 0px 0px 0px');
+  expect(r.corners[1]).toBe('0px 0px 0px 0px');
+  expect(r.corners[2]).toBe('0px 4px 0px 0px');
+  expect(r.corners[3]).toBe('0px 0px 4px 4px');
+});

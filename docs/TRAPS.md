@@ -9791,3 +9791,60 @@ should sit on the grid. Do not wrap tokens in it, and do not wrap a measured
 offset that is deliberately sub-pixel.
 
 - Site: `src/core/sherpa-grouping.css`
+
+### T-a-wrapping-span-hides-its-own-row
+
+`grid-column-start` does not report the track auto-placement chose. For an item
+declared `grid-column: span 4` it reports **`span 4`** — measured in all three
+engines — so CSS alone cannot tell which item is first or last in its row.
+
+That is fine while every item is one column wide. It breaks the moment a span
+wraps, which is the normal case for a layout grid: three `medium` thirds and
+one `full` row are spans of 4, 4, 4 and 12 against 12 tracks, so
+`sibling-index()` divided by the column count gives the wrong row for every one
+of them.
+
+`sherpa-group`'s grid mode is safe because its children are all one cell wide.
+`sherpa-layout-grid`'s are not, so `data-grouped` MEASURES instead:
+`measureGroupedGrid()` buckets children by their laid-out `top` — half a pixel
+of rounding is the same row — and writes `data-group="grid-top-start"` and the
+rest from that.
+
+`fit-grid.ts` already stated the rule for its own row count: *"which items
+share a row is decided during layout, and adding up `data-col-span` values
+re-implements that — wrongly, the moment a span wraps."* The same applies to
+position.
+
+- Site: `src/components/sherpa-layout-grid/fit-grid.ts`
+- Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.ts`
+- Site: `test/e2e/reforged-layout-grid.spec.ts`
+
+### T-a-document-rule-outranks-an-adopted-host-rule
+
+A DOCUMENT class beats an adopted `:host` rule, at any specificity. Measured
+both ways: a `.doc-rule { column-gap: 16px }` in the page wins over
+`:host { column-gap: 99px }` in an adopted sheet, and still wins when the
+adopted rule is tightened to `:host(.doc-rule)`.
+
+This is the twin of `T-a-document-class-cannot-reach-a-shadow-root`, in the
+other direction: a document rule reaches the HOST of a shadow root perfectly
+well, and outranks what that root adopts.
+
+`sherpa-layout-grid` hits it because its tracks come from `.sherpa-grid` in the
+generated `tokens.css`, which the host WEARS. `data-grouped` therefore cannot
+set `column-gap: 0` from the component's own sheet. It re-points what the
+document rule READS instead:
+
+```css
+:host([data-grouped]) {
+  --sherpa-layout-grid-gap-horizontal: 0px;
+  --sherpa-layout-grid-gap-vertical: 0px;
+}
+```
+
+A custom property inherits, so the document rule resolves it at the host and
+the gutters go. Whenever a component wears a document class, the property is
+the only lever it has.
+
+- Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.css`
+- Site: `test/e2e/reforged-layout-grid.spec.ts`

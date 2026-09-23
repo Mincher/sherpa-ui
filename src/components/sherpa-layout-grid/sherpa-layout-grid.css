@@ -15,3 +15,18 @@
 :host([hidden]) {
   display: none;
 }
+
+/* ── Grouped ─────────────────────────────────────────────────────────────
+   Every container stitched into one object. The gutters go, and each child's
+   `data-group` — written by the JS from its laid-out position — picks its
+   edges from the generated grouping blocks.
+   Will's ruling 2026-09-23: this is grouping applied to the layout grid, not a
+   second mechanism. */
+:host([data-grouped]) {
+  /* The TOKENS, not `column-gap`. `.sherpa-grid` is a DOCUMENT rule and a
+     document rule beats an adopted `:host` one at any specificity — measured
+     both ways. Re-pointing what that rule READS is the only lever from in here.
+     TRAP T-a-document-rule-outranks-an-adopted-host-rule */
+  --sherpa-layout-grid-gap-horizontal: 0px;
+  --sherpa-layout-grid-gap-vertical: 0px;
+}

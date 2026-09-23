@@ -23,6 +23,13 @@ export class SherpaLayoutGrid extends SherpaElement {
       values: ['1', '2', '3', '4', '5', '6', '8', '10', '12'],
     },
     'data-rows': { type: 'enum', kind: 'style', values: ['fit', 'fixed'] },
+    /**
+     * Every container reads as ONE stitched object: no gutters, and only the
+     * four outer corners round. The JS writes each child's `data-group` from
+     * its LAID-OUT position, because a wrapping span hides its own row.
+     * TRAP T-a-wrapping-span-hides-its-own-row
+     */
+    'data-grouped': { type: 'boolean', kind: 'style' },
   } as const;
 
   override onRender(): void {
