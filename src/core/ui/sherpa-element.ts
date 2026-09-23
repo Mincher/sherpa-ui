@@ -731,7 +731,10 @@ export abstract class SherpaElement extends HTMLElement {
       if (n.nodeType === Node.TEXT_NODE) return (n.textContent ?? '').trim().length > 0;
       return (n as Element).tagName !== 'TEMPLATE';
     });
-    const attr = slot.name ? `data-has-${slot.name}` : 'data-has-content';
+    /* `-slot`, not `data-has-content`: the attribute says THE DEFAULT SLOT IS
+       FILLED, which is not the same as the element having content. On a layout
+       element it is inert either way. */
+    const attr = slot.name ? `data-has-${slot.name}` : 'data-has-content-slot';
     this.toggleAttribute(attr, has);
   }
 

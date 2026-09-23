@@ -300,7 +300,7 @@
 
 /* ── The footer ── a composed <sherpa-container-footer> that owns its own
  * padding, gap and top stroke; this only says WHEN it appears. `display: none`
- * beats the component's own [data-has-content] rule.
+ * beats the component's own [data-has-content-slot] rule.
  *
  * Four things can raise the row and any ONE of them earns it: data-commit
  * (Cancel·Apply), data-removable, data-clearable, Type=calendar (Today). Each

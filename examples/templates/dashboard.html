@@ -5,7 +5,7 @@
 <!-- ONE grid for the whole view, so every card shares the same 12 columns and the
      vertical rhythm is the grid's own row gap. No section header: the app header
      owns the view's name. -->
-<div class="sherpa-grid">
+<sherpa-layout-grid>
   <!-- Span is clamped to the breakpoint's column count: 4 per row on desktop,
        2 on tablet, full on mobile. -->
   <sherpa-metric id="m-endpoints" data-col-span="small"></sherpa-metric>
@@ -62,4 +62,4 @@
     <sherpa-container-header slot="header" data-heading="Summary"></sherpa-container-header>
     <sherpa-key-value-list id="kv" data-orientation="horizontal"></sherpa-key-value-list>
   </sherpa-container>
-</div>
+</sherpa-layout-grid>

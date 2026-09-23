@@ -90,7 +90,7 @@ test('clicking a stamped row keeps only that row current (single-current)', asyn
   expect(r).toEqual([false, false, true]);
 });
 
-test('slotted sherpa-list-item children are supported (data-has-content)', async ({ page }) => {
+test('slotted sherpa-list-item children are supported (data-has-content-slot)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-list') as unknown as ListEl;
     el.innerHTML =
@@ -100,7 +100,7 @@ test('slotted sherpa-list-item children are supported (data-has-content)', async
     await el.rendered;
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return {
-      hasContent: el.hasAttribute('data-has-content'),
+      hasContent: el.hasAttribute('data-has-content-slot'),
       childCount: el.querySelectorAll(':scope > sherpa-list-item').length,
     };
   });

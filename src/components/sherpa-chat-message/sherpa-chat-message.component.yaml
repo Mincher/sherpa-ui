@@ -117,8 +117,8 @@ states:
     name: user
     selector: ":host([data-type=\"user\"])"
   - $type: state
-    name: has-content
-    selector: ":host([data-has-content])"
+    name: has-content-slot
+    selector: ":host([data-has-content-slot])"
   - $type: state
     name: assistant
     selector: ":host([data-type=\"assistant\"])"

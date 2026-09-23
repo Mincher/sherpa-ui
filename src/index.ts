@@ -186,3 +186,4 @@ export { SherpaLineChart } from './components/sherpa-line-chart/sherpa-line-char
 export { SherpaDataGrid, type GridColumn } from './components/sherpa-data-grid/sherpa-data-grid.js';
 export { SherpaQuickFilterToolbar, type QuickFilterDef } from './components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js';
 export { SherpaAppShell } from './components/sherpa-app-shell/sherpa-app-shell.js';
+export { SherpaLayoutGrid } from './components/sherpa-layout-grid/sherpa-layout-grid.js';

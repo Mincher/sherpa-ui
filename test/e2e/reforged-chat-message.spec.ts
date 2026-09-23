@@ -78,7 +78,7 @@ test('a slotted body replaces the data-content text node', async ({ page }) => {
     await el.rendered;
     await new Promise((res) => requestAnimationFrame(res));
     return {
-      hasContent: el.hasAttribute('data-has-content'),
+      hasContent: el.hasAttribute('data-has-content-slot'),
       contentDisplay: getComputedStyle(el.shadowRoot!.querySelector('.content')!).display,
     };
   });

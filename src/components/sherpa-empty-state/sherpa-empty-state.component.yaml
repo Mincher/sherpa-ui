@@ -125,8 +125,8 @@ states:
     name: success
     selector: ":host([data-illustration=\"success\"])"
   - $type: state
-    name: has-content
-    selector: ":host([data-has-content])"
+    name: has-content-slot
+    selector: ":host([data-has-content-slot])"
   - $type: state
     name: has-action
     selector: ":host([data-has-action])"

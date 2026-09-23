@@ -95,9 +95,9 @@
 }
 .message-text { margin: 0; }
 /* Drop the default message node when neither data-description nor a slotted body exists. */
-:host(:not([data-description]):not([data-has-content])) .message { display: none; }
+:host(:not([data-description]):not([data-has-content-slot])) .message { display: none; }
 /* A slotted body replaces the data-description text node. */
-:host([data-has-content]) .message-text { display: none; }
+:host([data-has-content-slot]) .message-text { display: none; }
 
 /* ── Actions ─────────────────────────────────────────────────────────── */
 .actions {

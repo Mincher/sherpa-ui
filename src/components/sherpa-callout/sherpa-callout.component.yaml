@@ -108,8 +108,8 @@ states:
     name: not-heading
     selector: ":host(:not([data-heading]))"
   - $type: state
-    name: not-has-content
-    selector: ":host(:not([data-has-content]))"
+    name: not-has-content-slot
+    selector: ":host(:not([data-has-content-slot]))"
   - $type: state
     name: not-dismissible
     selector: ":host(:not([data-dismissible]))"

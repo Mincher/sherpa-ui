@@ -3,9 +3,10 @@
      No section header: the APP HEADER owns the view's name. -->
 <!-- data-rows="fit": the rows hug their content and the LAST card takes the
      remainder, so the view fills the content area and nothing scrolls but the
-     grid inside its own card. records.js calls bindFitGrid on it.
+     grid inside its own card. The ELEMENT measures its own row count — there is
+     nothing for the view script to wire.
      TRAP T-a-content-grid-has-two-row-modes -->
-<div class="sherpa-grid" data-rows="fit">
+<sherpa-layout-grid data-rows="fit">
   <!-- SUMMARIES OF THE SAME ROWS. Every one is bound to the view's DataSource
        with an `as` adapter, so a filter set anywhere re-computes all of them.
        Nothing here is hardcoded and nothing recounts by hand.
@@ -94,7 +95,7 @@
       data-total-pages="4"
       data-rows-options="10,25,50,100"></sherpa-pagination>
   </sherpa-container>
-</div>
+</sherpa-layout-grid>
 
 <!-- Add / edit customer dialog. -->
 <sherpa-dialog id="dialog" data-heading="Add customer">

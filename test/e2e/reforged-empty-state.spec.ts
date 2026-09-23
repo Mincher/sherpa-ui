@@ -128,7 +128,7 @@ test('a slotted body replaces the default message text', async ({ page }) => {
     await el.rendered;
     await new Promise((res) => requestAnimationFrame(res));
     return {
-      hasContent: el.hasAttribute('data-has-content'),
+      hasContent: el.hasAttribute('data-has-content-slot'),
       // Default .message-text is slot fallback; a filled slot leaves it unrendered
       // (display "" not "none"). Assert the real contract via checkVisibility().
       msgTextHidden: !el.shadowRoot!.querySelector('.message-text')!.checkVisibility(),

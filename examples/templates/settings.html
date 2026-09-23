@@ -2,7 +2,7 @@
      content slot by the SPA router. views/settings.js populates and wires it.
      One reading column ON the grid (8 of 12), so it re-flows with every other view. -->
 <form id="settings-form" novalidate>
-  <div class="sherpa-grid">
+  <sherpa-layout-grid>
 
     <!-- ── Profile ─────────────────────────────────────────────── -->
     <sherpa-container data-col-span="reading">
@@ -110,5 +110,5 @@
       <sherpa-button type="submit" id="save-btn" data-look="saturated">Save changes</sherpa-button>
     </sherpa-container-footer>
 
-  </div>
+  </sherpa-layout-grid>
 </form>

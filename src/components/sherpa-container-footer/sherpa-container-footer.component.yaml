@@ -42,8 +42,8 @@ props:
       a search field), rather than buttons clustered at one end.
 states:
   - $type: state
-    name: has-content
-    selector: ":host([data-has-content])"
+    name: has-content-slot
+    selector: ":host([data-has-content-slot])"
   - $type: state
     name: start
     selector: ":host([data-align=\"start\"])"

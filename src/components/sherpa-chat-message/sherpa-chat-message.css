@@ -92,7 +92,7 @@
 /* On the accent user bubble the meta row takes the fixed light ink too. */
 :host([data-type="user"]) .meta { color: var(--_ink); }
 /* A slotted body replaces the data-content text node. */
-:host([data-has-content]) .content { display: none; }
+:host([data-has-content-slot]) .content { display: none; }
 
 .bubble ::slotted(*) { margin: 0; }
 .bubble ::slotted(* + *) { margin-block-start: var(--sherpa-display-mode-space-xs, 8px); }

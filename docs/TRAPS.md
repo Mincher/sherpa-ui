@@ -150,6 +150,8 @@ Related: a variant re-stamp does NOT abort it. See `T-restamp-does-not-abort`.
 
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-slider/sherpa-slider.ts`
+- Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.ts`
+- Site: `test/e2e/reforged-layout-grid.spec.ts`
 
 ### T-restamp-does-not-abort
 
@@ -2919,7 +2921,6 @@ ready clause, and stripping only the picks let the clause ride in anyway.
 one field have nothing to keep in step once both read `selection(field)`. The
 binding went from 194 lines to 152.
 
-- Site: `examples/views/records.js`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
@@ -2934,6 +2935,8 @@ binding went from 194 lines to 152.
 - Site: `test/e2e/reforged-view-definition.spec.ts`
 - Site: `test/unit/bind-selection.test.mjs`
 - Site: `test/unit/field-selection.test.mjs`
+- Site: `examples/views/records.js`
+
 ### T-an-operator-decides-pick-or-type
 
 A filter menu's CONDITION dropdown leads the card, above the search box, and is
@@ -7625,11 +7628,11 @@ onto TWO rows, and the count came back one too many.
 
 The filler is `data-grow`; with none, the LAST child fills.
 
-- Site: `examples/views/records.js`
 - Site: `scripts/project-tokens.mjs`
 - Site: `src/core/ui/fit-grid.ts`
 - Site: `src/index.ts`
 - Site: `test/e2e/reforged-fit-grid.spec.ts`
+- Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.ts`
 
 ### T-a-fit-grid-needs-a-sized-parent
 
@@ -8157,6 +8160,9 @@ the APP links, `src/core/` is what a COMPONENT adopts.** A class belongs in
 - Site: `src/core/sherpa-typography.css`
 - Site: `src/index.ts`
 - Site: `src/core/sherpa-group-positions.css`
+- Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.ts`
+- Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.html`
+- Site: `test/e2e/reforged-layout-grid.spec.ts`
 
 ### T-import-dies-in-an-adopted-sheet
 

@@ -86,7 +86,7 @@
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
-:host(:not([data-has-content])) .message { display: none; }
+:host(:not([data-has-content-slot])) .message { display: none; }
 
 /* ── Dismiss button ──────────────────────────────────────────────────── */
 .close {

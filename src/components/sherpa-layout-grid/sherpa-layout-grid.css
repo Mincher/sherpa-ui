@@ -1,0 +1,17 @@
+/**
+ * sherpa-layout-grid.css — almost nothing, on purpose.
+ *
+ * The tracks are `.sherpa-grid` in the generated tokens.css, worn by the host.
+ * Copying them here would fork the Figma projection.
+ */
+
+/* `display` is the one thing the class cannot give a custom element: an
+   unknown element is `display: inline` until something says otherwise, and the
+   document rule lands too late to stop a flash of inline layout. */
+:host {
+  display: grid;
+}
+
+:host([hidden]) {
+  display: none;
+}

@@ -7,7 +7,7 @@
   display: none;
   background: var(--_status-surface, transparent);
 }
-:host([data-has-content]) { display: block; }
+:host([data-has-content-slot]) { display: block; }
 
 .row {
   display: flex;
