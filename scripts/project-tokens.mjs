@@ -819,7 +819,9 @@ for (const mode of STATUS_MODES) {
 // ════════════════════════════════════════════════════════════════════════════
 // Look tiers — style-transparent / style-saturated, from the extension cache. A tier
 // re-points the same status cascade vars per status mode, so [data-look][data-status]
-// composes. Values are literal hex (extension overrides don't serialise as refs).
+// composes. Values are literal hex (extension overrides don't serialise as refs) — and
+// they cannot be read back from the variable either.
+// TRAP T-a-look-override-is-not-on-the-variable
 // ════════════════════════════════════════════════════════════════════════════
 const LOOK_ROLE_MAP = {
   'style-surface/base': '_status-surface',
