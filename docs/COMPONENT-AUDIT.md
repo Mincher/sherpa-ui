@@ -34,7 +34,7 @@ meet a problem and then hunt for its resolution 500 lines later.
 | 10 | `data-size` has two contradictory contracts | ✅ Fixed — and the finding changed shape |
 | 11 | Three holes in `check-props` | ✅ Fixed — two were real, one was not |
 | 12 | `sherpa-element.ts` — two real bugs | ✅ Fixed |
-| 13 | Icons: four files, one bad name | ✅ Fixed |
+| 13 | Icons: four files, one bad name | ✅ Fixed — and the alias map is now gone too |
 | 14 | `kind: content` is overloaded to mean "observed" — 156 props | ✅ Fixed |
 | — | What is genuinely clean | ⬜ Not a fault |
 
@@ -1424,7 +1424,50 @@ test that a `src/`-only grep would have missed.
 `src/core/ui/icons.ts`, and the count went 7 → 11 until they were updated —
 exactly the silent rot it exists to prevent.
 
-#### 🔶 The open half — `render-icon.ts` and the alias map
+#### ✅ The open half — resolved 2026-09-23
+
+Will's question was whether `render-icon.ts` is needed at all, since an icon is
+"just an SVG in a div with some CSS classes". Measured, the answer differs per
+file.
+
+**`icon-aliases.ts` — deleted.** 28 hand-written Font Awesome → Figma
+judgements, kept only so 88 call sites would not need rewriting. They are
+rewritten: 27 names remapped (`xmark` → `cross`, `house` → `home`, `flask` →
+`beaker`), the `fa-solid` prefix stripped from the rest, and
+`class="fa-solid fa-x"` converted to `data-icon="x"` + `sherpa-icon-box`.
+**Zero `fa-` class pairs remain** in `src` or `examples`.
+
+**`render-icon.ts` — kept, 92 → 68 lines.** The blocker is where icon names come
+from:
+
+| source | count | can a static template cover it? |
+|---|---:|---|
+| a component's own template | 28 | yes — already static markup |
+| a host passing `data-icon-start="…"` | **48** | **no** — the caller picks the name |
+| chosen at runtime in TS | 1 | no |
+
+What did go is the prefix parsing: `NOT_A_NAME`, the alias lookup, the
+class-list fallback in `upgradeIcons`, and the unused `iconName` export.
+
+**`icon-paths.ts` — kept, and the reason is now in its header.** Will asked why
+it exists when `src/icons/` holds 214 SVG files. Because **the files do not
+carry the ink box**: all 214 say `viewBox="0 0 14 14"`, and **206 have a tighter
+real box**. Measured in a 24px wrapper:
+
+| viewBox used | drawing's longest axis |
+|---|---|
+| the ink box (`icon-paths.ts`) | **25.2px** — fills the square |
+| the file's own frame | 20.4px — **15% too small** |
+
+The files also never ship: `dist/icons/` does not exist. Loading them would mean
+214 requests and an async icon API in a zero-dependency library.
+
+**The scan test was repurposed.** `reforged-icons.spec.ts` looked for `fa-`
+classes and would now pass vacuously. It renders every icon **name** in the repo
+and fails on one that draws nothing — the same silent failure the Pro-webfont
+era had. It earned its place immediately, catching three
+`data-icon="xmark"` in `sherpa-input-text` that the rename had missed.
+
 
 Will's question, recorded above with measurements. The viewBox is the part that
 resists being a static template — 88 distinct ink boxes across 214 icons — and
@@ -1537,15 +1580,52 @@ Ordered by what unblocks the most.
 | # | work | why it is next |
 |---:|---|---|
 | 1 | **State ownership** — decide per site whether the 3 menu-less toggle chips are owners or reporters | the gate is fixed; what is left is 3 sites, not 15, and nothing is visibly broken |
-| 2 | **`render-icon.ts` / the alias map** | 88 distinct ink boxes across 214 icons is the blocker; three questions first |
+| 2 | **Sweep for other shared constants** — anything a second component must agree on belongs in `shared-constants.ts` | Will's ask; do it at the END of the audit, once everything else has settled |
 | 3 | **`sherpa-data-grid` rebuild onto Grid Cell** | a dedicated session; the prerequisite (agreeing event shapes) is done |
-| 4 | **The flaky suite** | 12 non-deterministic failures, plus a webkit border-edges failure belonging to work elsewhere in the tree; it makes every other change harder to verify |
+| 4 | **The last suite failures** — 8, down from 13 | **They were not flaky.** Five were engine gaps the code already handled, two were real races, one a tolerance. What remains needs the same per-case treatment |
 | 5 | **The remaining naming rulings** | `data-type`'s nine meanings, `data-empty`'s three, and the detail-shape sweep across all 75 events. Decisions, not bugs |
 
 ### Detail on the larger ones
 
 
-#### The flaky suite
+#### The suite failures — ✅ 5 of 13 fixed, and they were not flaky
+
+Re-measured 2026-09-23, and the label was wrong. **Run alone, each failure
+reproduced every time.** What varied between runs was only which ENGINE reported
+it, and that is what made them look non-deterministic.
+
+Three causes, none of which is timing in the usual sense:
+
+**a. Engine gaps the code already handles — 5 tests.** In every one the source
+progressively enhances correctly and the TEST asserted a Chromium-only result in
+all three engines.
+
+| test | the feature | what the other engines do |
+|---|---|---|
+| app-shell ×2 | `container-type: scroll-state` | report `"normal"`; header still sticks, loses only its stuck shadow |
+| grouping ×2 | CSS `if()` + `style()` queries | Firefox has none; every grid cell keeps its own outer box — the documented fallback |
+| border-edges ×1 | — | the 0.5px token resolves by DENSITY, and WebKit at dpr 2 keeps 0.5px, which is the honest answer |
+
+Each now asserts that the **guard agrees with the engine**, which also catches
+Chromium *losing* a feature — the shape `reforged-css-functions.spec.ts` already
+used for `@function`.
+
+**b. Two real races.** `__settled()` waits for renders and frames but not for a
+CSS **transition**; `sherpa-nav` animates its own `inline-size` to the collapsed
+40px, so a measurement could catch the host at 232px. Proved with twelve pages
+driven at once — 4 of 12 bad before, 0 of 12 after. Separately,
+`reforged-nav-pin-persist` treated "the shadowRoot exists" as ready, and in
+Firefox the template lands ~40ms later.
+
+**c. One tolerance.** An SVG path's bounding box differs by up to 0.05px in
+Firefox, and `toBeCloseTo(14, 1)` demands *strictly* below 0.05 — so it failed
+by 0.00003px.
+
+Traps: `T-scroll-state-is-chromium-only`, `T-a-hairline-resolves-by-density`,
+`T-a-grid-group-needs-css-if`, `T-settled-waits-for-renders-not-transitions`,
+`T-an-svg-path-box-rounds-by-a-hundredth`, `T-a-shadow-root-precedes-its-template`.
+
+#### The remaining eight
 
 12 failures that are not deterministic, plus a webkit-only border-edges failure
 (20 components resolving 0.5px where 1px is wanted) that belongs to
