@@ -7276,6 +7276,7 @@ not.
 T-shared-sheets-settle-independently). The markup leg never got one.
 
 - Site: `src/core/ui/sherpa-element.ts`
+- Site: `test/e2e/reforged-bootstrap-failure.spec.ts`
 
 ### T-an-event-name-is-not-always-a-literal
 

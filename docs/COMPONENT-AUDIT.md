@@ -878,6 +878,68 @@ that happens to share the name.
 
 ---
 
+### 12 — `sherpa-element.ts`: comments cut, file ordered
+
+**Comments: 38% → 35%, 888 → 864 lines.** Eight blocks trimmed, every one the
+same shape — a useful first line followed by history the TRAP citation already
+carries:
+
+> *"three of them wrote the same loop"* · *"only 23 of 58 overrode renderData"*
+> · *"seven files hand-paired add/remove across 22 sites"* · *"50 scroll events
+> produced 100 getBoundingClientRect() calls"*
+
+All 51 TRAP citations survive. The gate keys on a **Set of files** per id, so
+duplicate citations within one file collapse — what matters is that each of the
+36 distinct ids still appears, which was checked.
+
+**Module order now matches the convention:** `import → types → constants →
+functions → class`. `DATA_PROPS` and `SHARED_PROPS` had been declared at line
+821, *after* the class.
+
+**Class body grouped by role**, so a component author reads top-down — what I
+set, what is called on me, what I can call, what I override:
+
+```
+static config → instance fields → constructor
+Native lifecycle — the platform calls these
+Shadow queries · Attributes in, out · Events · Data in
+Private — boot and stamp / slots / prop sync / item stamping
+Hooks — subclasses override these
+```
+
+#### Two bugs in my own tooling, both caught by verification
+
+The reorder was scripted, and the script was wrong twice:
+
+1. **Split inside multi-line parameter lists.** A param line is 4-space indented
+   but the closing `): void {` is 2-space, so the member regex fired mid-
+   declaration. Type-check caught it.
+2. **Overlapping chunk boundaries duplicated comment blocks.** 51 citations
+   became 78 and the file grew to 1045 lines. A sort-and-diff against the
+   original caught it — the type-checker was perfectly happy.
+
+The third version asserts the chunks **tile the body exactly** before
+reassembling:
+
+```python
+assert rebuilt == original, 'chunks do not tile the body'
+```
+
+Final diff shows only the section banners changed. Every line of code and every
+comment is intact.
+
+**Verified:** all nine gates green; 1932 passed / 12 failed, and the 12 are the
+known load-flaky set — no base-class, bootstrap, binding or coercion failure.
+That is the signal that matters, since all 58 components inherit from this file.
+
+#### The ordering rule, as it should be written
+
+Per **class**, not per file: constants and types above it, nothing below it.
+`core/data/stores.ts` is the exception that proves it — three classes, each
+paired with its own `*Options` interface, which keeps a class beside its config.
+
+---
+
 ### The suite has load-dependent flakiness, and it will mislead you
 
 Full suite after this work: **1923 passed, 13 failed, 2 flaky** — the same
