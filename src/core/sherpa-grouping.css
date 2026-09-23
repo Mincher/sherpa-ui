@@ -66,6 +66,8 @@
    `sibling-index()` is allowed.
 
    `round(down, …)` stands in for `mod()`, which Chromium does not have yet.
+   This is what round() is FOR — a value computed from the sibling count, which
+   no token can state. TRAP T-round-is-for-dynamic-sizes-only
    The `@supports` gate is for `if()`; without it every cell keeps the outer
    box below, which is correct, just not joined.
 

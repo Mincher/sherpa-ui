@@ -9746,3 +9746,37 @@ named cannot be rounded, because CSS has no self-reference. `round()` is for
 DYNAMIC content that computes a fractional size.
 
 - Site: `src/core/sherpa-base.css`
+
+### T-round-is-for-dynamic-sizes-only
+
+CSS `round()` works identically in Chromium, Firefox and WebKit — verified,
+including on a value read from a custom property (`49.95px` → `48px` at a
+`round(…, 8px)`). So it is available. It is just rarely the right answer.
+
+**Will's ruling:** the sizing and spacing ranges are already aliased through the
+tokens. `round()` is needed only when the content is DYNAMIC and computes a
+fractional size.
+
+Two reasons it cannot police static spacing:
+
+1. **CSS has no self-reference.** `round(margin-top, 4px)` is not valid — you
+   can only round a value you have already named, and a value you are naming is
+   one you could have taken from a token instead.
+2. **The drift was not in authored CSS at all.** `lint:css` reports zero
+   off-grid literals. Measured in the running app, 2,571 of 2,812 off-grid
+   values were UA defaults on native controls, which is a reset, not a rounding
+   problem — `T-a-native-control-brings-its-own-margin`.
+
+Measured across the app after that reset, the only JS-written pixel value is
+`sherpa-data-grid`'s `--_pin-offset`, which is already on-grid **and must keep
+its sub-pixel precision**: rounding it reintroduces the hairline that
+`T-grid-pin-offset-needs-subpixel` exists to prevent.
+
+Slider percentages and the sparkline's point count are not sizes and must not
+be snapped either — a slider at 37% belongs at 37%.
+
+So: reach for `round()` when dynamic content produces a fractional SIZE that
+should sit on the grid. Do not wrap tokens in it, and do not wrap a measured
+offset that is deliberately sub-pixel.
+
+- Site: `src/core/sherpa-grouping.css`
