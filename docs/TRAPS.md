@@ -2080,6 +2080,14 @@ not licence to add a JS status branch.
 
 ### T-harness-serves-font-awesome-locally
 
+> **HISTORY — 2026-09-23.** Font Awesome is GONE. The icons are Figma SVGs
+> baked into `icon-paths.ts`, so there is no webfont to serve, no `<link>` in
+> the harness and no CDN entry in `sharedStyles`. Measured before removal: the
+> CDN sheet was adopted into every shadow root, putting **1,935 `.fa-*` rules**
+> into each of 59 roots that matched **nothing**, at 3 network requests per
+> page. Kept because the LESSON survives — a shared stylesheet is fetched once
+> per page per context, and reading that as a code problem cost a week.
+
 **`npm test` used to fail a RANDOM 1-18 tests per run, and the failing set
 changed every time.** Six runs of identical code gave 18, 12, 6, 15, 1 and 7
 failures, with the suite taking anywhere from 55 seconds to 5.5 minutes.
@@ -2124,7 +2132,6 @@ Related: `T-fa-pro-icons-fail-silently` is why the harness needs the REAL font
 rather than a stub — a Pro glyph is absent from the free webfont and renders as
 nothing, with no warning anywhere.
 
-- Site: `test/reforged/harness.html`
 - Site: `playwright.config.ts`
 
 ### T-icon-box-is-not-the-glyph
@@ -9649,3 +9656,55 @@ different LINE-HEIGHT (14 vs 20 puts the baselines in different places inside
 boxes that share a midpoint). Half a pixel on a 20px line is neither.
 
 - Site: `test/e2e/reforged-quick-filter.spec.ts`
+
+### T-a-col-element-has-no-computed-width-in-webkit
+
+`getComputedStyle(colEl).width` on a `<col>` inside a fixed table:
+
+| engine | reports |
+|---|---|
+| Chromium | 56px |
+| Firefox | 56px |
+| WebKit | **0px** |
+
+The PAINTED cell is 56px in all three, so the layout is correct everywhere and
+only the property disagrees. Measure what is drawn:
+
+```ts
+Math.round(sr.querySelector('.select-cell')!.getBoundingClientRect().width)
+```
+
+**But an EMPTY grid paints 0 in every engine** — no body rows, so the table has
+no width to hand the column. A test about the column DECLARATION reverting
+(advanced 56 → plain 32) is asking a different question, and the honest probe
+there is the custom property the rule reads, `--_select-w`, which every engine
+resolves.
+
+Two questions, two probes: what is DRAWN, and what is DECLARED.
+
+- Site: `test/e2e/reforged-data-grid.spec.ts`
+
+### T-the-fold-measures-whatever-font-is-loaded
+
+A component that MEASURES text gets a different answer before the real font
+arrives, and it does not re-measure on its own.
+
+`sherpa-quick-filter-toolbar` folds chips until the bar stops overflowing.
+Measured against fallback metrics it folded **3**; once the body font landed the
+same bar needed **4**, so it came to rest overflowing and the test read it as a
+fold bug. The values before and after, on one 300px bar:
+
+```
+before fonts   over: 2   folded: 3
+after  fonts   over: 0   folded: 4
+```
+
+The harness used to wait for two **Font Awesome** faces — icon glyphs, which
+size nothing — and never for the body font, which is what sizes a label. It now
+waits on `document.fonts.ready`, because Inter is not declared by the page at
+all when it comes from the OS, so there is no named face to `fonts.load()`.
+
+The ceiling stays: `fonts.ready` has no timeout of its own, and losing the race
+only costs a text measurement.
+
+- Site: `test/reforged/harness.html`

@@ -8,16 +8,6 @@
 import { SherpaElement } from './core/ui/sherpa-element.js';
 
 /**
- * Font Awesome 6 (free) CDN. Icons use `fa-solid fa-<name>` classes.
- * NOTE: true "Classic Light" (`fa-light`) is a Font Awesome Pro style — swap
- * this URL for a Pro kit and the class prefix `fa-solid`→`fa-light` to get it.
- * The `@font-face` is loaded into the document by installIcons(); the class rules
- * (`.fa-*::before`) are adopted into every shadow root via sharedStyles below
- * (a document <link> does NOT reach shadow roots; fonts do, class rules do not).
- */
-const FA_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css';
-
-/**
  * What every shadow root adopts, in cascade order. Tokens themselves inherit
  * from the light DOM.
  *
@@ -33,18 +23,16 @@ SherpaElement.sharedStyles = [
   new URL('./core/sherpa-group-positions.css', import.meta.url),
   new URL('./core/sherpa-anchor.css', import.meta.url),
   new URL('./core/sherpa-motion.css', import.meta.url),
-  new URL(FA_CDN),
 ];
 
-/** Inject the Font Awesome stylesheet (its @font-face) into the document head, once. */
-let iconsInstalled = false;
+/**
+ * @deprecated A NO-OP since the icons became Figma SVGs baked into
+ * `icon-paths.ts`. It loaded a 103KB Font Awesome sheet whose 1,935 `.fa-*`
+ * rules were adopted into every shadow root and matched nothing.
+ * Kept so an existing call does not throw; delete the call.
+ */
 export function installIcons(): void {
-  if (iconsInstalled || typeof document === 'undefined') return;
-  iconsInstalled = true;
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = FA_CDN;
-  document.head.appendChild(link);
+  /* nothing to install */
 }
 
 /**

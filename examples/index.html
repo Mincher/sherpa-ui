@@ -60,11 +60,10 @@
                         data-dismissible></sherpa-overlay-panel>
 
   <script type="module">
-    import { installIcons, ArrayStore, DataSource, SessionStore } from '../dist/index.js';
+    import { ArrayStore, DataSource, SessionStore } from '../dist/index.js';
 
     // Font Awesome must be in the DOCUMENT too: sharedStyles carries the class
     // rules into shadow roots, but @font-face and light-DOM <i> need <head>.
-    installIcons();
 
     // Sentinel proving hot-swaps stay in the SAME document (never a full reload).
     window.__sherpaAppBooted = (window.__sherpaAppBooted ?? 0) + 1;

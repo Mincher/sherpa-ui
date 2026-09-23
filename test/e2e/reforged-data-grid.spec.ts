@@ -2405,7 +2405,13 @@ test('the header checkbox is ADVANCED: a caret, three scenarios, and the grid ac
       // The CONTROL keeps its own rounding — the snap belongs to the wrapper.
       control: corners(box.shadowRoot!.querySelector('.control')!),
     };
-    const colW = getComputedStyle(sr.querySelector('.select-col')!).width;
+    /* The painted CELL, not the `<col>`. WebKit's getComputedStyle on a <col>
+       reports width 0 where Chromium and Firefox report 56 — and the cell is
+       56 in all three, so the layout is right everywhere and only the property
+       disagrees. TRAP T-a-col-element-has-no-computed-width-in-webkit */
+    const colW = `${Math.round(
+      sr.querySelector('.select-cell')!.getBoundingClientRect().width,
+    )}px`;
     const caretShown = getComputedStyle(box.shadowRoot!.querySelector('.caret')!).display;
 
     // Open it the way a person does — the inner trigger, not the host.
@@ -2492,14 +2498,18 @@ test('an EMPTY grid shows a plain checkbox, not the advanced one', async ({ page
       advanced: box.hasAttribute('data-advanced'),
       hostFlag: el.hasAttribute('data-advanced-select'),
       caret: getComputedStyle(box.shadowRoot!.querySelector('.caret')!).display,
-      colW: getComputedStyle(sr.querySelector('.select-col')!).width,
+      /* The DECLARED width. An empty grid paints a 0px cell in every engine —
+         no body rows, so the table has no width to give it — and this test is
+         about the declaration reverting, not about a painted column.
+         Read as the custom property, which every engine resolves. */
+      colW: getComputedStyle(el).getPropertyValue('--_select-w').trim(),
     };
   });
 
   expect(r.advanced).toBe(false);
   expect(r.caret).toBe('none');
   expect(r.hostFlag).toBe(false);
-  // …and the column goes back to the plain box's width.
+  // …and the column declaration goes back to the plain box's width.
   expect(r.colW).toBe('32px');
 });
 
