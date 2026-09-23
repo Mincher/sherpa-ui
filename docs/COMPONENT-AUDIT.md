@@ -31,7 +31,7 @@ meet a problem and then hunt for its resolution 500 lines later.
 | 7 | Composition, skipped in five places | ✅ Fixed (4 close buttons, file-upload, calendar, composer) · 🔶 Open (grid-cell, nav-section) |
 | 8 | State ownership — the named recurring bug | 🔶 Open — and the count shrank on inspection |
 | 9 | `sherpa-switch` declares nothing | ✅ Fixed |
-| 10 | `data-size` has two contradictory contracts | 🔶 Open |
+| 10 | `data-size` has two contradictory contracts | ✅ Fixed — and the finding changed shape |
 | 11 | Three holes in `check-props` | 🔶 Open |
 | 12 | `sherpa-element.ts` — two real bugs | ✅ Fixed |
 | 13 | Icons: four files, one bad name | ✅ Fixed |
@@ -1069,14 +1069,40 @@ tests pass across three engines.
 
 ---
 
-### 10. `data-size` has two contradictory contracts — 🔶 Open
+### 10. `data-size` has two contradictory contracts — ✅ Fixed, and the finding changed shape
 
-`SHARED_PROPS['data-size']` (`sherpa-element.ts:113`) declares `['sm','lg']`.
-`sherpa-button` ships **five** — re-measured from its CSS 2026-09-23:
-`2xs xs sm lg xl` — and its own spec agrees.
+`SHARED_PROPS['data-size']` declared `['sm','lg']`. `sherpa-button` ships
+**five** — `2xs xs sm lg xl`.
 
-Any component adopting the shared declaration inherits an enum that contradicts
-the system's most-used control. One of the two has to move.
+**But the two never meet.** `sherpa-button` does not import `SHARED_PROPS` and
+never did; it declares its sizes in its HTML `Public API:` comment, which is
+where its spec gets them. Nothing at runtime validates an enum either. So the
+"contradiction" was not a live fault, and calling it one would have led to
+merging two vocabularies that are correctly separate — a control and a
+container do not have the same size ladder, the same way `data-label` and
+`data-heading` split by tier.
+
+**What measurement found instead: the shared enum was missing its default.**
+All three components that import it — `empty-state`, `loader`,
+`section-header` — document `md`, and their CSS draws it on the bare `:host`:
+
+```css
+/* sherpa-loader.css */
+/* ── Sizes (unset = md) ─────────────────────────────── */
+:host { --_spinner-size: var(--sherpa-display-mode-size-md, 20px); }
+```
+
+The **specs were already right**, because the generator reads the HTML comment
+and all three say `sm | md (default, unset) | lg`. Only the TS declaration was
+short. Listing a default in the enum is the house pattern — `data-sort-direction`
+already carries `''` for the same reason. No spec changed.
+
+**The real risk is forward-looking**, and that is what got written down.
+`SHARED_PROPS`'s own comment says its entries have a shape "identical wherever
+they appear". That invites a future component to adopt `data-size` because the
+name matches, and inherit an enum missing three of the button's five sizes,
+silently. The declaration now carries the warning.
+`TRAP T-a-shared-enum-is-not-every-enum`.
 
 ---
 
@@ -1359,13 +1385,12 @@ Ordered by what unblocks the most.
 | # | work | why it is next |
 |---:|---|---|
 | 1 | **State ownership** — teach `check-ownership.mjs` to see a template-declared lock, then judge the 15 toolbar writes per site | the named recurring bug; the gate under-reports by construction |
-| 2 | **`data-size`: 2 vs 5** | a contradiction between the base class and the most-used control |
-| 3 | **Three `check-props` holes** | a gate that passes while public API goes undeclared |
-| 4 | **Three dead-code items** | small, but each needs a read — the calendar one may be a *missing* stylesheet |
-| 5 | **`render-icon.ts` / the alias map** | 88 distinct ink boxes across 214 icons is the blocker; three questions first |
-| 6 | **`sherpa-data-grid` rebuild onto Grid Cell** | a dedicated session; the prerequisite (agreeing event shapes) is done |
-| 7 | **The flaky suite** | 12 non-deterministic failures, plus a webkit border-edges failure belonging to work elsewhere in the tree; it makes every other change harder to verify |
-| 8 | **The remaining naming rulings** | `data-type`'s nine meanings, `data-empty`'s three, and the detail-shape sweep across all 75 events. Decisions, not bugs |
+| 2 | **Three `check-props` holes** | a gate that passes while public API goes undeclared |
+| 3 | **Three dead-code items** | small, but each needs a read — the calendar one may be a *missing* stylesheet |
+| 4 | **`render-icon.ts` / the alias map** | 88 distinct ink boxes across 214 icons is the blocker; three questions first |
+| 5 | **`sherpa-data-grid` rebuild onto Grid Cell** | a dedicated session; the prerequisite (agreeing event shapes) is done |
+| 6 | **The flaky suite** | 12 non-deterministic failures, plus a webkit border-edges failure belonging to work elsewhere in the tree; it makes every other change harder to verify |
+| 7 | **The remaining naming rulings** | `data-type`'s nine meanings, `data-empty`'s three, and the detail-shape sweep across all 75 events. Decisions, not bugs |
 
 ### Detail on the larger ones
 
