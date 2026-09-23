@@ -507,8 +507,8 @@ test('a preset builds its OWN components and layout, then configures them', asyn
         label: 'Fleet overview',
         content: `
           <sherpa-container>
-            <sherpa-metric id="a" data-span="3"></sherpa-metric>
-            <sherpa-metric id="b" data-span="3"></sherpa-metric>
+            <sherpa-metric id="a" data-col-span="small"></sherpa-metric>
+            <sherpa-metric id="b" data-col-span="small"></sherpa-metric>
           </sherpa-container>`,
         snapshot: { v: 1, source: { filter: undefined } },
       },
@@ -517,7 +517,7 @@ test('a preset builds its OWN components and layout, then configures them', asyn
         // DIFFERENT components, DIFFERENT arrangement — not the same screen.
         content: `
           <sherpa-container>
-            <sherpa-data-grid id="grid" data-span="12"></sherpa-data-grid>
+            <sherpa-data-grid id="grid" data-col-span="full"></sherpa-data-grid>
           </sherpa-container>`,
         /* The SHAPE is markup; the DATA and the configuration come through the
            snapshot, addressed by the id in that markup and applied through the

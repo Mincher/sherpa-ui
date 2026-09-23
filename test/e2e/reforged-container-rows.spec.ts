@@ -20,7 +20,7 @@ test('the height is N row units plus the gutters between them', async ({ page })
     const out: Record<string, number> = {};
     for (const n of [4, 6, 8]) {
       const el = document.createElement('sherpa-container') as HTMLElement & { rendered?: Promise<void> };
-      el.setAttribute('data-rows', String(n));
+      el.setAttribute('data-row-span', String(n));
       el.innerHTML = '<div>x</div>';
       root.appendChild(el);
       await el.rendered;
@@ -49,7 +49,7 @@ test('an only child FILLS the card', async ({ page }) => {
     const root = document.getElementById('root')!;
     root.innerHTML = '';
     const el = document.createElement('sherpa-container') as HTMLElement & { rendered?: Promise<void> };
-    el.setAttribute('data-rows', '6');
+    el.setAttribute('data-row-span', '6');
     el.setAttribute('data-padding', 'none');
     el.innerHTML = '<div id="only"></div>';
     root.appendChild(el);
@@ -72,7 +72,7 @@ test('data-fill + data-grow picks the grower; the others keep their natural heig
     const root = document.getElementById('root')!;
     root.innerHTML = '';
     const el = document.createElement('sherpa-container') as HTMLElement & { rendered?: Promise<void> };
-    el.setAttribute('data-rows', '8');
+    el.setAttribute('data-row-span', '8');
     el.setAttribute('data-padding', 'none');
     // data-fill is the switch: without it EVERY body child grows (the common
     // one-child card), with it only the data-grow child does.
@@ -123,7 +123,7 @@ test('a body child grows even when a header shares the light DOM', async ({ page
     const root = document.getElementById('root')!;
     root.innerHTML = '';
     const el = document.createElement('sherpa-container') as HTMLElement & { rendered?: Promise<void> };
-    el.setAttribute('data-rows', '6');
+    el.setAttribute('data-row-span', '6');
     el.setAttribute('data-padding', 'none');
     el.innerHTML = '<div slot="header">Title</div><div id="body"></div>';
     root.appendChild(el);
@@ -132,12 +132,15 @@ test('a body child grows even when a header shares the light DOM', async ({ page
     const header = el.shadowRoot!.querySelector('.header')!.getBoundingClientRect();
     return {
       card: el.clientHeight,
-      headerH: Math.round(header.height),
-      body: Math.round(document.getElementById('body')!.getBoundingClientRect().height),
+      // UNROUNDED. A header of 34.5 and a body of 428.5 each round UP, so
+      // rounding first and subtracting after counts the same half-pixel twice
+      // and the sum misses by one.
+      headerH: header.height,
+      body: document.getElementById('body')!.getBoundingClientRect().height,
     };
   });
   // The body child took everything the header did not.
-  expect(r.body).toBe(r.card - r.headerH);
+  expect(Math.round(r.body)).toBe(Math.round(r.card - r.headerH));
   expect(r.body).toBeGreaterThan(100);
 });
 

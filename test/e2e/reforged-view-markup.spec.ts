@@ -19,7 +19,7 @@ test('a view built from markup is the same DOM an authored template gives', asyn
     const { parseViewMarkup } = await import('/dist/index.js');
     const { fragment, report } = parseViewMarkup(`
       <div class="sherpa-grid">
-        <sherpa-container data-span="12" data-rows="8">
+        <sherpa-container data-col-span="full" data-row-span="8">
           <sherpa-container-header slot="header"
             data-heading="Fullest devices"></sherpa-container-header>
           <sherpa-data-grid id="fullest"></sherpa-data-grid>
@@ -37,7 +37,7 @@ test('a view built from markup is the same DOM an authored template gives', asyn
       // not inert markup.
       upgraded: grid instanceof (customElements.get('sherpa-data-grid') as CustomElementConstructor),
       shadow: !!grid?.shadowRoot,
-      span: host.querySelector('sherpa-container')?.getAttribute('data-span'),
+      span: host.querySelector('sherpa-container')?.getAttribute('data-col-span'),
       slot: host.querySelector('sherpa-container-header')?.getAttribute('slot'),
       // The layout class survives — the grid IS a class.
       cls: host.querySelector('div')?.className,
@@ -48,7 +48,7 @@ test('a view built from markup is the same DOM an authored template gives', asyn
   expect(r.grid).toBe(true);
   expect(r.upgraded).toBe(true);
   expect(r.shadow).toBe(true);
-  expect(r.span).toBe('12');
+  expect(r.span).toBe('full');
   expect(r.slot).toBe('header');
   expect(r.cls).toBe('sherpa-grid');
   // Nothing in ordinary view markup is refused.
@@ -69,7 +69,7 @@ test('the allow-list drops what a saved view has no business carrying', async ({
       <div class="sherpa-grid">
         <script>window.__ran = true;<\/script>
         <img src="x" onerror="window.__ran = true">
-        <sherpa-container data-span="6" onclick="window.__ran = true" style="position:fixed">
+        <sherpa-container data-col-span="large" onclick="window.__ran = true" style="position:fixed">
           <sherpa-data-grid id="ok"></sherpa-data-grid>
         </sherpa-container>
         <iframe src="https://example.com"></iframe>
@@ -87,7 +87,7 @@ test('the allow-list drops what a saved view has no business carrying', async ({
       ran: (window as unknown as { __ran?: boolean }).__ran,
       // What SURVIVED: the component and its data-* attribute.
       kept: !!host.querySelector('sherpa-data-grid#ok'),
-      span: host.querySelector('sherpa-container')?.getAttribute('data-span'),
+      span: host.querySelector('sherpa-container')?.getAttribute('data-col-span'),
       // What did NOT.
       script: host.querySelectorAll('script').length,
       img: host.querySelectorAll('img').length,
@@ -100,7 +100,7 @@ test('the allow-list drops what a saved view has no business carrying', async ({
       attrs: report.attributes.sort(),
       // checkViewMarkup answers the same question WITHOUT building.
       check: checkViewMarkup(hostile).ok,
-      checkClean: checkViewMarkup('<sherpa-container data-span="6"></sherpa-container>').ok,
+      checkClean: checkViewMarkup('<sherpa-container data-col-span="large"></sherpa-container>').ok,
     };
   });
 
@@ -109,7 +109,7 @@ test('the allow-list drops what a saved view has no business carrying', async ({
 
   // The legitimate half came through untouched.
   expect(r.kept).toBe(true);
-  expect(r.span).toBe('6');
+  expect(r.span).toBe('large');
 
   // Every vector is gone from the DOM.
   expect(r.script).toBe(0);
@@ -151,7 +151,7 @@ test('a saved view applies its markup, then configures it by id', async ({ page 
         capacity: {
           label: 'Capacity',
           content: `
-            <sherpa-container data-span="12">
+            <sherpa-container data-col-span="full">
               <sherpa-data-grid id="fullest"></sherpa-data-grid>
             </sherpa-container>
           `,

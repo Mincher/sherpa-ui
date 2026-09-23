@@ -74,7 +74,7 @@ props:
     type: string
     kind: style
     description: >-
-      with data-rows AND several body children: only the child marked data-grow takes the spare
+      with data-row-span AND several body children: only the child marked data-grow takes the spare
       height; the rest keep their natural size. A records card is a toolbar, a filter bar, the GRID,
       then the pager — the grid grows, the pager stays put. Not needed for the common one-child
       card. No data-state attribute: slotting empty / error shows that overlay, via the base class
@@ -96,7 +96,7 @@ props:
       - lg
     description: none | sm | base  | lg
   - $type: prop
-    name: data-rows
+    name: data-row-span
     type: enum
     kind: style
     values:
@@ -138,23 +138,35 @@ states:
     name: lg
     selector: ":host([data-padding-inline=\"lg\"])"
   - $type: state
-    name: rows
-    selector: ":host([data-rows])"
+    name: "1"
+    selector: ":host([data-row-span=\"1\"])"
+  - $type: state
+    name: "2"
+    selector: ":host([data-row-span=\"2\"])"
+  - $type: state
+    name: "3"
+    selector: ":host([data-row-span=\"3\"])"
   - $type: state
     name: "4"
-    selector: ":host([data-rows=\"4\"])"
+    selector: ":host([data-row-span=\"4\"])"
+  - $type: state
+    name: "5"
+    selector: ":host([data-row-span=\"5\"])"
   - $type: state
     name: "6"
-    selector: ":host([data-rows=\"6\"])"
+    selector: ":host([data-row-span=\"6\"])"
   - $type: state
     name: "8"
-    selector: ":host([data-rows=\"8\"])"
+    selector: ":host([data-row-span=\"8\"])"
   - $type: state
     name: "10"
-    selector: ":host([data-rows=\"10\"])"
+    selector: ":host([data-row-span=\"10\"])"
   - $type: state
     name: "12"
-    selector: ":host([data-rows=\"12\"])"
+    selector: ":host([data-row-span=\"12\"])"
+  - $type: state
+    name: row-span
+    selector: ":host([data-row-span])"
   - $type: state
     name: has-header
     selector: ":host([data-has-header])"

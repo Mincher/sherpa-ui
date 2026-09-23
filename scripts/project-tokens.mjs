@@ -1124,41 +1124,61 @@ ${darkBlocks(layers.theme.rootDark)}
 // The Layout collection's modes ARE the breakpoints, and a mode pin has no meaning
 // in CSS on its own — a viewport mode IS a media query. Emitted as
 // `@media (min-width: …)` in ascending order.
-/* The named container widths. `parts` is how many sit side by side at the
-   widest; `track` is the narrowest column count that width may shrink to. The
-   same two numbers the reading rule below uses. */
-const WIDTH_CLASSES = [
-  { name: 'large', parts: 2, track: 6 },
-  { name: 'medium', parts: 3, track: 3 },
-  { name: 'small', parts: 4, track: 3 },
-  { name: 'xsmall', parts: 4, track: 1 },
-];
+/* The named column spans, stated per breakpoint.
 
-/* A STRANDED CONTAINER FILLS ITS ROW.
+   A view says what a card IS — full, reading, large, medium, small, xsmall —
+   and each breakpoint decides how many columns that takes. Stated outright
+   rather than derived: `reading` is two thirds, which no cols/N can express,
+   and an explicit table is the thing a reader can check against the design.
 
-   Inside one breakpoint `across` is a constant, so `:nth-child(An + 1 of S)`
-   means "starts a row" — and `of S` counts only items of the SAME width, which
-   `sibling-count()` cannot do. Last of its kind AND starting a row means it
-   sits alone, so it takes what is left.
+     name      mobile(4)   tablet(8)   desktop/wide(12)
+     full        4 (1-up)    8 (1-up)    12 (1-up)
+     reading     4 (1-up)    8 (1-up)     8 (a measure limit, not a share)
+     large       4 (1-up)    8 (1-up)     6 (2-up)
+     medium      4 (1-up)    4 (2-up)     4 (3-up)
+     small       4 (1-up)    4 (2-up)     3 (4-up)
+     xsmall      1 (4-up)    2 (4-up)     3 (4-up)
 
-   `:not(:nth-child(1 of S))` keeps a LONE container at its declared width: the
-   first of its kind has no run-mates to be stranded after, so a single chart
-   stays a third rather than filling the row.
+   Tablet reads as two columns and mobile as one — except xsmall, which holds
+   4-up all the way down for a row of metric tiles that CONDENSE rather than
+   wrap (TRAP T-a-metric-condenses-by-wrapping).
+   TRAP T-a-container-width-is-named-not-counted */
+const COL_SPANS = {
+  full: { mobile: 4, tablet: 8, desktop: 12, wide: 12 },
+  reading: { mobile: 4, tablet: 8, desktop: 8, wide: 8 },
+  large: { mobile: 4, tablet: 8, desktop: 6, wide: 6 },
+  medium: { mobile: 4, tablet: 4, desktop: 4, wide: 4 },
+  small: { mobile: 4, tablet: 4, desktop: 3, wide: 3 },
+  xsmall: { mobile: 1, tablet: 2, desktop: 3, wide: 3 },
+};
 
-   RANGE-SCOPED, not min-width: a `min-width` block stays true at every wider
+/* One band's column rules: the span each name takes, and the stranded-row fill.
+
+   A STRANDED CONTAINER FILLS ITS ROW. Inside one breakpoint `across` is a
+   constant, so `:nth-child(An + 1 of S)` means "starts a row" — and `of S`
+   counts only items of the SAME name, which `sibling-count()` cannot do. Last
+   of its kind AND starting a row means it sits alone, so it takes what is left.
+   `:not(:nth-child(1 of S))` keeps a LONE container at its declared width.
+
+   RANGE-SCOPED, not min-width: a min-width block stays true at every wider
    size, so the tablet rule fired at desktop and stretched a third-width chart
    to the full row. TRAP T-a-stranded-container-fills-its-row */
-const strandedBlock = (cols, min, max) => {
-  const rules = WIDTH_CLASSES.map(({ name, parts, track }) => {
-    const across = Math.max(1, Math.min(parts, Math.floor(cols / track)));
+const colBlock = (mode, cols, min, max) => {
+  const rules = [];
+  for (const [name, spans] of Object.entries(COL_SPANS)) {
+    const span = spans[mode];
+    if (!span) continue;
+    const sel = "[data-col-span='" + name + "']";
+    rules.push('    .sherpa-grid > ' + sel
+      + ' { grid-column: span ' + span + '; }');
+    const across = Math.floor(cols / span);
     // One per row already fills it — nothing to rescue.
-    if (across < 2) return null;
-    const sel = "[data-width='" + name + "']";
-    return '    .sherpa-grid > ' + sel + ':nth-last-child(1 of ' + sel + ')'
+    if (across < 2) continue;
+    rules.push('    .sherpa-grid > ' + sel + ':nth-last-child(1 of ' + sel + ')'
       + ':nth-child(' + across + 'n + 1 of ' + sel + ')'
       + ':not(:nth-child(1 of ' + sel + '))'
-      + ' { grid-column: 1 / -1; }';
-  }).filter(Boolean);
+      + ' { grid-column: 1 / -1; }');
+  }
   if (!rules.length) return null;
   const query = max == null
     ? '(min-width: ' + min + 'px)'
@@ -1193,25 +1213,38 @@ const layoutBreakpointBlocks = (() => {
   }).filter(Boolean);
 })();
 
-/* The stranded-row rules, one RANGE-SCOPED block per breakpoint. Separate from
-   the :root blocks above, which cascade on purpose — these must not. */
-const strandedBlocks = (() => {
+/* The column rules, one RANGE-SCOPED block per breakpoint. Separate from the
+   :root blocks above, which cascade on purpose — these must not. */
+const colBlocks = (() => {
   const leaves = [...walkLeaves(doc.layout ?? {}, ['layout'])];
   const bp = leaves.find((l) => l.rawPath === 'layout/breakpoint');
   const cols = leaves.find((l) => l.rawPath === 'layout/layout-grid/columns');
   if (!bp || !cols) return [];
 
-  const bands = Object.entries(bp.modes)
+  /* `modes` holds every mode BUT the primary one, whose value sits in `value`.
+     Reading modes alone silently dropped 'mobile' — every span rule was then
+     missing below the tablet breakpoint. */
+  const primary = bp.primaryMode ?? cols.primaryMode;
+  const all = { ...bp.modes };
+  if (primary && !(primary in all)) all[primary] = bp.value;
+
+  const bands = Object.entries(all)
     .map(([mode, value]) => ({
       mode,
       min: Number(String(toCss(value, 'dimension') ?? '').replace('px', '')),
-      cols: Number(String(cols.modes?.[mode] ?? cols.value ?? '').replace('px', '')),
+      cols: Number(String(
+        (mode === primary ? cols.value : cols.modes?.[mode]) ?? cols.value ?? '',
+      ).replace('px', '')),
     }))
     .filter((b) => Number.isFinite(b.min) && Number.isFinite(b.cols) && b.cols > 0)
     .sort((a, b) => a.min - b.min);
 
+  /* The NARROWEST band starts at 0, not at its own breakpoint: 'mobile' is
+     375px in Figma, which describes a phone artboard, not a floor below which
+     a layout stops existing. Emitted at its own value, every span rule was
+     missing under 375 — and, because the bands are ranged, under 768 too. */
   return bands
-    .map((b, i) => strandedBlock(b.cols, b.min, bands[i + 1]?.min))
+    .map((b, i) => colBlock(b.mode, b.cols, i === 0 ? 0 : b.min, bands[i + 1]?.min))
     .filter(Boolean);
 })();
 
@@ -1250,65 +1283,51 @@ const gridUtilityBlock = `  /* Layout grid — the track system views place thei
     padding: var(--sherpa-layout-grid-padding, 16px);
     box-sizing: border-box;
   }
-  /* Span helpers — a child claims N of the current breakpoint's columns.
-
-     A SPAN SHARES ITS ROW. At a narrower breakpoint a span that no longer fits
-     beside another of its kind grows to take the space rather than stranding a
-     gap: on 6 columns a span-4 chart used 547 of 828px, three rows running.
-
-     across is how many fit side by side (at least one); fit shares the row
-     between them. So span-4 is 4 of 12, 6 of 6, and 3 of 3 — and a small span
-     is untouched. round(down, …) stands in for mod(), which Chromium does
-     not have; sherpa-grouping.css does the same.
-     TRAP T-a-span-shares-its-row */
-  .sherpa-grid > [data-span] {
-    --_across: max(1, round(down, calc(var(--sherpa-layout-grid-columns, 4) / var(--_span, 1)), 1));
-    grid-column: span round(down, calc(var(--sherpa-layout-grid-columns, 4) / var(--_across)), 1);
+  /* Column and row COUNTS — override the breakpoint's own track counts. A
+     column count also re-scales every named span, since a span is stated
+     against the 12-column system. */
+  .sherpa-grid[data-col-count] {
+    grid-template-columns: repeat(var(--_col-count), minmax(0, 1fr));
   }
-  .sherpa-grid > [data-span='1']  { --_span: 1; }
-  .sherpa-grid > [data-span='2']  { --_span: 2; }
-  .sherpa-grid > [data-span='3']  { --_span: 3; }
-  .sherpa-grid > [data-span='4']  { --_span: 4; }
-  .sherpa-grid > [data-span='6']  { --_span: 6; }
-  .sherpa-grid > [data-span='8']  { --_span: 8; }
-  .sherpa-grid > [data-span='12'] { --_span: 12; }
-  .sherpa-grid > [data-span='full'] { grid-column: 1 / -1; }
-  /* ── Container widths — full | large | medium | small | xsmall ───────────
-     A NAMED width, not a column count, so a view says what a card IS and the
-     grid decides what that means at each breakpoint:
+  .sherpa-grid[data-col-count='1'] { --_col-count: 1; }
+  .sherpa-grid[data-col-count='2'] { --_col-count: 2; }
+  .sherpa-grid[data-col-count='3'] { --_col-count: 3; }
+  .sherpa-grid[data-col-count='4'] { --_col-count: 4; }
+  .sherpa-grid[data-col-count='5'] { --_col-count: 5; }
+  .sherpa-grid[data-col-count='6'] { --_col-count: 6; }
+  .sherpa-grid[data-col-count='8'] { --_col-count: 8; }
+  .sherpa-grid[data-col-count='10'] { --_col-count: 10; }
+  .sherpa-grid[data-col-count='12'] { --_col-count: 12; }
+  .sherpa-grid[data-row-count] {
+    grid-template-rows: repeat(var(--_row-count), minmax(0, 1fr));
+  }
+  .sherpa-grid[data-row-count='1'] { --_row-count: 1; }
+  .sherpa-grid[data-row-count='2'] { --_row-count: 2; }
+  .sherpa-grid[data-row-count='3'] { --_row-count: 3; }
+  .sherpa-grid[data-row-count='4'] { --_row-count: 4; }
+  .sherpa-grid[data-row-count='5'] { --_row-count: 5; }
+  .sherpa-grid[data-row-count='6'] { --_row-count: 6; }
+  .sherpa-grid[data-row-count='8'] { --_row-count: 8; }
+  .sherpa-grid[data-row-count='10'] { --_row-count: 10; }
+  .sherpa-grid[data-row-count='12'] { --_row-count: 12; }
 
-       class    12 cols   8 cols   4 cols
-       full     12        8        4
-       large     6        8        4
-       medium    4        4        4
-       small     3        4        4
-       xsmall    3        2        1
-
-     Tablet reads as two columns and mobile as one — except xsmall, which stays
-     a quarter everywhere, for a row of metric tiles that condense rather than
-     wrap. COMPUTED FROM THE COLUMN COUNT, so a change in Figma needs no CSS:
-
-       across = clamp(1, floor(cols / --_w-min), --_w-parts)
-       span   = floor(cols / across)
-
-     --_w-parts is how many sit side by side at the widest, --_w-min the
-     narrowest track that width may shrink to. A class stops dividing once a
-     part would fall below its minimum, which is what collapses medium and
-     small to half at tablet and both to full at mobile. xsmall sets a minimum
-     of 1, so it never stops dividing.
-     round(down, …) stands in for mod(), which Chromium does not have.
+  /* Column spans — a child says what it IS; the breakpoint blocks above turn
+     that into a span. The table and the reasoning live with COL_SPANS in
+     scripts/project-tokens.mjs.
      TRAP T-a-container-width-is-named-not-counted */
-  .sherpa-grid > [data-width] {
-    --_across: clamp(1, round(down, calc(var(--sherpa-layout-grid-columns, 4)
-                                         / var(--_w-min, 1)), 1), var(--_w-parts, 1));
-    grid-column: span round(down, calc(var(--sherpa-layout-grid-columns, 4)
-                                       / var(--_across)), 1);
-  }
-  .sherpa-grid > [data-width='full']   { --_w-parts: 1; --_w-min: 999; }
-  .sherpa-grid > [data-width='large']  { --_w-parts: 2; --_w-min: 6; }
-  .sherpa-grid > [data-width='medium'] { --_w-parts: 3; --_w-min: 3; }
-  .sherpa-grid > [data-width='small']  { --_w-parts: 4; --_w-min: 3; }
-  .sherpa-grid > [data-width='xsmall'] { --_w-parts: 4; --_w-min: 1; }
+
+  /* Row spans — a child N grid rows tall. Only meaningful where the rows HAVE
+     a height, which is data-rows="fixed"; in the default mode rows are auto
+     and a span collapses to the content. */
+  .sherpa-grid > [data-row-span='1']  { grid-row: span 1; }
+  .sherpa-grid > [data-row-span='2']  { grid-row: span 2; }
+  .sherpa-grid > [data-row-span='3']  { grid-row: span 3; }
+  .sherpa-grid > [data-row-span='4']  { grid-row: span 4; }
+  .sherpa-grid > [data-row-span='5']  { grid-row: span 5; }
+  .sherpa-grid > [data-row-span='6']  { grid-row: span 6; }
+  .sherpa-grid > [data-row-span='8']  { grid-row: span 8; }
+  .sherpa-grid > [data-row-span='10'] { grid-row: span 10; }
+  .sherpa-grid > [data-row-span='12'] { grid-row: span 12; }
 
   /* ── Row sizing — two variants, and the default is neither ───────────────
      No attribute: rows size to their CONTENT and the page scrolls, which is
@@ -1366,7 +1385,7 @@ const layoutLayer = `@layer layout {
 ${rootBlock(layers.layout.root)}
 ${layoutBreakpointBlocks.length ? '\n' + layoutBreakpointBlocks.join('\n\n') + '\n' : ''}
 ${gridUtilityBlock}
-${strandedBlocks.length ? '\n' + strandedBlocks.join('\n\n') + '\n' : ''}
+${colBlocks.length ? '\n' + colBlocks.join('\n\n') + '\n' : ''}
   /* View frame utility — the light-DOM app shell renderView() wraps a view in. */
 ${viewFrameBlock}
 }`;

@@ -5,7 +5,7 @@
   <div class="sherpa-grid">
 
     <!-- ── Profile ─────────────────────────────────────────────── -->
-    <sherpa-container data-span="8">
+    <sherpa-container data-col-span="reading">
       <sherpa-container-header slot="header"
                                data-heading="Profile"
                                data-description="How you appear to your team."></sherpa-container-header>
@@ -35,7 +35,7 @@
     </sherpa-container>
 
     <!-- ── Preferences ─────────────────────────────────────────── -->
-    <sherpa-container data-span="8">
+    <sherpa-container data-col-span="reading">
       <sherpa-container-header slot="header"
                                data-heading="Preferences"
                                data-description="Control notifications and appearance."></sherpa-container-header>
@@ -73,7 +73,7 @@
     </sherpa-container>
 
     <!-- ── Plan ────────────────────────────────────────────────── -->
-    <sherpa-container data-span="8">
+    <sherpa-container data-col-span="reading">
       <sherpa-container-header slot="header"
                                data-heading="Plan features"
                                data-description="Turn optional capabilities on or off."></sherpa-container-header>
@@ -100,12 +100,12 @@
     </sherpa-container>
 
     <!-- ── Note + actions ──────────────────────────────────────── -->
-    <sherpa-callout data-span="8" data-status="info" data-heading="Heads up">
+    <sherpa-callout data-col-span="reading" data-status="info" data-heading="Heads up">
       Changes apply immediately for you, and roll out to your team within a few minutes.
     </sherpa-callout>
 
     <!-- Action bar: only the primary action takes data-look="saturated". -->
-    <sherpa-container-footer data-span="8" data-align="end">
+    <sherpa-container-footer data-col-span="reading" data-align="end">
       <sherpa-button type="button" id="cancel-btn">Cancel</sherpa-button>
       <sherpa-button type="submit" id="save-btn" data-look="saturated">Save changes</sherpa-button>
     </sherpa-container-footer>

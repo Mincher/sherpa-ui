@@ -60,14 +60,14 @@ export const DASHBOARD_VIEWS = {
     content: `
       <div class="sherpa-grid">
         <!-- A histogram, not a donut: storage is continuous. -->
-        <sherpa-container data-span="12" data-rows="5">
+        <sherpa-container data-col-span="full" data-row-span="5">
           <sherpa-container-header slot="header"
             data-heading="Storage used, by band"></sherpa-container-header>
           <sherpa-barchart id="hist"
             data-label="Devices per storage band"></sherpa-barchart>
         </sherpa-container>
 
-        <sherpa-container data-span="12" data-rows="8">
+        <sherpa-container data-col-span="full" data-row-span="8">
           <sherpa-container-header slot="header"
             data-heading="Fullest devices"></sherpa-container-header>
           <sherpa-data-grid id="fullest"></sherpa-data-grid>

@@ -65,23 +65,38 @@
 :host([data-padding-inline="md"]) { --_pad-inline: var(--sherpa-theme-padding-md, 8px); }
 :host([data-padding-inline="lg"]) { --_pad-inline: var(--sherpa-theme-padding-lg, 16px); }
 
-/* ── data-rows="N" — the card is N layout-grid rows tall: N row heights plus
+/* ── data-row-span="N" — the card is N layout-grid rows tall: N row heights plus
    the (N-1) gutters between them, so it lines up with the grid it sits on. ── */
-:host([data-rows]) {
+:host([data-row-span="1"]),
+:host([data-row-span="2"]),
+:host([data-row-span="3"]),
+:host([data-row-span="4"]),
+:host([data-row-span="5"]),
+:host([data-row-span="6"]),
+:host([data-row-span="8"]),
+:host([data-row-span="10"]),
+:host([data-row-span="12"]) {
   block-size: calc(
-    var(--_rows, 6) * var(--sherpa-layout-grid-row-height, 64px)
-    + (var(--_rows, 6) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)
+    var(--_rows) * var(--sherpa-layout-grid-row-height, 64px)
+    + (var(--_rows) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)
   );
 }
-:host([data-rows="4"]) { --_rows: 4; }
-:host([data-rows="6"]) { --_rows: 6; }
-:host([data-rows="8"]) { --_rows: 8; }
-:host([data-rows="10"]) { --_rows: 10; }
-:host([data-rows="12"]) { --_rows: 12; }
+/* KEYED BY VALUE, and the rule above lists the same set, so an unrecognised
+   value does NOTHING rather than silently meaning 6.
+   TRAP T-a-row-span-is-keyed-by-value */
+:host([data-row-span="1"]) { --_rows: 1; }
+:host([data-row-span="2"]) { --_rows: 2; }
+:host([data-row-span="3"]) { --_rows: 3; }
+:host([data-row-span="4"]) { --_rows: 4; }
+:host([data-row-span="5"]) { --_rows: 5; }
+:host([data-row-span="6"]) { --_rows: 6; }
+:host([data-row-span="8"]) { --_rows: 8; }
+:host([data-row-span="10"]) { --_rows: 10; }
+:host([data-row-span="12"]) { --_rows: 12; }
 
 /* `min-block-size: 0` matters: a flex item's default floor is its min-content
    size, so a tall grid or chart would refuse to shrink and overflow the card. */
-:host([data-rows]) .body {
+:host([data-row-span]) .body {
   display: flex;
   flex-direction: column;
   min-block-size: 0;
@@ -89,13 +104,13 @@
 }
 /* Everything in the body grows by default. Not `:only-child`: it counts every
    light-DOM sibling, blind to slots, so a header sibling defeats it. */
-:host([data-rows]) .body ::slotted(*) {
+:host([data-row-span]) .body ::slotted(*) {
   min-block-size: 0;
   flex: 1 1 auto;
 }
 /* With `data-fill`, only the `data-grow` child grows. No `:has()`: `:host(:has())`
    is dropped silently, and chained `:host:has()` matches every host. */
-:host([data-rows][data-fill]) .body ::slotted(*:not([data-grow])) {
+:host([data-row-span][data-fill]) .body ::slotted(*:not([data-grow])) {
   flex: 0 0 auto;
 }
 

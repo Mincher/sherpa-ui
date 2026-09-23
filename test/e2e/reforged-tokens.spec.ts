@@ -102,7 +102,7 @@ test('the layout grid projects a unitless column COUNT that responds to width', 
       const box = document.createElement('div');
       box.className = 'sherpa-grid';
       const child = document.createElement('div');
-      child.setAttribute('data-span', '6');
+      child.setAttribute('data-col-span', 'large');
       box.appendChild(child);
       document.getElementById('root')!.replaceChildren(box);
       const cs = getComputedStyle(box);

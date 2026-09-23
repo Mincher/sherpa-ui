@@ -1,11 +1,11 @@
 <!-- Content-only markup for the "chat" view, injected into the app-shell's
      content slot by the SPA router. views/chat.js wires the composer/thread.
      The router sets the shell's data-no-header here — chat wants full height. -->
-<!-- data-rows="12" gives the card a real height in grid rows, so the thread
+<!-- data-row-span="12" gives the card a real height in grid rows, so the thread
      scrolls inside it instead of the page scrolling. The composer sits in the
      card's own footer region, which already carries the divider and padding.
      data-padding="none": each message carries its own spacing. -->
-<sherpa-container data-rows="12" data-padding="none">
+<sherpa-container data-row-span="12" data-padding="none">
   <!-- data-scroll keeps overflow in the card; data-measure caps line length. -->
   <sherpa-stack id="thread" data-gap="xl" data-grow data-scroll data-measure
                 role="log" aria-live="polite" aria-label="Conversation">

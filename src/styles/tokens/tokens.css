@@ -1165,65 +1165,51 @@
     padding: var(--sherpa-layout-grid-padding, 16px);
     box-sizing: border-box;
   }
-  /* Span helpers — a child claims N of the current breakpoint's columns.
-
-     A SPAN SHARES ITS ROW. At a narrower breakpoint a span that no longer fits
-     beside another of its kind grows to take the space rather than stranding a
-     gap: on 6 columns a span-4 chart used 547 of 828px, three rows running.
-
-     across is how many fit side by side (at least one); fit shares the row
-     between them. So span-4 is 4 of 12, 6 of 6, and 3 of 3 — and a small span
-     is untouched. round(down, …) stands in for mod(), which Chromium does
-     not have; sherpa-grouping.css does the same.
-     TRAP T-a-span-shares-its-row */
-  .sherpa-grid > [data-span] {
-    --_across: max(1, round(down, calc(var(--sherpa-layout-grid-columns, 4) / var(--_span, 1)), 1));
-    grid-column: span round(down, calc(var(--sherpa-layout-grid-columns, 4) / var(--_across)), 1);
+  /* Column and row COUNTS — override the breakpoint's own track counts. A
+     column count also re-scales every named span, since a span is stated
+     against the 12-column system. */
+  .sherpa-grid[data-col-count] {
+    grid-template-columns: repeat(var(--_col-count), minmax(0, 1fr));
   }
-  .sherpa-grid > [data-span='1']  { --_span: 1; }
-  .sherpa-grid > [data-span='2']  { --_span: 2; }
-  .sherpa-grid > [data-span='3']  { --_span: 3; }
-  .sherpa-grid > [data-span='4']  { --_span: 4; }
-  .sherpa-grid > [data-span='6']  { --_span: 6; }
-  .sherpa-grid > [data-span='8']  { --_span: 8; }
-  .sherpa-grid > [data-span='12'] { --_span: 12; }
-  .sherpa-grid > [data-span='full'] { grid-column: 1 / -1; }
-  /* ── Container widths — full | large | medium | small | xsmall ───────────
-     A NAMED width, not a column count, so a view says what a card IS and the
-     grid decides what that means at each breakpoint:
+  .sherpa-grid[data-col-count='1'] { --_col-count: 1; }
+  .sherpa-grid[data-col-count='2'] { --_col-count: 2; }
+  .sherpa-grid[data-col-count='3'] { --_col-count: 3; }
+  .sherpa-grid[data-col-count='4'] { --_col-count: 4; }
+  .sherpa-grid[data-col-count='5'] { --_col-count: 5; }
+  .sherpa-grid[data-col-count='6'] { --_col-count: 6; }
+  .sherpa-grid[data-col-count='8'] { --_col-count: 8; }
+  .sherpa-grid[data-col-count='10'] { --_col-count: 10; }
+  .sherpa-grid[data-col-count='12'] { --_col-count: 12; }
+  .sherpa-grid[data-row-count] {
+    grid-template-rows: repeat(var(--_row-count), minmax(0, 1fr));
+  }
+  .sherpa-grid[data-row-count='1'] { --_row-count: 1; }
+  .sherpa-grid[data-row-count='2'] { --_row-count: 2; }
+  .sherpa-grid[data-row-count='3'] { --_row-count: 3; }
+  .sherpa-grid[data-row-count='4'] { --_row-count: 4; }
+  .sherpa-grid[data-row-count='5'] { --_row-count: 5; }
+  .sherpa-grid[data-row-count='6'] { --_row-count: 6; }
+  .sherpa-grid[data-row-count='8'] { --_row-count: 8; }
+  .sherpa-grid[data-row-count='10'] { --_row-count: 10; }
+  .sherpa-grid[data-row-count='12'] { --_row-count: 12; }
 
-       class    12 cols   8 cols   4 cols
-       full     12        8        4
-       large     6        8        4
-       medium    4        4        4
-       small     3        4        4
-       xsmall    3        2        1
-
-     Tablet reads as two columns and mobile as one — except xsmall, which stays
-     a quarter everywhere, for a row of metric tiles that condense rather than
-     wrap. COMPUTED FROM THE COLUMN COUNT, so a change in Figma needs no CSS:
-
-       across = clamp(1, floor(cols / --_w-min), --_w-parts)
-       span   = floor(cols / across)
-
-     --_w-parts is how many sit side by side at the widest, --_w-min the
-     narrowest track that width may shrink to. A class stops dividing once a
-     part would fall below its minimum, which is what collapses medium and
-     small to half at tablet and both to full at mobile. xsmall sets a minimum
-     of 1, so it never stops dividing.
-     round(down, …) stands in for mod(), which Chromium does not have.
+  /* Column spans — a child says what it IS; the breakpoint blocks above turn
+     that into a span. The table and the reasoning live with COL_SPANS in
+     scripts/project-tokens.mjs.
      TRAP T-a-container-width-is-named-not-counted */
-  .sherpa-grid > [data-width] {
-    --_across: clamp(1, round(down, calc(var(--sherpa-layout-grid-columns, 4)
-                                         / var(--_w-min, 1)), 1), var(--_w-parts, 1));
-    grid-column: span round(down, calc(var(--sherpa-layout-grid-columns, 4)
-                                       / var(--_across)), 1);
-  }
-  .sherpa-grid > [data-width='full']   { --_w-parts: 1; --_w-min: 999; }
-  .sherpa-grid > [data-width='large']  { --_w-parts: 2; --_w-min: 6; }
-  .sherpa-grid > [data-width='medium'] { --_w-parts: 3; --_w-min: 3; }
-  .sherpa-grid > [data-width='small']  { --_w-parts: 4; --_w-min: 3; }
-  .sherpa-grid > [data-width='xsmall'] { --_w-parts: 4; --_w-min: 1; }
+
+  /* Row spans — a child N grid rows tall. Only meaningful where the rows HAVE
+     a height, which is data-rows="fixed"; in the default mode rows are auto
+     and a span collapses to the content. */
+  .sherpa-grid > [data-row-span='1']  { grid-row: span 1; }
+  .sherpa-grid > [data-row-span='2']  { grid-row: span 2; }
+  .sherpa-grid > [data-row-span='3']  { grid-row: span 3; }
+  .sherpa-grid > [data-row-span='4']  { grid-row: span 4; }
+  .sherpa-grid > [data-row-span='5']  { grid-row: span 5; }
+  .sherpa-grid > [data-row-span='6']  { grid-row: span 6; }
+  .sherpa-grid > [data-row-span='8']  { grid-row: span 8; }
+  .sherpa-grid > [data-row-span='10'] { grid-row: span 10; }
+  .sherpa-grid > [data-row-span='12'] { grid-row: span 12; }
 
   /* ── Row sizing — two variants, and the default is neither ───────────────
      No attribute: rows size to their CONTENT and the page scrolls, which is
@@ -1277,24 +1263,52 @@
     }
   }
 
+  @media (min-width: 0px) and (max-width: 767px) {
+    .sherpa-grid > [data-col-span='full'] { grid-column: span 4; }
+    .sherpa-grid > [data-col-span='reading'] { grid-column: span 4; }
+    .sherpa-grid > [data-col-span='large'] { grid-column: span 4; }
+    .sherpa-grid > [data-col-span='medium'] { grid-column: span 4; }
+    .sherpa-grid > [data-col-span='small'] { grid-column: span 4; }
+    .sherpa-grid > [data-col-span='xsmall'] { grid-column: span 1; }
+    .sherpa-grid > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])) { grid-column: 1 / -1; }
+  }
+
   @media (min-width: 768px) and (max-width: 1279px) {
-    .sherpa-grid > [data-width='medium']:nth-last-child(1 of [data-width='medium']):nth-child(2n + 1 of [data-width='medium']):not(:nth-child(1 of [data-width='medium'])) { grid-column: 1 / -1; }
-    .sherpa-grid > [data-width='small']:nth-last-child(1 of [data-width='small']):nth-child(2n + 1 of [data-width='small']):not(:nth-child(1 of [data-width='small'])) { grid-column: 1 / -1; }
-    .sherpa-grid > [data-width='xsmall']:nth-last-child(1 of [data-width='xsmall']):nth-child(4n + 1 of [data-width='xsmall']):not(:nth-child(1 of [data-width='xsmall'])) { grid-column: 1 / -1; }
+    .sherpa-grid > [data-col-span='full'] { grid-column: span 8; }
+    .sherpa-grid > [data-col-span='reading'] { grid-column: span 8; }
+    .sherpa-grid > [data-col-span='large'] { grid-column: span 8; }
+    .sherpa-grid > [data-col-span='medium'] { grid-column: span 4; }
+    .sherpa-grid > [data-col-span='medium']:nth-last-child(1 of [data-col-span='medium']):nth-child(2n + 1 of [data-col-span='medium']):not(:nth-child(1 of [data-col-span='medium'])) { grid-column: 1 / -1; }
+    .sherpa-grid > [data-col-span='small'] { grid-column: span 4; }
+    .sherpa-grid > [data-col-span='small']:nth-last-child(1 of [data-col-span='small']):nth-child(2n + 1 of [data-col-span='small']):not(:nth-child(1 of [data-col-span='small'])) { grid-column: 1 / -1; }
+    .sherpa-grid > [data-col-span='xsmall'] { grid-column: span 2; }
+    .sherpa-grid > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])) { grid-column: 1 / -1; }
   }
 
   @media (min-width: 1280px) and (max-width: 1919px) {
-    .sherpa-grid > [data-width='large']:nth-last-child(1 of [data-width='large']):nth-child(2n + 1 of [data-width='large']):not(:nth-child(1 of [data-width='large'])) { grid-column: 1 / -1; }
-    .sherpa-grid > [data-width='medium']:nth-last-child(1 of [data-width='medium']):nth-child(3n + 1 of [data-width='medium']):not(:nth-child(1 of [data-width='medium'])) { grid-column: 1 / -1; }
-    .sherpa-grid > [data-width='small']:nth-last-child(1 of [data-width='small']):nth-child(4n + 1 of [data-width='small']):not(:nth-child(1 of [data-width='small'])) { grid-column: 1 / -1; }
-    .sherpa-grid > [data-width='xsmall']:nth-last-child(1 of [data-width='xsmall']):nth-child(4n + 1 of [data-width='xsmall']):not(:nth-child(1 of [data-width='xsmall'])) { grid-column: 1 / -1; }
+    .sherpa-grid > [data-col-span='full'] { grid-column: span 12; }
+    .sherpa-grid > [data-col-span='reading'] { grid-column: span 8; }
+    .sherpa-grid > [data-col-span='large'] { grid-column: span 6; }
+    .sherpa-grid > [data-col-span='large']:nth-last-child(1 of [data-col-span='large']):nth-child(2n + 1 of [data-col-span='large']):not(:nth-child(1 of [data-col-span='large'])) { grid-column: 1 / -1; }
+    .sherpa-grid > [data-col-span='medium'] { grid-column: span 4; }
+    .sherpa-grid > [data-col-span='medium']:nth-last-child(1 of [data-col-span='medium']):nth-child(3n + 1 of [data-col-span='medium']):not(:nth-child(1 of [data-col-span='medium'])) { grid-column: 1 / -1; }
+    .sherpa-grid > [data-col-span='small'] { grid-column: span 3; }
+    .sherpa-grid > [data-col-span='small']:nth-last-child(1 of [data-col-span='small']):nth-child(4n + 1 of [data-col-span='small']):not(:nth-child(1 of [data-col-span='small'])) { grid-column: 1 / -1; }
+    .sherpa-grid > [data-col-span='xsmall'] { grid-column: span 3; }
+    .sherpa-grid > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])) { grid-column: 1 / -1; }
   }
 
   @media (min-width: 1920px) {
-    .sherpa-grid > [data-width='large']:nth-last-child(1 of [data-width='large']):nth-child(2n + 1 of [data-width='large']):not(:nth-child(1 of [data-width='large'])) { grid-column: 1 / -1; }
-    .sherpa-grid > [data-width='medium']:nth-last-child(1 of [data-width='medium']):nth-child(3n + 1 of [data-width='medium']):not(:nth-child(1 of [data-width='medium'])) { grid-column: 1 / -1; }
-    .sherpa-grid > [data-width='small']:nth-last-child(1 of [data-width='small']):nth-child(4n + 1 of [data-width='small']):not(:nth-child(1 of [data-width='small'])) { grid-column: 1 / -1; }
-    .sherpa-grid > [data-width='xsmall']:nth-last-child(1 of [data-width='xsmall']):nth-child(4n + 1 of [data-width='xsmall']):not(:nth-child(1 of [data-width='xsmall'])) { grid-column: 1 / -1; }
+    .sherpa-grid > [data-col-span='full'] { grid-column: span 12; }
+    .sherpa-grid > [data-col-span='reading'] { grid-column: span 8; }
+    .sherpa-grid > [data-col-span='large'] { grid-column: span 6; }
+    .sherpa-grid > [data-col-span='large']:nth-last-child(1 of [data-col-span='large']):nth-child(2n + 1 of [data-col-span='large']):not(:nth-child(1 of [data-col-span='large'])) { grid-column: 1 / -1; }
+    .sherpa-grid > [data-col-span='medium'] { grid-column: span 4; }
+    .sherpa-grid > [data-col-span='medium']:nth-last-child(1 of [data-col-span='medium']):nth-child(3n + 1 of [data-col-span='medium']):not(:nth-child(1 of [data-col-span='medium'])) { grid-column: 1 / -1; }
+    .sherpa-grid > [data-col-span='small'] { grid-column: span 3; }
+    .sherpa-grid > [data-col-span='small']:nth-last-child(1 of [data-col-span='small']):nth-child(4n + 1 of [data-col-span='small']):not(:nth-child(1 of [data-col-span='small'])) { grid-column: 1 / -1; }
+    .sherpa-grid > [data-col-span='xsmall'] { grid-column: span 3; }
+    .sherpa-grid > [data-col-span='xsmall']:nth-last-child(1 of [data-col-span='xsmall']):nth-child(4n + 1 of [data-col-span='xsmall']):not(:nth-child(1 of [data-col-span='xsmall'])) { grid-column: 1 / -1; }
   }
 
   /* View frame utility — the light-DOM app shell renderView() wraps a view in. */

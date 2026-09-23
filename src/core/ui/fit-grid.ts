@@ -18,7 +18,7 @@ function filler(grid: HTMLElement): HTMLElement | null {
  * How many grid ROWS sit above `item`.
  *
  * Counted from laid-out POSITIONS, not from spans: which items share a row is
- * decided during layout, and adding up `data-span` values re-implements that
+ * decided during layout, and adding up `data-col-span` values re-implements that
  * — wrongly, the moment a span wraps.
  */
 function rowsAbove(grid: HTMLElement, item: HTMLElement): number {
@@ -83,7 +83,7 @@ export function bindFitGrid(
     for (const child of grid.children) resize.observe(child);
     schedule();
   });
-  mutations.observe(grid, { childList: true, attributeFilter: ['data-span', 'data-grow'] });
+  mutations.observe(grid, { childList: true, attributeFilter: ['data-col-span', 'data-row-span', 'data-grow'] });
 
   measureFitGrid(grid);
 

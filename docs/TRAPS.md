@@ -7246,37 +7246,6 @@ way up, since −5 is a fifth of the 25 span), the negative bar from 36 down to
 - Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
 - Site: `test/e2e/reforged-barchart.spec.ts`
 
-### T-a-span-shares-its-row
-
-`data-span` is a count of the CURRENT breakpoint's columns, and the counts
-changed in Figma on 2026-09-23: mobile 4 -> 3, tablet 8 -> 6.
-
-A span that no longer fits beside another of its kind used to sit alone with
-the rest of the row empty. Measured on Records at tablet: each span-4 chart
-took 547 of 828px, three rows running — a third of the width wasted each time.
-
-A span now SHARES its row. `across` is how many fit side by side, at least one;
-the span takes `columns / across`, floored:
-
-| span | 3 cols | 6 cols | 12 cols |
-|---|---|---|---|
-| 2 | 3 | 2 | 2 |
-| 3 | 3 | 3 | 3 |
-| 4 | 3 | **6** | 4 |
-| 8 | 3 | 6 | **12** |
-
-So a span-4 chart is 4 of 12 on desktop and the whole row on tablet, and every
-row on Records is now 100% full at every breakpoint.
-
-`round(down, …)` is INTEGER DIVISION here, which is what a span needs.
-(`mod()` and `rem()` do work in all three engines — measured 2026-09-23 — they
-just answer a different question.) `sherpa-grouping.css` does the same. `--_across` and `--_span` are REGISTERED
-in tokens.css, because an unregistered custom property keeps its literal text
-and `round()` never computes. TRAP T-at-property-needs-the-document
-
-- Site: `scripts/project-tokens.mjs`
-- Site: `test/e2e/reforged-fit-grid.spec.ts`
-
 ### T-a-metric-condenses-by-wrapping
 
 A metric tile drops its sparkline at narrow widths, and NO breakpoint says so.
@@ -7299,8 +7268,30 @@ does not help — it measures the wrapped height too.
 Value and delta both ellipse on one line for the same reason: a wrap would push
 the trend out of the card and past the clip.
 
+- Site: `scripts/project-tokens.mjs`
 - Site: `src/components/sherpa-metric/sherpa-metric.css`
 - Site: `test/e2e/reforged-metric.spec.ts`
+
+### T-a-row-span-is-keyed-by-value
+
+`sherpa-container`'s height rule lists its values in the selector. A bare
+`:host([data-row-span])` with a `var(--_rows, 6)` fallback looks equivalent and
+is not: any value the value-rules do not name falls through to the default and
+renders a 6-row card, silently.
+
+Two live bugs came from that, both measured at 464px where 6 rows is 464px:
+
+- `data-rows="5"` in a saved view (`dashboard-views.js`) — 5 was never a
+  declared value, so a card meant to be 384px tall drew 464px for months.
+- `data-rows="fit"` — the GRID's row MODE landed on a container, matched the
+  bare selector, and became a 6-row card. The names no longer collide: the
+  grid keeps `data-rows`, the container took `data-row-span`.
+
+The `props` declaration cannot catch this. `kind: 'style'` means CSS selects on
+it and the base class writes nothing, so nothing validates the value at runtime.
+The selector IS the validation.
+
+- Site: `src/components/sherpa-container/sherpa-container.css`
 
 ### T-a-stranded-container-fills-its-row
 
@@ -7350,41 +7341,31 @@ is more widely supported than `sibling-index()`.
 
 ### T-a-container-width-is-named-not-counted
 
-`data-span` is a COUNT, so a view that uses it has to know the column count of
-every breakpoint. `data-width` is a NAME, and the grid works out the count:
+`data-col-span` takes a NAME, never a number. A view says what a card IS and
+each breakpoint decides how many columns that takes:
 
-| class | 12 cols | 8 cols | 4 cols |
+| name | mobile (4) | tablet (8) | desktop/wide (12) |
 |---|---|---|---|
-| full | 12 | 8 | 4 |
-| large | **6** | 8 | 4 |
-| medium | **4** | **4** | 4 |
-| small | **3** | **4** | 4 |
-| xsmall | **3** | **2** | **1** |
+| full | 4 | 8 | 12 |
+| reading | 4 | 8 | **8** |
+| large | 4 | 8 | **6** |
+| medium | 4 | **4** | **4** |
+| small | 4 | **4** | **3** |
+| xsmall | **1** | **2** | **3** |
 
-Tablet reads as two columns and mobile as one, whatever the real counts are —
-except `xsmall`, which stays a quarter at every breakpoint. That is for a row of
-metric tiles, which CONDENSE rather than wrap: four stay four all the way down.
-TRAP T-a-metric-condenses-by-wrapping
+Tablet reads as two columns and mobile as one — except `xsmall`, which holds
+4-up all the way down for a row of metric tiles that CONDENSE rather than wrap
+(TRAP T-a-metric-condenses-by-wrapping).
 
-Both numbers are COMPUTED from the column count, so a change in Figma needs no
-CSS edit:
+STATED, NOT DERIVED. An earlier version computed the span from the column count
+(`floor(cols / across)`), which reads elegantly and cannot express `reading` —
+two thirds is not `12/N` for any integer N. It also hid the one thing a reader
+needs to check against the design. The table above is the contract; the numbers
+live in `COL_SPANS` in the projector.
 
-```
-across = clamp(1, floor(cols / --_w-min), --_w-parts)
-span   = floor(cols / across)
-```
-
-`--_w-parts` is how many sit side by side at the widest; `--_w-min` is the
-narrowest track that width may shrink to. A class stops dividing once a part
-would fall below its minimum — which is what collapses `medium` and `small` at
-the narrower counts. The two ends of the range are the minimum: `full` sets
-`--_w-min: 999` so it never divides, and `xsmall` sets `1` so it never stops.
-
-Do not put `data-span` and `data-width` on the same item: both write
-`--_across` and the later rule wins.
-
-Measured in Chromium, WebKit and Firefox — the table above is what all three
-lay out.
+A NUMBER was the old API (`data-span="3"`). It is gone because it made the
+author hold the column count in their head, and it silently skipped the
+responsive collapse a name gives.
 
 - Site: `scripts/project-tokens.mjs`
 - Site: `test/e2e/reforged-fit-grid.spec.ts`
