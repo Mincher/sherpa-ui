@@ -795,20 +795,124 @@ it changes what nine components paint, so it wants its own pass.
 
 ---
 
+### 10 — Breadcrumbs: one name, and one fewer hop
+
+`sherpa-breadcrumbs` fires `breadcrumb-select`. `sherpa-app-header` listened for
+it and re-emitted the identical detail as `breadcrumb-click` — the same user
+action under two names, one hop apart.
+
+**Renaming the re-emit would have looped forever.** The header listens for
+`breadcrumb-select` *on itself*, so emitting that name from the handler feeds
+straight back in. Checking `emit()` explained why the re-emit was never needed:
+
+```ts
+this.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true }));
+```
+
+The child's event already bubbles composed, so it crosses the header's shadow
+boundary and reaches the document on its own. The handler was duplicating an
+event that was already arriving.
+
+Removed the listener and the handler; `examples/index.html` now listens for
+`breadcrumb-select`. Verified in the running app rather than by reading: a crumb
+click moved the URL from `?view=records` to `?view=dashboard` with zero page
+errors.
+
+The app-header test kept its real assertion — that the event reaches a listener
+on the header — under the one name.
+
+---
+
+### The suite has load-dependent flakiness, and it will mislead you
+
+Full suite after this work: **1923 passed, 13 failed, 2 flaky** — the same
+count as before any of it started.
+
+The 13 are not deterministic. Running one identical five-file batch three times
+against one unchanged build:
+
+```
+3 failed   228 passed
+2 failed   1 flaky   228 passed
+3 failed   228 passed
+```
+
+Same build, same command, different answer. Every one of them passes when its
+spec file is run alone.
+
+**Why this matters when you are changing things.** Twice during this work a
+failure appeared that looked caused by the change and was not:
+
+- After the shade migration, a nav test failed on a **width** — 187px where 24
+  was expected — from a diff that only touched colour. Run alone it passed
+  three times with the change and three times without.
+- After the card lift, `reforged-accordion` joined the failing list. The test
+  checks that a summary click fires a composed `toggle`; the change was four
+  colour declarations. Reverting just that file still left the batch failing.
+
+The method that settles it every time: **run the spec alone, then run the same
+batch on the reverted build.** If the batch fails either way, it is the suite.
+
+The affected specs cluster in `nav-pin-persist`, `quick-filter-toolbar`,
+`grouping`, `data-grid`, `app-shell` — hover, click-timing and persistence
+tests. Worth its own pass; `sherpa-playwright-suite-is-flaky` in memory records
+an earlier round of the same.
+
+---
+
 ## Still to do
 
-### If you fix five things
+Four of the original five are done. What is left, in the order I would take it:
 
-1. **`sherpa-app-header`'s `Fires:` comment** — eight wrong names, and fixing
-   them restores eight events to the contract.
-2. **`sherpa-slider`'s `Events:` → `Fires:`** — one word, restores the entire
-   range detail shape `{start, end}`.
-3. **Delete the `@fires` sentence from CLAUDE.md** — it mandates a mechanism
-   that does not exist.
-4. **Lift the four shared CSS blocks** into custom properties on a shared sheet
-   — 8, 9, 12 and 14 copies respectively.
-5. **Settle the selection vocabulary** — one name for "which is picked", one
-   verb for "the user picked", one antonym for `show()`.
+### 1 — Elevation (9 components)
 
-Numbers 1–3 are minutes of work each and remove silent wrongness. 4 and 5 are
-real refactors.
+Nine components each hand-write a `box-shadow`, each with its own comment
+explaining that a `[data-elevation]` pin is a bare selector in `tokens.css` and
+never reaches a shadow root. Nine independent workarounds for one gap.
+
+Same property shape as the card surface would fix it, and would give
+`sherpa-panel` a `data-elevation` it cannot have today. Held back because it
+changes what nine components paint — it wants its own pass and its own
+before/after measurement.
+
+### 2 — The naming rulings
+
+These need a decision before code, because each one picks a winner:
+
+| concept | names in use | note |
+|---|---|---|
+| which one is picked | `data-active-id` · `data-current-id` · `data-current` · `data-tab-active` | tabs uses two of them one line apart |
+| the user picked one | `nav-select` · `tab-change` · `breadcrumb-select` | breadcrumbs settled — `nav-select` vs `tab-change` remain |
+| make this go away | `close()` · `hide()` · `dismiss()` | three antonyms for one `show()` |
+| the text on this | `data-label` (19) · `data-heading` (14) | the split is control-vs-container, and two components declare both |
+
+The breadcrumbs half is done — see "Breadcrumbs: one name" above.
+
+### 3 — Composition, four places
+
+- `sherpa-file-upload` hand-draws four buttons (~95 of its 279 CSS lines)
+- `sherpa-calendar` re-implements the menu's card and footer (~76 lines)
+- `sherpa-prompt-composer` is the only non-chart component with inline `<svg>`
+- `sherpa-grid-cell` is an orphan — every part re-implemented inside the grid,
+  and the two disagree about what `sort-change` and `group-toggle` mean
+
+### 4 — State ownership
+
+`data-locked` is implemented by 5 components and ignored by the rest, and the
+gate only examines the ones that opted in. The sharpest case: a locked
+`sherpa-quick-filter` defers correctly, then the toolbar catches the event in
+capture, stops propagation, and writes `data-current` itself.
+
+### 5 — `sherpa-element.ts`, and a file-ordering convention
+
+Will's request, 2026-09-23: the base class carries a lot of code and comment,
+and wants a deep assessment with refactoring where it earns it.
+
+Alongside it, a convention for **all** TS: imports, then constants and
+module-level variables, then functions — and functions ordered sensibly rather
+than by accretion. Worth a gate if it can be expressed mechanically.
+
+### 6 — The flaky suite
+
+13 failures that are not deterministic — see the section above. Worth a pass of
+its own, since it makes every other change harder to verify.

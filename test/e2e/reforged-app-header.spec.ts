@@ -159,7 +159,7 @@ test('data-loading reveals the loading bar', async ({ page }) => {
   expect(r.after.headerHeight).toBe(r.before.headerHeight);
 });
 
-test('populate() composes breadcrumbs + a quick-filter toolbar and re-dispatches breadcrumb-click', async ({ page }) => {
+test('populate() composes breadcrumbs + a quick-filter toolbar, and breadcrumb-select surfaces', async ({ page }) => {
   const r = await page.evaluate(async () => {
     await import('/dist/components/sherpa-breadcrumbs/sherpa-breadcrumbs.js');
     await import('/dist/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js');
@@ -182,9 +182,11 @@ test('populate() composes breadcrumbs + a quick-filter toolbar and re-dispatches
     await crumbs.rendered;
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
-    // Re-dispatch: a breadcrumbs' own event surfaces as breadcrumb-click on the header.
+    // ONE NAME. The crumbs' own event bubbles composed, so it surfaces on the
+    // header under its own name — the header used to re-emit it as
+    // `breadcrumb-click`, which was the same action with two names.
     let clicked = false;
-    el.addEventListener('breadcrumb-click', () => (clicked = true));
+    el.addEventListener('breadcrumb-select', () => (clicked = true));
     crumbs.dispatchEvent(new CustomEvent('breadcrumb-select', {
       bubbles: true, composed: true, detail: { index: 0, label: 'Home' },
     }));
@@ -198,7 +200,7 @@ test('populate() composes breadcrumbs + a quick-filter toolbar and re-dispatches
   });
   expect(r.hasCrumbs).toBe(true);
   expect(r.hasFilters).toBe(true);
-  expect(r.clicked).toBe(true); // breadcrumb-select re-dispatched as breadcrumb-click
+  expect(r.clicked).toBe(true); // breadcrumb-select reaches a listener on the header
 });
 
 test('the action cluster is in Figma order, with Figma glyphs', async ({ page }) => {

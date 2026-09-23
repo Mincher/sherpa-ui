@@ -35,7 +35,8 @@
     account-click — detail: {}
     help-click — detail: {}
     menu-click — detail: {}
-    breadcrumb-click — detail: { index, label, href }
+    (breadcrumb-select comes from the slotted sherpa-breadcrumbs and already
+     bubbles composed, so the header does not re-emit it.)
 -->
 <template id="default">
   <header class="bar" part="bar">

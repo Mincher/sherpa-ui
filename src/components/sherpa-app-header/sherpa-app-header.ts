@@ -65,7 +65,6 @@ export class SherpaAppHeader extends SherpaElement {
       // `button-click`, not the native `click`.
       this.$(sel)?.addEventListener('button-click', () => this.emit(event, {}));
     }
-    this.addEventListener('breadcrumb-select', this.#onBreadcrumb as EventListener);
   }
 
   override onChange(): void {
@@ -164,10 +163,6 @@ export class SherpaAppHeader extends SherpaElement {
 
   }
 
-  #onBreadcrumb = (event: Event): void => {
-    const { index, label, href } = (event as CustomEvent).detail ?? {};
-    this.emit('breadcrumb-click', { index, label, href });
-  };
 }
 
 customElements.define('sherpa-app-header', SherpaAppHeader);

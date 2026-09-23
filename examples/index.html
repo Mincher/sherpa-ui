@@ -386,9 +386,10 @@
       loadView(view);
     });
 
-    // A BREADCRUMB click swaps in-page too — the header fires breadcrumb-click
+    // A BREADCRUMB click swaps in-page too — sherpa-breadcrumbs fires this and
+    // it bubbles composed through the header.
     // with the crumb's href. A crumb with no href is the current page.
-    document.addEventListener('breadcrumb-click', (e) => {
+    document.addEventListener('breadcrumb-select', (e) => {
       const href = e.detail?.href;
       if (!href?.startsWith('?view=')) return;
       const view = new URLSearchParams(href.slice(1)).get('view');

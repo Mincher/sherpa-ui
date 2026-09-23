@@ -314,14 +314,6 @@ events:
     name: menu-click
     bubbles: true
     composed: true
-  - $type: event
-    name: breadcrumb-click
-    bubbles: true
-    composed: true
-    detail:
-      href: unknown
-      index: unknown
-      label: unknown
 tokens:
   content.gap: "{sherpa.display-mode-space-sm}"
   content.padding: "{sherpa.display-mode-space-xs}"
