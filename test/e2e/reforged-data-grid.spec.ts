@@ -966,8 +966,17 @@ test('a long value truncates inside its column instead of widening it', async ({
     return {
       heads,
       tableLayout: getComputedStyle(sr.querySelector('.grid')!).tableLayout,
-      // The value overflows its box — which is exactly what an ellipsis means.
-      clipped: long.scrollWidth > long.clientWidth,
+      /* The TEXT is wider than its box — which is what an ellipsis means.
+         Measured with a Range, not `scrollWidth`: under `overflow: clip`
+         Firefox reports the CLIPPED width (159) where Chromium and WebKit
+         report the content width (377), so the property is engine-dependent
+         and the drawing is not.
+         TRAP T-scroll-width-under-clip-is-engine-dependent */
+      clipped: (() => {
+        const range = document.createRange();
+        range.selectNodeContents(long);
+        return range.getBoundingClientRect().width > long.getBoundingClientRect().width + 1;
+      })(),
       ellipsis: getComputedStyle(long).textOverflow,
       // `clip`, not `hidden`: the last pinned cell paints its scroll shadow as an
       // ::after standing OUTSIDE its trailing edge, and `hidden` clipped it away.

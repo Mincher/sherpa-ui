@@ -155,3 +155,45 @@ test('no rendered leaf is an icon name in plain text', async ({ page }) => {
 
   expect(wordy, `icon names rendered as text:\n${wordy.join('\n')}`).toEqual([]);
 });
+
+/**
+ * AN ICON INSIDE A CLONING PROTOTYPE STILL DRAWS.
+ *
+ * `upgradeIcons` runs once on the stamped root. An icon declared inside a
+ * `<template class="row-tpl">` is therefore still a bare `<i>` when the clone
+ * is appended — 39 of them were blank in sherpa-data-grid: every row's actions
+ * trigger and every filter cell's clear button.
+ *
+ * Invisible to every other test: the ELEMENT is present, carries the right
+ * `data-icon`, and is the right size. Only the drawing is missing.
+ * TRAP T-a-cloned-prototype-needs-its-icons-upgraded
+ */
+test('icons stamped from a cloning prototype are drawn', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    await import('/dist/index.js');
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>; populate?: (c: unknown) => void;
+    };
+    el.setAttribute('data-filterable', '');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate!({
+      columns: [{ field: 'team', header: 'Team' }, { field: 'name', header: 'Name' }],
+      rows: [{ team: 'A', name: 'Jo' }, { team: 'A', name: 'Sam' }, { team: 'B', name: 'Kit' }],
+    });
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    el.setAttribute('data-group-field', 'team');
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const boxes = [...el.shadowRoot!.querySelectorAll('[data-icon]')];
+    return {
+      total: boxes.length,
+      blank: boxes.filter((b) => !b.querySelector('svg path, svg circle, svg rect'))
+        .map((b) => b.getAttribute('data-icon')),
+    };
+  });
+
+  // The grid draws a row-actions trigger, a filter clear and a group chevron.
+  expect(r.total).toBeGreaterThan(3);
+  expect(r.blank, `data-icon elements with no drawing:\n${r.blank.join('\n')}`).toEqual([]);
+});

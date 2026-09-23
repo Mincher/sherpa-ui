@@ -316,6 +316,7 @@ export class SherpaDataGrid extends SherpaElement {
     headRow.querySelectorAll('.head-cell').forEach((el) => el.remove());
     this.#shownColumns().forEach((col, i) => {
       const th = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      this.upgradeClonedIcons(th);
       th.dataset['field'] = col.field;
       if (col.type) th.dataset['type'] = col.type;
       // Not nth-child: the position shifts when a column is dropped.
@@ -902,6 +903,7 @@ export class SherpaDataGrid extends SherpaElement {
     const actionsSpacer = filterRow.querySelector('.actions-cell');
     this.#shownColumns().forEach((col, i) => {
       const th = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      this.upgradeClonedIcons(th);
       th.dataset['field'] = col.field;
       if (col.type) th.dataset['type'] = col.type;
       if (i === 0) this.#markPinned(th, true);
@@ -961,6 +963,10 @@ export class SherpaDataGrid extends SherpaElement {
       }
 
       const tr = rowTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+
+      // Cloned from a prototype, so its icons are still bare <i>.
+      // TRAP T-a-cloned-prototype-needs-its-icons-upgraded
+      this.upgradeClonedIcons(tr);
       tr.dataset['index'] = String(offset + i);
       // BOTH boxes are stamped; CSS shows one. TRAP T-compose-never-reimplement.
       // The radio needs the shared per-grid NAME that unpicks the previous row.
@@ -973,6 +979,7 @@ export class SherpaDataGrid extends SherpaElement {
       if (group && lastGroup !== null) tr.dataset['groupKey'] = lastGroup;
       columns.forEach((col, c) => {
         const td = cellTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+        this.upgradeClonedIcons(td);
         if (col.type) td.dataset['type'] = col.type;
         if (c === 0) this.#markPinned(td, true);
         const value = record[col.field];
@@ -1186,6 +1193,7 @@ export class SherpaDataGrid extends SherpaElement {
     menu.replaceChildren();
     for (const action of this.#actions) {
       const item = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      this.upgradeClonedIcons(item);
       item.setAttribute('value', action.id);
       item.toggleAttribute('data-danger', !!action.danger);
       const icon = item.querySelector('.action-icon');

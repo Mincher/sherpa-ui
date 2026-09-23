@@ -474,8 +474,13 @@ test('the caret label sits on the SAME text line as the chip label', async ({ pa
 
   expect(got.sameFont).toBe(true);
   expect(got.sameLineHeight).toBe(true);
-  // Exact, not approximate — both labels are 14 on 20 in Figma (150:3408).
-  expect(got.delta).toBeLessThan(0.5);
+  /* At most half a pixel. Both labels are 14 on 20 in Figma (150:3408), and the
+     two faults this guards — a different face, a different line-height — are
+     asserted above and are exact. What is left is where WebKit puts a text
+     RANGE's box: measured 0 in Chromium and Firefox, 0.5 in WebKit at both
+     densities, so `< 0.5` failed on the boundary by nothing at all.
+     TRAP T-a-text-range-box-differs-by-half-a-pixel */
+  expect(got.delta).toBeLessThanOrEqual(0.5);
 });
 
 /**

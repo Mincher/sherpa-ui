@@ -9576,3 +9576,76 @@ leave no text, and `★` must stay text.
 - Site: `src/components/sherpa-nav/sherpa-nav.ts`
 - Site: `test/e2e/reforged-nav.spec.ts`
 - Site: `test/e2e/reforged-icons.spec.ts`
+
+### T-a-cloned-prototype-needs-its-icons-upgraded
+
+`upgradeIcons(this.root)` runs ONCE, in `#stamp`. An icon declared inside a
+cloning prototype — `<template class="row-tpl">` — is not in the root when that
+runs, so the clone is appended holding a bare `<i data-icon="…">` and nothing
+draws.
+
+Measured in the live app: **39 blank icons in `sherpa-data-grid`** — 25 row
+actions triggers and 14 filter-cell clear buttons, plus the group chevron once a
+grouped view is opened.
+
+**Invisible to every other test.** The element is present, carries the right
+`data-icon`, and is the right size. Only the drawing is missing, so a test that
+asserts the trigger exists, or that its box is 14px, passes.
+
+`upgradeClonedIcons(node)` on `SherpaElement` fixes it, and `clone()` calls it
+for you. A component that clones a `<template>`'s content directly —
+`sherpa-data-grid` does, at five sites, because it needs the `<tr>` rather than
+a wrapper — has to call it itself.
+
+Idempotent: `upgradeIcons` skips an element that already holds an SVG, so a
+second call costs a `querySelectorAll` and nothing else.
+
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/e2e/reforged-icons.spec.ts`
+
+### T-scroll-width-under-clip-is-engine-dependent
+
+`overflow: clip` makes `scrollWidth` disagree across engines. Measured on one
+truncated grid cell, 160px wide:
+
+| engine | `scrollWidth` |
+|---|---|
+| Chromium | 377 |
+| WebKit | 381 |
+| Firefox | **159** — the CLIPPED width |
+
+Everything that matters is identical in all three — the column is 160px,
+`text-overflow: ellipsis`, `white-space: nowrap`, `overflow: clip` — so the
+rendering is right and only the PROPERTY differs.
+
+Measure the drawing instead. A `Range` over the node's contents reports
+373 / 374 / 373 in the three engines:
+
+```ts
+const range = document.createRange();
+range.selectNodeContents(cell);
+range.getBoundingClientRect().width > cell.getBoundingClientRect().width + 1
+```
+
+- Site: `test/e2e/reforged-data-grid.spec.ts`
+
+### T-a-text-range-box-differs-by-half-a-pixel
+
+Two labels on one text line, measured with a `Range`, do not agree to the pixel
+across engines. Measured on the quick-filter chip and its caret:
+
+| engine | delta |
+|---|---|
+| Chromium | 0 |
+| Firefox | 0 |
+| WebKit | **0.5** — at dpr 1 AND dpr 2, so it is not density |
+
+`toBeLessThan(0.5)` therefore failed on the boundary by nothing at all.
+
+The two faults such a test exists to catch are exact and are asserted
+separately: a different FACE (a `<button>` does not inherit the page font) and a
+different LINE-HEIGHT (14 vs 20 puts the baselines in different places inside
+boxes that share a midpoint). Half a pixel on a 20px line is neither.
+
+- Site: `test/e2e/reforged-quick-filter.spec.ts`

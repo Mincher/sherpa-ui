@@ -367,7 +367,23 @@ export abstract class SherpaElement extends HTMLElement {
     const tpl = this.$<HTMLTemplateElement>(sel);
     // `content` is absent on a non-<template>, so a wrong selector fails here.
     const first = tpl?.content?.firstElementChild;
-    return first ? (first.cloneNode(true) as T) : null;
+    if (!first) return null;
+    const node = first.cloneNode(true) as T;
+    this.upgradeClonedIcons(node);
+    return node;
+  }
+
+  /**
+   * Draw any `data-icon` in a freshly cloned subtree.
+   *
+   * `upgradeIcons` runs ONCE on the stamped root, so an icon that lives inside a
+   * cloning prototype is still a bare `<i>` when the clone is appended — 39 of
+   * them in sherpa-data-grid, every one blank.
+   * Idempotent: a node that already holds its SVG is skipped.
+   * TRAP T-a-cloned-prototype-needs-its-icons-upgraded
+   */
+  protected upgradeClonedIcons(node: ParentNode): void {
+    upgradeIcons(node);
   }
 
   /* ── Attributes in, attributes out ───────────────────────────────────── */
