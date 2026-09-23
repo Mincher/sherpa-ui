@@ -76,7 +76,7 @@ inherit the answers.
 | 11b | ~~`sherpa-group` — a wrapper component~~ **BUILT 2026-09-23** |
 | 11c | Shared constants — sweep for anything a second component must agree on |
 | 11d | `data-type` means nine things; `data-empty` means three |
-| 11e | Event detail shapes disagree across 75 events |
+| 11e | ~~Event detail shapes~~ **SWEPT 2026-09-23 — nothing to fix** |
 | 11f | 3 toggle chips: owner or reporter? |
 | 11g | `sherpa-nav-section` is a component nothing uses |
 
@@ -886,18 +886,39 @@ Neither is a bug — both are rulings. The question for `data-type` is whether i
 should be reserved for TEMPLATE SELECTION, which is what four of its nine uses
 already do.
 
-### `[ ]` Event detail shapes disagree across 75 events
+### `[x]` Event detail shapes — swept, and there was nothing to fix
 
-Two events carry the same name and a different shape:
+Swept 2026-09-23 with the TypeScript AST rather than a regex. **3 events carry
+more than one detail shape, and all three are correct.**
 
-| event | one component | the other |
+| event | shapes | verdict |
 |---|---|---|
-| `sort-change` | `{field, direction}` (grid) | `{direction}` (grid-cell) |
-| `group-toggle` | `{collapsed}` | `{expanded}` — **inverted sense** |
-| `quick-filter-change` | three shapes under one name, and the HTML documents a fourth |
+| `change` | 5 | **Correct.** A checkbox reports `checked`, a card `selected`, a switch `checked` alone. The native event's detail follows the control. |
+| `item-click` | `{label}` vs `{href, label}` | **Correct.** `sherpa-list-item` has no `href` — measured, zero references. A nav item navigates; a list item does not. |
+| `quick-filter-change` | `{scope, values}` vs two toolbar shapes | **Correct, and deliberate** — see below. |
 
-The grid and grid-cell pair was reconciled (commit `379e5fd2`). The sweep across
-all 75 has not run.
+**The audit's two headline examples were already fixed.** `sort-change` is
+`{field, direction}` in all three emitters and `group-toggle` is
+`{value, collapsed}` in both — commit `379e5fd2`. The `{expanded}` vs
+`{collapsed}` inversion no longer exists.
+
+**`quick-filter-change` is a TAGGED UNION, not drift.** `scope` says which
+shape you have: `'chip'` carries a bare `string[]`, `'bar'` a
+`Record<id, string[]>`. `T-values-carries-two-shapes` records why that matters —
+reading one as the other once *"turned a sort pick into a filter and emptied the
+grid."*
+
+The chip's shape never escapes. Verified by dispatching one by hand at a chip:
+the toolbar catches it in CAPTURE (`#onOrganiseChange`,
+`T-capture-beats-registration-order`) and re-emits the `'bar'` shape, so a
+document listener only ever sees the record. `examples/views/records.js:553`
+does `Object.entries(e.detail.values)` with no `scope` guard and is safe for
+that reason — though a guard there would cost nothing.
+
+**A note on method.** Four regex passes reported 8 disagreeing events. Every one
+of the extra five was a parser artefact — a ternary's `null` read as a key, a
+multi-line object read as two. The AST reports 3. A regex over TypeScript
+answers a question about the regex.
 
 ### `[ ]` 3 toggle chips: owner or reporter?
 

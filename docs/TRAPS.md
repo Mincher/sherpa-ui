@@ -1219,6 +1219,7 @@ the same event.
 
 - Site: `src/core/browser/persist-view.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `examples/views/records.js`
 
 ### T-content-first-original-once
 

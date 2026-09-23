@@ -549,6 +549,12 @@ export async function init(root) {
   };
 
   header?.addEventListener('quick-filter-change', (e) => {
+    /* `values` carries TWO shapes and `scope` says which — a bare string[] from
+       a chip, a Record<id, string[]> from the bar. The toolbar catches a chip's
+       in capture and re-emits the bar shape, so this only ever sees the record;
+       the guard makes that a rule rather than a coincidence.
+       TRAP T-values-carries-two-shapes */
+    if (e.detail?.scope !== 'bar') return;
     const picked = {};
     for (const [id, values] of Object.entries(e.detail.values ?? {})) {
       const field = headerField(id);
