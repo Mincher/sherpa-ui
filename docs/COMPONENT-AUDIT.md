@@ -29,7 +29,7 @@ meet a problem and then hunt for its resolution 500 lines later.
 | 5 | Dead code that actively misleads | ✅ Fixed — 2 of the last 3 removed, 1 kept for a better reason |
 | 6 | One vocabulary, many spellings | ✅ Fixed (verbs, selection, label/heading, breadcrumbs) · 🔶 Open (`data-type`, `data-empty`, detail shapes) |
 | 7 | Composition, skipped in five places | ✅ Fixed (4 close buttons, file-upload, calendar, composer) · 🔶 Open (grid-cell, nav-section) |
-| 8 | State ownership — the named recurring bug | 🔶 Open — and the count shrank on inspection |
+| 8 | State ownership — the named recurring bug | ✅ Gate fixed · 🔶 Open (one per-site pass) — the count shrank twice |
 | 9 | `sherpa-switch` declares nothing | ✅ Fixed |
 | 10 | `data-size` has two contradictory contracts | ✅ Fixed — and the finding changed shape |
 | 11 | Three holes in `check-props` | ✅ Fixed — two were real, one was not |
@@ -1009,7 +1009,7 @@ from one place.
 
 ---
 
-### 8. State ownership — the named recurring bug — 🔶 Open
+### 8. State ownership — the named recurring bug — ✅ Gate fixed, and the count shrank twice
 
 The convention: `data-<thing>` in, `<thing>-change` out, `data-locked` to hand
 ownership to the host.
@@ -1069,6 +1069,64 @@ own locked child.
 
 Two separate pieces of work: teach the gate to see a template-declared lock,
 and decide per site whether the toolbar is an owner or a reporter.
+
+#### The gate, measured a third time — ✅ fixed
+
+The earlier note said the gate under-reports because its regex matched
+`setAttribute` but not `toggleAttribute` or `removeAttribute`, and that widening
+it takes the count from 5 to 24. Both halves needed re-checking, and both moved.
+
+**The verbs gap is real and is now closed.** Planting
+`this.toggleAttribute('data-sort-field', true)` in `sherpa-data-grid` slipped
+past the old gate and is caught by the new one at line 165. Reverted after.
+
+**The count was never 24, because the regex was also unanchored.** It could not
+tell `this.setAttribute(…)` from `chip.setAttribute(…)`, and those are
+opposites: a parent writing a child's attribute is configuring something it
+owns. Measured across the tree:
+
+| `data-current` writes | count |
+|---|---:|
+| to a **child** | **22** |
+| to `this` | 3 |
+
+And all 3 of those are inside a `set current(v)` accessor, which the gate
+already exempts — a setter is the host's own door for writing the value. So
+adding `data-current` to `DATA_PROPS` under the old regex would have reported
+**22 faults and zero real ones**. The ruling not to add it was right for a
+better reason than the one first given.
+
+The regex now requires `this.` and covers all three write verbs.
+`TRAP T-writing-a-child-is-not-owning-yourself`.
+
+#### The 15 toolbar writes, measured in the running app — 🔶 smaller than it reads
+
+The claim was 15 unguarded writes with no lock check. Measured live on the
+records view:
+
+| | |
+|---|---|
+| chips per toolbar | 5 and 10 |
+| chips carrying `data-locked` | **1 and 1** |
+| chips that reach the chip's self-flip line | **3 of 15** |
+| `data-current` writes observed on one real click | **1** |
+
+Two things follow. The template declares `data-locked` on the static overflow
+chip only; the data-driven chips are cloned from `qf-tpl`, which has none. And
+a chip **with** a menu returns before the self-flip line
+(`sherpa-quick-filter.ts:173`), so only the three menu-less toggle chips —
+"Open tickets", "At risk", "Unassigned" — can write their own state at all.
+
+A real mouse click on one produced exactly **one** write, so the two owners do
+not conflict today. It is still two owners on paper, and it still wants a
+per-site decision — but it is three sites, not fifteen, and nothing is visibly
+broken.
+
+**A probe note against myself.** Three attempts said "no writes at all" before
+this. Twice `.click()` on a shadow node did nothing (the real target is inside),
+and once the chip was below the fold at y=785 so a real mouse click missed it.
+Same lesson as the composed-button probes earlier in this audit: when a probe
+reports *nothing happened*, suspect the probe first.
 
 ---
 
@@ -1478,7 +1536,7 @@ Ordered by what unblocks the most.
 
 | # | work | why it is next |
 |---:|---|---|
-| 1 | **State ownership** — teach `check-ownership.mjs` to see a template-declared lock, then judge the 15 toolbar writes per site | the named recurring bug; the gate under-reports by construction |
+| 1 | **State ownership** — decide per site whether the 3 menu-less toggle chips are owners or reporters | the gate is fixed; what is left is 3 sites, not 15, and nothing is visibly broken |
 | 2 | **`render-icon.ts` / the alias map** | 88 distinct ink boxes across 214 icons is the blocker; three questions first |
 | 3 | **`sherpa-data-grid` rebuild onto Grid Cell** | a dedicated session; the prerequisite (agreeing event shapes) is done |
 | 4 | **The flaky suite** | 12 non-deterministic failures, plus a webkit border-edges failure belonging to work elsewhere in the tree; it makes every other change harder to verify |
