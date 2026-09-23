@@ -18,6 +18,9 @@ import '../sherpa-menu/sherpa-menu.js';
 
 const MAX_ITEMS = 6;
 
+/** The roll-up row's name, before its `(n)` count is appended. */
+const ROLLUP_LABEL = 'Other';
+
 /** One legend row — TRAP T-chart-datum-aliases-are-not-copies. */
 export type LegendItem = LegendDatum;
 
@@ -141,7 +144,10 @@ export class SherpaChartLegend extends SherpaElement {
     return [
       ...kept,
       {
-        label: 'Other',
+        /* HOW MANY it folded, in the label: "Other (3)" says what the row
+           stands for, where a bare "Other" could be one category or twenty.
+           TRAP T-legend-caps-at-six-and-rolls-up */
+        label: `${ROLLUP_LABEL} (${rest.length})`,
         colorIndex: MAX_ITEMS,
         ...(total != null ? { value: total } : {}),
       },
@@ -234,9 +240,28 @@ export class SherpaChartLegend extends SherpaElement {
       // Applying a suspended group's breakdown turns the row back on.
       const row = wrapper.querySelector('.rollup-toggle');
       row?.setAttribute('aria-pressed', String(on.size > 0));
+
+      /* THE OFF-SET IS THE ONE ANSWER. Unticking a folded row used to emit and
+         nothing else — `off` never learnt about it, so the binding reading it
+         saw no change and the view kept every row.
+         TRAP T-a-breakdown-pick-is-a-legend-pick */
+      for (const { index, item } of this.#rolled) {
+        if (on.has(index)) this.#off.delete(item.label);
+        else this.#off.add(item.label);
+      }
+
       this.emit('legend-breakdown-change', {
         active: [...on].sort((a, b) => a - b),
         hidden: this.#rolled.map((r) => r.index).filter((i) => !on.has(i)),
+      });
+      /* …and SAY SO in the language every other control speaks, so a caller
+         binds one event rather than two. `indices` is what a roll-up row
+         always reports. */
+      this.emit('legend-item-click', {
+        index: this.#items.length - 1,
+        label: this.#items.at(-1)?.label ?? 'Other',
+        active: on.size > 0,
+        indices: [...on].sort((a, b) => a - b),
       });
     }) as EventListener);
   }

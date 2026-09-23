@@ -166,7 +166,8 @@ test('a legend caps at six rows, rolling the tail into an Other total', async ({
 
   // Nine becomes five named plus a total, and the numbers still add to the whole.
   expect(r.capped.rows).toBe(6);
-  expect(r.capped.labels).toEqual(['C0', 'C1', 'C2', 'C3', 'C4', 'Other']);
+  // The label COUNTS what it folded — four of nine, here.
+  expect(r.capped.labels).toEqual(['C0', 'C1', 'C2', 'C3', 'C4', 'Other (4)']);
   expect(r.capped.values).toEqual(['1', '2', '3', '4', '5', '30']);
 
   // The Other row stands for EVERY rolled-up series, so toggling it hides them all.
@@ -174,7 +175,7 @@ test('a legend caps at six rows, rolling the tail into an Other total', async ({
   expect(r.detail?.indices).toEqual([5, 6, 7, 8]);
 
   // Nothing to sum → no value, not a zero.
-  expect(r.noValues.labels).toEqual(['C0', 'C1', 'C2', 'C3', 'C4', 'Other']);
+  expect(r.noValues.labels).toEqual(['C0', 'C1', 'C2', 'C3', 'C4', 'Other (4)']);
   expect(r.noValues.values).toEqual(['', '', '', '', '', '']);
 });
 
@@ -457,7 +458,7 @@ test('a ROLL-UP row records the real labels it folded, not "Other"', async ({ pa
     return { label, off: [...el.off].sort() };
   });
 
-  expect(r.label).toBe('Other');
+  expect(r.label, 'and it says how many it stands for').toBe('Other (2)');
   // NOT ['Other'] — those names are what a filter can act on.
   expect(r.off).toEqual(['f', 'g']);
 });
@@ -635,4 +636,156 @@ test('the LAST active row cannot be switched off', async ({ page }) => {
 
   // The same floor for a host write — both reach the same state.
   expect(r.set).toEqual(['A', 'B']);
+});
+
+/**
+ * A HORIZONTAL LEGEND IS THREE BY TWO.
+ *
+ * It was a wrapping flex row, so it put a different number of entries on each
+ * line at every width. Six cells — which is MAX_ITEMS — so the last one is
+ * always the roll-up with its breakdown menu.
+ *
+ * TRAP T-a-horizontal-legend-is-three-by-two
+ */
+test('a HORIZONTAL legend is a 3x2 grid, roll-up in the last cell', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-chart-legend') as HTMLElement & {
+      rendered?: Promise<void>; populate?: (d: unknown) => void;
+    };
+    el.setAttribute('data-orientation', 'horizontal');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    // EIGHT, so the roll-up fires — six cells cannot hold eight entries.
+    el.populate!(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+      .map((label, i) => ({ label, value: (8 - i) * 10 })));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const legend = el.shadowRoot!.querySelector('.legend')!;
+    const cells = [...el.shadowRoot!.querySelectorAll('.item, .rollup')]
+      // The toggle is INSIDE the roll-up wrapper; count cells, not controls.
+      .filter((n) => !n.closest('.rollup') || n.classList.contains('rollup'));
+
+    return {
+      tracks: getComputedStyle(legend).gridTemplateColumns.split(' ').length,
+      cells: cells.map((n) => {
+        const box = n.getBoundingClientRect();
+        return { text: n.textContent!.trim().replace(/\s+/g, ' ').slice(0, 12),
+                 x: Math.round(box.x), y: Math.round(box.y) };
+      }),
+      menuInLastCell: !!cells.at(-1)!.querySelector('.rollup-menu-btn'),
+    };
+  });
+
+  expect(r.tracks, 'three columns').toBe(3);
+  expect(r.cells.length, 'six cells, never more').toBe(6);
+
+  // TWO rows of three: cells 0-2 share a y, cells 3-5 share the next.
+  const rows = [...new Set(r.cells.map((c) => c.y))];
+  expect(rows.length).toBe(2);
+  expect(r.cells.slice(0, 3).every((c) => c.y === rows[0])).toBe(true);
+  expect(r.cells.slice(3).every((c) => c.y === rows[1])).toBe(true);
+
+  // THREE columns: each row's cells are at the same three x positions.
+  const xs = [...new Set(r.cells.map((c) => c.x))];
+  expect(xs.length).toBe(3);
+
+  // The LAST cell is the roll-up, and it carries the breakdown button.
+  expect(r.cells.at(-1)!.text).toContain('Other');
+  expect(r.menuInLastCell).toBe(true);
+});
+
+/**
+ * THE BREAKDOWN BUTTON SHARES THE OTHER ROW.
+ *
+ * The legend's grid had three tracks — swatch, label, value — so the button had
+ * no cell and wrapped BELOW the row it belongs to. A fourth track is its own.
+ *
+ * TRAP T-the-breakdown-button-shares-the-other-row
+ */
+test('the breakdown button sits ON the Other row, after its value', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-chart-legend') as HTMLElement & {
+      rendered?: Promise<void>; populate?: (d: unknown) => void;
+    };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.populate!(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+      .map((label, i) => ({ label, value: (8 - i) * 10 })));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const sr = el.shadowRoot!;
+    const at = (sel: string): { x: number; y: number } => {
+      const box = sr.querySelector(sel)!.getBoundingClientRect();
+      return { x: Math.round(box.x), y: Math.round(box.y) };
+    };
+    const rows = [...sr.querySelectorAll('.item, .rollup')]
+      .filter((n) => !n.closest('.rollup') || n.classList.contains('rollup'));
+
+    return {
+      tracks: getComputedStyle(sr.querySelector('.legend')!).gridTemplateColumns.split(' ').length,
+      rows: rows.map((n) => n.textContent!.trim().replace(/\s+/g, ' ').slice(0, 10)),
+      value: at('.rollup-toggle .value'),
+      button: at('.rollup-menu-btn'),
+    };
+  });
+
+  expect(r.tracks, 'the fourth track is the button\'s own').toBe(4);
+  // Other is the SIXTH item, not a seventh row below the list.
+  expect(r.rows.length).toBe(6);
+  expect(r.rows.at(-1)).toContain('Other');
+
+  expect(r.button.y, 'same row as the value').toBe(r.value.y);
+  expect(r.button.x, 'and to its right').toBeGreaterThan(r.value.x);
+});
+
+/**
+ * A BREAKDOWN PICK IS A LEGEND PICK.
+ *
+ * Unticking a folded category did NOTHING to the view: the legend emitted
+ * `legend-breakdown-change`, which nothing listened to, and never touched its
+ * own off-set — so a caller reading `legend.off` saw no change at all.
+ *
+ * TRAP T-a-breakdown-pick-is-a-legend-pick
+ */
+test('unticking a folded category puts it in the OFF set, and reports', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-chart-legend') as HTMLElement & {
+      rendered?: Promise<void>; populate?: (d: unknown) => void; off?: string[];
+    };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.populate!(['a', 'b', 'c', 'd', 'e', 'f', 'g']
+      .map((label, i) => ({ label, value: i + 1 })));
+    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    await settle();
+
+    const clicks: Array<{ label: string; indices?: number[] }> = [];
+    el.addEventListener('legend-item-click', (e) =>
+      clicks.push((e as CustomEvent).detail));
+
+    const sr = el.shadowRoot!;
+    const btn = sr.querySelector('.rollup-menu-btn') as HTMLElement & { shadowRoot?: ShadowRoot };
+    (btn.shadowRoot?.querySelector('button') ?? btn).click();
+    await settle();
+
+    const menu = sr.querySelector('.rollup-menu')!;
+    const boxes = [...menu.querySelectorAll<HTMLInputElement>('input[type=checkbox]')];
+    const folded = [...menu.querySelectorAll('.rollup-row-label')].map((n) => n.textContent);
+
+    // Untick the FIRST folded row, then Apply.
+    boxes[0]!.click();
+    const apply = menu.shadowRoot!.querySelector('.apply') as HTMLElement & { shadowRoot?: ShadowRoot };
+    (apply.shadowRoot?.querySelector('button') ?? apply).click();
+    await settle();
+
+    return { folded, off: [...el.off!], clicks };
+  });
+
+  // The menu lists the REAL categories, never "Other".
+  expect(r.folded).toEqual(['f', 'g']);
+  // The unticked one is OFF, which is what a caller reads.
+  expect(r.off, 'it used to stay empty').toEqual(['f']);
+  // …and it SAID so, in the event every other control speaks.
+  expect(r.clicks.length).toBe(1);
+  expect(r.clicks[0]!.indices, 'the folded rows still on').toEqual([6]);
 });

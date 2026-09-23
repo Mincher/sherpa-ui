@@ -6,7 +6,14 @@
  */
 
 const CATEGORIES = ['Disk', 'CPU', 'Memory', 'Network', 'Security', 'Services', 'Backup', 'Antivirus'];
-const OSES = ['Windows 11', 'Windows 10', 'macOS', 'Linux', 'Other'];
+/* REAL operating systems, and no "Other" among them. A category literally
+   NAMED Other reads as a roll-up and is not one — the legend folds its own
+   tail past six rows and labels that. Eight here, so it does.
+   TRAP T-a-rolled-up-other-is-not-a-category */
+const OSES = [
+  'Windows 11', 'Windows 10', 'macOS', 'Ubuntu',
+  'Fedora', 'ChromeOS', 'Debian', 'FreeBSD',
+];
 const REGIONS = ['EMEA', 'AMER', 'APAC', 'LATAM'];
 
 /**
@@ -31,7 +38,9 @@ export function alerts(count = 1284) {
     id: i,
     // Squared index crowds the early categories, so the bar chart has a shape.
     category: CATEGORIES[Math.floor(((i * i) % 64) / 8)],
-    os: OSES[i % 5 === 0 ? 4 : Math.floor((i % 17) / 4)],
+    /* A long TAIL: the first four hold most of the estate and the rest are a
+       handful each, which is what a roll-up is for. */
+    os: OSES[i % 23 < 16 ? Math.floor((i % 23) / 4) : 4 + ((i % 23) - 16) % 4],
     region: REGIONS[i % 4],
     // 8 orgs against 4 regions — coprime strides, so the columns do not
     // march in lockstep.

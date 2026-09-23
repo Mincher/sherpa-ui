@@ -8353,6 +8353,72 @@ that follows is what makes it read as unset.
 - Site: `test/unit/bind-selection.test.mjs`
 - Site: `test/unit/field-selection.test.mjs`
 - Site: `test/unit/filter-state.test.mjs`
+### T-a-breakdown-pick-is-a-legend-pick
+
+Unticking a folded category in the "Other" breakdown menu did NOTHING to the
+view. The chart kept its slice, the tiles kept their count, and the menu closed
+looking as if it had worked.
+
+Two halves, both missing:
+
+- the legend emitted `legend-breakdown-change` and **nothing in the app
+  listened**. It was a public event with no subscriber anywhere but its own
+  test.
+- the legend never updated its own `off` set, so a caller reading `legend.off`
+  — which is how `bindSelection` draws the field — saw no change either.
+
+A breakdown pick IS a legend pick: the folded rows go into `off` like any
+other, and the row re-reports itself as `legend-item-click` with its
+`indices`. One event for a caller to bind, and the off-set stays the one
+answer. `legend-breakdown-change` still fires for a caller who wants the
+narrower detail.
+
+- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
+
+### T-a-horizontal-legend-is-three-by-two
+
+A horizontal legend was a wrapping flex row, so it put a different number of
+entries on each line at every width — three here, five there, and a lone one
+stranded below.
+
+It is a 3x2 GRID: six cells, which is `MAX_ITEMS`, so the last cell is always
+the roll-up with its breakdown menu. `1fr` columns rather than `auto`, because
+three equal cells are what keep the second row's entries under the first row's.
+Entries are centred in their cell, since a two-row grid leaves a cell taller
+than its entry wherever a label wraps.
+
+- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.css`
+- Site: `test/e2e/reforged-chart-legend.spec.ts`
+
+### T-the-breakdown-button-shares-the-other-row
+
+The legend's grid had THREE tracks — swatch, label, value — and the roll-up
+needed a fourth for its menu button. With `grid-column: 1 / -1` the toggle
+spanned all three and the button wrapped to the line BELOW, which reads as a
+seventh row that is not there.
+
+The legend declares four tracks. An ordinary entry takes the first three and
+leaves the button's empty; the roll-up takes all four.
+
+The comment claiming a "FOURTH implicit column" was describing something that
+never happened — an implicit track is only created by an item placed past the
+explicit ones, and `1 / -1` is not.
+
+- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.css`
+- Site: `test/e2e/reforged-chart-legend.spec.ts`
+
+### T-a-rolled-up-other-is-not-a-category
+
+The dashboard's OS data contained a category literally NAMED "Other", so the
+donut showed an Other slice that was a real value, not a roll-up — and the
+legend's own roll-up never fired, because five categories is under the cap.
+
+A reader cannot tell those apart, and only one of them has a breakdown. The
+demo data now names eight real systems with a long tail, so the legend folds
+its own and the "Other" on screen is the one with a menu behind it.
+
+- Site: `examples/views/dashboard-data.js`
+
 ### T-a-legend-keeps-one-row-on
 
 Will, same message: *"at least 1 must be active at all times so we need to

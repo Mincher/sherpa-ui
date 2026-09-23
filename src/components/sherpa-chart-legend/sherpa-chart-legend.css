@@ -17,9 +17,14 @@
 
 .legend {
   display: grid;
-  /* All THREE hug. `1fr` on the category swallowed the whole parent width, so
-     the legend could not sit beside a chart. */
-  grid-template-columns: auto auto auto;
+  /* All FOUR hug. `1fr` on the category swallowed the whole parent width, so
+     the legend could not sit beside a chart.
+
+     The FOURTH track is the roll-up's menu button. Without it the button had
+     no cell of its own and wrapped BELOW the row it belongs to; an ordinary
+     entry simply leaves it empty.
+     TRAP T-the-breakdown-button-shares-the-other-row */
+  grid-template-columns: auto auto auto auto;
   justify-content: start;
   column-gap: var(--sherpa-display-mode-space-xs, 8px);
   row-gap: var(--sherpa-display-mode-space-2xs, 4px);
@@ -27,31 +32,35 @@
   padding: var(--sherpa-display-mode-space-xs, 8px);
 }
 
-/* FLEX WITH WRAP, not `grid-auto-flow: column` — that kept one row at any width
-   and crushed every label to a single letter in a narrow panel.
+/* THREE COLUMNS, TWO ROWS — six cells, which is `MAX_ITEMS`, so the last one
+   is the roll-up with its breakdown menu. A wrapping flex row put a different
+   number on each line at every width; a fixed grid reads the same everywhere.
 
-   The gap stays space/xs 8: entry separation IS the gap here, so a wider one
-   would space a swatch from its own label too. */
+   `1fr` columns, not `auto`: three equal cells keep the second row's entries
+   under the first row's, which is what makes it a grid rather than three
+   ragged columns. TRAP T-a-horizontal-legend-is-three-by-two */
 :host([data-orientation="horizontal"]) .legend {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  /* CENTRED: a horizontal legend spans the full width below a centred chart.
-     The vertical one keeps `start` — beside a chart it reads as a list. */
-  justify-content: center;
-  gap: var(--sherpa-display-mode-space-xs, 8px);
+  grid-template-columns: repeat(3, 1fr);
+  justify-content: stretch;
+  column-gap: var(--sherpa-display-mode-space-md, 16px);
+  row-gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
-/* The per-corner rounding, shared by the entry and its swatch. */
-.item,
-.swatch {
+/* The rows that adopt the parent legend's tracks. An ENTRY takes the first
+   three and stops, leaving the button's track empty; the ROLL-UP takes all
+   four, and its toggle takes the three inside that. */
+.item {
+  grid-column: 1 / 4;
+  display: grid;
+  grid-template-columns: subgrid;
 }
-
-/* The three rows that adopt the parent legend's tracks. */
-.item,
-.rollup,
-.rollup-toggle {
+.rollup {
   grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+}
+.rollup-toggle {
+  grid-column: 1 / 4;
   display: grid;
   grid-template-columns: subgrid;
 }
@@ -85,14 +94,19 @@
    nothing. */
 :host([data-readonly]) .item { cursor: default; }
 
-/* `subgrid` needs a grid PARENT, which a flex row is not — so give each entry
-   its own tracks here. `flex: 0 0 auto` is what stops flex shrinking a label to
-   one letter before the row wraps. */
+/* Each entry owns ONE cell and lays out its own swatch/label/value inside it.
+   `subgrid` is for the vertical legend, whose three tracks line up down the
+   whole list; here the cells are equal and independent.
+
+   CENTRED in the cell, because a two-row grid leaves a cell taller than its
+   entry wherever a label wraps. */
 :host([data-orientation="horizontal"]) .item {
   grid-column: auto;
-  grid-template-columns: auto auto auto;
+  grid-template-columns: auto 1fr auto;
+  align-content: center;
+  align-items: center;
+  min-inline-size: 0;
   column-gap: var(--sherpa-display-mode-space-xs, 8px);
-  flex: 0 0 auto;
 }
 
 /* Toggled off, OR emptied by a filter — dims via the inactive CONTENT ink,
@@ -153,18 +167,23 @@
    after them, rather than fighting the value for its cell. Its tracks come from
    the shared subgrid rule above. */
 
-/* No parent tracks to adopt in a flex row — same reason as .item above. */
+/* THE LAST CELL of the 3x2 grid: the Other toggle and its breakdown button,
+   side by side, centred like every other entry.
+   TRAP T-a-horizontal-legend-is-three-by-two */
 :host([data-orientation="horizontal"]) .rollup {
   grid-column: auto;
   display: flex;
   align-items: center;
-  column-gap: var(--sherpa-display-mode-space-xs, 8px);
-  /* Never shrunk — see the .item note above. */
-  flex: 0 0 auto;
+  align-self: center;
+  min-inline-size: 0;
+  column-gap: var(--sherpa-display-mode-space-2xs, 4px);
 }
 :host([data-orientation="horizontal"]) .rollup-toggle {
   grid-column: auto;
-  grid-template-columns: auto auto auto;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  min-inline-size: 0;
+  flex: 1 1 auto;
   column-gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
