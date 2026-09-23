@@ -10,17 +10,25 @@ export class SherpaSwitch extends SherpaElement {
   static override css = new URL('./sherpa-switch.css', import.meta.url);
   static override html = new URL('./sherpa-switch.html', import.meta.url);
 
+  static override observed = [
+    'checked',
+    'disabled',
+    // CSS-only; declared for the typed door.
+    'data-type',
+  ];
+
   #input(): HTMLInputElement | null {
     return this.$<HTMLInputElement>('.input');
   }
 
   override onRender(): void {
-    const input = this.#input();
-    if (!input) return;
-    if (this.hasAttribute('checked')) input.checked = true;
-    input.disabled = this.hasAttribute('disabled');
+    this.#syncState();
     // The native change bubbles inside the shadow root but is not composed.
-    input.addEventListener('change', this.#onChange);
+    this.#input()?.addEventListener('change', this.#onChange);
+  }
+
+  override onChange(): void {
+    this.#syncState();
   }
 
   /* ── Public API ──────────────────────────────────────────────────────── */
@@ -44,6 +52,14 @@ export class SherpaSwitch extends SherpaElement {
   }
 
   /* ── Private ─────────────────────────────────────────────────────────── */
+
+  /** Mirror checked + disabled host → inner control. */
+  #syncState(): void {
+    const input = this.#input();
+    if (!input) return;
+    input.checked = this.hasAttribute('checked');
+    input.disabled = this.hasAttribute('disabled');
+  }
 
   #onChange = (): void => {
     const checked = this.#input()?.checked ?? false;
