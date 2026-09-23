@@ -140,3 +140,33 @@
   cursor: not-allowed;
   pointer-events: none;
 }
+
+/* ── Native control margins ──────────────────────────────────────────────
+   A checkbox or radio carries a UA margin nobody chose, and it is not even the
+   same one per engine: `3px 3px 3px 4px` in Chromium and Firefox, `3px 2px 3px
+   2px` in WebKit — so a tick sits in a different place depending on the
+   browser. A `<fieldset>` carries `0 2px`.
+
+   Zeroed so a token owns the spacing. `:where()` keeps specificity at 0, so any
+   component rule still wins without `!important`.
+   TRAP T-a-native-control-brings-its-own-margin */
+:where(input, fieldset) {
+  margin: 0;
+}
+
+/* And the UA PADDING on a control, which is worse: a `<button>` is padded
+   `1px 6px` in Chromium, `1px 4px` in Firefox and `0 6px` in WebKit, so the
+   SAME button is a different height per engine. An `<option>` ranges from
+   `0 2px 1px` to `5.2px 12.1px 5.2px 8.25px`.
+
+   Zeroed so a token decides. sherpa-button sets `padding-inline` and never
+   `padding-block`, which is how the UA value was reaching the trigger. */
+:where(input, button, option, select) {
+  padding: 0;
+}
+
+/* An `<option>` also carries a UA `gap` — 7px in Chromium, which is neither
+   on the 8px grid nor on the 4px text sub-grid. */
+:where(option) {
+  gap: 0;
+}

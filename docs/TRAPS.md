@@ -9708,3 +9708,41 @@ The ceiling stays: `fonts.ready` has no timeout of its own, and losing the race
 only costs a text measurement.
 
 - Site: `test/reforged/harness.html`
+
+### T-a-native-control-brings-its-own-margin
+
+A native control carries UA spacing nobody chose, and it is **not the same per
+engine** — so the same component is a different size depending on the browser.
+Measured on bare elements in all three:
+
+| element | Chromium | Firefox | WebKit |
+|---|---|---|---|
+| `<input>` margin | `3px 3px 3px 4px` | `3px 3px 3px 4px` | **`3px 2px 3px 2px`** |
+| `<button>` padding | `1px 6px` | **`1px 4px`** | **`0 6px 1px`** |
+| `<option>` padding | `0 2px 1px 2px` | `2px 4px` | **`5.2px 12.1px 5.2px 8.25px`** |
+| `<option>` gap | **7px** | — | — |
+
+`sherpa-button` sets `padding-inline` and never `padding-block`, which is how a
+UA value reached the trigger: its height differed per engine and nothing said
+so.
+
+`sherpa-base.css` zeroes them, at specificity 0 via `:where()`, so any component
+rule still wins without `!important`:
+
+```css
+:where(input, fieldset) { margin: 0; }
+:where(input, button, option, select) { padding: 0; }
+:where(option) { gap: 0; }
+```
+
+Measured across the running app, spacing and sizing only (font metrics are
+token-driven and exempt): **2,812 off-grid values → 276**, a 90% drop, with
+every visible input identical in size before and after. What remains is 272
+deliberate `2px` — the sanctioned sub-grid edge case — and 4 fractional
+bar-chart data positions, which must stay exact.
+
+This is why `round()` is not the tool for static spacing: a value you never
+named cannot be rounded, because CSS has no self-reference. `round()` is for
+DYNAMIC content that computes a fractional size.
+
+- Site: `src/core/sherpa-base.css`
