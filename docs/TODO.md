@@ -8,7 +8,7 @@ Status: `[ ]` open · `[~]` in progress · `[x]` done
 
 ## The order to do them in
 
-40 items. Ordered so that nothing is built twice.
+41 items. Ordered so that nothing is built twice.
 
 Includes the six findings the 2026-09-23 component audit left open; its other 13
 are done. `docs/COMPONENT-AUDIT.md` keeps the measurements behind every one.
@@ -74,11 +74,11 @@ inherit the answers.
 | # | Item |
 |---|---|
 | 11b | ~~`sherpa-group` — a wrapper component~~ **BUILT 2026-09-23** |
-| 11c | Shared constants — sweep for anything a second component must agree on |
+| 11c | ~~Shared constants — sweep~~ **DONE 2026-09-23 — 5 folded in** |
 | 11d | `data-type` means nine things; `data-empty` means three |
 | 11e | ~~Event detail shapes~~ **SWEPT 2026-09-23 — nothing to fix** |
 | 11f | 3 toggle chips: owner or reporter? |
-| 11g | `sherpa-nav-section` is a component nothing uses |
+| 11g | `sherpa-nav-section` — measured; it is item 28's question |
 
 ### Wave 4 — the data-to-UI faults
 
@@ -162,6 +162,7 @@ Last, because they touch everything and block nothing.
 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? |
 | 31 | The 8px grid and 4px sub-grid should be TOKENS |
 | 32 | Fold donut + gauge into ONE radial chart |
+| 33 | Two scaling multipliers, in place of the remapped density modes |
 
 Item 29 dead last. It is a rename across the whole repo, so it is cheapest when
 no other work is in flight.
@@ -864,15 +865,27 @@ Name it `sherpa-group`, not `sherpa-grouping`: it is the thing, not the idea.
 The same ruling as `sherpa-layout-grid`, which is a util component with no Figma
 node — see `docs/COMPONENT-AUDIT.md` finding 15.
 
-### `[ ]` Shared constants — sweep for the rest
+### `[x]` Shared constants — swept 2026-09-23
 
 `src/core/ui/shared-constants.ts` holds two values today: `ORGANISE_ICONS` and
 `NON_VALUE_ROWS`. It was renamed from `icons.ts` during the audit because three
 of its four importers wanted the CSS selector, not the icons.
 
-Sweep for anything else a SECOND component must agree on and fold it in. A value
-two components each declare is a value that can drift — that is the whole reason
-the file exists.
+**Done.** Five more folded in, each verified identical in value AND use first:
+
+| | shared by |
+|---|---|
+| `MIRRORED_CONTROL_ATTRS` | select-checkbox + select-radio |
+| `RADIAL_CENTRE` · `RADIAL_CORNER` · `RADIAL_OUTLINE` | donut + gauge |
+| `DEFAULT_TICKS` | barchart + line-chart |
+
+The radial three mattered most: both charts hand them to `ringSegmentPath()`, so
+a value that moved in one and not the other would draw two different rings from
+one function.
+
+NOT moved: `sherpa-input-text`'s `MIRRORED`. It is a SUPERSET — a text field
+also mirrors `placeholder`, `pattern`, `inputmode` and the length limits. A
+superset is not the same value.
 
 ### `[ ]` `data-type` means nine things; `data-empty` means three
 
@@ -975,6 +988,65 @@ is the bigger case.
 ---
 
 ## Tokens
+
+### `[ ]` Two scaling multipliers, in place of the remapped density modes
+
+Will, 2026-09-23: in Figma the Comfortable and Compact modes are remapped
+aliases for every size and space variable — necessary there, but in code two
+multipliers would do it.
+
+| | what it does |
+|---|---|
+| **Breakpoint scaling** | scales sizing and spacing by breakpoint. Bigger on mobile and tablet, for touch targets. |
+| **Mode scaling** | Compact and Comfortable, applied RELATIVE to the breakpoint scale. |
+
+Breakpoint first, then mode.
+
+#### What the modes actually are today — measured
+
+Not a multiplier. The ratios are all over the place: compact runs 0.500 → 0.900
+of default, comfortable 2.000 → 1.125. But laid against the scale itself it is
+**a step shift**:
+
+```
+default scale   0  2  4  8  12  16  20  24  32  40  48  56  64
+```
+
+| | rule | holds for |
+|---|---|---|
+| compact | the PREVIOUS step | **10 of 13** |
+| comfortable | the NEXT step | **9 of 13** |
+
+The exceptions are where it breaks: `xl` comfortable is `28`, `2xl` compact is
+`28` and comfortable `36` — values that are on no step at all. That is where the
+off-grid spacing measured earlier comes from, and a step-shift rule would
+remove them by construction.
+
+So "mode scaling" is better expressed as `--sherpa-scale-step: -1 | 0 | +1`
+against one scale, not a multiplier against a value. A multiplier on `12px`
+gives `10.8`; a step gives `8`.
+
+#### Breakpoint scaling does not exist yet
+
+Measured: `--sherpa-layout-grid-gap-horizontal` and `-padding` resolve to
+`--sherpa-display-mode-space-base` at **every** breakpoint — mobile, tablet,
+desktop and wide all point at the same token. Only the COLUMN COUNT and the
+grid's own geometry move.
+
+So the touch-target half is new work, not a re-expression of something Figma
+already does.
+
+#### Order of work
+
+1. **Settle the step rule** and fix the four off-step values in Figma, or accept
+   them as deliberate. A rule with exceptions is not a rule.
+2. **Emit the scale ONCE** plus a step offset, rather than three full copies of
+   every space and size token. `tokens.css` currently carries the whole scale
+   three times.
+3. **Add the breakpoint step.** One offset per breakpoint, applied before the
+   mode's. Mobile and tablet step UP.
+4. It composes with item 31: `--sherpa-grid-step` says what a step IS, and this
+   says how many steps to move.
 
 ### `[ ]` The 8px grid and 4px sub-grid should be TOKENS
 
