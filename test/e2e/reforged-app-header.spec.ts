@@ -234,7 +234,7 @@ test('the action cluster is in Figma order, with Figma glyphs', async ({ page })
         const attr = n.getAttribute('data-icon-start');
         if (attr) return attr.replace('fa-solid fa-', '');
         const icon = n.querySelector('i');
-        return icon ? icon.className.replace('fa-solid fa-', '') : n.className;
+        return icon ? (icon.getAttribute('data-icon') ?? icon.className) : n.className;
       });
     return { order };
   });

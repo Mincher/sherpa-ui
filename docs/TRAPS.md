@@ -9542,3 +9542,36 @@ Inside the harness, `__settled()` already does this properly. This trap is for
 the specs that drive the real app on :4200, which have no harness.
 
 - Site: `test/e2e/reforged-nav-pin-persist.spec.ts`
+
+### T-an-icon-is-known-by-the-set-not-its-spelling
+
+Ask `hasIcon(value)`. Never test the string's SHAPE.
+
+`sherpa-nav`'s `#applyIcon` decided with `/\bfa-/`: a value containing `fa-`
+was an icon, anything else was a raw glyph character to print as text. That
+worked for exactly as long as every icon name carried the prefix.
+
+When the names were migrated to the Figma set — `fa-solid fa-cubes` → `group` —
+every name failed the test and fell through to the text branch. The nav's brand
+tile printed the word **"group"** where the product mark should be.
+
+**Nothing failed.** No error, no empty box: a name is a perfectly valid string
+to render as text, so the wrong branch produced a plausible result. Will found
+it by looking at the running app.
+
+The set is the only authority on what is an icon:
+
+```ts
+if (hasIcon(value)) { renderIcon(box, value); }
+else { host.textContent = value; }   // a raw glyph — an emoji, a letter mark
+```
+
+`SherpaElement.writeIcon` already had this shape, which is why only the one
+hand-rolled copy broke. `#applyIcon` cannot simply call `writeIcon` — see
+`T-brand-icon-must-empty-its-host` — but it can ask the same question.
+
+Covered by a test that renders both branches: a name must paint an SVG and
+leave no text, and `★` must stay text.
+
+- Site: `src/components/sherpa-nav/sherpa-nav.ts`
+- Site: `test/e2e/reforged-nav.spec.ts`

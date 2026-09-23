@@ -5,6 +5,7 @@
  * TRAP T-nav-state-writes-only-the-attribute
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { hasIcon, renderIcon } from '../../core/ui/render-icon.js';
 
 /** What a stamped row shows. `icon` is undefined on a child row. */
 export interface NavRowInfo {
@@ -285,19 +286,26 @@ export class SherpaNav extends SherpaElement {
   }
 
   /**
-   * Set an icon as FA classes when it looks like one, else as a text glyph.
+   * Draw an icon NAME, or print a raw glyph character.
+   *
+   * ASK THE ICON SET, never the string's shape. This tested `/\bfa-/`, so once
+   * the names lost that prefix every one of them fell through to the text
+   * branch and the brand tile printed the word "group".
+   * TRAP T-an-icon-is-known-by-the-set-not-its-spelling
    *
    * NOT `writeIcon` — the host's `<slot>` fallback must be emptied first.
    * TRAP T-brand-icon-must-empty-its-host.
    */
   #applyIcon(host: Element, value: string): void {
-    if (/\bfa-/.test(value)) {
-      host.replaceChildren();
-      const i = document.createElement('i');
-      i.className = value;
-      i.setAttribute('aria-hidden', 'true');
-      host.appendChild(i);
+    host.replaceChildren();
+    if (hasIcon(value)) {
+      const box = document.createElement('i');
+      box.className = 'sherpa-icon-box';
+      box.setAttribute('aria-hidden', 'true');
+      host.appendChild(box);
+      renderIcon(box, value);
     } else {
+      // A raw glyph character — an emoji or a letter mark.
       host.textContent = value;
     }
   }

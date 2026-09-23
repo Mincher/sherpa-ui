@@ -470,9 +470,6 @@ export abstract class SherpaElement extends HTMLElement {
    * TRAP T-write-icon-is-protected-not-private
    */
   protected writeIcon(el: Element, value: string): void {
-    // A stale `fa-*` class paints nothing now the webfont is gone, but it still
-    // selects — so it is stripped rather than left to accumulate.
-    for (const cls of [...el.classList]) if (cls.startsWith('fa-')) el.classList.remove(cls);
     el.replaceChildren();
     if (hasIcon(value)) {
       el.classList.add('sherpa-icon-box');

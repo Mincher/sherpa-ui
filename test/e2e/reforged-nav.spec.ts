@@ -835,3 +835,40 @@ test('setting state to settings swaps the section list, and announces it', async
   expect(r.after).toEqual(['home', 'records']);
   expect(r.announced).toEqual(['settings', 'collapsed']);
 });
+
+/**
+ * THE BRAND MARK IS A DRAWING, NOT A WORD.
+ *
+ * `#applyIcon` used to decide by SPELLING — `/\bfa-/` meant "an icon", anything
+ * else meant "a raw glyph". When the icon names lost their `fa-` prefix every
+ * one of them fell through to the text branch, and the brand tile printed the
+ * word "group" where the mark should be. Nothing failed: a name IS a valid
+ * string to render as text.
+ * TRAP T-an-icon-is-known-by-the-set-not-its-spelling
+ */
+test('the brand icon draws an SVG for a name, and text for a raw glyph', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const read = async (icon: string): Promise<{ text: string; paints: boolean }> => {
+      const nav = document.createElement('sherpa-nav') as HTMLElement & {
+        rendered?: Promise<void>; populate?: (d: unknown) => void;
+      };
+      document.getElementById('root')!.replaceChildren(nav);
+      await nav.rendered;
+      nav.populate!({ product: { name: 'Acme', icon }, sections: [] });
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      const host = nav.shadowRoot!.querySelector('.brand-icon')!;
+      return {
+        text: (host.textContent ?? '').trim(),
+        paints: !!host.querySelector('svg path, svg circle, svg rect'),
+      };
+    };
+    return { named: await read('group'), glyph: await read('★') };
+  });
+
+  // A NAME in the icon set becomes a real drawing and leaves no text behind.
+  expect(r.named.paints).toBe(true);
+  expect(r.named.text).toBe('');
+  // A raw character is still printed — that branch is deliberate, not a fallback.
+  expect(r.glyph.paints).toBe(false);
+  expect(r.glyph.text).toBe('★');
+});
