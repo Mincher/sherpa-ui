@@ -36,6 +36,7 @@ say what order. Anything not numbered is a sub-item of the section it sits in.
 | | 21 | A filter PANEL, as an alternative to the toolbars | 7 |
 | | 21b | Which header chips CARRY OVER between views — configurable | 7 |
 | | 21c | A condition's matches must ALL highlight, not just one string | 7 |
+| | 21d | **EXPLORE** — date conditions. Undesigned, and much bigger | 7 |
 | | 22 | `Ask N-zo` panel — width, and a draggable edge | 8 |
 | | 23 | A focused grid row opens a details panel | 8 |
 | | 24 | Playwright tests accessibility — WCAG 2.1 AA | 9 |
@@ -184,6 +185,7 @@ primitive, then build on it.
 | 21 | A filter PANEL, as an alternative to the toolbars |
 | 21b | Which header chips CARRY OVER between views — configurable |
 | 21c | A condition's matches must ALL highlight, not just one string |
+| 21d | **EXPLORE** — date conditions. Undesigned, and much bigger |
 
 Item 21 is undesigned. Do it last of the three, once the menu is settled — the
 panel shows the same controls in a different frame.
@@ -224,6 +226,47 @@ that found it (`T-a-conditioned-chip-reads-as-info`), so only the FINDING
 changes — walk every answered row's text, not just `state.text`.
 
 Not started.
+
+### `[ ]` 21d — EXPLORE: conditions for a DATE field
+
+Will, 2026-09-24. **Nothing here is designed yet, so design comes first.**
+
+A date is not a string, and the text ops (`Contains`, `Starts with`) say
+nothing about one. The conditions it wants instead:
+
+| condition | takes |
+|---|---|
+| On | a date |
+| Before | a date **and** a time |
+| After | a date **and** a time |
+| Between | two dates **and** two times |
+| Last X | a DURATION — `7 days`, `3 months` |
+| Next X | a duration |
+| Includes | a boolean per weekday? — Mon…Sun toggles |
+
+Will: "Much more complicated than current conditional filters."
+
+**Why it is bigger than it looks.** `OP_TAKES` has three answers today —
+`list`, `text`, `range` — and a row shows ONE control for whichever it is.
+Every row above wants something else:
+
+- a DATE takes a calendar, which `sherpa-menu`'s `calendar` template already
+  owns — but that is a whole template, not a control inside a row
+- a TIME has no control at all yet
+- `Between` needs TWO of each, in one row
+- a DURATION is a number and a unit, which is two controls and no component
+- `Includes` is seven toggles, and it is not clear it is a condition at all
+  rather than a second axis
+
+So this is not "add seven entries to `OPS_FOR_TYPE`". Explore first: what a row
+looks like when its answer is two calendars, and whether `Last X` / `Includes`
+belong in the same list as `On` or somewhere else entirely.
+
+`OPS_FOR_TYPE['date']` is `[]` today, on purpose — "a date is answered by
+clicking a calendar, no operator list". That decision is what this item
+reopens.
+
+Not started. **Design before code.**
 
 ### Wave 8 — overlay panels
 
