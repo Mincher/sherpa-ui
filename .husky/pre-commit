@@ -107,6 +107,19 @@ if [ $PROPS_RESULT -ne 0 ]; then
   exit 1
 fi
 
+# The component CSS rules PRINCIPLES.md lists as gated — including a state colour
+# that reads the Theme "active" ramp instead of the Style mode, which is how a
+# Figma change to Style stopped reaching the filter chip.
+echo "🎨 Linting component CSS..."
+CSS_OUT=$(npm run lint:css --silent 2>&1)
+CSS_RESULT=$?
+
+if [ $CSS_RESULT -ne 0 ]; then
+  echo "$CSS_OUT" | grep -E '^(ERROR|warn)'
+  echo "❌ Component CSS breaks a gated rule. Commit blocked."
+  exit 1
+fi
+
 # A doc that names a script or command must name one that EXISTS. Found four
 # dangling pointers the moment it was written, two of which read as live
 # instructions — including a note saying two scripts "were KEPT" that had since

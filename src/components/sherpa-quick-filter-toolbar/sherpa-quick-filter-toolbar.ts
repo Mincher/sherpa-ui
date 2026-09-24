@@ -405,6 +405,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (this.#filters.length) this.#render();
     if (this.#organise.group?.length || this.#organise.sort?.length) this.#renderOrganise();
     if (this.#available.length) this.#renderAvailable();
+    // onChange never fires for an attribute set before the first render.
+    this.#syncFavouriteFromAttr();
 
     // CLICK, not hover: a passing pointer would drill the list out from under it.
     this.addEventListener('click', this.#onFoldedClick, true);
@@ -1435,8 +1437,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (!btn) return;
     const on = this.hasAttribute('data-favourite');
     // `active` is a real Style MODE; the adopted style-modes sheet paints it.
-    // TRAP T-tokens-css-never-reaches-shadow — `active` is a real Style MODE,
-    // which is why THIS sheet paints it.
+    // TRAP T-tokens-css-never-reaches-shadow
     if (on) btn.setAttribute('data-status', 'active');
     else btn.removeAttribute('data-status');
     /* NAMED, not `fa-solid`/`fa-regular`: the resolver strips the weight token,

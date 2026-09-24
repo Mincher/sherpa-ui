@@ -170,9 +170,9 @@
   inline-size: var(--sherpa-display-mode-size-2xs, 8px);
   block-size: var(--sherpa-display-mode-size-2xs, 8px);
   border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
-  background: var(--sherpa-theme-surface-active-base, #f2dfff);
+  background: var(--sherpa-style-active-surface-base, #f2dfff);
   border: var(--sherpa-border-top, 0.5px) solid
-    var(--sherpa-theme-border-active-2, #c046ff);
+    var(--sherpa-style-active-border-base, #c046ff);
 }
 /* No isVisible flag: the dot is meant to survive the collapsed rail. Absolute, not
    a flex child — a 40px rail has no room for it in flow (8+16+8+8+8 = 48), so it
@@ -206,10 +206,12 @@
   box-shadow: var(--sherpa-focus-ring);
 }
 
-/* ── Current — Style active. The label weight does NOT change with the mode. ── */
+/* ── Current — the Transparent look in its ACTIVE mode, as Figma pins it.
+   The label weight does NOT change with the mode.
+   TRAP T-a-state-colour-binds-the-style-mode ── */
 :host([data-current]) {
-  background: var(--sherpa-theme-surface-active-base, #f2dfff);
-  color: var(--sherpa-theme-content-active-1, #8300b6);
+  background: var(--sherpa-style-transparent-active-surface-base, transparent);
+  color: var(--sherpa-style-transparent-active-content-base, #c046ff);
 }
 
 /* ── Disabled — Style inactive: dark ink on the grey; never opacity. ───────── */
@@ -268,8 +270,8 @@
   block-size: var(--sherpa-display-mode-size-lg, 24px);
   flex-shrink: 0;
   border-radius: var(--sherpa-display-mode-border-rounding-xl, 16px);
-  background: var(--sherpa-theme-surface-active-base, #f2dfff);
-  color: var(--sherpa-theme-content-active-base, #240036);
+  background: var(--sherpa-style-active-surface-base, #f2dfff);
+  color: var(--sherpa-style-active-content-base, #240036);
 }
 
 .promo-body {

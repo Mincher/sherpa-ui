@@ -516,21 +516,20 @@ test('a favourited star takes the ACTIVE Style mode, face ring and ink', async (
   // Each resolved to a real colour, so the assertions below mean something — an
   // EMPTY value (the properties never reaching the button) is exactly the bug
   // this test exists for, and would otherwise pass silently.
-  expect(r.expected.surface).toMatch(/^#[0-9a-f]{6}$/i);
-  expect(r.expected.border).toMatch(/^#[0-9a-f]{6}$/i);
-  expect(r.expected.text).toMatch(/^#[0-9a-f]{6}$/i);
+  // Minified CSS may shorten a hex to 3 digits (#fff).
+  expect(r.expected.surface).toMatch(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  expect(r.expected.border).toMatch(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  expect(r.expected.text).toMatch(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
 
-  // ACTIVE is a Style MODE in the design, not an invented colour: the Style
-  // collection's `active` mode re-points style-surface/base → surface/active/base,
-  // style-border/base → border/active/+2 and style-content/base → content/active/+1.
-  // The star takes all three, not just tinted ink.
+  // ACTIVE is a Style MODE in the design, not an invented colour. The pin
+  // reaches the star inside the toolbar's shadow root through the adopted
+  // style-modes sheet — TRAP T-tokens-css-never-reaches-shadow.
   expect(r.on.status).toBe('active');
 
-  // The three PAINT differently from the default look. Asserted as "changed",
-  // not against fixed triples: the exact rgb depends on the browser's own
-  // rounding of the token hex (it paints #F2DFFF as 242,224,255, where the
-  // arithmetic is 223), which is not what this test is about.
-  expect(r.on.bg).not.toBe(r.off.bg);
+  // The ring and the ink PAINT differently from the default look. The face is
+  // not asserted as changed: since 2026-09-24 the active mode's surface IS the
+  // default surface in Figma. Not fixed triples either — the exact rgb depends
+  // on the browser's rounding of the token hex, which is not what this tests.
   expect(r.on.border).not.toBe(r.off.border);
   expect(r.on.ink).not.toBe(r.off.ink);
 

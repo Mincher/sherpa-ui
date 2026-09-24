@@ -23,6 +23,7 @@ const OUT = join(ROOT, 'src/styles/tokens/tokens.css');
    components used one. TRAP T-a-document-class-cannot-reach-a-shadow-root. */
 const OUT_TYPOGRAPHY = join(ROOT, 'src/core/sherpa-typography.css');
 const OUT_GROUP_POSITIONS = join(ROOT, 'src/core/sherpa-group-positions.css');
+const OUT_STYLE_MODES = join(ROOT, 'src/core/sherpa-style-modes.css');
 const COMPONENTS = join(ROOT, 'src/components');
 const PREFIX = 'sherpa-';
 
@@ -799,8 +800,13 @@ for (const slug of ['data-viz-status', 'data-viz-set-2']) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// Status cascade — an ancestor [data-status] emits --_status-* to shadow roots.
-// The `style` collection's 8 status modes map onto the public cascade vars.
+// Style MODES, by name — every Style variable in every mode, and in every look:
+//   --sherpa-style-<mode>-<role>            --sherpa-style-active-surface-base
+//   --sherpa-style-<look>[-<mode>]-<role>   --sherpa-style-transparent-active-content-base
+// A component STATE binds one of these, as a Figma instance binds a Style
+// variable and pins a mode. The [data-status] / [data-look] pins below re-point
+// the --_status-* cascade at the same names, so each value is declared once.
+// TRAP T-a-state-colour-binds-the-style-mode
 // ════════════════════════════════════════════════════════════════════════════
 const STATUS_MODES = ['info', 'critical', 'warning', 'urgent', 'success', 'active', 'inactive'];
 const STATUS_ROLE_MAP = {
@@ -820,71 +826,90 @@ const STATUS_ROLE_MAP = {
   'style-content/inverse': '_status-text-on-color',
   'style-indicator/accent': '_status-icon',
 };
-const statusBlocks = [];
 const styleByKey = {};
 for (const l of walkLeaves(doc.style ?? {}, ['style'])) {
   const key = l.path.slice(1).join('/'); // 'style-surface/base' etc
   styleByKey[key] = l;
 }
+const STYLE_VAR = `--${PREFIX}style-`;
+/** The named token for a Style variable in a mode, and optionally a look. */
+const styleModeVar = (key, mode, look) =>
+  `${STYLE_VAR}${look ? `${look}-` : ''}${mode === 'default' ? '' : `${mode}-`}` +
+  styleByKey[key].name.slice(STYLE_VAR.length);
+
+const styleModeLines = [];
+const emittedModeVars = new Set(Object.values(styleByKey).map((l) => l.name));
+const emitModeVar = (name, value) => {
+  if (value == null) return;
+  styleModeLines.push(`  ${name}: ${value};`);
+  emittedModeVars.add(name);
+};
 for (const mode of STATUS_MODES) {
-  const lines = [];
-  for (const [key, publicVar] of Object.entries(STATUS_ROLE_MAP)) {
-    const leaf = styleByKey[key];
-    if (!leaf) continue;
+  for (const [key, leaf] of Object.entries(styleByKey)) {
     const raw = mode in leaf.modes ? leaf.modes[mode] : leaf.value;
-    const v = withOpacity(toCss(raw, leaf.type), leaf.opacity[mode] ?? leaf.opacity[leaf.primaryMode]);
-    if (v != null) lines.push(`    --${publicVar}: ${v};`);
+    emitModeVar(
+      styleModeVar(key, mode),
+      withOpacity(toCss(raw, leaf.type), leaf.opacity[mode] ?? leaf.opacity[leaf.primaryMode]),
+    );
   }
-  if (lines.length) statusBlocks.push(`  [data-status="${mode}"] {\n${lines.join('\n')}\n  }`);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// Look tiers — style-transparent / style-saturated, from the extension cache. A tier
-// re-points the same status cascade vars per status mode, so [data-look][data-status]
-// composes. Values are literal hex (extension overrides don't serialise as refs) — and
-// they cannot be read back from the variable either.
-// TRAP T-a-look-override-is-not-on-the-variable
-// ════════════════════════════════════════════════════════════════════════════
-const LOOK_ROLE_MAP = {
-  'style-surface/base': '_status-surface',
-  'style-surface/base +1': '_status-surface-subtle',
-  'style-surface/base +2': '_status-surface-strong',
-  'style-surface/shadow': '_status-shadow',
-  'style-border/base': '_status-border',
-  // A status-tinted rule/stroke (chart lines, dividers) — the neutral
-  // `_status-border` cannot express these.
-  'style-border/base +1': '_status-border-strong',
-  // A DATA MARK under a status pin: fill is the ramp mid at 50%, border the same
-  // solid. Not `_status-border-strong`, which is a CARD's border step.
-  'style-surface/data-viz': '_status-data-viz',
-  'style-border/data-viz': '_status-data-viz-border',
-  'style-content/base': '_status-text',
-  'style-content/inverse': '_status-text-on-color',
-  'style-indicator/accent': '_status-icon',
-};
-const lookBlocks = [];
-for (const look of ['transparent', 'saturated']) {
-  const cache = extDoc[`style-${look}`]?.vars;
-  if (!cache) {
+// Looks EXTEND Style: a variable a look does not override is the parent's own
+// mode, as in Figma. The overrides are refs read from the collection's
+// `variableOverrides`. TRAP T-a-look-override-is-not-on-the-variable
+const LOOKS = ['transparent', 'saturated'];
+const LOOK_MODES = ['default', ...STATUS_MODES];
+// A look carries no data-viz: a chart mark takes its status from the pin alone.
+const LOOK_KEYS = Object.keys(styleByKey).filter((k) => !k.includes('data-viz'));
+/** A look override → CSS: a ref, a ref at an opacity, or a literal. */
+const lookValue = (ov, type) =>
+  ov && typeof ov === 'object' ? withOpacity(toCss(ov.ref, type), ov.opacity) : toCss(ov, type);
+for (const look of LOOKS) {
+  const vars = extDoc[`style-${look}`]?.vars;
+  if (!vars) {
     warn(`look tier "style-${look}" missing from extension cache`);
     continue;
   }
-  const defaultMode = extDoc[`style-${look}`].defaultMode ?? 'default';
-  const modes = new Set();
-  for (const v of Object.values(cache)) for (const m of Object.keys(v)) modes.add(m);
-  for (const mode of modes) {
-    const status = mode === defaultMode ? null : mode; // the default tier has no status
-    const lines = [];
-    for (const [key, publicVar] of Object.entries(LOOK_ROLE_MAP)) {
-      const val = cache[key]?.[mode];
-      if (val == null) continue;
-      lines.push(`    --${publicVar}: ${val};`);
+  for (const key of Object.keys(vars)) {
+    if (!styleByKey[key]) warn(`look "${look}" overrides "${key}", which Style does not have`);
+  }
+  for (const mode of LOOK_MODES) {
+    for (const key of LOOK_KEYS) {
+      const ov = vars[key]?.[mode];
+      const parent = styleModeVar(key, mode);
+      emitModeVar(
+        styleModeVar(key, mode, look),
+        ov != null ? lookValue(ov, styleByKey[key].type) : emittedModeVars.has(parent) ? `var(${parent})` : null,
+      );
     }
-    if (!lines.length) continue;
-    const sel = status
-      ? `  [data-look="${look}"][data-status="${status}"]`
-      : `  [data-look="${look}"]`;
-    lookBlocks.push(`${sel} {\n${lines.join('\n')}\n  }`);
+  }
+}
+
+/** One pin block: each cascade var re-pointed at its named token. */
+function pinBlock(selector, mode, look) {
+  const lines = Object.entries(STATUS_ROLE_MAP)
+    .filter(([key]) => styleByKey[key] && (!look || LOOK_KEYS.includes(key)))
+    .map(([key, cascadeVar]) => [cascadeVar, styleModeVar(key, mode, look)])
+    .filter(([, name]) => emittedModeVars.has(name))
+    .map(([cascadeVar, name]) => `    --${cascadeVar}: var(${name});`);
+  return lines.length ? `  ${selector} {\n${lines.join('\n')}\n  }` : null;
+}
+
+// The status cascade — an ancestor [data-status] emits --_status-* to shadow roots.
+const statusBlocks = STATUS_MODES.map((mode) => pinBlock(`[data-status="${mode}"]`, mode)).filter(Boolean);
+
+// A look re-points the same cascade per mode, so [data-look][data-status] composes.
+// `lookPinBlocks` is the compound half — the only half a shadow root adopts.
+const lookBlocks = [];
+const lookPinBlocks = [];
+for (const look of LOOKS) {
+  if (!extDoc[`style-${look}`]?.vars) continue;
+  for (const mode of LOOK_MODES) {
+    const sel = mode === 'default' ? `[data-look="${look}"]` : `[data-look="${look}"][data-status="${mode}"]`;
+    const block = pinBlock(sel, mode, look);
+    if (!block) continue;
+    lookBlocks.push(block);
+    if (mode !== 'default') lookPinBlocks.push(block);
   }
 }
 
@@ -1551,6 +1576,10 @@ ${joinBlocks(groupPositionBlocks)}
 const styleVars = [
   ...layers.style.root,
   '',
+  '    /* Style modes and looks, by NAME — a state binds one.',
+  '       TRAP T-a-state-colour-binds-the-style-mode */',
+  ...styleModeLines,
+  '',
   '    /* data-viz series — stable public names */',
   ...categoricalLines,
   ...(statusSeriesLines.length
@@ -1609,6 +1638,15 @@ ${styleLayer}
 ${elevationLayer}
 `;
 
+// A look names its targets in the EXPORT's words; a variable Figma renamed since
+// resolves to nothing, silently. TRAP T-a-look-override-is-not-on-the-variable
+for (const line of styleModeLines) {
+  if (!LOOKS.some((look) => line.startsWith(`  ${STYLE_VAR}${look}-`))) continue;
+  for (const [, name] of line.matchAll(/var\((--[\w-]+)/g)) {
+    if (!css.includes(`${name}:`)) warn(`${line.trim().split(':')[0]} reads ${name}, which nothing declares`);
+  }
+}
+
 writeFileSync(OUT, css);
 
 /* The same text classes, unwrapped from their @layer so a shadow root can adopt
@@ -1646,6 +1684,23 @@ writeFileSync(
  * TRAP T-a-document-class-cannot-reach-a-shadow-root.
  */
 ${groupPositionBlocks.join('\n\n').replace(/^ {2}/gm, '')}
+`,
+);
+
+/* The Style mode PINS, unwrapped from @layer so a shadow root can adopt them.
+   The same blocks in tokens.css never match an element inside a shadow root.
+   TRAP T-tokens-css-never-reaches-shadow. */
+writeFileSync(
+  OUT_STYLE_MODES,
+  `/**
+ * sherpa-style-modes.css — GENERATED by scripts/project-tokens.mjs. Do not edit.
+ *
+ * The Style mode pins — [data-status] and [data-look][data-status] — adopted
+ * into every shadow root, because the same blocks in tokens.css reach the page
+ * only. A bare [data-look] is left out: it would reset a status set above it.
+ * TRAP T-tokens-css-never-reaches-shadow.
+ */
+${[...statusBlocks, ...lookPinBlocks].join('\n\n').replace(/^ {2}/gm, '')}
 `,
 );
 

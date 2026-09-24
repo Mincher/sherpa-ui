@@ -59,7 +59,7 @@
   justify-content: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
   padding: var(--sherpa-display-mode-space-lg, 20px);
-  border: var(--sherpa-display-mode-border-width-base, 1px) dashed var(--sherpa-theme-border-active-2, #c046ff);
+  border: var(--sherpa-display-mode-border-width-base, 1px) dashed var(--sherpa-theme-border-active-2, #c046ff); /* theme-direct */
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   background: transparent;
   color: var(--sherpa-theme-content-body-1, #35353d);

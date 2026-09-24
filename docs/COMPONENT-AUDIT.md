@@ -1917,7 +1917,7 @@ gate, and I re-checked the rest. Not findings:
 - `data-selected`, `data-advanced`, `data-multiple` are **validly declared** —
   `check-props.mjs:78` accepts `observed` and `variantAttrs`, not just `props`.
 - `sherpa-select-group.ts:105` `createElement` — sanctioned by PRINCIPLES
-  rule 15 as "a typed child by tag name".
+  rule 16 as "a typed child by tag name".
 - The per-edge border chain in `input-text` and `button` — explicitly sanctioned
   in CLAUDE.md, though see §1: it no longer exists anywhere else.
 - `--sherpa-button-*` / `--sherpa-switch-*` — projected Figma tokens, not

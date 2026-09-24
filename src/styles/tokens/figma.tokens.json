@@ -9498,37 +9498,37 @@
             "lastSyncedAt": "2026-09-09T09:43:47.989Z",
             "lastSyncedValue": {
               "active": {
-                "reference": "{theme.content.body.+4}"
+                "reference": "{theme.content.body.base-fixed}"
               },
               "critical": {
-                "reference": "{theme.content.body.+4}"
+                "reference": "{theme.content.body.base-fixed}"
               },
               "default": {
-                "reference": "{theme.content.body.+4}"
+                "reference": "{theme.content.body.base-fixed}"
               },
               "inactive": {
                 "reference": "{theme.content.body.+1}"
               },
               "info": {
-                "reference": "{theme.content.body.+4}"
+                "reference": "{theme.content.body.base-fixed}"
               },
               "success": {
-                "reference": "{theme.content.body.+4}"
+                "reference": "{theme.content.body.base-fixed}"
               },
               "urgent": {
-                "reference": "{theme.content.body.+4}"
+                "reference": "{theme.content.body.base-fixed}"
               },
               "warning": {
-                "reference": "{theme.content.body.+4}"
+                "reference": "{theme.content.body.base-fixed}"
               }
             },
             "modes": {
-              "info": "{theme.content.body.+4}",
-              "critical": "{theme.content.body.+4}",
-              "warning": "{theme.content.body.+4}",
-              "urgent": "{theme.content.body.+4}",
-              "success": "{theme.content.body.+4}",
-              "active": "{theme.content.body.+4}",
+              "info": "{theme.content.body.base-fixed}",
+              "critical": "{theme.content.body.base-fixed}",
+              "warning": "{theme.content.body.base-fixed}",
+              "urgent": "{theme.content.body.base-fixed}",
+              "success": "{theme.content.body.base-fixed}",
+              "active": "{theme.content.body.base-fixed}",
               "inactive": "{theme.content.body.+1}"
             },
             "primaryMode": "default",
@@ -9536,7 +9536,7 @@
           }
         },
         "$type": "color",
-        "$value": "{theme.content.body.+4}"
+        "$value": "{theme.content.body.base-fixed}"
       },
       "secondary": {
         "$extensions": {
@@ -9699,7 +9699,7 @@
             "lastSyncedAt": "2026-09-09T09:43:47.989Z",
             "lastSyncedValue": {
               "active": {
-                "reference": "{theme.surface.default.base}"
+                "reference": "{theme.surface.active.base}"
               },
               "critical": {
                 "reference": "{theme.surface.default.base}"
@@ -9729,7 +9729,7 @@
               "warning": "{theme.surface.default.base}",
               "urgent": "{theme.surface.default.base}",
               "success": "{theme.surface.default.base}",
-              "active": "{theme.surface.default.base}",
+              "active": "{theme.surface.active.base}",
               "inactive": "{theme.surface.default.+2}"
             },
             "primaryMode": "default",
@@ -9752,7 +9752,7 @@
             "lastSyncedAt": "2026-09-09T09:43:47.989Z",
             "lastSyncedValue": {
               "active": {
-                "reference": "{theme.surface.active.base}"
+                "reference": "{theme.surface.active.+1}"
               },
               "critical": {
                 "reference": "{theme.surface.critical.base}"
@@ -9782,7 +9782,7 @@
               "warning": "{theme.surface.warning.base}",
               "urgent": "{theme.surface.urgent.base}",
               "success": "{theme.surface.success.base}",
-              "active": "{theme.surface.active.base}",
+              "active": "{theme.surface.active.+1}",
               "inactive": "{theme.surface.default.+2}"
             },
             "primaryMode": "default",
@@ -9805,7 +9805,7 @@
             "lastSyncedAt": "2026-09-09T09:43:47.989Z",
             "lastSyncedValue": {
               "active": {
-                "reference": "{theme.surface.active.+1}"
+                "reference": "{theme.surface.active.+2}"
               },
               "critical": {
                 "reference": "{theme.surface.critical.+1}"
@@ -9835,7 +9835,7 @@
               "warning": "{theme.surface.warning.+1}",
               "urgent": "{theme.surface.urgent.+1}",
               "success": "{theme.surface.success.+1}",
-              "active": "{theme.surface.active.+1}",
+              "active": "{theme.surface.active.+2}",
               "inactive": "{theme.surface.default.+2}"
             },
             "primaryMode": "default",
@@ -9910,7 +9910,7 @@
           }
         },
         "$type": "color",
-        "$value": "{display-mode.color.neutral.fixed.color 4}"
+        "$value": "{display-mode.color.neutral.fixed.color 5}"
       },
       "data-viz": {
         "$description": "Design value.",

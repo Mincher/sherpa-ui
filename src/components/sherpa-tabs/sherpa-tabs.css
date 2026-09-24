@@ -70,8 +70,8 @@
   }
 
   &[data-current] {
-    border-block-end-color: var(--sherpa-theme-border-active-2, #c046ff);
-    color: var(--sherpa-theme-content-active-1, #8300b6);
+    border-block-end-color: var(--sherpa-style-active-border-base, #c046ff);
+    color: var(--sherpa-style-active-content-base, #240036);
   }
 }
 

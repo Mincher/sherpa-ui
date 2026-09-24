@@ -60,7 +60,9 @@ test('CSS owns the look: data-look drives the rendered background', async ({ pag
   // default = white surface; saturated = solid accent fill; transparent = ghost.
   expect(r.def).toBe('rgb(255, 255, 255)');
   expect(r.saturated).not.toBe(r.def); // a distinct filled emphasis
-  expect(r.transparent).toMatch(/, 0\)$/); // fully transparent (alpha 0), any base channel
+  // Fully transparent (alpha 0), any base channel. A token at 0% computes to
+  // `color(srgb … / 0)` rather than `rgba(…, 0)`, so accept either form.
+  expect(r.transparent).toMatch(/(, 0|\/ 0)\)$/);
 });
 
 test('emits button-click; suppresses it when disabled', async ({ page }) => {

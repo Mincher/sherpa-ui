@@ -221,7 +221,7 @@
   display: block;
   block-size: 100%;
   inline-size: 40%;
-  background: var(--sherpa-theme-surface-active-2, #c046ff);
+  background: var(--sherpa-theme-surface-active-2, #c046ff); /* theme-direct */
   transform: translateX(-100%);
 }
 :host(:not([data-loading])) .loading-bar { display: none; }

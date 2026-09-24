@@ -4,124 +4,191 @@
     "defaultMode": "default",
     "vars": {
       "style-surface/base": {
-        "default": "#ffffff00",
-        "info": "#ffffff00",
-        "critical": "#ffffff00",
-        "warning": "#ffffff00",
-        "urgent": "#ffffff00",
-        "success": "#ffffff00",
-        "active": "#ffffff00",
-        "inactive": "#b3b3c300"
-      },
-      "style-border/base": {
-        "default": "#e8e8f6",
-        "info": "#b3b3c3",
-        "critical": "#b3b3c3",
-        "warning": "#b3b3c3",
-        "urgent": "#b3b3c3",
-        "success": "#b3b3c3",
-        "active": "#c046ff",
-        "inactive": "#b3b3c3"
-      },
-      "style-border/width": {
-        "default": 0.5,
-        "info": 0.5,
-        "critical": 0.5,
-        "warning": 0.5,
-        "urgent": 0.5,
-        "success": 0.5,
-        "active": 0.5,
-        "inactive": 0.5
-      },
-      "style-content/base": {
-        "default": "#35353d",
-        "info": "#006c91",
-        "critical": "#701100",
-        "warning": "#a27500",
-        "urgent": "#a24600",
-        "success": "#00ad62",
-        "active": "#8300b6",
-        "inactive": "#35353d"
-      },
-      "style-indicator/accent": {
-        "default": "#3b4ccd",
-        "info": "#003246",
-        "critical": "#701100",
-        "warning": "#473100",
-        "urgent": "#4e1e00",
-        "success": "#006b37",
-        "active": "#240036",
-        "inactive": "#b3b3c3"
-      },
-      "style-content/inverse": {
-        "default": "#ffffff",
-        "info": "#ffffff",
-        "critical": "#ffffff",
-        "warning": "#ffffff",
-        "urgent": "#ffffff",
-        "success": "#ffffff",
-        "active": "#ffffff",
-        "inactive": "#35353d"
+        "default": {
+          "ref": "{theme.surface.default.base}",
+          "opacity": "{primitives::effects/opacity/0}"
+        },
+        "info": {
+          "ref": "{theme.surface.default.base}",
+          "opacity": "{primitives::effects/opacity/0}"
+        },
+        "critical": {
+          "ref": "{theme.surface.default.base}",
+          "opacity": "{primitives::effects/opacity/0}"
+        },
+        "warning": {
+          "ref": "{theme.surface.default.base}",
+          "opacity": "{primitives::effects/opacity/0}"
+        },
+        "urgent": {
+          "ref": "{theme.surface.default.base}",
+          "opacity": "{primitives::effects/opacity/0}"
+        },
+        "success": {
+          "ref": "{theme.surface.default.base}",
+          "opacity": "{primitives::effects/opacity/0}"
+        },
+        "active": {
+          "ref": "{theme.surface.default.base}",
+          "opacity": "{primitives::effects/opacity/0}"
+        },
+        "inactive": {
+          "ref": "{theme.surface.default.+2}",
+          "opacity": "{primitives::effects/opacity/0}"
+        }
       },
       "style-surface/base +1": {
-        "default": "#e8e8f64d",
-        "info": "#d4f0ff4d",
-        "critical": "#ffdad14d",
-        "warning": "#fff4e14d",
-        "urgent": "#ffe6da4d",
-        "success": "#f0fff54d",
-        "active": "#f2dfff4d",
-        "inactive": "#b3b3c34d"
+        "default": {
+          "ref": "{theme.surface.default.+1}",
+          "opacity": "{primitives::effects/opacity/300}"
+        },
+        "info": {
+          "ref": "{theme.surface.info.base}",
+          "opacity": "{primitives::effects/opacity/300}"
+        },
+        "critical": {
+          "ref": "{theme.surface.critical.base}",
+          "opacity": "{primitives::effects/opacity/300}"
+        },
+        "warning": {
+          "ref": "{theme.surface.warning.base}",
+          "opacity": "{primitives::effects/opacity/300}"
+        },
+        "urgent": {
+          "ref": "{theme.surface.urgent.base}",
+          "opacity": "{primitives::effects/opacity/300}"
+        },
+        "success": {
+          "ref": "{theme.surface.success.base}",
+          "opacity": "{primitives::effects/opacity/300}"
+        },
+        "active": {
+          "ref": "{theme.surface.active.base}",
+          "opacity": "{primitives::effects/opacity/300}"
+        },
+        "inactive": {
+          "ref": "{theme.surface.default.+2}",
+          "opacity": "{primitives::effects/opacity/300}"
+        }
       },
       "style-surface/base +2": {
-        "default": "#b3b3c34d",
-        "info": "#6fd1ff4d",
-        "critical": "#ff856d4d",
-        "warning": "#ffdda04d",
-        "urgent": "#ff955b4d",
-        "success": "#82edb14d",
-        "active": "#d89cff4d",
-        "inactive": "#b3b3c34d"
+        "default": {
+          "ref": "{theme.surface.default.+2}",
+          "opacity": "{primitives::effects/opacity/300}"
+        },
+        "info": {
+          "ref": "{theme.surface.info.+1}",
+          "opacity": "{primitives::effects/opacity/300}"
+        },
+        "critical": {
+          "ref": "{theme.surface.critical.+1}",
+          "opacity": "{primitives::effects/opacity/300}"
+        },
+        "warning": {
+          "ref": "{theme.surface.warning.+1}",
+          "opacity": "{primitives::effects/opacity/300}"
+        },
+        "urgent": {
+          "ref": "{theme.surface.urgent.+1}",
+          "opacity": "{primitives::effects/opacity/300}"
+        },
+        "success": {
+          "ref": "{theme.surface.success.+1}",
+          "opacity": "{primitives::effects/opacity/300}"
+        },
+        "active": {
+          "ref": "{theme.surface.active.+1}",
+          "opacity": "{primitives::effects/opacity/300}"
+        },
+        "inactive": {
+          "ref": "{theme.surface.default.+2}",
+          "opacity": "{primitives::effects/opacity/300}"
+        }
       },
-      "style-content/secondary": {
-        "default": "#35353d",
-        "info": "#35353d",
-        "critical": "#35353d",
-        "warning": "#35353d",
-        "urgent": "#35353d",
-        "success": "#35353d",
-        "active": "#35353d",
-        "inactive": "#35353d"
-      },
-      "style-content/tertiary": {
-        "default": "#e8e8f6",
-        "info": "#b3b3c3",
-        "critical": "#b3b3c3",
-        "warning": "#35353d",
-        "urgent": "#b3b3c3",
-        "success": "#b3b3c3",
-        "active": "#b3b3c3",
-        "inactive": "#35353d"
-      },
-      "style-surface/shadow": {
-        "default": "#0c0b114d",
-        "info": "#0032464d",
-        "critical": "#7011004d",
-        "warning": "#4731004d",
-        "urgent": "#4e1e004d",
-        "success": "#006b374d",
-        "active": "#2400364d",
-        "inactive": "#0c0b114d"
+      "style-border/base": {
+        "default": {
+          "ref": "{theme.border.default.+1}",
+          "opacity": "{primitives::effects/opacity/0}"
+        },
+        "info": {
+          "ref": "{theme.border.default.+2}",
+          "opacity": "{primitives::effects/opacity/0}"
+        },
+        "critical": {
+          "ref": "{theme.border.default.+2}",
+          "opacity": "{primitives::effects/opacity/0}"
+        },
+        "warning": {
+          "ref": "{theme.border.default.+2}",
+          "opacity": "{primitives::effects/opacity/0}"
+        },
+        "urgent": {
+          "ref": "{theme.border.default.+2}",
+          "opacity": "{primitives::effects/opacity/0}"
+        },
+        "success": {
+          "ref": "{theme.border.default.+2}",
+          "opacity": "{primitives::effects/opacity/0}"
+        },
+        "active": {
+          "ref": "{theme.border.active.+2}",
+          "opacity": "{primitives::effects/opacity/0}"
+        },
+        "inactive": {
+          "ref": "{theme.border.default.+2}",
+          "opacity": "{primitives::effects/opacity/0}"
+        }
       },
       "style-border/base +1": {
-        "default": "#b3b3c3",
-        "info": "#008bba",
-        "critical": "#dd2c01",
-        "warning": "#ffc44c",
-        "urgent": "#ff7300",
-        "success": "#00ad62",
-        "active": "#c046ff",
-        "inactive": "#b3b3c3"
+        "default": {
+          "ref": "{theme.border.default.+2}",
+          "opacity": "{primitives::effects/opacity/0}"
+        },
+        "info": {
+          "ref": "{theme.border.info.+2}",
+          "opacity": "{primitives::effects/opacity/0}"
+        },
+        "critical": {
+          "ref": "{theme.border.critical.+2}",
+          "opacity": "{primitives::effects/opacity/0}"
+        },
+        "warning": {
+          "ref": "{theme.border.warning.+2}",
+          "opacity": "{primitives::effects/opacity/0}"
+        },
+        "urgent": {
+          "ref": "{theme.border.urgent.+2}",
+          "opacity": "{primitives::effects/opacity/0}"
+        },
+        "success": {
+          "ref": "{theme.border.success.+3}",
+          "opacity": "{primitives::effects/opacity/0}"
+        },
+        "active": {
+          "ref": "{theme.border.active.+2}",
+          "opacity": "{primitives::effects/opacity/0}"
+        },
+        "inactive": {
+          "ref": "{theme.border.default.+2}",
+          "opacity": "{primitives::effects/opacity/0}"
+        }
+      },
+      "style-content/base": {
+        "default": "{theme.content.body.+1}",
+        "info": "{theme.content.info.+1}",
+        "critical": "{theme.content.critical.+2}",
+        "warning": "{theme.content.warning.+2}",
+        "urgent": "{theme.content.urgent.+2}",
+        "success": "{theme.content.success.+1}",
+        "active": "{theme.content.active.base}"
+      },
+      "style-indicator/accent": {
+        "info": "{theme.surface.info.+4}",
+        "critical": "{theme.surface.critical.+4}",
+        "warning": "{theme.surface.warning.+4}",
+        "urgent": "{theme.surface.urgent.+4}",
+        "success": "{theme.surface.success.+4}",
+        "active": "{theme.surface.active.+4}"
       }
     }
   },
@@ -130,124 +197,66 @@
     "defaultMode": "default",
     "vars": {
       "style-surface/base": {
-        "default": "#3b4ccd",
-        "info": "#006c91",
-        "critical": "#b72200",
-        "warning": "#ffc44c",
-        "urgent": "#ff7300",
-        "success": "#20c173",
-        "active": "#f2dfff",
-        "inactive": "#b3b3c3"
-      },
-      "style-border/base": {
-        "default": "#3b4ccd",
-        "info": "#006c91",
-        "critical": "#b72200",
-        "warning": "#ffc44c",
-        "urgent": "#ff7300",
-        "success": "#20c173",
-        "active": "#c046ff",
-        "inactive": "#b3b3c3"
-      },
-      "style-border/width": {
-        "default": 0.5,
-        "info": 0.5,
-        "critical": 0.5,
-        "warning": 0.5,
-        "urgent": 0.5,
-        "success": 0.5,
-        "active": 0.5,
-        "inactive": 0.5
-      },
-      "style-content/base": {
-        "default": "#ffffff",
-        "info": "#ffffff",
-        "critical": "#ffffff",
-        "warning": "#0c0b11",
-        "urgent": "#ffffff",
-        "success": "#ffffff",
-        "active": "#8300b6",
-        "inactive": "#35353d"
-      },
-      "style-indicator/accent": {
-        "default": "#3b4ccd",
-        "info": "#003246",
-        "critical": "#701100",
-        "warning": "#473100",
-        "urgent": "#4e1e00",
-        "success": "#00391d",
-        "active": "#240036",
-        "inactive": "#b3b3c3"
-      },
-      "style-content/inverse": {
-        "default": "#0c0b11",
-        "info": "#0c0b11",
-        "critical": "#0c0b11",
-        "warning": "#0c0b11",
-        "urgent": "#0c0b11",
-        "success": "#0c0b11",
-        "active": "#ffffff",
-        "inactive": "#35353d"
+        "default": "{theme.surface.accent.+2}",
+        "info": "{theme.surface.info.+3}",
+        "critical": "{theme.surface.critical.+3}",
+        "warning": "{theme.surface.warning.+2}",
+        "urgent": "{theme.surface.urgent.+2}",
+        "success": "{theme.surface.success.+2}",
+        "active": "{theme.surface.active.base}",
+        "inactive": "{theme.surface.default.+2}"
       },
       "style-surface/base +1": {
-        "default": "#2b34b4",
-        "info": "#006c91",
-        "critical": "#b72200",
-        "warning": "#a27500",
-        "urgent": "#a24600",
-        "success": "#007a45",
-        "active": "#f2dfff",
-        "inactive": "#b3b3c3"
+        "default": "{theme.surface.accent.+3}",
+        "info": "{theme.surface.info.+3}",
+        "critical": "{theme.surface.critical.+3}",
+        "warning": "{theme.surface.warning.+3}",
+        "urgent": "{theme.surface.urgent.+3}",
+        "success": "{theme.surface.success.+3}"
       },
       "style-surface/base +2": {
-        "default": "#1e189c",
-        "info": "#003246",
-        "critical": "#701100",
-        "warning": "#473100",
-        "urgent": "#4e1e00",
-        "success": "#00391d",
-        "active": "#d89cff",
-        "inactive": "#b3b3c3"
+        "default": "{theme.surface.accent.+4}",
+        "info": "{theme.surface.info.+4}",
+        "critical": "{theme.surface.critical.+4}",
+        "warning": "{theme.surface.warning.+4}",
+        "urgent": "{theme.surface.urgent.+4}",
+        "success": "{theme.surface.success.+4}"
       },
-      "style-content/secondary": {
-        "default": "#b3b3c3",
-        "info": "#35353d",
-        "critical": "#35353d",
-        "warning": "#35353d",
-        "urgent": "#35353d",
-        "success": "#35353d",
-        "active": "#35353d",
-        "inactive": "#35353d"
-      },
-      "style-content/tertiary": {
-        "default": "#e8e8f6",
-        "info": "#b3b3c3",
-        "critical": "#b3b3c3",
-        "warning": "#35353d",
-        "urgent": "#b3b3c3",
-        "success": "#b3b3c3",
-        "active": "#b3b3c3",
-        "inactive": "#35353d"
-      },
-      "style-surface/shadow": {
-        "default": "#3b4ccd4d",
-        "info": "#00324680",
-        "critical": "#70110080",
-        "warning": "#47310080",
-        "urgent": "#4e1e0080",
-        "success": "#00391d80",
-        "active": "#8300b680",
-        "inactive": "#15151e80"
+      "style-border/base": {
+        "default": "{theme.border.accent.+2}",
+        "info": "{theme.border.info.+3}",
+        "critical": "{theme.border.critical.+3}",
+        "warning": "{theme.border.warning.+2}",
+        "urgent": "{theme.border.urgent.+2}",
+        "success": "{theme.surface.success.+2}"
       },
       "style-border/base +1": {
-        "default": "#e8e8f6",
-        "info": "#008bba",
-        "critical": "#dd2c01",
-        "warning": "#ffc44c",
-        "urgent": "#ff7300",
-        "success": "#20c173",
-        "active": "#c046ff",
-        "inactive": "#b3b3c3"
+        "default": "{theme.border.accent.+2}"
+      },
+      "style-content/base": {
+        "default": "{theme.content.body.base-fixed}",
+        "info": "{theme.content.body.base-fixed}",
+        "critical": "{theme.content.body.base-fixed}",
+        "warning": "{display-mode.color.neutral.fixed.color 5}",
+        "urgent": "{theme.content.body.base-fixed}",
+        "success": "{theme.content.body.base-fixed}",
+        "active": "{theme.content.active.+1}"
+      },
+      "style-content/inverse": {
+        "default": "{theme.content.body.base}",
+        "info": "{theme.content.body.base}",
+        "critical": "{theme.content.body.base}",
+        "warning": "{display-mode.color.neutral.fixed.color 5}",
+        "urgent": "{theme.content.body.base}",
+        "success": "{theme.content.body.base}"
+      },
+      "style-indicator/accent": {
+        "info": "{theme.surface.info.+4}",
+        "critical": "{theme.surface.critical.+4}",
+        "warning": "{theme.surface.warning.+4}",
+        "urgent": "{theme.surface.urgent.+4}",
+        "success": "{theme.surface.success.+4}",
+        "active": "{theme.surface.active.+4}"
       }
     }
   },

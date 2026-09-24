@@ -1,6 +1,6 @@
 # Principles
 
-The rules, stated once. Sixteen of them, and **twelve are enforced by a gate**
+The rules, stated once. Seventeen of them, and **thirteen are enforced by a gate**
 — those are facts about the codebase, not aspirations. The other four are
 conventions a reviewer has to hold.
 
@@ -34,7 +34,7 @@ reaches past the source to a store, and two components never speak directly.
 
 ---
 
-## 1–12: the gated rules
+## 1–13: the gated rules
 
 Each one runs in the pre-commit hook. The gate is the statement; the words here
 are a reminder of why.
@@ -48,39 +48,40 @@ are a reminder of why.
 | 3 | Never `opacity` for a disabled state — it compounds in dark mode. Inactive tokens per property | `lint:css` `disabled-opacity` |
 | 4 | An inset focus ring, `var(--sherpa-focus-ring)` — an outer ring bleeds over a snapped neighbour | `lint:css` `focus-ring` |
 | 5 | `@container`, never a viewport `@media`, inside a component | `lint:css` `viewport-media` |
-| 6 | The 8px grid, with a 4px text sub-grid. `/* off-grid-ok */` opts a drawn glyph out | `lint:css` `off-grid` |
+| 6 | Two grids: 4px for spacing, 2px for text. `/* off-grid-ok */` opts a drawn glyph out | `lint:css` `off-grid` |
 | 7 | No `light-dark()` in component CSS — the display-mode layer owns mode | `lint:css` `light-dark` |
+| 8 | A state colour binds the Style MODE Figma pins (`--sherpa-style-active-*`), never the Theme ramp. `/* theme-direct */` where Figma binds Theme too | `lint:css` `theme-active` |
 
 ### Contracts
 
 | # | Rule | Gate |
 |---|---|---|
-| 8 | Every `:host([data-*])` and every `this.dataset` read is DECLARED in `static props` | `check:props` |
-| 9 | One owner per value. A bound component REPORTS; `data-locked` says the host owns it | `check:ownership` |
-| 10 | A `TRAP T-…` citation resolves to an entry in `TRAPS.md`, and its Sites match who cites it | `check:traps` |
-| 11 | A `.component.yaml` regenerates the source it describes | `spec:check` |
-| 12 | The data layer imports no DOM — no `document`, `window`, `customElements`, storage | `lint` |
+| 9 | Every `:host([data-*])` and every `this.dataset` read is DECLARED in `static props` | `check:props` |
+| 10 | One owner per value. A bound component REPORTS; `data-locked` says the host owns it | `check:ownership` |
+| 11 | A `TRAP T-…` citation resolves to an entry in `TRAPS.md`, and its Sites match who cites it | `check:traps` |
+| 12 | A `.component.yaml` regenerates the source it describes | `spec:check` |
+| 13 | The data layer imports no DOM — no `document`, `window`, `customElements`, storage | `lint` |
 
 ---
 
-## 13–16: the ungated conventions
+## 14–17: the ungated conventions
 
 No gate, so a reviewer holds these. All four were checked on 2026-09-22 and the
 codebase obeys them.
 
-**13. `data-*` is the public API.** Native attributes (`disabled`, `name`,
+**14. `data-*` is the public API.** Native attributes (`disabled`, `name`,
 `value`) stay unprefixed. Component-private state is `--_*`, never a public
 `data-*`.
 
-**14. CSS owns visibility.** JS sets a `data-*` on the host; CSS selects it. JS
+**15. CSS owns visibility.** JS sets a `data-*` on the host; CSS selects it. JS
 never touches `.hidden`, `display` or `visibility` on a shadow node.
 
-**15. Every element the component will ever show is in the template.** No
+**16. Every element the component will ever show is in the template.** No
 `createElement()` for structure, no structural `innerHTML`. Repeating items use
 a cloning prototype. The four `createElement` calls that exist are a component
 creating *itself* (`sherpa-toast`) or a typed child by tag name.
 
-**16. Events are unprefixed `noun-verb`** — `page-change`, `tree-select`. Never
+**17. Events are unprefixed `noun-verb`** — `page-change`, `tree-select`. Never
 a `sherpa-` prefix. A re-dispatched native event keeps its native name, which
 is why `sherpa-accordion` emits `toggle`.
 

@@ -155,10 +155,10 @@
 
 /* ── Current row ───────────────────────────────────────────────────── */
 :host([data-current]) .row {
-  background: var(--sherpa-theme-surface-active-base, #f2dfff);
+  background: var(--sherpa-style-active-surface-base, #f2dfff);
 }
 :host([data-current]) .title {
-  color: var(--sherpa-theme-content-active-base, #240036);
+  color: var(--sherpa-style-active-content-base, #240036);
   font-weight: var(--sherpa-font-weight-semibold, 600);
 }
 

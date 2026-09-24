@@ -41,11 +41,19 @@ test('each State paints the fill the node names, on the inner content box', asyn
         h: cell.shadowRoot!.querySelector('.cell')!.getBoundingClientRect().height,
       };
     };
+    // The mode's own token, read the same way, so the check follows Figma.
+    const probe = document.createElement('div');
+    probe.style.background = 'var(--sherpa-style-active-surface-base)';
+    document.body.appendChild(probe);
+    const activeFill = getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    const active = activeFill.match(/[\d.]+/g)!.map(Number);
     return {
       default: await mk(),
       today: await mk('today'),
       selected: await mk('selected'),
       rangeMid: await mk('range-mid'),
+      active: [active[0], active[1], active[2], active[3] ?? 1],
     };
   });
 
@@ -60,8 +68,9 @@ test('each State paints the fill the node names, on the inner content box', asyn
   // fact, not a selection, which is why it is the info tint and not the active.
   expect(r.today.bg).toEqual([0, 139, 186, 0.3]);
 
-  // selected → surface/active/base (#F2DFFF).
-  expect(r.selected.bg).toEqual([242, 223, 255, 1]);
+  // selected → Figma pins Style=active; an on state is the mode's BASE step.
+  // TRAP T-a-state-colour-binds-the-style-mode
+  expect(r.selected.bg).toEqual(r.active);
 
   // A RANGE's middle squares its corners so a run reads as one band — the
   // node's selected-range variant has rounding 0 for exactly this reason.

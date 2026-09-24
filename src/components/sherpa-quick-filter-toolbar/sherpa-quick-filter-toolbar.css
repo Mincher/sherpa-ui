@@ -145,16 +145,6 @@
 /* Corner squaring is `.sherpa-group` (core/sherpa-grouping.css), which
    `.view-group` carries. */
 
-/* The lit star. These are written here because tokens.css's
-   [data-status="active"] is a document rule that never matches in a shadow
-   root; feeding --_status-* works because custom properties inherit across the
-   boundary. Setting `color` on the button host does nothing. */
-:host([data-favourite]) [data-act="favourite"] {
-  --_status-surface: var(--sherpa-theme-surface-active-base, #f2dfff);
-  --_status-border: var(--sherpa-theme-border-active-2, #c046ff);
-  --_status-text: var(--sherpa-theme-content-active-1, #8300b6);
-}
-
 /* ── Menu row groups ─────────────────────────────────────────────────
  * These rows sit in the CHIP's light DOM, slotted into the menu — which is why
  * a plain descendant selector from here reaches them at all.

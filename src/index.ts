@@ -14,6 +14,7 @@ import { SherpaElement } from './core/ui/sherpa-element.js';
  * One entry per file, because `@import` is DROPPED from an adopted stylesheet
  * without an error — TRAP T-import-dies-in-an-adopted-sheet.
  * `sherpa-typography.css` is GENERATED — TRAP T-a-document-class-cannot-reach-a-shadow-root.
+ * `sherpa-style-modes.css` is GENERATED — TRAP T-tokens-css-never-reaches-shadow.
  */
 SherpaElement.sharedStyles = [
   new URL('./core/sherpa-base.css', import.meta.url),
@@ -21,6 +22,7 @@ SherpaElement.sharedStyles = [
   new URL('./core/sherpa-grouping.css', import.meta.url),
   new URL('./core/sherpa-icon.css', import.meta.url),
   new URL('./core/sherpa-group-positions.css', import.meta.url),
+  new URL('./core/sherpa-style-modes.css', import.meta.url),
   new URL('./core/sherpa-anchor.css', import.meta.url),
   new URL('./core/sherpa-motion.css', import.meta.url),
 ];

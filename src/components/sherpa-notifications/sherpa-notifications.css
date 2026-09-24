@@ -60,7 +60,7 @@
   inline-size: var(--sherpa-display-mode-size-2xs, 8px);
   block-size: var(--sherpa-display-mode-size-2xs, 8px);
   border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
-  background: var(--sherpa-theme-border-active-2, #c046ff);
+  background: var(--sherpa-style-active-border-base, #c046ff);
 }
 
 /* An unread row's TITLE carries the weight, so the list is scannable without

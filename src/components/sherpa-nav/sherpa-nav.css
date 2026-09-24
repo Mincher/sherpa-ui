@@ -163,7 +163,7 @@
   block-size: var(--sherpa-display-mode-size-3xl, 40px);
   flex-shrink: 0;
   border-end-end-radius: var(--sherpa-display-mode-border-rounding-lg, 8px);
-  background: var(--sherpa-theme-surface-active-3, #8300b6);
+  background: var(--sherpa-theme-surface-active-3, #8300b6); /* theme-direct */
   color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
   font-size: var(--sherpa-display-mode-size-lg, 24px);
   line-height: 1;
@@ -219,10 +219,12 @@
     box-shadow: var(--sherpa-focus-ring);
   }
 }
+/* Pressed — the Transparent look in its ACTIVE mode, as Figma pins it.
+   TRAP T-a-state-colour-binds-the-style-mode */
 .hdr-btn[aria-pressed="true"] {
-  background: color-mix(in srgb, var(--sherpa-display-mode-color-brand-color-3, #c046ff) 30%, transparent);
-  border-color: var(--sherpa-theme-border-active-2, #c046ff);
-  color: var(--sherpa-theme-content-active-1, #8300b6);
+  background: var(--sherpa-style-transparent-active-surface-base, transparent);
+  border-color: var(--sherpa-style-transparent-active-border-base-1, transparent);
+  color: var(--sherpa-style-transparent-active-content-base, #c046ff);
 }
 
 /* ── Quick zone ────────────────────────────────────────────────────────── */

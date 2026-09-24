@@ -398,7 +398,15 @@ test('a value chip that is ON with no values picked paints WARNING, not active',
     toggle.current = true;
     const toggleOn = { empty: toggle.hasAttribute('data-empty'), ...(await paint(toggle)) };
 
-    return { emptyOn, withValue, unticked, emptyAgain, toggleOn };
+    // The active mode's own tokens, resolved the same way, so the check follows Figma.
+    const probe = document.createElement('div');
+    probe.style.background = 'var(--sherpa-style-active-surface-base)';
+    probe.style.borderTop = '1px solid var(--sherpa-style-active-border-base-1)';
+    document.body.appendChild(probe);
+    const active = { bg: getComputedStyle(probe).backgroundColor, border: getComputedStyle(probe).borderTopColor };
+    probe.remove();
+
+    return { emptyOn, withValue, unticked, emptyAgain, toggleOn, active };
   });
 
   // Warning: surface-warning-base #FFF4E1 face, border-warning-2 #FFC44C ring.
@@ -406,10 +414,12 @@ test('a value chip that is ON with no values picked paints WARNING, not active',
   expect(r.emptyOn.bg).toBe('rgb(255, 244, 225)');
   expect(r.emptyOn.border).toBe('rgb(255, 196, 76)');
 
-  // Active: the brand-purple tint and ring.
+  // Active: the ACTIVE Style mode's face and ring — whatever Figma sets them to.
+  // TRAP T-a-state-colour-binds-the-style-mode
   expect(r.withValue.empty).toBe(false);
-  expect(r.withValue.bg).toBe('rgb(242, 223, 255)');
-  expect(r.withValue.border).toBe('rgb(192, 70, 255)');
+  expect(r.withValue.bg).toBe(r.active.bg);
+  expect(r.withValue.border).toBe(r.active.border);
+  expect(r.emptyOn.bg).not.toBe(r.active.bg);
 
   // Unticking the last value turns the chip off rather than leaving it on-and-empty.
   expect(r.unticked).toEqual({ current: false, empty: false });
@@ -420,7 +430,7 @@ test('a value chip that is ON with no values picked paints WARNING, not active',
 
   // The toggle chip keeps the plain active look.
   expect(r.toggleOn.empty).toBe(false);
-  expect(r.toggleOn.bg).toBe('rgb(242, 223, 255)');
+  expect(r.toggleOn.bg).toBe(r.active.bg);
 });
 
 test('the caret label sits on the SAME text line as the chip label', async ({ page }) => {

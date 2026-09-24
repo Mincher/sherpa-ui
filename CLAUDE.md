@@ -6,8 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Read these first
 
-**[docs/PRINCIPLES.md](docs/PRINCIPLES.md) is the rules, stated once.** Sixteen
-of them, twelve enforced by a gate. Start there; it is two pages.
+**[docs/PRINCIPLES.md](docs/PRINCIPLES.md) is the rules, stated once.** Seventeen
+of them, thirteen enforced by a gate. Start there; it is two pages.
 
 This file is the detail behind them — the commands, the architecture, and the
 worked examples. The handover docs hold the *why*: the traps, the rulings, and
@@ -402,9 +402,9 @@ So: **read what you need live through the figma-console MCP**, and hand-patch
 that file when a value changes. `npm run check:extensions` guards it — a
 hand-patch is exactly where one collection collapses onto its sibling.
 
-### Shared CSS lives in SEVEN sheets
+### Shared CSS lives in EIGHT sheets
 
-`src/index.ts` puts seven stylesheets into `SherpaElement.sharedStyles`, and
+`src/index.ts` puts eight stylesheets into `SherpaElement.sharedStyles`, and
 every one is adopted into every shadow root:
 
 | sheet | holds |
@@ -414,6 +414,7 @@ every one is adopted into every shadow root:
 | `sherpa-grouping.css` | `.sherpa-group*`, `.sherpa-border-edges`, `.sherpa-border-corners` |
 | `sherpa-icon.css` | `.sherpa-icon-box` |
 | `sherpa-group-positions.css` | **generated** — grouping positions |
+| `sherpa-style-modes.css` | **generated** — the Style mode pins, `[data-status]` and `[data-look][data-status]` |
 | `sherpa-anchor.css` | `.chart-tip`, `.sherpa-tip`, `.chart-mark` |
 | `sherpa-motion.css` | durations, shared keyframes |
 
@@ -447,13 +448,23 @@ shorthand — but that is an argument for the shared class, not for 21 copies.
 
 ### Status cascade (`[data-status]`)
 
-Setting `data-status="critical|warning|success|info|urgent"` on any ancestor emits `--_status-*` custom properties that inherit through Shadow DOM. Components consume them via fallback chains — no per-component status blocks are needed:
+Setting `data-status="critical|warning|success|info|urgent|active|inactive"` on any ancestor emits `--_status-*` custom properties that inherit through Shadow DOM. Components consume them via fallback chains — no per-component status blocks are needed:
 
 ```css
-background: var(--_status-surface-strong, var(--sherpa-surface-control-primary-default));
+background: var(--_status-surface-strong, var(--sherpa-style-surface-base-2, #b3b3c3));
 ```
 
 Available: `--_status-surface` (style-surface/base), `--_status-surface-subtle` (+1 — the pale tint, e.g. the Toast card), `--_status-surface-strong` (+2), `--_status-shadow` (style-surface/shadow — status-tinted elevation colour), `--_status-border` (neutral in most modes), `--_status-border-strong` (style-border/base +1 — the status-tinted rule/stroke, e.g. a sparkline), `--_status-text`, `--_status-text-on-color`, `--_status-icon`.
+
+A pin works at ANY depth: the same blocks are in `tokens.css` for the page and in
+the adopted `sherpa-style-modes.css` for every shadow root.
+
+**A component's OWN state binds the Style mode by name** — on, current, open,
+selected. Figma binds a Style variable and pins a mode; the code binds the one
+token that is both: `--sherpa-style-active-surface-base`,
+`--sherpa-style-transparent-active-content-base`. Never the Theme ramp under it —
+`lint:css` `theme-active` fails that, because a Figma change to the mode then
+never arrives. TRAP `T-a-state-colour-binds-the-style-mode`.
 
 ### CSS `@function`: longhand first, function second
 

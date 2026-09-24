@@ -8,8 +8,6 @@
   /* BLOCK: an inline-block host shrink-wraps and never gives the grid a width. */
   display: block;
   --_border: var(--sherpa-theme-border-default-2, #b3b3c3);
-  --_accent: var(--sherpa-theme-surface-active-2, #c046ff);
-  --_accent-on: var(--sherpa-theme-content-body-base-fixed, #ffffff);
 }
 
 .cal {

@@ -57,15 +57,67 @@ attributes only, written before append.
 - Site: `test/e2e/reforged-app-header.spec.ts`
 ### T-tokens-css-never-reaches-shadow
 
-A bare `[data-status]` rule in `tokens.css` is loaded into the **document** and
-is not in `sharedStyles`. It reaches a light-DOM element — verified, it resolves
-`#f2dfff` there — and **never** one inside a shadow root.
+A bare `[data-status]` rule in `tokens.css` is loaded into the **document**. It
+reaches a light-DOM element and **never** one inside a shadow root. The
+`--_status-*` values inherit across the boundary; the SELECTOR that sets them
+does not.
 
-So a component that wants a status tint restates it in its own sheet. The
-`--_status-*` cascade works because those are inherited custom properties; the
-SELECTOR that sets them does not cross the boundary.
+So the projector writes the same pins a second time, into
+`src/core/sherpa-style-modes.css`, which every shadow root adopts: each
+`[data-status]` block and each `[data-look][data-status]` compound. A pin now
+works at any depth, as a mode pin does in Figma, and the favourite star's
+hand-copied active colours were deleted.
+
+A bare `[data-look]` is **left out** of that sheet. It sets the look's DEFAULT
+mode, so inside a status parent it would reset the status passed down. In the
+page, `tokens.css` still does exactly that — a known gap, not a model.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/index.ts`
+- Site: `src/core/sherpa-style-modes.css`
+- Site: `scripts/project-tokens.mjs`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `test/e2e/reforged-style-modes.spec.ts`
+
+### T-a-state-colour-binds-the-style-mode
+
+A component STATE — on, current, open, selected — is a Style MODE in Figma: the
+instance binds a Style variable and pins a mode. Code that painted the same
+state from the Theme ramp (`--sherpa-theme-surface-active-base`) looked right
+and could never follow Figma. On 2026-09-24 Will moved
+`style-surface/base [active]` to the default surface, and the filter chip stayed
+purple: 12 components read the ramp directly.
+
+So the projector names every Style variable in every mode and look:
+
+| token | Figma |
+|---|---|
+| `--sherpa-style-active-surface-base` | Style · `style-surface/base` · `active` |
+| `--sherpa-style-transparent-active-content-base` | Transparent · `style-content/base` · `active` |
+
+A state binds the token for the mode Figma pins, in the component's own look —
+a chip pins Style, a nav row pins Transparent. Where Figma shows no visible
+state, the token that gives today's colour was used, so nothing moved.
+
+`lint:css` `theme-active` fails a `--sherpa-theme-*-active-*` read. Where Figma
+ALSO binds Theme, a trailing `/* theme-direct */` on the same line opts out: the
+nav brand block and the upload drop zone, and the app-header loading bar, which
+Figma does not draw.
+
+Verified end to end on 2026-09-24: every Style colour variable × 8 modes × 3
+looks, computed in the browser against Figma's own resolve — 264 of 264 in
+light, 264 of 264 in dark.
+
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
+- Site: `src/components/sherpa-nav-item/sherpa-nav-item.css`
+- Site: `src/components/sherpa-nav/sherpa-nav.css`
+- Site: `src/components/sherpa-button/sherpa-button.css`
+- Site: `scripts/lint-css.mjs`
+- Site: `scripts/project-tokens.mjs`
+- Site: `test/e2e/reforged-style-modes.spec.ts`
+- Site: `test/e2e/reforged-nav-item.spec.ts`
+- Site: `test/e2e/reforged-quick-filter.spec.ts`
+- Site: `test/e2e/reforged-calendar-cell.spec.ts`
 
 ### T-scope-does-not-stop-inheritance
 
@@ -10193,35 +10245,28 @@ the only lever it has.
 ### T-a-look-override-is-not-on-the-variable
 
 A LOOK collection — `Transparent`, `Saturated` — does not own its variables. Its
-`variableIds` point at the **Style** collection's variables, and their
-`valuesByMode` is keyed by **Style's** mode ids (`18:2`, `951:27`…), never the
-look's own (`951:90`…).
+`variableIds` point at the **Style** collection's, keyed by Style's mode ids, so
+reading a look through the VARIABLE returns the base value and every look looks
+the same.
 
-So reading a look's values through the plugin API returns the BASE value, and
-every look looks identical. Measured 2026-09-23: `Transparent` and `Saturated`
-came back byte-for-byte the same, while the cache they are projected from has
-`#ffffff00` for a transparent surface and `#3b4ccd` for a saturated one.
+The override is on the **collection**:
+`(await figma.variables.getVariableCollectionByIdAsync(id)).variableOverrides`
+gives `{ [variableId]: { [lookModeId]: alias | { color, opacity } } }`. It holds
+only what the look overrides; the rest is the parent's value in the same mode.
 
-That is why `src/styles/tokens/figma.extensions.json` exists, and why
-`project-tokens.mjs` says *"extension overrides don't serialise as refs"*. The
-override lives at the collection's mode id; the variable does not carry it.
+So `figma.extensions.json` stores the two looks as exactly that — refs, sparse —
+and the projector emits every gap as `var(--sherpa-style-<mode>-…)`, the parent.
+Before 2026-09-24 they were light-mode hex from a probe: no dark mode, and 39
+values stale against Figma.
 
-**Two consequences.**
+Name each target by its variable ID, in the EXPORT's words. The export is older
+than Figma: `957:36740` is `content/body/base-fixed` in the export and
+`content/body/inverse-fixed` live, and a new `base-fixed` exists only live. A
+live name resolves to the wrong token or to nothing, silently — so
+`project-tokens.mjs` warns when a look reads a name nothing declares.
 
-`figma_export_tokens` cannot produce it. A fresh export writes
-`style-transparent: { $extensions: … }` with no variables, which matches the
-API and is still useless — and its `lastSyncedValue` is a cache of its own,
-dated 2026-09-09, so a "fresh" export can assert a stale alias. Diffing one
-against the repo showed 363 differences that were almost all that staleness.
-
-And the cache goes stale SILENTLY. Nothing in `scripts/` writes it, `lint:css`
-cannot see it, and `project-tokens.mjs` re-projects byte-identically from a
-stale copy — which reads exactly like "nothing changed in Figma".
-
-**To read a variable's true per-mode alias, use `getLocalVariablesAsync` and the
-collection that DECLARES it.** That is authoritative, and it is how five drifts
-in the Style collection were found — see the commit that removed the purple
-active fill.
+`figma_export_tokens` still cannot produce a look, and its `lastSyncedValue` is a
+cache of its own — a "fresh" export can assert a stale alias.
 
 - Site: `scripts/project-tokens.mjs`
 

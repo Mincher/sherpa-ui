@@ -60,7 +60,8 @@
 :host([data-state="range-start"]) .content,
 :host([data-state="range-end"]) .content,
 :host([data-state="range-mid"]) .content {
-  background: var(--sherpa-theme-surface-active-base, #f2dfff);
+  /* Figma pins Style=active. base / +1 / +2 = default / hover / down. */
+  background: var(--sherpa-style-active-surface-base, #f2dfff);
 }
 
 /* A range squares the corners that meet, so a run of days reads as one band.

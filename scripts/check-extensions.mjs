@@ -3,8 +3,8 @@
  * check-extensions.mjs — guard `src/styles/tokens/figma.extensions.json`.
  *
  * That file is HAND-MAINTAINED: the DTCG export cannot carry an override
- * collection, and neither can the plugin API — see
- * TRAP T-an-override-collection-is-keyed-by-its-parent for the three dead ends.
+ * collection. The plugin API can, but only through the COLLECTION's
+ * `variableOverrides` — TRAP T-an-override-collection-is-keyed-by-its-parent.
  * Will's ruling 2026-09-24: read what a task needs live through the
  * figma-console MCP, and hand-patch this file when a value changes.
  *
@@ -22,8 +22,9 @@ const FILE = join(ROOT, 'src', 'styles', 'tokens', 'figma.extensions.json');
 
 /** Every collection the projector reads, and how many variables it carries. */
 const EXPECTED = {
-  'style-transparent': 12,
-  'style-saturated': 12,
+  // The two looks hold only what they OVERRIDE, as refs — the rest is Style's.
+  'style-transparent': 7,
+  'style-saturated': 8,
   'display-compact': 118,
   'display-comfortable': 118,
   vertical: 8,
@@ -41,7 +42,7 @@ const EXPECTED = {
  * not guessed — a wrong constant here reads as drift in the data.
  */
 const MUST_DIFFER = [
-  ['style-transparent', 'style-saturated', 54],
+  ['style-transparent', 'style-saturated', 53],
   ['display-compact', 'display-comfortable', 48],
   ['data-viz-status', 'data-viz-set-2', 55],
   ['vertical', 'grid-top', 14],
@@ -78,7 +79,8 @@ const countDiff = (a, b) => {
   let n = 0;
   for (const name of new Set([...Object.keys(va), ...Object.keys(vb)])) {
     for (const mode of new Set([...Object.keys(va[name] ?? {}), ...Object.keys(vb[name] ?? {})])) {
-      if (va[name]?.[mode] !== vb[name]?.[mode]) n++;
+      // A look value can be an object ({ ref, opacity }), so compare by content.
+      if (JSON.stringify(va[name]?.[mode]) !== JSON.stringify(vb[name]?.[mode])) n++;
     }
   }
   return n;

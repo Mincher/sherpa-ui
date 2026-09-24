@@ -68,6 +68,18 @@ function nextComment(decl) {
   return next && next.type === 'comment' ? next.text : '';
 }
 
+/** A comment on the SAME line as the declaration, after its `;`. */
+function sameLineComment(decl) {
+  const next = decl.next?.();
+  if (!next || next.type !== 'comment') return '';
+  return next.source?.start?.line === decl.source?.end?.line ? next.text : '';
+}
+
+/* The Theme "active" ramp, read straight. A state binds the Style MODE instead,
+   as Figma binds a Style variable and pins a mode — or a change to the mode
+   never arrives. TRAP T-a-state-colour-binds-the-style-mode */
+const THEME_ACTIVE = /--sherpa-theme-(surface|border|content)-active-/;
+
 const findings = [];
 function report(level, file, line, code, msg) {
   findings.push({ level, file, line, code, msg });
@@ -164,6 +176,14 @@ function lintFile(file, cssRaw) {
       report('warning', file, line, 'off-grid',
         `${prop}: ${v}px is off the ${step}px ${which} grid — use a step (…, ${step}, ${step * 2}, ${step * 3}…), the token's real value, or add /* off-grid-ok */ if it's a drawn glyph.`);
     }
+  });
+
+  root.walkDecls((decl) => {
+    if (!THEME_ACTIVE.test(decl.value)) return;
+    if (/theme-direct/.test(sameLineComment(decl))) return;
+    report('error', file, decl.source?.start?.line ?? 0, 'theme-active',
+      `${decl.prop} reads the Theme "active" ramp — bind the Style mode (--sherpa-style-active-*, `
+      + `--sherpa-style-<look>-active-*), or add /* theme-direct */ where Figma binds Theme too.`);
   });
 
   root.walkAtRules('media', (at) => {

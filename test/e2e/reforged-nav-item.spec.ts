@@ -100,14 +100,22 @@ test('current setter reflects to data-current and styles the row', async ({ page
     const cs = getComputedStyle(el);
     const styled = { bg: cs.backgroundColor, color: cs.color, weight: cs.fontWeight };
     el.current = false;
-    return { on, off: el.hasAttribute('data-current'), ...styled };
+    // The mode's own tokens, resolved the same way, so the check follows Figma.
+    const probe = document.createElement('div');
+    probe.style.background = 'var(--sherpa-style-transparent-active-surface-base)';
+    probe.style.color = 'var(--sherpa-style-transparent-active-content-base)';
+    document.body.appendChild(probe);
+    const mode = { bg: getComputedStyle(probe).backgroundColor, color: getComputedStyle(probe).color };
+    probe.remove();
+    return { on, off: el.hasAttribute('data-current'), ...styled, mode };
   });
   expect(r.on).toBe(true);
   expect(r.off).toBe(false);
-  // Figma Style=active: surface/active/base face + content-active ink. The label
-  // weight binds Theme weight/light (300) and does NOT change with the mode.
-  expect(r.bg).toBe('rgb(242, 223, 255)'); // #f2dfff
-  expect(r.color).toBe('rgb(131, 0, 182)'); // #8300b6
+  // Figma pins Transparent=active on the current row: that look's face and ink.
+  // The label weight binds Theme weight/light (300) and does NOT change with the
+  // mode. TRAP T-a-state-colour-binds-the-style-mode
+  expect(r.bg).toBe(r.mode.bg);
+  expect(r.color).toBe(r.mode.color);
   expect(r.weight).toBe('300');
 });
 

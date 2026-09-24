@@ -12,9 +12,8 @@
      above it without painting over a neighbouring chip's open menu. */
   position: relative;
 
-  /* The strong brand accent (ramp step 2 = #C046FF), not the light surface. */
-  --_accent: var(--_status-border, var(--sherpa-theme-border-active-2, #c046ff));
-  --_active-surface: var(--sherpa-theme-surface-active-base, #f2dfff);
+  /* The AI type's ring and ink — the active Style mode's border. */
+  --_accent: var(--_status-border, var(--sherpa-style-active-border-base-1, #c046ff));
 }
 
 /* The chip shell is a SNAP WRAPPER, not a box — no fill, no stroke. */
@@ -94,12 +93,12 @@
   border-color: var(--_accent);
 }
 
-/* Active → brand-tint face, brand ring, and deeper brand ink than the ring
-   (Figma Style: active binds the label to content-active-1). */
+/* On → the ACTIVE Style mode, which Figma pins on the chip.
+   TRAP T-a-state-colour-binds-the-style-mode */
 :host([data-current]) :is(.body, .caret) {
-  background: var(--_active-surface);
-  border-color: var(--_accent);
-  color: var(--sherpa-theme-content-active-1, #8300b6);
+  background: var(--sherpa-style-active-surface-base, #ffffff);
+  border-color: var(--sherpa-style-active-border-base-1, #c046ff);
+  color: var(--sherpa-style-active-content-base, #240036);
 }
 
 /* ── ON but holding no values → the WARNING look, not the active one ─────────
