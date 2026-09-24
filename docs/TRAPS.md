@@ -8102,6 +8102,14 @@ be in the DOM.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
+**A CONDITION ROW states BOTH ends.** Three of its five children are
+conditional — the join is hidden on row one, the Remove on a lone row, and the
+answer is a select or a text box — so neither `:first-child` nor `:last-child`
+is the control a reader can see. The two ends are written out per flag rather
+than left to position.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+
 ### T-an-accordion-chevron-rides-the-heading-row
 
 `sherpa-accordion`'s summary row is `align-items: start`, not `center`.

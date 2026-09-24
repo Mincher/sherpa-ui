@@ -61,6 +61,14 @@
 /* The scope's HEADER stays put while its fields scroll past — a reader deep in
    a long list still knows which scope they are in, and the Add button stays
    reachable. `::part`, because the summary row is in the accordion's shadow. */
+/* ONE SIZE UP. A panel header is the app's own chrome, not a card's, so its
+   glyph and its switch read at the next step rather than the container
+   default. Will, 2026-09-24. */
+.head::part(icon) {
+  inline-size: var(--sherpa-theme-content-size-base-1, 16px);
+  block-size: var(--sherpa-theme-content-size-base-1, 16px);
+}
+
 .scope::part(header) {
   position: sticky;
   inset-block-start: 0;

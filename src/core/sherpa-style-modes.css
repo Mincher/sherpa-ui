@@ -751,6 +751,34 @@ sherpa-quick-filter[data-current][data-empty] {
   --_status-icon: var(--sherpa-style-warning-indicator-accent);
 }
 
+sherpa-quick-filter[data-current][data-conditioned] {
+  --sherpa-style-border-base: var(--sherpa-style-info-border-base);
+  --sherpa-style-border-base-1: var(--sherpa-style-info-border-base-1);
+  --sherpa-style-border-width: var(--sherpa-style-info-border-width);
+  --sherpa-style-border-data-viz: var(--sherpa-style-info-border-data-viz);
+  --sherpa-style-content-base: var(--sherpa-style-info-content-base);
+  --sherpa-style-content-inverse: var(--sherpa-style-info-content-inverse);
+  --sherpa-style-content-secondary: var(--sherpa-style-info-content-secondary);
+  --sherpa-style-content-tertiary: var(--sherpa-style-info-content-tertiary);
+  --sherpa-style-indicator-accent: var(--sherpa-style-info-indicator-accent);
+  --sherpa-style-surface-base: var(--sherpa-style-info-surface-base);
+  --sherpa-style-surface-base-1: var(--sherpa-style-info-surface-base-1);
+  --sherpa-style-surface-base-2: var(--sherpa-style-info-surface-base-2);
+  --sherpa-style-surface-shadow: var(--sherpa-style-info-surface-shadow);
+  --sherpa-style-surface-data-viz: var(--sherpa-style-info-surface-data-viz);
+  --_status-surface: var(--sherpa-style-info-surface-base);
+  --_status-surface-subtle: var(--sherpa-style-info-surface-base-1);
+  --_status-surface-strong: var(--sherpa-style-info-surface-base-2);
+  --_status-shadow: var(--sherpa-style-info-surface-shadow);
+  --_status-border: var(--sherpa-style-info-border-base);
+  --_status-border-strong: var(--sherpa-style-info-border-base-1);
+  --_status-data-viz: var(--sherpa-style-info-surface-data-viz);
+  --_status-data-viz-border: var(--sherpa-style-info-border-data-viz);
+  --_status-text: var(--sherpa-style-info-content-base);
+  --_status-text-on-color: var(--sherpa-style-info-content-inverse);
+  --_status-icon: var(--sherpa-style-info-indicator-accent);
+}
+
 sherpa-quick-filter[data-superseded] {
   --sherpa-style-border-base: var(--sherpa-style-inactive-border-base);
   --sherpa-style-border-base-1: var(--sherpa-style-inactive-border-base-1);
@@ -833,6 +861,34 @@ sherpa-quick-filter[disabled] {
   --_status-text: initial;
   --_status-text-on-color: initial;
   --_status-icon: initial;
+}
+
+:host(sherpa-filter-panel) .field-conditional[aria-pressed="true"] {
+  --sherpa-style-border-base: var(--sherpa-style-info-border-base);
+  --sherpa-style-border-base-1: var(--sherpa-style-info-border-base-1);
+  --sherpa-style-border-width: var(--sherpa-style-info-border-width);
+  --sherpa-style-border-data-viz: var(--sherpa-style-info-border-data-viz);
+  --sherpa-style-content-base: var(--sherpa-style-info-content-base);
+  --sherpa-style-content-inverse: var(--sherpa-style-info-content-inverse);
+  --sherpa-style-content-secondary: var(--sherpa-style-info-content-secondary);
+  --sherpa-style-content-tertiary: var(--sherpa-style-info-content-tertiary);
+  --sherpa-style-indicator-accent: var(--sherpa-style-info-indicator-accent);
+  --sherpa-style-surface-base: var(--sherpa-style-info-surface-base);
+  --sherpa-style-surface-base-1: var(--sherpa-style-info-surface-base-1);
+  --sherpa-style-surface-base-2: var(--sherpa-style-info-surface-base-2);
+  --sherpa-style-surface-shadow: var(--sherpa-style-info-surface-shadow);
+  --sherpa-style-surface-data-viz: var(--sherpa-style-info-surface-data-viz);
+  --_status-surface: var(--sherpa-style-info-surface-base);
+  --_status-surface-subtle: var(--sherpa-style-info-surface-base-1);
+  --_status-surface-strong: var(--sherpa-style-info-surface-base-2);
+  --_status-shadow: var(--sherpa-style-info-surface-shadow);
+  --_status-border: var(--sherpa-style-info-border-base);
+  --_status-border-strong: var(--sherpa-style-info-border-base-1);
+  --_status-data-viz: var(--sherpa-style-info-surface-data-viz);
+  --_status-data-viz-border: var(--sherpa-style-info-border-data-viz);
+  --_status-text: var(--sherpa-style-info-content-base);
+  --_status-text-on-color: var(--sherpa-style-info-content-inverse);
+  --_status-icon: var(--sherpa-style-info-indicator-accent);
 }
 
 sherpa-menu {

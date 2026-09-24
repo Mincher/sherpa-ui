@@ -188,6 +188,24 @@
 .condition-row[data-first] { grid-template-columns: minmax(6.5rem, 2fr) minmax(0, 3fr) auto; }
 .condition-row[data-only] { grid-template-columns: minmax(6.5rem, 2fr) minmax(0, 3fr); }
 
+/* THE GROUP'S REAL ENDS. `.sherpa-group` squares corners by POSITION, and a
+   `display: none` sibling still counts as `:first-child` / `:last-child` — so
+   the join (hidden on row one) and the Remove (hidden on a lone row) took the
+   rounded ends while the controls a reader can see kept square ones.
+   Three of the five children are conditional, so both ends are stated.
+   TRAP T-a-hidden-sibling-still-counts-as-first-child */
+.condition-row[data-first] > .condition {
+  --sherpa-border-left: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
+.condition-row[data-only][data-takes="list"] > .condition-pick,
+.condition-row[data-only][data-takes="text"] > .condition-value {
+  --sherpa-border-right: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
+
 /* A PICKING op answers with the field's own values; a TYPING one with a box.
    The row's own flag, so two rows can ask different questions at once.
    TRAP T-an-operator-decides-pick-or-type */

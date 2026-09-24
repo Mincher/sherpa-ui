@@ -20,12 +20,22 @@ sherpa-quick-filter:
   '&[data-current]': active
   # On but holding no values — the contradiction reads as a warning.
   '&[data-current][data-empty]': warning
+  # A CONDITION is an answer of a different kind, so it reads differently:
+  # info, never the plain on-tint. Will, 2026-09-24.
+  # TRAP T-a-conditioned-chip-reads-as-info
+  '&[data-current][data-conditioned]': info
 
   # The view took this field; reads as inactive, keeps its value.
   '&[data-superseded]': inactive
   '&[disabled]': inactive
   # The count is a Badge, which pins Style=default in Figma — never the on tint.
   '& .count': default
+
+sherpa-filter-panel:
+  # The `fx` switch is ON while the field answers with rows. INFO, the same
+  # mode a conditioned chip wears, so the pair reads as one idea.
+  # TRAP T-a-conditioned-chip-reads-as-info
+  '& .field-conditional[aria-pressed="true"]': info
 
 sherpa-menu:
   # Every Menu variant pins Style=default, so a menu slotted into an ON chip
