@@ -191,6 +191,13 @@ export async function init(root) {
       l.off = picked.length ? values.filter((v) => !picked.includes(v)) : [];
     },
     event: 'legend-item-click',
+    /* COMPONENT scope: a series switched off filters THIS chart and nothing
+       else — not the grid, not a sibling chart. It is still subject to the
+       View filter, which does cascade down.
+       TRAP T-a-filter-applies-down-its-scope */
+    scope: 'component',
+    // One part per legend, or the second would replace the first.
+    key: `legend:${el.id || field}`,
     signal: page.signal,
   });
   bindLegend($('#bar-legend'), 'category', CATEGORY_ORDER);

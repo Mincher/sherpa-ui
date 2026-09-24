@@ -7411,6 +7411,48 @@ holds it.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 
+### T-a-filter-applies-down-its-scope
+
+Two scopes, and before this they shared one slot.
+
+| scope | reaches | writes |
+|---|---|---|
+| **view** | every component in the View — it cascades DOWN | the FIELD's one selection, `select()` |
+| **component** | that component only | a NAMED PART, `contribute()` |
+
+`select(field, …)` is keyed by field alone, so a second writer does not narrow,
+it **replaces**. Measured: a View chip picked `mac + win`, a legend switched
+`mac` off, and the chip's own state came back as `win` — the reader's choice
+overwritten, and the chip re-drew showing the legend's answer as if they had
+made it.
+
+A named part fixes the whole rule at once, because parts are ANDed with every
+field selection:
+
+- it can only **narrow further** — `mac+win` then `win` gives `win`;
+- it can **never widen past the View** — a legend asking for a series the View
+  excluded gets nothing, not that series back;
+- two components over one field **intersect** rather than fight, provided each
+  names its own `key`;
+- the View's own state is **untouched**.
+
+**A component binding draws its OWN answer, not the field's.** The View's is a
+different, wider question, and drawing it on a component control would claim the
+reader picked something they did not. It also means `selection-change` never
+fires for a part, so the binding redraws itself on write.
+
+**A component scope REFUSES a source with no `contribute()`** rather than
+falling back to `select()` — that fallback is the exact clobber this scope
+exists to prevent.
+
+`scope` defaults to `view`, so every existing binding is unchanged.
+
+- Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `test/e2e/reforged-filter-scope.spec.ts`
+- Site: `examples/contexts/records.js`
+- Site: `examples/contexts/dashboard.js`
+
 ### T-a-full-range-is-still-a-range
 
 A NUMBER filter's slider opened at the column's own min and max, and the menu

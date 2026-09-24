@@ -347,6 +347,14 @@ export async function init(root) {
       l.off = picked.length ? values.filter((v) => !picked.includes(v)) : [];
     },
     event: 'legend-item-click',
+    /* COMPONENT scope: a series switched off filters THIS chart and nothing
+       else — not the grid, not a sibling chart. It is still subject to the
+       View filter, which does cascade down, so a series the View has already
+       removed cannot be switched back on here.
+       TRAP T-a-filter-applies-down-its-scope */
+    scope: 'component',
+    // One part per legend, or the second would replace the first.
+    key: `legend:${el.id || field}`,
     signal,
   });
   bindLegend(root.querySelector('#r-bar-legend'), 'status', states);

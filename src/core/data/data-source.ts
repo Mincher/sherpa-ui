@@ -269,11 +269,25 @@ export class DataSource extends EventTarget {
     this.#setFilterValue(filter);
   }
 
-  /** Own ONE NAMED PART. Parts are ANDed; `undefined` removes one. TRAP T-contribute-beats-last-writer */
+  /**
+   * Own ONE NAMED PART — the COMPONENT scope. Parts are ANDed with each other
+   * and with every field selection, so a part can only ever narrow further; it
+   * can never widen past what the View already allows, and it never touches
+   * another component's part or the View's own selection.
+   *
+   * `undefined` removes one.
+   *
+   * TRAP T-contribute-beats-last-writer · TRAP T-a-filter-applies-down-its-scope
+   */
   contribute(key: string, filter: Filter | undefined): void {
     if (filter) this.#parts.set(key, filter);
     else this.#parts.delete(key);
     this.#setFilterValue(this.#composed());
+  }
+
+  /** Every named part currently applied — the component-scope filters. */
+  get contributions(): string[] {
+    return [...this.#parts.keys()];
   }
 
   /* ── Selection, by FIELD ───────────────────────────────────────────── */
@@ -304,9 +318,16 @@ export class DataSource extends EventTarget {
   }
 
   /**
-   * Select values for a FIELD. Every control over it reads the same answer
-   * back from `selection()`; an empty list clears it. `reading` carries the
-   * rest of the question — the condition and its typed text.
+   * Select values for a FIELD — the VIEW scope. Every control over that field
+   * reads the same answer back from `selection()`; an empty list clears it.
+   * `reading` carries the rest of the question — the condition and its text.
+   *
+   * ONE SLOT PER FIELD, so this is the View's. A component that narrows only
+   * ITSELF must `contribute()` a named part instead: a second writer here does
+   * not narrow, it REPLACES — measured, a legend switching one series off
+   * overwrote the View chip's own two picks, and the chip then re-drew showing
+   * the legend's answer as if the reader had chosen it.
+   * TRAP T-a-filter-applies-down-its-scope
    */
   select(field: string, picked: readonly unknown[], reading: FieldReading = {}): void {
     /* A control hands back the KEY it was given, so it maps to the value the

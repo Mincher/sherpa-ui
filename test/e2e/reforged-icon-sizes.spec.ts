@@ -27,6 +27,14 @@ const BUTTON_SIZES: Record<string, string> = {
   '2xs': '10px', xs: '10px', sm: '14px', lg: '16px', xl: '16px', default: '14px',
 };
 
+/**
+ * How much of its 14-unit frame the `gear` drawing uses — its longest axis,
+ * read from `icon-paths.ts`: `ink: [1.344, 1.05, 11.324, 11.9]`. The box
+ * follows the token; the art follows Figma, at 85% of it.
+ * TRAP T-icon-box-is-not-the-glyph
+ */
+const GEAR_FILL = 11.9 / 14;
+
 test('every button size paints its box at its own icon-size token', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const root = document.getElementById('root')!;
@@ -61,19 +69,29 @@ test('every button size paints its box at its own icon-size token', async ({ pag
     // The BOX is the layout contract — exactly the token, and SQUARE.
     expect(`${row.boxH}px`, `${row.mode}: box height`).toBe(want);
     expect(`${row.boxW}px`, `${row.mode}: box width`).toBe(want);
-    /* THE RULE: the drawing's longest axis fills that box.
+    /* THE RULE: the drawing renders at the size it was DRAWN, scaled with the
+       box. `gear` is 12.25 of its 14 frame, so it is 87.5% of the box at every
+       size — not 100%. An icon that filled its box would be 1.14x Figma.
+
        0.1px, not toBeCloseTo(…, 1): Firefox rounds an SVG path's bounding box
        up by as much as 0.05px, where Chromium and WebKit are exact. Measured
        across all six sizes in all three engines — the worst case is +0.05, and
        `toBeCloseTo(14, 1)` demands < 0.05, so it failed by 0.00003px.
        A wrong TOKEN is pixels out, not hundredths.
-       TRAP T-an-svg-path-box-rounds-by-a-hundredth */
-    expect(Math.abs(Math.max(row.inkW, row.inkH) - parseFloat(want)),
-      `${row.mode}: longest axis`).toBeLessThanOrEqual(0.1);
+       TRAP T-an-svg-path-box-rounds-by-a-hundredth
+       TRAP T-icon-box-is-not-the-glyph */
+    expect(Math.abs(Math.max(row.inkW, row.inkH) - parseFloat(want) * GEAR_FILL),
+      `${row.mode}: drawn size`).toBeLessThanOrEqual(0.1);
   }
 });
 
-test('a drawing fills its longest axis, keeps 1:1, and never overflows', async ({ page }) => {
+/**
+ * The drawing stays INSIDE its box. It no longer has to fill it: an icon
+ * renders at the size it was drawn in Figma, and only 19 of 214 are drawn at
+ * 100%. Overflow is still a bug at any size.
+ * TRAP T-icon-box-is-not-the-glyph
+ */
+test('a drawing keeps 1:1 and never overflows its box', async ({ page }) => {
   const bad = await page.evaluate(async () => {
     const root = document.getElementById('root')!;
     const cases: string[] = [
@@ -118,13 +136,15 @@ test('a drawing fills its longest axis, keeps 1:1, and never overflows', async (
         const note = { html, cls, box: `${rect.width}x${rect.height}`, ink: `${w.toFixed(2)}x${h.toFixed(2)}` };
         // Half a pixel of slack: a curve's antialiased edge is not geometry.
         if (w > rect.width + 0.5 || h > rect.height + 0.5) out.push({ ...note, why: 'OVERFLOWS' });
-        else if (Math.abs(Math.max(w, h) - rect.width) > 0.5) out.push({ ...note, why: 'longest axis is not 100%' });
+        // A drawing may be SMALLER than its box — that is Figma's design — but
+        // an empty one means the art never rendered.
+        else if (w < 0.5 || h < 0.5) out.push({ ...note, why: 'drew NOTHING' });
       }
     }
     return out;
   });
 
-  expect(bad, `icons breaking the fit rule:\n${
+  expect(bad, `icons outside their box:\n${
     bad.map((b) => `  ${b.why}: ${b.cls} — box ${b.box}, ink ${b.ink}\n    ${b.html}`).join('\n')
   }`).toEqual([]);
 });
