@@ -143,6 +143,8 @@ events:
     name: filter-panel-close
     bubbles: true
     composed: true
+    detail:
+      reason: unknown
   - $type: event
     name: filter-add-request
     bubbles: true
@@ -165,6 +167,10 @@ events:
       conditional: unknown
       id: unknown
       scope: unknown
+  - $type: event
+    name: filter-panel-reopen
+    bubbles: true
+    composed: true
 tokens:
   field.column-gap: "{sherpa.display-mode-space-xs}"
 $extensions:
@@ -180,7 +186,8 @@ $extensions:
         description: Show the panel, unless the window is too narrow.
       - $type: method
         name: close
-        args: ""
+        args: "reason: 'reader' | 'width' = 'reader'"
+        description: EVERY close reports, and says why. The width path called this directly
       - $type: method
         name: toggle
         args: ""

@@ -110,6 +110,20 @@
    two answers side by side is the thing this mode exists to avoid. */
 .field[data-conditional] .field-values { display: none; }
 
+/* …and it gives the rows the WHOLE column. A condition row is one grouped
+   object — `[And|Or] [condition] [answer] [x]` — and the actions column took
+   80 of the field's 294px, which left 214 and forced the row to stack.
+   Measured 2026-09-24: body 214px beside the actions, 294px under them.
+   So in condition mode the field is ONE column and the actions ride the label
+   row, where they still act on the field.
+   TRAP T-an-inline-condition-row-keeps-its-tracks */
+.field[data-conditional] {
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "label acts"
+    "body  body";
+}
+
 /* A NUMBER body's two shapes. The rows are the TOOLBAR's clones, and its sheet
    does not reach this shadow root — so both showed at once and the bare input
    kept its native spinner beside the slider. Same two lines, here.
@@ -117,6 +131,15 @@
 .field-body .qf-number-range { display: none; }
 .field-body sherpa-menu[data-range] .qf-number-one { display: none; }
 .field-body sherpa-menu[data-range] .qf-number-range { display: flex; }
+/* And the Range switch's own row. Without it the row fell back to `block`,
+   which stacked the switch above its label. */
+.field-body .qf-range-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+  padding: var(--sherpa-display-mode-space-2xs, 4px)
+    var(--sherpa-display-mode-space-xs, 8px);
+}
 
 /* A field ANSWERED BY ITS MENU — a condition, a number, a range — shows that
    body instead of a run of chips. TRAP T-an-inline-menu-is-the-same-menu */
@@ -132,6 +155,11 @@
    TRAP T-a-hidden-sibling-still-counts-as-first-child */
 
 /* A scope with nothing to add offers no Add button. */
+/* The Add-filter button and the chevron share the accordion's header gap, and
+   at the accordion's own 4px they read as one control. Wider, here only —
+   every other accordion in the library keeps its own spacing. */
+.scope::part(header) { gap: var(--sherpa-display-mode-space-sm, 12px); }
+
 .scope-actions { display: block; }
 .scope-add { display: none; }
 .scope[data-can-add] .scope-add {

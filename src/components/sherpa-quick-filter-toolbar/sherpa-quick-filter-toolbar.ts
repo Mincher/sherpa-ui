@@ -421,8 +421,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // A calendar commits through its own events — it has no Apply button.
     this.addEventListener('datetime-change', this.#onDatePicked);
     this.addEventListener('range-select', this.#onDatePicked);
-    // sherpa-switch re-dispatches its native change COMPOSED; a bare checkbox does not.
-    this.addEventListener('change', this.#onRangeToggle);
     /* A menu's CONDITION is part of what a chip filters by, so the bar reports
        it like any other change. TRAP T-an-operator-decides-pick-or-type */
     this.addEventListener('condition-change', this.#onConditionChanged);
@@ -893,7 +891,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   /** Was this chip's commit mode PINNED by its definition? The Range switch must not move it. */
   #chipDefers(sw: HTMLElement): boolean {
-    const id = sw.closest<HTMLElement>('.chip')?.dataset['id'];
+    /* The MENU carries the id. Walking up to `.chip` finds nothing once a
+       filter panel has borrowed the menu.
+       TRAP T-a-borrowed-menu-leaves-its-toolbars-listeners-behind */
+    const id = sw.closest<HTMLElement>('sherpa-menu')?.dataset['chipId']
+      ?? sw.closest<HTMLElement>('.chip')?.dataset['id'];
     if (!id) return false;
     return this.#filters.some((f) => f.id === id && f.commit != null);
   }
@@ -909,6 +911,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       sw?.setAttribute('checked', '');
       menu.setAttribute('data-range', '');
     }
+    /* On the MENU, not on the bar. A filter panel BORROWS a menu out of this
+       toolbar, and a listener bound on the bar stops hearing it the moment it
+       moves — the switch then flipped nothing, silently.
+       TRAP T-a-borrowed-menu-leaves-its-toolbars-listeners-behind */
+    menu.addEventListener('change', this.#onRangeToggle);
+    /* The chip's own id, read NOW while the menu is still on its chip. A
+       borrowed menu cannot walk up to `.chip` any more. */
+    menu.dataset['chipId'] = def.id;
     menu.appendChild(row);
   }
 

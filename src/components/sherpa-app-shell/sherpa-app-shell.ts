@@ -11,6 +11,12 @@ export class SherpaAppShell extends SherpaElement {
   static override html = new URL('./sherpa-app-shell.html', import.meta.url);
   static override observed = ['data-nav-state', 'data-no-nav', 'data-no-header'];
 
+  /** The shell writes these itself, mirroring each panel's own `data-open`. */
+  static override props = {
+    'data-panel-start-open': { type: 'boolean', kind: 'visibility' },
+    'data-panel-end-open': { type: 'boolean', kind: 'visibility' },
+  } as const;
+
   override onRender(): void {
     // The event is composed, so one listener covers the default rail and a slotted one.
     this.addEventListener('nav-state-change', this.#onNavState as EventListener);

@@ -328,6 +328,20 @@ tokens:
   act-divider.background: "{sherpa.theme-border-default-2}"
   chips.gap: "{sherpa.display-mode-space-xs}"
   actions-zone.gap: "{sherpa.display-mode-space-xs}"
+  qf-range-row.gap: "{sherpa.display-mode-space-xs}"
+  qf-range-row.padding: "{sherpa.display-mode-space-2xs}"
+  qf-range-row.font-size: "{sherpa.font-size-body-base}"
+  qf-range-row.line-height: "{sherpa.theme-content-line-height-base}"
+  qf-range-row.color: "{sherpa.theme-content-body-1}"
+  qf-number.padding: "{sherpa.display-mode-space-2xs}"
+  qf-number-one.min-block-size: "{sherpa.display-mode-size-2xl}"
+  qf-number-one.padding: "{sherpa.display-mode-space-2xs}"
+  qf-number-one.border-color: "{sherpa.theme-border-default-2}"
+  qf-number-one.border-radius: "{sherpa.display-mode-border-rounding-base}"
+  qf-number-one.background: "{sherpa.theme-surface-default-base}"
+  qf-number-one.color: "{sherpa.theme-content-body-1}"
+  qf-number-one.font-family: "{sherpa.font-family-mono}"
+  qf-number-one.font-size: "{sherpa.font-size-body-base}"
 $extensions:
   sherpa:
     figmaName: Filter Toolbar

@@ -276,13 +276,13 @@ export async function init(root, { session } = {}) {
     // one field would make the reader guess which is in force.
     { id: 'tier', label: 'Tier', type: 'data',
       select: 'multiple', removable: true, options: asOptions('tier') },
-    /* SINGLE-select, COMMITTING: rows are a draft behind Apply/Cancel. And the
-       one chip here that OPTS IN to conditions — an owner is a person's name,
-       so "starts with" is a question a reader really asks. Status, Plan and
-       Tier are closed sets of three or four, and get a plain list.
+    /* COMMITTING: rows are a draft behind Apply/Cancel. And the one chip here
+       that OPTS IN to conditions — an owner is a person's name, so "starts
+       with" is a question a reader really asks. Status, Plan and Tier are
+       closed sets of three or four, and get a plain list.
        TRAP T-conditions-are-opt-in-per-field */
     { id: 'owner', label: 'Owner', type: 'data', conditions: true,
-      select: 'single', removable: true, commit: true, options: asOptions('owner') },
+      select: 'multiple', removable: true, commit: true, options: asOptions('owner') },
     /* No `created` chip here: the header's "Created date" already filters that
        field at VIEW scope, and one field lives in exactly ONE scope.
        TRAP T-component-extends-view-never-alters-it */
@@ -432,16 +432,38 @@ export async function init(root, { session } = {}) {
 
   qft.addEventListener('filter-configure', togglePanel, { signal });
   header?.addEventListener('filter-configure', togglePanel, { signal });
-  panel?.addEventListener('filter-panel-close', () => {
+  panel?.addEventListener('filter-panel-close', (e) => {
     syncPanelled(false);
     setPanelMode(false);
-    setMode('toolbars');
+    /* Only a READER's close is a choice worth remembering. A window too narrow
+       to hold the panel is not — storing that would let the window size forget
+       what they asked for.
+       TRAP T-every-close-reports-or-the-toolbars-stay-hidden */
+    if (e.detail?.reason !== 'width') setMode('toolbars');
+  }, { signal });
+
+  /* WIDE AGAIN, and the window was what took the panel away. Give it back. */
+  panel?.addEventListener('filter-panel-reopen', () => {
+    void (async () => {
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      fillPanel();
+      panel.open();
+      if (panel.hasAttribute('data-open')) {
+        syncPanelled(true);
+        setPanelMode(true);
+      }
+    })();
   }, { signal });
 
   /* RESTORE. The panel opens itself if the reader left it open — after the
      bars are populated, because it reads their chips. */
   if (session?.get?.('/filters/mode') === 'panel') {
-    queueMicrotask(() => {
+    /* TWO FRAMES, not a microtask: the bars have only just been populated and
+       a cloned `<sherpa-menu>` stamps nothing until it upgrades, so a read now
+       finds chips with no value rows — and the panel draws menus instead of
+       chips. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
+    void (async () => {
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       fillPanel();
       panel?.open();
       // `open()` refuses below its breakpoint, so follow what it actually did.
@@ -449,7 +471,7 @@ export async function init(root, { session } = {}) {
         syncPanelled(true);
         setPanelMode(true);
       }
-    });
+    })();
   }
 
   /* APPLY. The panel reports every field in ONE event; each one goes to the

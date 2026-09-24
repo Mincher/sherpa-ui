@@ -185,8 +185,15 @@ export class SherpaFilterPanel extends SherpaElement {
     this.toggleAttribute('data-open', true);
   }
 
-  close(): void {
+  /** EVERY close reports, and says why. The width path called this directly
+   *  while only the header button emitted, so a narrow window left the panel
+   *  gone and the host still in panel mode — no toolbars, no panel.
+   *  TRAP T-every-close-reports-or-the-toolbars-stay-hidden */
+  close(reason: 'reader' | 'width' = 'reader'): void {
+    if (!this.hasAttribute('data-open')) return;
     this.removeAttribute('data-open');
+    this.#lastClose = reason;
+    this.emit('filter-panel-close', { reason });
   }
 
   override onDisconnect(): void {
@@ -497,7 +504,7 @@ export class SherpaFilterPanel extends SherpaElement {
   #onValueClick = (event: Event): void => {
     const one = this.#pathFind(event, '.value');
     if (!one) return;
-    const held = [...this.#held.values()].find((h) => h.values.contains(one));
+    const held = this.#heldOfChip(one);
     if (!held) return;
     if (held.def.select === 'single') {
       for (const other of held.values.querySelectorAll('.value')) {
@@ -523,6 +530,21 @@ export class SherpaFilterPanel extends SherpaElement {
     const remove = this.#pathFind(event, '.field-remove');
     if (remove) return this.#removeField(remove);
   };
+
+  /** The `Held` a CHIP belongs to.
+   *
+   *  `values.contains(chip)` is not enough: Organise puts Group and Sort in
+   *  ONE section, so both chips share one container and `find` always returned
+   *  the first — the Sort chip applied GROUPING.
+   *  The chip carries its own id, so ask it first.
+   *  TRAP T-two-chips-in-one-section-need-their-own-id */
+  #heldOfChip(chip: HTMLElement): Held | undefined {
+    const id = chip.dataset['value'];
+    const byId = id
+      ? [...this.#held.values()].find((h) => h.def.id === id && h.values.contains(chip))
+      : undefined;
+    return byId ?? [...this.#held.values()].find((h) => h.values.contains(chip));
+  }
 
   #fieldOf(node: HTMLElement): Held | undefined {
     return [...this.#held.values()].find((h) => h.box.contains(node));
@@ -610,7 +632,7 @@ export class SherpaFilterPanel extends SherpaElement {
        TRAP T-a-chip-menu-apply-is-the-panels-apply */
     const chip = this.#pathFind(event, '.value');
     if (chip) {
-      const held = [...this.#held.values()].find((h) => h.values.contains(chip));
+      const held = this.#heldOfChip(chip);
       if (held) {
         const picked = ((event as CustomEvent).detail?.values ?? []) as string[];
         chip.toggleAttribute('data-current', picked.length > 0);
@@ -656,7 +678,71 @@ export class SherpaFilterPanel extends SherpaElement {
       values: this.values,
       picked: this.values,
     });
+    /* AND THEN ASK THE BARS. `values` is ticked chips only — a field in
+       CONDITION mode has no ticked chips, so its rows said nothing and Apply
+       committed nothing. The bar already reads its own chips AND their menus'
+       conditions, so it re-reports rather than the panel deriving a second
+       answer. TRAP T-the-panel-asks-the-bar-it-does-not-answer-for-it */
+    this.#markConditioned();
+    for (const bar of this.#bars()) bar.report?.();
   };
+
+  /** A field answered by CONDITIONS is on, and its chip has to say so.
+   *
+   *  The bar reads `data-current` to decide whether a field is suspended, and
+   *  a chip in the hidden toolbar was never ticked — the reader answered in
+   *  the panel. So the field read as suspended and gave no clause, with the
+   *  right conditions sitting in its own state.
+   *  TRAP T-a-conditioned-chip-answers-with-its-clause */
+  #markConditioned(): void {
+    for (const [, held] of this.#held) {
+      if (!held.box.hasAttribute('data-conditional')) continue;
+      const menu = held.menu as (HTMLElement & { conditions?: unknown[] }) | undefined;
+      const chip = this.#chipOf(held);
+      if (!chip) continue;
+      chip.toggleAttribute('data-current', (menu?.conditions?.length ?? 0) > 0);
+    }
+  }
+
+  /** Every toolbar a borrowed menu came from, each named once. */
+  #bars(): Array<HTMLElement & { report?: () => void }> {
+    const out = new Set<HTMLElement>();
+    for (const [, held] of this.#held) {
+      const bar = this.#barOf(held);
+      if (bar) out.add(bar);
+    }
+    return [...out] as Array<HTMLElement & { report?: () => void }>;
+  }
+
+  /** The toolbar a borrowed menu came from.
+   *
+   *  `closest()` STOPS at a shadow boundary, and a chip lives inside the
+   *  toolbar's shadow root — so it walked up to the chip and found no bar at
+   *  all. A root walk crosses the boundary.
+   *  TRAP T-closest-stops-at-the-shadow-boundary */
+  #barOf(held: Held): (HTMLElement & { report?: () => void }) | null {
+    const root = this.getRootNode() as Document | ShadowRoot;
+    const host = (root as ShadowRoot).host ?? root;
+    const bars = (host.ownerDocument ?? document)
+      .querySelectorAll<HTMLElement & { heldIds?: readonly string[];
+        report?: () => void; shadowRoot: ShadowRoot }>('sherpa-quick-filter-toolbar');
+    for (const bar of bars) {
+      if (bar.heldIds?.includes(held.def.id)) return bar;
+    }
+    return null;
+  }
+
+  /** The BAR's own chip for this field.
+   *
+   *  Not `menuHome.parent`: the flip path records the parent as it is AT THAT
+   *  MOMENT, and for a menu the panel already holds that is the PANEL's chip.
+   *  Ticking it told the bar nothing. The bar's chip is found by field id.
+   *  TRAP T-the-panel-asks-the-bar-it-does-not-answer-for-it */
+  #chipOf(held: Held): HTMLElement | null {
+    const bar = this.#barOf(held) as (HTMLElement & { shadowRoot: ShadowRoot }) | null;
+    return bar?.shadowRoot?.querySelector<HTMLElement>(
+      `.chip[data-id="${CSS.escape(held.def.id)}"]`) ?? null;
+  }
 
   /** DISCARD reverts to the last Apply, which is why it is not Cancel. */
   #onDiscard = (): void => {
@@ -669,8 +755,7 @@ export class SherpaFilterPanel extends SherpaElement {
   };
 
   #onClose = (): void => {
-    this.close();
-    this.emit('filter-panel-close', {});
+    this.close('reader');
   };
 
   /* ── The breakpoint ───────────────────────────────────────────────── */
@@ -687,8 +772,20 @@ export class SherpaFilterPanel extends SherpaElement {
   /** Below its width the panel closes itself: filtering goes back to the
    *  toolbars, which is what they are for. TRAP T-the-panel-is-desktop-only */
   #enforceWidth = (): void => {
-    if (!this.#wideEnough() && this.hasAttribute('data-open')) this.close();
+    if (!this.#wideEnough()) {
+      this.close('width');
+      return;
+    }
+    /* WIDE AGAIN, and the window was what took it away. Nothing else tells the
+       host the panel is back. TRAP T-every-close-reports-or-the-toolbars-stay-hidden */
+    if (this.#closedByWidth) this.emit('filter-panel-reopen', {});
   };
+
+  /** Closed by the window, not by the reader — so a widen may give it back. */
+  get #closedByWidth(): boolean {
+    return this.#lastClose === 'width' && !this.hasAttribute('data-open');
+  }
+  #lastClose: 'reader' | 'width' | null = null;
 
   /** The first match on an event's composed path. */
   #pathFind(event: Event, selector: string): HTMLElement | null {

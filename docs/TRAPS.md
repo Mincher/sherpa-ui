@@ -8025,24 +8025,6 @@ gone.
 ---
 - Site: `src/core/ui/render-icon.ts`
 
-### T-a-wrapped-group-regroups-per-line
-
-`.sherpa-group` squares corners by POSITION — `:first-child` and `:last-child`
-— which is exactly right for a run on ONE line and wrong the moment it wraps.
-
-A condition row inline is two lines. The group rounded the ends of the ROW, so
-line one's last control and line two's first kept square edges with nothing
-beside them, and the row read as broken in half.
-
-Each LINE is its own object: every child gets full edges and rounding back, and
-only the pairs that really are adjacent snap to each other.
-
-**A group that can wrap needs its positions re-stated per line.** The class
-cannot know where the break falls.
-
----
-- Site: `src/components/sherpa-menu/sherpa-menu.css`
-
 ### T-a-borrowed-menu-is-not-on-its-chip
 
 A menu the filter panel has BORROWED is not on its chip, and a host reading the
@@ -8300,25 +8282,183 @@ CHILDREN, and `.qf-number-one` is inside `.qf-number`.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 
-### T-an-inline-condition-row-wraps
+### T-two-chips-in-one-section-need-their-own-id
 
-A condition row in a COLUMN wraps; one in a floating card does not.
+The filter panel's Organise section holds TWO chips — Group by and Sort by —
+because they answer one question and a header per control reads as noise.
 
-`[And|Or] [condition] [value] [x]` is four tracks. A popover can be as wide as
-it likes, so they sit on one line. A filter panel's column cannot, and at 360px
-the value select was crushed to its caret — a control that showed nothing but
-an arrow.
+Every other section holds ONE field, so the panel found a chip's `Held` by
+asking which section CONTAINS it:
 
-Inline, the row STACKS — one control per line, in the same order. Measured
-against the toolbar's own row, which is `162px 243px`: a panel column has 214
-in total, so a two-column grid there leaves the second track at ZERO and the
-answer draws nothing.
+```ts
+[...this.#held.values()].find((h) => h.values.contains(chip))
+```
 
-The MENU owns the rule under `:host([data-inline])`, not the panel — inline is
-the menu's own mode, so how a row lays out in it is the menu's business.
+With two chips in one container that returns the FIRST every time. Measured:
+picking a column in the SORT menu emitted `group-change`, and the grid grouped
+by it. The Sort chip could not sort at all.
 
----
+`#held` was right — `scope:group` and `scope:sort`, each with its own `def.id`.
+Only the lookup was wrong.
+
+The chip carries its id in `data-value`, so ask the chip and fall back to the
+container test for everything else.
+
+**A container test identifies a section, never a control.** It reads as correct
+for as long as every section holds one thing.
+
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+
+### T-the-panel-asks-the-bar-it-does-not-answer-for-it
+
+`sherpa-filter-panel` is a SECOND VIEW of a toolbar's filters, not a second
+filtering system. Every bug in it so far came from the panel deriving an answer
+the bar already gives.
+
+Apply built its own payload from `values` — the ticked chips. A field in
+CONDITION mode has NO ticked chips, so its rows said nothing and Apply
+committed nothing, while `menu.conditions` sat right there holding the answer.
+
+So Apply asks instead: `bar.report?.()`, which re-reads the bar's own chips AND
+their menus' conditions through `states`/`clauses` — one rule, one place.
+
+Two reads it needs, and both were wrong in the obvious way:
+
+- **The bar.** `closest()` stops at a shadow boundary and a chip lives inside
+  the toolbar's shadow root, so the walk found the chip and no bar. The bar is
+  found by asking which one holds the field (`heldIds`).
+- **The chip.** `menuHome.parent` records the parent AT FLIP TIME, which for an
+  already-borrowed menu is the PANEL's chip. Ticking that told the bar nothing.
+  The bar's own chip is found by field id.
+
+The chip also has to be TICKED: the bar reads `data-current` to decide whether
+a field is suspended, and a chip in the hidden toolbar was never ticked because
+the reader answered in the panel. Suspended meant no clause, with correct
+conditions in the state.
+
+**A second view reports through the first, or it is a second system.**
+
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+
+### T-closest-stops-at-the-shadow-boundary
+
+`Element.closest()` walks `parentElement`, and a shadow root is not one. A walk
+that starts inside a component's shadow DOM stops at the shadow root and
+returns `null` — it never reaches the host, let alone the host's ancestors.
+
+Measured: the filter panel looked for a chip's toolbar with
+`chip.closest('sherpa-quick-filter-toolbar')`. The chip is in the toolbar's own
+shadow root, so the call returned `null` every time, and nothing downstream ran.
+
+A root walk crosses it — at each step, a `ShadowRoot` hands over its `host`:
+
+```ts
+node = node instanceof ShadowRoot ? node.host : node.parentNode;
+```
+
+`composedPath()` does the same job for an EVENT. `closest()` is correct only
+inside one tree.
+
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+
+### T-a-borrowed-menu-is-still-its-chips
+
+`sherpa-quick-filter.menu` was `this.querySelector('[slot="menu"]')`.
+
+A filter panel BORROWS the menu: it strips the `slot` and appends the element
+somewhere else entirely. The query then found nothing, so the chip reported no
+values and no conditions — while its menu was on screen, answered, in the
+panel.
+
+The chip remembers the menu when it first sees it, and returns the remembered
+one while it is still connected. A menu that has genuinely gone still reads as
+`null`.
+
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+
+### T-two-conditions-over-one-field-are-alternatives
+
+A second condition row defaulted its join to `and`. Over ONE field that matches
+nothing, always: `owner eq Dana AND owner eq Ravi` has no rows, and a reader
+who added a row to widen their filter watched the grid empty.
+
+Measured: `["and", ["owner","eq","Dana Whitlock"], ["owner","eq","Ravi Menon"]]`
+→ 0 rows. With `or` → 25 rows over 2 pages.
+
+`#seedFromPicks` already knew this — carrying ticked values into condition mode
+joins them with `or`. Only a row the READER added disagreed, so the same two
+values meant different things depending on how they got there.
+
+`and` is still there to be chosen, and it is the right answer for ranges
+(`> 10 AND < 50`). It is the wrong DEFAULT.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+
+### T-a-borrowed-menu-leaves-its-toolbars-listeners-behind
+
+`sherpa-filter-panel` BORROWS a chip's own `<sherpa-menu>` and appends it into
+a field body. The menu is then genuinely out of the toolbar's tree — measured,
+a click on its range switch has the composed path
+`SHERPA-SWITCH → SHERPA-MENU → SHERPA-FILTER-PANEL → SHERPA-APP-SHELL`, and
+`bar.contains(menu)` is `false` for every bar on the page.
+
+So every listener the toolbar bound on ITSELF goes silent for that menu. The
+Range switch was the visible one: flipping it changed nothing, with no error.
+
+**Bind on the MENU for anything a borrowed menu owns.** The listener travels
+with the element, so the rule keeps working wherever the menu is drawn, and the
+toolbar still owns the rule.
+
+The same move fixes the reads inside those handlers: `sw.closest('.chip')`
+found nothing once borrowed, so the chip's id is written onto the menu
+(`data-chip-id`) while it is still on its chip, and read from there.
+
+A listener on the bar is correct for anything the CHIPS fire — they never move.
+It is wrong for a menu.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+
+### T-an-fr-track-floors-at-min-content
+
+An `fr` track does NOT shrink to zero. Its floor is `auto`, which is the
+content's min-content width — so a row of `2fr 3fr auto` in a box narrower than
+that content overflows the box rather than squeezing.
+
+Measured on a two-row condition layout in the filter panel: the rows box had
+`clientWidth 294` and `scrollWidth 378`, and the 16px Remove button was simply
+clipped off the end. Nothing scrolled and nothing reported an error.
+
+`minmax(0, 2fr)` sets the floor to zero, and each child needs
+`min-inline-size: 0` for the same reason one level down — a `<select>` or an
+`<input>` has its own intrinsic minimum.
+
+**A grid that must fit needs both.** The track's floor and the item's floor are
+two separate defaults, and fixing one alone still overflows.
+
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
+
+### T-an-inline-condition-row-keeps-its-tracks
+
+A condition row inline keeps the TOOLBAR's grouped tracks. The first fix here
+stacked it one control per line, and that was the wrong answer to a real
+measurement.
+
+The measurement: the row had 214px and its second track collapsed to zero, so
+the value select drew nothing but a caret. The reading was "a panel column is
+too narrow". The CAUSE was elsewhere — `.field` is a two-column grid,
+`1fr auto`, and the ACTIONS column took 80 of the field's 294px. The body was
+never the column's width; it was the column minus the buttons.
+
+So the host gives the rows the whole column instead: in condition mode `.field`
+puts the actions on the LABEL row and spans the body across both tracks. The
+row gets 294px, the `fr` tracks narrow, and the four controls stay one grouped
+object exactly as they are in the chip menu.
+
+**A collapsed track is a width problem, and the width is rarely where you are
+looking.** Measure the CHAIN — the row, its body, its box — not just the row.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 
 ### T-an-inline-menu-drops-the-chrome-its-host-owns
 
@@ -8491,6 +8631,7 @@ menu is right, and the grid does not move.
 
 ---
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-a-conditioned-chip-reads-as-info
 
@@ -8569,10 +8710,23 @@ right; only the ORDER was wrong.
 `#removeFilter` / `#addFilters` emit through it. The bug is silent, it looks
 like a filter reset, and nothing in the remove path is wrong on its own.
 
+**The same fact bites a RELOAD.** A reader who left the filter panel open
+loads the page, the bars populate, and a restore in a `queueMicrotask` reads
+chips with no menus — so the panel drew menu bodies instead of chips in every
+section. Measured: `[["status",0,true],["plan",0,true]]` — zero chips, menu
+drawn. Wait TWO frames; one is not enough, because the upgrade and the first
+stamp land in different turns.
+
+```js
+await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+```
+
+After: `[["status",4,false],["plan",4,false],["tier",4,false],["owner",4,false]]`.
+
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `examples/contexts/records.js`
 
 ---
-- Site: `examples/contexts/records.js`
 
 ### T-equals-answers-with-the-fields-own-values
 
@@ -11509,3 +11663,28 @@ not.
 
 - Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.ts`
 - Site: `test/e2e/reforged-radial-chart.spec.ts`
+
+### T-every-close-reports-or-the-toolbars-stay-hidden
+
+`sherpa-filter-panel` has **two ways to close**: the reader clicks the header
+`×`, or the window narrows past the panel's minimum and `#enforceWidth` closes
+it. Only the first one emitted `filter-panel-close`, because `close()` was
+written as the button handler's helper and the width path called it directly.
+
+So a narrow window left the panel gone and the host still in panel mode: the
+toolbars stayed hidden, and there was no control on screen to filter with.
+Measured at 900px — `{panelOpen:false, dataBar:"none", panelled:1}`.
+
+**Every close reports, and it says WHY.** `close(reason)` always emits, and the
+host branches on the reason: a `reader` close writes the mode to `toolbars`; a
+`width` close does not, so widening restores what the reader chose. The widen
+side needs its own event — `filter-panel-reopen` — because nothing else tells
+the host the panel is back.
+
+The general shape: a component with two paths into the same state must emit from
+the state change, never from one path's handler. The second path is always the
+one nobody tests.
+
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `examples/contexts/records.js`
+

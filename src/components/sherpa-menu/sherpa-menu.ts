@@ -263,7 +263,12 @@ export class SherpaMenu extends SherpaElement {
       { value: 'and', label: 'And' },
       { value: 'or', label: 'Or' },
     ]);
-    if (join) join.value = seed?.join ?? 'and';
+    /* OR, not AND. Two rows over ONE field are alternatives — `eq Dana` AND
+       `eq Ravi` matches nobody, every time, and that is what a second row
+       produced. `#seedFromPicks` already joins carried picks with `or`; a row
+       the reader adds now agrees with it.
+       TRAP T-two-conditions-over-one-field-are-alternatives */
+    if (join) join.value = seed?.join ?? 'or';
 
     const ops = this.#opList();
     void cond?.populate?.(ops.map((op) => ({
@@ -343,7 +348,7 @@ export class SherpaMenu extends SherpaElement {
       const op = (row.querySelector<FieldEl>('.condition')?.value ?? DEFAULT_OP) as FilterOp;
       const takes = OP_TAKES[op] ?? 'list';
       const out: FieldCondition = { op };
-      if (i > 0) out.join = (row.querySelector<FieldEl>('.join')?.value ?? 'and') as 'and' | 'or';
+      if (i > 0) out.join = (row.querySelector<FieldEl>('.join')?.value ?? 'or') as 'and' | 'or';
       if (takes === 'list') {
         /* `row.dataset.want` is what the READER chose. A `<select>` shows its
            first option whether or not anyone touched it, so reading `.value`
@@ -486,6 +491,7 @@ export class SherpaMenu extends SherpaElement {
     if (box && box.value !== held) box.value = held;
     this.#numberRows();
   }
+
 
   /** Narrow rows to a typed substring; a hidden row keeps its tick.
    * TRAP T-menu-search-is-a-substring-find */

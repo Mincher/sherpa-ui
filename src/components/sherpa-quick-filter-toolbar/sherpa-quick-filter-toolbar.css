@@ -154,8 +154,13 @@
  * Also slotted from the chip's light DOM.
  */
 
-/* Control leads, label follows, so every menu control shares one left edge. */
-.chip .qf-range-row {
+/* Control leads, label follows, so every menu control shares one left edge.
+   NOT `.chip`-scoped, for the reason the block below states: this row is
+   cloned into a MENU, and a filter panel borrows that menu out of the chip.
+   Scoped, the row had no layout at all and the switch was invisible — so a
+   reader could not flip Range in the panel.
+   TRAP T-a-slotted-rows-css-follows-the-menu-not-the-chip */
+.qf-range-row {
   display: flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);

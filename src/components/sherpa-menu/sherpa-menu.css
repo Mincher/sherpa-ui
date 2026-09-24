@@ -89,51 +89,11 @@
    carries the list/condition switch and the panel has ONE footer, so a second
    of each is two answers to one question.
    TRAP T-an-inline-menu-drops-the-chrome-its-host-owns */
-/* INLINE, a condition row STACKS. The toolbar's row is
-   `[join] [condition] [answer] [x]` on one line, which needs ~405px; a filter
-   panel's column has ~214. Same controls, same order, one per line — not a
-   two-column grid with a collapsed track.
-   TRAP T-an-inline-condition-row-wraps */
-:host([data-inline]) .condition-row,
-:host([data-inline]) .condition-row[data-first],
-:host([data-inline]) .condition-row[data-only] {
-  grid-template-columns: 1fr;
-}
-:host([data-inline]) .condition-row > * { grid-column: 1; }
-/* Its Remove rides the CONDITION's line, at the end. */
-:host([data-inline]) .condition-row:not([data-only]) {
-  grid-template-columns: 1fr auto;
-}
-:host([data-inline]) .condition-row:not([data-only]) .join,
-:host([data-inline]) .condition-row:not([data-only]) :is(.condition-pick, .condition-value) {
-  grid-column: 1 / -1;
-}
-:host([data-inline]) .condition-row:not([data-only]) .condition { grid-column: 1; }
-:host([data-inline]) .condition-row:not([data-only]) .drop-condition { grid-column: 2; }
-
-/* REGROUPED PER LINE. `.sherpa-group` squares corners by POSITION, and a
-   stacked row is several lines — so `:first-child` and `:last-child` rounded
-   the ends of the ROW rather than each LINE.
-   TRAP T-a-wrapped-group-regroups-per-line */
-:host([data-inline]) .condition-row > * {
-  --sherpa-border-left: var(--sherpa-display-mode-border-width-sm, 0.5px);
-  --sherpa-border-right: var(--sherpa-display-mode-border-width-sm, 0.5px);
-  --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
-  --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
-  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
-  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
-}
-/* The condition and its Remove share a line, so they snap to each other. */
-:host([data-inline]) .condition-row:not([data-only]) .condition {
-  --sherpa-border-right: var(--sherpa-display-mode-border-width-xs, 0.25px);
-  --sherpa-border-rounding-top-right: 0px;
-  --sherpa-border-rounding-bottom-right: 0px;
-}
-:host([data-inline]) .condition-row:not([data-only]) .drop-condition {
-  --sherpa-border-left: var(--sherpa-display-mode-border-width-xs, 0.25px);
-  --sherpa-border-rounding-top-left: 0px;
-  --sherpa-border-rounding-bottom-left: 0px;
-}
+/* INLINE, a condition row keeps the TOOLBAR's grouped tracks — same controls,
+   same one-line object. Its host gives it the full column width by moving the
+   field's action buttons off the row (see `sherpa-filter-panel.css`); the
+   tracks are `fr`-based, so they simply narrow.
+   TRAP T-an-inline-condition-row-keeps-its-tracks */
 
 :host([data-inline]) .use-condition,
 :host([data-inline]) .footer {
@@ -209,9 +169,15 @@
    `.sherpa-group`, which squares the inner corners by POSITION. */
 .condition-row {
   display: grid;
-  /* The join is a FIXED track, not `auto`: at auto the select shrank to its
-     caret and "And" clipped. TRAP T-a-select-does-not-hug-its-own-text */
-  grid-template-columns: 5rem 2fr 3fr auto;
+  /* The join has a FLOOR, not a fixed width: at `auto` the select shrank to
+     its caret and "And" clipped, and at a fixed `5rem` it took 80px a narrow
+     column could not spare — which clipped the operator instead.
+     TRAP T-a-select-does-not-hug-its-own-text */
+  /* `minmax(0, …)`, not a bare `fr`: an `fr` track floors at its content's
+     min-content width, so in a narrow column the row overflowed its own box
+     and the Remove button was clipped away.
+     TRAP T-an-fr-track-floors-at-min-content */
+  grid-template-columns: minmax(3.5rem, auto) minmax(6.5rem, 2fr) minmax(0, 3fr) auto;
   align-items: center;
 }
 
@@ -219,8 +185,8 @@
    never removed — a re-order gives the control straight back. */
 .condition-row[data-first] .join,
 .condition-row[data-only] .drop-condition { display: none; }
-.condition-row[data-first] { grid-template-columns: 2fr 3fr auto; }
-.condition-row[data-only] { grid-template-columns: 2fr 3fr; }
+.condition-row[data-first] { grid-template-columns: minmax(6.5rem, 2fr) minmax(0, 3fr) auto; }
+.condition-row[data-only] { grid-template-columns: minmax(6.5rem, 2fr) minmax(0, 3fr); }
 
 /* A PICKING op answers with the field's own values; a TYPING one with a box.
    The row's own flag, so two rows can ask different questions at once.
@@ -231,7 +197,10 @@
 .condition-row[data-takes="text"] .condition-value { display: block; }
 
 /* Every part of a row is the same height, so the joints read as one edge. */
-.condition-row > * { min-block-size: var(--sherpa-display-mode-size-2xl, 32px); }
+.condition-row > * {
+  min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
+  min-inline-size: 0;
+}
 
 
 .header .heading { grid-area: heading; }
