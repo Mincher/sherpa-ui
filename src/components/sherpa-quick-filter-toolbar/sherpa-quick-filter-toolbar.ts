@@ -605,9 +605,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const value = cal.dataset['value'];
       return value ? [value] : [];
     }
-    /* The MENU's rows, not the chip's — a lent menu is somewhere else in the
-       page and its ticks travelled with it.
-       TRAP T-a-chip-lends-its-menu-and-still-owns-it */
+    // The MENU's rows, through the chip's own getter — never a DOM query here.
     const held = (chip as ChipEl & { menu?: HTMLElement }).menu ?? chip;
     // NON_VALUE_ROWS names the rows that are not picks.
     return Array.from(held.querySelectorAll<HTMLInputElement>('input:checked'))
@@ -1161,9 +1159,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       /* The MENU holds the condition — one field, one filter menu, whether a
          chip or a column heading opened it.
          TRAP T-one-field-one-filter-menu */
-      /* The CHIP's own getter, never a DOM query: a chip may have LENT its
-         menu to a filter panel and still owns it.
-         TRAP T-a-chip-lends-its-menu-and-still-owns-it */
       const menu = (chip as ChipEl & { menu?: HTMLElement }).menu as
         (HTMLElement & { conditionValue?: string; conditions?: FieldCondition[] }) | null;
       if (menu?.getAttribute('data-type') !== 'filter') continue;
@@ -1345,6 +1340,26 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   available(defs: QuickFilterDef[]): void {
     this.#available = Array.isArray(defs) ? defs : [];
     this.#renderAvailable();
+  }
+
+  /**
+   * What the Add button is OFFERING — the read-back half of `available()`.
+   *
+   * A host that set something needs to ask what the bar now holds: a filter
+   * panel draws its own Add control per scope and cannot see into this
+   * shadow root. TRAP T-a-panel-adds-through-the-bar-that-owns-the-list
+   */
+  get offering(): QuickFilterDef[] {
+    return allow(this.#available, this.#allowedFields);
+  }
+
+  /**
+   * addFilters([...ids]) — put offered filters on this bar, as the Add button
+   * does. The one door, so a panel's Add and the bar's own Add cannot drift.
+   * TRAP T-a-panel-adds-through-the-bar-that-owns-the-list
+   */
+  addFilters(ids: readonly string[]): void {
+    this.#addFilters([...ids]);
   }
 
   /**

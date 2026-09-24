@@ -51,8 +51,13 @@ anatomy:
                     class: description-text
                   - slot: description
           - el: span
-            class: chevron
+            class: actions
+            part: actions
+            slot: actions
+          - el: i
+            class: chevron sherpa-icon-box
             attrs:
+              data-icon: chevron-down
               aria-hidden: "true"
       - el: div
         class: body
@@ -86,6 +91,9 @@ props:
     description: — native boolean (current disclosure state; drives [open] visuals)
 states:
   - $type: state
+    name: has-actions
+    selector: ":host([data-has-actions])"
+  - $type: state
     name: description
     selector: ":host([data-description])"
   - $type: state
@@ -109,6 +117,7 @@ tokens:
   header.gap: "{sherpa.theme-gap-sm}"
   header.padding: "{sherpa.theme-padding-md}"
   header.color: "{sherpa.style-content-base}"
+  actions.gap: "{sherpa.display-mode-space-2xs}"
   titles.gap: "{sherpa.display-mode-space-3xs}"
   heading.color: "{sherpa.theme-content-body-base}"
   heading.font-size: "{sherpa.font-size-body-base}"

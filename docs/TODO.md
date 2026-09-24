@@ -38,6 +38,7 @@ say what order. Anything not numbered is a sub-item of the section it sits in.
 | | 21c | A condition's matches must ALL highlight, not just one string | 7 |
 | | 21d | **EXPLORE** — date conditions. Undesigned, and much bigger | 7 |
 | | 21e | Filters survive a RELOAD — compiled into the data layer | 7 |
+| | 21f | "Send to view filters" — promote a local filter to view scope | 7 |
 | | 22 | `Ask N-zo` panel — width, and a draggable edge | 8 |
 | | 23 | A focused grid row opens a details panel | 8 |
 | | 24 | Playwright tests accessibility — WCAG 2.1 AA | 9 |
@@ -188,6 +189,7 @@ primitive, then build on it.
 | 21c | A condition's matches must ALL highlight, not just one string |
 | 21d | **EXPLORE** — date conditions. Undesigned, and much bigger |
 | 21e | Filters survive a RELOAD — compiled into the data layer |
+| 21f | "Send to view filters" — promote a local filter to view scope |
 
 Item 21 is undesigned. Do it last of the three, once the menu is settled — the
 panel shows the same controls in a different frame.
@@ -304,6 +306,38 @@ immediately.
 
 A saved VIEW is the other tier and stays as it is — a deliberate act, and a
 different lifetime.
+
+Not started.
+
+### `[ ]` 21f — "Send to view filters"
+
+Will, 2026-09-24:
+
+> Add an option to 'Send to view filters' for local scope filters. This will
+> elevate them from their component toolbar to the app-header toolbar and allow
+> it trickle down across all view components/data.
+>
+> Include this next to clear and remove buttons in the panel.
+
+So it is a THIRD action in each field's `sherpa-section-header` actions slot,
+beside Clear and Remove — and it only exists in the `data` scope, because a
+view-scope field has nowhere to go up to.
+
+**What it does is a MOVE between two bars**, and both halves already exist:
+`#removeFilter` takes it off one, `#addFilters` puts it on the other. The
+values travel with it — a field promoted while filtering by `active` keeps
+that, or the reader is punished for tidying up.
+
+**Two things to settle first.**
+
+- The panel draws Customer and Region from the HEADER bar today and hides the
+  chip on its own bar. A promoted field joins them, so the panel's `STAYS` set
+  and the scope a field is drawn under must both follow the move.
+- A field in `globalAvailable` already exists at view scope. Promoting the
+  Status chip must not give the header TWO Status chips — the add has to
+  consume the available entry, exactly as the Add button does.
+
+The reverse trip ("send back down") is not asked for. Leave it until it is.
 
 Not started.
 

@@ -27,7 +27,15 @@ export class SherpaAccordion extends SherpaElement {
     if (!details) return;
     if (this.hasAttribute('open')) details.open = true;
     details.addEventListener('toggle', this.#onToggle);
+    /* An ACTION in the summary row is a control, not a handle. Without this a
+       click on it opens or shuts the disclosure as well as doing its own job.
+       TRAP T-an-accordion-action-is-not-a-toggle */
+    this.$('.actions')?.addEventListener('click', this.#onActionClick);
   }
+
+  #onActionClick = (event: Event): void => {
+    event.preventDefault();
+  };
 
   override onChange(name: string): void {
     if (name === 'open') {

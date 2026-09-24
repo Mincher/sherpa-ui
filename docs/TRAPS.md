@@ -55,6 +55,8 @@ attributes only, written before append.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-app-header.spec.ts`
+- Site: `examples/contexts/filter-panel.js`
+
 ### T-tokens-css-never-reaches-shadow
 
 A bare `[data-status]` rule in `tokens.css` is loaded into the **document**. It
@@ -6720,6 +6722,8 @@ sit in the row template and CSS reveals one —
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
+- Site: `examples/contexts/filter-panel.js`
+
 ### T-every-element-in-the-template
 
 Every element a component will EVER show exists in its `.html` from the start.
@@ -7680,6 +7684,8 @@ is exactly what a reader asks "starts with" of.
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 
 ---
+- Site: `test/e2e/reforged-filter-panel.spec.ts`
+- Site: `examples/contexts/filter-panel.js`
 
 ### T-a-condition-badge-says-that-not-which
 
@@ -7851,6 +7857,153 @@ condition is applied."
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 
 ---
+
+### T-a-chip-with-no-field-is-a-preset
+
+A filter chip with NO MENU is a PRESET, not a field.
+
+`At risk`, `Open tickets`, `Unassigned` — one question the data answers yes or
+no, with no field behind it and no values to pick. In a filter panel they lead
+their scope in ONE `Presets` section, not one section each: they are separate
+questions that happen to share a shape, and a header per chip says they are
+four fields when they are none.
+
+A preset gets no Clear and no Remove — there is no field to act on — and its
+own label is what a search matches, exactly as a value's is.
+
+---
+- Site: `test/e2e/reforged-filter-panel.spec.ts`
+- Site: `examples/contexts/filter-panel.js`
+
+### T-a-scope-is-named-for-its-content
+
+A filter panel's component scope is named after the CONTENT it filters —
+"Customer records", not "This context".
+
+A reader with two grids on one page has to know which one a section answers
+for, and "this context" answers for neither. The caller passes the name
+(`names: { data: 'Customer records' }`); the generic word is only the fallback.
+
+The VIEW scope keeps its own name, because there is exactly one of it.
+
+---
+- Site: `test/e2e/reforged-filter-panel.spec.ts`
+- Site: `examples/contexts/filter-panel.js`
+- Site: `examples/contexts/records.js`
+
+### T-a-panel-adds-through-the-bar-that-owns-the-list
+
+A filter panel's Add button does not keep its own list of available fields.
+
+`sherpa-quick-filter-toolbar` owns it, so the panel reads `bar.offering` and
+adds through `bar.addFilters(ids)` — the same door the bar's own Add button
+uses. Two lists would drift the first time either one changed.
+
+Both halves are read-backs the bar did not have: `available()` was a setter
+with no getter, and `#addFilters` was private. "A host that SET something needs
+to ask what the component now holds" — `T-state-ownership`.
+
+The button lives in the ACCORDION's header, beside its chevron: it is the
+scope's own action, not a row at the end of its list.
+
+**ONE FIELD, ONE SCOPE.** A field held by BOTH bars would draw twice, and a
+reader cannot tell which of the two is in force — the same reason the records
+bar has no Region chip. View leads, because its filters set the population the
+Context bar narrows within.
+
+---
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-filter-panel.spec.ts`
+- Site: `examples/contexts/filter-panel.js`
+
+### T-an-accordion-action-is-not-a-toggle
+
+`sherpa-accordion` has an `actions` slot in its summary row, and a click on one
+must NOT open or shut the disclosure.
+
+The slot is inside the `<summary>`, which is a handle by definition — so
+without `preventDefault()` on the slot, pressing a button there did its own job
+AND flipped the accordion. `preventDefault` rather than `stopPropagation`: the
+event still has to reach the button.
+
+---
+- Site: `src/components/sherpa-accordion/sherpa-accordion.ts`
+- Site: `src/components/sherpa-accordion/sherpa-accordion.html`
+
+### T-the-panel-is-the-toolbar-in-a-column
+
+A filter PANEL shows the same filters the toolbars hold, laid out as a column.
+It is not a second filter system, and it draws nothing of its own.
+
+One accordion per SCOPE. Inside each, a field is a `sherpa-section-header` with
+Clear and Remove in its `actions` slot, above a wrapping run of boolean chips —
+one per value. ONE search and ONE footer for the whole panel: Apply commits
+every field at once, Discard reverts to the last Apply.
+
+**`chip.values =` is a SILENT write.** It ticks the menu's rows and nothing
+downstream hears, so Apply also fires `menu-change` — the same event a reader
+clicking Apply in the menu's own footer would fire.
+
+**A field with NO VALUE ROWS is not drawn.** A date or a number range is not a
+set of chips, and there is nothing honest to show for it, so it keeps its chip
+on the toolbar.
+
+**Everything is COMPOSED.** The first build hand-rolled five `<div>`s and sixty
+lines of CSS for the heading rows, the value runs and the gaps. Will: "Use the
+sherpa components. That's the whole point of sherpa." What is left in the
+example's own `<style>` is only what no component owns: a search that HIDES a
+chip, and the gap between two composed stacks.
+
+**The panel sits OUTSIDE the layout grid**, in an inline `sherpa-stack`.
+`data-col-span="full"` is a hardcoded `span 12` per breakpoint, so a `full`
+child cannot know a sibling column is beside it — the records card sat straight
+under the panel. Narrowing the GRID's own box is what makes `full` mean full.
+
+---
+- Site: `test/e2e/reforged-filter-panel.spec.ts`
+- Site: `examples/contexts/filter-panel.js`
+- Site: `examples/contexts/records.js`
+- Site: `examples/templates/records.html`
+
+### T-the-view-chip-stays-on-the-header
+
+Three chips are never drawn in the filter panel.
+
+`view` is not a filter at all — it is what the filters apply WITHIN. `customer`
+and `region` are GLOBAL: a reader sets them once and they follow from page to
+page, so burying them in a per-Context panel makes a global answer look local.
+
+Every OTHER field the panel draws is hidden on its bar (`data-panelled`,
+written by the host). Two controls over one field make a reader guess which is
+in force — the same reason there is no Region chip on the records bar.
+
+`data-panelled` is plain `display: none`, unlike `data-folded-away`: a folded
+chip's MENU is still live as a submenu, and a menu in a `display: none` host
+measures 0×0 and lands in the viewport corner. A panelled chip's menu is not in
+use at all, because the panel draws value chips rather than the menu.
+
+---
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
+- Site: `test/e2e/reforged-filter-panel.spec.ts`
+- Site: `examples/contexts/filter-panel.js`
+
+### T-the-panel-is-desktop-only
+
+Below 1280px the filter panel closes itself and refuses to open.
+
+A 288px column on a 768px tablet leaves the content 480px — narrower than the
+phone layout it would get with no panel at all. Filtering goes back to the
+toolbars, which is what they are for.
+
+A media QUERY, not a resize listener: the browser owns the measuring, and
+`matchMedia(...).addEventListener('change')` fires once per crossing rather
+than once per pixel.
+
+---
+- Site: `test/e2e/reforged-filter-panel.spec.ts`
+- Site: `examples/contexts/filter-panel.js`
 
 ### T-a-conditioned-chip-answers-with-its-clause
 

@@ -18,6 +18,10 @@
   /* The search hides a chip; JS writes the flag, CSS owns the hiding. */
   #filter-panel .panel-value[data-filtered-out] { display: none; }
 
+  /* CONDITION MODE REPLACES the value chips — the rows are the answer now,
+     and two answers side by side is the thing this mode exists to avoid. */
+  #filter-panel .panel-field[data-conditional-open] .panel-values { display: none; }
+
   /* A field the search emptied says so rather than showing a bare label. */
   #filter-panel .panel-field[data-no-matches] .panel-values::after {
     content: "No matches";
@@ -33,6 +37,10 @@
   /* The BODY scrolls, not the panel — the search and the footer stay put.
      `::part` is the only way in: the body is in the panel's shadow root. */
   #filter-panel::part(body) { overflow: auto; }
+
+  /* The search fills its row: a header's metadata strip is a flex row, and a
+     field in it otherwise hugs its own content. */
+  #filter-panel .panel-search { flex: 1 1 auto; }
 </style>
 
 <sherpa-stack data-direction="inline" data-gap="md" data-fill>
@@ -51,10 +59,13 @@
                 style="flex: 0 0 auto; inline-size: 288px; box-shadow: none;
                        block-size: calc(100% - var(--sherpa-display-mode-space-md, 16px) * 2);
                        margin-block: var(--sherpa-display-mode-space-md, 16px)">
-    <sherpa-container-header slot="header" data-type="panel"
+    <!-- The GENERIC header. `data-type="panel"` only paints the title
+         link-blue, which is the overlay look; this is a FIXED panel. -->
+    <sherpa-container-header slot="header"
                              data-heading="Filters" data-icon="filter"
                              data-dismissible>
-      <!-- ONE search, across every value chip in the panel. -->
+      <!-- ONE search, across every value chip in the panel. The metadata row
+           is the header's own bottom row, so it spans the full width. -->
       <sherpa-input-text slot="metadata" class="panel-search"
                          data-icon-start="magnifying-glass"
                          placeholder="Search filters" autocomplete="off"

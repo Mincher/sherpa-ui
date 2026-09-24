@@ -249,7 +249,13 @@ export async function init(root) {
   mountFilterPanel(panel, {
     view: header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]'),
     data: qft,
-  }, { signal });
+  }, {
+    signal,
+    /* The CONTENT's own name, not "this context" — a reader with two grids on
+       one page has to know which one a section answers for.
+       TRAP T-a-scope-is-named-for-its-content */
+    names: { data: 'Customer records' },
+  });
 
   /* ROW ACTIONS declared ONCE. The grid draws them in its pinned trailing
      column and the toolbar reads the same list back via `grid.actionsFor(n)`,

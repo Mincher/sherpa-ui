@@ -11,6 +11,9 @@
   Slots:
     heading     — rich summary title (overrides data-heading)
     description — rich secondary line under the title (overrides data-description)
+    actions     — trailing controls in the summary row, before the chevron.
+                  A click on one does NOT toggle the disclosure.
+                  TRAP T-an-accordion-action-is-not-a-toggle
     (default)   — the disclosure body
 
   Fires: toggle (detail: { open: boolean })
@@ -22,7 +25,11 @@
         <span class="heading" part="heading"><span class="heading-text"></span><slot name="heading"></slot></span>
         <span class="description" part="description"><span class="description-text"></span><slot name="description"></slot></span>
       </span>
-      <span class="chevron" aria-hidden="true"></span>
+      <!-- Trailing controls, BEFORE the chevron. They sit inside the
+           <summary>, so a click on one would also toggle the disclosure — the
+           slot stops that itself. TRAP T-an-accordion-action-is-not-a-toggle -->
+      <span class="actions" part="actions"><slot name="actions"></slot></span>
+      <i class="chevron sherpa-icon-box" data-icon="chevron-down" aria-hidden="true"></i>
     </summary>
     <div class="body" part="body">
       <slot></slot>

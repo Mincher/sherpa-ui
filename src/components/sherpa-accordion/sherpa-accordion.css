@@ -51,6 +51,16 @@
   }
 }
 
+/* ── Actions ─────────────────────────────────────────────────────────────
+ * Trailing controls in the summary row. Hidden until something is slotted, so
+ * an accordion without them is unchanged. */
+.actions {
+  display: none;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
+}
+:host([data-has-actions]) .actions { display: flex; }
+
 /* ── Titles ──────────────────────────────────────────────────────────── */
 .titles {
   flex: 1 1 auto;
@@ -81,19 +91,14 @@
 }
 
 /* ── Chevron ─────────────────────────────────────────────────────────── */
+/* Figma's chevron-down in the shared icon box. Points right while shut. */
 .chevron {
-  inline-size: 10px; /* off-grid-ok */
-  block-size: 10px; /* off-grid-ok */
-  border-inline-end: 2px solid currentColor;
-  border-block-end: 2px solid currentColor;
-  transform: rotate(-45deg);
+  transform: rotate(-90deg);
   transition: transform 160ms ease;
-  flex: 0 0 auto;
-  margin-inline-end: 2px; /* off-grid-ok — nudges the drawn chevron, not layout */
 }
 
 .root[open] .chevron {
-  transform: rotate(45deg);
+  transform: none;
 }
 
 /* ── Body ────────────────────────────────────────────────────────────── */
