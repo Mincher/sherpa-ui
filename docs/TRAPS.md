@@ -81,28 +81,37 @@ page, `tokens.css` still does exactly that — a known gap, not a model.
 
 ### T-a-state-colour-binds-the-style-mode
 
-A component STATE — on, current, open, selected — is a Style MODE in Figma: the
-instance binds a Style variable and pins a mode. Code that painted the same
-state from the Theme ramp (`--sherpa-theme-surface-active-base`) looked right
-and could never follow Figma. On 2026-09-24 Will moved
-`style-surface/base [active]` to the default surface, and the filter chip stayed
-purple: 12 components read the ramp directly.
+In Figma a component binds a **Style** variable and the instance pins a MODE —
+`Style=active` for an on chip, `Transparent=active` for a current nav row. Code
+that painted the same state from the Theme ramp looked right and could never
+follow Figma: on 2026-09-24 Will moved `style-surface/base [active]` and only
+the chip moved. Measured then: 49% of component colours read Theme directly.
 
-So the projector names every Style variable in every mode and look:
+**The system, as Figma does it:**
 
-| token | Figma |
-|---|---|
-| `--sherpa-style-active-surface-base` | Style · `style-surface/base` · `active` |
-| `--sherpa-style-transparent-active-content-base` | Transparent · `style-content/base` · `active` |
+- **Bind the public name** — `var(--sherpa-style-surface-base)`, the variable
+  Figma binds for that layer. `base` / `+1` / `+2` are default / hover / down.
+- **A pin re-points the public names** at a mode's own tokens
+  (`--sherpa-style-active-surface-base`, `--sherpa-style-transparent-active-…`,
+  `--sherpa-style-default-…`). `[data-status]` and `[data-look]` are pins.
+- **A component state is a pin, as data** — `scripts/figma-data/state-pins.yaml`
+  becomes `:host(tag[state]) { … }` in the adopted sheet. No state colour is
+  written in a component. An author's own `[data-status]` on the host still
+  wins, as an instance override does.
+- **A FLAG is not a pin.** The data grid marks an acting column with
+  `data-status="active"` but paints nothing, so its YAML pins that heading
+  back to `default`; without it the tint leaked into the chips and the menu.
 
-A state binds the token for the mode Figma pins, in the component's own look —
-a chip pins Style, a nav row pins Transparent. Where Figma shows no visible
-state, the token that gives today's colour was used, so nothing moved.
+`--_status-*` is still set by every pin, for components not yet moved — and
+unset (`initial`) by a default pin, because "default" is not "no status" to a
+fallback chain.
 
-`lint:css` `theme-active` fails a `--sherpa-theme-*-active-*` read. Where Figma
-ALSO binds Theme, a trailing `/* theme-direct */` on the same line opts out: the
-nav brand block and the upload drop zone, and the app-header loading bar, which
-Figma does not draw.
+`lint:css`: `theme-active` fails a Theme "active" read outright; `theme-colour`
+counts every Theme colour read per component against
+`scripts/lint-css-baseline.json`, which may only fall
+(`node scripts/lint-css.mjs --update-baseline`). `/* theme-direct */` on the same
+line marks a place Figma binds Theme too — the nav brand block, the upload drop
+zone — or has no design, like the app-header loading bar.
 
 Verified end to end on 2026-09-24: every Style colour variable × 8 modes × 3
 looks, computed in the browser against Figma's own resolve — 264 of 264 in

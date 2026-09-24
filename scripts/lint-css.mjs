@@ -7,7 +7,7 @@
  *   node scripts/lint-css.mjs            # lint every src/components/…/*.css
  *   node scripts/lint-css.mjs --strict   # elevate warnings to errors
  */
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import postcss from 'postcss';
@@ -79,6 +79,16 @@ function sameLineComment(decl) {
    as Figma binds a Style variable and pins a mode — or a change to the mode
    never arrives. TRAP T-a-state-colour-binds-the-style-mode */
 const THEME_ACTIVE = /--sherpa-theme-(surface|border|content)-active-/;
+
+/* Any colour read from THEME or lower, which a Style change can never reach.
+   Counted per component against scripts/lint-css-baseline.json, which may only
+   FALL: a component that reads more than its baseline fails. The count reaches
+   zero as components move onto Style. TRAP T-a-state-colour-binds-the-style-mode */
+const THEME_COLOUR =
+  /--sherpa-theme-(surface|border)-|--sherpa-theme-content-(body|active|info|critical|warning|success|urgent|link)-|--sherpa-display-mode-color-/;
+const BASELINE = join(ROOT, 'scripts', 'lint-css-baseline.json');
+const UPDATE_BASELINE = process.argv.includes('--update-baseline');
+const themeReads = {};
 
 const findings = [];
 function report(level, file, line, code, msg) {
@@ -186,6 +196,14 @@ function lintFile(file, cssRaw) {
       + `--sherpa-style-<look>-active-*), or add /* theme-direct */ where Figma binds Theme too.`);
   });
 
+  const comp = file.split('/').at(-2);
+  themeReads[comp] = 0;
+  root.walkDecls((decl) => {
+    if (!THEME_COLOUR.test(decl.value)) return;
+    if (/theme-direct/.test(sameLineComment(decl))) return;
+    themeReads[comp]++;
+  });
+
   root.walkAtRules('media', (at) => {
     const line = at.source?.start?.line ?? 0;
     const params = at.params;
@@ -206,6 +224,26 @@ for (const d of dirs) {
   lintFile(`src/components/${d.name}/${d.name}.css`, readFileSync(p, 'utf8'));
 }
 
+const baseline = existsSync(BASELINE) ? JSON.parse(readFileSync(BASELINE, 'utf8')) : {};
+const themeTotal = Object.values(themeReads).reduce((a, b) => a + b, 0);
+const baseTotal = Object.values(baseline).reduce((a, b) => a + b, 0);
+for (const [comp, n] of Object.entries(themeReads)) {
+  if (n > (baseline[comp] ?? 0)) {
+    report('error', `src/components/${comp}/${comp}.css`, 0, 'theme-colour',
+      `${n} colour reads from Theme, baseline ${baseline[comp] ?? 0} — bind the Style name Figma binds, `
+      + `or add /* theme-direct */ where Figma binds Theme too.`);
+  }
+}
+if (UPDATE_BASELINE) {
+  if (existsSync(BASELINE) && findings.some((f) => f.code === 'theme-colour')) {
+    console.error('lint:css — a count ROSE; the baseline only falls. Fix those first.');
+    process.exit(1);
+  }
+  const next = Object.fromEntries(Object.entries(themeReads).filter(([, n]) => n > 0).sort());
+  writeFileSync(BASELINE, JSON.stringify(next, null, 2) + '\n');
+  console.log(`lint:css — baseline written: ${themeTotal} Theme reads in ${Object.keys(next).length} components`);
+}
+
 const errors = findings.filter((f) => f.level === 'error');
 const warnings = findings.filter((f) => f.level === 'warning');
 
@@ -217,7 +255,8 @@ for (const f of [...errors, ...warnings]) {
 const failWarnings = STRICT && warnings.length > 0;
 console.log(
   `\nlint:css — ${fileCount} files · ${errors.length} error(s) · ${warnings.length} warning(s)`
-  + (STRICT ? ' (strict)' : ''),
+  + (STRICT ? ' (strict)' : '')
+  + ` · Theme colour reads ${themeTotal}` + (themeTotal < baseTotal ? ` (baseline ${baseTotal} — run with --update-baseline)` : ''),
 );
 
 if (errors.length || failWarnings) process.exit(1);

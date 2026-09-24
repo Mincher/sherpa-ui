@@ -50,7 +50,7 @@ are a reminder of why.
 | 5 | `@container`, never a viewport `@media`, inside a component | `lint:css` `viewport-media` |
 | 6 | Two grids: 4px for spacing, 2px for text. `/* off-grid-ok */` opts a drawn glyph out | `lint:css` `off-grid` |
 | 7 | No `light-dark()` in component CSS — the display-mode layer owns mode | `lint:css` `light-dark` |
-| 8 | A state colour binds the Style MODE Figma pins (`--sherpa-style-active-*`), never the Theme ramp. `/* theme-direct */` where Figma binds Theme too | `lint:css` `theme-active` |
+| 8 | A colour binds the Style name Figma binds; a state is a mode pin in `state-pins.yaml`, never a colour rule. `/* theme-direct */` where Figma binds Theme too | `lint:css` `theme-active`, `theme-colour` (ratchet) |
 
 ### Contracts
 

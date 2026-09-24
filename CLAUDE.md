@@ -459,12 +459,14 @@ Available: `--_status-surface` (style-surface/base), `--_status-surface-subtle` 
 A pin works at ANY depth: the same blocks are in `tokens.css` for the page and in
 the adopted `sherpa-style-modes.css` for every shadow root.
 
-**A component's OWN state binds the Style mode by name** — on, current, open,
-selected. Figma binds a Style variable and pins a mode; the code binds the one
-token that is both: `--sherpa-style-active-surface-base`,
-`--sherpa-style-transparent-active-content-base`. Never the Theme ramp under it —
-`lint:css` `theme-active` fails that, because a Figma change to the mode then
-never arrives. TRAP `T-a-state-colour-binds-the-style-mode`.
+**Bind like Figma.** A pin re-points the PUBLIC Style names, so a component binds
+exactly the variable Figma binds — `var(--sherpa-style-surface-base)` — and the
+mode decides the colour. `base` / `+1` / `+2` are default / hover / down. A
+component STATE (on, current, open) is a pin written as data in
+`scripts/figma-data/state-pins.yaml`, never a colour rule in the component. The
+`--_status-*` names above are the old door, kept until every component has moved.
+Never read Theme for a colour: `lint:css` `theme-colour` counts it per component
+against a baseline that may only fall. TRAP `T-a-state-colour-binds-the-style-mode`.
 
 ### CSS `@function`: longhand first, function second
 

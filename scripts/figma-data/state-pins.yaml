@@ -1,0 +1,9 @@
+# A component STATE is a Style MODE pin, as Figma pins it on the instance.
+#   '&…'  the host, then any descendant       value: mode | look | look/mode
+# Generated into src/core/sherpa-style-modes.css by scripts/project-tokens.mjs.
+# TRAP T-a-state-colour-binds-the-style-mode
+
+sherpa-data-grid:
+  # A sorted or filtered column is FLAGGED with data-status="active"; its chips
+  # carry the on-state, so the heading itself stays default.
+  '& .head-cell[data-status]': default

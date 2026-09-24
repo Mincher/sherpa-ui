@@ -11,6 +11,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import yaml from 'js-yaml';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = join(ROOT, 'src/styles/tokens/figma.tokens.json');
@@ -834,17 +835,17 @@ for (const l of walkLeaves(doc.style ?? {}, ['style'])) {
 const STYLE_VAR = `--${PREFIX}style-`;
 /** The named token for a Style variable in a mode, and optionally a look. */
 const styleModeVar = (key, mode, look) =>
-  `${STYLE_VAR}${look ? `${look}-` : ''}${mode === 'default' ? '' : `${mode}-`}` +
+  `${STYLE_VAR}${look ? `${look}-` : ''}${mode === 'default' && look ? '' : `${mode}-`}` +
   styleByKey[key].name.slice(STYLE_VAR.length);
 
 const styleModeLines = [];
-const emittedModeVars = new Set(Object.values(styleByKey).map((l) => l.name));
+const emittedModeVars = new Set();
 const emitModeVar = (name, value) => {
   if (value == null) return;
   styleModeLines.push(`  ${name}: ${value};`);
   emittedModeVars.add(name);
 };
-for (const mode of STATUS_MODES) {
+for (const mode of ['default', ...STATUS_MODES]) {
   for (const [key, leaf] of Object.entries(styleByKey)) {
     const raw = mode in leaf.modes ? leaf.modes[mode] : leaf.value;
     emitModeVar(
@@ -853,6 +854,16 @@ for (const mode of STATUS_MODES) {
     );
   }
 }
+// The public name is the one a component binds and a pin re-points; at :root
+// it is the default mode. TRAP T-a-state-colour-binds-the-style-mode
+const styleLeafNames = new Map(Object.entries(styleByKey).map(([key, l]) => [l.name, key]));
+layers.style.root = layers.style.root.map((line) => {
+  const name = /^\s*(--[\w-]+):/.exec(line)?.[1];
+  const key = styleLeafNames.get(name);
+  return key && emittedModeVars.has(styleModeVar(key, 'default'))
+    ? `  ${name}: var(${styleModeVar(key, 'default')});`
+    : line;
+});
 
 // Looks EXTEND Style: a variable a look does not override is the parent's own
 // mode, as in Figma. The overrides are refs read from the collection's
@@ -885,20 +896,35 @@ for (const look of LOOKS) {
   }
 }
 
-/** One pin block: each cascade var re-pointed at its named token. */
+/** A pin: every public Style name re-pointed at the mode's own token — plus the
+    --_status-* names, until no component reads them. */
+function pinBody(mode, look) {
+  const keys = Object.keys(styleByKey).filter((k) => !look || LOOK_KEYS.includes(k));
+  const lines = [];
+  for (const key of keys) {
+    const name = styleModeVar(key, mode, look);
+    if (emittedModeVars.has(name)) lines.push(`    ${styleByKey[key].name}: var(${name});`);
+  }
+  for (const [key, cascadeVar] of Object.entries(STATUS_ROLE_MAP)) {
+    const name = styleModeVar(key, mode, look);
+    if (!keys.includes(key) || !emittedModeVars.has(name)) continue;
+    // DEFAULT is "no status" to a component still on --_status-*: unset, so its
+    // own fallback (a transparent button's clear face) survives.
+    lines.push(`    --${cascadeVar}: ${mode === 'default' && !look ? 'initial' : `var(${name})`};`);
+  }
+  return lines;
+}
 function pinBlock(selector, mode, look) {
-  const lines = Object.entries(STATUS_ROLE_MAP)
-    .filter(([key]) => styleByKey[key] && (!look || LOOK_KEYS.includes(key)))
-    .map(([key, cascadeVar]) => [cascadeVar, styleModeVar(key, mode, look)])
-    .filter(([, name]) => emittedModeVars.has(name))
-    .map(([cascadeVar, name]) => `    --${cascadeVar}: var(${name});`);
+  const lines = pinBody(mode, look);
   return lines.length ? `  ${selector} {\n${lines.join('\n')}\n  }` : null;
 }
 
-// The status cascade — an ancestor [data-status] emits --_status-* to shadow roots.
-const statusBlocks = STATUS_MODES.map((mode) => pinBlock(`[data-status="${mode}"]`, mode)).filter(Boolean);
+// The status pins — an ancestor [data-status] re-points Style for its subtree.
+const statusBlocks = ['default', ...STATUS_MODES]
+  .map((mode) => pinBlock(`[data-status="${mode}"]`, mode))
+  .filter(Boolean);
 
-// A look re-points the same cascade per mode, so [data-look][data-status] composes.
+// A look re-points the same names per mode, so [data-look][data-status] composes.
 // `lookPinBlocks` is the compound half — the only half a shadow root adopts.
 const lookBlocks = [];
 const lookPinBlocks = [];
@@ -910,6 +936,33 @@ for (const look of LOOKS) {
     if (!block) continue;
     lookBlocks.push(block);
     if (mode !== 'default') lookPinBlocks.push(block);
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Component STATE pins — which Style mode a state takes, as Figma pins it on the
+// instance. Data in scripts/figma-data/state-pins.yaml; `&` is the host.
+// Emitted as :host(…) rules into the adopted sheet, so an author's own
+// [data-status] on the host still wins, as an instance override does.
+// ════════════════════════════════════════════════════════════════════════════
+const STATE_PINS = join(ROOT, 'scripts/figma-data/state-pins.yaml');
+const statePinBlocks = [];
+if (existsSync(STATE_PINS)) {
+  const pins = yaml.load(readFileSync(STATE_PINS, 'utf8')) ?? {};
+  for (const [tag, rules] of Object.entries(pins)) {
+    if (!existsSync(join(COMPONENTS, tag))) warn(`state-pins: no component "${tag}"`);
+    for (const [selector, spec] of Object.entries(rules ?? {})) {
+      const m = /^&(\S*)(.*)$/.exec(selector);
+      const parts = String(spec).split('/');
+      const look = LOOKS.includes(parts[0]) ? parts[0] : undefined;
+      const mode = (look ? parts[1] : parts[0]) ?? 'default';
+      if (!m || !['default', ...STATUS_MODES].includes(mode) || (look && parts.length > 2)) {
+        warn(`state-pins: ${tag} "${selector}": ${spec} — want "&…" and [look/]mode`);
+        continue;
+      }
+      const block = pinBlock(`:host(${tag}${m[1]})${m[2]}`, mode, look);
+      if (block) statePinBlocks.push(block);
+    }
   }
 }
 
@@ -1695,12 +1748,13 @@ writeFileSync(
   `/**
  * sherpa-style-modes.css — GENERATED by scripts/project-tokens.mjs. Do not edit.
  *
- * The Style mode pins — [data-status] and [data-look][data-status] — adopted
- * into every shadow root, because the same blocks in tokens.css reach the page
- * only. A bare [data-look] is left out: it would reset a status set above it.
+ * The Style mode pins — [data-status], [data-look][data-status], and each
+ * component's STATE pins from scripts/figma-data/state-pins.yaml — adopted into
+ * every shadow root, because the same blocks in tokens.css reach the page only.
+ * A bare [data-look] is left out: it would reset a status set above it.
  * TRAP T-tokens-css-never-reaches-shadow.
  */
-${[...statusBlocks, ...lookPinBlocks].join('\n\n').replace(/^ {2}/gm, '')}
+${[...statusBlocks, ...lookPinBlocks, ...statePinBlocks].join('\n\n').replace(/^ {2}/gm, '')}
 `,
 );
 
