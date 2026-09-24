@@ -393,6 +393,11 @@ export async function init(root) {
     const { field } = e.detail;
     const state = source.selection(field);
     const picked = state.values.filter((v) => v.state === 'picked').map((v) => v.value);
+    /* A SUSPENDED field keeps its values and applies none of them, so steering
+       the chip would switch it straight back on — the chip is already showing
+       exactly this, which is what suspending means. Its picks are safe; only
+       the APPLYING stops. TRAP T-grid-suspend-is-not-clear */
+    if (state.fieldState === 'suspended') return;
     // Both are SILENT writes, so neither echoes back as another change.
     qft.setChipValues(field, picked);
     grid.setColumnFilter(field, picked.length ? picksClause(field, picked) : null);
@@ -424,9 +429,19 @@ export async function init(root) {
        there and every other control over that field re-reads. Everything else
        on this bar — the toggles, the typed conditions, a `col:` chip — has no
        single field behind it, so it still contributes as one part. */
+    const picked = qft.pickedValues ?? {};
     for (const field of FIELD_CHIPS) {
-      // Absent means OFF — a chip reports no entry at all when it is not on.
-      source.select(field, e.detail.values?.[field] ?? []);
+      /* OFF is a STATE, not a delete. `values` drops an off chip, but its picks
+         survive in `pickedValues` — so an off chip SUSPENDS its field and one
+         more click brings the same values back. Passing the empty list from
+         `values` cleared them instead: toggling a chip off wiped what the
+         reader had chosen, and it could not even switch back on.
+         TRAP T-grid-suspend-is-not-clear */
+      const on = e.detail.values?.[field];
+      if (on) source.select(field, on);
+      else if ((picked[field] ?? []).length) {
+        source.select(field, picked[field], { suspended: true });
+      } else source.select(field, []);
     }
     pushChips();
     /* A custom chip's body is a TOGGLE: off means "stop applying this", not

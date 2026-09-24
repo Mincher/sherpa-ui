@@ -1575,6 +1575,8 @@ This is the suspend ≠ clear rule as a COLUMN sees it; `T-sort-is-tri-state` an
 - Site: `src/core/data/filter-state.ts`
 - Site: `test/unit/field-selection.test.mjs`
 - Site: `test/unit/filter-state.test.mjs`
+- Site: `examples/contexts/records.js`
+- Site: `test/e2e/reforged-filter-scope.spec.ts`
 ### T-grid-column-width-bounds
 
 `MIN_COL_WIDTH = 96`, `MAX_COL_WIDTH = 480`, `DEFAULT_COL_WIDTH = 160`. All
@@ -7548,6 +7550,36 @@ border colour from the page field beside it.
 - Site: `src/components/sherpa-pagination/sherpa-pagination.css`
 - Site: `test/e2e/reforged-pagination.spec.ts`
 
+### T-many-conditions-are-one-reading
+
+A reader may give one field SEVERAL conditions — `contains "an" OR starts with
+"B"` — and every row after the first says how it joins the one before it. That
+is still ONE reading of ONE field, so it stays in the field's single slot and
+`stateClause()` returns one filter: a CLAUSE for one row, a GROUP for several.
+
+Splitting it across two writers would be the bug `T-one-state-per-filtered-field`
+already names, and a control drawing the field would have to ask twice.
+
+**`and` binds tighter than `or`.** `A or B and C` is `A or (B and C)` — the
+precedence every other language uses. Reading the rows left to right without it
+gives `(A or B) and C`, a different question from the one the reader wrote.
+
+**A half-built row narrows nothing, and is dropped.** A row whose op has no
+value yet — no text typed, nothing picked — is not a filter. A field whose rows
+are all half-built reads `off`, so a menu mid-edit does not narrow the data
+under the reader's hands.
+
+**One surviving row returns a CLAUSE, not a one-member group.** `['or', x]` is
+valid and a caller ANDs it either way, but someone debugging a filter should see
+the shape they built.
+
+`op`/`text` remain the single-condition form and are what every existing caller
+writes. A reading carries EITHER — never both.
+
+- Site: `src/core/data/filter-state.ts`
+- Site: `test/unit/filter-conditions.test.mjs`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+
 ### T-a-full-range-is-still-a-range
 
 A NUMBER filter's slider opened at the column's own min and max, and the menu
@@ -9640,6 +9672,7 @@ arrived and the tile read `-0.6211180124223602%`. **Two decimals** (Will,
 - Site: `src/components/sherpa-metric/sherpa-metric.ts`
 - Site: `examples/contexts/dashboard.js`
 - Site: `examples/contexts/records.js`
+- Site: `test/e2e/reforged-metric.spec.ts`
 
 ### T-a-draft-dies-with-its-menu
 

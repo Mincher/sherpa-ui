@@ -16,7 +16,7 @@
 import {
   DEFAULT_OP, OP_LABELS, OP_SYMBOLS, OP_TAKES,
   picksClause, valueSet, valueKey,
-  type FilterClause, type FilterOp,
+  type Filter, type FilterClause, type FilterOp,
 } from './store.js';
 
 /** What a field's selection is doing. */
@@ -60,6 +60,12 @@ export interface FilterState {
   op: FilterOp;
   /** What was TYPED, for a condition that takes text rather than a pick. */
   text: string;
+  /**
+   * The condition ROWS, when the reader built several. Empty for the ordinary
+   * single-condition case, so a control that never asks sees no change.
+   * TRAP T-many-conditions-are-one-reading
+   */
+  conditions: readonly FieldCondition[];
   /** EVERY value the field has — never only the reachable ones. */
   values: ValueEntry[];
 }
@@ -85,8 +91,36 @@ export interface FieldReading {
   present?: readonly unknown[];
   op?: FilterOp;
   text?: string;
+  /**
+   * SEVERAL conditions on one field, chained. The first row has no `join`;
+   * every row after it carries `and` or `or`, which is how a reader reads it.
+   *
+   * `op`/`text` above remain the single-condition form and are what every
+   * existing caller writes. A reading may carry EITHER — never both, because
+   * two answers to "what is this field filtering by" is the bug this file
+   * exists to prevent. TRAP T-many-conditions-are-one-reading
+   */
+  conditions?: readonly FieldCondition[];
   /** Remembered but not applied. TRAP T-grid-suspend-is-not-clear */
   suspended?: boolean;
+}
+
+/** One row of a multi-condition filter. */
+export interface FieldCondition {
+  /** How this row joins the one before it. The FIRST row has none. */
+  join?: 'and' | 'or';
+  op: FilterOp;
+  /** For an op that takes typed text. */
+  text?: string;
+  /** For an op that takes values — `eq` offers the field's own list. */
+  picked?: readonly unknown[];
+}
+
+/** Does this condition row have what its op needs to narrow anything? */
+function rowAnswered(row: FieldCondition): boolean {
+  return (OP_TAKES[row.op] ?? 'list') === 'text'
+    ? (row.text ?? '').trim() !== ''
+    : (row.picked ?? []).length > 0;
 }
 
 /**
@@ -124,12 +158,21 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
   const chosen = values.filter((v) => v.state === 'picked').length;
   const answered = takesText ? text !== '' : chosen > 0 && chosen < all.length;
 
+  /* ROWS answer for themselves. A row is answered when its op has what it
+     needs — text typed, or a value picked — so a half-built row narrows
+     nothing and an empty list is simply not a filter.
+     TRAP T-many-conditions-are-one-reading */
+  const conditions = (reading.conditions ?? []).filter(rowAnswered);
+
   return {
     field: facts.field,
     label: facts.label ?? facts.field,
-    fieldState: !answered ? 'off' : reading.suspended ? 'suspended' : 'active',
+    fieldState: !(conditions.length ? true : answered)
+      ? 'off'
+      : reading.suspended ? 'suspended' : 'active',
     op,
     text,
+    conditions,
     values,
   };
 }
@@ -140,8 +183,14 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
  * ONE pick is `eq`; SEVERAL become `in`, because `eq` against a list can never
  * match. A suspended field contributes nothing while keeping its values.
  */
-export function stateClause(state: FilterState): FilterClause | undefined {
+export function stateClause(state: FilterState): Filter | undefined {
   if (state.fieldState !== 'active') return undefined;
+
+  /* SEVERAL rows become a GROUP. A row's `join` says how it meets the one
+     BEFORE it, so `[a, or b, and c]` is read left to right and becomes
+     `['and', ['or', a, b], c]` — `and` binds tighter, as it does everywhere
+     else. TRAP T-many-conditions-are-one-reading */
+  if (state.conditions.length) return chainConditions(state);
 
   if ((OP_TAKES[state.op] ?? 'list') === 'text') {
     return state.text ? [state.field, state.op, state.text] : undefined;
@@ -154,6 +203,32 @@ export function stateClause(state: FilterState): FilterClause | undefined {
     state.values.filter((v) => v.state === 'picked').map((v) => v.raw),
     state.op,
   );
+}
+
+/**
+ * The condition rows as ONE filter, joined left to right with `and` binding
+ * tighter than `or` — the precedence every other language uses, so a reader
+ * who writes `A or B and C` gets `A or (B and C)`.
+ */
+function chainConditions(state: FilterState): Filter | undefined {
+  const clause = (row: FieldCondition): Filter | undefined =>
+    ((OP_TAKES[row.op] ?? 'list') === 'text'
+      ? [state.field, row.op, (row.text ?? '').trim()] as FilterClause
+      : picksClause(state.field, [...(row.picked ?? [])], row.op));
+
+  // Group the `and` runs first, then `or` them together.
+  const runs: Filter[][] = [];
+  for (const row of state.conditions) {
+    const one = clause(row);
+    if (!one) continue;
+    if (!runs.length || row.join === 'or') runs.push([one]);
+    else runs[runs.length - 1]!.push(one);
+  }
+  const anded = runs
+    .map((run) => (run.length > 1 ? (['and', ...run] as Filter) : run[0]!))
+    .filter(Boolean);
+  if (!anded.length) return undefined;
+  return anded.length === 1 ? anded[0]! : (['or', ...anded] as Filter);
 }
 
 /**

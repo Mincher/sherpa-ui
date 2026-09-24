@@ -9,7 +9,7 @@ import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
 import { allow, type AllowList } from '../../core/data/allow.js';
 import {
   DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES,
-  type FilterClause, type FilterOp,
+  type Filter, type FilterOp,
 } from '../../core/data/store.js';
 import { fieldState, stateClause, type FilterState } from '../../core/data/filter-state.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
@@ -1113,8 +1113,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * field filtered from either place reaches the data layer identically.
    * TRAP T-an-operator-decides-pick-or-type
    */
-  get clauses(): Record<string, FilterClause> {
-    const out: Record<string, FilterClause> = {};
+  get clauses(): Record<string, Filter> {
+    /* `Filter`, not `FilterClause`: a field the reader gave SEVERAL conditions
+       reports a GROUP — `['or', …]` — and a caller ANDs it in exactly as it
+       would one clause. TRAP T-many-conditions-are-one-reading */
+    const out: Record<string, Filter> = {};
     for (const [field, state] of Object.entries(this.states)) {
       const clause = stateClause(state);
       if (clause) out[field] = clause;

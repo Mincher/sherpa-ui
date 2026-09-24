@@ -198,3 +198,65 @@ test('a component scope REFUSES a source that cannot hold a part', async ({ page
   // Falling back to select() would be the exact clobber this scope prevents.
   expect(message).toContain('needs a source with contribute()');
 });
+
+/**
+ * OFF IS A STATE, NOT A DELETE.
+ *
+ * A chip switched off stops APPLYING its values; it does not forget them. The
+ * records example passed the empty list from `values` — which is correct for
+ * "what is this bar filtering by" and wrong as an instruction — so toggling a
+ * chip off cleared the reader's picks and it could not even switch back on.
+ *
+ * TRAP T-grid-suspend-is-not-clear
+ */
+test('suspending a field keeps its values; clearing does not', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    const { ArrayStore, DataSource } = await import('/dist/data.js');
+    const store = new ArrayStore(
+      [{ id: 1, s: 'a' }, { id: 2, s: 'b' }, { id: 3, s: 'c' }],
+      { key: 'id' },
+    );
+    const src = new DataSource({ store });
+    await src.ready;
+    src.declareValues('s', ['a', 'b', 'c']);
+    const settle = () => new Promise((r) => setTimeout(r, 60));
+
+    const snap = () => {
+      const st = src.selection('s');
+      return {
+        rows: src.rows.length,
+        state: st.fieldState,
+        picked: st.values.filter((v) => v.state === 'picked').map((v) => v.value).join('+'),
+      };
+    };
+
+    src.select('s', ['a', 'b']);
+    await settle();
+    const on = snap();
+
+    // OFF: keep the picks, stop applying them.
+    src.select('s', ['a', 'b'], { suspended: true });
+    await settle();
+    const off = snap();
+
+    // ON again, from the values it still holds.
+    src.select('s', ['a', 'b']);
+    await settle();
+    const back = snap();
+
+    // And a real CLEAR, which is a different instruction.
+    src.select('s', []);
+    await settle();
+    const cleared = snap();
+
+    return { on, off, back, cleared };
+  })()`) as Record<string, { rows: number; state: string; picked: string }>;
+
+  expect(r.on).toEqual({ rows: 2, state: 'active', picked: 'a+b' });
+  // SUSPENDED: every row is back, and the picks are still there.
+  expect(r.off).toEqual({ rows: 3, state: 'suspended', picked: 'a+b' });
+  // One more click restores the same filter — nothing was re-picked.
+  expect(r.back).toEqual({ rows: 2, state: 'active', picked: 'a+b' });
+  // CLEAR is the other instruction: the values go.
+  expect(r.cleared).toEqual({ rows: 3, state: 'off', picked: '' });
+});

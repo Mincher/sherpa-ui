@@ -212,6 +212,7 @@ export {
   type FilterState,
   type FieldFacts,
   type FieldReading,
+  type FieldCondition,
   type FilterFace,
   type Selector,
   type SelectionBinding,

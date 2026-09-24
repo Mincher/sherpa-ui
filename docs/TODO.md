@@ -294,10 +294,14 @@ all 18 components follow at once.
 
 ## Filters
 
-### `[ ]` The `More` chip shows active when it is not
+### `[x]` The `More` chip shows active when it is not — DONE 2026-09-24
 
-The overflow chip goes active when NONE of its child filters are active. It must
-go active only when ONE OR MORE child filters are active.
+The overflow chip went active when NONE of its child filters were active.
+`data-current` was hard-coded in the template, so it always drew as an applied
+filter. It is now written by the toolbar from the folded chips' own state, in
+`#syncFoldedBadges()` — the path that runs on every change.
+
+`T-the-more-chip-is-a-door-not-a-filter`.
 
 ### `[ ]` The data toolbar is clipped away below 800px tall
 
