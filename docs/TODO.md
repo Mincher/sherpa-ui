@@ -49,9 +49,14 @@ say what order. Anything not numbered is a sub-item of the section it sits in.
 | | 34 | Figma: use the Navigation terms | 11 |
 
 **Blocked, and on the same thing.** Items 3 and 33 both need
-`figma.extensions.json` regenerated — it is 8 days staler than the token export
-and nothing in the repo writes it. Unblocking that is one job that frees two
-items.
+`figma.extensions.json` regenerated. Investigated 2026-09-24 and the blocker is
+now understood, not just observed: an override collection's variables key their
+values by their **parent** collection's mode ids, so a plugin read returns the
+BASE values and every override silently collapses. All ten collections fail this
+way. `scripts/figma-export-extensions.mjs` holds the capture code and, more
+usefully, a GATE that refuses a collapsed capture — so the next attempt cannot
+quietly write wrong values. It needs a Figma plugin with UI to finish.
+`T-an-override-collection-is-keyed-by-its-parent`.
 
 **Done but not numbered:** a nav item goes to a Context · Settings opens as an
 overlay · shared constants swept · event detail shapes swept · toggle chips
@@ -1349,6 +1354,15 @@ Measured 2026-09-24. The density values do NOT come from `figma.tokens.json`:
 Nothing in the repo WRITES the cache — `project-tokens.mjs` and
 `figma-extract-component.js` both only read it. Same blocker as the
 Style/Transparent item.
+
+**Attempted 2026-09-24, and it does not work through the plugin API.** An
+override collection keys `valuesByMode` by its PARENT's mode ids — measured
+across all ten, `sawOwnMode: false` every time — so a capture returns the base
+values and looks complete while every override is gone. `compact` and
+`comfortable` both alias the same variable for `space/sm`, which would read as
+one value where the cache correctly holds 8 and 16.
+`scripts/figma-export-extensions.mjs` now carries the capture code AND a gate
+that refuses a collapsed result. `T-an-override-collection-is-keyed-by-its-parent`.
 
 It does not block the step rule (verified against LIVE Figma through the plugin
 bridge: `:root` matches the Display Mode collection value for value, and the

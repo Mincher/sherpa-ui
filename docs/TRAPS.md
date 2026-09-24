@@ -7186,6 +7186,51 @@ now share `RADIAL_INNER_RATIO`.
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
 - Site: `test/e2e/reforged-radial-chart.spec.ts`
 
+### T-an-override-collection-is-keyed-by-its-parent
+
+`figma.extensions.json` caches ten Figma collections that the DTCG export
+cannot carry. Nothing in the repo writes it, and it went eight days staler than
+the export before anyone noticed. The obvious fix — read the values back through
+the plugin API — **does not work**, and fails in the way that looks like success.
+
+An override collection's variables key `valuesByMode` by their **parent**
+collection's mode ids. Their own mode ids appear nowhere in the chain. Measured
+2026-09-24, all ten:
+
+| collection | its own mode id | the key its variables actually use |
+|---|---|---|
+| Transparent | `…951:35766/951:90` | `18:2` (Style) |
+| Saturated | `…953:35878/953:98` | `18:2` (Style) |
+| compact | `…94:1014/94:0` | `6:1` (Display Mode) |
+| grid-top | `…1200:30207/1200:452` | `1181:11` (Grouping) |
+
+**10 of 10 showed `sawOwnMode: false`.** Transparent and Saturated even alias
+the SAME variable (`VariableID:956:36558`) under the same keys, so a read
+returns one value for both — while the cache has them differing in 54 of 96.
+`resolveForConsumer` on a node pinned to the override mode returns `null`.
+
+So a capture looks complete, carries real hex values, and is silently the BASE
+collection's values with every override gone.
+
+`scripts/figma-export-extensions.mjs` is therefore a GATE first and an exporter
+second. It refuses a capture when a collection never showed its own mode id, and
+when a sibling pair that must differ comes back identical — the cache's real
+difference counts are the expected values. Proven both ways: a collapsed capture
+is refused by name, and the known-good cache round-trips with 0 changes.
+
+**Two real bugs were found on the way**, and both are worth keeping:
+
+- **Figma opacity is 0–100, not 0–1.** Dividing by 100 is required.
+- **A nested `COMPOSE_COLOR` must return CHANNELS, not a hex string.** Returning
+  a string makes the outer expression's `'r' in col` test fail, and its alpha is
+  dropped in silence — which is how `style-surface/shadow` read `#0c0b11`
+  instead of `#0c0b114d`.
+
+Unblocking this needs whatever originally produced the cache — a Figma plugin
+with UI, reading the document with an override mode actually applied.
+
+- Site: `scripts/figma-export-extensions.mjs`
+
 ### T-a-full-range-is-still-a-range
 
 A NUMBER filter's slider opened at the column's own min and max, and the menu
