@@ -8,10 +8,10 @@
  *   1. DEFAULT component usage  — GET /template/component/:name
  *      A ready-to-use `<sherpa-x data-…>` tag DERIVED from the component's own
  *      Public API comment (server/component-usage.mjs). Cannot drift.
- *   2. BESPOKE per-view markup   — GET /template/view/:view
- *      The app-specific composed layout, served from examples/templates/<view>.html.
+ *   2. BESPOKE per-Context markup — GET /template/context/:context
+ *      The app-specific composed layout, served from examples/templates/<context>.html.
  *
- * No htmx: the example pages fetch their view template with plain `fetch` and
+ * No htmx: the example pages fetch their Context template with plain `fetch` and
  * inject it, then their own module script does populate()/event wiring. Plain
  * fetch+inject is enough here — there is no server-driven partial swapping — so
  * a client-side swap library would only add weight.
@@ -28,15 +28,16 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const app = express();
 const PORT = process.env.PORT ?? 4200;
 
-const VIEWS = ['dashboard', 'records', 'profile', 'accessibility', 'appearance', 'chat'];
+// The pages a nav row opens are CONTEXTS (CLAUDE.md "Navigation terms").
+const CONTEXTS = ['dashboard', 'records', 'chat', 'profile', 'accessibility', 'appearance'];
 const NAME_RE = /^sherpa-[a-z0-9-]+$/;
-const VIEW_RE = /^[a-z0-9-]+$/;
+const CONTEXT_RE = /^[a-z0-9-]+$/;
 
 // ── static assets ────────────────────────────────────────────────────────────
 app.use('/dist', express.static(join(ROOT, 'dist')));           // built components + tokens.css
 app.use('/server', express.static(join(ROOT, 'server')));       // shared parser (browser sandbox imports it too)
 app.use('/examples', express.static(join(ROOT, 'examples')));   // example page CSS/JS assets if any
-app.use('/views', express.static(join(ROOT, 'examples', 'views'))); // SPA view modules (index.html imports ./views/<v>.js)
+app.use('/contexts', express.static(join(ROOT, 'examples', 'contexts'))); // SPA Context modules (index.html imports ./contexts/<c>.js)
 
 // ── template source #1: derived default component usage ───────────────────────
 app.get('/template/component/:name', async (req, res) => {
@@ -50,22 +51,22 @@ app.get('/template/component/:name', async (req, res) => {
   }
 });
 
-// ── template source #2: bespoke per-view markup ───────────────────────────────
-app.get('/template/view/:view', async (req, res) => {
-  const view = String(req.params.view);
-  if (!VIEW_RE.test(view)) return res.status(400).type('text').send('bad view name');
+// ── template source #2: bespoke per-Context markup ────────────────────────────
+app.get('/template/context/:context', async (req, res) => {
+  const context = String(req.params.context);
+  if (!CONTEXT_RE.test(context)) return res.status(400).type('text').send('bad context name');
   try {
-    const markup = await readFile(join(ROOT, 'examples', 'templates', `${view}.html`), 'utf8');
+    const markup = await readFile(join(ROOT, 'examples', 'templates', `${context}.html`), 'utf8');
     res.type('html').send(markup);
   } catch {
-    res.status(404).type('text').send(`no such view template: ${view}`);
+    res.status(404).type('text').send(`no such context template: ${context}`);
   }
 });
 
 // ── the single-page app shell ───────────────────────────────────────────────
 // One document (examples/index.html) owns the app-shell + nav + header. Its
-// router reads ?view=<view>, fetches /template/view/<view> and hot-swaps the
-// content — no per-view HTML documents, no full reloads.
+// router reads ?context=<c>, fetches /template/context/<c> and hot-swaps the
+// content — no per-Context HTML documents, no full reloads.
 app.get('/', async (_req, res) => {
   try {
     const page = await readFile(join(ROOT, 'examples', 'index.html'), 'utf8');
@@ -75,11 +76,11 @@ app.get('/', async (_req, res) => {
   }
 });
 
-// Legacy per-view URLs (/records, /records.html) → redirect into the SPA.
-app.get('/:view', (req, res) => {
-  const view = String(req.params.view).replace(/\.html$/, '');
-  if (!VIEWS.includes(view)) return res.status(404).type('text').send('unknown view');
-  res.redirect(302, `/?view=${view}`);
+// Legacy per-page URLs (/records, /records.html) → redirect into the SPA.
+app.get('/:context', (req, res) => {
+  const context = String(req.params.context).replace(/\.html$/, '');
+  if (!CONTEXTS.includes(context)) return res.status(404).type('text').send('unknown context');
+  res.redirect(302, `/?context=${context}`);
 });
 
 

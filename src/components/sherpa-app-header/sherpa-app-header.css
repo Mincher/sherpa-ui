@@ -25,7 +25,7 @@
 }
 
 /* Positioning context for the loading-bar overlay; fills the host's fixed 120 so
-   the view block can bottom-align inside it. */
+   the context block can bottom-align inside it. */
 .bar {
   position: relative;
   display: flex;
@@ -51,7 +51,7 @@
   flex-direction: column;
   gap: var(--sherpa-display-mode-space-sm, 12px);
   padding: var(--sherpa-display-mode-space-xs, 8px);
-  /* Fills the host's fixed height, so the view block below bottom-aligns rather
+  /* Fills the host's fixed height, so the context block below bottom-aligns rather
      than the header shrinking to fit. */
   block-size: 100%;
 }
@@ -151,8 +151,8 @@
 :host([data-notifications]) .notif-badge { display: block; }
 
 
-/* ── Row 2: view details ────────────────────────────────────────────── */
-.row-view {
+/* ── Row 2: Context details ─────────────────────────────────────────── */
+.row-context {
   display: flex;
   flex-direction: column;
   gap: var(--sherpa-display-mode-space-2xs, 4px);
@@ -169,7 +169,7 @@
   min-block-size: var(--sherpa-display-mode-size-lg, 24px);
 }
 
-.view-icon {
+.context-icon {
   display: none;
   align-items: center;
   justify-content: center;
@@ -178,7 +178,7 @@
   line-height: 1;
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
-:host([data-icon]) .view-icon { display: inline-flex; }
+:host([data-icon]) .context-icon { display: inline-flex; }
 
 /* Figma "View title": content/body/+1, REGULAR weight (not bold). */
 .title {

@@ -1,5 +1,5 @@
 /**
- * The records / CRUD-table view. init(root) binds the grid, quick-filter
+ * The records / CRUD-table Context. init(root) binds the grid, quick-filter
  * toolbar and pagination inside `root` to ONE DataSource. Nav/header are shared
  * and live in index.html.
  */
@@ -15,7 +15,7 @@ import { globalFilters, globalAvailable } from './global-filters.js';
 
 export async function init(root) {
   /* The store is the APP's (records outlive a screen); the source is this
-     view's (one query over them). */
+     Context's (one query over them). */
   const store = customerStore;
   /* SEED BEFORE FIRST LOAD. The store is IndexedDB, so a source that loaded
      first would draw an empty grid and never hear the seed arrive. */
@@ -49,13 +49,13 @@ export async function init(root) {
 
   /* One clause per filtered column heading. The grid reports a ready
      FilterClause and lights the column but does not narrow its own rows —
-     combining them is this view's job. Kept by field, so a second condition on
+     combining them is this Context's job. Kept by field, so a second condition on
      one column replaces the first rather than fighting it. */
   const columnClauses = new Map();
 
   /**
    * `ready` are the toolbar's own FilterClauses — a chip's menu holds the
-   * CONDITION, so "Starts with Go" arrives finished and this view does not
+   * CONDITION, so "Starts with Go" arrives finished and this Context does not
    * re-derive it. A field in `ready` is skipped below.
    * TRAP T-an-operator-decides-pick-or-type
    */
@@ -128,7 +128,7 @@ export async function init(root) {
   header?.populate({
     breadcrumb: [
       // Every crumb links to a REAL page.
-      { label: 'Home', href: '?view=dashboard' },
+      { label: 'Home', href: '?context=dashboard' },
       { label: 'Records' },
     ],
     /* THE GLOBAL FILTERS — View, Customer, Region, Date range. They sit above
@@ -229,7 +229,7 @@ export async function init(root) {
   /* Three components, ONE source: each READS (rows plus view state as data-*)
      and WRITES (its noun-verb events steer the source). */
 
-  /* ONE AbortController for the whole view — `bind`, `persistView` and
+  /* ONE AbortController for the whole Context — `bind`, `persistView` and
      `onViewPicked` all take a `signal`. Without a teardown the source keeps
      pushing rows into components the router has already removed. */
   const page = new AbortController();
@@ -452,7 +452,7 @@ export async function init(root) {
                guard its menu, so a bubbling listener here never runs. */
 
   /* COLUMN FILTERS — the funnel in each column heading. The clause arrives
-     ready; this view decides what it means for the query, because only it knows
+     ready; this Context decides what it means for the query, because only it knows
      what else is filtering. It also goes onto the toolbar as a chip, so a
      sideways scroll still shows the view is narrowed and by what. */
   grid.addEventListener('column-filter-change', (e) => {

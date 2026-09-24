@@ -152,7 +152,7 @@ export class SherpaAppHeader extends SherpaElement {
 
   #sync(): void {
     this.#syncOpen();
-    const icon = this.$('.view-icon');
+    const icon = this.$('.context-icon');
     if (icon) this.writeIcon(icon, this.dataset['icon'] ?? '');
 
     // CSS shows/hides the badge via [data-notifications].

@@ -36,8 +36,8 @@ test('data-heading / data-icon mirror into the view row', async ({ page }) => {
     const s = el.shadowRoot!;
     return {
       title: s.querySelector('.title')!.textContent,
-      icon: s.querySelector('.view-icon')!.textContent,
-      iconVisible: getComputedStyle(s.querySelector('.view-icon')!).display !== 'none',
+      icon: s.querySelector('.context-icon')!.textContent,
+      iconVisible: getComputedStyle(s.querySelector('.context-icon')!).display !== 'none',
     };
   });
   expect(r.title).toBe('Dashboards');

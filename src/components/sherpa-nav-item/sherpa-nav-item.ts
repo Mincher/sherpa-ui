@@ -210,7 +210,7 @@ export class SherpaNavItem extends SherpaElement {
 
   #onClick = (event: MouseEvent): void => {
     /* AN EXPANDABLE ROW IS NOT A DESTINATION. The whole row toggles, not just
-       the chevron: a parent groups its children, and the views are the children.
+       the chevron: an Area groups its children, and the Contexts are the children.
        TRAP T-an-expandable-row-is-not-a-destination */
     if (this.hasAttribute('data-expandable')) {
       event.preventDefault();

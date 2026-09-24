@@ -1,5 +1,5 @@
 /**
- * The dashboard view. init(root) populates the metric tiles, charts and
+ * The dashboard Context. init(root) populates the metric tiles, charts and
  * summary inside `root`; the nav and header live once in index.html.
  */
 import {
@@ -47,7 +47,7 @@ export async function init(root) {
     ];
   };
 
-  // Wait for the view's elements to define, then populate.
+  // Wait for the Context's elements to define, then populate.
   await Promise.all([
     customElements.whenDefined('sherpa-app-header'),
     customElements.whenDefined('sherpa-metric'),
@@ -62,7 +62,7 @@ export async function init(root) {
 
   const $ = (sel) => root.querySelector(sel);
 
-  // Shared header — it lives in index.html, not in this view's root.
+  // Shared header — it lives in index.html, not in this Context's root.
   const header = document.querySelector('sherpa-app-shell sherpa-app-header');
   header?.populate(headerConfig);
   header?.setAttribute('data-notifications', '4');
@@ -73,8 +73,8 @@ export async function init(root) {
   // the data, only the header's toolbar steers it.
   const source = new DataSource({ store: new ArrayStore(alerts(), { key: 'id' }) });
 
-  // Two lifetimes, two AbortControllers. `page` lasts while this view is
-  // mounted; `content` is shorter, because a view's own elements are replaced
+  // Two lifetimes, two AbortControllers. `page` lasts while this Context is
+  // mounted; `content` is shorter, because a Context's own elements are replaced
   // and a source pushing into a detached element leaks.
   const page = new AbortController();
   let content = new AbortController();

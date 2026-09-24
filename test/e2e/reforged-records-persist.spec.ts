@@ -4,19 +4,19 @@ import { test, expect } from '@playwright/test';
  * A RECORD SURVIVES A RELOAD.
  *
  * The example's customer store moved from `ArrayStore` to `IdbStore`
- * (`examples/views/records-data.js`), and this is the only thing that proves
+ * (`examples/contexts/records-data.js`), and this is the only thing that proves
  * it: a full `page.reload()`, which throws away every module, every custom
  * element and every in-memory store there has ever been.
  *
- * The existing cross-view test navigates with the ROUTER and deliberately does
- * NOT reload — it proves the store is app-level rather than view-level. That is
+ * The existing cross-Context test navigates with the ROUTER and deliberately does
+ * NOT reload — it proves the store is app-level rather than Context-level. That is
  * a different claim, and an ArrayStore passes it. Only a reload tells the two
  * apart.
  *
  * TRAP T-idb-is-the-only-real-local-store
  * TRAP T-idb-bulk-is-one-transaction — why the seed runs once, not per load
  */
-const APP = 'http://localhost:4200/?view=records';
+const APP = 'http://localhost:4200/?context=records';
 
 /** How many customers the grid says there are, once it has drawn. */
 async function rowCount(page: import('@playwright/test').Page): Promise<number> {
@@ -30,7 +30,7 @@ async function rowCount(page: import('@playwright/test').Page): Promise<number> 
   });
 }
 
-/** Add one customer through the view's OWN dialog — not by poking the store. */
+/** Add one customer through the Context's OWN dialog — not by poking the store. */
 async function addCustomer(page: import('@playwright/test').Page, name: string): Promise<void> {
   await page.evaluate(async (who) => {
     const root = document.querySelector('sherpa-app-shell')!;

@@ -19,7 +19,7 @@ test('applyState configures an element through its OWN API, not its attributes',
      view needs. TRAP T-state-is-the-saved-view-half.
 
      The element is built with createElement + dataset, the way real code does
-     (examples/views/chat.js). `renderElement` was deleted 2026-09-18: a JSON
+     (examples/contexts/chat.js). `renderElement` was deleted 2026-09-18: a JSON
      tree dialect beside markup, with zero callers outside tests. */
   const r = await page.evaluate(async () => {
     const { applyState } = await import('/dist/index.js');

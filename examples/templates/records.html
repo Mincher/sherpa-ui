@@ -1,13 +1,13 @@
-<!-- Content-only markup for the "records" view, injected into the app-shell's
-     content slot by the SPA router. views/records.js wires the data.
-     No section header: the APP HEADER owns the view's name. -->
+<!-- Content-only markup for the "records" Context, injected into the app-shell's
+     content slot by the SPA router. contexts/records.js wires the data.
+     No section header: the APP HEADER owns the Context's name. -->
 <!-- data-rows="fit": the rows hug their content and the LAST card takes the
-     remainder, so the view fills the content area and nothing scrolls but the
+     remainder, so the Context fills the content area and nothing scrolls but the
      grid inside its own card. The ELEMENT measures its own row count — there is
-     nothing for the view script to wire.
+     nothing for the Context script to wire.
      TRAP T-a-content-grid-has-two-row-modes -->
 <sherpa-layout-grid data-rows="fit">
-  <!-- SUMMARIES OF THE SAME ROWS. Every one is bound to the view's DataSource
+  <!-- SUMMARIES OF THE SAME ROWS. Every one is bound to the Context's DataSource
        with an `as` adapter, so a filter set anywhere re-computes all of them.
        Nothing here is hardcoded and nothing recounts by hand.
        records.js binds each one with `scope: 'all'`. -->
@@ -120,7 +120,7 @@
 
 <!-- A SECOND dialog, not the add/edit one re-labelled — re-use means every open
      has to undo what the last one set. data-status="critical" re-points the card
-     and the Delete button from one attribute. The view writes the message. -->
+     and the Delete button from one attribute. The Context writes the message. -->
 <sherpa-dialog id="confirm" data-heading="Delete customer?" data-status="critical">
   <!-- Margin zeroed inline: the dialog body already brings its padding and the
        browser's own <p> margins would add to it. -->

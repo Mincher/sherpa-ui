@@ -14,6 +14,7 @@ export interface NavRowInfo {
   icon: string | undefined;
 }
 
+/** An AREA when it has `children` (it toggles, never navigates); a CONTEXT when it has an `href`. */
 export interface NavEntry {
   id: string;
   label: string;
@@ -33,6 +34,7 @@ export interface NavEntry {
 /** @deprecated Renamed to NavEntry (kept as an alias for existing imports). */
 export type NavItem = NavEntry;
 
+/** A SECTION: a label and divider over its entries. Visual only. */
 export interface NavSection {
   label?: string;
   items: NavEntry[];

@@ -2,9 +2,9 @@
   sherpa-app-header — the top application header bar.
 
   Public API:
-    data-heading        the view title (row 2)
+    data-heading        the Context title (row 2)
     data-title          accepted as an alias for data-heading
-    data-icon           the view icon — an icon name ("gauge")
+    data-icon           the Context icon — an icon name ("gauge")
     data-back           show the back button
     data-ai             show the "Ask N-zo" AI button
     data-ai-label       its label (default "Ask N-zo")
@@ -23,7 +23,7 @@
   Slots:
     breadcrumbs  the breadcrumb trail (row 1, left)
     actions      extra buttons before the standard action set
-    title        rich view title (overrides data-heading)
+    title        rich Context title (overrides data-heading)
     filters      the quick-filter toolbar (row 2)
 
   Fires:
@@ -98,10 +98,10 @@
         </div>
       </div>
 
-      <!-- ── Row 2: view details ──────────────────────────────────── -->
-      <div class="row-view" part="row-view">
+      <!-- ── Row 2: Context details ───────────────────────────────── -->
+      <div class="row-context" part="row-context">
         <div class="title-row" part="title-row">
-          <span class="view-icon sherpa-icon-box" part="view-icon" aria-hidden="true"></span>
+          <span class="context-icon sherpa-icon-box" part="context-icon" aria-hidden="true"></span>
           <h1 class="title sherpa-truncate" part="title"></h1>
           <slot name="title"></slot>
           <!-- No favourite star: the filter toolbar below already fires

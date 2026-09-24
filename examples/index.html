@@ -15,7 +15,7 @@
     <sherpa-nav slot="nav"></sherpa-nav>
 
     <!-- No data-heading / data-icon: the script copies them from the selected
-         nav row on every view load, so one hard-coded here would go stale. -->
+         nav row on every Context load, so one hard-coded here would go stale. -->
     <sherpa-app-header slot="header"
                        data-ai data-labs data-theme-toggle
                        data-account data-help data-menu
@@ -23,9 +23,9 @@
       <!-- app-header.populate() stamps into these empty children by slot name. -->
       <sherpa-breadcrumbs slot="breadcrumbs"></sherpa-breadcrumbs>
       <!-- data-type="view" gives the action cluster the snapped
-           [star | Save | caret] group; the records view's toolbar is data type.
-           data-reset-on-populate: these filters belong to the VIEW, so the last
-           view's picks must not carry into the next. -->
+           [star | Save | caret] group; the records Context's toolbar is data type.
+           data-reset-on-populate: these filters belong to the CONTEXT, so the last
+           Context's picks must not carry into the next. -->
       <!-- data-locked: the ★ is a REQUEST here. The favourites list lives in the
            session store and paints the nav rail, so the app answers by setting
            data-favourite back. TRAP T-the-star-reports-it-does-not-decide -->
@@ -33,27 +33,27 @@
                                    data-reset-on-populate></sherpa-quick-filter-toolbar>
     </sherpa-app-header>
 
-    <!-- The per-view content is fetched + injected here by the router.
+    <!-- The per-Context content is fetched + injected here by the router.
 
          `block-size: 100%` PASSES THE SHELL'S HEIGHT THROUGH. Without it a
          `data-rows="fit"` grid has nothing to measure against: `100%` needs an
          unbroken chain of sized ancestors, and this wrapper broke it — the
          grid resolved against its own 1809px content instead of the 900px
-         area. A scrolling view is unaffected; it overflows this box exactly as
+         area. A scrolling Context is unaffected; it overflows this box exactly as
          it overflowed the shell. TRAP T-a-fit-grid-needs-a-sized-parent -->
-    <main id="view-root" style="min-block-size: 0"></main>
+    <main id="context-root" style="min-block-size: 0"></main>
   </sherpa-app-shell>
 
   <!-- Outside the app shell on purpose: the menu is a popover in the top layer,
        and every header slot is NAMED, so an unslotted child there gets no
-       layout at all. Fed by a DataSource below, so list and badge are two views
+       layout at all. Fed by a DataSource below, so list and badge are two readings
        of one set. -->
   <sherpa-notifications id="notifications"></sherpa-notifications>
 
   <!-- The assistant: sherpa-overlay-panel is a <dialog> opened with show(), not
        showModal(), so the page behind stays live. Outside the app-shell so a
-       view swap cannot take it, and its content is the same chat template the
-       full-page view uses. -->
+       Context swap cannot take it, and its content is the same chat template the
+       full-page Context uses. -->
   <sherpa-overlay-panel id="assistant"
                         data-title="Assistant"
                         data-icon="wand-magic-sparkles"
@@ -68,36 +68,37 @@
     // Sentinel proving hot-swaps stay in the SAME document (never a full reload).
     window.__sherpaAppBooted = (window.__sherpaAppBooted ?? 0) + 1;
 
-    const VIEWS = ['dashboard', 'records', 'profile', 'accessibility', 'appearance', 'chat'];
-    // These open with the rail in SETTINGS mode and a pared-back header.
-    const SETTINGS_VIEWS = new Set(['profile', 'accessibility', 'appearance']);
-    const DEFAULT_VIEW = 'dashboard';
+    /* A CONTEXT is what a nav row opens: it fills the header and the content.
+       Terms: CLAUDE.md "Navigation terms". Settings Contexts open with the rail
+       in SETTINGS mode and a pared-back header. */
+    const SETTINGS_CONTEXTS = new Set(['profile', 'accessibility', 'appearance']);
+    const CONTEXTS = ['dashboard', 'records', 'chat', ...SETTINGS_CONTEXTS];
+    const DEFAULT_CONTEXT = 'dashboard';
 
-    const viewRoot = document.getElementById('view-root');
+    const contextRoot = document.getElementById('context-root');
     const nav = document.querySelector('sherpa-app-shell sherpa-nav');
 
-    /* App state that outlives a view swap. Declared here because the view
+    /* App state that outlives a Context swap. Declared here because the Context
        loader reads /nav/pinned before the theme block further down runs. */
     const session = new SessionStore({
       theme: { mode: document.documentElement.dataset.mode ?? 'light', density: 'default' },
       nav: { pinned: false, favorites: [], recent: [] },
     });
     session.persist('/theme/mode');
-    // Only these two: the Appearance switch never offers `comfortable`.
-    session.persist('/theme/density', { guard: (v) => v === 'default' || v === 'compact' });
+    session.persist('/theme/density', { guard: (v) => ['compact', 'default', 'comfortable'].includes(v) });
     session.persist('/nav/pinned');
 
-    /* Favourites and Recents are STORED ROWS, not views, so a stored shape this
+    /* Favourites and Recents are STORED ROWS, not Contexts, so a stored shape this
        release cannot read must be dropped rather than stamped into the rail. */
     const isRowList = (value) => Array.isArray(value)
-      && value.every((e) => e && typeof e === 'object' && typeof e.view === 'string');
+      && value.every((e) => e && typeof e === 'object' && typeof e.context === 'string');
     session.persist('/nav/favorites', { guard: isRowList });
     session.persist('/nav/recent', { guard: isRowList });
 
-    /* `by: view` is the identity: starring Records twice is one favourite, and
-       re-visiting a view MOVES it up the Recents list instead of repeating it. */
-    const favorites = session.list('/nav/favorites', { by: 'view' });
-    const recents = session.list('/nav/recent', { by: 'view', max: 5, front: true });
+    /* `by: context` is the identity: starring Records twice is one favourite, and
+       re-visiting a Context MOVES it up the Recents list instead of repeating it. */
+    const favorites = session.list('/nav/favorites', { by: 'context' });
+    const recents = session.list('/nav/recent', { by: 'context', max: 5, front: true });
 
     // Shared nav config. An icon is a NAME from the Figma set; an `fa-*` class
     // list still resolves through the alias table. A name the set does not hold
@@ -109,72 +110,63 @@
       quickItems: [
         // The component's default Home carries no href — it cannot know where a
         // product's home lives — so the app supplies it.
-        { id: 'home', label: 'Home', icon: 'home', href: '?view=dashboard' },
-        /* Recent and Favorites are PARENTS. Their children are stamped from the
+        { id: 'home', label: 'Home', icon: 'home', href: '?context=dashboard' },
+        /* Recent and Favorites are AREAS. Their children are stamped from the
            stored lists by refreshNav() below, so they start empty here. */
         { id: 'recent', label: 'Recent', icon: 'ccw-circle-arrow-w-clock' },
         { id: 'favorites', label: 'Favorites', icon: 'star' },
       ],
       sections: [
-        { label: 'Views', items: [
-          { id: 'view-records',   label: 'Records',   icon: 'table-columns',  href: '?view=records' },
+        { label: 'Customers', items: [
+          { id: 'context-records', label: 'Records', icon: 'table-columns', href: '?context=records' },
         ] },
       ],
-      // The settings BUTTON in the nav header swaps the rail to these pages.
+      /* The settings BUTTON in the nav header swaps the rail to these. Each
+         Context's pages are Views, in its View chip. */
       settingsSections: [
-        { label: 'User Profile', items: [
-          { id: 'view-profile', label: 'Details & notifications', icon: 'person', href: '?view=profile' },
-        ] },
-        { label: 'Accessibility', items: [
-          { id: 'view-accessibility', label: 'Motion & contrast', icon: 'universal-access', href: '?view=accessibility' },
-        ] },
-        { label: 'Appearance', items: [
-          { id: 'view-appearance', label: 'Theme & density', icon: 'paint-roller', href: '?view=appearance' },
+        { items: [
+          { id: 'context-profile', label: 'User Profile', icon: 'person', href: '?context=profile' },
+          { id: 'context-accessibility', label: 'Accessibility', icon: 'universal-access', href: '?context=accessibility' },
+          { id: 'context-appearance', label: 'Appearance', icon: 'paint-roller', href: '?context=appearance' },
         ] },
       ],
     };
 
-    /* Which nav row maps to which view — read from the HREF, not from a `view-`
-       id prefix, so a row named anything else (Home) still routes. */
-    const viewForHref = (href) => {
-      if (!href?.startsWith('?view=')) return null;
-      const v = new URLSearchParams(href.slice(1)).get('view');
-      return VIEWS.includes(v) ? v : null;
+    /* Which nav row maps to which Context — read from the HREF, not from a
+       `context-` id prefix, so a row named anything else (Home) still routes. */
+    const contextForHref = (href) => {
+      if (!href?.startsWith('?context=')) return null;
+      const c = new URLSearchParams(href.slice(1)).get('context');
+      return CONTEXTS.includes(c) ? c : null;
     };
-    const idForView  = (v) => `view-${v}`;
+    const idForContext = (c) => `context-${c}`;
 
-    /** The id of whichever nav row points at this view. settingsSections counts:
-     * each is a real row opening a real view. Children are deliberately
-     * NOT walked: a Favorites copy of Records must not out-rank the real row. */
-    const navRowIdForView = (view) => {
-      const all = [...(navConfig.quickItems ?? []),
-                   ...(navConfig.sections ?? []).flatMap((s) => s.items ?? []),
-                   ...(navConfig.settingsSections ?? []).flatMap((s) => s.items ?? [])];
-      return all.find((i) => viewForHref(i.href) === view)?.id ?? null;
-    };
+    /* Every configured row. Children are deliberately NOT walked: a Favorites
+       copy of Records must not out-rank the real row. */
+    const configRows = () => [
+      ...(navConfig.quickItems ?? []),
+      ...[...(navConfig.sections ?? []), ...(navConfig.settingsSections ?? [])]
+        .flatMap((s) => s.items ?? []),
+    ];
+    const rowForHref = (context) => configRows().find((i) => contextForHref(i.href) === context);
 
-    /* Fallback ONLY, for a view no nav row opens (the assistant, reached from
-       "Ask N-zo"). A view with a row always takes the row's label and icon. */
-    const HEADLESS_VIEWS = {
+    /* Fallback ONLY, for a Context no nav row opens (the assistant, reached from
+       "Ask N-zo"). A Context with a row always takes the row's label and icon. */
+    const HEADLESS_CONTEXTS = {
       chat: { label: 'Assistant' },
     };
 
-    /** What a stored Favourite or Recent row remembers about a view. The LABEL
+    /** What a stored Favourite or Recent row remembers about a Context. The LABEL
      *  is copied, so a stored row still reads if the config later drops it. */
-    const rowForView = (view) => ({
-      view,
-      label: navConfig.quickItems
-        .concat((navConfig.sections ?? []).flatMap((s) => s.items ?? []))
-        .concat((navConfig.settingsSections ?? []).flatMap((s) => s.items ?? []))
-        .find((i) => viewForHref(i.href) === view)?.label
-        ?? HEADLESS_VIEWS[view]?.label
-        ?? view,
+    const rowForContext = (context) => ({
+      context,
+      label: rowForHref(context)?.label ?? HEADLESS_CONTEXTS[context]?.label ?? context,
     });
 
     /* Write the rail's CURRENT row onto the header. The rail is asked what it
        shows rather than the config being read twice. */
-    const syncHeaderToNav = (header, view) => {
-      const entry = nav.activeEntry ?? HEADLESS_VIEWS[view];
+    const syncHeaderToNav = (header, context) => {
+      const entry = nav.activeEntry ?? HEADLESS_CONTEXTS[context];
       if (!header || !entry) return;
       header.setAttribute('data-heading', entry.label ?? '');
       // No icon on the row → clear it: a stale glyph is worse than none.
@@ -182,10 +174,10 @@
       else header.removeAttribute('data-icon');
     };
 
-    // Read the current view from the URL (?view=<v>), defaulting to dashboard.
-    const viewFromURL = () => {
-      const v = new URL(location.href).searchParams.get('view');
-      return VIEWS.includes(v) ? v : DEFAULT_VIEW;
+    // Read the current Context from the URL (?context=<c>), defaulting to dashboard.
+    const contextFromURL = () => {
+      const c = new URL(location.href).searchParams.get('context');
+      return CONTEXTS.includes(c) ? c : DEFAULT_CONTEXT;
     };
 
     // The header's action buttons, as index.html's markup declares them.
@@ -195,32 +187,32 @@
 
     // Guard against races: only the newest load may commit.
     let loadToken = 0;
-    let cleanup = null;   // teardown returned by the current view's init()
+    let cleanup = null;   // teardown returned by the current Context's init()
 
-    async function loadView(name) {
+    async function loadContext(name) {
       const token = ++loadToken;
 
-      // Tear down the previous view (e.g. chat's data-no-header).
+      // Tear down the previous Context (e.g. chat's data-no-header).
       if (typeof cleanup === 'function') { try { cleanup(); } catch { /* noop */ } cleanup = null; }
 
       // Found by href, so Home lights up for the dashboard.
-      nav.dataset.currentId = navRowIdForView(name) ?? idForView(name);
+      nav.dataset.currentId = rowForHref(name)?.id ?? idForContext(name);
 
       /* Through the rail's OWN setter, not a raw dataset write: the setter
          announces the change, so the app-shell's content inset follows.
          A PINNED rail is the reader's choice and survives the swap. */
-      const inSettings = SETTINGS_VIEWS.has(name);
+      const inSettings = SETTINGS_CONTEXTS.has(name);
       nav.state = inSettings ? 'settings'
                 : session.get('/nav/pinned') ? 'pinned'
                 : 'collapsed';
 
-      // 1) Fetch the bespoke content-only markup for the view.
-      const markup = await (await fetch(`/template/view/${name}`)).text();
+      // 1) Fetch the bespoke content-only markup for the Context.
+      const markup = await (await fetch(`/template/context/${name}`)).text();
       if (token !== loadToken) return;   // a newer navigation superseded us
 
       /* Home is the root, so it has nothing to go back from. */
       const header = document.querySelector('sherpa-app-header');
-      header?.toggleAttribute('data-back', name !== DEFAULT_VIEW);
+      header?.toggleAttribute('data-back', name !== DEFAULT_CONTEXT);
 
       // Settings needs none of the header's actions, nor the filter bar's.
       settingsHeader = inSettings;
@@ -232,22 +224,22 @@
       syncHeaderToNav(header, name);
 
       // 2) Inject into the app-shell content slot.
-      viewRoot.innerHTML = markup;
+      contextRoot.innerHTML = markup;
 
-
-      // 3) Wait for the shell chrome to define, then import + run the view module.
+      // 3) Wait for the shell chrome to define, then import + run the Context module.
       await customElements.whenDefined('sherpa-app-shell');
       if (token !== loadToken) return;
 
-      const mod = await import(`./views/${name}.js`);
+      // Every Settings Context shares one module.
+      const mod = await import(`./contexts/${inSettings ? 'settings' : name}.js`);
       if (token !== loadToken) return;
 
-      cleanup = await mod.init(viewRoot, { session });
+      cleanup = await mod.init(contextRoot, { session, context: name, label: rowForHref(name)?.label });
 
-      /* Recorded LAST, so a view that failed to load never enters Recents. The
+      /* Recorded LAST, so a Context that failed to load never enters Recents. The
          list caps itself at 5 and moves a re-visit up. */
-      recents.add(rowForView(name));
-      // The star shows whether THIS view is already a favourite.
+      recents.add(rowForContext(name));
+      // The star shows whether THIS Context is already a favourite.
       syncFavouriteStar(name);
     }
 
@@ -256,18 +248,18 @@
     /* AWAITED below: populate() defers to the component's render promise, so
        calling it is not the same as the rows existing — and the header reads its
        title off a stamped ROW. */
-    /* A child row's id must be STABLE and distinct from the view's own row, or
-       starring Records would give two rows claiming id `view-records` and
+    /* A child row's id must be STABLE and distinct from the Context's own row, or
+       starring Records would give two rows claiming id `context-records` and
        `data-current-id` would light both. */
-    const childId = (parent, view) => `${parent}:${view}`;
+    const childId = (area, context) => `${area}:${context}`;
 
     /** A stored row → a nav child. No icon: TRAP T-nav-child-rows-carry-no-icon. */
     const toChild = (parent) => (row) =>
-      ({ id: childId(parent, row.view), label: row.label, href: `?view=${row.view}` });
+      ({ id: childId(parent, row.context), label: row.label, href: `?context=${row.context}` });
 
-    /* Re-stamp the two dynamic parents. A re-populate rebuilds every row, so the
-       reader's OPEN parents must be read back first and handed to the next
-       config — otherwise starring a view snaps its own branch shut. */
+    /* Re-stamp the two dynamic Areas. A re-populate rebuilds every row, so the
+       reader's OPEN Areas must be read back first and handed to the next
+       config — otherwise starring a Context snaps its own branch shut. */
     function refreshNav() {
       const wasOpen = new Set(
         nav.shadowRoot?.querySelectorAll('.nav-row[data-expanded="true"]') ?? [],
@@ -303,14 +295,15 @@
        the list's own subscriber. TRAP T-the-star-reports-it-does-not-decide */
     const viewToolbar = () => document.querySelector('sherpa-quick-filter-toolbar[data-type="view"]');
 
-    function syncFavouriteStar(view) {
-      viewToolbar()?.toggleAttribute('data-favourite', favorites.has({ view }));
+    function syncFavouriteStar(context) {
+      viewToolbar()?.toggleAttribute('data-favourite', favorites.has({ context }));
     }
 
+    // The ★ sits in the View group, but what it stars is the Context.
     document.addEventListener('view-favorite', () => {
-      const view = viewFromURL();
-      favorites.toggle(rowForView(view));
-      syncFavouriteStar(view);
+      const context = contextFromURL();
+      favorites.toggle(rowForContext(context));
+      syncFavouriteStar(context);
     });
 
     /* The rail REPORTS its mode; the app owns whether the pin is remembered.
@@ -322,7 +315,7 @@
       else if (state === 'collapsed') session.set('/nav/pinned', false);
     });
 
-    /* Rows that open no view (Recent, Favorites) never reach the router, so the
+    /* Areas open no Context (Recent, Favorites), so they never reach the router, so the
        rail's own event updates the header for both cases. */
     nav.addEventListener('nav-select', (e) => {
       const header = document.querySelector('sherpa-app-header');
@@ -333,7 +326,7 @@
     });
 
     /* Notifications, through the data layer: the badge and the list are TWO
-       VIEWS OF ONE SET. Swapping the ArrayStore for a SocketStore is the only
+       READINGS OF ONE SET. Swapping the ArrayStore for a SocketStore is the only
        change a real app makes. */
     const notificationFeed = new ArrayStore([
       { id: 'n1', label: 'Northwind renewed', description: 'Enterprise, 3 years',
@@ -350,7 +343,7 @@
 
     const notificationSource = new DataSource({ store: notificationFeed });
     const notifications = document.getElementById('notifications');
-    // Its own reference: the `header` further up is local to the view loader.
+    // Its own reference: the `header` further up is local to the Context loader.
     const appHeader = document.querySelector('sherpa-app-header');
 
     // The LIST is bound. Rows in, and its own events out.
@@ -392,19 +385,19 @@
 
     notificationSource.load().then(syncBadge);
 
-    // Nav rows render as real <a href="?view=…"> links. Intercept the click to
+    // Context rows render as real <a href="?context=…"> links. Intercept the click to
     // swap in-page — preventDefault must happen on the real click, not on the
     // synthetic nav-select. A modified click (new tab / middle) is left alone.
     nav.addEventListener('click', (e) => {
       if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
       const row = e.composedPath().find((n) => n.dataset && n.dataset.href);
       if (!row) return;
-      const view = viewForHref(row.dataset.href);
-      if (!view) return;
+      const context = contextForHref(row.dataset.href);
+      if (!context) return;
       e.preventDefault();
-      if (view === viewFromURL() && viewRoot.children.length) return;
-      history.pushState({ view }, '', `?view=${view}`);
-      loadView(view);
+      if (context === contextFromURL() && contextRoot.children.length) return;
+      history.pushState({ context }, '', `?context=${context}`);
+      loadContext(context);
     });
 
     // A BREADCRUMB click swaps in-page too — sherpa-breadcrumbs fires this and
@@ -412,12 +405,11 @@
     // with the crumb's href. A crumb with no href is the current page.
     document.addEventListener('breadcrumb-select', (e) => {
       const href = e.detail?.href;
-      if (!href?.startsWith('?view=')) return;
-      const view = new URLSearchParams(href.slice(1)).get('view');
-      if (!VIEWS.includes(view)) return;
-      if (view === viewFromURL() && viewRoot.children.length) return;
-      history.pushState({ view }, '', `?view=${view}`);
-      loadView(view);
+      const context = contextForHref(href);
+      if (!context) return;
+      if (context === contextFromURL() && contextRoot.children.length) return;
+      history.pushState({ context }, '', `?context=${context}`);
+      loadContext(context);
     });
 
     /* The moon button flips light ↔ dark. The whole switch is one attribute on
@@ -444,8 +436,9 @@
        its shadow root after that, so a glyph written then lands before the
        button exists. `rendered` is the promise that means the DOM is there. */
     session.subscribe('/theme/density', (density) => {
-      if (density === 'compact') document.documentElement.dataset.density = density;
-      else delete document.documentElement.dataset.density;
+      // `default` is NO attribute: the tokens' base values are the default density.
+      if (density === 'default') delete document.documentElement.dataset.density;
+      else document.documentElement.dataset.density = density;
     });
     const resync = () => {
       session.set('/theme/mode', session.get('/theme/mode'));
@@ -462,10 +455,10 @@
     let assistantReady = null;
     document.addEventListener('ai-click', () => {
       assistantReady ??= (async () => {
-        assistant.innerHTML = await (await fetch('/template/view/chat')).text();
+        assistant.innerHTML = await (await fetch('/template/context/chat')).text();
 
         /* UNWRAP the card: inside a panel the PANEL is the surface, so the chat
-           view's sherpa-container would be a box drawn inside a box. The two
+           Context's sherpa-container would be a box drawn inside a box. The two
            halves are re-slotted onto the panel itself. */
         const card = assistant.querySelector('sherpa-container');
         if (card) {
@@ -479,8 +472,8 @@
         }
 
         await customElements.whenDefined('sherpa-overlay-panel');
-        const mod = await import('./views/chat.js');
-        // The chat view hides the app header for its full-page form; in a panel
+        const mod = await import('./contexts/chat.js');
+        // The chat Context hides the app header for its full-page form; in a panel
         // the header must stay, so its shell tweak is undone straight away.
         const cleanup = await mod.init(assistant);
         cleanup?.();
@@ -493,12 +486,12 @@
     });
 
     // Back/forward → load without pushing.
-    window.addEventListener('popstate', () => loadView(viewFromURL()));
+    window.addEventListener('popstate', () => loadContext(contextFromURL()));
 
     /* First paint, AFTER the rail has stamped its rows: without this await the
        first load finds an empty rail and the header comes up blank. */
     await navReady;
-    loadView(viewFromURL());
+    loadContext(contextFromURL());
   </script>
 </body>
 </html>

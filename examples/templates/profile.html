@@ -1,10 +1,11 @@
-<!-- Settings › User Profile. views/profile.js wires it. -->
+<!-- Settings › User Profile. The container holds the Details View; the View chip
+     swaps its children for another View's (contexts/settings-views.js). -->
 <form novalidate>
   <sherpa-layout-grid>
 
-    <sherpa-container data-col-span="reading">
+    <sherpa-container data-col-span="reading" id="view-region">
       <sherpa-container-header slot="header"
-                               data-heading="Profile"
+                               data-heading="Details"
                                data-description="How you appear to your team."></sherpa-container-header>
       <sherpa-stack>
         <sherpa-input-text
@@ -29,22 +30,6 @@
           maxlength="240"
           placeholder="Tell us a little about yourself…"></sherpa-input-text>
       </sherpa-stack>
-    </sherpa-container>
-
-    <sherpa-container data-col-span="reading">
-      <sherpa-container-header slot="header"
-                               data-heading="Notifications"
-                               data-description="What we send you, and where."></sherpa-container-header>
-      <sherpa-list>
-        <sherpa-list-item data-label="Email notifications"
-                          data-description="Weekly digest and mentions.">
-          <sherpa-switch slot="trailing" name="notify-email" checked></sherpa-switch>
-        </sherpa-list-item>
-        <sherpa-list-item data-label="Browser notifications"
-                          data-description="Alerts while the app is open.">
-          <sherpa-switch slot="trailing" name="notify-browser"></sherpa-switch>
-        </sherpa-list-item>
-      </sherpa-list>
     </sherpa-container>
 
     <sherpa-container-footer data-col-span="reading" data-align="end">

@@ -1,10 +1,10 @@
-<!-- Content-only markup for the "dashboard" view. Served by the template server
-     (GET /template/view/dashboard) into the app-shell's content slot; the shell,
-     nav and header live once in index.html. views/dashboard.js populates it. -->
+<!-- Content-only markup for the "dashboard" Context. Served by the template server
+     (GET /template/context/dashboard) into the app-shell's content slot; the shell,
+     nav and header live once in index.html. contexts/dashboard.js populates it. -->
 
-<!-- ONE grid for the whole view, so every card shares the same 12 columns and the
+<!-- ONE grid for the whole Context, so every card shares the same 12 columns and the
      vertical rhythm is the grid's own row gap. No section header: the app header
-     owns the view's name. -->
+     owns the Context's name. -->
 <sherpa-layout-grid>
   <!-- Span is clamped to the breakpoint's column count: 4 per row on desktop,
        2 on tablet, full on mobile. -->

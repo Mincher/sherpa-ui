@@ -30,7 +30,7 @@ const SOURCES = [
   // scripts/lib/ was invisible and the gate reported its own Site as uncited.
   'scripts/lib/*.mjs',
   'scripts/lib/*/*.mjs',
-  'examples/views/*.js',
+  'examples/contexts/*.js',
   // The example TEMPLATES too. A citation in the Add-customer dialog was
   // unchecked, which is how a missing form field went unnoticed.
   'examples/templates/*.html',

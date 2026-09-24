@@ -12,15 +12,19 @@
       sections?:         [{ label?, items: NavEntry[] }],
       settingsSections?: [{ label?, items: NavEntry[] }],  // shown in SETTINGS mode
     }
-  where NavEntry = { id, label, icon?, href?, badge?, indicator?, tier? }.
+  where NavEntry = { id, label, icon?, href?, badge?, indicator?, tier?, children? }.
   A plain array is still accepted and treated as one unlabelled section.
 
-  The settings button swaps the rail to settingsSections — settings pages live behind
-  that button, not as a nav item in the product tree. `tier: 2 | 3` indents a row.
+  Terms (CLAUDE.md "Navigation terms"): a SECTION is a label and divider only.
+  An entry with `children` is an AREA — it expands, never navigates. An entry
+  with an `href` is a CONTEXT — it fills the app header and the content.
+
+  The settings button swaps the rail to settingsSections — Settings lives behind
+  that button, not in the product tree. `tier: 2 | 3` indents a row.
 
   Public API:
     data-nav-state  collapsed (default) | hover | default | pinned | settings
-    data-current-id  id of the current item
+    data-current-id  id of the current Context
     data-searchable show the search field (auto-set when a product is given)
 
   Slots:

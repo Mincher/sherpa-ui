@@ -138,16 +138,16 @@ anatomy:
                       data-icon-start: drag-handle-horizontal
                       aria-label: Switch app
           - el: div
-            class: row-view
-            part: row-view
+            class: row-context
+            part: row-context
             children:
               - el: div
                 class: title-row
                 part: title-row
                 children:
                   - el: span
-                    class: view-icon sherpa-icon-box
-                    part: view-icon
+                    class: context-icon sherpa-icon-box
+                    part: context-icon
                     attrs:
                       aria-hidden: "true"
                   - el: h1
@@ -197,7 +197,7 @@ props:
     type: string
     observed: false
     kind: content
-    description: the view title (row 2)
+    description: the Context title (row 2)
   - $type: prop
     name: data-help
     type: string
@@ -209,7 +209,7 @@ props:
     type: string
     observed: true
     kind: style
-    description: the view icon — an icon name ("gauge")
+    description: the Context icon — an icon name ("gauge")
   - $type: prop
     name: data-labs
     type: string
@@ -351,11 +351,11 @@ tokens:
   notif-badge.font-weight: "{sherpa.font-weight-regular}"
   notif-badge.line-height: "{sherpa.theme-content-line-height-base}"
   notif-badge.box-shadow: "{sherpa.display-mode-size-2xs}"
-  row-view.gap: "{sherpa.display-mode-space-2xs}"
+  row-context.gap: "{sherpa.display-mode-space-2xs}"
   title-row.gap: "{sherpa.display-mode-space-xs}"
   title-row.min-block-size: "{sherpa.display-mode-size-lg}"
-  view-icon.--_icon-size: "{sherpa.theme-size-icon-xs}"
-  view-icon.color: "{sherpa.theme-content-body-1}"
+  context-icon.--_icon-size: "{sherpa.theme-size-icon-xs}"
+  context-icon.color: "{sherpa.theme-content-body-1}"
   title.font-size: "{sherpa.font-size-body-large}"
   title.font-weight: "{sherpa.font-weight-regular}"
   title.line-height: "{sherpa.theme-content-line-height-large}"

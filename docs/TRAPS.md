@@ -1219,7 +1219,7 @@ the same event.
 
 - Site: `src/core/browser/persist-view.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `examples/views/records.js`
+- Site: `examples/contexts/records.js`
 
 ### T-content-first-original-once
 
@@ -2943,7 +2943,7 @@ binding went from 194 lines to 152.
 - Site: `test/e2e/reforged-view-definition.spec.ts`
 - Site: `test/unit/bind-selection.test.mjs`
 - Site: `test/unit/field-selection.test.mjs`
-- Site: `examples/views/records.js`
+- Site: `examples/contexts/records.js`
 
 ### T-an-operator-decides-pick-or-type
 
@@ -3015,7 +3015,7 @@ and would otherwise wipe it.
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-- Site: `examples/views/records.js`
+- Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
 ### T-native-change-stops-at-the-host
 
@@ -3900,7 +3900,7 @@ restores a grid's column filters. It moved to `apply-state.ts` and stays.
 what markup already says, with `props` for attributes, `slots` for slots and
 `children` for children. Four tests called it. Nothing else ever did.
 
-**What real code does instead**, from `examples/views/chat.js`:
+**What real code does instead**, from `examples/contexts/chat.js`:
 
 ```js
 const el = document.createElement('sherpa-chat-message');
@@ -5069,7 +5069,7 @@ future caller's mistake visible as nothing drawn, rather than as a chip that
 steers one arbitrary component.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `examples/views/global-filters.js`
+- Site: `examples/contexts/global-filters.js`
 
 ### T-a-bar-offers-only-what-its-scope-holds
 
@@ -5088,7 +5088,7 @@ either bar is never offered again — `offerable()` in `src/core/data/filter-sco
 is the DOM-free rule; the caller supplies the two held-id lists.
 
 - Site: `src/components/sherpa-app-header/sherpa-app-header.ts`
-- Site: `examples/views/records.js`
+- Site: `examples/contexts/records.js`
 
 ### T-a-superseded-chip-suspends-it-is-never-removed
 
@@ -5111,7 +5111,7 @@ Three parts make it work:
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
-- Site: `examples/views/records.js`
+- Site: `examples/contexts/records.js`
 
 ### T-unavailable-value-sorts-below-a-divider
 
@@ -5141,7 +5141,7 @@ the host knows the whole column, so it hands it over in `data-column-values`.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `examples/views/records.js`
+- Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `src/core/data/filter-state.ts`
@@ -6824,15 +6824,15 @@ Raman']` — "Priya" is a customer FIRST NAME in `records-data.js`, and no
 `owner` field has ever held it. The view matched zero rows on every load, so
 any filter applied on top of it also showed zero and read as a broken filter.
 
-- Site: `examples/views/global-filters.js`
-- Site: `examples/views/records.js`
-- Site: `examples/views/records-data.js`
-- Site: `examples/views/records-views.js`
+- Site: `examples/contexts/global-filters.js`
+- Site: `examples/contexts/records.js`
+- Site: `examples/contexts/records-data.js`
+- Site: `examples/contexts/records-views.js`
 - Site: `examples/templates/records.html`
 - Site: `test/e2e/reforged-view-chips.spec.ts`
-- Site: `examples/views/dashboard.js`
-- Site: `examples/views/dashboard-data.js`
-- Site: `examples/views/dashboard-views.js`
+- Site: `examples/contexts/dashboard.js`
+- Site: `examples/contexts/dashboard-data.js`
+- Site: `examples/contexts/dashboard-views.js`
 
 ### T-a-persistent-chip-reports-on-every-change
 
@@ -6868,8 +6868,8 @@ against what you last acted on, or read `picked` — which names only what
 changed — rather than `values`.
 
 - Site: `src/core/browser/persist-view.ts`
-- Site: `examples/views/records.js`
-- Site: `examples/views/dashboard.js`
+- Site: `examples/contexts/records.js`
+- Site: `examples/contexts/dashboard.js`
 
 ### T-the-header-chips-must-reach-the-query
 
@@ -6897,7 +6897,7 @@ is the `customer` field — not the record's own `name`, and not `owner`, which 
 the member of staff looking after the account. A chip the page does not map
 narrows nothing, rather than building a clause against a field no record has.
 
-- Site: `examples/views/records.js`
+- Site: `examples/contexts/records.js`
 
 ### T-the-last-row-draws-no-rule
 
@@ -6952,19 +6952,19 @@ every descendant that reads it.
 
 ### T-two-urls-are-two-modules
 
-The examples server serves `examples/views/records-data.js` at BOTH
-`/views/records-data.js` and `/examples/views/records-data.js`. A browser keys
+The examples server serves `examples/contexts/records-data.js` at BOTH
+`/contexts/records-data.js` and `/examples/contexts/records-data.js`. A browser keys
 its module registry on the URL, so importing the two gives **two separate module
 instances** — two `customerStore`s, two sets of records, no connection between
 them.
 
-A test that patched `store.remove` on `/examples/views/…` made a store nothing
+A test that patched `store.remove` on `/examples/contexts/…` made a store nothing
 held refuse a delete, while the view's own store deleted the rows for real. The
 assertion then reported the rows as missing, which looked like the error
 handling failing when it was the test reaching the wrong object.
 
-**Import the URL the VIEW imports.** `/views/records.js` does
-`import … from './records-data.js'`, which resolves to `/views/records-data.js`.
+**Import the URL the CONTEXT imports.** `/contexts/records.js` does
+`import … from './records-data.js'`, which resolves to `/contexts/records-data.js`.
 
 This is not specific to the examples: any server that maps one file to two paths
 does it, and nothing warns. The symptom is a patched or seeded module having no
@@ -7011,7 +7011,7 @@ Three things a mutation flow owes the reader, and all three were missing:
 `DataSource` already treats a failed LOAD as a state rather than a throw. A
 mutation deserves the same care, and had none.
 
-- Site: `examples/views/records.js`
+- Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-view-chips.spec.ts`
 
 ### T-a-row-holds-two-selection-boxes
@@ -7200,7 +7200,7 @@ of asking the question — `applyOptions` still owns the query, and `LoadResult`
 still returns rows.
 
 - Site: `src/core/data/aggregate.ts`
-- Site: `examples/views/dashboard.js`
+- Site: `examples/contexts/dashboard.js`
 
 ### T-one-scale-for-every-chart
 
@@ -7726,8 +7726,8 @@ Two related choices in the same module:
   `T-number-of-null-is-zero`.
 
 - Site: `src/core/data/aggregate.ts`
-- Site: `examples/views/dashboard.js`
-- Site: `examples/views/records.js`
+- Site: `examples/contexts/dashboard.js`
+- Site: `examples/contexts/records.js`
 
 ### T-number-of-null-is-zero
 
@@ -7778,8 +7778,8 @@ countBy(rows, 'sev', { order: ['critical', 'warning', 'info'] })
 category nothing matched is noise, unless the categories are a fixed scale
 (severity levels, storage bands) where a missing one is itself the finding.
 
-- Site: `examples/views/dashboard-data.js`
-- Site: `examples/views/records.js`
+- Site: `examples/contexts/dashboard-data.js`
+- Site: `examples/contexts/records.js`
 - Site: `src/core/data/aggregate.ts`
 
 ### T-the-last-band-includes-its-top
@@ -7800,7 +7800,7 @@ drops values outside the declared edges instead, because folding them into the
 end bands misreports both the count and the scale.
 
 - Site: `src/core/data/aggregate.ts`
-- Site: `examples/views/dashboard.js`
+- Site: `examples/contexts/dashboard.js`
 
 ### T-a-series-has-a-value-at-every-point
 
@@ -8407,15 +8407,15 @@ Three things make it safe:
   particular bind receives, not `#result.rows` — otherwise a summary would be
   skipped whenever the page array happened to be unchanged.
 
-`examples/views/dashboard.js` predated this and was correct only by accident:
+`examples/contexts/dashboard.js` predated this and was correct only by accident:
 its source declares no `pageSize`, so nothing was ever sliced. It now says
 `scope: 'all'` outright, because that luck is one added pageSize from running
 out.
 
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/summary-scope.test.mjs`
-- Site: `examples/views/records.js`
-- Site: `examples/views/dashboard.js`
+- Site: `examples/contexts/records.js`
+- Site: `examples/contexts/dashboard.js`
 
 ### T-a-legend-row-goes-inactive-it-never-vanishes
 
@@ -8441,7 +8441,7 @@ See `T-a-legend-toggle-is-a-filter` for the other half — a legend click writes
 - Site: `src/core/data/aggregate.ts`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.css`
-- Site: `examples/views/records.js`
+- Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-chart-legend.spec.ts`
 - Site: `test/unit/filter-state.test.mjs`
 ### T-a-legend-toggle-is-a-filter
@@ -8485,14 +8485,14 @@ Three things the rule gets right, each with a test:
   keeps its `off` set, its roll-up rows and its floor — see
   `T-a-legend-keeps-one-row-on`.
 
-`examples/views/dashboard.js` is converted too — clicking "Disk" takes its
+`examples/contexts/dashboard.js` is converted too — clicking "Disk" takes its
 Alerts tile from 1284 to 881 and recounts the donut legend to sum to 881. Its
 LINE legend is the one that stays a per-chart hide: those labels name two
 SERIES ("Sessions" is every non-critical row), not values of one field, so
 there is nothing to filter on and inventing a field would be a lie.
 
-- Site: `examples/views/dashboard.js`
-- Site: `examples/views/records.js`
+- Site: `examples/contexts/dashboard.js`
+- Site: `examples/contexts/records.js`
 
 ### T-a-legend-remembers-its-off-set-by-label
 
@@ -8753,8 +8753,8 @@ The shape to remember: a comparison duplicated between the query and the UI is
 a contract with no gate on it, and it only breaks on the return journey — the
 outbound path works, which is what makes it hard to see.
 
-- Site: `examples/views/global-filters.js`
-- Site: `examples/views/records.js`
+- Site: `examples/contexts/global-filters.js`
+- Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/filter-state.ts`
@@ -8861,7 +8861,7 @@ A reader cannot tell those apart, and only one of them has a breakdown. The
 demo data now names eight real systems with a long tail, so the legend folds
 its own and the "Other" on screen is the one with a menu behind it.
 
-- Site: `examples/views/dashboard-data.js`
+- Site: `examples/contexts/dashboard-data.js`
 
 ### T-a-legend-keeps-one-row-on
 
@@ -8922,8 +8922,8 @@ next reader does not chase them again:
   `#chipPicks` reads. Setting `chip.values` on one looks like it worked and
   reports nothing.
 
-- Site: `examples/views/global-filters.js`
-- Site: `examples/views/records.js`
+- Site: `examples/contexts/global-filters.js`
+- Site: `examples/contexts/records.js`
 
 ### T-any-component-can-be-bound
 
@@ -9123,8 +9123,8 @@ arrived and the tile read `-0.6211180124223602%`. **Two decimals** (Will,
 
 - Site: `src/core/data/aggregate.ts`
 - Site: `src/components/sherpa-metric/sherpa-metric.ts`
-- Site: `examples/views/dashboard.js`
-- Site: `examples/views/records.js`
+- Site: `examples/contexts/dashboard.js`
+- Site: `examples/contexts/records.js`
 
 ### T-a-draft-dies-with-its-menu
 
@@ -9252,7 +9252,7 @@ NARROW. The old status set ORed instead, because four values of one field
 cannot all be true at once — which is another sign they were a menu wearing
 toggles.
 
-- Site: `examples/views/records.js`
+- Site: `examples/contexts/records.js`
 
 ### T-component-extends-view-never-alters-it
 
@@ -9276,7 +9276,7 @@ saying only "Go". Nothing caught it, because nothing ran it.
 See `T-a-superseded-chip-suspends-it-is-never-removed`, which IS implemented,
 on the half a component owns.
 
-- Site: `examples/views/records.js`
+- Site: `examples/contexts/records.js`
 
 ### T-a-constructed-event-is-not-a-dispatched-one
 

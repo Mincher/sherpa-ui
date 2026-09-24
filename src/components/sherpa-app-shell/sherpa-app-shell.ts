@@ -1,5 +1,5 @@
 /**
- * sherpa-app-shell — the boilerplate frame for an app or a view.
+ * sherpa-app-shell — the boilerplate frame for an app and its Contexts.
  *
  * CSS owns the inset past the overlaying nav rail; this file only mirrors the
  * rail's state onto the host.

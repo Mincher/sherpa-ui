@@ -1,5 +1,5 @@
 <!--
-  sherpa-app-shell — the frame for an app or a view. Nav and header are
+  sherpa-app-shell — the frame for an app and its Contexts. Nav and header are
   PRE-COMPOSED; slotting your own replaces the default.
 
   Public API:
@@ -11,7 +11,7 @@
   Slots:
     nav       replace the default <sherpa-nav>          (data-accepts: nav)
     header    replace the default <sherpa-app-header>   (data-accepts: app-header, toolbar)
-    (default) the view content                          (data-accepts: any)
+    (default) the Context content                       (data-accepts: any)
 -->
 <template id="default">
   <div class="shell">
@@ -26,7 +26,7 @@
         <header class="header" part="header">
           <slot name="header"><sherpa-app-header></sherpa-app-header></slot>
         </header>
-        <div class="view"><slot></slot></div>
+        <div class="context-frame"><slot></slot></div>
       </main>
     </div>
   </div>

@@ -5,11 +5,11 @@ import { test, expect } from '@playwright/test';
  *
  * The rail REPORTS its mode; the app decides whether the pin is remembered.
  * The router used to write `nav.state = 'collapsed'` on every load, which
- * un-pinned the rail the moment you opened another view.
+ * un-pinned the rail the moment you opened another Context.
  *
  * TRAP T-session-store-is-the-third-tier — where the remembered value lives
  */
-const APP = 'http://localhost:4200/?view=dashboard';
+const APP = 'http://localhost:4200/?context=dashboard';
 
 /** The rail's own mode, read from the attribute the state setter writes. */
 const navState = (page: import('@playwright/test').Page): Promise<string | null> =>
@@ -47,17 +47,17 @@ test.beforeEach(async ({ page }) => {
   await railReady(page);
 });
 
-test('a pinned rail stays pinned when the view changes', async ({ page }) => {
+test('a pinned rail stays pinned when the Context changes', async ({ page }) => {
   await clickPin(page);
   expect(await navState(page)).toBe('pinned');
 
   // Navigate with the ROUTER — the same path a nav row click takes.
   await page.evaluate(() => {
-    history.pushState({ view: 'records' }, '', '?view=records');
+    history.pushState({ context: 'records' }, '', '?context=records');
     dispatchEvent(new PopStateEvent('popstate'));
   });
   await page.waitForFunction(() =>
-    !!document.querySelector('#view-root sherpa-data-grid'), undefined, { timeout: 15000 });
+    !!document.querySelector('#context-root sherpa-data-grid'), undefined, { timeout: 15000 });
 
   expect(await navState(page)).toBe('pinned');
 });

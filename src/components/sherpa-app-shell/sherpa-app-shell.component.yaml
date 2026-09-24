@@ -45,7 +45,7 @@ anatomy:
                     children:
                       - el: sherpa-app-header
               - el: div
-                class: view
+                class: context-frame
                 slot: ""
 props:
   - $type: prop

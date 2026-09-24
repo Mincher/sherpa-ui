@@ -48,7 +48,7 @@ test('the nav rail is a full-height overlay; the header is sticky inside the scr
       // The view's inset moved off .content, so the sticky header bleeds full
       // width while the content below it stays on the layout grid.
       contentPadding: getComputedStyle(q('.content')).paddingTop,
-      viewPadding: getComputedStyle(q('.view')).paddingTop,
+      viewPadding: getComputedStyle(q('.context-frame')).paddingTop,
     };
   });
   expect(r.shell).toBe(true);

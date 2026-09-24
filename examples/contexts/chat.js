@@ -1,5 +1,5 @@
 /**
- * examples/views/chat.js — the AI-chat view's logic.
+ * examples/contexts/chat.js — the AI-chat Context's logic.
  *
  * Exported as init(root): wires the composer/thread that live inside `root`,
  * appending user messages + canned assistant replies with a typing indicator.
@@ -16,7 +16,7 @@ export async function init(root) {
     customElements.whenDefined('sherpa-prompt-composer'),
   ]);
 
-  // Chat is a full-height view — hide the shared app-header row for it.
+  // Chat is a full-height Context — hide the shared app-header row for it.
   const shell = document.querySelector('sherpa-app-shell');
   shell?.setAttribute('data-no-header', '');
 
@@ -27,7 +27,7 @@ export async function init(root) {
       // Every crumb links to a REAL page. The trail used to name sections
       // that do not exist ('Monitoring', 'Workspace') and point at dead `#`
       // anchors, so clicking one went nowhere.
-      { label: 'Home', href: '?view=dashboard' },
+      { label: 'Home', href: '?context=dashboard' },
       { label: 'Assistant' },
     ],
   });

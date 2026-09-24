@@ -1,18 +1,18 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * FAVORITES AND RECENTS ARE PARENT ROWS, AND THEY SURVIVE A RELOAD.
+ * FAVORITES AND RECENTS ARE AREAS, AND THEY SURVIVE A RELOAD.
  *
- * Neither is a view. Each is a nav parent whose children are stamped from a
- * stored list — Favorites from the ★, Recents from the last five views opened.
+ * Neither is a Context. Each is an Area whose children are stamped from a
+ * stored list — Favorites from the ★, Recents from the last five Contexts opened.
  *
- * NOTHING HERE VISITS `settings`. That view puts the rail into SETTINGS mode,
+ * NOTHING HERE VISITS A SETTINGS CONTEXT. Those put the rail into SETTINGS mode,
  * which swaps `sections` for `settingsSections` and drops `quickItems`
  * altogether — so Recent and Favorites are not stamped at all while it is open.
  * That is the nav's own behaviour and not this feature's, but it makes settings
- * useless as a second view to navigate to.
+ * useless as a second Context to navigate to.
  *
- * The five-entry CAP is not reachable here either: the example has four views.
+ * The five-entry CAP is not reachable here either: only three Contexts qualify.
  * `test/unit/session-list.test.mjs` proves the cap against the list directly.
  *
  * TRAP T-session-list-is-a-view-not-a-copy — the list, and its cap
@@ -35,26 +35,26 @@ const childLabels = (page: Page, parent: string): Promise<string[]> =>
       .map((i) => (i as HTMLElement).dataset['label'] ?? ''), parent);
 
 /**
- * Open a view the way the router does, and wait for it to LAND.
+ * Open a Context the way the router does, and wait for it to LAND.
  *
- * Recents is written last, after the view module's `init` resolves, so waiting
- * for this view at the front of the stored list is what proves the load
- * finished. Waiting on the URL alone races the rest of `loadView`.
+ * Recents is written last, after the Context module's `init` resolves, so waiting
+ * for this Context at the front of the stored list is what proves the load
+ * finished. Waiting on the URL alone races the rest of `loadContext`.
  */
-async function goto(page: Page, view: string): Promise<void> {
+async function goto(page: Page, context: string): Promise<void> {
   await page.evaluate((v) => {
-    history.pushState({ view: v }, '', `?view=${v}`);
+    history.pushState({ context: v }, '', `?context=${v}`);
     dispatchEvent(new PopStateEvent('popstate'));
-  }, view);
+  }, context);
   await page.waitForFunction((v) => {
     const raw = localStorage.getItem('sherpa:session:/nav/recent');
     if (raw == null) return false;
     try {
-      return JSON.parse(raw)[0]?.view === v;
+      return JSON.parse(raw)[0]?.context === v;
     } catch {
       return false;
     }
-  }, view, { timeout: 15000 });
+  }, context, { timeout: 15000 });
 }
 
 /** Click the ★. `button-click` is what the bar listens for — a raw DOM click on
@@ -85,7 +85,7 @@ test.beforeEach(async ({ page }) => {
     localStorage.getItem('sherpa:session:/nav/recent') != null, undefined, { timeout: 15000 });
 });
 
-test('Recent gathers the views visited, newest FIRST', async ({ page }) => {
+test('Recent gathers the Contexts visited, newest FIRST', async ({ page }) => {
   await goto(page, 'records');
   await goto(page, 'chat');
 
@@ -94,8 +94,8 @@ test('Recent gathers the views visited, newest FIRST', async ({ page }) => {
 });
 
 test('Recent keeps at most FIVE, and a re-visit moves up rather than repeats', async ({ page }) => {
-  // Four distinct views plus two re-visits: the cap is never the thing under
-  // test here, the de-dupe is. VIEWS holds only four, so five is unreachable.
+  // Three Contexts plus two re-visits: the cap is never the thing under
+  // test here, the de-dupe is.
   for (const v of ['records', 'chat', 'dashboard', 'records', 'chat']) {
     await goto(page, v);
   }
@@ -116,7 +116,7 @@ test('the ★ adds a Favorites CHILD, and clicking it again removes it', async (
   // The child's id is its own, so it cannot collide with the real Records row.
   const ids = await rowIds(page);
   expect(ids).toContain('favorites:records');
-  expect(ids).toContain('view-records');
+  expect(ids).toContain('context-records');
 
   await clickStar(page);
   await expect.poll(() => childLabels(page, 'favorites')).toEqual([]);
@@ -159,7 +159,7 @@ test('the ★ swaps to a FILLED drawing, not just a different name', async ({ pa
   await expect.poll(path).toBe(outline);
 });
 
-test('the ★ reflects the view you are ON, not the last one you starred', async ({ page }) => {
+test('the ★ reflects the Context you are ON, not the last one you starred', async ({ page }) => {
   await goto(page, 'records');
   await clickStar(page);
   await expect.poll(() => page.evaluate(() =>
@@ -195,7 +195,7 @@ test('Recents survive a FULL reload too', async ({ page }) => {
   await page.reload();
   await page.waitForFunction(() => !!document.querySelector('sherpa-nav')?.shadowRoot);
 
-  /* The reload keeps `?view=chat`, so it re-opens the view it was left on.
+  /* The reload keeps `?context=chat`, so it re-opens the Context it was left on.
      That MOVES chat to the front, which it already was — the order is the one
      from before the reload, unchanged. */
   await expect.poll(() => childLabels(page, 'recent'))
@@ -203,7 +203,7 @@ test('Recents survive a FULL reload too', async ({ page }) => {
 });
 
 test('a stored list this release cannot read is DROPPED, not stamped', async ({ page }) => {
-  // What an older release wrote: bare strings, no {view,label}.
+  // What an older release wrote: bare strings, no {context,label}.
   await page.evaluate(() => localStorage.setItem(
     'sherpa:session:/nav/favorites', JSON.stringify(['records', 'chat'])));
   await page.reload();
@@ -215,7 +215,7 @@ test('a stored list this release cannot read is DROPPED, not stamped', async ({ 
   expect(await stored(page, 'sherpa:session:/nav/favorites')).toBe(null);
 });
 
-test('a Favorites child OPENS its view, and the real row stays the active one',
+test('a Favorites child OPENS its Context, and the real row stays the active one',
   async ({ page }) => {
     await goto(page, 'records');
     await clickStar(page);
@@ -231,12 +231,12 @@ test('a Favorites child OPENS its view, and the real row stays the active one',
     });
 
     await page.waitForFunction(() =>
-      new URL(location.href).searchParams.get('view') === 'records', undefined, { timeout: 15000 });
+      new URL(location.href).searchParams.get('context') === 'records', undefined, { timeout: 15000 });
 
     // The REAL Records row is current, not the favourite copy.
     await expect.poll(() => page.evaluate(() =>
       document.querySelector('sherpa-nav')?.getAttribute('data-current-id')))
-      .toBe('view-records');
+      .toBe('context-records');
   });
 
 test('an open Favorites parent stays open when a row is added', async ({ page }) => {
@@ -310,8 +310,8 @@ test('an expandable parent carries NO href, so it cannot be opened in a tab',
 
     expect(hrefs.parent).toBe(null);
     // A CHILD is the destination, and a plain row is unaffected.
-    expect(hrefs.child).toBe('?view=records');
-    expect(hrefs.home).toBe('?view=dashboard');
+    expect(hrefs.child).toBe('?context=records');
+    expect(hrefs.home).toBe('?context=dashboard');
   });
 
 test('a parent that LOSES its last child becomes a plain row again', async ({ page }) => {

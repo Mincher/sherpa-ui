@@ -24,7 +24,7 @@ Three rules set the order:
 
 | # | Item | Why first |
 |---|---|---|
-| 1 | Area vs View | Views, Save, Favourite, breadcrumbs and filter scope ALL sit on this. Every later item reads differently if the model is wrong. |
+| 1 | ~~Context vs View~~ DECIDED 2026-09-24 — CLAUDE.md "Navigation terms" | Views, Save, Favourite, breadcrumbs and filter scope ALL sit on this. Every later item reads differently if the model is wrong. |
 | 2 | Filter scope — down, never up | The panel, the menu rework and the allow-list all need the scope rule fixed. |
 | 3 | Style/Transparent tokens | BLOCKED on your Figma export. Unblock it early — the button border item may turn out to be the same fault. |
 
@@ -100,7 +100,7 @@ Needs Wave 1 item 1 to have landed.
 | # | Item |
 |---|---|
 | 15 | Save a View, and the Save split-button menu |
-| 16 | Favourite and Save apply to the Area, not the View |
+| 16 | Favourite and Save apply to the Context, not the View |
 | 17 | Breadcrumbs are for workflow, not for the nav |
 | 17b | At the mobile breakpoint the nav becomes a menu |
 
@@ -165,13 +165,14 @@ Last, because they touch everything and block nothing.
 | 31 | The 8px grid and 4px sub-grid should be TOKENS |
 | 32 | Fold donut + gauge into ONE radial chart |
 | 33 | Two scaling multipliers, in place of the remapped density modes |
+| 34 | Figma: use the Navigation terms |
 
 Item 29 dead last. It is a rename across the whole repo, so it is cheapest when
 no other work is in flight.
 
 ### If you only do three things
 
-1. **Area vs View** (item 1). Everything else bends around it.
+1. ~~**Context vs View** (item 1).~~ Decided 2026-09-24.
 2. **The consistency sweep** (items 10-11). It stops the next fault being copied.
 3. **The allow-list** (item 18). It is one primitive that makes four later items
    smaller.
@@ -317,7 +318,7 @@ should be current and is not. Check whether the Apply path writes
 Will, 2026-09-23: it should be a top-level date range filter that slices the
 records to a subset across the whole view.
 
-**Where it is today.** `examples/views/global-filters.js:74` — it IS already at
+**Where it is today.** `examples/contexts/global-filters.js:74` — it IS already at
 view scope, in `globalFilters()`, so the scope half is right. What is wrong is
 the SHAPE:
 
@@ -363,15 +364,16 @@ Not designed yet. Do this one by trying things.
 
 ## Views
 
-### `[ ]` A nav item goes to an AREA, not a View
+### `[x]` A nav item goes to a CONTEXT, not a View
 
-The nav has been calling its items `Views`. They are `Areas`. A `View` is what
-the View chip in the App Header selects.
+Done in code 2026-09-24. The four terms are in CLAUDE.md "Navigation terms":
+Section, Area, Context, View. A `View` is what the View chip in the App Header
+selects.
 
 - A View is a preset, or one the user saved.
 - A View has its own layout and its own content.
 - A View can have its own Data Sources and Stores.
-- Views under one Area DO NOT have to share data.
+- Views under one Context DO NOT have to share data.
 
 ### `[ ]` Save a View, and the Save split-button menu
 
@@ -392,10 +394,11 @@ BOTTOM of that menu, labelled `Custom Views`.
 | `Save As` | A dialog. The user edits the View name, then saves. The user can cancel. |
 | `Delete View` | Critical style. A dialog asks the user to confirm. ONLY a custom View can be deleted. |
 
-### `[ ]` Favourite and Save apply to the Area, not the View
+### `[ ]` Favourite and Save apply to the Context, not the View
 
-Favouriting or saving a View applies to every View in that Area. It must apply
-only to the one View.
+Favouriting or saving a View applies to every View in that Context. It must
+apply only to the one View. Today the ★ stars the Context
+(`examples/index.html`, the `view-favorite` listener).
 
 ---
 
@@ -405,7 +408,7 @@ only to the one View.
 
 At mobile width the left nav rail is GONE. A menu takes its place.
 
-**The trigger.** A menu button in the App Header, to the RIGHT of the Area title.
+**The trigger.** A menu button in the App Header, to the RIGHT of the Context title.
 
 **The rail.** Hidden. The padding it puts on the App Header and on the content
 area goes to `0`. No empty gutter left behind.
@@ -417,7 +420,7 @@ area goes to `0`. No empty gutter left behind.
 - `Settings` is a menu item, at the BOTTOM of the list.
 - The footer holds a `Cancel` button. It closes the menu and redirects nowhere.
 
-**Pressing a nav item that targets an Area** closes the menu AND performs the
+**Pressing a nav item that targets a Context** closes the menu AND performs the
 redirect.
 
 **Put the nav on the data layer while you are here.** The rail and this menu are
@@ -428,13 +431,35 @@ Checked 2026-09-23: `sherpa-nav` has `renderData()` (line 131), so
 not a live binding. `sherpa-nav-item` touches the data layer not at all.
 
 Bind the nav to a Store and both renderings follow one source. A change to the
-Areas then reaches the rail and the menu together.
+nav then reaches the rail and the menu together.
+
+### `[ ]` Settings opens as an overlay, and closing it puts you back
+
+Queued 2026-09-24. Leaving Settings must restore the Area, Context and View the
+user was in before. Today Settings Contexts are routed like any other, so the
+previous Context is gone.
+
+The likely shape: a new `sherpa-dialog` variant that covers the WHOLE app header
+and content area, with the Settings content inside. The rail stays in Settings
+mode beside it. Closing it leaves the page under it untouched.
+
+### `[ ]` Figma: use the Navigation terms
+
+The code moved to Section / Area / Context / View on 2026-09-24 (CLAUDE.md
+"Navigation terms"). Figma still uses the old words. Rename there, then resync:
+
+- App Header: the `View title` layer is the Context title. Code parts are now
+  `row-context` and `context-icon`.
+- Navigation: a parent row is an Area; a leaf row is a Context. A Section is
+  the label + divider only.
+- Any `Views` section label, or frame named for a page, is a Context.
+- Keep `View` only for the View chip and its View group (★ · Save · ▾).
 
 ### `[ ]` Breadcrumbs are for workflow, not for the nav
 
-Breadcrumbs must not show movement between Areas — the nav does that.
+Breadcrumbs must not show movement between Contexts — the nav does that.
 Breadcrumbs are for a workflow redirect or a drilldown, e.g. a link in a grid
-cell opens a details View.
+cell opens a details Context.
 
 ---
 
@@ -991,7 +1016,7 @@ grid."*
 The chip's shape never escapes. Verified by dispatching one by hand at a chip:
 the toolbar catches it in CAPTURE (`#onOrganiseChange`,
 `T-capture-beats-registration-order`) and re-emits the `'bar'` shape, so a
-document listener only ever sees the record. `examples/views/records.js:553`
+document listener only ever sees the record. `examples/contexts/records.js:553`
 does `Object.entries(e.detail.values)` with no `scope` guard and is safe for
 that reason — though a guard there would cost nothing.
 

@@ -1,28 +1,14 @@
-<!-- Settings › Appearance. views/appearance.js wires it. -->
+<!-- Settings › Appearance. The container holds the Theme View; the View chip
+     swaps its children for another View's (contexts/settings-views.js). -->
 <form novalidate>
   <sherpa-layout-grid>
 
-    <sherpa-container data-col-span="reading">
+    <sherpa-container data-col-span="reading" id="view-region">
       <sherpa-container-header slot="header"
-                               data-heading="Appearance"
-                               data-description="Colour mode and density apply as you change them."></sherpa-container-header>
-      <sherpa-stack data-gap="xl">
-        <!-- Radios via populate([{value,label,description}]) -->
-        <sherpa-select-group id="mode-group" data-label="Colour mode"></sherpa-select-group>
-
-        <sherpa-list>
-          <sherpa-list-item data-label="Compact density"
-                            data-description="Tighten spacing across dense views.">
-            <sherpa-switch slot="trailing" id="sw-compact" name="compact" data-type="simple"></sherpa-switch>
-          </sherpa-list-item>
-        </sherpa-list>
-
-        <sherpa-slider
-          id="page-size"
-          data-label="Items per page"
-          data-show-value
-          min="10" max="100" step="10"></sherpa-slider>
-      </sherpa-stack>
+                               data-heading="Theme"
+                               data-description="Applies as you change it."></sherpa-container-header>
+      <!-- Radios via populate([{value,label,description}]) -->
+      <sherpa-select-group id="mode-group" data-label="Colour mode"></sherpa-select-group>
     </sherpa-container>
 
     <sherpa-container-footer data-col-span="reading" data-align="end">

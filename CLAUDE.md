@@ -259,6 +259,26 @@ Applies to **all** components, existing and new:
   slot-bearing components carry them** — the rule is every content-bearing slot, so
   the other 32 are a real gap, not a licence to skip it.
 
+### Navigation terms
+
+Ratified 2026-09-24. Four words, one meaning each — in code, comments, tests and docs.
+
+| Term | Is | Where |
+|---|---|---|
+| **Section** | a label and divider in the nav. Visual only, does nothing | nav — `NavSection`, `sherpa-nav-section` |
+| **Area** | a parent nav row. It expands and collapses its Contexts; it never navigates | nav — a `NavEntry` with `children` |
+| **Context** | a nav row that fills the app header and the content | nav — a `NavEntry` with an `href`; `?context=` in the example app |
+| **View** | a preset or user-saved view definition, picked from the header's View chip | app header only — never in the nav |
+
+A Context's sub-pages are its **Views**, picked in the View chip — never child
+nav rows. Add an Area only when one is asked for. `examples/contexts/settings-views.js`
+is the reference: three Settings Contexts, two Views each.
+
+So a page is a **Context**, not a view: `examples/contexts/`, `loadContext`,
+`/template/context/:context`. "View" is kept for saved views — `ViewSnapshot`,
+`onViewPicked`, the `data-type="view"` toolbar and its `view-*` events. Figma
+still uses the old words; that rename is queued in `docs/TODO.md`.
+
 ### CSS owns all visibility
 
 **JS never toggles `.hidden`, `display`, or `visibility` on shadow DOM internals.** JS sets `data-*` attributes on the host; CSS selects them:
@@ -519,7 +539,7 @@ app: open a `sherpa-dialog` with `.show()` (NOT the native `showModal()` — the
 component owns modality and the `open` attribute), read the fields, then append a
 `sherpa-toast` for feedback.
 
-`examples/views/records.js` is the working reference — the add-customer
+`examples/contexts/records.js` is the working reference — the add-customer
 button → dialog → save → toast path.
 
 ### MCP server (`mcp-server/`)

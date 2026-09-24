@@ -142,7 +142,7 @@ props:
     type: string
     observed: true
     kind: style
-    description: id of the current item
+    description: id of the current Context
   - $type: prop
     name: data-nav-state
     type: enum

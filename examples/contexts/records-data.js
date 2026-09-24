@@ -1,7 +1,7 @@
 /**
  * records-data.js — the customer records, and the ONE store that holds them.
  * A STORE is app-level (a module `const`, alive as long as the tab); a
- * DataSource is view-level.
+ * DataSource is Context-level.
  */
 import { IdbStore, ArrayStore, rules, required, number, email } from '../../dist/index.js';
 
@@ -77,7 +77,7 @@ export const customers = Array.from({ length: 100 }, (_, i) => {
   };
 });
 
-/** Here, not in the view: a COLUMN describes a record, and a second view wants the same. */
+/** Here, not in the Context: a COLUMN describes a record, and a second Context wants the same. */
 export const columns = [
   { field: 'name',        header: 'Name',      sortable: true },
   { field: 'email',       header: 'Email',     sortable: true },
@@ -114,7 +114,7 @@ export const customerSchema = rules({
 });
 
 /**
- * The one store every view of these records shares. Keyed by EMAIL.
+ * The one store every Context showing these records shares. Keyed by EMAIL.
  *
  * INDEXED on the columns the toolbar chips filter by. An index only changes how
  * much is read (`T-idb-index-narrows-it-never-answers-it`), so adding or
@@ -145,7 +145,7 @@ export const customerStore = IdbStore.available
  * `putAll` rather than 100 `insert()` calls: one transaction and ONE `change`
  * event (`T-idb-bulk-is-one-transaction`).
  *
- * AWAITED BY THE VIEWS, not fired and forgotten — a grid that populates before
+ * AWAITED BY THE CONTEXTS, not fired and forgotten — a grid that populates before
  * the seed lands draws an empty table and never hears about it.
  */
 export const customersReady = (async () => {

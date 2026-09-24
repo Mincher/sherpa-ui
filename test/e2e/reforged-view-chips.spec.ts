@@ -12,7 +12,7 @@ import { test, expect } from '@playwright/test';
  * had no `values` at all, the toolbar had a getter and no setter, and the app
  * header had neither. A definition could not say what it meant.
  *
- * This runs against the EXAMPLES server (:4200), not the sandbox: the views
+ * This runs against the EXAMPLES server (:4200), not the sandbox: the Contexts
  * are express templates, and the dashboard's saved views are the thing on
  * trial. `npm run serve:examples` must be up.
  */
@@ -122,18 +122,18 @@ test.describe('view definitions set the filter bar', () => {
  *
  * Runs against the EXAMPLES server (:4200); `npm run serve:examples` must be up.
  */
-test('a record added on one view changes the summary on another', async ({ page }) => {
-  const nav = async (view: string) => {
+test('a record added on one Context changes the summary on another', async ({ page }) => {
+  const nav = async (context: string) => {
     // The ROUTER'S path — pushState, no reload. Setting window.location is a
     // full reload and would wipe the store by design, proving nothing.
     await page.evaluate((v) => {
       const n = document.querySelector('sherpa-nav')!;
-      (n.shadowRoot!.querySelector(`[data-href="?view=${v}"]`) as HTMLElement)?.click();
-    }, view);
+      (n.shadowRoot!.querySelector(`[data-href="?context=${v}"]`) as HTMLElement)?.click();
+    }, context);
     await page.waitForTimeout(1200);
   };
 
-  await page.goto('http://localhost:4200/?view=dashboard');
+  await page.goto('http://localhost:4200/?context=dashboard');
   await page.waitForFunction(() => {
     const el = document.querySelector('#kv');
     return (el?.shadowRoot?.textContent ?? '').includes('Customers');
@@ -192,19 +192,19 @@ test('a record added on one view changes the summary on another', async ({ page 
  * demonstrated nowhere.
  */
 test('the records store refuses a record its schema rejects', async ({ page }) => {
-  await page.goto('http://localhost:4200/?view=records');
+  await page.goto('http://localhost:4200/?context=records');
   await page.waitForFunction(() => {
     const g = document.querySelector('sherpa-data-grid');
     return (g?.shadowRoot?.querySelectorAll('tbody tr').length ?? 0) > 0;
   }, undefined, { timeout: 15000 });
 
   const r = await page.evaluate(async () => {
-    /* `/views/…`, the url the VIEW imports. The server serves this file at two
+    /* `/contexts/…`, the url the CONTEXT imports. The server serves this file at two
        urls and a browser keys its module registry on the url, so
-       `/examples/views/…` is a SECOND instance with its own store — this test
+       `/examples/contexts/…` is a SECOND instance with its own store — this test
        passed against a store the app never held.
        TRAP T-two-urls-are-two-modules. */
-    const { customerStore } = await import('/views/records-data.js');
+    const { customerStore } = await import('/contexts/records-data.js');
     const before = (await customerStore.load()).total;
 
     // NO EMAIL — and email is the KEY, so a blank one would collide with the
@@ -253,7 +253,7 @@ test('the records store refuses a record its schema rejects', async ({ page }) =
  * TRAP T-a-failed-mutation-must-reach-the-reader.
  */
 test('delete asks before it deletes, and reports a refusal', async ({ page }) => {
-  await page.goto('http://localhost:4200/?view=records');
+  await page.goto('http://localhost:4200/?context=records');
   await page.waitForFunction(() => {
     const g = document.querySelector('sherpa-data-grid');
     return (g?.shadowRoot?.querySelectorAll('.row').length ?? 0) > 0;
@@ -317,13 +317,13 @@ test('delete asks before it deletes, and reports a refusal', async ({ page }) =>
 
   /* ── 2. A REFUSED delete says so, and keeps the rows ────────────────── */
   await page.evaluate(async () => {
-    /* `/views/…`, NOT `/examples/views/…`. The server maps the same file to
+    /* `/contexts/…`, NOT `/examples/contexts/…`. The server maps the same file to
        BOTH urls, and a browser keys its module registry on the url — so the
-       two are two separate module instances with two separate stores. The view
-       imports `./records-data.js` from `/views/records.js`, so this is the copy
+       two are two separate module instances with two separate stores. The Context
+       imports `./records-data.js` from `/contexts/records.js`, so this is the copy
        it actually holds; patching the other one refused a delete nothing ever
        called. TRAP T-two-urls-are-two-modules. */
-    const mod = await import('/views/records-data.js');
+    const mod = await import('/contexts/records-data.js');
     const store = mod.customerStore as { remove: (k: unknown) => Promise<void> };
     store.remove = async () => { throw new Error('Network unreachable'); };
   });

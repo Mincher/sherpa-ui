@@ -1,16 +1,13 @@
-<!-- Settings › Accessibility. views/accessibility.js wires it. -->
+<!-- Settings › Accessibility. The container holds the Display View; the View chip
+     swaps its children for another View's (contexts/settings-views.js). -->
 <form novalidate>
   <sherpa-layout-grid>
 
-    <sherpa-container data-col-span="reading">
+    <sherpa-container data-col-span="reading" id="view-region">
       <sherpa-container-header slot="header"
-                               data-heading="Accessibility"
-                               data-description="Make the app easier to see and use."></sherpa-container-header>
+                               data-heading="Display"
+                               data-description="Make the app easier to see."></sherpa-container-header>
       <sherpa-list>
-        <sherpa-list-item data-label="Reduce motion"
-                          data-description="Turn off animation and moving effects.">
-          <sherpa-switch slot="trailing" name="reduce-motion"></sherpa-switch>
-        </sherpa-list-item>
         <sherpa-list-item data-label="Increase contrast"
                           data-description="Stronger borders and text.">
           <sherpa-switch slot="trailing" name="contrast"></sherpa-switch>
@@ -19,16 +16,8 @@
                           data-description="Show links with an underline, not colour alone.">
           <sherpa-switch slot="trailing" name="underline-links"></sherpa-switch>
         </sherpa-list-item>
-        <sherpa-list-item data-label="Keyboard shortcuts"
-                          data-description="Single-key shortcuts for common actions.">
-          <sherpa-switch slot="trailing" name="shortcuts" checked></sherpa-switch>
-        </sherpa-list-item>
       </sherpa-list>
     </sherpa-container>
-
-    <sherpa-callout data-col-span="reading" data-status="info" data-heading="Your system settings apply too">
-      Reduced motion and dark mode set in your operating system are always followed.
-    </sherpa-callout>
 
     <sherpa-container-footer data-col-span="reading" data-align="end">
       <sherpa-button type="button" class="cancel-btn">Cancel</sherpa-button>

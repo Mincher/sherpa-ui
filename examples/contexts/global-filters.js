@@ -1,8 +1,8 @@
 /**
  * global-filters.js — the app header's TOP-LEVEL filters.
  *
- * Header chips trickle DOWN: they set the population every view works within.
- * A view's own filter bar narrows further inside that. VIEW leads, because
+ * Header chips trickle DOWN: they set the population every Context works within.
+ * A Context's own filter bar narrows further inside that. VIEW leads, because
  * picking a saved view re-applies the other three.
  */
 
@@ -92,7 +92,7 @@ export function globalFilters(views, regions = REGIONS, customers = CUSTOMERS, d
 /**
  * What the header's ADD chip offers — VIEW-scope fields not already on the bar.
  *
- * These belong to the whole view, so every component narrows by them: a status
+ * These belong to the whole Context, so every component narrows by them: a status
  * or a plan means the same thing to the chart, the tiles and the grid. Group
  * and Sort are absent on purpose — they arrange ONE component and have no
  * view-level meaning. TRAP T-group-and-sort-are-component-scope
