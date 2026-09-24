@@ -83,6 +83,10 @@
 /* The floor was documented and never wired: --_min-item kept its 200px
    default whatever the attribute said. An enum, so the sizes stay on the
    grid — a free-form length would let any value in. */
+/* HUG — each item at its OWN width, which is what a run of chips or tags
+   wants. Every other value STRETCHES its items to share the line, and a chip
+   stretched to 120px reads as a button. */
+:host([data-wrap][data-min-item="hug"]) ::slotted(*) { flex: 0 0 auto; }
 :host([data-min-item="sm"]) { --_min-item: 120px; }
 :host([data-min-item="md"]) { --_min-item: 200px; }
 :host([data-min-item="lg"]) { --_min-item: 280px; }

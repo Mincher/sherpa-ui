@@ -12,6 +12,7 @@ import { customerStore, customersReady, customers, columns, plans, regions, cust
   from './records-data.js';
 import { RECORDS_VIEWS } from './records-views.js';
 import { globalFilters, globalAvailable } from './global-filters.js';
+import { mountFilterPanel } from './filter-panel.js';
 
 export async function init(root) {
   /* The store is the APP's (records outlive a screen); the source is this
@@ -108,6 +109,7 @@ export async function init(root) {
   const dialog    = root.querySelector('#dialog');
   const planGroup = root.querySelector('#f-plan');
   const custField = root.querySelector('#f-customer');
+  const panel       = root.querySelector('#filter-panel');
   const confirm     = root.querySelector('#confirm');
   const confirmText = root.querySelector('#confirm-text');
 
@@ -239,6 +241,15 @@ export async function init(root) {
      pushing rows into components the router has already removed. */
   const page = new AbortController();
   const signal = page.signal;
+
+  /* THE FILTER PANEL — the same filters, in a column. It BORROWS each chip's
+     own menu, so a field filtered here and the same field filtered from its
+     chip are one control in two places.
+     TRAP T-the-panel-is-the-toolbar-in-a-column */
+  mountFilterPanel(panel, {
+    view: header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]'),
+    data: qft,
+  }, { signal });
 
   /* ROW ACTIONS declared ONCE. The grid draws them in its pinned trailing
      column and the toolbar reads the same list back via `grid.actionsFor(n)`,

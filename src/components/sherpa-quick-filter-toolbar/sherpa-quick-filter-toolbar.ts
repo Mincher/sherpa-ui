@@ -605,8 +605,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const value = cal.dataset['value'];
       return value ? [value] : [];
     }
+    /* The MENU's rows, not the chip's — a lent menu is somewhere else in the
+       page and its ticks travelled with it.
+       TRAP T-a-chip-lends-its-menu-and-still-owns-it */
+    const held = (chip as ChipEl & { menu?: HTMLElement }).menu ?? chip;
     // NON_VALUE_ROWS names the rows that are not picks.
-    return Array.from(chip.querySelectorAll<HTMLInputElement>('input:checked'))
+    return Array.from(held.querySelectorAll<HTMLInputElement>('input:checked'))
       .filter((i) => !i.closest(NON_VALUE_ROWS))
       .map((i) => i.value);
   }
@@ -1157,7 +1161,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       /* The MENU holds the condition — one field, one filter menu, whether a
          chip or a column heading opened it.
          TRAP T-one-field-one-filter-menu */
-      const menu = chip.querySelector('sherpa-menu') as
+      /* The CHIP's own getter, never a DOM query: a chip may have LENT its
+         menu to a filter panel and still owns it.
+         TRAP T-a-chip-lends-its-menu-and-still-owns-it */
+      const menu = (chip as ChipEl & { menu?: HTMLElement }).menu as
         (HTMLElement & { conditionValue?: string; conditions?: FieldCondition[] }) | null;
       if (menu?.getAttribute('data-type') !== 'filter') continue;
 

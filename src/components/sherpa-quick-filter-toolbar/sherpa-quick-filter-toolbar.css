@@ -233,6 +233,11 @@
   pointer-events: auto;
 }
 
+/* A chip a FILTER PANEL is drawing instead. Plain `display: none`, unlike a
+   folded chip: the panel draws value chips, not the menu, so nothing here is
+   still in use. TRAP T-the-view-chip-stays-on-the-header */
+.chips > .chip[data-panelled] { display: none; }
+
 /* ── The overflow chip's menu rows ─────────────────────────────────── */
 :is(.chip, .overflow-chip) .qf-folded { display: block; }
 

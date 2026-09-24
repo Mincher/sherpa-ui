@@ -51,6 +51,9 @@ export class SherpaQuickFilter extends SherpaElement {
     /* Written BY the chip: its menu is answering with CONDITIONS, not ticks.
        TRAP T-a-conditioned-chip-reads-as-info */
     'data-conditioned': { type: 'boolean', kind: 'style' },
+    /* A filter PANEL is drawing this field instead, so the bar hides the chip.
+       Written by the HOST. TRAP T-the-view-chip-stays-on-the-header */
+    'data-panelled': { type: 'boolean', kind: 'style' },
     /* WHERE this field is filtered instead — "App header", "View". Shown in the
        tooltip of a chip that is off because something else owns its field: an
        inactive chip that says nothing tells a reader their filter vanished.

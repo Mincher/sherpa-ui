@@ -92,7 +92,8 @@ props:
     kind: style
     default: 200px
     description: >-
-      with data-wrap: the floor an item may shrink to — sm (120) | md (200, default) | lg (280) | xl
+      with data-wrap: hug — each item at its OWN width (a run of chips); else the floor an item may
+      shrink to while it STRETCHES to share the line — sm (120) | md (200, default) | lg (280) | xl
       (360)
   - $type: prop
     name: data-scroll

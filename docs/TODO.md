@@ -37,6 +37,7 @@ say what order. Anything not numbered is a sub-item of the section it sits in.
 | | 21b | Which header chips CARRY OVER between views — configurable | 7 |
 | | 21c | A condition's matches must ALL highlight, not just one string | 7 |
 | | 21d | **EXPLORE** — date conditions. Undesigned, and much bigger | 7 |
+| | 21e | Filters survive a RELOAD — compiled into the data layer | 7 |
 | | 22 | `Ask N-zo` panel — width, and a draggable edge | 8 |
 | | 23 | A focused grid row opens a details panel | 8 |
 | | 24 | Playwright tests accessibility — WCAG 2.1 AA | 9 |
@@ -186,6 +187,7 @@ primitive, then build on it.
 | 21b | Which header chips CARRY OVER between views — configurable |
 | 21c | A condition's matches must ALL highlight, not just one string |
 | 21d | **EXPLORE** — date conditions. Undesigned, and much bigger |
+| 21e | Filters survive a RELOAD — compiled into the data layer |
 
 Item 21 is undesigned. Do it last of the three, once the menu is settled — the
 panel shows the same controls in a different frame.
@@ -267,6 +269,43 @@ clicking a calendar, no operator list". That decision is what this item
 reopens.
 
 Not started. **Design before code.**
+
+### `[ ]` 21e — filters survive a reload, but not the session
+
+Will, 2026-09-24:
+
+> Filters & conditional filters need to survive page refreshes and navigating
+> away and coming back. So they need to be compiled and stored in the data
+> layer. They don't need to survive the session. For that a user can save the
+> view (when done) to save the filter configurations to the view definition.
+
+**So it is SessionStore, not IdbStore.** The tiers are already decided — see
+`sherpa-local-data-tiers` and `sherpa-app-chrome-state-is-session-store`: the
+nav pin and the theme mode persist exactly this way. A reload keeps it, closing
+the tab does not.
+
+**What gets stored is the COMPILED form, not the controls.** A bar full of
+chips is markup; what a reload must bring back is the FILTER — the same shape
+`clauses` already reports, plus each field's picks and its suspended flag.
+`DataSource` already owns all of it: `selection(field)`, the named
+`contribute()` parts, and the conditions now on `FilterState`. That whole set
+is one JSON object, and it is what `ViewSnapshot` will want too.
+
+The two halves:
+
+| | |
+|---|---|
+| WRITE | on every `quick-filter-change` / `condition-change`, keyed by Context |
+| READ | at Context load, before `bind()` — a bar painted then re-filtered flashes |
+
+**Careful with the read order.** `sherpa-example-uses-idbstore` records the
+same trap from the other end: seed BEFORE bind, because bind paints
+immediately.
+
+A saved VIEW is the other tier and stays as it is — a deliberate act, and a
+different lifetime.
+
+Not started.
 
 ### Wave 8 — overlay panels
 

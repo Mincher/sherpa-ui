@@ -18,7 +18,7 @@ export class SherpaStack extends SherpaElement {
     'data-fill': { type: 'boolean', kind: 'style' },
     'data-gap': { type: 'enum', kind: 'style', values: ['2xl', 'lg', 'md', 'none', 'sm', 'xl'] },
     'data-measure': { type: 'boolean', kind: 'style' },
-    'data-min-item': { type: 'enum', kind: 'style', values: ['sm', 'md', 'lg', 'xl'] },
+    'data-min-item': { type: 'enum', kind: 'style', values: ['hug', 'sm', 'md', 'lg', 'xl'] },
     'data-scroll': { type: 'boolean', kind: 'style' },
     'data-wrap': { type: 'boolean', kind: 'style' },
   } as const;
