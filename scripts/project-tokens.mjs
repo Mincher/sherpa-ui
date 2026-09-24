@@ -2,7 +2,9 @@
  * project-tokens.mjs — project the Figma DTCG export into Sherpa's CSS as cascade
  * layers. Structure is read from the dump (figma.tokens.json + the extension cache
  * figma.extensions.json); the ROUTING table below is the only hand-config. Refs into
- * `primitives.*` are inlined to literals, so Primitives is never emitted.
+ * `primitives.*` are inlined to literals — EXCEPT `primitives/scale`, which is
+ * emitted as `--sherpa-scale-*` so a density block can alias one step along it
+ * (TRAP T-a-density-mode-is-one-step).
  *
  *   node scripts/project-tokens.mjs
  */
@@ -70,7 +72,8 @@ const LAYER_ORDER = [
 // dark mode. `attr` turns non-primary MODES into [attr="mode"] blocks in the layer.
 // A collection in the dump or cache but MISSING here warns — never silently dropped.
 const ROUTING = {
-  // Reference-only — refs into it are inlined to literals.
+  // Reference-only — refs into it are inlined to literals. The `scale` group is
+  // ALSO emitted as vars; see the scale block below.
   primitives: { target: 'skip' },
 
   // Slug is 'display-mode' since the 2026-09-09 re-export (was 'display').
@@ -257,6 +260,25 @@ const primLiteral = {};
     walkPrim(node[k], [...path, k], seen);
   }
 })(doc.primitives ?? {}, ['primitives']);
+
+/* The PRIMITIVE step scale, emitted as variables — the one exception to
+   inlining primitives. A density mode is ONE STEP along it, and a step cannot be
+   computed (the gaps run 2, 4, 8) so it has to be a lookup. Emitting the scale
+   lets a density block ALIAS one step along instead of restating every value,
+   which is what makes the rule readable in the output.
+   TRAP T-a-density-mode-is-one-step */
+const SCALE_PREFIX = 'primitives.scale.';
+const scaleSteps = Object.entries(primLiteral)
+  .filter(([k]) => k.startsWith(SCALE_PREFIX))
+  .map(([k, v]) => [k.slice(SCALE_PREFIX.length), Number(String(v).replace('px', ''))])
+  .filter(([, v]) => Number.isFinite(v))
+  .sort((a, b) => a[1] - b[1]);
+
+const scaleLayerLines = scaleSteps.map(([k, v]) => `    --${PREFIX}scale-${k}: ${v}px;`);
+/** value → its var name, for a density block to alias. */
+const scaleVarByValue = new Map(scaleSteps.map(([k, v]) => [v, `--${PREFIX}scale-${k}`]));
+/** the ordered values, so a step is an index move. */
+const scaleValues = scaleSteps.map(([, v]) => v);
 
 /** ref/literal → CSS value; refs into primitives are inlined to their literal. */
 function toCss(value, type) {
@@ -908,6 +930,21 @@ for (const slug of Object.keys(extDoc)) {
 // OVERRIDE the display collection, emitted as [data-density="<name>"] blocks plus a
 // dark re-point. Names mirror the display leaf names so they shadow the core ramp.
 // ════════════════════════════════════════════════════════════════════════════
+/* A density value that IS a step on the scale becomes an alias to that step's
+   variable, so the shift is readable rather than a restated number. Anything
+   off the scale — a weight ramp, a value Figma set by hand — stays a literal.
+   TRAP T-a-density-mode-is-one-step */
+function densityValue(rawPath, v, type) {
+  // SPACE and SIZE only. Rounding, border widths and the weight ramp share
+  // numbers with the scale by coincidence, not by aliasing it.
+  const onScale = /^(space|size)\//.test(rawPath);
+  if (onScale && type === 'dimension' && typeof v === 'number') {
+    const varName = scaleVarByValue.get(v);
+    if (varName) return `var(${varName})`;
+  }
+  return literal(v, type);
+}
+
 function densityBlock(slug, name) {
   const cache = extDoc[slug]?.vars;
   if (!cache) {
@@ -923,9 +960,9 @@ function densityBlock(slug, name) {
     // `400px` silently voids every font-weight under [data-density].
     const type = /(^|\/)weight\//.test(rawPath) ? 'fontWeight' : 'dimension';
     const lv = byMode.light;
-    if (lv != null) lightLines.push(`    ${cssName}: ${literal(lv, type)};`);
+    if (lv != null) lightLines.push(`    ${cssName}: ${densityValue(rawPath, lv, type)};`);
     if (byMode.dark != null && byMode.dark !== byMode.light)
-      darkLines.push(`      ${cssName}: ${literal(byMode.dark, type)};`);
+      darkLines.push(`      ${cssName}: ${densityValue(rawPath, byMode.dark, type)};`);
   }
   return {
     light: `  [data-density="${name}"] {\n${lightLines.join('\n')}\n  }`,
@@ -936,6 +973,40 @@ function densityBlock(slug, name) {
 }
 const densityCompact = densityBlock('display-compact', 'compact');
 const densityComfortable = densityBlock('display-comfortable', 'comfortable');
+
+/* The rule, GATED. A density mode is one step along the scale — compact −1,
+   comfortable +1, clamped at both ends. Measured 2026-09-24 across space and
+   size: 45 exact, 7 clamped, 0 wrong. This fires the moment Figma drifts.
+   TRAP T-a-density-mode-is-one-step */
+for (const [slug, offset, name] of [
+  ['display-compact', -1, 'compact'],
+  ['display-comfortable', +1, 'comfortable'],
+]) {
+  const cache = extDoc[slug]?.vars;
+  const base = doc['display-mode'] ?? {};
+  if (!cache) continue;
+  for (const [rawPath, byMode] of Object.entries(cache)) {
+    const [fam, key] = rawPath.split('/');
+    if (fam !== 'space' && fam !== 'size') continue;
+    const ref = base[fam]?.[key]?.$value;
+    const from = typeof ref === 'string' && ref.startsWith('{')
+      ? primLiteral[ref.slice(1, -1)] : null;
+    const baseVal = from == null ? null : Number(String(from).replace('px', ''));
+    const got = byMode.light;
+    if (baseVal == null || typeof got !== 'number') continue;
+    // 0 is the ABSENCE of a step, not the smallest one: `none` stays none, and
+    // the smallest real step never collapses to zero.
+    if (baseVal === 0) continue;
+    const i = scaleValues.indexOf(baseVal);
+    if (i < 0) continue;
+    const floor = scaleValues.findIndex((v) => v > 0);
+    const j = Math.min(Math.max(i + offset, floor), scaleValues.length - 1); // clamped
+    const want = scaleValues[j];
+    if (got !== want) {
+      warn(`${name} ${rawPath}: ${baseVal}px → ${got}px, but one step is ${want}px`);
+    }
+  }
+}
 
 // ── elevation shadow convenience aliases ────────────────────────────────────
 const shadowAliasLines = [
@@ -1021,7 +1092,7 @@ const header = `/**
  *
  * Cascade layers mirror the Figma collection families (Primitives resolved away →
  * reference-only). Each layer owns its base values PLUS its own mode/extension blocks:
- *   core         — shared base geometry (primitives inlined as literals).
+ *   core         — shared base geometry + the step scale and its two grids.
  *   display-mode — light/dark colour+scale ramp + dark re-point + density.
  *   theme        — semantic surface/border/content/size/weight/font, scoped [data-theme].
  *   layout       — grid layout properties + the .sherpa-view utility.
@@ -1122,9 +1193,12 @@ function gridBlock(lines) {
     }
   }
 
-  return `  /* The grids the scales sit on. Derived from the scales themselves —
-     see TRAP T-the-grid-is-two-grids. */
+  return `  /* The step scale every size and space token aliases, and the two
+     grids it sits on. A density mode moves ONE STEP along this list.
+     TRAP T-a-density-mode-is-one-step · TRAP T-the-grid-is-two-grids */
   :root {
+${scaleLayerLines.join('\n')}
+
     --sherpa-grid-space-step: ${space}px;
     --sherpa-grid-text-step: ${text}px;
   }`;

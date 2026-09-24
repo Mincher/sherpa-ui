@@ -8,7 +8,7 @@
  *
  * Cascade layers mirror the Figma collection families (Primitives resolved away →
  * reference-only). Each layer owns its base values PLUS its own mode/extension blocks:
- *   core         — shared base geometry (primitives inlined as literals).
+ *   core         — shared base geometry + the step scale and its two grids.
  *   display-mode — light/dark colour+scale ramp + dark re-point + density.
  *   theme        — semantic surface/border/content/size/weight/font, scoped [data-theme].
  *   layout       — grid layout properties + the .sherpa-view utility.
@@ -32,9 +32,26 @@
 @layer core {
 
 
-  /* The grids the scales sit on. Derived from the scales themselves —
-     see TRAP T-the-grid-is-two-grids. */
+  /* The step scale every size and space token aliases, and the two
+     grids it sits on. A density mode moves ONE STEP along this list.
+     TRAP T-a-density-mode-is-one-step · TRAP T-the-grid-is-two-grids */
   :root {
+    --sherpa-scale-0: 0px;
+    --sherpa-scale-25: 2px;
+    --sherpa-scale-50: 4px;
+    --sherpa-scale-100: 8px;
+    --sherpa-scale-150: 12px;
+    --sherpa-scale-200: 16px;
+    --sherpa-scale-250: 20px;
+    --sherpa-scale-300: 24px;
+    --sherpa-scale-350: 28px;
+    --sherpa-scale-400: 32px;
+    --sherpa-scale-450: 36px;
+    --sherpa-scale-500: 40px;
+    --sherpa-scale-600: 48px;
+    --sherpa-scale-700: 56px;
+    --sherpa-scale-800: 64px;
+
     --sherpa-grid-space-step: 4px;
     --sherpa-grid-text-step: 2px;
   }
@@ -322,32 +339,32 @@
     --sherpa-display-mode-fonts-weight-600: 600;
     --sherpa-display-mode-fonts-weight-700: 700;
     --sherpa-display-mode-fonts-weight-900: 900;
-    --sherpa-display-mode-size-none: 0px;
-    --sherpa-display-mode-size-3xs: 2px;
-    --sherpa-display-mode-size-2xs: 4px;
-    --sherpa-display-mode-size-xs: 8px;
-    --sherpa-display-mode-size-sm: 12px;
-    --sherpa-display-mode-size-md: 16px;
-    --sherpa-display-mode-size-lg: 20px;
-    --sherpa-display-mode-size-xl: 24px;
-    --sherpa-display-mode-size-2xl: 28px;
-    --sherpa-display-mode-size-3xl: 36px;
-    --sherpa-display-mode-size-4xl: 40px;
-    --sherpa-display-mode-size-5xl: 48px;
-    --sherpa-display-mode-size-6xl: 56px;
-    --sherpa-display-mode-space-none: 0px;
-    --sherpa-display-mode-space-3xs: 2px;
-    --sherpa-display-mode-space-2xs: 2px;
-    --sherpa-display-mode-space-xs: 4px;
-    --sherpa-display-mode-space-sm: 8px;
-    --sherpa-display-mode-space-base: 12px;
-    --sherpa-display-mode-space-lg: 16px;
-    --sherpa-display-mode-space-xl: 20px;
-    --sherpa-display-mode-space-2xl: 28px;
-    --sherpa-display-mode-space-3xl: 36px;
-    --sherpa-display-mode-space-4xl: 40px;
-    --sherpa-display-mode-space-5xl: 48px;
-    --sherpa-display-mode-space-6xl: 56px;
+    --sherpa-display-mode-size-none: var(--sherpa-scale-0);
+    --sherpa-display-mode-size-3xs: var(--sherpa-scale-25);
+    --sherpa-display-mode-size-2xs: var(--sherpa-scale-50);
+    --sherpa-display-mode-size-xs: var(--sherpa-scale-100);
+    --sherpa-display-mode-size-sm: var(--sherpa-scale-150);
+    --sherpa-display-mode-size-md: var(--sherpa-scale-200);
+    --sherpa-display-mode-size-lg: var(--sherpa-scale-250);
+    --sherpa-display-mode-size-xl: var(--sherpa-scale-300);
+    --sherpa-display-mode-size-2xl: var(--sherpa-scale-350);
+    --sherpa-display-mode-size-3xl: var(--sherpa-scale-450);
+    --sherpa-display-mode-size-4xl: var(--sherpa-scale-500);
+    --sherpa-display-mode-size-5xl: var(--sherpa-scale-600);
+    --sherpa-display-mode-size-6xl: var(--sherpa-scale-700);
+    --sherpa-display-mode-space-none: var(--sherpa-scale-0);
+    --sherpa-display-mode-space-3xs: var(--sherpa-scale-25);
+    --sherpa-display-mode-space-2xs: var(--sherpa-scale-25);
+    --sherpa-display-mode-space-xs: var(--sherpa-scale-50);
+    --sherpa-display-mode-space-sm: var(--sherpa-scale-100);
+    --sherpa-display-mode-space-base: var(--sherpa-scale-150);
+    --sherpa-display-mode-space-lg: var(--sherpa-scale-200);
+    --sherpa-display-mode-space-xl: var(--sherpa-scale-250);
+    --sherpa-display-mode-space-2xl: var(--sherpa-scale-350);
+    --sherpa-display-mode-space-3xl: var(--sherpa-scale-450);
+    --sherpa-display-mode-space-4xl: var(--sherpa-scale-500);
+    --sherpa-display-mode-space-5xl: var(--sherpa-scale-600);
+    --sherpa-display-mode-space-6xl: var(--sherpa-scale-700);
     --sherpa-display-mode-color-neutral-color-1: #ffffff;
     --sherpa-display-mode-color-neutral-color-2: #e8e8f6;
     --sherpa-display-mode-color-neutral-color-3: #b3b3c3;
@@ -443,32 +460,32 @@
     --sherpa-display-mode-fonts-weight-600: 600;
     --sherpa-display-mode-fonts-weight-700: 700;
     --sherpa-display-mode-fonts-weight-900: 900;
-    --sherpa-display-mode-size-none: 0px;
-    --sherpa-display-mode-size-3xs: 8px;
-    --sherpa-display-mode-size-2xs: 12px;
-    --sherpa-display-mode-size-xs: 16px;
-    --sherpa-display-mode-size-sm: 20px;
-    --sherpa-display-mode-size-md: 24px;
-    --sherpa-display-mode-size-lg: 28px;
-    --sherpa-display-mode-size-xl: 32px;
-    --sherpa-display-mode-size-2xl: 36px;
-    --sherpa-display-mode-size-3xl: 48px;
-    --sherpa-display-mode-size-4xl: 56px;
-    --sherpa-display-mode-size-5xl: 64px;
-    --sherpa-display-mode-size-6xl: 64px;
-    --sherpa-display-mode-space-none: 0px;
-    --sherpa-display-mode-space-3xs: 4px;
-    --sherpa-display-mode-space-2xs: 8px;
-    --sherpa-display-mode-space-xs: 12px;
-    --sherpa-display-mode-space-sm: 16px;
-    --sherpa-display-mode-space-base: 20px;
-    --sherpa-display-mode-space-lg: 24px;
-    --sherpa-display-mode-space-xl: 28px;
-    --sherpa-display-mode-space-2xl: 36px;
-    --sherpa-display-mode-space-3xl: 48px;
-    --sherpa-display-mode-space-4xl: 56px;
-    --sherpa-display-mode-space-5xl: 64px;
-    --sherpa-display-mode-space-6xl: 64px;
+    --sherpa-display-mode-size-none: var(--sherpa-scale-0);
+    --sherpa-display-mode-size-3xs: var(--sherpa-scale-100);
+    --sherpa-display-mode-size-2xs: var(--sherpa-scale-150);
+    --sherpa-display-mode-size-xs: var(--sherpa-scale-200);
+    --sherpa-display-mode-size-sm: var(--sherpa-scale-250);
+    --sherpa-display-mode-size-md: var(--sherpa-scale-300);
+    --sherpa-display-mode-size-lg: var(--sherpa-scale-350);
+    --sherpa-display-mode-size-xl: var(--sherpa-scale-400);
+    --sherpa-display-mode-size-2xl: var(--sherpa-scale-450);
+    --sherpa-display-mode-size-3xl: var(--sherpa-scale-600);
+    --sherpa-display-mode-size-4xl: var(--sherpa-scale-700);
+    --sherpa-display-mode-size-5xl: var(--sherpa-scale-800);
+    --sherpa-display-mode-size-6xl: var(--sherpa-scale-800);
+    --sherpa-display-mode-space-none: var(--sherpa-scale-0);
+    --sherpa-display-mode-space-3xs: var(--sherpa-scale-50);
+    --sherpa-display-mode-space-2xs: var(--sherpa-scale-100);
+    --sherpa-display-mode-space-xs: var(--sherpa-scale-150);
+    --sherpa-display-mode-space-sm: var(--sherpa-scale-200);
+    --sherpa-display-mode-space-base: var(--sherpa-scale-250);
+    --sherpa-display-mode-space-lg: var(--sherpa-scale-300);
+    --sherpa-display-mode-space-xl: var(--sherpa-scale-350);
+    --sherpa-display-mode-space-2xl: var(--sherpa-scale-450);
+    --sherpa-display-mode-space-3xl: var(--sherpa-scale-600);
+    --sherpa-display-mode-space-4xl: var(--sherpa-scale-700);
+    --sherpa-display-mode-space-5xl: var(--sherpa-scale-800);
+    --sherpa-display-mode-space-6xl: var(--sherpa-scale-800);
     --sherpa-display-mode-color-neutral-color-1: #ffffff;
     --sherpa-display-mode-color-neutral-color-2: #e8e8f6;
     --sherpa-display-mode-color-neutral-color-3: #b3b3c3;

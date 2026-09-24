@@ -7120,6 +7120,39 @@ never typed in.
 - Site: `scripts/project-tokens.mjs`
 - Site: `scripts/lint-css.mjs`
 
+### T-a-density-mode-is-one-step
+
+A density mode is **one step along the primitive scale** — compact −1,
+comfortable +1, clamped at both ends. Measured 2026-09-24 across space and size,
+both modes: **45 exact, 7 clamped, 0 wrong**.
+
+It reads as arbitrary in the numbers, and that is the trap. Compact's ratios run
+0.250 → 0.875 and its differences run −2 → −16, so it looks like neither a
+multiplier nor a shift. It is a shift; the gaps in the scale simply widen
+(2, 4, 8) as it climbs.
+
+**Measure against the PRIMITIVE scale, not the space scale.** An earlier pass
+measured against `space`, got "10 of 13", and concluded the rule had exceptions.
+It does not: `space` skips `28` and `36`, which are real primitive steps, so a
+shift landing on one looked wrong. The aliases point at `primitives/scale`, and
+against that there are no exceptions.
+
+```
+primitives/scale   0  2  4  8  12  16  20  24  28  32  36  40  48  56  64
+space skips                            ^^      ^^
+```
+
+**0 is the absence of a step, not the smallest one.** `none` stays `none` in
+every mode, and the smallest real step never collapses to zero — a gate that
+treats 0 as index 0 reports three false failures.
+
+The scale is now emitted as `--sherpa-scale-*` (the one exception to inlining
+primitives) so a density block ALIASES one step along rather than restating a
+number, and `project-tokens.mjs` gates the rule — proven by breaking one cache
+value, which reported `12px → 10px, but one step is 8px`.
+
+- Site: `scripts/project-tokens.mjs`
+
 ### T-a-full-range-is-still-a-range
 
 A NUMBER filter's slider opened at the column's own min and max, and the menu

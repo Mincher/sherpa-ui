@@ -1166,21 +1166,29 @@ of default, comfortable 2.000 → 1.125. But laid against the scale itself it is
 default scale   0  2  4  8  12  16  20  24  32  40  48  56  64
 ```
 
-| | rule | holds for |
+**Re-measured 2026-09-24 against the PRIMITIVE scale, and there are no
+exceptions at all:**
+
+```
+primitives/scale   0  2  4  8  12  16  20  24  28  32  36  40  48  56  64
+```
+
+| scale | compact (−1) | comfortable (+1) |
 |---|---|---|
-| compact | the PREVIOUS step | **10 of 13** |
-| comfortable | the NEXT step | **9 of 13** |
+| space | 11 exact, 2 clamped, **0 wrong** | 11 exact, 2 clamped, **0 wrong** |
+| size | 12 exact, 1 clamped, **0 wrong** | 11 exact, 2 clamped, **0 wrong** |
 
-The exceptions are smaller than they look, and one is fine. Re-measured against
-BOTH scales:
+The only misses are values already at an end of the scale, which clamp — correct
+behaviour, not drift. So the rule holds exactly:
 
-| value | on the space scale | on the size scale | on the 4px sub-grid |
-|---|---|---|---|
-| `28px` | no | **yes** (`size-xl`) | yes |
-| `36px` | no | no | yes |
+> **A density mode is ONE STEP on the primitive scale.** Compact −1,
+> comfortable +1, clamped at both ends.
 
-So `28` is a real step that the space scale simply does not carry — a density
-mode borrowing it is reasonable. Only `36` sits on neither scale.
+The earlier "10 of 13 / 9 of 13" measured the offset against the SPACE scale,
+which omits `28` and `36`. Those are real primitive steps that space skips, so a
+shift that lands on one looked like an exception. Against the scale the aliases
+actually point at, nothing is exceptional. Verified against LIVE Figma, not the
+export: `:root` matches the live Display Mode collection value for value.
 
 #### And it must keep the grid — Will, 2026-09-23
 
@@ -1224,6 +1232,27 @@ grid's own geometry move.
 
 So the touch-target half is new work, not a re-expression of something Figma
 already does.
+
+#### The extension cache is 8 days stale — and it gates the rest
+
+Measured 2026-09-24. The density values do NOT come from `figma.tokens.json`:
+`display-mode-compact` and `display-mode-comfortable` are in the export but
+**empty** (`$extensions` only, zero variables). The real values live in
+`figma.extensions.json`, which `densityBlock()` reads.
+
+| file | last written |
+|---|---|
+| `figma.tokens.json` | 23 Sept |
+| `figma.extensions.json` | **15 Sept** |
+
+Nothing in the repo WRITES the cache — `project-tokens.mjs` and
+`figma-extract-component.js` both only read it. Same blocker as the
+Style/Transparent item.
+
+It does not block the step rule (verified against LIVE Figma through the plugin
+bridge: `:root` matches the Display Mode collection value for value, and the
+primitive scale matches exactly). It DOES block trusting any density value the
+cache alone asserts.
 
 #### Order of work
 
