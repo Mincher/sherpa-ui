@@ -8,13 +8,13 @@ Status: `[ ]` open · `[~]` in progress · `[x]` done
 
 ## At a glance
 
-**34 numbered items · 5 done · 1 parked · 28 open.** Numbers are the spine; the waves below
+**34 numbered items · 6 done · 1 parked · 27 open.** Numbers are the spine; the waves below
 say what order. Anything not numbered is a sub-item of the section it sits in.
 
 | | # | Item | Wave |
 |---|---:|---|---|
 | ✅ | 1 | Context vs View — the naming, settled | 1 |
-| | 2 | Filter scope — down, never up | 1 |
+| ✅ | 2 | Filter scope — down, never up | 1 |
 | ⛔ | 3 | Style/Transparent tokens — **blocked** on the Figma export | 1 |
 | | 4 | The `More` chip shows active when it is not | 2 |
 | | 5 | Metric item — no surface or border colour | 2 |
@@ -384,7 +384,7 @@ Only these five carry one:
 | Date filters | calendar |
 | Time filters | clock |
 
-### `[ ]` A filter applies DOWN its scope only, never up
+### `[x]` A filter applies DOWN its scope only, never up — DONE 2026-09-24
 
 Two scopes. The same filter in each scope gives a different result.
 
@@ -411,6 +411,28 @@ the scope being STATED and enforced, the same as every other component filter.
 
 Check the same question for every control that filters its own component: a
 grid column filter, a metric's own scope, a chart's segment mode.
+
+---
+
+**Done 2026-09-24.** `bindSelection` gains `scope: 'view' | 'component'` and a
+`key`. A component binding contributes a NAMED PART instead of writing the
+field, and because parts are ANDed with every field selection that gives the
+whole rule at once — narrows further, cannot widen past the View, two
+components intersect rather than fight, and the View's own state is untouched.
+
+**The bug was real and measured.** A View chip picked `mac+win`, a legend
+switched `mac` off, and the chip's own state came back as `["win"]` — the
+reader's choice overwritten, and the chip re-drew showing the legend's answer.
+
+`scope` defaults to `view`, so every existing binding is unchanged. The four
+example legends now use `component`, per Will's ruling. Verified live: a legend
+click takes the donut from 4 slices to 3 and leaves the grid at 25 rows.
+
+`T-a-filter-applies-down-its-scope`. 15 tests across three engines.
+
+**Still to check, and now cheap:** a grid column filter, a metric's own scope,
+a chart's segment mode. Each is the same one-word change at the point it binds,
+plus a look at whether it should have been narrowing everything all along.
 
 ### `[ ]` BUG — a range filter refuses its default max, and the chip stays inactive
 
