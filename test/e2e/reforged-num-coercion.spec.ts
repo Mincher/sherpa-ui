@@ -449,8 +449,13 @@ test('icon: the drawing actually RENDERS — an unknown name would be empty', as
   expect(probe.boxW).toBeGreaterThan(0);
   // Real art, not an empty SVG.
   expect(probe.inkW).toBeGreaterThan(0);
-  // THE RULE: the longest axis fills the square wrapper exactly.
-  expect(Math.max(probe.inkW, probe.inkH)).toBeCloseTo(probe.boxW, 1);
+  /* THE RULE: the art renders at the size it was DRAWN, scaled with the box.
+     `price-tag` is 12.25 of its 14 frame, so it is 87.5% of the wrapper — an
+     icon that FILLED its box would be 1.14x its Figma size.
+     TRAP T-icon-box-is-not-the-glyph */
+  expect(Math.max(probe.inkW, probe.inkH)).toBeCloseTo(probe.boxW * (12.25 / 14), 1);
+  // And it still never paints outside.
+  expect(probe.inkW).toBeLessThanOrEqual(probe.boxW + 0.5);
 });
 
 /* ── clone(): one null policy for template prototypes ─────────────────────── */

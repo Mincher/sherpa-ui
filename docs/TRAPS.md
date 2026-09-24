@@ -2263,6 +2263,7 @@ measure the PATH: the wrapper is its full size either way.
 - Site: `src/core/ui/render-icon.ts`
 - Site: `src/core/ui/icon-paths.ts`
 - Site: `scripts/generate-icons.mjs`
+- Site: `test/e2e/reforged-num-coercion.spec.ts`
 - Site: `src/core/ui/render-icon.ts`
 - Site: `src/core/sherpa-icon.css`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
@@ -7489,6 +7490,30 @@ ITSELF, which is still true; what the host writes is a separate question.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+
+### T-only-five-filter-chips-carry-an-icon
+
+A component-scoped filter chip carries NO glyph. Only five filters do, and they
+are the ones a reader finds by shape rather than by reading:
+
+| filter | icon |
+|---|---|
+| Views | `desktop` |
+| Regions | `globe` |
+| Customer / Organisation | `buildings` |
+| Date filters | `calendar` |
+| Time filters | `time` |
+
+An icon on every chip is an icon on none: a row of glyphs is a texture, and the
+five that mean something stop being visible. `plan` wore `price-tag` and
+`openTickets` wore `ticket` — both decorative, both dropped 2026-09-24.
+
+**Two names in the table are not the icon's name.** `monitor` and `desktop` are
+byte-identical files — the same drawing exported twice — and the toolbar fixes
+the view selector's glyph itself rather than taking it from the chip def. There
+is no `office`; `buildings` is the set's word for it.
+
+- Site: `examples/contexts/global-filters.js`
 
 ### T-a-full-range-is-still-a-range
 

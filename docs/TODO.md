@@ -8,7 +8,7 @@ Status: `[ ]` open · `[~]` in progress · `[x]` done
 
 ## At a glance
 
-**34 numbered items · 10 done · 1 parked · 23 open.** Numbers are the spine; the waves below
+**34 numbered items · 11 done · 1 parked · 22 open.** Numbers are the spine; the waves below
 say what order. Anything not numbered is a sub-item of the section it sits in.
 
 | | # | Item | Wave |
@@ -19,7 +19,7 @@ say what order. Anything not numbered is a sub-item of the section it sits in.
 | ✅ | 4 | The `More` chip shows active when it is not | 2 |
 | ✅ | 5 | Metric item — no surface or border colour | 2 |
 | ✅ | 6 | Every metric item uses the xsmall container class | 2 |
-| | 7 | Only five filter chips carry an icon | 2 |
+| ✅ | 7 | Only five filter chips carry an icon | 2 |
 | | 8 | Fixed-height row uses a hard-coded gutter | 2 |
 | | 9 | Pagination row-count select is not a Sherpa select | 2 |
 | ✅ | 10 | Notifications button — swept, 4 components fixed | 3 |
@@ -370,19 +370,29 @@ The first row has no chaining select.
 **`Equals` stays a condition.** For `Equals`, the second input is NOT a text
 box. It is a select menu of the values for that field.
 
-### `[ ]` Only five filter chips carry an icon
+### `[x]` Only five filter chips carry an icon — DONE 2026-09-24
 
-A component-scoped filter chip needs NO icon. Drop them.
+A component-scoped filter chip needs NO icon. Only these five carry one:
 
-Only these five carry one:
+| Filter | Icon | note |
+|---|---|---|
+| Views | `desktop` | already correct |
+| Regions | `globe` | already correct |
+| Customer / Organisation | `buildings` | ADDED |
+| Date filters | `calendar` | already correct |
+| Time filters | `time` | no such filter in the examples yet |
 
-| Filter | Icon |
-|---|---|
-| Views | monitor |
-| Regions | globe |
-| Customer / Organisation | office |
-| Date filters | calendar |
-| Time filters | clock |
+**Dropped:** `plan` wore `price-tag` and `openTickets` wore `ticket` — both
+decorative, neither on the list.
+
+**Two names in the table are not the icon's name**, which cost a detour:
+`monitor` and `desktop` are byte-identical files, the same drawing exported
+twice, and the toolbar fixes the view selector's glyph itself rather than
+reading it from the chip def. There is no `office`; `buildings` is the set's
+word for it.
+
+Verified live: the view bar carries `desktop / buildings / globe / calendar`,
+and the data bar carries none. `T-only-five-filter-chips-carry-an-icon`.
 
 ### `[x]` A filter applies DOWN its scope only, never up — DONE 2026-09-24
 

@@ -185,7 +185,7 @@ export async function init(root) {
     { id: 'status', label: 'Status', type: 'data',
       select: 'multiple', removable: true, options: asOptions('status') },
     // MULTI-select: one pick reads back as "Plan: Pro", two or more show a count.
-    { id: 'plan', label: 'Plan', type: 'data', icon: 'price-tag',
+    { id: 'plan', label: 'Plan', type: 'data',
       select: 'multiple', removable: true, options: asOptions('plan') },
     // No Region chip: it is a GLOBAL filter in the app header, and two chips for
     // one field would make the reader guess which is in force.
@@ -209,7 +209,7 @@ export async function init(root) {
       kind: 'number', min: 120, max: 10000, step: 20 },
     { id: 'health', label: 'Health', type: 'data',
       kind: 'number', min: 40, max: 100, step: 1 },
-    { id: 'openTickets', label: 'Open tickets', type: 'data', icon: 'ticket',
+    { id: 'openTickets', label: 'Open tickets', type: 'data',
       kind: 'number', min: 0, max: 8, step: 1 },
   ]);
 

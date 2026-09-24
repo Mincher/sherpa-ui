@@ -52,6 +52,9 @@ export function globalFilters(views, regions = REGIONS, customers = CUSTOMERS, d
     {
       id: 'customer',
       label: 'Customer',
+      // One of the FIVE filters that carry a glyph. `buildings`, because there
+      // is no `office` in the set. TRAP T-only-five-filter-chips-carry-an-icon
+      icon: 'buildings',
       // OFF until a value is picked: ON with nothing chosen paints the amber
       // "filtering nothing" warning before the reader has touched anything.
       removable: true,
@@ -109,7 +112,7 @@ export function globalAvailable(fields = {}, held = []) {
   return [
     { id: 'status', label: 'Status', select: 'multiple', removable: true,
       options: asOptions(fields.status ?? []) },
-    { id: 'plan', label: 'Plan', icon: 'price-tag',
+    { id: 'plan', label: 'Plan',
       select: 'multiple', removable: true, options: asOptions(fields.plan ?? []) },
     { id: 'tier', label: 'Tier', select: 'multiple', removable: true,
       options: asOptions(fields.tier ?? []) },
