@@ -826,6 +826,22 @@ export class SherpaDataGrid extends SherpaElement {
     return this.#columnClause(field, held, col?.type);
   }
 
+  /**
+   * One column filter AS A READER SEES IT — "Contains: ana", "Is not: churned".
+   *
+   * The clause was readable and its wording was not, so a host restoring a
+   * saved view could apply a column filter and had nothing to put on a chip:
+   * the grid narrowed and the toolbar said nothing. `column-filter-change`
+   * carries this same string, so an interaction and a restore now describe a
+   * filter identically.
+   * TRAP T-grid-read-without-write-is-half-an-api
+   * TRAP T-a-restored-filter-still-needs-its-chip
+   */
+  columnLabel(field: string): string | null {
+    const held = this.#columnFilters.get(field);
+    return held ? this.#columnFilterLabel(held) : null;
+  }
+
   /** Suspend or resume, never lose. TRAP T-grid-suspend-is-not-clear. */
   suspendColumnFilter(field: string, suspended = true): void {
     const held = this.#columnFilters.get(field);

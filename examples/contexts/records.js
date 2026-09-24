@@ -566,7 +566,9 @@ export async function init(root) {
      the reader's picks; both come back when the view lets the field go.
      TRAP T-a-superseded-chip-suspends-it-is-never-removed */
   const syncScopes = () => {
-    qft.supersede(viewFields());
+    /* The App Header owns these fields now, and the chips below say so rather
+       than going quietly grey. TRAP T-an-inactive-chip-says-where-its-filter-went */
+    qft.supersede(viewFields(), 'App header');
     // The bar's own filters changed shape, so re-read them.
     pushChips();
   };
@@ -616,6 +618,29 @@ export async function init(root) {
         for (const col of columns) {
           const clause = grid.columnClause(col.field);
           if (clause) columnClauses.set(col.field, clause);
+          /* AND ONTO THE BAR. `setColumnFilter` is silent by design, so a view
+             that restores a column filter fires no `column-filter-change` and
+             the chip an interaction would have added never appears — the grid
+             narrows and nothing says why.
+
+             A FIELD_CHIPS field is drawn by its own chip ONLY where the clause
+             is a pick list, which is all `source.select` can hold. `At risk`
+             restores `status ne churned`, which is not — so it needs a `col:`
+             chip like any other condition, or nothing on the bar reports it.
+             That is the same split the live `column-filter-change` handler
+             makes. TRAP T-a-restored-filter-still-needs-its-chip */
+          const picks = Array.isArray(clause?.[2]) ? clause[2].map(String)
+            : clause?.[1] === 'eq' ? [String(clause[2])]
+            : null;
+          if (FIELD_CHIPS.has(col.field) && (picks || !clause)) {
+            source.select(col.field, picks ?? []);
+            continue;
+          }
+          qft.addCustomFilter({
+            id: `col:${col.field}`,
+            label: col.header,
+            value: clause ? grid.columnLabel(col.field) : null,
+          });
         }
         pushColumns();
       });

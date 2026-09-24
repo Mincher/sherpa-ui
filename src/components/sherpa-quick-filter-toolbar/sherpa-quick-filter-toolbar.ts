@@ -540,12 +540,19 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    *
    * TRAP T-a-superseded-chip-suspends-it-is-never-removed
    */
-  supersede(ids: readonly string[]): void {
+  supersede(ids: readonly string[], appliedAt?: string): void {
     const taken = new Set(ids);
     for (const chip of this.#chips()) {
       const id = chip.dataset['id'];
       if (!id) continue;
-      chip.toggleAttribute('data-superseded', taken.has(id));
+      const held = taken.has(id);
+      chip.toggleAttribute('data-superseded', held);
+      /* WHERE it is filtered instead. Only the host knows — this bar cannot
+         see the one that took the field. An off chip with no explanation reads
+         as "your filter vanished".
+         TRAP T-an-inactive-chip-says-where-its-filter-went */
+      if (held && appliedAt) chip.setAttribute('data-applied-at', appliedAt);
+      else chip.removeAttribute('data-applied-at');
     }
   }
 

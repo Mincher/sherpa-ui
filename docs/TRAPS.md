@@ -7585,6 +7585,61 @@ writes. A reading carries EITHER — never both.
 - Site: `test/unit/filter-conditions.test.mjs`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-an-inactive-chip-says-where-its-filter-went
+
+A chip whose field another control has taken goes grey with an EMPTY tooltip,
+which reads as "your filter vanished". It has not: the View owns the field, and
+the chip's own picks are still there waiting for the field to come free.
+
+A superseded chip now says so, and says it in two halves because a reader wants
+both:
+
+| | |
+|---|---|
+| no picks of its own | `Filtered by the App header.` |
+| picks it still holds | `Filtered by the App header. This chip holds active, churned.` |
+
+**The HOST names the place.** A chip cannot know which control took its field —
+`supersede(ids, appliedAt)` carries it, and the chip renders it. Without the
+second argument the tooltip says "another filter", which is still better than
+silence.
+
+The tooltip follows `data-superseded` and `data-applied-at` from `onChange`,
+because neither touches the VALUES and nothing else re-syncs it.
+
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-quick-filter.spec.ts`
+- Site: `examples/contexts/records.js`
+
+### T-a-restored-filter-still-needs-its-chip
+
+`setColumnFilter()` is SILENT by design — echoing `column-filter-change` back
+would clear the clause twice. So a saved view that restores a column filter
+fires no event, and the chip an interaction would have put on the bar never
+appears: the grid narrows and nothing on screen says why.
+
+Reported as *"the Status column has a filter applied by default that isn't
+visible in the toolbar chips or anywhere else"*. Measured on `?context=records`
+after picking `At risk`: `grid.columnClause('status')` held
+`['status','ne','churned']`, the heading showed its `!=` badge, and the toolbar
+carried no `col:` chip at all.
+
+**A `FIELD_CHIPS` field is NOT automatically covered by its own chip.** That
+chip draws a SELECTION, which is all `source.select` can hold, so it reports a
+pick list and nothing else. `ne churned` is not a pick list — so a field with
+its own chip still needs a `col:` chip for a condition the chip cannot express.
+That is the same split the live `column-filter-change` handler already makes,
+and the restore path has to make it too.
+
+**The label had no public reader.** `columnClause(field)` was public and the
+wording was not, so a host could see the clause and had nothing to put on a
+chip. `columnLabel(field)` closes that — `T-grid-read-without-write-is-half-an-api`
+is the same shape of gap.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `examples/contexts/records.js`
+
 ### T-a-full-range-is-still-a-range
 
 A NUMBER filter's slider opened at the column's own min and max, and the menu

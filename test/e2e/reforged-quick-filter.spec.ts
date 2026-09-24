@@ -589,3 +589,83 @@ test('an EMPTY chip opens its menu; one holding a value still toggles', async ({
   // A chip with no menu is unaffected.
   expect(r.toggled, 'a toggle-only chip still toggles').toBe(true);
 });
+
+/**
+ * An inactive chip must say WHERE its filter is applied. A chip that goes grey
+ * with an empty tooltip reads as "your filter vanished" — and it has not: the
+ * View owns the field, and the chip's own picks are still there waiting.
+ * TRAP T-an-inactive-chip-says-where-its-filter-went
+ */
+test('a superseded chip says where its field is filtered instead', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter') as HTMLElement & {
+      rendered?: Promise<void>;
+      values: readonly string[];
+    };
+    el.setAttribute('data-label', 'Status');
+    el.setAttribute('data-menu', '');
+    const menu = document.createElement('sherpa-menu');
+    menu.setAttribute('slot', 'menu');
+    menu.setAttribute('data-select', 'multiple');
+    for (const v of ['active', 'churned']) {
+      const label = document.createElement('label');
+      const box = document.createElement('input');
+      box.type = 'checkbox';
+      box.value = v;
+      label.append(box, document.createTextNode(v));
+      menu.appendChild(label);
+    }
+    el.appendChild(menu);
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    await (menu as HTMLElement & { rendered?: Promise<void> }).rendered;
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const settle = async (): Promise<void> => {
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await new Promise((res) => setTimeout(res, 60));
+    };
+    const tip = (): string =>
+      (el.shadowRoot!.querySelector('.count-wrap') as HTMLElement | null)?.dataset['text'] ?? '';
+
+    const bare = tip();
+
+    // Superseded with NOTHING picked: the reader still needs the reason.
+    el.setAttribute('data-superseded', '');
+    el.setAttribute('data-applied-at', 'App header');
+    await settle();
+    const empty = tip();
+
+    // And with the reader's own picks still held.
+    el.removeAttribute('data-superseded');
+    el.removeAttribute('data-applied-at');
+    el.values = ['active', 'churned'];
+    await settle();
+    const withValues = tip();
+
+    el.setAttribute('data-superseded', '');
+    el.setAttribute('data-applied-at', 'App header');
+    await settle();
+    const both = tip();
+
+    // Released: back to describing itself.
+    el.removeAttribute('data-superseded');
+    el.removeAttribute('data-applied-at');
+    await settle();
+    const released = tip();
+
+    return { bare, empty, withValues, both, released };
+  });
+
+  // Nothing picked, nothing taken — nothing to say.
+  expect(r.bare).toBe('');
+  // Taken, with no picks of its own: the REASON alone.
+  expect(r.empty).toBe('Filtered by the App header.');
+  // Its own values, when it owns the field.
+  expect(r.withValues).toBe('active, churned');
+  /* Taken, WITH picks: both facts. The picks are the half a reader panics
+     about, so the tooltip says they are still there. */
+  expect(r.both).toBe('Filtered by the App header. This chip holds active, churned.');
+  // And it goes back when the field is free again.
+  expect(r.released).toBe('active, churned');
+});

@@ -32,7 +32,7 @@ say what order. Anything not numbered is a sub-item of the section it sits in.
 | | 17 | Breadcrumbs are for workflow, not for the nav | 5 |
 | ✅ | 18 | An optional allow-list on ANY component axis | 6 |
 | | 19 | Rework the filter menu — two modes, many conditions | 7 |
-| | 20 | An inactive chip must say where its filter is applied | 7 |
+| ✅ | 20 | An inactive chip must say where its filter is applied | 7 |
 | | 21 | A filter PANEL, as an alternative to the toolbars | 7 |
 | | 22 | `Ask N-zo` panel — width, and a draggable edge | 8 |
 | | 23 | A focused grid row opens a details panel | 8 |
@@ -339,10 +339,34 @@ Open questions, to settle when the work starts:
 
 Related: the `More` chip's active state is already an open item above.
 
-### `[ ]` An inactive chip must say where its filter is applied
+### `[x]` An inactive chip must say where its filter is applied — DONE 2026-09-24
 
-The tooltip on an inactive filter chip tells the user nothing. If the App Header
-applies that filter, the tooltip must say so.
+The tooltip on an inactive filter chip told the user nothing — measured, every
+inactive chip on the records view had an empty tooltip.
+
+A superseded chip now says where its field went, in two halves:
+
+| | |
+|---|---|
+| no picks of its own | `Filtered by the App header.` |
+| picks it still holds | `Filtered by the App header. This chip holds active, churned.` |
+
+The HOST names the place — `supersede(ids, appliedAt)` — because a chip cannot
+know which control took its field. `T-an-inactive-chip-says-where-its-filter-went`.
+
+### `[ ]` BUG — switching BACK to a view leaves the last view's column filter
+
+Found 2026-09-24 while fixing the hidden-filter bug, and it is NOT caused by
+that fix: measured on unchanged code, `All customers → At risk → All customers`
+leaves the page count at **1 of 1** when it should be 4.
+
+`clearColumnFilter` runs and `grid.columnClause('status')` reads `null`, so the
+GRID is clean — the stale clause is somewhere in the query the source composes.
+The `col:` chip stays on the bar with it, which is now at least visible.
+
+Start at `onViewPicked`'s `after` in `examples/contexts/records.js`: the loop
+rebuilds `columnClauses` from the grid, and something the view cleared is not
+reaching `pushColumns()`.
 
 ### `[ ]` Rework the filter menu — two modes, and MANY conditions
 

@@ -42,6 +42,12 @@ export class SherpaQuickFilter extends SherpaElement {
        it keeps its value and comes back when the view lets the field go.
        TRAP T-a-superseded-chip-suspends-it-is-never-removed */
     'data-superseded': { type: 'boolean', kind: 'style' },
+    /* WHERE this field is filtered instead — "App header", "View". Shown in the
+       tooltip of a chip that is off because something else owns its field: an
+       inactive chip that says nothing tells a reader their filter vanished.
+       The HOST names the place; the chip cannot know it.
+       TRAP T-an-inactive-chip-says-where-its-filter-went */
+    'data-applied-at': { type: 'string', kind: 'style' },
     'data-count': { type: 'string', kind: 'content', to: '.count' },
     /* WHICH FIELD this chip filters. The toolbar writes it on every chip and
        selects on it; the chip reads it to name its own state. */
@@ -87,7 +93,12 @@ export class SherpaQuickFilter extends SherpaElement {
 
   override onChange(name: string): void {
     if (name === 'data-current') this.#syncEmpty();
-    else this.#syncText();
+    /* The tooltip says WHY a chip is off, so it must follow the two attributes
+       that decide that — neither touches the values, so nothing else re-syncs
+       it. TRAP T-an-inactive-chip-says-where-its-filter-went */
+    else if (name === 'data-superseded' || name === 'data-applied-at') {
+      this.#syncCountTip((this.menu?.values ?? []) as string[]);
+    } else this.#syncText();
   }
 
   get current(): boolean {
@@ -242,6 +253,24 @@ export class SherpaQuickFilter extends SherpaElement {
    * Flag "on, but filtering by nothing" so CSS can warn.
    * TRAP T-empty-flag-needs-rows-to-count — a PERSISTENT or LOCKED chip is exempt.
    */
+  /**
+   * What the tooltip says. A chip with values describes them; one that is OFF
+   * because another control owns its field says SO, because "no tooltip" reads
+   * as "nothing here" — and the reader's own filter has not gone anywhere.
+   * TRAP T-an-inactive-chip-says-where-its-filter-went
+   */
+  #tipText(values: string): string {
+    const where = this.dataset['appliedAt'];
+    if (this.hasAttribute('data-superseded')) {
+      const place = where ? `the ${where}` : 'another filter';
+      // The VALUES too where there are any: they come back when the field is free.
+      return values
+        ? `Filtered by ${place}. This chip holds ${values}.`
+        : `Filtered by ${place}.`;
+    }
+    return values;
+  }
+
   #syncEmpty(): void {
     if (this.hasAttribute('data-persistent') || this.hasAttribute('data-locked')) {
       this.removeAttribute('data-empty');
@@ -264,7 +293,7 @@ export class SherpaQuickFilter extends SherpaElement {
 
     // `data-text` is sherpa-tooltip's own API — the component writes the bubble.
     const tip = this.$<HTMLElement>('.count-wrap');
-    if (tip) tip.dataset['text'] = face.tip;
+    if (tip) tip.dataset['text'] = this.#tipText(face.tip);
     const badge = this.$('.count');
     if (!badge) return;
     if (face.count > 1) {
