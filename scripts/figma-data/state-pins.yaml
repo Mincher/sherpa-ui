@@ -52,9 +52,8 @@ sherpa-nav-item:
 sherpa-list-item:
   # Menu List Item pins Transparent=default at its root.
   '&': transparent
-  # Figma's current pin (Transparent=active) changes nothing visible, so the
-  # row takes the base look's ACTIVE mode instead — a divergence, kept on purpose.
-  '&[data-current] .row': active
+  # The current row pins Transparent=active, as Figma does.
+  '&[data-current] .row': transparent/active
   '&[disabled] .row': inactive
   # The leading control pins Style=default in Figma.
   '& .checkbox': default
