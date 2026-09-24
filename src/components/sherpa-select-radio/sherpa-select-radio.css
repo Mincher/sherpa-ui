@@ -11,12 +11,6 @@
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   --_size: var(--sherpa-display-mode-size-sm, 16px);
-  /* border/default/+1 #e8e8f6, NOT the grey #b3b3c3 — the grey is hover.
-     TRAP T-style-border-base-is-default-1. */
-  --_border: var(--_status-border, var(--sherpa-theme-border-default-1, #e8e8f6));
-  /* White face even under a status; only the ring/dot re-tint. */
-  --_surface: var(--sherpa-theme-surface-default-base, #ffffff);
-  --_dot: var(--_status-surface, var(--sherpa-style-indicator-accent, #3b4ccd));
 }
 
 .field {
@@ -26,11 +20,16 @@
   cursor: pointer;
   user-select: none;
   inline-size: 100%;
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
 }
 
 /* ── The control (native input, custom-drawn circle) ──────────────── */
 .control {
+  /* The Style names Figma binds, declared HERE so the circle's PIN reaches them.
+     Radio takes border base, checkbox +1. TRAP T-style-border-base-is-default-1. */
+  --_border: var(--sherpa-style-border-base, #b3b3c3);
+  --_surface: var(--sherpa-style-surface-base, #ffffff);
+  --_dot: var(--sherpa-style-indicator-accent, #3b4ccd);
   appearance: none;
   -webkit-appearance: none;
   display: inline-flex;
@@ -62,9 +61,9 @@
     background-color: var(--_dot);
   }
 
-  /* Hover must be DARKER than the resting ring, or it does nothing. */
+  /* Hover is the +1 step. */
   &:hover:not(:disabled) {
-    border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+    border-color: var(--sherpa-style-border-base-1, #b3b3c3);
   }
   &:active:not(:disabled) {
     transform: scale(0.92);
@@ -85,48 +84,35 @@
   min-width: 0;
 }
 .label {
-  color: var(--_status-text, var(--sherpa-theme-content-body-base, #0c0b11));
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-medium, 500);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
 .description {
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
 .label:empty,
 .description:empty { display: none; }
 
-/* ── Disabled — inactive tokens, never opacity ────────────────────── */
+/* ── Disabled — a PIN (inactive) on the circle ─────────────────────── */
 :host([disabled]) .field {
   cursor: not-allowed;
   pointer-events: none;
 }
-:host([disabled]) .control {
-  cursor: not-allowed;
-  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
-  background: var(--sherpa-style-surface-base, #ffffff);
-}
-:host([disabled]) .control:checked {
-  background: var(--sherpa-style-surface-base, #ffffff);
-  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
-}
+:host([disabled]) .control { cursor: not-allowed; }
+/* The inactive dot is the face's own grey, so it takes the inactive ink. */
 :host([disabled]) .control:checked::after {
-  background-color: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  background-color: var(--sherpa-style-content-base, #35353d);
 }
-/* Text binds Theme content, not Style → inactive keeps the dark ink. */
-:host([disabled]) .label,
-:host([disabled]) .description {
-  color: var(--sherpa-theme-content-body-1, #35353d);
+/* The label binds Theme, which a pin cannot reach. */
+:host([disabled]) .label {
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 }
 
-/* ── Validation — native :user-invalid, unchecked required ────────── */
+/* ── Validation — native :user-invalid, which the host does not reflect ── */
 .control:user-invalid:not(:checked) {
-  border-color: var(--sherpa-theme-border-critical-3, #b72200);
-}
-
-/* ── Status cascade — the box and label already read --_status-* ──── */
-:host([data-status]) .description {
-  color: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
+  border-color: var(--sherpa-theme-border-critical-3, #b72200); /* theme-direct */
 }

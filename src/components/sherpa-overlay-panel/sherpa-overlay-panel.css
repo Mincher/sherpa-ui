@@ -6,10 +6,8 @@
 :host {
   display: contents;
 
-  --_surface: var(--sherpa-card-surface);
-  --_border: var(--sherpa-card-border);
-  /* Divider is a lighter neutral than the outer border (+1 vs +2). */
-  --_divider: var(--sherpa-card-divider);
+  --_surface: var(--sherpa-style-surface-base, #ffffff);
+  --_border: var(--sherpa-style-border-base-1, #b3b3c3);
   --_pad: var(--sherpa-card-pad);
 }
 
@@ -21,7 +19,7 @@
   inset: 0;
   z-index: var(--_z, 100);
   pointer-events: none;
-  background: color-mix(in srgb, var(--sherpa-display-mode-color-neutral-fixed-color-5, #0c0b11) 20%, transparent);
+  background: color-mix(in srgb, var(--sherpa-display-mode-color-neutral-fixed-color-5, #0c0b11) 20%, transparent); /* theme-direct */
 }
 :host([open]) .scrim { display: block; }
 

@@ -326,7 +326,7 @@ $extensions:
         description: Set ONE chip's picks, leaving every other chip alone.
       - $type: method
         name: supersede
-        args: "ids: readonly string[]"
+        args: "ids: readonly string[], appliedAt?: string"
         description: supersede([...ids]) — the VIEW now owns these fields.
       - $type: method
         name: setClause

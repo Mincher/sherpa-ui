@@ -17,12 +17,11 @@
 
 :host {
   display: block;
-  --_border: var(--sherpa-theme-border-default-2, #b3b3c3);
-  --_border-focus: var(--sherpa-theme-border-accent-2, #3b4ccd);
-  /* Fallback = the Figma error atom's bar fill; it surfaces when no data-status cascades. */
-  --_border-error: var(--_status-border, #b72200);
-  --_surface-error: var(--_status-surface-strong, #b72200);
-  --_text-on-error: var(--_status-text-on-color, #ffffff);
+  /* The Style names Figma binds; error and disabled are PINS. */
+  --_border: var(--sherpa-style-border-base, #b3b3c3);
+  --_border-focus: var(--sherpa-theme-border-accent-2, #3b4ccd); /* theme-direct */
+  /* The critical pin's accent. */
+  --_border-error: var(--sherpa-style-indicator-accent, #b72200);
 }
 
 .field {
@@ -38,12 +37,12 @@
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-medium, 500);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
 }
 .description {
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+  color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */
 }
 .label:empty,
 .description:empty,
@@ -69,7 +68,7 @@
   border-block-end-width: var(--sherpa-border-bottom, 0.5px);
   border-inline-start-width: var(--sherpa-border-left, 0.5px);
   border-inline-end-width: var(--sherpa-border-right, 0.5px);
-  background: var(--sherpa-theme-surface-default-base, #ffffff);
+  background: var(--sherpa-style-surface-base, #ffffff);
   transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 /* Both boxes round identically — the row (default) and the bare minimal control. */
@@ -90,12 +89,12 @@
   padding-block: var(--sherpa-theme-padding-sm, 4px);
   border: none;
   background: transparent;
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-base, 14px);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
-.control::placeholder { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
+.control::placeholder { color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */ }
 .control:focus-visible { outline: none; }
 
 /* ── CLEAR ── opt-in per field, shown only with something to clear. */
@@ -110,7 +109,7 @@
   border: 0;
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   background: transparent;
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   cursor: pointer;
 }
 
@@ -144,7 +143,7 @@ select.control::-ms-expand { display: none; }
   inset-inline-end: var(--sherpa-structure-space-padding, 8px);
   inline-size: var(--sherpa-theme-size-icon-xs, 14px);
   pointer-events: none;
-  background-color: var(--sherpa-theme-content-body-1, #35353d);
+  background-color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M6.55898 9.46207C6.83458 9.69455 7.23923 9.6786 7.49514 9.41192L10.2949 6.49447C10.4961 6.28478 10.5552 5.97252 10.4458 5.69901C10.3364 5.4255 10.0827 5.25 9.80055 5.25H4.20107C3.91891 5.25 3.663 5.42778 3.55363 5.70129C3.44427 5.9748 3.50551 6.28706 3.70674 6.49447L6.50648 9.41192L6.55898 9.46207Z'/%3E%3C/svg%3E");
   -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M6.55898 9.46207C6.83458 9.69455 7.23923 9.6786 7.49514 9.41192L10.2949 6.49447C10.4961 6.28478 10.5552 5.97252 10.4458 5.69901C10.3364 5.4255 10.0827 5.25 9.80055 5.25H4.20107C3.91891 5.25 3.663 5.42778 3.55363 5.70129C3.44427 5.9748 3.50551 6.28706 3.70674 6.49447L6.50648 9.41192L6.55898 9.46207Z'/%3E%3C/svg%3E");
   mask-repeat: no-repeat;
@@ -176,7 +175,7 @@ textarea.control {
   /* Box only. Without a declared glyph size it inherits the field's text size
      and overhangs its square; .sherpa-icon-box scales the glyph inside. */
   --_icon-size: var(--sherpa-theme-size-icon-xs, 14px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 }
 /* Raw glyph only. A Font Awesome class draws via the webfont's own ::before;
    without the [data-glyph] guard the empty attr() empties the FA glyph. */
@@ -198,8 +197,7 @@ textarea.control {
 :host([data-has-actions]) .actions { display: inline-flex; }
 
 /* ── Validation — a filled critical bar under the control ──────────────
-   Only the bar goes red; the field border stays neutral, per Figma. Colours
-   borrow the status cascade so :user-invalid and data-status="critical" match. */
+   data-error PINS the field critical: its border stays neutral, per Figma. */
 .control-row:has(.control:user-invalid):focus-within,
 :host([data-error]) .control-row:focus-within {
   box-shadow: inset 0 0 0 2px var(--_border-error);
@@ -215,8 +213,9 @@ textarea.control {
   display: none;
   padding: var(--sherpa-theme-padding-xs, 2px) var(--sherpa-theme-padding-sm, 4px);
   border-radius: 0 0 var(--sherpa-border-rounding-bottom-right, 4px) var(--sherpa-border-rounding-bottom-left, 4px);
-  background: var(--_surface-error);
-  color: var(--_text-on-error);
+  /* The validation bar pins Saturated=critical. */
+  background: var(--sherpa-style-surface-base, #b72200);
+  color: var(--sherpa-style-content-base, #ffffff);
   font-size: var(--sherpa-font-size-body-base, 14px);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
@@ -225,17 +224,13 @@ textarea.control {
   display: block;
 }
 
-/* ── Disabled — inactive tokens, never opacity ──────────────────────── */
+/* ── Disabled — a PIN (inactive), never opacity ─────────────────────── */
 :host([disabled]) :is(.control-row, .control) { cursor: not-allowed; }
-:host([disabled]) .control-row {
-  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
-  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
-}
-/* content-body-2 is the same grey as the disabled row — the text would
-   vanish. Use the darker inactive ink. */
-:host([disabled]) .control { color: var(--sherpa-theme-content-body-1, #35353d); }
-:host([disabled]) .control::placeholder { color: var(--sherpa-theme-content-body-1, #35353d); }
-:host([disabled]) .label { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
+/* Ink ON the greyed box takes the inactive ink; body-2 would vanish into it. */
+:host([disabled]) .control,
+:host([disabled]) .control::placeholder { color: var(--sherpa-style-content-base, #35353d); }
+/* The label binds Theme, which a pin cannot reach. */
+:host([disabled]) .label { color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */ }
 
 /* ── Minimal style — label beside the control ─────────────────────────
    Layout only: the typography matches the default variant. The minimal
@@ -260,7 +255,7 @@ textarea.control {
   border-block-end-width: var(--sherpa-border-bottom, 0.5px);
   border-inline-start-width: var(--sherpa-border-left, 0.5px);
   border-inline-end-width: var(--sherpa-border-right, 0.5px);
-  background: var(--sherpa-theme-surface-default-base, #ffffff);
+  background: var(--sherpa-style-surface-base, #ffffff);
 }
 .field-minimal .control:focus-visible {
   border-color: var(--_border-focus);

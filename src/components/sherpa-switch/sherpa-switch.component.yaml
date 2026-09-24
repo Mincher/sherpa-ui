@@ -95,10 +95,10 @@ tokens:
   knob.inline-size: "{switch.switch-size.thumb}"
   knob.block-size: "{switch.switch-size.thumb}"
   knob.border-radius: "{switch.switch-radius.thumb}"
-  knob.background: "{sherpa.theme-content-body-4}"
+  knob.background: "{sherpa.style-content-inverse}"
   knob.transition: "{sherpa.motion-fast}"
   label.transition: "{sherpa.motion-fast}"
-  label.color: "{sherpa.theme-content-body-base-fixed}"
+  label.color: "{sherpa.style-content-base}"
 $extensions:
   sherpa:
     figmaName: Switch

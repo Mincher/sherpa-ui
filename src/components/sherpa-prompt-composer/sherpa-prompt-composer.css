@@ -1,17 +1,12 @@
 /**
  * sherpa-prompt-composer.css — an AI prompt input: auto-growing textarea
  * (JS sets the height; the cap and scroll are here) plus a send button.
- *
- * Divergence: Figma 228:6617 draws the send NEUTRAL. Code uses accent pending a
- * ratified brand-surface token.
  */
 
 :host {
   display: block;
-
-  /* fallbacks so a status-less composer still resolves */
-  --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
-  --_border: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
+  --_surface: var(--sherpa-style-surface-base, #ffffff);
+  --_border: var(--sherpa-theme-border-default-2, #b3b3c3); /* theme-direct */
 }
 
 /* Figma Prompt Composer 228:6617. */
@@ -32,7 +27,7 @@
   transition: border-color 120ms ease, box-shadow 120ms ease;
 
   &:focus-within {
-    border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
+    border-color: var(--sherpa-theme-border-accent-2, #3b4ccd); /* theme-direct */
     box-shadow: var(--sherpa-focus-ring);
   }
 }
@@ -50,10 +45,10 @@
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-base, 14px);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 
   &:focus { outline: none; }
-  &::placeholder { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
+  &::placeholder { color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */ }
 }
 
 /* ── Tools row (leading buttons + extras … send) ────────────────────── */
@@ -109,22 +104,10 @@
 .lead-btn,
 .send { flex-shrink: 0; }
 
-/* ── Disabled — inactive tokens, never opacity ──────────────────────── */
+/* ── Disabled — the form is a PIN (inactive); each button pins its own ── */
 /* NOT `.sherpa-inert`: that class is static markup, so it cannot follow
    [disabled], and it also kills pointer-events, which these keep. */
-:host([disabled]) .form {
-  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
-  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+:host([disabled]) .input {
+  color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */
 }
-:host([disabled]) :is(.input, .send, .lead-btn) {
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
-  cursor: not-allowed;
-}
-:host([disabled]) .send {
-  /* One step darker than the other disabled surfaces: content-body-2 on
-     surface-default-2 is the same colour, so the glyph would vanish. */
-  background: var(--sherpa-theme-surface-default-3, #35353d);
-}
-:host([disabled]) .lead-btn {
-  background: transparent;
-}
+:host([disabled]) :is(.input, .send, .lead-btn) { cursor: not-allowed; }

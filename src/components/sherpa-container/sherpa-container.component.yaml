@@ -189,7 +189,7 @@ states:
     selector: ":host([data-has-error])"
 tokens:
   state.background: "{sherpa.style-surface-base}"
-  state-text.color: "{sherpa.theme-content-body-1}"
+  state-text.color: "{sherpa.style-content-base}"
   state-text.font-size: "{sherpa.font-size-body-base}"
   spinner.inline-size: "{sherpa.display-mode-size-md}"
   spinner.block-size: "{sherpa.display-mode-size-md}"

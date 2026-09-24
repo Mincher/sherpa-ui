@@ -14,13 +14,12 @@
   /* Padding lives on .pagination only — in both places it double-insets. */
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
   --_control: var(--sherpa-display-mode-size-2xl, 32px);
   /* Two widths, from Figma Pagination 48:65826: rows field 72, page field 48. */
   --_field-rows: 72px;
   --_field-page: 48px;
-  --_border: var(--sherpa-theme-border-default-2, #b3b3c3);
-  --_border-focus: var(--sherpa-theme-border-accent-2, #3b4ccd);
+  --_border-focus: var(--sherpa-theme-border-accent-2, #3b4ccd); /* theme-direct */
 }
 
 /* ── Results zone — label + rows-per-page select ─────────────────────── */
@@ -30,9 +29,9 @@
   gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
-/* Both captions read the same; only their margins differ. */
+/* Both captions read the same; only their margins differ. Figma binds Theme. */
 :is(.rows-label, .total) {
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
   white-space: nowrap;
@@ -63,7 +62,7 @@
   block-size: var(--_control);
   padding: var(--sherpa-theme-padding-sm, 4px) var(--sherpa-structure-space-padding, 8px);
   border-style: solid;
-  border-color: var(--_border);
+  border-color: var(--sherpa-style-border-base, #b3b3c3);
   /* The WIDTH, stated. There was none: the engine's native control supplied a
      border, so the declared colour above never drew — `appearance: none` then
      took that away and WebKit fell back to currentcolor, a dark grey beside two
@@ -84,8 +83,10 @@
   border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
-  background: var(--sherpa-theme-surface-default-base, #ffffff);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  /* Figma's Input Field binds Style for the box and Theme for the value; its
+     Style=default pin and the disabled state are PINS. */
+  background: var(--sherpa-style-surface-base, #ffffff);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-base, 14px);
   transition: border-color 120ms ease, box-shadow 120ms ease;
@@ -134,12 +135,10 @@
 
 /* Corners come from `.sherpa-group` in core/sherpa-grouping.css, by POSITION. */
 
-/* ── Disabled fields ──────────────────────────────────────────────────────
+/* ── Disabled fields — the box is the inactive PIN; body/+2 has no Style name.
    NOT `.sherpa-inert`: that class is static markup, so it cannot follow
    [disabled], and it also kills pointer-events, which these fields keep. */
 :host([disabled]) :is(.rows, .page-input) {
   cursor: not-allowed;
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
-  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
-  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+  color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */
 }

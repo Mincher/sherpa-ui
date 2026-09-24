@@ -73,7 +73,7 @@
   border: none;
   background: transparent;
   /* The row carries the CATEGORY's ink; .value overrides it below. */
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   /* MONOSPACED by design — a legend reads as part of the chart's numeric run. */
   font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-size: var(--sherpa-theme-content-size-small, 12px);
@@ -118,11 +118,11 @@
 .item[aria-pressed="false"] .value,
 .item[data-empty],
 .item[data-empty] .value {
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+  color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */
 }
 .item[aria-pressed="false"] .swatch,
 .item[data-empty] .swatch {
-  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3); /* theme-direct */
   background: transparent;
 }
 
@@ -148,7 +148,7 @@
    caption. An entry with no value leaves the track empty rather than
    collapsing it, so the other entries stay aligned. */
 .value {
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
   text-align: end;
   font-variant-numeric: tabular-nums;
 }

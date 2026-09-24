@@ -8,11 +8,9 @@
 :host {
   display: block;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
   /* Plain spaces its rows; the bordered default overrides to 0 below. */
   --_row-gap: var(--sherpa-display-mode-space-3xs, 2px);
-  /* One rule for the surround, one for the dividers — same colour. */
-  --_rule: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
 }
 
 /* Native <ul> — reset the default list chrome. */
@@ -38,9 +36,9 @@
 }
 
 :host(:not([data-type="plain"])) .body {
-  background: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
+  background: var(--sherpa-style-surface-base, #ffffff);
   border-style: solid;
-  border-color: var(--_rule);
+  border-color: var(--sherpa-style-border-base, #b3b3c3);
   border-block-start-width: var(--sherpa-border-top, 0.5px);
   border-block-end-width: var(--sherpa-border-bottom, 0.5px);
   border-inline-start-width: var(--sherpa-border-left, 0.5px);
@@ -52,10 +50,10 @@
   overflow: hidden;
 }
 
-/* Dividers between adjacent rows. */
+/* Dividers between adjacent rows. Figma binds the divider to Theme. */
 :host(:not([data-type="plain"])) .body > .row-item:not(:last-child),
 :host(:not([data-type="plain"])) ::slotted(sherpa-list-item:not(:last-child)) {
-  border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_rule);
+  border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-theme-border-default-2, #b3b3c3); /* theme-direct */
 }
 
 /* Plain needs no rule: no dividers, and it keeps the :host row gap. */
@@ -65,7 +63,7 @@
   display: none;
   padding: var(--sherpa-theme-padding-lg, 16px);
   text-align: center;
-  color: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-size: var(--sherpa-font-size-body-base, 14px);
 }
 :host([data-empty-visible]) .empty { display: block; }

@@ -6,9 +6,7 @@
  * content (data-has-actions, reflected by the base class). data-size scales the
  * heading typography; data-divider draws a rule beneath the row. Pure data-*.
  *
- * Figma binding model: title → content/title/base, description →
- * content/secondary/base, any slotted link → content/link/base, the divider rule
- * → border/primary, and every gap/margin binds the single space/xs geometry token.
+ * Figma (27:767) binds Theme on every colour here, so each read is theme-direct.
  */
 
 :host {
@@ -41,7 +39,7 @@
 /* ── Title — content/body/base 14/20 medium ─────────────────────────── */
 .title {
   margin: 0;
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--_title-size);
   font-weight: var(--sherpa-font-weight-medium, 500);
@@ -54,7 +52,7 @@
 /* ── Description ─────────────────────────────────────────────────────── */
 .description {
   display: none;
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
@@ -64,7 +62,7 @@
 /* A link inside the heading or description inherits the accent link colour. */
 ::slotted(a),
 .lead a {
-  color: var(--sherpa-theme-content-link-base, #1e189c);
+  color: var(--sherpa-theme-content-link-base, #1e189c); /* theme-direct */
 }
 
 /* ── Actions ─────────────────────────────────────────────────────────── */
@@ -91,6 +89,6 @@
   border: none;
   /* Figma: border/width/sm (0.5px) hairline in border/default/+2. */
   border-block-start: var(--sherpa-border-top, 0.5px) solid
-    var(--sherpa-theme-border-default-2, #b3b3c3);
+    var(--sherpa-theme-border-default-2, #b3b3c3); /* theme-direct */
 }
 :host([data-divider="none"]) .divider { display: none; }

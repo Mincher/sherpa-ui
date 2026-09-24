@@ -9,9 +9,8 @@
   --_gap: var(--sherpa-display-mode-space-xs, 8px);
   display: block;
   inline-size: 100%;
-  /* Bare strip by design; a [data-status] ancestor fills it via the cascade. */
-  background: var(--_status-surface, transparent);
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  /* Bare strip by design: Figma gives the Toolbar no fill. */
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
@@ -29,7 +28,7 @@
 
 :host([data-type="bordered"]) .bar {
   border-block-end: var(--sherpa-style-border-width, 0.5px) solid
-    var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
+    var(--sherpa-style-border-base, #b3b3c3);
 }
 
 .zone {

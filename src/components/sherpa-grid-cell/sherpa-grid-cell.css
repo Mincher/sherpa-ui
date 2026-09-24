@@ -7,10 +7,11 @@
   display: block;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-style-content-base, #0c0b11);
 }
 
-/* Figma Grid Cell 926:34253. */
+/* Figma Grid Cell 926:34253. The toggle, sort and menu buttons and the
+   checkbox are PINS. TRAP T-a-state-colour-binds-the-style-mode */
 .cell {
   display: flex;
   align-items: center;
@@ -18,14 +19,14 @@
   padding: var(--sherpa-theme-padding-sm, 4px);
   min-block-size: var(--sherpa-structure-height, 32px);
   border-style: solid;
-  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+  border-color: var(--sherpa-style-border-base, #b3b3c3);
   background: var(--sherpa-style-surface-base, #ffffff);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
 
 /* Band types only — label weight stays regular in every type. */
 :host(:is([data-type="header"], [data-type="filter"], [data-type="group"])) .cell {
-  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
+  background: var(--sherpa-style-surface-base-1, #e8e8f6);
 }
 
 .content {
@@ -59,7 +60,7 @@
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: transparent;
-  color: inherit;
+  color: var(--sherpa-style-content-base, #35353d);
   cursor: pointer;
 }
 .toggle-caret {
@@ -93,7 +94,7 @@
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: transparent;
-  color: var(--sherpa-style-content-base, #0c0b11);
+  color: var(--sherpa-style-content-base, #35353d);
   cursor: pointer;
 
   &:focus-visible {

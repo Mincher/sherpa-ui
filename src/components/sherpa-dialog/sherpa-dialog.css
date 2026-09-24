@@ -1,16 +1,16 @@
 /**
  * sherpa-dialog.css — a modal card surface on native <dialog>.
- * Card look mirrors sherpa-container; --_status-* re-points surface/border.
+ * Card look mirrors sherpa-container; a data-status on the host re-points its Style names.
  */
 
 :host {
   /* Zero-box anchor; the real surface is the <dialog> in the top layer. */
   display: contents;
 
-  --_surface: var(--sherpa-card-surface);
-  --_border: var(--sherpa-card-border);
-  /* Divider is a lighter neutral than the outer border (Figma: +1 vs +2). */
-  --_divider: var(--sherpa-card-divider);
+  --_surface: var(--sherpa-style-surface-base, #ffffff);
+  --_border: var(--sherpa-style-border-base-1, #b3b3c3);
+  /* The header and footer strokes. */
+  --_divider: var(--sherpa-style-border-base-1, #b3b3c3);
   /* The whole rule: three regions draw the same line, on different edges. */
   --_rule: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
   --_pad: var(--sherpa-card-pad);
@@ -38,7 +38,7 @@
   box-shadow: var(--sherpa-shadow-lg);
 
   &::backdrop {
-    background: color-mix(in srgb, var(--sherpa-display-mode-color-neutral-fixed-color-5, #0c0b11) 45%, transparent);
+    background: color-mix(in srgb, var(--sherpa-display-mode-color-neutral-fixed-color-5, #0c0b11) 45%, transparent); /* theme-direct */
   }
 }
 
@@ -91,7 +91,7 @@
 
 /* ── Overlay — fills its container, non-modal ────────────────────────
    The HOST is the box, so a parent grid can place it; closed, it takes no
-   room and blocks nothing. The surface is the app's, not a card's. */
+   room and blocks nothing. No border, radius or shadow — only the surface. */
 :host([data-type="overlay"]) {
   display: block;
   position: relative;
@@ -114,7 +114,6 @@
   border-width: 0;
   border-radius: 0;
   box-shadow: none;
-  background: var(--sherpa-theme-surface-default-base, #ffffff);
 }
 :host([data-type="overlay"]) .root:focus { outline: none; }
 :host([data-type="overlay"]) .body {
@@ -131,7 +130,7 @@
 
 /* Figma header title: content/body/base 14/20 medium. */
 .heading-text {
-  color: var(--_status-text, var(--sherpa-theme-content-body-base, #0c0b11));
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-medium, 500);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);

@@ -36,12 +36,13 @@
   display: inline-flex;
   vertical-align: middle;
 
-  /* One fill + one border token the track consumes; ON re-points both. Routing
-     state through a property (not swapping the `background` rule) keeps the
-     computed value reliable across an early getComputedStyle read. */
-  --_fill: var(--sherpa-theme-surface-default-2, #b3b3c3);
-  --_border: var(--sherpa-theme-border-default-2, #b3b3c3);
+  /* The Style names Figma binds; ON and disabled are PINS. Through a property,
+     so an early getComputedStyle read still sees the state. */
+  --_fill: var(--sherpa-style-surface-base-2, #b3b3c3);
+  --_border: var(--sherpa-style-border-base, #b3b3c3);
 }
+/* Value=on binds one step lighter: its ghost style-surface/dark is +1 there. */
+:host([checked]) { --_fill: var(--sherpa-style-surface-base-1, #00ad62); }
 
 /* ── Track: the <label> the whole control lives in ─────────────────────── */
 .track {
@@ -77,17 +78,7 @@
     box-shadow: var(--sherpa-focus-ring);
   }
 
-  &:has(.input:checked) {
-    --_fill: var(--sherpa-theme-surface-success-3, #00ad62);
-    --_border: var(--sherpa-theme-border-success-2, #36de8c);
-  }
-
-  /* Disabled — inactive tokens, never opacity. */
-  &:has(.input:disabled) {
-    cursor: not-allowed;
-    background: var(--sherpa-theme-surface-default-2, #b3b3c3);
-    border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
-  }
+  &:has(.input:disabled) { cursor: not-allowed; }
 }
 
 /* Input: real and focusable, with a zero footprint so the knob and label lay
@@ -108,8 +99,10 @@
   inline-size: var(--sherpa-switch-size-thumb, 16px);
   block-size: var(--sherpa-switch-size-thumb, 16px);
   border-radius: var(--sherpa-switch-radius-thumb, 3px);
-  background: var(--sherpa-theme-content-body-4, #ffffff);
+  background: var(--sherpa-style-content-inverse, #ffffff);
 }
+/* Value=on binds the thumb to content/base. */
+:host([checked]) .knob { background: var(--sherpa-style-content-base, #ffffff); }
 
 /* The knob and label swap sides ON. An explicit 0, as `auto` does not animate. */
 .knob,
@@ -129,13 +122,10 @@
   min-inline-size: 0;
   overflow: hidden;
   text-align: center;
-  color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
+  color: var(--sherpa-style-content-base, #0c0b11);
 }
 .input:checked ~ .label::after { content: "ON"; }
-.input:not(:checked) ~ .label::after {
-  content: "OFF";
-  color: var(--sherpa-theme-content-body-1, #35353d);
-}
+.input:not(:checked) ~ .label::after { content: "OFF"; }
 
 /* ON — an offset, not `order` or an auto margin: `order` cannot animate, and the
    label's flex-grow takes the free space before an auto margin can. The % is the
@@ -147,14 +137,7 @@
   inset-inline-start: calc(-1 * var(--sherpa-switch-size-thumb, 16px));
 }
 
-/* ── Disabled — inactive tokens, never opacity ─────────────────────────── */
+/* ── Disabled — a PIN (inactive), never opacity ────────────────────────── */
 :host([disabled]) {
   pointer-events: none;
-}
-/* content-body-2 equals the disabled track surface, so ON text would vanish;
-   use the darker content-body-1 for both labels. */
-.track:has(.input:disabled) .label,
-.track:has(.input:disabled) .input:checked ~ .label::after,
-.track:has(.input:disabled) .input:not(:checked) ~ .label::after {
-  color: var(--sherpa-theme-content-body-1, #35353d);
 }

@@ -102,12 +102,12 @@ events:
       ids: unknown
 tokens:
   notification-icon.font-size: "{sherpa.theme-size-icon-xs}"
-  notification-icon.color: "{sherpa.theme-content-body-1}"
-  notification-time.color: "{sherpa.theme-content-body-1}"
+  notification-icon.color: "{sherpa.style-content-secondary}"
+  notification-time.color: "{sherpa.style-content-secondary}"
   notification-time.font-size: "{sherpa.theme-content-size-small}"
   notification-time.line-height: "{sherpa.theme-content-line-height-small}"
   empty.padding: "{sherpa.theme-padding-md}"
-  empty.color: "{sherpa.theme-content-body-1}"
+  empty.color: "{sherpa.style-content-secondary}"
   empty.font-family: "{sherpa.font-family-body}"
   empty.font-size: "{sherpa.font-size-body-base}"
   empty.line-height: "{sherpa.theme-content-line-height-base}"

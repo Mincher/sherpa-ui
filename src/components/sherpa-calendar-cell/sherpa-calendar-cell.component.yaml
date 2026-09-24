@@ -85,17 +85,14 @@ states:
     name: today
     selector: ":host([data-state=\"today\"])"
   - $type: state
-    name: selected
-    selector: ":host([data-state=\"selected\"])"
+    name: range-mid
+    selector: ":host([data-state=\"range-mid\"])"
   - $type: state
     name: range-start
     selector: ":host([data-state=\"range-start\"])"
   - $type: state
     name: range-end
     selector: ":host([data-state=\"range-end\"])"
-  - $type: state
-    name: range-mid
-    selector: ":host([data-state=\"range-mid\"])"
   - $type: state
     name: outside
     selector: ":host([data-outside])"
@@ -119,7 +116,8 @@ events:
 tokens:
   cell.block-size: "{sherpa.display-mode-size-2xl}"
   content.border-radius: "{sherpa.display-mode-border-rounding-base}"
-  content.color: "{sherpa.theme-content-body-1}"
+  content.background: "{sherpa.style-surface-base}"
+  content.color: "{sherpa.theme-content-body-base}"
   content.font-size: "{sherpa.theme-content-size-base}"
   content.font-weight: "{sherpa.font-weight-regular}"
   content.line-height: "{sherpa.theme-content-line-height-base}"

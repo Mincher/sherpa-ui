@@ -10,10 +10,10 @@
   align-self: stretch;
   block-size: 100%;
 
-  --_surface: var(--sherpa-card-surface);
-  --_border: var(--sherpa-card-border);
-  /* Divider is one step lighter than the outer box border, as in the container. */
-  --_divider: var(--sherpa-card-divider);
+  --_surface: var(--sherpa-style-surface-base, #ffffff);
+  --_border: var(--sherpa-style-border-base-1, #b3b3c3);
+  /* The header and footer strokes. */
+  --_divider: var(--sherpa-style-border-base-1, #b3b3c3);
   --_pad: var(--sherpa-card-pad);
 
   background: var(--_surface);
@@ -77,7 +77,7 @@
 }
 
 .heading-text {
-  color: var(--_status-text, var(--sherpa-theme-content-body-base, #0c0b11));
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-medium, 500);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);

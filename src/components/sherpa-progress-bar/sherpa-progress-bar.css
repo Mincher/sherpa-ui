@@ -9,8 +9,8 @@
   inline-size: 100%;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
 
-  /* Strong status surface wins, else the accent indicator the loader arc uses. */
-  --_fill: var(--_status-surface-strong, var(--sherpa-style-indicator-accent, #3b4ccd));
+  /* A status or a pin re-points both. */
+  --_fill: var(--sherpa-style-indicator-accent, #3b4ccd);
   --_track: var(--sherpa-style-surface-base, #ffffff);
 }
 
@@ -19,7 +19,7 @@
   display: none;
   font-size: var(--sherpa-font-size-body-base, 14px);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
 }
 :host([data-label]) .label { display: block; }
 
@@ -66,11 +66,7 @@
   100% { transform: translateX(320%); }
 }
 
-/* ── Disabled — inactive tokens, never opacity ────────────────────────── */
-:host([disabled]) {
-  --_fill: var(--sherpa-theme-content-body-2, #b3b3c3);
-  --_track: var(--sherpa-theme-surface-default-2, #b3b3c3);
-}
+/* Disabled is a pin (inactive); the label reads Theme, so it dims here. */
 :host([disabled]) .label {
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+  color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */
 }

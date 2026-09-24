@@ -1,6 +1,6 @@
 /**
  * sherpa-toast — presentation. Figma Toast 27:750.
- * The card takes the PALE status tint (--_status-surface-subtle), not the base one.
+ * The card binds style-surface/base +1 — the PALE status tint, not the base one.
  */
 
 /* The host is the fixed positioner, so a toast appended anywhere still finds the
@@ -15,11 +15,11 @@
 
   animation: sherpa-toast-in 180ms ease-out both;
 
-  --_surface: var(--_status-surface-subtle, var(--sherpa-style-surface-base, #ffffff));
+  --_surface: var(--sherpa-style-surface-base-1, #e8e8f6);
   --_border: var(--sherpa-style-border-base, #b3b3c3);
-  --_content: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
-  --_badge: var(--_status-icon, var(--sherpa-style-indicator-accent, #3b4ccd));
-  --_shadow-color: var(--_status-shadow, var(--sherpa-style-surface-shadow, #35353d4c));
+  --_content: var(--sherpa-style-content-base, #0c0b11);
+  --_badge: var(--sherpa-style-indicator-accent, #3b4ccd);
+  --_shadow-color: var(--sherpa-style-surface-shadow, #35353d4c);
 }
 
 /* In a stack the container owns the corner. The stack is pointer-events:none so it
@@ -81,9 +81,9 @@
   flex-direction: column;
   gap: var(--sherpa-theme-gap-sm, 4px);
 }
-/* Heading is status-independent — content-body-1, never the status ink. */
+/* Heading is style-content/secondary, which no status re-points. */
 .heading {
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-style-content-secondary, #35353d);
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
@@ -103,7 +103,7 @@
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--sherpa-theme-content-link-1, #2b34b4);
+  color: var(--sherpa-theme-content-link-1, #2b34b4); /* theme-direct */
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);

@@ -60,7 +60,7 @@
 .title {
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
 
   &:empty { display: none; }
 }
@@ -181,7 +181,7 @@
   /* STATED, not `normal`: an unset line-height is resolved by the FONT, and
      JetBrains Mono resolves taller than Inter, dropping descenders off the edge. */
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   /* Truncation via .sherpa-truncate in the template. */
   max-inline-size: 100%;
 }
@@ -265,7 +265,7 @@
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 }
 /* Written by JS: an absent data-ticks means "default 4" and data-ticks="0"
    means none, which no selector can tell apart. */
@@ -291,7 +291,7 @@
 .axis-label {
   display: none;
   align-self: center;
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);

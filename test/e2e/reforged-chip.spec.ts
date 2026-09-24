@@ -27,7 +27,7 @@ test('default is a neutral near-square chip: white surface, grey border, dark te
   });
   expect(r.bg).toBe('rgb(255, 255, 255)'); // style-surface-base (neutral)
   expect(r.border).not.toBe(r.bg); // a visible grey border
-  expect(r.text).toBe('rgb(53, 53, 61)'); // style-content-base → content-body-1 (#35353d) dark ink
+  expect(r.text).toBe('rgb(12, 11, 17)'); // style-content-base → content-body-base (#0c0b11), as Figma binds
   expect(r.radius).not.toBe('999px'); // near-square, NOT the full-radius pill
 });
 

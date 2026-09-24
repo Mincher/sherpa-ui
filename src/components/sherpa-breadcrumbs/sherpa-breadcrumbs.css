@@ -35,7 +35,7 @@
   justify-content: center;
   inline-size: var(--sherpa-theme-size-icon-2xs, 10px);
   block-size: var(--sherpa-theme-size-icon-2xs, 10px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-family: "Font Awesome 6 Free";
   font-weight: 900;
   font-size: var(--sherpa-theme-content-size-xs, 10px);
@@ -44,7 +44,7 @@
 }
 
 .link {
-  color: var(--sherpa-theme-content-link-1, #2b34b4);
+  color: var(--sherpa-theme-content-link-1, #2b34b4); /* theme-direct */
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
   text-decoration: none;
@@ -63,7 +63,7 @@
 
 /* The current page: same weight as a link, but not a link. */
 .link[aria-current="page"] {
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   cursor: default;
   text-decoration: none;
 }

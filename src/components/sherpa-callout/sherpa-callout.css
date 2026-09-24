@@ -1,34 +1,17 @@
 /**
- * sherpa-callout — presentation.
- *
- * A status message box (Figma Callout). Per Figma the BOX SURFACE + BORDER stay
- * NEUTRAL — white surface, neutral border — in every status (style-surface/base and
- * style-border/base do not re-point per status). The status hue lives on the INK and
- * the BADGE: Figma's style-content/base re-points per status (info=#006c91,
- * critical=#b72200, success=#00ad62 …), mirrored here by the --_status-text cascade;
- * the badge carries the strong --_status-icon hue so its white glyph keeps contrast.
- * (Verified against Figma 27:733 Variant Reference, 2026-09-09.) Geometry chains to
- * the shared Structure/Theme tokens.
- *
- *   surface → style-surface-base           (neutral, status-independent)
- *   border  → style-border-base            (neutral, status-independent)
- *   content → var(--_status-text, style-content-base)   (status-hued ink)
- *   badge   → var(--_status-icon, theme-surface-info-3) (strong status hue)
+ * sherpa-callout — presentation. Figma Callout 27:733.
+ * Surface and border are the base Style names, neutral in every status; the ink
+ * and the icon take the status hue.
  */
 
 :host {
   display: block;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
 
-  /* Box surface + border stay neutral in every status (Figma: style-surface/base
-     and style-border/base do not re-point per status). The status hue lives on the
-     ink and the badge: Figma's style-content/base re-points per status, mirrored
-     here by the --_status-text cascade; the badge carries the strong status icon
-     hue so its white glyph keeps contrast. */
   --_surface: var(--sherpa-style-surface-base, #ffffff);
   --_border: var(--sherpa-style-border-base, #b3b3c3);
-  --_content: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
-  --_badge: var(--_status-icon, var(--sherpa-theme-surface-info-3, #006c91));
+  --_content: var(--sherpa-style-content-base, #0c0b11);
+  --_badge: var(--sherpa-style-indicator-accent, #3b4ccd);
 }
 
 /* Figma Callout (27:733): padding/lg 16, column gap space/xs 8, row gap 4; the ONLY
@@ -40,9 +23,7 @@
   gap: var(--sherpa-display-mode-space-xs, 8px);
   padding: var(--sherpa-theme-padding-lg, 16px);
   border: 0;
-  /* The leading edge binds style-border/base — neutral in the base Style modes. */
-  border-inline-start: var(--sherpa-display-mode-border-width-lg, 2px) solid
-    var(--_status-border, var(--_border));
+  border-inline-start: var(--sherpa-display-mode-border-width-lg, 2px) solid var(--_border);
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
   background: var(--_surface);
   color: var(--_content);

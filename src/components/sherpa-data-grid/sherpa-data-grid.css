@@ -11,9 +11,11 @@
   min-block-size: 0;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  /* Grid Cell binds every label and stroke to Style; states are PINS or tints
+     of Style. TRAP T-a-state-colour-binds-the-style-mode */
+  color: var(--sherpa-style-content-base, #0c0b11);
   border-style: solid;
-  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+  border-color: var(--sherpa-style-border-base, #b3b3c3);
   border-block-start-width: var(--sherpa-border-top, 0.5px);
   border-block-end-width: var(--sherpa-border-bottom, 0.5px);
   border-inline-start-width: var(--sherpa-border-left, 0.5px);
@@ -25,9 +27,11 @@
   /* The three row-state tints, declared once. 13 sites restated these — the row
      itself, and again on each sticky cell, which paints its own background and
      so cannot receive the row's. TRAP T-one-value-one-declaration. */
-  --_tint-hover: color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-2, #e8e8f6) 20%, transparent);
-  --_tint-focused: color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-3, #b3b3c3) 30%, transparent);
-  --_tint-selected: color-mix(in srgb, var(--sherpa-display-mode-color-brand-color-3, #c046ff) 30%, transparent);
+  /* Hover +1, focused +2, selected the ACTIVE mode's +2. Selected is a checked
+     box in the shadow DOM, with no attribute to pin. */
+  --_tint-hover: color-mix(in srgb, var(--sherpa-style-surface-base-1, #e8e8f6) 20%, transparent);
+  --_tint-focused: color-mix(in srgb, var(--sherpa-style-surface-base-2, #b3b3c3) 30%, transparent);
+  --_tint-selected: color-mix(in srgb, var(--sherpa-style-active-surface-base-2, #c046ff) 30%, transparent);
 }
 
 /* The scroll box is a wrapper DIV, not the <table>: `display: block` on a table
@@ -69,13 +73,13 @@
   /* An OPAQUE fill on the SECTION as well as the cells: the two header rows
      meet at a fractional boundary and a sub-pixel seam let a scrolling row
      show through. */
-  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
+  background: var(--sherpa-style-surface-base-1, #e8e8f6);
 }
 /* A `background` on a <thead> is not painted in every engine's table model, so
    the rows repeat it as the reliable layer. */
 .head-row,
 .filter-row {
-  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
+  background: var(--sherpa-style-surface-base-1, #e8e8f6);
 }
 /* Each header CELL sticks too. A z-index on the <thead> does not lift its cells
    out of the table's stacking order, so they must be positioned themselves. */
@@ -83,7 +87,7 @@
 .filter-row > * {
   position: sticky;
   z-index: 3;
-  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
+  background: var(--sherpa-style-surface-base-1, #e8e8f6);
 }
 /* NO per-row offset — both rows pin at the <thead>'s own sticky position. */
 :host([data-empty]) .grid { display: none; }
@@ -136,15 +140,15 @@
 
 .row:not(:last-child) > .select-cell {
   border-block-end: var(--sherpa-border-bottom, 0.5px) solid
-    var(--sherpa-theme-border-default-2, #b3b3c3);
+    var(--sherpa-style-border-base, #b3b3c3);
 }
 /* The FILTER row has no rule of its own; `.select-head` restates the header's. */
 .filter-row > .select-cell {
   border-block-end: none;
 }
 .select-head {
-  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
-  border-block-end: var(--sherpa-border-bottom, 0.5px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
+  background: var(--sherpa-style-surface-base-1, #e8e8f6);
+  border-block-end: var(--sherpa-border-bottom, 0.5px) solid var(--sherpa-style-border-base, #b3b3c3);
 }
 /* TRAP T-compose-never-reimplement. All three boxes are components; they draw
    their own box and their own focus ring, so no `accent-color` here. */
@@ -233,7 +237,7 @@
 /* Placeholder: grey hint, regular weight — the inherited <th> bold must be
    beaten here too. */
 .filter-input::placeholder {
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+  color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */
   font-weight: var(--sherpa-font-weight-regular, 400);
   font-style: normal;
 }
@@ -250,14 +254,14 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-size: var(--sherpa-theme-content-size-small, 12px);
   line-height: 1;
   cursor: pointer;
 
   @supports (color: color-mix(in oklab, red, blue)) {
     &:hover {
-      background: color-mix(in oklab, var(--sherpa-theme-surface-default-1, #e8e8f6) 88%, currentColor);
+      background: color-mix(in oklab, var(--sherpa-style-surface-base-1, #e8e8f6) 88%, currentColor);
     }
   }
   &:focus-visible {
@@ -272,7 +276,7 @@
 .no-matches {
   display: none;
   padding: var(--sherpa-display-mode-space-xs, 8px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
@@ -280,7 +284,7 @@
 /* Focus lights the whole FIELD. `:focus-within` so it also fires for the clear
    button inside it, rather than drawing a second ring around it. */
 .filter-field:focus-within {
-  border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
+  border-color: var(--sherpa-theme-border-accent-2, #3b4ccd); /* theme-direct */
   box-shadow: var(--sherpa-focus-ring);
 }
 
@@ -372,7 +376,7 @@
 .cell mark.match {
   background: color-mix(in srgb,
     var(--sherpa-style-info-border-base-1, #008bba) 24%, transparent);
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
 }
 
@@ -400,11 +404,11 @@
 .head-filter-range-label {
   font-size: var(--sherpa-theme-content-size-base, 14px);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 }
 
 /* Bare form controls rather than composed components: they live where no
-   stylesheet but this one reaches. */
+   stylesheet but this one reaches. Bound as Figma's Input Field. */
 .head-filter-op,
 .head-filter-body input {
   inline-size: 100%;
@@ -412,14 +416,14 @@
   padding: var(--sherpa-display-mode-space-2xs, 4px)
     var(--sherpa-display-mode-space-xs, 8px);
   border-style: solid;
-  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+  border-color: var(--sherpa-style-border-base, #b3b3c3);
   border-block-start-width: var(--sherpa-border-top, 0.5px);
   border-block-end-width: var(--sherpa-border-bottom, 0.5px);
   border-inline-start-width: var(--sherpa-border-left, 0.5px);
   border-inline-end-width: var(--sherpa-border-right, 0.5px);
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
-  background: var(--sherpa-theme-surface-default-base, #ffffff);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  background: var(--sherpa-style-surface-base, #ffffff);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   /* A <select> and an <input> do NOT inherit the page font — browsers
      substitute their own UI face. */
   font-family: inherit;
@@ -445,7 +449,7 @@
 .head-filter-op:focus-visible,
 .head-filter-body input:focus-visible {
   outline: none;
-  border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
+  border-color: var(--sherpa-theme-border-accent-2, #3b4ccd); /* theme-direct */
   box-shadow: var(--sherpa-focus-ring);
 }
 
@@ -505,7 +509,7 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
   font-style: normal;
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-style-content-base, #0c0b11);
   text-align: start;
   cursor: pointer;
 
@@ -570,7 +574,7 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
 }
 :host([data-actions]) .row:not(:last-child) > .actions-cell {
   border-block-end: var(--sherpa-border-bottom, 0.5px) solid
-    var(--sherpa-theme-border-default-2, #b3b3c3);
+    var(--sherpa-style-border-base, #b3b3c3);
 }
 
 /* A pinned head cell must clear its row's scrolling siblings AND the pinned
@@ -585,10 +589,10 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
 :host([data-actions]) .actions-head {
   background: var(--sherpa-style-surface-base-1, #e8e8f6);
   border-block-end: var(--sherpa-border-bottom, 0.5px) solid
-    var(--sherpa-theme-border-default-2, #b3b3c3);
+    var(--sherpa-style-border-base, #b3b3c3);
 }
 :host([data-actions]) .filter-row > .actions-cell {
-  background: var(--sherpa-theme-surface-default-base, #ffffff);
+  background: var(--sherpa-style-surface-base, #ffffff);
 }
 
 /* The head label, matching `.head-label` on every other column. */
@@ -600,7 +604,7 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
 
 @container grid-scroll scroll-state(scrollable: inline-end) {
   .actions-cell {
-    border-inline-start-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+    border-inline-start-color: var(--sherpa-style-border-base, #b3b3c3);
   }
 }
 
@@ -625,7 +629,8 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
     var(--sherpa-style-surface-base, #ffffff);
 }
 
-/* The trigger: icon-only, so square, sized from the grid's icon token. */
+/* The trigger: icon-only, so square, sized from the grid's icon token. Pinned
+   Transparent, as Figma's row-action Button. */
 .actions-trigger {
   display: inline-flex;
   align-items: center;
@@ -636,19 +641,20 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
   border: none;
   border-radius: var(--sherpa-border-rounding-sm, 4px);
   background: transparent;
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-style-content-base, #35353d);
   cursor: pointer;
   font-size: var(--sherpa-theme-content-size-md, 14px);
 }
 .actions-trigger:hover {
-  background: color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-2, #e8e8f6) 60%, transparent);
+  background: var(--sherpa-style-surface-base-1, #e8e8f64d);
 }
 .actions-trigger:focus-visible {
   outline: none;
   box-shadow: var(--sherpa-focus-ring);
 }
 
-/* One menu row. A real <button>, so it keeps Enter, Space and focus for free. */
+/* One menu row. A real <button>, so it keeps Enter, Space and focus for free.
+   Pinned Transparent, as a Menu List Item; a danger row is a critical PIN. */
 .action-item {
   display: flex;
   align-items: center;
@@ -657,22 +663,17 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
   padding: var(--sherpa-display-mode-space-xs, 8px);
   border: none;
   background: transparent;
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-style-content-base, #35353d);
   font: inherit;
   text-align: start;
   cursor: pointer;
 }
 .action-item:hover {
-  background: color-mix(in srgb, var(--sherpa-display-mode-color-neutral-color-2, #e8e8f6) 60%, transparent);
+  background: var(--sherpa-style-surface-base-1, #e8e8f64d);
 }
 .action-item:focus-visible {
   outline: none;
   box-shadow: var(--sherpa-focus-ring);
-}
-/* A DESTRUCTIVE action reads as one before it is clicked — status colour, not a
-   component token. */
-.action-item[data-danger] {
-  color: var(--sherpa-style-content-critical-base, #b3261e);
 }
 .action-icon {
   inline-size: var(--sherpa-theme-content-size-md, 14px);
@@ -731,7 +732,7 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
 
 @container grid-scroll scroll-state(scrollable: inline-start) {
   [data-pinned][data-pin-last] {
-    border-inline-end-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+    border-inline-end-color: var(--sherpa-style-border-base, #b3b3c3);
   }
 }
 
@@ -751,8 +752,7 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
 /* ── Body: row states ───────────────────────────────────────────────
  * Unselected < focused < selected. The tints are TRANSPARENT on purpose, so a
  * row keeps the context under it — which is why `.cell` carries no opaque fill.
- * FIGMA-SIDE FLAG: no theme alias exists for the neutral transparent +1, so the
- * focused tint reaches for the (mode-aware) display-mode var directly. */
+ * Figma has no row states; the tints are declared on :host. */
 .row {
   cursor: pointer;
   transition: background-color 80ms ease;
@@ -774,7 +774,7 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
     background: var(--_tint-focused);
   }
 
-  /* SELECTED: the brand tint the system uses for "chosen". */
+  /* SELECTED: the active mode's tint, the system's "chosen". */
   &:has(.row-select:checked) {
     background: var(--_tint-selected);
   }
@@ -815,8 +815,7 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
   }
 }
 
-/* Group rows. Figma binds `style-surface/dark`, which is not projected; probed
-   what it PAINTS (#e8e8f6) and it is base +1 (base +2 is visibly darker). */
+/* Group rows — Figma Grid Cell Type=group fills style-surface/base +1. */
 .group-row {
   cursor: pointer;
   background: var(--sherpa-style-surface-base-1, #e8e8f6);
@@ -879,14 +878,15 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
   white-space: nowrap;
 }
 
-/* The row count, as the same neutral count chip a filter chip uses. */
+/* The row count: the same neutral count chip a filter chip uses — a Badge,
+   pinned Style=default in Figma. */
 .group-count {
   flex-shrink: 0;
   min-inline-size: var(--sherpa-display-mode-size-sm, 16px);
   padding-inline: var(--sherpa-display-mode-space-3xs, 2px);
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
-  background: var(--sherpa-theme-surface-default-base, #ffffff);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  background: var(--sherpa-style-surface-base, #ffffff);
+  color: var(--sherpa-style-content-base, #0c0b11);
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-variant-numeric: tabular-nums;
   text-align: center;
@@ -900,7 +900,7 @@ sherpa-menu[data-range] .head-filter-op { display: none; }
   display: none;
   padding: var(--sherpa-display-mode-space-2xl, 32px);
   text-align: center;
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 }
 :host([data-empty]) .empty { display: block; }
 

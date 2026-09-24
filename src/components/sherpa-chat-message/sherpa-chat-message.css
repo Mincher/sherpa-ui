@@ -11,10 +11,10 @@
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
 
-  /* Role blocks re-pin these; the bubble reads them, so an early
+  /* Role blocks re-point these; the bubble reads them, so an early
      getComputedStyle sees the right background. */
   --_surface: var(--sherpa-style-surface-base, #ffffff);
-  --_ink: var(--sherpa-theme-content-body-base, #0c0b11);
+  --_ink: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
 }
 
 .message {
@@ -39,7 +39,7 @@
   align-items: center;
   justify-content: center;
   margin-block-start: var(--sherpa-display-mode-space-xs, 8px); /* sits on the meta line */
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-style-content-base, #0c0b11);
   line-height: 1;
   overflow: hidden;
 }
@@ -59,7 +59,7 @@
   align-items: baseline;
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 }
 .author { flex: 1 1 auto; min-inline-size: 0; font-weight: var(--sherpa-font-weight-regular, 400); }
 .time {
@@ -102,7 +102,7 @@
    an explicit data-type="assistant". */
 :host([data-type="assistant"]) {
   --_surface: var(--sherpa-style-surface-base, #ffffff);
-  --_ink: var(--sherpa-theme-content-body-base, #0c0b11);
+  --_ink: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
 }
 
 /* ── User ────────────────────────────────────────────────────────────── */
@@ -115,11 +115,9 @@
 }
 :host([data-type="user"]) .stack { align-items: flex-end; max-inline-size: 85%; }
 :host([data-type="user"]) {
-  /* Fixed Saturated accent + fixed white ink, NOT the status cascade — that
-     would give a light status surface, white-on-white, under any ancestor
-     data-status. */
-  --_surface: var(--sherpa-theme-surface-accent-2, #3b4ccd);
-  --_ink: var(--sherpa-theme-content-body-base-fixed, #ffffff);
+  /* Figma binds Theme here: a fixed accent that no ancestor status reaches. */
+  --_surface: var(--sherpa-theme-surface-accent-2, #3b4ccd); /* theme-direct */
+  --_ink: var(--sherpa-theme-content-body-base-fixed, #ffffff); /* theme-direct */
 }
 
 /* ── System ──────────────────────────────────────────────────────────── */
@@ -133,6 +131,6 @@
   font-size: var(--sherpa-font-size-body-small, 12px);
 }
 :host([data-type="system"]) {
-  --_surface: var(--sherpa-theme-surface-default-2, #b3b3c3);
-  --_ink: var(--sherpa-theme-content-body-1, #35353d);
+  --_surface: var(--sherpa-style-surface-base-2, #b3b3c3);
+  --_ink: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 }

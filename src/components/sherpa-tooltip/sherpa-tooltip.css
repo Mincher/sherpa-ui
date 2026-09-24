@@ -21,7 +21,8 @@
      bubble's Style=default pin must be in place first.
      TRAP T-scope-does-not-stop-inheritance */
   --_bg: var(--sherpa-style-content-base, #0c0b11);
-  --_fg: var(--sherpa-theme-content-body-4, #ffffff);
+  /* Figma's label binds a ghost; surface-base is the inverse of the bubble in both modes. */
+  --_fg: var(--sherpa-style-surface-base, #ffffff);
   position: absolute;
   z-index: 10;
   /* Reset the UA popover border/background/inset — the bubble paints its own. */

@@ -108,6 +108,7 @@ tokens:
   trend.gap: "{sherpa.display-mode-space-2xs}"
   trend.font-size: "{sherpa.font-size-body-small}"
   trend.line-height: "{sherpa.theme-content-line-height-small}"
+  trend.color: "{sherpa.style-content-base}"
   arrow.font-size: "{sherpa.font-size-body-small}"
 $extensions:
   sherpa:

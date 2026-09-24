@@ -13,8 +13,8 @@
   position: relative; /* the positioning context for the rail overlay */
   block-size: 100%;
   min-block-size: 100vh;
-  background: var(--sherpa-theme-surface-default-base, #ffffff);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  background: var(--sherpa-theme-surface-default-base, #ffffff); /* theme-direct */
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 }
 
 .shell {

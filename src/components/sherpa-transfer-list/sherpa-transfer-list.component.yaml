@@ -149,6 +149,7 @@ events:
 tokens:
   pane.border-width: "{sherpa.display-mode-border-width-base}"
   pane.border-radius: "{sherpa.border-rounding-top-left}"
+  pane.background: "{sherpa.style-surface-base}"
   pane-heading.padding: "{sherpa.display-mode-space-xs}"
   pane-heading.border-block-end: "{sherpa.display-mode-border-width-base}"
   pane-heading.background: "{sherpa.theme-surface-default-1}"

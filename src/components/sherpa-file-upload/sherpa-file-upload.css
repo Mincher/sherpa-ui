@@ -7,12 +7,7 @@
 
 :host {
   display: block;
-  --_accent: var(--sherpa-theme-border-accent-2, #3b4ccd);
-
-  /* Fallbacks so a status-less file row still resolves. */
-  --_file-surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
-  --_file-border: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
-  --_file-text: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
+  --_accent: var(--sherpa-theme-border-accent-2, #3b4ccd); /* theme-direct */
 }
 
 .field {
@@ -38,14 +33,14 @@
 .label {
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
 
   &:empty { display: none; }
 }
 
 .helper {
   font-size: var(--sherpa-font-size-body-small, 12px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 
   &:empty { display: none; }
 }
@@ -62,7 +57,7 @@
   border: var(--sherpa-display-mode-border-width-base, 1px) dashed var(--sherpa-theme-border-active-2, #c046ff); /* theme-direct */
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   background: transparent;
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-size: var(--sherpa-font-size-body-base, 14px);
   text-align: center;
   transition: border-color 120ms ease, background-color 120ms ease;
@@ -78,14 +73,14 @@
 .drop-icon {
   font-size: var(--sherpa-theme-content-size-base, 14px);
   line-height: 1;
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 }
 .browse {
   padding: 0;
   border: none;
   background: none;
   font: inherit;
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-weight: var(--sherpa-font-weight-medium, 500);
   text-decoration: underline;
   cursor: pointer;
@@ -115,14 +110,13 @@
   &:empty { display: none; }
 }
 
-/* Figma File Item (67:2237). The row has NO fill, stroke or padding by design —
-   only its text follows the status cascade. */
+/* Figma File Item (67:2237). The row has NO fill, stroke or padding by design. */
 .file-item {
   display: flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
   padding: 0;
-  color: var(--_file-text);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-size: var(--sherpa-font-size-body-base, 14px);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
@@ -134,8 +128,8 @@
   inline-size: var(--sherpa-theme-size-icon-xl, 24px);
   block-size: var(--sherpa-theme-size-icon-xl, 24px);
   margin-inline-end: var(--sherpa-display-mode-space-2xs, 4px); /* 8 + 4 = Figma gap 12 */
-  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_file-border);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-theme-border-default-2, #b3b3c3); /* theme-direct */
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-size: var(--sherpa-theme-content-size-base, 14px);
   line-height: 1;
 }
@@ -148,12 +142,9 @@
 }
 .file-line { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sherpa-display-mode-space-xs, 8px); }
 /* Truncation via .sherpa-truncate in the template. */
-.file-name {
-  flex: 1 1 auto;
-  color: var(--_file-text);
-}
+.file-name { flex: 1 1 auto; }
 .file-size {
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
   flex-shrink: 0;
@@ -161,7 +152,7 @@
 .file-status {
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 
   &:empty { display: none; }
 }
@@ -171,14 +162,15 @@
 }
 
 /* ── Disabled — inactive tokens, never opacity ───────────────────────── */
+/* Not a pin: the zone binds Theme, as Figma does, so no mode reaches it. */
 :host([disabled]) :is(.drop-zone, .label) {
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+  color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */
 }
 :host([disabled]) .drop-zone {
   cursor: not-allowed;
   pointer-events: none;
-  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
-  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3); /* theme-direct */
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3); /* theme-direct */
 }
 
 /* ── Details (max size + allowed types) ──────────────────────────────── */
@@ -193,7 +185,7 @@
 .allowed-types {
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 
   &:empty { display: none; }
 }

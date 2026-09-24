@@ -14,7 +14,7 @@
 :host {
   display: block;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-size: var(--sherpa-font-size-body-base, 14px);
 }
 
@@ -24,24 +24,15 @@
   row-gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
-/* Figma Key Value Pair: key content/body/+1 14/20 medium; value 14/20 regular. */
+/* Figma Key Value Pair: key content/body/+1 14/20 medium; value 14/20 regular.
+   Both texts bind Theme in Figma, so they stay Theme here. */
 .key {
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-weight: var(--sherpa-font-weight-medium, 500);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
 
-/* The value sits inside a subtle grey rounded pill that hugs its content.
-
-   Read from the Key Value Pair node (62:283 > Value Slot): the fill is
-   style-surface/base +1 = #e8e8f6, the PALE grey. It was
-   theme-surface/default/+2 = #b3b3c3, which is three steps darker and the
-   colour of a BORDER, not a surface — a dark slab behind every value.
-
-   The comment here used to say "surface/default-2", which had been true once
-   and was never re-checked against the node. That is the whole reason the
-   sweeps kept missing this: a stale comment reads exactly like a verified one.
-   scripts/figma-harvest-colours.mjs now makes the comparison instead. */
+/* A pale pill that hugs its content — Figma Value Slot, style-surface/base +1. */
 .value {
   margin: 0;
   min-inline-size: 0;
@@ -49,7 +40,7 @@
   display: inline-flex;
   align-items: center;
   padding-inline: var(--sherpa-theme-padding-sm, 4px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
   background: var(--sherpa-style-surface-base-1, #e8e8f6);
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);

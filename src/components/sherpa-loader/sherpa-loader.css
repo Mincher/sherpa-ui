@@ -14,7 +14,7 @@
   gap: var(--sherpa-display-mode-space-sm, 12px);
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
 }
 
 /* ── Panel ─────────────────────────────────────────────────────────────── */
@@ -42,8 +42,7 @@
   inline-size: var(--_spinner-size);
   block-size: var(--_spinner-size);
   border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
-  /* Figma's track alias is stale; this is the nearest live token. */
-  border: var(--_spinner-weight) solid var(--sherpa-theme-surface-default-2, #b3b3c3);
+  border: var(--_spinner-weight) solid var(--sherpa-theme-surface-default-2, #b3b3c3); /* theme-direct */
 
   &::after {
     content: "";

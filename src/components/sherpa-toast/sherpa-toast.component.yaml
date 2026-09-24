@@ -166,7 +166,7 @@ tokens:
   icon.--_icon-size: "{sherpa.theme-content-size-base}"
   icon.margin-block-start: "{sherpa.display-mode-space-3xs}"
   content.gap: "{sherpa.theme-gap-sm}"
-  heading.color: "{sherpa.theme-content-body-1}"
+  heading.color: "{sherpa.style-content-secondary}"
   heading.font-size: "{sherpa.font-size-body-base}"
   heading.font-weight: "{sherpa.font-weight-semibold}"
   heading.line-height: "{sherpa.theme-content-line-height-base}"

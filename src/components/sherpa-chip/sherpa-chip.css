@@ -1,27 +1,14 @@
 /**
- * sherpa-chip — presentation.
- *
- * The Figma Chip (62:1732): a small NEAR-SQUARE token (radius 2), neutral by
- * default (white surface, grey border, dark ink), coloured only through the
- * look-tier cascade (--_status-*). A leading icon and a trailing dismiss button
- * sit inside. Distinct from sherpa-tag, which is a full-radius pill.
- *
- *   surface → var(--_status-surface, theme-surface-default-base)  #ffffff (white)
- *   content → var(--_status-text,    theme-content-body-1)        #35353d (ink)
- *   border  → var(--_status-border,  theme-border-default-2)      #b3b3c3 (grey)
- *
- * Pure data-* selectors; JS only mirrors the label / icon / dismissible template.
+ * sherpa-chip — presentation. The Figma Chip (62:1732): a small near-square
+ * token (radius 2), distinct from sherpa-tag's full-radius pill. It binds the
+ * Style names Figma binds; a status, a look and disabled are PINS.
+ * TRAP T-a-state-colour-binds-the-style-mode
  */
 
 :host {
   display: inline-flex;
   vertical-align: middle;
   inline-size: fit-content;
-
-  /* Look-tier routing — neutral until a [data-status]/[data-look] lights it up. */
-  --_surface: var(--_status-surface, var(--sherpa-theme-surface-default-base, #ffffff));
-  --_content: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
-  --_border: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
 }
 
 .chip {
@@ -29,10 +16,10 @@
   align-items: center;
   gap: var(--sherpa-theme-gap-sm, 4px);
   padding: var(--sherpa-theme-padding-sm, 4px);
-  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_border);
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-style-border-base, #b3b3c3);
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
-  background: var(--_surface);
-  color: var(--_content);
+  background: var(--sherpa-style-surface-base, #ffffff);
+  color: var(--sherpa-style-content-base, #0c0b11);
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-regular, 400);
@@ -57,13 +44,5 @@
   margin-inline-start: var(--sherpa-display-mode-space-2xs, 4px);
 }
 
-:host([disabled]) .chip {
-  cursor: not-allowed;
-  /* Figma inactive (Style: inactive) keeps the label dark ink; only the
-     surface greys out. content stays theme-content-body-1 #35353d — not a
-     lighter grey (which would be near-invisible on the grey surface). */
-  color: var(--sherpa-theme-content-body-1, #35353d);
-  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
-  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
-}
+:host([disabled]) .chip { cursor: not-allowed; }
 :host([disabled]) .close { pointer-events: none; }

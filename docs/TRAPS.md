@@ -134,6 +134,9 @@ light, 264 of 264 in dark.
 - Site: `test/e2e/reforged-quick-filter.spec.ts`
 - Site: `test/e2e/reforged-calendar-cell.spec.ts`
 - Site: `test/e2e/reforged-button.spec.ts`
+- Site: `src/components/sherpa-chip/sherpa-chip.css`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
+- Site: `src/components/sherpa-grid-cell/sherpa-grid-cell.css`
 
 ### T-scope-does-not-stop-inheritance
 
@@ -6508,6 +6511,7 @@ The trend itself is derived from `deltaPercent` when it is not given explicitly
 (`> 0` up, `< 0` down, `0` flat, absent or non-finite → none).
 
 - Site: `src/components/sherpa-metric/sherpa-metric.ts`
+- Site: `src/components/sherpa-metric/sherpa-metric.css`
 
 ### T-donut-slice-is-a-closed-path
 
@@ -6661,39 +6665,23 @@ auto-dismiss" — a toast that never left. The default is 5000.
 
 ### T-style-border-base-is-default-1
 
-**The checkbox and the radio do not share a border colour or a border width.**
-They look like the same control at a glance, so the natural move is to give
-them one rule. Figma binds them differently:
+**The checkbox and the radio differ in border WIDTH, not colour.** They look
+like one control, so the natural move is one rule. Figma binds them apart:
 
-| | stroke colour | resolves to | stroke width | resolves to |
-|---|---|---|---|---|
-| `Checkbox (Atom)` | `style-border/base +1` | `border/default/+2` · `#b3b3c3` | `border/width/sm` | **0.5px** |
-| `Radio (Atom)` | `style-border/base` | `border/default/+1` · `#e8e8f6` | `border/width/base` | 1px |
+| | stroke colour | stroke width |
+|---|---|---|
+| `Checkbox (Atom)` | `style-border/base +1` | `border/width/sm` · **0.5px** |
+| `Radio (Atom)` | `style-border/base` | `border/width/base` · 1px |
 
-So `style-border/base` is the **pale** one and `style-border/base +1` is the
-grey — one ramp step apart, on a sub-pixel stroke. Nothing about the names says
-which control takes which, and nothing in a screenshot shows the difference.
+The NAME is history. Until 2026-09-24 `style-border/base` resolved to the pale
+`border/default/+1` (#e8e8f6). Since the Style tier was synced by variable id,
+`base` and `+1` both resolve to `border/default/+2` (#b3b3c3) — in live Figma
+and in `tokens.css` alike. So bind the Style name Figma binds, and never pick a
+Theme step from a comment: a comment about a token is not a reading of it.
 
-Two further things make this easy to get wrong:
-
-1. `tokens.css` maps the generated `--sherpa-style-border-base` to
-   `--sherpa-theme-border-default-2`, which disagrees with the live Figma
-   chain. That file is generated, so it is not hand-edited — but it also cannot
-   be used to settle which Theme token a component should consume. **Resolve
-   the alias chain in Figma and bind the Theme token it actually lands on.**
-2. The stroke width changes the geometry of what is inside it. The checked
-   indicator is inset 2px and must land at 14 on a 20 box; `inset` measures
-   from the PADDING box, so it is immune — but any arithmetic that starts from
-   the content box is not, and would draw 15 at a 0.5px border.
-
-A THIRD member of the same family: `style-border/base +1` also resolves to
-Theme `border/default/+2` (#b3b3c3) in Figma, while the generated
-`--sherpa-style-border-base-1` in `tokens.css` points at `border/default/+3` —
-one step darker again. `sherpa-container-footer` consumed it and drew a
-near-black rule under every dialog and menu footer, against the pale one the
-header draws. Its comment claimed both resolved to #e8e8f6 and its fallback
-said #35353d; neither was the bound colour. A comment about a token is not a
-reading of it.
+The width changes the geometry inside it. The checked indicator is inset 2px
+and must land at 14 on a 20 box; `inset` measures from the PADDING box, so it is
+immune — but arithmetic from the content box would draw 15 at a 0.5px border.
 
 - Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.css`
 - Site: `src/components/sherpa-select-radio/sherpa-select-radio.css`

@@ -149,9 +149,6 @@ props:
     description: native disabled state
 states:
   - $type: state
-    name: saturated
-    selector: ":host([data-look=\"saturated\"])"
-  - $type: state
     name: transparent
     selector: ":host([data-look=\"transparent\"])"
   - $type: state

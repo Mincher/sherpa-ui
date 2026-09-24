@@ -15,6 +15,7 @@
   inline-size: 100%;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
 
+  /* The Style names Figma binds; disabled is a PIN. */
   --_accent: var(--sherpa-style-indicator-accent, #3b4ccd);
   --_thumb: var(--sherpa-display-mode-size-sm, 16px);
   --_rail: var(--sherpa-display-mode-space-2xs, 4px);
@@ -31,7 +32,7 @@
 :host([data-label]) .head { display: flex; }
 
 .label {
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-style-content-base, #0c0b11);
   font-weight: var(--sherpa-font-weight-medium, 500);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
 
@@ -52,10 +53,10 @@
   min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
   padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
   /* Widths + border-style come from .sherpa-border-edges in the template. */
-  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+  border-color: var(--sherpa-style-border-base, #b3b3c3);
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
-  background: var(--sherpa-theme-surface-default-base, #ffffff);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  background: var(--sherpa-style-surface-base, #ffffff);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-size: var(--sherpa-font-size-body-base, 14px);
   text-align: right;
@@ -67,7 +68,7 @@
   &::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   &:focus-visible {
     outline: none;
-    border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
+    border-color: var(--sherpa-theme-border-accent-2, #3b4ccd); /* theme-direct */
     box-shadow: var(--sherpa-focus-ring);
   }
 }
@@ -75,12 +76,7 @@
 /* Range only: beside a single slider an empty box reads as a value that failed. */
 :host([data-type="range"][data-show-value]) .value-start { display: block; }
 :host([data-value-readonly]) .value-input { pointer-events: none; background: transparent; border-color: transparent; }
-:host([disabled]) .value-input {
-  pointer-events: none;
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
-  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
-  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
-}
+:host([disabled]) .value-input { pointer-events: none; }
 /* ── Track area: styled rail + fill + transparent native input ─────── */
 .track-area {
   flex: 1 1 auto;
@@ -94,7 +90,7 @@
   position: absolute;
   inset-inline: 0;
   block-size: var(--_rail);
-  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
+  background: var(--sherpa-theme-surface-default-2, #b3b3c3); /* theme-direct */
   border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
   overflow: hidden;
 }
@@ -135,14 +131,14 @@
     block-size: var(--_thumb);
     border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
     background: var(--_accent);
-    border: var(--sherpa-display-mode-border-width-lg, 2px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
+    border: var(--sherpa-display-mode-border-width-lg, 2px) solid var(--sherpa-style-border-base, #b3b3c3);
   }
   &::-moz-range-thumb {
     inline-size: var(--_thumb);
     block-size: var(--_thumb);
     border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
     background: var(--_accent);
-    border: var(--sherpa-display-mode-border-width-lg, 2px) solid var(--sherpa-theme-border-default-2, #b3b3c3);
+    border: var(--sherpa-display-mode-border-width-lg, 2px) solid var(--sherpa-style-border-base, #b3b3c3);
   }
 
   /* Explicit box-shadow — a CSS @function fails silently where unsupported. */
@@ -154,14 +150,10 @@
   }
 }
 
-/* ── Disabled — inactive tokens, never opacity ─────────────────────── */
-/* content-body-2 is the same grey as the rail, so the fill would vanish into it. */
-:host([disabled]) { --_accent: var(--sherpa-theme-content-body-1, #35353d); }
+/* ── Disabled — a PIN (inactive), never opacity ────────────────────── */
+/* The inactive accent is the rail's own grey, so fill and thumb take the ink. */
+:host([disabled]) { --_accent: var(--sherpa-style-content-base, #35353d); }
 :host([disabled]) .range { cursor: not-allowed; pointer-events: none; }
-:host([disabled]) .track {
-  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
-}
-:host([disabled]) .label { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
 
 /* ── Range mode: two stacked inputs, one per end ─────────────────────
  * The top input covers the whole track and would swallow every click, so the

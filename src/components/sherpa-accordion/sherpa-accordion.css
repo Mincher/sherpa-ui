@@ -7,10 +7,10 @@
   display: block;
   min-inline-size: 0;
 
-  --_surface: var(--sherpa-card-surface);
-  --_border: var(--sherpa-card-border);
-  /* Divider is one step lighter than the outer border (Figma: default/+1 vs +2). */
-  --_divider: var(--sherpa-card-divider);
+  --_surface: var(--sherpa-style-surface-base, #ffffff);
+  --_border: var(--sherpa-style-border-base-1, #b3b3c3);
+  /* The header's stroke. */
+  --_divider: var(--sherpa-style-border-base-1, #b3b3c3);
 
   background: var(--_surface);
   border-style: solid;
@@ -61,7 +61,7 @@
 }
 
 .heading {
-  color: var(--_status-text, var(--sherpa-theme-content-body-base, #0c0b11));
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-medium, 500);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
@@ -70,7 +70,7 @@
 /* Hidden until an attribute or slotted content exists. */
 .description {
   display: none;
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }

@@ -166,7 +166,7 @@ tokens:
   cell.gap: "{sherpa.display-mode-space-xs}"
   cell.padding: "{sherpa.theme-padding-sm}"
   cell.min-block-size: "{sherpa.structure-height}"
-  cell.border-color: "{sherpa.theme-border-default-2}"
+  cell.border-color: "{sherpa.style-border-base}"
   cell.background: "{sherpa.style-surface-base}"
   cell.line-height: "{sherpa.theme-content-line-height-base}"
   sort.inline-size: "{sherpa.theme-size-icon-xs}"

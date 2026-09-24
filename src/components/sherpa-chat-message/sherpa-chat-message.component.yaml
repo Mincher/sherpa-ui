@@ -130,7 +130,7 @@ tokens:
   message.gap: "{sherpa.display-mode-space-xs}"
   avatar.--_icon-size: "{sherpa.theme-content-size-base}"
   avatar.margin-block-start: "{sherpa.display-mode-space-xs}"
-  avatar.color: "{sherpa.theme-content-body-1}"
+  avatar.color: "{sherpa.style-content-base}"
   meta.gap: "{sherpa.display-mode-space-xs}"
   meta.font-size: "{sherpa.font-size-body-small}"
   meta.line-height: "{sherpa.theme-content-line-height-small}"

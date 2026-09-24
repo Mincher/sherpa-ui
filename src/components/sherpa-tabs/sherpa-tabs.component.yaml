@@ -96,7 +96,7 @@ tokens:
   tab.font-size: "{sherpa.font-size-body-base}"
   tab.font-weight: "{sherpa.font-weight-regular}"
   tab.line-height: "{sherpa.display-mode-fonts-scale-xl}"
-  tab.color: "{sherpa.theme-content-body-1}"
+  tab.color: "{sherpa.style-content-base}"
   panels.padding-block-start: "{sherpa.display-mode-space-base}"
 $extensions:
   sherpa:

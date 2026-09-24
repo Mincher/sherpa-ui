@@ -1,22 +1,13 @@
 /**
  * sherpa-code-block.css — a monospace code display with a copy button.
- *
- * A bordered surface: a white header row (language label + copy button) over a
- * tinted, scrollable <pre>. The card border binds --_status-border (neutral
- * border/default fallback). The header sits on style-surface/base (white); the
- * code region sits on the stronger surface/default/1 tint (Figma = a subtle
- * lavender panel). Line breaks and indentation are preserved by white-space:
- * pre. When data-line-numbers is set, a left gutter column of line numbers is
- * shown (JS fills .gutter with one number per line; CSS reveals it). The copy
- * button's "Copied" confirmation is driven purely by data-copied. Corner radii
- * bind the border/grouping radius vars.
+ * A white header row (language + copy) over a tinted, scrollable <pre>.
  */
 
 :host {
   display: block;
   container: sherpa-code-block / inline-size;
-  background: var(--_status-surface, var(--sherpa-theme-surface-default-1, #e8e8f6));
-  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
+  background: var(--sherpa-theme-surface-default-1, #e8e8f6); /* theme-direct */
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-theme-border-default-2, #b3b3c3); /* theme-direct */
   border-radius:
     var(--sherpa-border-rounding-top-left, 4px)
     var(--sherpa-border-rounding-top-right, 4px)
@@ -36,7 +27,7 @@
   padding: var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-display-mode-space-xs, 8px)
     var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-display-mode-space-sm, 12px);
   background: var(--sherpa-style-surface-base, #ffffff);
-  border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
+  border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid var(--sherpa-theme-border-default-2, #b3b3c3); /* theme-direct */
 }
 
 .language {
@@ -44,13 +35,13 @@
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   letter-spacing: var(--sherpa-theme-content-letter-spacing-base, 0);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 
   &:empty { display: none; }
 }
 
-/* ── Copy button — Figma: Button/Type=icon (32×32, Structure default) in the
-   Transparent look: no fill, no ring, radius 4, a 14px glyph. ─────────────── */
+/* ── Copy button — Figma: Button/Type=icon (32×32, Structure default), pinned
+   Transparent: no fill, no ring, radius 4, a 14px glyph. ────────────────── */
 .copy {
   display: inline-flex;
   align-items: center;
@@ -59,22 +50,24 @@
   block-size: var(--sherpa-structure-height, 32px);
   padding: 0;
   border: 0;
-  background: transparent;
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  background: var(--sherpa-style-surface-base, transparent);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-size: var(--sherpa-theme-content-size-base, 14px);
   line-height: 1;
   cursor: pointer;
 
-  &:hover { background: var(--sherpa-shade-hover); }
-  &:active { background: var(--sherpa-shade-active); }
+  /* Style base / +1 / +2 are default / hover / down, in whatever mode is pinned. */
+  &:hover { background: var(--sherpa-style-surface-base-1, #e8e8f64d); }
+  &:active { background: var(--sherpa-style-surface-base-2, #b3b3c34d); }
   &:focus-visible {
     outline: none;
     box-shadow: var(--sherpa-focus-ring);
   }
 }
 
-/* Confirmation swap — CSS owns the state, JS only flips data-copied. */
-.copied-label { display: none; color: var(--sherpa-theme-content-success-1, #00ad62); }
+/* Confirmation swap — CSS owns the state, JS only flips data-copied. Its
+   colour is a PIN (success). */
+.copied-label { display: none; color: var(--sherpa-style-content-base, #00ad62); }
 :host([data-copied]) .copy-label { display: none; }
 :host([data-copied]) .copied-label { display: inline-block; }
 
@@ -82,7 +75,7 @@
 .pre {
   margin: 0;
   padding: var(--sherpa-display-mode-space-sm, 12px);
-  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
+  background: var(--sherpa-theme-surface-default-1, #e8e8f6); /* theme-direct */
   overflow-x: auto;
 }
 .code {
@@ -92,7 +85,7 @@
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
   white-space: pre;
   tab-size: 2;
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 
   @container sherpa-code-block (max-width: 400px) {
     & { font-size: var(--sherpa-font-size-body-small, 12px); }
@@ -109,7 +102,7 @@
   white-space: pre;
   text-align: end;
   user-select: none;
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 }
 :host([data-line-numbers]) .code {
   display: flex;

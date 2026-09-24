@@ -6,9 +6,8 @@
 :host {
   display: block;
   container: sherpa-container-header / inline-size;
-  background: var(--_status-surface, transparent);
   /* The header owns its divider — the container region is a bare wrapper. */
-  border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--sherpa-theme-border-default-1, #e8e8f6);
+  border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--sherpa-style-border-base-1, #b3b3c3);
 }
 
 /* ── Layout ───────────────────────────────────────────────────────────── */
@@ -49,7 +48,6 @@
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--sherpa-theme-content-body-1, #35353d);
   cursor: grab;
 
   &:active { cursor: grabbing; }
@@ -59,7 +57,7 @@
 .icon {
   inline-size: var(--sherpa-theme-content-size-base, 14px);
   block-size: var(--sherpa-theme-content-size-base, 14px);
-  color: var(--_status-icon, var(--sherpa-theme-content-body-1, #35353d));
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 }
 :host([data-icon]) .icon,
 :host([data-has-icon]) .icon { display: inline-flex; }
@@ -67,7 +65,7 @@
 /* ── Title ────────────────────────────────────────────────────────────── */
 .title {
   display: block;
-  color: var(--_status-text, var(--sherpa-theme-content-body-base, #0c0b11));
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-medium, 500);
@@ -80,7 +78,7 @@ slot[name="heading"] { display: contents; }
 /* ── Description ──────────────────────────────────────────────────────── */
 .description {
   display: none;
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
@@ -119,7 +117,7 @@ slot[name="heading"] { display: contents; }
   align-items: center;
   gap: var(--sherpa-theme-gap-lg, 12px);
   padding: 0 var(--sherpa-theme-padding-md, 8px) var(--sherpa-theme-padding-md, 8px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
@@ -127,7 +125,9 @@ slot[name="heading"] { display: contents; }
 :host([data-has-metadata]) .metadata { display: flex; }
 
 /* ── Panel variant — same skeleton, different look ────────────────────── */
-:host([data-type="panel"]) .title { color: var(--sherpa-theme-content-link-1, #2b34b4); }
+:host([data-type="panel"]) .title {
+  color: var(--sherpa-theme-content-link-1, #2b34b4); /* theme-direct */
+}
 :host([data-type="panel"]) .actions { margin-inline-start: auto; }
 
 /* ── Narrow: drop the description first ───────────────────────────────── */

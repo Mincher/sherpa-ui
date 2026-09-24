@@ -89,7 +89,9 @@ tokens:
   marker.block-size: "{sherpa.display-mode-size-lg}"
   marker.border-radius: "{sherpa.display-mode-border-rounding-full}"
   marker.border-width: "{sherpa.display-mode-border-width-base}"
+  marker.border-color: "{sherpa.style-border-base}"
   marker.background: "{sherpa.style-surface-base}"
+  marker.color: "{sherpa.style-content-base}"
   marker.font-size: "{sherpa.font-size-body-base}"
   marker.font-weight: "{sherpa.font-weight-regular}"
   marker.line-height: "{sherpa.theme-content-line-height-base}"
@@ -101,6 +103,7 @@ tokens:
   description.color: "{sherpa.theme-content-body-1}"
   connector.block-size: "{sherpa.display-mode-border-width-lg}"
   connector.margin-block-start: "{sherpa.display-mode-size-lg}"
+  connector.background: "{sherpa.style-border-base}"
 $extensions:
   sherpa:
     figmaName: Progress Steps

@@ -20,7 +20,7 @@
   z-index: 1;
 
   background: var(--sherpa-style-surface-base, #ffffff);
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
   transition: box-shadow 150ms ease;
 }
 
@@ -79,13 +79,13 @@
   flex: 0 0 auto;
 }
 
-/* Figma draws a 1×16 rectangle in border/default/+2, sitting in the gap.
+/* Figma draws a 1×16 rectangle in style-border/base, sitting in the gap.
    Hidden by default; the show-rules are with the other gating below. */
 .divider {
   display: none;
   inline-size: var(--sherpa-display-mode-border-width-base, 1px);
   block-size: var(--sherpa-display-mode-size-sm, 16px);
-  background: var(--sherpa-theme-border-default-2, #b3b3c3);
+  background: var(--sherpa-style-border-base, #b3b3c3);
   flex-shrink: 0;
 }
 
@@ -125,13 +125,13 @@
   position: absolute;
   inset-block-end: calc(-1 * var(--sherpa-display-mode-space-sm, 12px));
   inset-inline-start: var(--sherpa-display-mode-space-2xs, 4px);
-  /* Values below are the instance's own (Indicator Type=count, Saturated). */
+  /* Values below are the instance's own (Badge, pinned Saturated). */
   min-inline-size: var(--sherpa-display-mode-size-sm, 16px);
   block-size: var(--sherpa-display-mode-size-sm, 16px);
   padding-inline: var(--sherpa-display-mode-space-3xs, 2px);
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
-  background: var(--sherpa-theme-surface-accent-2, #3b4ccd);
-  color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
+  background: var(--sherpa-style-surface-base, #3b4ccd);
+  color: var(--sherpa-style-content-base, #ffffff);
   font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
   font-size: var(--sherpa-theme-content-size-base, 14px);
   font-weight: var(--sherpa-font-weight-regular, 400);
@@ -176,7 +176,7 @@
   flex-shrink: 0;
   --_icon-size: var(--sherpa-theme-size-icon-xs, 14px);
   line-height: 1;
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-style-content-base, #0c0b11);
 }
 :host([data-icon]) .context-icon { display: inline-flex; }
 
@@ -186,7 +186,7 @@
   font-size: var(--sherpa-font-size-body-large, 16px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-large, 24px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 
   &:empty { display: none; }
 }

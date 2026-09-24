@@ -45,11 +45,10 @@ $extensions:
         2026-09-23: NO FIGMA COMPONENT, and that is the ruling — grouping is a Figma VARIABLE
         collection (the Grouping matrix), not a component. Same footing as `sherpa-layout-grid`: a
         layout concept expressed as a util component, so `figmaName` is absent, which is what tells
-        resync-figma there is nothing to match.
-        The wrapper DERIVES each child's position — `:first-child` / `:last-child` for a row or
-        column, `sibling-index()` for a grid — so a re-order, insert or delete needs nothing from
-        the children. It replaces the `.sherpa-group*` classes for new work; the classes and the
-        `data-group` attribute both stay, because a host that states a position in its own markup
-        still needs them. TRAP T-grouping-is-an-attribute-and-a-class
-        It works because `::slotted()` sets CUSTOM PROPERTIES, which inherit through a child's own
-        shadow boundary where a class cannot reach.
+        resync-figma there is nothing to match. The wrapper DERIVES each child's position —
+        `:first-child` / `:last-child` for a row or column, `sibling-index()` for a grid — so a
+        re-order, insert or delete needs nothing from the children. It replaces the `.sherpa-group*`
+        classes for new work; the classes and the `data-group` attribute both stay, because a host
+        that states a position in its own markup still needs them. TRAP
+        T-grouping-is-an-attribute-and-a-class It works because `::slotted()` sets CUSTOM
+        PROPERTIES, which inherit through a child's own shadow boundary where a class cannot reach.

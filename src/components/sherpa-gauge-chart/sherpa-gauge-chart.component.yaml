@@ -173,7 +173,7 @@ tokens:
   title.color: "{sherpa.theme-content-body-base}"
   needle.inline-size: "{sherpa.display-mode-border-width-base}"
   needle.background: "{sherpa.theme-content-body-2}"
-  hub-cap.background: "{sherpa.theme-content-body-1}"
+  hub-cap.background: "{sherpa.style-content-base}"
   value.font-family: "{sherpa.font-family-mono}"
   value.font-size: "{sherpa.font-size-body-xs}"
   value.font-weight: "{sherpa.font-weight-regular}"

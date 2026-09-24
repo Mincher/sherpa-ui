@@ -7,6 +7,13 @@ sherpa-data-grid:
   # A sorted or filtered column is FLAGGED with data-status="active"; its chips
   # carry the on-state, so the heading itself stays default.
   '& .head-cell[data-status]': default
+  # The row-action Button pins Transparent=default; its menu rows are Menu List
+  # Items, also Transparent. A danger row takes the critical mode of that look.
+  '& .actions-trigger': transparent
+  '& .action-item': transparent
+  '& .action-item[data-danger]': transparent/critical
+  # The group count is a Badge, which pins Style=default.
+  '& .group-count': default
 
 sherpa-quick-filter:
   # Filter Chip (atom) instances pin Style=active when on.
@@ -98,7 +105,123 @@ sherpa-radial-chart:
 
 sherpa-gauge-chart:
   '& .chart-tip': default
+  # Figma pins Style=default on the grey remainder segment (segment-4).
+  '& .zone[data-rest]': default
 
 sherpa-tooltip:
   # The bubble only — a host pin would also strip the status from the trigger.
   '& .bubble': default
+
+sherpa-accordion:
+  # Accordion pins Style=default at its root.
+  '&': default
+
+sherpa-app-header:
+  # The notification count is a Badge instance pinned Saturated=default.
+  '& .notif-badge': saturated
+
+sherpa-chip:
+  # Figma inactive: the surface greys out, the label keeps its ink.
+  '&[disabled]': inactive
+
+sherpa-code-block:
+  # The copy control is a Button instance pinned Transparent=default.
+  '& .copy': transparent
+  # No copied state in Figma; the tick reads as success.
+  '&[data-copied] .copied-label': success
+
+sherpa-container:
+  # Container pins Style=default at its root. No Figma design for the error
+  # overlay; its text keeps the critical ink it had, as a pin.
+  '&': default
+  '&[data-has-error] .state-text': critical
+
+sherpa-dialog:
+  # Dialog pins Style=default at its root. A data-status on the host still wins
+  # (attribute beats tag), so the critical confirm dialog keeps working.
+  '&': default
+
+sherpa-grid-cell:
+  # Grid Cell pins its Checkbox Style=default in every type.
+  '& .checkbox': default
+  # The group toggle and the sort / menu buttons pin Transparent=default.
+  '& .toggle': transparent
+  '& .sort': transparent
+  '& .menu': transparent
+
+sherpa-input-text:
+  # Input Field (atom) pins Style=default; its State=error pins Style=critical.
+  '&': default
+  '&[data-error]': critical
+  # No Figma disabled design: the inactive mode.
+  '&[disabled]': inactive
+  # The validation bar pins Saturated=critical.
+  '& .message': saturated/critical
+
+sherpa-metric:
+  # Figma pins the tile Style=success for a rise. The trend IS the status, so a
+  # bare data-trend still colours the delta, the shadow and the sparkline.
+  '&[data-trend="up"]': success
+  '&[data-trend="down"]': critical
+
+sherpa-overlay-panel:
+  # Overlay Panel pins Style=default at its root.
+  '&': default
+
+sherpa-pagination:
+  # Both Input Field instances pin Style=default in Figma.
+  '& .rows': default
+  '& .page-input': default
+  '&[disabled] .rows': inactive
+  '&[disabled] .page-input': inactive
+
+sherpa-panel:
+  # Panel pins Style=default at its root.
+  '&': default
+
+sherpa-progress-bar:
+  # Figma has no disabled variant; inactive is the repo's disabled mode and
+  # resolves to the old #b3b3c3 fill and track.
+  '&[disabled]': inactive
+
+sherpa-progress-step-tracker:
+  # Figma pins Saturated=default on the done step (step 1 of Progress Steps).
+  '& .step[data-state="done"]': saturated
+
+sherpa-prompt-composer:
+  # No disabled variant in Figma; the form takes the inactive mode. Its buttons
+  # are disabled too, and pin their own look's inactive.
+  '&[disabled]': inactive
+
+sherpa-select-card:
+  # Select Card pins nothing. No Figma disabled design: the inactive mode.
+  '&[disabled]': inactive
+
+sherpa-select-checkbox:
+  # Checkbox (Atom) pins Style=default, so a status around it never tints the box.
+  '& .control': default
+  # No Figma design: the inactive mode greys box and indicator; the tick goes dark.
+  '&[disabled] .control': inactive
+
+sherpa-select-radio:
+  # Radio (Atom) pins nothing. No Figma disabled design: the circle takes inactive.
+  '&[disabled] .control': inactive
+
+sherpa-slider:
+  # No Figma disabled design: the inactive mode.
+  '&[disabled]': inactive
+  # Its Input Field (atom) instance pins Style=default.
+  '& .value-input': default
+  '&[disabled] .value-input': inactive
+
+sherpa-switch:
+  # Value=off pins Style=default at the root; Value=on pins Saturated=success.
+  '&': default
+  '&[checked]': saturated/success
+  # No Figma disabled design: the inactive mode of each look.
+  '&[disabled]': inactive
+  '&[checked][disabled]': saturated/inactive
+
+sherpa-transfer-list:
+  # No disabled design in Figma; inactive greys the pane surface, as the old rule did.
+  '&[disabled]': inactive

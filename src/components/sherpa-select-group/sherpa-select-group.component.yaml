@@ -141,7 +141,7 @@ tokens:
   description.color: "{sherpa.theme-content-body-1}"
   divider.border-block-start: "{sherpa.border-top}"
   options.gap: "{sherpa.display-mode-space-xs}"
-  validation.color: "{sherpa.theme-content-body-1}"
+  validation.color: "{sherpa.style-content-base}"
 $extensions:
   sherpa:
     figmaName: Fieldset

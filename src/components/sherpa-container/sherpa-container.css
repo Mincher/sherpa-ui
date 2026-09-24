@@ -8,11 +8,11 @@
   position: relative;
   min-inline-size: 0;
 
-  /* One surface token the box + regions consume; status re-points it. */
-  --_surface: var(--sherpa-card-surface);
-  --_border: var(--sherpa-card-border);
-  /* Divider stays neutral: the status cascade exposes no tinted-border hook. */
-  --_divider: var(--sherpa-card-divider);
+  /* The Style names Figma binds; the root pins Style=default (state-pins.yaml). */
+  --_surface: var(--sherpa-style-surface-base, #ffffff);
+  --_border: var(--sherpa-style-border-base-1, #b3b3c3);
+  /* The header and footer strokes. */
+  --_divider: var(--sherpa-style-border-base-1, #b3b3c3);
 
   background: var(--_surface);
   /* Per-edge widths, so a snap extension can zero one edge. Not a shorthand. */
@@ -157,7 +157,7 @@
   border-radius: inherit;
 }
 .state > slot { display: none; }
-.state-text { color: var(--sherpa-theme-content-body-1, #35353d); font-size: var(--sherpa-font-size-body-base, 14px); }
+.state-text { color: var(--sherpa-style-content-base, #0c0b11); font-size: var(--sherpa-font-size-body-base, 14px); }
 
 /* empty / error are slot-driven: data-has-* comes from the base class reflecting
    named-slot presence. */
@@ -165,13 +165,13 @@
 :host([data-loading]) .state-loading { display: inline-flex; }
 :host([data-has-empty]) .state-empty { display: inline-flex; }
 :host([data-has-error]) .state-error { display: inline-flex; }
-:host([data-has-error]) .state-text { color: var(--sherpa-theme-content-critical-1, #b72200); }
+/* The error ink is a pin: critical. */
 
 /* Default loading content — mirrors sherpa-loader md. */
 .spinner {
   inline-size: var(--sherpa-display-mode-size-md, 20px);
   block-size: var(--sherpa-display-mode-size-md, 20px);
-  border: 2px solid var(--sherpa-theme-surface-default-2, #b3b3c3);
+  border: 2px solid var(--sherpa-theme-surface-default-2, #b3b3c3); /* theme-direct */
   border-block-start-color: var(--sherpa-style-indicator-accent, #3b4ccd);
   border-radius: 50%;
   animation: sherpa-spin 720ms linear infinite;

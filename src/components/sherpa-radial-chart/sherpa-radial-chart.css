@@ -83,7 +83,7 @@
 /* The keyboard ring stays, and is drawn rather than left to the UA. */
 .slice:focus-visible {
   outline: none;
-  stroke: var(--sherpa-theme-border-accent-2, #3b4ccd);
+  stroke: var(--sherpa-theme-border-accent-2, #3b4ccd); /* theme-direct */
   stroke-width: 2;
 }
 
@@ -113,13 +113,13 @@
   line-height: var(--sherpa-theme-content-line-height-h1, 32px);
   letter-spacing: var(--sherpa-theme-content-letter-spacing-h1, -0.2px);
   /* body/BASE, the darkest ink, so the total leads the sublabel. */
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
   font-variant-numeric: tabular-nums;
 }
 .sub {
   font-size: var(--sherpa-font-size-body-xs, 10px);
   line-height: var(--sherpa-theme-content-line-height-xs, 16px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 }
 
 /* ── Tooltip anchors ────────────────────────────────────────────────────────

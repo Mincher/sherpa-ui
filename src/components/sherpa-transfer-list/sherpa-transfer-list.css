@@ -11,11 +11,9 @@
   container: sherpa-transfer / inline-size;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
-
-  /* [data-status] cascade may be absent — fall back so a bare list resolves */
-  --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
-  --_border: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
+  /* Figma binds the pane and heading strokes to Theme, not Style. */
+  --_border: var(--sherpa-theme-border-default-2, #b3b3c3); /* theme-direct */
 }
 
 .panes {
@@ -33,15 +31,15 @@
     var(--sherpa-border-rounding-top-right, 4px)
     var(--sherpa-border-rounding-bottom-right, 4px)
     var(--sherpa-border-rounding-bottom-left, 4px);
-  background: var(--_surface);
+  background: var(--sherpa-style-surface-base, #ffffff);
   overflow: hidden;
 }
 .pane-heading {
   margin: 0;
   padding: var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-display-mode-space-sm, 12px);
   border-block-end: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_border);
-  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  background: var(--sherpa-theme-surface-default-1, #e8e8f6); /* theme-direct */
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
@@ -59,7 +57,7 @@
   display: none;
   margin: 0;
   padding: var(--sherpa-display-mode-space-base, 16px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   text-align: center;
 }
 .pane[data-empty] {
@@ -86,13 +84,9 @@
 }
 .move { flex-shrink: 0; }
 
-/* ── Disabled ─────────────────────────────────────────────────────── */
+/* ── Disabled — the inactive PIN greys the panes. ─────────────────── */
 :host([disabled]) {
   pointer-events: none;
-}
-:host([disabled]) .pane {
-  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
-  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
 }
 
 /* ── Narrow: stack ────────────────────────────────────────────────── */

@@ -11,11 +11,6 @@
   font-size: var(--sherpa-font-size-body-base, 14px);
   /* 20 square, per Figma's Checkbox (Atom) — not 16. */
   --_size: var(--sherpa-display-mode-size-md, 20px);
-  /* Checkbox and radio do NOT share a border colour. TRAP T-style-border-base-is-default-1. */
-  --_border: var(--_status-border, var(--sherpa-theme-border-default-2, #b3b3c3));
-  --_surface: var(--sherpa-theme-surface-default-base, #ffffff);
-  /* Checked indicator fill; a status context re-tints it. */
-  --_fill: var(--_status-surface, var(--sherpa-style-indicator-accent, #3b4ccd));
 }
 
 /* ── The ADVANCED group (Figma `Checkbox - Advanced`) ────────────────────
@@ -48,12 +43,12 @@
   padding-inline: 0;
   /* An empty text span would otherwise still claim the 8px gap. */
   --_field-gap: 0px;
-  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+  border-color: var(--sherpa-style-border-base-1, #b3b3c3);
   border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
   border-start-end-radius: var(--sherpa-border-rounding-top-right, 0px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 0px);
-  background: var(--sherpa-theme-surface-default-base, #ffffff);
+  background: var(--sherpa-style-surface-base, #ffffff);
   /* Half a stroke; the button carries the other half. */
   --sherpa-border-right: 0.25px;
 }
@@ -80,13 +75,18 @@ slot[name="menu"] { display: contents; }
   cursor: pointer;
   user-select: none;
   inline-size: 100%;
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
 }
 /* In the group the label hugs, else the caret is pushed to the far edge. */
 :host([data-advanced]) .field { inline-size: auto; }
 
 /* ── The control (native input, custom-drawn box) ─────────────────── */
 .control {
+  /* The Style names Figma binds, declared HERE so the box's PIN reaches them.
+     Checkbox takes border +1, radio takes base. TRAP T-style-border-base-is-default-1. */
+  --_border: var(--sherpa-style-border-base-1, #b3b3c3);
+  --_surface: var(--sherpa-style-surface-base, #ffffff);
+  --_fill: var(--sherpa-style-indicator-accent, #3b4ccd);
   appearance: none;
   -webkit-appearance: none;
   display: inline-flex;
@@ -117,13 +117,12 @@ slot[name="menu"] { display: contents; }
     background: var(--_fill);
   }
 
-  /* The mark, painted above ::before. The FIXED ramp, or it goes black on the
-     indicator in dark mode. TRAP T-the-tick-needs-the-fixed-ramp. */
+  /* The mark: style-content/inverse, the FIXED ramp. TRAP T-the-tick-needs-the-fixed-ramp. */
   &:is(:checked, :indeterminate)::after {
     content: "";
     display: block;
     position: relative;
-    background-color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
+    background-color: var(--sherpa-style-content-inverse, #ffffff);
   }
 
   /* Checkmark — SVG mask. Sized as a ratio of the box, so every size stays in
@@ -152,11 +151,11 @@ slot[name="menu"] { display: contents; }
 
   /* ── Hover / active ───────────────────────────────────────────────── */
   &:hover:not(:disabled) {
-    border-color: var(--sherpa-theme-border-default-1, #e8e8f6);
+    border-color: var(--sherpa-theme-border-default-1, #e8e8f6); /* theme-direct */
   }
   @supports (color: color-mix(in oklab, red, blue)) {
     &:is(:checked, :indeterminate):hover:not(:disabled)::before {
-      background: color-mix(in oklab, var(--_fill) 88%, var(--sherpa-display-mode-color-neutral-fixed-color-5, #0c0b11));
+      background: color-mix(in oklab, var(--_fill) 88%, var(--sherpa-display-mode-color-neutral-fixed-color-5, #0c0b11)); /* theme-direct */
     }
   }
   &:active:not(:disabled) {
@@ -178,13 +177,13 @@ slot[name="menu"] { display: contents; }
   min-inline-size: 0;
 }
 .label {
-  color: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-medium, 500);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
 }
 .description {
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+  color: var(--sherpa-style-content-secondary, #35353d);
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
@@ -194,35 +193,14 @@ slot[name="menu"] { display: contents; }
    HERE because the subject is a plain class, not `:host`. */
 .text:not(:has(*:not(:empty))) { display: none; }
 
-/* ── Disabled — inactive tokens, never opacity ────────────────────── */
+/* ── Disabled — a PIN (inactive): grey box and indicator, dark tick ── */
 :host([disabled]) .field {
   cursor: not-allowed;
   pointer-events: none;
 }
-:host([disabled]) .control {
-  cursor: not-allowed;
-  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
-  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
-}
-/* Box and indicator both go grey; the tick takes dark ink so the state still reads. */
-:host([disabled]) .control:is(:checked, :indeterminate)::before {
-  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
-}
-:host([disabled]) .control:is(:checked, :indeterminate)::after {
-  background-color: var(--sherpa-theme-content-body-1, #35353d);
-}
-/* Text binds Theme content, so inactive keeps the dark ink. */
-:host([disabled]) .label,
-:host([disabled]) .description {
-  color: var(--sherpa-theme-content-body-1, #35353d);
-}
+:host([disabled]) .control { cursor: not-allowed; }
 
-/* ── Validation — native :user-invalid, unchecked required ────────── */
+/* ── Validation — native :user-invalid, which the host does not reflect ── */
 .control:user-invalid:not(:checked):not(:indeterminate) {
-  border-color: var(--sherpa-theme-border-critical-3, #b72200);
-}
-
-/* ── Status cascade — the fill already routes through --_fill ──────── */
-:host([data-status]) .description {
-  color: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
+  border-color: var(--sherpa-theme-border-critical-3, #b72200); /* theme-direct */
 }

@@ -5,7 +5,6 @@
 
 :host {
   display: none;
-  background: var(--_status-surface, transparent);
 }
 :host([data-has-content-slot]) { display: block; }
 
@@ -20,10 +19,9 @@
   /* A host with no gutter of its own pins `--_pad-inline` rather than reaching
      into the shadow root. TRAP T-an-instance-pin-is-the-hosts-to-apply. */
   padding-inline: var(--_pad-inline, var(--sherpa-theme-padding-none, 0px));
-  /* Top divider. This exact Theme token — `--sherpa-style-border-base-1` resolves
-     one step darker. TRAP T-style-border-base-is-default-1. */
+  /* Top divider: Figma binds style-border/base +1. TRAP T-style-border-base-is-default-1. */
   border-block-start: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
-    var(--sherpa-theme-border-default-2, #b3b3c3);
+    var(--sherpa-style-border-base-1, #b3b3c3);
 }
 
 /* Slotted controls keep their natural width; a flex item would otherwise shrink

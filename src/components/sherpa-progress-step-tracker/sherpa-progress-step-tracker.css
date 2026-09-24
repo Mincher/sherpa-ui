@@ -4,10 +4,6 @@
 :host {
   display: block;
   padding: var(--sherpa-display-mode-space-xs, 8px);
-  /* +2, not -base: -base is pale #8aa3ff — white check on a light disc. */
-  --_accent: var(--sherpa-theme-surface-accent-2, #3b4ccd);
-  --_line: var(--sherpa-theme-border-default-2, #b3b3c3);
-  --_idle: var(--sherpa-theme-content-body-1, #35353d);
 }
 
 .steps {
@@ -41,7 +37,7 @@
 
   &:focus-visible { outline: none; }
   &:focus-visible .marker {
-    box-shadow: inset 0 0 0 2px var(--_accent);
+    box-shadow: var(--sherpa-focus-ring);
   }
 }
 
@@ -53,9 +49,11 @@
   inline-size: var(--sherpa-display-mode-size-lg, 24px);
   block-size: var(--sherpa-display-mode-size-lg, 24px);
   border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
-  border: var(--sherpa-display-mode-border-width-base, 1px) solid var(--_line);
+  /* Progress Step (atom). A done step is a pin (saturated). */
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid
+    var(--sherpa-style-border-base, #b3b3c3);
   background: var(--sherpa-style-surface-base, #ffffff);
-  color: var(--_idle);
+  color: var(--sherpa-style-content-base, #0c0b11);
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
@@ -71,11 +69,11 @@
 .label {
   font-size: var(--sherpa-font-size-body-small, 12px);
   font-weight: var(--sherpa-font-weight-medium, 500);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 }
 .description {
   font-size: var(--sherpa-font-size-body-small, 12px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 
   &:empty { display: none; }
 }
@@ -85,34 +83,31 @@
   flex: 1 1 auto;
   block-size: var(--sherpa-display-mode-border-width-lg, 2px);
   margin-block-start: calc(var(--sherpa-display-mode-size-lg, 24px) / 2);
-  background: var(--_line);
+  background: var(--sherpa-style-border-base, #b3b3c3);
 }
 
 /* ── done ────────────────────────────────────────────────────────────── */
 .step[data-state='done'] {
-  & .marker {
-    background: var(--_accent);
-    border-color: var(--_accent);
-    color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
-  }
   & .number { display: none; }
   & .check { display: block; }
 }
 
 /* ── active ──────────────────────────────────────────────────────────── */
 .step[data-state='active'] {
+  /* No Figma design for the current step, so no pin: the accent stays a rule. */
   & .marker {
-    border-color: var(--_accent);
-    color: var(--_accent);
+    border-color: var(--sherpa-style-indicator-accent, #3b4ccd);
+    color: var(--sherpa-style-indicator-accent, #3b4ccd);
     /* Solid ring first; the blended one wins where color-mix is supported. */
-    box-shadow: 0 0 0 2px var(--_accent);
+    box-shadow: 0 0 0 2px var(--sherpa-style-indicator-accent, #3b4ccd);
 
     @supports (color: color-mix(in oklab, red, blue)) {
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--_accent) 25%, transparent);
+      box-shadow: 0 0 0 2px
+        color-mix(in srgb, var(--sherpa-style-indicator-accent, #3b4ccd) 25%, transparent);
     }
   }
   & .label {
-    color: var(--sherpa-theme-content-body-base, #0c0b11);
+    color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
     font-weight: var(--sherpa-font-weight-semibold, 600);
   }
 }
