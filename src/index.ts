@@ -56,9 +56,9 @@ export { SherpaElement } from './core/ui/sherpa-element.js';
 // a preset and an agent's MCP call all go through.
 // TRAP T-state-is-the-saved-view-half.
 export { applyState, type Populatable } from './core/ui/apply-state.js';
-/* A `data-rows="fit"` grid needs its row count, which CSS cannot see.
-   TRAP T-a-fit-grid-needs-its-row-count */
-export { bindFitGrid, measureFitGrid } from './components/sherpa-layout-grid/fit-grid.js';
+/* A `data-grouped` grid needs each child's position, which CSS cannot see.
+   TRAP T-a-wrapping-span-hides-its-own-row */
+export { bindGroupedGrid, measureGroupedGrid } from './components/sherpa-layout-grid/grouped-grid.js';
 // A saved view's content is MARKUP, parsed through an allow-list on the way in.
 // TRAP T-saved-markup-is-untrusted-input.
 export {

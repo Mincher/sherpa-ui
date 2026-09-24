@@ -25,8 +25,8 @@ const EXPECTED = {
   // The two looks hold only what they OVERRIDE, as refs — the rest is Style's.
   'style-transparent': 7,
   'style-saturated': 8,
-  'display-compact': 118,
-  'display-comfortable': 118,
+  'display-compact': 119,
+  'display-comfortable': 119,
   vertical: 8,
   'grid-top': 8,
   'grid-mid': 8,
@@ -43,7 +43,7 @@ const EXPECTED = {
  */
 const MUST_DIFFER = [
   ['style-transparent', 'style-saturated', 53],
-  ['display-compact', 'display-comfortable', 48],
+  ['display-compact', 'display-comfortable', 50],
   ['data-viz-status', 'data-viz-set-2', 55],
   ['vertical', 'grid-top', 14],
   ['grid-top', 'grid-mid', 8],

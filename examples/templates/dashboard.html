@@ -16,14 +16,14 @@
   <!-- `data-rows` fixes the card height in layout grid rows, which gives the chart
        a real height to draw into. The legend is SLOTTED INTO the chart, not placed
        beside it here, so the chart owns the split. -->
-  <sherpa-container data-col-span="medium" data-row-span="6">
+  <sherpa-container data-col-span="medium" data-row-span="4">
     <sherpa-container-header slot="header" data-heading="Alerts by category"></sherpa-container-header>
     <sherpa-barchart id="bar" data-legend="horizontal">
       <sherpa-chart-legend slot="legend" id="bar-legend" data-orientation="horizontal"></sherpa-chart-legend>
     </sherpa-barchart>
   </sherpa-container>
 
-  <sherpa-container data-col-span="medium" data-row-span="6">
+  <sherpa-container data-col-span="medium" data-row-span="4">
     <sherpa-container-header slot="header" data-heading="Endpoints by OS"></sherpa-container-header>
     <!-- No data-label: "1,284" was hardcoded and stayed put while the ring
          beneath it redrew. TRAP T-the-centre-totals-what-the-ring-draws -->
@@ -32,7 +32,7 @@
     </sherpa-radial-chart>
   </sherpa-container>
 
-  <sherpa-container data-col-span="medium" data-row-span="6">
+  <sherpa-container data-col-span="medium" data-row-span="4">
     <sherpa-container-header slot="header" data-heading="Storage used"></sherpa-container-header>
     <!-- The gauge's legend names its ZONES, not a series, so it is read-only. No
          `data-palette`: a zone's status is a mode in that palette and a gauge
@@ -50,7 +50,7 @@
   </sherpa-container>
 
   <!-- A time series needs horizontal room, so it takes 12 of 12. -->
-  <sherpa-container data-col-span="full" data-row-span="6">
+  <sherpa-container data-col-span="full" data-row-span="4">
     <sherpa-container-header slot="header" data-heading="Sessions vs. incidents"></sherpa-container-header>
     <sherpa-line-chart id="line" data-type="area" data-legend="horizontal">
       <sherpa-chart-legend slot="legend" id="line-legend" data-orientation="horizontal"></sherpa-chart-legend>

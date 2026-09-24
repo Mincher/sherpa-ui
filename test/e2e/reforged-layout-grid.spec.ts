@@ -3,19 +3,15 @@ import { expect, test } from '@playwright/test';
 /**
  * THE CONTENT GRID — its row modes, and the ELEMENT that owns them.
  *
- * Two halves in one file because they are one feature: the CSS below decides
- * every visual thing, and `<sherpa-layout-grid>` supplies the single number CSS
- * cannot compute. A bare `<div class="sherpa-grid">` still works; it just needs
- * `bindFitGrid` called by hand, which the element exists to stop.
- *
- * THE ROW MODES.
- *
  * `.sherpa-grid` is a layout MIXIN: it works in any sized box, with or without
  * an app shell. Three modes:
  *
  *   (none)   rows size to their content and the area scrolls — unchanged
  *   fixed    every row one grid row high, and the area scrolls
- *   fit      rows hug, the grid fills its area, and one item takes the rest
+ *   fit      every row one grid row high, and the LAST row takes the rest
+ *
+ * A fit grid needs no JS: `data-row-count` is authored and every child states
+ * its spans, so no child's content can size a row.
  *
  * TRAP T-a-content-grid-has-two-row-modes
  * TRAP T-a-fit-grid-needs-its-row-count
@@ -27,99 +23,100 @@ test.beforeEach(async ({ page }) => {
   await page.setViewportSize({ width: 1400, height: 800 });
 });
 
-/** Build a grid in a 500px box and measure what came out. */
+/** Build a grid in a sized box and measure what came out. */
 const build = async (
   page: import('@playwright/test').Page,
   mode: string,
   inner: string,
+  rows = 0,
+  boxH = 500,
 ): Promise<{
-  gridH: number; fitRows: string; fillerH: number; fillerTop: number;
-  rowTops: number[]; scrolls: boolean;
+  gridH: number; fillerH: number; fillerTop: number; rowH: number; gap: number;
+  heights: number[]; scrolls: boolean;
 }> =>
-  page.evaluate(async ([mode, inner]) => {
-    const { bindFitGrid } = await import('/dist/index.js') as {
-      bindFitGrid: (el: HTMLElement) => () => void;
-    };
+  page.evaluate(async ([mode, inner, rows, boxH]) => {
     const root = document.getElementById('root')!;
     root.style.cssText = '';
     root.innerHTML =
-      '<div style="height:500px">'
-      + '<div class="sherpa-grid"' + (mode ? ' data-rows="' + mode + '"' : '') + '>'
+      '<div style="height:' + boxH + 'px">'
+      + '<div class="sherpa-grid"'
+      + (mode ? ' data-rows="' + mode + '"' : '')
+      + (rows ? ' data-row-count="' + rows + '"' : '') + '>'
       + inner + '</div></div>';
+    await new Promise((r) => setTimeout(r, 100));
 
     const grid = root.querySelector<HTMLElement>('.sherpa-grid')!;
-    bindFitGrid(grid);
-    await new Promise((r) => setTimeout(r, 200));
-
     const filler = grid.querySelector<HTMLElement>('[data-grow]')
       ?? (grid.lastElementChild as HTMLElement);
     const box = grid.getBoundingClientRect();
+    const cs = getComputedStyle(grid);
     return {
       gridH: Math.round(box.height),
-      fitRows: grid.style.getPropertyValue('--_fit-rows'),
       fillerH: Math.round(filler.getBoundingClientRect().height),
       fillerTop: Math.round(filler.getBoundingClientRect().top - box.top),
-      rowTops: [...new Set([...grid.children]
-        .map((c) => Math.round(c.getBoundingClientRect().top)))],
+      rowH: parseFloat(cs.getPropertyValue('--sherpa-layout-grid-row-height')),
+      gap: parseFloat(cs.rowGap),
+      heights: [...grid.children].map((c) => Math.round(c.getBoundingClientRect().height)),
       scrolls: grid.scrollHeight > grid.clientHeight + 1,
     };
-  }, [mode, inner] as const);
+  }, [mode, inner, rows, boxH] as const);
 
 const METRIC = '<div data-col-span="small" style="background:#eef">m</div>';
 const FILLER = '<div data-col-span="full" data-grow style="background:#fee">F</div>';
+const PAD = 16;
 
 /* ── fit ────────────────────────────────────────────────────────────── */
 
 test('FIT fills its area, and the marked item takes what is left', async ({ page }) => {
-  const r = await build(page, 'fit', METRIC.repeat(4) + FILLER);
+  const r = await build(page, 'fit', METRIC.repeat(4) + FILLER, 2);
 
   expect(r.gridH, 'the grid is exactly its parent').toBe(500);
-  expect(r.rowTops.length, 'four metrics share one row, the filler is the second').toBe(2);
-  expect(r.fitRows, 'ONE row above the filler').toBe('1');
-  // 500 - 16 padding * 2 - 18 metric - 16 gap.
-  expect(r.fillerH).toBeGreaterThan(400);
+  expect(r.heights[0], 'a metric row is ONE grid row').toBe(r.rowH);
+  expect(r.fillerH).toBe(500 - 2 * PAD - r.rowH - r.gap);
   expect(r.scrolls, 'a fit grid never scrolls').toBe(false);
 });
 
 test('with NO data-grow, the LAST child fills', async ({ page }) => {
-  const marked = await build(page, 'fit', METRIC.repeat(4) + FILLER);
+  const marked = await build(page, 'fit', METRIC.repeat(4) + FILLER, 2);
   const bare = await build(page, 'fit',
-    METRIC.repeat(4) + '<div data-col-span="full" style="background:#fee">LAST</div>');
+    METRIC.repeat(4) + '<div data-col-span="full" style="background:#fee">LAST</div>', 2);
 
   expect(bare.fillerH, 'the same answer either way').toBe(marked.fillerH);
 });
 
-test('a TALL row keeps its height; the filler takes the remainder', async ({ page }) => {
-  const r = await build(page, 'fit',
-    METRIC.repeat(4)
-    + '<div data-col-span="full" style="background:#efe;height:200px">tall</div>'
-    + FILLER);
+/* The reported bug: three cards spanning rows sat above the last card, the
+   one flexible row fell inside them, and the last card hugged its content. */
+test('items that SPAN rows above it do not steal the last row', async ({ page }) => {
+  const card = '<div data-col-span="medium" data-row-span="2" style="background:#efe">c</div>';
+  const r = await build(page, 'fit', METRIC.repeat(4) + card.repeat(3) + FILLER, 4, 600);
 
-  expect(r.fitRows).toBe('2');
-  // The tall row is 200; what is left goes to the filler, and nothing scrolls.
-  expect(r.fillerH).toBeGreaterThan(150);
-  expect(r.fillerH).toBeLessThan(250);
+  expect(r.heights[4], 'a two-row card is two rows and a gutter').toBe(2 * r.rowH + r.gap);
+  expect(r.fillerTop).toBe(PAD + 3 * r.rowH + 2 * r.gap + r.gap);
+  expect(r.fillerH, 'the last card takes the rest').toBe(600 - PAD - r.fillerTop);
   expect(r.scrolls).toBe(false);
 });
 
+test('a row is one grid row whatever its content', async ({ page }) => {
+  const tall = '<div data-col-span="small"><div style="height:300px">tall</div></div>';
+  const r = await build(page, 'fit', tall + METRIC.repeat(3) + FILLER, 2);
+
+  expect(r.heights[0], 'the content overflows; the row does not grow').toBe(r.rowH);
+  expect(r.fillerTop).toBe(PAD + r.rowH + r.gap);
+});
+
 test('a grid of ONLY a filler gives it everything', async ({ page }) => {
-  const r = await build(page, 'fit', FILLER);
-  expect(r.fitRows, 'no rows above it').toBe('0');
-  expect(r.fillerH).toBeGreaterThan(450);
+  const r = await build(page, 'fit', FILLER, 1);
+  expect(r.fillerH).toBe(500 - 2 * PAD);
 });
 
 /* ── fixed ──────────────────────────────────────────────────────────── */
 
 test('FIXED gives every row the grid row height, and scrolls', async ({ page }) => {
-  const tall = '<div data-col-span="full" style="background:#eef">r</div>'.repeat(8);
-  const r = await build(page, 'fixed', tall);
+  const r = await build(page, 'fixed',
+    '<div data-col-span="full" style="background:#eef">r</div>'.repeat(8));
 
-  expect(r.scrolls, 'eight 64px rows do not fit 500px').toBe(true);
-  const rowH = await page.evaluate(() => {
-    const grid = document.querySelector<HTMLElement>('.sherpa-grid')!;
-    return Math.round(grid.children[0]!.getBoundingClientRect().height);
-  });
-  expect(rowH, 'one layout-grid row').toBe(64);
+  expect(r.scrolls, 'eight grid rows do not fit 500px').toBe(true);
+  expect(r.heights[0], 'one layout-grid row').toBe(r.rowH);
 });
 
 /* ── the default is neither ─────────────────────────────────────────── */
@@ -128,7 +125,6 @@ test('NO attribute is unchanged — rows hug, and it OVERFLOWS its parent', asyn
   const r = await build(page, '', METRIC.repeat(4)
     + '<div data-col-span="full" style="background:#efe;height:800px">tall</div>');
 
-  expect(r.fitRows, 'nothing is written on a grid that did not ask').toBe('');
   /* It does not scroll ITSELF — it grows past its parent and whatever is above
      it scrolls, exactly as every view did before these modes existed. */
   expect(r.scrolls).toBe(false);
@@ -139,9 +135,6 @@ test('NO attribute is unchanged — rows hug, and it OVERFLOWS its parent', asyn
 
 test('it fits in ANY sized box — no app shell anywhere', async ({ page }) => {
   const heights = await page.evaluate(async () => {
-    const { bindFitGrid } = await import('/dist/index.js') as {
-      bindFitGrid: (el: HTMLElement) => () => void;
-    };
     const wrappers: Record<string, string> = {
       plain: '<div style="height:500px">',
       flexChild: '<div style="height:500px;display:flex;flex-direction:column">'
@@ -155,16 +148,14 @@ test('it fits in ANY sized box — no app shell anywhere', async ({ page }) => {
       root.style.cssText = '';
       const depth = (open.match(/<div/g) ?? []).length;
       root.innerHTML = open
-        + '<div class="sherpa-grid" data-rows="fit">'
+        + '<div class="sherpa-grid" data-rows="fit" data-row-count="2">'
         + '<div data-col-span="small">m</div><div data-col-span="small">m</div>'
         + '<div data-col-span="small">m</div><div data-col-span="small">m</div>'
         + '<div data-col-span="full" data-grow>F</div>'
         + '</div>' + '</div>'.repeat(depth);
-      const grid = root.querySelector<HTMLElement>('.sherpa-grid')!;
-      bindFitGrid(grid);
-      await new Promise((r) => setTimeout(r, 200));
-      out[name] = Math.round(
-        grid.querySelector<HTMLElement>('[data-grow]')!.getBoundingClientRect().height);
+      await new Promise((r) => setTimeout(r, 100));
+      out[name] = Math.round(root.querySelector<HTMLElement>('[data-grow]')!
+        .getBoundingClientRect().height);
     }
     return out;
   });
@@ -172,33 +163,29 @@ test('it fits in ANY sized box — no app shell anywhere', async ({ page }) => {
   // The SAME height in every box: the only requirement is a sized parent.
   const values = Object.values(heights);
   expect(new Set(values).size, JSON.stringify(heights)).toBe(1);
-  expect(values[0]).toBeGreaterThan(400);
+  expect(values[0]).toBeGreaterThan(300);
 });
 
 /**
  * WHEN IT CANNOT FIT, IT SCROLLS.
  *
- * Rows above the filler may already exceed the area — three fixed-height cards
- * in a short window. Crushing the filler to nothing loses content, so the grid
- * scrolls instead and behaves like the default mode at that size.
+ * Rows above the filler may already exceed the area — tall cards in a short
+ * window. Crushing the filler to nothing loses content, so the grid scrolls
+ * instead and behaves like the default mode at that size.
  *
  * TRAP T-a-content-grid-has-two-row-modes
  */
 test('a filler with no room hits its FLOOR and the grid scrolls', async ({ page }) => {
   const r = await build(page, 'fit',
-    // Two 300px rows in a 500px box: 600px before the filler even starts.
-    '<div data-col-span="full" style="background:#efe;height:300px">a</div>'
-    + '<div data-col-span="full" style="background:#efe;height:300px">b</div>'
-    + FILLER);
+    '<div data-col-span="full" data-row-span="4" style="background:#efe">a</div>' + FILLER, 5);
 
   expect(r.scrolls, 'the content is reachable, not clipped').toBe(true);
   // Two grid rows plus a gutter is the floor — never crushed to nothing.
-  expect(r.fillerH).toBeGreaterThanOrEqual(144);
+  expect(r.fillerH).toBe(2 * r.rowH + r.gap);
 });
 
 test('…and a grid that DOES fit still does not scroll', async ({ page }) => {
-  const r = await build(page, 'fit',
-    '<div data-col-span="full" style="background:#efe;height:100px">a</div>' + FILLER);
+  const r = await build(page, 'fit', '<div data-col-span="full">a</div>' + FILLER, 2);
 
   expect(r.scrolls).toBe(false);
   expect(r.gridH).toBe(500);
@@ -258,19 +245,15 @@ test('below 1280 a fit grid is not pinned — it scrolls', async ({ page }) => {
   const measure = async (width: number): Promise<{ gridH: number; parentH: number }> => {
     await page.setViewportSize({ width, height: 600 });
     return page.evaluate(async () => {
-      const { bindFitGrid } = await import('/dist/index.js') as {
-        bindFitGrid: (el: HTMLElement) => () => void;
-      };
       const root = document.getElementById('root')!;
       root.style.cssText = '';
       root.innerHTML = '<div style="height:400px">'
-        + '<div class="sherpa-grid" data-rows="fit">'
+        + '<div class="sherpa-grid" data-rows="fit" data-row-count="3">'
         + '<div data-col-span="full" style="height:300px">a</div>'
         + '<div data-col-span="full" style="height:300px">b</div>'
         + '<div data-col-span="full" data-grow>F</div></div></div>';
+      await new Promise((r) => setTimeout(r, 100));
       const grid = root.querySelector<HTMLElement>('.sherpa-grid')!;
-      bindFitGrid(grid);
-      await new Promise((r) => setTimeout(r, 200));
       return {
         gridH: Math.round(grid.getBoundingClientRect().height),
         parentH: Math.round(grid.parentElement!.getBoundingClientRect().height),
@@ -343,8 +326,8 @@ test('the last of a width class fills its row when alone', async ({ page }) => {
  * ROW SPANS AND TRACK COUNTS.
  *
  * `data-row-span` is only meaningful where the rows HAVE a height — that is
- * `data-rows="fixed"`. In the default mode rows are `auto`, so a span collapses
- * to the content and says nothing.
+ * `data-rows="fixed"` or `"fit"`. In the default mode rows are `auto`, so a span
+ * collapses to the content and says nothing.
  *
  * `data-col-count` / `data-row-count` override the breakpoint's own tracks, for
  * a grid that is not the page's main content area.
@@ -360,18 +343,19 @@ test('a row span needs rows with a height', async ({ page }) => {
         + '<div data-col-span="medium" data-row-span="6">A</div>'
         + '<div data-col-span="medium">B</div></div></div>';
       await new Promise((r) => setTimeout(r, 80));
-      out[mode || 'default'] = Math.round(
-        root.querySelector('.sherpa-grid')!.children[0]!.getBoundingClientRect().height);
+      const grid = root.querySelector<HTMLElement>('.sherpa-grid')!;
+      out[mode || 'default'] = Math.round(grid.children[0]!.getBoundingClientRect().height);
+      out.rowH = parseFloat(getComputedStyle(grid).getPropertyValue('--sherpa-layout-grid-row-height'));
+      out.gap = parseFloat(getComputedStyle(grid).rowGap);
     }
     return out;
   });
 
-  // 6 rows of 64px plus 5 gutters of 16px.
-  expect(r['fixed'], 'six real rows').toBe(6 * 64 + 5 * 16);
+  const six = 6 * r['rowH']! + 5 * r['gap']!;
+  expect(r['fixed'], 'six real rows').toBe(six);
   // Nowhere near six rows — it hugs. Engines differ by a pixel or two on
   // the exact hug height, so this asserts the KIND of answer, not the value.
-  expect(r['default'], 'auto rows hug the content instead')
-    .toBeLessThan(6 * 64 + 5 * 16);
+  expect(r['default'], 'auto rows hug the content instead').toBeLessThan(six);
 });
 
 test('col and row counts override the breakpoint tracks', async ({ page }) => {
@@ -426,7 +410,6 @@ const read = (page: import('@playwright/test').Page) =>
       columnGap: cs.columnGap,
       // The CSS CLASS keeps Figma's name; only the ELEMENT is sherpa-layout-grid.
       wearsClass: g.classList.contains('sherpa-grid'),
-      fitRows: g.style.getPropertyValue('--_fit-rows'),
       spans: [...g.children].map((c) => getComputedStyle(c).gridColumn),
     };
   });
@@ -444,70 +427,30 @@ test('the host wears the projected class, so the tokens reach it unchanged', asy
   expect(r.spans).toEqual(['span 4', 'span 3']);
 });
 
-test('a fit grid measures its own row count', async ({ page }) => {
-  await mount(
-    page,
-    '<div data-col-span="full">a</div><div data-col-span="full" data-grow>filler</div>',
-    'data-rows=fit',
-  );
-  // One row sits above the filler. Nothing in the app had to ask for this.
-  expect((await read(page)).fitRows).toBe('1');
-});
-
-test('the count follows the content', async ({ page }) => {
-  await mount(
-    page,
-    '<div data-col-span="full">a</div><div data-col-span="full" data-grow>filler</div>',
-    'data-rows=fit',
-  );
-  const settle = async (): Promise<void> => {
-    await page.evaluate(() => (window as unknown as { __settled: () => Promise<void> }).__settled());
-  };
-
-  const added = await page.evaluate(async () => {
-    const g = document.querySelector('sherpa-layout-grid')!;
-    const extra = document.createElement('div');
-    extra.setAttribute('data-col-span', 'full');
-    extra.textContent = 'c';
-    g.insertBefore(extra, g.lastElementChild);
-    return null;
-  });
-  void added;
-  await settle();
-  expect((await read(page)).fitRows).toBe('2');
-
-  await page.evaluate(() => {
-    document.querySelector('sherpa-layout-grid')!.children[1]!.remove();
-  });
-  await settle();
-  expect((await read(page)).fitRows).toBe('1');
-});
-
 /**
  * A router detaches a view and re-attaches it. `signal` is a NEW
  * AbortController each connect, so a bind made in onRender — which fires once —
  * holds one that is already aborted. TRAP T-abort-controller-per-connect
  */
 test('it still measures after a detach and re-attach', async ({ page }) => {
-  await mount(
-    page,
-    '<div data-col-span="full">a</div><div data-col-span="full" data-grow>filler</div>',
-    'data-rows=fit',
-  );
+  await mount(page, '<div data-col-span="full">a</div>', 'data-grouped');
 
-  await page.evaluate(async () => {
+  const last = await page.evaluate(async () => {
     const root = document.getElementById('root')!;
     const g = document.querySelector('sherpa-layout-grid')!;
     g.remove();
     root.appendChild(g);
     const extra = document.createElement('div');
     extra.setAttribute('data-col-span', 'full');
-    extra.textContent = 'c';
-    g.insertBefore(extra, g.lastElementChild);
+    extra.textContent = 'b';
+    g.appendChild(extra);
+    for (let i = 0; i < 30 && !extra.hasAttribute('data-group'); i++) {
+      await new Promise((r) => requestAnimationFrame(r));
+    }
+    return extra.getAttribute('data-group');
   });
-  await page.evaluate(() => (window as unknown as { __settled: () => Promise<void> }).__settled());
 
-  expect((await read(page)).fitRows).toBe('2');
+  expect(last, 'the new child was measured').toBe('grid-bottom-solo');
 });
 
 test('data-col-count overrides the breakpoint', async ({ page }) => {

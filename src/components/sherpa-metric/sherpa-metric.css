@@ -10,7 +10,12 @@
   flex-direction: column;
   gap: var(--sherpa-display-mode-space-xs, 8px);
   min-inline-size: 0;
-  padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
+  /* Figma's stroke is INSIDE and takes no room, so the padding gives it back:
+     the tile is exactly one layout-grid row (size/row) tall. */
+  padding-block-start: calc(var(--sherpa-display-mode-space-2xs, 4px) - var(--sherpa-border-top, 0.5px));
+  padding-block-end: calc(var(--sherpa-display-mode-space-2xs, 4px) - var(--sherpa-border-bottom, 0.5px));
+  padding-inline-start: calc(var(--sherpa-display-mode-space-xs, 8px) - var(--sherpa-border-left, 0.5px));
+  padding-inline-end: calc(var(--sherpa-display-mode-space-xs, 8px) - var(--sherpa-border-right, 0.5px));
   background: var(--sherpa-style-surface-base, #ffffff);
   /* Figma binds BOTH a fill and a stroke: `style-surface/base` over
      `style-border/base`, 0.5px INSIDE, with per-corner rounding. Only the fill

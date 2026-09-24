@@ -812,7 +812,7 @@ tears down every binding, listener and persister a view made.
 - Site: `src/core/browser/persist-view.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/filter-state.ts`
-- Site: `src/components/sherpa-layout-grid/fit-grid.ts`
+- Site: `src/components/sherpa-layout-grid/grouped-grid.ts`
 
 ### T-steer-only-populate-means-chips
 
@@ -8194,9 +8194,8 @@ squeeze every card on the way down, and the one that takes the remainder would
 sit at its floor with everything above it crushed. Below the breakpoint the
 rule simply does not apply, so the grid behaves as the default does.
 
-The JS still measures and writes `--_fit-rows` at every width. That is
-harmless — nothing reads it below 1280 — and it means a resize past the
-breakpoint needs no second code path.
+Below it, `data-row-count` does nothing on a fit grid — the equal-row rule
+skips it. Applied, every `1fr` row would grow as tall as the tallest card.
 
 - Site: `scripts/project-tokens.mjs`
 - Site: `test/e2e/reforged-layout-grid.spec.ts`
@@ -8210,7 +8209,7 @@ an app shell, and `data-rows` picks how its rows are sized:
 |---|---|
 | (none) | rows hug their content and the grid OVERFLOWS its parent — how every view behaved before these existed |
 | `fixed` | every row one grid row high; the grid fills its parent and SCROLLS |
-| `fit` | rows hug, the grid fills its parent exactly, and one item takes the rest |
+| `fit` | every row one grid row high; the grid fills its parent exactly, and the LAST row takes the rest |
 
 `block-size: 100%` is what makes `overflow` mean anything in `fixed`: without
 it the grid grew to 656px inside a 500px parent and scrolled nothing.
@@ -8230,9 +8229,20 @@ The DEFAULT is neither, so nothing that existed before changed.
 ### T-a-fit-grid-needs-its-row-count
 
 A grid item can never be taller than its ROW, so filling the remainder means
-the row itself must be `1fr` — and CSS has no way to name the last auto row.
+the LAST row must be `1fr` — and CSS has no way to name the last auto row. So
+the count is AUTHORED: `data-row-count` counts every row, the last included,
+and the grid is `repeat(count - 1, row-height) 1fr`.
 
-Seven shapes were measured before settling. Every one of them failed:
+Every row is one `size/row` tall — one metric — and every child states its
+spans. Nothing is measured, so no child's content can size a row.
+
+**It was measured until 2026-09-24, and that was the bug.** JS counted the
+distinct TOPS above the filler. A card spanning six rows has ONE top, so on
+Records the count came back 2 where the rows were 7: the `1fr` row fell inside
+the charts, they took the slack, and the last card dropped into an implicit
+`auto` row and hugged its content.
+
+Seven shapes were measured before the count existed. Every one failed:
 
 | tried | result |
 |---|---|
@@ -8244,25 +8254,13 @@ Seven shapes were measured before settling. Every one of them failed:
 | `align-self: stretch` + `height: 100%` | 18px — it stretches WITHIN its own row |
 | flex-wrap, spans as basis | 242px — `align-content` splits between LINES |
 
-`grid-template-rows: repeat(n-1, min-content) 1fr` works, and `n` is the one
-number CSS cannot see: the row count depends on how the spans WRAPPED, which
-is resolved during layout. `bindFitGrid` supplies it as `--_fit-rows` and
-nothing else.
-
-It is counted from laid-out POSITIONS, never by adding up `data-span` values —
-that re-implements wrapping, wrongly, the moment a span wraps. And it is
-measured with `grid-template-rows: none` for one frame, because leaving the
-template on measures the layout the count itself produced: with
-`--_fit-rows: 0` the template is a lone `1fr`, four quarter-width items wrapped
-onto TWO rows, and the count came back one too many.
-
-The filler is `data-grow`; with none, the LAST child fills.
+`repeat(calc(n - 1), …)` works in all three engines. `repeat(0, …)` does not —
+it drops the whole template — so a count of 1 is its own rule.
 
 - Site: `scripts/project-tokens.mjs`
-- Site: `src/components/sherpa-layout-grid/fit-grid.ts`
-- Site: `src/index.ts`
+- Site: `src/components/sherpa-layout-grid/grouped-grid.ts`
 - Site: `test/e2e/reforged-layout-grid.spec.ts`
-- Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.ts`
+
 
 ### T-a-fit-grid-needs-a-sized-parent
 
@@ -10434,13 +10432,9 @@ of them.
 of rounding is the same row — and writes `data-group="grid-top-start"` and the
 rest from that.
 
-`fit-grid.ts` already stated the rule for its own row count: *"which items
-share a row is decided during layout, and adding up `data-col-span` values
-re-implements that — wrongly, the moment a span wraps."* The same applies to
-position.
-
-- Site: `src/components/sherpa-layout-grid/fit-grid.ts`
+- Site: `src/components/sherpa-layout-grid/grouped-grid.ts`
 - Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.ts`
+- Site: `src/index.ts`
 - Site: `test/e2e/reforged-layout-grid.spec.ts`
 
 ### T-a-document-rule-outranks-an-adopted-host-rule

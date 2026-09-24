@@ -3008,6 +3008,34 @@
         },
         "$type": "dimension",
         "$value": "{primitives.scale.25}"
+      },
+      "row": {
+        "$description": "One layout-grid row: the height of one metric tile.",
+        "$extensions": {
+          "figma-console-mcp": {
+            "collectionId": "VariableCollectionId:6:363",
+            "figmaResolvedType": "FLOAT",
+            "lastSyncedAt": "2026-09-24T12:00:00.000Z",
+            "lastSyncedValue": {
+              "dark": {
+                "literal": 88
+              },
+              "light": {
+                "literal": 88
+              }
+            },
+            "modes": {
+              "dark": 88
+            },
+            "primaryMode": "light",
+            "scopes": [
+              "WIDTH_HEIGHT"
+            ],
+            "variableId": "VariableID:1486:30539"
+          }
+        },
+        "$type": "dimension",
+        "$value": 88
       }
     },
     "space": {
@@ -3829,25 +3857,25 @@
           "figma-console-mcp": {
             "collectionId": "VariableCollectionId:63:1849",
             "figmaResolvedType": "FLOAT",
-            "lastSyncedAt": "2026-09-09T09:43:47.989Z",
+            "lastSyncedAt": "2026-09-24T12:00:00.000Z",
             "lastSyncedValue": {
               "desktop": {
-                "reference": "{display-mode.space.6xl}"
+                "reference": "{display-mode.size.row}"
               },
               "mobile": {
-                "reference": "{display-mode.space.6xl}"
+                "reference": "{display-mode.size.row}"
               },
               "tablet": {
-                "reference": "{display-mode.space.6xl}"
+                "reference": "{display-mode.size.row}"
               },
               "wide": {
-                "reference": "{display-mode.space.6xl}"
+                "reference": "{display-mode.size.row}"
               }
             },
             "modes": {
-              "tablet": "{display-mode.space.6xl}",
-              "desktop": "{display-mode.space.6xl}",
-              "wide": "{display-mode.space.6xl}"
+              "tablet": "{display-mode.size.row}",
+              "desktop": "{display-mode.size.row}",
+              "wide": "{display-mode.size.row}"
             },
             "primaryMode": "mobile",
             "scopes": [
@@ -3857,7 +3885,7 @@
           }
         },
         "$type": "dimension",
-        "$value": "{display-mode.space.6xl}"
+        "$value": "{display-mode.size.row}"
       }
     }
   },

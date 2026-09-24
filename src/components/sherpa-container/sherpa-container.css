@@ -77,7 +77,7 @@
 :host([data-row-span="10"]),
 :host([data-row-span="12"]) {
   block-size: calc(
-    var(--_rows) * var(--sherpa-layout-grid-row-height, 64px)
+    var(--_rows) * var(--sherpa-layout-grid-row-height, 88px)
     + (var(--_rows) - 1) * var(--sherpa-layout-grid-gap-vertical, 16px)
   );
 }

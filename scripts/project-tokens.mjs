@@ -1519,7 +1519,7 @@ const gridUtilityBlock = `  /* Layout grid — the track system views place thei
   .sherpa-grid[data-col-count='8'] { --_col-count: 8; }
   .sherpa-grid[data-col-count='10'] { --_col-count: 10; }
   .sherpa-grid[data-col-count='12'] { --_col-count: 12; }
-  .sherpa-grid[data-row-count] {
+  .sherpa-grid[data-row-count]:not([data-rows='fit']) {
     grid-template-rows: repeat(var(--_row-count), minmax(0, 1fr));
   }
   .sherpa-grid[data-row-count='1'] { --_row-count: 1; }
@@ -1538,8 +1538,8 @@ const gridUtilityBlock = `  /* Layout grid — the track system views place thei
      TRAP T-a-container-width-is-named-not-counted */
 
   /* Row spans — a child N grid rows tall. Only meaningful where the rows HAVE
-     a height, which is data-rows="fixed"; in the default mode rows are auto
-     and a span collapses to the content. */
+     a height, which is data-rows="fixed" or "fit"; in the default mode rows are
+     auto and a span collapses to the content. */
   .sherpa-grid > [data-row-span='1']  { grid-row: span 1; }
   .sherpa-grid > [data-row-span='2']  { grid-row: span 2; }
   .sherpa-grid > [data-row-span='3']  { grid-row: span 3; }
@@ -1560,34 +1560,38 @@ const gridUtilityBlock = `  /* Layout grid — the track system views place thei
      block-size: 100% is what makes overflow mean anything: without it the grid
      grew to 656px inside a 500px parent and scrolled nothing. */
   .sherpa-grid[data-rows='fixed'] {
-    grid-auto-rows: var(--sherpa-layout-grid-row-height, 64px);
+    grid-auto-rows: var(--sherpa-layout-grid-row-height, 88px);
     block-size: 100%;
     min-block-size: 0;
     overflow-y: auto;
   }
 
-  /* FIT — rows hug their content, the grid fills its area exactly, and one
-     item takes what is left. Nothing scrolls.
+  /* FIT — every row one grid row (one metric) tall, and the LAST row takes
+     what is left, so the grid fills its area exactly.
 
-     DESKTOP AND UP ONLY. At tablet and mobile a view is read by scrolling, and
-     pinning it to the fold would squeeze every card to nothing on the way down.
-     Below 1280 the rule simply does not apply and the grid behaves as the
-     default does. TRAP T-fit-is-a-desktop-mode
+     data-row-count counts EVERY row, the last included, and each child states
+     its spans. Nothing is measured, so no child's content can size a row.
+     TRAP T-a-fit-grid-needs-its-row-count
 
-     --_fit-rows is the ROW COUNT BEFORE THE FILLER, written by JS because CSS
-     cannot see it. A grid item can never be taller than its row, so the ROW
-     must be 1fr — and there is no way to name the last auto row. Seven shapes
-     were measured; the trap lists them.
-     TRAP T-a-fit-grid-needs-its-row-count */
+     DESKTOP AND UP ONLY. At tablet and mobile a view is read by scrolling, so
+     below 1280 the grid behaves as the default does. TRAP T-fit-is-a-desktop-mode */
   @media (min-width: 1280px) {
     .sherpa-grid[data-rows='fit'] {
       block-size: 100%;
       min-block-size: 0;
       /* AUTO, not hidden: when the rows above already exceed the area the
-         filler hits its floor and the grid scrolls rather than crushing it.
-         Content is never lost — at that size it behaves like the default. */
+         filler hits its floor and the grid scrolls rather than crushing it. */
       overflow-y: auto;
-      grid-template-rows: repeat(var(--_fit-rows, 0), min-content) 1fr;
+      grid-auto-rows: var(--sherpa-layout-grid-row-height, 88px);
+    }
+    .sherpa-grid[data-rows='fit'][data-row-count] {
+      grid-template-rows:
+        repeat(calc(var(--_row-count) - 1), var(--sherpa-layout-grid-row-height, 88px))
+        1fr;
+    }
+    /* repeat(0, …) is invalid, and would drop the whole template. */
+    .sherpa-grid[data-rows='fit'][data-row-count='1'] {
+      grid-template-rows: 1fr;
     }
     /* The filler, named by data-grow; with none, the LAST child fills.
        Its FLOOR is two grid rows: below that there is no room for a header and
@@ -1595,7 +1599,7 @@ const gridUtilityBlock = `  /* Layout grid — the track system views place thei
     .sherpa-grid[data-rows='fit'] > [data-grow],
     .sherpa-grid[data-rows='fit']:not(:has(> [data-grow])) > :last-child {
       min-block-size: calc(
-        2 * var(--sherpa-layout-grid-row-height, 64px)
+        2 * var(--sherpa-layout-grid-row-height, 88px)
         + var(--sherpa-layout-grid-gap-vertical, 16px)
       );
       block-size: 100%;

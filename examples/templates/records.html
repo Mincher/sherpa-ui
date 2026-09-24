@@ -1,12 +1,11 @@
 <!-- Content-only markup for the "records" Context, injected into the app-shell's
      content slot by the SPA router. contexts/records.js wires the data.
      No section header: the APP HEADER owns the Context's name. -->
-<!-- data-rows="fit": the rows hug their content and the LAST card takes the
-     remainder, so the Context fills the content area and nothing scrolls but the
-     grid inside its own card. The ELEMENT measures its own row count — there is
-     nothing for the Context script to wire.
+<!-- data-rows="fit": every row is one metric tall and the LAST row takes the
+     rest, so the Context fills the content area and nothing scrolls but the
+     grid inside its own card. Six rows: metrics 1, charts 4, the records card 1.
      TRAP T-a-content-grid-has-two-row-modes -->
-<sherpa-layout-grid data-rows="fit">
+<sherpa-layout-grid data-rows="fit" data-row-count="6">
   <!-- SUMMARIES OF THE SAME ROWS. Every one is bound to the Context's DataSource
        with an `as` adapter, so a filter set anywhere re-computes all of them.
        Nothing here is hardcoded and nothing recounts by hand.
@@ -16,7 +15,7 @@
   <sherpa-metric id="m-seats" data-col-span="xsmall"></sherpa-metric>
   <sherpa-metric id="m-tickets" data-col-span="xsmall"></sherpa-metric>
 
-  <sherpa-container data-col-span="medium" data-row-span="6">
+  <sherpa-container data-col-span="medium" data-row-span="4">
     <sherpa-container-header slot="header" data-heading="By status"></sherpa-container-header>
     <sherpa-barchart id="r-bar" data-legend="horizontal">
       <sherpa-chart-legend slot="legend" id="r-bar-legend"
@@ -24,7 +23,7 @@
     </sherpa-barchart>
   </sherpa-container>
 
-  <sherpa-container data-col-span="medium" data-row-span="6">
+  <sherpa-container data-col-span="medium" data-row-span="4">
     <sherpa-container-header slot="header" data-heading="By plan"></sherpa-container-header>
     <!-- No data-label: the centre TOTALS what the ring draws, so it follows
          every filter. TRAP T-the-centre-totals-what-the-ring-draws -->
@@ -35,7 +34,7 @@
   </sherpa-container>
 
   <!-- The gauge's legend names its ZONES, not a series, so it is read-only. -->
-  <sherpa-container data-col-span="medium" data-row-span="6">
+  <sherpa-container data-col-span="medium" data-row-span="4">
     <sherpa-container-header slot="header" data-heading="Mean risk"></sherpa-container-header>
     <sherpa-gauge-chart
       id="r-gauge"

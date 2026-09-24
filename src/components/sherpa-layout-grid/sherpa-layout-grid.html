@@ -8,12 +8,12 @@
 
   Children stay in the LIGHT DOM, so every `.sherpa-grid > [data-col-span]` rule
   applies to them unchanged. A `<div class="sherpa-grid">` still works; this
-  element adds the one thing markup cannot do — the fit row count.
+  element adds the one thing markup cannot do — each child's grouped position.
 
   Public API:
     data-col-count   override the breakpoint's column count (1|2|3|4|5|6|8|10|12)
-    data-row-count   set an explicit row count (1|2|3|4|5|6|8|10|12)
-    data-rows        fit — rows hug their content and one child takes the rest
+    data-row-count   set an explicit row count (1|2|3|4|5|6|8|10|12); a fit grid needs it
+    data-rows        fit — every row one grid row tall, and the LAST row takes the rest
                    | fixed — every row is one grid row tall
     data-grow        on a CHILD: the item that takes the remaining height
 -->

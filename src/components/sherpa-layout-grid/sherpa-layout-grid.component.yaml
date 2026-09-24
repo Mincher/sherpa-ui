@@ -34,15 +34,15 @@ props:
     type: string
     observed: false
     kind: style
-    description: set an explicit row count (1|2|3|4|5|6|8|10|12)
+    description: set an explicit row count (1|2|3|4|5|6|8|10|12); a fit grid needs it
   - $type: prop
     name: data-rows
     type: string
     observed: false
     kind: style
     description: >-
-      fit — rows hug their content and one child takes the rest | fixed — every row is one grid row
-      tall
+      fit — every row one grid row tall, and the LAST row takes the rest | fixed — every row is one
+      grid row tall
 states:
   - $type: state
     name: grouped
@@ -61,6 +61,6 @@ $extensions:
         component" rule; a util component is the exception that rule needed. The element does NOT
         re-declare the tracks — the host wears the projected `.sherpa-grid` class so a re-projection
         reaches it unchanged, and its children stay in the light DOM so every `.sherpa-grid >
-        [data-col-span]` rule still matches. What it adds is `--_fit-rows` for `data-rows="fit"`,
-        which CSS cannot compute and an app previously had to wire by hand with `bindFitGrid`. A
-        `sherpa-layout-canvas` is planned alongside it, on the same footing.
+        [data-col-span]` rule still matches. What it adds is each child's `data-group` for
+        `data-grouped`, which CSS cannot compute. A fit grid needs no JS since 2026-09-24: its row
+        count is authored. A `sherpa-layout-canvas` is planned alongside it, on the same footing.

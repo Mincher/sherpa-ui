@@ -1,14 +1,13 @@
 /**
- * sherpa-layout-grid — the layout grid, with its row count measured for it.
+ * sherpa-layout-grid — the layout grid, with its grouped positions measured.
  *
  * The tracks are CSS (`.sherpa-grid`, projected from Figma). This file supplies
- * only `--_fit-rows`, which `data-rows="fit"` cannot work out in CSS, and binds
- * it for the lifetime of the element.
+ * only each child's `data-group`, which `data-grouped` cannot work out in CSS.
  *
  * Fires: nothing — a grid has no interactions of its own.
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
-import { bindFitGrid } from './fit-grid.js';
+import { bindGroupedGrid } from './grouped-grid.js';
 
 export class SherpaLayoutGrid extends SherpaElement {
   static override css = new URL('./sherpa-layout-grid.css', import.meta.url);
@@ -44,8 +43,8 @@ export class SherpaLayoutGrid extends SherpaElement {
      router detaches and re-attaches kept a signal already aborted and silently
      stopped re-measuring. TRAP T-abort-controller-per-connect */
   override onConnect(): void {
-    // The one number CSS cannot work out. TRAP T-a-fit-grid-needs-its-row-count
-    bindFitGrid(this, { signal: this.signal });
+    // TRAP T-a-wrapping-span-hides-its-own-row
+    bindGroupedGrid(this, { signal: this.signal });
   }
 }
 
