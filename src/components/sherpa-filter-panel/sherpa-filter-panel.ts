@@ -122,6 +122,8 @@ export class SherpaFilterPanel extends SherpaElement {
   #baseline = new Map<string, string[]>();
   /** The scopes as last given. */
   #scopes: PanelScope[] = [];
+  /** Which removable ids each scope's Add menu was told about. */
+  #addable = new Map<string, string[]>();
 
   override onRender(): void {
     this.$('.head')?.addEventListener('header-dismiss', this.#onClose);
@@ -280,10 +282,25 @@ export class SherpaFilterPanel extends SherpaElement {
         if (drawn) box.append(drawn);
       }
 
-      const add = box.querySelector('.scope-add');
+      /* THE ADD MENU IS THE LIST. Ticked means held, unticked means gone — so
+         a reader adds and removes in one place instead of hunting a per-field
+         bin. Only a REMOVABLE field is listed: the rest are the scope's own
+         and a tick that cannot be cleared is a lie.
+         TRAP T-the-add-menu-is-the-whole-list */
       const offers = scope.available ?? [];
-      box.toggleAttribute('data-can-add', offers.length > 0);
-      if (offers.length && add) this.#fillAdd(add as HTMLElement, offers);
+      /* PRESETS TOO, each as its own row. A preset is a filter a reader turns
+         on; that it answers yes/no rather than with values changes nothing
+         about whether the scope holds it. */
+      const removable = [...presets, ...fields].filter((f) => f.removable);
+      /* WHAT THE MENU WAS TOLD, kept. `#held` knows a preset only as the
+         `presets` SECTION it was drawn in, so it cannot say which ones are
+         held. TRAP T-the-add-menu-is-the-whole-list */
+      this.#addable.set(scope.scope, removable.map((f) => f.id));
+      const add = box.querySelector('.scope-add');
+      box.toggleAttribute('data-can-add', offers.length + removable.length > 0);
+      if (add && (offers.length || removable.length)) {
+        this.#fillAdd(add as HTMLElement, removable, offers);
+      }
 
       /* An empty scope SAYS SO. Absent, it reads as a bug rather than as an
          answer — and a scope can legitimately be empty. */
@@ -372,13 +389,11 @@ export class SherpaFilterPanel extends SherpaElement {
        TRAP T-a-hidden-sibling-still-counts-as-first-child */
     if (!box.hasAttribute('data-conditional-ok')) box.querySelector('.field-conditional')?.remove();
     if (!box.hasAttribute('data-clearable')) box.querySelector('.field-clear')?.remove();
-    if (!box.hasAttribute('data-removable')) box.querySelector('.field-remove')?.remove();
 
     const head = box.querySelector('.field-head');
     head?.setAttribute('data-heading', def.label);
     const name = def.label;
     head?.querySelector('.field-clear')?.setAttribute('aria-label', `Clear ${name}`);
-    head?.querySelector('.field-remove')?.setAttribute('aria-label', `Remove ${name}`);
     head?.querySelector('.field-conditional')
       ?.setAttribute('aria-label', `Use a condition for ${name}`);
 
@@ -467,8 +482,9 @@ export class SherpaFilterPanel extends SherpaElement {
     }
   }
 
-  /** Hand the Add button its menu of what is left to add. */
-  #fillAdd(btn: HTMLElement, offers: PanelFilter[]): void {
+  /** Hand the Add button the WHOLE list: what is held, ticked, and what is not.
+   *  TRAP T-the-add-menu-is-the-whole-list */
+  #fillAdd(btn: HTMLElement, held: PanelFilter[], offers: PanelFilter[]): void {
     const menu = document.createElement('sherpa-menu');
     menu.setAttribute('slot', 'menu');
     menu.setAttribute('data-heading', 'Add filter');
@@ -480,9 +496,10 @@ export class SherpaFilterPanel extends SherpaElement {
     // TRAP T-custom-element-upgrade
     void Promise.resolve((menu as HTMLElement & { rendered?: Promise<void> }).rendered)
       .then(() => {
-        (menu as HTMLElement & { items?: (i: unknown[]) => void }).items?.(
-          offers.map((f) => ({ value: f.id, label: f.label })),
-        );
+        (menu as HTMLElement & { items?: (i: unknown[]) => void }).items?.([
+          ...held.map((f) => ({ value: f.id, label: f.label, selected: true })),
+          ...offers.map((f) => ({ value: f.id, label: f.label, selected: false })),
+        ]);
       });
   }
 
@@ -527,8 +544,6 @@ export class SherpaFilterPanel extends SherpaElement {
     if (cond) return this.#flipCondition(cond);
     const clear = this.#pathFind(event, '.field-clear');
     if (clear) return this.#clearField(clear);
-    const remove = this.#pathFind(event, '.field-remove');
-    if (remove) return this.#removeField(remove);
   };
 
   /** The `Held` a CHIP belongs to.
@@ -615,14 +630,6 @@ export class SherpaFilterPanel extends SherpaElement {
     }
   }
 
-  /** The HOST owns the list of fields, so a Remove is a request.
-   *  TRAP T-a-panel-adds-through-the-bar-that-owns-the-list */
-  #removeField(btn: HTMLElement): void {
-    const held = this.#fieldOf(btn);
-    if (!held) return;
-    this.emit('filter-remove', { scope: held.scope, id: held.def.id });
-  }
-
   /** The Add menu committed. The HOST owns the list; this is a request. */
   #onAddCommit = (event: Event): void => {
     /* A CHIP's own menu applying is the panel applying. Group, Sort and Date
@@ -648,10 +655,19 @@ export class SherpaFilterPanel extends SherpaElement {
 
     const btn = this.#pathFind(event, '.scope-add');
     if (!btn) return;
-    const ids = ((event as CustomEvent).detail?.values ?? []) as string[];
-    if (!ids.length) return;
     const scope = btn.closest('.scope')?.getAttribute('data-scope') ?? '';
-    this.emit('filter-add-request', { scope, ids });
+    const want = new Set(((event as CustomEvent).detail?.values ?? []) as string[]);
+
+    /* TICKED IS HELD. The menu lists the whole scope, so what changed is the
+       difference between what it now says and what the panel is drawing — a
+       row unticked is a REMOVE, and that is the only way to remove one.
+       TRAP T-the-add-menu-is-the-whole-list */
+    const held = new Set(this.#addable.get(scope) ?? []);
+    const added = [...want].filter((id) => !held.has(id));
+    const gone = [...held].filter((id) => !want.has(id));
+
+    if (added.length) this.emit('filter-add-request', { scope, ids: added });
+    for (const id of gone) this.emit('filter-remove', { scope, id });
   };
 
   /** ONE search, across every value in the panel. Field labels stay: a reader

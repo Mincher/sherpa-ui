@@ -82,9 +82,11 @@ test('a scope draws its presets, its fields, and nothing it cannot', async ({ pa
   expect(r['presets']).toEqual(['at-risk', 'unassigned']);
   expect(r['presetOn']).toEqual(['unassigned']);
 
-  // Owner asked for conditions, not Remove. Status asked for Remove.
+  /* Owner asked for conditions. NEITHER has a Remove: the scope's Add menu is
+     the whole list and unticking a row removes it.
+     TRAP T-the-add-menu-is-the-whole-list */
   expect(r['ownerActions']).toEqual(['conditional', 'clear']);
-  expect(r['statusActions']).toEqual(['clear', 'remove']);
+  expect(r['statusActions']).toEqual(['clear']);
   // A PRESETS section has no field to clear or remove.
   expect(r['presetActions']).toEqual([]);
 
@@ -241,10 +243,12 @@ test('the search matches values everywhere, and keeps the labels', async ({ page
 });
 
 /**
- * REMOVE AND ADD ARE REQUESTS. The HOST owns the list of fields.
+ * THE ADD MENU IS THE WHOLE LIST — ticked is held, unticked is gone — and both
+ * are REQUESTS. The HOST owns the list of fields.
+ * TRAP T-the-add-menu-is-the-whole-list
  * TRAP T-a-panel-adds-through-the-bar-that-owns-the-list
  */
-test('Remove and Add report, and change nothing by themselves', async ({ page }) => {
+test('the Add menu adds AND removes, and changes nothing by itself', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     const heard = [];
@@ -252,26 +256,32 @@ test('Remove and Add report, and change nothing by themselves', async ({ page })
       el.addEventListener(n, (e) => heard.push([n, e.detail]));
     }
 
-    press('.field[data-field="status"] .field-remove');
-    await new Promise((r) => setTimeout(r, 120));
-    const afterRemove = q('.field').map((f) => f.dataset.field);
+    // WHAT THE MENU HOLDS: every removable field, the held ones ticked.
+    const menu = sr.querySelector('.scope[data-scope="data"] .scope-add sherpa-menu');
+    await new Promise((r) => setTimeout(r, 200));
+    const rows = [...menu.querySelectorAll('.menu-row')]
+      .filter((row) => !row.matches('.qf-all, .menu-all'))
+      .map((row) => [row.querySelector('input').value, row.querySelector('input').checked]);
 
-    sr.querySelector('.scope[data-scope="data"] .scope-add sherpa-menu')
-      .dispatchEvent(new CustomEvent('menu-change', {
-        bubbles: true, composed: true, detail: { values: ['seats'] },
-      }));
+    /* SEATS ticked, STATUS unticked — one of each, in one commit. */
+    menu.dispatchEvent(new CustomEvent('menu-change', {
+      bubbles: true, composed: true, detail: { values: ['seats'] },
+    }));
     await new Promise((r) => setTimeout(r, 120));
 
-    return { heard, afterRemove };
-  })()`) as { heard: [string, unknown][]; afterRemove: string[] };
+    return { heard, rows, after: q('.field').map((f) => f.dataset.field) };
+  })()`) as { heard: [string, unknown][]; rows: [string, boolean][]; after: string[] };
+
+  // The held field is TICKED; what is left to add is not.
+  expect(r.rows).toEqual([['status', true], ['seats', false]]);
 
   expect(r.heard).toEqual([
-    ['filter-remove', { scope: 'data', id: 'status' }],
     ['filter-add-request', { scope: 'data', ids: ['seats'] }],
+    ['filter-remove', { scope: 'data', id: 'status' }],
   ]);
   /* The field is STILL THERE. A component that removed it would be deciding
      what the host's list holds. */
-  expect(r.afterRemove).toEqual(['organise', 'presets', 'status', 'owner']);
+  expect(r.after).toEqual(['organise', 'presets', 'status', 'owner']);
 });
 
 /**

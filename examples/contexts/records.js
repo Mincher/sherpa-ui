@@ -221,9 +221,11 @@ export async function init(root, { session } = {}) {
     /* Three TOGGLES, each a question the data answers yes or no, and none of
        them a field a menu chip below also filters.
        TRAP T-a-toggle-is-a-clause-not-a-value */
-    { id: 'has-tickets', label: 'Open tickets', type: 'data' },
-    { id: 'at-risk',     label: 'At risk',      type: 'data' },
-    { id: 'unassigned',  label: 'Unassigned',   type: 'data' },
+    /* "Has open tickets", not "Open tickets": the number FIELD carries that
+       name, and the two now sit in one add/remove list. */
+    { id: 'has-tickets', label: 'Has open tickets', type: 'data', removable: true },
+    { id: 'at-risk',     label: 'At risk',      type: 'data', removable: true },
+    { id: 'unassigned',  label: 'Unassigned',   type: 'data', removable: true },
     /* The STATUS legend's menu. A multi-select over the same field the bar
        chart splits on, so unticking a value and dimming its legend row are the
        same gesture. Not the four toggles above: those are one-tap presets, and

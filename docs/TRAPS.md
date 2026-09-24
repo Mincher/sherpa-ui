@@ -8311,6 +8311,28 @@ for as long as every section holds one thing.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
+### T-the-add-menu-is-the-whole-list
+
+A filter panel's scope had an Add menu of what was LEFT to add, and a bin icon
+on every field row. Two controls, two places, one question.
+
+The Add menu is the whole list instead: every filter the scope can hold, with
+the held ones ticked. Ticking a row adds it; unticking removes it. What changed
+is the difference between what the menu now says and what the panel is drawing,
+so a reader never hunts for where a filter is removed.
+
+Only a REMOVABLE field is listed. A scope's own fixed filters stay off the menu
+— a tick that cannot be cleared is a lie, and disabling it would say the same
+thing more quietly.
+
+The TOOLBAR's chip menus keep their own Remove in the footer. A chip is the
+filter, so removing it from its own menu is where a reader looks; the panel is
+a list of them, so the list is where they are managed. Will's ruling
+2026-09-24.
+
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+
 ### T-the-field-type-decides-the-clause
 
 The data layer had no idea what KIND a field was. `OPS_FOR_TYPE` named three
