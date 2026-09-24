@@ -67,6 +67,9 @@ export class SherpaQuickFilter extends SherpaElement {
     'data-locked': DATA_PROPS['data-locked'],
     /* The chip stays on the bar when off, instead of being removed. */
     'data-persistent': { type: 'boolean', kind: 'style' },
+    /* GROUP or SORT — it arranges rows, it does not choose them. Written by
+       the HOST that builds it. TRAP T-an-organise-chip-has-no-values */
+    'data-organise': { type: 'boolean', kind: 'style' },
   } as const;
 
   // data-label is hand-written: an absent attribute must leave the template's
@@ -330,7 +333,12 @@ export class SherpaQuickFilter extends SherpaElement {
   }
 
   #syncEmpty(): void {
-    if (this.hasAttribute('data-persistent') || this.hasAttribute('data-locked')) {
+    /* `data-empty` means ON BUT FILTERING NOTHING. An organise chip never
+       filters, so the question does not apply — and its menu picks a COLUMN,
+       which reads as zero values the moment nothing is chosen.
+       TRAP T-an-organise-chip-has-no-values */
+    if (this.hasAttribute('data-persistent') || this.hasAttribute('data-locked')
+      || this.hasAttribute('data-organise')) {
       this.removeAttribute('data-empty');
       return;
     }

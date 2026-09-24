@@ -1412,6 +1412,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        the INVERSE of what it now says. */
     const wasLive = !chip.hasAttribute('data-current');
     const column = this.#menuValue('sort') ?? '';
+    /* NO COLUMN, NOTHING TO CYCLE — the same guard #toggleGroup has. Without
+       it `nextSort('', '', 'asc')` answers `desc` and the chip lights up
+       sorting by nothing. TRAP T-an-organise-chip-has-no-values */
+    if (!column) {
+      chip.removeAttribute('data-current');
+      this.#syncSortLabel(chip);
+      return;
+    }
     /* SUSPENDED is a NULL direction — `data-direction` REMEMBERS the direction,
        not whether it runs. */
     const held = wasLive ? (sortDirectionFrom(chip.dataset['direction']) ?? 'asc') : null;
@@ -1799,6 +1807,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (!chip) throw new Error('sherpa-quick-filter-toolbar: template.qf-tpl is missing or empty');
     chip.classList.remove('chip');
     chip.classList.add('organise-chip');
+    chip.setAttribute('data-organise', '');
     chip.dataset['id'] = id;
     chip.setAttribute('data-label', label);
     chip.setAttribute('data-icon-start', icon);

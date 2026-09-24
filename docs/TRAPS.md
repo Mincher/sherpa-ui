@@ -8345,6 +8345,32 @@ memory so one more click resumes it. TRAP T-grid-suspend-is-not-clear
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
+### T-an-organise-chip-has-no-values
+
+`data-empty` means ON BUT FILTERING NOTHING, and `state-pins.yaml` paints
+`[data-current][data-empty]` AMBER. An organise chip never filters, so the
+question does not apply to it — but it IS a `sherpa-quick-filter` with a menu,
+and that menu picks a COLUMN. `menu.values` reads ticked inputs, so a Sort chip
+with no column chosen reports zero values and the chip is judged empty.
+
+Will, three times: *"Still seeing weird warning status styling being applied to
+chips randomly"*, then *"I loaded the page, removed a data grid filter from the
+panel, and the sort chip got a yellow border applied."*
+
+The trigger is that `data-current` has **26 writers outside the chip** — 16 in
+the toolbar, 10 in the panel — and only `#toggleGroup` checked the menu first.
+`#cycleSort` did not: with no column, `nextSort('', '', 'asc')` answers `desc`,
+so the chip lit up sorting by nothing. Any of the other 24 can do the same.
+
+Chasing the writers is the wrong fix; there is a 27th tomorrow. The chip is
+marked `data-organise` where it is BUILT, and the empty test skips it the way
+it already skips `data-persistent` and `data-locked`.
+
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-organise-chip-never-amber.spec.ts`
+
 ### T-the-add-menu-is-the-whole-list
 
 A filter panel's scope had an Add menu of what was LEFT to add, and a bin icon

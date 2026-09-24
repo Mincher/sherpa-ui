@@ -160,6 +160,15 @@ props:
     default: false
     description: Figma State=menu — snap on the caret button
   - $type: prop
+    name: data-organise
+    type: string
+    observed: false
+    kind: style
+    description: >-
+      this chip ARRANGES rows — Group or Sort — it does not choose them. Set by the toolbar and the
+      filter panel where the chip is built. Its menu picks a COLUMN, so it reads as zero values and
+      would take the same amber warning; it never applies.
+  - $type: prop
     name: data-panelled
     type: string
     observed: false
