@@ -8,7 +8,7 @@ Status: `[ ]` open · `[~]` in progress · `[x]` done
 
 ## At a glance
 
-**35 numbered items · 12 done · 1 parked · 2 unclear · 20 open.** Numbers are the spine; the waves below
+**36 numbered items · 12 done · 1 parked · 2 unclear · 21 open.** Numbers are the spine; the waves below
 say what order. Anything not numbered is a sub-item of the section it sits in.
 
 | | # | Item | Wave |
@@ -48,6 +48,7 @@ say what order. Anything not numbered is a sub-item of the section it sits in.
 | ⛔ | 33 | Density scaling as step offsets — **part done**, rest blocked | 11 |
 | | 34 | Figma: use the Navigation terms | 11 |
 | | 35 | Layout grid: plain grid templates, not a re-invented grid? | 10 |
+| | 36 | CSS: compiled where it should inherit? | 11 |
 
 **Not blocked — and the values ARE readable live.** Items 3 and 33 needed
 values from `figma.extensions.json`. They are not on the variable, which is why
@@ -224,6 +225,7 @@ Last, because they touch everything and block nothing.
 | ~~32~~ | ~~Fold donut + gauge~~ — DONE 2026-09-24. One ring; the gauge shares its pen |
 | 33 | Two scaling multipliers, in place of the remapped density modes |
 | 34 | Figma: use the Navigation terms |
+| 36 | CSS: compiled where it should inherit? |
 
 Item 29 dead last. It is a rename across the whole repo, so it is cheapest when
 no other work is in flight.
@@ -1005,6 +1007,24 @@ breakpoint; the fit grid's last row must take the rest) before building.
 ---
 
 ## Architecture — component boundaries
+
+### `[ ]` CSS: compiled where it should inherit?
+
+Will, 2026-09-24: the system is designed on INHERITANCE — `sherpa-element` and
+`sherpa-base.css` hold the core logic and styling every component inherits — so
+why is so much of the CSS compiled?
+
+Two things are generated today:
+
+- **State pins.** `scripts/figma-data/state-pins.yaml` writes rules into
+  `tokens.css` and `sherpa-style-modes.css`. One line per state becomes ~21
+  re-pointed Style names, because CSS has no mixin to say "use mode X". The
+  values still reach every part by inheritance when the page runs.
+- **The dist transform.** PostCSS (preset-env, autoprefixer, cssnano) rewrites
+  every component sheet on build.
+
+Find what can move into `sherpa-base.css` / `sherpa-element` as inherited rules,
+and what genuinely needs a generator.
 
 ### `[x]` Donut is now sherpa-radial-chart — DONE 2026-09-24
 
