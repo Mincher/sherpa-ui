@@ -404,3 +404,85 @@ test('the tile draws its Figma fill AND its border', async ({ page }) => {
      TRAP T-a-sub-pixel-border-reads-back-as-1px */
   for (const w of r.widths) expect(parseFloat(w)).toBeGreaterThan(0);
 });
+
+/**
+ * A tile's TREND is derived from its series, so it must follow the data layer —
+ * a filter that moves the value moves the trend, the delta and the status with
+ * it. Reported as broken; measured here end to end against a real DataSource.
+ * TRAP T-a-delta-is-derived-not-declared
+ */
+test('the trend, delta and status all follow a filter', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { ArrayStore, DataSource, seriesBy, deltaPercent } = await import(
+      '/dist/data.js'
+    ) as typeof import('../../src/data.js');
+
+    /* Two regions with OPPOSITE shapes over twelve months: EMEA climbs 1..12,
+       AMER falls 12..1. Together they are flat, so each filter must flip the
+       trend rather than merely rescale it. */
+    const rows: Record<string, unknown>[] = [];
+    for (let m = 1; m <= 12; m++) {
+      const mm = `2024-${String(m).padStart(2, '0')}`;
+      for (let i = 0; i < m; i++) rows.push({ id: `e${mm}${i}`, created: `${mm}-01`, region: 'EMEA' });
+      for (let i = 0; i < 13 - m; i++) rows.push({ id: `a${mm}${i}`, created: `${mm}-01`, region: 'AMER' });
+    }
+
+    const src = new DataSource({ store: new ArrayStore(rows, { key: 'id' }) });
+    await src.ready;
+    src.declareValues('region', ['EMEA', 'AMER']);
+
+    const el = document.createElement('sherpa-metric') as HTMLElement & {
+      rendered?: Promise<void>;
+    };
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+
+    const MONTHS = Array.from({ length: 12 }, (_, i) => `2024-${String(i + 1).padStart(2, '0')}`);
+    src.bind(el, {
+      readonly: true,
+      // A summary counts ALL the rows, never the page.
+      scope: 'all',
+      as: (rs: Record<string, unknown>[]) => {
+        const withMonth = rs.map((x) => ({ ...x, month: String(x['created']).slice(0, 7) }));
+        const values = seriesBy(withMonth, 'month', MONTHS, 'series', { kind: 'count' }).values;
+        return { label: 'Rows', value: rs.length, values,
+                 deltaPercent: deltaPercent(values) ?? undefined };
+      },
+    });
+
+    const settle = (): Promise<void> => new Promise((res) => { setTimeout(res, 250); });
+    await settle();
+    const snap = (): Record<string, string | undefined> => ({
+      value: el.shadowRoot!.querySelector('.value')?.textContent?.trim(),
+      trend: el.dataset['trend'],
+      delta: el.dataset['delta'],
+      status: el.dataset['status'],
+    });
+
+    const all = snap();
+    src.select('region', ['EMEA']);
+    await settle();
+    const emea = snap();
+    src.select('region', ['AMER']);
+    await settle();
+    const amer = snap();
+    return { all, emea, amer };
+  });
+
+  // Both shapes together cancel out.
+  expect(r.all.value).toBe('156');
+  expect(r.all.trend).toBe('flat');
+
+  // The RISING half: same row count, opposite trend.
+  expect(r.emea.value).toBe('78');
+  expect(r.emea.trend).toBe('up');
+  expect(r.emea.status).toBe('success');
+  expect(r.emea.delta?.startsWith('+')).toBe(true);
+
+  // The FALLING half — and this is the point: the value is identical, so only a
+  // trend that followed the DATA could tell the two apart.
+  expect(r.amer.value).toBe('78');
+  expect(r.amer.trend).toBe('down');
+  expect(r.amer.status).toBe('critical');
+  expect(r.amer.delta?.startsWith('-')).toBe(true);
+});

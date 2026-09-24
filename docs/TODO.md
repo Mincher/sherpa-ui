@@ -8,7 +8,7 @@ Status: `[ ]` open · `[~]` in progress · `[x]` done
 
 ## At a glance
 
-**34 numbered items · 12 done · 1 parked · 1 unclear · 20 open.** Numbers are the spine; the waves below
+**34 numbered items · 12 done · 1 parked · 2 unclear · 19 open.** Numbers are the spine; the waves below
 say what order. Anything not numbered is a sub-item of the section it sits in.
 
 | | # | Item | Wave |
@@ -24,7 +24,7 @@ say what order. Anything not numbered is a sub-item of the section it sits in.
 | ✅ | 9 | Pagination row-count select is not a Sherpa select | 2 |
 | ✅ | 10 | Notifications button — swept, 4 components fixed | 3 |
 | ⏸️ | 11 | Button borders and status — **parked**, overlaps CSS-inheritance work | 3 |
-| | 12 | Metric trend does not update after a data-layer change | 4 |
+| ❓ | 12 | Metric trend — **works when measured**, may be the Apply step | 4 |
 | | 13 | Sparkline does not follow its record deltas | 4 |
 | | 14 | An example of real-time data (WebSocket) | 4 |
 | | 15 | Save a View, and the Save split-button menu | 5 |
@@ -702,11 +702,34 @@ engines. `T-a-native-select-keeps-its-own-shape`, which also records why the
 test does not assert the select's border COLOUR: WebKit reports `currentcolor`
 until a forced recalc, so asserting it tests the engine.
 
-### `[ ]` A metric trend does not update after a data-layer change
+### `[~]` A metric trend does not update after a data-layer change — WORKS 2026-09-24
 
 The trend direction icon and the trend label on the metric component do not
 update when the data layer transforms the records — a filter, for example. The
 total value moves; the trend does not follow it.
+
+**Could not reproduce; it follows correctly.** Measured on `?context=records`
+by ticking a Region value and pressing Apply:
+
+| tile | value | delta |
+|---|---|---|
+| Customers | 100 → **27** | −60% → **−50%** |
+| Total spend | $496,749 → **$119,110** | −78.3% → **−75.93%** |
+| Seats | 12,308 → **3,665** | −73.35% → **−56.93%** |
+| Open tickets | 456 → **129** | −72.09% → **−55.56%** |
+
+The trend DIRECTION stayed `down` because EMEA genuinely still falls — correct,
+not stuck. Proved separately with a fixture of two regions with opposite shapes:
+same row count either way, and the trend flips `up` / `down` with the status and
+the sign of the delta. That test is now in `reforged-metric.spec.ts`.
+
+**Why it may have looked broken.** The Region menu COMMITS — `data-commit`, so a
+tick is a draft until Apply. Ticking a value and watching the tiles shows
+nothing move, because no filter has been applied yet. That cost me three probes
+before I noticed.
+
+**If it is still wrong, say which control.** A chip that applies on tick and
+does not move the tiles would be a different fault from the one described.
 
 ### `[ ]` A sparkline does not follow its record deltas
 
