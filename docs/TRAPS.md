@@ -7312,6 +7312,39 @@ own TS maintains it, and it is a collapse toggle rather than a menu.
 
 - Site: `src/components/sherpa-button/sherpa-button.ts`
 
+### T-an-allow-list-is-a-filter-not-an-order
+
+An allow-list says WHICH, never in what sequence. Returning the list's order
+silently replaces whatever order the items already had — a component that sorts
+its own options would have that sort overwritten by a caller's typing order, and
+nothing would report it.
+
+`allow(items, list)` therefore filters `items` and keeps THEIR order. The test
+writes its list backwards on purpose.
+
+**No list allows everything.** `null` and `undefined` mean "no list", so a
+component that never hears about this behaves exactly as before. An EMPTY array
+is a list that names no one, and allows nothing — the two are different, and
+collapsing them would either break every existing caller or make an empty list
+useless.
+
+An item is named by `id`, then `value`, then `field`, then `valueKey` — first
+present wins, so a filter def and the bare field name it is listed under still
+meet. A list entry naming nothing is REPORTED by `unknownEntries()` rather than
+thrown: a stale entry should not stop the other nine working.
+
+`nextState(states, current)` is the same primitive on the STATES axis, and it is
+why a two-state toggle and a tri-state cycle are the same control — the
+component steps the list it was given and does not care how long it is. An
+unknown current state starts the cycle rather than stranding the control, which
+is what happens when a value is removed from the list while something still
+holds it.
+
+- Site: `src/core/data/allow.ts`
+- Site: `test/unit/allow-list.test.mjs`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+
 ### T-a-full-range-is-still-a-range
 
 A NUMBER filter's slider opened at the column's own min and max, and the menu

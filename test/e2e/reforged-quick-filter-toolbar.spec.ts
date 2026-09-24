@@ -2395,3 +2395,73 @@ test('a persistent chip is LOCKED, so one click writes data-current once', async
   expect(r.writes).toBe(0);
   expect(r.current).toBe(true);
 });
+
+/**
+ * The allow-list on the FIELDS axis. A context, a role or a fetch decides what
+ * a reader may filter by, and the bar needs no branch for who is looking.
+ * No list is the default, so a caller that never sets one sees no change.
+ * TRAP T-an-allow-list-is-a-filter-not-an-order
+ */
+test('allowFields limits the chips AND the Add menu, and null restores both', async ({
+  page,
+}) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+      available(d: unknown): void;
+      allowFields(list: readonly unknown[] | null): void;
+    };
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate([
+      { id: 'status', label: 'Status', active: true },
+      { id: 'plan', label: 'Plan', active: true },
+      { id: 'owner', label: 'Owner', active: true },
+    ]);
+    el.available([
+      { id: 'seats', label: 'Seats', kind: 'number' },
+      { id: 'spend', label: 'Spend', kind: 'number' },
+    ]);
+    const settle = async (): Promise<void> => {
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await new Promise((res) => setTimeout(res, 200));
+    };
+    await settle();
+
+    const chips = (): string[] =>
+      [...el.shadowRoot!.querySelectorAll<HTMLElement>('.chips > .chip')].map(
+        (c) => c.dataset['id'] ?? '',
+      );
+    // The select-all row is not an offer, so it is dropped.
+    const offers = (): string[] => {
+      const m = el.shadowRoot!.querySelector('.add-btn sherpa-menu');
+      return m
+        ? [...m.querySelectorAll<HTMLInputElement>('input')]
+            .map((i) => i.value)
+            .filter((v) => v !== 'on')
+        : [];
+    };
+
+    const before = { chips: chips(), offers: offers() };
+    // Written BACKWARDS on purpose: the list says which, never in what order.
+    el.allowFields(['seats', 'plan', 'status']);
+    await settle();
+    const limited = { chips: chips(), offers: offers() };
+    el.allowFields(null);
+    await settle();
+    const restored = { chips: chips(), offers: offers() };
+    return { before, limited, restored };
+  });
+
+  expect(r.before.chips).toEqual(['status', 'plan', 'owner']);
+  expect(r.before.offers).toEqual(['seats', 'spend']);
+
+  // `owner` is gone from the bar; `spend` is gone from Add. Order is the BAR's.
+  expect(r.limited.chips).toEqual(['status', 'plan']);
+  expect(r.limited.offers).toEqual(['seats']);
+
+  // No list allows everything — the default cannot mean "nothing".
+  expect(r.restored.chips).toEqual(['status', 'plan', 'owner']);
+  expect(r.restored.offers).toEqual(['seats', 'spend']);
+});

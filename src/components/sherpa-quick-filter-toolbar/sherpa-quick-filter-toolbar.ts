@@ -6,6 +6,7 @@
 import { DATA_PROPS, SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
 import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
+import { allow, type AllowList } from '../../core/data/allow.js';
 import {
   DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES,
   type FilterClause, type FilterOp,
@@ -651,7 +652,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // TRAP T-custom-element-upgrade — `valueLabel` is a PROPERTY; writes are held
     // and replayed once the run is appended.
     const customLabels: Array<[HTMLElement, string]> = [];
-    for (const f of this.#filters) {
+    /* The allow-list applies to the chips already ON the bar, not only to what
+       Add offers: a field a reader may not filter by must not appear at all.
+       No list → every filter, which is the default. */
+    for (const f of allow(this.#filters, this.#allowedFields)) {
       const chip = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       const prior = live.get(f.id);
       chip.dataset['id'] = f.id;
@@ -1281,12 +1285,32 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#renderAvailable();
   }
 
+  /**
+   * allowFields([...]) — the ONLY fields this bar may offer, or `null` for all.
+   *
+   * A context, a role or a fetch decides what a reader may filter by; this bar
+   * does not need a branch for who is looking. No list is the default, so a
+   * caller that never sets one sees no change.
+   * TRAP T-an-allow-list-is-a-filter-not-an-order
+   */
+  allowFields(list: AllowList): void {
+    this.#allowedFields = list ?? null;
+    // RENDER FIRST: it replaces the chip run, and the Add button's menu is
+    // stamped into that same DOM. The other two callers order it this way too.
+    this.#render();
+    this.#renderAvailable();
+  }
+
+  /** The fields this bar may offer, or null for all. */
+  #allowedFields: AllowList = null;
+
   /** Stamp the Add button's menu from whatever is left to add. */
   #renderAvailable(): void {
     const add = this.$<HTMLElement>('.add-btn');
     if (!add) return;
     // Nothing left to add — disabled, not an empty list.
-    const any = this.#available.length > 0;
+    const offer = allow(this.#available, this.#allowedFields);
+    const any = offer.length > 0;
     this.toggleAttribute('data-can-add', any);
     add.toggleAttribute('disabled', !any);
     add.querySelector('sherpa-menu')?.remove();
@@ -1298,7 +1322,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // TRAP T-add-menu-batches — the one menu that KEEPS Apply: each tick stamps
       // a chip, so per-tick apply rebuilds the run mid-selection.
       commit: true,
-      options: this.#available.map((f) => ({ value: f.id, label: f.label })),
+      options: offer.map((f) => ({ value: f.id, label: f.label })),
     });
     // Its host is already in the page, so the items can go now.
     this.#flushItems();
@@ -1410,6 +1434,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const btn = this.$<HTMLElement>('.act[data-act="favourite"]');
     if (!btn) return;
     const on = this.hasAttribute('data-favourite');
+    // `active` is a real Style MODE; the adopted style-modes sheet paints it.
     // TRAP T-tokens-css-never-reaches-shadow — `active` is a real Style MODE,
     // which is why THIS sheet paints it.
     if (on) btn.setAttribute('data-status', 'active');

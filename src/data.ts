@@ -171,6 +171,18 @@ export {
   type SortState,
 } from './core/data/cycle.js';
 
+/* An optional allow-list on any axis a component offers. No list means
+   everything is allowed, so nothing that ignores this changes. */
+export {
+  allow,
+  isAllowed,
+  allowKey,
+  unknownEntries,
+  nextState,
+  type AllowEntry,
+  type AllowList,
+} from './core/data/allow.js';
+
 export {
   aggregateBy,
   countBy,
