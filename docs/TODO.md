@@ -8,7 +8,7 @@ Status: `[ ]` open · `[~]` in progress · `[x]` done
 
 ## At a glance
 
-**34 numbered items · 12 done · 1 parked · 2 unclear · 19 open.** Numbers are the spine; the waves below
+**35 numbered items · 12 done · 1 parked · 2 unclear · 20 open.** Numbers are the spine; the waves below
 say what order. Anything not numbered is a sub-item of the section it sits in.
 
 | | # | Item | Wave |
@@ -47,6 +47,7 @@ say what order. Anything not numbered is a sub-item of the section it sits in.
 | ✅ | 32 | Donut folded into `sherpa-radial-chart` | 11 |
 | ⛔ | 33 | Density scaling as step offsets — **part done**, rest blocked | 11 |
 | | 34 | Figma: use the Navigation terms | 11 |
+| | 35 | Layout grid: plain grid templates, not a re-invented grid? | 10 |
 
 **Not blocked — and the values ARE readable live.** Items 3 and 33 needed
 values from `figma.extensions.json`. They are not on the variable, which is why
@@ -208,6 +209,7 @@ must pass.
 | 25 | `sherpa-layout-canvas` + minimap |
 | 26 | A `Grouped` mode for the content area |
 | 27 | A consumer can supply their OWN templates and CSS |
+| 35 | Layout grid: plain grid templates, not a re-invented grid? |
 
 ### Wave 11 — the renames and the fold
 
@@ -961,6 +963,20 @@ So the work is not a new mode's CSS. It is deciding how the two wrappers meet:
 owns the joins. Either the layout grid gains a `data-grouped` that turns its own
 gaps to 0 and applies the group rules, or a group wraps a layout grid. Try both;
 the first is likely, because the gutter is the layout grid's to give up.
+
+### `[ ]` Layout grid: plain grid templates, not a re-invented grid?
+
+Will, 2026-09-24: are we re-inventing the wheel? A layout element could state its
+scenario with HTML attributes, and a CSS grid template (`grid-template-areas`,
+named lines) could set each one up.
+
+Today the scenario is spread over several parts: `data-rows` (fit / fixed),
+`data-row-count`, a named `data-col-span` per child, a `data-row-span` per
+child, and JS for `data-grouped`. A named template per scenario, with each child
+naming its AREA, might replace most of that — and the spans with it.
+
+Find out what it replaces and what it cannot do (the column spans re-scale per
+breakpoint; the fit grid's last row must take the rest) before building.
 
 ---
 
