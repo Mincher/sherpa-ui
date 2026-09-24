@@ -29,7 +29,7 @@
           "opacity": "{primitives::effects/opacity/0}"
         },
         "active": {
-          "ref": "{theme.surface.default.base}",
+          "ref": "{theme.surface.active.base}",
           "opacity": "{primitives::effects/opacity/0}"
         },
         "inactive": {
