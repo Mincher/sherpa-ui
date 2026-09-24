@@ -1,0 +1,96 @@
+<!--
+  sherpa-filter-panel — the filter toolbars, as a column.
+
+  A SIBLING of sherpa-quick-filter-toolbar over the same DataSource, never a
+  reader of one: it takes the same filter definitions and emits the same
+  `quick-filter-change`. TRAP T-the-panel-is-the-toolbar-in-a-column
+
+  One accordion per SCOPE. Inside each, a field is a section header with its
+  own actions above a wrapping run of boolean chips — one per value. ONE search
+  and ONE footer for the panel: Apply commits every field at once, and Discard
+  reverts to the last Apply.
+
+      const panel = document.querySelector('sherpa-filter-panel');
+      panel.populate([
+        { scope: 'view', label: 'View filters', filters: [...] },
+        { scope: 'data', label: 'Customer records', filters: [...] },
+      ]);
+      source.bind(panel, { steerOnly: true });
+
+  Public API:
+    data-heading    the panel's own title (default "Filters")
+    data-open       the panel is showing. A host writes it; the panel reports
+                    `filter-panel-close` and never hides itself, except below
+                    its breakpoint. TRAP T-the-panel-is-desktop-only
+    data-locked     the source owns the state — report, never set
+    data-min-width  the width below which the panel refuses to show, in px
+                    (default 1280). Filtering goes back to the toolbars there.
+
+  Slots:
+    (default)   extra content under the scopes
+
+  Fires:
+    quick-filter-change — Apply. detail: { scope, values, picked, clauses }
+    filter-panel-close — the header's close button. detail: {}
+    filter-add-request — the Add button committed. detail: { scope, ids }
+    filter-remove — a field's Remove. detail: { scope, id }
+-->
+<template id="default">
+  <sherpa-panel class="panel" part="panel">
+    <sherpa-container-header slot="header" class="head" part="head"
+                             data-icon="filter" data-dismissible>
+      <!-- ONE search, across every value in the panel. The metadata row is the
+           header's own bottom row, so it spans the full width. -->
+      <sherpa-input-text slot="metadata" class="search" part="search"
+                         data-icon-start="magnifying-glass"
+                         placeholder="Search filters" autocomplete="off"
+                         aria-label="Search every filter"></sherpa-input-text>
+    </sherpa-container-header>
+
+    <div class="scopes" part="scopes"></div>
+    <slot></slot>
+
+    <sherpa-container-footer slot="footer" class="foot" part="foot" data-align="end">
+      <!-- DISCARD, not Cancel: it reverts to the last Apply, not to nothing. -->
+      <sherpa-button class="discard" part="discard">Discard</sherpa-button>
+      <sherpa-button class="apply" part="apply" data-look="saturated">Apply</sherpa-button>
+    </sherpa-container-footer>
+  </sherpa-panel>
+
+  <!-- PROTOTYPES. Every element the panel will ever show exists here from the
+       start; JS clones, it never createElement()s. -->
+  <template class="scope-tpl">
+    <sherpa-accordion class="scope" open>
+      <sherpa-button slot="actions" class="scope-add" data-icon-start="plus">
+        Add filter
+      </sherpa-button>
+    </sherpa-accordion>
+  </template>
+
+  <template class="field-tpl">
+    <sherpa-stack class="field" data-gap="sm">
+      <sherpa-section-header class="field-head" data-size="sm" data-divider="none">
+        <sherpa-button slot="actions" class="field-conditional" data-type="icon"
+                       data-icon-start="sliders-up" aria-pressed="false"></sherpa-button>
+        <sherpa-button slot="actions" class="field-clear" data-type="icon"
+                       data-icon-start="arrow-rotate-left"></sherpa-button>
+        <sherpa-button slot="actions" class="field-remove" data-type="icon"
+                       data-icon-start="trash" data-status="critical"></sherpa-button>
+      </sherpa-section-header>
+      <!-- `hug`: each chip at its own width. Every other value STRETCHES its
+           items to share the line, which makes a chip read as a button. -->
+      <sherpa-stack class="field-values" data-direction="inline" data-gap="sm"
+                    data-wrap data-min-item="hug" data-align="start"></sherpa-stack>
+    </sherpa-stack>
+  </template>
+
+  <template class="value-tpl">
+    <sherpa-quick-filter class="value"></sherpa-quick-filter>
+  </template>
+
+  <!-- A scope with nothing to draw says so; empty, it reads as broken. -->
+  <template class="empty-tpl">
+    <sherpa-section-header class="scope-empty" data-size="sm" data-divider="none"
+                           data-heading="No filters here yet"></sherpa-section-header>
+  </template>
+</template>

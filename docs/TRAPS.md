@@ -56,6 +56,7 @@ attributes only, written before append.
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-app-header.spec.ts`
 - Site: `examples/contexts/filter-panel.js`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-tokens-css-never-reaches-shadow
 
@@ -2688,6 +2689,7 @@ root for the raw `<input>`: `sherpa-input-text` re-dispatches the inner
 control's `input`.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-cancel-baseline-captured-on-open
 
@@ -5171,6 +5173,8 @@ ignores the field WITHOUT clearing them, so `values` is what is applied and
 `pickedValues` what is remembered.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
 ### T-group-and-sort-are-component-scope
 
@@ -5190,6 +5194,8 @@ steers one arbitrary component.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `examples/contexts/global-filters.js`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
 ### T-a-bar-offers-only-what-its-scope-holds
 
@@ -7686,6 +7692,8 @@ is exactly what a reader asks "starts with" of.
 ---
 - Site: `test/e2e/reforged-filter-panel.spec.ts`
 - Site: `examples/contexts/filter-panel.js`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
 ### T-a-condition-badge-says-that-not-which
 
@@ -7858,6 +7866,41 @@ condition is applied."
 
 ---
 
+### T-a-composed-child-takes-an-attribute-not-text
+
+`kind: 'content'` on a prop whose `to` is a COMPOSED component writes text into
+it — and text replaces every child it has.
+
+`sherpa-filter-panel` declared `data-heading` that way, pointing at its
+`sherpa-container-header`. The base class wrote "Filters" into the header and
+deleted the search field slotted inside it. Nothing errored: the header still
+said Filters, and the search was simply gone.
+
+So a composed child takes an ATTRIBUTE. Declare the prop `kind: 'style'` and
+pass it along in a sync method.
+
+`kind: 'content'` is for a plain node the component owns — a `<span>`, a
+`<p>` — where there is nothing else in it to lose.
+
+---
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+
+### T-a-chip-rewrites-its-own-label
+
+`sherpa-quick-filter` rewrites its own `data-label` to "Field: Value" the
+moment exactly one value is picked.
+
+So anything that reads a chip's label back gets what the CHIP decided to show,
+not what the caller passed. A filter panel searching on `data-label` stopped
+matching a picked chip by its own name — the chip was called `Unassigned` and
+the attribute said something else.
+
+The panel records what it gave in `data-search` and matches on that. Give a
+chip a label and keep your own copy.
+
+---
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+
 ### T-a-chip-with-no-field-is-a-preset
 
 A filter chip with NO MENU is a PRESET, not a field.
@@ -7874,6 +7917,8 @@ own label is what a search matches, exactly as a value's is.
 ---
 - Site: `test/e2e/reforged-filter-panel.spec.ts`
 - Site: `examples/contexts/filter-panel.js`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
 ### T-a-scope-is-named-for-its-content
 
@@ -7890,6 +7935,8 @@ The VIEW scope keeps its own name, because there is exactly one of it.
 - Site: `test/e2e/reforged-filter-panel.spec.ts`
 - Site: `examples/contexts/filter-panel.js`
 - Site: `examples/contexts/records.js`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
 ### T-a-panel-adds-through-the-bar-that-owns-the-list
 
@@ -7915,6 +7962,8 @@ Context bar narrows within.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-filter-panel.spec.ts`
 - Site: `examples/contexts/filter-panel.js`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
 ### T-an-accordion-action-is-not-a-toggle
 
@@ -7964,6 +8013,9 @@ under the panel. Narrowing the GRID's own box is what makes `full` mean full.
 - Site: `examples/contexts/filter-panel.js`
 - Site: `examples/contexts/records.js`
 - Site: `examples/templates/records.html`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
 ### T-the-view-chip-stays-on-the-header
 
@@ -8004,6 +8056,9 @@ than once per pixel.
 ---
 - Site: `test/e2e/reforged-filter-panel.spec.ts`
 - Site: `examples/contexts/filter-panel.js`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
 ### T-a-conditioned-chip-answers-with-its-clause
 

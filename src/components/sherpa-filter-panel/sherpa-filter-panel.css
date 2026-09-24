@@ -1,0 +1,66 @@
+/**
+ * sherpa-filter-panel — the filter toolbars, as a column.
+ *
+ * Almost nothing here: the panel, the header, the footer, the accordions, the
+ * section headers and the value runs are all composed components that own
+ * their own look. What is left is placement, and the two states JS flags.
+ */
+
+:host {
+  display: none;
+  /* A FIXED box whose BODY scrolls: the search and the footer stay put. */
+  block-size: 100%;
+  min-block-size: 0;
+}
+
+:host([data-open]) { display: block; }
+:host([hidden]) { display: none; }
+
+.panel {
+  block-size: 100%;
+  /* A FIXED panel, not an overlay — it sits in the flow beside the content. */
+  box-shadow: none;
+}
+
+/* The search fills its row: a header's metadata strip is a flex row, and a
+   field in it otherwise hugs its own content. */
+.search { flex: 1 1 auto; }
+
+/* ── Scopes ──────────────────────────────────────────────────────────── */
+
+.scopes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+}
+
+/* ── Fields ──────────────────────────────────────────────────────────── */
+
+.field + .field { margin-block-start: var(--sherpa-display-mode-space-md, 16px); }
+
+/* The search hides a VALUE; JS writes the flag, CSS owns the hiding. */
+.value[data-filtered-out] { display: none; }
+
+/* A field the search emptied says so rather than showing a bare label. */
+.field[data-no-matches] .field-values::after {
+  content: "No matches";
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  color: var(--sherpa-style-content-secondary, #35353d);
+}
+
+/* CONDITION MODE REPLACES the value chips — the rows are the answer now, and
+   two answers side by side is the thing this mode exists to avoid. */
+.field[data-conditional] .field-values { display: none; }
+
+/* The three field actions are opt-in: a field that cannot be asked a
+   condition, cleared or removed does not show a control that does nothing. */
+.field-conditional,
+.field-clear,
+.field-remove { display: none; }
+.field[data-conditional-ok] .field-conditional,
+.field[data-clearable] .field-clear,
+.field[data-removable] .field-remove { display: inline-flex; }
+
+/* A scope with nothing to add offers no Add button. */
+.scope-add { display: none; }
+.scope[data-can-add] .scope-add { display: inline-flex; }

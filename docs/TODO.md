@@ -281,6 +281,12 @@ Will, 2026-09-24:
 > layer. They don't need to survive the session. For that a user can save the
 > view (when done) to save the filter configurations to the view definition.
 
+**The PANEL-OR-TOOLBAR choice rides along.** Will, 2026-09-24: "Whether the app
+is in filter toolbar or filter panel mode needs to be remembered across
+refreshes and view changes, too." That is app chrome, the same tier as the nav
+pin and the theme mode — `sherpa-app-chrome-state-is-session-store`. One flag
+beside the compiled filters.
+
 **So it is SessionStore, not IdbStore.** The tiers are already decided — see
 `sherpa-local-data-tiers` and `sherpa-app-chrome-state-is-session-store`: the
 nav pin and the theme mode persist exactly this way. A reload keeps it, closing
