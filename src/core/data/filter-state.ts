@@ -66,14 +66,28 @@ export interface FilterState {
    * TRAP T-many-conditions-are-one-reading
    */
   conditions: readonly FieldCondition[];
+  /** Its KIND. `text` unless declared. TRAP T-the-field-type-decides-the-clause */
+  type: FieldType;
   /** EVERY value the field has — never only the reachable ones. */
   values: ValueEntry[];
+}
+
+/** What KIND of field this is. The same three `OPS_FOR_TYPE` names. */
+export type FieldType = 'text' | 'number' | 'date';
+
+/** A field whose picks are ENDS, not a list to tick. */
+export function isRanged(type: FieldType | undefined): boolean {
+  return type === 'number' || type === 'date';
 }
 
 /** What a caller knows about a field before anything is chosen. */
 export interface FieldFacts {
   field: string;
   label?: string;
+  /** Its KIND, which decides how picks become a clause: two picks on a number
+   *  or a date are a RANGE, not two equalities.
+   *  TRAP T-the-field-type-decides-the-clause */
+  type?: FieldType;
   /** Every value the field has, over the WHOLE data — not the drawn page.
    *  A value can be a string, a number or an object.
    *  TRAP T-a-value-can-be-an-object */
@@ -129,9 +143,14 @@ function rowAnswered(row: FieldCondition): boolean {
  * TRAP T-one-state-per-filtered-field
  */
 export function fieldState(facts: FieldFacts, reading: FieldReading = {}): FilterState {
+  const type = facts.type ?? 'text';
+  /* A RANGE field has no value LIST to tick — a reader types an end, or drags
+     one. So its own picks ARE its values, and every rule below then works
+     unchanged. TRAP T-the-field-type-decides-the-clause */
+  const declared = facts.values ?? (isRanged(type) ? (reading.picked ?? []) : []);
   /* The string form is what a control puts in an attribute; `raw` is what the
      row holds. TRAP T-a-value-can-be-an-object */
-  const raws = [...(facts.values ?? [])];
+  const raws = [...declared];
   const all = raws.map(valueKey);
   /* The QUERY's comparison — a chip's option values may be spelled differently
      from the data. TRAP T-one-comparison-rule-for-query-and-ui */
@@ -156,7 +175,11 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
      nothing. TRAP T-everything-on-is-no-filter */
   const takesText = (OP_TAKES[op] ?? 'list') === 'text';
   const chosen = values.filter((v) => v.state === 'picked').length;
-  const answered = takesText ? text !== '' : chosen > 0 && chosen < all.length;
+  const answered = takesText
+    ? text !== ''
+    : isRanged(type)
+      ? chosen > 0
+      : chosen > 0 && chosen < all.length;
 
   /* ROWS answer for themselves. A row is answered when its op has what it
      needs — text typed, or a value picked — so a half-built row narrows
@@ -173,6 +196,7 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
     op,
     text,
     conditions,
+    type,
     values,
   };
 }
@@ -198,11 +222,34 @@ export function stateClause(state: FilterState): Filter | undefined {
 
   /* `raw`, not `value`: the clause is tested against real ROWS.
      TRAP T-a-value-can-be-an-object */
-  return picksClause(
-    state.field,
-    state.values.filter((v) => v.state === 'picked').map((v) => v.raw),
-    state.op,
-  );
+  const picked = state.values.filter((v) => v.state === 'picked').map((v) => v.raw);
+  return isRanged(state.type)
+    ? rangeClause(state.field, state.type, picked, state.op)
+    : picksClause(state.field, picked, state.op);
+}
+
+/**
+ * A NUMBER or DATE field's picks as a clause.
+ *
+ * TWO ends are a `between`; one is a plain comparison. A number is compared as
+ * a NUMBER — sorting `["1000","9"]` as text puts 1000 first and the range then
+ * matches nothing. TRAP T-the-field-type-decides-the-clause
+ */
+function rangeClause(
+  field: string, type: FieldType, picked: readonly unknown[], op: FilterOp,
+): Filter | undefined {
+  if (!picked.length) return undefined;
+  const numeric = type === 'number';
+  const ends = numeric ? picked.map(Number) : picked.map(String);
+  if (ends.length >= 2) {
+    const sorted = numeric
+      ? (ends as number[]).slice().sort((a, b) => a - b)
+      : (ends as string[]).slice().sort();
+    return [field, 'between', [sorted[0], sorted[sorted.length - 1]]];
+  }
+  /* ONE end is whatever the reader asked — `eq` by default, but a `gt` or an
+     `lte` from a condition row means exactly that. */
+  return [field, op, ends[0]];
 }
 
 /**

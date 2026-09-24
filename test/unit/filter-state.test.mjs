@@ -16,7 +16,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-const { fieldState, stateClause, filterFace } =
+const { fieldState, stateClause, filterFace, CONDITION_BADGE } =
   await import(new URL('../../dist/data.js', import.meta.url));
 
 const OWNERS = ['Ravi Menon', 'Dana Whitlock', 'Unassigned'];
@@ -114,10 +114,13 @@ test('the DEFAULT condition wears no badge', () => {
   assert.equal(face.tip, 'Ravi Menon');
 });
 
-test('another condition wears its SIGN, and spells itself in the tip', () => {
+test('another condition wears the ONE badge, and spells itself in the tip', () => {
   const face = filterFace(fieldState(facts, { op: 'notcontains', text: 'Ravi' }));
   assert.equal(face.current, true);
-  assert.equal(face.badge, '!∷');
+  /* ONE badge, not a per-op sign. A reader cannot learn six glyphs, and a
+     chained filter has no single sign to show anyway.
+     TRAP T-a-condition-badge-says-that-not-which */
+  assert.equal(face.badge, CONDITION_BADGE);
   // A tooltip is where a reader finds out what the sign MEANS.
   assert.equal(face.condition, 'Does not contain');
   assert.equal(face.tip, 'Does not contain: Ravi');

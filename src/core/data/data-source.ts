@@ -7,7 +7,7 @@
 import { andFilter, filterFields, filterNeedles, picksClause, valueKey } from './store.js';
 import { fieldState, stateClause } from './filter-state.js';
 import type { Populatable } from '../ui/apply-state.js';
-import type { FieldReading, FilterState } from './filter-state.js';
+import type { FieldReading, FieldType, FilterState } from './filter-state.js';
 import type { Filter, LoadOptions, LoadResult, Row, SortDirection, SortSpec, Store } from './store.js';
 
 /** The view state a source owns. */
@@ -137,6 +137,8 @@ export class DataSource extends EventTarget {
   #readings = new Map<string, FieldReading>();
   /** Every value a field can take, for the controls that draw its rows. */
   #domains = new Map<string, unknown[]>();
+  /** A field's declared KIND and label. TRAP T-the-field-type-decides-the-clause */
+  #fields = new Map<string, { type?: FieldType; label?: string }>();
 
   constructor(options: DataSourceOptions) {
     super();
@@ -305,6 +307,24 @@ export class DataSource extends EventTarget {
     this.#domains.set(field, [...seen.values()]);
   }
 
+  /**
+   * Declare a field's KIND and its reader-facing name.
+   *
+   * The type is what turns two picks on `seats` into a `between` rather than
+   * two equalities — the rule then lives here, once, instead of in every app
+   * that happens to know `seats` is a number.
+   * TRAP T-the-field-type-decides-the-clause
+   */
+  declareField(field: string, facts: { type?: FieldType; label?: string } = {}): void {
+    const held = this.#fields.get(field) ?? {};
+    this.#fields.set(field, { ...held, ...facts });
+  }
+
+  /** What `declareField` was told. */
+  fieldFacts(field: string): { type?: FieldType; label?: string } {
+    return { ...(this.#fields.get(field) ?? {}) };
+  }
+
   /** What `declareValues` was told, as the data holds it. */
   valuesFor(field: string): unknown[] {
     return [...(this.#domains.get(field) ?? [])];
@@ -336,7 +356,13 @@ export class DataSource extends EventTarget {
     const declared = this.#domainByKey(field);
     const raws = picked.map((v) => declared.get(valueKey(v)) ?? v);
     const next: FieldReading = { ...reading, picked: raws };
-    const answered = picked.length > 0 || (next.text ?? '').trim() !== '';
+    /* CONDITIONS count. A field answered only by rows — "starts with Go", or
+       an or-chain over two owners — has no picked values and no typed text, so
+       this deleted the reading and the filter never applied.
+       TRAP T-many-conditions-are-one-reading */
+    const answered = picked.length > 0
+      || (next.text ?? '').trim() !== ''
+      || (next.conditions ?? []).length > 0;
     if (answered) this.#readings.set(field, next);
     else this.#readings.delete(field);
     this.#setFilterValue(this.#composed());
@@ -356,8 +382,17 @@ export class DataSource extends EventTarget {
    * chip, a column menu, a legend row or anything else that draws it.
    */
   selection(field: string, label?: string): FilterState {
+    const facts = this.#fields.get(field) ?? {};
+    /* A RANGE field has no declared list, and passing an empty one would say
+       it has no values at all. TRAP T-the-field-type-decides-the-clause */
+    const values = this.#domains.get(field);
     return fieldState(
-      { field, values: this.#domains.get(field) ?? [], ...(label ? { label } : {}) },
+      {
+        field,
+        ...(values ? { values } : {}),
+        ...(facts.type ? { type: facts.type } : {}),
+        ...(label ?? facts.label ? { label: label ?? facts.label! } : {}),
+      },
       this.#readings.get(field) ?? {},
     );
   }

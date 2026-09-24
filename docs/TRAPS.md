@@ -7580,6 +7580,7 @@ writes. A reading carries EITHER — never both.
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/core/data/data-source.ts`
 
 ### T-an-inactive-chip-says-where-its-filter-went
 
@@ -7711,6 +7712,8 @@ nothing, and `fx` announces as noise.
 
 ---
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/data.ts`
+- Site: `test/unit/filter-state.test.mjs`
 
 ### T-an-active-chip-is-heavier-and-more-strongly-drawn
 
@@ -8308,6 +8311,38 @@ container test for everything else.
 for as long as every section holds one thing.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+
+### T-the-field-type-decides-the-clause
+
+The data layer had no idea what KIND a field was. `OPS_FOR_TYPE` named three
+(`text`, `number`, `date`) and the grid passed a column's type into its own
+builder, but `DataSource` held none — so it could not know that two picks on
+`seats` mean a RANGE rather than two equalities.
+
+Every app then had to know it. `examples/contexts/records.js` carried a
+`numberFields` set, a `dateFields` set, and 20 lines turning picks into
+`between` / `eq Number(x)`. That one gap grew **three** query builders:
+`stateClause`, the grid's `#columnClause`, and the app's `filterFromChips`.
+
+`declareField(field, { type, label })` closes it, and three rules move into the
+data layer where they belong:
+
+- **Two picks are a range.** A number sorts NUMERICALLY — as text, `["1000","9"]`
+  puts 1000 first and the range matches nothing.
+- **A range field has no value LIST.** Its picks ARE its values, so `fieldState`
+  reads them from the reading rather than a declared domain, and a number field
+  no longer reads as `off` for having nothing ticked.
+- **Conditions answer a field.** `select()` deleted a reading whose only answer
+  was condition rows — no picks, no typed text — so an or-chain built in a menu
+  never applied at all. That is why conditions travelled by a separate road.
+
+**A UI sends parameters; it never builds a query.** If a component needs to know
+a field's type to filter it, the type is in the wrong place.
+
+- Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `test/unit/field-type.test.mjs`
+- Site: `src/data.ts`
 
 ### T-the-panel-asks-the-bar-it-does-not-answer-for-it
 

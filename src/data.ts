@@ -202,6 +202,13 @@ export {
   fieldState,
   stateClause,
   filterFace,
+  /* The ONE mark a control wears when conditions apply, and the words behind
+     it. TRAP T-a-condition-badge-says-that-not-which */
+  CONDITION_BADGE,
+  spellConditions,
+  /* A field whose picks are ENDS, not a list to tick.
+     TRAP T-the-field-type-decides-the-clause */
+  isRanged,
   /* The read/draw/write loop ANY control over a field needs — a chip, a
      column heading, a chart legend, a tab strip. None of them hears about
      another: they read the same answer. TRAP T-one-field-one-filter-menu */
@@ -211,6 +218,7 @@ export {
   type ValueEntry,
   type FilterState,
   type FieldFacts,
+  type FieldType,
   type FieldReading,
   type FieldCondition,
   type FilterFace,

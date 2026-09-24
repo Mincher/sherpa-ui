@@ -61,6 +61,9 @@ const KNOWN = {
   // The read-back for `supersede([...ids])` — a host that suspended chips has
   // to be able to ask which ones the bar now holds suspended.
   'sherpa-quick-filter-toolbar.superseded': 'ok: supersede([...ids]) method',
+  'sherpa-quick-filter-toolbar.offering': 'ok: available(defs) — what is left to add',
+  'sherpa-quick-filter-toolbar.heldIds': 'ok: populate() / addFilters() / removeFilter()',
+  'sherpa-filter-panel.values': 'ok: populate(scopes) — a filter carries its picked options',
   // Every chip's FilterState, the one answer the bar and its readers share.
   // Written per field by setClause(id, clause). TRAP T-one-state-per-filtered-field
   'sherpa-quick-filter-toolbar.states': 'ok: setClause(id, clause) method',
