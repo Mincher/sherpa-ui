@@ -89,27 +89,31 @@
    carries the list/condition switch and the panel has ONE footer, so a second
    of each is two answers to one question.
    TRAP T-an-inline-menu-drops-the-chrome-its-host-owns */
-/* INLINE, a condition row is in a COLUMN, not a floating card that can be as
-   wide as it likes. Four tracks in 360px crushed the value select to its
-   caret, so the row wraps: the question on one line, the answer below it.
+/* INLINE, a condition row STACKS. The toolbar's row is
+   `[join] [condition] [answer] [x]` on one line, which needs ~405px; a filter
+   panel's column has ~214. Same controls, same order, one per line — not a
+   two-column grid with a collapsed track.
    TRAP T-an-inline-condition-row-wraps */
 :host([data-inline]) .condition-row,
 :host([data-inline]) .condition-row[data-first],
 :host([data-inline]) .condition-row[data-only] {
+  grid-template-columns: 1fr;
+}
+:host([data-inline]) .condition-row > * { grid-column: 1; }
+/* Its Remove rides the CONDITION's line, at the end. */
+:host([data-inline]) .condition-row:not([data-only]) {
   grid-template-columns: 1fr auto;
 }
-/* The JOIN leads its own line; the condition and its answer share the next. */
-:host([data-inline]) .condition-row .join { grid-column: 1 / -1; }
-:host([data-inline]) .condition-row .condition { grid-column: 1; }
-:host([data-inline]) .condition-row :is(.condition-pick, .condition-value) {
+:host([data-inline]) .condition-row:not([data-only]) .join,
+:host([data-inline]) .condition-row:not([data-only]) :is(.condition-pick, .condition-value) {
   grid-column: 1 / -1;
 }
-:host([data-inline]) .condition-row .drop-condition { grid-column: 2; grid-row: 2; }
+:host([data-inline]) .condition-row:not([data-only]) .condition { grid-column: 1; }
+:host([data-inline]) .condition-row:not([data-only]) .drop-condition { grid-column: 2; }
 
-/* REGROUPED PER LINE. `.sherpa-group` squares corners by POSITION, and the
-   wrapped row is two lines — so `:first-child` and `:last-child` rounded the
-   ends of the ROW rather than the ends of each LINE, and the middles kept
-   square edges with nothing beside them. Each line is its own object.
+/* REGROUPED PER LINE. `.sherpa-group` squares corners by POSITION, and a
+   stacked row is several lines — so `:first-child` and `:last-child` rounded
+   the ends of the ROW rather than each LINE.
    TRAP T-a-wrapped-group-regroups-per-line */
 :host([data-inline]) .condition-row > * {
   --sherpa-border-left: var(--sherpa-display-mode-border-width-sm, 0.5px);
@@ -119,7 +123,7 @@
   --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
   --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
-/* LINE TWO is the condition and its Remove: they snap to each other. */
+/* The condition and its Remove share a line, so they snap to each other. */
 :host([data-inline]) .condition-row:not([data-only]) .condition {
   --sherpa-border-right: var(--sherpa-display-mode-border-width-xs, 0.25px);
   --sherpa-border-rounding-top-right: 0px;

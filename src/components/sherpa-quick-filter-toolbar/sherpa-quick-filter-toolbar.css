@@ -166,7 +166,12 @@
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
 
-.chip .qf-number {
+/* NOT `.chip`-scoped. These rows are cloned into a MENU, and that menu may be
+   drawn somewhere else entirely — a filter PANEL borrows it. Scoped to the
+   chip, none of this reached the panel: both shapes showed at once and the
+   bare input kept its native spinner.
+   TRAP T-a-slotted-rows-css-follows-the-menu-not-the-chip */
+.qf-number {
   display: flex;
   flex-direction: column;
   padding: var(--sherpa-display-mode-space-2xs, 4px)
@@ -174,12 +179,12 @@
 }
 
 /* Both shapes stay in the DOM, so what was typed on the other side survives. */
-.chip .qf-number-range { display: none; }
-.chip sherpa-menu[data-range] .qf-number-one { display: none; }
-.chip sherpa-menu[data-range] .qf-number-range { display: flex; }
+.qf-number-range { display: none; }
+sherpa-menu[data-range] .qf-number-one { display: none; }
+sherpa-menu[data-range] .qf-number-range { display: flex; }
 
 /* Bare input, not sherpa-input-text: light DOM no component sheet reaches. */
-.chip .qf-number-one {
+.qf-number-one {
   inline-size: 100%;
   min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
   padding: var(--sherpa-display-mode-space-2xs, 4px)
@@ -195,7 +200,7 @@
   text-align: right;
   box-sizing: border-box;
 }
-.chip .qf-number-one:focus-visible {
+.qf-number-one:focus-visible {
   outline: none;
   border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
   box-shadow: var(--sherpa-focus-ring);

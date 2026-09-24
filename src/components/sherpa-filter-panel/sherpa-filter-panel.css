@@ -110,6 +110,14 @@
    two answers side by side is the thing this mode exists to avoid. */
 .field[data-conditional] .field-values { display: none; }
 
+/* A NUMBER body's two shapes. The rows are the TOOLBAR's clones, and its sheet
+   does not reach this shadow root — so both showed at once and the bare input
+   kept its native spinner beside the slider. Same two lines, here.
+   TRAP T-a-slotted-rows-css-follows-the-menu-not-the-chip */
+.field-body .qf-number-range { display: none; }
+.field-body sherpa-menu[data-range] .qf-number-one { display: none; }
+.field-body sherpa-menu[data-range] .qf-number-range { display: flex; }
+
 /* A field ANSWERED BY ITS MENU — a condition, a number, a range — shows that
    body instead of a run of chips. TRAP T-an-inline-menu-is-the-same-menu */
 .field-body { display: none; }

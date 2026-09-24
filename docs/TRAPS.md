@@ -8277,6 +8277,29 @@ like: a clipped border.
 - Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.ts`
 
+### T-a-slotted-rows-css-follows-the-menu-not-the-chip
+
+`sherpa-quick-filter-toolbar` clones rows into a chip's MENU — a number field's
+input and slider, a range switch — and styled them `.chip .qf-number-*`.
+
+That menu may be drawn somewhere else entirely: a filter panel borrows it. None
+of those rules reached the panel, so a number field showed BOTH shapes at once
+and the bare `<input type="number">` kept its native spinner beside the slider.
+
+Two halves to the fix, because a slotted row is in nobody's shadow:
+
+- the toolbar's rules DROP `.chip` — they belong to the rows, not to where the
+  menu happens to sit;
+- and the panel repeats the two `display` lines, because the toolbar's sheet is
+  not shared and does not reach the panel's own shadow root.
+
+`::slotted()` cannot close the gap: it matches a slotted element, never its
+CHILDREN, and `.qf-number-one` is inside `.qf-number`.
+
+---
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
+
 ### T-an-inline-condition-row-wraps
 
 A condition row in a COLUMN wraps; one in a floating card does not.
@@ -8286,8 +8309,10 @@ it likes, so they sit on one line. A filter panel's column cannot, and at 360px
 the value select was crushed to its caret — a control that showed nothing but
 an arrow.
 
-Inline, the row becomes two lines: the JOIN on its own, then the condition with
-its answer beneath it. Same controls, same order, one more line.
+Inline, the row STACKS — one control per line, in the same order. Measured
+against the toolbar's own row, which is `162px 243px`: a panel column has 214
+in total, so a two-column grid there leaves the second track at ZERO and the
+answer draws nothing.
 
 The MENU owns the rule under `:host([data-inline])`, not the panel — inline is
 the menu's own mode, so how a row lays out in it is the menu's business.
