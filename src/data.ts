@@ -202,6 +202,9 @@ export {
   fieldState,
   stateClause,
   filterFace,
+  /* A reading as a clause, for a control that holds its own field facts.
+     TRAP T-the-field-type-decides-the-clause */
+  readingClause,
   /* The ONE mark a control wears when conditions apply, and the words behind
      it. TRAP T-a-condition-badge-says-that-not-which */
   CONDITION_BADGE,

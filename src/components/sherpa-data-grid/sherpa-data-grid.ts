@@ -19,6 +19,9 @@ import {
 import {
   DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, picksClause, type FilterOp,
 } from '../../core/data/store.js';
+import {
+  readingClause, type FieldReading, type FieldType,
+} from '../../core/data/filter-state.js';
 // SIDE-EFFECT imports: an undefined custom element renders inert.
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
@@ -758,15 +761,26 @@ export class SherpaDataGrid extends SherpaElement {
    * T-grid-number-clause-must-coerce — a blank end is left as typed.
    */
   #columnClause(field: string, held: ColumnFilter, type?: string): unknown[] {
-    const cast = (raw: string): string | number => {
-      if (type !== 'number') return raw;
-      const n = Number(raw);
-      return raw !== '' && Number.isFinite(n) ? n : raw;
-    };
-    if (held.range) return [field, 'between', [cast(held.from ?? ''), cast(held.to ?? '')]];
+    /* THE DATA LAYER BUILDS IT. This column menu holds its own facts — it is
+       not the source's selection — so it hands over a READING and gets the
+       clause back. The casting, the range and the picks-to-`in` rule all live
+       once. TRAP T-the-field-type-decides-the-clause */
+    const facts = { field, ...(type ? { type: type as FieldType } : {}) };
+    const clause = readingClause(facts, this.#columnReading(held));
+    /* A column filter is SET, so it always says something — `stateClause`
+       returns nothing only for a reading nobody answered. */
+    return (clause as unknown[]) ?? [field, held.op, held.value];
+  }
+
+  /** One column's filter as a reading — what a reader gave, not a query. */
+  #columnReading(held: ColumnFilter): FieldReading {
+    const op = held.op as FilterOp;
+    if (held.range) {
+      return { op, range: true, picked: [held.from ?? '', held.to ?? ''] };
+    }
+    if ((OP_TAKES[op] ?? 'list') === 'text') return { op, text: held.value };
     // SEVERAL ticked values ride as a list, which is what `in` / `notin` take.
-    if (held.picks) return [field, held.op, held.picks.map(cast)];
-    return [field, held.op, cast(held.value)];
+    return { op, range: false, picked: held.picks ?? [held.value] };
   }
 
   /** One column filter as a chip reads it — "Contains: ana", "Between: 10 - 20". */

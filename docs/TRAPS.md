@@ -8344,6 +8344,7 @@ a field's type to filter it, the type is in the wrong place.
 - Site: `src/data.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `examples/contexts/records.js`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
 ### T-the-panel-asks-the-bar-it-does-not-answer-for-it
 

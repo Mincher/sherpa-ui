@@ -68,6 +68,8 @@ export interface FilterState {
   conditions: readonly FieldCondition[];
   /** Its KIND. `text` unless declared. TRAP T-the-field-type-decides-the-clause */
   type: FieldType;
+  /** Its picks are the ENDS of a range. */
+  range: boolean;
   /** EVERY value the field has — never only the reachable ones. */
   values: ValueEntry[];
 }
@@ -115,6 +117,15 @@ export interface FieldReading {
    * exists to prevent. TRAP T-many-conditions-are-one-reading
    */
   conditions?: readonly FieldCondition[];
+  /**
+   * Its picks are the ENDS of a range, not a list of values.
+   *
+   * A number field answered two ways: a SLIDER gives two ends (`between`), a
+   * ticked LIST gives two values (`in`). The type alone cannot tell them
+   * apart. Left out, a ranged field with no declared value list is read as
+   * ends — there is nothing to tick. TRAP T-the-field-type-decides-the-clause
+   */
+  range?: boolean;
   /** Remembered but not applied. TRAP T-grid-suspend-is-not-clear */
   suspended?: boolean;
 }
@@ -147,7 +158,14 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
   /* A RANGE field has no value LIST to tick — a reader types an end, or drags
      one. So its own picks ARE its values, and every rule below then works
      unchanged. TRAP T-the-field-type-decides-the-clause */
-  const declared = facts.values ?? (isRanged(type) ? (reading.picked ?? []) : []);
+  /* ENDS or a LIST. Said plainly when a control knows; otherwise a ranged
+     field with nothing to tick can only be answering with ends. */
+  const range = reading.range ?? (isRanged(type) && !facts.values?.length);
+  /* NO DECLARED LIST means the picks ARE the values. "Everything ticked is no
+     filter" can only be judged against a list someone named — a column menu
+     that set `plan in [Pro, Free]` is filtering, whatever else exists.
+     TRAP T-the-field-type-decides-the-clause */
+  const declared = facts.values ?? (reading.picked ?? []);
   /* The string form is what a control puts in an attribute; `raw` is what the
      row holds. TRAP T-a-value-can-be-an-object */
   const raws = [...declared];
@@ -177,7 +195,7 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
   const chosen = values.filter((v) => v.state === 'picked').length;
   const answered = takesText
     ? text !== ''
-    : isRanged(type)
+    : range || !facts.values
       ? chosen > 0
       : chosen > 0 && chosen < all.length;
 
@@ -197,6 +215,7 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
     text,
     conditions,
     type,
+    range,
     values,
   };
 }
@@ -217,15 +236,40 @@ export function stateClause(state: FilterState): Filter | undefined {
   if (state.conditions.length) return chainConditions(state);
 
   if ((OP_TAKES[state.op] ?? 'list') === 'text') {
-    return state.text ? [state.field, state.op, state.text] : undefined;
+    /* TYPED, and still cast. "At least 100" on a number column compares as
+       TEXT otherwise — "1000" sorts below "9", so `gte "100"` misses every row
+       above 99. TRAP T-the-field-type-decides-the-clause */
+    return state.text
+      ? [state.field, state.op, cast([state.text], state.type)[0]]
+      : undefined;
   }
 
   /* `raw`, not `value`: the clause is tested against real ROWS.
      TRAP T-a-value-can-be-an-object */
   const picked = state.values.filter((v) => v.state === 'picked').map((v) => v.raw);
-  return isRanged(state.type)
-    ? rangeClause(state.field, state.type, picked, state.op)
-    : picksClause(state.field, picked, state.op);
+  if (state.range) return rangeClause(state.field, state.type, picked, state.op);
+  /* A LIST on a number column is still typed — `eq "5"` never matches a row
+     holding 5. TRAP T-the-field-type-decides-the-clause */
+  return picksClause(state.field, cast(picked, state.type), state.op);
+}
+
+/**
+ * A reading as a clause, for a control that holds a field's facts itself — a
+ * grid column heading, say, whose menu is not the source's own selection.
+ * ONE rule, wherever the reading came from.
+ * TRAP T-the-field-type-decides-the-clause
+ */
+export function readingClause(facts: FieldFacts, reading: FieldReading): Filter | undefined {
+  return stateClause(fieldState(facts, reading));
+}
+
+/** Picks as the data holds them — a number column's values are numbers. */
+function cast(picked: readonly unknown[], type: FieldType): unknown[] {
+  if (type !== 'number') return [...picked];
+  return picked.map((v) => {
+    const n = Number(v);
+    return v !== '' && Number.isFinite(n) ? n : v;
+  });
 }
 
 /**
@@ -260,8 +304,9 @@ function rangeClause(
 function chainConditions(state: FilterState): Filter | undefined {
   const clause = (row: FieldCondition): Filter | undefined =>
     ((OP_TAKES[row.op] ?? 'list') === 'text'
-      ? [state.field, row.op, (row.text ?? '').trim()] as FilterClause
-      : picksClause(state.field, [...(row.picked ?? [])], row.op));
+      ? [state.field, row.op,
+         cast([(row.text ?? '').trim()], state.type)[0]] as FilterClause
+      : picksClause(state.field, cast([...(row.picked ?? [])], state.type), row.op));
 
   // Group the `and` runs first, then `or` them together.
   const runs: Filter[][] = [];

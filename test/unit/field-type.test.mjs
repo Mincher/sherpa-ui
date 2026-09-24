@@ -75,6 +75,27 @@ test('a range field needs no declared value list', async () => {
   assert.deepEqual(ids(src), [1, 4]);
 });
 
+test('a number answered from a LIST is `in`, not a range', async () => {
+  const src = await source();
+  /* The same field, two ways: a SLIDER gives two ENDS, a ticked LIST gives two
+     VALUES. The type alone cannot tell them apart, so the reading says. */
+  src.declareValues('seats', [5, 50, 500, 9]);
+  src.select('seats', ['5', '500'], { range: false });
+  await settle();
+  assert.deepEqual(stateClause(src.selection('seats')), ['seats', 'in', [5, 500]]);
+  // `in ["5","500"]` would match NOTHING — the rows hold numbers.
+  assert.deepEqual(ids(src), [1, 3]);
+});
+
+test('a ranged reading still says `between` when the field has a list', async () => {
+  const src = await source();
+  src.declareValues('seats', [5, 50, 500, 9]);
+  src.select('seats', ['5', '500'], { range: true });
+  await settle();
+  assert.deepEqual(stateClause(src.selection('seats')), ['seats', 'between', [5, 500]]);
+  assert.deepEqual(ids(src), [1, 2, 3, 4]);
+});
+
 /* ── Conditions travel through select() ─────────────────────────────── */
 
 test('CONDITIONS answer a field with no picks and no text', async () => {
