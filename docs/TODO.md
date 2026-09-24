@@ -48,15 +48,12 @@ say what order. Anything not numbered is a sub-item of the section it sits in.
 | ⛔ | 33 | Density scaling as step offsets — **part done**, rest blocked | 11 |
 | | 34 | Figma: use the Navigation terms | 11 |
 
-**Blocked, and on the same thing.** Items 3 and 33 both need
-`figma.extensions.json` regenerated. Investigated 2026-09-24 and the blocker is
-now understood, not just observed: an override collection's variables key their
-values by their **parent** collection's mode ids, so a plugin read returns the
-BASE values and every override silently collapses. All ten collections fail this
-way. `scripts/figma-export-extensions.mjs` holds the capture code and, more
-usefully, a GATE that refuses a collapsed capture — so the next attempt cannot
-quietly write wrong values. It needs a Figma plugin with UI to finish.
-`T-an-override-collection-is-keyed-by-its-parent`.
+**Not blocked after all — pull through the MCP.** Items 3 and 33 needed values
+from `figma.extensions.json`, which is a hand-made file the export cannot
+regenerate (`T-an-override-collection-is-keyed-by-its-parent` has the three
+dead ends). Will's ruling, 2026-09-24: **do not try to regenerate it — read what
+you need live through the figma-console MCP.** The file stays as the projector's
+input and is hand-patched when a value changes.
 
 **Done but not numbered:** a nav item goes to a Context · Settings opens as an
 overlay · shared constants swept · event detail shapes swept · toggle chips
@@ -1358,11 +1355,12 @@ Style/Transparent item.
 **Attempted 2026-09-24, and it does not work through the plugin API.** An
 override collection keys `valuesByMode` by its PARENT's mode ids — measured
 across all ten, `sawOwnMode: false` every time — so a capture returns the base
-values and looks complete while every override is gone. `compact` and
-`comfortable` both alias the same variable for `space/sm`, which would read as
-one value where the cache correctly holds 8 and 16.
-`scripts/figma-export-extensions.mjs` now carries the capture code AND a gate
-that refuses a collapsed result. `T-an-override-collection-is-keyed-by-its-parent`.
+values and looks complete while every override is gone.
+`T-an-override-collection-is-keyed-by-its-parent` has the three dead ends.
+
+**Will's ruling: stop trying.** Read what a task needs live through the
+figma-console MCP, and hand-patch the file when a value changes. It does not
+block this item — the step rule was verified against live Figma, not the file.
 
 It does not block the step rule (verified against LIVE Figma through the plugin
 bridge: `:root` matches the Display Mode collection value for value, and the

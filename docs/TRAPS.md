@@ -7225,11 +7225,19 @@ never in reach, so there was no stale read to clear.
 So a capture looks complete, carries real hex values, and is silently the BASE
 collection's values with every override gone.
 
-`scripts/figma-export-extensions.mjs` is therefore a GATE first and an exporter
-second. It refuses a capture when a collection never showed its own mode id, and
-when a sibling pair that must differ comes back identical — the cache's real
-difference counts are the expected values. Proven both ways: a collapsed capture
-is refused by name, and the known-good cache round-trips with 0 changes.
+**Will's ruling 2026-09-24: stop trying to regenerate it.** Read what a task
+needs live through the figma-console MCP; the file stays as the projector's
+input and is hand-patched when a value changes.
+
+A hand-patch is exactly where a collection can quietly collapse onto its
+sibling, so `npm run check:extensions` guards the shape a good file has: every
+collection present and non-empty, and every sibling pair that must differ still
+differing by the measured count. Proven by collapsing Saturated onto
+Transparent, which it names.
+
+Those counts are MEASURED, not guessed — I first wrote 102 for
+compact/comfortable, and the checker reported the correct file as drifted. A
+wrong constant in a gate reads as a fault in the data.
 
 **Two real bugs were found on the way**, and both are worth keeping:
 
@@ -7242,7 +7250,7 @@ is refused by name, and the known-good cache round-trips with 0 changes.
 Unblocking this needs whatever originally produced the cache — a Figma plugin
 with UI, reading the document with an override mode actually applied.
 
-- Site: `scripts/figma-export-extensions.mjs`
+- Site: `scripts/check-extensions.mjs`
 
 ### T-a-full-range-is-still-a-range
 

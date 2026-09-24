@@ -391,6 +391,17 @@ re-export, re-project — never hand-edit `tokens.css`. Activate a theme via
 `ThemeManager` handles persistence. There is no `light-dark()` in component CSS — the
 display-mode layer owns mode handling.
 
+**Ten override collections come from a HAND-MAINTAINED file**, not the export:
+`src/styles/tokens/figma.extensions.json` (Transparent, Saturated, compact,
+comfortable, the four grouping ones, two data-viz ones). Neither the DTCG export
+nor the plugin API can read them — an override collection keys its values by its
+PARENT's mode ids, so every read returns the base values and the overrides
+vanish silently. TRAP `T-an-override-collection-is-keyed-by-its-parent`.
+
+So: **read what you need live through the figma-console MCP**, and hand-patch
+that file when a value changes. `npm run check:extensions` guards it — a
+hand-patch is exactly where one collection collapses onto its sibling.
+
 ### Shared CSS lives in SEVEN sheets
 
 `src/index.ts` puts seven stylesheets into `SherpaElement.sharedStyles`, and
