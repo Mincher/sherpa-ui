@@ -40,8 +40,14 @@ export class SherpaAccordion extends SherpaElement {
        and `preventDefault()` then ate the checkbox's own tick and let the
        popover light-dismiss with nothing chosen.
        TRAP T-an-accordion-action-is-not-a-toggle */
+    const path = event.composedPath();
+    /* A control here may open a POPOVER whose card is in the top layer. Its
+       rows still pass through this listener, and `preventDefault()` ate the
+       checkbox's own tick — the Add menu opened and nothing could be picked.
+       A popover is not the summary row, whatever the path says. */
+    if (path.some((n) => n instanceof HTMLElement && n.matches?.('[popover]'))) return;
     const summary = this.$('.header');
-    if (!event.composedPath().some((n) => n === summary)) return;
+    if (!path.some((n) => n === summary)) return;
     event.preventDefault();
   };
 

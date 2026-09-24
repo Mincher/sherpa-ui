@@ -335,7 +335,30 @@ export async function init(root, { session } = {}) {
            on one page has to know which one a section answers for.
            TRAP T-a-scope-is-named-for-its-content */
         label: 'Customer records',
-        filters: DATA_FILTERS.map((f) => asPanelField(f, qft)),
+        /* WHAT THE BAR HOLDS NOW, not the list it was born with. `DATA_FILTERS`
+           never learns about a removal or an add, so the panel kept drawing a
+           field the reader had taken off and never drew one they added.
+           TRAP T-a-panel-adds-through-the-bar-that-owns-the-list */
+        filters: (qft.heldIds ?? []).map((id) => {
+          const chip = qft.shadowRoot?.querySelector(`.chips > .chip[data-id="${id}"]`);
+          const menu = chip?.querySelector('sherpa-menu');
+          return asPanelFieldWith({
+            id,
+            label: chip?.dataset['label'] ?? id,
+            select: menu?.dataset['select'],
+            options: [...(chip?.querySelectorAll('label:not(.qf-all)') ?? [])]
+              .map((row) => ({
+                value: row.querySelector('input')?.value ?? '',
+                label: (row.textContent ?? '').trim(),
+                selected: !!row.querySelector('input')?.checked,
+              }))
+              .filter((o) => o.value),
+            removable: true,
+            conditions: menu?.hasAttribute('data-conditional'),
+            kind: chip?.querySelector('.qf-number') ? 'number' : undefined,
+          }, menu ?? panel?.shadowRoot
+            ?.querySelector(`.field[data-field="${id}"] sherpa-menu`) ?? undefined);
+        }),
         available: (qft.offering ?? []).map((f) => asPanelField(f)),
         // HOW the grid arranges its rows, above the filters.
         group: organiseCols,

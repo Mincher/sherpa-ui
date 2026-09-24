@@ -7954,6 +7954,7 @@ Context bar narrows within.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+- Site: `examples/contexts/records.js`
 
 ### T-an-accordion-action-is-not-a-toggle
 
@@ -8059,6 +8060,21 @@ The host looks in BOTH places — the chip, then the panel's own field box.
 
 ---
 - Site: `examples/contexts/records.js`
+
+### T-a-chip-menu-apply-is-the-panels-apply
+
+Pressing Apply in a CHIP's own menu inside the filter panel is the panel
+applying.
+
+Group, Sort and Date are chips with popovers, so their footer Apply lands on
+the menu rather than on the panel's own footer — and a reader who pressed Apply
+expects the same thing to happen wherever they pressed it. The panel relays:
+the chip's on/off follows the pick, an organise chip also reports its own
+`group-change` or `sort-change`, and `#onApply()` runs as if the footer had
+been pressed.
+
+---
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-a-chip-menu-in-the-panel-commits
 

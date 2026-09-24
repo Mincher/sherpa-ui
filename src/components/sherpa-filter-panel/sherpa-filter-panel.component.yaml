@@ -80,11 +80,9 @@ anatomy:
                 - el: sherpa-button
                   class: scope-add
                   attrs:
-                    data-type: icon
                     data-size: sm
-                    data-icon-start: plus
+                    data-icon-end: triangle-down
                     aria-haspopup: menu
-                    aria-label: Add filter
 props:
   - $type: prop
     name: data-heading

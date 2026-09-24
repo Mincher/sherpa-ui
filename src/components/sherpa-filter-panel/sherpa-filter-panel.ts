@@ -223,26 +223,28 @@ export class SherpaFilterPanel extends SherpaElement {
       const presets = mine.filter((f) => f.preset);
       const fields = mine.filter((f) => !f.preset);
 
-      /* GROUP and SORT lead everything — they are HOW the rows are arranged,
-         and a reader reaches for them before narrowing.
+      /* ORGANISE leads everything: Group and Sort in ONE section, because
+         they answer the same question — how the rows are arranged — and two
+         headers for two chips is a header per control.
          TRAP T-organise-chips-lead-the-bar */
-      for (const [kind, cols] of [['group', scope.group], ['sort', scope.sort]] as const) {
-        if (!cols?.length) continue;
-        const on = kind === 'group' ? scope.groupField : scope.sortField;
-        const menu = kind === 'group' ? scope.groupMenu : scope.sortMenu;
-        const drawn = this.#drawField({
-          id: kind, label: kind === 'group' ? 'Group by' : 'Sort by',
-          select: 'single',
-          ...(menu ? { menu } : {}),
-          options: cols.map((c) => ({
-            value: c.field, label: c.label, selected: c.field === on,
-          })),
-        /* `false`: they are ordinary single-select fields, so they collapse to
-           ONE chip each. `true` would mark them as a presets run and explode
-           fourteen columns into fourteen chips.
-           TRAP T-only-group-and-sort-stay-one-chip */
-        }, scope.scope, false);
-        if (drawn) box.append(drawn);
+      const organised = ([['group', scope.group], ['sort', scope.sort]] as const)
+        .filter(([, cols]) => cols?.length);
+      if (organised.length) {
+        const section = this.#drawSection('organise', 'Organise');
+        for (const [kind, cols] of organised) {
+          const on = kind === 'group' ? scope.groupField : scope.sortField;
+          const menu = kind === 'group' ? scope.groupMenu : scope.sortMenu;
+          const chip = this.#drawChip({
+            id: kind, label: kind === 'group' ? 'Group by' : 'Sort by',
+            select: 'single',
+            ...(menu ? { menu } : {}),
+            options: (cols ?? []).map((c) => ({
+              value: c.field, label: c.label, selected: c.field === on,
+            })),
+          }, scope.scope, section);
+          if (chip) section.values.append(chip);
+        }
+        box.append(section.box);
       }
 
       if (presets.length) {
@@ -273,6 +275,45 @@ export class SherpaFilterPanel extends SherpaElement {
       region.append(box);
     }
     this.#snapshot();
+  }
+
+  /**
+   * An empty SECTION — a header and a run — for things that are not one field.
+   * `Organise` holds Group and Sort; `Presets` holds the toggles.
+   */
+  #drawSection(id: string, label: string): { box: HTMLElement; values: HTMLElement } {
+    const box = this.clone('template.field-tpl')!;
+    box.setAttribute('data-field', id);
+    box.querySelector('.field-head')?.setAttribute('data-heading', label);
+    // A section is not a field: nothing here to clear, remove or condition.
+    box.querySelector('.field-acts')?.remove();
+    return { box, values: box.querySelector('.field-values') as HTMLElement };
+  }
+
+  /** ONE chip carrying a field's own menu, for a section that holds several. */
+  #drawChip(def: PanelFilter, scope: string,
+    section: { box: HTMLElement; values: HTMLElement }): HTMLElement | null {
+    const proto = this.$<HTMLTemplateElement>('template.value-tpl');
+    const one = proto?.content.firstElementChild?.cloneNode(true) as HTMLElement | null;
+    if (!one) return null;
+    one.setAttribute('data-label', def.label);
+    one.dataset['value'] = def.id;
+    one.dataset['search'] = def.label.toLowerCase();
+    one.toggleAttribute('data-current', (def.options ?? []).some((o) => o.selected));
+
+    const held: Held = { def, scope, box: section.box, values: section.values };
+    if (def.menu) {
+      one.setAttribute('data-menu', '');
+      /* A chip menu in the panel COMMITS, like everything else here.
+         TRAP T-a-chip-menu-in-the-panel-commits */
+      def.menu.setAttribute('data-commit', '');
+      held.menu = def.menu;
+      held.menuHome = { parent: def.menu.parentNode!, slot: def.menu.getAttribute('slot') };
+      def.menu.setAttribute('slot', 'menu');
+      one.append(def.menu);
+    }
+    this.#held.set(`${scope}:${def.id}`, held);
+    return one;
   }
 
   /** One field: its header, its actions, and its run of value chips. */
@@ -549,6 +590,27 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** The Add menu committed. The HOST owns the list; this is a request. */
   #onAddCommit = (event: Event): void => {
+    /* A CHIP's own menu applying is the panel applying. Group, Sort and Date
+       are chips with popovers, so their Apply lands here rather than on the
+       panel's footer — and a reader who pressed Apply expects the same thing
+       to happen wherever they pressed it.
+       TRAP T-a-chip-menu-apply-is-the-panels-apply */
+    const chip = this.#pathFind(event, '.value');
+    if (chip) {
+      const held = [...this.#held.values()].find((h) => h.values.contains(chip));
+      if (held) {
+        const picked = ((event as CustomEvent).detail?.values ?? []) as string[];
+        chip.toggleAttribute('data-current', picked.length > 0);
+        if (held.def.id === 'group' || held.def.id === 'sort') {
+          this.emit(`${held.def.id}-change`, {
+            scope: held.scope, field: picked[0] ?? null,
+          });
+        }
+        this.#onApply();
+      }
+      return;
+    }
+
     const btn = this.#pathFind(event, '.scope-add');
     if (!btn) return;
     const ids = ((event as CustomEvent).detail?.values ?? []) as string[];

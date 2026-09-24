@@ -75,7 +75,10 @@ test('a scope draws its presets, its fields, and nothing it cannot', async ({ pa
 
   /* PRESETS lead in ONE section; `created` is absent because a date is not a
      set of chips. TRAP T-a-chip-with-no-field-is-a-preset */
-  expect(r['fields']).toEqual(['group', 'sort', 'presets', 'status', 'owner']);
+  /* ONE Organise section holds Group and Sort — they answer the same
+     question, and two headers for two chips is a header per control.
+     TRAP T-organise-chips-lead-the-bar */
+  expect(r['fields']).toEqual(['organise', 'presets', 'status', 'owner']);
   expect(r['presets']).toEqual(['at-risk', 'unassigned']);
   expect(r['presetOn']).toEqual(['unassigned']);
 
@@ -158,9 +161,8 @@ test('every filter field is a run; group and sort are one chip', async ({ page }
       // OWNER is single-select, and it STILL explodes.
       owner: chips('owner'),
       ownerChip: sr.querySelector('.field[data-field="owner"]').hasAttribute('data-chip'),
-      // GROUP and SORT are the exception: one chip, named for the field.
-      group: chips('group'),
-      groupChip: sr.querySelector('.field[data-field="group"]').hasAttribute('data-chip'),
+      // GROUP and SORT are the exception: two chips in ONE Organise section.
+      organise: chips('organise'),
       // STATUS: a run of its values.
       status: chips('status'),
       statusPicked: el.values.data.status,
@@ -169,8 +171,7 @@ test('every filter field is a run; group and sort are one chip', async ({ page }
 
   expect(r['owner']).toEqual(['Dana', 'Ravi']);
   expect(r['ownerChip']).toBe(false);
-  expect(r['group']).toEqual(['group']);
-  expect(r['groupChip']).toBe(true);
+  expect(r['organise']).toEqual(['group', 'sort']);
   expect(r['status']).toEqual(['active', 'churned']);
   expect(r['statusPicked']).toEqual(['active', 'churned']);
 });
@@ -234,9 +235,9 @@ test('the search matches values everywhere, and keeps the labels', async ({ page
 
   // A value matches its OWN label, and nothing else in the panel.
   expect(r.shown).toEqual(['unassigned']);
-  expect(r.empty).toEqual(['group', 'sort', 'status', 'owner']);
+  expect(r.empty).toEqual(['organise', 'status', 'owner']);
   // Every field still names itself.
-  expect(r.labels).toBe(5);
+  expect(r.labels).toBe(4);
 });
 
 /**
@@ -270,7 +271,7 @@ test('Remove and Add report, and change nothing by themselves', async ({ page })
   ]);
   /* The field is STILL THERE. A component that removed it would be deciding
      what the host's list holds. */
-  expect(r.afterRemove).toEqual(['group', 'sort', 'presets', 'status', 'owner']);
+  expect(r.afterRemove).toEqual(['organise', 'presets', 'status', 'owner']);
 });
 
 /**
@@ -323,14 +324,14 @@ test('group and sort lead the scope, report at once, and skip Apply',
       const order = q('.field').map((f) => f.dataset.field);
       /* ONE chip each, named for the field — the ONLY two that stay chips.
          TRAP T-only-group-and-sort-stay-one-chip */
-      const shape = ['group', 'sort'].map((id) =>
+      const shape = ['organise'].map((id) =>
         q('.field[data-field="' + id + '"] .value').map((c) => c.dataset.value));
       // The scope said which column Sort was on, so its chip arrived ON.
-      const sortOn = sr.querySelector('.field[data-field="sort"] .value')
+      const sortOn = sr.querySelector('.field[data-field="organise"] .value[data-value="sort"]')
         .hasAttribute('data-current');
 
       // Pick Group. It reports IMMEDIATELY — no Apply.
-      const g = sr.querySelector('.field[data-field="group"] .value');
+      const g = sr.querySelector('.field[data-field="organise"] .value[data-value="group"]');
       g.setAttribute('data-current', '');
       g.dispatchEvent(new CustomEvent('quick-filter-click', { bubbles: true, composed: true }));
       await new Promise((r) => setTimeout(r, 120));
@@ -345,9 +346,9 @@ test('group and sort lead the scope, report at once, and skip Apply',
     })()`) as Record<string, unknown>;
 
     // FIRST, above the presets — a reader reaches for them before narrowing.
-    expect(r['order']).toEqual(['group', 'sort', 'presets', 'status', 'owner']);
-    // ONE chip each, not fourteen columns each.
-    expect(r['shape']).toEqual([['group'], ['sort']]);
+    expect(r['order']).toEqual(['organise', 'presets', 'status', 'owner']);
+    // ONE chip each in ONE section, not fourteen columns each.
+    expect(r['shape']).toEqual([['group', 'sort']]);
     // The scope said which column Sort was on, so its chip arrived ON.
     expect(r['sortOn']).toBe(true);
 
