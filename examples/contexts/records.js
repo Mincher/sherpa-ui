@@ -122,8 +122,16 @@ export async function init(root, { session } = {}) {
    * TRAP T-a-chip-with-no-field-is-a-preset
    */
   const asPanelField = (f, bar) => {
+    /* The chip's menu may be BORROWED into the panel right now — it goes home
+       on the next `#draw`, but this reads the bar BEFORE that. Look in both
+       places, or a field whose menu is away reads as a preset and the panel
+       grows a second Presets section every time it redraws.
+       TRAP T-a-borrowed-menu-is-not-on-its-chip */
     const menu = bar?.shadowRoot
-      ?.querySelector(`.chips > .chip[data-id="${f.id}"] sherpa-menu`) ?? undefined;
+      ?.querySelector(`.chips > .chip[data-id="${f.id}"] sherpa-menu`)
+      ?? panel?.shadowRoot
+        ?.querySelector(`.field[data-field="${f.id}"] sherpa-menu`)
+      ?? undefined;
     return asPanelFieldWith(f, menu);
   };
 

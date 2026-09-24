@@ -106,6 +106,31 @@
 }
 :host([data-inline]) .condition-row .drop-condition { grid-column: 2; grid-row: 2; }
 
+/* REGROUPED PER LINE. `.sherpa-group` squares corners by POSITION, and the
+   wrapped row is two lines — so `:first-child` and `:last-child` rounded the
+   ends of the ROW rather than the ends of each LINE, and the middles kept
+   square edges with nothing beside them. Each line is its own object.
+   TRAP T-a-wrapped-group-regroups-per-line */
+:host([data-inline]) .condition-row > * {
+  --sherpa-border-left: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-right: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
+/* LINE TWO is the condition and its Remove: they snap to each other. */
+:host([data-inline]) .condition-row:not([data-only]) .condition {
+  --sherpa-border-right: var(--sherpa-display-mode-border-width-xs, 0.25px);
+  --sherpa-border-rounding-top-right: 0px;
+  --sherpa-border-rounding-bottom-right: 0px;
+}
+:host([data-inline]) .condition-row:not([data-only]) .drop-condition {
+  --sherpa-border-left: var(--sherpa-display-mode-border-width-xs, 0.25px);
+  --sherpa-border-rounding-top-left: 0px;
+  --sherpa-border-rounding-bottom-left: 0px;
+}
+
 :host([data-inline]) .use-condition,
 :host([data-inline]) .footer {
   /* `!important`, and it is the honest answer. Both are COMPOSED components

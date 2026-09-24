@@ -8024,6 +8024,42 @@ gone.
 ---
 - Site: `src/core/ui/render-icon.ts`
 
+### T-a-wrapped-group-regroups-per-line
+
+`.sherpa-group` squares corners by POSITION — `:first-child` and `:last-child`
+— which is exactly right for a run on ONE line and wrong the moment it wraps.
+
+A condition row inline is two lines. The group rounded the ends of the ROW, so
+line one's last control and line two's first kept square edges with nothing
+beside them, and the row read as broken in half.
+
+Each LINE is its own object: every child gets full edges and rounding back, and
+only the pairs that really are adjacent snap to each other.
+
+**A group that can wrap needs its positions re-stated per line.** The class
+cannot know where the break falls.
+
+---
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+
+### T-a-borrowed-menu-is-not-on-its-chip
+
+A menu the filter panel has BORROWED is not on its chip, and a host reading the
+bar for it finds nothing.
+
+`#giveBack()` runs at the top of every `#draw`, so the menu does go home — but
+the host builds its `populate()` payload BEFORE that, reading the bar as it is
+now. A field whose menu was away came back with `menu: undefined`, which reads
+as a chip with no field: a PRESET.
+
+Measured: removing one filter turned Created date into a preset and gave the
+panel a SECOND Presets section. Removing another added a third.
+
+The host looks in BOTH places — the chip, then the panel's own field box.
+
+---
+- Site: `examples/contexts/records.js`
+
 ### T-a-chip-menu-in-the-panel-commits
 
 A menu drawn as a CHIP inside the filter panel gets `data-commit`.
@@ -8054,6 +8090,7 @@ be in the DOM.
 ---
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
 ### T-an-accordion-chevron-rides-the-heading-row
 
