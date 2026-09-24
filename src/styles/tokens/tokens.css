@@ -1829,7 +1829,7 @@
   }
 
   [data-status="active"] {
-    --_status-surface: var(--sherpa-theme-border-default-base);
+    --_status-surface: var(--sherpa-theme-surface-default-base);
     --_status-surface-subtle: var(--sherpa-theme-surface-active-base);
     --_status-surface-strong: var(--sherpa-theme-surface-active-1);
     --_status-shadow: color-mix(in srgb, var(--sherpa-display-mode-color-brand-color-5) 30%, transparent);
@@ -1930,7 +1930,7 @@
   }
 
   [data-look="transparent"][data-status="active"] {
-    --_status-surface: #f2dfff00;
+    --_status-surface: #ffffff00;
     --_status-surface-subtle: #f2dfff4d;
     --_status-surface-strong: #d89cff4d;
     --_status-shadow: #2400364d;

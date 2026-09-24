@@ -10,7 +10,7 @@
         "warning": "#ffffff00",
         "urgent": "#ffffff00",
         "success": "#ffffff00",
-        "active": "#f2dfff00",
+        "active": "#ffffff00",
         "inactive": "#b3b3c300"
       },
       "style-border/base": {

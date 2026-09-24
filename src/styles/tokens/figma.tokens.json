@@ -9699,7 +9699,7 @@
             "lastSyncedAt": "2026-09-09T09:43:47.989Z",
             "lastSyncedValue": {
               "active": {
-                "reference": "{theme.border.default.base}"
+                "reference": "{theme.surface.default.base}"
               },
               "critical": {
                 "reference": "{theme.surface.default.base}"
@@ -9729,7 +9729,7 @@
               "warning": "{theme.surface.default.base}",
               "urgent": "{theme.surface.default.base}",
               "success": "{theme.surface.default.base}",
-              "active": "{theme.border.default.base}",
+              "active": "{theme.surface.default.base}",
               "inactive": "{theme.surface.default.+2}"
             },
             "primaryMode": "default",
