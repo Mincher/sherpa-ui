@@ -1,0 +1,39 @@
+<!-- Settings › Accessibility. views/accessibility.js wires it. -->
+<form novalidate>
+  <sherpa-layout-grid>
+
+    <sherpa-container data-col-span="reading">
+      <sherpa-container-header slot="header"
+                               data-heading="Accessibility"
+                               data-description="Make the app easier to see and use."></sherpa-container-header>
+      <sherpa-list>
+        <sherpa-list-item data-label="Reduce motion"
+                          data-description="Turn off animation and moving effects.">
+          <sherpa-switch slot="trailing" name="reduce-motion"></sherpa-switch>
+        </sherpa-list-item>
+        <sherpa-list-item data-label="Increase contrast"
+                          data-description="Stronger borders and text.">
+          <sherpa-switch slot="trailing" name="contrast"></sherpa-switch>
+        </sherpa-list-item>
+        <sherpa-list-item data-label="Underline links"
+                          data-description="Show links with an underline, not colour alone.">
+          <sherpa-switch slot="trailing" name="underline-links"></sherpa-switch>
+        </sherpa-list-item>
+        <sherpa-list-item data-label="Keyboard shortcuts"
+                          data-description="Single-key shortcuts for common actions.">
+          <sherpa-switch slot="trailing" name="shortcuts" checked></sherpa-switch>
+        </sherpa-list-item>
+      </sherpa-list>
+    </sherpa-container>
+
+    <sherpa-callout data-col-span="reading" data-status="info" data-heading="Your system settings apply too">
+      Reduced motion and dark mode set in your operating system are always followed.
+    </sherpa-callout>
+
+    <sherpa-container-footer data-col-span="reading" data-align="end">
+      <sherpa-button type="button" class="cancel-btn">Cancel</sherpa-button>
+      <sherpa-button type="submit" data-look="saturated">Save changes</sherpa-button>
+    </sherpa-container-footer>
+
+  </sherpa-layout-grid>
+</form>

@@ -1,0 +1,56 @@
+<!-- Settings › User Profile. views/profile.js wires it. -->
+<form novalidate>
+  <sherpa-layout-grid>
+
+    <sherpa-container data-col-span="reading">
+      <sherpa-container-header slot="header"
+                               data-heading="Profile"
+                               data-description="How you appear to your team."></sherpa-container-header>
+      <sherpa-stack>
+        <sherpa-input-text
+          data-label="Full name"
+          data-description="Shown on your profile and in comments."
+          name="name"
+          value="Will Mincher"
+          placeholder="Your name"></sherpa-input-text>
+
+        <sherpa-input-text
+          data-label="Email"
+          data-error="Enter a valid work email address."
+          name="email"
+          value="not-an-email"
+          placeholder="you@example.com"></sherpa-input-text>
+
+        <sherpa-input-text
+          data-label="Bio"
+          data-description="A short line about you (optional)."
+          data-multiline
+          name="bio"
+          maxlength="240"
+          placeholder="Tell us a little about yourself…"></sherpa-input-text>
+      </sherpa-stack>
+    </sherpa-container>
+
+    <sherpa-container data-col-span="reading">
+      <sherpa-container-header slot="header"
+                               data-heading="Notifications"
+                               data-description="What we send you, and where."></sherpa-container-header>
+      <sherpa-list>
+        <sherpa-list-item data-label="Email notifications"
+                          data-description="Weekly digest and mentions.">
+          <sherpa-switch slot="trailing" name="notify-email" checked></sherpa-switch>
+        </sherpa-list-item>
+        <sherpa-list-item data-label="Browser notifications"
+                          data-description="Alerts while the app is open.">
+          <sherpa-switch slot="trailing" name="notify-browser"></sherpa-switch>
+        </sherpa-list-item>
+      </sherpa-list>
+    </sherpa-container>
+
+    <sherpa-container-footer data-col-span="reading" data-align="end">
+      <sherpa-button type="button" class="cancel-btn">Cancel</sherpa-button>
+      <sherpa-button type="submit" data-look="saturated">Save changes</sherpa-button>
+    </sherpa-container-footer>
+
+  </sherpa-layout-grid>
+</form>

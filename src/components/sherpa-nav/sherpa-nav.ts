@@ -67,6 +67,8 @@ export class SherpaNav extends SherpaElement {
   static override observed = ['data-current-id', 'data-nav-state'];
 
   #config: NavConfig = {};
+  /** The mode Settings was entered from, so leaving it goes back there. */
+  #beforeSettings: NavState = 'collapsed';
 
   override onRender(): void {
     if (!this.dataset['navState']) this.dataset['navState'] = 'collapsed';
@@ -139,6 +141,7 @@ export class SherpaNav extends SherpaElement {
   #setState(next: NavState): void {
     const previous = this.state;
     if (previous === next) return;
+    if (next === 'settings') this.#beforeSettings = previous;
     // Writing the attribute is the ONLY step; onChange owns the re-render.
     this.dataset['navState'] = next;
     this.emit('nav-state-change', { state: next });
@@ -183,7 +186,12 @@ export class SherpaNav extends SherpaElement {
   };
 
   #onSettings = (): void => {
-    this.#setState(this.state === 'settings' ? 'pinned' : 'settings');
+    if (this.state !== 'settings') {
+      this.#setState('settings');
+      return;
+    }
+    // Unpinned before → hover, not collapsed: the pointer is still on the rail.
+    this.#setState(this.#beforeSettings === 'pinned' ? 'pinned' : 'hover');
   };
 
   /* ── Content ────────────────────────────────────────────────────── */

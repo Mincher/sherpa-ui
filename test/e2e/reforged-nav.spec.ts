@@ -233,6 +233,35 @@ test('the pin latches the rail open; settings switches mode and relabels the hea
   expect(r.settings.pressed).toBe('true');
 });
 
+test('leaving settings returns the rail to the mode it came from', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const nav = document.createElement('sherpa-nav') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate?: (d: unknown) => void;
+    };
+    document.getElementById('root')!.appendChild(nav);
+    await nav.rendered;
+    nav.populate!({ product: { name: 'Sherpa' } });
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const settings = nav.shadowRoot!.querySelector('.settings') as HTMLElement;
+    const roundTrip = () => { settings.click(); settings.click(); return nav.dataset['navState']; };
+
+    // Unpinned: the pointer is on the rail, so it comes back as hover…
+    nav.dispatchEvent(new PointerEvent('pointerenter'));
+    const fromHover = roundTrip();
+    // …and a pointer leave then shuts it, which a pinned rail would refuse.
+    nav.dispatchEvent(new PointerEvent('pointerleave'));
+    const afterLeave = nav.dataset['navState'];
+
+    (nav.shadowRoot!.querySelector('.pin') as HTMLElement).click();
+    const fromPinned = roundTrip();
+    return { fromHover, afterLeave, fromPinned };
+  });
+  expect(r.fromHover).toBe('hover');
+  expect(r.afterLeave).toBe('collapsed');
+  expect(r.fromPinned).toBe('pinned');
+});
+
 test('typing in search filters the rows and marks the matched text', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const nav = document.createElement('sherpa-nav') as HTMLElement & {

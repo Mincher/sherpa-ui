@@ -28,7 +28,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const app = express();
 const PORT = process.env.PORT ?? 4200;
 
-const VIEWS = ['dashboard', 'records', 'settings', 'chat'];
+const VIEWS = ['dashboard', 'records', 'profile', 'accessibility', 'appearance', 'chat'];
 const NAME_RE = /^sherpa-[a-z0-9-]+$/;
 const VIEW_RE = /^[a-z0-9-]+$/;
 

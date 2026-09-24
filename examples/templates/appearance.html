@@ -1,0 +1,34 @@
+<!-- Settings › Appearance. views/appearance.js wires it. -->
+<form novalidate>
+  <sherpa-layout-grid>
+
+    <sherpa-container data-col-span="reading">
+      <sherpa-container-header slot="header"
+                               data-heading="Appearance"
+                               data-description="Colour mode and density apply as you change them."></sherpa-container-header>
+      <sherpa-stack data-gap="xl">
+        <!-- Radios via populate([{value,label,description}]) -->
+        <sherpa-select-group id="mode-group" data-label="Colour mode"></sherpa-select-group>
+
+        <sherpa-list>
+          <sherpa-list-item data-label="Compact density"
+                            data-description="Tighten spacing across dense views.">
+            <sherpa-switch slot="trailing" id="sw-compact" name="compact" data-type="simple"></sherpa-switch>
+          </sherpa-list-item>
+        </sherpa-list>
+
+        <sherpa-slider
+          id="page-size"
+          data-label="Items per page"
+          data-show-value
+          min="10" max="100" step="10"></sherpa-slider>
+      </sherpa-stack>
+    </sherpa-container>
+
+    <sherpa-container-footer data-col-span="reading" data-align="end">
+      <sherpa-button type="button" class="cancel-btn">Cancel</sherpa-button>
+      <sherpa-button type="submit" data-look="saturated">Save changes</sherpa-button>
+    </sherpa-container-footer>
+
+  </sherpa-layout-grid>
+</form>

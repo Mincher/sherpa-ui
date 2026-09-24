@@ -68,7 +68,9 @@
     // Sentinel proving hot-swaps stay in the SAME document (never a full reload).
     window.__sherpaAppBooted = (window.__sherpaAppBooted ?? 0) + 1;
 
-    const VIEWS = ['dashboard', 'records', 'settings', 'chat'];
+    const VIEWS = ['dashboard', 'records', 'profile', 'accessibility', 'appearance', 'chat'];
+    // These open with the rail in SETTINGS mode and a pared-back header.
+    const SETTINGS_VIEWS = new Set(['profile', 'accessibility', 'appearance']);
     const DEFAULT_VIEW = 'dashboard';
 
     const viewRoot = document.getElementById('view-root');
@@ -77,10 +79,12 @@
     /* App state that outlives a view swap. Declared here because the view
        loader reads /nav/pinned before the theme block further down runs. */
     const session = new SessionStore({
-      theme: { mode: document.documentElement.dataset.mode ?? 'light' },
+      theme: { mode: document.documentElement.dataset.mode ?? 'light', density: 'default' },
       nav: { pinned: false, favorites: [], recent: [] },
     });
     session.persist('/theme/mode');
+    // Only these two: the Appearance switch never offers `comfortable`.
+    session.persist('/theme/density', { guard: (v) => v === 'default' || v === 'compact' });
     session.persist('/nav/pinned');
 
     /* Favourites and Recents are STORED ROWS, not views, so a stored shape this
@@ -118,8 +122,14 @@
       ],
       // The settings BUTTON in the nav header swaps the rail to these pages.
       settingsSections: [
-        { label: 'Account', items: [
-          { id: 'view-settings', label: 'Preferences', icon: 'sliders-up', href: '?view=settings' },
+        { label: 'User Profile', items: [
+          { id: 'view-profile', label: 'Details & notifications', icon: 'person', href: '?view=profile' },
+        ] },
+        { label: 'Accessibility', items: [
+          { id: 'view-accessibility', label: 'Motion & contrast', icon: 'universal-access', href: '?view=accessibility' },
+        ] },
+        { label: 'Appearance', items: [
+          { id: 'view-appearance', label: 'Theme & density', icon: 'paint-roller', href: '?view=appearance' },
         ] },
       ],
     };
@@ -134,7 +144,7 @@
     const idForView  = (v) => `view-${v}`;
 
     /** The id of whichever nav row points at this view. settingsSections counts:
-     * Preferences is a real row opening a real view. Children are deliberately
+     * each is a real row opening a real view. Children are deliberately
      * NOT walked: a Favorites copy of Records must not out-rank the real row. */
     const navRowIdForView = (view) => {
       const all = [...(navConfig.quickItems ?? []),
@@ -178,6 +188,11 @@
       return VIEWS.includes(v) ? v : DEFAULT_VIEW;
     };
 
+    // The header's action buttons, as index.html's markup declares them.
+    const HEADER_ACTIONS = ['data-ai', 'data-labs', 'data-theme-toggle',
+                            'data-account', 'data-help', 'data-menu'];
+    let settingsHeader = false;
+
     // Guard against races: only the newest load may commit.
     let loadToken = 0;
     let cleanup = null;   // teardown returned by the current view's init()
@@ -194,7 +209,8 @@
       /* Through the rail's OWN setter, not a raw dataset write: the setter
          announces the change, so the app-shell's content inset follows.
          A PINNED rail is the reader's choice and survives the swap. */
-      nav.state = name === 'settings' ? 'settings'
+      const inSettings = SETTINGS_VIEWS.has(name);
+      nav.state = inSettings ? 'settings'
                 : session.get('/nav/pinned') ? 'pinned'
                 : 'collapsed';
 
@@ -205,6 +221,12 @@
       /* Home is the root, so it has nothing to go back from. */
       const header = document.querySelector('sherpa-app-header');
       header?.toggleAttribute('data-back', name !== DEFAULT_VIEW);
+
+      // Settings needs none of the header's actions, nor the filter bar's.
+      settingsHeader = inSettings;
+      for (const attr of HEADER_ACTIONS) header?.toggleAttribute(attr, !inSettings);
+      viewToolbar()?.toggleAttribute('data-no-actions', inSettings);
+      syncBadge();
 
       /* Title and icon ARE the selected nav row's — one value, one owner. */
       syncHeaderToNav(header, name);
@@ -220,7 +242,7 @@
       const mod = await import(`./views/${name}.js`);
       if (token !== loadToken) return;
 
-      cleanup = await mod.init(viewRoot);
+      cleanup = await mod.init(viewRoot, { session });
 
       /* Recorded LAST, so a view that failed to load never enters Recents. The
          list caps itself at 5 and moves a re-visit up. */
@@ -339,7 +361,7 @@
     // component here counts an empty list on the first pass.
     const syncBadge = () => {
       const unread = notificationSource.rows.filter((n) => n.unread).length;
-      if (unread > 0) appHeader.setAttribute('data-notifications', String(unread));
+      if (unread > 0 && !settingsHeader) appHeader.setAttribute('data-notifications', String(unread));
       else appHeader.removeAttribute('data-notifications');
     };
     notificationSource.addEventListener('change', syncBadge);
@@ -421,7 +443,14 @@
        `whenDefined` resolves when the class registers, but SherpaElement builds
        its shadow root after that, so a glyph written then lands before the
        button exists. `rendered` is the promise that means the DOM is there. */
-    const resync = () => session.set('/theme/mode', session.get('/theme/mode'));
+    session.subscribe('/theme/density', (density) => {
+      if (density === 'compact') document.documentElement.dataset.density = density;
+      else delete document.documentElement.dataset.density;
+    });
+    const resync = () => {
+      session.set('/theme/mode', session.get('/theme/mode'));
+      session.set('/theme/density', session.get('/theme/density'));
+    };
     resync();
     void customElements.whenDefined('sherpa-app-header')
       .then(() => document.querySelector('sherpa-app-header')?.rendered)
