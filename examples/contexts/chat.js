@@ -21,7 +21,7 @@ export async function init(root) {
   shell?.setAttribute('data-no-header', '');
 
   // ── Shared header (populate for when the user leaves chat + comes back) ──
-  const header = document.querySelector('sherpa-app-shell sherpa-app-header');
+  const header = document.querySelector('sherpa-app-shell > sherpa-app-header');
   header?.populate({
     breadcrumb: [
       // Every crumb links to a REAL page. The trail used to name sections

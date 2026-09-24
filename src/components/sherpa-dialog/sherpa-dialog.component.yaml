@@ -58,12 +58,20 @@ props:
     kind: style
     description: — status colour cascade (critical | warning | success | info | urgent)
   - $type: prop
+    name: data-type
+    type: string
+    observed: false
+    kind: style
+    description: >-
+      — modal  | overlay — overlay fills its container and opens NON-modal, so the page beside it
+      stays live
+  - $type: prop
     name: open
     type: boolean
     observed: true
     native: true
     default: false
-    description: — native boolean (read reflects dialog.open; set → showModal()/close())
+    description: — native boolean (read reflects dialog.open; set → show()/close())
 states:
   - $type: state
     name: has-header
@@ -74,6 +82,9 @@ states:
   - $type: state
     name: has-footer
     selector: ":host([data-has-footer])"
+  - $type: state
+    name: overlay
+    selector: ":host([data-type=\"overlay\"])"
 capabilities:
   - $type: capability
     api: js-property-mirror
@@ -102,7 +113,7 @@ $extensions:
       - $type: method
         name: show
         args: ""
-        description: Open as a modal — top layer, backdrop, focus trap.
+        description: "Open it: a modal goes to the top layer with a backdrop; an overlay stays in place."
       - $type: method
         name: hide
         args: ""

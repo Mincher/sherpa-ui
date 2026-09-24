@@ -47,6 +47,13 @@ anatomy:
               - el: div
                 class: context-frame
                 slot: ""
+          - el: div
+            class: overlay
+            part: overlay
+            children:
+              - slot: overlay
+                attrs:
+                  data-accepts: dialog
 props:
   - $type: prop
     name: data-nav-state

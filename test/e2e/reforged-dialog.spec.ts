@@ -108,3 +108,39 @@ test('the card still has a MAXIMUM, so a long form does not fill the screen', as
   // 32rem = 512px, or 92vw.
   expect(r.w).toBeLessThanOrEqual(Math.min(512, Math.round(r.viewport * 0.92)) + 1);
 });
+
+test('data-type="overlay" opens NON-modal, fills its box, takes focus, and ESC closes it', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const box = document.createElement('div');
+    box.style.cssText = 'position: relative; display: grid; inline-size: 600px; block-size: 400px';
+    const el = document.createElement('sherpa-dialog') as DialogEl;
+    el.dataset['type'] = 'overlay';
+    el.innerHTML = '<p>settings</p>';
+    box.appendChild(el);
+    document.getElementById('root')!.appendChild(box);
+    await el.rendered;
+    const dialog = el.shadowRoot!.querySelector<HTMLDialogElement>('.root')!;
+    const closedDisplay = getComputedStyle(el).display;
+
+    el.show!();
+    const rect = dialog.getBoundingClientRect();
+    const opened = {
+      modal: dialog.matches(':modal'),
+      size: `${rect.width}x${rect.height}`,
+      focusWithin: el.matches(':focus-within'),
+    };
+    let closeEvents = 0;
+    el.addEventListener('close', () => { closeEvents += 1; });
+    // The native `close` is QUEUED, so wait for it rather than a tick.
+    const closed = new Promise((res) => { el.addEventListener('close', res, { once: true }); setTimeout(res, 1000); });
+    dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, composed: true }));
+    await closed;
+    return { closedDisplay, opened, afterEsc: el.open, closeEvents };
+  });
+  expect(r.closedDisplay).toBe('none');       // closed, it takes no room and blocks nothing
+  expect(r.opened.modal).toBe(false);         // the page beside it stays live
+  expect(r.opened.size).toBe('600x400');      // fills its container
+  expect(r.opened.focusWithin).toBe(true);    // so ESC reaches it
+  expect(r.afterEsc).toBe(false);
+  expect(r.closeEvents).toBe(1);
+});

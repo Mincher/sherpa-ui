@@ -89,6 +89,44 @@
   --_pad-inline: var(--sherpa-theme-padding-sm, 4px);
 }
 
+/* ── Overlay — fills its container, non-modal ────────────────────────
+   The HOST is the box, so a parent grid can place it; closed, it takes no
+   room and blocks nothing. The surface is the app's, not a card's. */
+:host([data-type="overlay"]) {
+  display: block;
+  position: relative;
+  min-inline-size: 0;
+  min-block-size: 0;
+}
+:host([data-type="overlay"]:not([open])) {
+  display: none;
+}
+:host([data-type="overlay"]) .root {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  min-inline-size: 0;
+  max-inline-size: none;
+  max-block-size: none;
+  margin: 0;
+  overflow: hidden;
+  border-width: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: var(--sherpa-theme-surface-default-base, #ffffff);
+}
+:host([data-type="overlay"]) .root:focus { outline: none; }
+:host([data-type="overlay"]) .body {
+  padding: 0;
+  overflow: auto;
+}
+/* A slotted app header brings its own chrome. */
+:host([data-type="overlay"]) .header ::slotted(*) {
+  padding: 0;
+  border-block-end: none;
+}
+
 /* Figma header title: content/body/base 14/20 medium. */
 .heading-text {
   color: var(--_status-text, var(--sherpa-theme-content-body-base, #0c0b11));

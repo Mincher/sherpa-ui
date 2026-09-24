@@ -29,7 +29,7 @@ const app = express();
 const PORT = process.env.PORT ?? 4200;
 
 // The pages a nav row opens are CONTEXTS (CLAUDE.md "Navigation terms").
-const CONTEXTS = ['dashboard', 'records', 'chat', 'profile', 'accessibility', 'appearance'];
+const CONTEXTS = ['dashboard', 'records', 'chat'];
 const NAME_RE = /^sherpa-[a-z0-9-]+$/;
 const CONTEXT_RE = /^[a-z0-9-]+$/;
 

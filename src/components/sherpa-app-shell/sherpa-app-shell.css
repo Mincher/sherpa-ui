@@ -38,6 +38,8 @@
 }
 
 /* ── Header + content wrapper — inset past the rail ─────────────────── */
+/* The content and the overlay share ONE cell; the overlay paints on top, and
+   the rail (z-index 2) stays above both. */
 .frame {
   display: grid;
   grid-template-rows: 1fr;
@@ -80,12 +82,20 @@
   position: relative;
   z-index: 1;
   isolation: isolate;
+  grid-area: 1 / 1;
   /* A COLUMN, so `.context-frame` takes what the sticky header leaves rather than the
      whole scroller. As a plain block a `block-size: 100%` Context started BELOW
      the header and still ran a header's height past the fold.
      TRAP T-a-fit-grid-needs-a-sized-parent */
   display: flex;
   flex-direction: column;
+}
+
+/* The slotted element is the box; a closed dialog takes none. */
+.overlay { display: contents; }
+.overlay ::slotted(*) {
+  grid-area: 1 / 1;
+  z-index: 1;
 }
 
 /* The inset follows the rail's LATCHED state only — hover reveals over the top. */

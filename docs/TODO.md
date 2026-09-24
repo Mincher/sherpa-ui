@@ -433,15 +433,13 @@ not a live binding. `sherpa-nav-item` touches the data layer not at all.
 Bind the nav to a Store and both renderings follow one source. A change to the
 nav then reaches the rail and the menu together.
 
-### `[ ]` Settings opens as an overlay, and closing it puts you back
+### `[x]` Settings opens as an overlay, and closing it puts you back
 
-Queued 2026-09-24. Leaving Settings must restore the Area, Context and View the
-user was in before. Today Settings Contexts are routed like any other, so the
-previous Context is gone.
-
-The likely shape: a new `sherpa-dialog` variant that covers the WHOLE app header
-and content area, with the Settings content inside. The rail stays in Settings
-mode beside it. Closing it leaves the page under it untouched.
+Done 2026-09-24. `sherpa-dialog data-type="overlay"` sits in the app shell's new
+`overlay` slot and covers the header and content; the rail stays beside it. The
+Context under it is never reloaded, so its View survives. The URL carries both:
+`?context=records&settings=profile`. Proven by
+`test/e2e/reforged-settings-overlay.spec.ts` — four ways out, one per test.
 
 ### `[ ]` Figma: use the Navigation terms
 
@@ -454,6 +452,8 @@ The code moved to Section / Area / Context / View on 2026-09-24 (CLAUDE.md
   the label + divider only.
 - Any `Views` section label, or frame named for a page, is a Context.
 - Keep `View` only for the View chip and its View group (★ · Save · ▾).
+- `sherpa-dialog` has a new `data-type="overlay"` (fills the app area, non-modal)
+  and `sherpa-app-shell` a new `overlay` slot. Neither exists in Figma yet.
 
 ### `[ ]` Breadcrumbs are for workflow, not for the nav
 

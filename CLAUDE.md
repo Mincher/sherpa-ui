@@ -274,6 +274,11 @@ A Context's sub-pages are its **Views**, picked in the View chip — never child
 nav rows. Add an Area only when one is asked for. `examples/contexts/settings-views.js`
 is the reference: three Settings Contexts, two Views each.
 
+**Settings opens ON TOP of the Context**, in `<sherpa-dialog data-type="overlay">`
+in the app shell's `overlay` slot. The Context under it is never reloaded, so
+leaving Settings restores its View. The URL carries both:
+`?context=records&settings=profile`.
+
 So a page is a **Context**, not a view: `examples/contexts/`, `loadContext`,
 `/template/context/:context`. "View" is kept for saved views — `ViewSnapshot`,
 `onViewPicked`, the `data-type="view"` toolbar and its `view-*` events. Figma

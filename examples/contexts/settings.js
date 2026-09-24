@@ -1,6 +1,7 @@
 /**
- * examples/contexts/settings.js — every Settings Context. The header carries a
- * trail and the View chip alone; a picked View swaps the one container.
+ * examples/contexts/settings.js — every Settings Context, inside the Settings
+ * overlay. Its header carries the View chip alone; a picked View swaps the one
+ * container.
  */
 import { SherpaToast, onViewPicked, viewOptions } from '../../dist/index.js';
 import { SETTINGS_VIEWS } from './settings-views.js';
@@ -40,16 +41,14 @@ const WIRING = {
   },
 };
 
-/** `label` is the Context row's, read from the nav config. */
-export async function init(root, { session, context, label }) {
+/** `label` is the Context row's; `header` is the Settings overlay's own. */
+export async function init(root, { session, context, label, header }) {
   await Promise.all(['sherpa-app-header', 'sherpa-toast'].map((t) => customElements.whenDefined(t)));
   const views = SETTINGS_VIEWS[context];
   const first = Object.keys(views)[0];
   const region = root.querySelector('#view-region');
 
-  const header = document.querySelector('sherpa-app-shell sherpa-app-header');
   await header?.populate({
-    breadcrumb: [{ label: 'Home', href: '?context=dashboard' }, { label }],
     // Settings has no data to filter, so the View chip is the whole bar.
     filters: [{
       id: 'view', label: 'View', persistent: true, active: true, select: 'single',

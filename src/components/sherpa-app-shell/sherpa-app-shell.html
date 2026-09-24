@@ -12,6 +12,8 @@
     nav       replace the default <sherpa-nav>          (data-accepts: nav)
     header    replace the default <sherpa-app-header>   (data-accepts: app-header, toolbar)
     (default) the Context content                       (data-accepts: any)
+    overlay   covers the header and content, beside the rail — a
+              <sherpa-dialog data-type="overlay">             (data-accepts: dialog)
 -->
 <template id="default">
   <div class="shell">
@@ -28,6 +30,7 @@
         </header>
         <div class="context-frame"><slot></slot></div>
       </main>
+      <div class="overlay" part="overlay"><slot name="overlay" data-accepts="dialog"></slot></div>
     </div>
   </div>
 </template>

@@ -12,6 +12,7 @@ export class SherpaDialog extends SherpaElement {
   static override html = new URL('./sherpa-dialog.html', import.meta.url);
   static override props = {
     'data-heading': { type: 'string', kind: 'content', to: '.heading-text' },
+    'data-type': { type: 'enum', kind: 'style', values: ['modal', 'overlay'] },
   } as const;
 
   static override observed = ['open'];
@@ -20,11 +21,22 @@ export class SherpaDialog extends SherpaElement {
     return this.$<HTMLDialogElement>('.root');
   }
 
+  /** An overlay leaves the page beside it live, so it is never modal. */
+  get #modal(): boolean {
+    return this.dataset['type'] !== 'overlay';
+  }
+
   override onRender(): void {
     const dialog = this.#dialog();
     if (!dialog) return;
-    if (this.hasAttribute('open')) dialog.showModal();
+    if (this.hasAttribute('open')) this.#showDialog(dialog);
     dialog.addEventListener('close', this.#onClose);
+    // A non-modal <dialog> gets no ESC from the browser.
+    this.addEventListener('keydown', this.#onKeydown);
+  }
+
+  override onDisconnect(): void {
+    this.removeEventListener('keydown', this.#onKeydown);
   }
 
   override onChange(name: string): void {
@@ -42,11 +54,22 @@ export class SherpaDialog extends SherpaElement {
     else this.close();
   }
 
-  /** Open as a modal — top layer, backdrop, focus trap. */
+  /** Open it: a modal goes to the top layer with a backdrop; an overlay stays in place. */
   show(): void {
-    const dialog = this.#dialog();
-    if (dialog && !dialog.open) dialog.showModal();
+    // The attribute FIRST: a closed overlay host is display:none, and cannot take focus.
     this.toggleAttribute('open', true);
+    const dialog = this.#dialog();
+    if (dialog && !dialog.open) this.#showDialog(dialog);
+  }
+
+  #showDialog(dialog: HTMLDialogElement): void {
+    if (this.#modal) {
+      dialog.showModal();
+      return;
+    }
+    dialog.show();
+    // show() moves no focus into SLOTTED content, and ESC is heard only from inside.
+    if (!this.matches(':focus-within')) dialog.focus();
   }
 
   /**
@@ -65,6 +88,12 @@ export class SherpaDialog extends SherpaElement {
   close(): void {
     this.hide();
   }
+
+  #onKeydown = (event: KeyboardEvent): void => {
+    if (event.key !== 'Escape' || this.#modal || !this.open) return;
+    event.preventDefault();
+    this.hide();
+  };
 
   #onClose = (): void => {
     this.toggleAttribute('open', false);

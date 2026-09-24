@@ -154,3 +154,28 @@ test('data-no-nav hides the rail and drops the content inset', async ({ page }) 
   expect(r.hidden).toBe('none');
   expect(r.inset).toBe('0px');
 });
+
+test('the overlay slot covers the header and content exactly, and the rail stays on top', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-app-shell') as HTMLElement & { rendered?: Promise<void> };
+    el.setAttribute('data-nav-state', 'pinned');
+    el.innerHTML =
+      '<div slot="nav" style="inline-size: 320px">N</div><div slot="header">H</div><div>Content</div>' +
+      '<div slot="overlay">Settings</div>';
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await new Promise((res) => setTimeout(res, 250)); // the inset animates
+    const frame = el.shadowRoot!.querySelector('.frame')!.getBoundingClientRect();
+    const overlay = el.querySelector('[slot="overlay"]')!.getBoundingClientRect();
+    const nav = el.shadowRoot!.querySelector('.nav') as HTMLElement;
+    return {
+      frame: `${frame.x},${frame.y} ${frame.width}x${frame.height}`,
+      overlay: `${overlay.x},${overlay.y} ${overlay.width}x${overlay.height}`,
+      navZ: Number(getComputedStyle(nav).zIndex),
+      overlayZ: Number(getComputedStyle(el.querySelector('[slot="overlay"]')!).zIndex),
+    };
+  });
+  expect(r.overlay).toBe(r.frame);
+  expect(r.navZ).toBeGreaterThan(r.overlayZ);
+});

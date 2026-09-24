@@ -4,7 +4,9 @@
 
   Public API:
     data-heading  — convenience header label (a slotted [slot=header] overrides it)
-    open          — native boolean (read reflects dialog.open; set → showModal()/close())
+    data-type     — modal (default) | overlay — overlay fills its container and
+                    opens NON-modal, so the page beside it stays live
+    open          — native boolean (read reflects dialog.open; set → show()/close())
     data-status   — status colour cascade (critical | warning | success | info | urgent)
 
   Slots:
@@ -18,7 +20,7 @@
   Fires: close (detail: { })
 -->
 <template id="default">
-  <dialog class="root sherpa-border-edges sherpa-border-corners" part="root">
+  <dialog class="root sherpa-border-edges sherpa-border-corners" part="root" tabindex="-1">
     <div class="header" part="header">
       <span class="heading-text"></span>
       <slot name="header"></slot>

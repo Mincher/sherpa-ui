@@ -112,7 +112,7 @@ export async function init(root) {
   const confirmText = root.querySelector('#confirm-text');
 
   /* Shared nav + header (live in index.html). */
-  const header = document.querySelector('sherpa-app-shell sherpa-app-header');
+  const header = document.querySelector('sherpa-app-shell > sherpa-app-header');
 
   await Promise.all([
     customElements.whenDefined('sherpa-app-header'),

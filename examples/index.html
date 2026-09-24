@@ -42,6 +42,16 @@
          area. A scrolling Context is unaffected; it overflows this box exactly as
          it overflowed the shell. TRAP T-a-fit-grid-needs-a-sized-parent -->
     <main id="context-root" style="min-block-size: 0"></main>
+
+    <!-- Settings covers the header and content, beside the rail. The Context
+         under it is never reloaded, so closing it puts the reader back. -->
+    <sherpa-dialog slot="overlay" id="settings" data-type="overlay">
+      <sherpa-app-header slot="header" data-back>
+        <sherpa-quick-filter-toolbar slot="filters" data-type="view" data-no-actions
+                                     data-reset-on-populate></sherpa-quick-filter-toolbar>
+      </sherpa-app-header>
+      <div id="settings-root"></div>
+    </sherpa-dialog>
   </sherpa-app-shell>
 
   <!-- Outside the app shell on purpose: the menu is a popover in the top layer,
@@ -69,11 +79,14 @@
     window.__sherpaAppBooted = (window.__sherpaAppBooted ?? 0) + 1;
 
     /* A CONTEXT is what a nav row opens: it fills the header and the content.
-       Terms: CLAUDE.md "Navigation terms". Settings Contexts open with the rail
-       in SETTINGS mode and a pared-back header. */
-    const SETTINGS_CONTEXTS = new Set(['profile', 'accessibility', 'appearance']);
-    const CONTEXTS = ['dashboard', 'records', 'chat', ...SETTINGS_CONTEXTS];
+       Terms: CLAUDE.md "Navigation terms". A Settings Context opens in an
+       overlay ON TOP of the Context, so the URL can carry both. */
+    const CONTEXTS = ['dashboard', 'records', 'chat'];
+    const SETTINGS_CONTEXTS = ['profile', 'accessibility', 'appearance'];
     const DEFAULT_CONTEXT = 'dashboard';
+
+    // The main header, not the one inside the Settings overlay.
+    const mainHeader = () => document.querySelector('sherpa-app-shell > sherpa-app-header');
 
     const contextRoot = document.getElementById('context-root');
     const nav = document.querySelector('sherpa-app-shell sherpa-nav');
@@ -125,9 +138,9 @@
          Context's pages are Views, in its View chip. */
       settingsSections: [
         { items: [
-          { id: 'context-profile', label: 'User Profile', icon: 'person', href: '?context=profile' },
-          { id: 'context-accessibility', label: 'Accessibility', icon: 'universal-access', href: '?context=accessibility' },
-          { id: 'context-appearance', label: 'Appearance', icon: 'paint-roller', href: '?context=appearance' },
+          { id: 'settings-profile', label: 'User Profile', icon: 'person', href: '?settings=profile' },
+          { id: 'settings-accessibility', label: 'Accessibility', icon: 'universal-access', href: '?settings=accessibility' },
+          { id: 'settings-appearance', label: 'Appearance', icon: 'paint-roller', href: '?settings=appearance' },
         ] },
       ],
     };
@@ -140,6 +153,14 @@
       return CONTEXTS.includes(c) ? c : null;
     };
     const idForContext = (c) => `context-${c}`;
+
+    /* ?context=records&settings=profile — the Settings Context rides on top. */
+    const settingsForHref = (href) => {
+      const s = href?.startsWith('?') ? new URLSearchParams(href.slice(1)).get('settings') : null;
+      return SETTINGS_CONTEXTS.includes(s) ? s : null;
+    };
+    const settingsFromURL = () => settingsForHref(location.search);
+    const urlFor = (context, settings) => `?context=${context}${settings ? `&settings=${settings}` : ''}`;
 
     /* Every configured row. Children are deliberately NOT walked: a Favorites
        copy of Records must not out-rank the real row. */
@@ -163,10 +184,10 @@
       label: rowForHref(context)?.label ?? HEADLESS_CONTEXTS[context]?.label ?? context,
     });
 
-    /* Write the rail's CURRENT row onto the header. The rail is asked what it
-       shows rather than the config being read twice. */
+    /* Write the Context's own row onto the header — from the config, not the
+       rail's current row: with Settings open on top, that row is a Settings one. */
     const syncHeaderToNav = (header, context) => {
-      const entry = nav.activeEntry ?? HEADLESS_CONTEXTS[context];
+      const entry = rowForHref(context) ?? HEADLESS_CONTEXTS[context];
       if (!header || !entry) return;
       header.setAttribute('data-heading', entry.label ?? '');
       // No icon on the row → clear it: a stale glyph is worse than none.
@@ -180,45 +201,33 @@
       return CONTEXTS.includes(c) ? c : DEFAULT_CONTEXT;
     };
 
-    // The header's action buttons, as index.html's markup declares them.
-    const HEADER_ACTIONS = ['data-ai', 'data-labs', 'data-theme-toggle',
-                            'data-account', 'data-help', 'data-menu'];
-    let settingsHeader = false;
-
     // Guard against races: only the newest load may commit.
     let loadToken = 0;
     let cleanup = null;   // teardown returned by the current Context's init()
+    let loadedContext = null;
 
     async function loadContext(name) {
       const token = ++loadToken;
+      loadedContext = name;
 
       // Tear down the previous Context (e.g. chat's data-no-header).
       if (typeof cleanup === 'function') { try { cleanup(); } catch { /* noop */ } cleanup = null; }
 
-      // Found by href, so Home lights up for the dashboard.
-      nav.dataset.currentId = rowForHref(name)?.id ?? idForContext(name);
-
-      /* Through the rail's OWN setter, not a raw dataset write: the setter
-         announces the change, so the app-shell's content inset follows.
-         A PINNED rail is the reader's choice and survives the swap. */
-      const inSettings = SETTINGS_CONTEXTS.has(name);
-      nav.state = inSettings ? 'settings'
-                : session.get('/nav/pinned') ? 'pinned'
-                : 'collapsed';
+      /* Settings open on top owns the rail. Otherwise: found by href, so Home
+         lights up for the dashboard; and through the rail's OWN setter, so the
+         app-shell's inset follows. A PINNED rail survives the swap. */
+      if (!settingsFromURL()) {
+        nav.dataset.currentId = rowForHref(name)?.id ?? idForContext(name);
+        nav.state = session.get('/nav/pinned') ? 'pinned' : 'collapsed';
+      }
 
       // 1) Fetch the bespoke content-only markup for the Context.
       const markup = await (await fetch(`/template/context/${name}`)).text();
       if (token !== loadToken) return;   // a newer navigation superseded us
 
       /* Home is the root, so it has nothing to go back from. */
-      const header = document.querySelector('sherpa-app-header');
+      const header = mainHeader();
       header?.toggleAttribute('data-back', name !== DEFAULT_CONTEXT);
-
-      // Settings needs none of the header's actions, nor the filter bar's.
-      settingsHeader = inSettings;
-      for (const attr of HEADER_ACTIONS) header?.toggleAttribute(attr, !inSettings);
-      viewToolbar()?.toggleAttribute('data-no-actions', inSettings);
-      syncBadge();
 
       /* Title and icon ARE the selected nav row's — one value, one owner. */
       syncHeaderToNav(header, name);
@@ -230,11 +239,10 @@
       await customElements.whenDefined('sherpa-app-shell');
       if (token !== loadToken) return;
 
-      // Every Settings Context shares one module.
-      const mod = await import(`./contexts/${inSettings ? 'settings' : name}.js`);
+      const mod = await import(`./contexts/${name}.js`);
       if (token !== loadToken) return;
 
-      cleanup = await mod.init(contextRoot, { session, context: name, label: rowForHref(name)?.label });
+      cleanup = await mod.init(contextRoot);
 
       /* Recorded LAST, so a Context that failed to load never enters Recents. The
          list caps itself at 5 and moves a re-visit up. */
@@ -293,7 +301,7 @@
        The toolbar is `data-locked`, so its star is a REQUEST. The app owns the
        list, answers by writing data-favourite back, and the rail follows from
        the list's own subscriber. TRAP T-the-star-reports-it-does-not-decide */
-    const viewToolbar = () => document.querySelector('sherpa-quick-filter-toolbar[data-type="view"]');
+    const viewToolbar = () => mainHeader()?.querySelector('sherpa-quick-filter-toolbar[data-type="view"]');
 
     function syncFavouriteStar(context) {
       viewToolbar()?.toggleAttribute('data-favourite', favorites.has({ context }));
@@ -306,6 +314,82 @@
       syncFavouriteStar(context);
     });
 
+    /* ── Settings — an overlay on the Context ─────────────────────────────
+       The URL's `settings` is the ONE owner. The settings button, the back
+       arrow, ESC and browser Back are intents: each writes or reads the URL,
+       and syncSettings() makes the screen match it. */
+    const settingsDialog = document.getElementById('settings');
+    const settingsRoot = document.getElementById('settings-root');
+    const settingsHeader = settingsDialog.querySelector('sherpa-app-header');
+    let settingsToken = 0;
+    let settingsCleanup = null;
+    let openSettingsName = null;
+    let lastSettings = SETTINGS_CONTEXTS[0];
+
+    const settingsRow = (name) => (navConfig.settingsSections ?? [])
+      .flatMap((s) => s.items ?? []).find((i) => settingsForHref(i.href) === name);
+
+    const dropSettingsContent = () => {
+      if (typeof settingsCleanup === 'function') { try { settingsCleanup(); } catch { /* noop */ } }
+      settingsCleanup = null;
+    };
+
+    async function openSettings(name) {
+      const token = ++settingsToken;
+      openSettingsName = lastSettings = name;
+      dropSettingsContent();
+
+      const row = settingsRow(name);
+      nav.dataset.currentId = row?.id ?? '';
+      nav.state = 'settings';
+      settingsHeader.setAttribute('data-heading', row?.label ?? '');
+      if (row?.icon) settingsHeader.setAttribute('data-icon', row.icon);
+      else settingsHeader.removeAttribute('data-icon');
+
+      const markup = await (await fetch(`/template/context/${name}`)).text();
+      if (token !== settingsToken) return;
+      settingsRoot.innerHTML = markup;
+      const mod = await import('./contexts/settings.js');
+      if (token !== settingsToken) return;
+      settingsCleanup = await mod.init(settingsRoot,
+        { session, context: name, label: row?.label, header: settingsHeader });
+      if (token !== settingsToken) return;
+
+      // Shown LAST, so opening it can move focus to something inside — ESC needs that.
+      await customElements.whenDefined('sherpa-dialog');
+      settingsDialog.show();
+    }
+
+    function closeSettings() {
+      ++settingsToken;
+      openSettingsName = null;
+      dropSettingsContent();
+      settingsDialog.hide();
+      // Back to the Context underneath — it was never unloaded.
+      const context = contextFromURL();
+      nav.dataset.currentId = rowForHref(context)?.id ?? idForContext(context);
+      // Left by the settings button, the rail has already moved; by anything else, move it.
+      if (nav.state === 'settings') nav.state = session.get('/nav/pinned') ? 'pinned' : 'collapsed';
+    }
+
+    /** Make the screen match the URL. */
+    function syncSettings() {
+      const name = settingsFromURL();
+      if (name && name !== openSettingsName) void openSettings(name);
+      else if (!name && openSettingsName) closeSettings();
+    }
+
+    /** An intent: write the URL, then follow it. */
+    function goSettings(name) {
+      if (name === settingsFromURL()) return;
+      history.pushState({}, '', urlFor(contextFromURL(), name));
+      syncSettings();
+    }
+
+    settingsHeader.addEventListener('back-click', () => goSettings(null));
+    // ESC closes the dialog itself; the URL follows.
+    settingsDialog.addEventListener('close', (e) => { if (e.target === settingsDialog) goSettings(null); });
+
     /* The rail REPORTS its mode; the app owns whether the pin is remembered.
        Settings is a temporary detour, so only the two latching-vs-not modes
        write. `hover` is a pointer state and never touches the stored value. */
@@ -313,13 +397,16 @@
       const state = e.detail.state;
       if (state === 'pinned') session.set('/nav/pinned', true);
       else if (state === 'collapsed') session.set('/nav/pinned', false);
+      // The settings button is an INTENT to open or leave Settings.
+      if (state === 'settings' && !openSettingsName) goSettings(lastSettings);
+      else if (state !== 'settings' && openSettingsName) goSettings(null);
     });
 
     /* Areas open no Context (Recent, Favorites), so they never reach the router, so the
        rail's own event updates the header for both cases. */
     nav.addEventListener('nav-select', (e) => {
-      const header = document.querySelector('sherpa-app-header');
-      if (!header) return;
+      const header = mainHeader();
+      if (!header || nav.state === 'settings') return;
       header.setAttribute('data-heading', e.detail.label ?? '');
       if (e.detail.icon) header.setAttribute('data-icon', e.detail.icon);
       else header.removeAttribute('data-icon');
@@ -344,7 +431,7 @@
     const notificationSource = new DataSource({ store: notificationFeed });
     const notifications = document.getElementById('notifications');
     // Its own reference: the `header` further up is local to the Context loader.
-    const appHeader = document.querySelector('sherpa-app-header');
+    const appHeader = mainHeader();
 
     // The LIST is bound. Rows in, and its own events out.
     notificationSource.bind(notifications);
@@ -354,7 +441,7 @@
     // component here counts an empty list on the first pass.
     const syncBadge = () => {
       const unread = notificationSource.rows.filter((n) => n.unread).length;
-      if (unread > 0 && !settingsHeader) appHeader.setAttribute('data-notifications', String(unread));
+      if (unread > 0) appHeader.setAttribute('data-notifications', String(unread));
       else appHeader.removeAttribute('data-notifications');
     };
     notificationSource.addEventListener('change', syncBadge);
@@ -392,12 +479,19 @@
       if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
       const row = e.composedPath().find((n) => n.dataset && n.dataset.href);
       if (!row) return;
+      const settings = settingsForHref(row.dataset.href);
+      if (settings) {
+        e.preventDefault();
+        goSettings(settings);
+        return;
+      }
       const context = contextForHref(row.dataset.href);
       if (!context) return;
       e.preventDefault();
       if (context === contextFromURL() && contextRoot.children.length) return;
-      history.pushState({ context }, '', `?context=${context}`);
+      history.pushState({ context }, '', urlFor(context, null));
       loadContext(context);
+      syncSettings();
     });
 
     // A BREADCRUMB click swaps in-page too — sherpa-breadcrumbs fires this and
@@ -408,8 +502,9 @@
       const context = contextForHref(href);
       if (!context) return;
       if (context === contextFromURL() && contextRoot.children.length) return;
-      history.pushState({ context }, '', `?context=${context}`);
+      history.pushState({ context }, '', urlFor(context, null));
       loadContext(context);
+      syncSettings();
     });
 
     /* The moon button flips light ↔ dark. The whole switch is one attribute on
@@ -424,7 +519,7 @@
        anything that changes the mode, from anywhere, lands here. */
     session.subscribe('/theme/mode', (mode) => {
       document.documentElement.dataset.mode = mode;
-      const btn = document.querySelector('sherpa-app-header')?.shadowRoot
+      const btn = mainHeader()?.shadowRoot
         ?.querySelector('.theme-toggle');
       btn?.setAttribute('data-icon-start',
         mode === 'dark' ? 'sun' : 'moon');
@@ -446,7 +541,7 @@
     };
     resync();
     void customElements.whenDefined('sherpa-app-header')
-      .then(() => document.querySelector('sherpa-app-header')?.rendered)
+      .then(() => mainHeader()?.rendered)
       .then(resync);
 
     /* Ask N-zo opens the assistant panel. Its markup is the CHAT template,
@@ -485,13 +580,19 @@
       session.set('/theme/mode', session.get('/theme/mode') === 'dark' ? 'light' : 'dark');
     });
 
-    // Back/forward → load without pushing.
-    window.addEventListener('popstate', () => loadContext(contextFromURL()));
+    // Back/forward: reload the Context only if IT changed, so closing Settings
+    // with Back keeps the page — and its View — as it was.
+    window.addEventListener('popstate', () => {
+      const context = contextFromURL();
+      if (context !== loadedContext) loadContext(context);
+      syncSettings();
+    });
 
     /* First paint, AFTER the rail has stamped its rows: without this await the
        first load finds an empty rail and the header comes up blank. */
     await navReady;
     loadContext(contextFromURL());
+    syncSettings();
   </script>
 </body>
 </html>

@@ -63,7 +63,7 @@ export async function init(root) {
   const $ = (sel) => root.querySelector(sel);
 
   // Shared header — it lives in index.html, not in this Context's root.
-  const header = document.querySelector('sherpa-app-shell sherpa-app-header');
+  const header = document.querySelector('sherpa-app-shell > sherpa-app-header');
   header?.populate(headerConfig);
   header?.setAttribute('data-notifications', '4');
 
