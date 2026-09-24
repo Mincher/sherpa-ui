@@ -37,13 +37,13 @@
    an icon is the same size as its text. */
 .notification-icon {
   font-size: var(--sherpa-theme-size-icon-xs, 14px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-style-content-secondary, #35353d);
 }
 
 /* When it arrived. Quieter than the title, because it is context rather than
    the thing itself. */
 .notification-time {
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-style-content-secondary, #35353d);
   font-size: var(--sherpa-theme-content-size-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
   white-space: nowrap;
@@ -51,8 +51,8 @@
 
 /* ── Unread ────────────────────────────────────────────────────────── */
 
-/* The pip. A filled dot in the ACTIVE brand, the same colour a picked chip
-   wears — "this one wants you" reads as the same kind of state. */
+/* The pip. A filled dot in the ACTIVE mode (pinned in state-pins.yaml), the
+   border a picked chip wears — "this one wants you" reads as the same state. */
 .notification-pip { display: none; }
 [data-unread] .notification-pip {
   display: inline-block;
@@ -60,14 +60,14 @@
   inline-size: var(--sherpa-display-mode-size-2xs, 8px);
   block-size: var(--sherpa-display-mode-size-2xs, 8px);
   border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
-  background: var(--sherpa-style-active-border-base, #c046ff);
+  background: var(--sherpa-style-border-base, #c046ff);
 }
 
 /* An unread row's TITLE carries the weight, so the list is scannable without
    reading it — the pip confirms, the weight is what the eye catches.
    The icon goes darker for the same reason. */
 [data-unread] .notification-icon {
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  color: var(--sherpa-style-content-base, #0c0b11);
 }
 
 /* ── Empty ─────────────────────────────────────────────────────────── */
@@ -75,7 +75,7 @@
 .empty {
   margin: 0;
   padding: var(--sherpa-theme-padding-md, 8px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-style-content-secondary, #35353d);
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-base, 14px);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);

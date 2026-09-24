@@ -398,35 +398,40 @@ test('a value chip that is ON with no values picked paints WARNING, not active',
     toggle.current = true;
     const toggleOn = { empty: toggle.hasAttribute('data-empty'), ...(await paint(toggle)) };
 
-    // The active mode's own tokens, resolved the same way, so the check follows Figma.
-    const probe = document.createElement('div');
-    probe.style.background = 'var(--sherpa-style-active-surface-base)';
-    probe.style.borderTop = '1px solid var(--sherpa-style-active-border-base-1)';
-    document.body.appendChild(probe);
-    const active = { bg: getComputedStyle(probe).backgroundColor, border: getComputedStyle(probe).borderTopColor };
-    probe.remove();
+    // Each mode's own tokens, resolved the same way, so the check follows Figma.
+    const mode = (name: string) => {
+      const probe = document.createElement('div');
+      probe.style.background = `var(--sherpa-style-${name}-surface-base)`;
+      probe.style.borderTop = `1px solid var(--sherpa-style-${name}-border-base-1)`;
+      document.body.appendChild(probe);
+      const cs = getComputedStyle(probe);
+      const out = { bg: cs.backgroundColor, border: cs.borderTopColor };
+      probe.remove();
+      return out;
+    };
 
-    return { emptyOn, withValue, unticked, emptyAgain, toggleOn, active };
+    return { emptyOn, withValue, unticked, emptyAgain, toggleOn, active: mode('active'), warning: mode('warning') };
   });
 
-  // Warning: surface-warning-base #FFF4E1 face, border-warning-2 #FFC44C ring.
+  // Warning: the chip pins the WARNING Style mode (state-pins.yaml).
+  // TRAP T-a-state-colour-binds-the-style-mode
   expect(r.emptyOn.empty).toBe(true);
-  expect(r.emptyOn.bg).toBe('rgb(255, 244, 225)');
-  expect(r.emptyOn.border).toBe('rgb(255, 196, 76)');
+  expect(r.emptyOn.bg).toBe(r.warning.bg);
+  expect(r.emptyOn.border).toBe(r.warning.border);
 
   // Active: the ACTIVE Style mode's face and ring — whatever Figma sets them to.
   // TRAP T-a-state-colour-binds-the-style-mode
   expect(r.withValue.empty).toBe(false);
   expect(r.withValue.bg).toBe(r.active.bg);
   expect(r.withValue.border).toBe(r.active.border);
-  expect(r.emptyOn.bg).not.toBe(r.active.bg);
+  expect(r.emptyOn.border).not.toBe(r.active.border);
 
   // Unticking the last value turns the chip off rather than leaving it on-and-empty.
   expect(r.unticked).toEqual({ current: false, empty: false });
 
   // Switched back on with nothing picked → the warning look returns.
   expect(r.emptyAgain.empty).toBe(true);
-  expect(r.emptyAgain.bg).toBe('rgb(255, 244, 225)');
+  expect(r.emptyAgain.bg).toBe(r.warning.bg);
 
   // The toggle chip keeps the plain active look.
   expect(r.toggleOn.empty).toBe(false);

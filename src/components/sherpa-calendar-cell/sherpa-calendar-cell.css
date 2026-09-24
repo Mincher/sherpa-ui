@@ -36,8 +36,10 @@
   inline-size: 100%;
   block-size: 100%;
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
-  background: transparent;
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  /* Figma: Content binds Style (Transparent, pinned; a selected day pins
+     active); the label binds THEME. TRAP T-a-state-colour-binds-the-style-mode */
+  background: var(--sherpa-style-surface-base, transparent);
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
   font-size: var(--sherpa-theme-content-size-base, 14px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
@@ -48,20 +50,13 @@
   transition: background-color 100ms ease, color 100ms ease;
 }
 
-/* Hover sits one step under the selected tint so the two never read the same. */
-.cell:hover:not(:disabled) .content { background: var(--sherpa-shade-hover); }
+/* Style base / +1 / +2 are default / hover / down, in whatever mode is pinned. */
+.cell:hover:not(:disabled) .content { background: var(--sherpa-style-surface-base-1, #e8e8f64d); }
 
-/* Today is a statement of fact, not a selection — info tint, not active. */
+/* Today is a statement of fact, not a selection — info tint, not active.
+   Figma's today pins Style=info, which resolves to a plain surface. */
 :host([data-state="today"]) .content {
-  background: color-mix(in srgb, var(--sherpa-display-mode-color-info-color-3, #008bba) 30%, transparent);
-}
-
-:host([data-state="selected"]) .content,
-:host([data-state="range-start"]) .content,
-:host([data-state="range-end"]) .content,
-:host([data-state="range-mid"]) .content {
-  /* Figma pins Style=active. base / +1 / +2 = default / hover / down. */
-  background: var(--sherpa-style-active-surface-base, #f2dfff);
+  background: color-mix(in srgb, var(--sherpa-display-mode-color-info-color-3, #008bba) 30%, transparent); /* theme-direct */
 }
 
 /* A range squares the corners that meet, so a run of days reads as one band.
@@ -80,7 +75,7 @@
 
 /* A day from the neighbouring month — kept so the grid holds its shape. */
 :host([data-outside]) .content {
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+  color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */
 }
 
 /* Disabled — outside data-min / data-max. Inactive ink, never opacity. */
@@ -89,6 +84,6 @@
   pointer-events: none;
 }
 :host([disabled]) .content {
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
+  color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */
   background: transparent;
 }

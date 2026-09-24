@@ -11,9 +11,6 @@
   /* Raised only while the tip is UP, so the value tooltip outranks the toolbar
      above it without painting over a neighbouring chip's open menu. */
   position: relative;
-
-  /* The AI type's ring and ink — the active Style mode's border. */
-  --_accent: var(--_status-border, var(--sherpa-style-active-border-base-1, #c046ff));
 }
 
 /* The chip shell is a SNAP WRAPPER, not a box — no fill, no stroke. */
@@ -31,17 +28,19 @@
   margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
 }
 
-/* ── Shared chip chrome — both snapped halves are the same bordered white box.
+/* ── Shared chip chrome — both snapped halves bind what Figma binds; the MODE
+   (on, empty, disabled) comes from scripts/figma-data/state-pins.yaml.
    Kept FIRST: same specificity as .body / .caret, so each may override below.
    A <button> does NOT inherit the page font — without `font-family: inherit`
-   the caret label renders in the browser UI face, off the chip's Inter label. */
+   the caret label renders in the browser UI face, off the chip's Inter label.
+   TRAP T-a-state-colour-binds-the-style-mode */
 :is(.body, .caret) {
   align-items: center;
   block-size: 100%;
   border: var(--sherpa-border-top, 0.5px) solid
-    var(--sherpa-style-border-base, #b3b3c3);
+    var(--sherpa-style-border-base-1, #b3b3c3);
   background: var(--sherpa-style-surface-base, #ffffff);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-style-content-base, #0c0b11);
   font-family: inherit;
   cursor: pointer;
   transition:
@@ -80,36 +79,14 @@
   border-end-end-radius: 0;
 }
 
-/* Hover and pressed come from sherpa-base.css. `currentColor` resolves where
-   the property is USED, so one declaration shades every component in its own
-   ink — and a color-mix IS the longhand, so there is no function to guard.
-   TRAP T-a-css-function-needs-its-longhand-first */
-:is(.body, .caret):hover { background: var(--sherpa-shade-hover); }
-:is(.body, .caret):active { background: var(--sherpa-shade-active); }
+/* Style base / +1 / +2 are default / hover / down, in whatever mode is pinned. */
+:is(.body, .caret):hover { background: var(--sherpa-style-surface-base-1, #e8e8f6); }
+:is(.body, .caret):active { background: var(--sherpa-style-surface-base-2, #b3b3c3); }
 
-/* AI type carries the brand accent even when inactive. */
+/* AI type carries the active mode's accent even when off. */
 :host([data-type="ai"]) :is(.body, .caret) {
-  color: var(--_accent);
-  border-color: var(--_accent);
-}
-
-/* On → the ACTIVE Style mode, which Figma pins on the chip.
-   TRAP T-a-state-colour-binds-the-style-mode */
-:host([data-current]) :is(.body, .caret) {
-  background: var(--sherpa-style-active-surface-base, #ffffff);
+  color: var(--sherpa-style-active-border-base-1, #c046ff);
   border-color: var(--sherpa-style-active-border-base-1, #c046ff);
-  color: var(--sherpa-style-active-content-base, #240036);
-}
-
-/* ── ON but holding no values → the WARNING look, not the active one ─────────
-   Explicit warning tokens rather than the --_status-* cascade, which would need
-   a [data-status] ANCESTOR that cannot know the chip is empty.
-
-   Must stay AFTER the data-current rule — same specificity, order decides. */
-:host([data-current][data-empty]) :is(.body, .caret) {
-  background: var(--sherpa-theme-surface-warning-base, #fff4e1);
-  border-color: var(--sherpa-theme-border-warning-2, #ffc44c);
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
 }
 
 /* Leading status dot — Figma "Indicator (atom)". */
@@ -119,7 +96,7 @@
   inline-size: var(--sherpa-display-mode-size-2xs, 8px);
   block-size: var(--sherpa-display-mode-size-2xs, 8px);
   border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
-  background: var(--_status-surface-strong, var(--sherpa-theme-surface-info-4, #003246));
+  background: var(--sherpa-style-indicator-accent, #3b4ccd);
 }
 
 /* Count chip — Figma "Indicator (atom)/Type=count" at Style=DEFAULT: neutral,
@@ -288,18 +265,10 @@
 :host([data-superseded]) :is(.body, .caret) {
   cursor: not-allowed;
   pointer-events: none;
-  color: var(--sherpa-theme-content-body-1, #35353d);
-  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
-  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
 }
 
-/* ── Disabled — inactive tokens, never opacity ─────────────────────── */
+/* ── Disabled — the INACTIVE mode, pinned in state-pins.yaml; never opacity ── */
 :host([disabled]) :is(.body, .caret) {
   cursor: not-allowed;
   pointer-events: none;
-  /* Figma inactive keeps the label dark ink; content-body-2 (#b3b3c3) matched
-     the grey surface exactly → invisible text. */
-  color: var(--sherpa-theme-content-body-1, #35353d);
-  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
-  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
 }

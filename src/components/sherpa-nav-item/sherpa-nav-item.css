@@ -46,7 +46,10 @@
   border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  /* The Style names Figma binds; the look and every state are PINS in
+     scripts/figma-data/state-pins.yaml. TRAP T-a-state-colour-binds-the-style-mode */
+  background: var(--sherpa-style-surface-base, transparent);
+  color: var(--sherpa-style-content-base, #35353d);
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   /* On the box, so the label, the tag and both controls inherit it. */
   font-size: var(--sherpa-font-size-body-base, 14px);
@@ -111,13 +114,12 @@
 /* Search match — the visible fallback for the CSS Custom Highlight API, which
    Chromium does not paint inside a shadow root (see highlight() in the TS). */
 .label mark.match {
-  background: color-mix(in srgb, var(--sherpa-display-mode-color-brand-color-3, #c046ff) 30%, transparent);
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  background: color-mix(in srgb, var(--sherpa-display-mode-color-brand-color-3, #c046ff) 30%, transparent); /* theme-direct */
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
 }
 
-/* Trailing Tag — Figma Tag/Type=full, Style:Saturated=success. A [data-status]
-   ancestor re-tints it through --_status-surface-strong. */
+/* Trailing Tag — Figma Tag/Type=full, pinned Saturated=success. */
 .badge {
   display: none;
   align-items: center;
@@ -126,8 +128,8 @@
   padding: var(--sherpa-theme-padding-xs, 2px) var(--sherpa-theme-padding-sm, 4px);
   block-size: var(--sherpa-display-mode-size-sm, 16px);
   border-radius: var(--sherpa-display-mode-border-rounding-xl, 16px);
-  background: var(--_status-surface-strong, var(--sherpa-theme-surface-success-2, #36de8c));
-  color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
+  background: var(--sherpa-style-surface-base-1, #00ad62);
+  color: var(--sherpa-style-content-base, #ffffff);
   font-size: var(--sherpa-theme-content-size-xs, 10px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-theme-content-line-height-xs, 16px);
@@ -170,9 +172,9 @@
   inline-size: var(--sherpa-display-mode-size-2xs, 8px);
   block-size: var(--sherpa-display-mode-size-2xs, 8px);
   border-radius: var(--sherpa-display-mode-border-rounding-full, 999px);
-  background: var(--sherpa-style-active-surface-base, #f2dfff);
+  background: var(--sherpa-style-surface-base, #f2dfff);
   border: var(--sherpa-border-top, 0.5px) solid
-    var(--sherpa-style-active-border-base, #c046ff);
+    var(--sherpa-style-border-base, #c046ff);
 }
 /* No isVisible flag: the dot is meant to survive the collapsed rail. Absolute, not
    a flex child — a 40px rail has no room for it in flow (8+16+8+8+8 = 48), so it
@@ -187,12 +189,9 @@
 }
 
 /* ── Hover / focus — on the BOX, so the whole row lights up ────────────── */
-/* Hover and pressed come from sherpa-base.css. `currentColor` resolves where
-   the property is USED, so one declaration shades every component in its own
-   ink — and a color-mix IS the longhand, so there is no function to guard.
-   TRAP T-a-css-function-needs-its-longhand-first */
-:host(:hover) { background: var(--sherpa-shade-hover); }
-:host(:active) { background: var(--sherpa-shade-active); }
+/* Style base / +1 / +2 are default / hover / down, in whatever mode is pinned. */
+:host(:hover) { background: var(--sherpa-style-surface-base-1, #e8e8f64d); }
+:host(:active) { background: var(--sherpa-style-surface-base-2, #b3b3c34d); }
 /* The controls are transparent, so the ring goes on the box; :focus-within so
    either control lights the same row. */
 :host(:focus-within) {
@@ -206,25 +205,10 @@
   box-shadow: var(--sherpa-focus-ring);
 }
 
-/* ── Current — the Transparent look in its ACTIVE mode, as Figma pins it.
-   The label weight does NOT change with the mode.
-   TRAP T-a-state-colour-binds-the-style-mode ── */
-:host([data-current]) {
-  background: var(--sherpa-style-transparent-active-surface-base, transparent);
-  color: var(--sherpa-style-transparent-active-content-base, #c046ff);
-}
-
-/* ── Disabled — Style inactive: dark ink on the grey; never opacity. ───────── */
-:host([disabled]) {
-  pointer-events: none;
-  color: var(--sherpa-theme-content-body-1, #35353d);
-  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
-}
+/* Current and disabled are PINS (transparent/active, transparent/inactive).
+   The label weight does NOT change with the mode. */
+:host([disabled]) { pointer-events: none; }
 :host([disabled]) :is(.nav, .expand, .promo) { cursor: not-allowed; }
-:host([disabled]) .badge {
-  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
-  color: var(--sherpa-theme-content-body-1, #35353d);
-}
 
 /* ── Promo is its own bordered card: it owns its padding, height and radius. ── */
 :host([data-type="promo"]) {
@@ -242,9 +226,9 @@
   padding: var(--sherpa-theme-padding-sm, 4px) var(--sherpa-display-mode-space-xs, 8px);
   border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
   border-style: solid;
-  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
+  border-color: var(--sherpa-style-border-base-1, #b3b3c3);
   background: var(--sherpa-style-surface-base, #ffffff);
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  color: var(--sherpa-style-content-base, #0c0b11);
   font-family: inherit;
   text-align: start;
   text-decoration: none;
@@ -256,11 +240,11 @@
 :host([data-href]) .promo-button { display: none; }
 :host([data-href]) .promo-link { display: flex; }
 :host([data-type="promo"]:hover) .promo {
-  border-color: var(--sherpa-theme-border-accent-2, #3b4ccd);
+  border-color: var(--sherpa-style-indicator-accent, #3b4ccd);
 }
-/* The card takes the hover tint; the row behind it stays flat. */
+/* The card takes the hover step; the row behind it stays flat. */
 :host([data-type="promo"]:hover) { background: none; }
-:host([data-type="promo"]:hover) .promo { background: var(--sherpa-shade-hover); }
+:host([data-type="promo"]:hover) .promo { background: var(--sherpa-style-surface-base-1, #e8e8f6); }
 
 .promo-icon {
   display: inline-flex;
@@ -270,8 +254,8 @@
   block-size: var(--sherpa-display-mode-size-lg, 24px);
   flex-shrink: 0;
   border-radius: var(--sherpa-display-mode-border-rounding-xl, 16px);
-  background: var(--sherpa-style-active-surface-base, #f2dfff);
-  color: var(--sherpa-style-active-content-base, #240036);
+  background: var(--sherpa-style-surface-base, #f2dfff);
+  color: var(--sherpa-style-content-base, #240036);
 }
 
 .promo-body {
@@ -282,18 +266,18 @@
   min-inline-size: 0;
 }
 .promo-heading {
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  color: var(--sherpa-style-content-base, #0c0b11);
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-semibold, 600);
 }
 .promo-description {
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-style-content-secondary, #35353d);
   font-size: var(--sherpa-font-size-body-small, 12px);
 
   &:empty { display: none; }
 }
 
 .promo-chevron {
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-style-content-secondary, #35353d);
   flex-shrink: 0;
 }

@@ -942,11 +942,14 @@ for (const look of LOOKS) {
 // ════════════════════════════════════════════════════════════════════════════
 // Component STATE pins — which Style mode a state takes, as Figma pins it on the
 // instance. Data in scripts/figma-data/state-pins.yaml; `&` is the host.
-// Emitted as :host(…) rules into the adopted sheet, so an author's own
-// [data-status] on the host still wins, as an instance override does.
+// A HOST pin is a plain `tag[state]` rule in BOTH sheets, so it meets the look
+// and status pins in the host's own tree and specificity decides: an outer rule
+// would otherwise beat any :host() rule, and a look would hide the state.
+// A pin on a PART is `:host(tag) .part`, in the adopted sheet only.
 // ════════════════════════════════════════════════════════════════════════════
 const STATE_PINS = join(ROOT, 'scripts/figma-data/state-pins.yaml');
 const statePinBlocks = [];
+const statePinHostBlocks = [];
 if (existsSync(STATE_PINS)) {
   const pins = yaml.load(readFileSync(STATE_PINS, 'utf8')) ?? {};
   for (const [tag, rules] of Object.entries(pins)) {
@@ -960,8 +963,11 @@ if (existsSync(STATE_PINS)) {
         warn(`state-pins: ${tag} "${selector}": ${spec} — want "&…" and [look/]mode`);
         continue;
       }
-      const block = pinBlock(`:host(${tag}${m[1]})${m[2]}`, mode, look);
-      if (block) statePinBlocks.push(block);
+      const onPart = m[2].trim() !== '';
+      const block = pinBlock(onPart ? `:host(${tag}${m[1]})${m[2]}` : `${tag}${m[1]}`, mode, look);
+      if (!block) continue;
+      statePinBlocks.push(block);
+      if (!onPart) statePinHostBlocks.push(block);
     }
   }
 }
@@ -1655,6 +1661,9 @@ ${joinBlocks(statusBlocks)}
 
   /* Look tiers — [data-look] re-points the status cascade per status mode. */
 ${joinBlocks(lookBlocks)}
+
+  /* Component state pins — scripts/figma-data/state-pins.yaml. */
+${joinBlocks(statePinHostBlocks)}
 
   /* Status palette — [data-palette] re-points the data-viz series onto the
      status ramps, so any chart can colour its marks by status with one attr. */

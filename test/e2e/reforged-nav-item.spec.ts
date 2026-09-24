@@ -85,16 +85,10 @@ test('current setter reflects to data-current and styles the row', async ({ page
     el.setAttribute('data-label', 'Reports');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
+    // The pin is under test, not the fade: a timed wait read mid-flight under load.
+    el.style.transition = 'none';
     el.current = true;
     const on = el.hasAttribute('data-current');
-    // The row box transitions background-color over 100ms, so reading it in the
-    // same task catches the START of the animation (transparent), not the target.
-    // Wait for the transition to land rather than asserting a mid-flight value.
-    await new Promise<void>((resolve) => {
-      const done = (): void => resolve();
-      el.addEventListener('transitionend', done, { once: true });
-      setTimeout(done, 300);
-    });
     // The HOST is the row box now (Figma's Navigation Item contains the tag and
     // the chevron), so the active fill and ink live there, not on the inner control.
     const cs = getComputedStyle(el);

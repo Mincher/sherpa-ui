@@ -7,3 +7,77 @@ sherpa-data-grid:
   # A sorted or filtered column is FLAGGED with data-status="active"; its chips
   # carry the on-state, so the heading itself stays default.
   '& .head-cell[data-status]': default
+
+sherpa-quick-filter:
+  # Filter Chip (atom) instances pin Style=active when on.
+  '&[data-current]': active
+  # On but holding no values — the contradiction reads as a warning.
+  '&[data-current][data-empty]': warning
+  # The view took this field; reads as inactive, keeps its value.
+  '&[data-superseded]': inactive
+  '&[disabled]': inactive
+  # The count is a Badge, which pins Style=default in Figma — never the on tint.
+  '& .count': default
+
+sherpa-menu:
+  # Every Menu variant pins Style=default, so a menu slotted into an ON chip
+  # does not inherit its mode.
+  '&': default
+
+sherpa-button:
+  # A look is the button's own pin, as a nested Figma Button pins its look.
+  '&[data-look="transparent"]': transparent
+  '&[data-look="saturated"]': saturated
+  # Menu open — the active mode of its own look.
+  '&[data-open]': active
+  '&[data-open][data-look="transparent"]': transparent/active
+  '&[data-open][data-look="saturated"]': saturated/active
+  '&[disabled]': inactive
+  '&[disabled][data-look="transparent"]': transparent/inactive
+  '&[disabled][data-look="saturated"]': saturated/inactive
+
+sherpa-nav-item:
+  # Navigation Item pins Transparent=default at its root. A promo is its own
+  # bordered card, in the default look.
+  '&:not([data-type="promo"])': transparent
+  '&[data-current]': transparent/active
+  '&[disabled]': transparent/inactive
+  # Its Tag instance pins Saturated=success; the dot is Indicator, Style=active.
+  '& .badge': saturated/success
+  '&[disabled] .badge': saturated/inactive
+  '& .dot': active
+  '& .promo-icon': active
+
+sherpa-list-item:
+  # Menu List Item pins Transparent=default at its root.
+  '&': transparent
+  # Figma's current pin (Transparent=active) changes nothing visible, so the
+  # row takes the base look's ACTIVE mode instead — a divergence, kept on purpose.
+  '&[data-current] .row': active
+  '&[disabled] .row': inactive
+  # The leading control pins Style=default in Figma.
+  '& .checkbox': default
+
+sherpa-tabs:
+  # Each Tab pins Transparent=default; the current tab takes the ACTIVE mode, so
+  # its reserved underline draws the active border.
+  '& .tab': transparent
+  '& .tab[data-current]': active
+
+sherpa-calendar-cell:
+  # A day pins Transparent=default; a selected day or range pins Style=active.
+  '&': transparent
+  '&[data-state="selected"]': active
+  '&[data-state="range-start"]': active
+  '&[data-state="range-mid"]': active
+  '&[data-state="range-end"]': active
+
+sherpa-notifications:
+  # No Figma component. The unread pip wears the active mode's border.
+  '& .notification-pip': active
+
+sherpa-nav:
+  # The header buttons pin Transparent; a pressed one (pin, settings) pins
+  # Transparent=active, as the Navigation Header's State=Pinned variant does.
+  '& .hdr-btn': transparent
+  '& .hdr-btn[aria-pressed="true"]': transparent/active

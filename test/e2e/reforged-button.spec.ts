@@ -174,23 +174,31 @@ test('a disabled TRANSPARENT button dims its ink instead of growing a grey box',
       const t = getComputedStyle(b.shadowRoot!.querySelector('.trigger')!);
       return { bg: t.backgroundColor, borderWidth: t.borderTopWidth, ink: t.color };
     };
-    return { transparent: await mk('transparent'), plain: await mk(null) };
+    // The INACTIVE mode's own tokens, read the same way, so the check follows Figma.
+    const probe = document.createElement('div');
+    document.body.appendChild(probe);
+    probe.style.color = 'var(--sherpa-style-transparent-inactive-content-base)';
+    probe.style.background = 'var(--sherpa-style-inactive-surface-base)';
+    const mode = { ink: getComputedStyle(probe).color, grey: getComputedStyle(probe).backgroundColor };
+    probe.remove();
+    return { transparent: await mk('transparent'), plain: await mk(null), mode };
   });
 
-  // A tertiary button has no box to grey out — its look tier sets --_surface to
-  // transparent (Figma's Style: Transparent extension resolves style-surface/base
-  // to #ffffff at 0% alpha). Filling it on disable made a borderless control
-  // suddenly grow a slab: the disabled pagination arrows painted one.
-  expect(r.transparent.bg).toBe('rgba(0, 0, 0, 0)');
+  // A tertiary button has no box to grey out — the Transparent look's INACTIVE
+  // mode resolves style-surface/base at 0% alpha. Filling it on disable made a
+  // borderless control grow a slab: the disabled pagination arrows painted one.
+  // A token at 0% computes to `color(srgb … / 0)` or `rgba(…, 0)`.
+  expect(r.transparent.bg).toMatch(/(, 0|\/ 0)\)$/);
   // NO border — carried by the Border passthrough (width → none/0px), not by a
   // transparent stroke colour: the Transparent Style tier now resolves
   // style-border/base to the DEFAULT Style border colour.
   expect(r.transparent.borderWidth).toBe('0px');
-  // It still says "off" — by dimming the ink, which is all it has.
-  expect(r.transparent.ink).toBe('rgb(179, 179, 195)');
+  // Its ink is the Transparent look's INACTIVE content — the pin, not a colour
+  // written here. TRAP T-a-state-colour-binds-the-style-mode
+  expect(r.transparent.ink).toBe(r.mode.ink);
 
-  // The DEFAULT look keeps Figma's inactive treatment: dark ink on grey.
-  expect(r.plain.bg).toBe('rgb(179, 179, 195)');
+  // The DEFAULT look takes Style's inactive mode: a grey face.
+  expect(r.plain.bg).toBe(r.mode.grey);
 });
 
 /* ── A trigger button and its slotted menu ───────────────────────────── */

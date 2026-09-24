@@ -21,8 +21,10 @@
   align-items: flex-start;
   gap: var(--sherpa-structure-space-gap, 8px);
   padding: var(--sherpa-structure-space-padding, 8px);
-  background: var(--_status-surface, transparent);
-  color: var(--_status-text, var(--sherpa-theme-content-body-base, #0c0b11));
+  /* Figma: the row binds Style (Transparent look, pinned); the label binds THEME.
+     States are pins — TRAP T-a-state-colour-binds-the-style-mode */
+  background: var(--sherpa-style-surface-base, transparent);
+  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
   transition: background-color 100ms ease, color 100ms ease;
 }
 
@@ -43,7 +45,7 @@
   padding: 0;
   border: none;
   background: transparent;
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-style-content-base, #35353d);
   cursor: pointer;
 }
 .drag {
@@ -69,7 +71,7 @@
   inline-size: var(--sherpa-display-mode-size-md, 20px);
   block-size: var(--sherpa-display-mode-size-md, 20px);
   border: var(--sherpa-display-mode-border-width-base, 1px) solid
-    var(--sherpa-theme-border-default-2, #b3b3c3);
+    var(--sherpa-style-border-base-1, #b3b3c3);
   background: var(--sherpa-style-surface-base, #ffffff);
   cursor: pointer;
 }
@@ -128,7 +130,7 @@
 :host(:not([data-label]):not([data-heading])) .title { display: none; }
 
 .description {
-  color: var(--_status-text, var(--sherpa-theme-content-body-1, #35353d));
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
@@ -145,7 +147,7 @@
 
 /* ── Interactive: hover + focus ────────────────────────────────────── */
 :host([data-interactive]) .row { cursor: pointer; }
-:host([data-interactive]:hover) .row { background: var(--sherpa-shade-hover); }
+:host([data-interactive]:hover) .row { background: var(--sherpa-style-surface-base-1, #e8e8f64d); }
 /* Focus lands on the inner <button>, not the host — ring it there. */
 .content-button:focus-visible {
   outline: none;
@@ -153,23 +155,9 @@
   box-shadow: var(--sherpa-focus-ring);
 }
 
-/* ── Current row ───────────────────────────────────────────────────── */
-:host([data-current]) .row {
-  background: var(--sherpa-style-active-surface-base, #f2dfff);
-}
+/* ── Current and disabled are PINS on the row; the weight is not a colour. ── */
 :host([data-current]) .title {
-  color: var(--sherpa-style-active-content-base, #240036);
   font-weight: var(--sherpa-font-weight-semibold, 600);
 }
-
-/* ── Disabled — inactive tokens, never opacity ─────────────────────── */
 :host([disabled]) { pointer-events: none; }
-:host([disabled]) .row {
-  cursor: not-allowed;
-  /* Not surface-default-2 — it equals the dimmed ink, so the text vanishes. */
-  background: var(--sherpa-theme-surface-default-1, #e8e8f6);
-}
-/* Disabled keeps dark ink; the surface carries the state. */
-:host([disabled]) :is(.title, .description, .leading) {
-  color: var(--sherpa-theme-content-body-1, #35353d);
-}
+:host([disabled]) .row { cursor: not-allowed; }

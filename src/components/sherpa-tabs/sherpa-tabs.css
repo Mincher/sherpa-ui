@@ -18,7 +18,7 @@
   align-items: stretch;
   justify-content: space-between;
   border-block-end: var(--sherpa-border-bottom, 0.5px) solid
-    var(--sherpa-theme-border-default-2, #b3b3c3);
+    var(--sherpa-theme-border-default-2, #b3b3c3); /* theme-direct */
 }
 
 .tabs {
@@ -46,33 +46,30 @@
   margin: 0;
   background: transparent;
   border: none;
-  /* Reserved at rest so the active underline adds no height. */
-  border-block-end: var(--sherpa-display-mode-border-width-lg, 2px) solid transparent;
+  /* Reserved at rest so the active underline adds no height. The Style names
+     Figma binds; the look and current are PINS in state-pins.yaml.
+     TRAP T-a-state-colour-binds-the-style-mode */
+  border-block-end: var(--sherpa-display-mode-border-width-lg, 2px) solid
+    var(--sherpa-style-border-base, transparent);
   margin-block-end: calc(-1 * var(--sherpa-display-mode-border-width-sm, 0.5px)); /* sit on the strip rule */
   font-family: inherit;
   font-size: var(--sherpa-font-size-body-base, 14px);
   font-weight: var(--sherpa-font-weight-regular, 400);
   line-height: var(--sherpa-display-mode-fonts-scale-xl, 20px);
   white-space: nowrap;
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-style-content-base, #35353d);
   cursor: pointer;
   transition: background-color 100ms ease, color 100ms ease, border-color 100ms ease;
 
-  &:hover {
-    /* Figma's hover fill is #FFFFFF00 — fully clear, so no token is needed. */
-    background: transparent;
-    color: var(--sherpa-theme-content-body-base, #0c0b11);
-  }
+  /* Style base / +1 / +2 are default / hover / down. */
+  &:hover { background: var(--sherpa-style-surface-base-1, #e8e8f64d); }
+  &:active { background: var(--sherpa-style-surface-base-2, #b3b3c34d); }
 
   &:focus-visible {
     outline: none;
     box-shadow: var(--sherpa-focus-ring);
   }
 
-  &[data-current] {
-    border-block-end-color: var(--sherpa-style-active-border-base, #c046ff);
-    color: var(--sherpa-style-active-content-base, #240036);
-  }
 }
 
 /* ── Panels ───────────────────────────────────────────────────────────── */

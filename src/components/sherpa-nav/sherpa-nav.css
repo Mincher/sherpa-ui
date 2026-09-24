@@ -124,7 +124,7 @@
   min-block-size: 0;
   overflow: hidden;
   background: var(--sherpa-navigation-nav-surface-default, #ffffff);
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  color: var(--sherpa-style-content-base, #0c0b11);
   /* nav-shadow/* is 0 in every mode except hover. */
   box-shadow:
     var(--sherpa-navigation-nav-shadow-offset-x, 0px)
@@ -164,7 +164,7 @@
   flex-shrink: 0;
   border-end-end-radius: var(--sherpa-display-mode-border-rounding-lg, 8px);
   background: var(--sherpa-theme-surface-active-3, #8300b6); /* theme-direct */
-  color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
+  color: var(--sherpa-style-content-inverse, #ffffff);
   font-size: var(--sherpa-display-mode-size-lg, 24px);
   line-height: 1;
 }
@@ -176,7 +176,7 @@
   font-size: var(--sherpa-font-size-body-large, 16px);
   font-weight: var(--sherpa-font-weight-medium, 500);
   line-height: var(--sherpa-theme-content-line-height-large, 24px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-style-content-secondary, #35353d);
 }
 
 /* Pin + settings. Which one is active comes from the projected
@@ -200,31 +200,23 @@
   block-size: var(--_btn-box);
   padding: 0;
   border-style: solid;
-  border-color: transparent;
-  background: transparent;
-  color: var(--sherpa-style-content-base, #0c0b11);
+  /* The Style names Figma binds; the look and pressed are PINS in
+     state-pins.yaml. TRAP T-a-state-colour-binds-the-style-mode */
+  border-color: var(--sherpa-style-border-base-1, transparent);
+  background: var(--sherpa-style-surface-base, transparent);
+  color: var(--sherpa-style-content-base, #35353d);
   font-size: var(--_btn-glyph);
   line-height: 1;
   cursor: pointer;
   transition: background-color 100ms ease, border-color 100ms ease, color 100ms ease;
 
-  /* Hover and pressed come from sherpa-base.css. `currentColor` resolves where
-     the property is USED, so one declaration shades every component in its own
-     ink — and a color-mix IS the longhand, so there is no function to guard.
-     TRAP T-a-css-function-needs-its-longhand-first */
-  &:hover { background: var(--sherpa-shade-hover); }
-  &:active { background: var(--sherpa-shade-active); }
+  /* Style base / +1 / +2 are default / hover / down, in whatever mode is pinned. */
+  &:hover { background: var(--sherpa-style-surface-base-1, #e8e8f64d); }
+  &:active { background: var(--sherpa-style-surface-base-2, #b3b3c34d); }
   &:focus-visible {
     outline: none;
     box-shadow: var(--sherpa-focus-ring);
   }
-}
-/* Pressed — the Transparent look in its ACTIVE mode, as Figma pins it.
-   TRAP T-a-state-colour-binds-the-style-mode */
-.hdr-btn[aria-pressed="true"] {
-  background: var(--sherpa-style-transparent-active-surface-base, transparent);
-  border-color: var(--sherpa-style-transparent-active-border-base-1, transparent);
-  color: var(--sherpa-style-transparent-active-content-base, #c046ff);
 }
 
 /* ── Quick zone ────────────────────────────────────────────────────────── */
@@ -267,7 +259,7 @@
 
 .search-icon {
   flex-shrink: 0;
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-style-content-secondary, #35353d);
   font-size: var(--sherpa-theme-size-icon-xs, 14px);
   line-height: 1;
 }
@@ -282,9 +274,9 @@
   font: inherit;
   font-size: var(--sherpa-font-size-body-base, 14px);
   line-height: var(--sherpa-theme-content-line-height-base, 20px);
-  color: var(--sherpa-theme-content-body-base, #0c0b11);
+  color: var(--sherpa-style-content-base, #0c0b11);
 
-  &::placeholder { color: var(--sherpa-theme-content-body-2, #b3b3c3); }
+  &::placeholder { color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */ }
   /* .search-clear replaces the native affordance, which cannot be styled. */
   &::-webkit-search-cancel-button { appearance: none; }
 }
@@ -302,17 +294,14 @@
   border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: transparent;
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-style-content-secondary, #35353d);
   font-size: var(--sherpa-theme-content-size-base, 14px);
   line-height: 1;
   cursor: pointer;
 
-  /* Hover and pressed come from sherpa-base.css. `currentColor` resolves where
-     the property is USED, so one declaration shades every component in its own
-     ink — and a color-mix IS the longhand, so there is no function to guard.
-     TRAP T-a-css-function-needs-its-longhand-first */
-  &:hover { background: var(--sherpa-shade-hover); }
-  &:active { background: var(--sherpa-shade-active); }
+  /* Style base / +1 / +2 are default / hover / down, in whatever mode is pinned. */
+  &:hover { background: var(--sherpa-style-surface-base-1, #e8e8f6); }
+  &:active { background: var(--sherpa-style-surface-base-2, #b3b3c3); }
   &:focus-visible {
     outline: none;
     box-shadow: var(--sherpa-focus-ring);
@@ -367,7 +356,7 @@
   line-height: var(--sherpa-theme-content-line-height-xs, 16px);
   text-transform: uppercase;
   white-space: nowrap;
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-style-content-secondary, #35353d);
 
   &:empty { display: none; }
 }
@@ -392,7 +381,7 @@
   min-inline-size: 0;
   block-size: 0;
   border-block-start: var(--sherpa-border-top, 0.5px) solid
-    var(--sherpa-theme-border-default-2, #b3b3c3);
+    var(--sherpa-style-border-base, #b3b3c3);
 }
 
 .section-items {
@@ -429,7 +418,7 @@
 .content:not(:has(.nav-row:not([data-filtered-out])))::after {
   content: "No matches";
   padding: var(--sherpa-display-mode-space-xs, 8px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
+  color: var(--sherpa-style-content-secondary, #35353d);
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }

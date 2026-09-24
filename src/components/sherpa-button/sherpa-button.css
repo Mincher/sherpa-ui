@@ -63,7 +63,7 @@
  * sherpa-button — presentation.
  * No primary/secondary/tertiary variant: emphasis is the shared look-tier
  * system (`data-look` → saturated = primary, transparent = tertiary, none =
- * secondary), coloured through the --_status-* cascade.
+ * secondary), each a Style pin — scripts/figma-data/state-pins.yaml.
  */
 
 :host {
@@ -77,10 +77,12 @@
   border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
   border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
 
-  /* Bound at the STYLE tier, as Figma binds it — status/look modes cascade here. */
-  --_surface: var(--_status-surface, var(--sherpa-style-surface-base, #ffffff));
-  --_content: var(--_status-text, var(--sherpa-style-content-base, #0c0b11));
-  --_border: var(--_status-border, var(--sherpa-style-border-base, #b3b3c3));
+  /* The Style names Figma binds. A look, the open state and disabled are PINS
+     (scripts/figma-data/state-pins.yaml) that re-point them.
+     TRAP T-a-state-colour-binds-the-style-mode */
+  --_surface: var(--sherpa-style-surface-base, #ffffff);
+  --_content: var(--sherpa-style-content-base, #0c0b11);
+  --_border: var(--sherpa-style-border-base-1, #b3b3c3);
   /* Per-edge widths, so a [data-group] position can drop just the shared edge. */
   --_border-top: var(--sherpa-border-top, 0.5px);
   --_border-bottom: var(--sherpa-border-bottom, 0.5px);
@@ -117,12 +119,9 @@
     color 120ms ease;
 
   /* States derived from the seed — mode-safe via currentColor. */
-  /* Hover and pressed come from sherpa-base.css. `currentColor` resolves where
-     the property is USED, so one declaration shades every component in its own
-     ink — and a color-mix IS the longhand, so there is no function to guard.
-     TRAP T-a-css-function-needs-its-longhand-first */
-  &:hover { background: var(--sherpa-shade-hover); }
-  &:active { background: var(--sherpa-shade-active); }
+  /* Style base / +1 / +2 are default / hover / down, in whatever mode is pinned. */
+  &:hover { background: var(--sherpa-style-surface-base-1, #e8e8f6); }
+  &:active { background: var(--sherpa-style-surface-base-2, #b3b3c3); }
 
   &:focus-visible {
     outline: none;
@@ -130,21 +129,13 @@
        REAL one — a missing token silently draws the fallback, a white halo in dark. */
     box-shadow:
       0 0 0 2px var(--sherpa-style-surface-base, #ffffff),
-      0 0 0 4px var(--sherpa-theme-border-accent-2, #3b4ccd);
+      0 0 0 4px var(--sherpa-theme-border-accent-2, #3b4ccd); /* theme-direct */
   }
 }
 
 /* ── Appearance-mode refinements ─────────────────────────────────────────── */
 
-:host([data-look="saturated"]) {
-  --_surface: var(--_status-surface, var(--sherpa-style-saturated-surface-base, #3b4ccd));
-  --_content: var(--_status-text, var(--sherpa-style-saturated-content-base, #ffffff));
-  --_border: var(--_status-border, var(--sherpa-style-saturated-border-base, #3b4ccd));
-}
-
 :host([data-look="transparent"]) {
-  --_surface: var(--_status-surface, var(--sherpa-style-transparent-surface-base, transparent));
-  --_content: var(--_status-text, var(--sherpa-style-transparent-content-base, #35353d));
   /* Removed by WIDTH: the Transparent tier still carries the default border colour. */
   --_border-top: var(--sherpa-display-mode-border-width-none, 0px);
   --_border-bottom: var(--sherpa-display-mode-border-width-none, 0px);
@@ -154,27 +145,10 @@
 
 :host(:focus-visible) { outline: none; }
 
-/* ── Its menu is open ────────────────────────────────────────────────────
- * The ACTIVE Style mode of its own look, as Figma pins a pressed button.
- * Real focus is inside the menu, so `:focus-visible` is false — the ring is
- * drawn from here instead. TRAP T-a-state-colour-binds-the-style-mode
+/* ── Its menu is open — the ACTIVE mode of its own look, pinned in
+ * state-pins.yaml. Real focus is inside the menu, so `:focus-visible` is false —
+ * the ring is drawn from here instead.
  */
-:host([data-open]) {
-  /* The icons and badge read --_content, so the re-point must happen here. */
-  --_surface: var(--sherpa-style-active-surface-base, #ffffff);
-  --_content: var(--sherpa-style-active-content-base, #240036);
-  --_border: var(--sherpa-style-active-border-base, #c046ff);
-}
-:host([data-open][data-look="saturated"]) {
-  --_surface: var(--sherpa-style-saturated-active-surface-base, #f2dfff);
-  --_content: var(--sherpa-style-saturated-active-content-base, #8300b6);
-  --_border: var(--sherpa-style-saturated-active-border-base, #c046ff);
-}
-:host([data-open][data-look="transparent"]) {
-  --_surface: var(--sherpa-style-transparent-active-surface-base, transparent);
-  --_content: var(--sherpa-style-transparent-active-content-base, #c046ff);
-}
-
 :host([data-open]) .trigger { box-shadow: var(--sherpa-focus-ring); }
 
 /* ── Icon-only (square) ─────────────────────────────────────────────────── */
@@ -218,27 +192,11 @@
 :host([data-has-badge]) .badge { display: inline-flex; }
 :host([data-type="icon"]) .badge { display: none; }
 
-/* ── Disabled — inactive tokens per property, never opacity ──────────────── */
-
-:host([disabled]) :is(.trigger, .icon) {
-  /* Dark ink on the grey inactive surface — never the same grey as the surface. */
-  color: var(--sherpa-theme-content-body-1, #35353d);
-}
+/* ── Disabled — the INACTIVE mode of its own look, pinned in state-pins.yaml;
+   never opacity. ───────────────────────────────────────────────────────── */
 :host([disabled]) .trigger {
   cursor: not-allowed;
   pointer-events: none;
-  background: var(--sherpa-theme-surface-default-2, #b3b3c3);
-  border-color: var(--sherpa-theme-border-default-2, #b3b3c3);
-}
-
-/* …except a TRANSPARENT button: filling it on disable grows a grey box where
-   there was nothing. It says "off" by dimming its ink, which is all it has. */
-:host([data-look="transparent"][disabled]) :is(.trigger, .icon) {
-  color: var(--sherpa-theme-content-body-2, #b3b3c3);
-}
-:host([data-look="transparent"][disabled]) .trigger {
-  background: transparent;
-  border-width: var(--sherpa-display-mode-border-width-none, 0px);
 }
 
 

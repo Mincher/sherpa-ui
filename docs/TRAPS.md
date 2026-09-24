@@ -94,10 +94,13 @@ the chip moved. Measured then: 49% of component colours read Theme directly.
 - **A pin re-points the public names** at a mode's own tokens
   (`--sherpa-style-active-surface-base`, `--sherpa-style-transparent-active-…`,
   `--sherpa-style-default-…`). `[data-status]` and `[data-look]` are pins.
-- **A component state is a pin, as data** — `scripts/figma-data/state-pins.yaml`
-  becomes `:host(tag[state]) { … }` in the adopted sheet. No state colour is
-  written in a component. An author's own `[data-status]` on the host still
-  wins, as an instance override does.
+- **A component state is a pin, as data** — `scripts/figma-data/state-pins.yaml`.
+  No state colour is written in a component. A HOST pin is a plain
+  `tag[state]` rule in both sheets, never `:host(…)`: a rule from outside the
+  component beats every `:host()` rule, so the page's `[data-look="saturated"]`
+  hid a button's open state. As plain rules they meet the look and status pins
+  in one tree, and specificity decides — look + state beats look alone. A pin on
+  a PART is `:host(tag) .part`, in the adopted sheet.
 - **A FLAG is not a pin.** The data grid marks an acting column with
   `data-status="active"` but paints nothing, so its YAML pins that heading
   back to `default`; without it the tint leaked into the chips and the menu.
@@ -121,12 +124,16 @@ light, 264 of 264 in dark.
 - Site: `src/components/sherpa-nav-item/sherpa-nav-item.css`
 - Site: `src/components/sherpa-nav/sherpa-nav.css`
 - Site: `src/components/sherpa-button/sherpa-button.css`
+- Site: `src/components/sherpa-tabs/sherpa-tabs.css`
+- Site: `src/components/sherpa-list-item/sherpa-list-item.css`
+- Site: `src/components/sherpa-calendar-cell/sherpa-calendar-cell.css`
 - Site: `scripts/lint-css.mjs`
 - Site: `scripts/project-tokens.mjs`
 - Site: `test/e2e/reforged-style-modes.spec.ts`
 - Site: `test/e2e/reforged-nav-item.spec.ts`
 - Site: `test/e2e/reforged-quick-filter.spec.ts`
 - Site: `test/e2e/reforged-calendar-cell.spec.ts`
+- Site: `test/e2e/reforged-button.spec.ts`
 
 ### T-scope-does-not-stop-inheritance
 
@@ -8544,6 +8551,10 @@ drifted:
 | `--shade(--surface, --amount)` | a control with a surface of its OWN | 8% hover, 16% pressed |
 | `--tint(--amount)` | one BORROWING the surface beneath it | 16% hover, 24% pressed |
 
+**Superseded for hover and down where a component binds Style** (Will's rule,
+2026-09-24): `base` / `+1` / `+2` are default / hover / down, so those bind the
+Style step and need no function. See `T-a-state-colour-binds-the-style-mode`.
+
 `--shade` replaced raw percentages that had drifted to 92%, 94% and 84%.
 `--tint` replaced four IDENTICAL close buttons — tag, chip, toast, callout —
 hovering at 22%, 18%, 22% and 14%. The function is not shorter; it is NAMED,
@@ -8555,12 +8566,8 @@ ARGUMENTS — a different surface and a different step per call — which a
 property cannot express.
 
 - Site: `src/core/sherpa-base.css`
-- Site: `src/components/sherpa-button/sherpa-button.css`
 - Site: `playwright.config.ts`
 - Site: `test/e2e/reforged-css-functions.spec.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
-- Site: `src/components/sherpa-nav-item/sherpa-nav-item.css`
-- Site: `src/components/sherpa-nav/sherpa-nav.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 ### T-one-value-one-declaration
 
