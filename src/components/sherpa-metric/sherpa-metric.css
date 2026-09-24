@@ -12,6 +12,22 @@
   min-inline-size: 0;
   padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
   background: var(--sherpa-style-surface-base, #ffffff);
+  /* Figma binds BOTH a fill and a stroke: `style-surface/base` over
+     `style-border/base`, 0.5px INSIDE, with per-corner rounding. Only the fill
+     was coded, so every metric tile floated with no edge.
+     Per-edge widths, not a shorthand, so a grouped run can zero one side. The
+     shared `.sherpa-border-edges` class cannot help here: a `:host` cannot wear
+     a class from its own sheet. */
+  border-style: solid;
+  border-color: var(--sherpa-style-border-base, #b3b3c3);
+  border-block-start-width: var(--sherpa-border-top, 0.5px);
+  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
+  border-inline-start-width: var(--sherpa-border-left, 0.5px);
+  border-inline-end-width: var(--sherpa-border-right, 0.5px);
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   container: sherpa-metric / inline-size;
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
 

@@ -8,7 +8,7 @@ Status: `[ ]` open · `[~]` in progress · `[x]` done
 
 ## At a glance
 
-**34 numbered items · 7 done · 1 parked · 26 open.** Numbers are the spine; the waves below
+**34 numbered items · 10 done · 1 parked · 23 open.** Numbers are the spine; the waves below
 say what order. Anything not numbered is a sub-item of the section it sits in.
 
 | | # | Item | Wave |
@@ -16,9 +16,9 @@ say what order. Anything not numbered is a sub-item of the section it sits in.
 | ✅ | 1 | Context vs View — the naming, settled | 1 |
 | ✅ | 2 | Filter scope — down, never up | 1 |
 | ✅ | 3 | Style/Transparent tokens — done by 7f1f95a3, verified vs live Figma | 1 |
-| | 4 | The `More` chip shows active when it is not | 2 |
-| | 5 | Metric item — no surface or border colour | 2 |
-| | 6 | Every metric item uses the xsmall container class | 2 |
+| ✅ | 4 | The `More` chip shows active when it is not | 2 |
+| ✅ | 5 | Metric item — no surface or border colour | 2 |
+| ✅ | 6 | Every metric item uses the xsmall container class | 2 |
 | | 7 | Only five filter chips carry an icon | 2 |
 | | 8 | Fixed-height row uses a hard-coded gutter | 2 |
 | | 9 | Pagination row-count select is not a Sherpa select | 2 |
@@ -685,14 +685,42 @@ total value moves; the trend does not follow it.
 The sparkline does not show the change in the record values, so it reads as
 disconnected from the total value label above it.
 
-### `[ ]` The metric item has no surface or border colour
+### `[x]` The metric item has no surface or border colour — DONE 2026-09-24
 
 Figma gives the metric item a surface colour and a border colour. The coded
-component does not apply either.
+component did not apply either.
 
-### `[ ]` Every metric item uses the xsmall container class
+**Measured against live Figma** (`Metric`, 61:263): the frame binds `fills →
+style-surface/base` AND `strokes → style-border/base`, 0.5px `INSIDE`, with
+`rounding/*` on each corner. The CSS had the fill only, so every tile floated
+with no edge.
 
-Some do not.
+Fixed with the same shape `sherpa-container` uses — per-edge widths and
+per-corner radii, not a shorthand, so a grouped run can zero one side. The
+shared `.sherpa-border-edges` class cannot help: a `:host` cannot wear a class
+from its own sheet.
+
+Verified live: fill `#ffffff`, border `#b3b3c3`, radius 4px. The widths read
+back as `1px`, which is `T-a-sub-pixel-border-reads-back-as-1px`, not a wrong
+value.
+
+### `[x]` Every metric item uses the xsmall container class — DONE 2026-09-24
+
+Some did not: the four dashboard tiles were `data-col-span="small"` while the
+four records tiles were `xsmall`.
+
+It matters only below desktop, which is why it was easy to miss:
+
+| breakpoint | `small` | `xsmall` |
+|---|---|---|
+| ≤767px | span 4 | **span 1** |
+| ≤1279px | span 4 | **span 2** |
+| ≤1919px | span 3 | span 3 |
+| ≥1920px | span 3 | span 3 |
+
+So at desktop the two are identical, and at mobile `small` put every tile on its
+own row. Verified after the change: four tiles, ONE row, equal widths at 700,
+1100 and 1600px.
 
 ---
 

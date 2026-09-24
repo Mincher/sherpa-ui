@@ -7552,6 +7552,7 @@ throwaway element if in doubt: a div with 0.5/0.25/1/2px edges reports
 
 - Site: `src/core/sherpa-grouping.css`
 - Site: `test/e2e/reforged-grouping.spec.ts`
+- Site: `test/e2e/reforged-metric.spec.ts`
 
 ### T-an-empty-chip-opens-its-menu
 

@@ -363,3 +363,44 @@ test('the sparkline condenses away, and the tile keeps its height', async ({ pag
   expect(new Set(rows.map((r) => r.tileH)).size, JSON.stringify(rows)).toBe(1);
   expect(new Set(rows.map((r) => r.valueH)).size, 'the value never wraps').toBe(1);
 });
+
+/**
+ * Figma binds BOTH a fill and a stroke on the Metric frame — `style-surface/base`
+ * over `style-border/base`, 0.5px INSIDE, per-corner rounding. Only the fill was
+ * coded, so every tile floated with no edge.
+ */
+test('the tile draws its Figma fill AND its border', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-metric') as HTMLElement & {
+      rendered?: Promise<void>;
+    };
+    el.setAttribute('data-label', 'Endpoints');
+    el.setAttribute('data-value', '1,284');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const cs = getComputedStyle(el);
+    return {
+      background: cs.backgroundColor,
+      borderStyle: cs.borderTopStyle,
+      borderColor: cs.borderTopColor,
+      // All four corners rounded, as Figma binds each one.
+      radii: [cs.borderTopLeftRadius, cs.borderTopRightRadius,
+              cs.borderBottomRightRadius, cs.borderBottomLeftRadius],
+      // Every edge carries a width — none is zeroed by default.
+      widths: [cs.borderTopWidth, cs.borderRightWidth,
+               cs.borderBottomWidth, cs.borderLeftWidth],
+    };
+  });
+
+  expect(r.background).toBe('rgb(255, 255, 255)');
+  expect(r.borderStyle).toBe('solid');
+  // style-border/base.
+  expect(r.borderColor).toBe('rgb(179, 179, 195)');
+  expect(r.radii).toEqual(['4px', '4px', '4px', '4px']);
+  /* NOT asserted as 0.5px: getComputedStyle returns the USED value and every
+     engine rounds a sub-pixel border up to one device pixel.
+     TRAP T-a-sub-pixel-border-reads-back-as-1px */
+  for (const w of r.widths) expect(parseFloat(w)).toBeGreaterThan(0);
+});
