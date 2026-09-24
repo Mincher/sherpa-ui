@@ -89,6 +89,16 @@ export class SherpaMenu extends SherpaElement {
     return this.$('.menu');
   }
 
+  /** The nearest drawn box to hang an untriggered card on: the element this
+   * menu is slotted into, else its own parent.
+   * TRAP T-a-menu-with-no-trigger-lands-at-the-origin */
+  #fallbackTrigger(): HTMLElement | null {
+    const slotted = this.assignedSlot?.getRootNode();
+    const host = slotted instanceof ShadowRoot ? slotted.host : null;
+    const near = host ?? this.parentElement;
+    return near instanceof HTMLElement ? near : null;
+  }
+
   override onRender(): void {
     this.#sync();
     /* Items given BEFORE this element had a shadow tree. A caller building a
@@ -246,6 +256,10 @@ export class SherpaMenu extends SherpaElement {
   /** Open the menu under `trigger`, which is also what it measures against. */
   show(trigger?: HTMLElement): void {
     if (trigger) this.#trigger = trigger;
+    // No trigger — `open` was set, or a caller forgot one. Without this the
+    // card has nothing to measure and sits at 0,0.
+    // TRAP T-a-menu-with-no-trigger-lands-at-the-origin
+    this.#trigger ??= this.#fallbackTrigger();
     // A closed popover measures 0, so show first. TRAP T-show-then-measure
     this.#syncSelectAll();
     this.#card()?.showPopover();
@@ -290,17 +304,15 @@ export class SherpaMenu extends SherpaElement {
       .map((i) => i.value);
   }
 
-  /** A NUMBER menu's value, or null. A range at full bounds excludes nothing. */
+  /** A NUMBER menu's value, or null. TRAP T-a-full-range-is-still-a-range */
   #numericValues(): string[] | null {
     const field = this.querySelector<HTMLInputElement>('input[type="number"]');
     const slider = this.querySelector<HTMLElement & { range: [number, number] }>('sherpa-slider');
     if (!field && !slider) return null;
     if (this.hasAttribute('data-range')) {
-      if (!slider) return [];
+      if (!slider || !slider.hasAttribute('data-touched')) return [];
       const [lo, hi] = slider.range;
-      const min = Number(slider.getAttribute('min') ?? 0);
-      const max = Number(slider.getAttribute('max') ?? 100);
-      return lo === min && hi === max ? [] : [String(lo), String(hi)];
+      return [String(lo), String(hi)];
     }
     const raw = field?.value.trim() ?? '';
     return raw === '' ? [] : [raw];
@@ -661,6 +673,13 @@ export class SherpaMenu extends SherpaElement {
     if (this.dataset['type'] === 'filter') this.conditionValue = '';
     for (const cal of this.querySelectorAll<HTMLElement>('sherpa-calendar')) {
       for (const a of ['data-value', 'data-value-start', 'data-value-end']) cal.removeAttribute(a);
+    }
+    // A cleared range is untouched again. The reset writes both ends, which
+    // re-flags it, so the flag comes off LAST.
+    // TRAP T-a-full-range-is-still-a-range
+    for (const s of this.querySelectorAll<HTMLElement & { range: [number, number] }>('sherpa-slider')) {
+      s.range = [Number(s.getAttribute('min') ?? 0), Number(s.getAttribute('max') ?? 100)];
+      s.removeAttribute('data-touched');
     }
     this.emit('menu-clear', {});
     /* ALWAYS, even on a COMMITTING menu. Clear is an action ON THE FILTER, not

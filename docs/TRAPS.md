@@ -2416,7 +2416,6 @@ Matching a TAG rather than an inner class also matters — see
 `T-path-not-target-finds-chip-host`.
 
 - Site: `src/core/ui/sherpa-element.ts`
-- Site: `src/components/sherpa-nav-item/sherpa-nav-item.ts`
 - Site: `src/components/sherpa-pagination/sherpa-pagination.ts`
 
 ### T-slot-guards-only-when-filled
@@ -4912,6 +4911,7 @@ A `set` writes THROUGH to storage for the pointer or any ANCESTOR of it: setting
 silently lose what a leaf write keeps.
 
 - Site: `src/core/browser/session.ts`
+- Site: `test/e2e/reforged-nav-pin-persist.spec.ts`
 
 ### T-session-persist-defaults-shared
 
@@ -4944,6 +4944,7 @@ try/catch to read, a try/catch to write, and a wrapper to keep the two in step. 
 pieces to get right per preference, and the examples were teaching it.
 
 - Site: `src/core/browser/session.ts`
+- Site: `test/unit/session-list.test.mjs`
 
 ### T-shared-values-two-components-must-agree-on
 
@@ -5307,6 +5308,8 @@ A test that reads `data-icon-start` cannot catch this. The test reads the
 rendered `<path d>`.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-nav-favorites-recents.spec.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Test: `test/e2e/reforged-nav-favorites-recents.spec.ts`
 
 ### T-the-star-reports-it-does-not-decide
@@ -5385,6 +5388,8 @@ entry, which is plain JSON by definition, and wrong for anything holding a
 function or a Date.
 
 - Site: `src/core/browser/session.ts`
+- Site: `test/e2e/reforged-nav-favorites-recents.spec.ts`
+- Site: `test/unit/session-list.test.mjs`
 - Test: `test/unit/session-list.test.mjs`
 
 ### T-clear-all-resets-organise-too
@@ -7057,6 +7062,50 @@ The component now clears both in its own change handler, because a user's click
 is exactly the gesture that ends the mixed state.
 
 - Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.ts`
+
+### T-a-menu-with-no-trigger-lands-at-the-origin
+
+`#place()` measures the TRIGGER, because CSS anchoring cannot cross a shadow
+root (`T-anchor-cross-root`). With no trigger it returns early, and the card
+keeps `left: 0; top: 0` — the top-left of the viewport, over whatever is there.
+
+It is silent. The card opens, it is readable, and every row works; it is simply
+in the wrong place. Measured: `show()` with no argument left the card at
+`["0px","0px"]` and it never moved, at +0ms through +2500ms. Not a race — there
+was nothing to measure.
+
+`show(trigger)` is the normal path, and a click always has one. The gap is
+`open = true`, which calls `show()` bare, and any caller that forgets. The menu
+now falls back to the nearest drawn box: the element it is slotted into, else
+its own parent. `#trigger` is cleared on close, so the fallback is recomputed
+per open and never outlives the trigger that replaced it.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `test/e2e/reforged-menu.spec.ts`
+
+### T-a-full-range-is-still-a-range
+
+A NUMBER filter's slider opened at the column's own min and max, and the menu
+read that pair as "no filter":
+
+```ts
+return lo === min && hi === max ? [] : [String(lo), String(hi)]   // WRONG
+```
+
+It is right for a chip the reader never opened, and wrong for every other case
+that lands on the same pair. A reader who drags to 1..240 on purpose, or drags
+out and back, gets an empty report: the chip never goes active and the filter
+never applies. Measured live — `sub 10..200` reported `["10","200"]`, `full
+1..240` reported `[]`, with the chip identical in both.
+
+The state being read was never the VALUE. It was whether the reader had touched
+the slider, which the value cannot carry. The slider now wears `data-touched`,
+set in its OWN `onChange` — the toolbar seeds the bounds before the element is
+upgraded, so any later write to an end is a real change. Clear restores the
+bounds first and drops the flag second, because the restore re-sets it.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-slider/sherpa-slider.ts`
 
 ### T-a-default-is-not-an-override
 

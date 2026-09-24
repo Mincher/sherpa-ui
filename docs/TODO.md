@@ -205,6 +205,40 @@ handles. Remove it; let the cascade do the work.
 The overflow chip goes active when NONE of its child filters are active. It must
 go active only when ONE OR MORE child filters are active.
 
+### `[ ]` The data toolbar is clipped away below 800px tall
+
+Measured 2026-09-24 at 1280x720 on `?context=records`: the data toolbar's
+`Add filter` button sits at y=773 with `document.scrollHeight` also 720. So the
+button is off-screen AND the page does not scroll — `elementFromPoint` returns
+null and no click can reach it. At 1600x1100 the same button is at y=785 and
+works.
+
+The app shell is a fixed-height fit grid, so a row that does not fit is clipped
+rather than scrolled. Whatever the fix, the rule is: nothing interactive may be
+clipped out of reach at a supported height.
+
+Two ways out, to choose when the work starts:
+- The content area scrolls when its rows exceed the viewport.
+- The grid card gives up height first, so the toolbars always fit.
+
+### `[ ]` Fold the `More` overflow into the `Add filter` button
+
+Two buttons at the end of the bar do nearly the same job. `More` holds the chips
+that did not fit; `Add filter` holds the chips not yet on the bar. Both open a
+menu, both are a list of filters, both end with the reader picking one.
+
+Merge them into ONE button. Its menu has two parts: the filters already on the
+bar but folded away, and the filters available to add.
+
+Open questions, to settle when the work starts:
+- Does a folded chip still DRILL (its own rows, one level in), while an
+  available one only ADDS?
+- What does the button say when only one of the two sets is non-empty?
+- The badge on `More` counts ACTIVE folded filters — does the merged button keep
+  that count, and does it count the addable ones too?
+
+Related: the `More` chip's active state is already an open item above.
+
 ### `[ ]` An inactive chip must say where its filter is applied
 
 The tooltip on an inactive filter chip tells the user nothing. If the App Header

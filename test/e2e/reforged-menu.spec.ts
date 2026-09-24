@@ -620,3 +620,47 @@ test('a committing menu discards its draft when closed without Apply', async ({ 
   // Back to what Apply last committed — the draft is gone, the commit is not.
   expect(r.afterClose).toEqual(['a']);
 });
+
+/**
+ * `open = true` calls show() with no argument, so there is no trigger to
+ * measure and the card kept left/top 0 — silently, in the viewport corner.
+ * TRAP T-a-menu-with-no-trigger-lands-at-the-origin
+ */
+test('a menu opened with no trigger falls back to the nearest drawn box', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const host = document.createElement('div');
+    host.style.cssText = 'position:absolute; left:300px; top:400px; width:120px; height:40px;';
+    const menu = document.createElement('sherpa-menu') as HTMLElement & {
+      rendered?: Promise<void>;
+      items(v: unknown): void;
+      show(t?: HTMLElement): void;
+    };
+    host.appendChild(menu);
+    document.getElementById('root')!.replaceChildren(host);
+    await menu.rendered;
+    menu.items([{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    // BARE show — the path `open = true` takes.
+    menu.show();
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const card = menu.shadowRoot!.querySelector('.menu')!;
+    const cs = getComputedStyle(card);
+    const box = card.getBoundingClientRect();
+    return {
+      left: cs.left,
+      top: cs.top,
+      x: Math.round(box.x),
+      y: Math.round(box.y),
+      hostY: Math.round(host.getBoundingClientRect().bottom),
+    };
+  });
+
+  // The bug was exactly this pair reading "0px".
+  expect(r.left).not.toBe('0px');
+  expect(r.top).not.toBe('0px');
+  // It hangs off the host box, not the viewport corner.
+  expect(r.x).toBeGreaterThan(100);
+  expect(r.y).toBeGreaterThanOrEqual(r.hostY);
+});
