@@ -20,6 +20,7 @@
   block-size: 100%;
   /* A FIXED panel, not an overlay — it sits in the flow beside the content. */
   box-shadow: none;
+
 }
 
 /* The BODY scrolls, not the panel: the search and the footer stay put. Without
@@ -56,11 +57,47 @@
   border-block-start-width: 0;
   border-inline-width: 0;
 }
+
+/* The scope's HEADER stays put while its fields scroll past — a reader deep in
+   a long list still knows which scope they are in, and the Add button stays
+   reachable. `::part`, because the summary row is in the accordion's shadow. */
+.scope::part(header) {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
+  background: var(--sherpa-style-surface-base, #fff);
+}
 .scope:last-of-type { border-block-end-width: 0; }
 
 /* ── Fields ──────────────────────────────────────────────────────────── */
 
 .field + .field { margin-block-start: var(--sherpa-display-mode-space-md, 16px); }
+
+/* A FIELD is a two-column grid: its label and chips, then the actions column.
+   The actions sit on the FIRST chip row, not in the header — a header row of
+   icons reads as chrome for the section, and these act on the field. */
+.field {
+  display: grid;
+  /* Two named rows, so the actions land on the CHIPS row rather than wherever
+     the implicit flow puts them. */
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "label label"
+    "body  acts";
+  column-gap: var(--sherpa-display-mode-space-xs, 8px);
+  align-items: start;
+}
+.field-head { grid-area: label; }
+.field-values,
+.field-body { grid-area: body; }
+.field-acts {
+  grid-area: acts;
+  display: flex;
+}
+/* A field with nothing to act on shows no column at all. */
+.field:not([data-clearable]):not([data-removable]):not([data-conditional-ok]) .field-acts {
+  display: none;
+}
 
 /* The search hides a VALUE; JS writes the flag, CSS owns the hiding. */
 .value[data-filtered-out] { display: none; }
@@ -81,16 +118,13 @@
 .field[data-body] .field-body { display: block; }
 .field[data-body] .field-values { display: none; }
 
-/* The three field actions are opt-in: a field that cannot be asked a
-   condition, cleared or removed does not show a control that does nothing. */
-.field-conditional,
-.field-clear,
-.field-remove { display: none; }
-.field[data-conditional-ok] .field-conditional,
-.field[data-clearable] .field-clear,
-.field[data-removable] .field-remove { display: inline-flex; }
+/* The three field actions are opt-in, and the ones a field does not offer are
+   REMOVED in JS rather than hidden here — `.sherpa-group` squares corners by
+   POSITION, and a hidden first child still counts.
+   TRAP T-a-hidden-sibling-still-counts-as-first-child */
 
 /* A scope with nothing to add offers no Add button. */
+.scope-actions { display: block; }
 .scope-add { display: none; }
 .scope[data-can-add] .scope-add {
   display: inline-flex;

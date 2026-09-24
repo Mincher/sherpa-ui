@@ -16,6 +16,39 @@ export class SherpaAppShell extends SherpaElement {
     this.addEventListener('nav-state-change', this.#onNavState as EventListener);
     // Deferred: the rail sets itself to `collapsed` on its own first render.
     queueMicrotask(() => this.#adoptRailState());
+
+    /* A panel area follows its panel's own `data-open`: slotted but SHUT, it
+       must take no room, or the Context never gets the width back.
+       `::slotted()` cannot go inside `:has()`, so the shell mirrors the flag.
+       TRAP T-the-shell-owns-the-panel-areas */
+    for (const side of ['start', 'end'] as const) {
+      this.$(`slot[name="panel-${side}"]`)
+        ?.addEventListener('slotchange', () => this.#watchPanel(side));
+      this.#watchPanel(side);
+    }
+  }
+
+  /** Mirror one panel's `data-open` onto the host, and follow it. */
+  #watchPanel(side: 'start' | 'end'): void {
+    const slot = this.$<HTMLSlotElement>(`slot[name="panel-${side}"]`);
+    const panel = slot?.assignedElements()[0];
+    const flag = `data-panel-${side}-open`;
+    const sync = (): void => {
+      this.toggleAttribute(flag, !!panel?.hasAttribute('data-open'));
+    };
+    this.#panelWatch[side]?.disconnect();
+    if (!panel) { this.removeAttribute(flag); return; }
+    const observer = new MutationObserver(sync);
+    observer.observe(panel, { attributes: true, attributeFilter: ['data-open'] });
+    this.#panelWatch[side] = observer;
+    sync();
+  }
+
+  #panelWatch: { start?: MutationObserver; end?: MutationObserver } = {};
+
+  override onDisconnect(): void {
+    this.#panelWatch.start?.disconnect();
+    this.#panelWatch.end?.disconnect();
   }
 
   #onNavState = (event: Event): void => {

@@ -14,7 +14,7 @@ import { RECORDS_VIEWS } from './records-views.js';
 import { globalFilters, globalAvailable } from './global-filters.js';
 
 
-export async function init(root) {
+export async function init(root, { session } = {}) {
   /* The store is the APP's (records outlive a screen); the source is this
      Context's (one query over them). */
   const store = customerStore;
@@ -121,19 +121,30 @@ export async function init(root) {
    * it, which the panel shows as a preset.
    * TRAP T-a-chip-with-no-field-is-a-preset
    */
-  const asPanelField = (f, bar) => ({
+  const asPanelField = (f, bar) => {
+    const menu = bar?.shadowRoot
+      ?.querySelector(`.chips > .chip[data-id="${f.id}"] sherpa-menu`) ?? undefined;
+    return asPanelFieldWith(f, menu);
+  };
+
+  const asPanelFieldWith = (f, menu) => ({
     id: f.id,
     label: f.label,
     options: f.options,
     select: f.select,
     removable: f.removable,
     conditions: f.conditions,
-    preset: !f.options?.length && !f.kind,
-    /* The field's OWN menu, where its chip has one. A single-select field
-       keeps it; so does a number or a date, which the panel cannot draw as a
-       run of chips. TRAP T-an-inline-menu-is-the-same-menu */
-    menu: bar?.shadowRoot
-      ?.querySelector(`.chips > .chip[data-id="${f.id}"] sherpa-menu`) ?? undefined,
+    /* A PRESET has no values AND no menu — one question, answered yes or no.
+       A date or a number range has no values either, but it HAS a menu, and
+       the panel draws that body. TRAP T-a-chip-with-no-field-is-a-preset */
+    preset: !f.options?.length && !f.kind && !menu,
+    /* A DATE is ONE chip with its menu. Its menu IS a calendar, and a calendar
+       drawn inline is the whole panel. TRAP T-only-group-and-sort-stay-one-chip */
+    asChip: f.kind === 'date' || f.id === 'dateRange',
+    /* The field's OWN menu, where its chip has one — a number, a date, or a
+       field the reader may ask a condition of.
+       TRAP T-an-inline-menu-is-the-same-menu */
+    ...(menu ? { menu } : {}),
   });
 
   const grid      = root.querySelector('#grid');
@@ -279,6 +290,11 @@ export async function init(root) {
      TRAP T-the-panel-is-the-toolbar-in-a-column */
   const fillPanel = () => {
     const viewBar = header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
+    /* CREATED DATE moves INTO the panel while it is open — it has a menu, so
+       the panel draws that body. View, Customer and Region stay on the header:
+       they are global, and the View chip is not a filter at all.
+       TRAP T-the-view-chip-stays-on-the-header */
+    const stays = ['view', 'customer', 'region'];
     panel?.populate([
       {
         scope: 'view',
@@ -287,7 +303,7 @@ export async function init(root) {
            all three stay on the app header.
            TRAP T-the-view-chip-stays-on-the-header */
         filters: (viewBar?.heldIds ?? [])
-          .filter((id) => !HEADER_HELD.includes(id))
+          .filter((id) => !stays.includes(id))
           .map((id) => {
             const chip = viewBar?.shadowRoot?.querySelector(`.chips > .chip[data-id="${id}"]`);
             return asPanelField({
@@ -330,28 +346,62 @@ export async function init(root) {
 
   /* EITHER bar's Configure button toggles the panel, and the panel is filled
      the moment it opens — the bars may have changed since last time. */
+  /** TOOLBARS or PANEL, remembered for the session.
+   *  TRAP T-panel-mode-hides-what-the-panel-answers */
+  const setMode = (mode) => session?.set?.('/filters/mode', mode);
+
   const togglePanel = () => {
     if (!panel) return;
     if (panel.hasAttribute('data-open')) { panel.close(); return; }
     fillPanel();
     panel.open();
+    setMode('panel');
     /* A field the panel draws is HIDDEN on its bar: two controls over one
        field make a reader guess which is in force.
        TRAP T-the-view-chip-stays-on-the-header */
     syncPanelled(true);
+    setPanelMode(true);
   };
 
-  /** Hide or show the chips the panel is drawing instead. */
+  /** Both bars step back while the panel answers for them.
+   *  TRAP T-panel-mode-hides-what-the-panel-answers */
+  const setPanelMode = (on) => {
+    qft.toggleAttribute('data-panel-mode', on);
+    header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]')
+      ?.toggleAttribute('data-panel-mode', on);
+  };
+
+  /** Hide the HEADER chips the panel is drawing. The data bar goes entirely,
+   *  so it needs none of this. TRAP T-panel-mode-hides-what-the-panel-answers */
   const syncPanelled = (on) => {
-    const drawn = new Set(DATA_FILTERS.map((f) => f.id));
-    for (const chip of qft.shadowRoot?.querySelectorAll('.chips > .chip') ?? []) {
-      chip.toggleAttribute('data-panelled', on && drawn.has(chip.dataset['id']));
+    const viewBar = header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
+    for (const chip of viewBar?.shadowRoot?.querySelectorAll('.chips > .chip') ?? []) {
+      const id = chip.dataset['id'];
+      chip.toggleAttribute('data-panelled', on && !['view', 'customer', 'region'].includes(id));
     }
   };
 
   qft.addEventListener('filter-configure', togglePanel, { signal });
   header?.addEventListener('filter-configure', togglePanel, { signal });
-  panel?.addEventListener('filter-panel-close', () => syncPanelled(false), { signal });
+  panel?.addEventListener('filter-panel-close', () => {
+    syncPanelled(false);
+    setPanelMode(false);
+    setMode('toolbars');
+  }, { signal });
+
+  /* RESTORE. The panel opens itself if the reader left it open — after the
+     bars are populated, because it reads their chips. */
+  if (session?.get?.('/filters/mode') === 'panel') {
+    queueMicrotask(() => {
+      fillPanel();
+      panel?.open();
+      // `open()` refuses below its breakpoint, so follow what it actually did.
+      if (panel?.hasAttribute('data-open')) {
+        syncPanelled(true);
+        setPanelMode(true);
+      }
+    });
+  }
 
   /* APPLY. The panel reports every field in ONE event; each one goes to the
      source exactly as its chip would send it. */

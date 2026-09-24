@@ -233,6 +233,15 @@
   pointer-events: auto;
 }
 
+/* PANEL MODE. A filter PANEL is answering for this bar, so the controls it
+   also carries are hidden here: AI, Reset and the panel toggle itself, plus
+   Add filter, which is now the scope's own action. Two of each is two answers
+   to one question. A DATA bar has nothing left, so it goes entirely.
+   TRAP T-panel-mode-hides-what-the-panel-answers */
+:host([data-panel-mode]) :is([data-act="ai"], [data-act="clear"],
+                             [data-act="configure"], .add-btn) { display: none; }
+:host([data-panel-mode]:not([data-type="view"])) { display: none; }
+
 /* A chip a FILTER PANEL is drawing instead. Plain `display: none`, unlike a
    folded chip: the panel draws value chips, not the menu, so nothing here is
    still in use. TRAP T-the-view-chip-stays-on-the-header */

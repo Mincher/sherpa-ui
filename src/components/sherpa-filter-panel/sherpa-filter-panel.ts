@@ -7,7 +7,7 @@
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
-import '../sherpa-panel/sherpa-panel.js';
+import '../sherpa-container/sherpa-container.js';
 import '../sherpa-container-header/sherpa-container-header.js';
 import '../sherpa-container-footer/sherpa-container-footer.js';
 import '../sherpa-accordion/sherpa-accordion.js';
@@ -37,6 +37,10 @@ export interface PanelFilter {
   /** A chip with no field behind it — one question, answered yes or no.
    *  TRAP T-a-chip-with-no-field-is-a-preset */
   preset?: boolean;
+  /** Draw as ONE chip with its menu, not a run. A date is the case: its menu
+   *  IS a calendar, and a calendar in a 360px column is the whole panel.
+   *  TRAP T-only-group-and-sort-stay-one-chip */
+  asChip?: boolean;
   /** ON, with nothing picked — a preset's whole state. */
   active?: boolean;
   /**
@@ -295,10 +299,19 @@ export class SherpaFilterPanel extends SherpaElement {
     const organise = def.id === 'group' || def.id === 'sort';
     // Set BEFORE the chip path returns, or it never lands.
     box.toggleAttribute('data-single', single && !isPresets);
-    box.toggleAttribute('data-chip', organise);
+    box.toggleAttribute('data-chip', organise || !!def.asChip);
     box.toggleAttribute('data-clearable', !isPresets && !organise);
     box.toggleAttribute('data-removable', !isPresets && !organise && !!def.removable);
     box.toggleAttribute('data-conditional-ok', !isPresets && !organise && !!def.conditions);
+
+    /* REMOVE what this field does not offer, never hide it: `.sherpa-group`
+       squares corners by POSITION, and a `display: none` first child still
+       counts as `:first-child` — so a field with no condition button had a
+       Clear that kept the middle's square edges.
+       TRAP T-a-hidden-sibling-still-counts-as-first-child */
+    if (!box.hasAttribute('data-conditional-ok')) box.querySelector('.field-conditional')?.remove();
+    if (!box.hasAttribute('data-clearable')) box.querySelector('.field-clear')?.remove();
+    if (!box.hasAttribute('data-removable')) box.querySelector('.field-remove')?.remove();
 
     const head = box.querySelector('.field-head');
     head?.setAttribute('data-heading', def.label);
@@ -313,7 +326,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
     /* ONE CHIP, carrying its own menu — group and sort only.
        TRAP T-only-group-and-sort-stay-one-chip */
-    if (organise && values && proto?.content.firstElementChild) {
+    if ((organise || def.asChip) && values && proto?.content.firstElementChild) {
       const one = proto.content.firstElementChild.cloneNode(true) as HTMLElement;
       one.setAttribute('data-label', def.label);
       one.dataset['value'] = def.id;
@@ -326,6 +339,11 @@ export class SherpaFilterPanel extends SherpaElement {
          in a second place, never a copy. TRAP T-an-inline-menu-is-the-same-menu */
       if (def.menu) {
         one.setAttribute('data-menu', '');
+        /* A CHIP MENU in the panel COMMITS. Everything else here waits for the
+           panel's own Apply, so a date or a sort that landed on every click
+           would be the one control that did not.
+           TRAP T-a-chip-menu-in-the-panel-commits */
+        def.menu.setAttribute('data-commit', '');
         held.menu = def.menu;
         held.menuHome = { parent: def.menu.parentNode!, slot: def.menu.getAttribute('slot') };
         def.menu.setAttribute('slot', 'menu');

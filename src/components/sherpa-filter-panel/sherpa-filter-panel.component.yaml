@@ -13,15 +13,19 @@ $name: sherpa-filter-panel
 $description: the filter toolbars, as a column.
 element:
   $type: element
-  tag: sherpa-panel
+  tag: sherpa-container
+  attributes:
+    data-padding: none
   provides: []
 templates:
   - default
 anatomy:
   roots:
-    - el: sherpa-panel
+    - el: sherpa-container
       class: panel
       part: panel
+      attrs:
+        data-padding: none
       children:
         - el: sherpa-container-header
           class: head
@@ -37,6 +41,7 @@ anatomy:
               attrs:
                 slot: metadata
                 data-icon-start: magnifying-glass
+                data-clearable: ""
                 placeholder: Search filters
                 autocomplete: "off"
                 aria-label: Search every filter
@@ -67,13 +72,19 @@ anatomy:
           attrs:
             open: ""
           children:
-            - el: sherpa-button
-              class: scope-add
+            - el: span
+              class: scope-actions
               attrs:
                 slot: actions
-                data-size: sm
-                data-icon-end: triangle-down
-                aria-haspopup: menu
+              children:
+                - el: sherpa-button
+                  class: scope-add
+                  attrs:
+                    data-type: icon
+                    data-size: sm
+                    data-icon-start: plus
+                    aria-haspopup: menu
+                    aria-label: Add filter
 props:
   - $type: prop
     name: data-heading
@@ -156,6 +167,8 @@ events:
       conditional: unknown
       id: unknown
       scope: unknown
+tokens:
+  field.column-gap: "{sherpa.display-mode-space-xs}"
 $extensions:
   sherpa:
     methods:

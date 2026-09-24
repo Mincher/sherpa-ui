@@ -1,0 +1,85 @@
+import { test, expect } from '@playwright/test';
+
+/**
+ * TOOLBARS OR PANEL, REMEMBERED FOR THE SESSION.
+ *
+ * Will, 2026-09-24: "Whether the app is in filter toolbar or filter panel mode
+ * needs to be remembered across refreshes and view changes, too."
+ *
+ * It is APP CHROME, the same tier as the nav pin and the theme mode — a
+ * SessionStore pointer, so it survives a reload and a Context change and dies
+ * with the session. A saved VIEW is the other tier, and a deliberate act.
+ * TRAP T-panel-mode-hides-what-the-panel-answers
+ */
+test('panel mode survives a reload, in both directions', async ({ page }) => {
+  const errs: string[] = [];
+  page.on('pageerror', (e) => errs.push(String(e)));
+  await page.setViewportSize({ width: 1440, height: 950 });
+  await page.goto('http://localhost:4200/?context=records');
+  await page.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot
+      ?.querySelector('.row, [role="row"]'));
+  await page.waitForTimeout(700);
+
+  const before = await page.evaluate(() =>
+    !document.querySelector('#filter-panel')!.hasAttribute('data-open'));
+
+  await page.evaluate(() => {
+    document.querySelector('#context-root sherpa-quick-filter-toolbar')!
+      .dispatchEvent(new CustomEvent('filter-configure', { bubbles: true, composed: true }));
+  });
+  await page.waitForTimeout(800);
+  const opened = await page.evaluate(() => ({
+    open: document.querySelector('#filter-panel')!.hasAttribute('data-open'),
+    stored: Object.keys(sessionStorage).filter((k) => k.includes('filter')),
+  }));
+
+  // RELOAD.
+  await page.reload();
+  await page.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot
+      ?.querySelector('.row, [role="row"]'));
+  await page.waitForTimeout(1200);
+
+  const after = await page.evaluate(() => {
+    const p = document.querySelector('#filter-panel') as HTMLElement & { shadowRoot: ShadowRoot };
+    const bar = document.querySelector('#context-root sherpa-quick-filter-toolbar') as HTMLElement;
+    return {
+      open: p.hasAttribute('data-open'),
+      fields: p.shadowRoot.querySelectorAll('.field').length,
+      barHidden: getComputedStyle(bar).display === 'none',
+    };
+  });
+
+  // And CLOSING it is remembered too. The header is in the panel's SHADOW root.
+  await page.evaluate(() => {
+    const p = document.querySelector('#filter-panel') as HTMLElement & { shadowRoot: ShadowRoot };
+    p.shadowRoot.querySelector('.head')!
+      .dispatchEvent(new CustomEvent('header-dismiss', { bubbles: true, composed: true }));
+  });
+  await page.waitForTimeout(400);
+  await page.reload();
+  await page.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot
+      ?.querySelector('.row, [role="row"]'));
+  await page.waitForTimeout(1200);
+  const closedAgain = await page.evaluate(() => ({
+    shut: !document.querySelector('#filter-panel')!.hasAttribute('data-open'),
+    barBack: getComputedStyle(
+      document.querySelector('#context-root sherpa-quick-filter-toolbar') as HTMLElement,
+    ).display !== 'none',
+  }));
+
+  expect(errs).toEqual([]);
+  // It starts in TOOLBARS mode.
+  expect(before).toBe(true);
+  expect(opened.open).toBe(true);
+
+  // RELOADED: still open, still filled, and the component bar still stood down.
+  expect(after.open).toBe(true);
+  expect(after.fields).toBeGreaterThan(0);
+  expect(after.barHidden).toBe(true);
+
+  // …and closing is remembered too, with the toolbar back.
+  expect(closedAgain).toEqual({ shut: true, barBack: true });
+});

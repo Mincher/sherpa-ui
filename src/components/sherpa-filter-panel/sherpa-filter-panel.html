@@ -40,13 +40,19 @@
     filter-remove — a field's Remove. detail: { scope, id }
 -->
 <template id="default">
-  <sherpa-panel class="panel" part="panel">
+  <!-- A CONTAINER, not a sherpa-panel: a panel draws LEFT and RIGHT edges only
+       because it is built to sit flush BETWEEN in-flow surfaces, so it has no
+       top, no bottom and no rounding. This is a standalone card beside the
+       content. A container is one, and it supplies its composed footer's
+       `--_pad-inline` already.
+       TRAP T-a-panel-flush-between-surfaces-draws-two-edges -->
+  <sherpa-container class="panel" part="panel" data-padding="none">
     <sherpa-container-header slot="header" class="head" part="head"
                              data-icon="filter" data-dismissible>
       <!-- ONE search, across every value in the panel. The metadata row is the
            header's own bottom row, so it spans the full width. -->
       <sherpa-input-text slot="metadata" class="search" part="search"
-                         data-icon-start="magnifying-glass"
+                         data-icon-start="magnifying-glass" data-clearable
                          placeholder="Search filters" autocomplete="off"
                          aria-label="Search every filter"></sherpa-input-text>
     </sherpa-container-header>
@@ -59,34 +65,50 @@
       <sherpa-button class="discard" part="discard">Discard</sherpa-button>
       <sherpa-button class="apply" part="apply" data-look="saturated">Apply</sherpa-button>
     </sherpa-container-footer>
-  </sherpa-panel>
+  </sherpa-container>
 
   <!-- PROTOTYPES. Every element the panel will ever show exists here from the
        start; JS clones, it never createElement()s. -->
   <template class="scope-tpl">
     <!-- THE SAME BUTTON the toolbar shows, attribute for attribute: this is a
          MOVE, not a recreation, and a reader must not have to notice. -->
+    <!-- ADD FILTER sits in its OWN row under the heading, in the accordion's
+         `description` slot — beside the chevron it crowded the title in a
+         360px column. The SAME button the toolbar shows, attribute for
+         attribute: this is a MOVE, not a recreation. -->
     <sherpa-accordion class="scope" open>
-      <sherpa-button slot="actions" class="scope-add" data-size="sm"
-                     data-icon-end="triangle-down"
-                     aria-haspopup="menu">Add filter</sherpa-button>
+      <!-- ADD FILTER rides the same right-hand column the field actions do,
+           still in the accordion's header. -->
+      <span slot="actions" class="scope-actions">
+        <!-- The SAME button the toolbar shows, attribute for attribute: this
+             is a MOVE, not a recreation, and a reader must not have to notice. -->
+        <sherpa-button class="scope-add" data-size="sm"
+                       data-icon-end="triangle-down"
+                       aria-haspopup="menu">Add filter</sherpa-button>
+      </span>
     </sherpa-accordion>
   </template>
 
   <template class="field-tpl">
-    <sherpa-stack class="field" data-gap="sm">
-      <sherpa-section-header class="field-head" data-size="sm" data-divider="none">
-        <!-- `sm`, like every other action in a filter bar. -->
-        <sherpa-button slot="actions" class="field-conditional" data-type="icon"
-                       data-size="sm" data-look="transparent"
+    <!-- A COLUMN of actions on the right, level with the FIRST row of chips —
+         not in the header. The three of them are one object, so `.sherpa-group`
+         snaps them. -->
+    <!-- A plain grid, not a sherpa-stack: a stack wraps its children in its
+         own `.run`, so a grid on the host never reaches them. Two rows — the
+         label, then the chips beside their actions. -->
+    <div class="field">
+      <sherpa-section-header class="field-head" data-size="sm"
+                             data-divider="none"></sherpa-section-header>
+      <span class="field-acts sherpa-group">
+        <!-- `sm`, and the DEFAULT look: transparent read as decoration, and
+             these are the field's own three controls. -->
+        <sherpa-button class="field-conditional" data-type="icon" data-size="sm"
                        data-icon-start="sliders-up" aria-pressed="false"></sherpa-button>
-        <sherpa-button slot="actions" class="field-clear" data-type="icon"
-                       data-size="sm" data-look="transparent"
+        <sherpa-button class="field-clear" data-type="icon" data-size="sm"
                        data-icon-start="arrow-rotate-left"></sherpa-button>
-        <sherpa-button slot="actions" class="field-remove" data-type="icon"
-                       data-size="sm" data-look="transparent"
+        <sherpa-button class="field-remove" data-type="icon" data-size="sm"
                        data-icon-start="trash" data-status="critical"></sherpa-button>
-      </sherpa-section-header>
+      </span>
       <!-- `hug`: each chip at its own width. Every other value STRETCHES its
            items to share the line, which makes a chip read as a button. -->
       <sherpa-stack class="field-values" data-direction="inline" data-gap="sm"
@@ -95,7 +117,7 @@
            the field's own menu body, drawn inline — not by a second copy of
            each control. TRAP T-an-inline-menu-is-the-same-menu -->
       <div class="field-body" part="field-body"></div>
-    </sherpa-stack>
+    </div>
   </template>
 
   <template class="value-tpl">

@@ -33,7 +33,11 @@
 /* ── Summary: the toggle row ─────────────────────────────────────────── */
 .header {
   display: flex;
-  align-items: center;
+  /* START, not centre: the titles are a COLUMN — a heading, a description, and
+     whatever a host slots under them — so centring put the chevron and the
+     actions halfway down a two-row header instead of on the row that names it.
+     TRAP T-an-accordion-chevron-rides-the-heading-row */
+  align-items: start;
   gap: var(--sherpa-theme-gap-sm, 4px);
   padding: var(--sherpa-theme-padding-md, 8px);
   cursor: pointer;
@@ -57,6 +61,9 @@
 .actions {
   display: none;
   align-items: center;
+  /* The heading's own line height, so `align-items: start` puts these on the
+     row that names the section rather than halfway down a two-row header. */
+  min-block-size: var(--sherpa-theme-content-line-height-base, 20px);
   gap: var(--sherpa-display-mode-space-2xs, 4px);
 }
 :host([data-has-actions]) .actions { display: flex; }
@@ -95,6 +102,12 @@
 .chevron {
   transform: rotate(-90deg);
   transition: transform 160ms ease;
+  /* Centred in the heading's row. The ICON keeps its own drawn size — sizing
+     the box here made it 20px and broke the icon's own contract. */
+  align-self: center;
+  margin-block: calc(
+    (var(--sherpa-theme-content-line-height-base, 20px)
+     - var(--sherpa-theme-content-size-base, 14px)) / 2);
 }
 
 .root[open] .chevron {

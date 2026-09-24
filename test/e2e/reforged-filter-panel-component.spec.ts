@@ -55,13 +55,16 @@ test('a scope draws its presets, its fields, and nothing it cannot', async ({ pa
       fields: q('.field').map((f) => f.dataset.field),
       presets: q('.field[data-field="presets"] .value').map((c) => c.dataset.value),
       presetOn: q('.field[data-field="presets"] .value[data-current]').map((c) => c.dataset.value),
-      // The three field actions are OPT-IN, per field.
-      ownerActions: ['conditional', 'clear', 'remove'].filter((a) =>
-        getComputedStyle(sr.querySelector('.field[data-field="owner"] .field-' + a)).display !== 'none'),
-      statusActions: ['conditional', 'clear', 'remove'].filter((a) =>
-        getComputedStyle(sr.querySelector('.field[data-field="status"] .field-' + a)).display !== 'none'),
-      presetActions: ['clear', 'remove'].filter((a) =>
-        getComputedStyle(sr.querySelector('.field[data-field="presets"] .field-' + a)).display !== 'none'),
+      /* The three field actions are OPT-IN, per field — and the ones a field
+         does not offer are REMOVED, not hidden: a group squares corners by
+         POSITION, and a hidden first child still counts.
+         TRAP T-a-hidden-sibling-still-counts-as-first-child */
+      ownerActions: ['conditional', 'clear', 'remove']
+        .filter((a) => !!sr.querySelector('.field[data-field="owner"] .field-' + a)),
+      statusActions: ['conditional', 'clear', 'remove']
+        .filter((a) => !!sr.querySelector('.field[data-field="status"] .field-' + a)),
+      presetActions: ['clear', 'remove']
+        .filter((a) => !!sr.querySelector('.field[data-field="presets"] .field-' + a)),
       canAdd: q('.scope[data-can-add]').map((s) => s.getAttribute('data-scope')),
       emptyScopes: q('.scope-empty').length,
     };
@@ -434,8 +437,11 @@ test('a number field shows its own menu body, and gets it back', async ({ page }
   expect(r['drawn']!['inputValue']).toBe('42');
   expect(r['drawn']!['chips']).toBe('none');
 
-  // HOME, exactly as it was: its slot back, and a popover again.
+  /* HOME, exactly as it was: its slot back, and a popover again. `manual`,
+     not `auto` — the menu owns its own dismiss, because its rows are SLOTTED
+     and the browser reads the DOM tree for light-dismiss.
+     TRAP T-a-slotted-row-is-outside-its-own-popover */
   expect(r['home']).toEqual({
-    back: true, slot: 'menu', inline: false, popover: 'auto',
+    back: true, slot: 'menu', inline: false, popover: 'manual',
   });
 });

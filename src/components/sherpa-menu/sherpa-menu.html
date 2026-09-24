@@ -2,8 +2,12 @@
   sherpa-menu — a floating list of choices or actions. Figma "Menu" SET
   (1156:29240), Type axis List | Calendar.
 
-  The card IS a `popover`, so the browser owns the top layer, Escape and
-  outside-click dismissal.
+  The card IS a `popover`, so the browser owns the top layer — but MANUAL, not
+  auto: the rows are SLOTTED, so for light-dismiss the browser reads the DOM
+  tree, where they are children of this element and OUTSIDE the card. Ticking a
+  row dismissed the menu with nothing chosen. The menu owns Escape and
+  outside-click itself, off the composed path.
+  TRAP T-a-slotted-row-is-outside-its-own-popover
 
   Placement is NOT native: CSS anchor positioning cannot cross a shadow root, so
   `position-anchor` found nothing and every menu rendered at the viewport corner.
@@ -86,7 +90,7 @@
     filter-mode-change — the mode button was pressed. detail: { mode }
 -->
 <template id="default">
-  <div class="menu sherpa-border-edges sherpa-border-corners" part="menu" popover="auto" role="menu">
+  <div class="menu sherpa-border-edges sherpa-border-corners" part="menu" popover="manual" role="menu">
     <!-- HEADER — CSS-gated on the slot-presence flag, so an unslotted menu is unchanged. -->
     <div class="header" part="header">
       <!-- Shown only in a DRILLED menu. The trail IS sherpa-breadcrumbs, never re-drawn here. -->
@@ -104,7 +108,7 @@
         row hidden by a search keeps its ticked state and comes back with it.
       -->
       <sherpa-input-text class="search" part="search"
-                         data-icon-start="magnifying-glass"
+                         data-icon-start="magnifying-glass" data-clearable
                          placeholder="Search" autocomplete="off"
                          aria-label="Search this menu"></sherpa-input-text>
     </div>
@@ -164,7 +168,7 @@
 </template>
 
 <template id="filter">
-  <div class="menu sherpa-border-edges sherpa-border-corners" part="menu" popover="auto" role="menu">
+  <div class="menu sherpa-border-edges sherpa-border-corners" part="menu" popover="manual" role="menu">
     <!-- HEADER — CSS-gated on the slot-presence flag, so an unslotted menu is unchanged. -->
     <div class="header" part="header">
       <!-- Shown only in a DRILLED menu. The trail IS sherpa-breadcrumbs, never re-drawn here. -->
@@ -193,7 +197,7 @@
 
       <!-- SELECT MODE — the search leads the ticked rows beneath it. -->
       <sherpa-input-text class="search" part="search"
-                         data-icon-start="magnifying-glass"
+                         data-icon-start="magnifying-glass" data-clearable
                          placeholder="Search" autocomplete="off"
                          aria-label="Search this menu"></sherpa-input-text>
 

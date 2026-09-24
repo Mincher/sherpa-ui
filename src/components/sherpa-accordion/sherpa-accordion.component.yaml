@@ -117,6 +117,7 @@ tokens:
   header.gap: "{sherpa.theme-gap-sm}"
   header.padding: "{sherpa.theme-padding-md}"
   header.color: "{sherpa.style-content-base}"
+  actions.min-block-size: "{sherpa.theme-content-line-height-base}"
   actions.gap: "{sherpa.display-mode-space-2xs}"
   titles.gap: "{sherpa.display-mode-space-3xs}"
   heading.color: "{sherpa.theme-content-body-base}"
@@ -126,6 +127,7 @@ tokens:
   description.color: "{sherpa.theme-content-body-1}"
   description.font-size: "{sherpa.font-size-body-small}"
   description.line-height: "{sherpa.theme-content-line-height-small}"
+  chevron.margin-block: "{sherpa.theme-content-line-height-base}"
   body.border-block-start: "{sherpa.style-border-width}"
 $extensions:
   sherpa:

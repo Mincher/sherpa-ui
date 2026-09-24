@@ -13,12 +13,14 @@
   align-items: center;
   justify-content: flex-end; /* default: end-aligned */
   gap: var(--sherpa-theme-gap-sm, 4px);
-  /* 8 block / 0 inline, per the Container Footer node (51:66438). Zero inline is
-     deliberate: the host supplies the gutter, so buttons sit flush with its edge. */
   padding-block: var(--sherpa-theme-padding-md, 8px);
-  /* A host with no gutter of its own pins `--_pad-inline` rather than reaching
-     into the shadow root. TRAP T-an-instance-pin-is-the-hosts-to-apply. */
-  padding-inline: var(--_pad-inline, var(--sherpa-theme-padding-none, 0px));
+  /* The FOOTER's OWN gutter, not zero. It defaulted to 0 on the theory that
+     every host supplies `--_pad-inline`, and most do not — `sherpa-container`
+     and `sherpa-dialog` did, `sherpa-panel` and `sherpa-menu` never had, so
+     their buttons sat flush against the card edge. A host that genuinely wants
+     none pins `--_pad-inline: 0`, which is the rarer case and now the explicit
+     one. TRAP T-a-composed-chrome-row-takes-its-inline-padding-from-its-container */
+  padding-inline: var(--_pad-inline, var(--sherpa-theme-padding-lg, 16px));
   /* Top divider: Figma binds style-border/base +1. TRAP T-style-border-base-is-default-1. */
   border-block-start: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
     var(--sherpa-style-border-base-1, #b3b3c3);

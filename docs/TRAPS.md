@@ -7062,7 +7062,6 @@ Redefining a shared token to mean something other than zero is a lie told to
 every descendant that reads it.
 
 - Site: `src/components/sherpa-dialog/sherpa-dialog.css`
-- Site: `src/components/sherpa-container-footer/sherpa-container-footer.css`
 
 ### T-two-urls-are-two-modules
 
@@ -7989,6 +7988,9 @@ value belongs.
 
 ---
 - Site: `src/components/sherpa-panel/sherpa-panel.css`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-container-footer/sherpa-container-footer.css`
+- Site: `test/e2e/reforged-container-footer.spec.ts`
 
 ### T-a-panel-chrome-row-never-shrinks
 
@@ -8021,6 +8023,127 @@ gone.
 
 ---
 - Site: `src/core/ui/render-icon.ts`
+
+### T-a-chip-menu-in-the-panel-commits
+
+A menu drawn as a CHIP inside the filter panel gets `data-commit`.
+
+Everything else in the panel waits for the panel's own Apply, so a date, a
+group or a sort that landed on every click would be the one control that did
+not — and a reader who opened Group to look would have regrouped the table by
+closing it.
+
+It is the panel's to set, not the chip's: the same menu on a toolbar commits or
+not by its own `select` mode. `T-commit-follows-select-mode`.
+
+---
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+
+### T-a-hidden-sibling-still-counts-as-first-child
+
+`.sherpa-group` squares a run's inner corners by POSITION — `:first-child` and
+`:last-child` — and a `display: none` child still holds its position.
+
+So a filter field with no condition button had a Clear that kept the MIDDLE's
+square edges: the hidden button was `:first-child`, and Clear was merely second.
+
+The panel REMOVES the actions a field does not offer rather than hiding them.
+That is the rule for any `.sherpa-group`: a control that is not there must not
+be in the DOM.
+
+---
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
+
+### T-an-accordion-chevron-rides-the-heading-row
+
+`sherpa-accordion`'s summary row is `align-items: start`, not `center`.
+
+Its titles are a COLUMN — a heading, a description, and whatever a host slots
+under them — so centring put the chevron and the trailing actions halfway down
+a two-row header instead of on the row that names the section.
+
+The chevron keeps its OWN drawn size and centres itself within the heading's
+line height. Setting `block-size` on it instead made it 20px and broke the
+icon's own contract — `T-icon-box-is-not-the-glyph`.
+
+---
+- Site: `src/components/sherpa-accordion/sherpa-accordion.css`
+
+### T-a-slotted-row-is-outside-its-own-popover
+
+`sherpa-menu`'s card is `popover="manual"`, and the menu owns its own dismiss.
+
+A native `popover="auto"` light-dismisses on a pointerdown OUTSIDE its own DOM
+tree — and the menu's rows are SLOTTED. They RENDER inside the card, but in the
+DOM they are children of `<sherpa-menu>`, a sibling of the popover. So ticking a
+row was an outside click: the menu shut with nothing chosen.
+
+`#onOutsidePointer` uses the COMPOSED path, which says what is really inside:
+this element, its card, or the trigger that opened it. Escape is handled the
+same way.
+
+Measured with a deep hit test — `elementFromPoint` through every shadow root
+returned the `input` itself, and the menu still closed.
+
+---
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+
+### T-a-click-in-a-slotted-menu-is-not-a-press
+
+`sherpa-button` opens a `slot="menu"` child on click. That menu is a LIGHT-DOM
+child, so every click inside it BUBBLES to the button — which read each one as
+a second press and shut the menu.
+
+So the button ignores a click whose composed path includes its menu. Half of
+the "Add filter closes when I click a row" bug was here; the other half was
+`T-a-slotted-row-is-outside-its-own-popover`, and each one alone still closed
+the menu.
+
+---
+- Site: `src/components/sherpa-button/sherpa-button.ts`
+
+### T-panel-mode-hides-what-the-panel-answers
+
+`sherpa-quick-filter-toolbar[data-panel-mode]` hides AI, Reset, the panel
+toggle and Add filter. A bar that is not `data-type="view"` goes entirely.
+
+A filter PANEL carries all of them: Add filter is each scope's own action, and
+a component bar has nothing left once the panel draws its fields. Two of each
+is two answers to one question, and a reader cannot tell which is in force.
+
+The VIEW bar stays, because three chips never move into the panel — the View
+selector is not a filter, and Customer and Region are global.
+`T-the-view-chip-stays-on-the-header`.
+
+---
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
+- Site: `examples/contexts/records.js`
+- Site: `test/e2e/reforged-filter-panel-mode.spec.ts`
+
+### T-a-panel-flush-between-surfaces-draws-two-edges
+
+`sherpa-panel` draws LEFT and RIGHT borders only — `border-block-style: none`
+and `border-radius: 0` — because it is built to sit FLUSH between other in-flow
+surfaces.
+
+A filter panel is the other case: a standalone card beside the content. It
+looked clipped top and bottom in every screenshot, and the border was never
+being drawn at all. Three attempts went into "fixing" a clip that did not
+exist.
+
+Will: "Use a regular container instead of a panel and all this bs goes away."
+He was right. `sherpa-container` is a card — four edges, rounding, header,
+footer — and it supplies its composed footer's `--_pad-inline` already.
+
+**Check what a surface component is FOR before restyling it into another one.**
+
+---
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 
 ### T-a-composed-child-hides-with-important
 
@@ -8066,6 +8189,7 @@ accordion section too, in its own `.field-body`, replacing the chips.
  Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `examples/contexts/records.js`
 
 ### T-the-shell-owns-the-panel-areas
 
@@ -8090,6 +8214,7 @@ like: a clipped border.
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.html`
 - Site: `examples/contexts/records.js`
+- Site: `src/components/sherpa-app-shell/sherpa-app-shell.ts`
 
 ### T-an-inline-condition-row-wraps
 

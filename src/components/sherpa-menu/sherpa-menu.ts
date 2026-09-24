@@ -716,7 +716,7 @@ export class SherpaMenu extends SherpaElement {
     if (!card) return;
     const inline = this.hasAttribute('data-inline');
     if (inline && card.hasAttribute('popover')) card.removeAttribute('popover');
-    else if (!inline && !card.hasAttribute('popover')) card.setAttribute('popover', 'auto');
+    else if (!inline && !card.hasAttribute('popover')) card.setAttribute('popover', 'manual');
   }
 
   #sync(): void {
@@ -800,6 +800,23 @@ export class SherpaMenu extends SherpaElement {
     card.style.setProperty('--_y', `${Math.round(y)}px`);
   }
 
+  /** A pointerdown anywhere this menu does not own closes it. */
+  #onOutsidePointer = (event: Event): void => {
+    const path = event.composedPath();
+    // Its own card, its own rows, and the trigger that opened it.
+    if (path.includes(this)) return;
+    const card = this.#card();
+    if (card && path.includes(card)) return;
+    if (this.#trigger && path.includes(this.#trigger)) return;
+    this.hide();
+  };
+
+  #onEscape = (event: Event): void => {
+    if ((event as KeyboardEvent).key !== 'Escape') return;
+    event.stopPropagation();
+    this.hide();
+  };
+
   #onToggle = (event: Event): void => {
     const open = (event as ToggleEvent).newState === 'open';
     this.toggleAttribute('open', open);
@@ -823,6 +840,16 @@ export class SherpaMenu extends SherpaElement {
       this.#cardResize ??= new ResizeObserver(() => this.#place());
       const card = this.#card();
       if (card) this.#cardResize.observe(card);
+
+      /* THE MENU OWNS ITS OWN DISMISS. `popover="manual"` because the rows are
+         SLOTTED: the browser reads the DOM tree for light-dismiss, where they
+         are children of THIS element and outside the card, so ticking one shut
+         the menu with nothing chosen. The composed path says what is really
+         inside. TRAP T-a-slotted-row-is-outside-its-own-popover */
+      this.on(document, 'pointerdown', this.#onOutsidePointer, {
+        ...whileOpen, capture: true,
+      });
+      this.on(document, 'keydown', this.#onEscape, whileOpen);
     } else {
       /* A COMMITTING menu holds ticks as a DRAFT until Apply. Closing any other
          way — clicking away, Escape — discards them, exactly as Cancel does.

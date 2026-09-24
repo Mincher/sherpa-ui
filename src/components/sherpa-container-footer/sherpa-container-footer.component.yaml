@@ -59,7 +59,7 @@ states:
 tokens:
   row.gap: "{sherpa.theme-gap-sm}"
   row.padding-block: "{sherpa.theme-padding-md}"
-  row.padding-inline: "{sherpa.theme-padding-none}"
+  row.padding-inline: "{sherpa.theme-padding-lg}"
   row.border-block-start: "{sherpa.display-mode-border-width-sm}"
 $extensions:
   sherpa:

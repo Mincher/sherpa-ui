@@ -44,6 +44,10 @@
   padding: var(--sherpa-theme-padding-md, 8px);
   /* Half step at the bottom so the footer's own 8 is not a double gap. */
   padding-block-end: var(--sherpa-theme-padding-sm, 4px);
+  /* The CARD already carries the gutter, so its composed footer takes none.
+     A footer's own default is 16 — the rarer case is pinning it away, and this
+     is it. TRAP T-a-composed-chrome-row-takes-its-inline-padding-from-its-container */
+  --_pad-inline: 0px;
   border-style: solid;
   border-color: var(--sherpa-style-border-base, #b3b3c3);
   background: var(--sherpa-style-surface-base, #ffffff);

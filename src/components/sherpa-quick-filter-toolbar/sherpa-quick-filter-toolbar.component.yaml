@@ -166,6 +166,14 @@ props:
     kind: style
     description: hide the built-in cluster entirely (host owns the trailing end)
   - $type: prop
+    name: data-panel-mode
+    type: string
+    observed: false
+    kind: style
+    description: >-
+      a filter PANEL is answering for this bar: AI, Reset, the panel toggle and Add filter are
+      hidden, and a `data` bar goes entirely. TRAP T-panel-mode-hides-what-the-panel-answers
+  - $type: prop
     name: data-sort-direction
     type: enum
     observed: true
@@ -218,6 +226,9 @@ states:
     name: folded
     selector: ":host([data-folded])"
   - $type: state
+    name: panel-mode
+    selector: ":host([data-panel-mode])"
+  - $type: state
     name: focus-visible
     selector: .qf-number-one:focus-visible
 capabilities:
@@ -225,13 +236,14 @@ capabilities:
     api: js-property-mirror
     description: >-
       read/write JS properties (active, values, superseded, pickedValues, clauses, states,
-      customFilters, groupField, sortField, sortDirection, sortSuspended). See
+      customFilters, offering, heldIds, groupField, sortField, sortDirection, sortSuspended). See
       $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
     description: >-
       callable from a view definition's state block (setChipValues, supersede, setClause, report,
-      available, allowFields, addCustomFilter, clearAll, organise). See $extensions.sherpa.methods.
+      available, addFilters, removeFilter, allowFields, addCustomFilter, clearAll, organise). See
+      $extensions.sherpa.methods.
 events:
   - $type: event
     name: quick-filter-change
@@ -341,6 +353,14 @@ $extensions:
         args: "defs: QuickFilterDef[]"
         description: available([...]) — the filters the Add chip offers, over the populate() set.
       - $type: method
+        name: addFilters
+        args: "ids: readonly string[]"
+        description: addFilters([...ids]) — put offered filters on this bar, as the Add button
+      - $type: method
+        name: removeFilter
+        args: "id: string"
+        description: removeFilter(id) — take one filter off this bar, as its menu's Remove
+      - $type: method
         name: allowFields
         args: "list: AllowList"
         description: allowFields([...]) — the ONLY fields this bar may offer, or `null` for all.
@@ -394,6 +414,12 @@ $extensions:
         type: string
         access: read
       - name: customFilters
+        type: string
+        access: read
+      - name: offering
+        type: string
+        access: read
+      - name: heldIds
         type: string
         access: read
       - name: groupField

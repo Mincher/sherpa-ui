@@ -88,9 +88,14 @@ test('data-align="stretch" lets ONE wide control fill the row', async ({ page })
       child: Math.round(document.getElementById('wide')!.getBoundingClientRect().width),
     };
   });
-  // A chat composer or a search field takes the whole row rather than hugging
-  // its content at one end the way a button cluster does.
-  expect(r.child).toBe(r.row);
+  /* A chat composer or a search field takes the whole row rather than hugging
+     its content at one end the way a button cluster does — the row INSIDE the
+     footer's own 16px gutter, which every footer now carries.
+     TRAP T-a-composed-chrome-row-takes-its-inline-padding-from-its-container */
+  /* The row's own box is the full width; its CONTENT box is that less the
+     footer's 16px gutter, which every footer now carries. */
+  expect(r.row).toBe(600);
+  expect(r.child).toBe(600 - 32);
 });
 
 test('the default still hugs its content at the end', async ({ page }) => {
@@ -107,10 +112,19 @@ test('the default still hugs its content at the end', async ({ page }) => {
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const row = el.shadowRoot!.querySelector('.row')!.getBoundingClientRect();
     const child = document.getElementById('btn')!.getBoundingClientRect();
+    const pad = parseFloat(getComputedStyle(
+      el.shadowRoot!.querySelector('.row')!).paddingInlineEnd);
     return { rowW: Math.round(row.width), childW: Math.round(child.width),
-             flushRight: Math.abs(row.right - child.right) < 2 };
+             pad: Math.round(pad),
+             // Flush with the row's own GUTTER, not with its edge.
+             flushRight: Math.abs((row.right - pad) - child.right) < 2 };
   });
   // stretch is opt-in: without it a control keeps its own width, at the end.
   expect(r.childW).toBeLessThan(r.rowW / 2);
+  /* …at the end of the footer's own GUTTER. It used to be zero, so every host
+     had to pin `--_pad-inline` and most did not — a panel's buttons sat flush
+     against the card edge.
+     TRAP T-a-composed-chrome-row-takes-its-inline-padding-from-its-container */
+  expect(r.pad).toBe(16);
   expect(r.flushRight).toBe(true);
 });

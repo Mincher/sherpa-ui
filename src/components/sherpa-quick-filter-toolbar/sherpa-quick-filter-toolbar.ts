@@ -106,6 +106,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   static override props = {
     'data-bounds': SHARED_PROPS['data-bounds'],
     'data-no-actions': { type: 'boolean', kind: 'style' },
+    /* A filter PANEL is answering for this bar, so it hides what the panel
+       also carries. TRAP T-panel-mode-hides-what-the-panel-answers */
+    'data-panel-mode': { type: 'boolean', kind: 'style' },
     /* WHICH SCOPE this bar is. `view` narrows every component on the screen;
        `data` narrows the one component it belongs to. The bar reads it to
        refuse Group and Sort at view scope.

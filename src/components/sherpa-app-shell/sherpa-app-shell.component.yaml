@@ -109,12 +109,6 @@ states:
     name: settings
     selector: ":host([data-nav-state=\"settings\"])"
   - $type: state
-    name: has-panel-start
-    selector: ":host([data-has-panel-start])"
-  - $type: state
-    name: has-panel-end
-    selector: ":host([data-has-panel-end])"
-  - $type: state
     name: no-nav
     selector: ":host([data-no-nav])"
   - $type: state

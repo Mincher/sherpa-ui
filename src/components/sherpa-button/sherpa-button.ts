@@ -111,9 +111,14 @@ export class SherpaButton extends SherpaElement {
    * leaves the menu open, and only this closes it.
    * TRAP T-a-trigger-click-follows-light-dismiss
    */
-  #onClick = (): void => {
+  #onClick = (event: Event): void => {
     if (this.hasAttribute('disabled')) return;
+    /* A click INSIDE the slotted menu is not a click on this button. The menu
+       is a light-DOM child, so every row tick bubbles here — and the button
+       read it as a second press and shut the menu with nothing chosen.
+       TRAP T-a-click-in-a-slotted-menu-is-not-a-press */
     const menu = this.#menu;
+    if (menu && event.composedPath().includes(menu)) return;
     if (menu) {
       const wasOpen = this.hasAttribute('data-open');
       this.removeAttribute('data-open');

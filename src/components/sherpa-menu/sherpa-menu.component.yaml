@@ -15,7 +15,7 @@ element:
   $type: element
   tag: div
   attributes:
-    popover: auto
+    popover: manual
     role: menu
   provides: []
 templates:
@@ -28,7 +28,7 @@ anatomy:
         class: menu sherpa-border-edges sherpa-border-corners
         part: menu
         attrs:
-          popover: auto
+          popover: manual
           role: menu
         children:
           - el: div
@@ -60,6 +60,7 @@ anatomy:
                 part: search
                 attrs:
                   data-icon-start: magnifying-glass
+                  data-clearable: ""
                   placeholder: Search
                   autocomplete: "off"
                   aria-label: Search this menu
@@ -88,7 +89,7 @@ anatomy:
         class: menu sherpa-border-edges sherpa-border-corners
         part: menu
         attrs:
-          popover: auto
+          popover: manual
           role: menu
         children:
           - el: div
@@ -129,6 +130,7 @@ anatomy:
                 part: search
                 attrs:
                   data-icon-start: magnifying-glass
+                  data-clearable: ""
                   placeholder: Search
                   autocomplete: "off"
                   aria-label: Search this menu
