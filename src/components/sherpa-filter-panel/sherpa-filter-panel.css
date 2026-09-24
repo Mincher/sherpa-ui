@@ -52,6 +52,13 @@
    two answers side by side is the thing this mode exists to avoid. */
 .field[data-conditional] .field-values { display: none; }
 
+/* A field ANSWERED BY ITS MENU — a condition, a number, a range — shows that
+   body instead of a run of chips. TRAP T-an-inline-menu-is-the-same-menu */
+.field-body { display: none; }
+.field[data-conditional] .field-body,
+.field[data-body] .field-body { display: block; }
+.field[data-body] .field-values { display: none; }
+
 /* The three field actions are opt-in: a field that cannot be asked a
    condition, cleared or removed does not show a control that does nothing. */
 .field-conditional,

@@ -57,6 +57,30 @@
   display: flex;
 }
 
+/* ── INLINE ──────────────────────────────────────────────────────────────
+ * The same card, in the FLOW instead of the top layer: a filter PANEL shows a
+ * field's own body — its condition rows, its number input, its range switch
+ * and slider — rather than drawing a second copy of each. The JS drops the
+ * `popover` attribute, so `:popover-open` never matches and these undo what
+ * the floating card needs. TRAP T-an-inline-menu-is-the-same-menu */
+:host([data-inline]) .menu {
+  display: flex;
+  position: static;
+  inline-size: auto;
+  min-inline-size: 0;
+  max-block-size: none;
+  /* In the flow it is PART of the panel, not a card floating over it. */
+  border-width: 0;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+}
+
+/* An inline menu has no card edge of its own, and no trigger to name. Its
+   heading is the section header above it. */
+:host([data-inline]) .heading,
+:host([data-inline]) .drill-trail { display: none; }
+
 /* No `@supports (anchor-name)` block — see the positioning note at the top. */
 
 /* ── Header ──────────────────────────────────────────────────────────────

@@ -52,6 +52,8 @@ export class SherpaMenu extends SherpaElement {
     'data-mode': { type: 'enum', kind: 'style', values: ['select', 'condition'] },
     /* Whether this field offers conditions AT ALL. TRAP T-conditions-are-opt-in-per-field */
     'data-conditional': { type: 'boolean', kind: 'style' },
+    /* Draw in the FLOW, not the top layer. TRAP T-an-inline-menu-is-the-same-menu */
+    'data-inline': { type: 'boolean', kind: 'style' },
     'data-heading': { type: 'string', kind: 'content', to: '.heading' },
     /* A RANGE body offers two ends; `data-commit` holds its Apply until asked. */
     'data-range': { type: 'boolean', kind: 'style' },
@@ -70,6 +72,7 @@ export class SherpaMenu extends SherpaElement {
     // Which condition is picked — a host may set it, and #sync follows.
     'data-op',
     'data-mode',
+    'data-inline',
     // What was typed under it. An ATTRIBUTE, so a re-stamp cannot lose it.
     'data-value',
     'open',
@@ -110,6 +113,7 @@ export class SherpaMenu extends SherpaElement {
   }
 
   override onRender(): void {
+    this.#syncInline();
     this.#sync();
     /* Items given BEFORE this element had a shadow tree. A caller building a
        chip clones an UNUPGRADED <sherpa-menu>, so there is no template to
@@ -516,6 +520,8 @@ export class SherpaMenu extends SherpaElement {
     // card has nothing to measure and sits at 0,0.
     // TRAP T-a-menu-with-no-trigger-lands-at-the-origin
     this.#trigger ??= this.#fallbackTrigger();
+    // Inline, it is already showing and has nothing to place.
+    if (this.hasAttribute('data-inline')) return;
     // A closed popover measures 0, so show first. TRAP T-show-then-measure
     this.#syncSelectAll();
     this.#card()?.showPopover();
@@ -523,6 +529,7 @@ export class SherpaMenu extends SherpaElement {
   }
 
   hide(): void {
+    if (this.hasAttribute('data-inline')) return;
     this.#card()?.hidePopover();
   }
 
@@ -697,7 +704,23 @@ export class SherpaMenu extends SherpaElement {
     crumbs.populate([{ label: from }, { label: this.dataset['heading'] ?? '' }]);
   }
 
+  /**
+   * An INLINE menu is not a popover.
+   *
+   * The attribute is in the TEMPLATE, so it is removed rather than never
+   * written — and putting it back restores the floating card, which is how one
+   * element serves a chip and a panel. TRAP T-an-inline-menu-is-the-same-menu
+   */
+  #syncInline(): void {
+    const card = this.#card();
+    if (!card) return;
+    const inline = this.hasAttribute('data-inline');
+    if (inline && card.hasAttribute('popover')) card.removeAttribute('popover');
+    else if (!inline && !card.hasAttribute('popover')) card.setAttribute('popover', 'auto');
+  }
+
   #sync(): void {
+    this.#syncInline();
     this.#enforceMode();
     this.#syncCrumb();
     this.#syncConditions();

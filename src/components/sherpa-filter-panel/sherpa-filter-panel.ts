@@ -39,6 +39,16 @@ export interface PanelFilter {
   preset?: boolean;
   /** ON, with nothing picked — a preset's whole state. */
   active?: boolean;
+  /**
+   * The field's OWN `<sherpa-menu>`, for a field the panel cannot draw as a
+   * run of chips — a condition, a number, a range.
+   *
+   * The panel draws it INLINE and gives it back untouched, so the condition
+   * rows, the number input and the range switch are the same controls a chip
+   * menu shows rather than a second copy of each.
+   * TRAP T-an-inline-menu-is-the-same-menu
+   */
+  menu?: HTMLElement;
 }
 
 /** A column Group or Sort may arrange by. */
@@ -77,6 +87,9 @@ interface Held {
   scope: string;
   box: HTMLElement;
   values: HTMLElement;
+  /** A borrowed menu, and where it came from, so it can go home. */
+  menu?: HTMLElement;
+  menuHome?: { parent: Node; slot: string | null };
 }
 
 export class SherpaFilterPanel extends SherpaElement {
@@ -126,10 +139,6 @@ export class SherpaFilterPanel extends SherpaElement {
     this.#enforceWidth();
   }
 
-  override onDisconnect(): void {
-    this.#media()?.removeEventListener('change', this.#enforceWidth);
-  }
-
   /* ── The public API ───────────────────────────────────────────────── */
 
   /** populate([{ scope, label, filters, available }]). */
@@ -160,6 +169,11 @@ export class SherpaFilterPanel extends SherpaElement {
     this.removeAttribute('data-open');
   }
 
+  override onDisconnect(): void {
+    this.#media()?.removeEventListener('change', this.#enforceWidth);
+    this.#giveBack();
+  }
+
   toggle(): void {
     if (this.hasAttribute('data-open')) this.close();
     else this.open();
@@ -175,6 +189,8 @@ export class SherpaFilterPanel extends SherpaElement {
   #draw(): void {
     const region = this.$('.scopes');
     if (!region) return;
+    // Every borrowed menu goes home BEFORE the boxes holding them are dropped.
+    this.#giveBack();
     this.#held.clear();
     region.replaceChildren();
 
@@ -249,9 +265,9 @@ export class SherpaFilterPanel extends SherpaElement {
   /** One field: its header, its actions, and its run of value chips. */
   #drawField(def: PanelFilter, scope: string, isPresets: boolean): HTMLElement | null {
     const options = def.options ?? [];
-    /* A field with NO VALUES is not a set of chips — a date or a number range
-       has nothing honest to draw here. TRAP T-the-panel-is-the-toolbar-in-a-column */
-    if (!options.length) return null;
+    /* A field with NO VALUES and NO MENU has nothing to draw at all.
+       TRAP T-the-panel-is-the-toolbar-in-a-column */
+    if (!options.length && !def.menu) return null;
 
     const box = this.clone('template.field-tpl');
     if (!box) return null;
@@ -289,8 +305,41 @@ export class SherpaFilterPanel extends SherpaElement {
       }
     }
 
-    this.#held.set(key, { def, scope, box, values: values ?? box });
+    const held: Held = { def, scope, box, values: values ?? box };
+
+    /* A field ANSWERED BY ITS MENU — a number, a range, a condition-only field
+       — borrows that menu and draws it inline. The panel gives it back
+       untouched. TRAP T-an-inline-menu-is-the-same-menu */
+    if (def.menu && !options.length) {
+      box.setAttribute('data-body', '');
+      this.#borrow(held, def.menu, box);
+    }
+
+    this.#held.set(key, held);
     return box;
+  }
+
+  /** Move a menu into this field's body, remembering where it came from. */
+  #borrow(held: Held, menu: HTMLElement, box: HTMLElement): void {
+    const body = box.querySelector('.field-body');
+    if (!body) return;
+    held.menu = menu;
+    held.menuHome = { parent: menu.parentNode!, slot: menu.getAttribute('slot') };
+    menu.removeAttribute('slot');
+    menu.setAttribute('data-inline', '');
+    body.append(menu);
+  }
+
+  /** Put every borrowed menu back exactly as it was. */
+  #giveBack(): void {
+    for (const [, held] of this.#held) {
+      if (!held.menu || !held.menuHome) continue;
+      held.menu.removeAttribute('data-inline');
+      if (held.menuHome.slot) held.menu.setAttribute('slot', held.menuHome.slot);
+      held.menuHome.parent.appendChild(held.menu);
+      delete held.menu;
+      delete held.menuHome;
+    }
   }
 
   /** Hand the Add button its menu of what is left to add. */
@@ -370,6 +419,27 @@ export class SherpaFilterPanel extends SherpaElement {
     const on = !held.box.hasAttribute('data-conditional');
     held.box.toggleAttribute('data-conditional', on);
     btn.setAttribute('aria-pressed', String(on));
+
+    /* The ROWS are the MENU's. The panel borrows the whole body and puts the
+       menu into condition mode — one control, drawn in a second place.
+       TRAP T-an-inline-menu-is-the-same-menu */
+    const menu = held.def.menu;
+    if (menu) {
+      if (on) {
+        menu.dataset['mode'] = 'condition';
+        if (!held.menu) this.#borrow(held, menu, held.box);
+      } else {
+        menu.dataset['mode'] = 'select';
+        if (held.menu && held.menuHome) {
+          menu.removeAttribute('data-inline');
+          if (held.menuHome.slot) menu.setAttribute('slot', held.menuHome.slot);
+          held.menuHome.parent.appendChild(menu);
+          delete held.menu;
+          delete held.menuHome;
+        }
+      }
+    }
+
     this.emit('filter-condition-change', {
       scope: held.scope, id: held.def.id, conditional: on,
     });

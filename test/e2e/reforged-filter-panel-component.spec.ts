@@ -344,3 +344,86 @@ test('group and sort lead the scope, report at once, and skip Apply',
     expect(Object.keys(r['applied'] as object).sort())
       .toEqual(['owner', 'presets', 'status']);
   });
+
+/**
+ * A FIELD ANSWERED BY ITS MENU DRAWS THAT MENU.
+ *
+ * A condition, a number, a range — none of them is a run of chips, and none of
+ * them should be a second copy of a control the menu already owns. The panel
+ * borrows the field's own `<sherpa-menu>`, draws it INLINE, and gives it back
+ * untouched. TRAP T-an-inline-menu-is-the-same-menu
+ */
+test('a number field shows its own menu body, and gets it back', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    const root = document.getElementById('root');
+
+    // A NUMBER field's menu, the shape a toolbar builds for one.
+    const holder = document.createElement('div');
+    const menu = document.createElement('sherpa-menu');
+    menu.setAttribute('slot', 'menu');
+    menu.setAttribute('data-heading', 'Seats');
+    const body = document.createElement('div');
+    body.className = 'qf-number';
+    body.innerHTML = '<input class="qf-number-one" type="number" value="42" />';
+    menu.append(body);
+    holder.append(menu);
+    root.append(holder);
+
+    const el = document.createElement('sherpa-filter-panel');
+    root.append(el);
+    await customElements.whenDefined('sherpa-filter-panel');
+    await el.rendered;
+    el.populate([{ scope: 'data', label: 'Grid', filters: [
+      { id: 'status', label: 'Status', select: 'multiple',
+        options: [{ value: 'active', label: 'active' }] },
+      // NO options, but a MENU — the panel draws that body instead.
+      { id: 'seats', label: 'Seats', menu },
+    ] }]);
+    await new Promise((r) => setTimeout(r, 300));
+    el.open();
+    await new Promise((r) => setTimeout(r, 200));
+
+    const sr = el.shadowRoot;
+    const seats = sr.querySelector('.field[data-field="seats"]');
+    const card = menu.shadowRoot.querySelector('.menu');
+    const drawn = {
+      fields: [...sr.querySelectorAll('.field')].map((f) => f.dataset.field),
+      hasBody: seats.hasAttribute('data-body'),
+      inline: menu.hasAttribute('data-inline'),
+      // A plain box in the flow, not a popover in the top layer.
+      popover: card.getAttribute('popover'),
+      position: getComputedStyle(card).position,
+      drawn: getComputedStyle(card).display,
+      // The field's OWN control travelled with it, state and all.
+      inputValue: seats.querySelector('.qf-number-one').value,
+      // The chip run steps aside for it.
+      chips: getComputedStyle(seats.querySelector('.field-values')).display,
+    };
+
+    el.populate([{ scope: 'data', label: 'Grid', filters: [] }]);
+    await new Promise((r) => setTimeout(r, 250));
+    return { drawn, home: {
+      back: holder.contains(menu),
+      slot: menu.getAttribute('slot'),
+      inline: menu.hasAttribute('data-inline'),
+      popover: card.getAttribute('popover'),
+    } };
+  })()`) as Record<string, Record<string, unknown>>;
+
+  // A field with no options but a MENU is still drawn.
+  expect(r['drawn']!['fields']).toEqual(['status', 'seats']);
+  expect(r['drawn']!['hasBody']).toBe(true);
+  expect(r['drawn']!['inline']).toBe(true);
+  // INLINE: no popover, in the flow, and showing.
+  expect(r['drawn']!['popover']).toBeNull();
+  expect(r['drawn']!['position']).toBe('static');
+  expect(r['drawn']!['drawn']).toBe('flex');
+  // The same input, not a copy of it.
+  expect(r['drawn']!['inputValue']).toBe('42');
+  expect(r['drawn']!['chips']).toBe('none');
+
+  // HOME, exactly as it was: its slot back, and a popover again.
+  expect(r['home']).toEqual({
+    back: true, slot: 'menu', inline: false, popover: 'auto',
+  });
+});

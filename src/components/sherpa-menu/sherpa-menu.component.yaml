@@ -259,6 +259,15 @@ props:
     kind: content
     description: optional heading (rendered upper-case at 10/16)
   - $type: prop
+    name: data-inline
+    type: string
+    observed: true
+    kind: style
+    description: >-
+      draw in the FLOW rather than the top layer — the same menu, always open, for a filter PANEL.
+      The popover attribute is dropped, so Escape and outside-click no longer apply, and
+      show()/hide() become no-ops. TRAP T-an-inline-menu-is-the-same-menu
+  - $type: prop
     name: data-mode
     type: string
     observed: true
@@ -336,6 +345,9 @@ props:
     default: false
     description: "native-ish boolean: reflects/controls the popover"
 states:
+  - $type: state
+    name: inline
+    selector: ":host([data-inline])"
   - $type: state
     name: heading
     selector: ":host([data-heading])"

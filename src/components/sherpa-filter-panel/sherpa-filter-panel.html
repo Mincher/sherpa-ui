@@ -19,6 +19,10 @@
 
   Public API:
     data-heading    the panel's own title (default "Filters")
+    menu:<id>       a field's own <sherpa-menu>, for a field the panel cannot
+                    draw as chips — a condition, a number, a range. The panel
+                    draws it INLINE and gives it back untouched.
+                    TRAP T-an-inline-menu-is-the-same-menu
     data-open       the panel is showing. A host writes it; the panel reports
                     `filter-panel-close` and never hides itself, except below
                     its breakpoint. TRAP T-the-panel-is-desktop-only
@@ -81,6 +85,10 @@
            items to share the line, which makes a chip read as a button. -->
       <sherpa-stack class="field-values" data-direction="inline" data-gap="sm"
                     data-wrap data-min-item="hug" data-align="start"></sherpa-stack>
+      <!-- WHERE A MENU GOES. A condition, a number or a range is answered by
+           the field's own menu body, drawn inline — not by a second copy of
+           each control. TRAP T-an-inline-menu-is-the-same-menu -->
+      <div class="field-body" part="field-body"></div>
     </sherpa-stack>
   </template>
 

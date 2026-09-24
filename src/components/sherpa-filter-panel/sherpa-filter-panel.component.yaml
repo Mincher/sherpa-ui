@@ -79,7 +79,10 @@ props:
     observed: true
     kind: style
     default: "\"Filters\""
-    description: the panel's own title
+    description: >-
+      the panel's own title  menu:<id>       a field's own <sherpa-menu>, for a field the panel
+      cannot draw as chips — a condition, a number, a range. The panel draws it INLINE and gives it
+      back untouched. TRAP T-an-inline-menu-is-the-same-menu
   - $type: prop
     name: data-locked
     type: string

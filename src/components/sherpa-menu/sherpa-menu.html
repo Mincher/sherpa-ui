@@ -37,6 +37,11 @@
                   `calendar` widens the card and lays the LIST region out
                   horizontally, so a day grid and a time picker sit side by
                   side. Everything else is the same menu.
+    data-inline     draw in the FLOW rather than the top layer — the same menu,
+                  always open, for a filter PANEL. The popover attribute is
+                  dropped, so Escape and outside-click no longer apply, and
+                  show()/hide() become no-ops.
+                  TRAP T-an-inline-menu-is-the-same-menu
     data-conditional  FILTER type only: this field can be asked a CONDITION, so
                   the mode button shows. OPT-IN: most fields are answered by
                   ticking values, and a `Contains` box over a closed set of

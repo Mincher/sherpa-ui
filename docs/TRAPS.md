@@ -7979,6 +7979,45 @@ event still has to reach the button.
 - Site: `src/components/sherpa-accordion/sherpa-accordion.ts`
 - Site: `src/components/sherpa-accordion/sherpa-accordion.html`
 
+### T-an-inline-menu-is-the-same-menu
+
+`sherpa-menu[data-inline]` is the same card, drawn in the FLOW instead of the
+top layer.
+
+A filter PANEL has to show a field's condition rows, its number input, its
+range switch and its slider — every one of which the MENU already owns. Drawing
+a second copy of each means the next fix to either one has to be made twice.
+
+So the panel borrows the field's own menu, flags it inline, and gives it back
+untouched. `data-inline` undoes the four things the floating card needs:
+
+| | |
+|---|---|
+| the `popover` attribute | REMOVED, so `:popover-open` never matches |
+| `display` | `flex`, since the UA no longer shows it |
+| `position` | `static` — `fixed` plus viewport coordinates put it at 0,0 |
+| the card's own edges | no border, no padding, no shadow: it is PART of the panel now |
+
+`show()` and `hide()` become no-ops: there is nothing to open, and nothing to
+place.
+
+The attribute is in the TEMPLATE, so `#syncInline` REMOVES it rather than never
+writing it — and putting it back restores the floating card, which is how one
+element serves a chip and a panel in turn.
+
+**Give it back before you drop what holds it.** The panel calls `#giveBack()`
+at the top of every redraw and on disconnect; a menu left inside a removed box
+is gone from its chip for good.
+
+---
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+
 ### T-the-panel-is-the-toolbar-in-a-column
 
 A filter PANEL shows the same filters the toolbars hold, laid out as a column.
