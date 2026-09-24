@@ -239,6 +239,26 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // A data-* ON THE ROW: nothing can write `:host(...)` for an element inside a menu.
       badge.closest('.qf-folded')?.toggleAttribute('data-count', count > 0);
     }
+    this.#syncOverflowActive();
+  }
+
+  /**
+   * More is ACTIVE only when one of the chips behind it is.
+   *
+   * `data-current` was hard-coded in the template, so it read as an applied
+   * filter while every chip it holds was off. More is a DOOR to filters, not a
+   * filter — and the chip is `data-locked`, which makes this host the one
+   * owner of that state. TRAP T-the-more-chip-is-a-door-not-a-filter
+   */
+  #syncOverflowActive(): void {
+    const chip = this.$<HTMLElement>('.overflow-chip');
+    if (!chip) return;
+    // The FOLDED chips are the ones it stands for — a visible chip speaks for
+    // itself.
+    const any = this.#chips().some(
+      (c) => c !== chip && c.hasAttribute('data-folded-away') && c.hasAttribute('data-current'),
+    );
+    chip.toggleAttribute('data-current', any);
   }
 
   /** A folded toggle was ticked — flip the chip it stands for. */

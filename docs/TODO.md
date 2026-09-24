@@ -8,14 +8,14 @@ Status: `[ ]` open · `[~]` in progress · `[x]` done
 
 ## At a glance
 
-**34 numbered items · 6 done · 1 parked · 27 open.** Numbers are the spine; the waves below
+**34 numbered items · 7 done · 1 parked · 26 open.** Numbers are the spine; the waves below
 say what order. Anything not numbered is a sub-item of the section it sits in.
 
 | | # | Item | Wave |
 |---|---:|---|---|
 | ✅ | 1 | Context vs View — the naming, settled | 1 |
 | ✅ | 2 | Filter scope — down, never up | 1 |
-| ⛔ | 3 | Style/Transparent tokens — **blocked** on the Figma export | 1 |
+| ✅ | 3 | Style/Transparent tokens — done by 7f1f95a3, verified vs live Figma | 1 |
 | | 4 | The `More` chip shows active when it is not | 2 |
 | | 5 | Metric item — no surface or border colour | 2 |
 | | 6 | Every metric item uses the xsmall container class | 2 |
@@ -1564,10 +1564,25 @@ it yet.** Point 2 of the original plan — `round(var(--_measured), var(--sherpa
 for genuinely dynamic sizes — is the follow-on, and belongs with item 33.
 
 
-### `[ ]` Consume the tweaked Style/Transparent content aliases
+### `[x]` Consume the tweaked Style/Transparent content aliases — DONE 2026-09-24
 
 The Style/Transparent content colour aliases changed in Figma. Apply the new
 values across the CSS that uses them.
+
+**Done by `7f1f95a3`** (sherpa-ui-7f's Style-modes work), which reads the look
+overrides from the collection's `variableOverrides` and emits them as REFS
+rather than light-mode hex. Verified 2026-09-24 against live Figma — every
+`style-content/base` alias matches:
+
+| mode | Figma | emitted |
+|---|---|---|
+| default | `content/body/+1` | `--sherpa-theme-content-body-1` |
+| info | `content/info/+1` | `--sherpa-theme-content-info-1` |
+| critical | `content/critical/+2` | `--sherpa-theme-content-critical-2` |
+| warning | `content/warning/+2` | `--sherpa-theme-content-warning-2` |
+| urgent | `content/urgent/+2` | `--sherpa-theme-content-urgent-2` |
+| success | `content/success/+1` | `--sherpa-theme-content-success-1` |
+| active | `content/active/base` | `--sherpa-theme-content-active-base` |
 
 **The block is NOT the variables export.** Re-checked 2026-09-23 against live
 Figma, and the diagnosis was wrong.

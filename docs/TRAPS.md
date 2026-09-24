@@ -7453,6 +7453,34 @@ exists to prevent.
 - Site: `examples/contexts/records.js`
 - Site: `examples/contexts/dashboard.js`
 
+### T-the-more-chip-is-a-door-not-a-filter
+
+The overflow chip carried `data-current` **hard-coded in the template**, so it
+always drew as an applied filter — while every chip it stands for was off.
+
+It is the one state on a filter bar that could never be wrong in the reader's
+favour: a bar showing an active filter that is not applied says the rows are
+narrowed when they are not.
+
+More is a DOOR to filters, not a filter. It is active when one of the chips
+BEHIND it is, and off otherwise. The chip is `data-locked`, which makes the
+toolbar the one owner of that state — so the toolbar writes it, in
+`#syncFoldedBadges()`, which already runs on every change. Writing it in
+`#renderFolded()` instead looks equivalent and is not: that runs only when the
+fold is recomputed, so ticking a folded row would not move it.
+
+**The BADGE is a different count and does not move.** It says how many filters
+are folded away, not how many are on — those are two questions, and a reader
+needs both.
+
+A test asserted the old behaviour in as many words — *"The MORE chip never
+moves: on throughout"*. Its real subject was that a LOCKED chip does not flip
+ITSELF, which is still true; what the host writes is a separate question.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+
 ### T-a-full-range-is-still-a-range
 
 A NUMBER filter's slider opened at the column's own min and max, and the menu

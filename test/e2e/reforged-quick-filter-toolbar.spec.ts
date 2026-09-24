@@ -2035,10 +2035,14 @@ test('a locked chip keeps its own state when its menu changes', async ({ page })
   });
 
   expect(r.start.locked).toBe(true);
-  // The MORE chip never moves: on throughout, badge unchanged.
-  expect(r.start.moreCurrent).toBe(true);
+  /* A LOCKED chip does not flip ITSELF — the host owns its state. What the host
+     writes is a different question: More reports whether a folded filter is on,
+     so it follows the row rather than sitting on.
+     TRAP T-the-more-chip-is-a-door-not-a-filter */
+  expect(r.start.moreCurrent).toBe(false);
   expect(r.ticked.moreCurrent).toBe(true);
-  expect(r.unticked.moreCurrent).toBe(true);
+  expect(r.unticked.moreCurrent).toBe(false);
+  // The BADGE counts folded filters, not active ones, so it never moves.
   expect(r.ticked.moreCount).toBe(r.start.moreCount);
   expect(r.unticked.moreCount).toBe(r.start.moreCount);
   // …while the chip the row stands for does exactly what was asked of it.
@@ -2463,4 +2467,90 @@ test('allowFields limits the chips AND the Add menu, and null restores both', as
   // No list allows everything — the default cannot mean "nothing".
   expect(r.restored.chips).toEqual(['status', 'plan', 'owner']);
   expect(r.restored.offers).toEqual(['seats', 'spend']);
+});
+
+/**
+ * More is a DOOR to filters, not a filter. `data-current` was hard-coded in the
+ * template, so it drew as an applied filter while every chip behind it was off —
+ * the one state on the bar that could never be wrong in the reader's favour.
+ * TRAP T-the-more-chip-is-a-door-not-a-filter
+ */
+test('the More chip is active only when a folded filter is', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(defs: unknown): void;
+    };
+    el.setAttribute('data-type', 'data');
+    // Narrow, so everything but the first chip folds.
+    el.style.cssText = 'max-inline-size: 300px';
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate([
+      { id: 'active', label: 'Active', type: 'data' },
+      { id: 'trial', label: 'Trial', type: 'data' },
+      { id: 'churned', label: 'Churned', type: 'data' },
+    ]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const sr = el.shadowRoot!;
+    for (let i = 0; i < 25 && !sr.querySelector('.overflow-chip sherpa-menu .qf-toggle'); i++) {
+      await new Promise((res) => setTimeout(res, 100));
+    }
+    // Wait for the fold to SETTLE — the ResizeObserver fires more than once.
+    let last = '';
+    for (let i = 0; i < 25; i++) {
+      const now = el.getAttribute('data-folded') ?? '';
+      if (now && now === last) break;
+      last = now;
+      await new Promise((res) => requestAnimationFrame(() => res(null)));
+      await new Promise((res) => setTimeout(res, 40));
+    }
+
+    const more = sr.querySelector('.overflow-chip') as HTMLElement;
+    const menu = sr.querySelector('.overflow-chip sherpa-menu');
+    if (!more || !menu) return { err: 'no overflow chip' };
+
+    const settled = async (): Promise<void> => {
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await new Promise((res) => setTimeout(res, 60));
+    };
+    const state = (): { more: boolean; activeFolded: string[] } => ({
+      more: more.hasAttribute('data-current'),
+      activeFolded: [...sr.querySelectorAll<HTMLElement>('.chips > .chip[data-folded-away]')]
+        .filter((c) => c.hasAttribute('data-current'))
+        .map((c) => c.dataset['id'] ?? ''),
+    });
+
+    const closed = state();
+
+    // Tick ONE folded row — that flips the chip it stands for.
+    const box = menu.querySelector<HTMLInputElement>('.qf-toggle input');
+    if (!box) return { err: 'no folded toggle' };
+    box.checked = true;
+    box.dispatchEvent(new Event('change', { bubbles: true }));
+    await settled();
+    const oneOn = state();
+
+    // And back off again.
+    box.checked = false;
+    box.dispatchEvent(new Event('change', { bubbles: true }));
+    await settled();
+    const backOff = state();
+
+    return { closed, oneOn, backOff };
+  });
+
+  expect(r.err).toBeUndefined();
+  // NOTHING active behind it — More must not claim a filter is applied.
+  expect(r.closed!.activeFolded).toEqual([]);
+  expect(r.closed!.more).toBe(false);
+
+  // One folded filter on — now it says so.
+  expect(r.oneOn!.activeFolded.length).toBeGreaterThan(0);
+  expect(r.oneOn!.more).toBe(true);
+
+  // Off again, and it goes back. "Off" is a state, not a one-way door.
+  expect(r.backOff!.activeFolded).toEqual([]);
+  expect(r.backOff!.more).toBe(false);
 });

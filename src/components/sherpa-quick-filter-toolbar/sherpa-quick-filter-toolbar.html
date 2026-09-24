@@ -69,9 +69,11 @@
       <sherpa-quick-filter> so it reads as one of the run; its menu lists the
       folded chips, each opening a submenu carrying that chip's real menu.
     -->
+    <!-- NO data-current here: More is active only when a folded chip is, and
+         the toolbar writes that. TRAP T-the-more-chip-is-a-door-not-a-filter -->
     <sherpa-quick-filter class="overflow-chip" part="overflow-chip"
                          data-label="More" data-icon-start="filter"
-                         data-current data-persistent data-no-value
+                         data-persistent data-no-value
                          data-locked></sherpa-quick-filter>
     <!--
       ACTION CLUSTER — Figma's `right-actions` slot. Nothing is created at

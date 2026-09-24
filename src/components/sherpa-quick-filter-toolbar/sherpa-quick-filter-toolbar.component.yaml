@@ -45,7 +45,6 @@ anatomy:
           attrs:
             data-label: More
             data-icon-start: filter
-            data-current: ""
             data-persistent: ""
             data-no-value: ""
             data-locked: ""
@@ -216,9 +215,6 @@ states:
     name: no-actions
     selector: ":host([data-no-actions])"
   - $type: state
-    name: favourite
-    selector: ":host([data-favourite])"
-  - $type: state
     name: folded
     selector: ":host([data-folded])"
   - $type: state
@@ -235,7 +231,7 @@ capabilities:
     api: js-methods
     description: >-
       callable from a view definition's state block (setChipValues, supersede, setClause, report,
-      available, addCustomFilter, clearAll, organise). See $extensions.sherpa.methods.
+      available, allowFields, addCustomFilter, clearAll, organise). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: quick-filter-change
@@ -344,6 +340,10 @@ $extensions:
         name: available
         args: "defs: QuickFilterDef[]"
         description: available([...]) — the filters the Add chip offers, over the populate() set.
+      - $type: method
+        name: allowFields
+        args: "list: AllowList"
+        description: allowFields([...]) — the ONLY fields this bar may offer, or `null` for all.
       - $type: method
         name: addCustomFilter
         args: "spec: { id: string; label: string; value?: string | null }"
