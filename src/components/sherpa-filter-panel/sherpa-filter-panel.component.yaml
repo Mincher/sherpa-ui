@@ -160,6 +160,21 @@ events:
       id: unknown
       scope: unknown
   - $type: event
+    name: group-change
+    bubbles: true
+    composed: true
+    detail:
+      field: unknown
+      scope: unknown
+  - $type: event
+    name: sort-change
+    bubbles: true
+    composed: true
+    detail:
+      direction: string
+      field: boolean
+      scope: unknown
+  - $type: event
     name: filter-condition-change
     bubbles: true
     composed: true

@@ -22,6 +22,9 @@ import {
 import {
   readingClause, type FieldReading, type FieldType,
 } from '../../core/data/filter-state.js';
+
+/** The `fx` glyph a CONDITION wears, wherever one is drawn. */
+const CONDITION_ICON = 'function';
 // SIDE-EFFECT imports: an undefined custom element renders inert.
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
@@ -914,7 +917,19 @@ export class SherpaDataGrid extends SherpaElement {
    * TRAP T-the-column-chip-is-the-only-signal.
    */
   #lightFilterChip(th: HTMLElement, field: string): void {
-    th.querySelector('.head-filter')?.toggleAttribute('data-current', this.#isFiltered(field));
+    const chip = th.querySelector<HTMLElement>('.head-filter');
+    if (!chip) return;
+    chip.toggleAttribute('data-current', this.#isFiltered(field));
+    /* THE GLYPH SAYS WHICH KIND. A column answered by a CONDITION — "contains",
+       "starts with" — wears the `fx` mark the chips and the panel already use,
+       so a reader can tell a typed rule from a ticked list without opening it.
+       An icon-only chip falls back to its funnel when no icon is named.
+       TRAP T-a-condition-badge-says-that-not-which */
+    const held = this.#columnFilters.get(field);
+    const typed = !!held && !held.range
+      && (OP_TAKES[held.op as FilterOp] ?? 'list') === 'text';
+    if (typed) chip.setAttribute('data-icon-start', CONDITION_ICON);
+    else chip.removeAttribute('data-icon-start');
   }
 
   /** Re-light every heading without rebuilding the header row. */

@@ -5,7 +5,7 @@
  */
 import {
   DataSource, SherpaToast, persistView, viewOptions, onViewPicked,
-  countBy, reduceRows, bindSelection, andFilter, picksClause,
+  countBy, reduceRows, bindSelection, andFilter, picksClause, stateClause,
   seriesBy, deltaPercent,
 } from '../../dist/index.js';
 import { customerStore, customersReady, customers, columns, plans, regions, customerOrgs, states }
@@ -497,8 +497,11 @@ export async function init(root, { session } = {}) {
     source.setGroup(e.detail.field || null);
   }, { signal });
   panel?.addEventListener('sort-change', (e) => {
-    if (e.detail.field) source.setSort(e.detail.field, e.detail.direction ?? 'asc');
-    else source.clearSort();
+    /* SUSPEND, never clear. `setSort(null)` moves the column to the source's
+       own memory so one more click resumes it; `clearSort()` would forget it,
+       and the tri-state cycle would have nothing to come back to.
+       TRAP T-grid-suspend-is-not-clear */
+    source.setSort(e.detail.field ?? null, e.detail.direction ?? 'asc');
   }, { signal });
 
   /* ROW ACTIONS declared ONCE. The grid draws them in its pinned trailing
@@ -664,14 +667,19 @@ export async function init(root, { session } = {}) {
        exactly this, which is what suspending means. Its picks are safe; only
        the APPLYING stops. TRAP T-grid-suspend-is-not-clear */
     if (state.fieldState === 'suspended') return;
-    /* A field answered by CONDITION ROWS has no ticks — steering it with an
-       empty pick list would untick nothing and switch it OFF while it is
-       filtering. The SOURCE knows; this no longer reads the chip's DOM.
+    /* CONDITIONS STEER TOO. This used to `return` for a field answered by rows,
+       so a condition typed in one place reached the data and NO other control
+       over the same field — the chip stayed blank while it was filtering.
+       `setChipReading` is the only write path that can carry rows.
        TRAP T-a-conditioned-chip-answers-with-its-clause */
-    if (state.conditions.length) return;
-    // Both are SILENT writes, so neither echoes back as another change.
-    qft.setChipValues(field, picked);
-    grid.setColumnFilter(field, picked.length ? picksClause(field, picked) : null);
+    // SILENT writes, so none of them echoes back as another change.
+    qft.setChipReading(field, {
+      picked,
+      ...(state.conditions.length ? { conditions: state.conditions } : {}),
+    });
+    /* The grid's heading takes a ready CLAUSE, which is the one shape that
+       carries either answer. */
+    grid.setColumnFilter(field, stateClause(state) ?? null);
   }, { signal });
 
   /* ONLY the toggles. A toggle is a whole clause a reader flips, with no single

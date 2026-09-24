@@ -535,6 +535,42 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
+   * setChipReading(id, reading) — steer ONE chip with a whole reading.
+   *
+   * The write path for `readings`, and the only one that can carry a CONDITION.
+   * `setChipValues` speaks picks alone, so a field answered by rows — an
+   * or-chain, a "starts with" — could not be shown anywhere but where it was
+   * typed. SILENT, like every other steer: a host writing a chip must not be
+   * echoed back into its own handler.
+   * TRAP T-a-conditioned-chip-answers-with-its-clause
+   */
+  setChipReading(id: string, reading: FieldReading): void {
+    for (const chip of this.#chips()) {
+      if (chip.dataset['id'] !== id || !chip.hasAttribute('data-menu')) continue;
+      const menu = (chip as ChipEl & { menu?: HTMLElement }).menu as
+        (HTMLElement & { conditions?: readonly FieldCondition[] }) | null;
+      if (!menu) return;
+
+      const rows = reading.conditions ?? [];
+      if (rows.length) {
+        /* The MENU refuses condition mode unless the field opted in, and a
+           steer IS that opt-in reaching it. */
+        menu.setAttribute('data-conditional', '');
+        menu.dataset['mode'] = 'condition';
+        menu.conditions = rows;
+        chip.current = true;
+        return;
+      }
+      /* NO ROWS: set the picks and LEAVE THE MODE ALONE. Which mode a menu is
+         in is the reader's choice, and a steer that flipped it back to the
+         list emptied the reading the bar reports one tick later — the
+         condition then read as gone and the filter cleared itself. */
+      this.setChipValues(id, (reading.picked ?? []).map(String));
+      return;
+    }
+  }
+
+  /**
    * supersede([...ids]) — the VIEW now owns these fields.
    *
    * The chips are SUSPENDED, never removed: each keeps its value and its place,
@@ -1081,14 +1117,46 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
 
     // Either way: a suspended sort still shows which column it would resume on.
-    for (const radio of chip.querySelectorAll<HTMLInputElement>('input[type="radio"]')) {
-      radio.checked = radio.value === field;
-    }
+    const landed = this.#tickColumn(chip, field);
     // A resume starts ASCENDING, so a suspended chip must not keep its `desc`.
     chip.dataset['direction'] = suspended ? 'asc' : direction;
-    chip.toggleAttribute('data-current', !suspended);
+    /* ONLY IF THE TICK LANDED. A rebuilt menu has no rows for a frame, so this
+       set the chip ON with an empty menu — the contradiction that paints AMBER
+       — and a reader who had merely removed some other filter was shown a
+       warning. The menu's own render brings it on.
+       TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
+    if (landed) chip.toggleAttribute('data-current', !suspended);
+    else this.#afterMenu(chip, () => this.#syncSortFromAttrs());
     this.#syncSortLabel(chip);
   }
+
+  /** Tick one column's radio. False when the menu has not stamped its rows. */
+  #tickColumn(chip: HTMLElement, field: string): boolean {
+    const radios = [...chip.querySelectorAll<HTMLInputElement>('input[type="radio"]')];
+    if (!radios.length) return false;
+    let hit = false;
+    for (const radio of radios) {
+      radio.checked = radio.value === field;
+      if (radio.checked) hit = true;
+    }
+    return hit;
+  }
+
+  /** Run again once this chip's menu has rendered. Once per chip. */
+  #afterMenu(chip: HTMLElement, again: () => void): void {
+    const menu = (chip as ChipEl & { menu?: HTMLElement }).menu as
+      (HTMLElement & { rendered?: Promise<void> }) | null;
+    if (!menu || this.#waiting.has(chip)) return;
+    this.#waiting.add(chip);
+    void Promise.resolve(menu.rendered)
+      .then(() => new Promise<void>((r) => requestAnimationFrame(() => r())))
+      .then(() => {
+        this.#waiting.delete(chip);
+        if (chip.isConnected) again();
+      });
+  }
+
+  #waiting = new WeakSet<HTMLElement>();
 
   /** Follow `data-group-field`. The twin of `#syncSortFromAttrs`: empty suspends, no event. */
   #syncGroupFromAttrs(): void {
@@ -1104,10 +1172,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       return;
     }
 
-    for (const radio of chip.querySelectorAll<HTMLInputElement>('input[type="radio"]')) {
-      radio.checked = radio.value === field;
-    }
-    chip.toggleAttribute('data-current', true);
+    /* ONLY IF THE TICK LANDED — see `#syncSortFromAttrs`.
+       TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
+    if (this.#tickColumn(chip, field)) chip.toggleAttribute('data-current', true);
+    else this.#afterMenu(chip, () => this.#syncGroupFromAttrs());
     this.#syncGroupLabel(chip);
   }
 

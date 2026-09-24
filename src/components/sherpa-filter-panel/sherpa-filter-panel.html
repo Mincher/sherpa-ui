@@ -48,7 +48,14 @@
        TRAP T-a-panel-flush-between-surfaces-draws-two-edges -->
   <sherpa-container class="panel" part="panel" data-padding="none">
     <sherpa-container-header slot="header" class="head" part="head"
-                             data-icon="filter" data-dismissible>
+                             data-icon="filter">
+      <!-- NOT the shared close: this button switches back to the TOOLBARS, and
+           an X says "gone". The sidebar glyph is the same one the toolbars use
+           to bring the panel back, so the pair reads as one switch. -->
+      <sherpa-button slot="actions" class="to-toolbars" part="to-toolbars"
+                     data-type="icon" data-size="xs" data-look="transparent"
+                     data-icon-start="sidebar"
+                     aria-label="Filter in the toolbars instead"></sherpa-button>
       <!-- ONE search, across every value in the panel. The metadata row is the
            header's own bottom row, so it spans the full width. -->
       <sherpa-input-text slot="metadata" class="search" part="search"

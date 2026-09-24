@@ -911,6 +911,82 @@ sherpa-button[data-look="saturated"] {
   --_status-icon: var(--sherpa-style-saturated-indicator-accent);
 }
 
+sherpa-button[aria-pressed="true"] {
+  --sherpa-style-border-base: var(--sherpa-style-active-border-base);
+  --sherpa-style-border-base-1: var(--sherpa-style-active-border-base-1);
+  --sherpa-style-border-width: var(--sherpa-style-active-border-width);
+  --sherpa-style-border-data-viz: var(--sherpa-style-active-border-data-viz);
+  --sherpa-style-content-base: var(--sherpa-style-active-content-base);
+  --sherpa-style-content-inverse: var(--sherpa-style-active-content-inverse);
+  --sherpa-style-content-secondary: var(--sherpa-style-active-content-secondary);
+  --sherpa-style-content-tertiary: var(--sherpa-style-active-content-tertiary);
+  --sherpa-style-indicator-accent: var(--sherpa-style-active-indicator-accent);
+  --sherpa-style-surface-base: var(--sherpa-style-active-surface-base);
+  --sherpa-style-surface-base-1: var(--sherpa-style-active-surface-base-1);
+  --sherpa-style-surface-base-2: var(--sherpa-style-active-surface-base-2);
+  --sherpa-style-surface-shadow: var(--sherpa-style-active-surface-shadow);
+  --sherpa-style-surface-data-viz: var(--sherpa-style-active-surface-data-viz);
+  --_status-surface: var(--sherpa-style-active-surface-base);
+  --_status-surface-subtle: var(--sherpa-style-active-surface-base-1);
+  --_status-surface-strong: var(--sherpa-style-active-surface-base-2);
+  --_status-shadow: var(--sherpa-style-active-surface-shadow);
+  --_status-border: var(--sherpa-style-active-border-base);
+  --_status-border-strong: var(--sherpa-style-active-border-base-1);
+  --_status-data-viz: var(--sherpa-style-active-surface-data-viz);
+  --_status-data-viz-border: var(--sherpa-style-active-border-data-viz);
+  --_status-text: var(--sherpa-style-active-content-base);
+  --_status-text-on-color: var(--sherpa-style-active-content-inverse);
+  --_status-icon: var(--sherpa-style-active-indicator-accent);
+}
+
+sherpa-button[aria-pressed="true"][data-look="transparent"] {
+  --sherpa-style-border-base: var(--sherpa-style-transparent-active-border-base);
+  --sherpa-style-border-base-1: var(--sherpa-style-transparent-active-border-base-1);
+  --sherpa-style-border-width: var(--sherpa-style-transparent-active-border-width);
+  --sherpa-style-content-base: var(--sherpa-style-transparent-active-content-base);
+  --sherpa-style-content-inverse: var(--sherpa-style-transparent-active-content-inverse);
+  --sherpa-style-content-secondary: var(--sherpa-style-transparent-active-content-secondary);
+  --sherpa-style-content-tertiary: var(--sherpa-style-transparent-active-content-tertiary);
+  --sherpa-style-indicator-accent: var(--sherpa-style-transparent-active-indicator-accent);
+  --sherpa-style-surface-base: var(--sherpa-style-transparent-active-surface-base);
+  --sherpa-style-surface-base-1: var(--sherpa-style-transparent-active-surface-base-1);
+  --sherpa-style-surface-base-2: var(--sherpa-style-transparent-active-surface-base-2);
+  --sherpa-style-surface-shadow: var(--sherpa-style-transparent-active-surface-shadow);
+  --_status-surface: var(--sherpa-style-transparent-active-surface-base);
+  --_status-surface-subtle: var(--sherpa-style-transparent-active-surface-base-1);
+  --_status-surface-strong: var(--sherpa-style-transparent-active-surface-base-2);
+  --_status-shadow: var(--sherpa-style-transparent-active-surface-shadow);
+  --_status-border: var(--sherpa-style-transparent-active-border-base);
+  --_status-border-strong: var(--sherpa-style-transparent-active-border-base-1);
+  --_status-text: var(--sherpa-style-transparent-active-content-base);
+  --_status-text-on-color: var(--sherpa-style-transparent-active-content-inverse);
+  --_status-icon: var(--sherpa-style-transparent-active-indicator-accent);
+}
+
+sherpa-button[aria-pressed="true"][data-look="saturated"] {
+  --sherpa-style-border-base: var(--sherpa-style-saturated-active-border-base);
+  --sherpa-style-border-base-1: var(--sherpa-style-saturated-active-border-base-1);
+  --sherpa-style-border-width: var(--sherpa-style-saturated-active-border-width);
+  --sherpa-style-content-base: var(--sherpa-style-saturated-active-content-base);
+  --sherpa-style-content-inverse: var(--sherpa-style-saturated-active-content-inverse);
+  --sherpa-style-content-secondary: var(--sherpa-style-saturated-active-content-secondary);
+  --sherpa-style-content-tertiary: var(--sherpa-style-saturated-active-content-tertiary);
+  --sherpa-style-indicator-accent: var(--sherpa-style-saturated-active-indicator-accent);
+  --sherpa-style-surface-base: var(--sherpa-style-saturated-active-surface-base);
+  --sherpa-style-surface-base-1: var(--sherpa-style-saturated-active-surface-base-1);
+  --sherpa-style-surface-base-2: var(--sherpa-style-saturated-active-surface-base-2);
+  --sherpa-style-surface-shadow: var(--sherpa-style-saturated-active-surface-shadow);
+  --_status-surface: var(--sherpa-style-saturated-active-surface-base);
+  --_status-surface-subtle: var(--sherpa-style-saturated-active-surface-base-1);
+  --_status-surface-strong: var(--sherpa-style-saturated-active-surface-base-2);
+  --_status-shadow: var(--sherpa-style-saturated-active-surface-shadow);
+  --_status-border: var(--sherpa-style-saturated-active-border-base);
+  --_status-border-strong: var(--sherpa-style-saturated-active-border-base-1);
+  --_status-text: var(--sherpa-style-saturated-active-content-base);
+  --_status-text-on-color: var(--sherpa-style-saturated-active-content-inverse);
+  --_status-icon: var(--sherpa-style-saturated-active-indicator-accent);
+}
+
 sherpa-button[data-open] {
   --sherpa-style-border-base: var(--sherpa-style-active-border-base);
   --sherpa-style-border-base-1: var(--sherpa-style-active-border-base-1);

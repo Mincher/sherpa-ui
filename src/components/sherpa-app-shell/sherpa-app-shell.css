@@ -127,13 +127,17 @@
   /* The AREA owns the width — a panel inside it fills it, so a Context does
      not size the app's own chrome. 4 columns at the desktop breakpoint.
      TRAP T-the-shell-owns-the-panel-areas */
-  flex: 0 0 var(--sherpa-panel-area-width, 360px);
+  flex: 0 0 var(--sherpa-panel-area-width, 400px);
   min-block-size: 0;
   /* The layout grid's own inset, which the panel does not otherwise carry —
      without it a panel's top and bottom overshoot the cards beside it by 16
      at each end, and its own edges are cut by the frame.
      TRAP T-the-shell-owns-the-panel-areas */
-  padding: var(--sherpa-layout-grid-padding, 16px);
+  padding-block: var(--sherpa-layout-grid-padding, 16px);
+  /* HALF on the sides, the same as a layout grid's own inline padding — the
+     panel and the Context each bring half, so the gap between them is one
+     gutter rather than two. */
+  padding-inline: calc(var(--sherpa-layout-grid-padding, 16px) / 2);
 }
 /* A SLOTTED BUT CLOSED panel takes no room either. `data-has-panel-*` says
    something is slotted, which stays true while the panel is SHUT — so the area

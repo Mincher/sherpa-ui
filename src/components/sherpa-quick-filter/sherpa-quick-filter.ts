@@ -349,32 +349,28 @@ export class SherpaQuickFilter extends SherpaElement {
     const empty = !!menu && this.current && !conditioned
       && (menu.values?.length ?? 0) === 0 && !this.#hasTypedAnswer();
 
-    // NOT empty is always safe to say at once.
-    if (!empty) {
-      this.removeAttribute('data-empty');
-      return;
-    }
-    /* EMPTY is the AMBER warning, and a rebuilt menu reads ZERO values until it
-       stamps — so adding or removing one filter painted unrelated chips as
-       "on, filtering nothing". Confirm it AFTER the menu has stamped; a recheck
-       may only ever turn the warning ON.
+    this.toggleAttribute('data-empty', empty);
+    /* AND CHECK AGAIN. `data-empty` is the AMBER warning, and a rebuilt menu
+       reads ZERO values until it stamps — so a bar that had just added or
+       removed one filter could paint an unrelated chip as "on, filtering
+       nothing". The recheck may only ever CLEAR a warning the menu has since
+       answered; it never raises one.
        TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
-    this.#confirmEmpty(menu);
+    if (empty && menu) this.#recheckEmpty(menu);
   }
 
-  /** Say EMPTY only once the menu has had its chance to stamp. */
-  #confirmEmpty(menu: MenuLike): void {
+  /** Drop a warning the menu answers once it has stamped. Never raises one. */
+  #recheckEmpty(menu: MenuLike): void {
     const token = ++this.#emptyCheck;
     void Promise.resolve((menu as { rendered?: Promise<void> }).rendered)
       .then(() => new Promise<void>((r) => requestAnimationFrame(() => r())))
       .then(() => {
         // A later check has already answered; this one is stale.
         if (token !== this.#emptyCheck || !this.isConnected) return;
-        const still = this.current
-          && menu.dataset?.['mode'] !== 'condition'
-          && (menu.values?.length ?? 0) === 0
-          && !this.#hasTypedAnswer();
-        this.toggleAttribute('data-empty', still);
+        const answered = (menu.values?.length ?? 0) > 0
+          || menu.dataset?.['mode'] === 'condition'
+          || this.#hasTypedAnswer();
+        if (answered) this.removeAttribute('data-empty');
       });
   }
 

@@ -36,6 +36,12 @@ sherpa-button:
   # A look is the button's own pin, as a nested Figma Button pins its look.
   '&[data-look="transparent"]': transparent
   '&[data-look="saturated"]': saturated
+  # PRESSED — a toggle button that is ON, the same mode an open menu wears.
+  # The panel's condition switch is one: `fx` pressed means the field is
+  # answered by rows.
+  '&[aria-pressed="true"]': active
+  '&[aria-pressed="true"][data-look="transparent"]': transparent/active
+  '&[aria-pressed="true"][data-look="saturated"]': saturated/active
   # Menu open — the active mode of its own look.
   '&[data-open]': active
   '&[data-open][data-look="transparent"]': transparent/active

@@ -201,7 +201,10 @@
   /* `minmax(min, 1fr)`, not a fixed track: the plot row grows to fill a sized
      host and floors at --_plot-height; in an unsized host 1fr resolves to that
      minimum. */
-  grid-template-rows: minmax(var(--_plot-height), 1fr) auto;
+  /* `min(…, 100%)`, so the floor YIELDS when the host is shorter than it. A
+     bare `--_plot-height` floor cannot shrink, so a card one row shorter
+     overflowed and the legend was drawn over the axis labels. */
+  grid-template-rows: minmax(min(var(--_plot-height), 100%), 1fr) auto;
   flex: 1 1 auto;
   min-block-size: 0;
   /* NO column gap: the axis LINE is the y-axis box's trailing border, so a gap

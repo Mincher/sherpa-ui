@@ -340,10 +340,11 @@ test('group and sort lead the scope, report at once, and skip Apply',
       const sortOn = sr.querySelector('.field[data-field="organise"] .value[data-value="sort"]')
         .hasAttribute('data-current');
 
-      // Pick Group. It reports IMMEDIATELY — no Apply.
-      const g = sr.querySelector('.field[data-field="organise"] .value[data-value="group"]');
-      g.setAttribute('data-current', '');
-      g.dispatchEvent(new CustomEvent('quick-filter-click', { bubbles: true, composed: true }));
+      /* Click SORT's body. It reports IMMEDIATELY — no Apply — and reports the
+         COLUMN the scope named, not the chip's own name.
+         TRAP T-an-organise-chip-is-named-for-its-job-not-its-field */
+      const st = sr.querySelector('.field[data-field="organise"] .value[data-value="sort"]');
+      st.dispatchEvent(new CustomEvent('quick-filter-click', { bubbles: true, composed: true }));
       await new Promise((r) => setTimeout(r, 120));
 
       press('.apply');
@@ -363,7 +364,12 @@ test('group and sort lead the scope, report at once, and skip Apply',
     expect(r['sortOn']).toBe(true);
 
     const heard = r['heard'] as [string, Record<string, unknown>][];
-    expect(heard[0]).toEqual(['group-change', { scope: 'data', field: 'group' }]);
+    /* THE COLUMN, not the chip's own name. `group` and `sort` are what the
+       chips are CALLED; the column lives in their menu, and the scope named
+       `name`. The body CYCLES, so the first click steps a live `asc` to `desc`.
+       TRAP T-an-organise-chip-is-named-for-its-job-not-its-field */
+    expect(heard[0]).toEqual(
+      ['sort-change', { scope: 'data', field: 'name', direction: 'desc' }]);
 
     /* APPLY carries the FILTERS only. An arrangement is not part of which
        rows are shown, so it has no business in a filter event. */

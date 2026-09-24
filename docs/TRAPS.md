@@ -714,6 +714,7 @@ flicker. It stays off, and the menu is where a column is chosen.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/cycle.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-add-menu-batches
 
@@ -7713,6 +7714,7 @@ nothing, and `fx` announces as noise.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/filter-state.test.mjs`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
 ### T-an-active-chip-is-heavier-and-more-strongly-drawn
 
@@ -8310,6 +8312,30 @@ container test for everything else.
 for as long as every section holds one thing.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+
+### T-an-organise-chip-is-named-for-its-job-not-its-field
+
+Group and Sort chips are called `group` and `sort`. The COLUMN they arrange by
+lives in their menu, and changes; the chip's own name does not.
+
+The filter panel read a chip's field the way it reads every other one — from
+the chip's own `data-value`. For these two that is the literal string `sort`,
+so a body click reported `sort-change { field: 'sort' }` and the grid tried to
+order by a column called "sort". Measured: `data-sort-field="sort"`.
+
+The field comes from the MENU (`menu.values[0]`), falling back to whichever
+option was drawn `selected`.
+
+**And the BODY cycles.** A Group chip toggles; a Sort chip steps asc → desc →
+suspended → asc, from `nextSort()` in the data layer, which the toolbar's chip
+already used. The panel had no cycle at all: one click switched the sort off,
+the next set it to the wrong field.
+
+Suspended is not cleared — `setSort(null)` moves the column to the source's own
+memory so one more click resumes it. TRAP T-grid-suspend-is-not-clear
+
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
 ### T-the-add-menu-is-the-whole-list
 
