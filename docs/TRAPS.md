@@ -145,7 +145,12 @@ inside it and turns that card transparent too. Scoping the rule does not help.
 The fix is to set a real property on the element that should change, never to
 re-point a shared token on an ancestor.
 
+When the ancestor MUST re-point it, reset it on the descendant — a reset
+inherits too. A metric pins its status on its host, so every chart tip and the
+`sherpa-tooltip` bubble pin Style=default in `scripts/figma-data/state-pins.yaml`.
+
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-tooltip/sherpa-tooltip.css`
 
 ### T-indeterminate-reports-false
 
