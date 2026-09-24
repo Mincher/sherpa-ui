@@ -312,6 +312,7 @@ export class SherpaFilterPanel extends SherpaElement {
       region.append(box);
     }
     this.#snapshot();
+    this.#syncAllAnswered();
   }
 
   /**
@@ -537,6 +538,7 @@ export class SherpaFilterPanel extends SherpaElement {
         scope: held.scope, field: picked[0] ?? null,
       });
     }
+    this.#syncAnswered(held);
   };
 
   #onAction = (event: Event): void => {
@@ -617,9 +619,25 @@ export class SherpaFilterPanel extends SherpaElement {
       }
     }
 
+    this.#syncAnswered(held);
     this.emit('filter-condition-change', {
       scope: held.scope, id: held.def.id, conditional: on,
     });
+  }
+
+  /** Has this field been ANSWERED — any ticked chip, or a condition row?
+   *  Clear only appears once there is something to clear. */
+  #syncAnswered(held: Held): void {
+    const ticked = held.values.querySelector('.value[data-current]') != null;
+    const menu = held.menu as (HTMLElement & { conditions?: unknown[] }) | undefined;
+    const conditioned = held.box.hasAttribute('data-conditional')
+      && (menu?.conditions?.length ?? 0) > 0;
+    held.box.toggleAttribute('data-answered', ticked || conditioned);
+  }
+
+  /** Every field, after anything that could have changed an answer. */
+  #syncAllAnswered(): void {
+    for (const [, held] of this.#held) this.#syncAnswered(held);
   }
 
   #clearField(btn: HTMLElement): void {
@@ -628,6 +646,7 @@ export class SherpaFilterPanel extends SherpaElement {
     for (const one of held.values.querySelectorAll('.value')) {
       one.removeAttribute('data-current');
     }
+    this.#syncAnswered(held);
   }
 
   /** The Add menu committed. The HOST owns the list; this is a request. */
@@ -643,6 +662,7 @@ export class SherpaFilterPanel extends SherpaElement {
       if (held) {
         const picked = ((event as CustomEvent).detail?.values ?? []) as string[];
         chip.toggleAttribute('data-current', picked.length > 0);
+        this.#syncAnswered(held);
         if (held.def.id === 'group' || held.def.id === 'sort') {
           this.emit(`${held.def.id}-change`, {
             scope: held.scope, field: picked[0] ?? null,
@@ -768,6 +788,7 @@ export class SherpaFilterPanel extends SherpaElement {
         one.toggleAttribute('data-current', want.has(one.dataset['value'] ?? ''));
       }
     }
+    this.#syncAllAnswered();
   };
 
   #onClose = (): void => {

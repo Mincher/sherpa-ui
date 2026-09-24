@@ -8787,6 +8787,16 @@ After: `[["status",4,false],["plan",4,false],["tier",4,false],["owner",4,false]]
 
 ---
 
+**AND THE AMBER WARNING RIDES ON IT.** A chip that is ON while its menu holds
+no values is the contradiction `state-pins.yaml` paints `warning`
+(`&[data-current][data-empty]`). A rebuilt menu reads zero values until it
+stamps, so `#syncEmpty` could set that flag from a premature read and paint an
+unrelated chip as broken. Saying NOT empty is always safe; saying EMPTY waits
+for the menu's own `rendered` and one frame after it, and a later check
+cancels an earlier one.
+
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+
 ### T-equals-answers-with-the-fields-own-values
 
 In condition mode, `Equals` does NOT give a text box.

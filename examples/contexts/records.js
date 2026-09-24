@@ -488,12 +488,17 @@ export async function init(root, { session } = {}) {
     void refill();
   }, { signal });
 
-  /* GROUP and SORT arrange the grid; they are not filters. */
+  /* GROUP and SORT arrange the rows; they are not filters. THROUGH THE SOURCE,
+     not onto the grid: `bind()` writes `data-group-field` and `data-sort-field`
+     on every bound component from the source's own state, so an attribute
+     written straight onto the grid is overwritten by the next requery — and a
+     panel Group pick did nothing at all. */
   panel?.addEventListener('group-change', (e) => {
-    grid.setAttribute('data-group-field', e.detail.field ?? '');
+    source.setGroup(e.detail.field || null);
   }, { signal });
   panel?.addEventListener('sort-change', (e) => {
-    grid.setAttribute('data-sort-field', e.detail.field ?? '');
+    if (e.detail.field) source.setSort(e.detail.field, e.detail.direction ?? 'asc');
+    else source.clearSort();
   }, { signal });
 
   /* ROW ACTIONS declared ONCE. The grid draws them in its pinned trailing

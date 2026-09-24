@@ -348,8 +348,37 @@ export class SherpaQuickFilter extends SherpaElement {
        lie. TRAP T-an-operator-decides-pick-or-type */
     const empty = !!menu && this.current && !conditioned
       && (menu.values?.length ?? 0) === 0 && !this.#hasTypedAnswer();
-    this.toggleAttribute('data-empty', empty);
+
+    // NOT empty is always safe to say at once.
+    if (!empty) {
+      this.removeAttribute('data-empty');
+      return;
+    }
+    /* EMPTY is the AMBER warning, and a rebuilt menu reads ZERO values until it
+       stamps — so adding or removing one filter painted unrelated chips as
+       "on, filtering nothing". Confirm it AFTER the menu has stamped; a recheck
+       may only ever turn the warning ON.
+       TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
+    this.#confirmEmpty(menu);
   }
+
+  /** Say EMPTY only once the menu has had its chance to stamp. */
+  #confirmEmpty(menu: MenuLike): void {
+    const token = ++this.#emptyCheck;
+    void Promise.resolve((menu as { rendered?: Promise<void> }).rendered)
+      .then(() => new Promise<void>((r) => requestAnimationFrame(() => r())))
+      .then(() => {
+        // A later check has already answered; this one is stale.
+        if (token !== this.#emptyCheck || !this.isConnected) return;
+        const still = this.current
+          && menu.dataset?.['mode'] !== 'condition'
+          && (menu.values?.length ?? 0) === 0
+          && !this.#hasTypedAnswer();
+        this.toggleAttribute('data-empty', still);
+      });
+  }
+
+  #emptyCheck = 0;
 
   #syncCountTip(values: string[]): void {
     /* The CONDITION in words, never the sign: a tooltip is where a reader goes
