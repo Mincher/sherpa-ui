@@ -14,7 +14,9 @@ import { NON_VALUE_ROWS } from '../../core/ui/shared-constants.js';
 import '../sherpa-tooltip/sherpa-tooltip.js';
 
 interface MenuLike extends HTMLElement {
-  toggle?: (trigger?: HTMLElement) => void;
+  // show/hide, not toggle — see #openMenu for why the click cannot ask the menu.
+  show?: (trigger?: HTMLElement) => void;
+  hide?: () => void;
   values?: string[];
 }
 
@@ -182,9 +184,17 @@ export class SherpaQuickFilter extends SherpaElement {
   /**
    * TRAP T-menu-anchors-to-the-chip — anchored to the CHIP's leading edge, not
    * the caret's. Placement is measured: TRAP T-anchor-cross-root.
+   *
+   * `data-open` decides, NOT `menu.open`: the native popover light-dismisses on
+   * pointerdown, so by the time the click lands an open menu already reads shut
+   * and `toggle()` re-opens what the reader just closed. Measured before this:
+   * open, open, open. TRAP T-a-trigger-click-follows-light-dismiss
    */
-  #openMenu(): void {
-    this.menu?.toggle?.(this);
+  #openMenu(anchor?: HTMLElement): void {
+    const wasOpen = this.hasAttribute('data-open');
+    this.removeAttribute('data-open');
+    if (wasOpen) this.menu?.hide?.();
+    else this.menu?.show?.(anchor ?? this);
   }
 
   #onCaret = (event: Event): void => {
@@ -192,6 +202,16 @@ export class SherpaQuickFilter extends SherpaElement {
     event.stopPropagation(); // opening the menu must not toggle the chip
     this.#openMenu();
   };
+
+  /**
+   * Open or shut this chip's menu — what a HOST calls to drive the chip from
+   * outside. It routes through the same light-dismiss-safe path a caret click
+   * takes, so an external opener cannot get the stuck-open behaviour back.
+   * TRAP T-a-trigger-click-follows-light-dismiss
+   */
+  toggleMenu(anchor?: HTMLElement): void {
+    this.#openMenu(anchor);
+  }
 
   /** Mirror the menu's open state onto the caret for assistive tech. */
   #onMenuToggle = (event: Event): void => {

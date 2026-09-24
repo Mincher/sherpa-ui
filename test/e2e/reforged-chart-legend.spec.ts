@@ -269,6 +269,13 @@ test('the Other row carries a breakdown menu that commits on Apply', async ({ pa
       toggleTag: toggle.tagName,
       buttonIsSibling: button.parentElement === rollup,
       buttonNotInToggle: !toggle.contains(button),
+      /* The menu is the BUTTON's own, slotted — so sherpa-button drives it and
+         holds `data-open` through the popover's light-dismiss. Hand-rolling the
+         toggle opened it once and no later click could shut it.
+         TRAP T-a-trigger-click-follows-light-dismiss */
+      menuIsSlottedIntoButton: menu.parentElement === button && menu.getAttribute('slot') === 'menu',
+      // aria-expanded lives on the button's INNER trigger, never on the host.
+      hostHasNoAria: !button.hasAttribute('aria-expanded'),
       size: button.getAttribute('data-size'),
       // The menu DEFERS: rows are a draft until Apply, so several can be ticked
       // without it closing after each click.
@@ -287,7 +294,7 @@ test('the Other row carries a breakdown menu that commits on Apply', async ({ pa
     const boxes = Array.from(menu.querySelectorAll<HTMLInputElement>('input'));
     menu.toggle?.(button);
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
-    const openedBy = button.getAttribute('aria-expanded');
+    const openedBy = button.shadowRoot?.querySelector('.trigger')?.getAttribute('aria-expanded');
     for (const b of [boxes[0]!, boxes[2]!]) {
       b.checked = false;
       b.dispatchEvent(new Event('change', { bubbles: true }));
@@ -307,6 +314,8 @@ test('the Other row carries a breakdown menu that commits on Apply', async ({ pa
   expect(r.structure.toggleTag).toBe('BUTTON');
   expect(r.structure.buttonIsSibling).toBe(true);
   expect(r.structure.buttonNotInToggle).toBe(true);
+  expect(r.structure.menuIsSlottedIntoButton).toBe(true);
+  expect(r.structure.hostHasNoAria).toBe(true);
   expect(r.structure.size).toBe('xs');
   expect(r.structure.commits).toBe(true);
 
@@ -788,4 +797,56 @@ test('unticking a folded category puts it in the OFF set, and reports', async ({
   // …and it SAID so, in the event every other control speaks.
   expect(r.clicks.length).toBe(1);
   expect(r.clicks[0]!.indices, 'the folded rows still on').toEqual([6]);
+});
+
+/**
+ * The breakdown menu opened ONCE and then stuck: the legend hand-rolled
+ * `menu.toggle(button)`, and the popover's light-dismiss had already shut the
+ * card by the time the click landed, so toggle re-opened what the click closed.
+ * Measured before the fix: open, open, open. TRAP T-a-trigger-click-follows-light-dismiss
+ */
+test('a second click on the breakdown control CLOSES it', async ({ page }) => {
+  await page.evaluate(async () => {
+    const el = document.createElement('sherpa-chart-legend') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    // Nine categories → five named + Other, which is what carries the menu.
+    el.populate(Array.from({ length: 9 }, (_, i) => ({ label: `C${i}`, value: i + 1 })));
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+  });
+
+  const box = await page.evaluate(() => {
+    const el = document.querySelector('sherpa-chart-legend')!;
+    const btn = el.shadowRoot!.querySelector('.rollup-menu-btn')!;
+    const r = btn.getBoundingClientRect();
+    return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+  });
+
+  // REAL clicks. A synthetic one does not reach the handler through a shadow root.
+  const readOpen = (): Promise<boolean> =>
+    page.evaluate(() => {
+      const el = document.querySelector('sherpa-chart-legend')!;
+      const menu = el.shadowRoot!.querySelector('.rollup-menu') as HTMLElement & { open?: boolean };
+      return !!menu.open;
+    });
+
+  await page.mouse.click(box.x, box.y);
+  await page.waitForTimeout(250);
+  const first = await readOpen();
+
+  await page.mouse.click(box.x, box.y);
+  await page.waitForTimeout(250);
+  const second = await readOpen();
+
+  await page.mouse.click(box.x, box.y);
+  await page.waitForTimeout(250);
+  const third = await readOpen();
+
+  expect(first).toBe(true);
+  // The whole point: it must go BACK.
+  expect(second).toBe(false);
+  expect(third).toBe(true);
 });

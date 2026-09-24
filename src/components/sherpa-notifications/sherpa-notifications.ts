@@ -51,6 +51,12 @@ export class SherpaNotifications extends SherpaElement {
     // menu's light DOM, so a click starts inside a list item's own shadow root
     // and the host is the one place every route passes through.
     this.addEventListener('click', this.#onClick);
+    /* The card's own state, because `menu.open` cannot answer a CLICK: the
+       native popover light-dismisses on pointerdown, so by the time the click
+       lands an open menu already reads shut.
+       TRAP T-a-trigger-click-follows-light-dismiss */
+    this.addEventListener('menu-open', this.#onMenuToggle);
+    this.addEventListener('menu-close', this.#onMenuToggle);
     this.#render();
   }
 
@@ -84,10 +90,27 @@ export class SherpaNotifications extends SherpaElement {
     this.hide();
   }
 
-  /** Open if shut, shut if open — what a bell click does. */
+  /**
+   * Open if shut, shut if open — what a bell click does.
+   *
+   * `#open` decides, NOT `menu.open`. Measured before this: the bell opened the
+   * list and no later click could shut it, because light-dismiss had already
+   * closed the card and `toggle()` re-opened what the reader just closed.
+   * TRAP T-a-trigger-click-follows-light-dismiss
+   */
   toggle(trigger?: HTMLElement): void {
-    this.#menu()?.toggle(trigger);
+    const wasOpen = this.#open;
+    this.#open = false;
+    if (wasOpen) this.#menu()?.hide();
+    else this.#menu()?.show(trigger);
   }
+
+  /** Whether the card is open, as the last menu event reported it. */
+  #open = false;
+
+  #onMenuToggle = (event: Event): void => {
+    this.#open = event.type === 'menu-open';
+  };
 
   /* ── Private ─────────────────────────────────────────────────────── */
 

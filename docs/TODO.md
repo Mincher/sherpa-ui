@@ -8,7 +8,7 @@ Status: `[ ]` open · `[~]` in progress · `[x]` done
 
 ## At a glance
 
-**34 numbered items · 3 done · 31 open.** Numbers are the spine; the waves below
+**34 numbered items · 4 done · 1 parked · 29 open.** Numbers are the spine; the waves below
 say what order. Anything not numbered is a sub-item of the section it sits in.
 
 | | # | Item | Wave |
@@ -22,8 +22,8 @@ say what order. Anything not numbered is a sub-item of the section it sits in.
 | | 7 | Only five filter chips carry an icon | 2 |
 | | 8 | Fixed-height row uses a hard-coded gutter | 2 |
 | | 9 | Pagination row-count select is not a Sherpa select | 2 |
-| | 10 | Notifications button — then sweep for the same fault | 3 |
-| | 11 | Button borders do not inherit the status colour | 3 |
+| ✅ | 10 | Notifications button — swept, 4 components fixed | 3 |
+| ⏸️ | 11 | Button borders and status — **parked**, overlaps CSS-inheritance work | 3 |
 | | 12 | Metric trend does not update after a data-layer change | 4 |
 | | 13 | Sparkline does not follow its record deltas | 4 |
 | | 14 | An example of real-time data (WebSocket) | 4 |
@@ -236,20 +236,58 @@ no other work is in flight.
 
 ## Consistency — no hand-rolled behaviour
 
-### `[ ]` The notifications button does not behave like other menu buttons
+### `[x]` The notifications button — and three more — DONE 2026-09-24
 
-The notifications button opens a menu in its own way. It must use the behaviour
-already established for a button that opens a menu.
+The notifications button opened a menu in its own way. The sweep found the same
+fault in three more places, and it was worse than a style difference: **each one
+opened on the first click and could never be closed.**
 
-Check EVERY component for the same fault, not only the App Header. Find any
-button that is hand-rolled, or that deviates from the common behaviour.
+Measured live, every one `open, open, open`:
 
-### `[ ]` Button borders do not inherit the status colour
+| component | what it did | fix |
+|---|---|---|
+| `sherpa-notifications` | proxied `toggle()` straight to the menu | track `#open` from the menu events |
+| `sherpa-chart-legend` | menu was a SIBLING of its button | slot it INTO the button |
+| `sherpa-quick-filter` | `menu.toggle(this)` on a native caret | read its own `data-open` |
+| `sherpa-data-grid` | reached past its chip to the menu | ask the CHIP, pass the anchor on |
+
+The cause is one thing, already solved once in `sherpa-button`: the native
+popover light-dismisses on `pointerdown`, so by click time an open menu reads
+shut and `toggle()` re-opens it. `T-a-trigger-click-follows-light-dismiss` now
+carries the sweep and the rule — **a component that owns a menu never calls
+`toggle()` from a click.**
+
+Two smaller findings on the way:
+
+- **A host cannot hold `aria-expanded`.** `sherpa-button` keeps it on its inner
+  `.trigger`; a host-level copy freezes and is what a screen reader meets first.
+  The legend announced "closed" over an open menu.
+  `T-a-host-cannot-hold-aria-expanded`.
+- `sherpa-container-header` keeps a host `aria-expanded` and is NOT that trap —
+  its own TS maintains it, and it is a collapse toggle, not a menu.
+
+### `[ ]` Button borders do not inherit the status colour — PARKED 2026-09-24
 
 A button border does not take the `[data-status]` colour correctly.
 
-Check for hand-rolled CSS that the component CSS or the framework CSS already
-handles. Remove it; let the cascade do the work.
+**Measured, and the button is not the fault.** It reads `--_status-border`,
+which resolves to the same neutral `#b3b3c3` under critical, warning, success,
+info and urgent. That is the documented model — CLAUDE.md: `--_status-border`
+is "neutral in most modes", `--_status-border-strong` is the tinted one.
+
+| token | consumers |
+|---|---|
+| `--_status-border` (neutral) | **18 components**, including the button |
+| `--_status-border-strong` (tinted) | **1** — `sherpa-data-grid` |
+
+So the button matches 17 peers, and switching it alone would make "does a
+border follow status?" have two answers. Will's ruling: **the TOKEN is wrong**,
+not the button — a component inside `[data-status="critical"]` should show a
+critical border.
+
+**Parked, not dropped.** Another agent is working on CSS inheritance in this
+project and that work overlaps. Do this after it lands, in the token layer, so
+all 18 components follow at once.
 
 ---
 

@@ -845,10 +845,13 @@ export class SherpaDataGrid extends SherpaElement {
     const chip = this.$<HTMLElement>(
       `.head-cell[data-field="${CSS.escape(field)}"] .head-filter`,
     );
-    const menu = chip?.querySelector<HTMLElement & { toggle?: (t?: HTMLElement) => void }>(
-      'sherpa-menu',
-    );
-    menu?.toggle?.(anchor ?? chip ?? undefined);
+    /* Ask the CHIP, not its menu: the chip owns the light-dismiss-safe open, and
+       reaching past it to `menu.toggle()` brought the stuck-open bug back
+       through this door. The anchor still travels — a toolbar chip borrows this
+       menu and must see it over ITSELF.
+       TRAP T-a-trigger-click-follows-light-dismiss · T-grid-toolbar-chip-borrows-the-menu */
+    (chip as (HTMLElement & { toggleMenu?: (a?: HTMLElement) => void }) | null)
+      ?.toggleMenu?.(anchor);
   }
 
   /**

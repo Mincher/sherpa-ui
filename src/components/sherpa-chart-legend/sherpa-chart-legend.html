@@ -29,14 +29,17 @@
         <span class="label sherpa-truncate" part="label"></span>
         <span class="value" part="value"></span>
       </button>
+      <!-- The menu is the button's OWN, slotted, so sherpa-button drives it:
+           it holds `data-open` through the popover's light-dismiss, which a
+           hand-rolled toggle cannot. TRAP T-a-trigger-click-follows-light-dismiss -->
       <sherpa-button
         class="rollup-menu-btn"
         data-size="xs"
         data-type="icon"
         data-icon-start="triangle-down"
-        aria-haspopup="menu"
-        aria-expanded="false"></sherpa-button>
-      <sherpa-menu class="rollup-menu" data-heading="Breakdown" data-commit></sherpa-menu>
+        aria-haspopup="menu">
+        <sherpa-menu slot="menu" class="rollup-menu" data-heading="Breakdown" data-commit></sherpa-menu>
+      </sherpa-button>
     </span>
   </template>
 

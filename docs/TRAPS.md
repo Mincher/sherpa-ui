@@ -2533,8 +2533,33 @@ a synthetic click.
 `data-open` is also what CSS reads for the pressed look: real focus has moved
 inside the menu, so `:focus-visible` on the trigger is false.
 
+**Swept 2026-09-24, and three components had re-introduced it.** `sherpa-button`
+solved this once; anything that calls `menu.toggle()` from its own click handler
+gets it back. Measured live — each opened on click 1 and no later click could
+shut it:
+
+| component | what it did | fix |
+|---|---|---|
+| `sherpa-chart-legend` | menu was a SIBLING of the button | slot it INTO the button |
+| `sherpa-quick-filter` | `menu.toggle(this)` on a native caret | read its own `data-open` |
+| `sherpa-notifications` | proxied `toggle()` straight through | track `#open` from the menu events |
+
+`sherpa-data-grid.openColumnFilter()` reached past its chip to the menu and got
+the bug through that door. It now asks the CHIP — which owns the safe open —
+and passes the anchor along, because a toolbar chip borrows this menu and must
+see it over ITSELF (`T-grid-toolbar-chip-borrows-the-menu`).
+
+**The rule:** a component that owns a menu never calls `toggle()` from a click.
+It slots the menu into a `sherpa-button`, or it tracks its own open flag.
+
 - Site: `src/components/sherpa-button/sherpa-button.ts`
 - Site: `test/e2e/reforged-button.spec.ts`
+- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
+- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.html`
+- Site: `test/e2e/reforged-chart-legend.spec.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-notifications/sherpa-notifications.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
 ### T-footer-row-raises-on-any-flag
 
@@ -7251,6 +7276,26 @@ Unblocking this needs whatever originally produced the cache — a Figma plugin
 with UI, reading the document with an override mode actually applied.
 
 - Site: `scripts/check-extensions.mjs`
+
+### T-a-host-cannot-hold-aria-expanded
+
+A `sherpa-button` that opens a menu keeps `aria-expanded` on its INNER
+`.trigger`, because that is the real `<button>`. An author who writes
+`aria-expanded="false"` on the HOST creates a second, frozen copy — and the host
+is what a screen reader meets first, so an open menu announces as closed.
+
+Measured on `sherpa-chart-legend`'s breakdown control: host `"false"` while the
+inner trigger read `"true"`.
+
+The button now strips a host-level `aria-expanded` when its menu toggles, and
+the template that wrote one no longer does. `sherpa-quick-filter-toolbar` had it
+right already — it sets `aria-haspopup` on the host (a static fact) and leaves
+`aria-expanded` to the button (a changing one).
+
+`sherpa-container-header` keeps a host `aria-expanded` and is NOT this trap: its
+own TS maintains it, and it is a collapse toggle rather than a menu.
+
+- Site: `src/components/sherpa-button/sherpa-button.ts`
 
 ### T-a-full-range-is-still-a-range
 

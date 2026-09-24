@@ -128,6 +128,11 @@ export class SherpaButton extends SherpaElement {
     const open = event.type === 'menu-open';
     this.toggleAttribute('data-open', open);
     this.$('.trigger')?.setAttribute('aria-expanded', String(open));
+    /* The REAL button is the inner `.trigger`, so that is where the state
+       belongs. A host-level `aria-expanded` cannot be maintained from outside
+       and reads FIRST to a screen reader — a stale "false" over an open menu.
+       TRAP T-a-host-cannot-hold-aria-expanded */
+    if (this.hasAttribute('aria-expanded')) this.removeAttribute('aria-expanded');
   };
 }
 

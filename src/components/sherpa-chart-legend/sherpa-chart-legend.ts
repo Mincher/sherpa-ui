@@ -227,13 +227,12 @@ export class SherpaChartLegend extends SherpaElement {
       menu.appendChild(row);
     }
 
-    button.addEventListener('click', (event) => {
-      // A SIBLING of the toggle, so its click must not reach it.
-      event.stopPropagation();
-      menu.toggle?.(button);
-    });
-    menu.addEventListener('menu-open', () => button.setAttribute('aria-expanded', 'true'));
-    menu.addEventListener('menu-close', () => button.setAttribute('aria-expanded', 'false'));
+    /* sherpa-button OPENS its own slotted menu and keeps aria-expanded —
+       the click listener here only stops the press reaching the toggle beside
+       it. Hand-rolling the open lost the light-dismiss race: the menu opened
+       once and no later click could shut it.
+       TRAP T-a-trigger-click-follows-light-dismiss */
+    button.addEventListener('click', (event) => event.stopPropagation());
     menu.addEventListener('menu-apply', ((event: CustomEvent) => {
       const values = (event.detail?.values ?? []) as string[];
       const on = new Set(values.map(Number));
