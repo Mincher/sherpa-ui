@@ -135,6 +135,39 @@ export async function init(root, { session } = {}) {
     return asPanelFieldWith(f, menu);
   };
 
+  /**
+   * One bar chip, as the PANEL takes it.
+   *
+   * The menu may be BORROWED into the panel right now, so it is looked for in
+   * both places — and the VALUE ROWS are read from wherever it is. Reading
+   * them from the chip alone gave every field zero options while its menu was
+   * away, and a field with no options but a menu draws that MENU: the panel
+   * filled with search boxes and checkboxes instead of chips.
+   * TRAP T-a-borrowed-menu-is-not-on-its-chip
+   */
+  const fromChip = (id, bar) => {
+    const chip = bar?.shadowRoot?.querySelector(`.chips > .chip[data-id="${id}"]`);
+    const menu = chip?.querySelector('sherpa-menu')
+      ?? panel?.shadowRoot?.querySelector(`.field[data-field="${id}"] sherpa-menu`)
+      ?? undefined;
+    return asPanelFieldWith({
+      id,
+      label: chip?.dataset['label'] ?? id,
+      select: menu?.dataset['select'],
+      // From the MENU, wherever it is — never from the chip it may have left.
+      options: [...(menu?.querySelectorAll('label:not(.qf-all)') ?? [])]
+        .map((row) => ({
+          value: row.querySelector('input')?.value ?? '',
+          label: (row.textContent ?? '').trim(),
+          selected: !!row.querySelector('input')?.checked,
+        }))
+        .filter((o) => o.value),
+      removable: true,
+      conditions: menu?.hasAttribute('data-conditional'),
+      kind: chip?.querySelector('.qf-number') ? 'number' : undefined,
+    }, menu);
+  };
+
   const asPanelFieldWith = (f, menu) => ({
     id: f.id,
     label: f.label,
@@ -297,6 +330,10 @@ export async function init(root, { session } = {}) {
      definitions the bars read; it never reaches into a toolbar.
      TRAP T-the-panel-is-the-toolbar-in-a-column */
   const fillPanel = () => {
+    /* GIVE THE MENUS BACK FIRST. This reads the bars, and a menu the panel is
+       holding is not on its chip — the field would arrive with no value rows.
+       TRAP T-a-borrowed-menu-is-not-on-its-chip */
+    panel?.release?.();
     const viewBar = header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
     /* CREATED DATE moves INTO the panel while it is open — it has a menu, so
        the panel draws that body. View, Customer and Region stay on the header:
@@ -339,26 +376,7 @@ export async function init(root, { session } = {}) {
            never learns about a removal or an add, so the panel kept drawing a
            field the reader had taken off and never drew one they added.
            TRAP T-a-panel-adds-through-the-bar-that-owns-the-list */
-        filters: (qft.heldIds ?? []).map((id) => {
-          const chip = qft.shadowRoot?.querySelector(`.chips > .chip[data-id="${id}"]`);
-          const menu = chip?.querySelector('sherpa-menu');
-          return asPanelFieldWith({
-            id,
-            label: chip?.dataset['label'] ?? id,
-            select: menu?.dataset['select'],
-            options: [...(chip?.querySelectorAll('label:not(.qf-all)') ?? [])]
-              .map((row) => ({
-                value: row.querySelector('input')?.value ?? '',
-                label: (row.textContent ?? '').trim(),
-                selected: !!row.querySelector('input')?.checked,
-              }))
-              .filter((o) => o.value),
-            removable: true,
-            conditions: menu?.hasAttribute('data-conditional'),
-            kind: chip?.querySelector('.qf-number') ? 'number' : undefined,
-          }, menu ?? panel?.shadowRoot
-            ?.querySelector(`.field[data-field="${id}"] sherpa-menu`) ?? undefined);
-        }),
+        filters: (qft.heldIds ?? []).map((id) => fromChip(id, qft)),
         available: (qft.offering ?? []).map((f) => asPanelField(f)),
         // HOW the grid arranges its rows, above the filters.
         group: organiseCols,
@@ -455,18 +473,28 @@ export async function init(root, { session } = {}) {
   }, { signal });
 
   /* ADD and REMOVE are REQUESTS: the BAR owns the list. */
+  /* A BAR REBUILDS ASYNCHRONOUSLY: `items()` on a freshly cloned menu stamps
+     nothing until the element upgrades, so a read straight after `addFilters`
+     or `removeFilter` finds chips with NO menus — and a field with no value
+     rows but a menu draws that menu, which filled the panel with search boxes
+     and checkboxes instead of chips.
+     TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
+  const refill = async () => {
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    fillPanel();
+    syncPanelled(true);
+  };
+
   panel?.addEventListener('filter-add-request', (e) => {
     const bar = e.detail.scope === 'view'
       ? header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]') : qft;
     bar?.addFilters?.(e.detail.ids);
-    fillPanel();
-    syncPanelled(true);
+    void refill();
   }, { signal });
 
   panel?.addEventListener('filter-remove', (e) => {
     qft.removeFilter?.(e.detail.id);
-    fillPanel();
-    syncPanelled(true);
+    void refill();
   }, { signal });
 
   /* GROUP and SORT arrange the grid; they are not filters. */

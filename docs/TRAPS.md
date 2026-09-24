@@ -8056,10 +8056,18 @@ as a chip with no field: a PRESET.
 Measured: removing one filter turned Created date into a preset and gave the
 panel a SECOND Presets section. Removing another added a third.
 
-The host looks in BOTH places — the chip, then the panel's own field box.
+The host looks in BOTH places — the chip, then the panel's own field box — and
+the panel offers `release()` so a host can give every menu back BEFORE it reads
+the bars.
+
+**Its VALUE ROWS travel with it.** Reading them from the chip alone gave every
+field zero options while its menu was away, and a field with no options but a
+menu draws that MENU: the panel filled with search boxes and checkboxes
+instead of chips.
 
 ---
 - Site: `examples/contexts/records.js`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-a-chip-menu-apply-is-the-panels-apply
 
@@ -8539,6 +8547,7 @@ like a filter reset, and nothing in the remove path is wrong on its own.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
 ---
+- Site: `examples/contexts/records.js`
 
 ### T-equals-answers-with-the-fields-own-values
 

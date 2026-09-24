@@ -128,7 +128,7 @@ capabilities:
   - $type: capability
     api: js-methods
     description: >-
-      callable from a view definition's state block (open, close, toggle). See
+      callable from a view definition's state block (release, open, close, toggle). See
       $extensions.sherpa.methods.
 events:
   - $type: event
@@ -170,6 +170,10 @@ tokens:
 $extensions:
   sherpa:
     methods:
+      - $type: method
+        name: release
+        args: ""
+        description: Give every borrowed menu back to its chip, NOW.
       - $type: method
         name: open
         args: ""

@@ -165,6 +165,19 @@ export class SherpaFilterPanel extends SherpaElement {
     return out;
   }
 
+  /**
+   * Give every borrowed menu back to its chip, NOW.
+   *
+   * A host builds its `populate()` payload by reading the bars — and a menu
+   * the panel is holding is not on its chip, so the field arrives with no
+   * value rows and draws the menu instead of chips. `#draw` releases them too,
+   * but that is after the payload was built. Call this first.
+   * TRAP T-a-borrowed-menu-is-not-on-its-chip
+   */
+  release(): void {
+    this.#giveBack();
+  }
+
   /** Show the panel, unless the window is too narrow.
    *  TRAP T-the-panel-is-desktop-only */
   open(): void {
