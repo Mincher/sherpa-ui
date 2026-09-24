@@ -170,7 +170,7 @@ export class SherpaMenu extends SherpaElement {
     const btn = this.$('.use-condition');
     if (!btn) return;
     const inCondition = this.mode === 'condition';
-    btn.setAttribute('data-icon-start', inCondition ? 'list' : 'sliders-up');
+    btn.setAttribute('data-icon-start', inCondition ? 'list' : 'function');
     btn.setAttribute('aria-pressed', String(inCondition));
     btn.setAttribute('aria-label', inCondition ? 'Pick from a list' : 'Use condition');
   }
