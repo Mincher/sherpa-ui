@@ -7207,7 +7207,20 @@ collection's mode ids. Their own mode ids appear nowhere in the chain. Measured
 **10 of 10 showed `sawOwnMode: false`.** Transparent and Saturated even alias
 the SAME variable (`VariableID:956:36558`) under the same keys, so a read
 returns one value for both — while the cache has them differing in 54 of 96.
-`resolveForConsumer` on a node pinned to the override mode returns `null`.
+
+Three further reads, each of which looks like it should work:
+
+- **`mode.parentModeId` exists** and gives the mapping (`951:90` → `18:2`), so
+  the keying is not a mystery. Reading through it still returns the same alias
+  for both collections — the mapping is right, the override is not there.
+- **`resolveForConsumer`** on a frame pinned to the override mode returns
+  `null`, for every mode of both collections.
+- **A scan of all 776 local variables** found **zero** keyed by an override
+  collection's own mode ids. The values are not in the variable data anywhere
+  in the file.
+
+Restarting Figma and the bridge plugin changes none of it — the values were
+never in reach, so there was no stale read to clear.
 
 So a capture looks complete, carries real hex values, and is silently the BASE
 collection's values with every override gone.
