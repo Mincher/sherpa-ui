@@ -8,7 +8,7 @@ Status: `[ ]` open · `[~]` in progress · `[x]` done
 
 ## At a glance
 
-**34 numbered items · 4 done · 1 parked · 29 open.** Numbers are the spine; the waves below
+**34 numbered items · 5 done · 1 parked · 28 open.** Numbers are the spine; the waves below
 say what order. Anything not numbered is a sub-item of the section it sits in.
 
 | | # | Item | Wave |
@@ -30,7 +30,7 @@ say what order. Anything not numbered is a sub-item of the section it sits in.
 | | 15 | Save a View, and the Save split-button menu | 5 |
 | | 16 | Favourite and Save apply to the Context, not the View | 5 |
 | | 17 | Breadcrumbs are for workflow, not for the nav | 5 |
-| | 18 | An optional allow-list on ANY component axis | 6 |
+| ✅ | 18 | An optional allow-list on ANY component axis | 6 |
 | | 19 | Rework the filter menu — two modes, many conditions | 7 |
 | | 20 | An inactive chip must say where its filter is applied | 7 |
 | | 21 | A filter PANEL, as an alternative to the toolbars | 7 |
@@ -743,7 +743,7 @@ coming through the data layer and into a piece of content in the UI.
 
 ## Architecture — allow-lists
 
-### `[ ]` An optional allow-list on ANY component axis
+### `[x]` An optional allow-list on ANY component axis — DONE 2026-09-24
 
 One primitive, for every component. A component takes an optional allow-list of
 what it may show or do. No list → everything is allowed. This is the default, so
@@ -770,6 +770,34 @@ Why it is worth doing:
 - Contextual and access-based variation needs no per-component branch.
 - A state list makes a boolean toggle and a tri-state cycle THE SAME control.
   Two states or three; the component does not care.
+
+---
+
+**Done 2026-09-24.** `src/core/data/allow.ts`, DOM-free like `cycle.ts` and
+`validate.ts`, exported from `sherpa-ui/data`:
+
+| | |
+|---|---|
+| `allow(items, list)` | the permitted subset, in the ITEMS' order |
+| `isAllowed(item, list)` | one item |
+| `allowKey(item)` | id → value → field → `valueKey`, first present wins |
+| `unknownEntries(items, list)` | what a list names that nothing has |
+| `nextState(states, current)` | the states axis — a toggle and a cycle, one control |
+
+Two rules carry it, and both are invisible when wrong. **No list allows
+everything**, so nothing that ignores this changes; an EMPTY array is a list
+that names no one. And **a list says which, never in what order** — returning
+the list's order would overwrite a component's own sort with a caller's typing
+order. `T-an-allow-list-is-a-filter-not-an-order`.
+
+Proven on a real component rather than left as a library nobody calls:
+`sherpa-quick-filter-toolbar.allowFields()` limits both the chips on the bar and
+what Add offers. 12 node tests, 1 e2e across three engines.
+
+**Still to wire, when a caller needs it:** values (menus), actions
+(`sherpa-data-grid.actionsFor`), and folding `cycle.ts`'s sort into
+`nextState`. The primitive is there; each is a small call at the point a list is
+already built.
 
 ---
 
