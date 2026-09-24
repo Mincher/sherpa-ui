@@ -7515,6 +7515,32 @@ is no `office`; `buildings` is the set's word for it.
 
 - Site: `examples/contexts/global-filters.js`
 
+### T-a-native-select-keeps-its-own-shape
+
+A `<select>` at `appearance: auto` is drawn by the ENGINE, and the engine's
+shape wins over the CSS. The pagination's row-count select and the page field
+sit side by side; measured, they disagreed — WebKit rounded the select to 5px
+and the input to 4px, whatever the stylesheet said. Chromium gave 4px for both,
+so the difference was invisible in one engine.
+
+`appearance: none` fixes the shape and takes two things with it:
+
+- **The caret.** The engine's arrow goes, and a `<select>` cannot carry a
+  `::after` — so the glyph has to be a `background-image`. It is the same
+  triangle-down `sherpa-input-text` masks in for its select type.
+- **The border.** The declared `border-color` had never drawn, because the
+  native control supplied its own; there was no `border-width` at all. Both are
+  now stated per-edge, as every other field does it.
+
+**WebKit's READ-BACK of that border is unreliable.** `getComputedStyle` returns
+`currentcolor` on a first read and the declared value only after a forced style
+recalc — writing any inline value to the same property flips it. The paint is
+right; the probe is not. So the test asserts the select's SHAPE, and takes the
+border colour from the page field beside it.
+
+- Site: `src/components/sherpa-pagination/sherpa-pagination.css`
+- Site: `test/e2e/reforged-pagination.spec.ts`
+
 ### T-a-full-range-is-still-a-range
 
 A NUMBER filter's slider opened at the column's own min and max, and the menu

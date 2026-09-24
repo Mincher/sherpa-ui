@@ -156,3 +156,65 @@ test('the host is border-box, so padding does not push it wider than a sibling',
   expect(r.rowWidth).toBe(600);
   expect(r.rowJustify).toBe('space-between');
 });
+
+/**
+ * The two fields follow the same design as every other Sherpa control. They
+ * were the only ones in the system drawn SQUARE — same height, same border,
+ * same fill as an input, but no rounding at all.
+ */
+test('the row-count select and page field are shaped like a Sherpa input', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const pager = document.createElement('sherpa-pagination') as HTMLElement & {
+      rendered?: Promise<void>;
+    };
+    pager.setAttribute('data-rows-options', '10,25,50');
+    pager.setAttribute('data-page', '1');
+    pager.setAttribute('data-total-pages', '4');
+    const input = document.createElement('sherpa-input-text') as HTMLElement & {
+      rendered?: Promise<void>;
+    };
+    input.setAttribute('placeholder', 'x');
+    document.getElementById('root')!.replaceChildren(pager, input);
+    await pager.rendered;
+    await input.rendered;
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const shape = (el: Element | null | undefined): Record<string, string> | null => {
+      if (!el) return null;
+      const cs = getComputedStyle(el);
+      return {
+        radius: cs.borderTopLeftRadius,
+        // All four corners, so a shorthand cannot hide a missing one.
+        corners: [cs.borderTopLeftRadius, cs.borderTopRightRadius,
+                  cs.borderBottomRightRadius, cs.borderBottomLeftRadius].join(' '),
+        borderColor: cs.borderTopColor,
+      };
+    };
+    const sr = pager.shadowRoot!;
+    return {
+      rows: shape(sr.querySelector('.rows')),
+      pageInput: shape(sr.querySelector('.page-input')),
+      // The control every field is measured against.
+      reference: shape(input.shadowRoot!.querySelector('.control-row')),
+    };
+  });
+
+  /* ROUNDED, not square — that is the whole fix, and the exact figure is not
+     the contract. An input's control row reads 5px here, one more than the 4px
+     token: an inset control rounds 1px outside the box it sits in, so the two
+     read concentric. Asserting a number would pin that idiom by accident. */
+  for (const field of [r.rows!, r.pageInput!]) {
+    expect(parseFloat(field.radius)).toBeGreaterThan(0);
+    // Every corner, so a shorthand cannot hide a missing one.
+    expect(new Set(field.corners.split(' ')).size).toBe(1);
+  }
+  // The two pager fields agree with EACH OTHER — they sit side by side.
+  expect(r.rows!.corners).toBe(r.pageInput!.corners);
+  /* The page field takes the same border as every other field. The SELECT is
+     not asserted here: WebKit reports `currentcolor` for a native <select>'s
+     border on a first read and the declared value only after a forced style
+     recalc — an inline write to the same property flips it. The paint is
+     correct; the read-back is not, so asserting it tests the engine.
+     TRAP T-a-native-select-keeps-its-own-shape */
+  expect(r.pageInput!.borderColor).toBe(r.reference!.borderColor);
+});

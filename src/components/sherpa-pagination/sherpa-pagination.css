@@ -64,6 +64,26 @@
   padding: var(--sherpa-theme-padding-sm, 4px) var(--sherpa-structure-space-padding, 8px);
   border-style: solid;
   border-color: var(--_border);
+  /* The WIDTH, stated. There was none: the engine's native control supplied a
+     border, so the declared colour above never drew — `appearance: none` then
+     took that away and WebKit fell back to currentcolor, a dark grey beside two
+     neutral fields. Per-edge, as every other field does it. */
+  border-block-start-width: var(--sherpa-border-top, 0.5px);
+  border-block-end-width: var(--sherpa-border-bottom, 0.5px);
+  border-inline-start-width: var(--sherpa-border-left, 0.5px);
+  border-inline-end-width: var(--sherpa-border-right, 0.5px);
+  /* `appearance: none` FIRST: at `auto` WebKit draws a <select> with its own
+     shape and rounds it to 5px whatever the CSS says, so the two fields beside
+     each other disagreed — 5px and 4px. Measured in both engines.
+     Then the same per-corner rounding every other field uses; these two were
+     the only controls in the system drawn square. Per-corner, not a shorthand,
+     so a grouped run can square one side.
+     TRAP T-a-native-select-keeps-its-own-shape */
+  appearance: none;
+  border-start-start-radius: var(--sherpa-border-rounding-top-left, 4px);
+  border-start-end-radius: var(--sherpa-border-rounding-top-right, 4px);
+  border-end-start-radius: var(--sherpa-border-rounding-bottom-left, 4px);
+  border-end-end-radius: var(--sherpa-border-rounding-bottom-right, 4px);
   background: var(--sherpa-theme-surface-default-base, #ffffff);
   color: var(--sherpa-theme-content-body-1, #35353d);
   font-family: inherit;
@@ -78,6 +98,14 @@
 .rows {
   inline-size: var(--_field-rows);
   padding-inline-end: calc(var(--sherpa-structure-space-padding, 8px) * 3);
+  /* `appearance: none` took the engine's caret with the engine's shape, so the
+     select must draw its own — the same triangle-down sherpa-input-text uses
+     for its select type. A <select> cannot carry a ::after, and it has no
+     wrapper here, so it is a background rather than a pseudo-element. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath fill='%2335353d' d='M6.55898 9.46207C6.83458 9.69455 7.23923 9.6786 7.49514 9.41192L10.2949 6.49447C10.4961 6.28478 10.5552 5.97252 10.4458 5.69901C10.3364 5.4255 10.0827 5.25 9.80055 5.25H4.20107C3.91891 5.25 3.663 5.42778 3.55363 5.70129C3.44427 5.9748 3.50551 6.28706 3.70674 6.49447L6.50648 9.41192L6.55898 9.46207Z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center right var(--sherpa-structure-space-padding, 8px);
+  background-size: var(--sherpa-theme-size-icon-xs, 14px);
 }
 
 .page-input {

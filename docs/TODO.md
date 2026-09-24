@@ -8,7 +8,7 @@ Status: `[ ]` open · `[~]` in progress · `[x]` done
 
 ## At a glance
 
-**34 numbered items · 11 done · 1 parked · 22 open.** Numbers are the spine; the waves below
+**34 numbered items · 12 done · 1 parked · 1 unclear · 20 open.** Numbers are the spine; the waves below
 say what order. Anything not numbered is a sub-item of the section it sits in.
 
 | | # | Item | Wave |
@@ -20,8 +20,8 @@ say what order. Anything not numbered is a sub-item of the section it sits in.
 | ✅ | 5 | Metric item — no surface or border colour | 2 |
 | ✅ | 6 | Every metric item uses the xsmall container class | 2 |
 | ✅ | 7 | Only five filter chips carry an icon | 2 |
-| | 8 | Fixed-height row uses a hard-coded gutter | 2 |
-| | 9 | Pagination row-count select is not a Sherpa select | 2 |
+| ❓ | 8 | Fixed-height row gutter — **cannot reproduce**, needs a pointer | 2 |
+| ✅ | 9 | Pagination row-count select is not a Sherpa select | 2 |
 | ✅ | 10 | Notifications button — swept, 4 components fixed | 3 |
 | ⏸️ | 11 | Button borders and status — **parked**, overlaps CSS-inheritance work | 3 |
 | | 12 | Metric trend does not update after a data-layer change | 4 |
@@ -679,10 +679,28 @@ description.
 
 Compose the two Buttons from `sherpa-button`. Do not hand-roll them.
 
-### `[ ]` The pagination row-count select is not a Sherpa select
+### `[x]` The pagination row-count select is not a Sherpa select — DONE 2026-09-24
 
-The row-count select box in the pagination does not follow the `sherpa-input`
-select design.
+The row-count select box did not follow the `sherpa-input` select design.
+
+**Measured against a real `sherpa-input-text`:** same height (32), same border
+colour, same fill — and `border-radius: 0` where every other control is 4px.
+These two fields were the only controls in the system drawn square.
+
+The cause was the native control. At `appearance: auto` the ENGINE draws a
+`<select>`, and its shape wins: WebKit rounded it to 5px and the page field
+beside it to 4px, whatever the CSS said — invisible in Chromium, which gave 4px
+for both. `appearance: none` then took two more things with it:
+
+- **the caret**, which a `<select>` cannot get back via `::after`, so it is a
+  `background-image` of the same triangle-down `sherpa-input-text` masks in;
+- **the border**, whose declared colour had never drawn because the native
+  control supplied its own — there was no `border-width` at all.
+
+Both fields now read 4px corners, 0.5px per-edge border, 32px tall, in both
+engines. `T-a-native-select-keeps-its-own-shape`, which also records why the
+test does not assert the select's border COLOUR: WebKit reports `currentcolor`
+until a forced recalc, so asserting it tests the engine.
 
 ### `[ ]` A metric trend does not update after a data-layer change
 
@@ -863,13 +881,39 @@ already built.
 
 ## Layout — the content area
 
-### `[ ]` A fixed-height row uses a hard-coded gutter, not the token
+### `[~]` A fixed-height row uses a hard-coded gutter — NOT REPRODUCIBLE 2026-09-24
 
 In a fixed-height content area, the LAST content item does not use the spacing
 token for the gutter between the row above it and itself.
 
 So the spacing breaks the moment `compact` or `comfortable` density is applied —
 the token moves, the hard-coded value does not.
+
+**Could not reproduce.** Measured every layer of the `data-rows="fit"` path on
+both `?context=records` and `?context=dashboard`, in all three densities. Every
+value follows the token:
+
+| what | default | compact | comfortable |
+|---|---|---|---|
+| grid `row-gap` | 16 | 12 | 20 |
+| gutters BETWEEN rows | 16, 16 | 12, 12 | 20, 20 |
+| grid padding, all four sides | 16 | 12 | 20 |
+| gap BELOW the last row | 16 | 12 | 20 |
+| `sherpa-stack[data-gap=md]` | 8 | 4 | 12 |
+| bulk-actions inline gap | 8 | 4 | 12 |
+
+A grep for raw px in `src/core/`, `examples/` and the layout components found
+no un-tokenised spacing either. The app shell adds none of its own — every
+padding and gap on it reads 0.
+
+**Two possibilities, and the second is likely.** Either the report predates a
+fix — `060674d2` fixed exactly this class of bug in the nav, where the closed
+rail was pinned to 40px while the tile and inset followed density — or the
+hard-coded value is somewhere I did not look.
+
+**To close this, say which view and which gap.** A screenshot at compact vs
+comfortable with the offending gutter circled would settle it in a minute; I
+would rather that than guess at a fix for something I cannot see.
 
 ### `[ ]` A `Grouped` mode for the content area
 
