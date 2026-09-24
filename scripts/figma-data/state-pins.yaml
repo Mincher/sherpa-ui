@@ -81,3 +81,24 @@ sherpa-nav:
   # Transparent=active, as the Navigation Header's State=Pinned variant does.
   '& .hdr-btn': transparent
   '& .hdr-btn[aria-pressed="true"]': transparent/active
+
+# A tip is its own surface: it pins Style=default, so a chart in a status tile
+# (a metric's sparkline) does not paint its tip in the status colour.
+sherpa-sparkline:
+  '& .chart-tip': default
+
+sherpa-barchart:
+  '& .chart-tip': default
+
+sherpa-line-chart:
+  '& .chart-tip': default
+
+sherpa-radial-chart:
+  '& .chart-tip': default
+
+sherpa-gauge-chart:
+  '& .chart-tip': default
+
+sherpa-tooltip:
+  # The bubble only — a host pin would also strip the status from the trigger.
+  '& .bubble': default

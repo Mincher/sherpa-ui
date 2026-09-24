@@ -86,6 +86,8 @@ capabilities:
     api: js-property-mirror
     description: read/write JS properties (text). See $extensions.sherpa.jsProps.
 tokens:
+  bubble.--_bg: "{sherpa.style-content-base}"
+  bubble.--_fg: "{sherpa.theme-content-body-4}"
   bubble.padding: "{sherpa.display-mode-space-2xs}"
   bubble.font-family: "{sherpa.font-family-body}"
   bubble.font-size: "{sherpa.font-size-body-small}"

@@ -295,3 +295,43 @@ test('sparkline dots space themselves across the box at the data heights', async
   // A rising series means each dot is strictly higher (a SMALLER top offset).
   for (let i = 1; i < r.ys.length; i++) expect(r.ys[i]!).toBeLessThan(r.ys[i - 1]!);
 });
+
+test('a tip ignores the status around it — it pins Style=default', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    type El = HTMLElement & { rendered?: Promise<void>; populate(d: unknown): Promise<void> };
+    const root = document.getElementById('root')!;
+    const bg = (el: Element) => getComputedStyle(el).backgroundColor;
+    const ink = document.createElement('span');
+    ink.style.color = 'var(--sherpa-style-content-base)';
+    root.replaceChildren(ink);
+
+    // A metric pins its own status from the trend; its sparkline tip must not.
+    const metric = document.createElement('sherpa-metric') as El;
+    root.appendChild(metric);
+    await metric.rendered;
+    await metric.populate({ name: 'Sessions', value: '9', deltaPercent: -6, values: [4, 6, 5, 9] });
+    const spark = metric.shadowRoot!.querySelector('sherpa-sparkline') as El;
+    await spark.rendered;
+
+    const box = document.createElement('div');
+    box.dataset['status'] = 'critical';
+    root.appendChild(box);
+    const tooltip = document.createElement('sherpa-tooltip') as El;
+    tooltip.innerHTML = '<span style="color: var(--sherpa-style-content-base)">t</span>';
+    box.appendChild(tooltip);
+    await tooltip.rendered;
+
+    return {
+      status: metric.dataset['status'],
+      plain: getComputedStyle(ink).color,
+      spark: bg(spark.shadowRoot!.querySelector('.chart-tip')!),
+      bubble: bg(tooltip.shadowRoot!.querySelector('.bubble')!),
+      trigger: getComputedStyle(tooltip.firstElementChild!).color,
+    };
+  });
+  expect(r.status).toBe('critical');
+  expect(r.spark).toBe(r.plain);
+  expect(r.bubble).toBe(r.plain);
+  // The pin is on the bubble only — the trigger keeps the status it sits in.
+  expect(r.trigger).not.toBe(r.plain);
+});
