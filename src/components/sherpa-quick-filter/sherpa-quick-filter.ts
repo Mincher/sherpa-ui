@@ -25,6 +25,12 @@ export class SherpaQuickFilter extends SherpaElement {
   static override html = new URL('./sherpa-quick-filter.html', import.meta.url);
   static override props = {
     'data-icon-only': { type: 'boolean', kind: 'style' },
+    /* The menu is open. CSS reads it for the pressed look — real focus has
+       moved INSIDE the menu, so `:focus-visible` on the chip is false — and
+       the caret click reads it to decide open-or-shut, because the popover
+       light-dismisses before the click lands.
+       TRAP T-a-trigger-click-follows-light-dismiss */
+    'data-open': { type: 'boolean', kind: 'style' },
     'data-indicator': { type: 'boolean', kind: 'style' },
     'data-menu': { type: 'boolean', kind: 'style' },
     'data-type': { type: 'enum', kind: 'style', values: ['ai'] },

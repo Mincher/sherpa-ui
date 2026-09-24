@@ -212,6 +212,9 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: read/write JS properties (current, valueLabel, menu, values). See $extensions.sherpa.jsProps.
+  - $type: capability
+    api: js-methods
+    description: callable from a view definition's state block (toggleMenu). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: quick-filter-click
@@ -247,6 +250,11 @@ tokens:
 $extensions:
   sherpa:
     figmaName: Filter Chip (atom)
+    methods:
+      - $type: method
+        name: toggleMenu
+        args: "anchor?: HTMLElement"
+        description: Open or shut this chip's menu — what a HOST calls to drive the chip from
     category: control
     variantAxes:
       - name: State
