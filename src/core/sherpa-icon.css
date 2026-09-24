@@ -22,9 +22,10 @@
   color: inherit;
 }
 
-/* The art. `preserveAspectRatio="xMidYMid meet"` on a viewBox fitted to the
-   path's own ink puts the LONGEST axis at exactly 100% of the square, keeps the
-   art 1:1, and makes overflow impossible at any wrapper size. */
+/* The art, at the size it was DRAWN. The viewBox is the icon's own Figma frame,
+   so a glyph drawn at half the frame renders at half; `xMidYMid meet` keeps it
+   1:1 and makes overflow impossible at any wrapper size.
+   TRAP T-icon-box-is-not-the-glyph */
 .sherpa-icon-box > svg {
   inline-size: 100%;
   block-size: 100%;

@@ -35,12 +35,16 @@ export function renderIcon(el: Element, value: string): void {
   const icon = name === null ? undefined : ICON_PATHS[name];
   if (!icon) return;
 
-  const [x, y, w, h] = icon.ink;
   // createElementNS, not createElement: an <svg> built in the HTML namespace
   // paints nothing at all. TRAP T-icon-box-is-not-the-glyph
   const svg = document.createElementNS(SVG_NS, 'svg');
-  // The INK box, not the icon's frame: that is what fills the wrapper exactly.
-  svg.setAttribute('viewBox', `${x} ${y} ${w} ${h}`);
+  /* THE FRAME, not the ink. In Figma every icon sits in a square frame with no
+     fill or border — a pure bounding box — and the art is drawn to design
+     inside it, at whatever size that design calls for. Re-fitting the art to
+     the frame throws that design away: `triangle-down` is drawn 7 wide in a 14
+     frame and rendered at 14, twice its size.
+     TRAP T-icon-box-is-not-the-glyph */
+  svg.setAttribute('viewBox', icon.frame);
   svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   svg.setAttribute('aria-hidden', 'true');
   svg.setAttribute('focusable', 'false');

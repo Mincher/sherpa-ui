@@ -2143,11 +2143,23 @@ nothing, with no warning anywhere.
 the 214 fill all 14. The square is the layout contract and never moves; the art
 inside it varies.
 
-Will's rule: **the drawing's LONGEST axis is 100% of the square**, it keeps its
-1:1 aspect, and it never paints outside. `.sherpa-icon-box` in
-`src/core/sherpa-icon.css` owns the square (`--_icon-size`, `flex-shrink: 0`,
-inherited colour); the fit is an SVG `viewBox` set to the art's own INK bbox
-plus `preserveAspectRatio="xMidYMid meet"`.
+**Will's rule, RESTATED 2026-09-24 — the art renders at the size it was
+DRAWN.** In Figma each icon sits in a square frame with no fill or border, a
+pure bounding box; the glyph is drawn to design inside it and scales with it.
+So the frame IS the viewBox, and a glyph drawn at half the frame renders at
+half. `.sherpa-icon-box` in `src/core/sherpa-icon.css` owns the square
+(`--_icon-size`, `flex-shrink: 0`, inherited colour);
+`preserveAspectRatio="xMidYMid meet"` keeps the art 1:1 and inside.
+
+**The rule this replaces said the longest axis was 100% of the square**, and
+the renderer implemented it by setting the viewBox to the art's own INK bbox.
+That re-fit every drawing and threw the design away: measured across all 214,
+only 19 are drawn at 100%, so 195 were inflated — `filter` by 1.33x, and
+`triangle-down` from 7 units wide to 14, twice its Figma size. It was reported
+as "the caret glyph is too big in its container", which is exactly what it was.
+
+The ink bbox is still generated, because a test or a tool may reasonably ask
+how much of its frame an icon uses. It no longer decides what renders.
 
 **Three approaches failed before that one, each measured:**
 
@@ -2188,6 +2200,8 @@ measure the PATH: the wrapper is its full size either way.
 
 - Site: `src/core/sherpa-icon.css`
 - Site: `src/core/ui/render-icon.ts`
+- Site: `src/core/ui/icon-paths.ts`
+- Site: `scripts/generate-icons.mjs`
 - Site: `src/core/ui/render-icon.ts`
 - Site: `src/core/sherpa-icon.css`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
