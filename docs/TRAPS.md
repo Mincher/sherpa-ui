@@ -7233,7 +7233,21 @@ collection's mode ids. Their own mode ids appear nowhere in the chain. Measured
 the SAME variable (`VariableID:956:36558`) under the same keys, so a read
 returns one value for both — while the cache has them differing in 54 of 96.
 
-Three further reads, each of which looks like it should work:
+**SOLVED 2026-09-24 — the values ARE readable, on the COLLECTION.** They are
+not on the variable, which is what made every read below fail:
+
+```js
+(await figma.variables.getVariableCollectionByIdAsync(id)).variableOverrides
+// -> { [variableId]: { [thisCollectionsOwnModeId]: VARIABLE_ALIAS | {color, opacity} } }
+```
+
+Keyed by the collection's OWN mode ids — the ones that appear nowhere in any
+variable. Verified on `Transparent`: 9 overridden variables, and
+`style-content/base` genuinely differs per mode. `T-a-look-override-is-not-on-the-variable`
+carries the shape.
+
+Everything below is the dead end that came first, kept because each step looks
+like it should work:
 
 - **`mode.parentModeId` exists** and gives the mapping (`951:90` → `18:2`), so
   the keying is not a mystery. Reading through it still returns the same alias
@@ -7245,14 +7259,15 @@ Three further reads, each of which looks like it should work:
   in the file.
 
 Restarting Figma and the bridge plugin changes none of it — the values were
-never in reach, so there was no stale read to clear.
+never on the VARIABLE, and that is the whole lesson: three reads agreeing does
+not mean the data is absent, only that you are asking the wrong object.
 
 So a capture looks complete, carries real hex values, and is silently the BASE
 collection's values with every override gone.
 
-**Will's ruling 2026-09-24: stop trying to regenerate it.** Read what a task
-needs live through the figma-console MCP; the file stays as the projector's
-input and is hand-patched when a value changes.
+**Will's ruling 2026-09-24: do not build a regenerator.** Read what a task
+needs live through the figma-console MCP — now possible for real, via
+`variableOverrides` — and hand-patch the file when a value changes.
 
 A hand-patch is exactly where a collection can quietly collapse onto its
 sibling, so `npm run check:extensions` guards the shape a good file has: every

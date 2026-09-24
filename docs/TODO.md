@@ -48,12 +48,13 @@ say what order. Anything not numbered is a sub-item of the section it sits in.
 | ⛔ | 33 | Density scaling as step offsets — **part done**, rest blocked | 11 |
 | | 34 | Figma: use the Navigation terms | 11 |
 
-**Not blocked after all — pull through the MCP.** Items 3 and 33 needed values
-from `figma.extensions.json`, which is a hand-made file the export cannot
-regenerate (`T-an-override-collection-is-keyed-by-its-parent` has the three
-dead ends). Will's ruling, 2026-09-24: **do not try to regenerate it — read what
-you need live through the figma-console MCP.** The file stays as the projector's
-input and is hand-patched when a value changes.
+**Not blocked — and the values ARE readable live.** Items 3 and 33 needed
+values from `figma.extensions.json`. They are not on the variable, which is why
+several reads returned base values; they are on the **collection**:
+`collection.variableOverrides`, keyed by its own mode ids. Found by the agent
+doing the CSS-inheritance work, 2026-09-24. Will's ruling stands: **do not build
+a regenerator — read what you need through the figma-console MCP** and
+hand-patch the file. `npm run check:extensions` guards the hand-patch.
 
 **Done but not numbered:** a nav item goes to a Context · Settings opens as an
 overlay · shared constants swept · event detail shapes swept · toggle chips
