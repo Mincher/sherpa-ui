@@ -89,7 +89,7 @@
   transform: rotate(-45deg);
   transition: transform 160ms ease;
   flex: 0 0 auto;
-  margin-inline-end: 2px;
+  margin-inline-end: 2px; /* off-grid-ok — nudges the drawn chevron, not layout */
 }
 
 .root[open] .chevron {

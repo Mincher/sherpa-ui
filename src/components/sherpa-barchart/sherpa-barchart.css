@@ -130,7 +130,7 @@
   max-inline-size: 48px;
   margin-block-start: auto; /* push to the bottom of the flexible area */
   block-size: var(--_h, 0%);
-  min-block-size: 2px;
+  min-block-size: 2px; /* off-grid-ok — a zero bar stays visible; a stroke, not spacing */
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px) var(--sherpa-display-mode-border-rounding-sm, 2px) 0 0;
   /* The border is the series' OWN token at full strength, not the fill —
      --_hue here inherits the fill's 50% and the outline vanishes. */

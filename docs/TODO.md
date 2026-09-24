@@ -162,7 +162,7 @@ Last, because they touch everything and block nothing.
 | 28 | A Figma component is NOT always a web component (sweep, then fold `sherpa-grid-cell`) |
 | 29 | Rename `src/index.ts` to `src/app.ts` |
 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? |
-| 31 | The 8px grid and 4px sub-grid should be TOKENS |
+| ~~31~~ | ~~The grid should be a TOKEN~~ — DONE 2026-09-24. It is TWO grids, 4px + 2px |
 | 32 | Fold donut + gauge into ONE radial chart |
 | 33 | Two scaling multipliers, in place of the remapped density modes |
 | 34 | Figma: use the Navigation terms |
@@ -1238,7 +1238,7 @@ already does.
 4. It composes with item 31: `--sherpa-grid-step` says what a step IS, and this
    says how many steps to move.
 
-### `[ ]` The 8px grid and 4px sub-grid should be TOKENS
+### `[x]` The grid is now TWO tokens — DONE 2026-09-24
 
 Will, 2026-09-23: *"This will allow us to easily adjust them for new themes &
 token sets in the future."*
@@ -1255,18 +1255,26 @@ So the spacing SCALE lives in Figma and the grid it is meant to sit on lives in
 a build script, and the script cannot read the tokens. A new theme moves one and
 not the other.
 
-**And the grid is not one number.** Measured 2026-09-23 — `--sherpa-display-mode-space-*`
-across the three density modes:
+**And the grid is 4px, not 8px.** Re-measured 2026-09-24 against the real
+`tokens.css`, every `space-*` and `size-*` value in all three density modes:
 
-| token | compact | default | comfortable |
-|---|---:|---:|---:|
-| `space-sm` | 12 | 8 | 16 |
-| `space-2xl` | 32 | 28 | 36 |
+| mode | off the 4px grid | off the 8px grid |
+|---|---|---|
+| compact | **none** | 4, 12, 20, 28, 36 |
+| default | **none** | 4, 12, 20, 28, 36 |
+| comfortable | **none** | 4, 12, 20, 28, 36 |
 
-A compact theme is effectively on a 4px grid, and `2xl` is off the 8px grid in
-two of the three modes. The rule as written — "even px is fine" — is loose
-enough to pass all of that, which is why `lint:css` reports zero off-grid
-literals while the scale itself is mixed.
+So the scale is NOT mixed, and compact is not a special case: all three modes
+carry the same scale, every value sits on 4px, and the five that miss 8px are
+simply the odd multiples of 4. **8px is the even half of a 4px scale**, not a
+grid the scale sometimes leaves.
+
+(An earlier note here claimed `space-sm` was 12/8/16 per mode and that `2xl` was
+off-grid in two modes. Both were wrong — the real values are 8/16/16 and 28/36/36,
+and none of them is off the 4px grid.)
+
+That also explains the lint result honestly: `% 2` passes everything because the
+scale is on 4px, not because the rule is too loose for a mixed scale.
 
 **What to do.** Emit the grid from Figma as two properties, so a theme states
 its own:
@@ -1292,6 +1300,37 @@ call, not the code's.
 
 Base CSS or tokens? **Tokens.** `sherpa-base.css` is adopted into shadow roots;
 the linter reads a file on disk, and `tokens.css` is the file it can read.
+
+---
+
+**Done 2026-09-24.** The open question above — per-mode or one value — was
+answered by measuring: one value, because all three density modes carry the same
+scale. But the measurement also changed the shape of the answer.
+
+`@layer core` now emits two properties, DERIVED from the scales by a GCD over
+their own values, never typed in:
+
+```css
+--sherpa-grid-space-step: 4px;   /* sizing, spacing, radius */
+--sherpa-grid-text-step:  2px;   /* text, and the icons that alias it */
+```
+
+1. `lint-css.mjs` reads both out of `tokens.css` and picks per declaration.
+2. The rule went from `v % 2` to the real grids. It surfaced 52 sites: 24 icon
+   boxes judged against the wrong grid (fixed — judge by the token in the VALUE,
+   not the property name), 26 `space-3xs`, a real 2px token (exempted — a px
+   inside `var()` is the token's own value), and **2 genuine** drawn-geometry
+   cases, now marked `/* off-grid-ok */`.
+3. `project-tokens.mjs` checks each scale against the grid it produced. Silent
+   today, as it must be; forcing the step to 8 made it report exactly
+   `4, 12, 20, 28`, which is the proof it fires.
+
+`lint:css` is at 0 errors, 0 warnings on a rule twice as strict, and the
+projector is idempotent. `T-the-grid-is-two-grids` has the measurements.
+
+Still open, and now visible: **`--sherpa-grid-*` is emitted but nothing CONSUMES
+it yet.** Point 2 of the original plan — `round(var(--_measured), var(--sherpa-grid-space-step))`
+for genuinely dynamic sizes — is the follow-on, and belongs with item 33.
 
 
 ### `[ ]` Consume the tweaked Style/Transparent content aliases

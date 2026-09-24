@@ -1079,8 +1079,61 @@ const documentResetBlock = `  /* The page itself — see the note above the laye
     block-size: 100%;
   }`;
 
+/* The two grids the scales actually sit on, DERIVED from the emitted values
+   rather than typed in — so a re-export that moves a scale moves the grid with
+   it, and `lint:css` reads these instead of hard-coding a number.
+   TRAP T-the-grid-is-two-grids */
+function gridBlock(lines) {
+  const gcd = (a, b) => {
+    while (b) [a, b] = [b, a % b];
+    return a;
+  };
+  const values = (prefix) => {
+    const out = [];
+    for (const line of lines) {
+      const m = line.match(/^\s*(--[\w-]+)\s*:\s*([\d.]+)px\s*;/);
+      if (!m || !m[1].startsWith(prefix)) continue;
+      const v = Number(m[2]);
+      // EXCLUDED, not skipped: 0 carries no step, and 2px is the sanctioned
+      // edge case — counting it would drag the GCD down to 2 and the grid
+      // would describe the exception instead of the scale.
+      if (v > 2 && Number.isInteger(v)) out.push([m[1], v]);
+    }
+    return out;
+  };
+  const stepOf = (prefix) => {
+    const vs = values(prefix).map(([, v]) => v);
+    return vs.length ? vs.reduce(gcd) : null;
+  };
+
+  const space = stepOf('--sherpa-display-mode-space-') ?? 4;
+  const text = stepOf('--sherpa-display-mode-fonts-scale-') ?? 2;
+
+  /* The scale is now checked against the grid it produced. A GCD cannot be
+     missed by the values it came from, so this only fires when a scale gains a
+     value off its own step — which is the drift worth hearing about. */
+  for (const [prefix, step, label] of [
+    ['--sherpa-display-mode-space-', space, 'space'],
+    ['--sherpa-display-mode-size-', space, 'size'],
+    ['--sherpa-display-mode-fonts-scale-', text, 'font'],
+  ]) {
+    for (const [name, v] of values(prefix)) {
+      if (v % step) warn(`${name}: ${v}px is off the ${step}px ${label} grid`);
+    }
+  }
+
+  return `  /* The grids the scales sit on. Derived from the scales themselves —
+     see TRAP T-the-grid-is-two-grids. */
+  :root {
+    --sherpa-grid-space-step: ${space}px;
+    --sherpa-grid-text-step: ${text}px;
+  }`;
+}
+
 const coreLayer = `@layer core {
 ${rootBlock(layers.core.root)}
+
+${gridBlock(layers['display-mode'].root)}
 
 ${documentResetBlock}
 }`;

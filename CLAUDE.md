@@ -340,18 +340,34 @@ shared prefix, and renaming it to `--_*` is undone by the next projection.
 there and re-project. `npm run lint:css` already lints only the authored region
 below that marker, for the same reason.
 
-### Spacing grid
+### The two grids
 
-All sizing, spacing, and radius follow an **8px grid** with a **4px sub-grid** for
-text. **2px and 1px** increments are for edge cases only. **Values below 1px** exist
-only for stroke widths (border widths). The projected Figma tokens are all on-grid;
-consume them rather than hand-writing px.
+**There are two, and neither is 8px.** Measured against every value in all three
+density modes — TRAP `T-the-grid-is-two-grids`:
 
-`npm run lint:css` warns on any odd px literal (≥1px, not `999`) in a spacing/sizing/
-radius property (`off-grid`). Exempt: `border*` props and `font-size`; `1px` and
-sub-1px (strokes); `999px` (the fully-round pill idiom). A genuinely off-grid **drawn
-glyph** (a pure-CSS triangle/chevron, where the px is geometry not spacing) opts out
-with a trailing `/* off-grid-ok */` comment on the declaration — do not use it to
+| what it measures | step | token |
+|---|---|---|
+| sizing, spacing, radius | **4px** | `--sherpa-grid-space-step` |
+| text, and the icons that alias it | **2px** | `--sherpa-grid-text-step` |
+
+8px is the even half of the 4px scale, not a grid the scale sits on: `4, 12, 20,
+28, 36` are real steps in every mode. `space-3xs` is 2px and is the sanctioned
+edge case. **Values below 1px** exist only for stroke widths.
+
+Both tokens are **emitted from the scales themselves** by
+`scripts/project-tokens.mjs` — a GCD over the values, never typed in — so a
+re-export that moves a scale moves the grid with it. Consume the scale tokens
+rather than hand-writing px.
+
+`npm run lint:css` READS those two tokens out of `tokens.css` and picks the grid
+per declaration: `font-size`/`line-height`, or any value carrying a type-scale
+token (`size-icon`, `content-size`, `fonts-scale`), answers to the text grid;
+everything else to the spacing grid. Exempt: `border*` props; `1px` and sub-1px
+(strokes); `999px` (the pill idiom); and **a px inside `var(--token, 12px)`** —
+that is the token's own value, so whether it is on-grid is the scale's question.
+A genuinely off-grid **drawn glyph** (a pure-CSS chevron, a minimum bar height —
+where the px is geometry, not spacing) opts out with a trailing
+`/* off-grid-ok */` on the declaration. Two sites use it; do not use it to
 excuse real spacing drift.
 
 Cascade layer order (declared in the generated `src/styles/tokens/tokens.css`) mirrors

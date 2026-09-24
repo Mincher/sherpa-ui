@@ -7083,6 +7083,43 @@ per open and never outlives the trigger that replaced it.
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-menu.spec.ts`
 
+### T-the-grid-is-two-grids
+
+The rule was "the 8px grid, with a 4px sub-grid for text". Measured 2026-09-24
+against every `space-*` and `size-*` value in all three density modes, that is
+not what the tokens do:
+
+| scale | off 4px | off 8px |
+|---|---|---|
+| space / size, all 3 modes | **none** | 4, 12, 20, 28, 36 |
+| font (icons alias it) | 10, 14, 30, 42 | — (it is a 2px scale) |
+
+So spacing is a **4px** scale — 8px is only its even half — and text is a
+separate **2px** scale. Two grids, not one grid with a sub-grid, and neither is
+8px.
+
+The old lint rule was `v % 2 === 0`, which passed everything either scale can
+produce and so reported zero off-grid literals for months. Tightening it to the
+real grids surfaced 52 sites; 24 were icon boxes judged against the wrong grid,
+26 were `space-3xs`, a real 2px token, and **2** were genuine drawn geometry.
+
+Three things follow, and each is a way to get this wrong:
+
+- **An icon is sized from the TYPE scale**, so `inline-size: var(--sherpa-theme-size-icon-2xs)`
+  is a text value wearing a layout property. Judge by the token in the VALUE,
+  not by the property name.
+- **A px inside `var(--token, 12px)` is the token's own value.** Whether it is
+  on the grid is the scale's question, not the component's.
+- **`space-3xs` is 2px and is correct.** It is the sanctioned edge case, not
+  drift.
+
+The steps are emitted from the scales themselves — a GCD over the values — so a
+re-export that moves a scale moves the grid and the lint with it. They are
+never typed in.
+
+- Site: `scripts/project-tokens.mjs`
+- Site: `scripts/lint-css.mjs`
+
 ### T-a-full-range-is-still-a-range
 
 A NUMBER filter's slider opened at the column's own min and max, and the menu

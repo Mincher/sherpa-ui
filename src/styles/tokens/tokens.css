@@ -32,6 +32,13 @@
 @layer core {
 
 
+  /* The grids the scales sit on. Derived from the scales themselves —
+     see TRAP T-the-grid-is-two-grids. */
+  :root {
+    --sherpa-grid-space-step: 4px;
+    --sherpa-grid-text-step: 2px;
+  }
+
   /* The page itself — see the note above the layer. */
   html,
   body {

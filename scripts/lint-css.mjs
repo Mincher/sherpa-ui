@@ -17,6 +17,34 @@ const C = join(ROOT, 'src', 'components');
 const STRICT = process.argv.includes('--strict');
 const TOKENS_MARK_END = '/* == end sherpa:tokens == */';
 
+/* The grids come from tokens.css, not from a number here — a theme that moves a
+   scale moves the lint with it. There are TWO: spacing/sizing sits on one grid,
+   text and the icons that alias it on a finer one.
+   TRAP T-the-grid-is-two-grids */
+function readGrids() {
+  const fallback = { space: 4, text: 2 };
+  const path = join(ROOT, 'src', 'styles', 'tokens', 'tokens.css');
+  if (!existsSync(path)) return fallback;
+  const css = readFileSync(path, 'utf8');
+  const one = (name, d) => {
+    const m = css.match(new RegExp(`--sherpa-grid-${name}-step\\s*:\\s*(\\d+)px`));
+    return m ? Number(m[1]) : d;
+  };
+  return { space: one('space', fallback.space), text: one('text', fallback.text) };
+}
+const GRID = readGrids();
+
+/* `var(--token, 12px)` — the px came from the token, so the grid question is
+   "is the TOKEN on the grid", which project-tokens.mjs answers, not this file. */
+const TOKEN_FALLBACK = /var\(\s*--[\w-]+\s*,[^)]*\d+px/;
+
+/* An icon is the SAME size as the text beside it, so a box sized FROM the type
+   scale answers to the text grid whatever the property is called — the token in
+   the VALUE says so, not the property name. Measured 2026-09-24: 24 sites read
+   `inline-size: var(--sherpa-theme-size-icon-*)`, every one a real icon box. */
+const TEXT_SIZED_PROP = /(font-size|line-height)/i;
+const TEXT_SIZED_VALUE = /--[\w-]*(size-icon|icon-size|content-size|font-size|fonts-scale)[\w-]*/i;
+
 function authoredCss(css) {
   const end = css.indexOf(TOKENS_MARK_END);
   return end === -1 ? css : css.slice(end + TOKENS_MARK_END.length);
@@ -113,10 +141,14 @@ function lintFile(file, cssRaw) {
   });
 
   root.walkDecls((decl) => {
-    // Odd px in spacing/sizing/radius props; border* and font-size are exempt.
+    // Off-grid px in a sizing prop. border* is exempt; font-size answers to the
+    // text grid rather than being skipped. TRAP T-the-grid-is-two-grids
     const prop = decl.prop;
-    if (/^border/.test(prop) || prop === 'font-size') return;
-    if (!/(margin|padding|gap|inset|top|right|bottom|left|width|height|size|radius|rounding|translate)/i.test(prop)) return;
+    if (/^border/.test(prop)) return;
+    if (!/(margin|padding|gap|inset|top|right|bottom|left|width|height|size|radius|rounding|translate|font-size|line-height)/i.test(prop)) return;
+    // Which grid this property answers to.
+    const textSized = TEXT_SIZED_PROP.test(prop) || TEXT_SIZED_VALUE.test(decl.value);
+    const step = textSized ? GRID.text : GRID.space;
     const line = decl.source?.start?.line ?? 0;
     // Drawn glyphs opt out with a trailing `/* off-grid-ok */`.
     const trailing = (decl.raws?.value?.raw ?? '') + (decl.raws?.between ?? '');
@@ -124,9 +156,13 @@ function lintFile(file, cssRaw) {
     for (const m of decl.value.matchAll(/(?<![\w.])(\d+)px\b/g)) {
       const v = Number(m[1]);
       if (v <= 1 || v === 999) continue;      // strokes + the pill idiom
-      if (v % 2 === 0) continue;
+      if (v % step === 0) continue;
+      // A fallback INSIDE var() is the token's own value — `space-3xs` really
+      // is 2px. project-tokens.mjs checks the SCALE against its own grid.
+      if (TOKEN_FALLBACK.test(decl.value)) continue;
+      const which = textSized ? 'text' : 'spacing';
       report('warning', file, line, 'off-grid',
-        `${prop}: ${v}px is off the 2px/8px grid — use a grid step (…, 2, 4, 8…), the token's real value, or add /* off-grid-ok */ if it's a drawn glyph.`);
+        `${prop}: ${v}px is off the ${step}px ${which} grid — use a step (…, ${step}, ${step * 2}, ${step * 3}…), the token's real value, or add /* off-grid-ok */ if it's a drawn glyph.`);
     }
   });
 
