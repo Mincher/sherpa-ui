@@ -30,7 +30,7 @@
         },
         "active": {
           "ref": "{theme.surface.active.base}",
-          "opacity": "{primitives::effects/opacity/0}"
+          "opacity": "{primitives::effects/opacity/300}"
         },
         "inactive": {
           "ref": "{theme.surface.default.+2}",

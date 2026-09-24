@@ -1909,7 +1909,7 @@
   --sherpa-style-transparent-active-content-secondary: var(--sherpa-style-active-content-secondary);
   --sherpa-style-transparent-active-content-tertiary: var(--sherpa-style-active-content-tertiary);
   --sherpa-style-transparent-active-indicator-accent: var(--sherpa-theme-surface-active-4);
-  --sherpa-style-transparent-active-surface-base: color-mix(in srgb, var(--sherpa-theme-surface-active-base) 0%, transparent);
+  --sherpa-style-transparent-active-surface-base: color-mix(in srgb, var(--sherpa-theme-surface-active-base) 30%, transparent);
   --sherpa-style-transparent-active-surface-base-1: color-mix(in srgb, var(--sherpa-theme-surface-active-base) 30%, transparent);
   --sherpa-style-transparent-active-surface-base-2: color-mix(in srgb, var(--sherpa-theme-surface-active-1) 30%, transparent);
   --sherpa-style-transparent-active-surface-shadow: var(--sherpa-style-active-surface-shadow);
