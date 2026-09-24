@@ -8,6 +8,14 @@ import { andFilter, filterFields, filterNeedles, picksClause, valueKey } from '.
 import { fieldState, stateClause } from './filter-state.js';
 import type { Populatable } from '../ui/apply-state.js';
 import type { FieldReading, FieldType, FilterState } from './filter-state.js';
+
+/** WHERE a control's reading applies. TRAP T-a-filter-applies-down-its-scope */
+export interface ApplyAt {
+  /** `view` writes each field's own slot; `component` owns one named part. */
+  scope?: 'view' | 'component';
+  /** Required for `component` — the part's name. */
+  key?: string;
+}
 import type { Filter, LoadOptions, LoadResult, Row, SortDirection, SortSpec, Store } from './store.js';
 
 /** The view state a source owns. */
@@ -290,6 +298,49 @@ export class DataSource extends EventTarget {
   /** Every named part currently applied — the component-scope filters. */
   get contributions(): string[] {
     return [...this.#parts.keys()];
+  }
+
+  /**
+   * Apply a whole control's READING of several fields, at one scope.
+   *
+   * This is the door a UI uses: it names its fields and what a reader did to
+   * each — picked values, a condition, an or-chain — and the data layer turns
+   * that into a query. A control that builds a clause is a control that has
+   * to know a field's type, and that is how one rule became three.
+   *
+   * VIEW is one slot per field: every other control over the same field reads
+   * the answer back. COMPONENT is one named part, ANDed under the View, so it
+   * narrows further and can never widen past it — and naming no fields clears
+   * that part. TRAP T-a-filter-applies-down-its-scope
+   */
+  apply(readings: Readonly<Record<string, FieldReading>>, at: ApplyAt = {}): void {
+    if (at.scope === 'component') {
+      const key = at.key;
+      if (!key) throw new Error('apply: a component scope needs a `key`');
+      const clauses = Object.entries(readings)
+        .map(([field, reading]) => stateClause(this.#stateFor(field, reading)))
+        .filter((c): c is NonNullable<typeof c> => !!c);
+      this.contribute(key, andFilter(clauses));
+      return;
+    }
+    for (const [field, reading] of Object.entries(readings)) {
+      this.select(field, reading.picked ?? [], reading);
+    }
+  }
+
+  /** One field's state from a reading this source has NOT stored. */
+  #stateFor(field: string, reading: FieldReading): FilterState {
+    const facts = this.#fields.get(field) ?? {};
+    const values = this.#domains.get(field);
+    return fieldState(
+      {
+        field,
+        ...(values ? { values } : {}),
+        ...(facts.type ? { type: facts.type } : {}),
+        ...(facts.label ? { label: facts.label } : {}),
+      },
+      reading,
+    );
   }
 
   /* ── Selection, by FIELD ───────────────────────────────────────────── */

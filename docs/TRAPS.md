@@ -3134,7 +3134,6 @@ and would otherwise wipe it.
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-- Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
 ### T-native-change-stops-at-the-host
 
@@ -8343,6 +8342,8 @@ a field's type to filter it, the type is in the wrong place.
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/field-type.test.mjs`
 - Site: `src/data.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `examples/contexts/records.js`
 
 ### T-the-panel-asks-the-bar-it-does-not-answer-for-it
 

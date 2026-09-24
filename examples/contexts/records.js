@@ -29,10 +29,13 @@ export async function init(root, { session } = {}) {
     searchFields: ['name', 'email', 'owner'],
   });
 
-  /* Two picks on a DATE column mean a RANGE; on any other column, either/or. */
-  const dateFields = new Set(['created', 'lastSeen']);
-  /* NUMBER columns: two picks are the ends of a range, one pick is one value. */
-  const numberFields = new Set(['seats', 'spend', 'openTickets', 'health']);
+  /* WHAT KIND each field is, said ONCE. The data layer decides what two picks
+     on a number mean — this page does not, and no longer can.
+     TRAP T-the-field-type-decides-the-clause */
+  for (const field of ['created', 'lastSeen']) source.declareField(field, { type: 'date' });
+  for (const field of ['seats', 'spend', 'openTickets', 'health']) {
+    source.declareField(field, { type: 'number' });
+  }
 
   /* TOGGLE chips are a whole CLAUSE the reader flips on or off — a question
      with a yes/no answer, not a value of some field. They arrive in `active`,
@@ -53,47 +56,6 @@ export async function init(root, { session } = {}) {
      combining them is this Context's job. Kept by field, so a second condition on
      one column replaces the first rather than fighting it. */
   const columnClauses = new Map();
-
-  /**
-   * `ready` are the toolbar's own FilterClauses — a chip's menu holds the
-   * CONDITION, so "Starts with Go" arrives finished and this Context does not
-   * re-derive it. A field in `ready` is skipped below.
-   * TRAP T-an-operator-decides-pick-or-type
-   */
-  const filterFromChips = (values, active = [], ready = {}) => {
-    const clauses = [];
-    const done = new Set();
-    for (const clause of Object.values(ready)) {
-      if (!Array.isArray(clause)) continue;
-      clauses.push(clause);
-      done.add(clause[0]);
-    }
-    /* Each ON toggle contributes its own clause, ANDed with the rest — two
-       toggles narrow, they do not widen. */
-    for (const id of active) {
-      const clause = TOGGLES[id];
-      if (clause) clauses.push(clause);
-    }
-
-    for (const [field, picked] of Object.entries(values ?? {})) {
-      if (!picked?.length || done.has(field)) continue;
-      if (picked.length === 2 && dateFields.has(field)) {
-        clauses.push([field, 'between', [...picked].sort()]);
-      } else if (picked.length === 2 && numberFields.has(field)) {
-        // Numeric sort: a lexical one puts "1000" below "9" and the range
-        // matches nothing.
-        const ends = picked.map(Number).sort((a, b) => a - b);
-        clauses.push([field, 'between', ends]);
-      } else if (picked.length === 1 && numberFields.has(field)) {
-        clauses.push([field, 'eq', Number(picked[0])]);
-      } else {
-        // ONE rule for picks → a clause: one is `eq`, several are `in`.
-        const clause = picksClause(field, picked);
-        if (clause) clauses.push(clause);
-      }
-    }
-    return andFilter(clauses);
-  };
 
   /* THREE WRITERS, THREE NAMED PARTS: the saved view, this page's chips, and
      the grid's column headings each own a `contribute` key and the source ANDs
@@ -690,75 +652,32 @@ export async function init(root, { session } = {}) {
        exactly this, which is what suspending means. Its picks are safe; only
        the APPLYING stops. TRAP T-grid-suspend-is-not-clear */
     if (state.fieldState === 'suspended') return;
-    /* A chip in CONDITION mode answers with rows, not ticks — steering it with
-       an empty pick list would untick nothing and switch it OFF while it is
-       filtering. TRAP T-a-conditioned-chip-answers-with-its-clause */
-    if (conditioned(field)) return;
+    /* A field answered by CONDITION ROWS has no ticks — steering it with an
+       empty pick list would untick nothing and switch it OFF while it is
+       filtering. The SOURCE knows; this no longer reads the chip's DOM.
+       TRAP T-a-conditioned-chip-answers-with-its-clause */
+    if (state.conditions.length) return;
     // Both are SILENT writes, so neither echoes back as another change.
     qft.setChipValues(field, picked);
     grid.setColumnFilter(field, picked.length ? picksClause(field, picked) : null);
   }, { signal });
 
-  /* THE BAR'S CONTRIBUTION, MINUS WHAT THE SOURCE OWNS. A field in
-     `FIELD_CHIPS` is held by `select()`, so letting it ride here too ANDed two
-     clauses over one field — and `eq Pro` AND `eq Free` matches nothing.
-     Every writer of the `chips` key goes through this. */
-  /** Is this chip answering with CONDITIONS rather than ticks? */
-  const conditioned = (id) => {
-    const chip = qft.shadowRoot?.querySelector(`.chip[data-id="${id}"]`);
-    return !!chip?.hasAttribute('data-conditioned');
-  };
-
+  /* ONLY the toggles. A toggle is a whole clause a reader flips, with no single
+     field behind it, so it cannot go through `apply()`. Every FIELD chip does —
+     letting one ride here too would AND two clauses over one field, and
+     `eq Pro` AND `eq Free` matches nothing. */
   const pushChips = () => {
-    const rest = {};
-    for (const [id, picked] of Object.entries(qft.values ?? {})) {
-      if (!FIELD_CHIPS.has(id)) rest[id] = picked;
-    }
-    /* THE READY CLAUSES TOO. A chip reports its own finished clause as well as
-       its picks, so stripping only `values` still let `plan eq Pro` ride in
-       beside the selection's `plan eq Free` — and `eq` twice over one field
-       matches nothing. */
-    const ready = {};
-    for (const [id, clause] of Object.entries(qft.clauses ?? {})) {
-      /* A FIELD chip's clause rides here ONLY when it is a CONDITION — the
-         field's own `select()` is skipped for exactly those, so nothing else
-         carries it. A chip answering with ticks is still stripped: its picks
-         and its clause would AND into `eq Pro` and `eq Free`, which matches
-         nothing. TRAP T-a-conditioned-chip-answers-with-its-clause */
-      if (!FIELD_CHIPS.has(id) || conditioned(id)) ready[id] = clause;
-    }
-    source.contribute('chips', filterFromChips(rest, qft.active, ready));
+    const clauses = (qft.active ?? []).map((id) => TOGGLES[id]).filter(Boolean);
+    source.contribute('chips', andFilter(clauses));
   };
 
   source.bind(qft, { steerOnly: true, ignore: ['quick-filter-change'], signal });
   qft.addEventListener('quick-filter-change', (e) => {
-    /* A FIELD chip writes the field's selection; the source owns it from
-       there and every other control over that field re-reads. Everything else
-       on this bar — the toggles, the typed conditions, a `col:` chip — has no
-       single field behind it, so it still contributes as one part. */
-    const picked = qft.pickedValues ?? {};
-    /* A chip in CONDITION MODE has no ticked values, so `values` says nothing
-       about it — and clearing the field from that silence switched the chip
-       straight back off while it was filtering. Its clause is the answer, and
-       `pushChips` lets that one ride.
-       A chip on a plain LIST still goes through `select()`: it has picks, and
-       every other control over the field re-reads them. Skipping it on
-       `clauses[field]` alone stopped EVERY list filtering, because a ticked
-       list reports a clause too. TRAP T-a-conditioned-chip-answers-with-its-clause */
-    for (const field of FIELD_CHIPS) {
-      if (conditioned(field)) continue;
-      /* OFF is a STATE, not a delete. `values` drops an off chip, but its picks
-         survive in `pickedValues` — so an off chip SUSPENDS its field and one
-         more click brings the same values back. Passing the empty list from
-         `values` cleared them instead: toggling a chip off wiped what the
-         reader had chosen, and it could not even switch back on.
-         TRAP T-grid-suspend-is-not-clear */
-      const on = e.detail.values?.[field];
-      if (on) source.select(field, on);
-      else if ((picked[field] ?? []).length) {
-        source.select(field, picked[field], { suspended: true });
-      } else source.select(field, []);
-    }
+    /* PARAMETERS, not a query. The bar says what a reader did to each field —
+       which values, which condition, whether it is suspended — and the data
+       layer decides what that means. This page knows none of it.
+       TRAP T-the-field-type-decides-the-clause */
+    source.apply(qft.readings);
     pushChips();
     /* A custom chip's body is a TOGGLE: off means "stop applying this", not
        "delete it" — only REMOVE deletes. So this suspends and restores the
@@ -896,13 +815,13 @@ export async function init(root, { session } = {}) {
        the guard makes that a rule rather than a coincidence.
        TRAP T-values-carries-two-shapes */
     if (e.detail?.scope !== 'bar') return;
-    const picked = {};
+    const readings = {};
     for (const [id, values] of Object.entries(e.detail.values ?? {})) {
       const field = headerField(id);
-      if (field && values?.length) picked[field] = values;
+      if (field && values?.length) readings[field] = { picked: values };
     }
     // Its OWN key, so it ANDs with the chips, the columns and a saved view.
-    source.contribute('global', filterFromChips(picked, []));
+    source.apply(readings, { scope: 'component', key: 'global' });
   }, { signal });
 
   // A field ARRIVING at or LEAVING the header changes which scope owns it.

@@ -12,7 +12,8 @@ import {
   type Filter, type FilterOp,
 } from '../../core/data/store.js';
 import {
-  fieldState, stateClause, type FieldCondition, type FilterState,
+  fieldState, stateClause,
+  type FieldCondition, type FieldReading, type FilterState,
 } from '../../core/data/filter-state.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
@@ -1159,11 +1160,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
-   * Every filter chip's STATE, by field — the one answer this bar and anything
-   * reading it share. TRAP T-one-state-per-filtered-field
+   * What a reader DID to each field — the parameters, not an answer.
+   *
+   * This is what a host sends to the data layer (`source.apply(bar.readings)`),
+   * which turns it into a query. A bar that builds a clause has to know a
+   * field's TYPE, and that is how one filtering rule became three.
+   * TRAP T-the-field-type-decides-the-clause
    */
-  get states(): Record<string, FilterState> {
-    const out: Record<string, FilterState> = {};
+  get readings(): Record<string, FieldReading & { label: string; values: string[] }> {
+    const out: Record<string, FieldReading & { label: string; values: string[] }> = {};
     for (const chip of this.#chips()) {
       const field = chip.dataset['id'];
       // A SUPERSEDED chip is the view's now; it narrows nothing here.
@@ -1179,30 +1184,46 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const all = [...menu.querySelectorAll<HTMLInputElement>('input')]
         .filter((i) => !i.closest(NON_VALUE_ROWS))
         .map((i) => i.value);
-      /* A chip switched OFF keeps its picks but applies none of them — off is
-         not gone. TRAP T-grid-suspend-is-not-clear */
-      const picked = chip.hasAttribute('data-current') ? this.#chipPicks(chip) : [];
+      /* A chip switched OFF keeps its picks and applies none of them — off is
+         not gone, and `suspended` below is what says so. Reporting an empty
+         list instead DELETED the reading, so one click wiped what the reader
+         had chosen and the chip could not switch back on.
+         TRAP T-grid-suspend-is-not-clear */
+      const picked = this.#chipPicks(chip);
 
-      out[field] = fieldState(
-        { field, label: chip.dataset['label'] ?? field, values: all },
-        {
-          picked,
-          op: (menu.dataset['op'] ?? DEFAULT_OP) as FilterOp,
-          text: menu.conditionValue ?? '',
-          /* THE ROWS. Without these `stateClause` saw no conditions and gave
-             nothing back, so a chip full of answered rows read as on, wore its
-             `fx` badge, and filtered NOTHING.
+      out[field] = {
+        label: chip.dataset['label'] ?? field,
+        values: all,
+        picked,
+        op: (menu.dataset['op'] ?? DEFAULT_OP) as FilterOp,
+        text: menu.conditionValue ?? '',
+        /* THE ROWS. Without these `stateClause` saw no conditions and gave
+           nothing back, so a chip full of answered rows read as on, wore its
+           `fx` badge, and filtered NOTHING.
 
-             TRAP T-a-conditioned-chip-answers-with-its-clause */
-          conditions: menu.dataset['mode'] === 'condition' ? (menu.conditions ?? []) : [],
-          /* An OFF chip SUSPENDS: it keeps every row and applies none of them,
-             exactly as it keeps its picks. Reporting none of them instead read
-             as "no filter", and the chip could never switch itself back ON —
-             it needed a clause to go on, and the clause needed it on.
-             TRAP T-grid-suspend-is-not-clear */
-          suspended: !chip.hasAttribute('data-current'),
-        },
-      );
+           TRAP T-a-conditioned-chip-answers-with-its-clause */
+        conditions: menu.dataset['mode'] === 'condition' ? (menu.conditions ?? []) : [],
+        /* An OFF chip SUSPENDS: it keeps every row and applies none of them,
+           exactly as it keeps its picks. Reporting none of them instead read
+           as "no filter", and the chip could never switch itself back ON —
+           it needed a clause to go on, and the clause needed it on.
+           TRAP T-grid-suspend-is-not-clear */
+        suspended: !chip.hasAttribute('data-current'),
+      };
+    }
+    return out;
+  }
+
+  /**
+   * Every filter chip's STATE, by field — READ-ONLY. Derived from `readings`,
+   * so the two can never disagree. A host that wants to FILTER sends
+   * `readings` to the data layer; this is for asking what a bar holds.
+   * TRAP T-one-state-per-filtered-field
+   */
+  get states(): Record<string, FilterState> {
+    const out: Record<string, FilterState> = {};
+    for (const [field, { label, values, ...reading }] of Object.entries(this.readings)) {
+      out[field] = fieldState({ field, label, values }, reading);
     }
     return out;
   }

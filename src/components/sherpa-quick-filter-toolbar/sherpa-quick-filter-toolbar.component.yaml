@@ -235,7 +235,7 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: >-
-      read/write JS properties (active, values, superseded, pickedValues, clauses, states,
+      read/write JS properties (active, values, superseded, pickedValues, clauses, readings, states,
       customFilters, offering, heldIds, groupField, sortField, sortDirection, sortSuspended). See
       $extensions.sherpa.jsProps.
   - $type: capability
@@ -422,6 +422,9 @@ $extensions:
         type: string
         access: read
       - name: clauses
+        type: string
+        access: read
+      - name: readings
         type: string
         access: read
       - name: states
