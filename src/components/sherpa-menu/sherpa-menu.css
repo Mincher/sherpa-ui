@@ -85,8 +85,32 @@
    carries the list/condition switch and the panel has ONE footer, so a second
    of each is two answers to one question.
    TRAP T-an-inline-menu-drops-the-chrome-its-host-owns */
+/* INLINE, a condition row is in a COLUMN, not a floating card that can be as
+   wide as it likes. Four tracks in 360px crushed the value select to its
+   caret, so the row wraps: the question on one line, the answer below it.
+   TRAP T-an-inline-condition-row-wraps */
+:host([data-inline]) .condition-row,
+:host([data-inline]) .condition-row[data-first],
+:host([data-inline]) .condition-row[data-only] {
+  grid-template-columns: 1fr auto;
+}
+/* The JOIN leads its own line; the condition and its answer share the next. */
+:host([data-inline]) .condition-row .join { grid-column: 1 / -1; }
+:host([data-inline]) .condition-row .condition { grid-column: 1; }
+:host([data-inline]) .condition-row :is(.condition-pick, .condition-value) {
+  grid-column: 1 / -1;
+}
+:host([data-inline]) .condition-row .drop-condition { grid-column: 2; grid-row: 2; }
+
 :host([data-inline]) .use-condition,
-:host([data-inline]) .footer { display: none; }
+:host([data-inline]) .footer {
+  /* `!important`, and it is the honest answer. Both are COMPOSED components
+     with their own `:host { display: … }`, and a host's own sheet wins over a
+     parent's rule on the same element — so a plain `display: none` here reads
+     as applied and paints nothing.
+     TRAP T-a-composed-child-hides-with-important */
+  display: none !important;
+}
 
 /* No `@supports (anchor-name)` block — see the positioning note at the top. */
 

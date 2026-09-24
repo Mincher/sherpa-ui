@@ -236,7 +236,7 @@ export class SherpaFilterPanel extends SherpaElement {
         /* `false`: they are ordinary single-select fields, so they collapse to
            ONE chip each. `true` would mark them as a presets run and explode
            fourteen columns into fourteen chips.
-           TRAP T-a-single-select-field-stays-one-chip */
+           TRAP T-only-group-and-sort-stay-one-chip */
         }, scope.scope, false);
         if (drawn) box.append(drawn);
       }
@@ -278,11 +278,12 @@ export class SherpaFilterPanel extends SherpaElement {
        TRAP T-the-panel-is-the-toolbar-in-a-column */
     if (!options.length && !def.menu) return null;
 
-    /* A SINGLE-SELECT field stays ONE chip with its own menu. Exploding a
-       one-of-many question into a run of chips says "pick several" with its
-       shape and "pick one" with its behaviour, and it costs a whole column of
-       height for an answer that is one line.
-       TRAP T-a-single-select-field-stays-one-chip */
+    /* ONLY GROUP AND SORT stay as one chip with their own menu. They are not
+       filters — they say HOW the rows are arranged — so they read as the two
+       controls a toolbar already shows.
+       Every other field, single-select included, EXPLODES into a run: the
+       whole point of the panel is that a reader sees the values without
+       opening anything. TRAP T-only-group-and-sort-stay-one-chip */
     const single = def.select === 'single';
 
     const box = this.clone('template.field-tpl');
@@ -292,8 +293,9 @@ export class SherpaFilterPanel extends SherpaElement {
     box.setAttribute('data-scope', scope);
     // A PRESETS section has no field to clear or remove.
     const organise = def.id === 'group' || def.id === 'sort';
-    // Set BEFORE the single-select path returns, or it never lands.
+    // Set BEFORE the chip path returns, or it never lands.
     box.toggleAttribute('data-single', single && !isPresets);
+    box.toggleAttribute('data-chip', organise);
     box.toggleAttribute('data-clearable', !isPresets && !organise);
     box.toggleAttribute('data-removable', !isPresets && !organise && !!def.removable);
     box.toggleAttribute('data-conditional-ok', !isPresets && !organise && !!def.conditions);
@@ -309,8 +311,9 @@ export class SherpaFilterPanel extends SherpaElement {
     const values = box.querySelector('.field-values') as HTMLElement | null;
     const proto = this.$<HTMLTemplateElement>('template.value-tpl');
 
-    /* ONE CHIP, carrying the field's own menu, for a single-select field. */
-    if (single && !isPresets && values && proto?.content.firstElementChild) {
+    /* ONE CHIP, carrying its own menu — group and sort only.
+       TRAP T-only-group-and-sort-stay-one-chip */
+    if (organise && values && proto?.content.firstElementChild) {
       const one = proto.content.firstElementChild.cloneNode(true) as HTMLElement;
       one.setAttribute('data-label', def.label);
       one.dataset['value'] = def.id;

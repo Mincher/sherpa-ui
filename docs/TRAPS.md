@@ -8022,25 +8022,50 @@ gone.
 ---
 - Site: `src/core/ui/render-icon.ts`
 
-### T-a-single-select-field-stays-one-chip
+### T-a-composed-child-hides-with-important
 
-A SINGLE-SELECT field in a filter panel stays ONE chip with its own menu; it is
-not exploded into a run of value chips.
+`display: none` on a COMPOSED child does nothing. Its own `:host` rule wins.
 
-Will, 2026-09-24: "Group and Sort can still be chips with their own menus in
-the panel mode. No need to explode them out to individual chips. Actually,
-that's true for any single select chip."
+A component's shadow sheet styles its own host, and that beats a parent's
+descendant rule on the same element — so `:host([data-inline]) .footer { display: none }`
+read as applied and painted a footer, because `sherpa-container-footer` sets
+`:host { display: none }` and `:host([data-has-content-slot]) { display: block }`
+in its own sheet.
 
-A one-of-many question drawn as a run says "pick several" with its shape and
-"pick one" with its behaviour. It also costs a column of height: Group and Sort
-over fourteen columns were twenty-eight chips for two answers.
+Nothing warns. `getComputedStyle` reports `block`, the rule is in the built
+CSS, and the selector matches.
 
-A MULTIPLE field is the opposite case and stays a run — every value is visible,
-and ticking three is three taps rather than three trips through a menu.
+`display: none !important` is the honest answer, and it is the only place in
+this repo that needs one. Any other property is fine — this is specific to
+`display`, which a component must set on its own host to exist at all.
 
 ---
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+
+### T-only-group-and-sort-stay-one-chip
+
+In a filter panel, GROUP and SORT are one chip with their own menu. Every
+other field — single-select included — explodes into a run of value chips.
+
+Will got here in two steps, and the second reverses the first. "Group and Sort
+can still be chips… Actually, that's true for any single select chip" became "I
+was wrong about single select filter menus. We need to explode them. It's just
+group and sort that can be kept like regular filter chips."
+
+The rule that holds: **the whole point of the panel is that a reader sees the
+values without opening anything.** A filter field answers WHICH rows, and its
+values are what the reader came for, however many they may pick. Group and Sort
+answer HOW the rows are arranged — not a filter at all — and read as the two
+controls a toolbar already shows.
+
+So the split is by JOB, not by `select`. A conditional field's rows go in the
+accordion section too, in its own `.field-body`, replacing the chips.
+
+---
+
+ Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-the-shell-owns-the-panel-areas
 
@@ -8065,6 +8090,24 @@ like: a clipped border.
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.html`
 - Site: `examples/contexts/records.js`
+
+### T-an-inline-condition-row-wraps
+
+A condition row in a COLUMN wraps; one in a floating card does not.
+
+`[And|Or] [condition] [value] [x]` is four tracks. A popover can be as wide as
+it likes, so they sit on one line. A filter panel's column cannot, and at 360px
+the value select was crushed to its caret — a control that showed nothing but
+an arrow.
+
+Inline, the row becomes two lines: the JOIN on its own, then the condition with
+its answer beneath it. Same controls, same order, one more line.
+
+The MENU owns the rule under `:host([data-inline])`, not the panel — inline is
+the menu's own mode, so how a row lays out in it is the menu's business.
+
+---
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
 
 ### T-an-inline-menu-drops-the-chrome-its-host-owns
 

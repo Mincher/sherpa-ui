@@ -46,6 +46,18 @@
   flex-direction: column;
 }
 
+/* NO OUTER BORDER on a scope. An accordion draws one so it reads as a card on
+   a page; inside a panel it is already inside one, and a box in a box reads as
+   two. The DIVIDER between scopes stays — that is what separates them.
+
+   `border-width`, not the per-edge CUSTOM PROPERTIES: those INHERIT, so
+   zeroing them here reached every chip inside and took their borders too. */
+.scope {
+  border-block-start-width: 0;
+  border-inline-width: 0;
+}
+.scope:last-of-type { border-block-end-width: 0; }
+
 /* ── Fields ──────────────────────────────────────────────────────────── */
 
 .field + .field { margin-block-start: var(--sherpa-display-mode-space-md, 16px); }

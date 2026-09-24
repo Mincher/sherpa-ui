@@ -124,7 +124,10 @@
 .panel-start,
 .panel-end {
   display: none;
-  flex: 0 0 auto;
+  /* The AREA owns the width — a panel inside it fills it, so a Context does
+     not size the app's own chrome. 4 columns at the desktop breakpoint.
+     TRAP T-the-shell-owns-the-panel-areas */
+  flex: 0 0 var(--sherpa-panel-area-width, 360px);
   min-block-size: 0;
   /* The layout grid's own inset, which the panel does not otherwise carry —
      without it a panel's top and bottom overshoot the cards beside it by 16
@@ -136,7 +139,10 @@
 :host([data-has-panel-end]) .panel-end { display: block; }
 
 .panel-start ::slotted(*),
-.panel-end ::slotted(*) { block-size: 100%; }
+.panel-end ::slotted(*) {
+  block-size: 100%;
+  inline-size: 100%;
+}
 
 .context-frame {
   min-inline-size: 0;

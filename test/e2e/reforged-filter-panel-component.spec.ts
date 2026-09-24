@@ -95,10 +95,10 @@ test('Apply reports EVERY field in one event; Discard reverts to it', async ({ p
 
     /* Tick two more. OWNER is single-select, so it is ONE chip carrying the
        field's id — not a run of its values.
-       TRAP T-a-single-select-field-stays-one-chip */
+       TRAP T-only-group-and-sort-stay-one-chip */
     sr.querySelector('.field[data-field="status"] .value[data-value="churned"]')
       .setAttribute('data-current', '');
-    sr.querySelector('.field[data-field="owner"] .value[data-value="owner"]')
+    sr.querySelector('.field[data-field="owner"] .value[data-value="Dana"]')
       .setAttribute('data-current', '');
     await new Promise((r) => setTimeout(r, 100));
 
@@ -120,7 +120,7 @@ test('Apply reports EVERY field in one event; Discard reverts to it', async ({ p
   // ONE event, carrying every field — not one per field.
   expect(r.heard).toHaveLength(1);
   expect(r.heard[0]!.values['data']).toEqual({
-    presets: ['unassigned'], status: ['active', 'churned'], owner: ['owner'],
+    presets: ['unassigned'], status: ['active', 'churned'], owner: ['Dana'],
   });
 
   // The draft really changed…
@@ -130,12 +130,15 @@ test('Apply reports EVERY field in one event; Discard reverts to it', async ({ p
 });
 
 /**
- * A SINGLE-SELECT FIELD IS ONE CHIP; A MULTIPLE ONE IS A RUN.
+ * EVERY FILTER FIELD EXPLODES — only GROUP and SORT stay as one chip.
  *
- * A one-of-many question drawn as a run says "pick several" with its shape and
- * "pick one" with its behaviour. TRAP T-a-single-select-field-stays-one-chip
+ * The whole point of the panel is that a reader sees the values without
+ * opening anything, so a single-select field is a run of chips like any other.
+ * Group and Sort are not filters — they say HOW the rows are arranged — and
+ * read as the two controls a toolbar already shows.
+ * TRAP T-only-group-and-sort-stay-one-chip
  */
-test('a single-select field is ONE chip; a multiple one is a run', async ({ page }) => {
+test('every filter field is a run; group and sort are one chip', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     const chips = (field) => [...sr.querySelectorAll(
@@ -149,17 +152,22 @@ test('a single-select field is ONE chip; a multiple one is a run', async ({ page
     await new Promise((r) => setTimeout(r, 100));
 
     return {
-      // OWNER: one chip, named for the FIELD, not for a value.
+      // OWNER is single-select, and it STILL explodes.
       owner: chips('owner'),
-      ownerSingle: sr.querySelector('.field[data-field="owner"]').hasAttribute('data-single'),
+      ownerChip: sr.querySelector('.field[data-field="owner"]').hasAttribute('data-chip'),
+      // GROUP and SORT are the exception: one chip, named for the field.
+      group: chips('group'),
+      groupChip: sr.querySelector('.field[data-field="group"]').hasAttribute('data-chip'),
       // STATUS: a run of its values.
       status: chips('status'),
       statusPicked: el.values.data.status,
     };
   })()`) as Record<string, unknown>;
 
-  expect(r['owner']).toEqual(['owner']);
-  expect(r['ownerSingle']).toBe(true);
+  expect(r['owner']).toEqual(['Dana', 'Ravi']);
+  expect(r['ownerChip']).toBe(false);
+  expect(r['group']).toEqual(['group']);
+  expect(r['groupChip']).toBe(true);
   expect(r['status']).toEqual(['active', 'churned']);
   expect(r['statusPicked']).toEqual(['active', 'churned']);
 });
@@ -310,9 +318,8 @@ test('group and sort lead the scope, report at once, and skip Apply',
       }
 
       const order = q('.field').map((f) => f.dataset.field);
-      /* ONE chip each, named for the field — they are single-select, so they
-         are not exploded into fourteen columns each.
-         TRAP T-a-single-select-field-stays-one-chip */
+      /* ONE chip each, named for the field — the ONLY two that stay chips.
+         TRAP T-only-group-and-sort-stay-one-chip */
       const shape = ['group', 'sort'].map((id) =>
         q('.field[data-field="' + id + '"] .value').map((c) => c.dataset.value));
       // The scope said which column Sort was on, so its chip arrived ON.

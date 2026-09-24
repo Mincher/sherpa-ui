@@ -156,8 +156,6 @@ events:
       conditional: unknown
       id: unknown
       scope: unknown
-tokens:
-  scopes.gap: "{sherpa.display-mode-space-xs}"
 $extensions:
   sherpa:
     methods:

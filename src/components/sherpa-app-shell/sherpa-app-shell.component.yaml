@@ -122,7 +122,9 @@ states:
     selector: ":host([data-no-header])"
 tokens:
   header.background: "{sherpa.style-surface-base}"
+  panel-start.flex: "{sherpa.panel-area-width}"
   panel-start.padding: "{sherpa.layout-grid-padding}"
+  panel-end.flex: "{sherpa.panel-area-width}"
   panel-end.padding: "{sherpa.layout-grid-padding}"
 $extensions:
   sherpa:
