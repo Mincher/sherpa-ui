@@ -48,7 +48,8 @@
   display: inline-flex;
   align-items: center;
   flex-direction: row; /* OFF: knob at the start */
-  gap: var(--sherpa-theme-gap-sm, 4px);
+  --_gap: var(--sherpa-theme-gap-sm, 4px);
+  gap: var(--_gap);
   inline-size: var(--sherpa-switch-size-width, 48px);
   min-block-size: var(--sherpa-switch-size-height, 20px);
   padding: var(--sherpa-switch-size-padding, 2px);
@@ -103,8 +104,14 @@
   block-size: var(--sherpa-switch-size-thumb, 16px);
   border-radius: var(--sherpa-switch-radius-thumb, 3px);
   background: var(--sherpa-theme-content-body-4, #ffffff);
-  margin-inline-start: 0;
-  transition: margin-inline-start var(--sherpa-motion-base, 120ms) var(--sherpa-motion-ease, ease);
+}
+
+/* The knob and label swap sides ON. An explicit 0, as `auto` does not animate. */
+.knob,
+.label {
+  position: relative;
+  inset-inline-start: 0;
+  transition: inset-inline-start var(--sherpa-motion-fast, 100ms) var(--sherpa-motion-ease, ease);
 }
 
 /* ── Label: ON / OFF text ───────────────────────────────────────────────── */
@@ -124,11 +131,14 @@
   color: var(--sherpa-theme-content-body-1, #35353d);
 }
 
-/* ON — slide the knob with an auto margin, NOT `order`. Reordering only moves
-   the knob past a SIBLING, and the `simple` style has no label to move past. */
+/* ON — an offset, not `order` or an auto margin: `order` cannot animate, and the
+   label's flex-grow takes the free space before an auto margin can. The % is the
+   track's content box. */
 .input:checked ~ .knob {
-  /* `.knob` already declares the transition — it applies to both states. */
-  margin-inline-start: auto;
+  inset-inline-start: calc(100% - var(--sherpa-switch-size-thumb, 16px));
+}
+.input:checked ~ .label {
+  inset-inline-start: calc(-1 * (var(--sherpa-switch-size-thumb, 16px) + var(--_gap)));
 }
 
 /* ── Disabled — inactive tokens, never opacity ─────────────────────────── */

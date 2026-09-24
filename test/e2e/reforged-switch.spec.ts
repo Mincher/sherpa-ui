@@ -139,3 +139,32 @@ test('simple variant hides the ON/OFF label', async ({ page }) => {
   });
   expect(display).toBe('none');
 });
+
+test('on swaps the knob and label sides, and back', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const side = async (type: string | null, on: boolean) => {
+      const el = document.createElement('sherpa-switch') as SwitchEl;
+      if (type) el.setAttribute('data-type', type);
+      el.style.setProperty('--sherpa-motion-fast', '0s');
+      document.getElementById('root')!.appendChild(el);
+      await el.rendered;
+      el.checked = on;
+      const sr = el.shadowRoot!;
+      const track = sr.querySelector('.track')!.getBoundingClientRect();
+      const knob = sr.querySelector('.knob')!.getBoundingClientRect();
+      const label = sr.querySelector('.label')!.getBoundingClientRect();
+      return {
+        knobAtEnd: track.right - knob.right < track.width / 4,
+        labelFirst: label.width > 0 && label.left < knob.left,
+      };
+    };
+    return {
+      off: await side(null, false),
+      on: await side(null, true),
+      simpleOn: await side('simple', true),
+    };
+  });
+  expect(r.off).toEqual({ knobAtEnd: false, labelFirst: false });
+  expect(r.on).toEqual({ knobAtEnd: true, labelFirst: true });
+  expect(r.simpleOn.knobAtEnd).toBe(true);
+});

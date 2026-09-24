@@ -80,7 +80,7 @@ events:
       "on": change
       node: .input
 tokens:
-  track.gap: "{sherpa.theme-gap-sm}"
+  track.--_gap: "{sherpa.theme-gap-sm}"
   track.inline-size: "{switch.switch-size.width}"
   track.min-block-size: "{switch.switch-size.height}"
   track.padding: "{switch.switch-size.padding}"
@@ -94,7 +94,8 @@ tokens:
   knob.block-size: "{switch.switch-size.thumb}"
   knob.border-radius: "{switch.switch-radius.thumb}"
   knob.background: "{sherpa.theme-content-body-4}"
-  knob.transition: "{sherpa.motion-base}"
+  knob.transition: "{sherpa.motion-fast}"
+  label.transition: "{sherpa.motion-fast}"
   label.min-inline-size: "{sherpa.display-mode-size-lg}"
   label.color: "{sherpa.theme-content-body-base-fixed}"
 $extensions:
