@@ -471,15 +471,20 @@ export async function init(root, { session } = {}) {
     syncPanelled(true);
   };
 
+  /* THE SCOPE SAYS WHICH BAR. Remove used to skip this and always ask the data
+     bar, so unticking a VIEW filter reported correctly and changed nothing —
+     the bar it asked had never held it. */
+  const barFor = (scope) => (scope === 'view'
+    ? header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]')
+    : qft);
+
   panel?.addEventListener('filter-add-request', (e) => {
-    const bar = e.detail.scope === 'view'
-      ? header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]') : qft;
-    bar?.addFilters?.(e.detail.ids);
+    barFor(e.detail.scope)?.addFilters?.(e.detail.ids);
     void refill();
   }, { signal });
 
   panel?.addEventListener('filter-remove', (e) => {
-    qft.removeFilter?.(e.detail.id);
+    barFor(e.detail.scope)?.removeFilter?.(e.detail.id);
     void refill();
   }, { signal });
 
