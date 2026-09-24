@@ -1,4 +1,4 @@
-/* sherpa-donut-chart.css — a donut/pie ring. SVG: one closed path per slice
+/* sherpa-radial-chart.css — a donut/pie ring. SVG: one closed path per slice
    (geometry in the TS); the centre label is a sibling in the hole. */
 
 :host {

@@ -1,10 +1,15 @@
 <!--
-  sherpa-donut-chart — a donut / pie for part-to-whole data.
+  sherpa-radial-chart — a donut / pie / arc for part-to-whole data.
 
   Public API:
     data-type   donut (default) | pie   (pie fills to the centre, no hole)
     data-label     centre big text
     data-sublabel  centre small text
+    data-inner     hole size, a FRACTION of the outer radius (0–1). A pie
+                   ignores it — a pie has no hole by definition.
+    data-sweep-start  where the arc begins, clockwise degrees from 12 o'clock
+    data-sweep     how far it runs, in degrees. 360 (default) is a full ring;
+                   a gauge is this ring stopped short — start 270, sweep 180.
 
   Slots: legend — an optional legend beside the ring.
 

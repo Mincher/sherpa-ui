@@ -168,7 +168,7 @@ export { SherpaPanel } from './components/sherpa-panel/sherpa-panel.js';
 export { SherpaProgressStepTracker } from './components/sherpa-progress-step-tracker/sherpa-progress-step-tracker.js';
 export { SherpaQuickFilter } from './components/sherpa-quick-filter/sherpa-quick-filter.js';
 export { SherpaGaugeChart } from './components/sherpa-gauge-chart/sherpa-gauge-chart.js';
-export { SherpaDonutChart, type DonutSlice } from './components/sherpa-donut-chart/sherpa-donut-chart.js';
+export { SherpaRadialChart, type RadialSlice } from './components/sherpa-radial-chart/sherpa-radial-chart.js';
 export { SherpaBarchart, type BarDatum } from './components/sherpa-barchart/sherpa-barchart.js';
 export { SherpaLineChart } from './components/sherpa-line-chart/sherpa-line-chart.js';
 export { SherpaDataGrid, type GridColumn } from './components/sherpa-data-grid/sherpa-data-grid.js';

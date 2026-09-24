@@ -125,7 +125,7 @@ test('a donut anchors its tips to invisible points, hovered from the SLICE', asy
   // (anchor-name computes to the right value and never resolves), so a zero-size
   // HTML span is placed on the ring by cos()/sin() from the JS's one angle.
   const r = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-donut-chart') as HTMLElement & {
+    const el = document.createElement('sherpa-radial-chart') as HTMLElement & {
       rendered?: Promise<void>;
       populate(d: unknown): void;
     };

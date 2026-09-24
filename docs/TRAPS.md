@@ -3443,7 +3443,7 @@ custom property:
 |---|---|
 | `RING_WIDTH = 15` | the donut's band: `innerRadius` 0.7 on a 100-unit circle, the outer 30%. It was **9** (Figma's older `innerRadius` 0.82), which read as a thin hoop beside the donut on the same dashboard row |
 | `CORNER = 1` | the donut's 2px on a 200px chart; `ringSegmentPath()` clamps it down for a band too thin or too short |
-| `OUTLINE = 0.5` | 1px on a 200px chart, ALIGNED INSIDE as in Figma. SVG has no inside stroke, so the path is drawn half a stroke in from the true band edges — the same trick `sherpa-donut-chart` uses |
+| `OUTLINE = 0.5` | 1px on a 200px chart, ALIGNED INSIDE as in Figma. SVG has no inside stroke, so the path is drawn half a stroke in from the true band edges — the same trick `sherpa-radial-chart` uses |
 | `START_DEG = 270`, `SPAN_DEG = 180` | clockwise from 12 o'clock: 9 o'clock round the top to 3 o'clock (270 + 180 = 450, which is 90 wrapped past the top) |
 
 JS still hands CSS the needle angle; the big number, caption and scale are text.
@@ -4424,7 +4424,7 @@ different and both are right:
 than a NaN that poisons the sum.
 
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
-- Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.ts`
+- Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.ts`
 - Site: `src/core/data/chart-datum.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/chart-datum.test.mjs`
@@ -6108,7 +6108,7 @@ different marks, so a stale hide would silently drop the wrong category.
 
 - Site: `src/components/sherpa-line-chart/sherpa-line-chart.ts`
 - Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
-- Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.ts`
+- Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.ts`
 
 ### T-hidden-set-is-view-state-and-replaces
 
@@ -6216,7 +6216,7 @@ Per chart:
 
 - Site: `src/components/sherpa-line-chart/sherpa-line-chart.ts`
 - Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
-- Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.ts`
+- Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.ts`
 - Site: `src/components/sherpa-sparkline/sherpa-sparkline.ts`
 
 ### T-y-axis-width-is-fixed-not-measured
@@ -6267,7 +6267,7 @@ sits BESIDE a chart showing the same data, so a `ChartDatum` should pass straigh
 into one — and it does: `LegendDatum` is `ChartDatum` plus the two things only a
 legend has, a value it may PRINT rather than plot, and a status swatch.
 
-`sherpa-donut-chart`'s `DonutSlice` is the third alias and is deliberately NOT
+`sherpa-radial-chart`'s `RadialSlice` is the third alias and is deliberately NOT
 cited there: its one-line JSDoc is the exported type's first prose line, which
 the spec generator reads into git-tracked YAML.
 
@@ -6439,7 +6439,7 @@ wrapper exists only so the HTML parser puts the path in the SVG namespace.
 The slice's `--_border` is its own token: colour 5 of the series' sequence, held
 at FULL strength. A mark's FILL moves along its ramp; its BORDER does not.
 
-- Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.ts`
+- Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.ts`
 
 ### T-sparkline-headroom-is-a-share-of-the-box
 
@@ -7152,6 +7152,39 @@ number, and `project-tokens.mjs` gates the rule — proven by breaking one cache
 value, which reported `12px → 10px, but one step is 8px`.
 
 - Site: `scripts/project-tokens.mjs`
+
+### T-a-gauge-composes-the-ring
+
+`sherpa-radial-chart` (was `sherpa-radial-chart`) owns the ring — donut, pie, and
+the arc variables `data-sweep-start`, `data-sweep` and `data-inner`. The gauge
+uses the same pen and keeps its own needle, zones, scale and caption.
+
+**It composes at the DRAWING layer, not the DOM**, and the measurement is why:
+
+| | |
+|---|---|
+| shared CSS classes | 7 of 24 — **29%** |
+| gauge-only | `needle` `hub` `hub-cap` `scale` `zone` `caption` + 6 more |
+
+A nested `<sherpa-radial-chart>` cannot work either, and it is worth knowing
+before trying: the gauge's SVG is `viewBox="0 0 100 50"` with
+`aspect-ratio: 2` — the TOP HALF of the ring's box — while the ring is
+`0 0 100 100` at `aspect-ratio: 1`. A child brings its own square box and its
+own shadow root, so the parent's crop cannot reach it. Composing in the DOM
+would mean the gauge reaching into the child's layout.
+
+What they DO share is `ringSegmentPath()`, which already takes every variable
+either needs, and the geometry constants beside it.
+
+**One of those constants was written twice.** The gauge computed its hole as
+`CENTRE - 15` and the ring as `CENTRE * 0.7`. Both are 35.25 at a 100-unit box
+— one value with two spellings, which drift apart the moment either moves. They
+now share `RADIAL_INNER_RATIO`.
+
+- Site: `src/core/ui/shared-constants.ts`
+- Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.ts`
+- Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
+- Site: `test/e2e/reforged-radial-chart.spec.ts`
 
 ### T-a-full-range-is-still-a-range
 
@@ -9213,7 +9246,7 @@ The axis still compacts. Both are correct for their own job; sharing one
 function was the mistake.
 
 - Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
-- Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.ts`
+- Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.ts`
 - Site: `src/components/sherpa-line-chart/sherpa-line-chart.ts`
 - Site: `src/components/sherpa-metric/sherpa-metric.ts`
 - Site: `src/components/sherpa-sparkline/sherpa-sparkline.ts`
@@ -9268,7 +9301,7 @@ A chart's tooltip carries the NUMBER. If only `:hover` reveals it, the number
 is pointer-only — the chart draws data a keyboard reader cannot get at.
 
 `sherpa-barchart` and `sherpa-line-chart` already made each mark a `<button>`,
-so both were fine. `sherpa-donut-chart` and `sherpa-gauge-chart` lit their tips
+so both were fine. `sherpa-radial-chart` and `sherpa-gauge-chart` lit their tips
 from `:hover` on an SVG arc with no `tabindex`, so **zero** of their data was
 reachable. Measured before the fix:
 
@@ -9289,8 +9322,8 @@ zero-size hotspot exists for.
 `role="img"`, not `button`: the path IS the datum, not a control that does
 something.
 
-- Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.ts`
-- Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.css`
+- Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.ts`
+- Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.css`
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.css`
 - Site: `test/e2e/reforged-chart-keyboard.spec.ts`
@@ -9348,8 +9381,8 @@ leaves the total, because the ring no longer counts it either: three slices of
 `data-label` still wins when a host names the centre, and an empty ring claims
 nothing rather than `0`.
 
-- Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.ts`
-- Site: `test/e2e/reforged-donut-chart.spec.ts`
+- Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.ts`
+- Site: `test/e2e/reforged-radial-chart.spec.ts`
 - Site: `examples/templates/records.html`
 - Site: `examples/templates/dashboard.html`
 
@@ -10047,13 +10080,13 @@ inset-ring idiom the controls use does not apply.
 
 Both radial charts need it — donut `.slice` and gauge `.zone`.
 
-- Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.css`
+- Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.css`
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.css`
-- Site: `test/e2e/reforged-donut-chart.spec.ts`
+- Site: `test/e2e/reforged-radial-chart.spec.ts`
 
 ### T-a-pie-slice-has-no-rounded-corner
 
-`sherpa-donut-chart` passed `radius: CORNER` to `ringSegmentPath()` for every
+`sherpa-radial-chart` passed `radius: CORNER` to `ringSegmentPath()` for every
 slice, including `data-type="pie"`. A donut's corners round because they sit on
 two ARCS; a pie slice's two straight edges meet at the CENTRE, and a radius
 there rounds the point off.
@@ -10067,5 +10100,5 @@ Will stated the rule: *"Pie segments will have 0 inner radius and no corner
 rounding on segments."* The inner radius was already right; the rounding was
 not.
 
-- Site: `src/components/sherpa-donut-chart/sherpa-donut-chart.ts`
-- Site: `test/e2e/reforged-donut-chart.spec.ts`
+- Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.ts`
+- Site: `test/e2e/reforged-radial-chart.spec.ts`

@@ -15,7 +15,7 @@ import { test, expect } from './harness';
 
 const CHARTS = [
   {
-    tag: 'sherpa-donut-chart',
+    tag: 'sherpa-radial-chart',
     data: [
       { label: 'Windows', value: 243, colorIndex: 1 },
       { label: 'macOS', value: 241, colorIndex: 2 },

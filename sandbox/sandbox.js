@@ -16,7 +16,7 @@ const COMPONENTS = [
   'sherpa-accordion', 'sherpa-app-header', 'sherpa-barchart', 'sherpa-breadcrumbs', 'sherpa-button',
   'sherpa-calendar', 'sherpa-callout', 'sherpa-chart-legend', 'sherpa-chat-message',
   'sherpa-chip', 'sherpa-code-block', 'sherpa-container', 'sherpa-container-footer', 'sherpa-container-header',
-  'sherpa-data-grid', 'sherpa-dialog', 'sherpa-donut-chart', 'sherpa-empty-state', 'sherpa-file-upload',
+  'sherpa-data-grid', 'sherpa-dialog', 'sherpa-radial-chart', 'sherpa-empty-state', 'sherpa-file-upload',
   'sherpa-grid-cell',
   'sherpa-gauge-chart', 'sherpa-input-text', 'sherpa-key-value-list',
   'sherpa-line-chart', 'sherpa-list', 'sherpa-list-item', 'sherpa-loader',

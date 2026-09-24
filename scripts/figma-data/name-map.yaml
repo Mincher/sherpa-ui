@@ -138,9 +138,11 @@ map:
     figma: Data Field
     status: matched
     note: same 2D Chart primitive as barchart, line orientation
-  sherpa-donut-chart:
+  sherpa-radial-chart:
     figma: Donut Chart
     status: matched
+    note: code folded donut/pie/arc into one ring; Figma keeps Donut and Gauge
+      separate — a code component need not map 1:1
   sherpa-gauge-chart:
     figma: Gauge Chart
     status: matched

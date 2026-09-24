@@ -52,6 +52,13 @@ export const RADIAL_CENTRE = RADIAL_BOX / 2;
 export const RADIAL_CORNER = 1;
 /** Outline thickness, aligned INSIDE as in Figma. */
 export const RADIAL_OUTLINE = 0.5;
+/**
+ * The hole, as a FRACTION of the outer radius. Measured 2026-09-24: the gauge
+ * wrote `CENTRE - 15` and the ring `CENTRE * 0.7`, which are the SAME 35.25 at
+ * this box size — two constants for one value, drifting apart the moment either
+ * moved. TRAP T-a-gauge-composes-the-ring
+ */
+export const RADIAL_INNER_RATIO = 0.7;
 
 /**
  * Gridlines a cartesian chart draws when `data-ticks` is absent.

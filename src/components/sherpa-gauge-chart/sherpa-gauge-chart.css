@@ -146,7 +146,7 @@
 }
 
 /* A clicked zone keeps focus but a pointer user has no use for the ring — see
-   the twin rule in sherpa-donut-chart.css.
+   the twin rule in sherpa-radial-chart.css.
    TRAP T-a-datum-focus-ring-is-for-the-keyboard-only */
 .zone:focus:not(:focus-visible) { outline: none; }
 

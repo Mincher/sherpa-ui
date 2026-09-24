@@ -1,5 +1,8 @@
 /**
- * sherpa-donut-chart — a donut (or pie) showing parts of a whole.
+ * sherpa-radial-chart — one ring, drawn as a donut, a pie or an arc.
+ *
+ * The gauge COMPOSES this for its arc rather than redrawing one; it keeps its
+ * own needle, zones, scale and caption. TRAP T-a-gauge-composes-the-ring
  *
  * TRAP T-donut-slice-is-a-closed-path — each slice is ONE closed <path>; a
  * stroked circle can express neither the full border nor the rounded corners.
@@ -9,19 +12,23 @@ import { datumTotal, type ChartDatum } from '../../core/data/chart-datum.js';
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import { radialArea, ringSegmentPath, seriesBorderVar, seriesVar, formatValue } from '../../core/data/format-tick.js';
 import { RADIAL_CENTRE as CENTRE, RADIAL_CORNER as CORNER,
-  RADIAL_OUTLINE as OUTLINE } from '../../core/ui/shared-constants.js';
+  RADIAL_OUTLINE as OUTLINE, RADIAL_INNER_RATIO } from '../../core/ui/shared-constants.js';
 
 /** One slice — an alias of the shared `ChartDatum`. */
-export type DonutSlice = ChartDatum;
+export type RadialSlice = ChartDatum;
 
 const MIN_SHARE = 0.005;
 
-export class SherpaDonutChart extends SherpaElement {
-  static override css = new URL('./sherpa-donut-chart.css', import.meta.url);
-  static override html = new URL('./sherpa-donut-chart.html', import.meta.url);
-  static override observed = ['data-label', 'data-sublabel', 'data-type'];
+export class SherpaRadialChart extends SherpaElement {
+  static override css = new URL('./sherpa-radial-chart.css', import.meta.url);
+  static override html = new URL('./sherpa-radial-chart.html', import.meta.url);
+  static override observed = [
+    'data-label', 'data-sublabel', 'data-type',
+    // The arc. A gauge is this ring stopped short — 270° for 180°.
+    'data-sweep-start', 'data-sweep', 'data-inner',
+  ];
 
-  #slices: DonutSlice[] = [];
+  #slices: RadialSlice[] = [];
   #hidden = new Set<number>();
 
   override onRender(): void {
@@ -38,7 +45,7 @@ export class SherpaDonutChart extends SherpaElement {
 
   /** populate([{ label, value, colorIndex? }]) — the slices. */
   protected override renderData(data: unknown): void {
-    this.#slices = Array.isArray(data) ? (data as DonutSlice[]) : [];
+    this.#slices = Array.isArray(data) ? (data as RadialSlice[]) : [];
     // Stale indices would hide the wrong slice.
     this.#hidden.clear();
     this.#renderRing();
@@ -46,7 +53,7 @@ export class SherpaDonutChart extends SherpaElement {
     this.#syncCentre();
   }
 
-  get slices(): DonutSlice[] {
+  get slices(): RadialSlice[] {
     return [...this.#slices];
   }
 
@@ -78,7 +85,10 @@ export class SherpaDonutChart extends SherpaElement {
     // Inset half an outline, so the stroke lands INSIDE the true edges.
     const pie = this.dataset['type'] === 'pie';
     const outer = CENTRE - OUTLINE / 2;
-    const inner = pie ? 0 : CENTRE * 0.7 + OUTLINE / 2;
+    const inner = this.#inner(pie, outer);
+    // The arc this ring fills. A full circle unless the host stops it short.
+    const sweepStart = this.num('data-sweep-start', 0);
+    const sweep = this.num('data-sweep', 360);
 
     // Only the visible slices share the circle, so the ring always closes.
     const visible = this.#slices.filter((_, i) => !this.#hidden.has(i));
@@ -104,8 +114,8 @@ export class SherpaDonutChart extends SherpaElement {
           cy: CENTRE,
           inner,
           outer,
-          startDeg: acc * 360,
-          endDeg: (acc + share) * 360,
+          startDeg: sweepStart + acc * sweep,
+          endDeg: sweepStart + (acc + share) * sweep,
           /* A PIE SLICE HAS NO ROUNDING. Its two straight edges meet at the
              centre, and a corner radius there rounds the point off — the path
              started at 49 rather than the centre's 50. A donut's corners round
@@ -136,11 +146,11 @@ export class SherpaDonutChart extends SherpaElement {
         const tip = frag.querySelector<HTMLElement>('.chart-tip')!;
         dot.dataset['index'] = String(i);
         tip.dataset['index'] = String(i);
-        const mid = (acc + share / 2) * 360;
+        const mid = sweepStart + (acc + share / 2) * sweep;
         dot.style.setProperty('--_angle', `${mid}deg`);
         tip.style.setProperty('--_area', radialArea(mid));
-        dot.style.setProperty('--_anchor', `--donut-slice-${i}`);
-        tip.style.setProperty('--_anchor', `--donut-slice-${i}`);
+        dot.style.setProperty('--_anchor', `--radial-slice-${i}`);
+        tip.style.setProperty('--_anchor', `--radial-slice-${i}`);
         tip.querySelector('.chart-tip-label')!.textContent = slice.label;
         // TRAP T-a-tooltip-is-not-an-axis.
         tip.querySelector('.chart-tip-value')!.textContent = formatValue(slice.value);
@@ -149,6 +159,22 @@ export class SherpaDonutChart extends SherpaElement {
 
       acc += share;
     });
+  }
+
+  /**
+   * The hole. `data-inner` is a FRACTION of the outer radius, so a host names
+   * 0.5 rather than a unit in this component's private 100-unit box.
+   * A pie has none, and says so by being a pie.
+   */
+  #inner(pie: boolean, outer: number): number {
+    if (pie) return 0;
+    const raw = this.dataset['inner'];
+    if (raw != null && raw !== '') {
+      const frac = Number(raw);
+      // Clamped: a hole wider than the ring is not a ring.
+      if (Number.isFinite(frac)) return Math.min(Math.max(frac, 0), 1) * outer;
+    }
+    return CENTRE * RADIAL_INNER_RATIO + OUTLINE / 2;
   }
 
   /**
@@ -190,4 +216,4 @@ export class SherpaDonutChart extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-donut-chart', SherpaDonutChart);
+customElements.define('sherpa-radial-chart', SherpaRadialChart);

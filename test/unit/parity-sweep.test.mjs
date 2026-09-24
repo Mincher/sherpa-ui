@@ -43,8 +43,8 @@ const KNOWN = {
   'sherpa-code-block.code': 'ok: data-code attribute',
   'sherpa-data-grid.selectedKeys': 'ok: select(keys) / clearSelection()',
   'sherpa-data-grid.selectedRecords': 'ok: select(keys) — derived from the same set',
-  'sherpa-donut-chart.slices': 'ok: populate()',
-  'sherpa-donut-chart.hiddenSlices': 'ok: setSliceHidden(index, hidden)',
+  'sherpa-radial-chart.slices': 'ok: populate()',
+  'sherpa-radial-chart.hiddenSlices': 'ok: setSliceHidden(index, hidden)',
   'sherpa-file-upload.files':
     'platform: a File list can only come from a real picker or drop; ' +
     'script cannot forge one, so there is nothing to call',
@@ -148,7 +148,7 @@ test('the open gaps are the ones we think they are', () => {
  * behind, and the component silently keeps looking for an attribute nobody
  * sets any more.
  *
- * That shipped once this session: sherpa-donut-chart's pie mode quietly stopped
+ * That shipped once this session: sherpa-radial-chart's pie mode quietly stopped
  * filling, caught only because a test read the rendered output. The same trap
  * was waiting in sherpa-input-text (`dataset['style']` picking a template) and
  * sherpa-nav-item.

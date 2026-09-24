@@ -102,7 +102,7 @@ test('charts: a hidden series can be restored, not just read', async ({ page }) 
 });
 
 test('one chart datum: the SAME array feeds a chart and its legend', async ({ page }) => {
-  // BarDatum, DonutSlice and LegendItem were three names for the same three
+  // BarDatum, RadialSlice and LegendItem were three names for the same three
   // fields, so crossing between them cost a `.map()` that copied a shape to
   // itself. Sharing one array also lets the source's skip-if-unchanged guard
   // hold — it compares by IDENTITY, and a rebuilt array never matches.
@@ -125,7 +125,7 @@ test('one chart datum: the SAME array feeds a chart and its legend', async ({ pa
     document.getElementById('root')!.replaceChildren();
 
     const bar = await mk('sherpa-barchart');
-    const donut = await mk('sherpa-donut-chart');
+    const donut = await mk('sherpa-radial-chart');
     const legend = await mk('sherpa-chart-legend');
 
     // THE SAME ARRAY — no adapter, no copy, no per-component shape.

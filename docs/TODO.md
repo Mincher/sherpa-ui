@@ -6,6 +6,59 @@ Status: `[ ]` open · `[~]` in progress · `[x]` done
 
 ---
 
+## At a glance
+
+**34 numbered items · 3 done · 31 open.** Numbers are the spine; the waves below
+say what order. Anything not numbered is a sub-item of the section it sits in.
+
+| | # | Item | Wave |
+|---|---:|---|---|
+| ✅ | 1 | Context vs View — the naming, settled | 1 |
+| | 2 | Filter scope — down, never up | 1 |
+| ⛔ | 3 | Style/Transparent tokens — **blocked** on the Figma export | 1 |
+| | 4 | The `More` chip shows active when it is not | 2 |
+| | 5 | Metric item — no surface or border colour | 2 |
+| | 6 | Every metric item uses the xsmall container class | 2 |
+| | 7 | Only five filter chips carry an icon | 2 |
+| | 8 | Fixed-height row uses a hard-coded gutter | 2 |
+| | 9 | Pagination row-count select is not a Sherpa select | 2 |
+| | 10 | Notifications button — then sweep for the same fault | 3 |
+| | 11 | Button borders do not inherit the status colour | 3 |
+| | 12 | Metric trend does not update after a data-layer change | 4 |
+| | 13 | Sparkline does not follow its record deltas | 4 |
+| | 14 | An example of real-time data (WebSocket) | 4 |
+| | 15 | Save a View, and the Save split-button menu | 5 |
+| | 16 | Favourite and Save apply to the Context, not the View | 5 |
+| | 17 | Breadcrumbs are for workflow, not for the nav | 5 |
+| | 18 | An optional allow-list on ANY component axis | 6 |
+| | 19 | Rework the filter menu — two modes, many conditions | 7 |
+| | 20 | An inactive chip must say where its filter is applied | 7 |
+| | 21 | A filter PANEL, as an alternative to the toolbars | 7 |
+| | 22 | `Ask N-zo` panel — width, and a draggable edge | 8 |
+| | 23 | A focused grid row opens a details panel | 8 |
+| | 24 | Playwright tests accessibility — WCAG 2.1 AA | 9 |
+| | 25 | `sherpa-layout-canvas` + minimap | 10 |
+| | 26 | A `Grouped` mode for the content area | 10 |
+| | 27 | A consumer can supply their OWN templates and CSS | 10 |
+| | 28 | A Figma component is NOT always a web component | 11 |
+| | 29 | Rename `src/index.ts` to `src/app.ts` | 11 |
+| | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | 11 |
+| ✅ | 31 | The grid is TWO tokens — 4px spacing, 2px text | 11 |
+| ✅ | 32 | Donut folded into `sherpa-radial-chart` | 11 |
+| ⛔ | 33 | Density scaling as step offsets — **part done**, rest blocked | 11 |
+| | 34 | Figma: use the Navigation terms | 11 |
+
+**Blocked, and on the same thing.** Items 3 and 33 both need
+`figma.extensions.json` regenerated — it is 8 days staler than the token export
+and nothing in the repo writes it. Unblocking that is one job that frees two
+items.
+
+**Done but not numbered:** a nav item goes to a Context · Settings opens as an
+overlay · shared constants swept · event detail shapes swept · toggle chips
+settled.
+
+---
+
 ## The order to do them in
 
 43 items. Ordered so that nothing is built twice.
@@ -24,7 +77,7 @@ Three rules set the order:
 
 | # | Item | Why first |
 |---|---|---|
-| 1 | ~~Context vs View~~ DECIDED 2026-09-24 — CLAUDE.md "Navigation terms" | Views, Save, Favourite, breadcrumbs and filter scope ALL sit on this. Every later item reads differently if the model is wrong. |
+| ~~1~~ | ~~Context vs View~~ DECIDED 2026-09-24 — CLAUDE.md "Navigation terms" | Views, Save, Favourite, breadcrumbs and filter scope ALL sit on this. Every later item reads differently if the model is wrong. |
 | 2 | Filter scope — down, never up | The panel, the menu rework and the allow-list all need the scope rule fixed. |
 | 3 | Style/Transparent tokens | BLOCKED on your Figma export. Unblock it early — the button border item may turn out to be the same fault. |
 
@@ -163,7 +216,7 @@ Last, because they touch everything and block nothing.
 | 29 | Rename `src/index.ts` to `src/app.ts` |
 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? |
 | ~~31~~ | ~~The grid should be a TOKEN~~ — DONE 2026-09-24. It is TWO grids, 4px + 2px |
-| 32 | Fold donut + gauge into ONE radial chart |
+| ~~32~~ | ~~Fold donut + gauge~~ — DONE 2026-09-24. One ring; the gauge shares its pen |
 | 33 | Two scaling multipliers, in place of the remapped density modes |
 | 34 | Figma: use the Navigation terms |
 
@@ -713,7 +766,7 @@ the first is likely, because the gutter is the layout grid's to give up.
 
 ## Architecture — component boundaries
 
-### `[ ]` Fold donut + gauge into ONE radial chart
+### `[x]` Donut is now sherpa-radial-chart — DONE 2026-09-24
 
 Will, 2026-09-23: *"the donut and gauge could be consolidated into a single
 chart component (and also support pie charts) if we add an inner radius, sweep
@@ -770,16 +823,64 @@ Proposed shape:
 with `data-sweep-start` and `data-sweep` for the arc, since a gauge is a donut
 that stops short — today that is hard-coded as the top half.
 
-Three things to settle first:
+#### Settled 2026-09-24 — measured, then ruled
 
-1. **The name.** `sherpa-radial-chart` says what it draws. `sherpa-chart` is too
-   broad — bar and line are not radial.
-2. **Does it fold, or does the gauge compose the donut?** The same question as
-   item 28 (a Figma component is not always a web component). A gauge that
-   wraps a donut keeps both specs; a fold leaves one.
-3. **The Figma side.** Donut and Gauge are separate components there. This is a
-   CODE consolidation unless Figma follows — see the layout-grid ruling for the
-   precedent that a code component need not map 1:1.
+**1. The name: `sherpa-radial-chart`.** It says what it draws; `sherpa-chart`
+would claim bar and line too.
+
+**2. The gauge COMPOSES the radial chart — it does not fold into it.** The
+measurement decided this:
+
+| | |
+|---|---|
+| shared CSS classes | `centre` `ring` `value` `hotspot` `hotspots` `chart-tip` |
+| gauge-only | `needle` `hub` `hub-cap` `scale` `zone` `caption` `gauge` `gauge-wrap` `chart-body` `chart-figure` `chart-header` `title` |
+| donut-only | `slice` `inner` `layout` `ring-wrap` `sub` |
+| **overlap** | **7 of 24 = 29%** |
+
+The DRAWING is already one engine — both call `ringSegmentPath()` with the same
+`cx/cy/inner/outer/radius` and differ only in the sweep, which the gauge already
+holds as `START_DEG = 270` and `SPAN_DEG = 180`. So the ring consolidates. But a
+single component would be 71% two disjoint halves behind a `data-type` switch,
+with a needle branch a donut never takes. Composing keeps ONE ring
+implementation and leaves the gauge's twelve classes where they are used.
+Consistent with the COMPOSE-never-reimplement rule and with item 28.
+
+**3. Figma unchanged.** Donut and Gauge stay separate components there; this is
+a CODE consolidation, per the layout-grid precedent. `name-map.yaml` now reads
+`sherpa-radial-chart → Donut Chart`, with the divergence noted.
+
+---
+
+**Done 2026-09-24.** `sherpa-donut-chart` → `sherpa-radial-chart`, with the arc
+variables you named:
+
+```html
+<sherpa-radial-chart>                                   <!-- donut -->
+<sherpa-radial-chart data-type="pie">                   <!-- inner 0, no rounding -->
+<sherpa-radial-chart data-inner="0.9">                  <!-- a thin ring -->
+<sherpa-radial-chart data-sweep-start="270" data-sweep="180">   <!-- an arc -->
+```
+
+`data-inner` is a FRACTION of the outer radius, clamped 0–1, so a host never has
+to know this component's private 100-unit box.
+
+**A DOM composition turned out to be impossible, and it is worth recording why.**
+The gauge's SVG is `viewBox="0 0 100 50"` at `aspect-ratio: 2` — the top half of
+the ring's box — while the ring is `0 0 100 100` at `aspect-ratio: 1`. A nested
+`<sherpa-radial-chart>` brings its own square box and its own shadow root, so
+the gauge's crop cannot reach it. They compose at the DRAWING layer instead,
+which is where they already shared `ringSegmentPath()`.
+
+**One value was written twice.** The gauge computed its hole as `CENTRE - 15`
+and the ring as `CENTRE * 0.7` — both 35.25, two spellings of one number, which
+drift the moment either moves. Now `RADIAL_INNER_RATIO`, shared.
+
+`T-a-gauge-composes-the-ring`. 36 chart tests pass across three engines,
+including a new one for the arc variables.
+
+**Not done, and deliberately:** the gauge keeps its needle, zones, scale and
+caption. The 29% overlap says that is right.
 
 ### `[ ]` Do we still need `icon-paths.ts` and `render-icon.ts`?
 

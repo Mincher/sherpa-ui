@@ -7,7 +7,7 @@
 import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import { formatTick, radialArea, ringSegmentPath } from '../../core/data/format-tick.js';
 import { RADIAL_CENTRE as CENTRE, RADIAL_CORNER as CORNER,
-  RADIAL_OUTLINE as OUTLINE } from '../../core/ui/shared-constants.js';
+  RADIAL_OUTLINE as OUTLINE, RADIAL_INNER_RATIO } from '../../core/ui/shared-constants.js';
 
 /** One resolved zone band, as a fraction (0–1) of the scale and a colour. */
 interface Zone {
@@ -30,8 +30,6 @@ const STATUS_ORDER = ['success', 'warning', 'urgent', 'critical', 'info'] as con
 
 /* Path geometry in viewBox units — an SVG `d` cannot read a custom property, so
    none of these can move to CSS. */
-
-const RING_WIDTH = 15;
 
 
 
@@ -232,7 +230,9 @@ export class SherpaGaugeChart extends SherpaElement {
 
     // The TRUE band edges; the path is inset half an outline inside them.
     const outer = CENTRE - OUTLINE / 2;
-    const inner = CENTRE - RING_WIDTH + OUTLINE / 2;
+    // The SAME hole the ring draws — one value, one source.
+    // TRAP T-a-gauge-composes-the-ring
+    const inner = CENTRE * RADIAL_INNER_RATIO + OUTLINE / 2;
 
     // Zones paint in full; a bare value paints only up to itself.
     const bands: Array<{

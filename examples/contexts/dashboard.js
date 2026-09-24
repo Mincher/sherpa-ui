@@ -52,7 +52,7 @@ export async function init(root) {
     customElements.whenDefined('sherpa-app-header'),
     customElements.whenDefined('sherpa-metric'),
     customElements.whenDefined('sherpa-barchart'),
-    customElements.whenDefined('sherpa-donut-chart'),
+    customElements.whenDefined('sherpa-radial-chart'),
     customElements.whenDefined('sherpa-gauge-chart'),
     customElements.whenDefined('sherpa-line-chart'),
     customElements.whenDefined('sherpa-chart-legend'),

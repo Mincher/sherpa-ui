@@ -1,6 +1,6 @@
 import { test, expect } from './harness';
 
-/** sherpa-donut-chart — one closed SVG ring-segment path per slice; centre label; pie variant. */
+/** sherpa-radial-chart — one closed SVG ring-segment path per slice; centre label; pie variant. */
 
 /**
  * The SHARE of the circle a slice's path sweeps, as a rounded percentage.
@@ -35,7 +35,7 @@ const SHARE_FN = `(el) => {
 test('draws one real SVG path per slice, spanning its share', async ({ page }) => {
   const r = await page.evaluate(async (shareSrc) => {
     const share = eval(shareSrc) as (el: SVGPathElement) => number;
-    const el = document.createElement('sherpa-donut-chart') as HTMLElement & {
+    const el = document.createElement('sherpa-radial-chart') as HTMLElement & {
       rendered?: Promise<void>;
       populate?: (d: unknown) => void;
     };
@@ -118,7 +118,7 @@ test('draws one real SVG path per slice, spanning its share', async ({ page }) =
 test('pie variant fills to the centre (no hole)', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const build = async (variant?: string): Promise<Record<string, number>> => {
-      const el = document.createElement('sherpa-donut-chart') as HTMLElement & {
+      const el = document.createElement('sherpa-radial-chart') as HTMLElement & {
         rendered?: Promise<void>;
         populate?: (d: unknown) => void;
       };
@@ -171,7 +171,7 @@ test('the ring scales uniformly to whichever axis runs out first', async ({ page
       const box = document.createElement('div');
       box.style.inlineSize = w;
       if (h) box.style.blockSize = h;
-      const el = document.createElement('sherpa-donut-chart') as HTMLElement & {
+      const el = document.createElement('sherpa-radial-chart') as HTMLElement & {
         rendered?: Promise<void>;
         populate(d: unknown): void;
       };
@@ -218,7 +218,7 @@ test('the ring scales uniformly to whichever axis runs out first', async ({ page
 test('setSliceHidden drops a slice and re-shares the whole circle', async ({ page }) => {
   const r = await page.evaluate(async (shareSrc) => {
     const share = eval(shareSrc) as (el: SVGPathElement) => number;
-    const el = document.createElement('sherpa-donut-chart') as HTMLElement & {
+    const el = document.createElement('sherpa-radial-chart') as HTMLElement & {
       rendered?: Promise<void>;
       populate(d: unknown): void;
       setSliceHidden(i: number, hidden?: boolean): void;
@@ -283,14 +283,14 @@ test('setSliceHidden drops a slice and re-shares the whole circle', async ({ pag
 test('the centre derives the total, follows a hidden slice, and yields to data-label', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const mk = async (label?: string) => {
-      const el = document.createElement('sherpa-donut-chart') as HTMLElement & {
+      const el = document.createElement('sherpa-radial-chart') as HTMLElement & {
         rendered?: Promise<void>;
         populate?: (d: unknown) => void;
         setSliceHidden?: (i: number, h?: boolean) => void;
       };
       if (label != null) el.setAttribute('data-label', label);
       document.getElementById('root')!.appendChild(el);
-      await customElements.whenDefined('sherpa-donut-chart');
+      await customElements.whenDefined('sherpa-radial-chart');
       await el.rendered;
       return el;
     };
@@ -342,7 +342,7 @@ test('the centre derives the total, follows a hidden slice, and yields to data-l
  */
 test('clicking a slice leaves no focus ring; tabbing to one draws it', async ({ page }) => {
   const box = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-donut-chart') as HTMLElement & {
+    const el = document.createElement('sherpa-radial-chart') as HTMLElement & {
       rendered?: Promise<void>; populate?: (d: unknown) => void;
     };
     document.getElementById('root')!.replaceChildren(el);
@@ -356,7 +356,7 @@ test('clicking a slice leaves no focus ring; tabbing to one draws it', async ({ 
 
   await page.mouse.click(box.x, box.y);
   const afterClick = await page.evaluate(() => {
-    const s = document.querySelector('sherpa-donut-chart')!.shadowRoot!.querySelector('.slice')!;
+    const s = document.querySelector('sherpa-radial-chart')!.shadowRoot!.querySelector('.slice')!;
     return { focused: s.matches(':focus'), outline: getComputedStyle(s).outlineStyle };
   });
   /* NO RING, whether or not the click focused it. Whether a mouse click focuses
@@ -367,7 +367,7 @@ test('clicking a slice leaves no focus ring; tabbing to one draws it', async ({ 
 
   await page.keyboard.press('Tab');
   const afterTab = await page.evaluate(() => {
-    const root = document.querySelector('sherpa-donut-chart')!.shadowRoot!;
+    const root = document.querySelector('sherpa-radial-chart')!.shadowRoot!;
     const a = root.activeElement;
     if (!a) return null;
     const cs = getComputedStyle(a);
@@ -392,7 +392,7 @@ test('a pie slice reaches the centre with a sharp point; a donut keeps its round
   async ({ page }) => {
     const r = await page.evaluate(async () => {
       const draw = async (type: string | null): Promise<string> => {
-        const el = document.createElement('sherpa-donut-chart') as HTMLElement & {
+        const el = document.createElement('sherpa-radial-chart') as HTMLElement & {
           rendered?: Promise<void>; populate?: (d: unknown) => void;
         };
         if (type) el.setAttribute('data-type', type);
@@ -417,3 +417,50 @@ test('a pie slice reaches the centre with a sharp point; a donut keeps its round
     // Straight to the centre of the 100-unit box.
     expect(r.pieStart).toBe('M 50.0000 50.0000');
   });
+
+/**
+ * The arc variables — what makes this a RADIAL chart rather than a donut.
+ * A gauge is this ring stopped short: start 270, sweep 180.
+ * TRAP T-a-gauge-composes-the-ring
+ */
+test('data-sweep-start and data-sweep stop the ring short', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const draw = async (attrs: Record<string, string>): Promise<string[]> => {
+      const el = document.createElement('sherpa-radial-chart') as HTMLElement & {
+        rendered?: Promise<void>;
+        populate(d: unknown): void;
+      };
+      for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+      document.getElementById('root')!.replaceChildren(el);
+      await el.rendered;
+      el.populate([
+        { label: 'a', value: 1 },
+        { label: 'b', value: 1 },
+        { label: 'c', value: 2 },
+      ]);
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      return [...el.shadowRoot!.querySelectorAll('.slice')].map((s) => s.getAttribute('d') ?? '');
+    };
+
+    const full = await draw({});
+    const arc = await draw({ 'data-sweep-start': '270', 'data-sweep': '180' });
+    const thin = await draw({ 'data-inner': '0.9' });
+    const wide = await draw({ 'data-inner': '0.1' });
+    return {
+      count: full.length,
+      // A stopped ring is a DIFFERENT path from a full one.
+      arcDiffers: arc[0] !== full[0],
+      // Every slice still draws — stopping the sweep drops none of them.
+      arcCount: arc.length,
+      // The hole size moves the path too, and the two extremes differ.
+      thinDiffers: thin[0] !== full[0],
+      holeMoves: thin[0] !== wide[0],
+    };
+  });
+
+  expect(r.count).toBe(3);
+  expect(r.arcCount).toBe(3);
+  expect(r.arcDiffers).toBe(true);
+  expect(r.thinDiffers).toBe(true);
+  expect(r.holeMoves).toBe(true);
+});
