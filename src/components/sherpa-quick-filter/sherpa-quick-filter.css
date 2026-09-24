@@ -83,6 +83,29 @@
 :is(.body, .caret):hover { background: var(--sherpa-style-surface-base-1, #e8e8f6); }
 :is(.body, .caret):active { background: var(--sherpa-style-surface-base-2, #b3b3c3); }
 
+/* ── ON ──────────────────────────────────────────────────────────────────
+ * An ACTIVE chip is heavier and more strongly drawn than an off one. The
+ * Style mode gives it the surface and the hue; these two say "this one is
+ * doing something" at a glance across a bar of twelve.
+ * TRAP T-an-active-chip-is-heavier-and-more-strongly-drawn */
+:host([data-current]) :is(.body, .caret) {
+  border-width: var(--sherpa-border-width-sm, 1px);
+}
+:host([data-current]) .body {
+  font-weight: var(--sherpa-font-weight-medium, 500);
+}
+
+/* A CONDITIONED chip keeps the active FILL — on must read as on — and takes
+   an INFO edge and ink. The `fx` badge says the same thing in the other
+   channel. TRAP T-a-conditioned-chip-reads-as-info */
+:host([data-conditioned][data-current]) :is(.body, .caret) {
+  border-color: var(--sherpa-style-info-border-base-1, #008bba);
+}
+:host([data-conditioned][data-current]) .count {
+  border-color: var(--sherpa-style-info-border-base-1, #008bba);
+  color: var(--sherpa-style-info-content-base, #006c91);
+}
+
 /* AI type carries the active mode's accent even when off. */
 :host([data-type="ai"]) :is(.body, .caret) {
   color: var(--sherpa-style-active-border-base-1, #c046ff);

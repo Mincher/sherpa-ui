@@ -24,7 +24,9 @@ async function bar(page: import('@playwright/test').Page): Promise<void> {
     await el.rendered;
     el.populate([
       {
-        id: 'tier', label: 'Tier', select: 'multiple', removable: true,
+        // OPT IN: conditions are off by default, so a chip that wants the
+        // And/Or rows asks for them. TRAP T-conditions-are-opt-in-per-field
+        id: 'tier', label: 'Tier', select: 'multiple', removable: true, conditions: true,
         options: [{ value: 'gold', label: 'Gold' }, { value: 'silver', label: 'Silver' }],
       },
       // A SELECTOR, not a field question — "which saved view" has no Contains.
@@ -95,164 +97,267 @@ test('every value chip opens the FILTER menu, on Equals', async ({ page }) => {
   expect(r.selectorHasCondition).toBe(false);
 });
 
-test('flipping the condition swaps the body and LOSES NOTHING', async ({ page }) => {
+test('the two modes swap, and NEITHER loses what the other holds', async ({ page }) => {
   await bar(page);
-  const r = await page.evaluate(() => {
+  const r = await page.evaluate(async () => {
     const el = document.querySelector('sherpa-quick-filter-toolbar')!;
     const menu = el.shadowRoot!
       .querySelector('sherpa-quick-filter[data-id="tier"] sherpa-menu') as HTMLElement & {
-        op: string; conditionValue: string; values: string[];
+        mode: string; conditions: { op: string; text?: string; picked?: string[] }[];
+        values: string[];
       };
     const sr = menu.shadowRoot!;
-    const select = sr.querySelector<HTMLSelectElement>('.condition')!;
-    const box = sr.querySelector<HTMLInputElement>('.condition-value')!;
-    const pick = (op: string): void => {
-      select.value = op;
-      select.dispatchEvent(new Event('change', { bubbles: true }));
+    const wait = (): Promise<void> => new Promise((res) => { setTimeout(res, 120); });
+    const shown = (sel: string): string => {
+      const node = sr.querySelector(sel);
+      return node ? getComputedStyle(node).display : '(missing)';
     };
 
-    // Tick Gold under Equals.
+    // SELECT mode is the default: a search over ticked rows, no condition rows.
     const gold = [...menu.querySelectorAll('input')].find((i) => i.value === 'gold')!;
     gold.checked = true;
     gold.dispatchEvent(new Event('change', { bubbles: true }));
-    const onEq = { op: menu.op, values: [...menu.values] };
-
-    // Flip to Contains: the rows and the search step aside for the box.
-    pick('contains');
-    const afterFlip = {
-      takes: menu.getAttribute('data-takes'),
-      op: menu.op,
-      boxShown: getComputedStyle(box).display,
-      rowsShown: getComputedStyle(sr.querySelector('.rows')!).display,
-      searchShown: getComputedStyle(sr.querySelector('.search')!).display,
-      typed: menu.conditionValue,
+    await wait();
+    const onSelect = {
+      mode: menu.mode, values: [...menu.values],
+      search: shown('.search'), rows: shown('.rows'),
+      conditionRows: shown('.condition-rows'),
     };
 
-    box.value = 'gol';
-    box.dispatchEvent(new Event('input', { bubbles: true }));
-    const onContains = { op: menu.op, typed: menu.conditionValue };
-
-    // …and BACK. The tick is still there; so is what was typed.
-    pick('eq');
-    return {
-      onEq, afterFlip, onContains,
-      backToEq: { op: menu.op, values: [...menu.values] },
+    // The header button switches to CONDITION mode.
+    sr.querySelector<HTMLElement>('.use-condition')!.click();
+    await wait();
+    const onCondition = {
+      mode: menu.mode,
+      search: shown('.search'), rows: shown('.rows'),
+      conditionRows: shown('.condition-rows'),
+      // It opens with ONE row — an empty condition mode reads as broken.
+      rowCount: sr.querySelectorAll('.condition-row').length,
+      // The ticks are untouched: a mode is a VIEW of the filter, not a reset.
       goldStillTicked: gold.checked,
-      typingKept: menu.conditionValue,
-      rowsBack: getComputedStyle(sr.querySelector('.rows')!).display,
     };
-  });
 
-  expect(r.onEq).toEqual({ op: 'eq', values: ['gold'] });
-  expect(r.afterFlip.takes).toBe('text');
-  expect(r.afterFlip.op).toBe('contains');
-  expect(r.afterFlip.boxShown).not.toBe('none');
-  expect(r.afterFlip.rowsShown).toBe('none');
-  expect(r.afterFlip.searchShown).toBe('none');
-  expect(r.afterFlip.typed).toBe('');
-  expect(r.onContains).toEqual({ op: 'contains', typed: 'gol' });
-  // THE POINT: both halves survive the round trip, because both are stamped.
-  expect(r.backToEq).toEqual({ op: 'eq', values: ['gold'] });
-  expect(r.goldStillTicked).toBe(true);
-  expect(r.typingKept).toBe('gol');
-  expect(r.rowsBack).not.toBe('none');
-});
-
-test('the typed value survives a variant RE-STAMP', async ({ page }) => {
-  const r = await page.evaluate(async () => {
-    const menu = document.createElement('sherpa-menu') as HTMLElement & {
-      rendered?: Promise<void>; op: string; conditionValue: string;
+    // Type an answer into row one.
+    const row0 = sr.querySelector('.condition-row')!;
+    const cond0 = row0.querySelector('.condition') as HTMLElement & { value: string };
+    cond0.value = 'contains';
+    cond0.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+    await wait();
+    const box = row0.querySelector('.condition-value') as HTMLElement & { value: string };
+    box.value = 'gol';
+    box.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+    await wait();
+    const typed = {
+      takes: (row0 as HTMLElement).dataset['takes'],
+      boxShown: getComputedStyle(row0.querySelector('.condition-value')!).display,
+      pickShown: getComputedStyle(row0.querySelector('.condition-pick')!).display,
+      conditions: menu.conditions,
     };
-    menu.setAttribute('data-type', 'filter');
-    menu.setAttribute('data-heading', 'Name');
-    document.getElementById('root')!.replaceChildren(menu);
-    await customElements.whenDefined('sherpa-menu');
-    await menu.rendered;
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
-    menu.op = 'contains';
-    menu.conditionValue = 'Ad';
-    const before = menu.conditionValue;
-
-    /* `data-type` is a VARIANT attribute, so this replaces the whole shadow
-       tree — and the box with it. The value lives in an attribute for exactly
-       this reason. TRAP T-restamp-does-not-abort */
-    menu.setAttribute('data-type', 'list');
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
-    const asPlainMenu = menu.shadowRoot!.querySelector('.condition-value');
-
-    menu.setAttribute('data-type', 'filter');
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    // …and BACK to select. The rows are still there; so is the typing.
+    sr.querySelector<HTMLElement>('.use-condition')!.click();
+    await wait();
     return {
-      before,
-      // A plain menu stamps no condition markup at all.
-      plainHasBox: !!asPlainMenu,
-      after: menu.conditionValue,
-      boxValue: menu.shadowRoot!.querySelector<HTMLInputElement>('.condition-value')!.value,
-      op: menu.op,
+      onSelect, onCondition, typed,
+      backToSelect: {
+        mode: menu.mode, values: [...menu.values],
+        search: shown('.search'), goldStillTicked: gold.checked,
+        // Kept, not cleared — one more press brings the same rows back.
+        conditionsKept: menu.conditions,
+      },
     };
   });
 
-  expect(r.before).toBe('Ad');
-  expect(r.plainHasBox).toBe(false);
-  expect(r.after).toBe('Ad');
-  expect(r.boxValue).toBe('Ad');
-  expect(r.op).toBe('contains');
+  expect(r.onSelect).toEqual({
+    mode: 'select', values: ['gold'],
+    search: 'block', rows: 'flex', conditionRows: 'none',
+  });
+
+  // CONDITION mode: the rows answer the field, so the search over them goes.
+  expect(r.onCondition.mode).toBe('condition');
+  expect(r.onCondition.search).toBe('none');
+  expect(r.onCondition.rows).toBe('none');
+  expect(r.onCondition.conditionRows).toBe('grid');
+  expect(r.onCondition.rowCount).toBe(1);
+  expect(r.onCondition.goldStillTicked).toBe(true);
+
+  // A TYPING op answers with a box; a PICKING one with the field's own values.
+  expect(r.typed.takes).toBe('text');
+  expect(r.typed.boxShown).not.toBe('none');
+  expect(r.typed.pickShown).toBe('none');
+  expect(r.typed.conditions).toEqual([{ op: 'contains', text: 'gol' }]);
+
+  // THE POINT: both modes survive the round trip, because both are stamped.
+  expect(r.backToSelect.mode).toBe('select');
+  expect(r.backToSelect.values).toEqual(['gold']);
+  expect(r.backToSelect.search).toBe('block');
+  expect(r.backToSelect.goldStillTicked).toBe(true);
+  expect(r.backToSelect.conditionsKept).toEqual([{ op: 'contains', text: 'gol' }]);
 });
 
-test('a column heading opens the SAME menu, over the column own values', async ({ page }) => {
+/**
+ * MANY CONDITIONS, CHAINED.
+ *
+ * `Add condition` appends a row, and every row after the first LEADS with an
+ * And/Or select. Each row asks its OWN question, so one can be a typed
+ * `Contains` while the next picks a value from the field's own list.
+ *
+ * TRAP T-many-conditions-are-one-reading
+ */
+test('Add condition chains rows, and each row asks its own question', async ({ page }) => {
+  await bar(page);
   const r = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
-      rendered?: Promise<void>; populate(d: unknown): void;
-      columnClause(field: string): unknown[] | null;
-    };
-    el.setAttribute('data-column-filters', '');
-    document.getElementById('root')!.replaceChildren(el);
-    await el.rendered;
-    el.populate({
-      columns: [{ field: 'tier', header: 'Tier' }],
-      rows: [{ tier: 'Gold' }, { tier: 'Gold' }, { tier: 'Silver' }, { tier: 'Bronze' }],
-    });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
-
-    const chip = el.shadowRoot!.querySelector('.head-cell[data-field="tier"] .head-filter')!;
-    const menu = chip.querySelector('sherpa-menu') as HTMLElement & { op: string };
+    const el = document.querySelector('sherpa-quick-filter-toolbar')!;
+    const menu = el.shadowRoot!
+      .querySelector('sherpa-quick-filter[data-id="tier"] sherpa-menu') as HTMLElement & {
+        mode: string; conditions: { op: string; join?: string; text?: string; picked?: string[] }[];
+      };
     const sr = menu.shadowRoot!;
-
-    const shape = {
-      type: menu.getAttribute('data-type'),
-      ops: [...sr.querySelector('.condition')!.shadowRoot!
-        .querySelectorAll<HTMLOptionElement>('.control option')].map((o) => o.value),
-      op: menu.op,
-      // The rows are the COLUMN's own distinct values — deduped and sorted.
-      // The MENU's own rows now, the same ones a filter chip gets.
-      rows: [...menu.querySelectorAll('.menu-row:not(.qf-all) .menu-row-label')]
-        .map((n) => n.textContent),
+    const wait = (): Promise<void> => new Promise((res) => { setTimeout(res, 120); });
+    const rows = (): HTMLElement[] => [...sr.querySelectorAll<HTMLElement>('.condition-row')];
+    const set = (row: HTMLElement, sel: string, value: string, ev = 'change'): void => {
+      const field = row.querySelector(sel) as HTMLElement & { value: string };
+      field.value = value;
+      field.dispatchEvent(new Event(ev, { bubbles: true, composed: true }));
     };
 
-    // Tick two and apply: SEVERAL picks read as `in`.
-    for (const value of ['Gold', 'Silver']) {
-      const box = [...menu.querySelectorAll<HTMLInputElement>('.menu-row input')]
-        .find((b) => b.value === value)!;
-      box.checked = true;
-    }
-    sr.querySelector<HTMLElement>('.apply')!.click();
-    await new Promise((res) => setTimeout(res, 60));
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    sr.querySelector<HTMLElement>('.use-condition')!.click();
+    await wait();
 
-    return { shape, clause: el.columnClause('tier') };
+    // ROW ONE: a typed Contains. It has NO join — nothing precedes it.
+    set(rows()[0]!, '.condition', 'contains');
+    await wait();
+    set(rows()[0]!, '.condition-value', 'gol', 'input');
+    await wait();
+    const firstRow = {
+      joinShown: getComputedStyle(rows()[0]!.querySelector('.join')!).display,
+      // A LONE row has nothing to drop, so its Remove is hidden too.
+      dropShown: getComputedStyle(rows()[0]!.querySelector('.drop-condition')!).display,
+    };
+
+    // ROW TWO: Or, Equals, picked from the field's own values.
+    sr.querySelector<HTMLElement>('.add-condition')!.click();
+    await wait();
+    set(rows()[1]!, '.join', 'or');
+    set(rows()[1]!, '.condition-pick', 'silver');
+    await wait();
+
+    const secondRow = {
+      count: rows().length,
+      joinShown: getComputedStyle(rows()[1]!.querySelector('.join')!).display,
+      // Row ONE gains its Remove the moment there are two.
+      firstDropShown: getComputedStyle(rows()[0]!.querySelector('.drop-condition')!).display,
+      joinOptions: [...(rows()[1]!.querySelector('.join') as HTMLElement).shadowRoot!
+        .querySelectorAll('option')].map((o) => (o as HTMLOptionElement).value),
+      /* `Equals` answers with the FIELD's own values, never a text box — one
+         vocabulary, so a chip and a column heading agree.
+         TRAP T-equals-answers-with-the-fields-own-values */
+      pickOptions: [...(rows()[1]!.querySelector('.condition-pick') as HTMLElement).shadowRoot!
+        .querySelectorAll('option')].map((o) => (o as HTMLOptionElement).value),
+      conditions: menu.conditions,
+    };
+
+    // Drop row two again. The LAST row is never dropped.
+    rows()[1]!.querySelector<HTMLElement>('.drop-condition')!.click();
+    await wait();
+    const afterDrop = { count: rows().length, conditions: menu.conditions };
+    rows()[0]!.querySelector<HTMLElement>('.drop-condition')!.click();
+    await wait();
+
+    return { firstRow, secondRow, afterDrop, lastRowKept: rows().length };
   });
 
-  expect(r.shape.type).toBe('filter');
-  // The SAME six conditions a filter chip offers, from the one vocabulary.
-  expect(r.shape.ops).toEqual(['eq', 'ne', 'contains', 'notcontains', 'startswith', 'endswith']);
-  expect(r.shape.op).toBe('eq');
-  expect(r.shape.rows).toEqual(['Bronze', 'Gold', 'Silver']);
-  // `eq` against a list can never match, so several picks become `in`.
-  expect(r.clause).toEqual(['tier', 'in', ['Gold', 'Silver']]);
+  // Row ONE leads, so it has no join and — while alone — nothing to remove.
+  expect(r.firstRow.joinShown).toBe('none');
+  expect(r.firstRow.dropShown).toBe('none');
+
+  expect(r.secondRow.count).toBe(2);
+  expect(r.secondRow.joinShown).not.toBe('none');
+  expect(r.secondRow.firstDropShown).not.toBe('none');
+  expect(r.secondRow.joinOptions).toEqual(['and', 'or']);
+  // Led by the `Select…` placeholder — an empty value is "not answered yet".
+  expect(r.secondRow.pickOptions).toEqual(['', 'gold', 'silver']);
+
+  // TWO rows, each with its own op and its own kind of answer.
+  expect(r.secondRow.conditions).toEqual([
+    { op: 'contains', text: 'gol' },
+    { op: 'eq', join: 'or', picked: ['silver'] },
+  ]);
+
+  expect(r.afterDrop.count).toBe(1);
+  expect(r.afterDrop.conditions).toEqual([{ op: 'contains', text: 'gol' }]);
+  // Clear is how you mean "no filter"; an empty condition mode reads as broken.
+  expect(r.lastRowKept).toBe(1);
 });
 
-test('the BADGE wears the condition sign; the caret keeps the value', async ({ page }) => {
+/**
+ * CONDITIONS ARE OPT-IN.
+ *
+ * A field answered by ticking a closed set of three — Region, Customer — gets
+ * a plain list and no mode button. The reader never meets a control that
+ * cannot help them. TRAP T-conditions-are-opt-in-per-field
+ */
+test('a chip that did not opt in has NO condition mode at all', async ({ page }) => {
+  await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>; populate(d: unknown): void;
+    };
+    el.setAttribute('data-type', 'data');
+    document.getElementById('root')!.replaceChildren(el);
+    await customElements.whenDefined('sherpa-quick-filter-toolbar');
+    await el.rendered;
+    el.populate([{
+      // No `conditions` — the default, and the common case.
+      id: 'region', label: 'Region', select: 'multiple',
+      options: [{ value: 'emea', label: 'EMEA' }, { value: 'apac', label: 'APAC' }],
+    }]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+  });
+
+  const r = await page.evaluate(async () => {
+    const el = document.querySelector('sherpa-quick-filter-toolbar')!;
+    const menu = el.shadowRoot!
+      .querySelector('sherpa-quick-filter[data-id="region"] sherpa-menu') as HTMLElement & {
+        mode: string;
+      };
+    const sr = menu.shadowRoot!;
+    const btn = sr.querySelector<HTMLElement>('.use-condition')!;
+    const before = { conditional: menu.hasAttribute('data-conditional'), btn: getComputedStyle(btn).display };
+
+    // Press it anyway. Nothing happens — the mode does not exist for this field.
+    btn.click();
+    await new Promise((res) => { setTimeout(res, 120); });
+    const afterClick = { mode: menu.mode, rows: sr.querySelectorAll('.condition-row').length };
+
+    // And a host WRITING the attribute gets no condition mode either.
+    menu.setAttribute('data-mode', 'condition');
+    await new Promise((res) => { setTimeout(res, 120); });
+    const afterWrite = {
+      mode: menu.mode,
+      search: getComputedStyle(sr.querySelector('.search')!).display,
+    };
+    return { before, afterClick, afterWrite };
+  });
+
+  expect(r.before.conditional).toBe(false);
+  expect(r.before.btn).toBe('none');
+  expect(r.afterClick).toEqual({ mode: 'select', rows: 0 });
+  /* The ATTRIBUTE is not the door. A hidden button and a live mode would be a
+     control a reader cannot reach but a script can. */
+  expect(r.afterWrite.mode).toBe('select');
+  expect(r.afterWrite.search).toBe('block');
+});
+
+/**
+ * ONE MARK, NOT A SIGN PER OPERATOR.
+ *
+ * The badge used to wear `!=` or `∷*`. A per-op sign cannot say anything true
+ * about a field holding three chained rows, and a badge reading `=` over
+ * `A or B and C` is worse than none. So it says only THAT conditions are
+ * applied — `fx`, like a spreadsheet's formula mark — and the TOOLTIP spells
+ * out which. TRAP T-a-condition-badge-says-that-not-which
+ */
+test('the BADGE says THAT conditions apply, never WHICH', async ({ page }) => {
   await bar(page);
   const r = await page.evaluate(async () => {
     const el = document.querySelector('sherpa-quick-filter-toolbar')!;
@@ -265,11 +370,29 @@ test('the BADGE wears the condition sign; the caret keeps the value', async ({ p
       spoken: chip.shadowRoot!.querySelector('.count')?.getAttribute('aria-label') ?? null,
       caret: chip.shadowRoot!.querySelector('.caret-label')?.textContent ?? '',
     });
-    const pick = (op: string): void => {
-      const field = menu.shadowRoot!.querySelector('.condition') as HTMLElement & { value: string };
+    /* A condition lives in a ROW now, so setting one means being IN condition
+       mode. The mode button is the only way in. */
+    let inCondition = false;
+    const pick = async (op: string): Promise<void> => {
+      if (!inCondition) {
+        menu.shadowRoot!.querySelector<HTMLElement>('.use-condition')!.click();
+        inCondition = true;
+        // The row's composed fields upgrade on their own schedule.
+        await wait();
+        await wait();
+      }
+      const row = menu.shadowRoot!.querySelector('.condition-row')!;
+      const field = row.querySelector('.condition') as HTMLElement & { value: string };
       field.value = op;
       field.shadowRoot!.querySelector('.control')!
         .dispatchEvent(new Event('change', { bubbles: true }));
+    };
+    /** Answer the current row, so the condition is real rather than drafted. */
+    const answer = (value: string): void => {
+      const row = menu.shadowRoot!.querySelector('.condition-row')!;
+      const box = row.querySelector('.condition-value') as HTMLElement & { value: string };
+      box.value = value;
+      box.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
     };
 
     // The menu names both at once: the word and the sign it will wear.
@@ -283,15 +406,26 @@ test('the BADGE wears the condition sign; the caret keeps the value', async ({ p
     await wait();
     const onEq = badge();
 
-    pick('ne');
+    /* `ne` PICKS from the field's own values, so the row is answered by
+       choosing one. TRAP T-equals-answers-with-the-fields-own-values */
+    await pick('ne');
+    await wait();
+    const row = menu.shadowRoot!.querySelector('.condition-row')!;
+    const sel = row.querySelector('.condition-pick') as HTMLElement & { value: string };
+    sel.value = 'gold';
+    sel.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+    await wait();
+    menu.shadowRoot!.querySelector<HTMLElement>('.apply')!.click();
+    await wait();
     await wait();
     const onNe = badge();
 
-    pick('startswith');
-    menu.conditionValue = 'Go';
-    menu.dispatchEvent(new CustomEvent('condition-change', {
-      bubbles: true, composed: true, detail: {},
-    }));
+    await pick('startswith');
+    await wait();
+    answer('Go');
+    await wait();
+    menu.shadowRoot!.querySelector<HTMLElement>('.apply')!.click();
+    await wait();
     await wait();
     return { rows, onEq, onNe, onTyped: badge() };
   });
@@ -301,11 +435,16 @@ test('the BADGE wears the condition sign; the caret keeps the value', async ({ p
     'Equals (=)', 'Does not equal (!=)', 'Contains (∷)',
     'Does not contain (!∷)', 'Starts with (∷*)', 'Ends with (*∷)',
   ]);
-  // `eq` HAS a sign, but a badge on every default chip would be noise.
+  // The DEFAULT names no condition, so it wears no mark at all.
   expect(r.onEq).toEqual({ sign: null, spoken: null, caret: 'Gold' });
-  expect(r.onNe).toEqual({ sign: '!=', spoken: 'Does not equal', caret: 'Gold' });
+  // ONE mark, whatever the condition is. The word is still the accessible name.
+  expect(r.onNe.sign).toBe('fx');
+  /* The WORD, not the value: `condition` is the accessible name, and the
+     tooltip carries the whole phrase. */
+  expect(r.onNe.spoken).toBe('Does not equal');
   // A typing condition answers with what was TYPED, and the caret keeps it all.
-  expect(r.onTyped).toEqual({ sign: '∷*', spoken: 'Starts with', caret: 'Go' });
+  expect(r.onTyped.sign).toBe('fx');
+  expect(r.onTyped.spoken).toBe('Starts with');
 });
 
 test('a TYPED condition survives Apply, and its hits mark', async ({ page }) => {
@@ -318,7 +457,9 @@ test('a TYPED condition survives Apply, and its hits mark', async ({ page }) => 
     await customElements.whenDefined('sherpa-quick-filter-toolbar');
     await el.rendered;
     el.populate([{
+      // OPT IN. TRAP T-conditions-are-opt-in-per-field
       id: 'owner', label: 'Owner', select: 'single', removable: true, commit: true,
+      conditions: true,
       options: [{ value: 'ravi', label: 'Ravi' }, { value: 'dana', label: 'Dana' }],
     }]);
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
@@ -327,17 +468,24 @@ test('a TYPED condition survives Apply, and its hits mark', async ({ page }) => 
     const menu = chip.querySelector('sherpa-menu') as HTMLElement & { conditionValue: string };
     const wait = (): Promise<void> => new Promise((res) => { setTimeout(res, 120); });
 
-    const field = menu.shadowRoot!.querySelector('.condition') as HTMLElement & { value: string };
+    // Into CONDITION mode; the rows live there.
+    menu.shadowRoot!.querySelector<HTMLElement>('.use-condition')!.click();
+    await wait();
+    const row = menu.shadowRoot!.querySelector('.condition-row')!;
+
+    const field = row.querySelector('.condition') as HTMLElement & { value: string };
     field.value = 'contains';
     field.shadowRoot!.querySelector('.control')!
       .dispatchEvent(new Event('change', { bubbles: true }));
     await wait();
 
-    const input = menu.shadowRoot!.querySelector('.condition-value')!
+    const input = row.querySelector('.condition-value')!
       .shadowRoot!.querySelector('.control') as HTMLInputElement;
     input.value = 'Rav';
     input.dispatchEvent(new Event('input', { bubbles: true }));
     await wait();
+    /* NOT yet. This menu COMMITS, so a typed condition is a DRAFT until Apply
+       — the same as a ticked row. TRAP T-a-condition-is-a-draft-too */
     const typed = chip.hasAttribute('data-current');
 
     /* APPLY is where this broke: the bar re-derived `data-current` from ticked
@@ -348,7 +496,8 @@ test('a TYPED condition survives Apply, and its hits mark', async ({ page }) => 
     return { typed, applied: chip.hasAttribute('data-current'), clauses: el.clauses };
   });
 
-  expect(r.typed).toBe(true);
+  // A DRAFT until Apply, exactly as ticked rows are.
+  expect(r.typed).toBe(false);
   expect(r.applied).toBe(true);
   expect(r.clauses).toEqual({ owner: ['owner', 'contains', 'Rav'] });
 });
@@ -427,14 +576,14 @@ test('the badge is legible, and the tooltip SPELLS the condition', async ({ page
 
   // The DEFAULT names no condition — there is nothing to explain.
   expect(r.onEq).toEqual({ badge: null, weight: '600', tip: 'Gold' });
-  /* A tooltip is where a reader goes to find out what `!∷` MEANS, so it spells
-     the condition rather than repeating the sign. The VALUE is what was TYPED:
+  /* The badge says only THAT a condition applies, so the TOOLTIP is the only
+     place the reader can find out which. The VALUE is what was TYPED:
      a typing condition is answered by its box, not by ticks left over from the
      list condition — the ticks survive the flip, but they are not the answer
      while `notcontains` is what the field holds.
      TRAP T-one-state-per-filtered-field */
   expect(r.onCondition).toEqual({
-    badge: '!∷', weight: '600', tip: 'Does not contain: Ravi',
+    badge: 'fx', weight: '600', tip: 'Does not contain: Ravi',
   });
 });
 
@@ -505,3 +654,96 @@ test('a column menu offers the WHOLE column, never just the drawn rows', async (
     type: 'filter', select: 'multiple', clearable: true, search: true, heading: 'Owner',
   });
 });
+
+/**
+ * A VALUE SELECT WAITS FOR THE ROWS.
+ *
+ * Row one is stamped by `#syncConditions`, which runs BEFORE the menu's own
+ * value rows arrive — so it opened with an empty `Equals` select while row two,
+ * added by hand afterwards, was full. `slotchange` re-fills every row.
+ *
+ * TRAP T-a-value-select-waits-for-the-rows
+ */
+test('row ONE\'s value select is populated, not just later rows', async ({ page }) => {
+  await bar(page);
+  const r = await page.evaluate(async () => {
+    const el = document.querySelector('sherpa-quick-filter-toolbar')!;
+    const menu = el.shadowRoot!
+      .querySelector('sherpa-quick-filter[data-id="tier"] sherpa-menu') as
+      HTMLElement & { shadowRoot: ShadowRoot };
+    const sr = menu.shadowRoot;
+    const wait = (ms = 150): Promise<void> => new Promise((res) => { setTimeout(res, ms); });
+
+    sr.querySelector<HTMLElement>('.use-condition')!.click();
+    await wait();
+    const opts = (row: Element): string[] => {
+      const pick = row.querySelector('.condition-pick') as HTMLElement & { shadowRoot: ShadowRoot };
+      return [...pick.shadowRoot.querySelectorAll('option')]
+        .map((o) => (o as HTMLOptionElement).value);
+    };
+    const first = opts(sr.querySelector('.condition-row')!);
+
+    sr.querySelector<HTMLElement>('.add-condition')!.click();
+    await wait();
+    const second = opts(sr.querySelectorAll('.condition-row')[1]!);
+
+    // A pick SURVIVES a re-fill — the values are re-sent, not reset.
+    const pick = sr.querySelector('.condition-pick') as HTMLElement & { value: string };
+    pick.value = 'silver';
+    pick.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+    await wait();
+    sr.querySelector<HTMLElement>('.add-condition')!.click();
+    await wait();
+
+    return { first, second, kept: pick.value };
+  });
+
+  // BOTH rows offer the field's own values. Row one used to be empty.
+  expect(r.first).toEqual(['', 'gold', 'silver']);
+  expect(r.second).toEqual(['', 'gold', 'silver']);
+  expect(r.kept).toBe('silver');
+});
+
+/**
+ * A PLAIN LIST STILL FILTERS.
+ *
+ * A ticked list reports a clause too — `["tier","eq","gold"]` — so a host that
+ * skipped `select()` on `clauses[field]` alone stopped EVERY list filtering
+ * the moment conditions arrived. The skip is on the MODE, not the clause.
+ *
+ * TRAP T-a-conditioned-chip-answers-with-its-clause
+ */
+test('a chip in SELECT mode reports picks AND a clause, and is not conditioned',
+  async ({ page }) => {
+    await bar(page);
+    const r = await page.evaluate(async () => {
+      const el = document.querySelector('sherpa-quick-filter-toolbar') as HTMLElement & {
+        shadowRoot: ShadowRoot; values: unknown; clauses: unknown;
+      };
+      const chip = el.shadowRoot.querySelector('sherpa-quick-filter[data-id="tier"]')!;
+      const menu = chip.querySelector('sherpa-menu') as HTMLElement & { shadowRoot: ShadowRoot };
+      const wait = (ms = 150): Promise<void> => new Promise((res) => { setTimeout(res, ms); });
+
+      const gold = [...chip.querySelectorAll('input')].find((i) => i.value === 'gold')!;
+      gold.checked = true;
+      gold.dispatchEvent(new Event('change', { bubbles: true }));
+      menu.shadowRoot.querySelector<HTMLElement>('.apply')?.click();
+      await wait(250);
+
+      return {
+        values: JSON.stringify(el.values),
+        clauses: JSON.stringify(el.clauses),
+        on: chip.hasAttribute('data-current'),
+        // The flag a host reads to decide whether `select()` applies.
+        conditioned: chip.hasAttribute('data-conditioned'),
+      };
+    });
+
+    // The `view` chip is persistent, so it is always in `values`.
+    expect(JSON.parse(r.values).tier).toEqual(['gold']);
+    expect(JSON.parse(r.clauses).tier).toEqual(['tier', 'eq', 'gold']);
+    expect(r.on).toBe(true);
+    /* NOT conditioned. Both shapes describe the same ticks, and a host uses
+       `values`; only a chip in CONDITION mode answers with its clause alone. */
+    expect(r.conditioned).toBe(false);
+  });

@@ -1,12 +1,11 @@
-<!-- Settings › Accessibility. The container holds the Display View; the View chip
-     swaps its children for another View's (contexts/settings-views.js). -->
-<form novalidate>
-  <sherpa-layout-grid>
-
-    <sherpa-container data-col-span="reading" id="view-region">
-      <sherpa-container-header slot="header"
-                               data-heading="Display"
-                               data-description="Make the app easier to see."></sherpa-container-header>
+<!-- Settings › Accessibility. One page, a section header before each set of
+     settings; the header's Jump to chip lists them. -->
+<sherpa-layout-grid>
+  <sherpa-stack data-col-span="reading" data-gap="2xl">
+    <sherpa-stack>
+      <sherpa-section-header id="section-display" data-heading="Display">
+        <span slot="description">Make the app easier to see.</span>
+      </sherpa-section-header>
       <sherpa-list>
         <sherpa-list-item data-label="Increase contrast"
                           data-description="Stronger borders and text.">
@@ -17,12 +16,22 @@
           <sherpa-switch slot="trailing" name="underline-links"></sherpa-switch>
         </sherpa-list-item>
       </sherpa-list>
-    </sherpa-container>
+    </sherpa-stack>
 
-    <sherpa-container-footer data-col-span="reading" data-align="end">
-      <sherpa-button type="button" class="cancel-btn">Cancel</sherpa-button>
-      <sherpa-button type="submit" data-look="saturated">Save changes</sherpa-button>
-    </sherpa-container-footer>
-
-  </sherpa-layout-grid>
-</form>
+    <sherpa-stack>
+      <sherpa-section-header id="section-interaction" data-heading="Interaction">
+        <span slot="description">Make the app easier to use.</span>
+      </sherpa-section-header>
+      <sherpa-list>
+        <sherpa-list-item data-label="Reduce motion"
+                          data-description="Turn off animation and moving effects.">
+          <sherpa-switch slot="trailing" id="reduce-motion" name="reduce-motion"></sherpa-switch>
+        </sherpa-list-item>
+        <sherpa-list-item data-label="Keyboard shortcuts"
+                          data-description="Single-key shortcuts for common actions.">
+          <sherpa-switch slot="trailing" id="shortcuts" name="shortcuts" checked></sherpa-switch>
+        </sherpa-list-item>
+      </sherpa-list>
+    </sherpa-stack>
+  </sherpa-stack>
+</sherpa-layout-grid>

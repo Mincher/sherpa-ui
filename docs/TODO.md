@@ -31,9 +31,11 @@ say what order. Anything not numbered is a sub-item of the section it sits in.
 | | 16 | Favourite and Save apply to the Context, not the View | 5 |
 | | 17 | Breadcrumbs are for workflow, not for the nav | 5 |
 | ✅ | 18 | An optional allow-list on ANY component axis | 6 |
-| | 19 | Rework the filter menu — two modes, many conditions | 7 |
+| ~~19~~ | ~~Rework the filter menu — two modes, many conditions~~ — DONE 2026-09-24 | 7 |
 | ✅ | 20 | An inactive chip must say where its filter is applied | 7 |
 | | 21 | A filter PANEL, as an alternative to the toolbars | 7 |
+| | 21b | Which header chips CARRY OVER between views — configurable | 7 |
+| | 21c | A condition's matches must ALL highlight, not just one string | 7 |
 | | 22 | `Ask N-zo` panel — width, and a draggable edge | 8 |
 | | 23 | A focused grid row opens a details panel | 8 |
 | | 24 | Playwright tests accessibility — WCAG 2.1 AA | 9 |
@@ -175,14 +177,53 @@ primitive, then build on it.
 
 | # | Item |
 |---|---|
-| 19 | Rework the filter menu — two modes, and MANY conditions |
+| ~~19~~ | ~~Rework the filter menu — two modes, MANY conditions~~ — DONE 2026-09-24 |
 | 20 | An inactive chip must say where its filter is applied |
 | 20b | The Created-date filter should be a top-level date RANGE |
 | 20c | **BUG** — a range filter refuses its default max; the chip stays inactive |
 | 21 | A filter PANEL, as an alternative to the toolbars |
+| 21b | Which header chips CARRY OVER between views — configurable |
+| 21c | A condition's matches must ALL highlight, not just one string |
 
 Item 21 is undesigned. Do it last of the three, once the menu is settled — the
 panel shows the same controls in a different frame.
+
+### `[ ]` 21b — which header chips carry over between views
+
+Will, 2026-09-24:
+
+> App header filters shouldn't carry over between preset or custom views unless
+> already set in the initial view definition. The View chip is obviously a
+> different scenario altogether. Which chips carry over should be CONFIGURABLE
+> though, in case we do want to persist things like Customer and Region later.
+>
+> It's kinda like some data blocks are singular, and global to the application.
+> When this is the case then there's a chance the consumer of Sherpa would want
+> their value selections to persist across contexts and views.
+
+So a chip def gains a flag — one axis, two answers: reset on a view change
+(the default), or SURVIVE it. The View chip is neither; it IS the thing that
+changed.
+
+Not started. It belongs with 21 because both are about what a view owns.
+
+### `[ ]` 21c — a condition's matches must ALL highlight
+
+Will, 2026-09-24, in two messages — the second corrects the first:
+
+> Conditional filters don't need to highlight string matches in target
+> components.
+>
+> Actually they do but there will be multiple strings to match and highlight.
+> Not just one.
+
+`.cell mark.match` marks ONE substring today, from one `text` value. A field
+answered by `Contains "ab" or Starts with "R"` has TWO strings to find, and a
+three-row chain has three. The mark is already INFO blue, matching the chip
+that found it (`T-a-conditioned-chip-reads-as-info`), so only the FINDING
+changes — walk every answered row's text, not just `state.text`.
+
+Not started.
 
 ### Wave 8 — overlay panels
 
@@ -370,7 +411,7 @@ Start at `onViewPicked`'s `after` in `examples/contexts/records.js`: the loop
 rebuilds `columnClauses` from the grid, and something the view cleared is not
 reaching `pushColumns()`.
 
-### `[ ]` Rework the filter menu — two modes, and MANY conditions
+### `[x]` Rework the filter menu — two modes, and MANY conditions — DONE 2026-09-24
 
 Today the filter menu has a condition dropdown, and the chosen condition symbol
 shows in the badge. Replace all of it.
@@ -401,6 +442,82 @@ The first row has no chaining select.
 
 **`Equals` stays a condition.** For `Equals`, the second input is NOT a text
 box. It is a select menu of the values for that field.
+
+---
+
+**Done 2026-09-24.** All of the above, plus one thing the spec did not ask for:
+**conditions are OPT-IN.** Will, 2026-09-24 — "I don't think Customer or Region
+need conditional logic." A field answered by ticking a closed set of three gets
+a plain list and no mode button; `conditions: true` on the def turns it on. A
+TEXT GRID COLUMN always opts in.
+
+| shipped | where |
+|---|---|
+| `data-mode` = select \| condition, an icon-only header button | `sherpa-menu` `filter` template |
+| `data-conditional` — the opt-in gate, refused by click AND by attribute | `sherpa-menu.ts` `#enforceMode` |
+| `[And\|Or] [condition] [value]` rows, stamped from a prototype | `.condition-row-tpl` |
+| `Equals` answers with the field's OWN values, per ROW | `.condition-pick` |
+| ONE badge, `fx` — never the per-op sign | `filterFace`, `CONDITION_BADGE` |
+| the tip SPELLS the chain: `Contains: ab or Equals: churned` | `spellConditions()` |
+| a conditioned chip reads as `info`, not the on-tint | `data-conditioned`, `state-pins.yaml` |
+
+The old light-DOM condition row is **deleted** — `#addConditionRow`,
+`qf-op-tpl`, `qf-text-tpl` and their CSS. The menu owns its own rows.
+
+Traps: `T-a-filter-menu-has-two-modes`, `T-conditions-are-opt-in-per-field`,
+`T-a-condition-badge-says-that-not-which`, `T-a-conditioned-chip-reads-as-info`,
+`T-equals-answers-with-the-fields-own-values`,
+`T-a-select-does-not-hug-its-own-text`.
+
+### `[x]` The conditional filter shake-down — DONE 2026-09-24
+
+Will drove the built menu and reported nine faults in a row. Every one was
+real, every one is measured in the browser, and eight of nine were SILENT — the
+menu looked right and did the wrong thing.
+
+| what he saw | what it was |
+|---|---|
+| "the chip never goes active" | `info` pins the surface to WHITE, so a conditioned chip painted like an off one. Active FILL + info EDGE now |
+| nothing happens on Apply | the toolbar's `states` never read `menu.conditions`, so a chip full of answered rows reported an EMPTY clause |
+| the old select lists don't work | the host skipped `select()` on `clauses[field]`, and a TICKED list reports a clause too — every list stopped filtering |
+| the Equals select is empty | row one is stamped before the menu's value rows arrive; `#refillPicks` on `slotchange` |
+| applied on every keystroke | `#emitConditions` now returns early on a committing menu, and Apply forces it |
+| values don't carry over | an untouched `<select>` reported its first option as a pick, so the seed believed the rows were answered |
+| no placeholder | a `<select>` has no `placeholder`; the empty `Select…` option is both the prompt and the "unanswered" flag |
+| Clear leaves the rows | Clear empties both modes and reports at once |
+| toggling does nothing | a conditioned chip read as EMPTY so its body opened the menu; and an off chip reported `[]` rather than `suspended` |
+
+Plus two he asked for: an active chip is `font-weight: medium` and a `1px`
+border, and the grid's `mark.match` is INFO blue so one colour runs from the
+chip to the cell it found.
+
+Traps: `T-a-condition-is-a-draft-too`, `T-a-mode-switch-carries-the-answer-over`,
+`T-an-untouched-select-is-not-an-answer`, `T-a-rebuilt-row-reads-empty-for-a-tick`,
+`T-a-value-select-waits-for-the-rows`, `T-clear-empties-both-modes`,
+`T-toggling-a-conditioned-chip-suspends-its-condition`,
+`T-a-conditioned-chip-answers-with-its-clause`,
+`T-an-active-chip-is-heavier-and-more-strongly-drawn`.
+
+**The recurring shape, worth naming once:** a composed `sherpa-input-text`
+fills ASYNCHRONOUSLY, so anything that rebuilds a condition row reads it as
+unanswered for one tick. Four of the nine were that, wearing different clothes.
+
+### `[x]` Two chip bugs found while building it — DONE 2026-09-24
+
+Both reported by Will, both reproduced, both worse than described.
+
+**A new chip opened in the AMBER warning.** It arrived `active: true` holding
+no values, which is exactly the state `data-empty` paints amber — so the reader
+pressed Add, got what they asked for, and was shown a warning about it. It now
+arrives OFF and lights when it has an answer.
+`T-a-new-chip-opens-in-default-not-warning`.
+
+**Removing ONE filter cleared every other one.** Measured: `#removeFilter`
+emitted `quick-filter-change` with `values: {}` on a bar whose chips were still
+ticked, because `items()` on a freshly cloned `<sherpa-menu>` stamps NOTHING
+until the element upgrades. The host answered the only way it could —
+`select(field, [])` for every field. `#settled()` now awaits every chip and
+every menu before the emit. `T-a-rebuilt-bar-reads-empty-until-its-menus-stamp`.
 
 ### `[x]` Only five filter chips carry an icon — DONE 2026-09-24
 

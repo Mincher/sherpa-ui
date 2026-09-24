@@ -4,8 +4,8 @@ import { test, expect, type Page } from '@playwright/test';
  * SETTINGS IS AN OVERLAY ON THE CONTEXT, SO LEAVING IT PUTS YOU BACK.
  *
  * The Context under it is never reloaded: its View, its rows and its DOM are
- * the ones you left. The URL carries both (`?context=records&settings=profile`),
- * and every way out — the settings button, the back arrow, ESC, browser Back —
+ * the ones you left. The URL carries both, each with its View
+ * (`?context=records&view=risk&settings=profile`), and every way out — the settings button, the back arrow, ESC, browser Back —
  * goes through it.
  *
  * Runs against the EXAMPLES server (:4200).
@@ -55,12 +55,12 @@ for (const [name, leave] of ways) {
 
     await clickSettings(page);
     await expect.poll(() => settingsOpen(page)).toBe(true);
-    expect(new URL(page.url()).search).toBe('?context=records&settings=profile');
+    expect(new URL(page.url()).search).toBe('?context=records&view=risk&settings=profile');
 
     await leave(page);
     await expect.poll(() => settingsOpen(page)).toBe(false);
     // ESC closes the dialog first; its QUEUED `close` then writes the URL.
-    await expect.poll(() => new URL(page.url()).search).toBe('?context=records');
+    await expect.poll(() => new URL(page.url()).search).toBe('?context=records&view=risk');
 
     const after = await page.evaluate(() => ({
       probe: document.querySelector<HTMLElement>('#context-root sherpa-data-grid')?.dataset['probe'],
@@ -88,19 +88,29 @@ test('a URL with settings opens the overlay on top of its Context', async ({ pag
   expect(r.main).toBe('Records');
 });
 
-test('a Settings View swaps the container, and its state comes from the snapshot', async ({ page }) => {
+test('a Settings Context is one page; Jump to scrolls to a section, clear of the edge', async ({ page }) => {
+  // Short enough that the page scrolls — a jump cannot scroll past the end.
+  await page.setViewportSize({ width: 1280, height: 480 });
+  await page.goto('http://localhost:4200/?context=dashboard&settings=appearance');
+  await expect.poll(() => settingsOpen(page)).toBe(true);
+  const jump = page.locator('#settings sherpa-quick-filter[data-type="jump"]');
+  // One row per section header, read off the page.
+  await expect.poll(() => jump.evaluate((j) =>
+    [...j.querySelectorAll('[slot="menu"] button')].map((b) => b.textContent))).toEqual(['Theme', 'Layout']);
+
+  await jump.locator('.body').click();
+  await jump.locator('button[value="section-layout"]').click();
+  // The overlay body scrolls smoothly, so wait for it to land.
+  await expect.poll(() => page.evaluate(() => {
+    const body = document.getElementById('settings')!.shadowRoot!.querySelector('.body')!;
+    const target = document.getElementById('section-layout')!;
+    return Math.round(target.getBoundingClientRect().top - body.getBoundingClientRect().top);
+  })).toBe(16);
+});
+
+test('a page of one section has nowhere to jump, so it shows no chip', async ({ page }) => {
   await page.goto('http://localhost:4200/?context=dashboard&settings=profile');
   await expect.poll(() => settingsOpen(page)).toBe(true);
-  const heading = () => page.evaluate(() =>
-    document.querySelector<HTMLElement>('#view-region sherpa-container-header')?.dataset['heading']);
-  await expect.poll(heading).toBe('Details');
-
-  await page.evaluate(() => document.querySelector('#settings sherpa-app-header')!
-    .dispatchEvent(new CustomEvent('quick-filter-change', {
-      bubbles: true, composed: true, detail: { values: { view: ['notifications'] } },
-    })));
-  await expect.poll(heading).toBe('Notifications');
-  // `checked` is dropped from View markup, so the snapshot sets it.
-  expect(await page.evaluate(() =>
-    (document.getElementById('notify-email') as HTMLElement & { checked: boolean }).checked)).toBe(true);
+  await expect.poll(() => page.evaluate(() =>
+    document.querySelector<HTMLElement>('#settings sherpa-quick-filter[data-type="jump"]')!.hidden)).toBe(true);
 });

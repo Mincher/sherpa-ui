@@ -150,56 +150,6 @@
  * a plain descendant selector from here reaches them at all.
  */
 
-/* ── The condition row, and the two bodies it chooses between ────────
- * The menu carries `data-takes` = list | text, written from the <select>.
- * BOTH bodies stay in the DOM, so flipping the condition keeps the reader's
- * picks AND what they typed. TRAP T-an-operator-decides-pick-or-type
- */
-
-.chip .qf-op-row {
-  display: flex;
-  align-items: center;
-  padding: var(--sherpa-display-mode-space-2xs, 4px)
-    var(--sherpa-display-mode-space-xs, 8px);
-}
-
-.chip .qf-op {
-  inline-size: 100%;
-  min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
-  padding: var(--sherpa-display-mode-space-2xs, 4px)
-    var(--sherpa-display-mode-space-xs, 8px);
-  font: inherit;
-  font-size: var(--sherpa-font-size-body-base, 14px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
-  background: var(--sherpa-theme-surface-default-1, #fff);
-  border: var(--sherpa-border-width-sm, 1px) solid
-    var(--sherpa-theme-border-default-1, #d8d8e0);
-  border-radius: var(--sherpa-structure-rounding-sm, 4px);
-}
-
-.chip .qf-text-row {
-  display: none;
-  padding: var(--sherpa-display-mode-space-2xs, 4px)
-    var(--sherpa-display-mode-space-xs, 8px);
-}
-
-.chip .qf-text {
-  min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
-  padding: var(--sherpa-display-mode-space-2xs, 4px)
-    var(--sherpa-display-mode-space-xs, 8px);
-  font: inherit;
-  font-size: var(--sherpa-font-size-body-base, 14px);
-  color: var(--sherpa-theme-content-body-1, #35353d);
-  background: var(--sherpa-theme-surface-default-1, #fff);
-  border: var(--sherpa-border-width-sm, 1px) solid
-    var(--sherpa-theme-border-default-1, #d8d8e0);
-  border-radius: var(--sherpa-structure-rounding-sm, 4px);
-}
-
-/* TYPE mode: the value rows and the search box step aside for the input. */
-.chip sherpa-menu[data-takes="text"] .qf-text-row { display: block; }
-.chip sherpa-menu[data-takes="text"] label { display: none; }
-
 /* ── The range switch, and a number filter's two shapes ──────────────
  * Also slotted from the chip's light DOM.
  */

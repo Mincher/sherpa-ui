@@ -363,11 +363,15 @@
    from the whole header row. */
 .head-filter { touch-action: auto; }
 
-/* The part of a cell a TEXT column's filter matched — same treatment as
-   sherpa-nav-item's search hit. Number and date cells never carry one. */
+/* The part of a cell a TEXT column's filter matched.
+ *
+ * INFO blue, not the brand purple: a match is what a CONDITION found, and the
+ * chip that found it wears the same blue. A reader following one colour from
+ * the chip to the cell is reading one fact, not two.
+ * TRAP T-a-conditioned-chip-reads-as-info */
 .cell mark.match {
   background: color-mix(in srgb,
-    var(--sherpa-display-mode-color-brand-color-3, #c046ff) 30%, transparent);
+    var(--sherpa-style-info-border-base-1, #008bba) 24%, transparent);
   color: var(--sherpa-theme-content-body-base, #0c0b11);
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
 }

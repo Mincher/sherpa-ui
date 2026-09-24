@@ -825,6 +825,8 @@ test('the Add button puts an available filter on the bar and drops it from its m
       // A MENU chip is deliberately absent from `active` (its id names a column,
       // not a value), so "did it arrive on?" is read off the chip itself.
       addedIsOn: !!sr.querySelector('.chip[data-id="health"]')?.hasAttribute('data-current'),
+      // On with no values is the AMBER warning, which is what we are avoiding.
+      addedIsWarning: !!sr.querySelector('.chip[data-id="health"]')?.hasAttribute('data-empty'),
     };
   }, MOUNT);
 
@@ -836,8 +838,12 @@ test('the Add button puts an available filter on the bar and drops it from its m
   expect(r.after.chips).toEqual(['active', 'health']);
   expect(r.after.offered).toEqual(['seats']);
 
-  // It arrives ON, so the reason you added it is visible immediately.
-  expect(r.addedIsOn).toBe(true);
+  /* It arrives OFF, in the DEFAULT look. A chip added ON holds no values yet,
+     and "on but filtering by nothing" paints the amber warning — shown to a
+     reader who has done nothing but add the chip they asked for. They add it,
+     then answer it. TRAP T-a-new-chip-opens-in-default-not-warning */
+  expect(r.addedIsOn).toBe(false);
+  expect(r.addedIsWarning).toBe(false);
 });
 
 test('the Add menu is multi-select and searchable; a chip can be removed', async ({ page }) => {

@@ -14,7 +14,7 @@
  * TRAP T-one-state-per-filtered-field
  */
 import {
-  DEFAULT_OP, OP_LABELS, OP_SYMBOLS, OP_TAKES,
+  DEFAULT_OP, OP_LABELS, OP_TAKES,
   picksClause, valueSet, valueKey,
   type Filter, type FilterClause, type FilterOp,
 } from './store.js';
@@ -239,7 +239,13 @@ function chainConditions(state: FilterState): Filter | undefined {
 export interface FilterFace {
   /** Is this control ON — narrowing, selected, active. */
   current: boolean;
-  /** The condition's SIGN, where a control has room for one. '' for the default. */
+  /**
+   * ONE mark, saying only "conditions are applied" — never WHICH condition.
+   *
+   * A per-op sign cannot say anything true about a field holding three chained
+   * rows, and a badge that reads `=` over `A or B and C` is worse than none.
+   * TRAP T-a-condition-badge-says-that-not-which
+   */
   badge: string;
   /** The same condition in WORDS, for a tooltip or an accessible name. */
   condition: string;
@@ -269,14 +275,40 @@ export function filterFace(state: FilterState): FilterFace {
     ? state.text
     : picks.map((p) => p.label).join(', ');
 
+  /* Many rows say their own story; one row falls back to the old wording. */
+  const chained = state.conditions.length > 1 ? spellConditions(state) : '';
+
   return {
     current: state.fieldState === 'active',
-    badge: named ? OP_SYMBOLS[state.op] : '',
-    condition,
-    value,
+    /* `fx` — the mark says conditions are applied, and the tip says which.
+       TRAP T-a-condition-badge-says-that-not-which */
+    badge: (named || state.conditions.length) ? CONDITION_BADGE : '',
+    condition: chained || condition,
+    value: chained ? chained : value,
     count: picks.length,
-    tip: condition && spelled ? `${condition}: ${spelled}` : (spelled || condition),
+    tip: chained || (condition && spelled ? `${condition}: ${spelled}` : (spelled || condition)),
   };
+}
+
+/** The ONE mark a control wears when conditions are applied. */
+export const CONDITION_BADGE = 'fx';
+
+/**
+ * Chained rows, in words: `Contains "ab" or Equals cd`.
+ *
+ * The badge cannot carry this, so the tip must. TRAP T-a-condition-badge-says-that-not-which
+ */
+export function spellConditions(state: FilterState): string {
+  const part = (row: FieldCondition): string => {
+    const name = OP_LABELS[row.op] ?? row.op;
+    const said = (OP_TAKES[row.op] ?? 'list') === 'text'
+      ? (row.text ?? '')
+      : (row.picked ?? []).map(String).join(', ');
+    return said ? `${name}: ${said}` : name;
+  };
+  return state.conditions
+    .map((row, i) => (i ? `${row.join === 'or' ? 'or' : 'and'} ${part(row)}` : part(row)))
+    .join(' ');
 }
 
 /* ── Binding a control to a field ──────────────────────────────────────── */

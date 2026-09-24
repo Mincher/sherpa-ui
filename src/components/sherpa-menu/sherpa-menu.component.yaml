@@ -115,31 +115,36 @@ anatomy:
                 class: heading
                 part: heading
               - slot: header
+              - el: sherpa-button
+                class: use-condition
+                part: use-condition
+                attrs:
+                  data-type: icon
+                  data-look: transparent
+                  data-icon-start: sliders-up
+                  aria-pressed: "false"
+                  aria-label: Use condition
+              - el: sherpa-input-text
+                class: search
+                part: search
+                attrs:
+                  data-icon-start: magnifying-glass
+                  placeholder: Search
+                  autocomplete: "off"
+                  aria-label: Search this menu
               - el: div
-                class: filter-row sherpa-group
-                part: filter-row
-                children:
-                  - el: sherpa-input-text
-                    class: condition
-                    part: condition
-                    attrs:
-                      data-type: select
-                      aria-label: Condition
-                  - el: sherpa-input-text
-                    class: condition-value
-                    part: condition-value
-                    attrs:
-                      placeholder: Value
-                      data-clearable: ""
-                      aria-label: Value
-                  - el: sherpa-input-text
-                    class: search
-                    part: search
-                    attrs:
-                      data-icon-start: magnifying-glass
-                      placeholder: Search
-                      autocomplete: "off"
-                      aria-label: Search this menu
+                class: condition-rows
+                part: condition-rows
+                attrs:
+                  role: group
+                  aria-label: Conditions
+              - el: sherpa-button
+                class: add-condition
+                part: add-condition
+                attrs:
+                  data-size: xs
+                  data-look: transparent
+                  data-icon-start: plus
           - el: p
             class: no-matches
             part: no-matches
@@ -150,16 +155,41 @@ anatomy:
             part: rows
             slot: ""
           - el: template
-            class: menu-check-tpl
+            class: condition-row-tpl
             children:
-              - el: label
-                class: menu-row
+              - el: div
+                class: condition-row sherpa-group
                 children:
-                  - el: input
+                  - el: sherpa-input-text
+                    class: join
                     attrs:
-                      type: checkbox
-                  - el: span
-                    class: menu-row-label
+                      data-type: select
+                      data-size: sm
+                      aria-label: Join
+                  - el: sherpa-input-text
+                    class: condition
+                    attrs:
+                      data-type: select
+                      aria-label: Condition
+                  - el: sherpa-input-text
+                    class: condition-pick
+                    attrs:
+                      data-type: select
+                      aria-label: Value
+                  - el: sherpa-input-text
+                    class: condition-value
+                    attrs:
+                      placeholder: Value
+                      data-clearable: ""
+                      aria-label: Value
+                  - el: sherpa-button
+                    class: drop-condition
+                    attrs:
+                      data-type: icon
+                      data-size: xs
+                      data-look: transparent
+                      data-icon-start: cross
+                      aria-label: Remove condition
 props:
   - $type: prop
     name: data-align
@@ -184,6 +214,15 @@ props:
     observed: false
     kind: style
     description: show the Apply / Cancel footer and DEFER changes until Apply
+  - $type: prop
+    name: data-conditional
+    type: string
+    observed: false
+    kind: style
+    description: >-
+      FILTER type only: this field can be asked a CONDITION, so the mode button shows. OPT-IN: most
+      fields are answered by ticking values, and a `Contains` box over a closed set of three is
+      noise. TRAP T-conditions-are-opt-in-per-field
   - $type: prop
     name: data-conditions
     type: string
@@ -220,11 +259,22 @@ props:
     kind: content
     description: optional heading (rendered upper-case at 10/16)
   - $type: prop
+    name: data-mode
+    type: string
+    observed: true
+    kind: style
+    description: >-
+      FILTER type only: select  | condition. `select` is a plain ticked list with a search;
+      `condition` is the And/Or rows. An icon-only button in the header switches between them. TRAP
+      T-a-filter-menu-has-two-modes
+  - $type: prop
     name: data-op
     type: string
     observed: true
     kind: style
-    description: "FILTER type only: which condition is picked. Defaults to `eq`."
+    description: >-
+      FILTER type only: which condition is picked. Defaults to `eq`. The FIRST row's op — a menu in
+      condition mode holds many.
   - $type: prop
     name: data-removable
     type: string
@@ -299,11 +349,11 @@ states:
     name: filter
     selector: ":host([data-type=\"filter\"])"
   - $type: state
+    name: condition
+    selector: ":host([data-mode=\"condition\"])"
+  - $type: state
     name: drill
     selector: ":host([data-drill])"
-  - $type: state
-    name: text
-    selector: ":host([data-takes=\"text\"])"
   - $type: state
     name: clearable
     selector: ":host([data-clearable])"
@@ -326,7 +376,7 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: >-
-      read/write JS properties (values, templateId, op, conditionValue, open). See
+      read/write JS properties (values, templateId, mode, conditions, op, conditionValue, open). See
       $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
@@ -374,8 +424,15 @@ events:
     bubbles: true
     composed: true
     detail:
+      conditions: unknown
       op: unknown
       value: unknown
+  - $type: event
+    name: filter-mode-change
+    bubbles: true
+    composed: true
+    detail:
+      mode: unknown
   - $type: event
     name: menu-items
     bubbles: true
@@ -461,6 +518,12 @@ $extensions:
       - name: templateId
         type: string
         access: read
+      - name: mode
+        type: string
+        access: read-write
+      - name: conditions
+        type: string
+        access: read-write
       - name: op
         type: string
         access: read-write

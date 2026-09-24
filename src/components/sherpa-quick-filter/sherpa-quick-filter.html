@@ -14,7 +14,10 @@
       </sherpa-quick-filter>
 
   Public API:
-    data-type       default | ai | populated
+    data-type       default | ai | populated | jump
+                    `jump` is a JUMP TO chip, not a filter: never on. Its menu
+                    lists places on the page, filled by populate([{ value, label }]);
+                    a pick scrolls the element whose id is `value` into view.
     data-current    selected/on state (boolean)
     data-label      chip text (or use the default slot). Rewritten to
                     "Field: Value" while exactly ONE menu value is picked;
@@ -29,6 +32,9 @@
                     sherpa-tooltip look rather than a nested instance: the badge
                     lives in this shadow root, so a light-DOM wrapper component
                     cannot reach it. Reveal is pure CSS on .count-wrap:hover.
+    data-conditioned written BY the chip when its menu is answering with
+                    CONDITIONS rather than ticks. Reads as `info`, not the
+                    plain on-tint. TRAP T-a-conditioned-chip-reads-as-info
     data-menu       Figma State=menu — snap on the caret button
     data-icon-only  the chip reduced to JUST its menu button — a 24 square with
                     a funnel. Body, count, indicator and value label are all
@@ -47,6 +53,7 @@
   Fires:
     quick-filter-click  — the chip body is toggled. detail: { active }
     quick-filter-change — the menu selection changed. detail: { values: string[] }
+    jump-select — a jump row was picked, and its target scrolled into view. detail: { value, label }
 -->
 <template id="default">
   <div class="chip" part="chip">
@@ -78,5 +85,9 @@
     </button>
 
     <span class="menu-slot"><slot name="menu"></slot></span>
+
+    <!-- A jump row, cloned into the slotted menu. No `slot`: rows go in the
+         menu's DEFAULT slot, and a row carrying one is never projected. -->
+    <template class="jump-item-tpl"><button class="jump-item" type="button"></button></template>
   </div>
 </template>

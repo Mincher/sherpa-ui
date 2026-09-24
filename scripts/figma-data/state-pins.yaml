@@ -13,6 +13,7 @@ sherpa-quick-filter:
   '&[data-current]': active
   # On but holding no values — the contradiction reads as a warning.
   '&[data-current][data-empty]': warning
+
   # The view took this field; reads as inactive, keeps its value.
   '&[data-superseded]': inactive
   '&[disabled]': inactive

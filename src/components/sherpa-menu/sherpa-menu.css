@@ -79,25 +79,71 @@
    gap under its heading. */
 :host([data-type="filter"]) .header {
   grid-template-areas:
-    "heading"
-    "filter";
+    "heading  mode"
+    "filter   filter";
+  grid-template-columns: 1fr auto;
 }
 
-/* ONE OBJECT: the condition leads at 40%, what answers it fills the rest, and
-   NO GAP — `.sherpa-group` squares their inner corners so the pair reads as a
-   single control rather than two that happen to sit together. */
-.header .filter-row {
+/* The mode switch sits on the heading's own row, at its end — and ONLY when
+   the field opted in. TRAP T-conditions-are-opt-in-per-field */
+.use-condition { display: none; }
+:host([data-type="filter"][data-conditional]) .use-condition {
+  display: inline-flex;
+  grid-area: mode;
+}
+
+/* SELECT mode (the default) shows the search; CONDITION mode shows the rows.
+   One filter, two views of it. TRAP T-a-filter-menu-has-two-modes */
+.condition-rows,
+.add-condition { display: none; }
+
+:host([data-type="filter"]) .search { grid-area: filter; }
+
+:host([data-mode="condition"]) .rows { display: none; }
+:host([data-mode="condition"]) .condition-rows {
   grid-area: filter;
   display: grid;
-  grid-template-columns: 2fr 3fr;
+  row-gap: var(--sherpa-display-mode-space-xs, 8px);
+}
+:host([data-mode="condition"]) .add-condition {
+  display: inline-flex;
+  grid-area: add;
+  justify-self: start;
+}
+:host([data-mode="condition"]) .header {
+  grid-template-areas:
+    "heading  mode"
+    "filter   filter"
+    "add      add";
+}
+
+/* ONE OBJECT per row: [And|Or] [condition] [value] [x], snapped with no gap by
+   `.sherpa-group`, which squares the inner corners by POSITION. */
+.condition-row {
+  display: grid;
+  /* The join is a FIXED track, not `auto`: at auto the select shrank to its
+     caret and "And" clipped. TRAP T-a-select-does-not-hug-its-own-text */
+  grid-template-columns: 5rem 2fr 3fr auto;
   align-items: center;
 }
 
-/* Inside the group the search is a plain child, not the header's control row. */
-:host([data-type="filter"]) .header .search { grid-area: auto; }
+/* Row ONE has no join, and a lone row has nothing to drop. Both are HIDDEN,
+   never removed — a re-order gives the control straight back. */
+.condition-row[data-first] .join,
+.condition-row[data-only] .drop-condition { display: none; }
+.condition-row[data-first] { grid-template-columns: 2fr 3fr auto; }
+.condition-row[data-only] { grid-template-columns: 2fr 3fr; }
 
-/* The two halves are the same height, so the joint reads as one edge. */
-.header .filter-row > * { min-block-size: var(--sherpa-display-mode-size-2xl, 32px); }
+/* A PICKING op answers with the field's own values; a TYPING one with a box.
+   The row's own flag, so two rows can ask different questions at once.
+   TRAP T-an-operator-decides-pick-or-type */
+.condition-pick,
+.condition-value { display: none; }
+.condition-row[data-takes="list"] .condition-pick { display: block; }
+.condition-row[data-takes="text"] .condition-value { display: block; }
+
+/* Every part of a row is the same height, so the joints read as one edge. */
+.condition-row > * { min-block-size: var(--sherpa-display-mode-size-2xl, 32px); }
 
 
 .header .heading { grid-area: heading; }
@@ -163,22 +209,17 @@
 /* ── Search ── a composed <sherpa-input-text> that owns its own box, ring,
    focus state and icon, so there is nothing to restyle here. */
 .search { display: none; }
-:host([data-search]) .search { display: block; }
+/* NOT in condition mode: the rows answer the field there, and a search box
+   above them filters a list nothing is showing. */
+:host([data-search]:not([data-mode="condition"])) .search { display: block; }
 
-/* ── Condition ── the FILTER type's own row; no other menu stamps it.
- * Both halves are COMPOSED sherpa-input-texts, which own box, border, caret,
- * focus ring and Clear — there is nothing to restyle here, only to place.
+/* ── Condition ── the FILTER type's own rows; no other menu stamps them.
+ * Every part is a COMPOSED sherpa-input-text or sherpa-button, which own box,
+ * border, caret, focus ring and Clear — there is nothing to restyle here,
+ * only to place. The layout is in the header block above.
  * TRAP T-one-field-one-filter-menu
- * TRAP T-an-operator-decides-pick-or-type
+ * TRAP T-a-filter-menu-has-two-modes
  */
-.condition-value { display: none; }
-
-:host([data-takes="text"]) .condition-value { display: block; }
-
-/* TYPE mode: the value rows and the search step aside for the box, which now
-   sits where the search was. */
-:host([data-takes="text"]) .rows { display: none; }
-:host([data-takes="text"]) .search { display: none; }
 
 
 /* The MENU's OWN rows, stamped by populate()/items(). They are LIGHT DOM, so

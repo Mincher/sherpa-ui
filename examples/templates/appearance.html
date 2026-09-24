@@ -1,20 +1,21 @@
-<!-- Settings › Appearance. The container holds the Theme View; the View chip
-     swaps its children for another View's (contexts/settings-views.js). -->
-<form novalidate>
-  <sherpa-layout-grid>
-
-    <sherpa-container data-col-span="reading" id="view-region">
-      <sherpa-container-header slot="header"
-                               data-heading="Theme"
-                               data-description="Applies as you change it."></sherpa-container-header>
+<!-- Settings › Appearance. One page, a section header before each set of
+     settings; the header's Jump to chip lists them. -->
+<sherpa-layout-grid>
+  <sherpa-stack data-col-span="reading" data-gap="2xl">
+    <sherpa-stack>
+      <sherpa-section-header id="section-theme" data-heading="Theme">
+        <span slot="description">Applies as you change it.</span>
+      </sherpa-section-header>
       <!-- Radios via populate([{value,label,description}]) -->
       <sherpa-select-group id="mode-group" data-label="Colour mode"></sherpa-select-group>
-    </sherpa-container>
+    </sherpa-stack>
 
-    <sherpa-container-footer data-col-span="reading" data-align="end">
-      <sherpa-button type="button" class="cancel-btn">Cancel</sherpa-button>
-      <sherpa-button type="submit" data-look="saturated">Save changes</sherpa-button>
-    </sherpa-container-footer>
-
-  </sherpa-layout-grid>
-</form>
+    <sherpa-stack>
+      <sherpa-section-header id="section-layout" data-heading="Layout">
+        <span slot="description">Spacing and page size.</span>
+      </sherpa-section-header>
+      <sherpa-select-group id="density" data-label="Density"></sherpa-select-group>
+      <sherpa-select-group id="page-size" data-label="Items per page"></sherpa-select-group>
+    </sherpa-stack>
+  </sherpa-stack>
+</sherpa-layout-grid>

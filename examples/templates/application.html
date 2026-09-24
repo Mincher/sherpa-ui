@@ -1,0 +1,33 @@
+<!-- Settings › Application. One page, a section header before each set of
+     settings; the header's Jump to chip lists them. -->
+<sherpa-layout-grid>
+  <sherpa-stack data-col-span="reading" data-gap="2xl">
+    <sherpa-stack>
+      <sherpa-section-header id="section-notifications" data-heading="Notifications">
+        <span slot="description">What we send you, and where.</span>
+      </sherpa-section-header>
+      <sherpa-list>
+        <sherpa-list-item data-label="Email notifications"
+                          data-description="Weekly digest and mentions.">
+          <sherpa-switch slot="trailing" id="notify-email" name="notify-email" checked></sherpa-switch>
+        </sherpa-list-item>
+        <sherpa-list-item data-label="Browser notifications"
+                          data-description="Alerts while the app is open.">
+          <sherpa-switch slot="trailing" id="notify-browser" name="notify-browser"></sherpa-switch>
+        </sherpa-list-item>
+      </sherpa-list>
+    </sherpa-stack>
+
+    <sherpa-stack>
+      <sherpa-section-header id="section-navigation" data-heading="Navigation">
+        <span slot="description">What the navigation panel lists.</span>
+      </sherpa-section-header>
+      <sherpa-list>
+        <sherpa-list-item data-label="Show full view hierarchy"
+                          data-description="List each page's preset and saved views under it.">
+          <sherpa-switch slot="trailing" id="nav-hierarchy" name="nav-hierarchy"></sherpa-switch>
+        </sherpa-list-item>
+      </sherpa-list>
+    </sherpa-stack>
+  </sherpa-stack>
+</sherpa-layout-grid>

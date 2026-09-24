@@ -64,7 +64,8 @@ export async function init(root) {
 
   // Shared header — it lives in index.html, not in this Context's root.
   const header = document.querySelector('sherpa-app-shell > sherpa-app-header');
-  header?.populate(headerConfig);
+  // Awaited, so a host picking a View after init() finds the chips.
+  await header?.populate(headerConfig);
   header?.setAttribute('data-notifications', '4');
 
   // ONE SOURCE, EIGHT BOUND COMPONENTS: a filter set once fans out to every
@@ -266,22 +267,26 @@ export async function init(root) {
   header?.addEventListener('view-save', () => {
     const label = prompt('Name this view');
     if (!label) return;
+    const id = label.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    // The saved view names ITSELF in the View chip, or picking it shows the one it was saved from.
+    const picked = { ...header.values, view: [id] };
     views = {
       ...views,
-      ...saveViewAs('dashboard', label, { source, elements: { header } }, {
+      ...saveViewAs('dashboard', label, { source, elements: { header: { values: picked } } }, {
         header: ['values'],
       }),
     };
-    // The chip should now read the view just saved.
-    const id = label.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     // RE-POPULATE, THEN PUT THE CHIPS BACK: `populate` rebuilds the bar from
     // the defs, wiping what the reader just picked. Read before, write after.
-    const picked = header.values;
     // Await populate(), NOT `rendered` — `rendered` resolved when the header
     // first drew, so a restore hung off it runs before the rebuilt chips exist.
     void Promise.resolve(
       header.populate({ ...headerConfig, filters: globalFilters(viewOptions(views, id), undefined, customerOrgs) }),
-    ).then(() => { header.values = picked; });
+    ).then(() => {
+      header.values = picked;
+      // Reported, so the URL and the nav follow the view just saved.
+      header.querySelector('sherpa-quick-filter-toolbar')?.report();
+    });
   });
   header?.addEventListener('view-favorite', (e) => console.log('view-favorite', e.detail));
   header?.addEventListener('data-refresh', () => console.log('data-refresh'));

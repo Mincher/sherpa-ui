@@ -8,10 +8,12 @@ import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.j
 import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
 import { allow, type AllowList } from '../../core/data/allow.js';
 import {
-  DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES,
+  DEFAULT_OP, OPS_FOR_TYPE, OP_TAKES,
   type Filter, type FilterOp,
 } from '../../core/data/store.js';
-import { fieldState, stateClause, type FilterState } from '../../core/data/filter-state.js';
+import {
+  fieldState, stateClause, type FieldCondition, type FilterState,
+} from '../../core/data/filter-state.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-button/sherpa-button.js';
@@ -58,12 +60,13 @@ export interface QuickFilterDef {
   /** Defer picks behind Apply. TRAP T-commit-follows-select-mode — else the select mode decides. */
   commit?: boolean;
   /**
-   * Offer a CONDITION dropdown above the rows: Equals, Contains, Starts with…
+   * Offer the CONDITION mode: And/Or rows of Equals, Contains, Starts with…
    *
-   * The same conditions the column heading's filter menu offers, from the one
-   * vocabulary in store.ts. `eq` is the default, and shows the value rows; a
-   * typing condition shows a text box instead.
-   * TRAP T-an-operator-decides-pick-or-type
+   * OPT-IN, and off by default. A field answered by ticking a closed set —
+   * Region, Customer — gets a plain list and no mode button; the reader never
+   * meets a control that cannot help them.
+   * TRAP T-conditions-are-opt-in-per-field
+   * TRAP T-a-filter-menu-has-two-modes
    */
   conditions?: boolean;
   /** Which condition this chip is on. Defaults to `eq`. */
@@ -439,6 +442,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   override onDisconnect(): void {
+    if (this.#conditionFrame != null) cancelAnimationFrame(this.#conditionFrame);
+    this.#conditionFrame = null;
     this.#observer?.disconnect();
     this.#observer = null;
     if (this.#frame != null) cancelAnimationFrame(this.#frame);
@@ -814,18 +819,25 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       return;
     }
 
-    /* THE CONDITION ROW leads the value menu, above the search box. What it
-       is set to decides whether the rows below it, or a text box, is what the
-       reader answers with. TRAP T-an-operator-decides-pick-or-type */
-    if (def.conditions) this.#addConditionRow(menu, def);
-
-    /* A VALUE menu is a FILTER menu: the condition row above the search says
-       what its rows mean. A PERSISTENT chip is a selector, not a field
-       question — "which saved view" has no Contains.
+    /* A VALUE menu is a FILTER menu. A PERSISTENT chip is a selector, not a
+       field question — "which saved view" has no Contains.
        TRAP T-an-operator-decides-pick-or-type */
     if (!def.persistent) {
       menu.setAttribute('data-type', 'filter');
       if (def.op) menu.setAttribute('data-op', def.op);
+
+      /* CONDITIONS ARE OPT-IN. A closed set of three — Region, Customer — is
+         answered by ticking, and a Contains box over it is noise. The MENU
+         owns the rows; this only says whether they are offered at all.
+         TRAP T-conditions-are-opt-in-per-field */
+      if (def.conditions) {
+        menu.setAttribute('data-conditional', '');
+        /* A number or date chip returned above, so what is left is a VALUES
+           chip — the text ops are the set it can answer. */
+        const ops = OPS_FOR_TYPE['text'] ?? [];
+        if (ops.length) menu.setAttribute('data-conditions', ops.join(','));
+        if (def.text) menu.setAttribute('data-value', def.text);
+      }
     }
 
     // TRAP T-persistent-chip-is-a-selector — no pick at all falls back to the
@@ -874,37 +886,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * TRAP T-an-operator-decides-pick-or-type
    * TRAP T-range-switch-swaps-not-rebuilds
    */
-  #addConditionRow(menu: HTMLElement, def: QuickFilterDef): void {
-    const row = this.clone('template.qf-op-tpl');
-    const select = row?.querySelector('select');
-    const proto = select?.querySelector('option');
-    if (!row || !select || !proto) return;
-
-    // The ops a TEXT field can answer — the one vocabulary, in store.ts.
-    const ops = OPS_FOR_TYPE[def.kind === 'number' ? 'number' : 'text'] ?? [];
-    select.replaceChildren(
-      ...ops.map((op) => {
-        const option = proto.cloneNode(false) as HTMLOptionElement;
-        option.value = op;
-        option.textContent = OP_LABELS[op];
-        return option;
-      }),
-    );
-
-    const op = def.op ?? DEFAULT_OP;
-    select.value = ops.includes(op) ? op : (ops[0] ?? DEFAULT_OP);
-    menu.setAttribute('data-takes', OP_TAKES[select.value as FilterOp] ?? 'list');
-    menu.appendChild(row);
-
-    // The typed half, stamped whether or not it shows. CSS decides.
-    const box = this.clone('template.qf-text-tpl');
-    const input = box?.querySelector('input');
-    if (box && input) {
-      input.value = def.text ?? '';
-      menu.appendChild(box);
-    }
-  }
-
   /** Was this chip's commit mode PINNED by its definition? The Range switch must not move it. */
   #chipDefers(sw: HTMLElement): boolean {
     const id = sw.closest<HTMLElement>('.chip')?.dataset['id'];
@@ -929,7 +910,18 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** A chip's condition or typed value changed — the bar's filter did too. */
   #onConditionChanged = (): void => {
     this.#emitChange();
+    /* AGAIN next frame. A rebuilt condition row's value select is filled
+       ASYNCHRONOUSLY, so `states` reads an unanswered row for one tick — and
+       the host, told the bar holds no clause, drops the filter the reader
+       just applied. TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
+    if (this.#conditionFrame != null) return;
+    this.#conditionFrame = requestAnimationFrame(() => {
+      this.#conditionFrame = null;
+      this.#emitChange();
+    });
   };
+
+  #conditionFrame: number | null = null;
 
   /** The Range switch was flipped — swap the menu between its two shapes. */
   #onRangeToggle = (event: Event): void => {
@@ -965,6 +957,25 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       (menu as HTMLElement & { items?: (i: unknown[]) => void }).items?.(items);
     }
     this.#pendingItems = [];
+  }
+
+  /**
+   * Settle after a REBUILD: every menu has stamped its rows.
+   *
+   * `items()` on a freshly cloned menu stamps NOTHING — the element has no
+   * shadow template until it upgrades, so it keeps the list and stamps at
+   * `onRender`. Reading the bar before that gives `values: {}` on a bar full
+   * of ticked rows, and a host that answers such an event clears every filter
+   * the reader had. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp
+   */
+  async #settled(): Promise<void> {
+    await Promise.all(this.#chips().map(
+      (chip) => (chip as HTMLElement & { rendered?: Promise<void> }).rendered,
+    ));
+    await Promise.all(this.#chips().flatMap((chip) =>
+      [...chip.querySelectorAll('sherpa-menu')].map(
+        (menu) => (menu as HTMLElement & { rendered?: Promise<void> }).rendered,
+      )));
   }
 
   /** Give a chip's menu its "Remove" action. TRAP T-remove-is-opt-in-and-a-footer-button */
@@ -1147,7 +1158,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
          chip or a column heading opened it.
          TRAP T-one-field-one-filter-menu */
       const menu = chip.querySelector('sherpa-menu') as
-        (HTMLElement & { conditionValue?: string }) | null;
+        (HTMLElement & { conditionValue?: string; conditions?: FieldCondition[] }) | null;
       if (menu?.getAttribute('data-type') !== 'filter') continue;
 
       const all = [...menu.querySelectorAll<HTMLInputElement>('input')]
@@ -1163,6 +1174,18 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
           picked,
           op: (menu.dataset['op'] ?? DEFAULT_OP) as FilterOp,
           text: menu.conditionValue ?? '',
+          /* THE ROWS. Without these `stateClause` saw no conditions and gave
+             nothing back, so a chip full of answered rows read as on, wore its
+             `fx` badge, and filtered NOTHING.
+
+             TRAP T-a-conditioned-chip-answers-with-its-clause */
+          conditions: menu.dataset['mode'] === 'condition' ? (menu.conditions ?? []) : [],
+          /* An OFF chip SUSPENDS: it keeps every row and applies none of them,
+             exactly as it keeps its picks. Reporting none of them instead read
+             as "no filter", and the chip could never switch itself back ON —
+             it needed a clause to go on, and the clause needed it on.
+             TRAP T-grid-suspend-is-not-clear */
+          suspended: !chip.hasAttribute('data-current'),
         },
       );
     }
@@ -1368,8 +1391,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const i = this.#available.findIndex((f) => f.id === id);
       if (i < 0) continue;
       const [def] = this.#available.splice(i, 1);
-      // ON and REMOVABLE: the user added it, so they may take it off.
-      added.push({ ...def!, active: true, removable: true });
+      /* OFF, and REMOVABLE. A chip added ON holds no values yet, and "on but
+         filtering by nothing" is the amber warning — shown to a reader who has
+         done nothing wrong. They add the chip, then answer it.
+         TRAP T-a-new-chip-opens-in-default-not-warning */
+      added.push({ ...def!, active: false, removable: true });
     }
     if (!added.length) return;
     this.#filters = [...this.#filters, ...added];
@@ -1377,7 +1403,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#renderAvailable();
     // ONE event for the batch — a host re-queries once.
     this.emit('filter-add', { ids: added.map((f) => f.id), filters: added });
-    this.#emitChange();
+    // AFTER the rebuild. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp
+    void this.#settled().then(() => this.#emitChange());
   }
 
   /** Take one filter back OFF the bar. It returns to the Add menu, clean. */
@@ -1390,7 +1417,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#render();
     this.#renderAvailable();
     this.emit('filter-remove', { id, filter: clean });
-    this.#emitChange();
+    /* AFTER the rebuild has settled. Emitting here read `values: {}` from a
+       bar whose menus had not stamped, and the host answered by clearing every
+       other chip. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
+    void this.#settled().then(() => this.#emitChange());
   }
 
   /* ── Action cluster ────────────────────────────────────────────────── */

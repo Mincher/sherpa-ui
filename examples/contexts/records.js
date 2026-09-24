@@ -125,7 +125,8 @@ export async function init(root) {
     customElements.whenDefined('sherpa-toast'),
   ]);
 
-  header?.populate({
+  // Awaited, so a host picking a View after init() finds the chips.
+  await header?.populate({
     breadcrumb: [
       // Every crumb links to a REAL page.
       { label: 'Home', href: '?context=dashboard' },
@@ -191,8 +192,12 @@ export async function init(root) {
     // one field would make the reader guess which is in force.
     { id: 'tier', label: 'Tier', type: 'data',
       select: 'multiple', removable: true, options: asOptions('tier') },
-    // SINGLE-select, COMMITTING: rows are a draft behind Apply/Cancel.
-    { id: 'owner', label: 'Owner', type: 'data',
+    /* SINGLE-select, COMMITTING: rows are a draft behind Apply/Cancel. And the
+       one chip here that OPTS IN to conditions — an owner is a person's name,
+       so "starts with" is a question a reader really asks. Status, Plan and
+       Tier are closed sets of three or four, and get a plain list.
+       TRAP T-conditions-are-opt-in-per-field */
+    { id: 'owner', label: 'Owner', type: 'data', conditions: true,
       select: 'single', removable: true, commit: true, options: asOptions('owner') },
     /* No `created` chip here: the header's "Created date" already filters that
        field at VIEW scope, and one field lives in exactly ONE scope.
@@ -398,6 +403,10 @@ export async function init(root) {
        exactly this, which is what suspending means. Its picks are safe; only
        the APPLYING stops. TRAP T-grid-suspend-is-not-clear */
     if (state.fieldState === 'suspended') return;
+    /* A chip in CONDITION mode answers with rows, not ticks — steering it with
+       an empty pick list would untick nothing and switch it OFF while it is
+       filtering. TRAP T-a-conditioned-chip-answers-with-its-clause */
+    if (conditioned(field)) return;
     // Both are SILENT writes, so neither echoes back as another change.
     qft.setChipValues(field, picked);
     grid.setColumnFilter(field, picked.length ? picksClause(field, picked) : null);
@@ -407,6 +416,12 @@ export async function init(root) {
      `FIELD_CHIPS` is held by `select()`, so letting it ride here too ANDed two
      clauses over one field — and `eq Pro` AND `eq Free` matches nothing.
      Every writer of the `chips` key goes through this. */
+  /** Is this chip answering with CONDITIONS rather than ticks? */
+  const conditioned = (id) => {
+    const chip = qft.shadowRoot?.querySelector(`.chip[data-id="${id}"]`);
+    return !!chip?.hasAttribute('data-conditioned');
+  };
+
   const pushChips = () => {
     const rest = {};
     for (const [id, picked] of Object.entries(qft.values ?? {})) {
@@ -418,7 +433,12 @@ export async function init(root) {
        matches nothing. */
     const ready = {};
     for (const [id, clause] of Object.entries(qft.clauses ?? {})) {
-      if (!FIELD_CHIPS.has(id)) ready[id] = clause;
+      /* A FIELD chip's clause rides here ONLY when it is a CONDITION — the
+         field's own `select()` is skipped for exactly those, so nothing else
+         carries it. A chip answering with ticks is still stripped: its picks
+         and its clause would AND into `eq Pro` and `eq Free`, which matches
+         nothing. TRAP T-a-conditioned-chip-answers-with-its-clause */
+      if (!FIELD_CHIPS.has(id) || conditioned(id)) ready[id] = clause;
     }
     source.contribute('chips', filterFromChips(rest, qft.active, ready));
   };
@@ -430,7 +450,16 @@ export async function init(root) {
        on this bar — the toggles, the typed conditions, a `col:` chip — has no
        single field behind it, so it still contributes as one part. */
     const picked = qft.pickedValues ?? {};
+    /* A chip in CONDITION MODE has no ticked values, so `values` says nothing
+       about it — and clearing the field from that silence switched the chip
+       straight back off while it was filtering. Its clause is the answer, and
+       `pushChips` lets that one ride.
+       A chip on a plain LIST still goes through `select()`: it has picks, and
+       every other control over the field re-reads them. Skipping it on
+       `clauses[field]` alone stopped EVERY list filtering, because a ticked
+       list reports a clause too. TRAP T-a-conditioned-chip-answers-with-its-clause */
     for (const field of FIELD_CHIPS) {
+      if (conditioned(field)) continue;
       /* OFF is a STATE, not a delete. `values` drops an off chip, but its picks
          survive in `pickedValues` — so an off chip SUSPENDS its field and one
          more click brings the same values back. Passing the empty list from

@@ -7,11 +7,17 @@
 import { DATA_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import { DEFAULT_OP, OP_TAKES, type FilterOp, valueSet } from '../../core/data/store.js';
 import {
-  fieldState, filterFace, type FilterFace, type FilterState,
+  fieldState, filterFace, type FieldCondition, type FilterFace, type FilterState,
 } from '../../core/data/filter-state.js';
 import { NON_VALUE_ROWS } from '../../core/ui/shared-constants.js';
 // Floating, so the count tooltip escapes the toolbar's clipping chip run.
 import '../sherpa-tooltip/sherpa-tooltip.js';
+
+/** One place a jump chip can scroll to — `value` is the target element's id. */
+interface JumpItem {
+  value: string;
+  label?: string;
+}
 
 interface MenuLike extends HTMLElement {
   // show/hide, not toggle — see #openMenu for why the click cannot ask the menu.
@@ -33,7 +39,7 @@ export class SherpaQuickFilter extends SherpaElement {
     'data-open': { type: 'boolean', kind: 'style' },
     'data-indicator': { type: 'boolean', kind: 'style' },
     'data-menu': { type: 'boolean', kind: 'style' },
-    'data-type': { type: 'enum', kind: 'style', values: ['ai'] },
+    'data-type': { type: 'enum', kind: 'style', values: ['ai', 'jump'] },
     'data-plain': { type: 'boolean', kind: 'style' },
     'data-no-value': { type: 'boolean', kind: 'style' },
     'data-full-value': { type: 'boolean', kind: 'style' },
@@ -42,6 +48,9 @@ export class SherpaQuickFilter extends SherpaElement {
        it keeps its value and comes back when the view lets the field go.
        TRAP T-a-superseded-chip-suspends-it-is-never-removed */
     'data-superseded': { type: 'boolean', kind: 'style' },
+    /* Written BY the chip: its menu is answering with CONDITIONS, not ticks.
+       TRAP T-a-conditioned-chip-reads-as-info */
+    'data-conditioned': { type: 'boolean', kind: 'style' },
     /* WHERE this field is filtered instead — "App header", "View". Shown in the
        tooltip of a chip that is off because something else owns its field: an
        inactive chip that says nothing tells a reader their filter vanished.
@@ -75,7 +84,36 @@ export class SherpaQuickFilter extends SherpaElement {
     this.addEventListener('condition-change', this.#onCondition as EventListener);
     this.addEventListener('menu-open', this.#onMenuToggle as EventListener);
     this.addEventListener('menu-close', this.#onMenuToggle as EventListener);
+    this.addEventListener('menu-select', this.#onJump as EventListener);
   }
+
+  /**
+   * populate([{ value, label }]) — a JUMP chip's places, as action rows in its
+   * menu. Any other chip keeps the default: payload keys onto its attributes.
+   */
+  protected override renderData(data: unknown): Promise<void> | void {
+    if (this.dataset['type'] !== 'jump' || !Array.isArray(data)) return super.renderData(data);
+    const menu = this.menu;
+    const row = this.$<HTMLTemplateElement>('template.jump-item-tpl')?.content.firstElementChild;
+    if (!menu || !row) return;
+    menu.replaceChildren(...(data as JumpItem[]).map(({ value, label }) => {
+      const button = row.cloneNode(true) as HTMLButtonElement;
+      button.value = value;
+      button.textContent = label ?? value;
+      return button;
+    }));
+  }
+
+  /** A jump row: scroll to its target, then report it. */
+  #onJump = (event: CustomEvent<{ value: string; label: string }>): void => {
+    if (this.dataset['type'] !== 'jump') return;
+    // Reported as a jump, not as a raw menu row a toolbar might read as its own.
+    event.stopPropagation();
+    const { value, label } = event.detail;
+    // No `behavior`: the scroller's own CSS decides, so the motion gate still holds.
+    (this.getRootNode() as Document | ShadowRoot).getElementById(value)?.scrollIntoView({ block: 'start' });
+    this.emit('jump-select', { value, label });
+  };
 
   /**
    * TRAP T-chip-empty-check-waits-for-onconnect — the slotted menu may not exist
@@ -186,7 +224,10 @@ export class SherpaQuickFilter extends SherpaElement {
      * Only when there IS a menu: a toggle-only chip keeps toggling.
      */
     const menu = this.menu;
-    if (menu && this.values.length === 0) {
+    /* A CONDITIONED chip has no ticks and is NOT empty — its rows are its
+       answer. Its body toggles, like any other answered chip.
+       TRAP T-toggling-a-conditioned-chip-suspends-its-condition */
+    if (menu && this.values.length === 0 && !this.hasAttribute('data-conditioned')) {
       // Opening a menu is not a toggle — the bar must not see one.
       event.stopPropagation();
       this.#openMenu();
@@ -246,6 +287,7 @@ export class SherpaQuickFilter extends SherpaElement {
       return;
     }
     this.#applySelection(values);
+    this.#recheckConditions();
     this.emit('quick-filter-change', { scope: 'chip', values });
   };
 
@@ -277,10 +319,18 @@ export class SherpaQuickFilter extends SherpaElement {
       return;
     }
     const menu = this.menu;
+    /* A CONDITION is an answer of a different kind, and it reads differently:
+       info, never the plain on-tint. TRAP T-a-conditioned-chip-reads-as-info */
+    /* ANSWERED rows, not merely present ones: a menu in condition mode always
+       holds one row, and an unanswered row is not a condition.
+       TRAP T-an-untouched-select-is-not-an-answer */
+    const conditioned = menu?.dataset?.['mode'] === 'condition' && this.#hasTypedAnswer();
+    this.toggleAttribute('data-conditioned', conditioned);
+
     /* A TYPED condition is an answer, so a chip holding one is not empty —
        "Contains Ravi" filters, and painting it as "filtering nothing" is a
        lie. TRAP T-an-operator-decides-pick-or-type */
-    const empty = !!menu && this.current
+    const empty = !!menu && this.current && !conditioned
       && (menu.values?.length ?? 0) === 0 && !this.#hasTypedAnswer();
     this.toggleAttribute('data-empty', empty);
   }
@@ -329,7 +379,37 @@ export class SherpaQuickFilter extends SherpaElement {
 
   #onCondition = (): void => {
     this.#applySelection((this.menu?.values ?? []) as string[]);
+    this.#recheckConditions();
   };
+
+  /**
+   * Read the rows AGAIN once the menu has settled.
+   *
+   * A rebuilt row's value select is filled asynchronously — `populate()` on a
+   * composed field settles later — so a single read right after a rebuild sees
+   * an unanswered row and switches this chip OFF while it is filtering.
+   * TRAP T-a-rebuilt-row-reads-empty-for-a-tick
+   */
+  #recheckConditions(): void {
+    const menu = this.menu as (HTMLElement & { dataset: DOMStringMap }) | null;
+    if (menu?.dataset['mode'] !== 'condition') return;
+    if (this.#recheck != null) return;
+    this.#recheck = requestAnimationFrame(() => {
+      this.#recheck = null;
+      /* ONLY UP. This exists to catch a row whose answer arrived a tick late —
+         never to overrule a reader who just switched the chip off.
+         TRAP T-toggling-a-conditioned-chip-suspends-its-condition */
+      if (this.current || !this.#hasTypedAnswer()) return;
+      this.#applySelection((this.menu?.values ?? []) as string[]);
+    });
+  }
+
+  #recheck: number | null = null;
+
+  override onDisconnect(): void {
+    if (this.#recheck != null) cancelAnimationFrame(this.#recheck);
+    this.#recheck = null;
+  }
 
   /**
    * This chip's state, read off its menu.
@@ -339,8 +419,14 @@ export class SherpaQuickFilter extends SherpaElement {
    * decides. TRAP T-one-state-per-filtered-field
    */
   #state(values: string[]): FilterState {
-    const menu = this.menu as (HTMLElement & { conditionValue?: string }) | null;
+    const menu = this.menu as (HTMLElement & {
+      conditionValue?: string; conditions?: FieldCondition[];
+    }) | null;
     const isFilter = menu?.getAttribute('data-type') === 'filter';
+    /* CONDITION mode answers with ROWS, so the whole chain goes in. The badge
+       and the tip both come back from it. TRAP T-a-condition-badge-says-that-not-which */
+    const rows = isFilter && menu?.dataset['mode'] === 'condition'
+      ? (menu.conditions ?? []) : [];
     const all = [...this.querySelectorAll<HTMLInputElement>('[slot="menu"] input')]
       .filter((i) => !i.closest(NON_VALUE_ROWS))
       .map((i) => i.value);
@@ -355,6 +441,7 @@ export class SherpaQuickFilter extends SherpaElement {
         picked: values,
         op: isFilter ? ((menu?.dataset['op'] ?? DEFAULT_OP) as FilterOp) : DEFAULT_OP,
         text: isFilter ? (menu?.conditionValue ?? '') : '',
+        conditions: rows,
       },
     );
   }
@@ -398,8 +485,22 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** Is this chip's menu on a typing condition with something typed? */
   #hasTypedAnswer(): boolean {
-    const menu = this.menu as (HTMLElement & { conditionValue?: string }) | null;
+    const menu = this.menu as (HTMLElement & {
+      conditionValue?: string;
+      conditions?: { op: FilterOp; text?: string; picked?: unknown[] }[];
+    }) | null;
     if (menu?.getAttribute('data-type') !== 'filter') return false;
+
+    /* CONDITION mode answers with ROWS, and ANY answered row is an answer. A
+       chip reading row one only stayed off while three rows filtered.
+       TRAP T-a-filter-menu-has-two-modes */
+    if (menu.dataset?.['mode'] === 'condition') {
+      return (menu.conditions ?? []).some((row) =>
+        (OP_TAKES[row.op] ?? 'list') === 'text'
+          ? (row.text ?? '').trim() !== ''
+          : (row.picked ?? []).length > 0);
+    }
+
     const op = (menu.dataset?.['op'] ?? DEFAULT_OP) as FilterOp;
     if ((OP_TAKES[op] ?? 'list') !== 'text') return false;
     return (menu.conditionValue ?? '').trim() !== '';

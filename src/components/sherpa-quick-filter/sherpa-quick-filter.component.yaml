@@ -83,7 +83,22 @@ anatomy:
       - el: span
         class: menu-slot
         slot: menu
+      - el: template
+        class: jump-item-tpl
+        children:
+          - el: button
+            class: jump-item
+            attrs:
+              type: button
 props:
+  - $type: prop
+    name: data-conditioned
+    type: string
+    observed: false
+    kind: style
+    description: >-
+      written BY the chip when its menu is answering with CONDITIONS rather than ticks. Reads as
+      `info`, not the plain on-tint. TRAP T-a-conditioned-chip-reads-as-info
   - $type: prop
     name: data-count
     type: string
@@ -163,8 +178,12 @@ props:
       - default
       - ai
       - populated
+      - jump
     default: false
-    description: default | ai | populated
+    description: >-
+      default | ai | populated | jump `jump` is a JUMP TO chip, not a filter: never on. Its menu
+      lists places on the page, filled by populate([{ value, label }]); a pick scrolls the element
+      whose id is `value` into view.
 states:
   - $type: state
     name: menu
@@ -173,11 +192,11 @@ states:
     name: open
     selector: ":host([data-open])"
   - $type: state
-    name: ai
-    selector: ":host([data-type=\"ai\"])"
-  - $type: state
     name: current
     selector: ":host([data-current])"
+  - $type: state
+    name: ai
+    selector: ":host([data-type=\"ai\"])"
   - $type: state
     name: indicator
     selector: ":host([data-indicator])"
@@ -232,6 +251,13 @@ events:
     detail:
       scope: string
       values: unknown
+  - $type: event
+    name: jump-select
+    bubbles: true
+    composed: true
+    detail:
+      label: unknown
+      value: unknown
 tokens:
   chip.block-size: "{sherpa.display-mode-size-lg}"
   body.gap: "{sherpa.display-mode-space-2xs}"

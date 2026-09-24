@@ -14,6 +14,7 @@ import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import {
   DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_SYMBOLS, OP_TAKES, type FilterOp, valueSet,
 } from '../../core/data/store.js';
+import type { FieldCondition } from '../../core/data/filter-state.js';
 import { NON_VALUE_ROWS } from '../../core/ui/shared-constants.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-breadcrumbs/sherpa-breadcrumbs.js';
@@ -32,6 +33,10 @@ export interface MenuItem {
   available?: boolean;
 }
 
+/** A composed `sherpa-input-text`: it carries a value, and a select variant
+ *  takes its options through `populate()`. */
+type FieldEl = HTMLElement & { value: string; populate?: (d: unknown) => unknown };
+
 export class SherpaMenu extends SherpaElement {
   static override css = new URL('./sherpa-menu.css', import.meta.url);
   static override html = new URL('./sherpa-menu.html', import.meta.url);
@@ -43,6 +48,10 @@ export class SherpaMenu extends SherpaElement {
        body answers it. TRAP T-an-operator-decides-pick-or-type */
     'data-conditions': { type: 'string', kind: 'style' },
     'data-takes': { type: 'enum', kind: 'style', values: ['list', 'text'] },
+    /* Which of the two filter modes is showing. TRAP T-a-filter-menu-has-two-modes */
+    'data-mode': { type: 'enum', kind: 'style', values: ['select', 'condition'] },
+    /* Whether this field offers conditions AT ALL. TRAP T-conditions-are-opt-in-per-field */
+    'data-conditional': { type: 'boolean', kind: 'style' },
     'data-heading': { type: 'string', kind: 'content', to: '.heading' },
     /* A RANGE body offers two ends; `data-commit` holds its Apply until asked. */
     'data-range': { type: 'boolean', kind: 'style' },
@@ -60,6 +69,7 @@ export class SherpaMenu extends SherpaElement {
     'data-drill-from',
     // Which condition is picked — a host may set it, and #sync follows.
     'data-op',
+    'data-mode',
     // What was typed under it. An ATTRIBUTE, so a re-stamp cannot lose it.
     'data-value',
     'open',
@@ -124,10 +134,256 @@ export class SherpaMenu extends SherpaElement {
     this.$('.remove')?.addEventListener('click', this.#onRemove);
     this.$('.search')?.addEventListener('input', this.#onSearch);
     /* Composed sherpa-input-texts, which re-dispatch `change` and `input`
-       from the HOST — so these reach here without a shadow-root listener. */
-    this.$('.condition')?.addEventListener('change', this.#onCondition);
-    this.$('.condition-value')?.addEventListener('input', this.#onCondition);
+       from the HOST — so ONE listener on the region covers every stamped row.
+       A row added later needs no wiring of its own. */
+    const region = this.$('.condition-rows');
+    region?.addEventListener('change', this.#onCondition);
+    region?.addEventListener('input', this.#onCondition);
+    this.$('.use-condition')?.addEventListener('click', this.#onModeSwitch);
+    this.$('.add-condition')?.addEventListener('click', this.#onAddCondition);
+    region?.addEventListener('click', this.#onDropCondition);
   }
+
+  /* ── The two modes ──────────────────────────────────────────────── */
+
+  /** select (default) | condition. TRAP T-a-filter-menu-has-two-modes */
+  get mode(): 'select' | 'condition' {
+    return this.dataset['mode'] === 'condition' ? 'condition' : 'select';
+  }
+
+  /** The button says where it GOES, not where you are: sliders to enter the
+   *  condition rows, a list to come back to the ticked values. */
+  /** A host writing `data-mode="condition"` on a field that did not opt in is
+   *  refused, the same as a click. The attribute is not a second door.
+   *  TRAP T-conditions-are-opt-in-per-field */
+  #enforceMode(): void {
+    if (this.dataset['mode'] === 'condition' && !this.hasAttribute('data-conditional')) {
+      this.removeAttribute('data-mode');
+    }
+  }
+
+  #syncModeButton(): void {
+    const btn = this.$('.use-condition');
+    if (!btn) return;
+    const inCondition = this.mode === 'condition';
+    btn.setAttribute('data-icon-start', inCondition ? 'list' : 'sliders-up');
+    btn.setAttribute('aria-pressed', String(inCondition));
+    btn.setAttribute('aria-label', inCondition ? 'Pick from a list' : 'Use condition');
+  }
+
+  set mode(next: 'select' | 'condition') {
+    /* A field that did not opt in has no condition mode to be in — the button
+       is hidden, and a host writing the attribute must not get one either.
+       TRAP T-conditions-are-opt-in-per-field */
+    if (next === 'condition' && !this.hasAttribute('data-conditional')) return;
+    this.dataset['mode'] = next;
+    this.#syncModeButton();
+  }
+
+  #onModeSwitch = (): void => {
+    if (!this.hasAttribute('data-conditional')) return;
+    const next = this.mode === 'condition' ? 'select' : 'condition';
+    this.mode = next;
+    // A condition mode with no rows has nothing to answer with.
+    if (next === 'condition' && !this.#rowEls().length) this.#addRow();
+    /* CARRY THE PICKS OVER. Ticking three values and pressing the mode button
+       is a reader saying "now let me refine THAT" — opening on a blank
+       `Equals <first option>` throws their answer away without saying so.
+       TRAP T-a-mode-switch-carries-the-answer-over */
+    if (next === 'condition') this.#seedFromPicks();
+    this.emit('filter-mode-change', { mode: next });
+    this.#emitConditions();
+  };
+
+  /**
+   * Put what is TICKED into the condition rows, when they have nothing of
+   * their own. One row per picked value, ORed — which is what a ticked list
+   * means. TRAP T-a-mode-switch-carries-the-answer-over
+   */
+  #seedFromPicks(): void {
+    const answered = this.conditions.some((row) =>
+      (row.text ?? '').trim() !== '' || (row.picked ?? []).length > 0);
+    if (answered) return;
+    const picks = this.values;
+    if (!picks.length) return;
+    this.conditions = picks.map((value, i) => (
+      i ? { op: DEFAULT_OP, join: 'or' as const, picked: [value] }
+        : { op: DEFAULT_OP, picked: [value] }
+    ));
+  }
+
+  #onAddCondition = (): void => {
+    this.#addRow();
+    this.#emitConditions();
+  };
+
+  /** A row's own Remove. The LAST row is never dropped — an empty condition
+   *  mode reads as broken, and Clear is the way to mean "no filter". */
+  #onDropCondition = (event: Event): void => {
+    const hit = (event.target as HTMLElement | null)?.closest?.('.drop-condition');
+    if (!hit) return;
+    const rows = this.#rowEls();
+    if (rows.length <= 1) return;
+    hit.closest('.condition-row')?.remove();
+    this.#numberRows();
+    this.#emitConditions();
+  };
+
+  /* ── The condition rows ─────────────────────────────────────────── */
+
+  #rowEls(): HTMLElement[] {
+    return [...(this.$('.condition-rows')?.querySelectorAll<HTMLElement>('.condition-row') ?? [])];
+  }
+
+  /** Stamp one row from the prototype, populate its three selects, append it. */
+  #addRow(seed?: FieldCondition): HTMLElement | null {
+    const region = this.$('.condition-rows');
+    const tpl = this.$<HTMLTemplateElement>('.condition-row-tpl');
+    if (!region || !tpl) return null;
+    const row = tpl.content.firstElementChild?.cloneNode(true) as HTMLElement | null;
+    if (!row) return null;
+    region.append(row);
+    this.#fillRow(row, seed);
+    this.#numberRows();
+    return row;
+  }
+
+  /** Send the three option sets into one row and set its values. */
+  #fillRow(row: HTMLElement, seed?: FieldCondition): void {
+    const join = row.querySelector<FieldEl>('.join');
+    const cond = row.querySelector<FieldEl>('.condition');
+    const pick = row.querySelector<FieldEl>('.condition-pick');
+    const text = row.querySelector<FieldEl>('.condition-value');
+
+    void join?.populate?.([
+      { value: 'and', label: 'And' },
+      { value: 'or', label: 'Or' },
+    ]);
+    if (join) join.value = seed?.join ?? 'and';
+
+    const ops = this.#opList();
+    void cond?.populate?.(ops.map((op) => ({
+      value: op, label: `${OP_LABELS[op]} (${OP_SYMBOLS[op]})`,
+    })));
+    const op = seed?.op && ops.includes(seed.op) ? seed.op : (ops[0] ?? DEFAULT_OP);
+    if (cond) cond.value = op;
+    row.dataset['takes'] = OP_TAKES[op] ?? 'list';
+
+    /* `Equals` answers with a LIST of the field's own values, never a text box.
+       The values are the menu's own rows, so there is one vocabulary.
+       TRAP T-equals-answers-with-the-fields-own-values */
+    const options = this.#valueOptions();
+    const want = seed?.picked?.length ? String(seed.picked[0]) : '';
+    /* The row REMEMBERS what it wants. `populate()` settles later and
+       `#refillPicks` runs on every slotchange, so the live `.value` is not a
+       safe record of the reader's answer until the options exist.
+       TRAP T-custom-element-upgrade */
+    if (want) row.dataset['want'] = want;
+    if (pick) {
+      /* `populate()` on a composed field that has not upgraded settles LATER,
+         so a value written straight after it lands before the <option> it
+         names exists — and the select silently keeps its first row. Write it
+         AFTER. TRAP T-custom-element-upgrade */
+      void Promise.resolve(pick.populate?.(options)).then(() => {
+        if (want) pick.value = want;
+      });
+    }
+    if (text) text.value = seed?.text ?? '';
+  }
+
+  /** The ops this menu offers, from `data-conditions` or the text set. */
+  #opList(): FilterOp[] {
+    const declared = this.dataset['conditions'] ?? '';
+    const wanted = declared.trim()
+      ? declared.split(',').map((op) => op.trim()).filter(Boolean)
+      : [...(OPS_FOR_TYPE['text'] ?? [])];
+    const ops = wanted.filter((op): op is FilterOp => op in OP_LABELS);
+    return ops.length ? ops : [DEFAULT_OP];
+  }
+
+  /**
+   * The field's own values, led by a `Select…` placeholder.
+   *
+   * A `<select>` has no placeholder attribute, so an EMPTY first option is the
+   * only way to show one — and it doubles as the proof a row is unanswered.
+   * TRAP T-an-untouched-select-is-not-an-answer
+   */
+  #valueOptions(): { value: string; label: string }[] {
+    const values = this.#fieldValues();
+    return values.length ? [{ value: '', label: 'Select…' }, ...values] : [];
+  }
+
+  /** The field's own values, read from the menu's rows. */
+  #fieldValues(): { value: string; label: string }[] {
+    return this.#rows()
+      .filter((row) => !row.matches(NON_VALUE_ROWS))
+      .map((row) => ({
+        value: row.querySelector<HTMLInputElement>('input')?.value ?? '',
+        label: (row.textContent ?? '').trim(),
+      }))
+      .filter((o) => o.value !== '');
+  }
+
+  /** Row ONE has no join. A flag, so CSS hides it and nothing is removed —
+   *  a row moved to the front gets its select back. */
+  #numberRows(): void {
+    this.#rowEls().forEach((row, i) => {
+      row.toggleAttribute('data-first', i === 0);
+      row.toggleAttribute('data-only', this.#rowEls().length === 1);
+    });
+  }
+
+  /** Every row, as data. TRAP T-many-conditions-are-one-reading */
+  get conditions(): FieldCondition[] {
+    return this.#rowEls().map((row, i) => {
+      const op = (row.querySelector<FieldEl>('.condition')?.value ?? DEFAULT_OP) as FilterOp;
+      const takes = OP_TAKES[op] ?? 'list';
+      const out: FieldCondition = { op };
+      if (i > 0) out.join = (row.querySelector<FieldEl>('.join')?.value ?? 'and') as 'and' | 'or';
+      if (takes === 'list') {
+        /* `row.dataset.want` is what the READER chose. A `<select>` shows its
+           first option whether or not anyone touched it, so reading `.value`
+           made every untouched row report a pick — and a mode switch then
+           believed the rows were already answered.
+           TRAP T-an-untouched-select-is-not-an-answer */
+        const picked = row.dataset['want'] ?? '';
+        if (picked) out.picked = [picked];
+      } else {
+        out.text = row.querySelector<FieldEl>('.condition-value')?.value ?? '';
+      }
+      return out;
+    });
+  }
+
+  /** Replace every row from data — a host restoring a saved filter. */
+  set conditions(rows: readonly FieldCondition[]) {
+    const region = this.$('.condition-rows');
+    if (!region) return;
+    /* NOTHING TO DO is not a rebuild. Between `replaceChildren()` and the
+       async fill of each new row's value select, this menu reports NO
+       conditions — and anything reading it in that gap is told the filter is
+       gone. TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
+    if (JSON.stringify(this.conditions) === JSON.stringify(rows)) return;
+    region.replaceChildren();
+    for (const row of rows.length ? rows : [{ op: DEFAULT_OP } as FieldCondition]) this.#addRow(row);
+  }
+
+  /**
+   * Report the rows — unless this menu COMMITS, in which case they are a DRAFT
+   * until Apply, exactly as ticked rows are.
+   *
+   * A condition applied on every keystroke re-queries the whole view per letter
+   * and, worse, cannot be cancelled. TRAP T-a-condition-is-a-draft-too
+   */
+  #emitConditions(force = false): void {
+    if (this.#commits && !force && !this.#applying) return;
+    this.emit('condition-change', {
+      op: this.op, value: this.conditionValue, conditions: this.conditions,
+    });
+  }
+
+  /** What Cancel restores, captured on open beside `#baseline`. */
+  #conditionBaseline: FieldCondition[] = [];
 
   /**
    * The condition, or what was typed under it, changed.
@@ -137,15 +393,24 @@ export class SherpaMenu extends SherpaElement {
    * TRAP T-an-operator-decides-pick-or-type
    */
   #onCondition = (event?: Event): void => {
-    const select = this.#conditionField();
-    const op = (select?.value ?? DEFAULT_OP) as FilterOp;
+    /* The row the change came from — its OWN op decides its OWN body, so two
+       rows can ask different questions at once. */
+    const row = (event?.target as HTMLElement | null)?.closest?.('.condition-row');
+    if (row instanceof HTMLElement) {
+      const op = (row.querySelector<FieldEl>('.condition')?.value ?? DEFAULT_OP) as FilterOp;
+      row.dataset['takes'] = OP_TAKES[op] ?? 'list';
+      // The reader just answered, so THAT is what the row wants now.
+      const picked = row.querySelector<FieldEl>('.condition-pick')?.value ?? '';
+      if (picked) row.dataset['want'] = picked;
+    }
+
+    // Row one still mirrors to the host attributes: the one-row view.
+    const op = (this.#conditionField()?.value ?? DEFAULT_OP) as FilterOp;
     if (this.dataset['op'] !== op) this.dataset['op'] = op;
     this.setAttribute('data-takes', OP_TAKES[op] ?? 'list');
-    // Typing writes through to the attribute, so a re-stamp cannot lose it.
-    if (event?.target === this.$('.condition-value')) {
-      this.dataset['value'] = this.#valueField()?.value ?? '';
-    }
-    this.emit('condition-change', { op, value: this.conditionValue });
+    this.dataset['value'] = this.#valueField()?.value ?? '';
+
+    this.#emitConditions();
   };
 
   /**
@@ -177,55 +442,46 @@ export class SherpaMenu extends SherpaElement {
     if (box) box.value = next;
   }
 
-  /** The composed field that names the condition. */
-  #conditionField(): (HTMLElement & { value: string; populate?: (d: unknown) => unknown }) | null {
-    return this.$('.condition');
+  /** ROW ONE's condition field. `menu.op` and `menu.conditionValue` are the
+   *  one-row view of the same state, so a caller that knows nothing about
+   *  rows still works. TRAP T-a-filter-menu-has-two-modes */
+  #conditionField(): FieldEl | null {
+    return this.#rowEls()[0]?.querySelector<FieldEl>('.condition') ?? null;
   }
 
-  /** The composed field that holds what was typed. */
-  #valueField(): (HTMLElement & { value: string }) | null {
-    return this.$('.condition-value');
+  /** ROW ONE's typed box. */
+  #valueField(): FieldEl | null {
+    return this.#rowEls()[0]?.querySelector<FieldEl>('.condition-value') ?? null;
   }
 
-  /** Stamp the condition <option>s and keep `data-takes` in step. */
+  /**
+   * Make sure the condition region has at least ONE row, and that row holds
+   * what the host asked for through `data-op` / `data-value`.
+   *
+   * A re-stamp replaces the whole shadow tree, so the rows are rebuilt from
+   * the attributes rather than remembered. TRAP T-restamp-does-not-abort
+   */
   #syncConditions(): void {
-    const select = this.#conditionField();
-    if (!select) return;
+    /* A field that did not opt in has no rows at all — not a hidden one. A
+       control nothing can reach should not exist.
+       TRAP T-conditions-are-opt-in-per-field */
+    if (!this.$('.condition-rows') || !this.hasAttribute('data-conditional')) return;
+    if (!this.#rowEls().length) this.#addRow();
 
-    /* A comma list names the ops; the default is the text set, which is what
-       a field question asks. One vocabulary, in store.ts. */
-    const declared = this.dataset['conditions'] ?? '';
-    const wanted = declared.trim()
-      ? declared.split(',').map((op) => op.trim()).filter(Boolean)
-      : [...(OPS_FOR_TYPE['text'] ?? [])];
-    const ops = wanted.filter((op): op is FilterOp => op in OP_LABELS);
-    if (!ops.length) return;
-
-    // The field keeps its own options across a re-stamp; this only re-sends
-    // them when the SET changed.
-    if (this.#sentOps.join() !== ops.join()) {
-      this.#sentOps = [...ops];
-      /* "Equals (=)" — the WORD says what it does, the SIGN is what the chip's
-         badge will wear, so a reader meets both together once.
-         TRAP T-an-operator-decides-pick-or-type */
-      void select.populate?.(ops.map((op) => ({
-        value: op, label: `${OP_LABELS[op]} (${OP_SYMBOLS[op]})`,
-      })));
-    }
-
+    const ops = this.#opList();
     const op = ops.includes(this.op) ? this.op : (ops[0] ?? DEFAULT_OP);
-    select.value = op;
+    const select = this.#conditionField();
+    if (select && select.value !== op) select.value = op;
     if (this.dataset['op'] !== op) this.dataset['op'] = op;
     this.setAttribute('data-takes', OP_TAKES[op] ?? 'list');
+    this.#rowEls()[0]?.setAttribute('data-takes', OP_TAKES[op] ?? 'list');
 
     // Put back what was typed — a re-stamp blanked the box, not the state.
     const box = this.#valueField();
     const held = this.dataset['value'] ?? '';
     if (box && box.value !== held) box.value = held;
+    this.#numberRows();
   }
-
-  /** The op set last sent to the condition field. */
-  #sentOps: string[] = [];
 
   /** Narrow rows to a typed substring; a hidden row keeps its tick.
    * TRAP T-menu-search-is-a-substring-find */
@@ -442,8 +698,10 @@ export class SherpaMenu extends SherpaElement {
   }
 
   #sync(): void {
+    this.#enforceMode();
     this.#syncCrumb();
     this.#syncConditions();
+    this.#syncModeButton();
     // The name must reach a screen reader even when no heading is drawn.
     // TRAP T-calendar-header-has-no-heading
     const card = this.#card();
@@ -524,6 +782,7 @@ export class SherpaMenu extends SherpaElement {
     this.toggleAttribute('open', open);
     if (open) {
       this.#baseline = this.values;
+      this.#conditionBaseline = this.conditions;
       /* These live while the menu is OPEN, which is shorter than the element's
          life — `while` is that shorter lifetime, and the base class ANDs it
          with its own disconnect signal.
@@ -547,7 +806,19 @@ export class SherpaMenu extends SherpaElement {
          Without this the draft survived: the chip read ["Northwind"] while
          `current` stayed false, so it LOOKED set and filtered nothing.
          TRAP T-a-draft-dies-with-its-menu */
-      if (this.#commits && !this.#applying) this.values = this.#baseline;
+      if (this.#commits && !this.#applying && !this.#settledByAction) {
+        this.values = this.#baseline;
+        /* The ROWS are a draft too — but only when they actually DIFFER.
+           `conditions =` REBUILDS every row, and a rebuilt row's value select
+           is filled asynchronously, so restoring identical rows still blanked
+           the answer for a tick — long enough for the chip to read it as empty
+           and switch itself off. TRAP T-a-condition-is-a-draft-too */
+        if (this.dataset['mode'] === 'condition'
+          && JSON.stringify(this.conditions) !== JSON.stringify(this.#conditionBaseline)) {
+          this.conditions = this.#conditionBaseline;
+        }
+      }
+      this.#settledByAction = false;
       this.#openAc?.abort();
       this.#openAc = null;
       this.#cardResize?.disconnect();
@@ -610,8 +881,28 @@ export class SherpaMenu extends SherpaElement {
   /** Rows changed — re-read select-all, re-place next frame. */
   #onRowsChanged = (): void => {
     this.#syncSelectAll();
+    /* A condition row's value select is BUILT from these rows, and row one is
+       built before they arrive — so it opened empty while row two, added
+       later, was full. TRAP T-a-value-select-waits-for-the-rows */
+    this.#refillPicks();
     if (this.open) requestAnimationFrame(() => this.#place());
   };
+
+  /** Re-send the field's values to every row's value select, keeping each
+   *  row's own pick where it still names a value. */
+  #refillPicks(): void {
+    const options = this.#valueOptions();
+    if (!options.length) return;
+    for (const row of this.#rowEls()) {
+      const pick = row.querySelector<FieldEl>('.condition-pick');
+      if (!pick) continue;
+      // What the row WANTS beats what the select happens to show.
+      const held = row.dataset['want'] || pick.value;
+      void Promise.resolve(pick.populate?.(options)).then(() => {
+        if (held && options.some((o) => o.value === held)) pick.value = held;
+      });
+    }
+  }
 
   /** Report the back arrow; the menu cannot know what it drilled into.
    * TRAP T-menu-back-is-a-report */
@@ -646,11 +937,21 @@ export class SherpaMenu extends SherpaElement {
   /** True while Apply or Cancel is closing the card — they own the values. */
   #applying = false;
 
+  /** Apply or Cancel has already settled this draft, so the CLOSE must not
+   *  restore anything. `hidePopover()` fires `toggle` asynchronously, so
+   *  `#applying` is false again by then. TRAP T-a-condition-is-a-draft-too */
+  #settledByAction = false;
+
   #onApply = (): void => {
     // Apply rewrites the baseline Cancel would restore.
     this.#applying = true;
+    this.#settledByAction = true;
     this.#baseline = this.values;
+    this.#conditionBaseline = this.conditions;
     this.emit('menu-apply', { values: this.values });
+    /* The ROWS are part of what Apply applies. Without this a committing menu
+       held its conditions for ever. TRAP T-a-condition-is-a-draft-too */
+    if (this.dataset['mode'] === 'condition') this.#emitConditions(true);
     this.emit('menu-change', { values: this.values });
     this.hide();
     this.#applying = false;
@@ -659,7 +960,9 @@ export class SherpaMenu extends SherpaElement {
   #onCancel = (): void => {
     // Restore, THEN report.
     this.#applying = true;
+    this.#settledByAction = true;
     this.values = this.#baseline;
+    if (this.dataset['mode'] === 'condition') this.conditions = this.#conditionBaseline;
     this.emit('menu-cancel', {});
     this.hide();
     this.#applying = false;
@@ -671,6 +974,10 @@ export class SherpaMenu extends SherpaElement {
     for (const input of this.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
     // A FILTER menu's typed value is part of what Clear empties.
     if (this.dataset['type'] === 'filter') this.conditionValue = '';
+    /* BOTH HALVES. Clear means "no filter", and a menu with two modes holds
+       its answer in two places — leaving the rows behind gave a cleared chip
+       that was still filtering. TRAP T-clear-empties-both-modes */
+    if (this.#rowEls().length) this.conditions = [];
     for (const cal of this.querySelectorAll<HTMLElement>('sherpa-calendar')) {
       for (const a of ['data-value', 'data-value-start', 'data-value-end']) cal.removeAttribute(a);
     }
@@ -688,6 +995,8 @@ export class SherpaMenu extends SherpaElement {
        found Apply. Apply and Cancel still own the row TICKS.
        TRAP T-every-chip-menu-gets-clear-and-search */
     this.emit('menu-change', { values: this.values });
+    // The rows went too, so whoever holds their clause must hear about it.
+    if (this.dataset['mode'] === 'condition') this.#emitConditions(true);
   };
 
   /** Drive the slotted calendar to today; stays OPEN.

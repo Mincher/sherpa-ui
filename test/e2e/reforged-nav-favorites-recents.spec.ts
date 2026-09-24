@@ -12,7 +12,7 @@ import { test, expect } from '@playwright/test';
  * That is the nav's own behaviour and not this feature's, but it makes settings
  * useless as a second Context to navigate to.
  *
- * The five-entry CAP is not reachable here either: only three Contexts qualify.
+ * The five-entry CAP is not reachable here either: only two Contexts qualify.
  * `test/unit/session-list.test.mjs` proves the cap against the list directly.
  *
  * TRAP T-session-list-is-a-view-not-a-copy — the list, and its cap
@@ -71,8 +71,14 @@ async function clickStar(page: Page): Promise<void> {
 const stored = (page: Page, key: string): Promise<unknown> =>
   page.evaluate((k) => JSON.parse(localStorage.getItem(k) ?? 'null'), key);
 
-/* Booting on the dashboard ADDS Home to Recents, so every expectation below
-   starts from that one entry rather than from nothing. */
+/** The View chip reads the dashboard's first View once Home has loaded. */
+const homeLoaded = (page: Page): Promise<unknown> => page.waitForFunction(() =>
+  (document.querySelector('sherpa-quick-filter-toolbar[data-type="view"]') as
+    (HTMLElement & { values?: Record<string, string[]> }) | null)?.values?.['view']?.[0] === 'fleet',
+  undefined, { timeout: 15000 });
+
+/* Booting on the dashboard adds NOTHING: Home never enters Recents, so every
+   test starts from an empty list. */
 test.beforeEach(async ({ page }) => {
   await page.goto(APP);
   await page.evaluate(() => {
@@ -81,8 +87,7 @@ test.beforeEach(async ({ page }) => {
   });
   await page.reload();
   await page.waitForFunction(() => !!document.querySelector('sherpa-nav')?.shadowRoot);
-  await page.waitForFunction(() =>
-    localStorage.getItem('sherpa:session:/nav/recent') != null, undefined, { timeout: 15000 });
+  await homeLoaded(page);
 });
 
 test('Recent gathers the Contexts visited, newest FIRST', async ({ page }) => {
@@ -90,13 +95,35 @@ test('Recent gathers the Contexts visited, newest FIRST', async ({ page }) => {
   await goto(page, 'chat');
 
   await expect.poll(() => childLabels(page, 'recent'))
-    .toEqual(['Assistant', 'Records', 'Home']);
+    .toEqual(['Assistant', 'Records']);
+});
+
+test('Home and Settings never enter Recent', async ({ page }) => {
+  await goto(page, 'records');
+  await page.evaluate(() => {
+    history.pushState({ context: 'dashboard' }, '', '?context=dashboard');
+    dispatchEvent(new PopStateEvent('popstate'));
+  });
+  await homeLoaded(page);
+
+  await page.goto(`${APP}?context=records&settings=application`);
+  await page.waitForFunction(() =>
+    (document.getElementById('settings') as HTMLElement & { open: boolean } | null)?.open === true);
+  // The rail stamps no Recent while Settings is open, so read the stored list.
+  expect(await stored(page, 'sherpa:session:/nav/recent')).toEqual([{ context: 'records', label: 'Records' }]);
+
+  // A Home an earlier release stored is dropped on the next boot.
+  await page.evaluate(() => localStorage.setItem('sherpa:session:/nav/recent', JSON.stringify([
+    { context: 'dashboard', label: 'Home' }, { context: 'records', label: 'Records' }])));
+  await page.goto(APP);
+  await homeLoaded(page);
+  expect(await childLabels(page, 'recent')).toEqual(['Records']);
 });
 
 test('Recent keeps at most FIVE, and a re-visit moves up rather than repeats', async ({ page }) => {
-  // Three Contexts plus two re-visits: the cap is never the thing under
-  // test here, the de-dupe is.
-  for (const v of ['records', 'chat', 'dashboard', 'records', 'chat']) {
+  // Two Contexts plus re-visits: the cap is never the thing under test here,
+  // the de-dupe is. Home is left out — it never enters Recents.
+  for (const v of ['records', 'chat', 'records', 'chat']) {
     await goto(page, v);
   }
   const labels = await childLabels(page, 'recent');
@@ -199,7 +226,7 @@ test('Recents survive a FULL reload too', async ({ page }) => {
      That MOVES chat to the front, which it already was — the order is the one
      from before the reload, unchanged. */
   await expect.poll(() => childLabels(page, 'recent'))
-    .toEqual(['Assistant', 'Records', 'Home']);
+    .toEqual(['Assistant', 'Records']);
 });
 
 test('a stored list this release cannot read is DROPPED, not stamped', async ({ page }) => {

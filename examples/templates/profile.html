@@ -1,41 +1,45 @@
-<!-- Settings › User Profile. The container holds the Details View; the View chip
-     swaps its children for another View's (contexts/settings-views.js). -->
-<form novalidate>
+<!-- Settings › User Profile. Typed values need Save, so only this page has a
+     footer, held at the bottom of the area while the fields scroll. -->
+<sherpa-stack data-fill>
+  <sherpa-stack data-grow data-scroll>
+    <form novalidate>
+      <sherpa-layout-grid>
+        <sherpa-stack data-col-span="reading" data-gap="2xl">
+          <sherpa-stack>
+            <sherpa-section-header id="section-details" data-heading="Details">
+              <span slot="description">How you appear to your team.</span>
+            </sherpa-section-header>
+            <sherpa-input-text
+              data-label="Full name"
+              data-description="Shown on your profile and in comments."
+              name="name"
+              value="Will Mincher"
+              placeholder="Your name"></sherpa-input-text>
+
+            <sherpa-input-text
+              data-label="Email"
+              data-error="Enter a valid work email address."
+              name="email"
+              value="not-an-email"
+              placeholder="you@example.com"></sherpa-input-text>
+
+            <sherpa-input-text
+              data-label="Bio"
+              data-description="A short line about you (optional)."
+              data-multiline
+              name="bio"
+              maxlength="240"
+              placeholder="Tell us a little about yourself…"></sherpa-input-text>
+          </sherpa-stack>
+        </sherpa-stack>
+      </sherpa-layout-grid>
+    </form>
+  </sherpa-stack>
+
   <sherpa-layout-grid>
-
-    <sherpa-container data-col-span="reading" id="view-region">
-      <sherpa-container-header slot="header"
-                               data-heading="Details"
-                               data-description="How you appear to your team."></sherpa-container-header>
-      <sherpa-stack>
-        <sherpa-input-text
-          data-label="Full name"
-          data-description="Shown on your profile and in comments."
-          name="name"
-          value="Will Mincher"
-          placeholder="Your name"></sherpa-input-text>
-
-        <sherpa-input-text
-          data-label="Email"
-          data-error="Enter a valid work email address."
-          name="email"
-          value="not-an-email"
-          placeholder="you@example.com"></sherpa-input-text>
-
-        <sherpa-input-text
-          data-label="Bio"
-          data-description="A short line about you (optional)."
-          data-multiline
-          name="bio"
-          maxlength="240"
-          placeholder="Tell us a little about yourself…"></sherpa-input-text>
-      </sherpa-stack>
-    </sherpa-container>
-
     <sherpa-container-footer data-col-span="reading" data-align="end">
-      <sherpa-button type="button" class="cancel-btn">Cancel</sherpa-button>
-      <sherpa-button type="submit" data-look="saturated">Save changes</sherpa-button>
+      <sherpa-button class="cancel-btn">Cancel</sherpa-button>
+      <sherpa-button class="save-btn" data-look="saturated">Save changes</sherpa-button>
     </sherpa-container-footer>
-
   </sherpa-layout-grid>
-</form>
+</sherpa-stack>

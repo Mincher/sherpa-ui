@@ -306,7 +306,7 @@ capabilities:
   - $type: capability
     api: js-methods
     description: >-
-      callable from a view definition's state block (setColumnFilter, columnClause,
+      callable from a view definition's state block (setColumnFilter, columnClause, columnLabel,
       suspendColumnFilter, openColumnFilter, clearColumnFilter, actionsFor, select, clearSelection).
       See $extensions.sherpa.methods.
 events:
@@ -494,6 +494,10 @@ $extensions:
         name: columnClause
         args: "field: string"
         description: One column's filter as a ready FilterClause, or null. TRAP
+      - $type: method
+        name: columnLabel
+        args: "field: string"
+        description: "One column filter AS A READER SEES IT — \"Contains: ana\", \"Is not: churned\"."
       - $type: method
         name: suspendColumnFilter
         args: "field: string, suspended = true"

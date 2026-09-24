@@ -120,6 +120,8 @@
 :host([data-type="overlay"]) .body {
   padding: 0;
   overflow: auto;
+  /* A jump glides; the shared motion gate turns this off for reduced motion. */
+  scroll-behavior: smooth;
 }
 /* A slotted app header brings its own chrome. */
 :host([data-type="overlay"]) .header ::slotted(*) {

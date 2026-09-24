@@ -1,17 +1,17 @@
 /**
  * examples/contexts/settings.js — every Settings Context, inside the Settings
- * overlay. Its header carries the View chip alone; a picked View swaps the one
- * container.
+ * overlay. One page each, a section header before each set of settings; the
+ * header's Jump to chip scrolls to them.
  */
-import { SherpaToast, onViewPicked, viewOptions } from '../../dist/index.js';
-import { SETTINGS_VIEWS } from './settings-views.js';
+import { SherpaToast } from '../../dist/index.js';
 
-/* Colour mode and density are the APP's session values, so these write them
-   there and the app's own subscribers paint <html>. Keyed by View id. */
-const WIRING = {
-  async theme(region, session) {
-    await customElements.whenDefined('sherpa-select-group');
-    const modes = region.querySelector('#mode-group');
+/* Colour mode, density and the nav hierarchy are the APP's session values, so
+   these write them there and the app's own subscribers paint. Each wires its
+   own controls, and does nothing on a page without them. */
+const WIRING = [
+  async (root, session) => {
+    const modes = root.querySelector('#mode-group');
+    if (!modes) return;
     await modes.populate([
       { value: 'light', label: 'Light', description: 'Bright, high-contrast surfaces.' },
       { value: 'dark',  label: 'Dark',  description: 'Dim surfaces for low light.' },
@@ -23,9 +23,9 @@ const WIRING = {
     });
   },
 
-  async layout(region, session) {
-    await customElements.whenDefined('sherpa-select-group');
-    const density = region.querySelector('#density');
+  async (root, session) => {
+    const density = root.querySelector('#density');
+    if (!density) return;
     await density.populate([
       { value: 'compact', label: 'Compact', description: 'Tighter spacing for dense Contexts.' },
       { value: 'default', label: 'Default', description: 'The standard spacing.' },
@@ -35,42 +35,46 @@ const WIRING = {
     density.addEventListener('change', (e) => {
       if (e.detail?.value) session.set('/theme/density', e.detail.value);
     });
-    const pageSize = region.querySelector('#page-size');
+  },
+
+  async (root) => {
+    const pageSize = root.querySelector('#page-size');
+    if (!pageSize) return;
     await pageSize.populate(['10', '25', '50', '100'].map((value) => ({ value, label: value })));
     pageSize.value = '25';
   },
-};
+
+  (root, session) => {
+    const hierarchy = root.querySelector('#nav-hierarchy');
+    if (!hierarchy) return;
+    hierarchy.checked = session.get('/nav/hierarchy');
+    hierarchy.addEventListener('change', (e) => session.set('/nav/hierarchy', e.detail.checked));
+  },
+];
 
 /** `label` is the Context row's; `header` is the Settings overlay's own. */
-export async function init(root, { session, context, label, header }) {
-  await Promise.all(['sherpa-app-header', 'sherpa-toast'].map((t) => customElements.whenDefined(t)));
-  const views = SETTINGS_VIEWS[context];
-  const first = Object.keys(views)[0];
-  const region = root.querySelector('#view-region');
+export async function init(root, { session, label, header }) {
+  await Promise.all(['sherpa-select-group', 'sherpa-quick-filter', 'sherpa-toast']
+    .map((t) => customElements.whenDefined(t)));
+  await Promise.all(WIRING.map((wire) => wire(root, session)));
 
-  await header?.populate({
-    // Settings has no data to filter, so the View chip is the whole bar.
-    filters: [{
-      id: 'view', label: 'View', persistent: true, active: true, select: 'single',
-      options: viewOptions(views),
-    }],
-  });
-
-  // The first View is the template's markup, already on screen.
-  await WIRING[first]?.(region, session);
+  /* Jump to: one row per section header, read off the page so the two cannot
+     disagree. A page of one section has nowhere to jump. */
+  const jump = header?.querySelector('sherpa-quick-filter[data-type="jump"]');
+  const sections = [...root.querySelectorAll('sherpa-section-header[id]')];
+  if (jump) {
+    jump.hidden = sections.length < 2;
+    await jump.populate(sections.map((s) => ({ value: s.id, label: s.dataset.heading })));
+  }
 
   const page = new AbortController();
-  onViewPicked(header, views, { elements: { header } }, {
-    into: region,
-    applied: first,
-    signal: page.signal,
-    /* A View with content is FRESH markup, so it is wired every time. The first
-       one is re-attached, not rebuilt, and keeps its listeners. */
-    after: ({ id, view }) => { if (view.content) void WIRING[id]?.(region, session); },
-  });
-
+  /* Only a page of typed values has a footer; the rest apply as they change. */
   root.querySelector('.cancel-btn')?.addEventListener('click', () => {
     SherpaToast.info('No changes were saved.', { duration: 3000 });
+  }, { signal: page.signal });
+  // sherpa-button is not form-associated, so Save submits the form itself.
+  root.querySelector('.save-btn')?.addEventListener('click', () => {
+    root.querySelector('form')?.requestSubmit();
   }, { signal: page.signal });
   root.querySelector('form')?.addEventListener('submit', (e) => {
     e.preventDefault();

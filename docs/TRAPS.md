@@ -242,7 +242,6 @@ A component that needs `this.signal` should wire in `onRender`, never `onConnect
 
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `test/e2e/reforged-filter-conditions.spec.ts`
 
 ---
 
@@ -590,7 +589,9 @@ template.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
+
+---
+
 ### T-group-chip-body-toggles-grouping
 
 **An organise chip needs its own branch in `#onChipClick`, and Group did not
@@ -3120,8 +3121,6 @@ and would otherwise wipe it.
 
 - Site: `src/core/data/store.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
@@ -6732,7 +6731,6 @@ sit in the row template and CSS reveals one —
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
-- Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 ### T-every-element-in-the-template
 
@@ -7584,6 +7582,9 @@ writes. A reading carries EITHER — never both.
 - Site: `src/core/data/filter-state.ts`
 - Site: `test/unit/filter-conditions.test.mjs`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `test/e2e/reforged-filter-conditions.spec.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 
 ### T-an-inactive-chip-says-where-its-filter-went
 
@@ -7639,6 +7640,381 @@ is the same shape of gap.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `examples/contexts/records.js`
+
+### T-a-filter-menu-has-two-modes
+
+A filter menu asks ONE question two ways, and they are not two menus.
+
+**SELECT** is the default: a search over ticked rows. **CONDITION** is the
+And/Or rows. An icon-only button in the header switches between them, and the
+icon says where it GOES — sliders to enter the rows, a list to come back.
+
+Both stay STAMPED. Flipping a mode is a change of VIEW, not a reset: the ticks
+survive a trip through condition mode, and the typed rows survive a trip back.
+A mode that cleared the other would make the button a destructive control
+wearing no warning.
+
+`data-mode` = `select` | `condition`. The rows live in `.condition-rows`, and
+each row is `[And|Or] [condition] [value]`.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+
+---
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+
+### T-conditions-are-opt-in-per-field
+
+Conditions are OFF by default. A field answered by ticking a closed set of
+three — Region, Customer, Status — gets a plain list and no mode button.
+
+`Contains` over four regions all visible on screen is a control that cannot
+help the reader, and offering it says the list might be incomplete when it is
+not. A field opts in with `conditions: true` on its def; the toolbar writes
+`data-conditional` and the menu shows the button.
+
+Two doors, both shut: the CLICK is refused, and so is a host writing
+`data-mode="condition"` — `#enforceMode()` strips it in `#sync`. A hidden
+button with a live mode is a control a reader cannot reach but a script can.
+
+A TEXT GRID COLUMN is the exception and always opts in. A column of free text
+is exactly what a reader asks "starts with" of.
+
+- Site: `examples/contexts/global-filters.js`
+- Site: `examples/contexts/records.js`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-filter-conditions.spec.ts`
+
+---
+
+### T-a-condition-badge-says-that-not-which
+
+The chip's badge wore the operator's sign — `!=`, `∷*`. It cannot any more.
+
+A sign can say which operator ONE row holds. A field holding
+`Contains "ab" or Equals churned` has no single operator, so a badge reading
+`∷` over it is not a simplification, it is wrong. And a badge reading `=` over
+three chained rows is worse than no badge: the reader believes it.
+
+So the badge is ONE mark — `fx`, the spreadsheet's formula sign — and it says
+only THAT conditions apply. The TOOLTIP spells out which:
+`Contains: ab or Equals: churned`, from `spellConditions()`.
+
+The accessible name stays the WORD, never the mark: a sign announces as
+nothing, and `fx` announces as noise.
+
+- Site: `src/core/data/filter-state.ts`
+- Site: `test/e2e/reforged-filter-conditions.spec.ts`
+
+---
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+
+### T-an-active-chip-is-heavier-and-more-strongly-drawn
+
+An ON filter chip is `font-weight: medium` (500) and a `1px` border; an off one
+is 400 and `0.5px`.
+
+Colour alone was carrying the whole on/off signal, and on a bar of twelve chips
+a reader scanning for "which of these is doing something" had one channel to
+read. Weight and stroke are the other two, and they survive a colour-blind
+reader and a bad monitor.
+
+Will, 2026-09-24: "I think I'd like to increase the font weight (emphasised
+token?) and border thickness (1px) on active chips."
+
+`--sherpa-font-weight-medium` is the emphasis step — 500, between the body 400
+and the semibold 600 the count badge already uses.
+
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
+
+---
+
+### T-a-condition-is-a-draft-too
+
+A committing menu holds its condition ROWS until Apply, exactly as it holds its
+ticked rows.
+
+Without this a condition applied on every keystroke — `C`, `Co`, `Con` — each
+re-querying the whole view, and none of them cancellable. Will, 2026-09-24:
+"Conditional filters are being applied immediately on change instead of on
+clicking Apply."
+
+`#emitConditions()` returns early when `#commits`, and Apply calls it with
+`force`. Cancel and a plain close restore `#conditionBaseline`, captured on
+open beside `#baseline`.
+
+**Two things make the restore harder than it looks.** `hidePopover()` fires
+`toggle` ASYNCHRONOUSLY, so `#applying` is already false when the close runs —
+`#settledByAction` is a second flag that survives the gap. And `conditions =`
+REBUILDS every row, whose value select then fills asynchronously, so restoring
+IDENTICAL rows still blanked the answer for a tick; the setter returns early
+when nothing differs.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `test/e2e/reforged-filter-conditions.spec.ts`
+
+---
+
+### T-a-mode-switch-carries-the-answer-over
+
+Pressing the mode button with three values ticked seeds three ORed rows.
+
+A reader who ticks values and then reaches for conditions is saying "now let me
+refine THAT". Opening on a blank `Equals <first option>` throws their answer
+away and does not say so.
+
+`#seedFromPicks()` runs only when the rows hold nothing of their own, so a
+second trip into condition mode never overwrites real work.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+
+---
+
+### T-an-untouched-select-is-not-an-answer
+
+A `<select>` shows its first option whether or not anyone touched it.
+
+So reading `.value` made every untouched condition row report a pick — and
+`#seedFromPicks` then believed the rows were already answered and carried
+nothing over. The row records what the READER chose in `data-want`, written
+only from a change event on the value select.
+
+The same fact needs a PLACEHOLDER: a `<select>` has no `placeholder`
+attribute, so an empty `Select…` first option is both the prompt and the proof
+the row is unanswered. Will, 2026-09-24: "Conditional equal dropdowns, if not
+populated from carry over, should default to a placeholder 'Select…' label."
+
+`data-conditioned` follows the same rule — it means ANSWERED rows, not merely
+present ones, because a menu in condition mode always holds one row.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+
+---
+
+### T-a-rebuilt-row-reads-empty-for-a-tick
+
+A rebuilt condition row reports NO answer until its value select has filled.
+
+`populate()` on a composed `sherpa-input-text` settles asynchronously, so for
+one tick the row holds no pick — and a chip reading it then switches itself OFF
+while it is filtering. The chip re-reads on the next frame (`#recheckConditions`)
+and the toolbar re-emits (`#conditionFrame`).
+
+**The recheck only ever turns a chip ON.** Re-applying unconditionally made it
+fight the reader: switching a conditioned chip off flipped it straight back on.
+
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+
+---
+
+### T-a-value-select-waits-for-the-rows
+
+Row ONE's `Equals` select opened EMPTY while row two, added afterwards, was
+full.
+
+`#syncConditions` stamps row one before the menu's own value rows arrive, and
+`#valueOptions()` reads those rows. `#refillPicks()` on `slotchange` re-sends
+the options to every row, keeping each row's own `data-want`.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `test/e2e/reforged-filter-conditions.spec.ts`
+
+---
+
+### T-clear-empties-both-modes
+
+Clear empties the ticks AND the condition rows.
+
+A menu with two modes holds its answer in two places, and clearing one left a
+"cleared" chip that was still filtering. Will, 2026-09-24: "Clicking Clear
+should reset both list and conditional selections and values."
+
+Clear is an action ON THE FILTER, not an edit to a draft, so it reports
+immediately even on a committing menu — `#emitConditions(true)`.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+
+---
+
+### T-toggling-a-conditioned-chip-suspends-its-condition
+
+A conditioned chip's BODY toggles, and off SUSPENDS.
+
+Two things blocked it. The body-click handler treated any chip with no ticks as
+EMPTY and opened its menu instead of toggling — a conditioned chip has no ticks
+and is not empty, its rows are its answer. And `states` reported an off chip's
+conditions as `[]`, which reads as "no filter" rather than "not applying": the
+chip could then never switch back on, because it needed a clause to go on and
+the clause needed it on. It reports `suspended: true` instead, which is how
+every other off chip already behaved.
+
+Will, 2026-09-24: "Toggling a conditional chip should toggle whether that
+condition is applied."
+
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+
+---
+
+### T-a-conditioned-chip-answers-with-its-clause
+
+A chip in CONDITION mode has NO ticked values, so `values` says nothing about
+it — and a host that reads `values` alone will clear the field from that
+silence.
+
+The records handler loops every field chip and, finding nothing in `values`,
+called `select(field, [])`. Measured: `data-current` was **true** when
+`condition-change` fired and **false** one microtask later, because the host
+had answered the event by clearing the very field the chip was filtering.
+
+So the host skips a field whose CLAUSE is present:
+
+```js
+const clauses = e.detail.clauses ?? {};
+for (const field of FIELD_CHIPS) {
+  if (clauses[field]) continue;   // the clause IS the answer
+  ...
+}
+```
+
+And `pushChips` then has to let that clause RIDE, because nothing else carries
+it — a field chip's clause is normally stripped there, since `select()` owns
+it. A chip answering with TICKS is still stripped: its picks and its clause
+would AND into `eq Pro` AND `eq Free`, which matches nothing.
+
+The two halves are one rule, and half of it is silently wrong: skipping the
+clear without letting the clause ride gives a lit chip that filters nothing.
+
+**And the toolbar's `states` getter has to read the rows.** It built its
+`fieldState` from `op` and `text` only, so `stateClause` saw no conditions and
+returned nothing — a chip full of answered rows reported an EMPTY clause. That
+one is the quietest of the three: the chip looks right, the badge is right, the
+menu is right, and the grid does not move.
+
+- Site: `examples/contexts/records.js`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+
+---
+- Site: `test/e2e/reforged-filter-conditions.spec.ts`
+
+### T-a-conditioned-chip-reads-as-info
+
+A chip answering with CONDITIONS keeps the ACTIVE fill and takes an INFO edge.
+
+The first try pinned the whole chip to `info` in `state-pins.yaml`. Measured,
+that painted it **white** — `--sherpa-style-info-surface-base` points at
+`surface-default-base`, so `info` has no fill at all. The chip read as OFF
+while it was filtering two thirds of the rows away. Will saw exactly that:
+"It's like the chip never goes active."
+
+So ON is one thing and WHAT KIND OF ANSWER is another, and they use different
+channels:
+
+| | fill | edge | badge | weight |
+|---|---|---|---|---|
+| off | default white | grey | — | 400 |
+| active | active purple | active purple | count | 500 |
+| conditioned | active purple | **info blue** | `fx` | 500 |
+
+The same blue runs through to the cells: a `mark.match` in the grid is
+`--sherpa-style-info-border-base-1`, not the brand purple, so a reader follows
+ONE colour from the chip that found the match to the text it matched.
+
+`data-conditioned` is written by the chip in `#syncEmpty`, and a conditioned
+chip is never `data-empty` — a condition is an answer, so the amber "on but
+filtering by nothing" warning would be a lie.
+
+**A status pin is not a look.** Before reaching for one, check what its surface
+actually resolves to; `info`, `neutral` and `default` all resolve to the plain
+surface, which is invisible on something whose job is to stand out.
+
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
+
+---
+
+### T-a-new-chip-opens-in-default-not-warning
+
+A chip added from the Add menu arrives OFF.
+
+It used to arrive `active: true`, "so the reason you added it is visible
+immediately". But a chip on with no values is exactly the state
+`data-empty` paints AMBER — so the reader pressed Add, got what they asked
+for, and was shown a warning about it.
+
+They add the chip, then answer it. The chip lights when it has an answer.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+
+---
+
+### T-a-rebuilt-bar-reads-empty-until-its-menus-stamp
+
+`#render()` rebuilds every chip, and a rebuilt bar reads `values: {}` for one
+tick — on a bar full of ticked rows.
+
+`items()` on a freshly cloned `<sherpa-menu>` stamps NOTHING. The element has
+no shadow template until it upgrades, so `#stampItems` returns early, keeps the
+list, and stamps at `onRender`. `#flushItems()` runs inside `#render`, but the
+stamping it triggers has not happened when `#render` returns.
+
+So `#removeFilter` emitted `quick-filter-change` with `values: {}` and
+`picked: {}`. The host answered it the only way it could — `select(field, [])`
+for every field — and the reader watched every OTHER filter on the bar clear
+itself because they took ONE chip off.
+
+Measured: capture said `status on=true picks=active`, the write said
+`write status prior=true`, and the emit said `values={}`. Every step was
+right; only the ORDER was wrong.
+
+`#settled()` awaits each chip's `rendered` and then each menu's, and
+`#removeFilter` / `#addFilters` emit through it. The bug is silent, it looks
+like a filter reset, and nothing in the remove path is wrong on its own.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+
+---
+
+### T-equals-answers-with-the-fields-own-values
+
+In condition mode, `Equals` does NOT give a text box.
+
+A reader who picks `Equals` on a Status field is choosing among `active`,
+`churned`, `trial` — the values that field has. A free text box there invites
+them to type `Active` and get nothing, with no clue why.
+
+So `OP_TAKES[op] === 'list'` shows `.condition-pick`, a select of the field's
+own values, read from the menu's own rows. Only a TYPING op shows the box.
+The flag is on the ROW (`data-takes`), not the host, so one row can be a typed
+`Contains` while the next picks from the list.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `test/e2e/reforged-filter-conditions.spec.ts`
+
+---
+
+### T-a-select-does-not-hug-its-own-text
+
+The And/Or select in a condition row sat in an `auto` grid track and shrank to
+its caret — "And" clipped to nothing.
+
+A `<select>` reports an intrinsic width its own longest option does not
+guarantee, especially with `appearance` restyled. Give it a FIXED track.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+
+---
 
 ### T-a-full-range-is-still-a-range
 

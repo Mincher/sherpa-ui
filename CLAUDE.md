@@ -266,18 +266,24 @@ Ratified 2026-09-24. Four words, one meaning each — in code, comments, tests a
 | Term | Is | Where |
 |---|---|---|
 | **Section** | a label and divider in the nav. Visual only, does nothing | nav — `NavSection`, `sherpa-nav-section` |
-| **Area** | a parent nav row. It expands and collapses its Contexts; it never navigates | nav — a `NavEntry` with `children` |
+| **Area** | a parent nav row. It expands and collapses its children; it never navigates | nav — a `NavEntry` with `children` |
 | **Context** | a nav row that fills the app header and the content | nav — a `NavEntry` with an `href`; `?context=` in the example app |
-| **View** | a preset or user-saved view definition, picked from the header's View chip | app header only — never in the nav |
+| **View** | a preset or user-saved view definition, picked from the header's View chip | the View chip; also child rows of its Context when "Show full view hierarchy" is on |
 
-A Context's sub-pages are its **Views**, picked in the View chip — never child
-nav rows. Add an Area only when one is asked for. `examples/contexts/settings-views.js`
-is the reference: three Settings Contexts, two Views each.
+A Context's sub-pages are its **Views**, picked in the View chip. Settings ›
+Application › "Show full view hierarchy" also lists them as child rows, which
+makes the Context row an Area. A View row picks THROUGH the chip, so the two
+never disagree. Add an Area only when one is asked for.
+
+**A Settings Context is ONE page, with no Views**: a section header before each
+set of settings, and a Jump to chip (`sherpa-quick-filter data-type="jump"`) in
+its header that scrolls to each. A footer only where typed values need Save.
+`examples/templates/application.html` is the reference.
 
 **Settings opens ON TOP of the Context**, in `<sherpa-dialog data-type="overlay">`
 in the app shell's `overlay` slot. The Context under it is never reloaded, so
 leaving Settings restores its View. The URL carries both:
-`?context=records&settings=profile`.
+`?context=records&view=risk&settings=application`. A first View is left out.
 
 So a page is a **Context**, not a view: `examples/contexts/`, `loadContext`,
 `/template/context/:context`. "View" is kept for saved views — `ViewSnapshot`,

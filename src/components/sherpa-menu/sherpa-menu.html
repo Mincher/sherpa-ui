@@ -37,7 +37,16 @@
                   `calendar` widens the card and lays the LIST region out
                   horizontally, so a day grid and a time picker sit side by
                   side. Everything else is the same menu.
+    data-conditional  FILTER type only: this field can be asked a CONDITION, so
+                  the mode button shows. OPT-IN: most fields are answered by
+                  ticking values, and a `Contains` box over a closed set of
+                  three is noise. TRAP T-conditions-are-opt-in-per-field
+    data-mode     FILTER type only: select (default) | condition. `select` is a
+                  plain ticked list with a search; `condition` is the And/Or
+                  rows. An icon-only button in the header switches between them.
+                  TRAP T-a-filter-menu-has-two-modes
     data-op       FILTER type only: which condition is picked. Defaults to `eq`.
+                  The FIRST row's op — a menu in condition mode holds many.
     data-conditions  FILTER type only: a comma-separated op list ('eq,ne,contains')
                   in place of the default text set.
     data-has-value  written BY the menu: the typed value is not empty, so the
@@ -67,7 +76,9 @@
     menu-open — detail: {}
     menu-close — detail: {}
     condition-change — the condition or its typed value changed.
-                  detail: { op, value }
+                  detail: { op, value, conditions }
+                  `conditions` is EVERY row, in order. TRAP T-many-conditions-are-one-reading
+    filter-mode-change — the mode button was pressed. detail: { mode }
 -->
 <template id="default">
   <div class="menu sherpa-border-edges sherpa-border-corners" part="menu" popover="auto" role="menu">
@@ -166,24 +177,28 @@
            The search box is the last child while the rows are the answer; the
            input takes its place once a typing condition does.
            TRAP T-grouping-is-an-attribute-and-a-class -->
-      <div class="filter-row sherpa-group" part="filter-row">
-        <!-- COMPOSED, not re-drawn: sherpa-input-text owns box, border, caret,
-             focus ring and the Clear action for every field in the system.
-             `select` is its own template variant, so the platform's element
-             does the work. TRAP T-compose-never-reimplement -->
-        <sherpa-input-text class="condition" part="condition" data-type="select"
-                           aria-label="Condition"></sherpa-input-text>
-        <sherpa-input-text class="condition-value" part="condition-value"
-                           placeholder="Value" data-clearable
-                           aria-label="Value"></sherpa-input-text>
-        <!-- The SEARCH is the pair's second half while the ROWS are the answer;
-             the input above takes its place once a typing condition does. It
-             is a composed sherpa-input-text, so it owns box, ring and focus. -->
-        <sherpa-input-text class="search" part="search"
-                           data-icon-start="magnifying-glass"
-                           placeholder="Search" autocomplete="off"
-                           aria-label="Search this menu"></sherpa-input-text>
-      </div>
+      <!-- The mode switch. Icon only, in the header, because the two modes are
+           the SAME filter seen two ways — not two menus.
+           TRAP T-a-filter-menu-has-two-modes -->
+      <sherpa-button class="use-condition" part="use-condition" data-type="icon"
+                     data-look="transparent"
+                     data-icon-start="sliders-up"
+                     aria-pressed="false"
+                     aria-label="Use condition"></sherpa-button>
+
+      <!-- SELECT MODE — the search leads the ticked rows beneath it. -->
+      <sherpa-input-text class="search" part="search"
+                         data-icon-start="magnifying-glass"
+                         placeholder="Search" autocomplete="off"
+                         aria-label="Search this menu"></sherpa-input-text>
+
+      <!-- CONDITION MODE — one or more rows, stamped from the prototype.
+           Row one has no join select; every later row starts with one. -->
+      <div class="condition-rows" part="condition-rows" role="group"
+           aria-label="Conditions"></div>
+      <sherpa-button class="add-condition" part="add-condition" data-size="xs"
+                     data-look="transparent" data-icon-start="plus"
+                     >Add condition</sherpa-button>
     </div>
 
     <!-- Without this the card collapses to an empty box and reads as broken. -->
@@ -199,6 +214,28 @@
          chip menu and a column heading menu drifted into different controls.
          No `id`, so the multi-template parser leaves them alone.
          TRAP T-one-field-one-filter-menu -->
+    <!-- CONDITION ROW — [And|Or] [condition] [value]. The join is dropped on
+         the first row in CSS, never removed, so re-ordering cannot lose it.
+         `.sherpa-group` snaps the three into one object by POSITION.
+         TRAP T-a-filter-menu-has-two-modes -->
+    <template class="condition-row-tpl">
+      <div class="condition-row sherpa-group">
+        <sherpa-input-text class="join" data-type="select" data-size="sm"
+                           aria-label="Join"></sherpa-input-text>
+        <sherpa-input-text class="condition" data-type="select"
+                           aria-label="Condition"></sherpa-input-text>
+        <!-- A picking op answers with a SELECT of the field's own values; a
+             typing op answers with a text box. CSS shows one. -->
+        <sherpa-input-text class="condition-pick" data-type="select"
+                           aria-label="Value"></sherpa-input-text>
+        <sherpa-input-text class="condition-value" placeholder="Value"
+                           data-clearable aria-label="Value"></sherpa-input-text>
+        <sherpa-button class="drop-condition" data-type="icon" data-size="xs"
+                       data-look="transparent" data-icon-start="cross"
+                       aria-label="Remove condition"></sherpa-button>
+      </div>
+    </template>
+
     <template class="menu-check-tpl">
       <label class="menu-row"><input type="checkbox" /><span class="menu-row-label"></span></label>
     </template>

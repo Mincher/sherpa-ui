@@ -459,6 +459,11 @@ export class SherpaDataGrid extends SherpaElement {
        TRAP T-one-field-one-filter-menu */
     if (kind === 'text') {
       menu.setAttribute('data-type', 'filter');
+      /* A TEXT COLUMN always offers conditions. This is the one place they are
+         never noise: a column of free text is exactly what a reader asks
+         "starts with" of. A chip over a closed set opts in instead.
+         TRAP T-conditions-are-opt-in-per-field */
+      menu.setAttribute('data-conditional', '');
       menu.setAttribute('data-search', '');
       /* THE SAME MENU a filter chip opens for this field, so it carries the
          same flags: MULTIPLE values (checkbox rows, and several picks become

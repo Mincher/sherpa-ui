@@ -13,6 +13,8 @@
 
 :host {
   display: block;
+  /* A jump lands with room above the header, so it is never at the very edge. */
+  scroll-margin-block-start: var(--sherpa-display-mode-space-base, 16px);
 
   /* default size — md (unset) */
   --_title-size: var(--sherpa-font-size-body-base, 14px);

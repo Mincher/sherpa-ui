@@ -183,27 +183,6 @@
   <!-- THE RANGE SWITCH — first row of a number or date menu; flips what the
        rows below it are. Switch LEADS, label follows, so every control in the
        menu shares one left edge. -->
-  <!-- THE CONDITION ROW — the first row of a value menu, above the search box.
-       One <option> is a CLONING PROTOTYPE; JS clones it per operator, from the
-       one vocabulary in store.ts. The body below swaps with the pick: `Equals`
-       shows the value rows, `Contains` shows the text box.
-       TRAP T-an-operator-decides-pick-or-type -->
-  <template class="qf-op-tpl">
-    <div class="qf-op-row" data-row>
-      <select class="qf-op" aria-label="Condition"><option></option></select>
-    </div>
-  </template>
-
-  <!-- The typed half. It EXISTS from the start and CSS reveals it, so flipping
-       the condition back and forth keeps what the reader typed.
-       TRAP T-range-switch-swaps-not-rebuilds -->
-  <template class="qf-text-tpl">
-    <div class="qf-text-row" data-row>
-      <input class="qf-text" type="text" aria-label="Value" placeholder="Value"
-             style="inline-size: 100%; box-sizing: border-box;" />
-    </div>
-  </template>
-
   <template class="qf-range-tpl">
     <div class="qf-range-row" data-row>
       <sherpa-switch class="qf-range-switch" data-type="simple"></sherpa-switch>
