@@ -48,11 +48,16 @@
   display: inline-flex;
   align-items: center;
   flex-direction: row; /* OFF: knob at the start */
-  --_gap: var(--sherpa-theme-gap-sm, 4px);
-  gap: var(--_gap);
+  /* No gap: the label centres its text in what the thumb leaves, so the space
+     between them shrinks to fit OFF rather than pushing it out of the track. */
   inline-size: var(--sherpa-switch-size-width, 48px);
   min-block-size: var(--sherpa-switch-size-height, 20px);
-  padding: var(--sherpa-switch-size-padding, 2px);
+  /* Figma's stroke is INSIDE and takes no room, so the padding gives it back —
+     the room compact needs for OFF. */
+  padding-block-start: calc(var(--sherpa-switch-size-padding, 2px) - var(--sherpa-border-top, 0.5px));
+  padding-block-end: calc(var(--sherpa-switch-size-padding, 2px) - var(--sherpa-border-bottom, 0.5px));
+  padding-inline-start: calc(var(--sherpa-switch-size-padding, 2px) - var(--sherpa-border-left, 0.5px));
+  padding-inline-end: calc(var(--sherpa-switch-size-padding, 2px) - var(--sherpa-border-right, 0.5px));
   border-style: solid;
   border-color: var(--_border);
   border-radius: var(--sherpa-switch-radius-track, 4px);
@@ -119,9 +124,10 @@
   /* --_has-label is set by the projected token region above: revert-layer
      (standard) or none (simple). */
   display: var(--_has-label, inline-flex);
-  flex: 1 1 auto;
+  flex: 1 1 0;
   justify-content: center;
-  min-inline-size: var(--sherpa-display-mode-size-lg, 24px);
+  min-inline-size: 0;
+  overflow: hidden;
   text-align: center;
   color: var(--sherpa-theme-content-body-base-fixed, #ffffff);
 }
@@ -138,7 +144,7 @@
   inset-inline-start: calc(100% - var(--sherpa-switch-size-thumb, 16px));
 }
 .input:checked ~ .label {
-  inset-inline-start: calc(-1 * (var(--sherpa-switch-size-thumb, 16px) + var(--_gap)));
+  inset-inline-start: calc(-1 * var(--sherpa-switch-size-thumb, 16px));
 }
 
 /* ── Disabled — inactive tokens, never opacity ─────────────────────────── */

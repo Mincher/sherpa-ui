@@ -168,3 +168,34 @@ test('on swaps the knob and label sides, and back', async ({ page }) => {
   expect(r.on).toEqual({ knobAtEnd: true, labelFirst: true });
   expect(r.simpleOn.knobAtEnd).toBe(true);
 });
+
+test('the ON / OFF text stays inside the track in every density', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const out: string[] = [];
+    for (const density of ['compact', '', 'comfortable']) {
+      if (density) document.documentElement.dataset['density'] = density;
+      else delete document.documentElement.dataset['density'];
+      for (const on of [false, true]) {
+        const el = document.createElement('sherpa-switch') as SwitchEl;
+        el.style.setProperty('--sherpa-motion-fast', '0s');
+        document.getElementById('root')!.appendChild(el);
+        await el.rendered;
+        el.checked = on;
+        const sr = el.shadowRoot!;
+        const track = sr.querySelector<HTMLElement>('.track')!;
+        const label = sr.querySelector<HTMLElement>('.label')!;
+        const cs = getComputedStyle(track);
+        const t = track.getBoundingClientRect();
+        const l = label.getBoundingClientRect();
+        const inStart = t.left + parseFloat(cs.borderLeftWidth) + parseFloat(cs.paddingLeft);
+        const inEnd = t.right - parseFloat(cs.borderRightWidth) - parseFloat(cs.paddingRight);
+        const inside = l.left >= inStart - 0.5 && l.right <= inEnd + 0.5;
+        const fits = label.scrollWidth <= label.clientWidth;
+        if (!inside || !fits) out.push(`${density || 'default'} ${on ? 'ON' : 'OFF'}`);
+      }
+    }
+    delete document.documentElement.dataset['density'];
+    return out;
+  });
+  expect(r, 'label outside the track, or its text clipped').toEqual([]);
+});
