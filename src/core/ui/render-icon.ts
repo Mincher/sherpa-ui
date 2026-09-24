@@ -63,6 +63,13 @@ export function renderIcon(el: Element, value: string): void {
  */
 export function upgradeIcons(root: ParentNode): void {
   for (const el of root.querySelectorAll('[data-icon]')) {
+    /* A sherpa-* ELEMENT with data-icon owns its own icon — it is that
+       component's public API, not a marker on a plain node. Rendering into it
+       replaced its children with an SVG and made the whole component a 14px
+       icon box: a composed sherpa-container-header collapsed to a square and
+       dropped the search field slotted inside it.
+       TRAP T-a-component-with-data-icon-draws-its-own */
+    if (el.tagName.startsWith('SHERPA-')) continue;
     if (el.querySelector('svg')) continue;
     const name = iconName(el.getAttribute('data-icon') ?? '');
     if (name === null || !(name in ICON_PATHS)) continue;

@@ -81,6 +81,13 @@
 :host([data-inline]) .heading,
 :host([data-inline]) .drill-trail { display: none; }
 
+/* …and it drops the chrome its HOST already has. A filter panel's field header
+   carries the list/condition switch and the panel has ONE footer, so a second
+   of each is two answers to one question.
+   TRAP T-an-inline-menu-drops-the-chrome-its-host-owns */
+:host([data-inline]) .use-condition,
+:host([data-inline]) .footer { display: none; }
+
 /* No `@supports (anchor-name)` block — see the positioning note at the top. */
 
 /* ── Header ──────────────────────────────────────────────────────────────

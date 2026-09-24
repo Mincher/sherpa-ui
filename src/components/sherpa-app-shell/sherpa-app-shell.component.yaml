@@ -45,8 +45,26 @@ anatomy:
                     children:
                       - el: sherpa-app-header
               - el: div
-                class: context-frame
-                slot: ""
+                class: body
+                part: body
+                children:
+                  - el: aside
+                    class: panel-start
+                    part: panel-start
+                    children:
+                      - slot: panel-start
+                        attrs:
+                          data-accepts: filter-panel, panel
+                  - el: div
+                    class: context-frame
+                    slot: ""
+                  - el: aside
+                    class: panel-end
+                    part: panel-end
+                    children:
+                      - slot: panel-end
+                        attrs:
+                          data-accepts: panel, overlay-panel
           - el: div
             class: overlay
             part: overlay
@@ -91,6 +109,12 @@ states:
     name: settings
     selector: ":host([data-nav-state=\"settings\"])"
   - $type: state
+    name: has-panel-start
+    selector: ":host([data-has-panel-start])"
+  - $type: state
+    name: has-panel-end
+    selector: ":host([data-has-panel-end])"
+  - $type: state
     name: no-nav
     selector: ":host([data-no-nav])"
   - $type: state
@@ -98,6 +122,8 @@ states:
     selector: ":host([data-no-header])"
 tokens:
   header.background: "{sherpa.style-surface-base}"
+  panel-start.padding: "{sherpa.layout-grid-padding}"
+  panel-end.padding: "{sherpa.layout-grid-padding}"
 $extensions:
   sherpa:
     figmaName: App Shell

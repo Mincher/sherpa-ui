@@ -1363,6 +1363,21 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
+   * removeFilter(id) — take one filter off this bar, as its menu's Remove
+   * does. The other half of `addFilters`, for the same reason: a filter panel
+   * draws its own Remove and cannot reach this shadow root.
+   * TRAP T-a-panel-adds-through-the-bar-that-owns-the-list
+   */
+  removeFilter(id: string): void {
+    this.#removeFilter(id);
+  }
+
+  /** The ids this bar is holding — the read-back `populate()` never had. */
+  get heldIds(): string[] {
+    return this.#filters.map((f) => f.id);
+  }
+
+  /**
    * allowFields([...]) — the ONLY fields this bar may offer, or `null` for all.
    *
    * A context, a role or a fetch decides what a reader may filter by; this bar

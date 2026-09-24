@@ -34,6 +34,14 @@ export class SherpaAccordion extends SherpaElement {
   }
 
   #onActionClick = (event: Event): void => {
+    /* ONLY for a click that really is on the summary row. A control here may
+       open a POPOVER, whose card is in the top layer and outside this element
+       — but the click on a row inside it still passes through this listener,
+       and `preventDefault()` then ate the checkbox's own tick and let the
+       popover light-dismiss with nothing chosen.
+       TRAP T-an-accordion-action-is-not-a-toggle */
+    const summary = this.$('.header');
+    if (!event.composedPath().some((n) => n === summary)) return;
     event.preventDefault();
   };
 

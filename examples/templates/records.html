@@ -5,83 +5,7 @@
      rest, so the Context fills the content area and nothing scrolls but the
      grid inside its own card. Six rows: metrics 1, charts 4, the records card 1.
      TRAP T-a-content-grid-has-two-row-modes -->
-<!-- data-fill: the stack takes the content area's height and hands the spare
-     to the GRID, so the panel is as tall as the content beside it.
-     The panel sits OUTSIDE the grid on purpose: `data-col-span="full"` is a
-     hardcoded `span 12`, so a `full` child cannot know a sibling column is
-     beside it. Narrowing the grid's own box is what makes `full` mean full.
-     TRAP T-the-panel-is-the-toolbar-in-a-column -->
-<!-- What the components cannot own: a search that HIDES a chip, and the
-     field spacing between two composed stacks. Everything else — the heading
-     row, the wrapping value row, the gaps — is a sherpa component's job. -->
-<style>
-  /* The search hides a chip; JS writes the flag, CSS owns the hiding. */
-  #filter-panel .panel-value[data-filtered-out] { display: none; }
-
-  /* CONDITION MODE REPLACES the value chips — the rows are the answer now,
-     and two answers side by side is the thing this mode exists to avoid. */
-  #filter-panel .panel-field[data-conditional-open] .panel-values { display: none; }
-
-  /* A field the search emptied says so rather than showing a bare label. */
-  #filter-panel .panel-field[data-no-matches] .panel-values::after {
-    content: "No matches";
-    font-size: var(--sherpa-font-size-body-small, 12px);
-    color: var(--sherpa-theme-content-body-2, #b3b3c3);
-  }
-
-  #filter-panel .panel-field + .panel-field,
-  #filter-panel sherpa-accordion + sherpa-accordion {
-    margin-block-start: var(--sherpa-display-mode-space-md, 16px);
-  }
-
-  /* The BODY scrolls, not the panel — the search and the footer stay put.
-     `::part` is the only way in: the body is in the panel's shadow root. */
-  #filter-panel::part(body) { overflow: auto; }
-
-  /* The search fills its row: a header's metadata strip is a flex row, and a
-     field in it otherwise hugs its own content. */
-  #filter-panel .panel-search { flex: 1 1 auto; }
-</style>
-
-<sherpa-stack data-direction="inline" data-gap="md" data-fill>
-  <!-- THE FILTER PANEL — the same filters the toolbars hold, in a column
-       instead of a row. Hidden until the toolbar's Configure button asks.
-       TWO accordions, one per SCOPE; inside each, a field is a header row plus
-       a wrapping row of boolean chips. ONE search and ONE footer for the whole
-       panel: Apply commits every field at once.
-       288px = 3 columns at the desktop breakpoint. records.js fills it. -->
-  <!-- The panel's top and bottom meet the metrics and the pager beside it.
-       `margin-block` matches the layout grid's own 16px inset, which the panel
-       does not carry — without it the panel overshoots the content by 16 at
-       each end. A FIXED box whose BODY scrolls, never one that grows with its
-       content: the search and the footer must stay put. -->
-  <sherpa-panel id="filter-panel" hidden
-                style="flex: 0 0 auto; inline-size: 288px; box-shadow: none;
-                       block-size: calc(100% - var(--sherpa-display-mode-space-md, 16px) * 2);
-                       margin-block: var(--sherpa-display-mode-space-md, 16px)">
-    <!-- The GENERIC header. `data-type="panel"` only paints the title
-         link-blue, which is the overlay look; this is a FIXED panel. -->
-    <sherpa-container-header slot="header"
-                             data-heading="Filters" data-icon="filter"
-                             data-dismissible>
-      <!-- ONE search, across every value chip in the panel. The metadata row
-           is the header's own bottom row, so it spans the full width. -->
-      <sherpa-input-text slot="metadata" class="panel-search"
-                         data-icon-start="magnifying-glass"
-                         placeholder="Search filters" autocomplete="off"
-                         aria-label="Search every filter"></sherpa-input-text>
-    </sherpa-container-header>
-
-    <!-- ONE footer. Apply commits every field; Discard reverts to the last
-         Apply, which is why it is not called Cancel. -->
-    <sherpa-container-footer slot="footer" data-align="end">
-      <sherpa-button class="panel-discard">Discard</sherpa-button>
-      <sherpa-button class="panel-apply" data-look="saturated">Apply</sherpa-button>
-    </sherpa-container-footer>
-  </sherpa-panel>
-
-  <!-- data-grow: the grid takes what the panel leaves. -->
-  <sherpa-layout-grid data-rows="fit" data-row-count="6" data-grow>
+<sherpa-layout-grid data-rows="fit" data-row-count="6">
 
   <!-- SUMMARIES OF THE SAME ROWS. Every one is bound to the Context's DataSource
        with an `as` adapter, so a filter set anywhere re-computes all of them.
@@ -171,8 +95,7 @@
       data-total-pages="4"
       data-rows-options="10,25,50,100"></sherpa-pagination>
   </sherpa-container>
-  </sherpa-layout-grid>
-</sherpa-stack>
+</sherpa-layout-grid>
 
 <!-- Add / edit customer dialog. -->
 <sherpa-dialog id="dialog" data-heading="Add customer">

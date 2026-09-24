@@ -22,6 +22,19 @@
   box-shadow: none;
 }
 
+/* The BODY scrolls, not the panel: the search and the footer stay put. Without
+   it the scopes push both out of the box and the panel overflows its own
+   edges. `::part` is the only way in — the body is in the panel's shadow.
+
+   NO PADDING: an accordion is a full-width card, and a panel's worth of inset
+   around one makes it read as floating inside its own container. The header
+   and footer keep theirs; the scopes run edge to edge. */
+.panel::part(body) {
+  overflow: auto;
+  min-block-size: 0;
+  padding: 0;
+}
+
 /* The search fills its row: a header's metadata strip is a flex row, and a
    field in it otherwise hugs its own content. */
 .search { flex: 1 1 auto; }
@@ -31,7 +44,6 @@
 .scopes {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
 /* ── Fields ──────────────────────────────────────────────────────────── */
@@ -41,12 +53,9 @@
 /* The search hides a VALUE; JS writes the flag, CSS owns the hiding. */
 .value[data-filtered-out] { display: none; }
 
-/* A field the search emptied says so rather than showing a bare label. */
-.field[data-no-matches] .field-values::after {
-  content: "No matches";
-  font-size: var(--sherpa-font-size-body-small, 12px);
-  color: var(--sherpa-style-content-secondary, #35353d);
-}
+/* A field the search emptied is HIDDEN. Will, 2026-09-24: a column of labels
+   with nothing under them is harder to read than a shorter list. */
+.field[data-no-matches] { display: none; }
 
 /* CONDITION MODE REPLACES the value chips — the rows are the answer now, and
    two answers side by side is the thing this mode exists to avoid. */
@@ -55,6 +64,7 @@
 /* A field ANSWERED BY ITS MENU — a condition, a number, a range — shows that
    body instead of a run of chips. TRAP T-an-inline-menu-is-the-same-menu */
 .field-body { display: none; }
+
 .field[data-conditional] .field-body,
 .field[data-body] .field-body { display: block; }
 .field[data-body] .field-values { display: none; }
@@ -70,4 +80,10 @@
 
 /* A scope with nothing to add offers no Add button. */
 .scope-add { display: none; }
-.scope[data-can-add] .scope-add { display: inline-flex; }
+.scope[data-can-add] .scope-add {
+  display: inline-flex;
+  /* It does not wrap: a 288px column is narrow, and "Add / filter" on two
+     lines reads as two controls. The heading beside it shrinks instead. */
+  white-space: nowrap;
+  flex: 0 0 auto;
+}

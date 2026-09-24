@@ -71,7 +71,9 @@ anatomy:
               class: scope-add
               attrs:
                 slot: actions
-                data-icon-start: plus
+                data-size: sm
+                data-icon-end: triangle-down
+                aria-haspopup: menu
 props:
   - $type: prop
     name: data-heading

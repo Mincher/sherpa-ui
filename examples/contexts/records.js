@@ -12,7 +12,7 @@ import { customerStore, customersReady, customers, columns, plans, regions, cust
   from './records-data.js';
 import { RECORDS_VIEWS } from './records-views.js';
 import { globalFilters, globalAvailable } from './global-filters.js';
-import { mountFilterPanel } from './filter-panel.js';
+
 
 export async function init(root) {
   /* The store is the APP's (records outlive a screen); the source is this
@@ -103,13 +103,49 @@ export async function init(root) {
     source.contribute('columns', andFilter(clauses));
   };
 
+  /* The VALUES each field has, read once. Both the header's Add menu and the
+     filter PANEL offer from this. */
+  const FIELD_VALUES = {
+    status: [...new Set(customers.map((c) => c.status))].sort(),
+    plan: [...new Set(customers.map((c) => c.plan))].sort(),
+    tier: [...new Set(customers.map((c) => c.tier))].sort(),
+    owner: [...new Set(customers.map((c) => c.owner))].sort(),
+  };
+  /** Already on the header bar, so never offered again. */
+  const HEADER_HELD = ['view', 'customer', 'region', 'dateRange'];
+
+  /**
+   * A toolbar filter def, as the PANEL takes it.
+   *
+   * A chip with no `options` is a TOGGLE — one question with no field behind
+   * it, which the panel shows as a preset.
+   * TRAP T-a-chip-with-no-field-is-a-preset
+   */
+  const asPanelField = (f, bar) => ({
+    id: f.id,
+    label: f.label,
+    options: f.options,
+    select: f.select,
+    removable: f.removable,
+    conditions: f.conditions,
+    preset: !f.options?.length && !f.kind,
+    /* The field's OWN menu, where its chip has one. A single-select field
+       keeps it; so does a number or a date, which the panel cannot draw as a
+       run of chips. TRAP T-an-inline-menu-is-the-same-menu */
+    menu: bar?.shadowRoot
+      ?.querySelector(`.chips > .chip[data-id="${f.id}"] sherpa-menu`) ?? undefined,
+  });
+
   const grid      = root.querySelector('#grid');
   const qft       = root.querySelector('#qft');
   const pager     = root.querySelector('#pager');
   const dialog    = root.querySelector('#dialog');
   const planGroup = root.querySelector('#f-plan');
   const custField = root.querySelector('#f-customer');
-  const panel       = root.querySelector('#filter-panel');
+  /* The FILTER PANEL lives in the app shell, not in this Context's markup:
+     it is app chrome, and the shell owns where a panel sits beside the
+     content. TRAP T-the-shell-owns-the-panel-areas */
+  const panel       = document.querySelector('sherpa-app-shell #filter-panel');
   const confirm     = root.querySelector('#confirm');
   const confirmText = root.querySelector('#confirm-text');
 
@@ -146,16 +182,7 @@ export async function init(root) {
     /* What the header's ADD chip offers. Without this the button was disabled
        and the reader could add NOTHING at view scope.
        TRAP T-a-bar-offers-only-what-its-scope-holds */
-    available: globalAvailable(
-      {
-        status: [...new Set(customers.map((c) => c.status))].sort(),
-        plan: [...new Set(customers.map((c) => c.plan))].sort(),
-        tier: [...new Set(customers.map((c) => c.tier))].sort(),
-        owner: [...new Set(customers.map((c) => c.owner))].sort(),
-      },
-      // Already on the header bar, so never offered again.
-      ['view', 'customer', 'region', 'dateRange'],
-    ),
+    available: globalAvailable(FIELD_VALUES, HEADER_HELD),
   });
 
   /* Quick-filter chips. A chip with `options` opens a menu; one without is a
@@ -173,7 +200,10 @@ export async function init(root) {
      chip offers "Remove filter". `commit: true` on Owner and Created only:
      chips AUTO-APPLY by default, and committing is the opt-out for a field
      whose query is expensive. Both behaviours are here side by side. */
-  qft.populate([
+  /* ONE LIST, read twice: the toolbar draws it as a row of chips and the
+     PANEL draws it as a column. A second copy would drift the first time
+     either changed. TRAP T-the-panel-is-the-toolbar-in-a-column */
+  const DATA_FILTERS = [
     /* Three TOGGLES, each a question the data answers yes or no, and none of
        them a field a menu chip below also filters.
        TRAP T-a-toggle-is-a-clause-not-a-value */
@@ -204,12 +234,13 @@ export async function init(root) {
     /* No `created` chip here: the header's "Created date" already filters that
        field at VIEW scope, and one field lives in exactly ONE scope.
        TRAP T-component-extends-view-never-alters-it */
-  ]);
+  ];
+  qft.populate(DATA_FILTERS);
 
   /* What the ADD chip offers — the columns the default set leaves out. These
      four are `kind: 'number'`, not value lists: a column of 240 distinct seat
      counts is not a set anybody picks from. Bounds are the data's own. */
-  qft.available([
+  const DATA_AVAILABLE = [
     { id: 'seats', label: 'Seats', type: 'data',
       kind: 'number', min: 1, max: 240, step: 1 },
     { id: 'spend', label: 'Spend', type: 'data',
@@ -218,7 +249,8 @@ export async function init(root) {
       kind: 'number', min: 40, max: 100, step: 1 },
     { id: 'openTickets', label: 'Open tickets', type: 'data',
       kind: 'number', min: 0, max: 8, step: 1 },
-  ]);
+  ];
+  qft.available(DATA_AVAILABLE);
 
   /* The leading Group and Sort chips — how the grid is ARRANGED. Their own
      events, so a group/sort pick is never mistaken for a filter change. */
@@ -242,20 +274,127 @@ export async function init(root) {
   const page = new AbortController();
   const signal = page.signal;
 
-  /* THE FILTER PANEL — the same filters, in a column. It BORROWS each chip's
-     own menu, so a field filtered here and the same field filtered from its
-     chip are one control in two places.
+  /* THE FILTER PANEL — the same filters, in a column. It reads the SAME
+     definitions the bars read; it never reaches into a toolbar.
      TRAP T-the-panel-is-the-toolbar-in-a-column */
-  mountFilterPanel(panel, {
-    view: header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]'),
-    data: qft,
-  }, {
-    signal,
-    /* The CONTENT's own name, not "this context" — a reader with two grids on
-       one page has to know which one a section answers for.
-       TRAP T-a-scope-is-named-for-its-content */
-    names: { data: 'Customer records' },
-  });
+  const fillPanel = () => {
+    const viewBar = header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
+    panel?.populate([
+      {
+        scope: 'view',
+        label: 'View filters',
+        /* The VIEW chip is not a filter, and Customer and Region are GLOBAL —
+           all three stay on the app header.
+           TRAP T-the-view-chip-stays-on-the-header */
+        filters: (viewBar?.heldIds ?? [])
+          .filter((id) => !HEADER_HELD.includes(id))
+          .map((id) => {
+            const chip = viewBar?.shadowRoot?.querySelector(`.chips > .chip[data-id="${id}"]`);
+            return asPanelField({
+              id, label: chip?.dataset['label'] ?? id,
+              select: chip?.querySelector('sherpa-menu')?.dataset['select'],
+              options: [...(chip?.querySelectorAll('label:not(.qf-all)') ?? [])]
+                .map((row) => ({
+                  value: row.querySelector('input')?.value ?? '',
+                  label: (row.textContent ?? '').trim(),
+                  selected: !!row.querySelector('input')?.checked,
+                }))
+                .filter((o) => o.value),
+              removable: true,
+            }, viewBar);
+          }),
+        available: globalAvailable(FIELD_VALUES, viewBar?.heldIds ?? []).map((f) => asPanelField(f)),
+      },
+      {
+        scope: 'data',
+        /* The CONTENT's own name, not "this context" — a reader with two grids
+           on one page has to know which one a section answers for.
+           TRAP T-a-scope-is-named-for-its-content */
+        label: 'Customer records',
+        filters: DATA_FILTERS.map((f) => asPanelField(f, qft)),
+        available: (qft.offering ?? []).map((f) => asPanelField(f)),
+        // HOW the grid arranges its rows, above the filters.
+        group: organiseCols,
+        sort: organiseCols,
+        /* The BAR's own organise menus — the same control, moved.
+           TRAP T-an-inline-menu-is-the-same-menu */
+        groupMenu: qft.shadowRoot
+          ?.querySelector('.organise-zone [data-id="group"] sherpa-menu') ?? undefined,
+        sortMenu: qft.shadowRoot
+          ?.querySelector('.organise-zone [data-id="sort"] sherpa-menu') ?? undefined,
+        sortField: grid.dataset['sortField'] ?? undefined,
+        groupField: grid.dataset['groupField'] ?? undefined,
+      },
+    ]);
+  };
+
+  /* EITHER bar's Configure button toggles the panel, and the panel is filled
+     the moment it opens — the bars may have changed since last time. */
+  const togglePanel = () => {
+    if (!panel) return;
+    if (panel.hasAttribute('data-open')) { panel.close(); return; }
+    fillPanel();
+    panel.open();
+    /* A field the panel draws is HIDDEN on its bar: two controls over one
+       field make a reader guess which is in force.
+       TRAP T-the-view-chip-stays-on-the-header */
+    syncPanelled(true);
+  };
+
+  /** Hide or show the chips the panel is drawing instead. */
+  const syncPanelled = (on) => {
+    const drawn = new Set(DATA_FILTERS.map((f) => f.id));
+    for (const chip of qft.shadowRoot?.querySelectorAll('.chips > .chip') ?? []) {
+      chip.toggleAttribute('data-panelled', on && drawn.has(chip.dataset['id']));
+    }
+  };
+
+  qft.addEventListener('filter-configure', togglePanel, { signal });
+  header?.addEventListener('filter-configure', togglePanel, { signal });
+  panel?.addEventListener('filter-panel-close', () => syncPanelled(false), { signal });
+
+  /* APPLY. The panel reports every field in ONE event; each one goes to the
+     source exactly as its chip would send it. */
+  panel?.addEventListener('quick-filter-change', (e) => {
+    const byScope = e.detail.values ?? {};
+    for (const [, fields] of Object.entries(byScope)) {
+      for (const [id, picked] of Object.entries(fields)) {
+        // PRESETS are toggles, not a field: relay each through its own chip.
+        if (id === 'presets') {
+          for (const chip of qft.shadowRoot?.querySelectorAll('.chips > .chip') ?? []) {
+            const want = picked.includes(chip.dataset['id']);
+            if (chip.hasAttribute('data-current') !== want) chip.click();
+          }
+          continue;
+        }
+        if (FIELD_CHIPS.has(id)) source.select(id, picked);
+        else qft.setChipValues(id, picked);
+      }
+    }
+  }, { signal });
+
+  /* ADD and REMOVE are REQUESTS: the BAR owns the list. */
+  panel?.addEventListener('filter-add-request', (e) => {
+    const bar = e.detail.scope === 'view'
+      ? header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]') : qft;
+    bar?.addFilters?.(e.detail.ids);
+    fillPanel();
+    syncPanelled(true);
+  }, { signal });
+
+  panel?.addEventListener('filter-remove', (e) => {
+    qft.removeFilter?.(e.detail.id);
+    fillPanel();
+    syncPanelled(true);
+  }, { signal });
+
+  /* GROUP and SORT arrange the grid; they are not filters. */
+  panel?.addEventListener('group-change', (e) => {
+    grid.setAttribute('data-group-field', e.detail.field ?? '');
+  }, { signal });
+  panel?.addEventListener('sort-change', (e) => {
+    grid.setAttribute('data-sort-field', e.detail.field ?? '');
+  }, { signal });
 
   /* ROW ACTIONS declared ONCE. The grid draws them in its pinned trailing
      column and the toolbar reads the same list back via `grid.actionsFor(n)`,

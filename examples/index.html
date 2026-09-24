@@ -41,6 +41,15 @@
          grid resolved against its own 1809px content instead of the 900px
          area. A scrolling Context is unaffected; it overflows this box exactly as
          it overflowed the shell. TRAP T-a-fit-grid-needs-a-sized-parent -->
+    <!-- THE FILTER PANEL, in the shell's own leading panel area. It lives
+         here rather than in a Context template because it belongs to the app
+         chrome: it survives a Context change, and the shell owns where a panel
+         sits beside the content. Its Context fills it.
+         TRAP T-the-shell-owns-the-panel-areas -->
+    <sherpa-filter-panel slot="panel-start" id="filter-panel"
+                         data-heading="Filters"
+                         style="inline-size: 288px"></sherpa-filter-panel>
+
     <main id="context-root" style="min-block-size: 0"></main>
 
     <!-- Settings covers the header and content, beside the rail. The Context

@@ -93,10 +93,12 @@ test('Apply reports EVERY field in one event; Discard reverts to it', async ({ p
     const heard = [];
     el.addEventListener('quick-filter-change', (e) => heard.push(e.detail));
 
-    // Tick two more, across two fields.
+    /* Tick two more. OWNER is single-select, so it is ONE chip carrying the
+       field's id — not a run of its values.
+       TRAP T-a-single-select-field-stays-one-chip */
     sr.querySelector('.field[data-field="status"] .value[data-value="churned"]')
       .setAttribute('data-current', '');
-    sr.querySelector('.field[data-field="owner"] .value[data-value="Dana"]')
+    sr.querySelector('.field[data-field="owner"] .value[data-value="owner"]')
       .setAttribute('data-current', '');
     await new Promise((r) => setTimeout(r, 100));
 
@@ -118,7 +120,7 @@ test('Apply reports EVERY field in one event; Discard reverts to it', async ({ p
   // ONE event, carrying every field — not one per field.
   expect(r.heard).toHaveLength(1);
   expect(r.heard[0]!.values['data']).toEqual({
-    presets: ['unassigned'], status: ['active', 'churned'], owner: ['Dana'],
+    presets: ['unassigned'], status: ['active', 'churned'], owner: ['owner'],
   });
 
   // The draft really changed…
@@ -127,32 +129,39 @@ test('Apply reports EVERY field in one event; Discard reverts to it', async ({ p
   expect(r.after['status']).toEqual(['active', 'churned']);
 });
 
-test('a single-select field unticks its siblings; multi does not', async ({ page }) => {
+/**
+ * A SINGLE-SELECT FIELD IS ONE CHIP; A MULTIPLE ONE IS A RUN.
+ *
+ * A one-of-many question drawn as a run says "pick several" with its shape and
+ * "pick one" with its behaviour. TRAP T-a-single-select-field-stays-one-chip
+ */
+test('a single-select field is ONE chip; a multiple one is a run', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
-    const click = (field, value) => sr
-      .querySelector('.field[data-field="' + field + '"] .value[data-value="' + value + '"]')
-      .dispatchEvent(new CustomEvent('quick-filter-click', { bubbles: true, composed: true }));
+    const chips = (field) => [...sr.querySelectorAll(
+      '.field[data-field="' + field + '"] .value')].map((c) => c.dataset.value);
 
-    // OWNER is single. Tick both; only the last survives.
-    sr.querySelector('.field[data-field="owner"] .value[data-value="Dana"]')
-      .setAttribute('data-current', '');
-    sr.querySelector('.field[data-field="owner"] .value[data-value="Ravi"]')
-      .setAttribute('data-current', '');
-    click('owner', 'Ravi');
-    await new Promise((r) => setTimeout(r, 100));
-
-    // STATUS is multiple. Both stay.
+    // STATUS is multiple: every value is visible, and both stay ticked.
     sr.querySelector('.field[data-field="status"] .value[data-value="churned"]')
       .setAttribute('data-current', '');
-    click('status', 'churned');
+    sr.querySelector('.field[data-field="status"] .value[data-value="churned"]')
+      .dispatchEvent(new CustomEvent('quick-filter-click', { bubbles: true, composed: true }));
     await new Promise((r) => setTimeout(r, 100));
 
-    return { owner: el.values.data.owner, status: el.values.data.status };
-  })()`) as { owner: string[]; status: string[] };
+    return {
+      // OWNER: one chip, named for the FIELD, not for a value.
+      owner: chips('owner'),
+      ownerSingle: sr.querySelector('.field[data-field="owner"]').hasAttribute('data-single'),
+      // STATUS: a run of its values.
+      status: chips('status'),
+      statusPicked: el.values.data.status,
+    };
+  })()`) as Record<string, unknown>;
 
-  expect(r.owner).toEqual(['Ravi']);
-  expect(r.status).toEqual(['active', 'churned']);
+  expect(r['owner']).toEqual(['owner']);
+  expect(r['ownerSingle']).toBe(true);
+  expect(r['status']).toEqual(['active', 'churned']);
+  expect(r['statusPicked']).toEqual(['active', 'churned']);
 });
 
 /**
@@ -301,43 +310,39 @@ test('group and sort lead the scope, report at once, and skip Apply',
       }
 
       const order = q('.field').map((f) => f.dataset.field);
-      const sortOn = q('.field[data-field="sort"] .value[data-current]')
-        .map((c) => c.dataset.value);
+      /* ONE chip each, named for the field — they are single-select, so they
+         are not exploded into fourteen columns each.
+         TRAP T-a-single-select-field-stays-one-chip */
+      const shape = ['group', 'sort'].map((id) =>
+        q('.field[data-field="' + id + '"] .value').map((c) => c.dataset.value));
+      // The scope said which column Sort was on, so its chip arrived ON.
+      const sortOn = sr.querySelector('.field[data-field="sort"] .value')
+        .hasAttribute('data-current');
 
-      // Pick a Group column. It reports IMMEDIATELY — no Apply.
-      const g = sr.querySelector('.field[data-field="group"] .value[data-value="tier"]');
+      // Pick Group. It reports IMMEDIATELY — no Apply.
+      const g = sr.querySelector('.field[data-field="group"] .value');
       g.setAttribute('data-current', '');
       g.dispatchEvent(new CustomEvent('quick-filter-click', { bubbles: true, composed: true }));
-      await new Promise((r) => setTimeout(r, 120));
-
-      // Both are SINGLE: picking Spend unticks Name.
-      const s2 = sr.querySelector('.field[data-field="sort"] .value[data-value="spend"]');
-      s2.setAttribute('data-current', '');
-      s2.dispatchEvent(new CustomEvent('quick-filter-click', { bubbles: true, composed: true }));
       await new Promise((r) => setTimeout(r, 120));
 
       press('.apply');
       await new Promise((r) => setTimeout(r, 150));
 
       return {
-        order, sortOn, heard,
-        sortNow: q('.field[data-field="sort"] .value[data-current]').map((c) => c.dataset.value),
+        order, shape, sortOn, heard,
         applied: heard.find(([n]) => n === 'quick-filter-change')[1].values.data,
       };
     })()`) as Record<string, unknown>;
 
     // FIRST, above the presets — a reader reaches for them before narrowing.
     expect(r['order']).toEqual(['group', 'sort', 'presets', 'status', 'owner']);
-    // The scope said which column each was on.
-    expect(r['sortOn']).toEqual(['name']);
-    // SINGLE: one column at a time.
-    expect(r['sortNow']).toEqual(['spend']);
+    // ONE chip each, not fourteen columns each.
+    expect(r['shape']).toEqual([['group'], ['sort']]);
+    // The scope said which column Sort was on, so its chip arrived ON.
+    expect(r['sortOn']).toBe(true);
 
     const heard = r['heard'] as [string, Record<string, unknown>][];
-    expect(heard.slice(0, 2)).toEqual([
-      ['group-change', { scope: 'data', field: 'tier' }],
-      ['sort-change', { scope: 'data', field: 'spend' }],
-    ]);
+    expect(heard[0]).toEqual(['group-change', { scope: 'data', field: 'group' }]);
 
     /* APPLY carries the FILTERS only. An arrangement is not part of which
        rows are shown, so it has no business in a filter event. */

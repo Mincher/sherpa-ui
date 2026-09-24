@@ -108,8 +108,39 @@
    and adding it here insets the content twice. A COLUMN, because a percentage
    height resolves against the PARENT's, so one `auto` in the chain collapses
    everything below it to content height. */
+/* THE BODY ROW — panel, Context, panel. The Context grows; each panel is its
+   own width, and an empty one takes NO room at all, so a Context that slots
+   neither is exactly as it was. TRAP T-the-shell-owns-the-panel-areas */
+.body {
+  display: flex;
+  flex: 1 1 auto;
+  min-block-size: 0;
+  min-inline-size: 0;
+  /* NO PADDING and NO GAP: `.sherpa-grid` already applies the layout grid's
+     own inset, and adding one here insets the Context twice. Each PANEL
+     carries its own instead, so its edges meet the cards beside it. */
+}
+
+.panel-start,
+.panel-end {
+  display: none;
+  flex: 0 0 auto;
+  min-block-size: 0;
+  /* The layout grid's own inset, which the panel does not otherwise carry —
+     without it a panel's top and bottom overshoot the cards beside it by 16
+     at each end, and its own edges are cut by the frame.
+     TRAP T-the-shell-owns-the-panel-areas */
+  padding: var(--sherpa-layout-grid-padding, 16px);
+}
+:host([data-has-panel-start]) .panel-start,
+:host([data-has-panel-end]) .panel-end { display: block; }
+
+.panel-start ::slotted(*),
+.panel-end ::slotted(*) { block-size: 100%; }
+
 .context-frame {
   min-inline-size: 0;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   min-block-size: 0;

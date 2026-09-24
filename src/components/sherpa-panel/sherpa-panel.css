@@ -15,6 +15,12 @@
   /* The header and footer strokes. */
   --_divider: var(--sherpa-style-border-base-1, #b3b3c3);
   --_pad: var(--sherpa-card-pad);
+  /* A composed <sherpa-container-header>/<sherpa-container-footer> reads this
+     for its own inline padding and defaults to ZERO without it — so every
+     panel with a composed footer had its buttons flush against the edge.
+     `sherpa-container` and `sherpa-dialog` both supply it; this did not.
+     TRAP T-a-composed-chrome-row-takes-its-inline-padding-from-its-container */
+  --_pad-inline: var(--sherpa-card-pad);
 
   background: var(--_surface);
   /* Strokes on the left/right edges only — the panel sits flush between other
@@ -50,6 +56,10 @@
 .footer {
   display: none;
   padding: 0;
+  /* NEVER shrink. A flex item's default is `1`, so a long body squashed the
+     header to 14px and pushed its own search field outside the panel — the
+     BODY is what scrolls. TRAP T-a-panel-chrome-row-never-shrinks */
+  flex: 0 0 auto;
 }
 .body {
   padding: var(--_pad);

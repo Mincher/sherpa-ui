@@ -75,6 +75,9 @@ export interface PanelScope {
    */
   group?: PanelColumn[];
   sort?: PanelColumn[];
+  /** Each one's OWN menu, where its chip has one. */
+  groupMenu?: HTMLElement;
+  sortMenu?: HTMLElement;
   /** Which column each is on now, and which way the sort runs. */
   groupField?: string;
   sortField?: string;
@@ -222,13 +225,19 @@ export class SherpaFilterPanel extends SherpaElement {
       for (const [kind, cols] of [['group', scope.group], ['sort', scope.sort]] as const) {
         if (!cols?.length) continue;
         const on = kind === 'group' ? scope.groupField : scope.sortField;
+        const menu = kind === 'group' ? scope.groupMenu : scope.sortMenu;
         const drawn = this.#drawField({
           id: kind, label: kind === 'group' ? 'Group by' : 'Sort by',
           select: 'single',
+          ...(menu ? { menu } : {}),
           options: cols.map((c) => ({
             value: c.field, label: c.label, selected: c.field === on,
           })),
-        }, scope.scope, true);
+        /* `false`: they are ordinary single-select fields, so they collapse to
+           ONE chip each. `true` would mark them as a presets run and explode
+           fourteen columns into fourteen chips.
+           TRAP T-a-single-select-field-stays-one-chip */
+        }, scope.scope, false);
         if (drawn) box.append(drawn);
       }
 
@@ -269,15 +278,25 @@ export class SherpaFilterPanel extends SherpaElement {
        TRAP T-the-panel-is-the-toolbar-in-a-column */
     if (!options.length && !def.menu) return null;
 
+    /* A SINGLE-SELECT field stays ONE chip with its own menu. Exploding a
+       one-of-many question into a run of chips says "pick several" with its
+       shape and "pick one" with its behaviour, and it costs a whole column of
+       height for an answer that is one line.
+       TRAP T-a-single-select-field-stays-one-chip */
+    const single = def.select === 'single';
+
     const box = this.clone('template.field-tpl');
     if (!box) return null;
     const key = `${scope}:${def.id}`;
     box.setAttribute('data-field', def.id);
     box.setAttribute('data-scope', scope);
     // A PRESETS section has no field to clear or remove.
-    box.toggleAttribute('data-clearable', !isPresets);
-    box.toggleAttribute('data-removable', !isPresets && !!def.removable);
-    box.toggleAttribute('data-conditional-ok', !isPresets && !!def.conditions);
+    const organise = def.id === 'group' || def.id === 'sort';
+    // Set BEFORE the single-select path returns, or it never lands.
+    box.toggleAttribute('data-single', single && !isPresets);
+    box.toggleAttribute('data-clearable', !isPresets && !organise);
+    box.toggleAttribute('data-removable', !isPresets && !organise && !!def.removable);
+    box.toggleAttribute('data-conditional-ok', !isPresets && !organise && !!def.conditions);
 
     const head = box.querySelector('.field-head');
     head?.setAttribute('data-heading', def.label);
@@ -289,6 +308,30 @@ export class SherpaFilterPanel extends SherpaElement {
 
     const values = box.querySelector('.field-values') as HTMLElement | null;
     const proto = this.$<HTMLTemplateElement>('template.value-tpl');
+
+    /* ONE CHIP, carrying the field's own menu, for a single-select field. */
+    if (single && !isPresets && values && proto?.content.firstElementChild) {
+      const one = proto.content.firstElementChild.cloneNode(true) as HTMLElement;
+      one.setAttribute('data-label', def.label);
+      one.dataset['value'] = def.id;
+      one.dataset['search'] = def.label.toLowerCase();
+      one.toggleAttribute('data-current', options.some((o) => o.selected));
+      values.append(one);
+
+      const held: Held = { def, scope, box, values };
+      /* The MENU is the field's own, moved onto this chip — the same control
+         in a second place, never a copy. TRAP T-an-inline-menu-is-the-same-menu */
+      if (def.menu) {
+        one.setAttribute('data-menu', '');
+        held.menu = def.menu;
+        held.menuHome = { parent: def.menu.parentNode!, slot: def.menu.getAttribute('slot') };
+        def.menu.setAttribute('slot', 'menu');
+        one.append(def.menu);
+      }
+      this.#held.set(key, held);
+      return box;
+    }
+
     if (values && proto?.content.firstElementChild) {
       for (const option of options) {
         const one = proto.content.firstElementChild.cloneNode(true) as HTMLElement;
@@ -425,12 +468,34 @@ export class SherpaFilterPanel extends SherpaElement {
        TRAP T-an-inline-menu-is-the-same-menu */
     const menu = held.def.menu;
     if (menu) {
+      const body = held.box.querySelector('.field-body');
       if (on) {
+        /* The MENU refuses condition mode unless the field opted in, and a
+           panel's own button IS that opt-in reaching it.
+           TRAP T-conditions-are-opt-in-per-field */
+        menu.setAttribute('data-conditional', '');
         menu.dataset['mode'] = 'condition';
-        if (!held.menu) this.#borrow(held, menu, held.box);
+        /* MOVE IT, wherever it is now. A SINGLE-SELECT field's menu is already
+           borrowed — onto its one chip — so a `!held.menu` guard skipped the
+           move and the rows never appeared: the chips hid and nothing replaced
+           them. TRAP T-an-inline-menu-is-the-same-menu */
+        if (!held.menu) {
+          held.menu = menu;
+          held.menuHome = { parent: menu.parentNode!, slot: menu.getAttribute('slot') };
+        }
+        menu.removeAttribute('slot');
+        menu.setAttribute('data-inline', '');
+        body?.append(menu);
       } else {
         menu.dataset['mode'] = 'select';
-        if (held.menu && held.menuHome) {
+        /* BACK to the chip for a single-select field, or home for any other.
+           The chip is still in this box; the home may not be. */
+        const chip = held.values.querySelector('.value');
+        if (held.box.hasAttribute('data-single') && chip) {
+          menu.removeAttribute('data-inline');
+          menu.setAttribute('slot', 'menu');
+          chip.append(menu);
+        } else if (held.menu && held.menuHome) {
           menu.removeAttribute('data-inline');
           if (held.menuHome.slot) menu.setAttribute('slot', held.menuHome.slot);
           held.menuHome.parent.appendChild(menu);

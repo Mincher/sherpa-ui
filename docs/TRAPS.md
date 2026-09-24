@@ -55,7 +55,6 @@ attributes only, written before append.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-app-header.spec.ts`
-- Site: `examples/contexts/filter-panel.js`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-tokens-css-never-reaches-shadow
@@ -6728,7 +6727,6 @@ sit in the row template and CSS reveals one —
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
-- Site: `examples/contexts/filter-panel.js`
 
 ### T-every-element-in-the-template
 
@@ -7690,8 +7688,6 @@ is exactly what a reader asks "starts with" of.
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 
 ---
-- Site: `test/e2e/reforged-filter-panel.spec.ts`
-- Site: `examples/contexts/filter-panel.js`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
@@ -7915,10 +7911,9 @@ A preset gets no Clear and no Remove — there is no field to act on — and its
 own label is what a search matches, exactly as a value's is.
 
 ---
-- Site: `test/e2e/reforged-filter-panel.spec.ts`
-- Site: `examples/contexts/filter-panel.js`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+- Site: `examples/contexts/records.js`
 
 ### T-a-scope-is-named-for-its-content
 
@@ -7932,8 +7927,6 @@ for, and "this context" answers for neither. The caller passes the name
 The VIEW scope keeps its own name, because there is exactly one of it.
 
 ---
-- Site: `test/e2e/reforged-filter-panel.spec.ts`
-- Site: `examples/contexts/filter-panel.js`
 - Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
@@ -7960,8 +7953,6 @@ Context bar narrows within.
 
 ---
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `test/e2e/reforged-filter-panel.spec.ts`
-- Site: `examples/contexts/filter-panel.js`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
@@ -7978,6 +7969,118 @@ event still has to reach the button.
 ---
 - Site: `src/components/sherpa-accordion/sherpa-accordion.ts`
 - Site: `src/components/sherpa-accordion/sherpa-accordion.html`
+
+### T-a-composed-chrome-row-takes-its-inline-padding-from-its-container
+
+`sherpa-container-footer` sets `padding-inline: var(--_pad-inline, 0px)` — it
+DEFAULTS TO ZERO and expects its container to supply the value.
+
+`sherpa-container` and `sherpa-dialog` both do. `sherpa-panel` never did, so
+every panel with a composed footer had its buttons flush against the card edge.
+Will saw it three times before it was chased down, in three different places,
+because the footer looked right everywhere a container held it.
+
+The fix belongs on the CONTAINER, not on each footer: one `--_pad-inline` on
+`:host`, and every composed chrome row inside inherits it.
+
+**Before restyling a composed child from outside, check what it is asking its
+parent for.** A component that reads a custom property is telling you where the
+value belongs.
+
+---
+- Site: `src/components/sherpa-panel/sherpa-panel.css`
+
+### T-a-panel-chrome-row-never-shrinks
+
+`sherpa-panel`'s `.header` and `.footer` are flex items in a column, and a flex
+item's default `flex-shrink` is `1`.
+
+So a long body SQUASHED the header: 85px of heading and search became 14px, and
+the search field was pushed to x = −49, outside the panel. The BODY is what
+scrolls; the chrome rows are fixed.
+
+`flex: 0 0 auto` on both, and `overflow: auto` on the body.
+
+---
+- Site: `src/components/sherpa-panel/sherpa-panel.css`
+
+### T-a-component-with-data-icon-draws-its-own
+
+`upgradeIcons()` sweeps a stamped tree for `[data-icon]` and turns each match
+into an SVG in an icon box. A `sherpa-*` ELEMENT with `data-icon` must be
+skipped.
+
+`data-icon` is `sherpa-container-header`'s own public API — the glyph it draws
+beside its title. The sweep found the header itself, replaced its children with
+an SVG and gave it `sherpa-icon-box`, which is `inline-flex` at 14px square. A
+composed header collapsed to an icon and dropped the search field slotted
+inside it.
+
+Nothing errored. The header was still there, still 14px, and its content was
+gone.
+
+---
+- Site: `src/core/ui/render-icon.ts`
+
+### T-a-single-select-field-stays-one-chip
+
+A SINGLE-SELECT field in a filter panel stays ONE chip with its own menu; it is
+not exploded into a run of value chips.
+
+Will, 2026-09-24: "Group and Sort can still be chips with their own menus in
+the panel mode. No need to explode them out to individual chips. Actually,
+that's true for any single select chip."
+
+A one-of-many question drawn as a run says "pick several" with its shape and
+"pick one" with its behaviour. It also costs a column of height: Group and Sort
+over fourteen columns were twenty-eight chips for two answers.
+
+A MULTIPLE field is the opposite case and stays a run — every value is visible,
+and ticking three is three taps rather than three trips through a menu.
+
+---
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+
+### T-the-shell-owns-the-panel-areas
+
+`sherpa-app-shell` has `panel-start` and `panel-end` slots beside the Context.
+
+A panel is APP CHROME: it survives a Context change, and where it sits beside
+the content is the shell's question, not each Context template's. Before this
+the filter panel lived inside `records.html`, wrapped in a `sherpa-stack` that
+every other Context would have had to copy.
+
+**An empty area takes NO room**, so a Context that slots neither is exactly as
+it was.
+
+**The panel carries the layout grid's own inset, the row does not.** `.sherpa-grid`
+already applies `--sherpa-layout-grid-padding`, so padding the row insets the
+Context twice — but the panel is not in that grid and has no inset of its own.
+Without it the panel's top and bottom overshoot the cards beside it by 16 at
+each end and its edges are cut by the frame, which is exactly what it looked
+like: a clipped border.
+
+---
+- Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
+- Site: `src/components/sherpa-app-shell/sherpa-app-shell.html`
+- Site: `examples/contexts/records.js`
+
+### T-an-inline-menu-drops-the-chrome-its-host-owns
+
+`sherpa-menu[data-inline]` hides its `use-condition` button and its footer.
+
+Inline, the menu is inside something that already has both: a filter panel's
+FIELD HEADER carries the list/condition switch, and the panel has ONE footer
+whose Apply commits every field at once. A second of each is two answers to one
+question, and a reader cannot tell which Apply applies.
+
+The MENU owns the rule, not the host. Inline is the menu's own mode, so what it
+drops in that mode is its own business — a host reaching in with `::part` would
+have to repeat the list everywhere it draws one.
+
+---
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
 
 ### T-an-inline-menu-is-the-same-menu
 
@@ -8017,6 +8120,7 @@ is gone from its chip for good.
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+- Site: `examples/contexts/records.js`
 
 ### T-the-panel-is-the-toolbar-in-a-column
 
@@ -8048,10 +8152,7 @@ child cannot know a sibling column is beside it — the records card sat straigh
 under the panel. Narrowing the GRID's own box is what makes `full` mean full.
 
 ---
-- Site: `test/e2e/reforged-filter-panel.spec.ts`
-- Site: `examples/contexts/filter-panel.js`
 - Site: `examples/contexts/records.js`
-- Site: `examples/templates/records.html`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
@@ -8077,8 +8178,7 @@ use at all, because the panel draws value chips rather than the menu.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
-- Site: `test/e2e/reforged-filter-panel.spec.ts`
-- Site: `examples/contexts/filter-panel.js`
+- Site: `examples/contexts/records.js`
 
 ### T-the-panel-is-desktop-only
 
@@ -8093,8 +8193,6 @@ A media QUERY, not a resize listener: the browser owns the measuring, and
 than once per pixel.
 
 ---
-- Site: `test/e2e/reforged-filter-panel.spec.ts`
-- Site: `examples/contexts/filter-panel.js`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`

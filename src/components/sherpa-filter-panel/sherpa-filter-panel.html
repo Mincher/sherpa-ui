@@ -64,21 +64,27 @@
   <!-- PROTOTYPES. Every element the panel will ever show exists here from the
        start; JS clones, it never createElement()s. -->
   <template class="scope-tpl">
+    <!-- THE SAME BUTTON the toolbar shows, attribute for attribute: this is a
+         MOVE, not a recreation, and a reader must not have to notice. -->
     <sherpa-accordion class="scope" open>
-      <sherpa-button slot="actions" class="scope-add" data-icon-start="plus">
-        Add filter
-      </sherpa-button>
+      <sherpa-button slot="actions" class="scope-add" data-size="sm"
+                     data-icon-end="triangle-down"
+                     aria-haspopup="menu">Add filter</sherpa-button>
     </sherpa-accordion>
   </template>
 
   <template class="field-tpl">
     <sherpa-stack class="field" data-gap="sm">
       <sherpa-section-header class="field-head" data-size="sm" data-divider="none">
+        <!-- `sm`, like every other action in a filter bar. -->
         <sherpa-button slot="actions" class="field-conditional" data-type="icon"
+                       data-size="sm" data-look="transparent"
                        data-icon-start="sliders-up" aria-pressed="false"></sherpa-button>
         <sherpa-button slot="actions" class="field-clear" data-type="icon"
+                       data-size="sm" data-look="transparent"
                        data-icon-start="arrow-rotate-left"></sherpa-button>
         <sherpa-button slot="actions" class="field-remove" data-type="icon"
+                       data-size="sm" data-look="transparent"
                        data-icon-start="trash" data-status="critical"></sherpa-button>
       </sherpa-section-header>
       <!-- `hug`: each chip at its own width. Every other value STRETCHES its
