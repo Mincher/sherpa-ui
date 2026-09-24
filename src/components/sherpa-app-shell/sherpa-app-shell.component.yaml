@@ -111,3 +111,8 @@ $extensions:
         KNOWN DEF GAP: the thin-def model cannot represent slot FALLBACK content, so
         generate-component-spec round-trip is expected-lossy here (validate passes; the anatomy
         drops the fallback instances). The HTML is the source of truth, not the regenerated anatomy.
+    _divergence:
+      overlaySlot: >-
+        2026-09-24: the `overlay` slot is code-only. It shares the header+content cell, under the
+        rail, and holds a sherpa-dialog data-type="overlay" (Settings). Figma's App Shell has no
+        such slot yet.

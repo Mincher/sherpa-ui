@@ -14,6 +14,8 @@ $description: a modal surface built on the native <dialog> element.
 element:
   $type: element
   tag: dialog
+  attributes:
+    tabindex: "-1"
   provides:
     - modal
     - focus-trap
@@ -28,6 +30,8 @@ anatomy:
     el: dialog
     class: root sherpa-border-edges sherpa-border-corners
     part: root
+    attrs:
+      tabindex: "-1"
     children:
       - el: div
         class: header
@@ -127,6 +131,10 @@ $extensions:
         2026-09-07 (D2/D12): split out of the former Container Type=dialog variant into a standalone
         component on native <dialog> (showModal → modality, ::backdrop, focus-trap, ESC free). Maps
         to the Figma "Dialog" component (Container set already split).
+    _divergence:
+      overlayType: >-
+        2026-09-24: data-type="overlay" is code-only. It fills its container (the app shell's
+        overlay slot), opens NON-modal, and closes on ESC. Figma's Dialog has no such variant yet.
     jsProps:
       - name: open
         type: boolean

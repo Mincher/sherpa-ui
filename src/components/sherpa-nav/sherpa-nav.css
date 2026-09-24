@@ -111,6 +111,12 @@
   transition: inline-size 160ms ease;
 }
 
+/* The CLOSED rail follows density, as the brand tile and the shell's inset do.
+   Figma still pins 40px: see `_divergence` in the spec. */
+:host([data-nav-state="collapsed"]) {
+  --sherpa-navigation-nav-layout-width: var(--sherpa-display-mode-size-3xl, 40px);
+}
+
 .rail {
   display: flex;
   flex-direction: column;

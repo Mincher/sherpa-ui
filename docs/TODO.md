@@ -454,6 +454,11 @@ The code moved to Section / Area / Context / View on 2026-09-24 (CLAUDE.md
 - Keep `View` only for the View chip and its View group (★ · Save · ▾).
 - `sherpa-dialog` has a new `data-type="overlay"` (fills the app area, non-modal)
   and `sherpa-app-shell` a new `overlay` slot. Neither exists in Figma yet.
+- Navigation: collapsed `nav-layout/width` is pinned to 40px. Bind it to
+  `size/3xl` so the closed rail follows density (36 / 40 / 48), as the code
+  already does. Then drop the override in `sherpa-nav.css`.
+
+Each code-only difference above is also in that component's `_divergence` block.
 
 ### `[ ]` Breadcrumbs are for workflow, not for the nav
 

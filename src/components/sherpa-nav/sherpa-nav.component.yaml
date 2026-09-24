@@ -270,6 +270,13 @@ $extensions:
         args: "id: string"
         description: What a row shows. Read off the stamped ROW, so hand-authored rows work too.
     category: nav
+    _divergence:
+      collapsedWidthFollowsDensity: >-
+        2026-09-24: the CLOSED rail is display-mode size/3xl (36 compact, 40 default, 48
+        comfortable), so it matches the brand tile and the app shell's inset in every density.
+        Figma's Navigation collection still pins nav-layout/width to 40px in collapsed mode; the
+        code overrides it below the sherpa:tokens region. Bind it to size/3xl in Figma, then drop
+        the override.
     jsProps:
       - name: state
         type: string

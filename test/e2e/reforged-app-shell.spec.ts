@@ -179,3 +179,26 @@ test('the overlay slot covers the header and content exactly, and the rail stays
   expect(r.overlay).toBe(r.frame);
   expect(r.navZ).toBeGreaterThan(r.overlayZ);
 });
+
+for (const [density, px] of [['compact', 36], ['default', 40], ['comfortable', 48]] as const) {
+  test(`in ${density} density the closed rail, its brand tile and the content inset are all ${px}px`, async ({ page }) => {
+    const r = await page.evaluate(async (d) => {
+      if (d !== 'default') document.documentElement.dataset['density'] = d;
+      const el = document.createElement('sherpa-app-shell') as HTMLElement & { rendered?: Promise<void> };
+      el.innerHTML = '<div>Content</div>';
+      document.getElementById('root')!.appendChild(el);
+      await el.rendered;
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      await new Promise((res) => setTimeout(res, 250)); // width and inset animate
+      const nav = el.shadowRoot!.querySelector('sherpa-nav')!;
+      const tile = nav.shadowRoot!.querySelector('.brand-icon')!.getBoundingClientRect();
+      const frame = el.shadowRoot!.querySelector('.frame')!;
+      return {
+        rail: nav.getBoundingClientRect().width,
+        tile: `${tile.width}x${tile.height}`,
+        inset: getComputedStyle(frame).marginInlineStart,
+      };
+    }, density);
+    expect(r).toEqual({ rail: px, tile: `${px}x${px}`, inset: `${px}px` });
+  });
+}
