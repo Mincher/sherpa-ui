@@ -1384,6 +1384,13 @@ component, optional, required only where a region offers more than one. `DataSou
 and `SherpaElement` finds its source by dispatching a request on connect, which
 the nearest source answers.
 
+**What may be added where** (Will, 2026-09-25): UP is open — any field a
+component has can be added to the VIEW scope. DOWN is closed — a component
+scope holds only its OWN fields. View and component are EXCLUSIVE, so adding to
+one removes it from the other, in ONE call. Two component scopes are NOT
+exclusive: two grids may both filter `owner` without elevating it. Detail and
+what the registry must answer: `docs/FILTER-REVIEW.md` §7 step 3.
+
 **And the component DECLARES what data it needs; the data layer COMPOSES it.**
 Will: *"Any component template can come in with a variety of attributes set
 that will require data composition from the data layer. So this should probably

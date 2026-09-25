@@ -357,6 +357,51 @@ Naming them apart is part of this step, or the collision will be re-learned:
   `BindOptions.scope`)
 - `scope` — a NAMED place a filter lives. Free-form, the app's own words.
 
+##### What may be added where — Will, 2026-09-25
+
+> *"It should be possible to add any filter to either the view or component
+> scopes. A filter can't exist in both the view and component scope so adding
+> to one removes it from the other. However, the same filter can exist across
+> multiple component scopes."*
+>
+> *"Any component field can be applied to the view scope as a filter. Only
+> component fields can be added to that component's scoped filters."*
+
+Three rules, and they are not symmetric:
+
+| | |
+|---|---|
+| **UP is open** | ANY field a component has can be added to the VIEW scope |
+| **DOWN is closed** | a component scope may hold only ITS OWN fields |
+| **VIEW and COMPONENT are exclusive** | adding to one REMOVES it from the other |
+| **COMPONENT and COMPONENT are not** | two grids may both filter `owner` without either elevating it |
+
+The last two together are the whole point. A field in the view narrows
+everything, so nothing below may narrow it again — that is
+TRAP `T-a-superseded-chip-suspends-it-is-never-removed`, and it is why moving a
+filter up must take it out of the component. But two components narrowing the
+same field independently is not a conflict: each contributes its own named
+part, ANDed under the view, and neither can widen past it.
+TRAP `T-a-filter-applies-down-its-scope`
+
+**What the registry has to answer**, beyond §9.6:
+
+```
+fields(scope)               what this component HAS — the down-is-closed rule
+canHold(scope, field)       scope === 'view' || fields(scope).includes(field)
+move(field, from, to)       one call, because the removal is not optional
+```
+
+`move()` matters. "Add to view" and "remove from the data bar" are one gesture
+and two writes, and a UI that does them separately is a UI that can be
+interrupted between them — which is how a field ends up filtered in two scopes
+with nobody owning it.
+
+**What this changes in the Add menu.** Today a scope's Add menu lists what that
+scope offers. Under this rule the VIEW's Add menu lists the union of every
+component's fields, marked with where each one currently lives; a component's
+Add menu lists only its own.
+
 ##### The scope registry
 
 `DataSource` gains one small map, holding **current state only**:
