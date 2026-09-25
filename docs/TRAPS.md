@@ -5465,23 +5465,25 @@ silently bailed.**
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
-### T-custom-chips-are-reported-separately
+### T-external-chips-are-reported-separately
 
-A CUSTOM chip's value was TYPED rather than picked — the data grid's column
-filters are the case. So it carries no rows to read back, and its id plus its
-on/off state are the whole of what it says.
+An EXTERNAL chip shows a filter the host applies somewhere else — the data
+grid's column filters are the case. Its value was TYPED rather than picked, so
+it carries no rows to read back, and its id plus its on/off state are the whole
+of what it says. It was a "custom" chip until 2026-09-25, when "custom" came to
+mean a Custom Condition Filter. TRAP T-a-renamed-attribute-keeps-its-old-name
 
 It appears in NEITHER of the other two lists on `quick-filter-change`:
 
 - `active` skips anything with a menu, so the caret draws
-- `values` reads TICKED ROWS, which a custom chip has none of
+- `values` reads TICKED ROWS, which an external chip has none of
 
-Without the `custom` entry a host had **no way to see one at all** — turning one
-OFF said nothing, and the column it came from stayed filtered and lit. A host
-that put one on the bar reads `customFilters` to learn it has been switched off,
-and clears whatever set it.
+Without the `external` entry a host had **no way to see one at all** — turning
+one OFF said nothing, and the column it came from stayed filtered and lit. A
+host that put one on the bar reads `externalFilters` to learn it has been
+switched off, and clears whatever set it.
 
-That is why `addCustomFilter` exists as its own door: a filter narrowing the view
+That is why `addExternalFilter` exists as its own door: a filter narrowing the view
 with no chip to say so is one nobody can undo. The label arrives WHOLE ("Contains:
 ana") because the value is not one of a list, so the chip carries NO menu. The
 same `id` REPLACES rather than adding a second, a null/empty `value` removes, and
@@ -5489,6 +5491,7 @@ same `id` REPLACES rather than adding a second, a null/empty `value` removes, an
 (`T-grid-clear-from-outside-is-silent`).
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-external-filter.spec.ts`
 
 ### T-favourite-star-swaps-its-glyph
 
@@ -8750,9 +8753,9 @@ the other.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
-### T-a-custom-chip-caret-must-open-its-condition
+### T-an-external-chip-caret-must-open-its-condition
 
-`addCustomFilter()` put a chip on the bar carrying a finished phrase —
+`addExternalFilter()` put a chip on the bar carrying a finished phrase —
 "Contains: ana" — and set `data-menu` so the caret would draw and read it. It
 never gave the chip a menu. Its own comment said so: *"no `options`, so no
 menu — just a caret reading this."*
@@ -8760,7 +8763,7 @@ menu — just a caret reading this."*
 A caret that opens nothing is drawn exactly like every caret that does. Will:
 *"When a conditional filter is applied, I can't open the filter chip menu in
 the filter toolbar for that conditional filter."* Measured on the running page:
-`col:name  menu=false  data-current data-custom data-menu data-full-value`.
+`col:name  menu=false  data-current data-menu data-full-value`.
 
 `data-menu` cannot simply come off — the caret is where `valueLabel` writes the
 phrase, so hiding it hides the filter. The caller names the CONDITION instead
@@ -11562,11 +11565,20 @@ their old spelling: `customOf()` reads `custom`, then `conditions`, and
 both. `OffersCustom` declares the key ONCE — four def types each declared
 `conditions` for themselves.
 
+**And the external filter.** The toolbar's host-added chip was a "custom"
+filter, so "custom" meant two things. It is an EXTERNAL filter now:
+`addExternalFilter()` — the old `addCustomFilter()` forwards — and a def's
+`externalValue`, with `customValue` still read. The `externalFilters` getter
+and the `external` entry on `quick-filter-change` are reports, so they have
+no alias. TRAP T-external-chips-are-reported-separately
+
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/core/ui/filter-kind.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-custom-condition-words.spec.ts`
+- Site: `test/e2e/reforged-external-filter.spec.ts`
 - Site: `test/unit/the-def-speaks-the-new-words.test.mjs`
 
 ### T-a-held-clause-op-is-not-a-reading-op

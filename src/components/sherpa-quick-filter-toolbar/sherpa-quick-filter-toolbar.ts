@@ -5,6 +5,7 @@
  *
  * Map:
  * - QuickFilterOption — One value a filter chip's menu can offer.
+ * - ExternalFilterSpec — An external filter: its chip, its finished phrase, and the condition behind it.
  * - QuickFilterDef — one filter chip as data: its id, kind, values, and how it answers
  * - OrganiseColumn — One column the grid can be grouped or sorted by.
  * - OrganiseDef — The columns the leading Group / Sort chips offer.
@@ -45,6 +46,16 @@ export interface QuickFilterOption {
   note?: string;
 }
 
+/** An external filter: its chip, its finished phrase, and the condition behind it. */
+export interface ExternalFilterSpec {
+  id: string;
+  label: string;
+  /** The phrase the chip reads. Empty or null removes the chip. */
+  value?: string | null;
+  op?: FilterOp;
+  text?: string;
+}
+
 export interface QuickFilterDef extends OffersCustom {
   id: string;
   label: string;
@@ -66,7 +77,9 @@ export interface QuickFilterDef extends OffersCustom {
   step?: number;
   /** ISO days a DATE chip may pick. A SET, not a span; every other day draws inactive. */
   availableDates?: string[];
-  /** A finished phrase the user TYPED ("Contains: ana"). Set via `addCustomFilter()`. */
+  /** An EXTERNAL filter's finished phrase ("Contains: ana"). Set via `addExternalFilter()`. */
+  externalValue?: string;
+  /** @deprecated The old name of `externalValue`, still read. */
   customValue?: string;
   /** Start in RANGE mode. The user may still flip it. */
   range?: boolean;
@@ -747,7 +760,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     list.replaceChildren();
     // TRAP T-custom-element-upgrade — `valueLabel` is a PROPERTY; writes are held
     // and replayed once the run is appended.
-    const customLabels: Array<[HTMLElement, string]> = [];
+    const externalLabels: Array<[HTMLElement, string]> = [];
     /* The allow-list applies to the chips already ON the bar, not only to what
        Add offers: a field a reader may not filter by must not appear at all.
        No list → every filter, which is the default. */
@@ -778,13 +791,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
          TRAP T-a-chip-knows-what-kind-it-is */
       const kind = kindOf(f);
       if (kind !== 'boolean' || customOf(f)) this.#addMenu(chip, f, prior?.picked);
-      if (f.customValue) {
-        // `data-custom` makes it findable: it is in neither `active` nor `values`.
-        chip.setAttribute('data-custom', '');
+      const phrase = f.externalValue ?? f.customValue;
+      if (phrase) {
+        // `data-external` makes it findable: it is in neither `active` nor `values`.
+        chip.setAttribute('data-external', '');
         chip.setAttribute('data-menu', '');
         // In FULL: "Contains: a…" names a condition with no subject.
         chip.setAttribute('data-full-value', '');
-        customLabels.push([chip, f.customValue]);
+        externalLabels.push([chip, phrase]);
       }
       list.appendChild(chip);
       if (kind === 'date') {
@@ -797,7 +811,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#flushItems();
 
     // These write into the chip's shadow root, so they wait on `el.rendered`.
-    for (const [chip, text] of customLabels) {
+    for (const [chip, text] of externalLabels) {
       const el = chip as HTMLElement & { valueLabel?: string; rendered?: Promise<void> };
       void Promise.resolve(el.rendered).then(() => { el.valueLabel = text; });
     }
@@ -1034,7 +1048,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // APPLIED: only ON chips. REMEMBERED: including chips toggled off.
       values: this.values,
       picked: this.pickedValues,
-      custom: this.customFilters,
+      external: this.externalFilters,
       // Ready for a DataSource, for the chips that carry a CONDITION. A view
       // that offers no conditions never sees this and reads `values` as before.
       clauses: this.clauses,
@@ -1078,12 +1092,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const field = chip.dataset['id'];
       // A SUPERSEDED chip is the view's now; it narrows nothing here.
       if (!field || chip.hasAttribute('data-superseded')) continue;
-      /* A CUSTOM chip's id is NOT a field — it is `col:email`, the host's own
+      /* An EXTERNAL chip's id is NOT a field — it is `col:email`, the host's own
          name for a clause the host already applies. Reporting it here made
          `apply()` select on a field no row has, and the view went to 0 rows.
-         Custom chips are reported by `custom`, which is where they belong.
+         External chips are reported by `external`, which is where they belong.
          TRAP T-a-wall-of-values-is-not-a-filter */
-      if (chip.hasAttribute('data-custom')) continue;
+      if (chip.hasAttribute('data-external')) continue;
 
       /* The MENU holds the condition — one field, one filter menu, whether a
          chip or a column heading opened it.
@@ -1227,15 +1241,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
-   * Every CUSTOM chip and whether it is on — `{ 'col:name': true }`.
+   * Every EXTERNAL chip and whether it is on — `{ 'col:name': true }`.
    *
-   * TRAP T-custom-chips-are-reported-separately — a typed value has no rows to
+   * TRAP T-external-chips-are-reported-separately — a typed value has no rows to
    * read back, so on/off is the whole answer.
    */
-  get customFilters(): Record<string, boolean> {
+  get externalFilters(): Record<string, boolean> {
     const out: Record<string, boolean> = {};
     for (const chip of this.#chips()) {
-      if (!chip.hasAttribute('data-custom')) continue;
+      if (!chip.hasAttribute('data-external')) continue;
       out[chip.dataset['id'] ?? ''] = chip.current;
     }
     return out;
@@ -1506,17 +1520,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
-   * Put a CUSTOM filter on the bar — one whose value is TYPED, not picked.
+   * Put an EXTERNAL filter on the bar: one the host applies somewhere else.
+   * The chip shows its finished phrase.
    *
    * Give it the CONDITION behind the phrase (`op`, `text`) and the chip gets a
    * real filter menu that opens on it. Without one the caret still reads the
    * phrase but opens nothing, which is drawn exactly like every caret that
-   * does. TRAP T-a-custom-chip-caret-must-open-its-condition
+   * does. TRAP T-an-external-chip-caret-must-open-its-condition
    */
-  addCustomFilter(spec: {
-    id: string; label: string; value?: string | null;
-    op?: FilterOp; text?: string;
-  }): void {
+  addExternalFilter(spec: ExternalFilterSpec): void {
     const { id, label, value, op, text } = spec;
     const i = this.#filters.findIndex((f) => f.id === id);
 
@@ -1536,10 +1548,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       active: true,
       // Theirs to remove.
       removable: true,
-      customValue: value,
+      externalValue: value,
       /* THE CONDITION, where the caller named it: the menu then opens in
-         condition mode showing what is applied, instead of opening nothing.
-         TRAP T-a-custom-chip-caret-must-open-its-condition */
+         custom mode showing what is applied, instead of opening nothing.
+         TRAP T-an-external-chip-caret-must-open-its-condition */
       ...(op || text
         ? { custom: true, ...(op ? { op } : {}), ...(text ? { text } : {}) }
         : {}),
@@ -1550,6 +1562,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
     this.#render();
     this.#emitChange();
+  }
+
+  /** The old name of `addExternalFilter()`, still a door.
+   *  TRAP T-a-renamed-attribute-keeps-its-old-name */
+  addCustomFilter(spec: ExternalFilterSpec): void {
+    this.addExternalFilter(spec);
   }
 
   /** TRAP T-clear-all-resets-organise-too — organise chips included; three events afterwards. */

@@ -2654,7 +2654,7 @@ test('a number column with BLANKS bounds its slider on the real values', async (
  * So the mark and the colour disagreed. Will: "The Column filter button doesn't
  * become an Info blue Condition style button when a conditional filter is applied."
  *
- * TRAP T-a-custom-chip-caret-must-open-its-condition
+ * TRAP T-an-external-chip-caret-must-open-its-condition
  */
 test('a column filtered by a CONDITION wears the fx mark AND the info edge', async ({ page }) => {
   const r = await page.evaluate(async () => {

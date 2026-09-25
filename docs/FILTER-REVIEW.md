@@ -1165,7 +1165,7 @@ ignore?: readonly string[]         // the scalpel, unchanged
 
 ```
 active · values · superseded · pickedValues · clauses ·
-readings · states · customFilters · offering · heldIds
+readings · states · externalFilters · offering · heldIds
 ```
 
 Ten getters, all "what is this bar holding". They exist because the APP had to
@@ -2028,12 +2028,21 @@ Will: *"B"* — fix the last old words before §16.
 `OffersCustom` in `core/ui/filter-kind.ts` declares the key once; the chip,
 column, panel and menu defs each declared `conditions` for themselves.
 
-### 21.5.2 Still open
+### 21.5.2 "Custom" means one thing — done 2026-09-25
 
-- **"Custom" means two things.** A Custom Condition Filter, and the toolbar's
-  host-added chip — `addCustomFilter()`, `customFilters`, `customValue` and a
-  private `data-custom` on that chip. §16's saved "Custom" filters would be a
-  third.
+The toolbar's host-added chip was a "custom" filter too. Will: *"External
+filter"*. So "custom" now means a Custom Condition Filter, and nothing else.
+
+| was | is | old name |
+|---|---|---|
+| `addCustomFilter()` | `addExternalFilter()` | still a door |
+| def `customValue` | `externalValue` | still read |
+| `customFilters` getter | `externalFilters` | none — a report |
+| `quick-filter-change` `custom` | `external` | none — a report |
+| the chip's private `data-custom` | `data-external` | none — private |
+
+§16's saved filters are saved Custom Condition Filters, so its "Custom" section
+in the Add menu is the same word, not a new meaning.
 
 ### 21.6 What was to be settled first
 

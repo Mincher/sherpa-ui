@@ -1929,19 +1929,19 @@ test('a locked chip keeps its own state when its menu changes', async ({ page })
 });
 
 /**
- * A CUSTOM chip — one whose value was typed, not picked from a list.
+ * An EXTERNAL chip — a filter applied somewhere else, shown by its phrase.
  *
  * The data grid's column-heading filters are what this exists for. A reader
  * sets "Name starts with Ad" in a column heading, and the bar has to show it
  * beside the chips they picked from the Add menu, or the view is narrowed by
  * something with no presence on the toolbar that says so.
  */
-test('addCustomFilter puts a typed-value chip on the bar, replaces it, and removes it', async ({ page }) => {
+test('addExternalFilter puts a typed-value chip on the bar, replaces it, and removes it', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
       rendered?: Promise<void>;
       populate?: (d: unknown) => void;
-      addCustomFilter(spec: { id: string; label: string; value?: string | null }): void;
+      addExternalFilter(spec: { id: string; label: string; value?: string | null }): void;
     };
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
@@ -1964,17 +1964,17 @@ test('addCustomFilter puts a typed-value chip on the bar, replaces it, and remov
         full: c.hasAttribute('data-full-value'),
       }));
 
-    el.addCustomFilter({ id: 'col:name', label: 'Name', value: 'Starts with: Ad' });
+    el.addExternalFilter({ id: 'col:name', label: 'Name', value: 'Starts with: Ad' });
     await settle();
     const added = bar();
 
     // Changing the condition is the SAME filter, not a second one.
-    el.addCustomFilter({ id: 'col:name', label: 'Name', value: 'Contains: bo' });
+    el.addExternalFilter({ id: 'col:name', label: 'Name', value: 'Contains: bo' });
     await settle();
     const replaced = bar();
 
     // A null value means the column's menu was cleared — the chip goes.
-    el.addCustomFilter({ id: 'col:name', label: 'Name', value: null });
+    el.addExternalFilter({ id: 'col:name', label: 'Name', value: null });
     await settle();
     const removed = bar();
 
@@ -2449,27 +2449,27 @@ test('a CUSTOM field with no options gets a menu, not a toggle', async ({ page }
 
 /**
  * A caret that opens nothing is drawn exactly like every caret that does.
- * `addCustomFilter` set `data-menu` so the phrase would read in the caret, and
+ * `addExternalFilter` set `data-menu` so the phrase would read in the caret, and
  * never gave the chip a menu — so a conditional column filter could not be
  * opened or edited from the bar at all.
  *
- * TRAP T-a-custom-chip-caret-must-open-its-condition
+ * TRAP T-an-external-chip-caret-must-open-its-condition
  */
-test('a custom chip GIVEN its condition opens a menu on it', async ({ page }) => {
+test('an external chip GIVEN its condition opens a menu on it', async ({ page }) => {
   const r = await page.evaluate(async () => {
     // WIDE, so nothing folds into More — a folded chip is not in `.chips`.
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'style': 'inline-size: 1200px' });
     el.populate([{ id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] }]);
-    /* SETTLE FIRST. `populate` defers to `renderData`, so a custom filter added
+    /* SETTLE FIRST. `populate` defers to `renderData`, so an external filter added
        before it lands is overwritten by the populate set. */
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
-    el.addCustomFilter({
+    el.addExternalFilter({
       id: 'col:name', label: 'Name', value: 'Contains: ana',
       op: 'contains', text: 'ana',
     });
     // The same call WITHOUT a condition — the old shape, still supported.
-    el.addCustomFilter({ id: 'col:email', label: 'Email', value: 'Contains: z' });
+    el.addExternalFilter({ id: 'col:email', label: 'Email', value: 'Contains: z' });
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const look = (id: string) => {

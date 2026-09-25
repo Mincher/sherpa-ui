@@ -972,7 +972,7 @@ export class SherpaDataGrid extends SherpaElement {
        purple, so a column answered by a condition looked like one answered by
        a ticked list. Written from the SAME `condition`, so the two can never
        disagree. TRAP T-a-conditioned-chip-reads-as-info
-       TRAP T-a-custom-chip-caret-must-open-its-condition */
+       TRAP T-an-external-chip-caret-must-open-its-condition */
     if (condition) chip.dataset['condition'] = condition;
     else chip.removeAttribute('data-condition');
   }

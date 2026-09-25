@@ -233,14 +233,14 @@ capabilities:
     api: js-property-mirror
     description: >-
       read/write JS properties (active, values, superseded, pickedValues, clauses, readings, states,
-      customFilters, offering, heldIds, held, groupField, sortField, sortDirection, sortSuspended).
-      See $extensions.sherpa.jsProps.
+      externalFilters, offering, heldIds, held, groupField, sortField, sortDirection,
+      sortSuspended). See $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
     description: >-
       callable from a view definition's state block (setChipValues, setChipReading, supersede,
-      setClause, report, available, addFilters, removeFilter, allowFields, addCustomFilter,
-      clearAll, organise). See $extensions.sherpa.methods.
+      setClause, report, available, addFilters, removeFilter, allowFields, addExternalFilter,
+      addCustomFilter, clearAll, organise). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: quick-filter-change
@@ -249,7 +249,7 @@ events:
     detail:
       active: unknown
       clauses: unknown
-      custom: unknown
+      external: unknown
       id: unknown
       picked: unknown
       scope: string
@@ -366,9 +366,13 @@ $extensions:
         args: "list: AllowList"
         description: allowFields([...]) — the ONLY fields this bar may offer, or `null` for all.
       - $type: method
+        name: addExternalFilter
+        args: "spec: ExternalFilterSpec"
+        description: "Put an EXTERNAL filter on the bar: one the host applies somewhere else."
+      - $type: method
         name: addCustomFilter
-        args: "spec: { id: string; label: string; value?: string | null; op?: FilterOp; text?: string; }"
-        description: Put a CUSTOM filter on the bar — one whose value is TYPED, not picked.
+        args: "spec: ExternalFilterSpec"
+        description: The old name of `addExternalFilter()`, still a door.
       - $type: method
         name: clearAll
         args: ""
@@ -417,7 +421,7 @@ $extensions:
       - name: states
         type: string
         access: read
-      - name: customFilters
+      - name: externalFilters
         type: string
         access: read
       - name: offering

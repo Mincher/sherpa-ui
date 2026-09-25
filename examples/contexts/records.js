@@ -752,11 +752,11 @@ export async function init(root, { session } = {}) {
   source.bind(qft, { steerOnly: true, signal });
   qft.addEventListener('quick-filter-change', (e) => {
     pushChips();
-    /* A custom chip's body is a TOGGLE: off means "stop applying this", not
+    /* An external chip's body is a TOGGLE: off means "stop applying this", not
        "delete it" — only REMOVE deletes. So this suspends and restores the
-       clause and never touches the chip. A custom chip shows in neither
-       `active` nor `values`, so the toolbar reports it in `custom`. */
-    for (const [id, on] of Object.entries(e.detail.custom ?? {})) {
+       clause and never touches the chip. An external chip shows in neither
+       `active` nor `values`, so the toolbar reports it in `external`. */
+    for (const [id, on] of Object.entries(e.detail.external ?? {})) {
       if (!id.startsWith('col:')) continue;
       const field = id.slice(4);
       /* The grid keeps the clause; this only says whether it is APPLIED.
@@ -812,8 +812,8 @@ export async function init(root, { session } = {}) {
        TRAP T-one-query-builder-in-the-data-layer */
     /* THE CONDITION, not only the phrase. Without it the chip's caret read
        "Contains: ana" and opened nothing at all.
-       TRAP T-a-custom-chip-caret-must-open-its-condition */
-    qft.addCustomFilter({
+       TRAP T-an-external-chip-caret-must-open-its-condition */
+    qft.addExternalFilter({
       id: `col:${field}`, label: header, value: label,
       ...(clause ? { op: clause[1] } : {}),
       ...(typeof clause?.[2] === 'string' ? { text: clause[2] } : {}),
@@ -992,7 +992,7 @@ export async function init(root, { session } = {}) {
             source.select(col.field, picks ?? []);
             continue;
           }
-          qft.addCustomFilter({
+          qft.addExternalFilter({
             id: `col:${col.field}`,
             label: col.header,
             value: clause ? grid.columnLabel(col.field) : null,
