@@ -22,13 +22,13 @@ Kept as the work lands. Budgets from §15.4.
 | 4b-ii the GRID uses them too | ✅ | ≈ −60 | **−57** | 13 direct reads moved; two grid templates and 81 CSS lines gone |
 | 3c-ii stop BORROWING menus | ✅ | ≈ −110 | **−45** | `menuFor()` is the one def→menu builder. Borrow machinery gone; the app stops scraping the bar's shadow root |
 | — 3 red tests that pre-dated it | ✅ | — | **+30** | a report is the whole answer; a `min(…,100%)` floor collapsed the bar chart to 35px; a test dispatched an event nothing emits |
+| 4 one field-row builder | ✅ | ≈ −250 | **−21** | the budget was wrong: 4b and 3c-ii had already taken the shared half. See §7 note |
 | 4c a record TIMESTAMP, and one Date filter | | ≈ +60 | — | buys the series composition in §9.5 |
-| 4 one field-row builder | | ≈ −250 | — | |
 | 5 collapse sort/group state | | ≈ −50 | — | |
 | 5.5 error reporting | | ≈ +80 | — | `debugState()` lands with 3 |
 | 6 split `filter-state.ts` | | ≈ 0 | — | |
 | test harness §13.2 | | ≈ −400 | — | 28 of 40 toolbar tests mount by hand |
-| **arc** | | **≈ −800** | **−18** | code only; docs counted separately |
+| **arc** | | **≈ −800** | **−39** | code only; docs counted separately |
 
 ---
 
@@ -522,6 +522,20 @@ by exactly two things: layout **direction**, and whether a field's values
 **Risk:** high; land 2 and 3 first.
 **Closes:** the class where the two containers drift apart visually and
 behaviourally.
+
+**Landed at −21, not −250, and the budget was wrong.** Steps 4b and 3c-ii ran
+first and took the shared half with them: `menuFor()` is now the one def→menu
+builder and `kindOf()` the one kind derivation, so what was left of "one
+field-row builder" was three chip-clone blocks in the panel and a
+column-tick retry loop in the toolbar. Both were collapsed; there was no
+250-line duplicate left to delete.
+
+What DID come out of it is worth naming: the toolbar answered the
+menu-stamps-a-tick-late race with a retry loop — `#afterMenu`, a `#waiting`
+WeakSet, and a `landed` gate in both sync methods — where the panel answers it
+by naming the column on the chip. The chip's `get column()` prefers its menu
+and falls back to `data-column`, and the rows are RADIOS, so the fallback can
+only ever agree. The retry loop is gone.
 
 ### Step 4b — ONE set of menu templates, in `sherpa-menu`
 

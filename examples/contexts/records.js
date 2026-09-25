@@ -402,10 +402,11 @@ export async function init(root, { session } = {}) {
   /* RESTORE. The panel opens itself if the reader left it open — after the
      bars are populated, because it reads their chips. */
   if (session?.get?.('/filters/mode') === 'panel') {
-    /* TWO FRAMES, not a microtask: the bars have only just been populated and
-       a cloned `<sherpa-menu>` stamps nothing until it upgrades, so a read now
-       finds chips with no value rows — and the panel draws menus instead of
-       chips. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
+    /* TWO FRAMES, not a microtask: `bar.held` carries each field's READING,
+       and a cloned `<sherpa-menu>` stamps nothing until it upgrades — so a
+       read now reports every field unanswered and the panel opens with
+       nothing ticked.
+       TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
     void (async () => {
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       fillPanel();
@@ -449,10 +450,8 @@ export async function init(root, { session } = {}) {
 
   /* ADD and REMOVE are REQUESTS: the BAR owns the list. */
   /* A BAR REBUILDS ASYNCHRONOUSLY: `items()` on a freshly cloned menu stamps
-     nothing until the element upgrades, so a read straight after `addFilters`
-     or `removeFilter` finds chips with NO menus — and a field with no value
-     rows but a menu draws that menu, which filled the panel with search boxes
-     and checkboxes instead of chips.
+     nothing until the element upgrades, so `held` read straight after
+     `addFilters` or `removeFilter` reports every field unanswered.
      TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
   const refill = async () => {
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));

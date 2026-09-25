@@ -282,7 +282,7 @@ export class SherpaFilterPanel extends SherpaElement {
         const section = this.#drawSection('organise', 'Organise');
         for (const [kind, cols] of organised) {
           const on = kind === 'group' ? scope.groupField : scope.sortField;
-          const chip = this.#drawChip({
+          const chip = this.#fieldChip({
             id: kind, label: kind === 'group' ? 'Group by' : 'Sort by',
             select: 'single',
             /* The SAME glyphs the toolbar draws — one constant, so the two
@@ -292,7 +292,7 @@ export class SherpaFilterPanel extends SherpaElement {
             options: (cols ?? []).map((c) => ({
               value: c.field, label: c.label, selected: c.field === on,
             })),
-          }, scope.scope, section);
+          }, scope.scope, section.box, section.values);
           if (chip) {
             /* SEED THE CYCLE and let the chip draw itself: `data-direction`
                remembers the way, `data-current` (from `selected`, above) says
@@ -367,31 +367,47 @@ export class SherpaFilterPanel extends SherpaElement {
     return { box, values: box.querySelector('.field-values') as HTMLElement };
   }
 
-  /** ONE chip carrying a field's own menu, for a section that holds several. */
-  #drawChip(def: PanelFilter, scope: string,
-    section: { box: HTMLElement; values: HTMLElement }): HTMLElement | null {
+  /** ONE value chip. The only place this panel makes a `<sherpa-quick-filter>`. */
+  #valueChip(value: string, label: string, opts: {
+    icon?: string; current?: boolean; kind?: FilterKind; column?: string;
+  } = {}): HTMLElement | null {
     const proto = this.$<HTMLTemplateElement>('template.value-tpl');
     const one = proto?.content.firstElementChild?.cloneNode(true) as HTMLElement | null;
     if (!one) return null;
-    one.setAttribute('data-label', def.label);
-    if (def.icon) one.setAttribute('data-icon-start', def.icon);
-    one.dataset['value'] = def.id;
-    one.dataset['search'] = def.label.toLowerCase();
-    /* THE CHIP KNOWS WHAT IT IS. Group toggles, Sort cycles, and both report
-       it themselves — this panel only draws them under a heading.
-       "Organise" is that heading, not a kind.
-       TRAP T-a-chip-knows-what-kind-it-is */
-    const kind = kindOf(def);
-    if (arranges(kind)) {
-      one.dataset['kind'] = kind;
-      /* NAME THE COLUMN. The chip's own menu stamps its rows a tick later, so
-         this is what it reads until then. TRAP T-a-chip-knows-what-kind-it-is */
-      const on = (def.options ?? []).find((o) => o.selected)?.value;
-      if (on) one.dataset['column'] = String(on);
-    }
-    one.toggleAttribute('data-current', (def.options ?? []).some((o) => o.selected));
+    one.dataset['value'] = value;
+    one.setAttribute('data-label', label);
+    /* The SEARCH reads this, not `data-label`: a chip rewrites its own label
+       to "Field: Value" the moment one value is picked, so a picked chip
+       stopped matching its own name. TRAP T-a-chip-rewrites-its-own-label */
+    one.dataset['search'] = label.toLowerCase();
+    if (opts.icon) one.setAttribute('data-icon-start', opts.icon);
+    if (opts.kind) one.dataset['kind'] = opts.kind;
+    if (opts.column) one.dataset['column'] = opts.column;
+    one.toggleAttribute('data-current', !!opts.current);
+    return one;
+  }
 
-    const held: Held = { def, scope, box: section.box, values: section.values };
+  /**
+   * ONE chip standing for a WHOLE FIELD, with that field's own menu — an
+   * arrangement, or a date whose calendar cannot be a run.
+   *
+   * `box` and `values` are where the field was drawn: its own field box, or
+   * the shared Organise section. TRAP T-a-chip-knows-what-kind-it-is
+   */
+  #fieldChip(def: PanelFilter, scope: string,
+    box: HTMLElement, values: HTMLElement): HTMLElement | null {
+    const kind = kindOf(def);
+    const on = (def.options ?? []).find((o) => o.selected)?.value;
+    const one = this.#valueChip(def.id, def.label, {
+      ...(def.icon ? { icon: def.icon } : {}),
+      current: !!on,
+      ...(arranges(kind) ? { kind } : {}),
+      /* NAME THE COLUMN. The chip's own menu stamps its rows a tick later, so
+         this is what it reads until then. */
+      ...(arranges(kind) && on ? { column: String(on) } : {}),
+    });
+    if (!one) return null;
+    const held: Held = { def, scope, box, values };
     this.#giveMenu(held, one);
     this.#held.set(`${scope}:${def.id}`, held);
     return one;
@@ -444,40 +460,19 @@ export class SherpaFilterPanel extends SherpaElement {
       ?.setAttribute('aria-label', `Use a condition for ${name}`);
 
     const values = box.querySelector('.field-values') as HTMLElement | null;
-    const proto = this.$<HTMLTemplateElement>('template.value-tpl');
 
-    /* ONE CHIP, carrying its own menu — group and sort only.
-       TRAP T-only-group-and-sort-stay-one-chip */
-    if ((organise || def.asChip) && values && proto?.content.firstElementChild) {
-      const one = proto.content.firstElementChild.cloneNode(true) as HTMLElement;
-      one.setAttribute('data-label', def.label);
-      one.dataset['value'] = def.id;
-      one.dataset['search'] = def.label.toLowerCase();
-      // TRAP T-a-chip-knows-what-kind-it-is
-      if (organise) one.dataset['kind'] = def.id;
-      one.toggleAttribute('data-current', options.some((o) => o.selected));
-      values.append(one);
-
-      const held: Held = { def, scope, box, values };
-      this.#giveMenu(held, one);
-      this.#held.set(key, held);
+    /* ONE CHIP, carrying its own menu — group, sort, and a date whose
+       calendar cannot be a run. TRAP T-only-group-and-sort-stay-one-chip */
+    if ((organise || def.asChip) && values) {
+      const one = this.#fieldChip(def, scope, box, values);
+      if (one) values.append(one);
       return box;
     }
 
-    if (values && proto?.content.firstElementChild) {
-      for (const option of options) {
-        const one = proto.content.firstElementChild.cloneNode(true) as HTMLElement;
-        one.dataset['value'] = option.value;
-        const text = option.label ?? option.value;
-        one.setAttribute('data-label', text);
-        /* The SEARCH reads this, not `data-label`: a chip rewrites its own
-           label to "Field: Value" the moment one value is picked, so a picked
-           chip stopped matching its own name.
-           TRAP T-a-chip-rewrites-its-own-label */
-        one.dataset['search'] = text.toLowerCase();
-        one.toggleAttribute('data-current', !!option.selected);
-        values.append(one);
-      }
+    for (const option of values ? options : []) {
+      const one = this.#valueChip(option.value, option.label ?? option.value,
+        { current: !!option.selected });
+      if (one) values!.append(one);
     }
 
     const held: Held = { def, scope, box, values: values ?? box };

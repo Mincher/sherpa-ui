@@ -975,46 +975,23 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       return;
     }
 
-    // Either way: a suspended sort still shows which column it would resume on.
-    const landed = this.#tickColumn(chip, field);
+    /* NAME THE COLUMN, then tick it. A rebuilt menu has no rows for a frame, so
+       the tick can miss — `data-column` is what the chip reads until it lands,
+       and its rows are RADIOS, so a later tick can only ever agree.
+       TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
+    chip.dataset['column'] = field;
+    this.#tickColumn(chip, field);
     // A resume starts ASCENDING, so a suspended chip must not keep its `desc`.
     chip.dataset['direction'] = suspended ? 'asc' : direction;
-    /* ONLY IF THE TICK LANDED. A rebuilt menu has no rows for a frame, so this
-       set the chip ON with an empty menu — the contradiction that paints AMBER
-       — and a reader who had merely removed some other filter was shown a
-       warning. The menu's own render brings it on.
-       TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
-    if (landed) chip.toggleAttribute('data-current', !suspended);
-    else this.#afterMenu(chip, () => this.#syncSortFromAttrs());
+    chip.toggleAttribute('data-current', !suspended);
   }
 
-  /** Tick one column's radio. False when the menu has not stamped its rows. */
-  #tickColumn(chip: HTMLElement, field: string): boolean {
-    const radios = [...chip.querySelectorAll<HTMLInputElement>('input[type="radio"]')];
-    if (!radios.length) return false;
-    let hit = false;
-    for (const radio of radios) {
+  /** Tick one column's radio, where the menu has stamped its rows. */
+  #tickColumn(chip: HTMLElement, field: string): void {
+    for (const radio of chip.querySelectorAll<HTMLInputElement>('input[type="radio"]')) {
       radio.checked = radio.value === field;
-      if (radio.checked) hit = true;
     }
-    return hit;
   }
-
-  /** Run again once this chip's menu has rendered. Once per chip. */
-  #afterMenu(chip: HTMLElement, again: () => void): void {
-    const menu = (chip as ChipEl & { menu?: HTMLElement }).menu as
-      (HTMLElement & { rendered?: Promise<void> }) | null;
-    if (!menu || this.#waiting.has(chip)) return;
-    this.#waiting.add(chip);
-    void Promise.resolve(menu.rendered)
-      .then(() => new Promise<void>((r) => requestAnimationFrame(() => r())))
-      .then(() => {
-        this.#waiting.delete(chip);
-        if (chip.isConnected) again();
-      });
-  }
-
-  #waiting = new WeakSet<HTMLElement>();
 
   /** Follow `data-group-field`. The twin of `#syncSortFromAttrs`: empty suspends, no event. */
   #syncGroupFromAttrs(): void {
@@ -1029,10 +1006,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       return;
     }
 
-    /* ONLY IF THE TICK LANDED — see `#syncSortFromAttrs`.
-       TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
-    if (this.#tickColumn(chip, field)) chip.toggleAttribute('data-current', true);
-    else this.#afterMenu(chip, () => this.#syncGroupFromAttrs());
+    // NAME THE COLUMN, then tick it — see `#syncSortFromAttrs`.
+    chip.dataset['column'] = field;
+    this.#tickColumn(chip, field);
+    chip.toggleAttribute('data-current', true);
   }
 
   /** Report the whole filter state — the active toggle chips and every menu chip's picks. */
@@ -1624,19 +1601,24 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // its divider rule floating.
     this.toggleAttribute('data-has-organise', group.length > 0 || sort.length > 0);
 
+    /* BORN NAMING ITS COLUMN. The bar may already be grouped or sorted — a
+       reload restores both — so the chip is built on that column rather than
+       waiting for a second pass to tick it. */
+    const on = { group: this.dataset['groupField'] ?? '', sort: this.dataset['sortField'] ?? '' };
+    const cols = (list: readonly OrganiseColumn[], field: string): QuickFilterOption[] =>
+      list.map((c) => ({ value: c.field, label: c.label, selected: c.field === field }));
+
     if (group.length) {
-      zone.appendChild(
-        // fa-SOLID: the free set has no regular weight here; `fa-regular` renders
-        // the missing-glyph box.
-        this.#organiseChip('group', 'Group', SherpaQuickFilterToolbar.#icons.group,
-          group.map((c) => ({ value: c.field, label: c.label }))),
-      );
+      // fa-SOLID: the free set has no regular weight here; `fa-regular` renders
+      // the missing-glyph box.
+      zone.appendChild(this.#organiseChip('group', 'Group',
+        SherpaQuickFilterToolbar.#icons.group, cols(group, on.group), on.group));
     }
     if (sort.length) {
       // The MENU picks the column, the BODY cycles direction. Built OFF, so it
       // opens with the sort-none glyph.
-      const chip = this.#organiseChip('sort', 'Sort', SherpaQuickFilterToolbar.#icons.sortNone,
-        sort.map((c) => ({ value: c.field, label: c.label })));
+      const chip = this.#organiseChip('sort', 'Sort',
+        SherpaQuickFilterToolbar.#icons.sortNone, cols(sort, on.sort), on.sort);
       chip.dataset['direction'] = 'asc';
       zone.appendChild(chip);
     }
@@ -1650,6 +1632,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     label: string,
     icon: string,
     options: QuickFilterOption[],
+    column = '',
   ): HTMLElement {
     const chip = this.clone('template.qf-tpl');
     if (!chip) throw new Error('sherpa-quick-filter-toolbar: template.qf-tpl is missing or empty');
@@ -1661,6 +1644,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        TRAP T-a-chip-knows-what-kind-it-is */
     chip.dataset['kind'] = id;
     chip.dataset['id'] = id;
+    if (column) chip.dataset['column'] = column;
     chip.setAttribute('data-label', label);
     chip.setAttribute('data-icon-start', icon);
     this.#addMenu(chip, { id, label, select: 'single', options });
