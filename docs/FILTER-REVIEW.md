@@ -1911,3 +1911,72 @@ In Figma, `default` and `active` Style modes BOTH bind
 `--sherpa-display-mode-border-width-sm`, so the 1px active stroke is a code-side
 deviation Will asked for — `--sherpa-display-mode-border-width-base` (1px) is the
 token it should name.
+
+---
+
+## 21. One condition system — Default and Custom Condition Filters — to explore
+
+Will, 2026-09-25: *"Default filter modes are also technically conditional
+filters. They are either: EQUALS X; EQUALS X AND EQUALS Y… So we can use the same
+engine regardless of filtering mode. I think we should do some renaming /
+rebranding of the conditional filter mode. We should call it a Custom Condition
+Filter. Default is a Default Condition Filter. We use the blue info styling to
+represent active Custom Condition Filters. Bringing everything into the same
+condition composition system will help us deal with any discrepancies and bugs.
+It will make tracking state and type much easier, too."*
+
+**Not scheduled.** Recorded with what is measured today.
+
+### 21.1 The names
+
+| today | becomes |
+|---|---|
+| the value list — "default" mode, `data-mode="select"` | **Default Condition Filter** |
+| the condition rows — "conditional" mode, `data-mode="condition"` | **Custom Condition Filter** |
+| `conditions: 'only'` (Email) | a Custom Condition Filter with no Default half |
+| the info-blue chip (`T-a-conditioned-chip-reads-as-info`) | an ACTIVE Custom Condition Filter — already the rule |
+
+The rename is wide: across `src` and `examples`, `conditional` appears 42
+times, `data-conditional` 21, `data-mode` 18, `'condition'` 25 and
+`conditions-only` 10. `kindOf()`'s `'conditional'` kind is one of them.
+
+### 21.2 One correction to carry into it
+
+Two values ticked in ONE field join with **OR**, not AND —
+`status: Active, Trial` means *Active OR Trial*. The engine already writes it
+that way: `picksClause` gives `['status', 'in', ['Active', 'Trial']]`, which is
+`eq Active OR eq Trial`. AND is between fields. So the Default form is:
+
+    EQUALS X                          one pick
+    EQUALS X  OR  EQUALS Y  …         several picks in one field
+
+Worth fixing in the words before the rename, because a rename that says AND
+will be read as a rule change.
+
+### 21.3 The engine is already half-way there
+
+`stateClause()` is the one query builder (§3) and it already turns BOTH shapes
+into the same `Filter` grammar. The split is one level up, in the READING:
+
+| | carried as | built by |
+|---|---|---|
+| Default | `picked: [x, y]` | `picksClause` → `in` |
+| Custom | `conditions: [{ op, picked \| text, join }]` | the or/and-chain in `stateClause` |
+
+So the unification is: **a reading is always `conditions`**, and a Default
+reading is the list `[{ op: 'eq', picked: [x] }, { join: 'or', op: 'eq',
+picked: [y] }]`. `picked` becomes a derived view of it rather than a second
+shape. That removes the class of bug where a control read one shape and wrote
+the other — four of the nine filter bugs on 2026-09-24 were a composed field
+reading as unanswered for a tick in exactly that hand-off
+(`T-a-rebuilt-row-reads-empty-for-a-tick`).
+
+### 21.4 What to settle first
+
+1. Whether `picked` survives as a convenience on the reading, or goes entirely.
+   It is the shape `setChipValues`, the legend and the saved views all speak.
+2. Whether "Default" and "Custom" are two MODES of one menu, or one list of
+   rows where the Default ones happen to be `eq`. The second is simpler and is
+   what §21.3 implies.
+3. The saved-view format. A `ViewSnapshot` stores readings, so a change of
+   shape needs a reader for the old one.
