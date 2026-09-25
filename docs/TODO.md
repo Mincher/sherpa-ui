@@ -580,13 +580,13 @@ TEXT GRID COLUMN always opts in.
 
 | shipped | where |
 |---|---|
-| `data-mode` = select \| condition, an icon-only header button | `sherpa-menu` `filter` template |
-| `data-conditional` — the opt-in gate, refused by click AND by attribute | `sherpa-menu.ts` `#enforceMode` |
+| `data-mode` = default \| custom, an icon-only header button | `sherpa-menu` `filter` template |
+| `data-custom` — the opt-in gate, refused by click AND by attribute | `sherpa-menu.ts` `#enforceMode` |
 | `[And\|Or] [condition] [value]` rows, stamped from a prototype | `.condition-row-tpl` |
 | `Equals` answers with the field's OWN values, per ROW | `.condition-pick` |
 | ONE badge, `fx` — never the per-op sign | `filterFace`, `CONDITION_BADGE` |
 | the tip SPELLS the chain: `Contains: ab or Equals: churned` | `spellConditions()` |
-| a conditioned chip reads as `info`, not the on-tint | `data-conditioned`, `state-pins.yaml` |
+| a custom chip reads as `info`, not the on-tint | `data-condition`, `state-pins.yaml` |
 
 The old light-DOM condition row is **deleted** — `#addConditionRow`,
 `qf-op-tpl`, `qf-text-tpl` and their CSS. The menu owns its own rows.

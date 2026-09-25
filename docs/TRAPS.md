@@ -7753,10 +7753,10 @@ three — Region, Customer, Status — gets a plain list and no mode button.
 `Contains` over four regions all visible on screen is a control that cannot
 help the reader, and offering it says the list might be incomplete when it is
 not. A field opts in with `conditions: true` on its def; the toolbar writes
-`data-conditional` and the menu shows the button.
+`data-custom` and the menu shows the button.
 
 Two doors, both shut: the CLICK is refused, and so is a host writing
-`data-mode="condition"` — `#enforceMode()` strips it in `#sync`. A hidden
+`data-mode="custom"` — `#enforceMode()` strips it in `#sync`. A hidden
 button with a live mode is a control a reader cannot reach but a script can.
 
 A TEXT GRID COLUMN is the exception and always opts in. A column of free text
@@ -7875,8 +7875,8 @@ attribute, so an empty `Select…` first option is both the prompt and the proof
 the row is unanswered. Will, 2026-09-24: "Conditional equal dropdowns, if not
 populated from carry over, should default to a placeholder 'Select…' label."
 
-`data-conditioned` follows the same rule — it means ANSWERED rows, not merely
-present ones, because a menu in condition mode always holds one row.
+`data-condition="custom"` follows the same rule — it means ANSWERED rows, not
+merely present ones, because a menu in custom mode always holds one row.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/core/data/filter-state.ts`
@@ -8674,7 +8674,7 @@ The More chip drills into a folded filter by MOVING its menu's light-DOM rows
 into the overflow menu: `into.replaceChildren(...from.childNodes)`.
 
 A conditions-only menu has no light-DOM children. Its answer is the condition
-ROWS, which live in its own shadow DOM and are driven by `data-conditions-only`
+ROWS, which live in its own shadow DOM and are driven by `data-custom-only`
 and `data-mode` — attributes the overflow menu does not have. So drilling put a
 blank card on screen.
 
@@ -8710,8 +8710,8 @@ conditional filter, only, that defaults to 'Contains'."*
 
 ONE field, widened from a boolean, so nothing that already said `true` moved.
 `op` says which condition it opens on. `sherpa-menu` takes it as
-`data-conditions-only`, which IMPLIES `data-conditional`, forces
-`data-mode="condition"`, refuses to leave it, and hides the mode switch —
+`data-custom-only`, which IMPLIES `data-custom`, forces
+`data-mode="custom"`, refuses to leave it, and hides the mode switch —
 there is no list behind it. Its CSS rule must come AFTER the one that shows the
 switch and be as specific, or the later rule wins and the button comes back.
 
@@ -8766,13 +8766,14 @@ the filter toolbar for that conditional filter."* Measured on the running page:
 `data-menu` cannot simply come off — the caret is where `valueLabel` writes the
 phrase, so hiding it hides the filter. The caller names the CONDITION instead
 (`op`, `text`), and the chip gets a real filter menu that opens on it. The
-machinery was already there: `data-conditional`, `data-op`, `data-value`.
+machinery was already there: `data-custom`, `data-op`, `data-value`.
 
 **And the colour half.** `sherpa-data-grid.#lightFilterChip` gave a
 condition-answered column the `fx` glyph and left it in the plain active
-purple, because nothing wrote `data-conditioned` — the info rule is
-`:host([data-conditioned][data-current])`. Glyph and colour now come from the
-same `typed`, so they cannot disagree. TRAP T-a-conditioned-chip-reads-as-info
+purple, because nothing wrote the chip's condition — the info rule is
+`:host([data-condition="custom"][data-current])`. Glyph and colour now come
+from the same `state.condition`, so they cannot disagree.
+TRAP T-a-conditioned-chip-reads-as-info
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
@@ -9405,7 +9406,7 @@ The same blue runs through to the cells: a `mark.match` in the grid is
 `--sherpa-style-info-border-base-1`, not the brand purple, so a reader follows
 ONE colour from the chip that found the match to the text it matched.
 
-`data-conditioned` is written by the chip in `#syncEmpty`, and a conditioned
+`data-condition` is written by the chip in `#syncCondition`, and a custom
 chip is never `data-empty` — a condition is an answer, so the amber "on but
 filtering by nothing" warning would be a lie.
 
@@ -11502,18 +11503,91 @@ on a chip without one `data-count` is the host's to set.
 Proved first: all 247 existing unit tests passed on the single compiler before
 anything read the new fields.
 
-**Not renamed yet: the public attributes.** `data-mode="select" | "condition"`,
-`data-conditional` and `data-conditions-only` on `sherpa-menu` keep their
-names; the reader-facing words are Default and Custom condition. Renaming a
-public attribute breaks every host that writes it, so that is its own decision.
+**The chip says it too**, as `data-condition="default" | "custom"` — absent
+when it holds none. It is written again when the menu STAMPS its rows
+(`menu-items`): a ticked answer cannot be read before that, so a chip ticked
+by its def said nothing at all.
+
+**And so does the grid.** `#lightFilterChip` asks `fieldState()` for its
+column's condition, so a heading's `fx` and blue follow the same rule as a
+toolbar chip — "Is not" is custom there too.
+TRAP T-a-held-clause-op-is-not-a-reading-op
+
+The public attributes speak these words since 2026-09-25, and still hear the old
+ones. TRAP T-a-renamed-attribute-keeps-its-old-name
 
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/filter-face.ts`
 - Site: `src/data.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/unit/one-condition-system.test.mjs`
 - Site: `test/e2e/reforged-one-condition-system.spec.ts`
+
+### T-a-renamed-attribute-keeps-its-old-name
+
+**A public attribute that is renamed still hears its old name.** Will,
+2026-09-25, renaming the filter modes to Default and Custom Condition Filter:
+
+| old | new, on `sherpa-menu` |
+|---|---|
+| `data-conditional` | `data-custom` |
+| `data-conditions-only` | `data-custom-only` |
+| `data-mode="select"` | `data-mode="default"` |
+| `data-mode="condition"` | `data-mode="custom"` |
+
+Two kinds of alias, and they take two different doors:
+
+- **A NAME is read, never rewritten.** `#offersCustom()` and `#customOnly()`
+  and the CSS read both names, so a host that set `data-conditional` still
+  reads it back. `fallbackAttr` declares the old name: it is observed, and
+  `check:props` counts it.
+- **A VALUE is rewritten.** `#enforceMode()` turns `select` / `condition` into
+  `default` / `custom`, and the `mode` setter takes either. The menu already
+  rewrote `data-mode` — custom-only forces it, an un-offered custom is
+  removed — and ONE spelling in the DOM gives the CSS and every reader one
+  value to match.
+
+**No alias for what a component WRITES.** An alias protects a host's writes.
+The chip's `data-condition` (it was a boolean, `data-conditioned`), the
+`filter-mode-change` detail and the panel's `filter-condition-change` detail
+(`mode`, was `conditional: boolean`) are reports, and their readers follow the
+new words.
+
+**Not renamed:** the def key `conditions: true | 'only'` and the
+`'conditional'` kind. They are a def's data shape, not an attribute.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `test/e2e/reforged-custom-condition-words.spec.ts`
+
+### T-a-held-clause-op-is-not-a-reading-op
+
+**The grid held a CLAUSE op, and handed it to the data layer as a READING op.**
+
+A column filter keeps the op its clause has: several ticks under `eq` are
+`in`, under `ne` are `notin`, and two ends are `between`. `#columnReading()`
+passed that op to `readingClause()` unchanged. But a reading's op is what the
+reader picked in the dropdown — `eq` or `ne` — and `picksClause()` makes
+`notin` only from `ne`. Given `notin`, several picks became `in`.
+
+So "Is not Pro, Free" reached the host as `['plan', 'in', ['Pro', 'Free']]`:
+exactly the rows the reader excluded. Measured in the browser —
+`columnClause('plan')` returned `in`.
+
+It hid behind the menu. The column's own dropdown was fed through the same
+mapping (`in` → `eq`, `notin` → `ne`), so the menu read right; only the
+clause the HOST got was wrong.
+
+`readingOp()` is that mapping, once, for both. It also makes the column's
+`state.condition` honest: `between` is a clause op, not a custom one, so a
+range reads Default, as it does on a toolbar chip.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/e2e/reforged-custom-condition-words.spec.ts`
 
 ### T-up-is-open-down-is-closed
 

@@ -93,13 +93,13 @@
   border-width: var(--sherpa-border-width-sm, 1px);
 }
 
-/* A CONDITIONED chip keeps the active FILL — on must read as on — and takes
+/* A CUSTOM chip keeps the active FILL — on must read as on — and takes
    an INFO edge and ink. The `fx` badge says the same thing in the other
    channel. TRAP T-a-conditioned-chip-reads-as-info */
-:host([data-conditioned][data-current]) :is(.body, .caret) {
+:host([data-condition="custom"][data-current]) :is(.body, .caret) {
   border-color: var(--sherpa-style-info-border-base-1, #008bba);
 }
-:host([data-conditioned][data-current]) .count {
+:host([data-condition="custom"][data-current]) .count {
   border-color: var(--sherpa-style-info-border-base-1, #008bba);
   color: var(--sherpa-style-info-content-base, #006c91);
 }

@@ -136,35 +136,38 @@
    the field opted in. TRAP T-conditions-are-opt-in-per-field */
 .use-condition { display: none; }
 
+/* The old name still counts. TRAP T-a-renamed-attribute-keeps-its-old-name */
+:host([data-type="filter"][data-custom]) .use-condition,
 :host([data-type="filter"][data-conditional]) .use-condition {
   display: inline-flex;
   grid-area: mode;
 }
 
-/* NOWHERE TO SWITCH TO. A conditions-only field has no list behind the button.
+/* NOWHERE TO SWITCH TO. A custom-only field has no list behind the button.
    AFTER the rule that shows it, and as specific, so it wins.
    TRAP T-a-filter-answers-by-values-conditions-or-both */
+:host([data-type="filter"][data-custom-only]) .use-condition,
 :host([data-type="filter"][data-conditions-only]) .use-condition { display: none; }
 
-/* SELECT mode (the default) shows the search; CONDITION mode shows the rows.
+/* DEFAULT mode shows the search; CUSTOM mode shows the condition rows.
    One filter, two views of it. TRAP T-a-filter-menu-has-two-modes */
 .condition-rows,
 .add-condition { display: none; }
 
 :host([data-type="filter"]) .search { grid-area: filter; }
 
-:host([data-mode="condition"]) .rows { display: none; }
-:host([data-mode="condition"]) .condition-rows {
+:host([data-mode="custom"]) .rows { display: none; }
+:host([data-mode="custom"]) .condition-rows {
   grid-area: filter;
   display: grid;
   row-gap: var(--sherpa-display-mode-space-xs, 8px);
 }
-:host([data-mode="condition"]) .add-condition {
+:host([data-mode="custom"]) .add-condition {
   display: inline-flex;
   grid-area: add;
   justify-self: start;
 }
-:host([data-mode="condition"]) .header {
+:host([data-mode="custom"]) .header {
   grid-template-areas:
     "heading  mode"
     "filter   filter"
@@ -290,9 +293,9 @@
 /* ── Search ── a composed <sherpa-input-text> that owns its own box, ring,
    focus state and icon, so there is nothing to restyle here. */
 .search { display: none; }
-/* NOT in condition mode: the rows answer the field there, and a search box
+/* NOT in custom mode: the rows answer the field there, and a search box
    above them filters a list nothing is showing. */
-:host([data-search]:not([data-mode="condition"])) .search { display: block; }
+:host([data-search]:not([data-mode="custom"])) .search { display: block; }
 
 /* ── Condition ── the FILTER type's own rows; no other menu stamps them.
  * Every part is a COMPOSED sherpa-input-text or sherpa-button, which own box,

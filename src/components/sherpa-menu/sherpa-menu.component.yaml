@@ -250,10 +250,7 @@ props:
     type: string
     observed: false
     kind: style
-    description: >-
-      FILTER type only: this field can be asked a CONDITION, so the mode button shows. OPT-IN: most
-      fields are answered by ticking values, and a `Contains` box over a closed set of three is
-      noise. TRAP T-conditions-are-opt-in-per-field
+    description: the old name of data-custom, still read. TRAP T-a-renamed-attribute-keeps-its-old-name
   - $type: prop
     name: data-conditions
     type: string
@@ -267,10 +264,25 @@ props:
     type: string
     observed: false
     kind: style
+    description: the old name of data-custom-only, still read.
+  - $type: prop
+    name: data-custom
+    type: string
+    observed: false
+    kind: style
     description: >-
-      FILTER type only: conditions and NOTHING else. Implies data-conditional, opens in condition
-      mode and cannot leave it, and hides the switch — there is no list behind it. For a field whose
-      values are a wall nobody ticks: 240 email addresses. TRAP
+      FILTER type only: this field offers a Custom Condition Filter, so the mode button shows.
+      OPT-IN: most fields are answered by ticking values, and a `Contains` box over a closed set of
+      three is noise. TRAP T-conditions-are-opt-in-per-field
+  - $type: prop
+    name: data-custom-only
+    type: string
+    observed: false
+    kind: style
+    description: >-
+      FILTER type only: a Custom Condition Filter and NOTHING else. Implies data-custom, opens in
+      custom mode and cannot leave it, and hides the switch — there is no list behind it. For a
+      field whose values are a wall nobody ticks: 240 emails. TRAP
       T-a-filter-answers-by-values-conditions-or-both
   - $type: prop
     name: data-drill
@@ -314,9 +326,10 @@ props:
     observed: true
     kind: style
     description: >-
-      FILTER type only: select  | condition. `select` is a plain ticked list with a search;
-      `condition` is the And/Or rows. An icon-only button in the header switches between them. TRAP
-      T-a-filter-menu-has-two-modes
+      FILTER type only: default | custom. `default` is a Default Condition Filter, a ticked list
+      with a search; `custom` is a Custom Condition Filter, the And/Or rows. An icon-only button in
+      the header switches between them. The old values select | condition are read, and rewritten to
+      the new ones. TRAP T-a-filter-menu-has-two-modes
   - $type: prop
     name: data-op
     type: string
@@ -402,8 +415,8 @@ states:
     name: filter
     selector: ":host([data-type=\"filter\"])"
   - $type: state
-    name: condition
-    selector: ":host([data-mode=\"condition\"])"
+    name: custom
+    selector: ":host([data-mode=\"custom\"])"
   - $type: state
     name: drill
     selector: ":host([data-drill])"

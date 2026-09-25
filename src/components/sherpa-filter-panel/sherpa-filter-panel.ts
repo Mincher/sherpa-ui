@@ -465,21 +465,21 @@ export class SherpaFilterPanel extends SherpaElement {
     box.toggleAttribute('data-chip', organise || !!def.asChip);
     box.toggleAttribute('data-clearable', !isPresets && !organise);
     box.toggleAttribute('data-removable', !isPresets && !organise && !!def.removable);
-    box.toggleAttribute('data-conditional-ok', !isPresets && !organise && !!def.conditions);
+    box.toggleAttribute('data-custom-ok', !isPresets && !organise && !!def.conditions);
 
     /* REMOVE what this field does not offer, never hide it: `.sherpa-group`
        squares corners by POSITION, and a `display: none` first child still
        counts as `:first-child` — so a field with no condition button had a
        Clear that kept the middle's square edges.
        TRAP T-a-hidden-sibling-still-counts-as-first-child */
-    if (!box.hasAttribute('data-conditional-ok')) box.querySelector('.field-conditional')?.remove();
+    if (!box.hasAttribute('data-custom-ok')) box.querySelector('.field-custom')?.remove();
     if (!box.hasAttribute('data-clearable')) box.querySelector('.field-clear')?.remove();
 
     const head = box.querySelector('.field-head');
     head?.setAttribute('data-heading', def.label);
     const name = def.label;
     head?.querySelector('.field-clear')?.setAttribute('aria-label', `Clear ${name}`);
-    head?.querySelector('.field-conditional')
+    head?.querySelector('.field-custom')
       ?.setAttribute('aria-label', `Custom condition for ${name}`);
 
     const values = box.querySelector('.field-values') as HTMLElement | null;
@@ -646,7 +646,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** A field's condition or Clear button. */
   #onAction = (event: Event): void => {
-    const cond = this.#pathFind(event, '.field-conditional');
+    const cond = this.#pathFind(event, '.field-custom');
     if (cond) return this.#flipCondition(cond);
     const clear = this.#pathFind(event, '.field-clear');
     if (clear) return this.#clearField(clear);
@@ -672,19 +672,19 @@ export class SherpaFilterPanel extends SherpaElement {
     return [...this.#held.values()].find((h) => h.box.contains(node));
   }
 
-  /** CONDITION MODE replaces the value chips. The rows are the host's to draw:
+  /** CUSTOM MODE replaces the value chips. The rows are the host's to draw:
    *  the panel reports the intent and flags the field.
    *  TRAP T-conditions-are-opt-in-per-field */
   #flipCondition(btn: HTMLElement): void {
     const held = this.#fieldOf(btn);
     if (!held) return;
-    const on = !held.box.hasAttribute('data-conditional');
-    held.box.toggleAttribute('data-conditional', on);
+    const on = !held.box.hasAttribute('data-custom');
+    held.box.toggleAttribute('data-custom', on);
     btn.setAttribute('aria-pressed', String(on));
 
     /* THE ROWS ARE THE MENU'S, and this field may not have needed one until
        now — a run of chips answers it otherwise. CSS shows the body off
-       `[data-conditional]`, so OFF needs nothing but the mode back.
+       `[data-custom]`, so OFF needs nothing but the mode back.
        TRAP T-a-panel-builds-its-own-menus */
     const body = held.box.querySelector('.field-body');
     if (on && !held.menu && body) {
@@ -692,16 +692,17 @@ export class SherpaFilterPanel extends SherpaElement {
       this.#flushMenus();
     }
     if (held.menu) {
-      /* The MENU refuses condition mode unless the field opted in, and a
+      /* The MENU refuses custom mode unless the field opted in, and a
          panel's own button IS that opt-in reaching it.
          TRAP T-conditions-are-opt-in-per-field */
-      if (on) held.menu.setAttribute('data-conditional', '');
-      held.menu.dataset['mode'] = on ? 'condition' : 'select';
+      if (on) held.menu.setAttribute('data-custom', '');
+      held.menu.dataset['mode'] = on ? 'custom' : 'default';
     }
 
     this.#syncAnswered(held);
+    // The menu's own words, so one reader hears both. TRAP T-one-condition-system
     this.emit('filter-condition-change', {
-      scope: held.scope, id: held.def.id, conditional: on,
+      scope: held.scope, id: held.def.id, mode: on ? 'custom' : 'default',
     });
   }
 
@@ -710,9 +711,9 @@ export class SherpaFilterPanel extends SherpaElement {
   #syncAnswered(held: Held): void {
     const ticked = held.values.querySelector('.value[data-current]') != null;
     const menu = held.menu as (HTMLElement & { conditions?: unknown[] }) | undefined;
-    const conditioned = held.box.hasAttribute('data-conditional')
+    const custom = held.box.hasAttribute('data-custom')
       && (menu?.conditions?.length ?? 0) > 0;
-    held.box.toggleAttribute('data-answered', ticked || conditioned);
+    held.box.toggleAttribute('data-answered', ticked || custom);
   }
 
   /** Every field, after anything that could have changed an answer. */

@@ -113,25 +113,25 @@ test('the two modes swap, and NEITHER loses what the other holds', async ({ page
       return node ? getComputedStyle(node).display : '(missing)';
     };
 
-    // SELECT mode is the default: a search over ticked rows, no condition rows.
+    // DEFAULT mode: a search over ticked rows, no condition rows.
     const gold = [...menu.querySelectorAll('input')].find((i) => i.value === 'gold')!;
     gold.checked = true;
     gold.dispatchEvent(new Event('change', { bubbles: true }));
     await wait();
-    const onSelect = {
+    const onDefault = {
       mode: menu.mode, values: [...menu.values],
       search: shown('.search'), rows: shown('.rows'),
       conditionRows: shown('.condition-rows'),
     };
 
-    // The header button switches to CONDITION mode.
+    // The header button switches to CUSTOM mode.
     sr.querySelector<HTMLElement>('.use-condition')!.click();
     await wait();
-    const onCondition = {
+    const onCustom = {
       mode: menu.mode,
       search: shown('.search'), rows: shown('.rows'),
       conditionRows: shown('.condition-rows'),
-      // It opens with ONE row — an empty condition mode reads as broken.
+      // It opens with ONE row — an empty custom mode reads as broken.
       rowCount: sr.querySelectorAll('.condition-row').length,
       // The ticks are untouched: a mode is a VIEW of the filter, not a reset.
       goldStillTicked: gold.checked,
@@ -154,12 +154,12 @@ test('the two modes swap, and NEITHER loses what the other holds', async ({ page
       conditions: menu.conditions,
     };
 
-    // …and BACK to select. The rows are still there; so is the typing.
+    // …and BACK to default. The rows are still there; so is the typing.
     sr.querySelector<HTMLElement>('.use-condition')!.click();
     await wait();
     return {
-      onSelect, onCondition, typed,
-      backToSelect: {
+      onDefault, onCustom, typed,
+      backToDefault: {
         mode: menu.mode, values: [...menu.values],
         search: shown('.search'), goldStillTicked: gold.checked,
         // Kept, not cleared — one more press brings the same rows back.
@@ -168,18 +168,18 @@ test('the two modes swap, and NEITHER loses what the other holds', async ({ page
     };
   });
 
-  expect(r.onSelect).toEqual({
-    mode: 'select', values: ['gold'],
+  expect(r.onDefault).toEqual({
+    mode: 'default', values: ['gold'],
     search: 'block', rows: 'flex', conditionRows: 'none',
   });
 
-  // CONDITION mode: the rows answer the field, so the search over them goes.
-  expect(r.onCondition.mode).toBe('condition');
-  expect(r.onCondition.search).toBe('none');
-  expect(r.onCondition.rows).toBe('none');
-  expect(r.onCondition.conditionRows).toBe('grid');
-  expect(r.onCondition.rowCount).toBe(1);
-  expect(r.onCondition.goldStillTicked).toBe(true);
+  // CUSTOM mode: the rows answer the field, so the search over them goes.
+  expect(r.onCustom.mode).toBe('custom');
+  expect(r.onCustom.search).toBe('none');
+  expect(r.onCustom.rows).toBe('none');
+  expect(r.onCustom.conditionRows).toBe('grid');
+  expect(r.onCustom.rowCount).toBe(1);
+  expect(r.onCustom.goldStillTicked).toBe(true);
 
   // A TYPING op answers with a box; a PICKING one with the field's own values.
   expect(r.typed.takes).toBe('text');
@@ -188,11 +188,11 @@ test('the two modes swap, and NEITHER loses what the other holds', async ({ page
   expect(r.typed.conditions).toEqual([{ op: 'contains', text: 'gol' }]);
 
   // THE POINT: both modes survive the round trip, because both are stamped.
-  expect(r.backToSelect.mode).toBe('select');
-  expect(r.backToSelect.values).toEqual(['gold']);
-  expect(r.backToSelect.search).toBe('block');
-  expect(r.backToSelect.goldStillTicked).toBe(true);
-  expect(r.backToSelect.conditionsKept).toEqual([{ op: 'contains', text: 'gol' }]);
+  expect(r.backToDefault.mode).toBe('default');
+  expect(r.backToDefault.values).toEqual(['gold']);
+  expect(r.backToDefault.search).toBe('block');
+  expect(r.backToDefault.goldStillTicked).toBe(true);
+  expect(r.backToDefault.conditionsKept).toEqual([{ op: 'contains', text: 'gol' }]);
 });
 
 /**
@@ -297,7 +297,7 @@ test('Add condition chains rows, and each row asks its own question', async ({ p
  * a plain list and no mode button. The reader never meets a control that
  * cannot help them. TRAP T-conditions-are-opt-in-per-field
  */
-test('a chip that did not opt in has NO condition mode at all', async ({ page }) => {
+test('a chip that did not opt in has NO custom mode at all', async ({ page }) => {
   await page.evaluate(async () => {
     const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
       rendered?: Promise<void>; populate(d: unknown): void;
@@ -322,15 +322,15 @@ test('a chip that did not opt in has NO condition mode at all', async ({ page })
       };
     const sr = menu.shadowRoot!;
     const btn = sr.querySelector<HTMLElement>('.use-condition')!;
-    const before = { conditional: menu.hasAttribute('data-conditional'), btn: getComputedStyle(btn).display };
+    const before = { custom: menu.hasAttribute('data-custom'), btn: getComputedStyle(btn).display };
 
     // Press it anyway. Nothing happens — the mode does not exist for this field.
     btn.click();
     await new Promise((res) => { setTimeout(res, 120); });
     const afterClick = { mode: menu.mode, rows: sr.querySelectorAll('.condition-row').length };
 
-    // And a host WRITING the attribute gets no condition mode either.
-    menu.setAttribute('data-mode', 'condition');
+    // And a host WRITING the attribute gets no custom mode either.
+    menu.setAttribute('data-mode', 'custom');
     await new Promise((res) => { setTimeout(res, 120); });
     const afterWrite = {
       mode: menu.mode,
@@ -339,12 +339,12 @@ test('a chip that did not opt in has NO condition mode at all', async ({ page })
     return { before, afterClick, afterWrite };
   });
 
-  expect(r.before.conditional).toBe(false);
+  expect(r.before.custom).toBe(false);
   expect(r.before.btn).toBe('none');
-  expect(r.afterClick).toEqual({ mode: 'select', rows: 0 });
+  expect(r.afterClick).toEqual({ mode: 'default', rows: 0 });
   /* The ATTRIBUTE is not the door. A hidden button and a live mode would be a
      control a reader cannot reach but a script can. */
-  expect(r.afterWrite.mode).toBe('select');
+  expect(r.afterWrite.mode).toBe('default');
   expect(r.afterWrite.search).toBe('block');
 });
 
@@ -712,7 +712,7 @@ test('row ONE\'s value select is populated, not just later rows', async ({ page 
  *
  * TRAP T-a-conditioned-chip-answers-with-its-clause
  */
-test('a chip in SELECT mode reports picks AND a clause, and is not conditioned',
+test('a chip in DEFAULT mode reports picks AND a clause, and is not custom',
   async ({ page }) => {
     await bar(page);
     const r = await page.evaluate(async () => {
@@ -734,7 +734,7 @@ test('a chip in SELECT mode reports picks AND a clause, and is not conditioned',
         clauses: JSON.stringify(el.clauses),
         on: chip.hasAttribute('data-current'),
         // The flag a host reads to decide whether `select()` applies.
-        conditioned: chip.hasAttribute('data-conditioned'),
+        condition: chip.getAttribute('data-condition'),
       };
     });
 
@@ -742,9 +742,9 @@ test('a chip in SELECT mode reports picks AND a clause, and is not conditioned',
     expect(JSON.parse(r.values).tier).toEqual(['gold']);
     expect(JSON.parse(r.clauses).tier).toEqual(['tier', 'eq', 'gold']);
     expect(r.on).toBe(true);
-    /* NOT conditioned. Both shapes describe the same ticks, and a host uses
-       `values`; only a chip in CONDITION mode answers with its clause alone. */
-    expect(r.conditioned).toBe(false);
+    /* DEFAULT, not custom. Both shapes describe the same ticks, and a host uses
+       `values`; only a chip in CUSTOM mode answers with its clause alone. */
+    expect(r.condition).toBe('default');
   });
 
 /**
@@ -785,40 +785,40 @@ test('a filter answers by values, by conditions, or by both', async ({ page }) =
       const sw = menu.shadowRoot.querySelector('.use-condition');
       return {
         menu: true,
-        conditional: menu.hasAttribute('data-conditional'),
-        only: menu.hasAttribute('data-conditions-only'),
+        custom: menu.hasAttribute('data-custom'),
+        only: menu.hasAttribute('data-custom-only'),
         mode: menu.getAttribute('data-mode'),
         op: menu.getAttribute('data-op'),
         switchShown: sw ? getComputedStyle(sw).display !== 'none' : null,
       };
     };
 
-    // And a conditions-only menu must REFUSE to go back to a list.
+    // And a custom-only menu must REFUSE to go back to a list.
     const email = el.shadowRoot!.querySelector('.chip[data-id="email"] sherpa-menu') as
       HTMLElement & { mode: string };
-    email.mode = 'select';
+    email.mode = 'default';
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return {
       status: look('status'), owner: look('owner'), email: look('email'),
-      afterForcingSelect: email.getAttribute('data-mode'),
+      afterForcingDefault: email.getAttribute('data-mode'),
     };
   });
 
   // VALUES only — no condition offered at all.
-  expect(r.status.conditional).toBe(false);
+  expect(r.status.custom).toBe(false);
   expect(r.status.switchShown).toBe(false);
 
   // BOTH — the switch is there, and it opens on the list.
-  expect(r.owner.conditional).toBe(true);
+  expect(r.owner.custom).toBe(true);
   expect(r.owner.only).toBe(false);
   expect(r.owner.switchShown).toBe(true);
 
-  // ONLY — opens in condition mode, on its own op, with nowhere to switch to.
+  // ONLY — opens in custom mode, on its own op, with nowhere to switch to.
   expect(r.email).toEqual({
-    menu: true, conditional: true, only: true,
-    mode: 'condition', op: 'contains', switchShown: false,
+    menu: true, custom: true, only: true,
+    mode: 'custom', op: 'contains', switchShown: false,
   });
   // The attribute is not a second door back either.
-  expect(r.afterForcingSelect).toBe('condition');
+  expect(r.afterForcingDefault).toBe('custom');
 });

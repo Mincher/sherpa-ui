@@ -107,13 +107,13 @@ props:
       which column a group or sort chip arranges by, for a host that draws the choice without a
       menu. A menu, where there is one, is the answer.
   - $type: prop
-    name: data-conditioned
+    name: data-condition
     type: string
     observed: false
     kind: style
     description: >-
-      written BY the chip when its menu is answering with CONDITIONS rather than ticks. Reads as
-      `info`, not the plain on-tint. TRAP T-a-conditioned-chip-reads-as-info
+      written BY the chip: default | custom — which condition it holds, absent when it holds none.
+      `custom` reads as `info`, not the plain on-tint. TRAP T-a-conditioned-chip-reads-as-info
   - $type: prop
     name: data-count
     type: string

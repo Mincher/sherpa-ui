@@ -2650,7 +2650,7 @@ test('a number column with BLANKS bounds its slider on the real values', async (
  * A column answered by a CONDITION reads as INFO, not the plain active purple.
  *
  * The glyph already said so — `fx` in place of the funnel — but nothing wrote
- * `data-conditioned`, and the info rule is `:host([data-conditioned][data-current])`.
+ * `data-condition`, and the info rule is `:host([data-condition="custom"][data-current])`.
  * So the mark and the colour disagreed. Will: "The Column filter button doesn't
  * become an Info blue Condition style button when a conditional filter is applied."
  *
@@ -2682,7 +2682,7 @@ test('a column filtered by a CONDITION wears the fx mark AND the info edge', asy
         `.head-cell[data-field="${field}"] .head-filter`)!;
       return {
         current: chip.hasAttribute('data-current'),
-        conditioned: chip.hasAttribute('data-conditioned'),
+        condition: chip.getAttribute('data-condition'),
         icon: chip.getAttribute('data-icon-start'),
       };
     };
@@ -2700,11 +2700,11 @@ test('a column filtered by a CONDITION wears the fx mark AND the info edge', asy
   });
 
   // Mark and colour come from the same answer, so they cannot disagree.
-  expect(r.on.name).toEqual({ current: true, conditioned: true, icon: 'function' });
-  // A range is filtered but NOT conditioned — it keeps the plain active look.
-  expect(r.on.spend).toEqual({ current: true, conditioned: false, icon: null });
+  expect(r.on.name).toEqual({ current: true, condition: 'custom', icon: 'function' });
+  // A range is filtered but NOT custom — it keeps the plain active look.
+  expect(r.on.spend).toEqual({ current: true, condition: 'default', icon: null });
   // And clearing takes both off.
-  expect(r.off).toEqual({ current: false, conditioned: false, icon: null });
+  expect(r.off).toEqual({ current: false, condition: null, icon: null });
 });
 
 /**
@@ -2755,7 +2755,7 @@ test('a conditions-only column drops its list and opens on its own op', async ({
       return sw ? getComputedStyle(sw).display !== 'none' : null;
     };
     const shape = (m: HTMLElement & { shadowRoot: ShadowRoot }) => ({
-      only: m.hasAttribute('data-conditions-only'),
+      only: m.hasAttribute('data-custom-only'),
       mode: m.getAttribute('data-mode'),
       op: m.getAttribute('data-op'),
       // NOTHING to switch to, so no button — and no wall of rows stamped.
@@ -2779,9 +2779,9 @@ test('a conditions-only column drops its list and opens on its own op', async ({
     return { before, typed: !!inner, clause: el.columnClause('email') };
   });
 
-  // CONDITIONS ONLY: opens in condition mode, on its own op, no list, no switch.
+  // CUSTOM ONLY: opens in custom mode, on its own op, no list, no switch.
   expect(r.before.email).toEqual({
-    only: true, mode: 'condition', op: 'contains', switchShown: false, rows: 0,
+    only: true, mode: 'custom', op: 'contains', switchShown: false, rows: 0,
   });
   // BOTH, as every text column was: a list of values and a switch to conditions.
   expect(r.before.status.only).toBe(false);

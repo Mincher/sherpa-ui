@@ -32,9 +32,10 @@
                     sherpa-tooltip look rather than a nested instance: the badge
                     lives in this shadow root, so a light-DOM wrapper component
                     cannot reach it. Reveal is pure CSS on .count-wrap:hover.
-    data-conditioned written BY the chip when its menu is answering with
-                    CONDITIONS rather than ticks. Reads as `info`, not the
-                    plain on-tint. TRAP T-a-conditioned-chip-reads-as-info
+    data-condition  written BY the chip: default | custom — which condition
+                    it holds, absent when it holds none. `custom` reads as
+                    `info`, not the plain on-tint.
+                    TRAP T-a-conditioned-chip-reads-as-info
     data-panelled   a FILTER PANEL is drawing this field instead, so the bar
                     hides the chip — two controls over one field make a reader
                     guess which is in force. Written by the host.

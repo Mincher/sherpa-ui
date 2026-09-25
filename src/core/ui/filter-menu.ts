@@ -125,13 +125,13 @@ export function menuFor(
 
     /* CONDITIONS ARE OPT-IN. TRAP T-conditions-are-opt-in-per-field */
     if (def.conditions) {
-      menu.setAttribute('data-conditional', '');
-      /* VALUES, CONDITIONS, OR BOTH. `only` opens in condition mode and hides
+      menu.setAttribute('data-custom', '');
+      /* VALUES, CONDITIONS, OR BOTH. `only` opens in custom mode and hides
          the switch — there is no list behind it.
          TRAP T-a-filter-answers-by-values-conditions-or-both */
       if (def.conditions === 'only') {
-        menu.setAttribute('data-conditions-only', '');
-        menu.setAttribute('data-mode', 'condition');
+        menu.setAttribute('data-custom-only', '');
+        menu.setAttribute('data-mode', 'custom');
       }
       const ops = OPS_FOR_TYPE['text'] ?? [];
       if (ops.length) menu.setAttribute('data-conditions', ops.join(','));

@@ -28,11 +28,18 @@ import {
   DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, picksClause, type FilterOp,
 } from '../../core/data/store.js';
 import {
-  readingClause, type FieldReading, type FieldType,
+  fieldState, readingClause, type FieldReading, type FieldType,
 } from '../../core/data/filter-state.js';
 
 /** The `fx` glyph a CONDITION wears, wherever one is drawn. */
 const CONDITION_ICON = 'function';
+
+/** A held CLAUSE op as the op a reader picked: several `eq` picks are `in`,
+ *  several `ne` picks `notin`, two ends `between`.
+ *  TRAP T-a-held-clause-op-is-not-a-reading-op */
+const READING_OPS: Readonly<Record<string, FilterOp>> = { in: 'eq', notin: 'ne', between: DEFAULT_OP };
+const readingOp = (op: string): FilterOp => READING_OPS[op] ?? (op as FilterOp);
+
 // SIDE-EFFECT imports: an undefined custom element renders inert.
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
@@ -494,15 +501,15 @@ export class SherpaDataGrid extends SherpaElement {
          never noise: a column of free text is exactly what a reader asks
          "starts with" of. A chip over a closed set opts in instead.
          TRAP T-conditions-are-opt-in-per-field */
-      menu.setAttribute('data-conditional', '');
+      menu.setAttribute('data-custom', '');
       /* VALUES, CONDITIONS, OR BOTH — the column says which, because how many
          values is too many is a question about the data.
          TRAP T-a-filter-answers-by-values-conditions-or-both */
       /* WHAT IT IS, from the ONE derivation the chips read.
          TRAP T-a-chip-knows-what-kind-it-is */
       if (kindOf(col) === 'conditional') {
-        menu.setAttribute('data-conditions-only', '');
-        menu.setAttribute('data-mode', 'condition');
+        menu.setAttribute('data-custom-only', '');
+        menu.setAttribute('data-mode', 'custom');
       }
       menu.setAttribute('data-search', '');
       /* THE SAME MENU a filter chip opens for this field, so it carries the
@@ -515,7 +522,7 @@ export class SherpaDataGrid extends SherpaElement {
          stays `eq` / `ne`, because its dropdown offers no "is one of" — the
          ticked list IS the "one of". */
       const op = held?.op ?? col.op ?? DEFAULT_OP;
-      menu.setAttribute('data-op', op === 'in' ? 'eq' : op === 'notin' ? 'ne' : op);
+      menu.setAttribute('data-op', readingOp(op));
       /* The header is rebuilt on every sort and keystroke, so what the reader
          TYPED has to be written back or it is lost. A PROPERTY, replayed after
          upgrade. TRAP T-custom-element-upgrade */
@@ -816,7 +823,7 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** One column's filter as a reading — what a reader gave, not a query. */
   #columnReading(held: ColumnFilter): FieldReading {
-    const op = held.op as FilterOp;
+    const op = readingOp(held.op);
     if (held.range) {
       return { op, range: true, picked: [held.from ?? '', held.to ?? ''] };
     }
@@ -965,16 +972,18 @@ export class SherpaDataGrid extends SherpaElement {
        An icon-only chip falls back to its funnel when no icon is named.
        TRAP T-a-condition-badge-says-that-not-which */
     const held = this.#columnFilters.get(field);
-    const typed = !!held && !held.range
-      && (OP_TAKES[held.op as FilterOp] ?? 'list') === 'text';
-    if (typed) chip.setAttribute('data-icon-start', CONDITION_ICON);
+    /* THE SAME ANSWER a toolbar chip reads — `state.condition`, from this
+       column's reading. TRAP T-one-condition-system */
+    const condition = held ? fieldState({ field }, this.#columnReading(held)).condition : null;
+    if (condition === 'custom') chip.setAttribute('data-icon-start', CONDITION_ICON);
     else chip.removeAttribute('data-icon-start');
     /* THE COLOUR SAYS IT TOO. The glyph alone left the chip in the plain active
        purple, so a column answered by a condition looked like one answered by
-       a ticked list. Written from the SAME `typed`, so the two can never
+       a ticked list. Written from the SAME `condition`, so the two can never
        disagree. TRAP T-a-conditioned-chip-reads-as-info
        TRAP T-a-custom-chip-caret-must-open-its-condition */
-    chip.toggleAttribute('data-conditioned', typed);
+    if (condition) chip.dataset['condition'] = condition;
+    else chip.removeAttribute('data-condition');
   }
 
   /** Re-light every heading without rebuilding the header row. */

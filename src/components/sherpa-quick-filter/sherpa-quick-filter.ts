@@ -29,6 +29,7 @@ interface MenuLike extends HTMLElement {
   show?: (trigger?: HTMLElement) => void;
   hide?: () => void;
   values?: string[];
+  mode?: string;
 }
 
 export class SherpaQuickFilter extends SherpaElement {
@@ -53,9 +54,9 @@ export class SherpaQuickFilter extends SherpaElement {
        it keeps its value and comes back when the view lets the field go.
        TRAP T-a-superseded-chip-suspends-it-is-never-removed */
     'data-superseded': { type: 'boolean', kind: 'style' },
-    /* Written BY the chip: its menu is answering with CONDITIONS, not ticks.
+    /* Written BY the chip: which condition it holds — `state.condition`.
        TRAP T-a-conditioned-chip-reads-as-info */
-    'data-conditioned': { type: 'boolean', kind: 'style' },
+    'data-condition': { type: 'enum', kind: 'style', values: ['default', 'custom'] },
     /* A filter PANEL is drawing this field instead, so the bar hides the chip.
        Written by the HOST. TRAP T-the-view-chip-stays-on-the-header */
     'data-panelled': { type: 'boolean', kind: 'style' },
@@ -396,7 +397,7 @@ export class SherpaQuickFilter extends SherpaElement {
     /* A CONDITIONED chip has no ticks and is NOT empty — its rows are its
        answer. Its body toggles, like any other answered chip.
        TRAP T-toggling-a-conditioned-chip-suspends-its-condition */
-    if (menu && this.values.length === 0 && !this.hasAttribute('data-conditioned')) {
+    if (menu && this.values.length === 0 && this.dataset['condition'] !== 'custom') {
       // Opening a menu is not a toggle — the bar must not see one.
       event.stopPropagation();
       this.#openMenu();
@@ -494,19 +495,14 @@ export class SherpaQuickFilter extends SherpaElement {
        filters, so the question does not apply — and its menu picks a COLUMN,
        which reads as zero values the moment nothing is chosen.
        TRAP T-an-organise-chip-has-no-values */
-    if (this.hasAttribute('data-persistent') || this.hasAttribute('data-locked')
-      || this.#arranges()) {
+    if (!this.#answersForItself()) {
       this.removeAttribute('data-empty');
       return;
     }
     const menu = this.menu;
-    /* A CUSTOM Condition Filter reads differently: info, never the plain
-       on-tint. ASKED of the state, not worked out from the menu's mode — the
-       fx badge reads the same answer, and the two used to disagree.
-       TRAP T-a-conditioned-chip-reads-as-info · TRAP T-one-condition-system */
     const state = this.#state((menu?.values ?? []) as string[]);
-    const conditioned = state.condition === 'custom';
-    this.toggleAttribute('data-conditioned', conditioned);
+    const custom = state.condition === 'custom';
+    this.#syncCondition(state);
     /* …and the BADGE from the same state, at the same moment. It was drawn only
        once a reader touched the chip, so one answered by a typed condition from
        the start wore its blue and not its fx. ONLY with a menu to read: on a
@@ -516,7 +512,7 @@ export class SherpaQuickFilter extends SherpaElement {
     /* A TYPED condition is an answer, so a chip holding one is not empty —
        "Contains Ravi" filters, and painting it as "filtering nothing" is a
        lie. TRAP T-an-operator-decides-pick-or-type */
-    const empty = !!menu && this.current && !conditioned
+    const empty = !!menu && this.current && !custom
       && (menu.values?.length ?? 0) === 0 && !this.#hasTypedAnswer();
 
     this.toggleAttribute('data-empty', empty);
@@ -529,6 +525,23 @@ export class SherpaQuickFilter extends SherpaElement {
     if (empty && menu) this.#recheckEmpty(menu);
   }
 
+  /** A chip whose state is its own — not a selector, not the host's, not an arrangement. */
+  #answersForItself(): boolean {
+    return !this.hasAttribute('data-persistent') && !this.hasAttribute('data-locked')
+      && !this.#arranges();
+  }
+
+  /**
+   * `data-condition` is `state.condition`. A CUSTOM Condition Filter reads as
+   * info, never the plain on-tint — ASKED of the state, as the fx badge is.
+   * TRAP T-a-conditioned-chip-reads-as-info · TRAP T-one-condition-system
+   */
+  #syncCondition(state: FilterState): void {
+    if (!this.#answersForItself()) return;
+    if (state.condition) this.dataset['condition'] = state.condition;
+    else this.removeAttribute('data-condition');
+  }
+
   /** Drop a warning the menu answers once it has stamped. Never raises one. */
   #recheckEmpty(menu: MenuLike): void {
     const token = ++this.#emptyCheck;
@@ -538,7 +551,7 @@ export class SherpaQuickFilter extends SherpaElement {
         // A later check has already answered; this one is stale.
         if (token !== this.#emptyCheck || !this.isConnected) return;
         const answered = (menu.values?.length ?? 0) > 0
-          || menu.dataset?.['mode'] === 'condition'
+          || menu.mode === 'custom'
           || this.#hasTypedAnswer();
         if (answered) this.removeAttribute('data-empty');
       });
@@ -586,7 +599,10 @@ export class SherpaQuickFilter extends SherpaElement {
     if (!values.length) return;
     this.#syncLabelForSelection(values);
     this.#syncCountTip(values);
-    this.#syncBadge(filterFace(this.#state(values)));
+    // A TICKED answer is only readable once the rows stamp.
+    const state = this.#state(values);
+    this.#syncBadge(filterFace(state));
+    this.#syncCondition(state);
   };
 
   /** A condition row changed: re-derive the face from it. */
@@ -604,8 +620,7 @@ export class SherpaQuickFilter extends SherpaElement {
    * TRAP T-a-rebuilt-row-reads-empty-for-a-tick
    */
   #recheckConditions(): void {
-    const menu = this.menu as (HTMLElement & { dataset: DOMStringMap }) | null;
-    if (menu?.dataset['mode'] !== 'condition') return;
+    if (this.menu?.mode !== 'custom') return;
     if (this.#recheck != null) return;
     this.#recheck = requestAnimationFrame(() => {
       this.#recheck = null;
@@ -634,12 +649,12 @@ export class SherpaQuickFilter extends SherpaElement {
    */
   #state(values: string[]): FilterState {
     const menu = this.menu as (HTMLElement & {
-      conditionValue?: string; conditions?: FieldCondition[];
+      conditionValue?: string; conditions?: FieldCondition[]; mode?: string;
     }) | null;
     const isFilter = menu?.getAttribute('data-type') === 'filter';
-    /* CONDITION mode answers with ROWS, so the whole chain goes in. The badge
+    /* CUSTOM mode answers with ROWS, so the whole chain goes in. The badge
        and the tip both come back from it. TRAP T-a-condition-badge-says-that-not-which */
-    const rows = isFilter && menu?.dataset['mode'] === 'condition'
+    const rows = isFilter && menu?.mode === 'custom'
       ? (menu.conditions ?? []) : [];
     const all = [...this.querySelectorAll<HTMLInputElement>('[slot="menu"] input')]
       .filter((i) => !i.closest(NON_VALUE_ROWS))
@@ -701,15 +716,15 @@ export class SherpaQuickFilter extends SherpaElement {
   /** Is this chip's menu on a typing condition with something typed? */
   #hasTypedAnswer(): boolean {
     const menu = this.menu as (HTMLElement & {
-      conditionValue?: string;
+      conditionValue?: string; mode?: string;
       conditions?: { op: FilterOp; text?: string; picked?: unknown[] }[];
     }) | null;
     if (menu?.getAttribute('data-type') !== 'filter') return false;
 
-    /* CONDITION mode answers with ROWS, and ANY answered row is an answer. A
+    /* CUSTOM mode answers with ROWS, and ANY answered row is an answer. A
        chip reading row one only stayed off while three rows filtered.
        TRAP T-a-filter-menu-has-two-modes */
-    if (menu.dataset?.['mode'] === 'condition') {
+    if (menu.mode === 'custom') {
       return (menu.conditions ?? []).some((row) =>
         (OP_TAKES[row.op] ?? 'list') === 'text'
           ? (row.text ?? '').trim() !== ''

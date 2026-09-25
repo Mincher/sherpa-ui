@@ -46,19 +46,24 @@
                   dropped, so Escape and outside-click no longer apply, and
                   show()/hide() become no-ops.
                   TRAP T-an-inline-menu-is-the-same-menu
-    data-conditional  FILTER type only: this field can be asked a CONDITION, so
-                  the mode button shows. OPT-IN: most fields are answered by
-                  ticking values, and a `Contains` box over a closed set of
-                  three is noise. TRAP T-conditions-are-opt-in-per-field
-    data-conditions-only  FILTER type only: conditions and NOTHING else. Implies
-                  data-conditional, opens in condition mode and cannot leave it,
-                  and hides the switch — there is no list behind it. For a field
-                  whose values are a wall nobody ticks: 240 email addresses.
+    data-custom   FILTER type only: this field offers a Custom Condition
+                  Filter, so the mode button shows. OPT-IN: most fields are
+                  answered by ticking values, and a `Contains` box over a
+                  closed set of three is noise. TRAP T-conditions-are-opt-in-per-field
+    data-custom-only  FILTER type only: a Custom Condition Filter and NOTHING
+                  else. Implies data-custom, opens in custom mode and cannot
+                  leave it, and hides the switch — there is no list behind it.
+                  For a field whose values are a wall nobody ticks: 240 emails.
                   TRAP T-a-filter-answers-by-values-conditions-or-both
-    data-mode     FILTER type only: select (default) | condition. `select` is a
-                  plain ticked list with a search; `condition` is the And/Or
-                  rows. An icon-only button in the header switches between them.
+    data-mode     FILTER type only: default | custom. `default` is a Default
+                  Condition Filter, a ticked list with a search; `custom` is a
+                  Custom Condition Filter, the And/Or rows. An icon-only button
+                  in the header switches between them. The old values select |
+                  condition are read, and rewritten to the new ones.
                   TRAP T-a-filter-menu-has-two-modes
+    data-conditional  the old name of data-custom, still read.
+                  TRAP T-a-renamed-attribute-keeps-its-old-name
+    data-conditions-only  the old name of data-custom-only, still read.
     data-op       FILTER type only: which condition is picked. Defaults to `eq`.
                   The FIRST row's op — a menu in condition mode holds many.
     data-conditions  FILTER type only: a comma-separated op list ('eq,ne,contains')
@@ -92,7 +97,7 @@
     condition-change — the condition or its typed value changed.
                   detail: { op, value, conditions }
                   `conditions` is EVERY row, in order. TRAP T-many-conditions-are-one-reading
-    filter-mode-change — the mode button was pressed. detail: { mode }
+    filter-mode-change — the mode button was pressed. detail: { mode } — default | custom
 -->
 <template id="default">
   <div class="menu sherpa-border-edges sherpa-border-corners" part="menu" popover="manual" role="menu">

@@ -59,9 +59,9 @@ test('a scope draws its presets, its fields, and nothing it cannot', async ({ pa
          does not offer are REMOVED, not hidden: a group squares corners by
          POSITION, and a hidden first child still counts.
          TRAP T-a-hidden-sibling-still-counts-as-first-child */
-      ownerActions: ['conditional', 'clear', 'remove']
+      ownerActions: ['custom', 'clear', 'remove']
         .filter((a) => !!sr.querySelector('.field[data-field="owner"] .field-' + a)),
-      statusActions: ['conditional', 'clear', 'remove']
+      statusActions: ['custom', 'clear', 'remove']
         .filter((a) => !!sr.querySelector('.field[data-field="status"] .field-' + a)),
       presetActions: ['clear', 'remove']
         .filter((a) => !!sr.querySelector('.field[data-field="presets"] .field-' + a)),
@@ -85,7 +85,7 @@ test('a scope draws its presets, its fields, and nothing it cannot', async ({ pa
   /* Owner asked for conditions. NEITHER has a Remove: the scope's Add menu is
      the whole list and unticking a row removes it.
      TRAP T-the-add-menu-is-the-whole-list */
-  expect(r['ownerActions']).toEqual(['conditional', 'clear']);
+  expect(r['ownerActions']).toEqual(['custom', 'clear']);
   expect(r['statusActions']).toEqual(['clear']);
   // A PRESETS section has no field to clear or remove.
   expect(r['presetActions']).toEqual([]);
@@ -191,18 +191,18 @@ test('the condition button flags the field and hides its chips', async ({ page }
     const heard = [];
     el.addEventListener('filter-condition-change', (e) => heard.push(e.detail));
     const read = () => ({
-      flag: sr.querySelector('.field[data-field="owner"]').hasAttribute('data-conditional'),
-      pressed: sr.querySelector('.field[data-field="owner"] .field-conditional')
+      flag: sr.querySelector('.field[data-field="owner"]').hasAttribute('data-custom'),
+      pressed: sr.querySelector('.field[data-field="owner"] .field-custom')
         .getAttribute('aria-pressed'),
       chips: getComputedStyle(
         sr.querySelector('.field[data-field="owner"] .field-values')).display,
     });
 
     const before = read();
-    press('.field[data-field="owner"] .field-conditional');
+    press('.field[data-field="owner"] .field-custom');
     await new Promise((r) => setTimeout(r, 120));
     const on = read();
-    press('.field[data-field="owner"] .field-conditional');
+    press('.field[data-field="owner"] .field-custom');
     await new Promise((r) => setTimeout(r, 120));
     return { before, on, off: read(), heard };
   })()`) as Record<string, unknown>;
@@ -212,8 +212,8 @@ test('the condition button flags the field and hides its chips', async ({ page }
   expect(r['on']).toEqual({ flag: true, pressed: 'true', chips: 'none' });
   expect(r['off']).toEqual({ flag: false, pressed: 'false', chips: 'flex' });
   expect(r['heard']).toEqual([
-    { scope: 'data', id: 'owner', conditional: true },
-    { scope: 'data', id: 'owner', conditional: false },
+    { scope: 'data', id: 'owner', mode: 'custom' },
+    { scope: 'data', id: 'owner', mode: 'default' },
   ]);
 });
 

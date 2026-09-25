@@ -179,8 +179,8 @@ events:
     bubbles: true
     composed: true
     detail:
-      conditional: unknown
       id: unknown
+      mode: unknown
       scope: unknown
   - $type: event
     name: filter-panel-reopen

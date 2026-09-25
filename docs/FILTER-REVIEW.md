@@ -1991,12 +1991,40 @@ input shape — `setChipValues`, the legend and the saved views all speak it —
 and `fieldState` turns it into a row. So the saved-view format did not change
 at all. And Default and Custom stay two MODES of one menu, over one data shape.
 
-### 21.5 Still open
+### 21.5 The words — done 2026-09-25
 
-**The public attributes.** `data-mode="select" | "condition"`,
-`data-conditional` and `data-conditions-only` keep their names. Renaming them
-breaks every host that writes them; it wants a decision, and a `fallbackAttr`
-alias if it goes ahead.
+Will: *"rename"*. The public surface speaks Default and Custom now, and the old
+names still work. See `T-a-renamed-attribute-keeps-its-old-name`.
+
+| was | is | old name |
+|---|---|---|
+| menu `data-conditional` | `data-custom` | still read |
+| menu `data-conditions-only` | `data-custom-only` | still read |
+| menu `data-mode="select" \| "condition"` | `data-mode="default" \| "custom"` | read, and rewritten |
+| menu `mode` property, `filter-mode-change` | `'default' \| 'custom'` | the setter takes either |
+| chip `data-conditioned` (boolean) | `data-condition="default" \| "custom"` | none — the chip writes it |
+| panel `filter-condition-change { conditional }` | `{ mode }`, as the menu's | none — the panel writes it |
+
+**Two bugs found on the way.**
+
+- **A grid column set to "Is not" filtered to what it excluded.** The grid gave
+  the data layer its CLAUSE op (`notin`) where a READING op (`ne`) belongs,
+  and `notin` came back as `in`. See `T-a-held-clause-op-is-not-a-reading-op`.
+  The grid's heading chip now asks `fieldState()` for its condition, so its fx
+  and blue follow the toolbar's rule — "Is not" is custom on both.
+- **A chip ticked by its def never said `default`.** Its rows stamp after it
+  connects, and only the badge was redrawn then. The condition is now written on
+  the stamp too.
+
+### 21.5.1 Still open
+
+- **The def key** `conditions: true | 'only'` and the `'conditional'` kind keep
+  their names. They are a def's data shape, not an attribute, and every filter
+  has conditions now — so `conditions: true` reads as a tautology.
+- **"Custom" means two things.** A Custom Condition Filter, and the toolbar's
+  host-added chip — `addCustomFilter()`, `customFilters`, `customValue` and a
+  private `data-custom` on that chip. §16's saved "Custom" filters would be a
+  third.
 
 ### 21.6 What was to be settled first
 

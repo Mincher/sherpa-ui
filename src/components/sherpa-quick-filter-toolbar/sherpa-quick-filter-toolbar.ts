@@ -595,10 +595,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
       const rows = reading.conditions ?? [];
       if (rows.length) {
-        /* The MENU refuses condition mode unless the field opted in, and a
+        /* The MENU refuses custom mode unless the field opted in, and a
            steer IS that opt-in reaching it. */
-        menu.setAttribute('data-conditional', '');
-        menu.dataset['mode'] = 'condition';
+        menu.setAttribute('data-custom', '');
+        menu.dataset['mode'] = 'custom';
         menu.conditions = rows;
         chip.current = true;
         return;
@@ -1102,8 +1102,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       /* The MENU holds the condition — one field, one filter menu, whether a
          chip or a column heading opened it.
          TRAP T-one-field-one-filter-menu */
-      const menu = (chip as ChipEl & { menu?: HTMLElement }).menu as
-        (HTMLElement & { conditionValue?: string; conditions?: FieldCondition[] }) | null;
+      const menu = (chip as ChipEl & { menu?: HTMLElement }).menu as (HTMLElement & {
+        conditionValue?: string; conditions?: FieldCondition[]; mode?: string;
+      }) | null;
       if (menu?.getAttribute('data-type') !== 'filter') continue;
 
       const all = [...menu.querySelectorAll<HTMLInputElement>('input')]
@@ -1127,7 +1128,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
            `fx` badge, and filtered NOTHING.
 
            TRAP T-a-conditioned-chip-answers-with-its-clause */
-        conditions: menu.dataset['mode'] === 'condition' ? (menu.conditions ?? []) : [],
+        conditions: menu.mode === 'custom' ? (menu.conditions ?? []) : [],
         /* An OFF chip SUSPENDS: it keeps every row and applies none of them,
            exactly as it keeps its picks. Reporting none of them instead read
            as "no filter", and the chip could never switch itself back ON —

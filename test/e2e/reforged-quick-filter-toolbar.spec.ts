@@ -2436,7 +2436,6 @@ test('a CONDITION-only field gets a menu, not a toggle', async ({ page }) => {
         menu: !!menu,
         // A filter menu is what carries the two modes.
         type: menu?.getAttribute('data-type') ?? null,
-        conditional: !!menu?.querySelector('.mode-switch, [data-mode]'),
       };
     };
     return { email: look('email'), toggle: look('at-risk') };
@@ -2482,7 +2481,7 @@ test('a custom chip GIVEN its condition opens a menu on it', async ({ page }) =>
         // The caret still reads the phrase either way.
         caret: chip.hasAttribute('data-menu'),
         menu: !!menu,
-        conditional: menu?.hasAttribute('data-conditional') ?? false,
+        custom: menu?.hasAttribute('data-custom') ?? false,
         op: menu?.getAttribute('data-op') ?? null,
         value: menu?.getAttribute('data-value') ?? null,
       };
@@ -2490,9 +2489,9 @@ test('a custom chip GIVEN its condition opens a menu on it', async ({ page }) =>
     return { withCond: look('col:name'), bare: look('col:email') };
   });
 
-  // It OPENS, in condition mode, holding what is applied.
+  // It OPENS, in custom mode, holding what is applied.
   expect(r.withCond).toEqual({
-    caret: true, menu: true, conditional: true, op: 'contains', value: 'ana',
+    caret: true, menu: true, custom: true, op: 'contains', value: 'ana',
   });
   // And the phrase-only call is unchanged.
   expect(r.bare.caret).toBe(true);
@@ -2535,7 +2534,7 @@ test('a FOLDED conditions-only filter opens its own menu, not a blank drill', as
 
     const overflowMenu = overflow.querySelector('sherpa-menu')!;
     return {
-      // Its OWN menu opened, in condition mode...
+      // Its OWN menu opened, in custom mode...
       opened: menu.hasAttribute('open'),
       mode: menu.getAttribute('data-mode'),
       // ...with a condition row a reader can actually type into.
@@ -2546,7 +2545,7 @@ test('a FOLDED conditions-only filter opens its own menu, not a blank drill', as
   });
 
   expect(r.opened).toBe(true);
-  expect(r.mode).toBe('condition');
+  expect(r.mode).toBe('custom');
   expect(r.hasConditionRow).toBe(true);
   expect(r.overflowStillListsFilters).toBe(true);
 });

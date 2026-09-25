@@ -103,7 +103,7 @@
   display: flex;
 }
 /* A field with nothing to act on shows no column at all. */
-.field:not([data-clearable]):not([data-removable]):not([data-conditional-ok]) .field-acts {
+.field:not([data-clearable]):not([data-removable]):not([data-custom-ok]) .field-acts {
   display: none;
 }
 
@@ -114,14 +114,14 @@
    corners by POSITION and cannot see a `display: none` sibling, so the
    condition button kept a square right edge with nothing against it.
    TRAP T-a-hidden-sibling-still-counts-as-first-child */
-.field:not([data-answered]) .field-conditional {
+.field:not([data-answered]) .field-custom {
   --sherpa-border-right: var(--sherpa-display-mode-border-width-sm, 0.5px);
   --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
   --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
 
 /* A field with ONLY a Clear, and nothing to clear, shows no column. */
-.field[data-clearable]:not([data-answered]):not([data-conditional-ok]) .field-acts {
+.field[data-clearable]:not([data-answered]):not([data-custom-ok]) .field-acts {
   display: none;
 }
 
@@ -132,18 +132,18 @@
    with nothing under them is harder to read than a shorter list. */
 .field[data-no-matches] { display: none; }
 
-/* CONDITION MODE REPLACES the value chips — the rows are the answer now, and
+/* CUSTOM MODE REPLACES the value chips — the rows are the answer now, and
    two answers side by side is the thing this mode exists to avoid. */
-.field[data-conditional] .field-values { display: none; }
+.field[data-custom] .field-values { display: none; }
 
 /* …and it gives the rows the WHOLE column. A condition row is one grouped
    object — `[And|Or] [condition] [answer] [x]` — and the actions column took
    80 of the field's 294px, which left 214 and forced the row to stack.
    Measured 2026-09-24: body 214px beside the actions, 294px under them.
-   So in condition mode the field is ONE column and the actions ride the label
+   So in custom mode the field is ONE column and the actions ride the label
    row, where they still act on the field.
    TRAP T-an-inline-condition-row-keeps-its-tracks */
-.field[data-conditional] {
+.field[data-custom] {
   grid-template-columns: 1fr auto;
   grid-template-areas:
     "label acts"
@@ -171,7 +171,7 @@
    body instead of a run of chips. TRAP T-an-inline-menu-is-the-same-menu */
 .field-body { display: none; }
 
-.field[data-conditional] .field-body,
+.field[data-custom] .field-body,
 .field[data-body] .field-body { display: block; }
 .field[data-body] .field-values { display: none; }
 
