@@ -18,9 +18,10 @@ Kept as the work lands. Budgets from §15.4.
 | 3a `scope` renamed three ways | ✅ | ≈ 0 | **+8** | `reach` / `rows` / `scope`. 31 call sites, 2210 tests green |
 | 3b the scope registry + `debugState()` | ✅ | ≈ +40 | **+84** | registry +40, `debugState()` +26, docs the rest. 219 unit / 2209 e2e green |
 | 3c-i the panel stops REACHING | ✅ | ≈ −60 | **−3** | `#barOf`, `#chipOf`, `#bars`, `#markConditioned` deleted; it reports `readings` |
-| 3c-ii stop BORROWING menus | | ≈ −110 | — | the panel draws its own |
+| 4b one set of menu templates | ⏳ | **re-estimating** | — | **moved BEFORE 3c-ii**; the hosts read body controls directly in 15 places |
+| 4c a record TIMESTAMP, and one Date filter | | ≈ +60 | — | buys the series composition in §9.5 |
+| 3c-ii stop BORROWING menus | | ≈ −110 | — | needs 4b: the panel cannot build a calendar body without it |
 | 4 one field-row builder | | ≈ −250 | — | |
-| 4b one set of menu templates | | ≈ −60 | — | the range switch is duplicated verbatim |
 | 5 collapse sort/group state | | ≈ −50 | — | |
 | 5.5 error reporting | | ≈ +80 | — | `debugState()` lands with 3 |
 | 6 split `filter-state.ts` | | ≈ 0 | — | |
@@ -534,10 +535,92 @@ all.
 somewhere to get one. Today it would write a third copy, and there would be
 three spellings of "Range".
 
-**Where it sits:** beside step 4. Step 4 makes one builder for the TypeScript;
-this makes one set of templates for the HTML. Same argument, same shape —
-**do them together**, because a builder that clones two different templates has
-not finished the job.
+**Where it sits — MOVED, 2026-09-25.** It was planned beside step 4. Starting
+3c-ii showed the order is wrong: **3c-ii cannot finish without it.**
+
+To stop borrowing, the panel has to build its own menu. Measured, it borrows
+three: `group`, `sort` and `dateRange`. The first two are plain single-select
+value lists and the panel could build those today. `dateRange` is a CALENDAR,
+and the panel has no way to make one — the calendar body lives in the toolbar's
+template and in the grid's, and in neither case where the panel can reach it.
+
+Half-borrowing is worse than either: two paths for one job, and the bug class
+stays. So 4b comes first, `sherpa-menu` gains `body(kind)`, and then 3c-ii is
+a deletion rather than a rewrite.
+
+Step 4 still follows — one builder for the TypeScript, after one set of
+templates for the HTML.
+
+### Step 4c — A generic RECORD TIMESTAMP, and one Date filter over it
+
+Will, 2026-09-25: *"The view scope filters in the examples have a 'Created
+date' filter that targets the 'Created' field. This should just be a generic
+Date filter to filter all view data by a specific date or date range. This
+means that every data record needs a generic timestamp for this to work. It's
+useful for other reasons, too. It also allows all data to have a history of
+values."*
+
+#### What it is today
+
+The header's date chip is `id: 'dateRange'`, labelled **"Created date"**, and
+it filters the `created` field — one column of one dataset. Its own comment
+says why: *"a chip names the FIELD it filters"*. So the VIEW-scope date filter
+only works because the example happens to have a field called `created`.
+
+Point a second dataset at the same header and the chip filters nothing.
+
+#### What it should be
+
+**Every record has a time of its own**, and the view's date filter asks about
+THAT — not about a column somebody remembered to call `created`.
+
+```
+store: { key: 'email', time: 'created' }     // which field IS the record's time
+```
+
+The data layer gains one idea: a source knows its records' timestamp field, the
+way it already knows their key. Then:
+
+- the view's chip is **"Date"**, not "Created date" — it filters any dataset
+- `declareField(time, { type: 'date' })` happens once, in the source
+- a Context that swaps its dataset keeps its date filter working
+
+**There is no such concept today** — `grep -rniE "timestamp|updatedAt|createdAt"
+src/core/data` finds nothing. The key is declared (`{ key: 'id' }`); the time
+is not.
+
+#### Why it earns more than the filter
+
+Will's second sentence is the bigger one: *"It also allows all data to have a
+history of values."*
+
+A record with a known time can be:
+
+- **ordered** without naming a column — newest first is a default a grid can
+  have out of the box
+- **compared to itself** — a metric's delta and a sparkline's series are both
+  "this field, over the record's own time". Today `records.js` builds that by
+  hand: `month(rows)`, `overMonths(rows, kind, field)`, `seriesBy(...)`, ~569
+  lines of it (§13.2). With a declared time, `data-series-by` needs no argument.
+- **bounded** — "as at" a date, which is what a history is
+
+That makes it a prerequisite for §9.5's "a SERIES over a field", not a nicety.
+
+#### What it touches
+
+| | |
+|---|---|
+| `Store` options | `time?: string`, beside `key` |
+| `DataSource` | declare it as a date field; expose `timeField` |
+| the header's chip | "Created date" → "Date", bound to `timeField` |
+| `examples/contexts/*-data.js` | say which field is the time |
+| `debugState()` | report it, so a filter over nothing is visible |
+
+**Budget ≈ +60**, and it BUYS the series composition in §9.5 — which is most of
+the 569 lines the example hand-writes.
+
+**Where it sits:** after step 4b, before step 5. It is a data-layer idea, so it
+does not block the component work, but §9.5's declare-and-compose needs it.
 
 ### Step 5 — Collapse the sort/group state
 
