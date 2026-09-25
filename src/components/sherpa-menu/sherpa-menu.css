@@ -324,6 +324,19 @@
   white-space: nowrap;
 }
 
+/* A SECTION heading inside the list, set as the menu's own heading is, with a
+   rule above it. TRAP T-saved-filters-are-the-custom-section */
+.rows ::slotted(.menu-section) {
+  margin: 0;
+  padding-block-start: var(--sherpa-display-mode-space-xs, 8px);
+  border-block-start: var(--sherpa-display-mode-border-width-sm, 0.5px) solid
+    var(--sherpa-style-border-base, #b3b3c3);
+  color: var(--sherpa-style-content-secondary, #35353d);
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
+  text-transform: uppercase;
+}
+
 .rows ::slotted(hr) {
   inline-size: 100%;
   margin-block: var(--sherpa-display-mode-space-2xs, 4px);

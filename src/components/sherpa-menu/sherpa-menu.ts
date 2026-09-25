@@ -38,6 +38,9 @@ export interface MenuItem {
   available?: boolean;
   /** A SECOND fact, drawn muted after the label — where a filter lives now. */
   note?: string;
+  /** The section it is in. A heading is drawn where the section changes.
+   *  TRAP T-saved-filters-are-the-custom-section */
+  section?: string;
 }
 
 /** The mode's spellings before 2026-09-25, still heard.
@@ -623,12 +626,26 @@ export class SherpaMenu extends SherpaElement {
     const field = this.$<HTMLElement & { value?: string }>('.search');
     const q = (field?.value ?? '').trim().toLowerCase();
     let shown = 0;
+    // A SECTION heading shows while a row under it does — never on its own name.
+    let heading: HTMLElement | null = null;
+    let under = false;
+    const close = (): void => { heading?.toggleAttribute('data-filtered-out', !under); };
     for (const row of this.#rows()) {
+      if (row.classList.contains('menu-section')) {
+        close();
+        heading = row;
+        under = false;
+        continue;
+      }
       const hit = !q || (row.textContent ?? '').toLowerCase().includes(q);
       // JS writes the flag; CSS owns the hiding.
       row.toggleAttribute('data-filtered-out', !hit);
-      if (hit) shown += 1;
+      if (hit) {
+        shown += 1;
+        under = true;
+      }
     }
+    close();
     this.toggleAttribute('data-no-matches', !!q && shown === 0);
   };
 
@@ -798,7 +815,19 @@ export class SherpaMenu extends SherpaElement {
        does not re-sort or dim: the checkbox already says what is picked, and a
        divider plus a grey row said it a second, noisier way.
        TRAP T-unavailable-value-sorts-below-a-divider */
-    const rows = this.#items.map(stamp);
+    const rows: Element[] = [];
+    let section: string | undefined;
+    for (const item of this.#items) {
+      if (item.section && item.section !== section) {
+        const head = this.clone('template.menu-section-tpl');
+        if (head) {
+          head.textContent = item.section;
+          rows.push(head);
+        }
+      }
+      section = item.section;
+      rows.push(stamp(item));
+    }
     const out: Element[] = all ? [all, ...rows] : rows;
     /* KEEP what the menu does not own. A caller's own rows — a Select-all, a
        Remove action — live here too, and a blanket replace ate them the moment

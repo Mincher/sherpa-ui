@@ -36,6 +36,9 @@ import '../sherpa-switch/sherpa-switch.js';
 import '../sherpa-list-item/sherpa-list-item.js';
 import '../sherpa-tag/sherpa-tag.js';
 
+/** The Add menu's heading over saved filters — Will's "Custom" section, at the bottom. */
+const CUSTOM_SECTION = 'Custom';
+
 /** One value a filter chip's menu can offer. */
 export interface QuickFilterOption {
   value: string;
@@ -45,6 +48,8 @@ export interface QuickFilterOption {
   available?: boolean;
   /** A second fact its menu row shows, muted. */
   note?: string;
+  /** The section its menu row is in, headed where it changes. */
+  section?: string;
 }
 
 /** An external filter: its chip, its finished phrase, and the condition behind it. */
@@ -888,6 +893,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
             : !!item.selected || item.value === fallback,
           available: item.available,
           ...(item.note ? { note: item.note } : {}),
+          ...(item.section ? { section: item.section } : {}),
         })),
       ]);
     }
@@ -1519,9 +1525,16 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // TRAP T-add-menu-batches — the one menu that KEEPS Apply: each tick stamps
       // a chip, so per-tick apply rebuilds the run mid-selection.
       commit: true,
+      /* SAVED filters LAST, under their own heading — held ones ticked.
+         TRAP T-saved-filters-are-the-custom-section */
       options: [
-        ...held.map((f) => ({ value: f.id, label: f.label, selected: true })),
-        ...offer.map((f) => ({ value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}) })),
+        ...held.filter((f) => !f.readings).map((f) => ({ value: f.id, label: f.label, selected: true })),
+        ...offer.filter((f) => !f.readings)
+          .map((f) => ({ value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}) })),
+        ...held.filter((f) => f.readings)
+          .map((f) => ({ value: f.id, label: f.label, selected: true, section: CUSTOM_SECTION })),
+        ...offer.filter((f) => f.readings)
+          .map((f) => ({ value: f.id, label: f.label, section: CUSTOM_SECTION })),
       ],
     });
     // Its host is already in the page, so the items can go now.
@@ -1549,8 +1562,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       /* OFF, and REMOVABLE. A chip added ON holds no values yet, and "on but
          filtering by nothing" is the amber warning — shown to a reader who has
          done nothing wrong. They add the chip, then answer it.
-         TRAP T-a-new-chip-opens-in-default-not-warning */
-      added.push({ ...def!, active: false, removable: true });
+         TRAP T-a-new-chip-opens-in-default-not-warning
+         A SAVED filter is answered already, so it comes ON.
+         TRAP T-saved-filters-are-the-custom-section */
+      added.push({ ...def!, active: !!def!.readings, removable: true });
     }
     if (!added.length) return;
     this.#filters = [...this.#filters, ...added];

@@ -288,5 +288,68 @@ test('the Records page saves a condition as a filter, and nothing filters twice'
   });
   await expect.poll(bar).toEqual({ saved: ['custom:dana-accounts'], on: true, owner: false, kept: ['dana-accounts'] });
   await expect.poll(total).toBe(before);
+
+  // KEPT: after a reload it is offered in Add, under Custom.
+  await page.reload();
+  await page.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
+  await expect.poll(() => page.evaluate(() => {
+    const menu = document.querySelector('#context-root sherpa-quick-filter-toolbar')!.shadowRoot!
+      .querySelector('.add-btn sherpa-menu')!;
+    const head = [...menu.children].find((n) => n.classList.contains('menu-section'));
+    const row = menu.querySelector('input[value="custom:dana-accounts"]');
+    return { head: head?.textContent ?? null, row: !!row };
+  })).toEqual({ head: 'Custom', row: true });
   await page.evaluate(() => localStorage.removeItem('sherpa:filters:customers'));
+});
+
+/**
+ * THE CUSTOM SECTION. Will: saved filters go "to the add filters menu under a
+ * 'Custom' section at the bottom". The menu draws the heading where a section
+ * starts, and its search hides the heading when nothing under it matches. A
+ * saved filter added from there comes ON: its answer is given.
+ * TRAP T-saved-filters-are-the-custom-section
+ */
+test('the Add menu offers saved filters at the bottom, under Custom', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const held = { owner: { conditions: [{ op: 'contains', text: 'Da' }] } };
+    const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [
+      { id: 'owner', label: 'Owner', select: 'multiple', removable: true, custom: true,
+        options: [{ value: 'Dana', label: 'Dana' }] },
+      { id: 'custom:held', label: 'Held one', readings: held, removable: true },
+    ], { style: 'inline-size: 1200px' });
+    bar.available([
+      { id: 'tier', label: 'Tier', options: [{ value: 'gold', label: 'Gold' }] },
+      { id: 'custom:mine', label: 'Mine', readings: held },
+      { id: 'custom:big', label: 'Big spenders', readings: { spend: { op: 'gt', text: '1000' } } },
+    ]);
+    await window.__settled();
+    const menu = bar.shadowRoot!.querySelector<HTMLElement & { shadowRoot: ShadowRoot }>('.add-btn sherpa-menu')!;
+    const rows = () => [...menu.children]
+      .filter((n) => !n.classList.contains('qf-all') && !(n as HTMLElement).hasAttribute('data-filtered-out'))
+      .map((n) => (n.classList.contains('menu-section') ? `§${n.textContent}`
+        : `${n.querySelector('input')!.value}${n.querySelector('input')!.checked ? '*' : ''}`));
+    const search = async (q: string) => {
+      const box = menu.shadowRoot.querySelector<HTMLElement & { value: string }>('.search')!;
+      box.value = q;
+      box.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+      await window.__settled();
+      return rows();
+    };
+    const all = rows();
+    const big = await search('big');
+    const own = await search('own');
+    await search('');
+    bar.addFilters(['custom:mine']);
+    await window.__settled();
+    const chip = bar.shadowRoot!.querySelector<HTMLElement>('.chip[data-id="custom:mine"]');
+    return { all, big, own, added: chip?.hasAttribute('data-current') ?? null };
+  });
+
+  // Fields first; the saved ones LAST, under their heading — a held one ticked.
+  expect(r.all).toEqual(['owner*', 'tier', '§Custom', 'custom:held*', 'custom:mine', 'custom:big']);
+  // The heading goes with the rows under it.
+  expect(r.big).toEqual(['§Custom', 'custom:big']);
+  expect(r.own).toEqual(['owner*']);
+  expect(r.added).toBe(true);
 });

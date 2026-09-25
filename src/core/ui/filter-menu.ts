@@ -27,6 +27,8 @@ export interface FilterMenuItem {
   available?: boolean;
   /** A second fact the row shows, muted — where a filter lives now. */
   note?: string;
+  /** The section it is in, headed where it changes. */
+  section?: string;
 }
 
 /** Enough of a filter definition to draw its menu. */

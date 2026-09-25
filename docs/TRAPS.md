@@ -11653,6 +11653,35 @@ a CONDITION into a chip. The Add menu packs it with the rest.
 - Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 
+### T-saved-filters-are-the-custom-section
+
+**Saved filters are offered LAST in the Add menu, under a "Custom" heading.**
+Will, 2026-09-25: *"add them to the add filters menu under a 'Custom' section
+at the bottom"*.
+
+A def with `readings` IS a saved filter, so the bar needs no second list: the
+host hands them over through `available()` beside the fields, and the Add menu
+puts fields first and saved filters after, held ones ticked. A saved chip taken
+off the bar goes back there by itself (`#removeFilter`).
+
+**The heading is the MENU's**, not the bar's: `MenuItem.section` names the
+section an item is in, and the menu draws a heading row where it changes. Its
+search hides a heading when nothing under it matches — a heading is never
+matched on its own name, so "Custom" over no rows cannot happen.
+
+**One added from there comes ON.** A new field chip comes off, because on with
+no answer is the amber warning (`T-a-new-chip-opens-in-default-not-warning`);
+a saved filter IS its answer.
+
+The heading row is a `.menu-row`, so a re-stamp removes it with the rows it
+heads.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `examples/contexts/records.js`
+- Site: `test/e2e/reforged-saved-filter.spec.ts`
+
 ### T-row-one-is-data-op
 
 **A filter menu's FIRST condition row is `data-op` and `data-value`.**

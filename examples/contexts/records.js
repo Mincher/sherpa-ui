@@ -10,7 +10,7 @@
 import {
   DataSource, VIEW_SCOPE, SherpaToast, persistView, viewOptions, onViewPicked,
   countBy, reduceRows, bindSelection, andFilter, picksClause, stateClause,
-  seriesBy, deltaPercent, saveFilterAs, labelId,
+  seriesBy, deltaPercent, saveFilterAs, loadSavedFilters, labelId,
 } from '../../dist/index.js';
 import { customerStore, customersReady, customers, columns, plans, regions, customerOrgs, states }
   from './records-data.js';
@@ -286,7 +286,11 @@ export async function init(root, { session } = {}) {
     });
 
   const DATA_AVAILABLE = addable('data', heldSomewhere).map((d) => ({ ...d, type: 'data' }));
-  qft.available(DATA_AVAILABLE);
+  /* THE READER'S OWN saved filters, offered at the bottom of Add, under Custom.
+     TRAP T-saved-filters-are-the-custom-section */
+  const savedDefs = () => Object.entries(loadSavedFilters('customers'))
+    .map(([id, saved]) => ({ id: `custom:${id}`, label: saved.label, readings: saved.readings }));
+  qft.available([...DATA_AVAILABLE, ...savedDefs()]);
 
   /* UP IS OPEN: the header offers every field any component has — including
      one the grid's bar holds, because raising a filter is the point. What the
