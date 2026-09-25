@@ -42,6 +42,8 @@ export interface QuickFilterOption {
   selected?: boolean;
   /** Reachable now. TRAP T-unavailable-value-sorts-below-a-divider — `false` still selects. */
   available?: boolean;
+  /** A second fact its menu row shows, muted. */
+  note?: string;
 }
 
 export interface QuickFilterDef {
@@ -96,6 +98,9 @@ export interface QuickFilterDef {
   /** WHAT THE READER ANSWERED — filled by the `held` read-back, never by a
    *  caller. TRAP T-a-panel-builds-its-own-menus */
   state?: FieldReading;
+  /** What the ADD menu shows beside it — where it lives now, if somewhere else.
+   *  The host's to say: this bar cannot see another scope. */
+  note?: string;
 }
 
 interface ChipEl extends HTMLElement {
@@ -858,6 +863,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
             ? picked.has(item.value) || item.value === fallback
             : !!item.selected || item.value === fallback,
           available: item.available,
+          ...(item.note ? { note: item.note } : {}),
         })),
       ]);
     }
@@ -1346,7 +1352,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       commit: true,
       options: [
         ...held.map((f) => ({ value: f.id, label: f.label, selected: true })),
-        ...offer.map((f) => ({ value: f.id, label: f.label })),
+        ...offer.map((f) => ({ value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}) })),
       ],
     });
     // Its host is already in the page, so the items can go now.

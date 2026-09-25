@@ -7,7 +7,6 @@
     "examples/contexts/global-filters.js",
     "examples/contexts/records-data.js",
     "examples/contexts/records-views.js",
-    "examples/contexts/records.js",
     "examples/contexts/settings.js",
     "mcp-server/lib/browser.js",
     "mcp-server/lib/data-layer.js",

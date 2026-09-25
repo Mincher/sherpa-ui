@@ -819,7 +819,11 @@ export class DataSource extends EventTarget {
     // TRAP T-in-flight-ticket-discards-stale — ANSWERED and ASKED are separate.
     const key = this.#stateKey();
     if (!options.force) {
-      if (key === this.#lastLoadKey && this.#loaded) return this.#result;  // answered
+      /* ANSWERED only while nothing else is in flight. A DIFFERENT load in
+         flight will land and overwrite the answer, so a request back to the
+         last finished one must still run — skipping it lost the reader's
+         filter for good. TRAP T-in-flight-ticket-discards-stale */
+      if (key === this.#lastLoadKey && this.#loaded && !this.#inFlight) return this.#result;
       if (key === this.#inFlightKey) return this.#result;                  // asked
     }
 

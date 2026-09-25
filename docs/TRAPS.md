@@ -991,7 +991,23 @@ key cannot stop them and the in-flight key can. Without it, 20 identical writes
 in one tick produced 20 store reads even though the first was already fetching
 the answer.
 
+**"Answered" holds only while NOTHING ELSE is in flight.** A request whose key
+matches `#lastLoadKey` was skipped even when a DIFFERENT load was in flight —
+and that load then landed and overwrote the answer, so the request was lost for
+good. Found on the running page in Firefox, raising Status to the header:
+
+    done       status = active        the last finished load
+    in flight  status cleared         the grid, re-announcing without it
+    asked      status = active again  the header taking it → SKIPPED
+    landed     status cleared         100 rows, and nothing asked again
+
+Chromium batched the two writes into one load, so only Firefox showed it. The
+shortcut is `key === #lastLoadKey && #loaded && !#inFlight` now;
+`test/unit/a-request-back-to-the-last-answer-still-runs.test.mjs` gates a load
+back to the last answer, and that a true no-op still skips.
+
 - Site: `src/core/data/data-source.ts`
+- Site: `test/unit/a-request-back-to-the-last-answer-still-runs.test.mjs`
 
 ### T-parts-order-must-be-stable
 
@@ -11445,10 +11461,26 @@ not have changes NOTHING and reports `scope-refused` — see
 `VIEW_SCOPE` is `'view'`, the same word as `reach: 'view'`, exported so no
 caller spells it twice.
 
+**Raising carries the answer.** Before this, raising Status from the grid gave
+the header an EMPTY, off chip and greyed the grid's, while the rows stayed
+filtered by a pick no visible chip showed. The app now reads the grid's
+reading BEFORE superseding, `move()`s the field, writes the reading onto the
+new header chip with `setChipReading`, and has both bars `report()`.
+**Lowering** lets the field go: the grid chip comes back with its OWN kept
+picks. And the selection mirror must never write into a SUPERSEDED chip — it
+was writing the grid's emptied answer into it on every raise.
+
+**The Add menu says where a field lives.** A row can carry a `note` — "in
+Customer records" — drawn muted by `::slotted(.menu-row[data-note])::after`,
+the one part of a slotted row the menu's sheet can reach, and read out through
+`aria-description`. Measured the same in all three engines.
+
 - Site: `src/core/data/data-source.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/up-is-open-down-is-closed.test.mjs`
 - Site: `examples/contexts/records.js`
+- Site: `test/e2e/reforged-raising-a-filter-carries-its-value.spec.ts`
+- Site: `test/e2e/reforged-menu-row-note.spec.ts`
 
 ### T-a-record-has-a-time-of-its-own
 

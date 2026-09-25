@@ -22,6 +22,7 @@ Kept as the work lands. Budgets from §15.4.
 | 4b-ii the GRID uses them too | ✅ | ≈ −60 | **−57** | 13 direct reads moved; two grid templates and 81 CSS lines gone |
 | 3c-ii stop BORROWING menus | ✅ | ≈ −110 | **−45** | `menuFor()` is the one def→menu builder. Borrow machinery gone; the app stops scraping the bar's shadow root |
 | — 3 red tests that pre-dated it | ✅ | — | **+30** | a report is the whole answer; a `min(…,100%)` floor collapsed the bar chart to 35px; a test dispatched an event nothing emits |
+| — raising carries its value; Add says where | ✅ | — | **+80** | and a `load()` race that skipped a request back to the last answer |
 | — the scope rules | ✅ | — | **+83** | up open, down closed, view/component exclusive. `offer`/`fields`/`canHold`/`move`; the header offers 11 fields, not 4 |
 | 4 one field-row builder | ✅ | ≈ −250 | **−21** | the budget was wrong: 4b and 3c-ii had already taken the shared half. See §7 note |
 | 4c a record TIMESTAMP, and one Date filter | ✅ | ≈ +60 | **+41** | `store: { key, time }`; the source declares it a date; the header chip is "Date" over `timeField` |
@@ -30,7 +31,7 @@ Kept as the work lands. Budgets from §15.4.
 | 5.5 error reporting | ✅ | ≈ +80 | **+118** | ONE channel, `report()` / `onReport()`; 5 host-facing give-ups converted; 8 tests |
 | 6 split `filter-state.ts` | ✅ | ≈ 0 | **+25** | 548 → 324 + 93 + 156. The +25 is two file headers; the budget was right |
 | test harness §13.2 | ✅ | ≈ −400 | **−113** | `window.__mount()` in the harness page; the toolbar spec 2,799 → 2,600. The other specs' mounts are not mechanically alike |
-| **arc** | | **≈ −800** | **+212** | code only; docs counted separately |
+| **arc** | | **≈ −800** | **+292** | code only; docs counted separately |
 
 ---
 
@@ -441,9 +442,17 @@ hand-written fields to 11 — every grid field it does not hold — and raising
 Status takes it out of the grid's scope while the grid chip draws greyed.
 `T-up-is-open-down-is-closed`.
 
-**Still open:** no UI gesture calls `move()` yet — raising goes through the
-header's own Add and `supersede()`, and the registry is TOLD the result. And the
-view's Add list does not yet MARK where each field currently lives.
+**Closed 2026-09-25.** Raising through the header's Add now calls `move()`,
+carries the grid's reading up onto the new header chip, and has both bars
+re-announce; lowering gives the grid chip its own kept picks back. The view's
+Add menu marks where each field lives — "Status  in Customer records".
+
+Finishing it found **a real data-layer bug**: `load()` skipped a request back to
+the last finished answer even while a DIFFERENT load was in flight, so raising
+Status in Firefox landed on 100 rows with the filter set and nothing asking
+again. Chromium had hidden it by batching. `T-in-flight-ticket-discards-stale`.
+A first fix in the app — waiting for the value to land — was only covering for
+it, and came out once the real one was in.
 
 `move()` matters. "Add to view" and "remove from the data bar" are one gesture
 and two writes, and a UI that does them separately is a UI that can be

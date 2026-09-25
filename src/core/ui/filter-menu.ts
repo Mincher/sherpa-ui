@@ -23,6 +23,8 @@ export interface FilterMenuItem {
   label?: string;
   selected?: boolean;
   available?: boolean;
+  /** A second fact the row shows, muted — where a filter lives now. */
+  note?: string;
 }
 
 /** Enough of a filter definition to draw its menu. */

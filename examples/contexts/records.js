@@ -1,7 +1,11 @@
 /**
- * The records / CRUD-table Context. init(root) binds the grid, quick-filter
- * toolbar and pagination inside `root` to ONE DataSource. Nav/header are shared
- * and live in index.html.
+ * records.js — the Records Context: a customer grid, its filters, and CRUD.
+ *
+ * `init(root)` binds the grid, its filter bar and pagination inside `root` to
+ * ONE DataSource. The nav and the header are shared and live in index.html.
+ *
+ * Map:
+ * - init — bind this Context to its source and wire every control; returns nothing
  */
 import {
   DataSource, VIEW_SCOPE, SherpaToast, persistView, viewOptions, onViewPicked,
@@ -272,13 +276,23 @@ export async function init(root, { session } = {}) {
       : c.type === 'date' ? { kind: 'date' }
       : textFacts(c.field)),
   });
+  /** Each scope's name AS A READER SEES IT — the panel's sections and the
+   *  Add notes read this, so the two cannot spell it differently. */
+  const SCOPE_LABELS = { [VIEW_SCOPE]: 'App header', data: 'Customer records' };
+
   /** What a scope may still add: the fields it HAS, less what it holds.
    *  COLUMNS only, so Group and Sort are never offered at the view — they
    *  arrange one component. TRAP T-a-bar-offers-only-what-its-scope-holds
    *  TRAP T-group-and-sort-are-component-scope */
   const addable = (scope, taken) => source.fields(scope)
     .filter((f) => !taken.has(f) && byField.has(f))
-    .map((f) => fieldDef(byField.get(f)));
+    .map((f) => {
+      /* WHERE IT LIVES NOW, when that is somewhere else — adding it here MOVES
+         it, and the reader should know before ticking. */
+      const at = source.scopeOf(f);
+      const note = at && at !== scope ? `in ${SCOPE_LABELS[at] ?? at}` : undefined;
+      return { ...fieldDef(byField.get(f)), ...(note ? { note } : {}) };
+    });
 
   const DATA_AVAILABLE = addable('data', heldSomewhere).map((d) => ({ ...d, type: 'data' }));
   qft.available(DATA_AVAILABLE);
@@ -351,7 +365,7 @@ export async function init(root, { session } = {}) {
         /* The CONTENT's own name, not "this context" — a reader with two grids
            on one page has to know which one a section answers for.
            TRAP T-a-scope-is-named-for-its-content */
-        label: 'Customer records',
+        label: SCOPE_LABELS.data,
         /* WHAT THE BAR HOLDS NOW, not the list it was born with. `DATA_FILTERS`
            never learns about a removal or an add, so the panel kept drawing a
            field the reader had taken off and never drew one they added.
@@ -707,10 +721,16 @@ export async function init(root, { session } = {}) {
        `setChipReading` is the only write path that can carry rows.
        TRAP T-a-conditioned-chip-answers-with-its-clause */
     // SILENT writes, so none of them echoes back as another change.
-    qft.setChipReading(field, {
-      picked,
-      ...(state.conditions.length ? { conditions: state.conditions } : {}),
-    });
+    /* …but NEVER into a SUPERSEDED chip. The view owns that field now, and the
+       chip keeps the reader's picks for when the view lets go — writing the
+       grid's now-empty answer into it threw them away on every raise.
+       TRAP T-a-superseded-chip-suspends-it-is-never-removed */
+    if (!(qft.superseded ?? []).includes(field)) {
+      qft.setChipReading(field, {
+        picked,
+        ...(state.conditions.length ? { conditions: state.conditions } : {}),
+      });
+    }
     /* The grid's heading takes a ready CLAUSE, which is the one shape that
        carries either answer. */
     grid.setColumnFilter(field, stateClause(state) ?? null);
@@ -871,9 +891,11 @@ export async function init(root, { session } = {}) {
     source.hold('data', (qft.heldIds ?? []).filter((id) => !raised.includes(id)));
     /* The App Header owns these fields now, and the chips below say so rather
        than going quietly grey. TRAP T-an-inactive-chip-says-where-its-filter-went */
-    qft.supersede(raised, 'App header');
+    qft.supersede(raised, SCOPE_LABELS[VIEW_SCOPE]);
     // The bar's own filters changed shape, so re-read them.
     pushChips();
+    // The header's Add notes say where each field lives — which just changed.
+    header?.available(addable(VIEW_SCOPE, viewHeld()));
   };
 
   header?.addEventListener('quick-filter-change', (e) => {
@@ -892,9 +914,37 @@ export async function init(root, { session } = {}) {
     source.apply(readings, { reach: 'component', key: 'global' });
   }, { signal });
 
-  // A field ARRIVING at or LEAVING EITHER bar changes which scope owns it.
+  /* RAISING CARRIES THE ANSWER. A field the view takes from a component keeps
+     what the reader picked there. Without this the new header chip arrived
+     EMPTY and the grid's went grey, while the rows stayed filtered by a pick
+     no visible chip showed. TRAP T-up-is-open-down-is-closed */
+  const twoFrames = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+  header?.addEventListener('filter-add', async (e) => {
+    const headerBar = header.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
+    // READ FIRST — once superseded, the grid's readings skip the field.
+    const below = qft.readings ?? {};
+    const carried = [];
+    for (const id of e.detail?.ids ?? []) {
+      const field = headerField(id);
+      const from = field ? source.scopeOf(field) : null;
+      if (!from || from === VIEW_SCOPE) continue;
+      source.move(field, from, VIEW_SCOPE);
+      if (below[field]) carried.push([id, below[field]]);
+    }
+    syncScopes();
+    // The grid re-announces WITHOUT the raised field, so its selection clears.
+    qft.report();
+    if (!carried.length) return;
+    /* The new chip's menu stamps its rows a frame or two after it lands.
+       TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
+    await twoFrames();
+    for (const [id, reading] of carried) headerBar?.setChipReading(id, reading);
+    headerBar?.report();
+  }, { signal });
+  /* LOWERING lets the field go: the component's chip comes back with its OWN
+     kept picks. TRAP T-a-superseded-chip-suspends-it-is-never-removed */
+  header?.addEventListener('filter-remove', () => { syncScopes(); qft.report(); }, { signal });
   for (const event of ['filter-add', 'filter-remove']) {
-    header?.addEventListener(event, syncScopes, { signal });
     qft.addEventListener(event, syncScopes, { signal });
   }
   /* AFTER the grid bar has its list — at init it has none yet, and an empty

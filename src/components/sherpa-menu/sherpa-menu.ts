@@ -35,6 +35,8 @@ export interface MenuItem {
   /** Whether a remaining row carries it. Recorded, never drawn: every item is
    *  listed the same way and the checkbox is the only signal. */
   available?: boolean;
+  /** A SECOND fact, drawn muted after the label — where a filter lives now. */
+  note?: string;
 }
 
 /** A composed `sherpa-input-text`: it carries a value, and a select variant
@@ -742,6 +744,13 @@ export class SherpaMenu extends SherpaElement {
       box.checked = !!item.selected;
       if (single) box.name = name;
       row.querySelector('.menu-row-label')!.textContent = item.label ?? item.value;
+      /* AN ATTRIBUTE, drawn by CSS: the row is light DOM, and `::slotted` cannot
+         reach its children — only the row itself and its pseudo-elements.
+         Said to assistive tech too, since generated content is not reliably. */
+      if (item.note) {
+        row.dataset['note'] = item.note;
+        box.setAttribute('aria-description', item.note);
+      }
       return row;
     };
 
