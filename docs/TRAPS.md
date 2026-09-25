@@ -7784,19 +7784,21 @@ nothing, and `fx` announces as noise.
 
 ### T-an-active-chip-is-heavier-and-more-strongly-drawn
 
-An ON filter chip is `font-weight: medium` (500) and a `1px` border; an off one
-is 400 and `0.5px`.
+An ON filter chip takes a `1px` border; an off one is `0.5px`. It does **not**
+change weight.
 
 Colour alone was carrying the whole on/off signal, and on a bar of twelve chips
 a reader scanning for "which of these is doing something" had one channel to
-read. Weight and stroke are the other two, and they survive a colour-blind
-reader and a bad monitor.
+read. The stroke is the second, and it survives a colour-blind reader and a bad
+monitor.
 
-Will, 2026-09-24: "I think I'd like to increase the font weight (emphasised
-token?) and border thickness (1px) on active chips."
+Will, 2026-09-24: *"I think I'd like to increase the font weight (emphasised
+token?) and border thickness (1px) on active chips."*
 
-`--sherpa-font-weight-medium` is the emphasis step — 500, between the body 400
-and the semibold 600 the count badge already uses.
+**The weight half was reverted, 2026-09-25.** Will: *"Let's remove the increase
+in filter chip text weight when active. It's a bit annoying."* Text that
+changes weight as it toggles re-flows its own chip, so a bar of twelve shifts
+under the pointer — which the stroke does not do. The stroke stays.
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
 

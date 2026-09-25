@@ -84,15 +84,13 @@
 :is(.body, .caret):active { background: var(--sherpa-style-surface-base-2, #b3b3c3); }
 
 /* ── ON ──────────────────────────────────────────────────────────────────
- * An ACTIVE chip is heavier and more strongly drawn than an off one. The
- * Style mode gives it the surface and the hue; these two say "this one is
- * doing something" at a glance across a bar of twelve.
+ * An ACTIVE chip is more strongly DRAWN than an off one. The Style mode gives
+ * it the surface and the hue; the stroke says "this one is doing something"
+ * at a glance across a bar of twelve.
+ * NO weight change — see the trap.
  * TRAP T-an-active-chip-is-heavier-and-more-strongly-drawn */
 :host([data-current]) :is(.body, .caret) {
   border-width: var(--sherpa-border-width-sm, 1px);
-}
-:host([data-current]) .body {
-  font-weight: var(--sherpa-font-weight-medium, 500);
 }
 
 /* A CONDITIONED chip keeps the active FILL — on must read as on — and takes
