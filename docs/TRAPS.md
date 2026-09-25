@@ -8412,6 +8412,8 @@ column in `data-column`; a menu, where there is one, is the answer.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-organise-chip-never-amber.spec.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+- Site: `src/core/ui/filter-kind.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
 ### T-off-is-not-forgotten
 

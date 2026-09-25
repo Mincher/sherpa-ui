@@ -12,6 +12,7 @@ import {
   fieldState, filterFace, type FieldCondition, type FilterFace, type FilterState,
 } from '../../core/data/filter-state.js';
 import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
+import { arranges, FILTER_KINDS, type FilterKind } from '../../core/ui/filter-kind.js';
 import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
 // Floating, so the count tooltip escapes the toolbar's clipping chip run.
 import '../sherpa-tooltip/sherpa-tooltip.js';
@@ -75,20 +76,20 @@ export class SherpaQuickFilter extends SherpaElement {
        gesture — group toggles, sort cycles asc → desc → off.
        "Organise" is NOT a kind: it is a heading a panel draws above the two.
        TRAP T-a-chip-knows-what-kind-it-is */
-    'data-kind': { type: 'enum', kind: 'style', values: ['group', 'sort'] },
+    'data-kind': { type: 'enum', kind: 'style', values: [...FILTER_KINDS] },
     /* WHICH COLUMN a group or sort chip arranges by, for a host that draws the
        choice without a menu. A menu, where there is one, is the answer.
        TRAP T-a-chip-knows-what-kind-it-is */
     'data-column': { type: 'string', kind: 'style' },
+    /* WHICH WAY a sort chip points. It REMEMBERS the direction; `data-current`
+       says whether it runs, so a suspended sort resumes the way it was.
+       TRAP T-off-is-not-forgotten */
+    'data-direction': { type: 'enum', kind: 'style', values: ['asc', 'desc'] },
   } as const;
 
   // data-label is hand-written: an absent attribute must leave the template's
   // own default label alone.
-  static override observed = [
-    'data-label', 'data-icon-start', 'data-current',
-    // A host writes these; the chip draws itself from them.
-    'data-kind', 'data-direction', 'data-column',
-  ];
+  static override observed = ['data-label', 'data-icon-start', 'data-current'];
 
   override onRender(): void {
     this.#syncText();
@@ -262,8 +263,7 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** GROUP or SORT: it arranges rows rather than choosing them. */
   #arranges(): boolean {
-    const kind = this.dataset['kind'];
-    return kind === 'group' || kind === 'sort';
+    return arranges(this.dataset['kind'] as FilterKind);
   }
 
   /**

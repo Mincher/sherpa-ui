@@ -7,6 +7,7 @@
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import { ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
+import { arranges, kindOf, picksOne } from '../../core/ui/filter-kind.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-container/sherpa-container.js';
 import '../sherpa-container-header/sherpa-container-header.js';
@@ -376,8 +377,9 @@ export class SherpaFilterPanel extends SherpaElement {
        it themselves — this panel only draws them under a heading.
        "Organise" is that heading, not a kind.
        TRAP T-a-chip-knows-what-kind-it-is */
-    if (def.id === 'group' || def.id === 'sort') {
-      one.dataset['kind'] = def.id;
+    const kind = kindOf(def);
+    if (arranges(kind)) {
+      one.dataset['kind'] = kind;
       /* NO MENU HERE means the choice is drawn as options, so the column has
          to be named. TRAP T-a-chip-knows-what-kind-it-is */
       const on = (def.options ?? []).find((o) => o.selected)?.value;
@@ -412,8 +414,10 @@ export class SherpaFilterPanel extends SherpaElement {
        controls a toolbar already shows.
        Every other field, single-select included, EXPLODES into a run: the
        whole point of the panel is that a reader sees the values without
-       opening anything. TRAP T-only-group-and-sort-stay-one-chip */
-    const single = def.select === 'single';
+       opening anything. TRAP T-only-group-and-sort-stay-one-chip
+       WHAT IT IS, asked once. TRAP T-a-chip-knows-what-kind-it-is */
+    const kind = kindOf(def);
+    const single = picksOne(kind);
 
     const box = this.clone('template.field-tpl');
     if (!box) return null;
@@ -421,7 +425,7 @@ export class SherpaFilterPanel extends SherpaElement {
     box.setAttribute('data-field', def.id);
     box.setAttribute('data-scope', scope);
     // A PRESETS section has no field to clear or remove.
-    const organise = def.id === 'group' || def.id === 'sort';
+    const organise = arranges(kind);
     // Set BEFORE the chip path returns, or it never lands.
     box.toggleAttribute('data-single', single && !isPresets);
     box.toggleAttribute('data-chip', organise || !!def.asChip);
@@ -578,7 +582,7 @@ export class SherpaFilterPanel extends SherpaElement {
        different questions. Sweeping the container unticked Group whenever Sort
        was clicked, and left the grid grouped by a chip that read OFF.
        TRAP T-a-section-heading-is-not-a-field */
-    if (held.def.select === 'single') {
+    if (picksOne(kindOf(held.def))) {
       for (const other of held.values.querySelectorAll<HTMLElement>('.value')) {
         if (other !== one && this.#heldOfChip(other) === held) {
           other.removeAttribute('data-current');

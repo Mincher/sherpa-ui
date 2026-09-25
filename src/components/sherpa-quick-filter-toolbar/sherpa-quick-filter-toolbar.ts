@@ -7,6 +7,7 @@ import { DATA_PROPS, SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-el
 import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
 import { sortDirectionFrom } from '../../core/data/cycle.js';
 import { allow, type AllowList } from '../../core/data/allow.js';
+import { hasOwnBody, kindOf, picksOne, type FilterKind } from '../../core/ui/filter-kind.js';
 import {
   DEFAULT_OP, OPS_FOR_TYPE, OP_TAKES,
   type Filter, type FilterOp,
@@ -42,8 +43,12 @@ export interface QuickFilterDef {
   /** Values this chip filters by — a menu of checkbox or radio rows. */
   options?: QuickFilterOption[];
   select?: 'single' | 'multiple';
-  /** TRAP T-number-and-date-lead-with-a-range-switch */
-  kind?: 'values' | 'number' | 'date';
+  /** WHAT THIS FILTER IS — see `core/ui/filter-kind.ts`. A def that leaves it
+   *  out has it worked out from `select`, `conditions` and whether there are
+   *  options, in ONE place rather than at fifteen.
+   *  TRAP T-number-and-date-lead-with-a-range-switch
+   *  TRAP T-a-chip-knows-what-kind-it-is */
+  kind?: FilterKind | 'values';
   /** A number filter's slider ends and field clamp. Default 0..100. */
   min?: number;
   max?: number;
@@ -764,13 +769,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         chip.setAttribute('data-locked', '');
         chip.setAttribute('data-current', '');
       }
-      /* A date or number chip carries no `options`, so kind stamps the menu
-         too — and so does CONDITIONS: a high-cardinality text column (an email,
-         a name) can only be asked "contains", never ticked from a list of 240.
-         Without this it fell through to the no-menu branch and became a
-         TOGGLE. TRAP T-a-condition-only-field-still-has-a-menu */
-      const hasOwnContent = f.kind === 'date' || f.kind === 'number' || !!f.conditions;
-      if (f.options?.length || hasOwnContent) this.#addMenu(chip, f, prior?.picked);
+      /* THE KIND DECIDES. A boolean has nothing to open; everything else does
+         — a date or number carries its own body, and so does a conditional,
+         which can only be asked "contains" and never ticked from a list of 240.
+         TRAP T-a-condition-only-field-still-has-a-menu
+         TRAP T-a-chip-knows-what-kind-it-is */
+      const kind = kindOf(f);
+      if (kind !== 'boolean' || f.conditions) this.#addMenu(chip, f, prior?.picked);
       if (f.customValue) {
         // `data-custom` makes it findable: it is in neither `active` nor `values`.
         chip.setAttribute('data-custom', '');
@@ -780,7 +785,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         customLabels.push([chip, f.customValue]);
       }
       list.appendChild(chip);
-      if (f.kind === 'date') {
+      if (kind === 'date') {
         chip.setAttribute('data-full-value', '');
         this.#syncDateLabel(chip);
       }
@@ -810,16 +815,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const menu = this.clone('template.qf-menu-tpl');
     if (!menu) return;
 
-    const single = def.select === 'single';
+    /* WHAT IT IS, asked once. TRAP T-a-chip-knows-what-kind-it-is */
+    const kind = kindOf(def);
+    const one = picksOne(kind);
     menu.setAttribute('data-heading', def.label);
     // One prototype serves both: a sherpa-button names the same slot as a chip.
     menu.setAttribute('slot', 'menu');
-    menu.setAttribute('data-select', single ? 'single' : 'multiple');
+    menu.setAttribute('data-select', one ? 'single' : 'multiple');
     // TRAP T-commit-follows-select-mode. A NUMBER defaults to a range — the same
     // default `#addRangeSwitch` applies.
-    const asRange = def.range ?? def.kind === 'number';
-    const picksOne = (def.kind === 'date' || def.kind === 'number') && !asRange;
-    const defers = def.commit ?? (!single && !picksOne);
+    const asRange = def.range ?? kind === 'number';
+    const defers = def.commit ?? (!one && !(hasOwnBody(kind) && !asRange));
     if (defers) menu.setAttribute('data-commit', '');
     // TRAP T-every-chip-menu-gets-clear-and-search — a persistent chip gets no Clear.
     if (!def.persistent) menu.setAttribute('data-clearable', '');
@@ -830,7 +836,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
     // Field and two-ended slider both exist from the start, CSS reveals one, so
     // flipping back keeps what was typed on the other side.
-    if (def.kind === 'number') {
+    if (kind === 'number') {
       // No list to search, only a value to type or drag.
       menu.removeAttribute('data-search');
       this.#addRangeSwitch(menu, def);
@@ -860,7 +866,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
 
     // A DATE chip's menu holds a CALENDAR instead of value rows.
-    if (def.kind === 'date') {
+    if (kind === 'date') {
       // FIRST: the switch decides what the calendar below it is.
       this.#addRangeSwitch(menu, def);
       const calTpl = this.$<HTMLTemplateElement>('template.qf-calendar-tpl');
@@ -975,7 +981,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const sw = row.querySelector('sherpa-switch');
     /* A NUMBER opens as a RANGE, a DATE keeps what it declared; an explicit
        `range: false` still wins. TRAP T-a-default-is-not-an-override */
-    if (def.range ?? def.kind === 'number') {
+    if (def.range ?? kindOf(def) === 'number') {
       sw?.setAttribute('checked', '');
       menu.setAttribute('data-range', '');
     }

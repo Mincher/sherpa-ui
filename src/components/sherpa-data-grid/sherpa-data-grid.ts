@@ -7,6 +7,7 @@
  *
  * @see TRAP T-grid-reports-never-combines
  */
+import { kindOf } from '../../core/ui/filter-kind.js';
 import {
   DATA_PROPS, SHARED_PROPS, SherpaElement, coerceNum, clampNum, markNeedle,
 } from '../../core/ui/sherpa-element.js';
@@ -484,7 +485,9 @@ export class SherpaDataGrid extends SherpaElement {
       /* VALUES, CONDITIONS, OR BOTH — the column says which, because how many
          values is too many is a question about the data.
          TRAP T-a-filter-answers-by-values-conditions-or-both */
-      if (col.conditions === 'only') {
+      /* WHAT IT IS, from the ONE derivation the chips read.
+         TRAP T-a-chip-knows-what-kind-it-is */
+      if (kindOf(col) === 'conditional') {
         menu.setAttribute('data-conditions-only', '');
         menu.setAttribute('data-mode', 'condition');
       }
@@ -510,7 +513,7 @@ export class SherpaDataGrid extends SherpaElement {
       /* NO WALL OF ROWS. A conditions-only column has no list to tick, so
          stamping its 240 values is work nobody sees.
          TRAP T-a-wall-of-values-is-not-a-filter */
-      if (col.conditions !== 'only') this.#addColumnValues(menu, col.field, held);
+      if (kindOf(col) !== 'conditional') this.#addColumnValues(menu, col.field, held);
     }
 
     // Restore the held clause — the header is rebuilt per sort and keystroke,

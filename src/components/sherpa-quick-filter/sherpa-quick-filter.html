@@ -55,6 +55,12 @@
                     asc / desc / off — and report it themselves. "Organise" is
                     not a kind; it is a heading a panel may draw above the two.
                     TRAP T-a-chip-knows-what-kind-it-is
+    data-column     which column a group or sort chip arranges by, for a host
+                    that draws the choice without a menu. A menu, where there is
+                    one, is the answer.
+    data-direction  asc | desc — which way a sort chip POINTS. `data-current`
+                    says whether it runs, so a suspended sort resumes the way it
+                    was. TRAP T-off-is-not-forgotten
 
   Slots:
     (default)  the chip label

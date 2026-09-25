@@ -243,8 +243,11 @@ reads in words and badges; `bindSelection`. Tidiness, no behaviour change.
 
 ## 8. Rules for the work
 
-1. **Every step deletes more than it adds.** State the deletion in the commit
-   message. If it does not, the step is not done.
+1. **Every step either deletes more than it adds, or names the deletion it buys
+   and which step collects it.** State it in the commit message either way.
+   (Step 2 is the first: it is net +73, and it buys ~250 lines in step 4,
+   because two components cannot share a builder until they agree what a filter
+   IS. Writing the rule as an absolute was wrong.)
 2. **Move code, do not rewrite it.** The old code carries lessons — comments,
    TRAP citations, guards — that new code has to re-learn through bugs.
 3. **Pin the invariant before moving it.** Off-keeps-the-value regressed
