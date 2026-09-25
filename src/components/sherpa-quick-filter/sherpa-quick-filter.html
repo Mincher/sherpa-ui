@@ -49,10 +49,12 @@
                     definition's `persistent` flag. The view chip is the case —
                     you are always in SOME view, so the amber "on but filtering
                     by nothing" state is one it cannot be in.
-    data-organise   this chip ARRANGES rows — Group or Sort — it does not choose
-                    them. Set by the toolbar and the filter panel where the chip
-                    is built. Its menu picks a COLUMN, so it reads as zero values
-                    and would take the same amber warning; it never applies.
+    data-kind       WHAT THIS CHIP IS: group | sort. Both ARRANGE rows rather
+                    than choosing them, so they have no values to be empty of,
+                    and both own their gesture — group toggles, sort cycles
+                    asc / desc / off — and report it themselves. "Organise" is
+                    not a kind; it is a heading a panel may draw above the two.
+                    TRAP T-a-chip-knows-what-kind-it-is
 
   Slots:
     (default)  the chip label

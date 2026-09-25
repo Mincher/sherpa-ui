@@ -5,7 +5,7 @@
  */
 import { DATA_PROPS, SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
-import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
+import { sortDirectionFrom } from '../../core/data/cycle.js';
 import { allow, type AllowList } from '../../core/data/allow.js';
 import {
   DEFAULT_OP, OPS_FOR_TYPE, OP_TAKES,
@@ -795,6 +795,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       void Promise.resolve(el.rendered).then(() => { el.valueLabel = text; });
     }
 
+    /* THE ADD MENU LISTS WHAT IS HELD, so it follows the run. `populate()` is
+       deferred, so a host calling `available()` first had nothing to tick.
+       TRAP T-the-add-menu-is-the-whole-list */
+    this.#renderAvailable();
+
     // A ResizeObserver fires only on a SIZE change; populating is not one, and
     // what fits just changed.
     this.#onResize();
@@ -1080,26 +1085,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // Composed → find the originating chip on the path.
     const path = event.composedPath();
 
-    // The SORT chip's body is a TRI-STATE toggle; the column only changes from
-    // the menu. TRAP T-sort-is-tri-state
-    const sortChip = path.find(
-      (n): n is HTMLElement => n instanceof HTMLElement && n.dataset['id'] === 'sort',
-    );
-    if (sortChip?.classList.contains('organise-chip')) {
-      // IMMEDIATE — see #onOrganiseChange.
+    /* GROUP and SORT handle their OWN body click and report it themselves —
+       the chip knows what kind it is. This bar only stops the click reading as
+       a filter change. TRAP T-a-chip-knows-what-kind-it-is */
+    if (path.some((n) => n instanceof HTMLElement && n.classList.contains('organise-chip'))) {
       event.stopImmediatePropagation();
-      this.#cycleSort(sortChip);
-      return;
-    }
-
-    /* Its own branch, because the lookup below wants `.chip` and an organise chip
-       is a `.organise-chip`. TRAP T-group-chip-body-toggles-grouping */
-    const groupChip = path.find(
-      (n): n is HTMLElement => n instanceof HTMLElement && n.dataset['id'] === 'group',
-    );
-    if (groupChip?.classList.contains('organise-chip')) {
-      event.stopImmediatePropagation();
-      this.#toggleGroup(groupChip);
       return;
     }
 
@@ -1138,7 +1128,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // No field, no sort — off, keeping whatever pick it had.
     if (!field) {
       chip.removeAttribute('data-current');
-      this.#syncSortLabel(chip);
       return;
     }
 
@@ -1153,7 +1142,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
     if (landed) chip.toggleAttribute('data-current', !suspended);
     else this.#afterMenu(chip, () => this.#syncSortFromAttrs());
-    this.#syncSortLabel(chip);
   }
 
   /** Tick one column's radio. False when the menu has not stamped its rows. */
@@ -1194,7 +1182,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // No field means ungrouped — SUSPENDED, and the pick is kept.
     if (!field) {
       chip.removeAttribute('data-current');
-      this.#syncGroupLabel(chip);
       return;
     }
 
@@ -1202,16 +1189,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
     if (this.#tickColumn(chip, field)) chip.toggleAttribute('data-current', true);
     else this.#afterMenu(chip, () => this.#syncGroupFromAttrs());
-    this.#syncGroupLabel(chip);
-  }
-
-  /** Name the grouped column in the Group chip's caret, or leave it blank. */
-  #syncGroupLabel(chip: HTMLElement): void {
-    const column = this.#organise.group?.find((c) => c.field === this.#menuValue('group'));
-    const target = chip as HTMLElement & { valueLabel?: string };
-    if ('valueLabel' in target) {
-      target.valueLabel = chip.hasAttribute('data-current') ? column?.label ?? '' : '';
-    }
   }
 
   /** Report the whole filter state — the active toggle chips and every menu chip's picks. */
@@ -1419,64 +1396,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     return out;
   }
 
-  /**
-   * Flip grouping from the chip's body. SUSPEND, NEVER CLEAR — the radio keeps
-   * its column.
-   */
-  #toggleGroup(chip: HTMLElement): void {
-    /* The chip is LOCKED, so this host does the flip. On with nothing ever
-       picked lights a chip that groups nothing, and the host writes
-       `data-group-field=""` straight back — a flicker. No pick is not a
-       suspended pick. TRAP T-an-organise-chip-has-no-values */
-    const on = !chip.hasAttribute('data-current') && !!this.#menuValue('group');
-    chip.toggleAttribute('data-current', on);
-    this.#syncGroupLabel(chip);
-    // REPORTS — the host owns the grouping and writes `data-group-field` back.
-    this.emit('group-change', { field: this.groupField });
-  }
-
-  /** Advance the sort chip: asc → desc → suspended → asc. */
-  #cycleSort(chip: HTMLElement): void {
-    /* ONE CYCLE, in `core/cycle.ts` — the same function the grid's column header
-       runs; written separately the two drifted. TRAP T-one-cycle-for-one-value
-
-       The chip is LOCKED, so `data-current` still says what is LIVE. */
-    const wasLive = chip.hasAttribute('data-current');
-    const column = this.#menuValue('sort') ?? '';
-    /* NO COLUMN, NOTHING TO CYCLE — the same guard #toggleGroup has. Without
-       it `nextSort('', '', 'asc')` answers `desc` and the chip lights up
-       sorting by nothing. TRAP T-an-organise-chip-has-no-values */
-    if (!column) {
-      chip.removeAttribute('data-current');
-      this.#syncSortLabel(chip);
-      return;
-    }
-    /* SUSPENDED is a NULL direction — `data-direction` REMEMBERS the direction,
-       not whether it runs. */
-    const held = wasLive ? (sortDirectionFrom(chip.dataset['direction']) ?? 'asc') : null;
-    const next = nextSort(column, column, held);
-
-    chip.toggleAttribute('data-current', next.direction !== null);
-    // A suspended chip rewinds to `asc` — that is where a resume starts.
-    chip.dataset['direction'] = next.direction ?? 'asc';
-
-    this.#syncSortLabel(chip);
-    this.emit('sort-change', { field: this.sortField, direction: this.sortDirection });
-  }
-
-  /** Show the sort chip's state: the CHIP says "Sort", the COLUMN reads in the caret. */
-  #syncSortLabel(chip: HTMLElement): void {
-    const live = chip.hasAttribute('data-current');
-    const desc = chip.dataset['direction'] === 'desc';
-    const column = this.#organise.sort?.find((c) => c.field === this.#menuValue('sort'));
-    chip.setAttribute('data-label', 'Sort');
-    const target = chip as HTMLElement & { valueLabel?: string };
-    // A suspended sort keeps its column, so the caret still names it.
-    if ('valueLabel' in target) target.valueLabel = column?.label ?? '';
-    const { sortNone, sortAsc, sortDesc } = SherpaQuickFilterToolbar.#icons;
-    chip.setAttribute('data-icon-start', !live ? sortNone : desc ? sortDesc : sortAsc);
-  }
-
   /** available([...]) — the filters the Add chip offers, over the populate() set. */
   available(defs: QuickFilterDef[]): void {
     this.#available = Array.isArray(defs) ? defs : [];
@@ -1541,9 +1460,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #renderAvailable(): void {
     const add = this.$<HTMLElement>('.add-btn');
     if (!add) return;
-    // Nothing left to add — disabled, not an empty list.
     const offer = allow(this.#available, this.#allowedFields);
-    const any = offer.length > 0;
+    /* THE WHOLE LIST, not what is LEFT. Ticked is held: a tick adds a chip and
+       an untick removes it, so a reader never hunts for where a filter goes.
+       Only a REMOVABLE chip is listed — a tick that cannot be cleared is a lie.
+       TRAP T-the-add-menu-is-the-whole-list */
+    const held = allow(this.#filters.filter((f) => f.removable), this.#allowedFields);
+    const any = offer.length > 0 || held.length > 0;
     this.toggleAttribute('data-can-add', any);
     add.toggleAttribute('disabled', !any);
     add.querySelector('sherpa-menu')?.remove();
@@ -1555,7 +1478,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // TRAP T-add-menu-batches — the one menu that KEEPS Apply: each tick stamps
       // a chip, so per-tick apply rebuilds the run mid-selection.
       commit: true,
-      options: offer.map((f) => ({ value: f.id, label: f.label })),
+      options: [
+        ...held.map((f) => ({ value: f.id, label: f.label, selected: true })),
+        ...offer.map((f) => ({ value: f.id, label: f.label })),
+      ],
     });
     // Its host is already in the page, so the items can go now.
     this.#flushItems();
@@ -1648,8 +1574,16 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const add = this.pathFind(event, '.add-btn');
     if (!add) return;
     event.stopImmediatePropagation();
-    const picked = (event as CustomEvent).detail?.values as string[] | undefined;
-    if (picked?.length) this.#addFilters(picked);
+    /* WHAT CHANGED is the difference between what the menu now says and what
+       the bar is holding — an unticked row is a REMOVE, and that is the only
+       way to take a chip off from here.
+       TRAP T-the-add-menu-is-the-whole-list */
+    const want = new Set(((event as CustomEvent).detail?.values ?? []) as string[]);
+    const held = new Set(this.#filters.filter((f) => f.removable).map((f) => f.id));
+    const added = [...want].filter((id) => !held.has(id));
+    const gone = [...held].filter((id) => !want.has(id));
+    for (const id of gone) this.#removeFilter(id);
+    if (added.length) this.#addFilters(added);
   };
 
   /**
@@ -1745,7 +1679,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       for (const input of chip.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
       if (chip.dataset['id'] === 'sort') {
         chip.dataset['direction'] = 'asc';
-        this.#syncSortLabel(chip);
       }
     }
     this.emit('filter-clear', {});
@@ -1854,11 +1787,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (!chip) throw new Error('sherpa-quick-filter-toolbar: template.qf-tpl is missing or empty');
     chip.classList.remove('chip');
     chip.classList.add('organise-chip');
-    /* ARRANGES rows, never chooses them. Its menu holds COLUMNS, so those rows
-       are not the chip's values — the same reason the More chip is locked, and
-       the host does the flip. TRAP T-an-organise-chip-has-no-values */
-    chip.setAttribute('data-organise', '');
-    chip.setAttribute('data-locked', '');
+    /* THE CHIP KNOWS WHAT IT IS, and owns its own gesture: group toggles,
+       sort cycles. This bar only places it and hears what it reports.
+       "Organise" is the zone it sits in, not a kind.
+       TRAP T-a-chip-knows-what-kind-it-is */
+    chip.dataset['kind'] = id;
     chip.dataset['id'] = id;
     chip.setAttribute('data-label', label);
     chip.setAttribute('data-icon-start', icon);
@@ -1916,7 +1849,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (id === 'group') this.emit('group-change', { field: this.groupField });
     else if (id === 'sort') {
       // Resumes in the remembered direction — the tri-state cycle is body-only.
-      this.#syncSortLabel(chip);
       this.emit('sort-change', { field: this.sortField, direction: this.sortDirection });
     }
   };

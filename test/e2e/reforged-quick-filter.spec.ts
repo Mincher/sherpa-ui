@@ -669,3 +669,80 @@ test('a superseded chip says where its field is filtered instead', async ({ page
   // And it goes back when the field is free again.
   expect(r.released).toBe('active, churned');
 });
+
+/**
+ * OFF IS A STATE, NOT A DELETE — for every kind of chip.
+ *
+ * It regressed because TWO hosts painted the chip: one kept the column when it
+ * was switched off, the other blanked it. Group forgot what Sort remembered,
+ * from one ternary four methods away. The chip draws itself now; this pins the
+ * rule for all three kinds so neither can drift again.
+ *
+ * TRAP T-off-is-not-forgotten
+ */
+test('switching a chip OFF keeps what it holds — values, and the column', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.replaceChildren();
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    /** A chip of `kind`, with a menu of columns and one of them picked. */
+    const make = (kind: string | null, picked: string): HTMLElement => {
+      const chip = document.createElement('sherpa-quick-filter') as HTMLElement & {
+        valueLabel?: string };
+      if (kind) chip.dataset['kind'] = kind;
+      chip.setAttribute('data-label', kind ?? 'Status');
+      chip.setAttribute('data-menu', '');
+      const menu = document.createElement('sherpa-menu');
+      menu.setAttribute('slot', 'menu');
+      for (const v of ['name', 'email']) {
+        const label = document.createElement('label');
+        label.className = 'menu-row';
+        const input = document.createElement('input');
+        input.type = kind ? 'radio' : 'checkbox';
+        input.name = kind ?? 'status';
+        input.value = v;
+        input.checked = v === picked;
+        label.append(input, document.createTextNode(v));
+        menu.append(label);
+      }
+      chip.append(menu);
+      root.append(chip);
+      return chip;
+    };
+
+    const group = make('group', 'name');
+    const sort = make('sort', 'email');
+    const value = make(null, 'name');
+    await settle();
+
+    const held = (c: HTMLElement) => ({
+      on: c.hasAttribute('data-current'),
+      label: (c as HTMLElement & { valueLabel?: string }).valueLabel ?? '',
+      ticked: [...c.querySelectorAll<HTMLInputElement>('[slot="menu"] input:checked')]
+        .map((i) => i.value).join(','),
+    });
+    const body = (c: HTMLElement) => c.shadowRoot!.querySelector<HTMLElement>('.body')!;
+
+    // ON: group and sort apply their column; the value chip is ticked.
+    body(group).click(); body(sort).click();
+    value.setAttribute('data-current', '');
+    await settle();
+    const on = { group: held(group), sort: held(sort), value: held(value) };
+
+    // OFF: group toggles, sort cycles desc then suspended, the value chip flips.
+    body(group).click();
+    body(sort).click(); body(sort).click();
+    value.removeAttribute('data-current');
+    await settle();
+    return { on, off: { group: held(group), sort: held(sort), value: held(value) } };
+  });
+
+  expect(r.on.group).toEqual({ on: true, label: 'name', ticked: 'name' });
+  expect(r.on.sort.on).toBe(true);
+
+  // OFF — and every one of them still holds exactly what it held.
+  expect(r.off.group).toEqual({ on: false, label: 'name', ticked: 'name' });
+  expect(r.off.sort).toEqual({ on: false, label: 'email', ticked: 'email' });
+  expect(r.off.value.ticked).toBe('name');
+});

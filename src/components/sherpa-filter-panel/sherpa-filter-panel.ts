@@ -6,7 +6,6 @@
  * TRAP T-the-panel-is-the-toolbar-in-a-column
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
-import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
 import { ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-container/sherpa-container.js';
@@ -138,6 +137,12 @@ export class SherpaFilterPanel extends SherpaElement {
     this.$('.scopes')?.addEventListener('button-click', this.#onAction);
     this.$('.scopes')?.addEventListener('quick-filter-click', this.#onValueClick);
     this.$('.scopes')?.addEventListener('menu-change', this.#onAddCommit);
+    /* THE CHIP says WHAT changed; only this panel knows WHICH SCOPE it belongs
+       to, so it annotates and passes it on rather than working the
+       arrangement out again. TRAP T-a-chip-knows-what-kind-it-is */
+    for (const type of ['group-change', 'sort-change']) {
+      this.$('.scopes')?.addEventListener(type, this.#onArrange);
+    }
     this.#syncHeading();
     if (this.#scopes.length) this.#draw();
   }
@@ -288,18 +293,10 @@ export class SherpaFilterPanel extends SherpaElement {
             })),
           }, scope.scope, section);
           if (chip) {
-            if (kind === 'sort') {
-              chip.dataset['direction'] = scope.sortDirection ?? 'asc';
-              /* SEED THE CYCLE from what the scope said. Without this the first
-                 body click on a chip that arrived ON reported `asc` again
-                 instead of stepping to `desc`. */
-              this.#sortField = on ?? null;
-              this.#sortLive = !!on;
-              if (on) {
-                chip.setAttribute('data-icon-start', scope.sortDirection === 'desc'
-                  ? ORGANISE_ICONS.sortDesc : ORGANISE_ICONS.sortAsc);
-              }
-            }
+            /* SEED THE CYCLE and let the chip draw itself: `data-direction`
+               remembers the way, `data-current` (from `selected`, above) says
+               whether it runs. TRAP T-a-chip-knows-what-kind-it-is */
+            if (kind === 'sort') chip.dataset['direction'] = scope.sortDirection ?? 'asc';
             section.values.append(chip);
           }
         }
@@ -375,12 +372,17 @@ export class SherpaFilterPanel extends SherpaElement {
     if (def.icon) one.setAttribute('data-icon-start', def.icon);
     one.dataset['value'] = def.id;
     one.dataset['search'] = def.label.toLowerCase();
-    /* ARRANGES rows, never chooses them. Its menu holds COLUMNS, so those rows
-       are not the chip's values and this panel owns its state.
-       TRAP T-an-organise-chip-has-no-values */
-    const organise = def.id === 'group' || def.id === 'sort';
-    one.toggleAttribute('data-organise', organise);
-    one.toggleAttribute('data-locked', organise);
+    /* THE CHIP KNOWS WHAT IT IS. Group toggles, Sort cycles, and both report
+       it themselves — this panel only draws them under a heading.
+       "Organise" is that heading, not a kind.
+       TRAP T-a-chip-knows-what-kind-it-is */
+    if (def.id === 'group' || def.id === 'sort') {
+      one.dataset['kind'] = def.id;
+      /* NO MENU HERE means the choice is drawn as options, so the column has
+         to be named. TRAP T-a-chip-knows-what-kind-it-is */
+      const on = (def.options ?? []).find((o) => o.selected)?.value;
+      if (!def.menu && on) one.dataset['column'] = String(on);
+    }
     one.toggleAttribute('data-current', (def.options ?? []).some((o) => o.selected));
 
     const held: Held = { def, scope, box: section.box, values: section.values };
@@ -452,8 +454,8 @@ export class SherpaFilterPanel extends SherpaElement {
       one.setAttribute('data-label', def.label);
       one.dataset['value'] = def.id;
       one.dataset['search'] = def.label.toLowerCase();
-      one.toggleAttribute('data-organise', organise);
-      one.toggleAttribute('data-locked', organise);
+      // TRAP T-a-chip-knows-what-kind-it-is
+      if (organise) one.dataset['kind'] = def.id;
       one.toggleAttribute('data-current', options.some((o) => o.selected));
       values.append(one);
 
@@ -583,71 +585,23 @@ export class SherpaFilterPanel extends SherpaElement {
         }
       }
     }
-    /* GROUP and SORT are not filters, so they report at once and by their own
-       names — a filter waits for Apply, an arrangement does not.
-       TRAP T-group-and-sort-are-component-scope */
-    if (held.def.id === 'group' || held.def.id === 'sort') {
-      this.#organiseClick(held, one);
-    }
+    /* GROUP and SORT handle their own click and report it themselves — a
+       filter waits for Apply, an arrangement does not, and which it is depends
+       on WHAT THE CHIP IS, not on which container drew it.
+       TRAP T-a-chip-knows-what-kind-it-is */
     this.#syncAnswered(held);
   };
 
-  /**
-   * An Organise chip's BODY was clicked. The MENU picks the column; the body
-   * toggles Group, and CYCLES Sort — asc → desc → suspended → asc, the same
-   * three states the toolbar's chip steps through.
-   *
-   * The field comes from the MENU. `#picked` reads the chip's own `data-value`,
-   * which for these is the literal `group` / `sort` — so a body click reported
-   * `sort-change { field: 'sort' }` and the grid tried to sort by a column
-   * called "sort". TRAP T-an-organise-chip-is-named-for-its-job-not-its-field
-   */
-  #organiseClick(held: Held, chip: HTMLElement): void {
-    const field = this.#organiseField(held);
-    if (held.def.id === 'group') {
-      this.emit('group-change', {
-        scope: held.scope,
-        field: chip.hasAttribute('data-current') ? field : null,
-      });
-      return;
-    }
-    /* NO COLUMN, NOTHING TO CYCLE. Turning the chip on with an empty menu is
-       the on-but-filtering-nothing contradiction that paints AMBER, and a
-       reader who has not chosen a column has done nothing wrong.
-       TRAP T-an-organise-chip-is-named-for-its-job-not-its-field */
-    if (!field) {
-      chip.removeAttribute('data-current');
-      return;
-    }
-    /* THE CYCLE, from the data layer — one definition for every control that
-       steps it. TRAP T-a-chip-body-cycles-its-states */
-    const held_dir = sortDirectionFrom(chip.dataset['direction']);
-    const wasOn = this.#sortLive;
-    const next = nextSort(field ?? '', wasOn ? this.#sortField : null, wasOn ? held_dir : null);
-    this.#sortField = next.field;
-    this.#sortLive = next.direction !== null;
-    // A suspended chip rewinds to `asc` — that is where a resume starts.
-    chip.dataset['direction'] = next.direction ?? 'asc';
-    chip.toggleAttribute('data-current', next.direction !== null);
-    // The glyph says which way, or that it is off — the toolbar's three icons.
-    chip.setAttribute('data-icon-start', next.direction === null
-      ? ORGANISE_ICONS.sortNone
-      : next.direction === 'desc' ? ORGANISE_ICONS.sortDesc : ORGANISE_ICONS.sortAsc);
-    this.emit('sort-change', {
-      scope: held.scope,
-      field: next.direction === null ? null : next.field,
-      direction: next.direction ?? 'asc',
-    });
-  }
-
-  /** Which COLUMN an Organise chip's menu has picked. */
-  #organiseField(held: Held): string | null {
-    const menu = held.menu as (HTMLElement & { values?: string[] }) | undefined;
-    return menu?.values?.[0] ?? held.def.options?.find((o) => o.selected)?.value ?? null;
-  }
-
-  #sortField: string | null = null;
-  #sortLive = false;
+  /** A Group or Sort chip reported. Add the scope, and pass it on. */
+  #onArrange = (event: Event): void => {
+    const chip = this.#pathFind(event, '.value');
+    const held = chip ? this.#heldOfChip(chip) : undefined;
+    if (!held) return;
+    event.stopImmediatePropagation();
+    const detail = ((event as CustomEvent).detail ?? {}) as Record<string, unknown>;
+    this.emit(event.type, { ...detail, scope: held.scope });
+    this.#syncAnswered(held);
+  };
 
   #onAction = (event: Event): void => {
     const cond = this.#pathFind(event, '.field-conditional');

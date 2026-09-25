@@ -5,11 +5,14 @@
  * TRAP T-scope-does-not-stop-inheritance, TRAP T-icon-only-is-purely-css
  */
 import { DATA_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
-import { DEFAULT_OP, OP_TAKES, type FilterOp, valueSet } from '../../core/data/store.js';
+import {
+  DEFAULT_OP, OP_TAKES, type FilterOp, type SortDirection, valueSet,
+} from '../../core/data/store.js';
 import {
   fieldState, filterFace, type FieldCondition, type FilterFace, type FilterState,
 } from '../../core/data/filter-state.js';
-import { NON_VALUE_ROWS } from '../../core/ui/shared-constants.js';
+import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
+import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
 // Floating, so the count tooltip escapes the toolbar's clipping chip run.
 import '../sherpa-tooltip/sherpa-tooltip.js';
 
@@ -67,14 +70,25 @@ export class SherpaQuickFilter extends SherpaElement {
     'data-locked': DATA_PROPS['data-locked'],
     /* The chip stays on the bar when off, instead of being removed. */
     'data-persistent': { type: 'boolean', kind: 'style' },
-    /* GROUP or SORT — it arranges rows, it does not choose them. Written by
-       the HOST that builds it. TRAP T-an-organise-chip-has-no-values */
-    'data-organise': { type: 'boolean', kind: 'style' },
+    /* WHAT THIS CHIP IS. `group` and `sort` ARRANGE rows; they do not choose
+       them, so they have no values to be empty of and they own their own
+       gesture — group toggles, sort cycles asc → desc → off.
+       "Organise" is NOT a kind: it is a heading a panel draws above the two.
+       TRAP T-a-chip-knows-what-kind-it-is */
+    'data-kind': { type: 'enum', kind: 'style', values: ['group', 'sort'] },
+    /* WHICH COLUMN a group or sort chip arranges by, for a host that draws the
+       choice without a menu. A menu, where there is one, is the answer.
+       TRAP T-a-chip-knows-what-kind-it-is */
+    'data-column': { type: 'string', kind: 'style' },
   } as const;
 
   // data-label is hand-written: an absent attribute must leave the template's
   // own default label alone.
-  static override observed = ['data-label', 'data-icon-start', 'data-current'];
+  static override observed = [
+    'data-label', 'data-icon-start', 'data-current',
+    // A host writes these; the chip draws itself from them.
+    'data-kind', 'data-direction', 'data-column',
+  ];
 
   override onRender(): void {
     this.#syncText();
@@ -127,6 +141,11 @@ export class SherpaQuickFilter extends SherpaElement {
    */
   override onConnect(): void {
     this.#syncEmpty();
+    /* GROUP and SORT draw their OWN column and glyph, from the state they were
+       given. A host that stamped `data-direction` and `data-current` has said
+       everything; nothing else needs to paint it.
+       TRAP T-a-chip-knows-what-kind-it-is */
+    if (this.#arranges()) this.#drawArrangement();
     const initial = this.menu?.values ?? [];
     if (initial.length) {
       this.#syncLabelForSelection(initial);
@@ -136,6 +155,12 @@ export class SherpaQuickFilter extends SherpaElement {
   }
 
   override onChange(name: string): void {
+    /* THE CHIP DRAWS ITSELF. A host says what the state IS — on, which way,
+       which column — and never paints the caret or the glyph for it. Two hosts
+       painting it is how Group came to forget its column when switched off
+       while Sort remembered: one of the two blanked the caret.
+       TRAP T-off-is-not-forgotten */
+    if (this.#arranges()) this.#drawArrangement();
     if (name === 'data-current') this.#syncEmpty();
     /* The tooltip says WHY a chip is off, so it must follow the two attributes
        that decide that — neither touches the values, so nothing else re-syncs
@@ -235,8 +260,114 @@ export class SherpaQuickFilter extends SherpaElement {
     for (const icon of this.$$('.icon, .caret-icon')) this.writeIcon(icon, glyph ?? '');
   }
 
+  /** GROUP or SORT: it arranges rows rather than choosing them. */
+  #arranges(): boolean {
+    const kind = this.dataset['kind'];
+    return kind === 'group' || kind === 'sort';
+  }
+
+  /**
+   * The column this chip arranges by.
+   *
+   * Its MENU's own pick, where it has one. A host that draws the choice some
+   * other way — a run of options, a saved view — names it in `data-column`
+   * instead; the menu wins whenever there is a menu to ask.
+   */
+  get column(): string {
+    if (this.menu) {
+      return this.querySelector<HTMLInputElement>('[slot="menu"] input:checked')?.value ?? '';
+    }
+    return this.dataset['column'] ?? '';
+  }
+
+  /** Which way a SORT chip is pointing, or null when it is off. */
+  get direction(): SortDirection | null {
+    if (!this.current) return null;
+    return sortDirectionFrom(this.dataset['direction']) ?? 'asc';
+  }
+
+  /**
+   * The chip's own gesture, for the two kinds that have one.
+   *
+   * GROUP toggles. SORT cycles asc → desc → suspended → asc, from `nextSort()`
+   * in the data layer — the same step the grid's column heading takes. Written
+   * separately in the toolbar and the panel, the two drifted every time.
+   * TRAP T-a-chip-knows-what-kind-it-is · TRAP T-one-cycle-for-one-value
+   * TRAP T-sort-is-tri-state · TRAP T-group-chip-body-toggles-grouping
+   * TRAP T-a-chip-body-cycles-its-states
+   * TRAP T-an-organise-chip-is-named-for-its-job-not-its-field
+   */
+  #arrange(): void {
+    const field = this.column;
+    /* NO COLUMN, NOTHING TO ARRANGE. Turning it on would light a chip that
+       sorts by nothing, and a reader who has not chosen has done nothing
+       wrong. TRAP T-an-organise-chip-has-no-values */
+    if (!field) {
+      this.current = false;
+      this.#drawArrangement();
+      return;
+    }
+    if (this.dataset['kind'] === 'group') {
+      this.current = !this.current;
+      this.#drawArrangement();
+      this.emit('group-change', { field: this.current ? field : null });
+      return;
+    }
+    const next = nextSort(field, this.current ? field : null, this.direction);
+    // A suspended chip rewinds to `asc` — that is where a resume starts.
+    this.dataset['direction'] = next.direction ?? 'asc';
+    this.current = next.direction !== null;
+    this.#drawArrangement();
+    this.emit('sort-change', {
+      field: next.direction === null ? null : next.field,
+      direction: next.direction ?? 'asc',
+    });
+  }
+
+  /** A column was picked from the menu: apply it and say so. */
+  #arrangeFromMenu(): void {
+    const field = this.column;
+    this.current = !!field;
+    this.#drawArrangement();
+    if (this.dataset['kind'] === 'group') {
+      this.emit('group-change', { field: field || null });
+      return;
+    }
+    this.emit('sort-change', {
+      field: field || null,
+      direction: this.direction ?? 'asc',
+    });
+  }
+
+  /** The column in the caret, and the glyph that says which way. */
+  #drawArrangement(): void {
+    if (!this.#arranges()) return;
+    /* OFF IS NOT FORGOTTEN. A suspended arrangement keeps its column, so the
+       caret still names it and one more click resumes exactly what was there.
+       TRAP T-off-is-not-forgotten · TRAP T-grid-suspend-is-not-clear */
+    const field = this.column;
+    const row = this.querySelector<HTMLElement>(`[slot="menu"] input[value="${CSS.escape(field)}"]`)
+      ?.closest<HTMLElement>('label, .menu-row');
+    this.valueLabel = field ? (row?.textContent ?? '').trim() || field : '';
+    if (this.dataset['kind'] === 'sort') {
+      const dir = this.direction;
+      this.setAttribute('data-icon-start', dir === null ? ORGANISE_ICONS.sortNone
+        : dir === 'desc' ? ORGANISE_ICONS.sortDesc : ORGANISE_ICONS.sortAsc);
+    }
+  }
+
   #onClick = (event: Event): void => {
     if (this.hasAttribute('disabled')) return;
+
+    /* A GROUP or SORT chip owns its own gesture, because what it does is a
+       property of WHAT IT IS, not of which container drew it.
+       TRAP T-a-chip-knows-what-kind-it-is */
+    if (this.#arranges()) {
+      event.stopPropagation();
+      if (!this.column) { this.#openMenu(); return; }
+      this.#arrange();
+      return;
+    }
 
     /* TRAP T-an-empty-chip-opens-its-menu — the body cycles a chip's states
      * (TRAP T-a-chip-body-cycles-its-states), and an empty chip has none to cycle.
@@ -300,6 +431,10 @@ export class SherpaQuickFilter extends SherpaElement {
 
   #onMenuChange = (event: Event): void => {
     const values = ((event as CustomEvent).detail?.values ?? []) as string[];
+    /* AN ARRANGEMENT, not a filter: picking a column applies it AT ONCE and
+       reports by its own name. A filter waits for Apply.
+       TRAP T-a-chip-knows-what-kind-it-is */
+    if (this.#arranges()) { this.#arrangeFromMenu(); return; }
     // A locked chip's menu rows are not its values: relay, change nothing.
     if (this.hasAttribute('data-locked')) {
       this.emit('quick-filter-change', { scope: 'chip', values });
@@ -338,7 +473,7 @@ export class SherpaQuickFilter extends SherpaElement {
        which reads as zero values the moment nothing is chosen.
        TRAP T-an-organise-chip-has-no-values */
     if (this.hasAttribute('data-persistent') || this.hasAttribute('data-locked')
-      || this.hasAttribute('data-organise')) {
+      || this.#arranges()) {
       this.removeAttribute('data-empty');
       return;
     }

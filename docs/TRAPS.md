@@ -625,8 +625,8 @@ The chip REPORTS `group-change` as every chip reports. The host owns the
 grouping and writes the attribute back — `T-grid-reports-never-combines`, the
 same rule the grid's own actions follow.
 
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 
 ### T-sort-is-tri-state
 
@@ -660,9 +660,10 @@ The CHIP label says "Sort" and never moves; the COLUMN reads in the caret button
 (Figma State=menu, 150:3408). Folded together as "Sort: Region" it re-flowed the
 bar on every pick.
 
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
 (none — `T-tokens-css-never-reaches-shadow` already exists and already lists this file as a Site. This extraction only compresses the surrounding prose; the citation already present is kept verbatim.)
+
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 
 ### T-a-chip-body-cycles-its-states
 
@@ -714,7 +715,6 @@ flicker. It stays off, and the menu is where a column is chosen.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/cycle.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-add-menu-batches
 
@@ -1590,6 +1590,7 @@ This is the suspend ≠ clear rule as a COLUMN sees it; `T-sort-is-tri-state` an
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 ### T-grid-column-width-bounds
 
 `MIN_COL_WIDTH = 96`, `MAX_COL_WIDTH = 480`, `DEFAULT_COL_WIDTH = 160`. All
@@ -8344,8 +8345,8 @@ the next set it to the wrong field.
 Suspended is not cleared — `setSort(null)` moves the column to the source's own
 memory so one more click resumes it. TRAP T-grid-suspend-is-not-clear
 
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 
 ### T-a-wall-of-values-is-not-a-filter
 
@@ -8376,6 +8377,64 @@ row has and the view went to 0 rows. A `data-custom` chip is reported by
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
+
+### T-a-chip-knows-what-kind-it-is
+
+Will, 2026-09-25: *"Group is a thing. Sort is a thing. Boolean filters are a
+thing. Single select value filters are a thing. Multi select value filters are
+a thing. Compound Conditional filters are a thing. **Organise is not.** It's
+just a label on the screen."*
+
+So a chip carries `data-kind` — what it IS — and owns the gesture that follows
+from it: **group** toggles, **sort** cycles asc → desc → suspended → asc
+through `nextSort()`. Both report by their own names. A container only places
+the chip and, where it knows something the chip cannot, annotates the report:
+the panel adds `scope`.
+
+Before this the same behaviour was written twice, and the two drifted every
+time one was touched — four bug reports in one day. Measured before the move:
+
+| file | organise-aware lines |
+|---|---|
+| `sherpa-quick-filter-toolbar.ts` | 75 |
+| `sherpa-filter-panel.ts` | 50 |
+| `sherpa-quick-filter.ts` | **6** |
+
+`data-organise` was the earlier name and it encoded the wrong idea — a chip
+named for the heading a panel happened to draw above it.
+
+A host that draws the choice as a run of options rather than a menu names the
+column in `data-column`; a menu, where there is one, is the answer.
+
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-organise-chip-never-amber.spec.ts`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+
+### T-off-is-not-forgotten
+
+**Switching a chip OFF must never clear what it holds.** Off is a state; gone
+is an instruction. Collapsing the two costs a reader their answer and makes the
+chip impossible to switch back on.
+
+It came back because TWO hosts painted the chip. `#syncSortLabel` kept the
+column — *"a suspended sort keeps its column, so the caret still names it"* —
+and `#syncGroupLabel`, four methods away, blanked it:
+
+    target.valueLabel = chip.hasAttribute('data-current') ? column?.label ?? '' : '';
+
+So Group forgot its column while Sort remembered, from one ternary.
+
+The chip draws ITSELF now, from `data-current`, `data-direction` and its menu.
+A host says what the state IS and never paints the caret or the glyph, so there
+is no second opinion to disagree with. Both painters are deleted.
+
+TRAP T-grid-suspend-is-not-clear is the same rule in the data layer.
+
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `test/e2e/reforged-quick-filter.spec.ts`
 
 ### T-a-closed-panel-gives-its-menus-back
 
@@ -8595,8 +8654,6 @@ marked `data-organise` where it is BUILT, and the empty test skips it the way
 it already skips `data-persistent` and `data-locked`.
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-organise-chip-never-amber.spec.ts`
 
 ### T-the-add-menu-is-the-whole-list
@@ -8609,6 +8666,16 @@ the held ones ticked. Ticking a row adds it; unticking removes it. What changed
 is the difference between what the menu now says and what the panel is drawing,
 so a reader never hunts for where a filter is removed.
 
+**The TOOLBAR now does this too.** Its Add menu listed only what was LEFT to
+add, so a tick added a chip and nothing took one off, and the menu said nothing
+about what the bar was already holding. Will: *"Add filter button, in the
+toolbar, doesn't have the add and remove capability. Menu item selection state
+should indicate whether the filter is added or removed from the chip row."*
+
+One catch: `populate()` is DEFERRED, so a host calling `available()` straight
+after it built the menu from an empty run and nothing was ticked. The menu is
+rebuilt at the end of `#render()`, because what it lists now follows the run.
+
 Only a REMOVABLE field is listed. A scope's own fixed filters stay off the menu
 — a tick that cannot be cleared is a lie, and disabling it would say the same
 thing more quietly.
@@ -8620,6 +8687,8 @@ a list of them, so the list is where they are managed. Will's ruling
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 
 ### T-the-field-type-decides-the-clause
 
@@ -10048,6 +10117,7 @@ delete" is stated once for both.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/cycle.test.mjs`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 
 ### T-a-trigger-shows-what-it-opened
 

@@ -807,8 +807,11 @@ test('the Add button puts an available filter on the bar and drops it from its m
     const chips = () => [...sr.querySelectorAll('.chips > .chip')].map((c) => (c as HTMLElement).dataset['id']);
     const add = sr.querySelector('.add-btn') as HTMLElement;
     // Skips the select-all row the multi menu leads with; it carries no filter id.
+    /* THE WHOLE LIST, with ticks saying what is held: `+id` held, `-id` offered.
+       TRAP T-the-add-menu-is-the-whole-list */
     const offered = () =>
-      [...add.querySelectorAll('label:not(.qf-all) input')].map((i) => (i as HTMLInputElement).value);
+      [...add.querySelectorAll('label:not(.qf-all) input')]
+        .map((i) => ((i as HTMLInputElement).checked ? '+' : '-') + (i as HTMLInputElement).value);
 
     const before = { chips: chips(), offered: offered() };
 
@@ -831,12 +834,14 @@ test('the Add button puts an available filter on the bar and drops it from its m
   }, MOUNT);
 
   expect(r.before.chips).toEqual(['active']);
-  expect(r.before.offered).toEqual(['health', 'seats']);
+  expect(r.before.offered).toEqual(['-health', '-seats']);
 
-  // The picked filter MOVES: onto the bar, and out of the menu — a filter already
-  // on the bar is not one you can add again.
+  /* The picked filter goes onto the bar and STAYS in the menu, now ticked —
+     the tick is what says it is held, and unticking is how it comes off.
+     TRAP T-the-add-menu-is-the-whole-list */
   expect(r.after.chips).toEqual(['active', 'health']);
-  expect(r.after.offered).toEqual(['seats']);
+  expect(r.after.offered).toContain('+health');
+  expect(r.after.offered).toContain('-seats');
 
   /* It arrives OFF, in the DEFAULT look. A chip added ON holds no values yet,
      and "on but filtering by nothing" paints the amber warning — shown to a
@@ -867,8 +872,11 @@ test('the Add menu is multi-select and searchable; a chip can be removed', async
     const add = sr.querySelector('.add-btn') as HTMLElement;
     const addMenu = add.querySelector('sherpa-menu') as HTMLElement;
     // Skips the select-all row the multi menu leads with; it carries no filter id.
+    /* THE WHOLE LIST, with ticks saying what is held: `+id` held, `-id` offered.
+       TRAP T-the-add-menu-is-the-whole-list */
     const offered = () =>
-      [...add.querySelectorAll('label:not(.qf-all) input')].map((i) => (i as HTMLInputElement).value);
+      [...add.querySelectorAll('label:not(.qf-all) input')]
+        .map((i) => ((i as HTMLInputElement).checked ? '+' : '-') + (i as HTMLInputElement).value);
     const apply = async (host: HTMLElement) => {
       const menu = host.querySelector('sherpa-menu') as HTMLElement & { shadowRoot: ShadowRoot };
       (menu.shadowRoot.querySelector('[data-act="apply"], .apply, button') as HTMLElement).click();
@@ -910,16 +918,20 @@ test('the Add menu is multi-select and searchable; a chip can be removed', async
   expect(r.menuShape.addSearch).toBe(true);
   expect(r.menuShape.chipSearch).toBe(true);
 
-  // Two added in ONE visit, both gone from the menu.
+  // Two added in ONE visit, and both still listed — ticked.
   expect(r.afterAdd.chips).toEqual(['plan', 'health', 'seats']);
-  expect(r.afterAdd.offered).toEqual(['tickets']);
+  expect(r.afterAdd.offered).toContain('+health');
+  expect(r.afterAdd.offered).toContain('+seats');
+  expect(r.afterAdd.offered).toContain('-tickets');
 
   // REMOVE puts it back where it came from: a user who removes a chip by mistake
   // should find it where they got it. Its picks are dropped — "remove" means
   // remove, not "hide and remember".
   expect(r.removeLabel).toBe('Remove');
   expect(r.afterRemove.chips).toEqual(['plan', 'seats']);
-  expect(r.afterRemove.offered).toEqual(['tickets', 'health']);
+  // Removed, so its row is UNTICKED — still listed, ready to be ticked back.
+  expect(r.afterRemove.offered).toContain('-health');
+  expect(r.afterRemove.offered).toContain('-tickets');
 });
 
 test('adding or removing a filter never disturbs the others', async ({ page }) => {
@@ -2718,4 +2730,64 @@ test('a FOLDED conditions-only filter opens its own menu, not a blank drill', as
   expect(r.mode).toBe('condition');
   expect(r.hasConditionRow).toBe(true);
   expect(r.overflowStillListsFilters).toBe(true);
+});
+
+/**
+ * THE ADD MENU IS THE WHOLE LIST — on the bar, as it already was in the panel.
+ *
+ * It listed only what was LEFT to add, so a tick added a chip and nothing took
+ * one off, and the menu said nothing about what the bar was already holding.
+ * Will: "Add filter button, in the toolbar, doesn't have the add and remove
+ * capability. Menu item selection state should indicate whether the filter is
+ * added or removed from the chip row."
+ *
+ * TRAP T-the-add-menu-is-the-whole-list
+ */
+test('the Add menu lists held AND offered, and an untick removes', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+      available(d: unknown): void;
+      heldIds: string[];
+    };
+    el.style.cssText = 'inline-size: 1400px';
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    el.populate([
+      { id: 'status', label: 'Status', removable: true,
+        options: [{ value: 'a', label: 'a' }] },
+      // NOT removable — a tick that cannot be cleared is a lie, so it is not listed.
+      { id: 'view', label: 'View', persistent: true },
+    ]);
+    el.available([{ id: 'seats', label: 'Seats' }]);
+    await settle();
+
+    const menu = () => el.shadowRoot!.querySelector('.add-btn sherpa-menu')!;
+    const rows = () => [...menu().children]
+      .map((r) => r.querySelector<HTMLInputElement>('input'))
+      .filter((i): i is HTMLInputElement => !!i && i.value !== 'on')
+      .map((i) => (i.checked ? '+' : '-') + i.value);
+
+    const before = rows();
+
+    // Untick the held one, tick the offered one, apply.
+    menu().dispatchEvent(new CustomEvent('menu-change', {
+      bubbles: true, composed: true, detail: { values: ['seats'] },
+    }));
+    await settle();
+    await new Promise((res) => setTimeout(res, 120));
+
+    return { before, after: rows(), held: el.heldIds };
+  });
+
+  // HELD is ticked, OFFERED is not, and a fixed chip is absent entirely.
+  expect(r.before).toEqual(['+status', '-seats']);
+  // The untick removed Status; the tick added Seats.
+  expect(r.held).toContain('seats');
+  expect(r.held).not.toContain('status');
+  // And the menu re-reads as the whole list, the other way round.
+  expect(r.after.sort()).toEqual(['+seats', '-status']);
 });

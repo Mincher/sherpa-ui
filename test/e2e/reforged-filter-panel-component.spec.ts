@@ -340,12 +340,13 @@ test('group and sort lead the scope, report at once, and skip Apply',
       const sortOn = sr.querySelector('.field[data-field="organise"] .value[data-value="sort"]')
         .hasAttribute('data-current');
 
-      /* Click SORT's body. It reports IMMEDIATELY — no Apply — and reports the
-         COLUMN the scope named, not the chip's own name.
-         TRAP T-an-organise-chip-is-named-for-its-job-not-its-field */
+      /* Click SORT's BODY, for real. The chip owns the gesture now, so a
+         synthetic quick-filter-click is not one. It reports IMMEDIATELY — no
+         Apply — and reports the COLUMN the scope named, not its own name.
+         TRAP T-a-chip-knows-what-kind-it-is */
       const st = sr.querySelector('.field[data-field="organise"] .value[data-value="sort"]');
-      st.dispatchEvent(new CustomEvent('quick-filter-click', { bubbles: true, composed: true }));
-      await new Promise((r) => setTimeout(r, 120));
+      st.shadowRoot.querySelector('.body').click();
+      await new Promise((r) => setTimeout(r, 200));
 
       press('.apply');
       await new Promise((r) => setTimeout(r, 150));

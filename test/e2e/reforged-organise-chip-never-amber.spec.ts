@@ -9,6 +9,7 @@ import { test, expect } from './harness';
  * is chosen. Will saw the yellow border three times and never on a filter.
  *
  * TRAP T-an-organise-chip-has-no-values
+ * TRAP T-a-chip-knows-what-kind-it-is
  */
 
 type Bar = HTMLElement & {
@@ -38,37 +39,32 @@ const BUILD = `
 test('both organise chips are MARKED as arrangements, not filters', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${BUILD}
-    const marks = (el) => [
-      el.hasAttribute('data-organise') && 'organise',
-      // Its menu holds COLUMNS, so those rows are not the chip's values.
-      el.hasAttribute('data-locked') && 'locked',
-    ].filter(Boolean).join('+');
+    // WHAT IT IS — not which section happened to draw it.
+    const marks = (el) => el.dataset.kind ?? '';
     return {
       sort: marks(sortChip),
       group: marks(groupChip),
-      // A real filter chip is NEITHER — its menu IS its values, and the empty
+      // A real filter chip has NO kind — its menu IS its values, and the empty
       // warning is its job.
       filter: marks(sr.querySelector('.chip[data-id="plan"]')),
     };
   })()`) as { sort: string; group: string; filter: string };
 
-  expect(r).toEqual({ sort: 'organise+locked', group: 'organise+locked', filter: '' });
+  expect(r).toEqual({ sort: 'sort', group: 'group', filter: '' });
 });
 
 test('a sort chip set current from OUTSIDE, with no column, never goes amber', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${BUILD}
     // WITHOUT the marks first, so this test proves the marks are what work.
-    sortChip.removeAttribute('data-organise');
-    sortChip.removeAttribute('data-locked');
+    delete sortChip.dataset.kind;
     sortChip.setAttribute('data-current', '');
     await window.__settled();
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
     const unmarked = sortChip.hasAttribute('data-empty');
 
     sortChip.removeAttribute('data-current');
-    sortChip.setAttribute('data-organise', '');
-    sortChip.setAttribute('data-locked', '');
+    sortChip.dataset.kind = 'sort';
     // This is what 26 call sites do: write the attribute directly. Nothing has
     // picked a column, so the menu reports zero values.
     sortChip.setAttribute('data-current', '');

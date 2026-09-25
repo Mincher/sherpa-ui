@@ -92,6 +92,13 @@ anatomy:
               type: button
 props:
   - $type: prop
+    name: asc
+    type: string
+    observed: false
+    description: >-
+      and report it themselves. "Organise" is not a kind; it is a heading a panel may draw above the
+      two.
+  - $type: prop
     name: data-conditioned
     type: string
     observed: false
@@ -145,6 +152,14 @@ props:
     kind: style
     description: show the leading status dot (Figma "Indicator (atom)", opt-in)
   - $type: prop
+    name: data-kind
+    type: string
+    observed: true
+    kind: style
+    description: >-
+      WHAT THIS CHIP IS: group | sort. Both ARRANGE rows rather than choosing them, so they have no
+      values to be empty of, and both own their gesture — group toggles, sort cycles
+  - $type: prop
     name: data-label
     type: string
     observed: true
@@ -159,15 +174,6 @@ props:
     kind: style
     default: false
     description: Figma State=menu — snap on the caret button
-  - $type: prop
-    name: data-organise
-    type: string
-    observed: false
-    kind: style
-    description: >-
-      this chip ARRANGES rows — Group or Sort — it does not choose them. Set by the toolbar and the
-      filter panel where the chip is built. Its menu picks a COLUMN, so it reads as zero values and
-      would take the same amber warning; it never applies.
   - $type: prop
     name: data-panelled
     type: string
@@ -202,6 +208,13 @@ props:
       default | ai | populated | jump `jump` is a JUMP TO chip, not a filter: never on. Its menu
       lists places on the page, filled by populate([{ value, label }]); a pick scrolls the element
       whose id is `value` into view.
+  - $type: prop
+    name: desc
+    type: string
+    observed: false
+    description: >-
+      and report it themselves. "Organise" is not a kind; it is a heading a panel may draw above the
+      two.
 states:
   - $type: state
     name: menu
@@ -248,7 +261,9 @@ states:
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (current, valueLabel, menu, values). See $extensions.sherpa.jsProps.
+    description: >-
+      read/write JS properties (current, valueLabel, menu, values, column, direction). See
+      $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
     description: callable from a view definition's state block (toggleMenu). See $extensions.sherpa.methods.
@@ -276,6 +291,19 @@ events:
     detail:
       label: unknown
       value: unknown
+  - $type: event
+    name: group-change
+    bubbles: true
+    composed: true
+    detail:
+      field: unknown
+  - $type: event
+    name: sort-change
+    bubbles: true
+    composed: true
+    detail:
+      direction: string
+      field: unknown
 tokens:
   chip.block-size: "{sherpa.display-mode-size-lg}"
   body.gap: "{sherpa.display-mode-space-2xs}"
@@ -322,3 +350,9 @@ $extensions:
       - name: values
         type: string
         access: read-write
+      - name: column
+        type: string
+        access: read
+      - name: direction
+        type: string
+        access: read
