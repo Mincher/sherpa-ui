@@ -511,3 +511,68 @@ test('clicking Sort leaves Group alone — Organise is a heading, not a field', 
   // Neither control owns the other.
   expect(r.afterGroup.sort).toBe(true);
 });
+
+/**
+ * A BORROWED MENU GOES HOME WHEN THE PANEL CLOSES.
+ *
+ * `release()`, `onDisconnect()` and a re-draw all gave it back; the reader's
+ * own Close did not. So the toolbar came back with Group and Sort holding no
+ * menu — nothing opened, and the sort cycle reads its column FROM that menu,
+ * so cycling died too.
+ *
+ * TRAP T-a-closed-panel-gives-its-menus-back
+ */
+test('closing the panel returns every borrowed menu to its chip', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    const root = document.getElementById('root');
+    root.replaceChildren();
+
+    // The CHIP that owns the menu, exactly as a toolbar holds one.
+    const chip = document.createElement('sherpa-quick-filter');
+    chip.dataset.id = 'seats';
+    const menu = document.createElement('sherpa-menu');
+    menu.setAttribute('slot', 'menu');
+    menu.setAttribute('data-heading', 'Seats');
+    const body = document.createElement('div');
+    body.className = 'qf-number';
+    body.innerHTML = '<input type="number" value="42" />';
+    menu.append(body);
+    chip.append(menu);
+    root.append(chip);
+
+    const el = document.createElement('sherpa-filter-panel');
+    root.append(el);
+    await customElements.whenDefined('sherpa-filter-panel');
+    await el.rendered;
+    el.populate([{ scope: 'data', label: 'Grid', filters: [
+      { id: 'seats', label: 'Seats', menu },
+    ] }]);
+    await new Promise((r) => setTimeout(r, 300));
+    el.open();
+    await new Promise((r) => setTimeout(r, 250));
+
+    /* WHERE THE MENU LIVES. Borrowed, it is drawn inside the panel's SHADOW
+       root, which a plain contains() on the host does not reach. Home, it is
+       back on its chip with its original slot. */
+    const where = () => (chip.contains(menu) ? 'chip'
+      : el.shadowRoot.contains(menu) ? 'panel' : 'lost');
+    const whileOpen = where();
+
+    el.close();
+    await new Promise((r) => setTimeout(r, 200));
+    // HOME, with its original slot put back, or the chip cannot see it.
+    const afterClose = where() + '/' + (menu.getAttribute('slot') ?? '');
+
+    // Re-opening borrows it again, rather than showing an empty field.
+    el.open();
+    await new Promise((r) => setTimeout(r, 300));
+    return { whileOpen, afterClose, afterReopen: where() };
+  })()`) as Record<string, string>;
+
+  // Borrowed while open...
+  expect(r.whileOpen).toBe('panel');
+  // ...and HOME once closed, with its slot put back.
+  expect(r.afterClose).toBe('chip/menu');
+  // Opening again draws it, so the field is not empty the second time.
+  expect(r.afterReopen).toBe('panel');
+});

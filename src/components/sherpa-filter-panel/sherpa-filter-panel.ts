@@ -188,7 +188,16 @@ export class SherpaFilterPanel extends SherpaElement {
    *  TRAP T-the-panel-is-desktop-only */
   open(): void {
     if (!this.#wideEnough()) return;
+    /* A CLOSED PANEL HOLDS NOTHING — see `close`. So anything drawn before has
+       already given its menu back, and the fields would come up empty.
+       TRAP T-a-closed-panel-gives-its-menus-back */
+    if (this.#scopes.length && this.#missingMenus()) this.#draw();
     this.toggleAttribute('data-open', true);
+  }
+
+  /** A field that HAD a borrowed menu and no longer holds it. */
+  #missingMenus(): boolean {
+    return [...this.#held.values()].some((held) => held.def.menu && !held.menu);
   }
 
   /** EVERY close reports, and says why. The width path called this directly
@@ -198,6 +207,12 @@ export class SherpaFilterPanel extends SherpaElement {
   close(reason: 'reader' | 'width' = 'reader'): void {
     if (!this.hasAttribute('data-open')) return;
     this.removeAttribute('data-open');
+    /* GIVE THE MENUS BACK. A borrowed menu is not on its chip, so a toolbar
+       shown again had Group and Sort with NO menu at all: nothing opened, and
+       the sort cycle reads its column FROM that menu, so cycling died too.
+       Every other way out of the panel already did this; the reader's own
+       Close did not. TRAP T-a-closed-panel-gives-its-menus-back */
+    this.#giveBack();
     this.#lastClose = reason;
     this.emit('filter-panel-close', { reason });
   }

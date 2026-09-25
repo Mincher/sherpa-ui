@@ -8377,6 +8377,34 @@ row has and the view went to 0 rows. A `data-custom` chip is reported by
 - Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 
+### T-a-closed-panel-gives-its-menus-back
+
+The filter panel BORROWS a field's `<sherpa-menu>` — Group, Sort, a date range
+— and draws it inline. Three ways out of the panel gave it back: `release()`,
+`onDisconnect()` and a re-`#draw()`. The reader's own **Close did not.**
+
+So switching back to the toolbars left Group and Sort with NO menu at all.
+Nothing opened, and `#cycleSort` reads its column FROM that menu, so the
+tri-state cycle died with it. Will: *"Menus don't open. Cycling is broken.
+Happens in both the toolbar and the panel. Probably not just these chips,
+either."* All of it, from one missing line.
+
+Measured, before and after:
+
+    2 PANEL OPEN   group:NONE sort:NONE status:menu plan:menu …
+    3 BACK (was)   group:NONE sort:NONE   ← never returned
+    3 BACK (now)   group:menu sort:menu
+
+`close()` now gives them back, so a closed panel holds nothing. `open()` draws
+again when a field it holds has lost its menu — otherwise the fields come up
+empty the second time.
+
+**Why it hid for so long:** every probe that opened the panel and measured
+INSIDE it passed. The damage is on the way OUT, in the other component.
+
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+
 ### T-a-conditions-only-menu-cannot-be-drilled
 
 The More chip drills into a folded filter by MOVING its menu's light-DOM rows
