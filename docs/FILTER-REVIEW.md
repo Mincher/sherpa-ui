@@ -6,8 +6,9 @@ every command used is given so you can re-run it.
 ---
 
 **Diagrams of the target architecture are in §9.** §10 answers "are we
-reinventing the platform?", §11 is where this could be simpler, and §12 decides
-that a source is NAMED, never inferred.
+reinventing the platform?", §11 is where this could be simpler, and §12 is how a
+component reaches a source — CONTAINED by its region, named only when a region
+offers more than one.
 
 ## 1. The short version
 
@@ -596,29 +597,29 @@ if components could specify where to look for a field or value. e.g.
 A page can hold several sources — customers and invoices, live and saved. The
 declaration carries WHERE as well as WHAT:
 
-**The source is NAMED, never inferred — see §12.** The element says which one
-it reads, once; a dotted field overrides it for the rare component that reads
-two.
+**A source is PROVIDED OVER A REGION, and named only when a region offers more
+than one — see §12.** Where a component is mounted decides what it can reach;
+it cannot widen that itself.
 
 | attribute | means |
 |---|---|
-| `data-source="records"` | every field on this element comes from `records` |
-| `data-field="spend"` | the field `spend`, in this element's source |
-| `data-compare="invoices.total"` | the field `total`, in `invoices` — overriding |
+| *(none)* | the one source this element's region provides |
+| `data-source="invoices"` | that region provides two, and this is the one |
+| `data-field="spend"` | the field `spend`, in whichever of those applies |
 
-A source gets a name it answers to, and the request in §9.2 carries it, so
-there is no nearest-provider walk and nothing to tie-break.
+A name is resolvable only inside the region that provides it, so it is a label
+on what is already on offer — not a key to every source on the page.
 
 ```mermaid
 flowchart TB
-  M1["sherpa-metric<br/>data-source=records<br/>data-field=spend"] --> N{"is the field<br/>dotted?"}
-  M2["sherpa-metric<br/>data-source=records<br/>data-compare=invoices.total"] --> N
-  N -- "no" --> OWN[("the element's own<br/>data-source")]
-  N -- "yes" --> NAMED[("the source named<br/>before the dot")]
-  OWN --> ERR{"does that<br/>source exist?"}
-  NAMED --> ERR
-  ERR -- "no" --> LOUD["a loud error,<br/>never silent wrong numbers"]
-  ERR -- "yes" --> OK["compose and push"]
+  EL["a component asks<br/>for its source"] --> REQ["context request<br/>composed, travels UP"]
+  REQ --> REG{"does a region<br/>above it provide?"}
+  REG -- "no" --> NONE["nothing reaches it.<br/>It draws its empty state."]
+  REG -- "yes" --> HOW{"how many does<br/>that region offer?"}
+  HOW -- "one" --> OK["that one. No attribute needed."]
+  HOW -- "two or more" --> NAMED{"did the element<br/>name one?"}
+  NAMED -- "yes, and it is offered here" --> OK
+  NAMED -- "no, or not offered here" --> LOUD["a loud error,<br/>never silent wrong numbers"]
 ```
 
 **One caution.** Two sources on one page is also how a field ends up filtered
@@ -856,83 +857,105 @@ direction and whether values explode into a run.
 
 ---
 
-## 12. Should the source namespace be REQUIRED?
+## 12. How a component reaches a source
 
-Will: *"I wonder if we should require the data source namespace in the
-attributes/properties. This will avoid having to handle the complexity in our
-codebase and ensure data correctness with reduced chance of errors."*
+Will asked two things, and they are not the same question:
 
-### There is already a precedent, and it agrees
+> *"I wonder if we should require the data source namespace in the
+> attributes/properties."* — and then — *"Those costs aren't ideal. We still
+> need to be able to scope implementations of sherpa components to specific
+> data sources. It's not great if any UI component can access all data
+> sources."*
 
-`data-bounds` names the box a floating menu must stay inside. It is not
-inferred, not walked for — the host **names** it and the menu looks it up:
+The first is about **naming**. The second is about **containment**. Naming does
+not give containment: if a source answers to a name, any element anywhere can
+write that name and reach it. A required attribute makes the reach *visible*,
+not *bounded*.
 
-```ts
-const box = document.querySelector(sel)?.getBoundingClientRect();
+### Containment comes from the TREE
+
+A source is **provided over a region**. Elements inside can reach it; elements
+outside cannot — not because they are forbidden, but because the request never
+gets there.
+
+```mermaid
+flowchart TB
+  subgraph R1["region A — provides: records"]
+    G["sherpa-data-grid"]
+    M["sherpa-metric"]
+    B["sherpa-quick-filter-toolbar"]
+  end
+  subgraph R2["region B — provides: invoices"]
+    L["sherpa-list"]
+  end
+  OUT["a component outside both"]
+
+  G --> S1[("records")]
+  M --> S1
+  B --> S1
+  L --> S2[("invoices")]
+  OUT -- "request reaches no provider" --> NONE["nothing. It draws its<br/>own empty state."]
 ```
 
-Named, explicit, one lookup, no ambiguity. The same shape works here.
+That is the **Context Protocol** from §10, used for what it is for: the request
+is `composed`, so it crosses shadow boundaries upward and stops at the first
+provider. `closest()` cannot do this — it does not cross shadow roots — which
+is precisely why the platform has the event.
 
-### What requiring it deletes
+**Containment is a property of where the component is mounted**, which is the
+app's business and nobody else's. A component cannot widen its own reach.
 
-| inferred (`data-field="spend"`) | required (`data-field="records.spend"`) |
-|---|---|
-| walk the tree for the nearest source | look the name up |
-| tie-break when two are equally near | nothing to tie-break |
-| a shadow boundary hides the provider | a name crosses every boundary |
-| wrong source → silently wrong numbers | unknown name → a loud error |
-| "which source answered this?" is a debugging question | it is written on the element |
+### Naming is the override, not the rule
 
-It also **simplifies the Context Protocol half** (§10): the request carries the
-name, and a source answers only if it matches. No "nearest" logic at all.
-
-### Two shapes — and they are not equal
-
-**A. On every value attribute**
+Inside one region there is usually **one** source, and then nothing needs
+saying:
 
 ```html
-<sherpa-metric data-field="records.spend" data-series-by="records.created">
+<!-- region A provides `records` -->
+<sherpa-metric data-field="spend" data-aggregate="sum"></sherpa-metric>
 ```
 
-**B. Once on the element (recommended)**
+When a region genuinely provides two, the element says which:
 
 ```html
-<sherpa-metric data-source="records" data-field="spend" data-series-by="created">
+<sherpa-metric data-source="invoices" data-field="total"></sherpa-metric>
 ```
 
-A component with five data attributes names its source **five times** under A
-and **once** under B. Under A a rename edits every attribute; under B, one per
-element. B is also the shape `data-bounds` already uses: one attribute naming
-one target.
+**And a name is only resolvable inside the region that provides it.** Naming
+`invoices` from region A reaches nothing and errors — the name is not a key to
+a global registry, it is a label on what this region already offers.
 
-A qualified field stays legal under B for the case that needs it — a component
-reading from two sources at once:
+| | costs Will objected to | still true? |
+|---|---|---|
+| every template gains an attribute | **gone** — only when a region has two sources |
+| cannot drop a template in without naming its source | **gone** — it inherits its region |
+| renaming a source edits every element | **gone** — the region names it, once |
 
-```html
-<sherpa-metric data-source="records" data-field="spend"
-               data-compare="invoices.total">
-```
+### What is left to decide
 
-Rule: **the element's `data-source` is the default for every field on it; a
-dotted field overrides it.** One rule, one exception, both visible.
+| | A — name only when ambiguous | B — name always |
+|---|---|---|
+| one source in a region | no attribute | `data-source` on every element |
+| two sources in a region | name it | name it |
+| reach | bounded by the region | bounded by the region |
+| a wrong name | loud error | loud error |
+| reading an element in isolation | must look up to find the region | self-describing |
 
-### What it costs, honestly
+Both are contained. The only difference is whether the attribute is mandatory
+when it carries no information.
 
-- **Every template gains an attribute**, including the many pages with exactly
-  one source, where the name says nothing new. That is the price of no
-  inference — and it is the price Will is choosing on purpose.
-- **A template cannot be dropped in without naming its source.** For a
-  component library that is a real cost. It is also the thing that makes the
-  error loud instead of silent, which is the trade being made.
-- **Renaming a source edits every element that names it.** An app constant in
-  one module keeps that to one edit in practice.
+**Recommendation: A.** `data-bounds` is the precedent and it is optional — a
+menu without it falls back to the viewport, and that is not a source of bugs.
+The loud error, which is what Will actually wanted, comes from resolution
+failing, not from the attribute being compulsory.
 
-### Does it break component agnosticism?
+**If a region ever provides two sources, requiring the attribute IN THAT REGION
+is a rule the source can enforce** — ambiguous request, no answer, loud error.
+That gets B's guarantee exactly where it earns its keep, and nowhere else.
 
-No. The component does not know what `records` IS — not its shape, its fields
-or its store. It knows only that its data comes from a thing with that name.
-That is the same relationship a form control has with `name`, or a menu with
-`data-bounds`.
+### The one thing to watch
 
-**Recommendation: B, required.** One attribute per element, a dotted field for
-the rare second source, and nothing inferred anywhere.
+A component moved between regions silently changes what it reads. That is the
+same trade as CSS inheritance, and the same answer: it is only surprising if
+the regions are not visible in the markup. Keep a region a real element with a
+real name, never an implicit wrapper.
