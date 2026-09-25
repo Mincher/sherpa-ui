@@ -1778,3 +1778,86 @@ Now that a group is an object, these become small rather than impossible:
 | select or act on a whole group | the keys, which `groups()` gives |
 | order the GROUPS, not the rows within them | the hardcoded `direction: 'asc'` in `applyOptions` becomes a parameter |
 | a chart or tile that draws the groups | `groups()` is DOM-free, so a server or the MCP can ask too |
+
+---
+
+## 19. Fold aggregation into the data layer — to explore
+
+Will, 2026-09-25: *"We have an aggregate script to collate data for use in data
+visualisations. These aggregates are conceptually similar to data pages and
+groups. So perhaps we can fold the aggregation code into the data layer to
+maximise the reuse of code across paging, grouping, and aggregation."*
+
+**Not scheduled.** Measured, because the overlap turns out to be literal.
+
+### 19.1 The same line, written four times
+
+`src/core/data/aggregate.ts` is 202 lines and nine exports. Both `aggregateBy`
+and `seriesBy` open with:
+
+```ts
+const groups = new Map(groupRows(rows, field).map((g) => [g.key, g.rows]));
+```
+
+`groupRows(rows, …)` appears **four times** inside `core/data` — twice in
+`aggregate.ts`, once in `groupSummaries`, once in `applyOptions`'s leading
+sort. Four callers, one question.
+
+And `countBy(rows, field)` is `groupSummaries(rows, field)` with a colour index
+bolted on. **It is the same computation `DataSource.groups()` now does**, §18,
+written a second time and reached a different way.
+
+### 19.2 The three are one question asked three ways
+
+| | asks | who answers today |
+|---|---|---|
+| paging | *which slice of the matching rows* | the store; the grid re-pages screen lines |
+| grouping | *which rows share a value, and how many* | the source, since §18 |
+| aggregation | *which rows share a value, and what do they add up to* | **every chart's own adapter** |
+
+The third is the odd one, and it shows: **every chart binds `rows: 'all'`** —
+four sites — *because the default bind hands over the PAGE, and a chart
+counting 25 of 100 looks perfectly reasonable*
+(`T-a-summary-binds-to-all-the-rows`). It asks for every row so it can do the
+grouping the source has already done.
+
+### 19.3 What a fold would look like
+
+```ts
+source.aggregate(field, kind, valueField?, options?) -> ChartDatum[]
+```
+
+Answered from the same matching rows `groups()` counts, so a chart stops
+needing `rows: 'all'` and stops carrying an adapter. `GroupSummary` already
+holds `count`, which is `reduceRows(rows, 'count')` — the reduction is the
+general case of the field it already has.
+
+`AggregateOptions.order` and `includeEmpty` move too. *"The categories, in
+order… keep unmentioned categories at zero"* is a GROUPING concern in chart
+clothing, and it is the same fact a legend needs
+(`T-a-legend-row-goes-inactive-it-never-vanishes`).
+
+### 19.4 What should NOT move
+
+Say it up front, or the fold swallows three things that are genuinely chart
+business:
+
+| | why it stays |
+|---|---|
+| `colorIndex` | presentation. A category's colour is not a property of the data |
+| `seriesBy`'s declared POINTS | *"a quiet Tuesday is zero, not absent"* — the point list comes from the axis, not the rows |
+| `deltaPercent` | a reading of a drawn series, not of the store |
+
+`bandBy` is the interesting middle: it groups NUMBERS by edges rather than by
+value. That is not a different job, it is `groupRows` with a different key
+function — which suggests `groupRows(rows, field, keyOf?)` rather than a
+separate function.
+
+### 19.5 What to settle first
+
+1. Does `aggregate()` go on `DataSource`, or stay a free function the source
+   merely calls? The free function is what an MCP tool and a server already
+   import.
+2. If charts stop binding `rows: 'all'`, what does the source push them — a
+   `ChartDatum[]` part, through the existing `into` mechanism?
+3. `bandBy` → `groupRows(rows, field, keyOf)`: one change, two callers.
