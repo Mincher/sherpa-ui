@@ -8825,6 +8825,7 @@ component names the other.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `examples/contexts/records.js`
+- Site: `test/unit/parity-sweep.test.mjs`
 
 ### T-closest-stops-at-the-shadow-boundary
 

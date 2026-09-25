@@ -46,6 +46,11 @@ const KNOWN = {
   /* A group or sort chip's arrangement. Both are DECLARED props, so a host
      writes them and the chip draws itself from them.
      TRAP T-a-chip-knows-what-kind-it-is */
+  /* The panel's own whole answer. It is WRITTEN by populate(): a scope's
+     filters carry `options[].selected` and their menus carry the conditions,
+     which is the same round trip a saved view needs.
+     TRAP T-the-panel-reports-its-own-reading */
+  'sherpa-filter-panel.readings': 'ok: populate() — selected options and menu conditions',
   'sherpa-quick-filter.column': 'ok: data-column attribute, or its menu pick',
   'sherpa-quick-filter.direction': 'ok: data-direction attribute',
   'sherpa-radial-chart.slices': 'ok: populate()',

@@ -112,3 +112,41 @@ test('the seed runs ONCE — a reload does not re-add the demo records', async (
 
   expect([first, second, third]).toEqual([4, 4, 4]);
 });
+
+test('a stale seed is re-written — and a row a person added stays', async ({ page }) => {
+  // A browser seeded BEFORE the demo data changed kept the old rows for good.
+  await page.goto(APP);
+  await page.evaluate(() => new Promise<void>((resolve) => {
+    const request = indexedDB.deleteDatabase('sherpa-examples');
+    request.onsuccess = () => resolve();
+    request.onerror = () => resolve();
+    request.onblocked = () => resolve();
+  }));
+  await page.reload();
+  await rowCount(page);
+  await addCustomer(page, 'Seed Probe');
+
+  // Age ONE seed row, and mark the stored seed as an old one.
+  await page.evaluate(async () => {
+    const { IdbStore } = await import('/dist/index.js');
+    const store = new IdbStore({ name: 'customers', database: 'sherpa-examples', key: 'email' });
+    const { rows } = await store.load({ filter: ['name', 'ne', 'Seed Probe'], take: 1 });
+    await store.update(rows[0].email, { owner: 'Stale Owner' });
+    store.close();
+    localStorage.setItem('sherpa-examples:customers-seed', '1');
+  });
+
+  await page.reload();
+  await rowCount(page);
+
+  const after = await page.evaluate(async () => {
+    const { IdbStore } = await import('/dist/index.js');
+    const store = new IdbStore({ name: 'customers', database: 'sherpa-examples', key: 'email' });
+    const stale = (await store.load({ filter: ['owner', 'eq', 'Stale Owner'] })).total;
+    const added = (await store.load({ filter: ['name', 'eq', 'Seed Probe'] })).total;
+    store.close();
+    return { stale, added, seed: localStorage.getItem('sherpa-examples:customers-seed') };
+  });
+
+  expect(after).toEqual({ stale: 0, added: 1, seed: '2' });
+});
