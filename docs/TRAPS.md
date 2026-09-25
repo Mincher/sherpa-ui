@@ -8446,6 +8446,41 @@ Two details that are easy to get wrong:
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/scope-registry.test.mjs`
 
+### T-the-fold-measures-a-chip-that-has-not-drawn-itself
+
+`#reflow()` folds chips from the end until the run fits. The loop is correct
+and complete — it cannot rest overflowing. So a bar that DOES rest overflowing
+means a width changed after the last measurement.
+
+It is the chips. A cloned `sherpa-quick-filter` stamps its own label and icon
+on its first render, so a run measured at the end of `#render()` is narrower
+than the run a reader sees. Measured in Firefox, a 300px bar:
+
+    rest    50/48  folded=3      ← one chip short, two pixels over
+    replay  48/48  folded=4      ← the same loop, 400ms later
+
+`chip#active` is **50px in a 48px track**, and at reflow time it was not yet.
+
+**Two frames after `rendered`, not one.** `rendered` resolving says the shadow
+root exists; the first stamp lands in a later turn and its LAYOUT in the turn
+after that. This is `T-a-rebuilt-bar-reads-empty-until-its-menus-stamp` in its
+layout form, and it wants the same double `requestAnimationFrame`.
+
+**Why it looked like a test flake.** It failed roughly one run in six, always
+under parallel load, always as `rests overflowing: 50 > 48 (folded 3)`. The
+test is right to use a plain wait rather than a loop that pumps frames until
+the fold settles — that loop would have hidden this. 24 runs across three
+browsers after the fix, no failures.
+
+Two wrong theories are worth naming, because both were plausible and both were
+measured away: the **font** (`T-the-fold-measures-whatever-font-is-loaded` —
+`document.fonts.status` was `loaded` in the failing case), and the More chip's
+**count badge**, which costs 20px but sits outside `.chips` and so changes its
+`clientWidth` not at all.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+
 ### T-a-broken-assumption-reports
 
 **A guard that expresses a DECISION stays silent. A guard that expresses a

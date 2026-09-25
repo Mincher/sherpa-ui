@@ -2131,7 +2131,11 @@ test('the bar comes to rest fitting, not overflowing', async ({ page }) => {
        does not pump frames. They look at the bar.
 
        400ms is far longer than the two reflows need; if the bar is still wrong
-       here, it is wrong for good. */
+       here, it is wrong for good.
+
+       This test caught a REAL one that way, one run in six under load — the
+       chips had not stamped their own labels when the fold measured them.
+       TRAP T-the-fold-measures-a-chip-that-has-not-drawn-itself */
     await new Promise((res) => setTimeout(res, 400));
 
     const chips = el.shadowRoot!.querySelector('.chips') as HTMLElement;

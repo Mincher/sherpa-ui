@@ -803,6 +803,22 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // A ResizeObserver fires only on a SIZE change; populating is not one, and
     // what fits just changed.
     this.#onResize();
+
+    /* AND AGAIN once every chip has drawn ITSELF. A cloned `sherpa-quick-filter`
+       stamps its own label and icon on its first render, so a run measured now
+       is narrower than the run a reader sees — and the bar came to rest one
+       chip short of folded, two pixels over its edge. Measured in Firefox: the
+       remaining chip is 50px in a 48px track.
+
+       TWO FRAMES after `rendered`, not one: the upgrade and the first stamp
+       land in different turns, and the LAYOUT of that stamp in a third.
+       TRAP T-the-fold-measures-a-chip-that-has-not-drawn-itself
+       TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
+    void Promise.all(this.#chips().map(
+      (chip) => (chip as HTMLElement & { rendered?: Promise<void> }).rendered,
+    )).then(() => new Promise<void>((done) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => done()));
+    })).then(() => { if (this.isConnected) this.#reflow(); });
   }
 
   /** Give a chip its value menu — real checkbox/radio rows in the chip's light DOM. */
