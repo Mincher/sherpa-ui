@@ -517,11 +517,11 @@ export class SherpaFilterPanel extends SherpaElement {
     if (inline) {
       menu.removeAttribute('slot');
     } else {
-      /* A CHIP MENU in the panel COMMITS. Everything else here waits for the
-         panel's own Apply, so a date or a sort that landed on every click
-         would be the one control that did not.
+      /* A FILTER chip's menu in the panel COMMITS — everything else here waits
+         for the panel's own Apply. An ARRANGEMENT does not: group and sort
+         apply as they are picked, on a bar and in a panel alike.
          TRAP T-a-chip-menu-in-the-panel-commits */
-      menu.setAttribute('data-commit', '');
+      if (!arranges(kind)) menu.setAttribute('data-commit', '');
       host.setAttribute('data-menu', '');
     }
     held.menu = menu;

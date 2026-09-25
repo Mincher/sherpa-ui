@@ -8111,12 +8111,17 @@ been pressed.
 
 ### T-a-chip-menu-in-the-panel-commits
 
-A menu drawn as a CHIP inside the filter panel gets `data-commit`.
+A FILTER menu drawn as a CHIP inside the filter panel gets `data-commit`. An
+ARRANGEMENT does not.
 
-Everything else in the panel waits for the panel's own Apply, so a date, a
-group or a sort that landed on every click would be the one control that did
-not — and a reader who opened Group to look would have regrouped the table by
-closing it.
+Everything else in the panel waits for the panel's own Apply, so a date that
+landed on every click would be the one filter that did not.
+
+Group and Sort are the other half of the rule. They do not narrow the rows —
+they say how the rows are laid out — and they apply as they are picked, on a
+bar and in a panel alike. Forcing `data-commit` on them put an Apply button
+under a radio list: the column ticked, the chip stayed off, and the table never
+regrouped. `T-a-chip-knows-what-kind-it-is`.
 
 It is the panel's to set, not the chip's: the same menu on a toolbar commits or
 not by its own `select` mode. `T-commit-follows-select-mode`.

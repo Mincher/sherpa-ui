@@ -1483,3 +1483,74 @@ Declared now, so the commits can be judged against them:
 
 If the arc does not land near that, the plan was wrong and should be said to be
 wrong rather than quietly exceeded.
+
+---
+
+## 16. Saved custom filters — to explore
+
+Will, 2026-09-25. **Not scheduled.** Recorded here so the shape is known before
+step 4 draws the field rows, because two of these change what a "preset" is.
+
+### 16.1 A preset is a conditional, not a boolean
+
+> "The boolean chips in that section of the examples are actually compound
+> conditional filters that (potentially) use more than 1 field and those fields
+> values."
+
+`has-tickets`, `at-risk` and `unassigned` read as boolean chips — one question,
+yes or no. They are not. Each is a **compound condition over one or more
+fields**, already written, that the reader only switches on.
+
+So they should carry the **conditional chip styling — the `f(x)` glyph** — and
+not the plain toggle look. That is a styling change plus an honest `kind`:
+`conditional`, answered by a stored clause rather than by rows.
+
+This lands in `kindOf()` (§2) — a preset is a conditional with its condition
+already given — so it is cheap to do while step 4 is open.
+
+### 16.2 A reader turns a condition INTO a chip
+
+> "We should also allow users to convert conditional filters to a boolean chip."
+
+The reverse direction: a reader who has built `status = churned OR risk > 70`
+saves it as a chip. Same styling as §16.1, because it is the same thing.
+
+Needs a **menu button on the chip with Edit**, which re-opens the condition UI
+— the menu on a bar, the field body in the panel. The UI already exists; what
+is missing is the door back into it from a saved chip.
+
+### 16.3 A whole SCOPE becomes one chip
+
+> "We can also allow creating multi-field conditional boolean chips from a whole
+> filter scope."
+
+Every field answered in a scope, collapsed into one saved chip. Two open
+questions, both listed by Will:
+
+| question | why it is hard |
+|---|---|
+| what happens to the filter UI | the fields it was built from — cleared, kept, or shown as its contents? |
+| how it is edited | a multi-field chip re-opens as a whole scope, not as one menu |
+
+### 16.4 They are SAVED DEFINITIONS, like a view
+
+> "We can think of these as 'saving' custom filter definitions, much like saving
+> a view, and add them to the add filters menu under a 'Custom' section at the
+> bottom."
+
+That is the framing that makes the rest tractable: a saved custom filter is a
+`ViewDefinition` sibling — data, not markup — and the Add menu grows a **Custom
+section at the bottom**.
+
+**They cannot transcend a data source.** A clause names fields; another store
+may not have them. So a saved definition is scoped to its source, and where it
+LIVES is the open question — the same tier question the saved views answered
+(`SessionStore` for chrome, a real store for a deliberate save).
+
+### 16.5 What to settle first
+
+1. Is §16.1 just styling plus `kind`, or does a preset need a stored clause in
+   its def? (It does — and that clause is what §16.2 writes.)
+2. Where a saved definition lives, and how it is keyed to a source.
+3. Whether §16.3 clears the fields it was built from. That one is a product
+   decision, not an implementation one.
