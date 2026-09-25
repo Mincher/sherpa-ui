@@ -11371,6 +11371,34 @@ label, which is a value of nothing.
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `test/e2e/reforged-chart-legend.spec.ts`
 
+### T-a-spec-on-disk-must-be-the-spec-the-source-makes
+
+`spec:check` generated a FRESH spec from the source and validated and
+round-tripped THAT — and never compared it with the `.component.yaml` on disk.
+So a committed spec that no longer described its component passed every
+commit.
+
+Found 2026-09-25, twice in one day: the toolbar's spec lacked the new `held`
+getter, and the filter panel's still advertised `release()`, deleted in 3c-ii.
+Both were caught only because the code map made me regenerate by hand. The
+first full run of the new check found three more — `sherpa-app-shell` and
+`sherpa-barchart` stale in committed code, `sherpa-accordion` stale in another
+session's uncommitted CSS.
+
+So `--check` now has a third half, **fresh**: a generated spec on disk must
+equal what the generator makes from the source now. A hand-authored spec (no
+GENERATED header) is exempt, as it always was from `--all` writes.
+
+**`--staged` in the hook.** Freshness is checked only for a component the
+commit touches. Anyone's half-done CSS makes its spec stale until regenerated,
+and a hook that checked every component blocked every commit on another
+session's work in progress. The full `npm run spec:check` still checks all 61.
+
+**Proving it needs a real staged change.** Writing the committed version back
+and staging it stages NOTHING — the first test of this passed for that reason.
+
+- Site: `scripts/generate-component-spec.mjs`
+
 ### T-a-file-says-what-it-holds
 
 Every file's header ends in a `Map:` — one line per export, what it is and
@@ -11409,6 +11437,12 @@ the final step of every change.
 **A ratchet for the rest.** 91 files had no Map when this landed; they sit in
 `scripts/code-map-baseline.json` and must leave it the first time they are
 touched. 283 `#private` members had no comment; that number may only fall.
+
+**An export LIST is exports too.** `export { generateSpec, toYaml };` at the
+bottom of a file read as "exports nothing", so the file never needed a Map —
+the same blind spot as the spec gate's, found the same day. A name in a local
+list counts when this file DECLARES it; one it only imported is a re-export,
+mapped in its own file.
 
 **The drafts are drafts.** `map:write` fills a line from the JSDoc above the
 export, and 60 of 297 came out blank, cut off, or wrong — a section banner

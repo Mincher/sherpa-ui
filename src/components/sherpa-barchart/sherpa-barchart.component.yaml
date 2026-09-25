@@ -150,6 +150,7 @@ tokens:
   bar-label.font-size: "{sherpa.font-size-body-small}"
   bar-label.line-height: "{sherpa.theme-content-line-height-small}"
   bar-label.color: "{sherpa.theme-content-body-1}"
+  chart-body.flex: "{sherpa.display-mode-space-2xs}"
   axis-label-y.margin-inline-end: "{sherpa.display-mode-space-2xs}"
   gridlines.background-image: "{sherpa.style-border-base}"
   gridlines.border-block-start: "{sherpa.border-top}"

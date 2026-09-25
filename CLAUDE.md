@@ -58,11 +58,13 @@ npm run lint:fix
 npm run lint:css
 npm run lint:css:strict
 
-# Check the component specs. Two halves, and BOTH must pass:
+# Check the component specs. Three halves, and ALL must pass:
 #   validate   — the spec matches schemas/component.v1.json
 #   round-trip — the spec regenerates the source it was made from
-# `spec:check` RUNS IN THE PRE-COMMIT HOOK and writes nothing. A spec that does
-# not match, or that no longer describes its component, blocks the commit.
+#   fresh      — the spec ON DISK is what the source generates now
+# `spec:check` RUNS IN THE PRE-COMMIT HOOK (`--staged`: freshness only for the
+# components the commit touches) and writes nothing. A stale spec blocks the
+# commit; `node scripts/generate-component-spec.mjs <name>` fixes it.
 npm run spec:check
 npm run spec:validate      # the schema half alone
 

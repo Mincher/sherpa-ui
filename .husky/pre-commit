@@ -25,7 +25,9 @@ echo "📋 Checking component specs (schema + round-trip)..."
 # QUIET ON SUCCESS. A 58-row table on every commit is noise that trains people to
 # scroll past the one line that matters. The output is captured and printed only
 # when something fails.
-SPEC_OUT=$(npm run spec:check --silent 2>&1)
+# --staged: a spec must be FRESH only for a component this commit touches — the
+# full `npm run spec:check` checks every one. TRAP T-a-spec-on-disk-must-be-the-spec-the-source-makes
+SPEC_OUT=$(npm run spec:check --silent -- --staged 2>&1)
 SPEC_RESULT=$?
 
 if [ $SPEC_RESULT -ne 0 ]; then

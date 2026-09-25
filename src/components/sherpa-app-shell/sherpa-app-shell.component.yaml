@@ -117,9 +117,11 @@ states:
 tokens:
   header.background: "{sherpa.style-surface-base}"
   panel-start.flex: "{sherpa.panel-area-width}"
-  panel-start.padding: "{sherpa.layout-grid-padding}"
+  panel-start.padding-block: "{sherpa.layout-grid-padding}"
+  panel-start.padding-inline: "{sherpa.layout-grid-padding}"
   panel-end.flex: "{sherpa.panel-area-width}"
-  panel-end.padding: "{sherpa.layout-grid-padding}"
+  panel-end.padding-block: "{sherpa.layout-grid-padding}"
+  panel-end.padding-inline: "{sherpa.layout-grid-padding}"
 $extensions:
   sherpa:
     figmaName: App Shell

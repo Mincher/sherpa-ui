@@ -59,7 +59,12 @@ function docAbove(lines, i) {
   let j = i - 1;
   while (j >= 0 && lines[j].trim() === '') j--;
   if (j < 0) return '';
-  if (lines[j].trim().startsWith('//')) return lines[j].trim().replace(/^\/\/\s?/, '');
+  // A section BANNER (`── Grouped ──`, `══ serialise ══`) heads a region, not one name.
+  const banner = (t) => /^[─═]{2}/.test(t);
+  if (lines[j].trim().startsWith('//')) {
+    const line = lines[j].trim().replace(/^\/\/\s?/, '');
+    return banner(line) ? '' : line;
+  }
   if (!lines[j].trim().endsWith('*/')) return '';
   let k = j;
   while (k >= 0 && !lines[k].includes('/**') && !lines[k].includes('/*')) k--;
@@ -67,8 +72,7 @@ function docAbove(lines, i) {
   if (lines.slice(0, k).every((l) => !l.trim() || l.startsWith('#!'))) return '';
   const text = lines.slice(k, j + 1).join(' ')
     .replace(/\/\*\*?|\*\//g, '').replace(/\s*\*\s/g, ' ').replace(/\s+/g, ' ').trim();
-  // A section BANNER (`── Grouped ──`) heads a region, not this one name.
-  if (text.startsWith('──')) return '';
+  if (banner(text)) return '';
   const first = text.split(/(?<=[.!?])\s|TRAP /)[0].trim();
   return first.length > MAX_LINE ? first.slice(0, MAX_LINE - 1).trimEnd() + '…' : first;
 }
@@ -89,6 +93,18 @@ export function exportsOf(text) {
     if (/\bimplements\b/.test(line) || !OWN_SURFACE_BASES.has(base)) return;
     out.push(...membersOf(lines, i).map((mem) => ({ ...mem, name: `.${mem.name}` })));
   });
+  /* A LOCAL LIST — `export { a, b as c }` with no `from` — exports what this
+     file declares. A name it only IMPORTED is a re-export, mapped in its own
+     file; a list was read as "exports nothing", so such a file needed no Map. */
+  for (const block of text.matchAll(/^export\s*\{([^}]*)\}\s*;?[ \t]*$/gm)) {
+    for (const part of block[1].split(',')) {
+      const [local, exported] = part.replace(/^\s*type\s+/, '').trim().split(/\s+as\s+/);
+      if (!local) continue;
+      const at = lines.findIndex((l) => new RegExp(
+        `^(?:async\\s+)?(?:function\\*?|const|let|var|class)\\s+${local}\\b`).test(l));
+      if (at >= 0) out.push({ name: exported ?? local, doc: docAbove(lines, at) });
+    }
+  }
   return out;
 }
 
