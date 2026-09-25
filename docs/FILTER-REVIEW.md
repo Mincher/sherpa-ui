@@ -1861,3 +1861,32 @@ separate function.
 2. If charts stop binding `rows: 'all'`, what does the source push them — a
    `ChartDatum[]` part, through the existing `into` mechanism?
 3. `bandBy` → `groupRows(rows, field, keyOf)`: one change, two callers.
+
+---
+
+## 20. The active-chip border — parked
+
+Will, 2026-09-25: *"You don't have to do this right now. The rest of the filter
+improvements are more important."* Recorded so it is not re-discovered.
+
+`:host([data-current]) :is(.body, .caret)` sets
+`border-width: var(--sherpa-border-width-sm, 1px)`, and **that token does not
+exist** — the real scale is `--sherpa-display-mode-border-width-*`. So the ON
+rule rides on its own literal fallback.
+
+Measured on the `plan` chip, at both pixel densities:
+
+    DPR 1:  off=1px  on=1px
+    DPR 2:  off=1px  on=1px
+
+The OFF border binds `--sherpa-border-top`, which resolves to
+`--sherpa-display-mode-border-width-sm` = 0.5px, and still measures 1px at 2×.
+So something else is widening the off state too, and **the on/off stroke Will
+asked for on 2026-09-24 has not been visible**. Not yet explained; the next
+look should start from the computed `border-top-width` of `.body` in the off
+state and work outwards.
+
+In Figma, `default` and `active` Style modes BOTH bind
+`--sherpa-display-mode-border-width-sm`, so the 1px active stroke is a code-side
+deviation Will asked for — `--sherpa-display-mode-border-width-base` (1px) is the
+token it should name.
