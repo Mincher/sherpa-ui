@@ -170,8 +170,25 @@ caret announces a column that is not in force. The same shape on Sort:
 A `sort-none` glyph and a neutral face, next to the words "Last seen". That is
 what the report was looking at.
 
-The value must stay — one more click resumes exactly what was there. What is
-open is whether an OFF chip should keep SAYING it. **Will's call.**
+**RULED, 2026-09-25 — this is correct, not a bug.** Will: *"An off chip should
+still show it's value. That applies to all chips regardless of purpose. Value
+is only hidden when it is cleared to none/null."*
+
+So both halves of the report are settled behaviour. Measured after the ruling,
+on the `plan` chip with Free and Pro applied then switched off:
+
+    ON   caret="Free…" count=2  bg #F2DFFF  border #C046FF   pages=2
+    off  caret="Free…" count=2  bg #E8E8F6  border #B3B3C3   pages=4
+
+The filter stops and the answer stays. On and off are told apart by the
+surface, which they clearly are. `T-off-is-not-forgotten` carries the rule.
+
+**And a correction of my own.** I first reported that applying two values left
+the chip off with no filter running. It does not. My probe set
+`input.checked = true` directly, which bypasses the commit menu's pending
+bookkeeping, so Apply had nothing to commit. Real clicks apply correctly. Same
+lesson as the page-size incident in §8 rule 4: drive the control, do not poke
+its parts.
 
 ---
 

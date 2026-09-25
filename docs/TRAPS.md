@@ -8466,6 +8466,7 @@ DOM-free, like the rest of `sherpa-ui/data`, so a node test reads it.
 
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/scope-registry.test.mjs`
+- Site: `examples/contexts/records.js`
 
 ### T-three-things-called-scope
 
@@ -8545,6 +8546,20 @@ A host says what the state IS and never paints the caret or the glyph, so there
 is no second opinion to disagree with. Both painters are deleted.
 
 TRAP T-grid-suspend-is-not-clear is the same rule in the data layer.
+
+**IT APPLIES TO EVERY CHIP, AND IT SHOWS THE VALUE.** Will, 2026-09-25:
+*"An off chip should still show it's value. That applies to all chips
+regardless of purpose. Value is only hidden when it is cleared to none/null."*
+
+So a switched-off chip keeps its caret text and its count badge. Measured on
+the running page, `plan` ticked Free and Pro and then switched off:
+
+    ON   caret="Free…" count=2  bg #F2DFFF  border #C046FF   pages=2
+    off  caret="Free…" count=2  bg #E8E8F6  border #B3B3C3   pages=4
+
+The filter stops; the answer stays, and the two states are told apart by the
+surface, not by hiding the value. An organise chip is the same rule: its caret
+still names the column it would resume on.
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `test/e2e/reforged-quick-filter.spec.ts`

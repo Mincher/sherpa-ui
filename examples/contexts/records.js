@@ -29,6 +29,14 @@ export async function init(root, { session } = {}) {
     searchFields: ['name', 'email', 'owner'],
   });
 
+  /* THE SOURCE, REACHABLE. `debugState()` answers every question a filter bug
+     raises in one paste — rows, total, sort, group, filter, selections,
+     scopes — and there was no way to call it from a running page, so two
+     investigations went hunting through shadow roots instead.
+     Example app only: a library never writes to `window`.
+     TRAP T-a-bug-report-should-be-a-paste */
+  window.sherpa = { ...(window.sherpa ?? {}), source, store };
+
   /* WHAT KIND each field is, said ONCE. The data layer decides what two picks
      on a number mean — this page does not, and no longer can.
      TRAP T-the-field-type-decides-the-clause */
