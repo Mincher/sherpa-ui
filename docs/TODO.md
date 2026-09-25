@@ -8,7 +8,7 @@ Status: `[ ]` open · `[~]` in progress · `[x]` done
 
 ## At a glance
 
-**37 numbered items · 12 done · 1 parked · 2 unclear · 22 open.** Numbers are the spine; the waves below
+**38 numbered items · 12 done · 1 parked · 2 unclear · 23 open.** Numbers are the spine; the waves below
 say what order. Anything not numbered is a sub-item of the section it sits in.
 
 | | # | Item | Wave |
@@ -55,6 +55,7 @@ say what order. Anything not numbered is a sub-item of the section it sits in.
 | | 35 | Layout grid: plain grid templates, not a re-invented grid? | 10 |
 | | 36 | CSS: compiled where it should inherit? | 11 |
 | | 37 | Components are AGNOSTIC of the data, and of the example app | 10 |
+| | 38 | The FILTER family — one model, one builder, one owner | 7 |
 
 **Not blocked — and the values ARE readable live.** Items 3 and 33 needed
 values from `figma.extensions.json`. They are not on the variable, which is why
@@ -1246,6 +1247,122 @@ Find out what it replaces and what it cannot do (the column spans re-scale per
 breakpoint; the fit grid's last row must take the rest) before building.
 
 ---
+
+## Architecture — the filter family
+
+### `[ ]` 38 — The FILTER family: one model, one builder, one owner
+
+Will, 2026-09-25: *"There's SO MUCH code in the filter panel and filter toolbar
+components. I feel like so much has been reinvented that we had working in the
+toolbar for the sake of some visual reorganisation and selection component
+differences for values. All of the events and data transformations would be the
+same."*
+
+And: *"I'm juggling bugs here between the filter panel and filter toolbar when
+the overlap is considerable so the code should be singular, and reused, where
+possible. That's the whole reason that the filter-chip is its own component."*
+
+#### What a filter IS — Will's taxonomy, 2026-09-25
+
+> Group is a thing. Sort is a thing. Boolean filters are a thing. Single select
+> value filters are a thing. Multi select value filters are a thing. Compound
+> Conditional filters are a thing. **Organise is not.** It's just a label on the
+> screen.
+
+Six KINDS. A heading, a section, a zone, a bar, a panel — those are
+PRESENTATION and must never name a kind. `data-kind` carries it; `group` and
+`sort` are implemented, the other four are still spelled out of `select`,
+`conditions` and whether there are options.
+
+#### The functionality that must survive any refactor
+
+| | boolean | single | multi | conditional | group | sort |
+|---|---|---|---|---|---|---|
+| draw on the toolbar | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| draw in the panel | ✅ preset | ✅ run | ✅ run | ✅ inline menu | ✅ chip | ✅ chip |
+| draw in a grid heading | — | ✅ | ✅ | ✅ | — | ✅ |
+| add / remove from the Add menu | ✅ | ✅ | ✅ | ✅ | — | — |
+| answer | tap | pick | tick | rows | pick | pick |
+| suspend, keeping the answer | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| clear | — | ✅ | ✅ | ✅ | ✅ | ✅ |
+| report | `quick-filter-change` | ← | ← | ← | `group-change` | `sort-change` |
+
+Plus, across all of them: the **scopes** (view narrows, component contributes),
+**folding** into More, **superseding** when another scope owns the field, and
+**commit** (Apply) versus applying at once.
+
+#### Where the code is now
+
+| file | ts | css | html |
+|---|---:|---:|---:|
+| `sherpa-quick-filter-toolbar` | **1857** | 268 | 215 |
+| `sherpa-menu` | 1103 | 479 | 295 |
+| `sherpa-filter-panel` | **898** | 197 | 138 |
+| `sherpa-quick-filter` | 703 | 297 | 103 |
+
+The toolbar has **77 methods**, the panel **44**. The panel's own list —
+`#drawField` (106), `#draw` (109), `#flipCondition` (54), `#drawChip` (36),
+`#fillAdd`, `#syncAnswered`, `#heldOfChip`, `#clearField`, `#markConditioned` —
+is a second answer to questions the toolbar already answers with `#render`
+(86), `#addMenu` (141), `#renderAvailable`, `#chipPicks`, `setChipReading`.
+
+#### The bug classes, and which structural cause each came from
+
+Every one of these was a real report in one day:
+
+| symptom | cause |
+|---|---|
+| amber Sort chip | `data-current` written from 26 places; the reader judged it |
+| Group off cleared its column | TWO hosts painted the chip, and disagreed |
+| Sort off also killed Group | one container swept a run it did not own |
+| menus dead after leaving the panel | the borrower did not give them back on close |
+| conditional chip opened a blank card | the drill moves ROWS; conditions are not rows |
+| Add could not remove | the bar's menu listed what was LEFT, not the whole list |
+
+**Not one of them was in the data layer.** All six are two components
+re-deriving what one of them, or the chip, already knows.
+
+#### The plan — four moves, smallest first
+
+**1. `[x]` The chip owns its KIND** — done 2026-09-25. Group and Sort own their
+gesture, draw themselves and report by name; the containers place them and the
+panel annotates with `scope`. Deleted `#toggleGroup`, `#cycleSort`,
+`#syncSortLabel`, `#syncGroupLabel`, `#organiseClick`, `#organiseField` and the
+panel's shadow copy of the sort state. TRAP `T-a-chip-knows-what-kind-it-is`.
+
+**2. The panel ASKS instead of deriving.** It already reaches the bar for
+`report()` and `heldIds`; `states`, `readings` and `setChipReading` exist for
+the rest. `#picked`, `#clearField`, `#markConditioned` and `#flipCondition`
+become calls. ~150 lines, and it closes the "second answer" class.
+TRAP `T-the-panel-asks-the-bar-it-does-not-answer-for-it`.
+
+**3. ONE field-row builder.** `#drawField` / `#drawChip` / `#drawSection` and
+`#render` / `#addMenu` differ by exactly two things: the layout DIRECTION, and
+whether a field's values EXPLODE into a run or stay behind a menu. That is two
+flags, not two implementations. ~200 lines, and the biggest risk — land 2 first.
+
+**4. Split `filter-state.ts`** (547 lines, three jobs): the state model and
+query building, how a filter READS in words and badges, and `bindSelection`.
+Tidiness, no behaviour.
+
+#### Rules for the work
+
+- **Land one move per commit**, full suite between. Every move deletes what it
+  replaces — a refactor that leaves both is worse than none.
+- **Pin the invariant before moving it.** Off-keeps-the-value regressed because
+  nothing tested it across kinds; it does now.
+- **Measure on the running page, not in the abstract.** A probe that walks every
+  shadow root and prints `data-*` finds in minutes what a dozen readings miss —
+  and read the TOTAL, never the drawn page, or a page-size of 25 reads as "the
+  filter did nothing".
+
+#### Open bug, to fix after move 2
+
+A **compound** (multi-row) Owner condition from the panel appears not to widen:
+one row and two rows ORed both give the same result. The reading is correct and
+live — `conditions: [{eq, Dana}, {eq, or, Ravi}]`, `suspended: false` — so the
+break is at or after `chainConditions`, not in the UI. Needs a row-COUNT read
+to confirm; the pager reports pages only.
 
 ## Architecture — component boundaries
 
