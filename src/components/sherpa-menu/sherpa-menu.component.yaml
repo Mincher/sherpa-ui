@@ -188,7 +188,6 @@ anatomy:
                     class: drop-condition
                     attrs:
                       data-type: icon
-                      data-size: xs
                       data-icon-start: cross
                       aria-label: Remove condition
 props:

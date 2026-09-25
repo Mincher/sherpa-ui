@@ -2661,3 +2661,61 @@ test('a custom chip GIVEN its condition opens a menu on it', async ({ page }) =>
   expect(r.bare.caret).toBe(true);
   expect(r.bare.menu).toBe(false);
 });
+
+/**
+ * The More chip drills into a folded filter by MOVING its menu's rows. A
+ * conditions-only menu has none — its answer is the condition rows in its own
+ * shadow DOM — so drilling showed a blank card, the filter could never be
+ * answered, never went active, and never filtered.
+ *
+ * TRAP T-a-conditions-only-menu-cannot-be-drilled
+ */
+test('a FOLDED conditions-only filter opens its own menu, not a blank drill', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    // NARROW, so the filters fold into More.
+    el.style.cssText = 'max-inline-size: 260px';
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate([
+      { id: 'status', label: 'Status', select: 'multiple',
+        options: [{ value: 'a', label: 'a' }, { value: 'b', label: 'b' }] },
+      { id: 'email', label: 'Email', conditions: 'only', op: 'contains' },
+    ]);
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await settle();
+    for (let i = 0; i < 20 && !el.getAttribute('data-folded'); i++) {
+      await new Promise((res) => setTimeout(res, 80));
+    }
+
+    const sr = el.shadowRoot!;
+    const overflow = sr.querySelector<HTMLElement>('.overflow-chip')!;
+    const row = overflow.querySelector<HTMLElement>('.qf-folded[data-for="email"]');
+    const menu = sr.querySelector('.chip[data-id="email"] sherpa-menu') as
+      (HTMLElement & { shadowRoot: ShadowRoot }) | null;
+    if (!row || !menu) return { folded: el.getAttribute('data-folded'), row: !!row, menu: !!menu };
+
+    row.click();
+    await settle();
+    await new Promise((res) => setTimeout(res, 120));
+
+    const overflowMenu = overflow.querySelector('sherpa-menu')!;
+    return {
+      // Its OWN menu opened, in condition mode...
+      opened: menu.hasAttribute('open'),
+      mode: menu.getAttribute('data-mode'),
+      // ...with a condition row a reader can actually type into.
+      hasConditionRow: !!menu.shadowRoot.querySelector('.condition-row'),
+      // ...and the More menu was NOT filled with its (empty) light DOM.
+      overflowStillListsFilters: overflowMenu.querySelectorAll('.qf-folded, .qf-toggle').length > 0,
+    };
+  });
+
+  expect(r.opened).toBe(true);
+  expect(r.mode).toBe('condition');
+  expect(r.hasConditionRow).toBe(true);
+  expect(r.overflowStillListsFilters).toBe(true);
+});

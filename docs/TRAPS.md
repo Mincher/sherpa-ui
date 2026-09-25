@@ -8377,6 +8377,32 @@ row has and the view went to 0 rows. A `data-custom` chip is reported by
 - Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 
+### T-a-conditions-only-menu-cannot-be-drilled
+
+The More chip drills into a folded filter by MOVING its menu's light-DOM rows
+into the overflow menu: `into.replaceChildren(...from.childNodes)`.
+
+A conditions-only menu has no light-DOM children. Its answer is the condition
+ROWS, which live in its own shadow DOM and are driven by `data-conditions-only`
+and `data-mode` — attributes the overflow menu does not have. So drilling put a
+blank card on screen.
+
+Three reports, one cause. Will: *"Still can't open the menu from a conditional
+filter chip in the toolbar"*, *"Seems like the Email filter doesn't get set to
+active"*, and *"I entered a value into the Emails conditional inputs and clicked
+apply but it had no effect on filtering the data."* It could never be answered,
+so it never went active, so it never filtered.
+
+Measured: the same chip driven directly works end to end — open, type, apply,
+25 rows to 2. Only the FOLDED path failed, which is why it looked like three
+bugs.
+
+A menu with nothing to drill is SHOWN instead, anchored to the More chip. The
+rows are not the answer, so moving them is the wrong gesture.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+
 ### T-a-filter-answers-by-values-conditions-or-both
 
 A filter is answered three ways, and the field says which:
@@ -8405,6 +8431,7 @@ or-chain.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `examples/contexts/records.js`

@@ -321,6 +321,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const into = chip?.querySelector<HTMLElement>('sherpa-menu');
     if (!from || !into || !chip) return;
 
+    /* NOTHING TO DRILL. A conditions-only menu answers with its condition
+       ROWS, which live in its own shadow DOM — moving its empty light DOM put
+       a blank card on screen, so the filter could never be answered, never
+       went active, and never filtered. Show the menu ITSELF, anchored to the
+       More chip. TRAP T-a-conditions-only-menu-cannot-be-drilled */
+    if (!from.children.length) {
+      this.#closeOverflow();
+      (from as HTMLElement & { show?: (t?: HTMLElement) => void }).show?.(chip);
+      return;
+    }
+
     // Back stays one level deep, never a chain.
     if (this.#drill) this.#drillOut();
 
