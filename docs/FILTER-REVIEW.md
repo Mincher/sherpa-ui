@@ -5,6 +5,8 @@ every command used is given so you can re-run it.
 
 ---
 
+**Diagrams of the target architecture are in §9.**
+
 ## 1. The short version
 
 Four components draw filters: `sherpa-quick-filter` (the chip), its toolbar,
@@ -306,6 +308,8 @@ Plus `held()` and the binding, ≈40 new. **Net ≈ −130.**
 
 ##### First: "scope" already means three things
 
+*Diagram: §9.5.*
+
 The same disease as `kind`. `DataSource` uses the word twice, for unrelated
 axes, and the app uses it a third way:
 
@@ -346,6 +350,8 @@ filter redraws from the source rather than from a sibling.
 
 ##### Automatic registration
 
+*Diagram: §9.2.*
+
 A component must not name its source — that is the coupling again. The web
 component idiom is a **provider request**: on connect the element dispatches a
 composed event, and the nearest `DataSource` in the tree answers it.
@@ -364,6 +370,8 @@ the same element, wired two ways, is a second door, so the request path calls
 and belongs with that work, not before it.
 
 ##### The component DECLARES; the data layer COMPOSES
+
+*Diagrams: §9.1 and §9.4.*
 
 Will, 2026-09-25:
 
@@ -472,3 +480,176 @@ reads in words and badges; `bindSelection`. Tidiness, no behaviour change.
    a working filter look broken; that cost an hour and a false bug report.
 5. **One step per commit, full suite between.** Two steps in one commit means a
    failure cannot be bisected.
+
+---
+
+## 9. How the system should work
+
+### 9.1 Two channels, and only two
+
+**Configuration comes from attributes — in HTML templates, or as JS
+properties.** It never travels through the data layer. **Data comes from the
+data layer.** It never travels between components.
+
+```mermaid
+flowchart LR
+  subgraph AUTHOR["App / template — CONFIGURATION"]
+    TPL["HTML template<br/>data-label, data-field,<br/>data-aggregate, data-kind"]
+    PROP["JS properties<br/>columns, actions, key"]
+  end
+
+  subgraph UI["UI components"]
+    GRID["sherpa-data-grid"]
+    MET["sherpa-metric"]
+    BAR["sherpa-quick-filter-toolbar"]
+    PAN["sherpa-filter-panel"]
+  end
+
+  SRC[("Data layer<br/>DataSource")]
+  STORE[("Store<br/>the raw rows")]
+
+  TPL --> UI
+  PROP --> UI
+  UI -- "PARAMETERS<br/>what the reader did" --> SRC
+  SRC -- "DATA<br/>composed for what each declared" --> UI
+  SRC <--> STORE
+
+  UI -.->|never| UI
+```
+
+The dotted line is the rule that has been broken: **no component talks to
+another.** Today the panel searches the page for a toolbar, reads its shadow
+root and takes its menus.
+
+### 9.2 How a component joins — automatic registration
+
+A component must not name its source, or that is the coupling again. It calls
+out; the nearest source answers.
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant EL as A component
+  participant TREE as The DOM
+  participant SRC as DataSource
+
+  EL->>TREE: connected
+  EL->>TREE: dispatch sherpa-source-request (bubbles, composed)
+  TREE-->>SRC: reaches the NEAREST source
+  SRC->>SRC: bind(el) — one wiring path, not two
+  SRC-->>EL: accept(source)
+  SRC->>EL: push the data it declared it needs
+  Note over EL,SRC: the element never named a source;<br/>the source never named a tag
+```
+
+### 9.3 The round trip — a reader changes something
+
+```mermaid
+sequenceDiagram
+  autonumber
+  actor R as Reader
+  participant C as A chip, or a panel row
+  participant SRC as DataSource
+  participant ALL as EVERY bound component
+
+  R->>C: tick a value / cycle the sort
+  C->>SRC: apply(readings) — PARAMETERS, never a query
+  Note right of SRC: stateClause → filter → sort → group → page<br/>the raw rows are never written to
+  SRC-->>ALL: data-change — rows + view state
+  ALL->>ALL: each redraws from what it was given
+  Note over C,ALL: the chip did not tell the panel anything.<br/>The panel redrew because the DATA changed.
+```
+
+### 9.4 What a component declares, and what it gets back
+
+The template already carries the declaration. The source does the composing —
+with the helpers it already owns, not with a closure the app writes.
+
+```mermaid
+flowchart LR
+  DECL["sherpa-metric<br/>data-label=Total spend<br/>data-field=spend<br/>data-aggregate=sum<br/>data-series-by=created<br/>data-series-step=month"]
+  SRC[("DataSource<br/>reduceRows · seriesBy · deltaPercent")]
+  OUT["{ label, value,<br/>values, deltaPercent }"]
+  MET["sherpa-metric<br/>draws it"]
+
+  DECL -- "what I need" --> SRC
+  SRC -- "composed" --> OUT
+  OUT --> MET
+```
+
+The shapes are a small closed set, not a language:
+
+```mermaid
+flowchart TB
+  SRC[("DataSource")]
+  SRC --> A["ROWS<br/>grid · list · transfer list"]
+  SRC --> B["an AGGREGATE of one field<br/>metric · progress bar · gauge"]
+  SRC --> C["a SERIES over a field<br/>sparkline · line · bar"]
+  SRC --> D["a FIELD VALUES, with counts<br/>menu · quick filter · chart legend"]
+  SRC --> E["the VIEW STATE only<br/>pagination"]
+```
+
+### 9.5 Scope — three meanings, renamed apart
+
+```mermaid
+flowchart TB
+  subgraph BEFORE["One word, three jobs"]
+    X1["ApplyAt.scope<br/>view / component"]
+    X2["BindOptions.scope<br/>page / all"]
+    X3["records.js scope<br/>view / data"]
+  end
+  subgraph AFTER["Named apart"]
+    Y1["reach<br/>view / component<br/>how far a filter narrows"]
+    Y2["rows<br/>page / all<br/>which rows a bind is given"]
+    Y3["scope<br/>the app own names<br/>WHICH SURFACE holds a filter"]
+  end
+  X1 --> Y1
+  X2 --> Y2
+  X3 --> Y3
+```
+
+Only the third is what Will's ruling is about, and it is the one with no home
+today. It becomes a small registry in the source, holding current state only:
+
+```mermaid
+flowchart LR
+  BAR["toolbar - header"] -- "hold view" --> REG[("scope registry<br/>in DataSource")]
+  BAR2["toolbar - grid"] -- "hold data" --> REG
+  REG -- "scope data" --> PAN["filter panel<br/>draws the same fields"]
+  REG -- "scopeOf customer" --> BAR2
+  REG -. "scope-change" .-> BAR
+  REG -. "scope-change" .-> BAR2
+  REG -. "scope-change" .-> PAN
+```
+
+`scopeOf(field)` is what makes **superseding** work without one bar knowing the
+other: a field the `view` scope holds is not the `data` bar's to narrow.
+
+### 9.6 The coupling, before and after
+
+```mermaid
+flowchart TB
+  subgraph NOW["Today"]
+    direction TB
+    P1["filter panel"]
+    B1["quick filter toolbar"]
+    S1[("DataSource")]
+    P1 -- "searches the page for a toolbar" --> B1
+    P1 -- "reads .shadowRoot, calls report(),<br/>reads heldIds, MOVES its menus" --> B1
+    B1 --> S1
+    P1 -. "not bound at all" .-> S1
+  end
+
+  subgraph AFTER2["After step 3"]
+    direction TB
+    P2["filter panel"]
+    B2["quick filter toolbar"]
+    S2[("DataSource<br/>+ scope registry")]
+    P2 <--> S2
+    B2 <--> S2
+  end
+```
+
+Both components draw their own menus from their own configuration. Borrowing
+exists only because the menu held the truth; once the source does, two menus
+over one field cannot disagree.
