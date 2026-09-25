@@ -311,10 +311,6 @@ export class SherpaQuickFilter extends SherpaElement {
   };
 
   /**
-   * Flag "on, but filtering by nothing" so CSS can warn.
-   * TRAP T-empty-flag-needs-rows-to-count — a PERSISTENT or LOCKED chip is exempt.
-   */
-  /**
    * What the tooltip says. A chip with values describes them; one that is OFF
    * because another control owns its field says SO, because "no tooltip" reads
    * as "nothing here" — and the reader's own filter has not gone anywhere.
@@ -332,6 +328,10 @@ export class SherpaQuickFilter extends SherpaElement {
     return values;
   }
 
+  /**
+   * Flag "on, but filtering by nothing" so CSS can warn.
+   * TRAP T-empty-flag-needs-rows-to-count — PERSISTENT, LOCKED and ORGANISE are exempt.
+   */
   #syncEmpty(): void {
     /* `data-empty` means ON BUT FILTERING NOTHING. An organise chip never
        filters, so the question does not apply — and its menu picks a COLUMN,

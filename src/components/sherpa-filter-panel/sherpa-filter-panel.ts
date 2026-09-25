@@ -360,9 +360,12 @@ export class SherpaFilterPanel extends SherpaElement {
     if (def.icon) one.setAttribute('data-icon-start', def.icon);
     one.dataset['value'] = def.id;
     one.dataset['search'] = def.label.toLowerCase();
-    /* ARRANGES rows, never chooses them — so the amber "on but filtering
-       nothing" test must skip it. TRAP T-an-organise-chip-has-no-values */
-    one.toggleAttribute('data-organise', def.id === 'group' || def.id === 'sort');
+    /* ARRANGES rows, never chooses them. Its menu holds COLUMNS, so those rows
+       are not the chip's values and this panel owns its state.
+       TRAP T-an-organise-chip-has-no-values */
+    const organise = def.id === 'group' || def.id === 'sort';
+    one.toggleAttribute('data-organise', organise);
+    one.toggleAttribute('data-locked', organise);
     one.toggleAttribute('data-current', (def.options ?? []).some((o) => o.selected));
 
     const held: Held = { def, scope, box: section.box, values: section.values };
@@ -435,6 +438,7 @@ export class SherpaFilterPanel extends SherpaElement {
       one.dataset['value'] = def.id;
       one.dataset['search'] = def.label.toLowerCase();
       one.toggleAttribute('data-organise', organise);
+      one.toggleAttribute('data-locked', organise);
       one.toggleAttribute('data-current', options.some((o) => o.selected));
       values.append(one);
 

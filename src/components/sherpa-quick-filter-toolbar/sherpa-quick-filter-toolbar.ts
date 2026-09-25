@@ -1389,15 +1389,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /**
    * Flip grouping from the chip's body. SUSPEND, NEVER CLEAR — the radio keeps
-   * its column, and the chip has ALREADY flipped its own `data-current`.
+   * its column.
    */
   #toggleGroup(chip: HTMLElement): void {
-    /* On with nothing ever picked lights a chip that groups nothing, and the host
-       writes `data-group-field=""` straight back — a flicker. No pick is not a
-       suspended pick. */
-    if (chip.hasAttribute('data-current') && !this.#menuValue('group')) {
-      chip.removeAttribute('data-current');
-    }
+    /* The chip is LOCKED, so this host does the flip. On with nothing ever
+       picked lights a chip that groups nothing, and the host writes
+       `data-group-field=""` straight back — a flicker. No pick is not a
+       suspended pick. TRAP T-an-organise-chip-has-no-values */
+    const on = !chip.hasAttribute('data-current') && !!this.#menuValue('group');
+    chip.toggleAttribute('data-current', on);
     this.#syncGroupLabel(chip);
     // REPORTS — the host owns the grouping and writes `data-group-field` back.
     this.emit('group-change', { field: this.groupField });
@@ -1408,9 +1408,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     /* ONE CYCLE, in `core/cycle.ts` — the same function the grid's column header
        runs; written separately the two drifted. TRAP T-one-cycle-for-one-value
 
-       The chip has ALREADY flipped its own `data-current`, so the live state is
-       the INVERSE of what it now says. */
-    const wasLive = !chip.hasAttribute('data-current');
+       The chip is LOCKED, so `data-current` still says what is LIVE. */
+    const wasLive = chip.hasAttribute('data-current');
     const column = this.#menuValue('sort') ?? '';
     /* NO COLUMN, NOTHING TO CYCLE — the same guard #toggleGroup has. Without
        it `nextSort('', '', 'asc')` answers `desc` and the chip lights up
@@ -1807,7 +1806,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (!chip) throw new Error('sherpa-quick-filter-toolbar: template.qf-tpl is missing or empty');
     chip.classList.remove('chip');
     chip.classList.add('organise-chip');
+    /* ARRANGES rows, never chooses them. Its menu holds COLUMNS, so those rows
+       are not the chip's values — the same reason the More chip is locked, and
+       the host does the flip. TRAP T-an-organise-chip-has-no-values */
     chip.setAttribute('data-organise', '');
+    chip.setAttribute('data-locked', '');
     chip.dataset['id'] = id;
     chip.setAttribute('data-label', label);
     chip.setAttribute('data-icon-start', icon);
