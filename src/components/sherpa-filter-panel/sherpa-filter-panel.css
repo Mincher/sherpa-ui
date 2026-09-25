@@ -187,7 +187,10 @@
 .scope::part(header) { gap: var(--sherpa-display-mode-space-sm, 12px); }
 
 .scope-actions { display: block; }
-.scope-add { display: none; }
+.scope-add,
+.scope-save { display: none; }
+/* Only a scope with something to save, in a host that saves. */
+.scope[data-can-save] .scope-save { display: inline-flex; }
 .scope[data-can-add] .scope-add {
   display: inline-flex;
   /* It does not wrap: a 288px column is narrow, and "Add / filter" on two

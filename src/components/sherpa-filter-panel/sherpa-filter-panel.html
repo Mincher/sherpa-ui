@@ -25,6 +25,10 @@
     data-locked     the source owns the state — report, never set
     data-min-width  the width below which the panel refuses to show, in px
                     (default 1280). Filtering goes back to the toolbars there.
+    data-saveable   the host SAVES filters: a scope with an answered field
+                    offers "Save filter", and a reader's own saved preset
+                    opens Edit filter and Delete filter — each asked for.
+                    TRAP T-the-panel-saves-a-whole-scope
 
   Slots:
     (default)   extra content under the scopes
@@ -36,6 +40,9 @@
     filter-remove — a field's Remove. detail: { scope, id }
     group-change — a Group chip, re-emitted with its scope. detail: { field, scope }
     sort-change — a Sort chip, re-emitted with its scope. detail: { field, direction, scope }
+    filter-save — a scope's Save filter. detail: { scope, readings }
+    filter-edit — a saved preset's Edit filter. detail: { scope, id }
+    filter-delete — a saved preset's Delete filter. detail: { scope, id }
 -->
 <template id="default">
   <!-- A CONTAINER, not a sherpa-panel: a panel draws LEFT and RIGHT edges only
@@ -90,6 +97,8 @@
         <sherpa-button class="scope-add" data-size="sm"
                        data-icon-end="triangle-down"
                        aria-haspopup="menu">Add filter</sherpa-button>
+        <!-- The whole scope as ONE saved filter. TRAP T-the-panel-saves-a-whole-scope -->
+        <sherpa-button class="scope-save" data-size="sm">Save filter</sherpa-button>
       </span>
     </sherpa-accordion>
   </template>
@@ -126,6 +135,14 @@
 
   <template class="value-tpl">
     <sherpa-quick-filter class="value"></sherpa-quick-filter>
+  </template>
+
+  <!-- A reader's OWN saved preset opens these. TRAP T-the-panel-saves-a-whole-scope -->
+  <template class="saved-menu-tpl">
+    <sherpa-menu slot="menu">
+      <button type="button" value="edit">Edit filter</button>
+      <button type="button" value="delete">Delete filter</button>
+    </sherpa-menu>
   </template>
 
   <!-- A scope with nothing to draw says so; empty, it reads as broken. -->

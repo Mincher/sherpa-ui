@@ -1042,8 +1042,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const id = this.pathFind(event, 'sherpa-quick-filter')?.dataset['id'];
       if (!id) return;
       event.stopImmediatePropagation();
-      if (value === 'edit') this.unpackFilter(id);
-      else this.#deleteFilter(id);
+      if (value === 'edit') void this.unpackFilter(id);
+      else this.deleteFilter(id);
       return;
     }
     if (value !== 'remove') return;
@@ -1192,9 +1192,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * Put a saved filter's answer back into its fields — UNPACK. A field not on
    * the bar comes onto it from the Add list; each holds its part again, and
-   * the saved chip goes OFF. ONE event. TRAP T-edit-unpacks-a-saved-filter
+   * the saved chip goes OFF. ONE event, and the promise settles after it.
+   * TRAP T-edit-unpacks-a-saved-filter
    */
-  unpackFilter(id: string): void {
+  unpackFilter(id: string): Promise<void> {
     const def = this.#filters.find((f) => f.id === id);
     if (!def?.readings) {
       // TRAP T-a-broken-assumption-reports
@@ -1203,7 +1204,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         message: 'unpackFilter: this bar holds no saved filter by that id.',
         at: { id, held: this.#filters.map((f) => f.id).join(',') },
       });
-      return;
+      return Promise.resolve();
     }
     const readings = def.readings;
     for (const field of Object.keys(readings)) {
@@ -1225,7 +1226,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const chip = this.#chips().find((c) => c.dataset['id'] === id);
     if (chip) chip.current = false;
     // The rebuilt menus take rows only once they have drawn.
-    void this.#settled().then(() => {
+    return this.#settled().then(() => {
       for (const [field, reading] of Object.entries(readings)) {
         this.#clearField(field);
         this.setChipReading(field, reading);
@@ -1234,8 +1235,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     });
   }
 
-  /** Delete: the saved filter is gone from the bar AND the Add list; the host forgets it. */
-  #deleteFilter(id: string): void {
+  /**
+   * Delete a saved filter: gone from the bar AND the Add list, and
+   * `filter-delete` tells the host to forget it. TRAP T-edit-unpacks-a-saved-filter
+   */
+  deleteFilter(id: string): void {
     this.#filters = this.#filters.filter((f) => f.id !== id);
     this.#available = this.#available.filter((f) => f.id !== id);
     if (this.#unpacked?.id === id) this.#unpacked = null;
@@ -1555,9 +1559,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   get held(): QuickFilterDef[] {
     const readings = this.readings;
+    // A chip with no field reading — a toggle, a saved filter — is on or off AS IT IS.
+    const on = new Set(this.#chips().filter((c) => c.current).map((c) => c.dataset['id']));
     return this.#filters.map((def) => {
       const reading = readings[def.id];
-      if (!reading) return { ...def };
+      if (!reading) return { ...def, active: on.has(def.id) };
       const picked = new Set((reading.picked ?? []).map(String));
       return {
         ...def,

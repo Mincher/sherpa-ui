@@ -92,6 +92,10 @@ anatomy:
                     data-size: sm
                     data-icon-end: triangle-down
                     aria-haspopup: menu
+                - el: sherpa-button
+                  class: scope-save
+                  attrs:
+                    data-size: sm
 props:
   - $type: prop
     name: data-heading
@@ -123,6 +127,15 @@ props:
     description: >-
       the panel is showing. A host writes it; the panel reports `filter-panel-close` and never hides
       itself, except below its breakpoint. TRAP T-the-panel-is-desktop-only
+  - $type: prop
+    name: data-saveable
+    type: string
+    observed: true
+    kind: style
+    description: >-
+      the host SAVES filters: a scope with an answered field offers "Save filter", and a reader's
+      own saved preset opens Edit filter and Delete filter — each asked for. TRAP
+      T-the-panel-saves-a-whole-scope
 states:
   - $type: state
     name: open
@@ -172,6 +185,21 @@ events:
     composed: true
   - $type: event
     name: sort-change
+    bubbles: true
+    composed: true
+  - $type: event
+    name: filter-save
+    bubbles: true
+    composed: true
+    detail:
+      readings: unknown
+      scope: unknown
+  - $type: event
+    name: filter-edit
+    bubbles: true
+    composed: true
+  - $type: event
+    name: filter-delete
     bubbles: true
     composed: true
   - $type: event

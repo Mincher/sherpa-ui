@@ -248,8 +248,9 @@ capabilities:
     api: js-methods
     description: >-
       callable from a view definition's state block (setChipValues, setChipReading, supersede,
-      unpackFilter, packFilter, setClause, report, available, addFilters, removeFilter, allowFields,
-      addExternalFilter, addCustomFilter, clearAll, organise). See $extensions.sherpa.methods.
+      unpackFilter, deleteFilter, packFilter, setClause, report, available, addFilters,
+      removeFilter, allowFields, addExternalFilter, addCustomFilter, clearAll, organise). See
+      $extensions.sherpa.methods.
 events:
   - $type: event
     name: quick-filter-change
@@ -366,6 +367,10 @@ $extensions:
         name: unpackFilter
         args: "id: string"
         description: Put a saved filter's answer back into its fields — UNPACK. A field not on
+      - $type: method
+        name: deleteFilter
+        args: "id: string"
+        description: "Delete a saved filter: gone from the bar AND the Add list, and"
       - $type: method
         name: packFilter
         args: "saved: SavedFilter & { id: string }"

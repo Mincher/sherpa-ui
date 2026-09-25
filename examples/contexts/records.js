@@ -92,6 +92,12 @@ export async function init(root, { session } = {}) {
     /* WHAT IS IN FORCE, from the bar's own read-back — so the panel opens on
        the answer the rows are under. */
     state: f.state,
+    // A SAVED filter carries its answer, and the reader's own can be edited.
+    readings: f.readings,
+    editable: f.editable,
+    /* ON OR OFF AS IT IS — a preset's whole state. Left out, every preset in
+       the panel read off, whatever the bar said. */
+    active: f.active,
     /* A PRESET has no values AND no body of its own — one question, answered
        yes or no. TRAP T-a-chip-with-no-field-is-a-preset */
     preset: !f.options?.length && !f.kind && !f.custom,
@@ -516,6 +522,24 @@ export async function init(root, { session } = {}) {
     void refill();
   }, { signal });
 
+  /* SAVED FILTERS FROM THE PANEL, which answers for the bar in panel mode.
+     Each is a REQUEST, as Add and Remove are: the BAR owns the list.
+     TRAP T-the-panel-saves-a-whole-scope */
+  panel?.setAttribute('data-saveable', '');
+  signal.addEventListener('abort', () => panel?.removeAttribute('data-saveable'), { once: true });
+  panel?.addEventListener('filter-save', (e) => {
+    saveAndPack(e.detail);
+    void refill();
+  }, { signal });
+  panel?.addEventListener('filter-edit', async (e) => {
+    await barFor(e.detail.scope)?.unpackFilter?.(e.detail.id);
+    void refill();
+  }, { signal });
+  panel?.addEventListener('filter-delete', (e) => {
+    barFor(e.detail.scope)?.deleteFilter?.(e.detail.id);
+    void refill();
+  }, { signal });
+
   /* GROUP and SORT arrange the rows; they are not filters. THROUGH THE SOURCE,
      not onto the grid: `bind()` writes `data-group-field` and `data-sort-field`
      on every bound component from the source's own state, so an attribute
@@ -822,13 +846,14 @@ export async function init(root, { session } = {}) {
      CUSTOMER records — not over this page — and the bar shows it in place of
      the fields it came from. TRAP T-save-packs-the-fields-into-one-chip
      TRAP T-a-saved-filter-lives-with-its-data */
-  qft.addEventListener('filter-save', (e) => {
+  const saveAndPack = ({ readings, label: was }) => {
     // After an Edit the old name is offered, so the same name updates it.
-    const label = prompt('Name this filter', e.detail.label ?? '')?.trim();
+    const label = prompt('Name this filter', was ?? '')?.trim();
     if (!label) return;
-    saveFilterAs('customers', label, e.detail.readings);
-    qft.packFilter({ id: `custom:${labelId(label)}`, label, readings: e.detail.readings });
-  }, { signal });
+    saveFilterAs('customers', label, readings);
+    qft.packFilter({ id: `custom:${labelId(label)}`, label, readings });
+  };
+  qft.addEventListener('filter-save', (e) => saveAndPack(e.detail), { signal });
   // DELETE: the bar has let it go; this page forgets it. TRAP T-edit-unpacks-a-saved-filter
   qft.addEventListener('filter-delete', (e) => {
     deleteSavedFilter('customers', e.detail.id.replace(/^custom:/, ''));

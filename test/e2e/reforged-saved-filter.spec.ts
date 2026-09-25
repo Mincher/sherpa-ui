@@ -416,6 +416,8 @@ test('Edit unpacks the answer into its fields, in one event; Delete forgets the 
     await window.__settled();
     await new Promise((res) => setTimeout(res, 150));
     await source.load();
+    // What the bar HOLDS says the chip is off now — the panel draws from it.
+    const heldOn = bar.held.find((d) => d.id === 'custom:mine')?.['active'];
     const fields = (bar as unknown as { readings: Record<string, { picked: unknown[]; conditions: unknown[] }> }).readings;
     const edited = {
       events,
@@ -437,7 +439,16 @@ test('Edit unpacks the answer into its fields, in one event; Delete forgets the 
     await window.__settled();
     const addRows = [...bar.shadowRoot!.querySelectorAll<HTMLInputElement>('.add-btn sherpa-menu input')]
       .map((i) => i.value);
-    return { before, edited, asked, told, gone: !chip('custom:mine'), offered: addRows.includes('custom:mine') };
+    // The same doors, CALLED: a panel in panel mode has only these.
+    const bar2 = bar as unknown as { packFilter(s: unknown): void; unpackFilter(id: string): Promise<void>;
+      deleteFilter(id: string): void };
+    bar2.packFilter({ id: 'custom:again', label: 'Again', readings });
+    const waited = bar2.unpackFilter('custom:again') instanceof Promise;
+    await window.__settled();
+    bar2.deleteFilter('custom:again');
+    const called = { waited, gone: !chip('custom:again'), told: told.at(-1) };
+    return { before, edited, heldOn, asked, told: told.slice(0, 1), gone: !chip('custom:mine'),
+      offered: addRows.includes('custom:mine'), called };
   }, { OPTS });
 
   expect(r.before).toEqual({ total: 1, parts: ['saved:custom:mine'] });
@@ -453,9 +464,11 @@ test('Edit unpacks the answer into its fields, in one event; Delete forgets the 
     readings: { owner: { conditions: [{ op: 'contains', text: 'Da' }] }, tier: { picked: ['gold'] } },
     id: 'custom:mine', label: 'Mine',
   }]);
+  expect(r.heldOn).toBe(false);
   expect(r.told).toEqual([{ id: 'custom:mine' }]);
   expect(r.gone).toBe(true);
   expect(r.offered).toBe(false);
+  expect(r.called).toEqual({ waited: true, gone: true, told: { id: 'custom:again' } });
 });
 
 /** The Records page: Edit, then Save offers the old name back; Delete forgets it. */
@@ -497,5 +510,108 @@ test('the Records page edits a saved filter under its own name, and deletes it',
   await press('.chip[data-id="custom:dana-accounts"] sherpa-menu button[value="delete"]');
   await expect.poll(kept).toEqual([]);
   expect(await inBar('.chip[data-id="custom:dana-accounts"]')).toBe(false);
+  await page.evaluate(() => localStorage.removeItem('sherpa:filters:customers'));
+});
+
+/**
+ * THE PANEL, which answers for the bar in panel mode — the bar is hidden then,
+ * so the panel needs every door the bar has. A saved filter in its Presets wears
+ * fx; a reader's own opens Edit and Delete, which the panel ASKS for, as it asks
+ * for Add and Remove; and a whole SCOPE saves as one chip.
+ * TRAP T-the-panel-saves-a-whole-scope
+ */
+test('the panel: saved presets wear fx, and a scope asks to save, edit and delete', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const readings = { health: { op: 'lt', text: '60' } };
+    const panel = await window.__mount<HTMLElement & { open(): void; populate(d: unknown): unknown }>(
+      'sherpa-filter-panel', undefined, { 'data-min-width': '0', style: 'inline-size: 400px' });
+    await panel.populate([{
+      scope: 'data', label: 'Data', filters: [
+        { id: 'at-risk', label: 'At risk', preset: true, readings, active: true },
+        { id: 'custom:mine', label: 'Mine', preset: true, readings, editable: true },
+        { id: 'owner', label: 'Owner', select: 'multiple',
+          options: [{ value: 'Dana', label: 'Dana', selected: true }, { value: 'Ravi', label: 'Ravi' }] },
+      ],
+    }]);
+    panel.open();
+    await window.__settled();
+    const sr = panel.shadowRoot!;
+    const chip = (v: string) => sr.querySelector<HTMLElement>(`.field[data-field="presets"] .value[data-value="${v}"]`)!;
+    const face = (v: string) => ({
+      condition: chip(v).getAttribute('data-condition'), badge: chip(v).dataset['count'] ?? '',
+      actions: [...(chip(v).querySelector('sherpa-menu')?.querySelectorAll('button') ?? [])].map((b) => b.value),
+    });
+    const presets = { preset: face('at-risk'), own: face('custom:mine') };
+
+    const save = () => sr.querySelector<HTMLElement>('.scope[data-scope="data"] .scope-save')!;
+    const hidden = getComputedStyle(save()).display === 'none';
+    panel.setAttribute('data-saveable', '');
+    await window.__settled();
+    const shown = getComputedStyle(save()).display !== 'none';
+
+    const asked: unknown[] = [];
+    for (const type of ['filter-save', 'filter-edit', 'filter-delete']) {
+      panel.addEventListener(type, (e) => asked.push({ type, ...(e as CustomEvent).detail }));
+    }
+    save().dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
+    const own = chip('custom:mine').querySelector('sherpa-menu')!;
+    own.querySelector<HTMLButtonElement>('button[value="edit"]')!.click();
+    own.querySelector<HTMLButtonElement>('button[value="delete"]')!.click();
+    return { presets, hidden, shown, asked };
+  });
+
+  const fx = { condition: 'custom', badge: 'fx' };
+  expect(r.presets).toEqual({ preset: { ...fx, actions: [] }, own: { ...fx, actions: ['edit', 'delete'] } });
+  // Only when the host saves.
+  expect(r.hidden).toBe(true);
+  expect(r.shown).toBe(true);
+  // The scope's ANSWERED fields, each as it can be saved — never the presets.
+  expect(r.asked).toEqual([
+    { type: 'filter-save', scope: 'data', readings: { owner: { picked: ['Dana'] } } },
+    { type: 'filter-edit', scope: 'data', id: 'custom:mine' },
+    { type: 'filter-delete', scope: 'data', id: 'custom:mine' },
+  ]);
+});
+
+/** The Records page in PANEL mode: a scope saves as one chip, and the panel deletes it. */
+test('in panel mode the Records page saves a whole scope, and deletes it from the panel', async ({ page }) => {
+  page.on('dialog', (d) => void d.accept('Dana only'));
+  await page.setViewportSize({ width: 1440, height: 950 });
+  await page.goto('http://localhost:4200/?context=records');
+  await page.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
+  await page.evaluate(() => {
+    localStorage.removeItem('sherpa:filters:customers');
+    document.querySelector('#context-root sherpa-quick-filter-toolbar')!
+      .dispatchEvent(new CustomEvent('filter-configure', { bubbles: true, composed: true }));
+  });
+  const inPanel = (sel: string) => page.evaluate((s) =>
+    document.querySelector('#filter-panel')!.shadowRoot!.querySelector(s), sel).then((n) => !!n);
+  await expect.poll(() => inPanel('.field[data-field="owner"] .value')).toBe(true);
+  const kept = () => page.evaluate(() =>
+    Object.keys(JSON.parse(localStorage.getItem('sherpa:filters:customers') ?? '{}')));
+
+  // Answer Owner in the panel, and save the scope.
+  await page.evaluate(() => {
+    const sr = document.querySelector('#filter-panel')!.shadowRoot!;
+    const chip = sr.querySelector<HTMLElement>('.field[data-field="owner"] .value[data-value="Dana Whitlock"]')!;
+    chip.shadowRoot!.querySelector<HTMLElement>('.body')!.click();
+  });
+  await expect.poll(() => inPanel('.scope[data-scope="data"][data-can-save]')).toBe(true);
+  await page.evaluate(() => document.querySelector('#filter-panel')!.shadowRoot!
+    .querySelector('.scope[data-scope="data"] .scope-save')!
+    .dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true })));
+  await expect.poll(kept).toEqual(['dana-only']);
+  const preset = '.field[data-field="presets"] .value[data-value="custom:dana-only"]';
+  await expect.poll(() => page.evaluate((s) => {
+    const chip = document.querySelector('#filter-panel')!.shadowRoot!.querySelector<HTMLElement>(s);
+    return chip && { on: chip.hasAttribute('data-current'), condition: chip.getAttribute('data-condition') };
+  }, preset)).toEqual({ on: true, condition: 'custom' });
+
+  // DELETE from the panel: gone from it, and forgotten.
+  await page.evaluate((s) => document.querySelector('#filter-panel')!.shadowRoot!.querySelector(s)!
+    .querySelector('sherpa-menu')!.querySelector<HTMLButtonElement>('button[value="delete"]')!.click(), preset);
+  await expect.poll(kept).toEqual([]);
+  await expect.poll(() => inPanel(preset)).toBe(false);
   await page.evaluate(() => localStorage.removeItem('sherpa:filters:customers'));
 });

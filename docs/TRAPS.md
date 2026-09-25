@@ -11615,6 +11615,7 @@ ON ones itself, so a preset was a chip in one file and a query in another.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 - Site: `src/core/data/data-source.ts`
 - Site: `examples/contexts/records.js`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/browser/saved-filters.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/data.ts`
@@ -11650,6 +11651,36 @@ a CONDITION into a chip. The Add menu packs it with the rest.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `examples/contexts/records.js`
+- Site: `test/e2e/reforged-saved-filter.spec.ts`
+
+### T-the-panel-saves-a-whole-scope
+
+**The panel answers for the bar in panel mode — the bar is hidden then — so it
+needs every door the bar has for saved filters.** Will, 2026-09-25: *"We can
+also allow creating multi-field conditional boolean chips from a whole filter
+scope."*
+
+- **A whole SCOPE saves as one chip.** With `data-saveable`, a scope that has
+  an answered field shows "Save filter", and pressing it fires `filter-save {
+  scope, readings }`: every answered field, as `savedReading()` gives it —
+  never the Presets, which are saved filters already, and never Group or Sort.
+- **A saved preset wears `fx`.** A preset carrying `readings` is drawn with
+  kind `custom`, and a chip with no filter menu then reads as custom by itself
+  (`T-a-saved-filter-is-its-readings`).
+- **A reader's own preset opens Edit filter and Delete filter**, and the panel
+  ASKS for each — `filter-edit`, `filter-delete` — as it asks for Add and
+  Remove. The BAR owns the list (`T-a-panel-adds-through-the-bar-that-owns-the-list`),
+  so the host answers through `packFilter`, `unpackFilter` and `deleteFilter`
+  and refills the panel; `unpackFilter` returns a promise for that.
+
+**Two holes this found in what the panel is told.** The bar's `held` gave a
+chip with no field reading — a toggle, a saved filter — the `active` of its def,
+not whether it was on; and the Records page's `asPanelField` did not pass
+`active` at all, so every preset in the panel read off, whatever the bar said.
+
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 

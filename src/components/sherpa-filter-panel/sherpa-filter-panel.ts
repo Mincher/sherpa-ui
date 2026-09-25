@@ -18,7 +18,9 @@ import {
 } from '../../core/ui/filter-kind.js';
 import { menuFor, type FilterMenuItem } from '../../core/ui/filter-menu.js';
 import { report } from '../../core/data/report.js';
-import type { FieldCondition, FieldReading } from '../../core/data/filter-state.js';
+import {
+  fieldState, savedReading, type FieldCondition, type FieldReading,
+} from '../../core/data/filter-state.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-container/sherpa-container.js';
 import '../sherpa-container-header/sherpa-container-header.js';
@@ -35,6 +37,10 @@ export interface PanelValue {
   value: string;
   label?: string;
   selected?: boolean;
+  /** What the value's own chip IS — a preset that carries its answer is `custom`. */
+  kind?: FilterKind;
+  /** A reader's OWN saved filter: its chip opens Edit filter and Delete filter. */
+  editable?: boolean;
 }
 
 /** One field the panel draws. The shape a quick-filter toolbar takes. */
@@ -71,6 +77,10 @@ export interface PanelFilter extends OffersCustom {
   asChip?: boolean;
   /** ON, with nothing picked — a preset's whole state. */
   active?: boolean;
+  /** A SAVED filter's answer, given — drawn as a preset. TRAP T-a-saved-filter-is-its-readings */
+  readings?: Readonly<Record<string, unknown>>;
+  /** The reader's OWN saved filter. TRAP T-the-panel-saves-a-whole-scope */
+  editable?: boolean;
 }
 
 /** A column Group or Sort may arrange by. */
@@ -128,7 +138,11 @@ export class SherpaFilterPanel extends SherpaElement {
     'data-min-width': { type: 'string', kind: 'style' },
   } as const;
 
-  static override observed = ['data-heading', 'data-open'];
+  static override observed = [
+    'data-heading', 'data-open',
+    // The host saves filters. TRAP T-the-panel-saves-a-whole-scope
+    'data-saveable',
+  ];
 
   /** Every drawn field, by `${scope}:${id}`. */
   #held = new Map<string, Held>();
@@ -148,6 +162,7 @@ export class SherpaFilterPanel extends SherpaElement {
     this.$('.scopes')?.addEventListener('button-click', this.#onAction);
     this.$('.scopes')?.addEventListener('quick-filter-click', this.#onValueClick);
     this.$('.scopes')?.addEventListener('menu-change', this.#onAddCommit);
+    this.$('.scopes')?.addEventListener('menu-select', this.#onSavedAction);
     /* THE CHIP says WHAT changed; only this panel knows WHICH SCOPE it belongs
        to, so it annotates and passes it on rather than working the
        arrangement out again. TRAP T-a-chip-knows-what-kind-it-is */
@@ -161,6 +176,7 @@ export class SherpaFilterPanel extends SherpaElement {
   override onChange(name: string): void {
     if (name === 'data-heading') this.#syncHeading();
     else if (name === 'data-open') this.#enforceWidth();
+    else if (name === 'data-saveable') this.#syncSaveable();
   }
 
   override onConnect(): void {
@@ -319,6 +335,9 @@ export class SherpaFilterPanel extends SherpaElement {
         box.append(this.#drawField({
           id: 'presets', label: 'Presets', options: presets.map((p) => ({
             value: p.id, label: p.label, selected: !!p.active,
+            // A preset that carries its answer wears fx. TRAP T-a-saved-filter-is-its-readings
+            ...(kindOf(p) === 'custom' ? { kind: 'custom' as const } : {}),
+            ...(p.editable ? { editable: true } : {}),
           })),
           select: 'multiple',
         }, scope.scope, true)!);
@@ -492,7 +511,8 @@ export class SherpaFilterPanel extends SherpaElement {
 
     for (const option of values ? options : []) {
       const one = this.#valueChip(option.value, option.label ?? option.value,
-        { current: !!option.selected });
+        { current: !!option.selected, ...(option.kind ? { kind: option.kind } : {}) });
+      if (one && option.editable) this.#addSavedMenu(one);
       if (one) values!.append(one);
     }
 
@@ -644,6 +664,8 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** A field's condition or Clear button. */
   #onAction = (event: Event): void => {
+    const save = this.#pathFind(event, '.scope-save');
+    if (save) return this.#requestSave(save);
     const cond = this.#pathFind(event, '.field-custom');
     if (cond) return this.#flipCondition(cond);
     const clear = this.#pathFind(event, '.field-clear');
@@ -712,12 +734,66 @@ export class SherpaFilterPanel extends SherpaElement {
     const custom = held.box.hasAttribute('data-custom')
       && (menu?.conditions?.length ?? 0) > 0;
     held.box.toggleAttribute('data-answered', ticked || custom);
+    this.#syncSaveable();
   }
 
   /** Every field, after anything that could have changed an answer. */
   #syncAllAnswered(): void {
     for (const [, held] of this.#held) this.#syncAnswered(held);
   }
+
+  /** "Save filter" on a scope with something to save — and only if the host saves.
+   *  TRAP T-the-panel-saves-a-whole-scope */
+  #syncSaveable(): void {
+    const saves = this.hasAttribute('data-saveable');
+    for (const box of this.$$<HTMLElement>('.scope[data-scope]')) {
+      const scope = box.dataset['scope'] ?? '';
+      box.toggleAttribute('data-can-save', saves && Object.keys(this.#scopeReadings(scope)).length > 0);
+    }
+  }
+
+  /** A scope's ANSWERED fields, each as it can be saved — never its presets or arrangements. */
+  #scopeReadings(scope: string): Record<string, FieldReading> {
+    const readings = this.readings[scope] ?? {};
+    const out: Record<string, FieldReading> = {};
+    for (const [, held] of this.#held) {
+      if (held.scope !== scope || held.def.id === 'presets' || arranges(kindOf(held.def))) continue;
+      const reading = readings[held.def.id];
+      if (!reading) continue;
+      const values = held.def.options?.map((o) => o.value);
+      const saved = savedReading(fieldState({ field: held.def.id, ...(values ? { values } : {}) }, reading));
+      if (saved) out[held.def.id] = saved;
+    }
+    return out;
+  }
+
+  /** A scope's "Save filter": ASK the host, with every answered field in it. */
+  #requestSave(button: HTMLElement): void {
+    const scope = button.closest<HTMLElement>('.scope')?.dataset['scope'];
+    if (!scope) return;
+    const readings = this.#scopeReadings(scope);
+    if (Object.keys(readings).length) this.emit('filter-save', { scope, readings });
+  }
+
+  /** A reader's own saved preset: Edit filter and Delete filter. */
+  #addSavedMenu(chip: HTMLElement): void {
+    const menu = this.clone('template.saved-menu-tpl');
+    if (!menu) return;
+    chip.setAttribute('data-menu', '');
+    chip.appendChild(menu);
+  }
+
+  /** A saved preset's Edit or Delete: ASK, as Add and Remove do. The bar owns the list. */
+  #onSavedAction = (event: Event): void => {
+    const value = (event as CustomEvent).detail?.value;
+    if (value !== 'edit' && value !== 'delete') return;
+    const chip = this.#pathFind(event, '.value');
+    const id = chip?.dataset['value'];
+    const scope = chip?.closest<HTMLElement>('.field')?.dataset['scope'];
+    if (!id || !scope) return;
+    event.stopPropagation();
+    this.emit(value === 'edit' ? 'filter-edit' : 'filter-delete', { scope, id });
+  };
 
   /** Untick a field's values and clear its conditions. */
   #clearField(btn: HTMLElement): void {

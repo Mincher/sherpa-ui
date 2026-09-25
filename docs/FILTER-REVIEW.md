@@ -1710,7 +1710,7 @@ code path, so a preset and a reader's own filter cannot drift apart.
 | 5 | **Edit = unpack, and Delete.** A reader's own chip opens Edit filter and Delete filter. Edit puts its readings back into their fields, adding a field's chip if it is not on the bar, and switches the saved chip OFF. Saving under the same name again updates it. An app preset has no Edit — it is the app's |
 | 6 | **The panel.** Its Presets section wears the same `fx`, and a whole scope saves as one chip |
 
-**Done 2026-09-25: steps 1–5.** Two bugs were found on the way, and fixed
+**Done 2026-09-25: all six steps.** Two bugs were found on the way, and fixed
 first, because pack rebuilds the bar and flags its menus:
 
 - **Adding a filter wiped another chip's condition rows.** A rebuild carried
