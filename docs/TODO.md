@@ -1322,6 +1322,10 @@ Every one of these was a real report in one day:
 **Not one of them was in the data layer.** All six are two components
 re-deriving what one of them, or the chip, already knows.
 
+**The full review is `docs/FILTER-REVIEW.md`** — measured sizes, the 61 sites
+that touch sort state, every bug mapped to its cause, and the six steps below
+with what each one DELETES.
+
 #### The plan — four moves, smallest first
 
 **1. `[x]` The chip owns its KIND** — done 2026-09-25. Group and Sort own their

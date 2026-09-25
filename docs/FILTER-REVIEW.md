@@ -1,0 +1,255 @@
+# The filter family — a review
+
+**Written for Will**, 2026-09-25. Everything here is measured, not estimated;
+every command used is given so you can re-run it.
+
+---
+
+## 1. The short version
+
+Four components draw filters: `sherpa-quick-filter` (the chip), its toolbar,
+`sherpa-filter-panel`, and `sherpa-menu`. Together they are **4,561 lines of
+TypeScript**. The data layer under them is correct — I tested it directly and
+it answers every question right. **Every filter bug in the last two days came
+from two components working out the same answer separately and disagreeing.**
+
+There is a second problem, and it is mine: over this session I added **4,351
+lines and deleted 1,095** — a ratio of **4:1**. I have been writing new code
+beside the old instead of replacing it. That is a large part of why the surface
+keeps growing and why fixes keep reopening old bugs.
+
+---
+
+## 2. What a filter IS
+
+Your taxonomy, 2026-09-25:
+
+> Group is a thing. Sort is a thing. Boolean filters are a thing. Single select
+> value filters are a thing. Multi select value filters are a thing. Compound
+> Conditional filters are a thing. **Organise is not.** It's just a label on the
+> screen.
+
+Six kinds. A heading, a section, a zone, a bar or a panel is **presentation**
+and must never name a kind.
+
+**Where the code stands against that model:**
+
+| kind | how it is spelled today | honest? |
+|---|---|---|
+| group | `data-kind="group"` | ✅ |
+| sort | `data-kind="sort"` | ✅ |
+| boolean | *no options, and no `kind`* | ❌ inferred |
+| single select | `select: 'single'` | ❌ a different axis |
+| multi select | `select: 'multiple'` | ❌ a different axis |
+| compound conditional | `conditions: true \| 'only'` | ❌ a third axis |
+
+Four of the six kinds are **inferred** from a combination of three unrelated
+properties. That is why `#addMenu` is 141 lines: it is a decision tree
+rebuilding the kind from its symptoms every time it runs.
+
+---
+
+## 3. The numbers
+
+```
+node scripts/…/methods.mjs src/components/<name>/<name>.ts
+```
+
+| file | lines | methods | lines in methods |
+|---|---:|---:|---:|
+| `sherpa-quick-filter-toolbar.ts` | **1,857** | 77 | 1,367 |
+| `sherpa-menu.ts` | 1,103 | — | — |
+| `sherpa-filter-panel.ts` | **898** | 44 | 638 |
+| `sherpa-quick-filter.ts` | 703 | — | — |
+
+The five largest methods in the two containers:
+
+| lines | method | what it does |
+|---:|---|---|
+| 141 | `toolbar #addMenu` | build a field's menu — every kind, every op |
+| 109 | `panel #draw` | build every scope |
+| 106 | `panel #drawField` | build one field's row |
+| 86 | `toolbar #render` | build every chip |
+| 54 | `panel #flipCondition` | switch one field into condition mode |
+
+`#addMenu` + `#render` (227 lines) and `#drawField` + `#drawChip` + `#draw`
+(251 lines) are **the same job twice**: turn a filter definition into controls.
+
+---
+
+## 4. The intertwining of Group and Sort
+
+You asked about this directly. Sort state is read or written at **61 sites**:
+
+```
+grep -rnE "sortField|sortDirection|data-sort-|setSort|resumeSort|clearSort|nextSort|'sort'" …
+```
+
+| file | sites |
+|---|---:|
+| `sherpa-quick-filter-toolbar.ts` | 15 |
+| `sherpa-data-grid.ts` | 13 |
+| `sherpa-filter-panel.ts` | 9 |
+| `data-source.ts` | 8 |
+| `sherpa-quick-filter.ts` | 7 |
+| `records.js` | 5 |
+| `cycle.ts` | 4 |
+
+**One value, seven owners.** And the value is spread over four separate
+attributes that must agree: `data-sort-field`, `data-sort-direction`,
+`data-current` on the chip, and `data-direction` on the chip. Group has three.
+
+The asymmetries this has already produced:
+
+- `#syncSortLabel` kept the column when the chip went off; `#syncGroupLabel`,
+  four methods away, blanked it. Group forgot what Sort remembered.
+- `data-direction` is written `'asc'` unconditionally in three places
+  (`#renderOrganise`, `#syncSortFromAttrs`, the chip's own cycle), so "which
+  way" and "is it running" are carried by different attributes that no single
+  function owns.
+- Group and Sort share one `.field-values` container in the panel and are both
+  `select: 'single'`, so the "untick the siblings" sweep cleared the other one.
+
+**I could not reproduce** the case you hit (group by Customer, refresh, Sort
+comes back on Last Seen). Stored state after grouping reads
+`{"sort":[],"group":"customer"}` and sort stays off through a reload, in
+toolbar and panel mode. That does not mean it is not real — it means the
+trigger is a state I have not found, and with seven owners that is unsurprising.
+**Collapsing the owners is more likely to fix it than another hunt.**
+
+---
+
+## 5. Why the bugs keep coming back
+
+Every filter bug reported over two days, against its structural cause:
+
+| symptom | cause |
+|---|---|
+| amber Sort chip | `data-current` written from 26 places; the chip judged itself from a menu it does not own |
+| Group off cleared its column | two hosts painted the chip and disagreed |
+| Sort off also killed Group | a container swept a run holding two different controls |
+| menus dead after leaving the panel | the borrower did not give them back on close |
+| conditional chip opened a blank card | the overflow drill moves ROWS; conditions are not rows |
+| Add could not remove | the bar's menu listed what was LEFT, not the whole list |
+| Email search "did nothing" | a find-in-list box where a filter was expected |
+
+**Not one was in the data layer.** I verified that directly:
+
+```
+one row  (eq Dana)      total=25   ["owner","eq","Dana Whitlock"]
+two rows OR             total=50   ["or",[eq Dana],[eq Ravi]]
+two rows AND            total= 0   ["and",[eq Dana],[eq Ravi]]
+three rows OR           total=75   ["or",…,…,…]
+```
+
+The query builder is right. Grouping, sorting and filtering are genuinely
+centralised, transforms never touch the raw rows, and there is one `stateClause`.
+**The whole problem is above it.**
+
+---
+
+## 6. My own failure mode
+
+You said I write new code rather than improving what is there. Measured over
+this session, across the four components and the data layer:
+
+```
+git log --numstat --since="2 days ago" -- <the filter components>
++4,351  −1,095   ratio 4.0 : 1
+```
+
+| file | start | now | net |
+|---|---:|---:|---:|
+| `sherpa-filter-panel.ts` | 0 | 898 | **+898** |
+| `sherpa-quick-filter.ts` | 522 | 703 | +181 |
+| `sherpa-quick-filter-toolbar.ts` | 1,748 | 1,857 | +109 |
+| `sherpa-menu.ts` | 1,025 | 1,103 | +78 |
+
+Even the commit *called* a refactor was **+264 −207**. When I moved Group and
+Sort into the chip I wrote three new methods (`#arrange`, `#arrangeFromMenu`,
+`#drawArrangement`) rather than moving `#cycleSort` and `#toggleGroup` across.
+The behaviour ended up in one place, which was the point — but the library grew
+where it should have shrunk, and the new code had to re-earn the lessons the
+old code already carried.
+
+**The rule for the rest of this work: a step that does not delete more than it
+adds is not finished.** Every step below states what it deletes.
+
+---
+
+## 7. The plan
+
+Ordered smallest-risk first. Each step is one commit, full suite between.
+
+### Step 1 — `[x]` The chip owns its KIND (done)
+
+Group and Sort own their gesture, draw themselves, report by name. Containers
+place them; the panel annotates with `scope`.
+**Deleted:** `#toggleGroup`, `#cycleSort`, `#syncSortLabel`, `#syncGroupLabel`
+(toolbar); `#organiseClick`, `#organiseField`, `#sortField`, `#sortLive`
+(panel). −129 lines from the containers.
+
+### Step 2 — Name all six kinds, and delete the inference
+
+`data-kind` gains `boolean`, `single`, `multi`, `conditional`. The definition
+says what a filter IS; `select` and `conditions` stop being read as a
+three-axis code.
+
+**Deletes:** the decision tree inside `#addMenu` (≈60 of its 141 lines), the
+`hasOwnContent` guess, and the `conditions ? 'only' : true` branch that had to
+be widened twice this week.
+**Risk:** low — it is a rename plus a lookup table.
+**Closes:** the class where a kind is inferred differently in two places.
+
+### Step 3 — The panel ASKS the bar
+
+`#picked`, `#clearField`, `#markConditioned`, `#flipCondition` and
+`#syncAnswered` become calls to `states`, `readings` and `setChipReading`,
+which already exist and are already used for `report()` and `heldIds`.
+
+**Deletes:** ≈150 lines of panel, including all five methods above.
+**Risk:** medium — the panel's Apply/Discard baseline depends on `#picked`.
+**Closes:** the "second answer" class, which is five of the seven bugs above.
+
+### Step 4 — ONE field-row builder
+
+`#drawField` / `#drawChip` / `#drawSection` and `#render` / `#addMenu` differ
+by exactly two things: layout **direction**, and whether a field's values
+**explode into a run** or stay behind a menu. Two flags, one builder, shared in
+`core/ui/`.
+
+**Deletes:** ≈250 lines — the larger half of both containers' drawing code.
+**Risk:** high; land 2 and 3 first.
+**Closes:** the class where the two containers drift apart visually and
+behaviourally.
+
+### Step 5 — Collapse the sort/group state
+
+One owner, one shape. `data-sort-field` + `data-sort-direction` +
+`data-current` + `data-direction` become the chip's own state, read back
+through a getter, with the source as the only other owner.
+
+**Deletes:** the three unconditional `'asc'` writes, `#syncSortFromAttrs` /
+`#syncGroupFromAttrs` (47 lines), and the panel's seeding.
+**Closes:** the intertwining in §4 — including, most likely, the bug I could
+not reproduce.
+
+### Step 6 — Split `filter-state.ts`
+
+547 lines doing three jobs: the state model and query building; how a filter
+reads in words and badges; `bindSelection`. Tidiness, no behaviour change.
+
+---
+
+## 8. Rules for the work
+
+1. **Every step deletes more than it adds.** State the deletion in the commit
+   message. If it does not, the step is not done.
+2. **Move code, do not rewrite it.** The old code carries lessons — comments,
+   TRAP citations, guards — that new code has to re-learn through bugs.
+3. **Pin the invariant before moving it.** Off-keeps-the-value regressed
+   because nothing tested it across kinds. It does now.
+4. **Measure on the running page, and read the TOTAL.** A page size of 25 makes
+   a working filter look broken; that cost an hour and a false bug report.
+5. **One step per commit, full suite between.** Two steps in one commit means a
+   failure cannot be bisected.
