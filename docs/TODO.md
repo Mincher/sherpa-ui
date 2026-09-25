@@ -1366,8 +1366,10 @@ flags, not two implementations. ~250 lines, the biggest risk — land 3 first.
 **6. Split `filter-state.ts`** (547 lines, three jobs): the state model and
 query building, how a filter READS in words and badges, and `bindSelection`.
 
-**Decided 2026-09-25:** filter SCOPING lives in the data layer, and
-registration is AUTOMATIC. `DataSource` gains a small scope registry —
+**Decided 2026-09-25:** filter SCOPING lives in the data layer; registration is
+AUTOMATIC; a source is PROVIDED OVER A REGION so a component cannot reach one
+outside where it is mounted; and `data-source` is available on every data-bound
+component, optional, required only where a region offers more than one. `DataSource` gains a small scope registry —
 `scope(name)`, `hold(name, fields)`, `holds(name, field)`, `scopeOf(field)` —
 and `SherpaElement` finds its source by dispatching a request on connect, which
 the nearest source answers.

@@ -931,27 +931,34 @@ a global registry, it is a label on what this region already offers.
 | cannot drop a template in without naming its source | **gone** — it inherits its region |
 | renaming a source edits every element | **gone** — the region names it, once |
 
-### What is left to decide
+### Decided — Will, 2026-09-25
 
-| | A — name only when ambiguous | B — name always |
-|---|---|---|
-| one source in a region | no attribute | `data-source` on every element |
-| two sources in a region | name it | name it |
-| reach | bounded by the region | bounded by the region |
-| a wrong name | loud error | loud error |
-| reading an element in isolation | must look up to find the region | self-describing |
+> *"We're good if we can specify the data-source attribute on UI components as
+> well as data-field."*
 
-Both are contained. The only difference is whether the attribute is mandatory
-when it carries no information.
+**`data-source` is available on every data-bound component, and optional.**
 
-**Recommendation: A.** `data-bounds` is the precedent and it is optional — a
-menu without it falls back to the viewport, and that is not a source of bugs.
-The loud error, which is what Will actually wanted, comes from resolution
-failing, not from the attribute being compulsory.
+```html
+<!-- the region provides one source -->
+<sherpa-metric data-field="spend" data-aggregate="sum"></sherpa-metric>
 
-**If a region ever provides two sources, requiring the attribute IN THAT REGION
-is a rule the source can enforce** — ambiguous request, no answer, loud error.
-That gets B's guarantee exactly where it earns its keep, and nowhere else.
+<!-- the region provides two, or you want it said out loud -->
+<sherpa-metric data-source="invoices" data-field="total"></sherpa-metric>
+```
+
+| | |
+|---|---|
+| reach | **bounded by the region.** A component cannot widen it |
+| one source in a region | `data-source` optional — write it for clarity if you like |
+| two or more | the region REFUSES an unnamed request: loud error, never a guess |
+| a name the region does not offer | loud error |
+
+`data-source` joins `SHARED_PROPS`, beside `data-bounds` — the same shape, for
+the same reason: a named target, resolved by lookup, never inferred.
+
+The loud error comes from resolution failing, not from the attribute being
+compulsory. That is what makes it safe to leave optional where it would carry
+no information.
 
 ### The one thing to watch
 
