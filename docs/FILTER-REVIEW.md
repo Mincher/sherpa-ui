@@ -24,11 +24,11 @@ Kept as the work lands. Budgets from §15.4.
 | — 3 red tests that pre-dated it | ✅ | — | **+30** | a report is the whole answer; a `min(…,100%)` floor collapsed the bar chart to 35px; a test dispatched an event nothing emits |
 | 4 one field-row builder | ✅ | ≈ −250 | **−21** | the budget was wrong: 4b and 3c-ii had already taken the shared half. See §7 note |
 | 4c a record TIMESTAMP, and one Date filter | | ≈ +60 | — | buys the series composition in §9.5 |
-| 5 collapse sort/group state | | ≈ −50 | — | |
+| 5 collapse sort/group state | ✅ | ≈ −50 | **+2** | two sync methods → one; `asc` written by ONE owner. Found the reported bug — see §4 |
 | 5.5 error reporting | | ≈ +80 | — | `debugState()` lands with 3 |
 | 6 split `filter-state.ts` | | ≈ 0 | — | |
 | test harness §13.2 | ✅ | ≈ −400 | **−113** | `window.__mount()` in the harness page; the toolbar spec 2,799 → 2,600. The other specs' mounts are not mechanically alike |
-| **arc** | | **≈ −800** | **−152** | code only; docs counted separately |
+| **arc** | | **≈ −800** | **−150** | code only; docs counted separately |
 
 ---
 
@@ -143,12 +143,34 @@ The asymmetries this has already produced:
 - Group and Sort share one `.field-values` container in the panel and are both
   `select: 'single'`, so the "untick the siblings" sweep cleared the other one.
 
-**I could not reproduce** the case you hit (group by Customer, refresh, Sort
-comes back on Last Seen). Stored state after grouping reads
-`{"sort":[],"group":"customer"}` and sort stays off through a reload, in
-toolbar and panel mode. That does not mean it is not real — it means the
-trigger is a state I have not found, and with seven owners that is unsurprising.
-**Collapsing the owners is more likely to fix it than another hunt.**
+### 4.1 FOUND IT — 2026-09-25, after step 5
+
+Reproduced on the running page. It is **two** things, and only one is a bug.
+
+**Last Seen is the `mine` VIEW's own sort.** `examples/contexts/records-views.js`
+line 33: `sort: [{ field: 'lastSeen', direction: 'desc' }]`. On
+`?context=records&view=mine` the Sort chip reads "Last seen" from a fresh load,
+before anyone touches it. Nothing is wrong — the view owns its arrangement —
+but a reader who never chose it reads it as "Sort was applied Last Seen".
+
+**The bug is the chip that is OFF and still names a column.** Measured:
+
+    1 view=mine    sort: ON  "Last seen"   group: off ""
+    2 grouped      sort: ON  "Last seen"   group: ON  "Customer"
+    3 RELOADED     sort: ON  "Last seen"   group: off "Customer"
+
+Line 3: the reader grouped by Customer, reloaded, and the chip says **Customer
+while being off**. The view's snapshot carries `group: null`, so restoring it
+ungroups — correct — but `T-off-is-not-forgotten` keeps the column, and the
+caret announces a column that is not in force. The same shape on Sort:
+
+    off   {"on":false,"icon":"sort-none","caret":"Last seen"}
+
+A `sort-none` glyph and a neutral face, next to the words "Last seen". That is
+what the report was looking at.
+
+The value must stay — one more click resumes exactly what was there. What is
+open is whether an OFF chip should keep SAYING it. **Will's call.**
 
 ---
 
