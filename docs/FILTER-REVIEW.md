@@ -1581,3 +1581,52 @@ LIVES is the open question — the same tier question the saved views answered
 2. Where a saved definition lives, and how it is keyed to a source.
 3. Whether §16.3 clears the fields it was built from. That one is a product
    decision, not an implementation one.
+
+---
+
+## 17. Merge More and Add filter — to explore
+
+Will, 2026-09-25: *"We should merge the overflow 'More' button and the 'Add
+filter' button that we use in the filter toolbar into 1 button. They're very
+closely aligned and ripe for a merging of their functionality. There's no point
+in using twice the amount of space if we don't need to."*
+
+**Not scheduled.** Recorded with what is measured today.
+
+### 17.1 They are already the same control
+
+| | More | Add filter |
+|---|---|---|
+| element | `<sherpa-quick-filter class="overflow-chip">` | `<sherpa-button class="add-btn">` |
+| sits in | the chip run, at its end | the action cluster, after the run |
+| its menu lists | the filters that did not FIT | the filters the bar does not HOLD |
+| a row does | open that filter's own menu, as a submenu | tick it on, untick it off |
+| built by | `#renderFolded()` | `#renderAvailable()` |
+| trap | `T-the-more-chip-is-a-door-not-a-filter` | `T-the-add-menu-is-the-whole-list` |
+
+Both are **a menu of filters keyed by id**, drawn beside the run. One lists the
+held-but-hidden, the other the holdable-but-not-held. A reader looking for
+"where is my Plan filter?" has to know which of the two words means which.
+
+### 17.2 What one button would be
+
+One chip at the end of the run whose menu has **two sections**: the folded
+filters (each a door into its own menu) and the offered ones (each a tick).
+`sherpa-menu` already draws a divider between reachable and unreachable rows,
+so the sectioning exists.
+
+It also answers a question the two have to keep agreeing on: a filter that is
+FOLDED is held, so Add must not offer it. That is currently two lists staying
+in step by construction.
+
+### 17.3 What to settle first
+
+1. **The badge.** More carries a count of folded filters; Add carries none. One
+   button needs one rule for what its badge counts.
+2. **`data-current`.** More is active when a folded filter is
+   (`T-the-more-chip-is-a-door-not-a-filter`); Add is never active. Merged, "on"
+   has to mean one thing.
+3. **Where it sits.** In the run it folds with the chips; in the cluster it is
+   fixed. It cannot be both, and the fold measurement reads whichever it is.
+4. **The empty case.** Nothing folded and nothing to add — does the button go,
+   or stay and say so?
