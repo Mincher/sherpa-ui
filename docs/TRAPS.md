@@ -405,6 +405,7 @@ first would filter to a range the user has not finished naming. So a range
 defers, and the Range switch moves the menu between the two modes at runtime.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 
 (none — `T-custom-element-upgrade` already exists and already lists this file as a Site.)
 
@@ -565,6 +566,57 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-a-menu-owns-its-own-bodies
+
+A menu's BODY — the Range switch, the number field and slider — lives in
+`sherpa-menu`'s own shadow root, and `data-body` picks one.
+
+Before this, each host handed one over as a slotted child. A slotted child is
+styled by whoever handed it over, so the SAME Range switch existed twice with
+two spellings and two sets of rules:
+
+    qf-range-row / qf-range-switch / qf-row-label            (toolbar)
+    head-filter-range / …-range-switch / …-range-label       (grid)
+
+Same three elements, same `data-row`, same switch, same word. Will, 2026-09-25:
+*"Perhaps we should keep all menu templates in the menu component's HTML file.
+That way we always have a single source to pull, or base new templates, from."*
+
+The menu also takes the rules that went with the body: the ends CLAMP the field
+as well as the slider, and a RANGE defers, because the pick is not finished on
+its first end. `data-commit-fixed` says a host named `commit` itself and
+outranks that.
+
+**THE CALENDAR IS THE EXCEPTION, and it is not a small one.** A date body stays
+a SLOTTED child. `sherpa-calendar` projects its stepper into the menu's
+`header` slot, and slot assignment only reaches a host's LIGHT DOM — inside the
+menu's shadow root it has nothing to project into, and the menu's header comes
+up empty. Measured: the test for it fails with the projected header null.
+TRAP T-projected-slot-content-crosses-two-shadow-boundaries
+
+So the switch above a calendar is the menu's; the calendar below it is the
+host's. That reads like an inconsistency and is a platform limit.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+
+### T-projected-slot-content-crosses-two-shadow-boundaries
+
+A component that projects content into its HOST's slot can only do so from the
+host's LIGHT DOM. Move it into the host's shadow root and the projection stops
+— silently, with an empty slot rather than an error.
+
+`sherpa-calendar` puts its month stepper into `sherpa-menu`'s `header` slot.
+That is why a date body cannot move into the menu's shadow root with the number
+body: it would have nothing to project into.
+TRAP T-a-menu-owns-its-own-bodies
+
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
+
 ### T-range-switch-swaps-not-rebuilds
 
 A NUMBER or DATE chip's menu leads with a Range switch: ONE filter, two shapes
@@ -594,6 +646,8 @@ template.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
 
 ---
 
@@ -1767,6 +1821,7 @@ excluding nothing — opening at 0..0 would empty the view before the reader had
 asked it anything.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 
 ### T-grid-number-clause-must-coerce
 
@@ -8286,7 +8341,6 @@ Two halves to the fix, because a slotted row is in nobody's shadow:
 CHILDREN, and `.qf-number-one` is inside `.qf-number`.
 
 ---
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 
 ### T-two-chips-in-one-section-need-their-own-id
@@ -8895,7 +8949,11 @@ found nothing once borrowed, so the chip's id is written onto the menu
 A listener on the bar is correct for anything the CHIPS fire — they never move.
 It is wrong for a menu.
 
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+
+**FIXED STRUCTURALLY, 2026-09-25.** The Range switch was the last host-bound
+listener on a borrowable menu; `sherpa-menu` owns it now, so there is nothing
+left for a borrow to strand. TRAP T-a-menu-owns-its-own-bodies
 
 ### T-an-fr-track-floors-at-min-content
 

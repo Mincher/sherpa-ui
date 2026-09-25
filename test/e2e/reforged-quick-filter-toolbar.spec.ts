@@ -1024,16 +1024,17 @@ test('a DATE chip opens a calendar, commits through the menu, and labels its day
       rendered?: Promise<void>;
       shadowRoot: ShadowRoot;
     };
+    /* THE MENU FIRST. Its calendar is in its own SHADOW root now, so there is
+       nothing to query until the menu has rendered.
+       TRAP T-a-menu-owns-its-own-bodies */
+    await menu.rendered;
     const cal = menu.querySelector('sherpa-calendar') as HTMLElement & {
       rendered?: Promise<void>;
       shadowRoot: ShadowRoot;
     };
-    // BOTH, not just the calendar. This awaited only the calendar and then read
-    // getComputedStyle off the MENU's own shadow root — which under parallel
-    // load had not rendered yet, so `display` came back as "" rather than
-    // "none". It passed alone and failed in a full run, which is the shape of
-    // every flake: the thing being measured was never waited for.
-    await menu.rendered;
+    // BOTH, not just the calendar: reading getComputedStyle off a shadow root
+    // that has not rendered gives "" rather than "none". It passed alone and
+    // failed in a full run, which is the shape of every flake.
     await cal.rendered;
 
     const projected = menu.querySelector('.cal-header-projected') as HTMLElement;
@@ -1262,18 +1263,22 @@ test('a NUMBER chip flips between a single field and a two-ended slider', async 
     ]);
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
-    const menu = el.shadowRoot!.querySelector('.chip[data-id="spend"] sherpa-menu')!;
+    /* THE BODY IS THE MENU'S OWN, in its shadow root — a slotted body is styled
+       by whoever handed it over, which is why there were two spellings.
+       TRAP T-a-menu-owns-its-own-bodies */
+    const menu = el.shadowRoot!.querySelector('.chip[data-id="spend"] sherpa-menu') as
+      HTMLElement & { shadowRoot: ShadowRoot };
     const shown = (sel: string): boolean => {
-      const node = menu.querySelector(sel);
+      const node = menu.shadowRoot.querySelector(sel);
       return !!node && getComputedStyle(node).display !== 'none';
     };
-    const slider = menu.querySelector<HTMLElement & { range: [number, number] }>('sherpa-slider')!;
-    const field = menu.querySelector<HTMLInputElement>('.qf-number-one')!;
+    const slider = menu.shadowRoot.querySelector<HTMLElement & { range: [number, number] }>('.body-number-range')!;
+    const field = menu.shadowRoot.querySelector<HTMLInputElement>('.body-number-one')!;
     const settle = (): Promise<void> =>
       (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const flip = async (): Promise<void> => {
-      const sw = menu.querySelector('.qf-range-switch') as HTMLElement & {
+      const sw = menu.shadowRoot.querySelector('.body-range-switch') as HTMLElement & {
         rendered?: Promise<void>;
         shadowRoot: ShadowRoot;
       };
@@ -1284,8 +1289,8 @@ test('a NUMBER chip flips between a single field and a two-ended slider', async 
 
     const snap = (): Record<string, unknown> => ({
       ranged: menu.hasAttribute('data-range'),
-      field: shown('.qf-number-one'),
-      slider: shown('sherpa-slider'),
+      field: shown('.body-number-one'),
+      slider: shown('.body-number-range'),
       picks: el.pickedValues['spend'] ?? null,
     });
 
@@ -1358,12 +1363,12 @@ test('a DATE chip carries the Range switch as a full-width row above its calenda
     await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
 
     const cal = menu.querySelector('sherpa-calendar')!;
-    const row = menu.querySelector('.qf-range-row')!.getBoundingClientRect();
+    const row = menu.shadowRoot.querySelector('.body-range')!.getBoundingClientRect();
     const rows = menu.shadowRoot.querySelector('.rows')!.getBoundingClientRect();
     const calBox = cal.getBoundingClientRect();
 
     const flip = async (): Promise<void> => {
-      const sw = menu.querySelector('.qf-range-switch') as HTMLElement & {
+      const sw = menu.shadowRoot.querySelector('.body-range-switch') as HTMLElement & {
         rendered?: Promise<void>;
         shadowRoot: ShadowRoot;
       };
@@ -1427,7 +1432,7 @@ test('the Range switch brings Apply/Cancel, and leads its own label', async ({ p
         const n = menu.shadowRoot.querySelector(sel);
         return !!n && getComputedStyle(n).display !== 'none';
       };
-      const row = menu.querySelector('.qf-range-row')!;
+      const row = menu.shadowRoot.querySelector('.body-range')!;
       const sw = row.querySelector('sherpa-switch') as HTMLElement & {
         rendered?: Promise<void>;
         shadowRoot: ShadowRoot;
@@ -1437,7 +1442,7 @@ test('the Range switch brings Apply/Cancel, and leads its own label', async ({ p
       // The CONTROL leads and the label follows, exactly where a value row puts
       // its checkbox and its text — so every control shares one left edge.
       const leads =
-        sw.getBoundingClientRect().left < row.querySelector('.qf-row-label')!.getBoundingClientRect().left;
+        sw.getBoundingClientRect().left < row.querySelector('.body-range-label')!.getBoundingClientRect().left;
 
       const single = { commits: menu.hasAttribute('data-commit'), apply: shown('.apply'), cancel: shown('.cancel') };
       sw.shadowRoot.querySelector<HTMLInputElement>('.input')!.click();

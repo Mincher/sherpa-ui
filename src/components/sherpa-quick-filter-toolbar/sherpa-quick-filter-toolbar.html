@@ -140,6 +140,14 @@
   </template>
 
   <!-- A chip's value menu, cloned when its definition carries `options`. -->
+  <!-- A DATE body stays SLOTTED: the calendar projects its stepper into the
+       menu's `header` slot, and slot assignment only reaches a host's LIGHT
+       DOM. The Range switch above it IS the menu's.
+       TRAP T-a-menu-owns-its-own-bodies -->
+  <template class="qf-calendar-tpl">
+    <sherpa-calendar class="qf-calendar" data-embedded></sherpa-calendar>
+  </template>
+
   <template class="qf-menu-tpl">
     <sherpa-menu slot="menu"></sherpa-menu>
   </template>
@@ -181,35 +189,7 @@
     </label>
   </template>
 
-  <template class="qf-calendar-tpl">
-    <sherpa-calendar class="qf-calendar" data-embedded></sherpa-calendar>
-  </template>
 
-  <!-- THE RANGE SWITCH — first row of a number or date menu; flips what the
-       rows below it are. Switch LEADS, label follows, so every control in the
-       menu shares one left edge. -->
-  <template class="qf-range-tpl">
-    <div class="qf-range-row" data-row>
-      <sherpa-switch class="qf-range-switch" data-type="simple"></sherpa-switch>
-      <span class="qf-row-label">Range</span>
-    </div>
-  </template>
 
-  <!--
-    A NUMBER filter's content: one field when Range is off, a two-ended slider
-    when on. BOTH exist from the start and CSS reveals one, so a flip keeps
-    whatever was typed on the other side.
-
-    A bare number input, not a sherpa-input-text: it sits in the CHIP's light
-    DOM to be slotted, where no stylesheet reaches it anyway.
-  -->
-  <template class="qf-number-tpl">
-    <div class="qf-number">
-      <input class="qf-number-one sherpa-border-edges" type="number" inputmode="decimal"
-             aria-label="Value" placeholder="Any" />
-      <sherpa-slider class="qf-number-range" data-type="range"
-                     data-show-value></sherpa-slider>
-    </div>
-  </template>
 
 </template>

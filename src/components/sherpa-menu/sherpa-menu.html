@@ -121,6 +121,34 @@
     <!-- Without this the card collapses to an empty box and reads as broken. -->
     <p class="no-matches" part="no-matches" role="status">No matches</p>
 
+    <!-- THE BODIES A MENU CAN HAVE; `data-body` picks one. They live HERE
+         because a body handed over as a slotted child is styled by whoever
+         handed it over — which is how one Range switch came to be spelled
+         `qf-range-*` in the toolbar and `head-filter-range-*` in the grid,
+         with two sets of rules to keep in step.
+         TRAP T-a-menu-owns-its-own-bodies -->
+    <div class="body-range" part="body-range">
+      <sherpa-switch class="body-range-switch" data-type="simple"></sherpa-switch>
+      <span class="body-range-label">Range</span>
+    </div>
+
+    <!-- BOTH SHAPES ALWAYS EXIST and CSS reveals one, so flipping Range keeps
+         what was typed on the other side.
+         TRAP T-range-switch-swaps-not-rebuilds -->
+    <div class="body-number" part="body-number">
+      <input class="body-number-one sherpa-border-edges" type="number" inputmode="decimal"
+             aria-label="Value" placeholder="Any" />
+      <sherpa-slider class="body-number-range" data-type="range"
+                     data-show-value></sherpa-slider>
+    </div>
+
+    <!-- NO CALENDAR HERE. A date body stays a SLOTTED child of the menu: the
+         calendar projects its stepper into this menu's `header` slot, and slot
+         assignment only reaches a host's LIGHT DOM. Inside this shadow root it
+         would have nothing to project into.
+         TRAP T-a-menu-owns-its-own-bodies
+         TRAP T-projected-slot-content-crosses-two-shadow-boundaries -->
+
     <div class="rows" part="rows">
       <slot></slot>
     </div>

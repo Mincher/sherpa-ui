@@ -477,3 +477,58 @@
   flex: 1 1 auto;
   min-inline-size: 0;
 }
+
+/* ── The bodies a menu can have ──────────────────────────────────────────
+   `data-body` picks one. They are styled HERE because they live in THIS
+   component's shadow root — a body handed over as a slotted child is styled by
+   whoever handed it over, which is how one Range switch ended up with two
+   spellings and two sets of rules. TRAP T-a-menu-owns-its-own-bodies */
+.body-range,
+.body-number { display: none; }
+
+/* NUMBER and DATE both lead with the Range switch. */
+:host([data-body="number"]) .body-range,
+:host([data-body="date"]) .body-range {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+  padding: var(--sherpa-display-mode-space-2xs, 4px)
+    var(--sherpa-display-mode-space-xs, 8px);
+}
+
+:host([data-body="number"]) .body-number {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  padding: var(--sherpa-display-mode-space-2xs, 4px)
+    var(--sherpa-display-mode-space-xs, 8px);
+}
+
+/* ONE END OR TWO. Both exist from the start, so flipping Range keeps what was
+   typed on the other side. TRAP T-range-switch-swaps-not-rebuilds */
+:host([data-body="number"]) .body-number-range { display: none; }
+:host([data-body="number"][data-range]) .body-number-one { display: none; }
+:host([data-body="number"][data-range]) .body-number-range { display: block; }
+
+.body-number-one {
+  inline-size: 100%;
+  min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
+  padding: var(--sherpa-display-mode-space-2xs, 4px)
+    var(--sherpa-display-mode-space-xs, 8px);
+  border-style: solid;
+  border-color: var(--sherpa-style-border-base, #b3b3c3);
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  background: var(--sherpa-style-surface-base, #ffffff);
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
+  /* An <input> does NOT inherit the page font — browsers substitute their own. */
+  font-family: inherit;
+  font-size: var(--sherpa-theme-content-size-base, 14px);
+  box-sizing: border-box;
+}
+
+.body-number-one:focus-visible { outline: none; box-shadow: var(--sherpa-focus-ring); }
+
+.body-range-label {
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
+  font-size: var(--sherpa-theme-content-size-base, 14px);
+}

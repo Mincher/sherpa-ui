@@ -57,6 +57,23 @@ export class SherpaMenu extends SherpaElement {
        switch to and the switch is hidden. It IMPLIES `data-conditional`.
        TRAP T-a-filter-answers-by-values-conditions-or-both */
     'data-conditions-only': { type: 'boolean', kind: 'style' },
+    /* WHICH BODY this menu draws. A body lives in THIS component's shadow root,
+       so one spelling and one set of rules serve every host.
+       TRAP T-a-menu-owns-its-own-bodies */
+    'data-body': { type: 'enum', kind: 'style', values: ['number', 'date'] },
+    /* A number body's ends and step. They CLAMP the field as well as the
+       slider — typing 500 into a 0..100 filter asks for a row that cannot
+       exist. TRAP T-grid-slider-spans-real-values */
+    'data-min': { type: 'string', kind: 'style' },
+    'data-max': { type: 'string', kind: 'style' },
+    'data-step': { type: 'string', kind: 'style' },
+    /* The days a DATE body may pick. A set, not a span. */
+    'data-available': { type: 'string', kind: 'style' },
+    /* The HOST pinned `data-commit`, so flipping Range must not move it. A
+       number or date body defers by default — the pick is not finished on its
+       first end — but a def that named `commit` outranks that.
+       TRAP T-commit-follows-select-mode */
+    'data-commit-fixed': { type: 'boolean', kind: 'style' },
     /* Draw in the FLOW, not the top layer. TRAP T-an-inline-menu-is-the-same-menu */
     'data-inline': { type: 'boolean', kind: 'style' },
     'data-heading': { type: 'string', kind: 'content', to: '.heading' },
@@ -135,6 +152,9 @@ export class SherpaMenu extends SherpaElement {
     // slotchange is the only hook a drill has; show() happens before it.
     // TRAP T-rows-changed-re-places-next-frame
     this.$('.rows slot')?.addEventListener('slotchange', this.#onRowsChanged);
+    /* THE MENU OWNS ITS RANGE SWITCH. Both hosts had one, spelled differently,
+       listened for separately. TRAP T-a-menu-owns-its-own-bodies */
+    this.$('.body-range-switch')?.addEventListener('change', this.#onRangeSwitch);
     this.addEventListener('click', this.#onClick);
     this.$('.apply')?.addEventListener('click', this.#onApply);
     this.$('.cancel')?.addEventListener('click', this.#onCancel);
@@ -205,6 +225,24 @@ export class SherpaMenu extends SherpaElement {
     this.dataset['mode'] = next;
     this.#syncModeButton();
   }
+
+  /** Range ON is two ends, OFF is one value; both shapes keep what they hold.
+   *
+   *  THE MENU LISTENS, not its host. A host that bound this listener lost it
+   *  the moment a filter panel borrowed the menu away.
+   *  TRAP T-a-borrowed-menu-leaves-its-toolbars-listeners-behind */
+  #onRangeSwitch = (event: Event): void => {
+    event.stopPropagation();
+    const on = !!(event.target as HTMLElement & { checked?: boolean }).checked;
+    this.toggleAttribute('data-range', on);
+    // A RANGE defers: the pick is not finished on its first end.
+    if (!this.hasAttribute('data-commit-fixed')) this.toggleAttribute('data-commit', on);
+    /* A FLIP names both sides. Any previous single pick is left alone —
+       re-picking starts a range anyway. */
+    this.querySelector('sherpa-calendar')?.setAttribute('data-type', on ? 'range' : 'single');
+    this.#syncBody();
+    this.emit('menu-range-change', { range: on });
+  };
 
   #onModeSwitch = (): void => {
     if (!this.#conditional() || this.#onlyConditions()) return;
@@ -597,8 +635,9 @@ export class SherpaMenu extends SherpaElement {
 
   /** A NUMBER menu's value, or null. TRAP T-a-full-range-is-still-a-range */
   #numericValues(): string[] | null {
-    const field = this.querySelector<HTMLInputElement>('input[type="number"]');
-    const slider = this.querySelector<HTMLElement & { range: [number, number] }>('sherpa-slider');
+    if (this.dataset['body'] !== 'number') return null;
+    const field = this.$<HTMLInputElement>('.body-number-one');
+    const slider = this.$<HTMLElement & { range: [number, number] }>('.body-number-range');
     if (!field && !slider) return null;
     if (this.hasAttribute('data-range')) {
       if (!slider || !slider.hasAttribute('data-touched')) return [];
@@ -747,7 +786,47 @@ export class SherpaMenu extends SherpaElement {
     else if (!inline && !card.hasAttribute('popover')) card.setAttribute('popover', 'manual');
   }
 
+  /**
+   * The chosen body's own numbers, its available days, and the Range switch.
+   * TRAP T-a-menu-owns-its-own-bodies
+   */
+  #syncBody(): void {
+    const body = this.dataset['body'];
+    if (!body) return;
+    this.$('.body-range-switch')?.toggleAttribute('checked', this.hasAttribute('data-range'));
+
+    if (body === 'date') {
+      // SLOTTED, not in this shadow root — see the template.
+      const cal = this.querySelector<HTMLElement>('sherpa-calendar');
+      if (!cal) return;
+      /* ONLY when RANGED. A fresh calendar has no `data-type` at all, and
+         writing `single` onto it would be this menu answering a question
+         nobody asked. The FLIP says `single`, because that is a change. */
+      if (this.hasAttribute('data-range')) cal.setAttribute('data-type', 'range');
+      const days = this.dataset['available'];
+      if (days) cal.setAttribute('data-available', days);
+      return;
+    }
+    if (body !== 'number') return;
+    const field = this.$<HTMLElement>('.body-number-one');
+    const slider = this.$<HTMLElement>('.body-number-range');
+    const min = this.dataset['min'] ?? '0';
+    const max = this.dataset['max'] ?? '100';
+    for (const el of [field, slider]) {
+      if (!el) continue;
+      el.setAttribute('min', min);
+      el.setAttribute('max', max);
+      if (this.dataset['step']) el.setAttribute('step', this.dataset['step']);
+    }
+    // A fresh range excludes nothing, so it opens at both ends.
+    if (slider && !slider.hasAttribute('data-touched')) {
+      slider.setAttribute('value-start', min);
+      slider.setAttribute('value-end', max);
+    }
+  }
+
   #sync(): void {
+    this.#syncBody();
     this.#syncInline();
     this.#enforceMode();
     this.#syncCrumb();

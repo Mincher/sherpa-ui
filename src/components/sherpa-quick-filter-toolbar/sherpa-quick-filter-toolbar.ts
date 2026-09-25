@@ -649,20 +649,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const menu = live?.querySelector<HTMLElement & { values: string[] }>('sherpa-menu');
       if (menu) return menu.values;
     }
-    // A NUMBER chip's menu reports its own value — it knows its Range shape.
-    if (chip.querySelector('.qf-number')) {
-      const menu = chip.querySelector<HTMLElement & { values: string[] }>('sherpa-menu');
-      return menu?.values ?? [];
-    }
+    /* A NUMBER or DATE menu reports its OWN value — it knows its body and its
+       Range shape. TRAP T-a-menu-owns-its-own-bodies */
+    const own = chip.querySelector<HTMLElement & { values: string[] }>('sherpa-menu[data-body]');
+    if (own) return own.values;
 
-    const cal = chip.querySelector<HTMLElement>('sherpa-calendar');
-    if (cal) {
-      const start = cal.dataset['valueStart'];
-      const end = cal.dataset['valueEnd'];
-      if (start && end) return [start, end];
-      const value = cal.dataset['value'];
-      return value ? [value] : [];
-    }
     // The MENU's rows, through the chip's own getter — never a DOM query here.
     const held = (chip as ChipEl & { menu?: HTMLElement }).menu ?? chip;
     // NON_VALUE_ROWS names the rows that are not picks.
@@ -673,8 +664,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** TRAP T-date-label-reads-in-full — UTC, day-then-month, in full, no badge. */
   #syncDateLabel(chip: HTMLElement): void {
-    const cal = chip.querySelector<HTMLElement>('sherpa-calendar');
-    if (!cal) return;
+    // The calendar is the MENU's, so ask what KIND of body it has.
+    if (!chip.querySelector('sherpa-menu[data-body="date"]')) return;
     const picked = this.#chipPicks(chip);
     const target = chip as HTMLElement & { valueLabel?: string };
     if (!picked.length) {
@@ -824,9 +815,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     menu.setAttribute('data-select', one ? 'single' : 'multiple');
     // TRAP T-commit-follows-select-mode. A NUMBER defaults to a range — the same
     // default `#addRangeSwitch` applies.
+    // A NUMBER opens as a RANGE; a def that says otherwise wins.
+    // TRAP T-a-default-is-not-an-override
     const asRange = def.range ?? kind === 'number';
     const defers = def.commit ?? (!one && !(hasOwnBody(kind) && !asRange));
     if (defers) menu.setAttribute('data-commit', '');
+    // A def that NAMED `commit` outranks the Range switch's own rule.
+    if (def.commit != null) menu.setAttribute('data-commit-fixed', '');
     // TRAP T-every-chip-menu-gets-clear-and-search — a persistent chip gets no Clear.
     if (!def.persistent) menu.setAttribute('data-clearable', '');
     menu.setAttribute('data-search', '');
@@ -834,31 +829,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const bounds = this.dataset['bounds'];
     if (bounds) menu.setAttribute('data-bounds', bounds);
 
-    // Field and two-ended slider both exist from the start, CSS reveals one, so
-    // flipping back keeps what was typed on the other side.
+    /* THE MENU OWNS ITS BODY. This bar says WHICH, and hands over the numbers;
+       the switch, the field, the slider and their rules are the menu's.
+       TRAP T-a-menu-owns-its-own-bodies */
     if (kind === 'number') {
       // No list to search, only a value to type or drag.
       menu.removeAttribute('data-search');
-      this.#addRangeSwitch(menu, def);
-      const box = this.clone('template.qf-number-tpl');
-      if (box) {
-        const slider = box.querySelector('sherpa-slider');
-        const field = box.querySelector('input');
-        // Slider ends and field clamp: typing 500 into a 0..100 filter cannot
-        // ask for a row that cannot exist.
-        const min = def.min ?? 0;
-        const max = def.max ?? 100;
-        for (const el of [slider, field]) {
-          if (!el) continue;
-          el.setAttribute('min', String(min));
-          el.setAttribute('max', String(max));
-          if (def.step != null) el.setAttribute('step', String(def.step));
-        }
-        // A fresh range excludes nothing.
-        slider?.setAttribute('value-start', String(min));
-        slider?.setAttribute('value-end', String(max));
-        menu.appendChild(box);
-      }
+      menu.setAttribute('data-body', 'number');
+      if (asRange) menu.setAttribute('data-range', '');
+      menu.setAttribute('data-min', String(def.min ?? 0));
+      menu.setAttribute('data-max', String(def.max ?? 100));
+      if (def.step != null) menu.setAttribute('data-step', String(def.step));
       this.#addRemove(chip, menu, def);
       chip.setAttribute('data-menu', '');
       chip.appendChild(menu);
@@ -867,8 +848,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
     // A DATE chip's menu holds a CALENDAR instead of value rows.
     if (kind === 'date') {
-      // FIRST: the switch decides what the calendar below it is.
-      this.#addRangeSwitch(menu, def);
+      /* TRAP T-calendar-header-has-no-heading — no search; CLEAR stays, as a
+         date chip has no other way back to "no date". */
+      menu.removeAttribute('data-search');
+      menu.setAttribute('data-body', 'date');
+      if (def.range) menu.setAttribute('data-range', '');
+      // The Menu set's `Type = Calendar` variant: a wider card.
+      menu.setAttribute('data-type', 'calendar');
+      /* SLOTTED, because the calendar projects its stepper into the menu's
+         header slot and slot assignment only reaches LIGHT DOM. The Range
+         switch above it is the menu's own.
+         TRAP T-a-menu-owns-its-own-bodies */
       const calTpl = this.$<HTMLTemplateElement>('template.qf-calendar-tpl');
       if (calTpl) {
         const cal = calTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
@@ -876,11 +866,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         if (def.availableDates) {
           cal.setAttribute('data-available', def.availableDates.join(','));
         }
-        // TRAP T-calendar-header-has-no-heading — no search; CLEAR stays, as a
-        // date chip has no other way back to "no date".
-        menu.removeAttribute('data-search');
-        // The Menu set's `Type = Calendar` variant: a wider card.
-        menu.setAttribute('data-type', 'calendar');
         menu.appendChild(cal);
       }
       this.#addRemove(chip, menu, def);
@@ -963,39 +948,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * TRAP T-an-operator-decides-pick-or-type
    * TRAP T-range-switch-swaps-not-rebuilds
    */
-  /** Was this chip's commit mode PINNED by its definition? The Range switch must not move it. */
-  #chipDefers(sw: HTMLElement): boolean {
-    /* The MENU carries the id. Walking up to `.chip` finds nothing once a
-       filter panel has borrowed the menu.
-       TRAP T-a-borrowed-menu-leaves-its-toolbars-listeners-behind */
-    const id = sw.closest<HTMLElement>('sherpa-menu')?.dataset['chipId']
-      ?? sw.closest<HTMLElement>('.chip')?.dataset['id'];
-    if (!id) return false;
-    return this.#filters.some((f) => f.id === id && f.commit != null);
-  }
-
-  /** TRAP T-range-switch-swaps-not-rebuilds — one filter, two shapes, one switch. */
-  #addRangeSwitch(menu: HTMLElement, def: QuickFilterDef): void {
-    const row = this.clone('template.qf-range-tpl');
-    if (!row) return;
-    const sw = row.querySelector('sherpa-switch');
-    /* A NUMBER opens as a RANGE, a DATE keeps what it declared; an explicit
-       `range: false` still wins. TRAP T-a-default-is-not-an-override */
-    if (def.range ?? kindOf(def) === 'number') {
-      sw?.setAttribute('checked', '');
-      menu.setAttribute('data-range', '');
-    }
-    /* On the MENU, not on the bar. A filter panel BORROWS a menu out of this
-       toolbar, and a listener bound on the bar stops hearing it the moment it
-       moves — the switch then flipped nothing, silently.
-       TRAP T-a-borrowed-menu-leaves-its-toolbars-listeners-behind */
-    menu.addEventListener('change', this.#onRangeToggle);
-    /* The chip's own id, read NOW while the menu is still on its chip. A
-       borrowed menu cannot walk up to `.chip` any more. */
-    menu.dataset['chipId'] = def.id;
-    menu.appendChild(row);
-  }
-
   /** A chip's condition or typed value changed — the bar's filter did too. */
   #onConditionChanged = (): void => {
     this.#emitChange();
@@ -1011,24 +963,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   };
 
   #conditionFrame: number | null = null;
-
-  /** The Range switch was flipped — swap the menu between its two shapes. */
-  #onRangeToggle = (event: Event): void => {
-    // The change starts on the switch's inner <input>.
-    const sw = this.pathFind(event, '.qf-range-switch');
-    if (!sw) return;
-    const on = (sw as HTMLElement & { checked: boolean }).checked;
-    const menu = sw.closest('sherpa-menu');
-    if (!menu) return;
-    menu.toggleAttribute('data-range', on);
-    // A range defers — the pick is not finished on its first end.
-    if (!this.#chipDefers(sw)) menu.toggleAttribute('data-commit', on);
-    // Any previous single pick is left alone — re-picking starts a range anyway.
-    menu.querySelector('sherpa-calendar')?.setAttribute('data-type', on ? 'range' : 'single');
-    // The filter's shape changed, so its meaning did.
-    this.#emitChange();
-  };
-
 
   /** Menus whose items wait for their chip to enter the list. */
   #pendingItems: Array<[HTMLElement, unknown[]]> = [];

@@ -18,7 +18,8 @@ Kept as the work lands. Budgets from §15.4.
 | 3a `scope` renamed three ways | ✅ | ≈ 0 | **+8** | `reach` / `rows` / `scope`. 31 call sites, 2210 tests green |
 | 3b the scope registry + `debugState()` | ✅ | ≈ +40 | **+84** | registry +40, `debugState()` +26, docs the rest. 219 unit / 2209 e2e green |
 | 3c-i the panel stops REACHING | ✅ | ≈ −60 | **−3** | `#barOf`, `#chipOf`, `#bars`, `#markConditioned` deleted; it reports `readings` |
-| 4b one set of menu templates | ⏳ | **re-estimating** | — | **moved BEFORE 3c-ii**; the hosts read body controls directly in 15 places |
+| 4b-i menu owns its bodies — TOOLBAR | ✅ | ≈ −60 | **+7** | toolbar −129, menu +166. The calendar CANNOT move: it projects into the menu's header slot |
+| 4b-ii the GRID uses them too | | ≈ −60 | — | 13 direct reads to move first |
 | 4c a record TIMESTAMP, and one Date filter | | ≈ +60 | — | buys the series composition in §9.5 |
 | 3c-ii stop BORROWING menus | | ≈ −110 | — | needs 4b: the panel cannot build a calendar body without it |
 | 4 one field-row builder | | ≈ −250 | — | |
@@ -534,6 +535,14 @@ all.
 **Why it is worth doing:** the next component that needs a number filter has
 somewhere to get one. Today it would write a third copy, and there would be
 three spellings of "Range".
+
+**THE CALENDAR CANNOT MOVE — found 2026-09-25 while doing it.** `sherpa-calendar`
+projects its month stepper into the menu's `header` slot, and slot assignment
+only reaches a host's LIGHT DOM. Inside the menu's shadow root it has nothing
+to project into, and the header comes up empty — silently, with no error. So a
+date body stays slotted while the Range switch above it is the menu's own.
+That reads like an inconsistency and is a platform limit.
+TRAP `T-projected-slot-content-crosses-two-shadow-boundaries`
 
 **Where it sits — MOVED, 2026-09-25.** It was planned beside step 4. Starting
 3c-ii showed the order is wrong: **3c-ii cannot finish without it.**
