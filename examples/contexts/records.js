@@ -514,8 +514,9 @@ export async function init(root, { session } = {}) {
   ];
 
   /* `as` adapts the shape at the binding. `ignore` on filter-change because
-     this view owns the whole filter: the grid's secondary header row emits it
-     with ONE column's text, which would wipe the chips and the other columns. */
+     the GRID owns that one: its secondary header row filters the rows it holds,
+     so a keystroke costs no re-query. Letting the source filter too would draw
+     the same narrowing twice, in two places. TRAP T-ignore-is-the-scalpel */
   /* THE WHOLE COLUMN, not the drawn page. A heading's filter menu built from
      the rows on screen is a one-way door: narrow on another field and three of
      four owners vanish from the Owner menu with no way to tick them back.
@@ -691,13 +692,12 @@ export async function init(root, { session } = {}) {
     source.contribute('chips', andFilter(clauses));
   };
 
-  source.bind(qft, { steerOnly: true, ignore: ['quick-filter-change'], signal });
+  /* NO `ignore` for `quick-filter-change`: the bound source now asks the bar
+     for its `readings` and applies them itself, which is the whole point of
+     one query builder. This page only adds what the bar cannot say — the
+     toggles, which name no field. TRAP T-one-query-builder-in-the-data-layer */
+  source.bind(qft, { steerOnly: true, signal });
   qft.addEventListener('quick-filter-change', (e) => {
-    /* PARAMETERS, not a query. The bar says what a reader did to each field —
-       which values, which condition, whether it is suspended — and the data
-       layer decides what that means. This page knows none of it.
-       TRAP T-the-field-type-decides-the-clause */
-    source.apply(qft.readings);
     pushChips();
     /* A custom chip's body is a TOGGLE: off means "stop applying this", not
        "delete it" — only REMOVE deletes. So this suspends and restores the
@@ -753,10 +753,10 @@ export async function init(root, { session } = {}) {
 
     if (clause) columnClauses.set(field, clause);
     else columnClauses.delete(field);
-    /* CHIP FIRST, then the filter. Adding the chip makes the toolbar emit
-       `quick-filter-change`, which the bound source answers by setting the
-       filter from the chips alone — so the column contribution must land after
-       it to have the last word on its own key. */
+    /* The chip first, then the contribution. `quick-filter-change` now lands
+       in each FIELD's own slot and leaves named parts alone, so this order is
+       no longer load-bearing — it just reads in the order it happens.
+       TRAP T-one-query-builder-in-the-data-layer */
     qft.addCustomFilter({ id: `col:${field}`, label: header, value: label });
     pushColumns();
   });

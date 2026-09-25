@@ -4,7 +4,7 @@
  * TRAP T-one-comparator-one-source
  * TRAP T-view-state-lives-in-one-object
  */
-import { andFilter, filterFields, filterNeedles, picksClause, valueKey } from './store.js';
+import { andFilter, filterFields, filterNeedles, valueKey } from './store.js';
 import { fieldState, stateClause } from './filter-state.js';
 import type { Populatable } from '../ui/apply-state.js';
 import type { FieldReading, FieldType, FilterState } from './filter-state.js';
@@ -706,7 +706,15 @@ export class DataSource extends EventTarget {
         return;
       }
       case 'quick-filter-change': {
-        this.setFilter(filterFromChips(detail));
+        /* ASK THE BAR. `readings` is the control's own answer — which field,
+           which values, which condition — and `apply()` is the ONE place a
+           reading becomes a query. Building a clause from the detail here was
+           a second builder that knew no field type, no range and no condition.
+           TRAP T-one-query-builder-in-the-data-layer */
+        const bar = event.currentTarget as EventTarget & {
+          readings?: Record<string, FieldReading>;
+        } | null;
+        this.apply(bar?.readings ?? readingsOf(detail['values']));
         return;
       }
       case 'filter-change': {
@@ -714,9 +722,12 @@ export class DataSource extends EventTarget {
         const field = detail['field'];
         const value = detail['value'];
         if (typeof field !== 'string') return;
-        this.setFilter(
-          value === '' || value == null ? undefined : [field, 'contains', value],
-        );
+        /* PARAMETERS, not a clause, and the FIELD's own slot — `setFilter`
+           replaced the whole query, so typing in one column heading wiped
+           every chip and every component part.
+           TRAP T-one-query-builder-in-the-data-layer */
+        const text = value == null ? '' : String(value);
+        this.select(field, [], { op: 'contains', text });
         return;
       }
       case 'page-change': {
@@ -844,20 +855,17 @@ function setAttr(el: HTMLElement, name: string, value: string | undefined): void
   else el.setAttribute(name, value);
 }
 
-/** A quick-filter toolbar's detail → a Filter. OR within a chip, AND across them. */
-function filterFromChips(detail: Record<string, unknown>): Filter | undefined {
-  const clauses: Filter[] = [];
-
-  const values = detail['values'];
-  if (values && typeof values === 'object') {
-    for (const [field, picked] of Object.entries(values as Record<string, unknown>)) {
-      if (!Array.isArray(picked)) continue;
-      const clause = picksClause(field, picked);
-      if (clause) clauses.push(clause);
-    }
+/**
+ * A bare `{ field: [values] }` detail as READINGS, for a control with no
+ * `readings` getter of its own. Parameters — `apply()` still builds the query.
+ * TRAP T-one-query-builder-in-the-data-layer
+ */
+function readingsOf(values: unknown): Record<string, FieldReading> {
+  const out: Record<string, FieldReading> = {};
+  if (!values || typeof values !== 'object') return out;
+  for (const [field, picked] of Object.entries(values as Record<string, unknown>)) {
+    // TRAP T-toggle-chips-have-no-field — `active` names no field, so it is not here.
+    if (Array.isArray(picked)) out[field] = { picked };
   }
-
-  // TRAP T-toggle-chips-have-no-field — `active` becomes no clause here.
-
-  return andFilter(clauses);
+  return out;
 }

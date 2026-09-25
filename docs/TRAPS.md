@@ -863,6 +863,7 @@ returns early — so a view that owns an event owns it outright, with no chance 
 the source having already acted by the time the view's own handler runs.
 
 - Site: `src/core/data/data-source.ts`
+- Site: `examples/contexts/records.js`
 
 ### T-adapter-lives-at-the-binding
 
@@ -8344,6 +8345,39 @@ memory so one more click resumes it. TRAP T-grid-suspend-is-not-clear
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+
+### T-one-query-builder-in-the-data-layer
+
+A reading becomes a query in exactly ONE place: `stateClause()`, reached through
+`apply()` or `select()`. Anything else is a second builder, and a second builder
+does not know what the first learned.
+
+`DataSource.#steer` had one. `quick-filter-change` ran a private
+`filterFromChips()` that turned `{ field: [values] }` into `in` clauses — no
+field type, so a number column compared as text; no range, so two picks on a
+slider meant a LIST; no conditions at all. Every fix to `stateClause` missed it.
+
+Worse, both it and the grid's `filter-change` called **`setFilter()`**, which
+replaces the WHOLE query — so typing in one column heading wiped every chip's
+selection and every component contribution.
+
+The proof it was dead weight: `examples/contexts/records.js` had to switch it
+off, twice, with `ignore: ['quick-filter-change']` and `ignore: ['filter-change']`.
+An app working around the data layer is the data layer being wrong.
+
+Both now go through the one door. A control with a `readings` getter is ASKED
+for it; one without has its `{ field: [values] }` read as READINGS, never as a
+clause. `picksClause` then had no callers left in `data-source.ts` at all.
+
+**The shape, stated once:** UI takes input → sends parameters to the data layer
+→ the data layer transforms → it publishes a data change → UI reads the new
+data back. Transforming never writes to the raw rows; only create, update and
+remove do. `test/unit/raw-data-is-untouched.test.mjs` holds that half.
+
+- Site: `src/core/data/data-source.ts`
+- Site: `test/unit/raw-data-is-untouched.test.mjs`
+- Site: `test/unit/one-query-builder.test.mjs`
+- Site: `examples/contexts/records.js`
 
 ### T-an-organise-chip-has-no-values
 
