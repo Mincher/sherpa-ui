@@ -144,13 +144,6 @@
        menu's `header` slot, and slot assignment only reaches a host's LIGHT
        DOM. The Range switch above it IS the menu's.
        TRAP T-a-menu-owns-its-own-bodies -->
-  <template class="qf-calendar-tpl">
-    <sherpa-calendar class="qf-calendar" data-embedded></sherpa-calendar>
-  </template>
-
-  <template class="qf-menu-tpl">
-    <sherpa-menu slot="menu"></sherpa-menu>
-  </template>
   <!-- One row of the OVERFLOW chip's menu: a folded filter with a count badge.
        It is a DOOR — clicking it swaps the menu's list for that filter's rows.
        `data-expandable` is the wrong thing here: its toggle sits on the LEADING

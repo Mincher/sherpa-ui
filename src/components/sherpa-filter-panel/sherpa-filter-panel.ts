@@ -7,7 +7,10 @@
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import { ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
-import { arranges, kindOf, picksOne } from '../../core/ui/filter-kind.js';
+import {
+  arranges, hasOwnBody, kindOf, picksOne, type FilterKind,
+} from '../../core/ui/filter-kind.js';
+import { menuFor, type FilterMenuItem } from '../../core/ui/filter-menu.js';
 import type { FieldCondition, FieldReading } from '../../core/data/filter-state.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-container/sherpa-container.js';
@@ -38,7 +41,22 @@ export interface PanelFilter {
   /** Offer Remove in this field's header. */
   removable?: boolean;
   /** Offer the CONDITION switch. TRAP T-conditions-are-opt-in-per-field */
-  conditions?: boolean;
+  conditions?: boolean | 'only';
+  /** WHAT THIS FILTER IS — see `core/ui/filter-kind.ts`. */
+  kind?: FilterKind | 'values';
+  /** A number filter's slider ends and field clamp. */
+  min?: number;
+  max?: number;
+  step?: number;
+  /** ISO days a DATE field may pick. */
+  availableDates?: string[];
+  /** Start in RANGE mode. */
+  range?: boolean;
+  /** WHAT IS IN FORCE now, from the data layer — the conditions and the text a
+   *  reader last applied. The panel seeds its own menu from this, so it shows
+   *  the answer the rows are under without asking another view.
+   *  TRAP T-a-panel-builds-its-own-menus */
+  state?: FieldReading;
   /** A chip with no field behind it — one question, answered yes or no.
    *  TRAP T-a-chip-with-no-field-is-a-preset */
   preset?: boolean;
@@ -48,16 +66,6 @@ export interface PanelFilter {
   asChip?: boolean;
   /** ON, with nothing picked — a preset's whole state. */
   active?: boolean;
-  /**
-   * The field's OWN `<sherpa-menu>`, for a field the panel cannot draw as a
-   * run of chips — a condition, a number, a range.
-   *
-   * The panel draws it INLINE and gives it back untouched, so the condition
-   * rows, the number input and the range switch are the same controls a chip
-   * menu shows rather than a second copy of each.
-   * TRAP T-an-inline-menu-is-the-same-menu
-   */
-  menu?: HTMLElement;
 }
 
 /** A column Group or Sort may arrange by. */
@@ -84,9 +92,6 @@ export interface PanelScope {
    */
   group?: PanelColumn[];
   sort?: PanelColumn[];
-  /** Each one's OWN menu, where its chip has one. */
-  groupMenu?: HTMLElement;
-  sortMenu?: HTMLElement;
   /** Which column each is on now, and which way the sort runs. */
   groupField?: string;
   sortField?: string;
@@ -99,9 +104,8 @@ interface Held {
   scope: string;
   box: HTMLElement;
   values: HTMLElement;
-  /** A borrowed menu, and where it came from, so it can go home. */
+  /** The menu the panel BUILT for this field, where it needs one. */
   menu?: HTMLElement;
-  menuHome?: { parent: Node; slot: string | null };
 }
 
 export class SherpaFilterPanel extends SherpaElement {
@@ -205,33 +209,11 @@ export class SherpaFilterPanel extends SherpaElement {
     return out;
   }
 
-  /**
-   * Give every borrowed menu back to its chip, NOW.
-   *
-   * A host builds its `populate()` payload by reading the bars — and a menu
-   * the panel is holding is not on its chip, so the field arrives with no
-   * value rows and draws the menu instead of chips. `#draw` releases them too,
-   * but that is after the payload was built. Call this first.
-   * TRAP T-a-borrowed-menu-is-not-on-its-chip
-   */
-  release(): void {
-    this.#giveBack();
-  }
-
   /** Show the panel, unless the window is too narrow.
    *  TRAP T-the-panel-is-desktop-only */
   open(): void {
     if (!this.#wideEnough()) return;
-    /* A CLOSED PANEL HOLDS NOTHING — see `close`. So anything drawn before has
-       already given its menu back, and the fields would come up empty.
-       TRAP T-a-closed-panel-gives-its-menus-back */
-    if (this.#scopes.length && this.#missingMenus()) this.#draw();
     this.toggleAttribute('data-open', true);
-  }
-
-  /** A field that HAD a borrowed menu and no longer holds it. */
-  #missingMenus(): boolean {
-    return [...this.#held.values()].some((held) => held.def.menu && !held.menu);
   }
 
   /** EVERY close reports, and says why. The width path called this directly
@@ -241,19 +223,12 @@ export class SherpaFilterPanel extends SherpaElement {
   close(reason: 'reader' | 'width' = 'reader'): void {
     if (!this.hasAttribute('data-open')) return;
     this.removeAttribute('data-open');
-    /* GIVE THE MENUS BACK. A borrowed menu is not on its chip, so a toolbar
-       shown again had Group and Sort with NO menu at all: nothing opened, and
-       the sort cycle reads its column FROM that menu, so cycling died too.
-       Every other way out of the panel already did this; the reader's own
-       Close did not. TRAP T-a-closed-panel-gives-its-menus-back */
-    this.#giveBack();
     this.#lastClose = reason;
     this.emit('filter-panel-close', { reason });
   }
 
   override onDisconnect(): void {
     this.#media()?.removeEventListener('change', this.#enforceWidth);
-    this.#giveBack();
   }
 
   toggle(): void {
@@ -271,8 +246,7 @@ export class SherpaFilterPanel extends SherpaElement {
   #draw(): void {
     const region = this.$('.scopes');
     if (!region) return;
-    // Every borrowed menu goes home BEFORE the boxes holding them are dropped.
-    this.#giveBack();
+    this.#pending = [];
     this.#held.clear();
     region.replaceChildren();
 
@@ -308,7 +282,6 @@ export class SherpaFilterPanel extends SherpaElement {
         const section = this.#drawSection('organise', 'Organise');
         for (const [kind, cols] of organised) {
           const on = kind === 'group' ? scope.groupField : scope.sortField;
-          const menu = kind === 'group' ? scope.groupMenu : scope.sortMenu;
           const chip = this.#drawChip({
             id: kind, label: kind === 'group' ? 'Group by' : 'Sort by',
             select: 'single',
@@ -316,7 +289,6 @@ export class SherpaFilterPanel extends SherpaElement {
                views of one control cannot drift. A Sort opens on `sort-none`
                and its icon follows the direction from there. */
             icon: kind === 'group' ? ORGANISE_ICONS.group : ORGANISE_ICONS.sortNone,
-            ...(menu ? { menu } : {}),
             options: (cols ?? []).map((c) => ({
               value: c.field, label: c.label, selected: c.field === on,
             })),
@@ -374,6 +346,10 @@ export class SherpaFilterPanel extends SherpaElement {
 
       region.append(box);
     }
+    /* THE MENUS ARE IN THE PAGE NOW. A detached `<sherpa-menu>` has not
+       upgraded, so rows stamped before this are lost.
+       TRAP T-custom-element-upgrade */
+    this.#flushMenus();
     this.#snapshot();
     this.#syncAllAnswered();
   }
@@ -408,24 +384,15 @@ export class SherpaFilterPanel extends SherpaElement {
     const kind = kindOf(def);
     if (arranges(kind)) {
       one.dataset['kind'] = kind;
-      /* NO MENU HERE means the choice is drawn as options, so the column has
-         to be named. TRAP T-a-chip-knows-what-kind-it-is */
+      /* NAME THE COLUMN. The chip's own menu stamps its rows a tick later, so
+         this is what it reads until then. TRAP T-a-chip-knows-what-kind-it-is */
       const on = (def.options ?? []).find((o) => o.selected)?.value;
-      if (!def.menu && on) one.dataset['column'] = String(on);
+      if (on) one.dataset['column'] = String(on);
     }
     one.toggleAttribute('data-current', (def.options ?? []).some((o) => o.selected));
 
     const held: Held = { def, scope, box: section.box, values: section.values };
-    if (def.menu) {
-      one.setAttribute('data-menu', '');
-      /* A chip menu in the panel COMMITS, like everything else here.
-         TRAP T-a-chip-menu-in-the-panel-commits */
-      def.menu.setAttribute('data-commit', '');
-      held.menu = def.menu;
-      held.menuHome = { parent: def.menu.parentNode!, slot: def.menu.getAttribute('slot') };
-      def.menu.setAttribute('slot', 'menu');
-      one.append(def.menu);
-    }
+    this.#giveMenu(held, one);
     this.#held.set(`${scope}:${def.id}`, held);
     return one;
   }
@@ -433,9 +400,9 @@ export class SherpaFilterPanel extends SherpaElement {
   /** One field: its header, its actions, and its run of value chips. */
   #drawField(def: PanelFilter, scope: string, isPresets: boolean): HTMLElement | null {
     const options = def.options ?? [];
-    /* A field with NO VALUES and NO MENU has nothing to draw at all.
+    /* A field with NO VALUES and NO BODY has nothing to draw at all.
        TRAP T-the-panel-is-the-toolbar-in-a-column */
-    if (!options.length && !def.menu) return null;
+    if (!options.length && !hasOwnBody(kindOf(def))) return null;
 
     /* ONLY GROUP AND SORT stay as one chip with their own menu. They are not
        filters — they say HOW the rows are arranged — so they read as the two
@@ -492,20 +459,7 @@ export class SherpaFilterPanel extends SherpaElement {
       values.append(one);
 
       const held: Held = { def, scope, box, values };
-      /* The MENU is the field's own, moved onto this chip — the same control
-         in a second place, never a copy. TRAP T-an-inline-menu-is-the-same-menu */
-      if (def.menu) {
-        one.setAttribute('data-menu', '');
-        /* A CHIP MENU in the panel COMMITS. Everything else here waits for the
-           panel's own Apply, so a date or a sort that landed on every click
-           would be the one control that did not.
-           TRAP T-a-chip-menu-in-the-panel-commits */
-        def.menu.setAttribute('data-commit', '');
-        held.menu = def.menu;
-        held.menuHome = { parent: def.menu.parentNode!, slot: def.menu.getAttribute('slot') };
-        def.menu.setAttribute('slot', 'menu');
-        one.append(def.menu);
-      }
+      this.#giveMenu(held, one);
       this.#held.set(key, held);
       return box;
     }
@@ -529,38 +483,69 @@ export class SherpaFilterPanel extends SherpaElement {
     const held: Held = { def, scope, box, values: values ?? box };
 
     /* A field ANSWERED BY ITS MENU — a number, a range, a condition-only field
-       — borrows that menu and draws it inline. The panel gives it back
-       untouched. TRAP T-an-inline-menu-is-the-same-menu */
-    if (def.menu && !options.length) {
+       — draws that menu INLINE, in its own body. */
+    const body = box.querySelector('.field-body');
+    if (body && !options.length && hasOwnBody(kind)) {
       box.setAttribute('data-body', '');
-      this.#borrow(held, def.menu, box);
+      this.#giveMenu(held, body as HTMLElement, true);
     }
 
     this.#held.set(key, held);
     return box;
   }
 
-  /** Move a menu into this field's body, remembering where it came from. */
-  #borrow(held: Held, menu: HTMLElement, box: HTMLElement): void {
-    const body = box.querySelector('.field-body');
-    if (!body) return;
+  /**
+   * BUILD this field's menu and hang it on `host`.
+   *
+   * The panel used to BORROW the toolbar's, which broke every listener bound
+   * on the original chip and left that chip with no menu at all while the
+   * panel was open. It builds its own from the same `menuFor`, so the two are
+   * the same control without being the same element.
+   * TRAP T-a-panel-builds-its-own-menus
+   */
+  #giveMenu(held: Held, host: HTMLElement, inline = false, force = false): void {
+    const def = held.def;
+    const kind = kindOf(def);
+    // A run of chips answers it already; only its OWN body needs a menu.
+    if (!force) {
+      if (!inline && !arranges(kind) && !def.asChip) return;
+      if (inline && !hasOwnBody(kind)) return;
+    }
+
+    // TRAP T-an-inline-menu-is-the-same-menu — the same card, drawn in the flow.
+    const { menu, items } = menuFor(def, { inline });
+    if (inline) {
+      menu.removeAttribute('slot');
+    } else {
+      /* A CHIP MENU in the panel COMMITS. Everything else here waits for the
+         panel's own Apply, so a date or a sort that landed on every click
+         would be the one control that did not.
+         TRAP T-a-chip-menu-in-the-panel-commits */
+      menu.setAttribute('data-commit', '');
+      host.setAttribute('data-menu', '');
+    }
     held.menu = menu;
-    held.menuHome = { parent: menu.parentNode!, slot: menu.getAttribute('slot') };
-    menu.removeAttribute('slot');
-    menu.setAttribute('data-inline', '');
-    body.append(menu);
+    host.append(menu);
+    this.#pending.push([menu, items, def.state]);
   }
 
-  /** Put every borrowed menu back exactly as it was. */
-  #giveBack(): void {
-    for (const [, held] of this.#held) {
-      if (!held.menu || !held.menuHome) continue;
-      held.menu.removeAttribute('data-inline');
-      if (held.menuHome.slot) held.menu.setAttribute('slot', held.menuHome.slot);
-      held.menuHome.parent.appendChild(held.menu);
-      delete held.menu;
-      delete held.menuHome;
+  /** Menus whose rows wait for the panel to enter the page.
+   *  TRAP T-custom-element-upgrade */
+  #pending: Array<[HTMLElement, FilterMenuItem[], FieldReading | undefined]> = [];
+
+  /** Hand each waiting menu its rows, and the answer already in force. */
+  #flushMenus(): void {
+    for (const [menu, items, state] of this.#pending) {
+      const api = menu as HTMLElement & {
+        items?: (i: readonly FilterMenuItem[]) => void;
+        conditions?: readonly FieldCondition[];
+        conditionValue?: string;
+      };
+      if (items.length) api.items?.(items);
+      if (state?.conditions?.length) api.conditions = state.conditions;
+      if (state?.text) api.conditionValue = state.text;
     }
+    this.#pending = [];
   }
 
   /** Hand the Add button the WHOLE list: what is held, ticked, and what is not.
@@ -671,46 +656,21 @@ export class SherpaFilterPanel extends SherpaElement {
     held.box.toggleAttribute('data-conditional', on);
     btn.setAttribute('aria-pressed', String(on));
 
-    /* The ROWS are the MENU's. The panel borrows the whole body and puts the
-       menu into condition mode — one control, drawn in a second place.
-       TRAP T-an-inline-menu-is-the-same-menu */
-    const menu = held.def.menu;
-    if (menu) {
-      const body = held.box.querySelector('.field-body');
-      if (on) {
-        /* The MENU refuses condition mode unless the field opted in, and a
-           panel's own button IS that opt-in reaching it.
-           TRAP T-conditions-are-opt-in-per-field */
-        menu.setAttribute('data-conditional', '');
-        menu.dataset['mode'] = 'condition';
-        /* MOVE IT, wherever it is now. A SINGLE-SELECT field's menu is already
-           borrowed — onto its one chip — so a `!held.menu` guard skipped the
-           move and the rows never appeared: the chips hid and nothing replaced
-           them. TRAP T-an-inline-menu-is-the-same-menu */
-        if (!held.menu) {
-          held.menu = menu;
-          held.menuHome = { parent: menu.parentNode!, slot: menu.getAttribute('slot') };
-        }
-        menu.removeAttribute('slot');
-        menu.setAttribute('data-inline', '');
-        body?.append(menu);
-      } else {
-        menu.dataset['mode'] = 'select';
-        /* BACK to the chip for a single-select field, or home for any other.
-           The chip is still in this box; the home may not be. */
-        const chip = held.values.querySelector('.value');
-        if (held.box.hasAttribute('data-single') && chip) {
-          menu.removeAttribute('data-inline');
-          menu.setAttribute('slot', 'menu');
-          chip.append(menu);
-        } else if (held.menu && held.menuHome) {
-          menu.removeAttribute('data-inline');
-          if (held.menuHome.slot) menu.setAttribute('slot', held.menuHome.slot);
-          held.menuHome.parent.appendChild(menu);
-          delete held.menu;
-          delete held.menuHome;
-        }
-      }
+    /* THE ROWS ARE THE MENU'S, and this field may not have needed one until
+       now — a run of chips answers it otherwise. CSS shows the body off
+       `[data-conditional]`, so OFF needs nothing but the mode back.
+       TRAP T-a-panel-builds-its-own-menus */
+    const body = held.box.querySelector('.field-body');
+    if (on && !held.menu && body) {
+      this.#giveMenu(held, body as HTMLElement, true, true);
+      this.#flushMenus();
+    }
+    if (held.menu) {
+      /* The MENU refuses condition mode unless the field opted in, and a
+         panel's own button IS that opt-in reaching it.
+         TRAP T-conditions-are-opt-in-per-field */
+      if (on) held.menu.setAttribute('data-conditional', '');
+      held.menu.dataset['mode'] = on ? 'condition' : 'select';
     }
 
     this.#syncAnswered(held);

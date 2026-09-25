@@ -75,6 +75,10 @@ const KNOWN = {
     'ok: the `values` setter / setClause(id, clause) — what a reader did to each field',
   'sherpa-quick-filter-toolbar.offering': 'ok: available(defs) — what is left to add',
   'sherpa-quick-filter-toolbar.heldIds': 'ok: populate() / addFilters() / removeFilter()',
+  // The DEFS, each with the reading in force — what a second view draws from.
+  // TRAP T-a-panel-builds-its-own-menus
+  'sherpa-quick-filter-toolbar.held':
+    'ok: populate() / addFilters() / removeFilter() — the defs; the `values` setter answers them',
   'sherpa-filter-panel.values': 'ok: populate(scopes) — a filter carries its picked options',
   // Every chip's FilterState, the one answer the bar and its readers share.
   // Written per field by setClause(id, clause). TRAP T-one-state-per-filtered-field

@@ -7,9 +7,10 @@ import { DATA_PROPS, SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-el
 import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
 import { sortDirectionFrom } from '../../core/data/cycle.js';
 import { allow, type AllowList } from '../../core/data/allow.js';
-import { hasOwnBody, kindOf, picksOne, type FilterKind } from '../../core/ui/filter-kind.js';
+import { kindOf, type FilterKind } from '../../core/ui/filter-kind.js';
+import { menuFor } from '../../core/ui/filter-menu.js';
 import {
-  DEFAULT_OP, OPS_FOR_TYPE, OP_TAKES,
+  DEFAULT_OP, OP_TAKES,
   type Filter, type FilterOp,
 } from '../../core/data/store.js';
 import {
@@ -83,6 +84,9 @@ export interface QuickFilterDef {
   op?: FilterOp;
   /** What the reader TYPED, for a condition that takes text rather than a pick. */
   text?: string;
+  /** WHAT THE READER ANSWERED — filled by the `held` read-back, never by a
+   *  caller. TRAP T-a-panel-builds-its-own-menus */
+  state?: FieldReading;
 }
 
 interface ChipEl extends HTMLElement {
@@ -199,8 +203,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
     let menu = chip.querySelector('sherpa-menu');
     if (!menu) {
-      menu = this.clone('template.qf-menu-tpl') as HTMLElement | null;
-      if (!menu) return;
+      menu = document.createElement('sherpa-menu');
       menu.setAttribute('slot', 'menu');
       menu.setAttribute('data-heading', 'More filters');
       chip.setAttribute('data-menu', '');
@@ -803,104 +806,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** Give a chip its value menu — real checkbox/radio rows in the chip's light DOM. */
   #addMenu(chip: HTMLElement, def: QuickFilterDef, picked?: Set<string>): void {
-    const menu = this.clone('template.qf-menu-tpl');
-    if (!menu) return;
-
-    /* WHAT IT IS, asked once. TRAP T-a-chip-knows-what-kind-it-is */
-    const kind = kindOf(def);
-    const one = picksOne(kind);
-    menu.setAttribute('data-heading', def.label);
-    // One prototype serves both: a sherpa-button names the same slot as a chip.
-    menu.setAttribute('slot', 'menu');
-    menu.setAttribute('data-select', one ? 'single' : 'multiple');
-    // TRAP T-commit-follows-select-mode. A NUMBER defaults to a range — the same
-    // default `#addRangeSwitch` applies.
-    // A NUMBER opens as a RANGE; a def that says otherwise wins.
-    // TRAP T-a-default-is-not-an-override
-    const asRange = def.range ?? kind === 'number';
-    const defers = def.commit ?? (!one && !(hasOwnBody(kind) && !asRange));
-    if (defers) menu.setAttribute('data-commit', '');
-    // A def that NAMED `commit` outranks the Range switch's own rule.
-    if (def.commit != null) menu.setAttribute('data-commit-fixed', '');
-    // TRAP T-every-chip-menu-gets-clear-and-search — a persistent chip gets no Clear.
-    if (!def.persistent) menu.setAttribute('data-clearable', '');
-    menu.setAttribute('data-search', '');
-    // Without `data-bounds` the card falls back to the viewport.
-    const bounds = this.dataset['bounds'];
-    if (bounds) menu.setAttribute('data-bounds', bounds);
-
-    /* THE MENU OWNS ITS BODY. This bar says WHICH, and hands over the numbers;
-       the switch, the field, the slider and their rules are the menu's.
-       TRAP T-a-menu-owns-its-own-bodies */
-    if (kind === 'number') {
-      // No list to search, only a value to type or drag.
-      menu.removeAttribute('data-search');
-      menu.setAttribute('data-body', 'number');
-      if (asRange) menu.setAttribute('data-range', '');
-      menu.setAttribute('data-min', String(def.min ?? 0));
-      menu.setAttribute('data-max', String(def.max ?? 100));
-      if (def.step != null) menu.setAttribute('data-step', String(def.step));
-      this.#addRemove(chip, menu, def);
-      chip.setAttribute('data-menu', '');
-      chip.appendChild(menu);
-      return;
-    }
-
-    // A DATE chip's menu holds a CALENDAR instead of value rows.
-    if (kind === 'date') {
-      /* TRAP T-calendar-header-has-no-heading — no search; CLEAR stays, as a
-         date chip has no other way back to "no date". */
-      menu.removeAttribute('data-search');
-      menu.setAttribute('data-body', 'date');
-      if (def.range) menu.setAttribute('data-range', '');
-      // The Menu set's `Type = Calendar` variant: a wider card.
-      menu.setAttribute('data-type', 'calendar');
-      /* SLOTTED, because the calendar projects its stepper into the menu's
-         header slot and slot assignment only reaches LIGHT DOM. The Range
-         switch above it is the menu's own.
-         TRAP T-a-menu-owns-its-own-bodies */
-      const calTpl = this.$<HTMLTemplateElement>('template.qf-calendar-tpl');
-      if (calTpl) {
-        const cal = calTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-        if (def.range) cal.setAttribute('data-type', 'range');
-        if (def.availableDates) {
-          cal.setAttribute('data-available', def.availableDates.join(','));
-        }
-        menu.appendChild(cal);
-      }
-      this.#addRemove(chip, menu, def);
-      chip.setAttribute('data-menu', '');
-      chip.appendChild(menu);
-      return;
-    }
-
-    /* A VALUE menu is a FILTER menu. A PERSISTENT chip is a selector, not a
-       field question — "which saved view" has no Contains.
-       TRAP T-an-operator-decides-pick-or-type */
-    if (!def.persistent) {
-      menu.setAttribute('data-type', 'filter');
-      if (def.op) menu.setAttribute('data-op', def.op);
-
-      /* CONDITIONS ARE OPT-IN. A closed set of three — Region, Customer — is
-         answered by ticking, and a Contains box over it is noise. The MENU
-         owns the rows; this only says whether they are offered at all.
-         TRAP T-conditions-are-opt-in-per-field */
-      if (def.conditions) {
-        menu.setAttribute('data-conditional', '');
-        /* VALUES, CONDITIONS, OR BOTH. `only` opens in condition mode and
-           hides the switch — there is no list behind it.
-           TRAP T-a-filter-answers-by-values-conditions-or-both */
-        if (def.conditions === 'only') {
-          menu.setAttribute('data-conditions-only', '');
-          menu.setAttribute('data-mode', 'condition');
-        }
-        /* A number or date chip returned above, so what is left is a VALUES
-           chip — the text ops are the set it can answer. */
-        const ops = OPS_FOR_TYPE['text'] ?? [];
-        if (ops.length) menu.setAttribute('data-conditions', ops.join(','));
-        if (def.text) menu.setAttribute('data-value', def.text);
-      }
-    }
+    /* ONE DEF, ONE MENU. The panel and a column heading build theirs the same
+       way, so a field cannot open with a different control in each.
+       TRAP T-one-field-one-filter-menu */
+    const { menu, items } = menuFor(def, { bounds: this.dataset['bounds'] });
 
     // TRAP T-persistent-chip-is-a-selector — no pick at all falls back to the
     // FIRST option, or the chip paints as an empty warning.
@@ -908,30 +817,25 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const hasPick = picked ? picked.size > 0 : options.some((o) => o.selected);
     const fallback = def.persistent && !hasPick ? options[0]?.value : undefined;
 
-    const isOn = (option: QuickFilterOption): boolean =>
-      picked
-        ? picked.has(option.value) || option.value === fallback
-        : !!option.selected || option.value === fallback;
-
     /* THE MENU draws its own items, from the DATA handed to it: it picks the
        control from `data-select` and sorts the unreachable below a divider.
-       Stamping them here as well is what let a chip menu and a column heading
-       menu end up with different controls over the same field.
 
        `items()`, not `populate()`: this chip is a detached clone, so its menu
        has not upgraded and an awaited populate would never settle.
-       TRAP T-one-field-one-filter-menu
        TRAP T-custom-element-upgrade */
-    this.#pendingItems.push([
-      menu,
-      options.map((option) => ({
-        value: option.value,
-        label: option.label,
-        selected: isOn(option),
-        available: option.available,
-      })),
-    ]);
-
+    if (items.length) {
+      this.#pendingItems.push([
+        menu,
+        items.map((item) => ({
+          value: item.value,
+          label: item.label,
+          selected: picked
+            ? picked.has(item.value) || item.value === fallback
+            : !!item.selected || item.value === fallback,
+          available: item.available,
+        })),
+      ]);
+    }
 
     this.#addRemove(chip, menu, def);
 
@@ -1375,6 +1279,30 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** The ids this bar is holding — the read-back `populate()` never had. */
   get heldIds(): string[] {
     return this.#filters.map((f) => f.id);
+  }
+
+  /**
+   * The DEFS this bar holds, each carrying what the reader has answered.
+   *
+   * A SECOND VIEW of the same fields — a filter panel — draws from this. It
+   * used to read them out of this shadow root instead, which meant scraping
+   * the value rows off a menu that might not be here at all.
+   * TRAP T-a-panel-builds-its-own-menus
+   */
+  get held(): QuickFilterDef[] {
+    const readings = this.readings;
+    return this.#filters.map((def) => {
+      const reading = readings[def.id];
+      if (!reading) return { ...def };
+      const picked = new Set((reading.picked ?? []).map(String));
+      return {
+        ...def,
+        state: reading,
+        ...(def.options
+          ? { options: def.options.map((o) => ({ ...o, selected: picked.has(o.value) })) }
+          : {}),
+      };
+    });
   }
 
   /**

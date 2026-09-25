@@ -79,75 +79,33 @@ export async function init(root, { session } = {}) {
   /**
    * A toolbar filter def, as the PANEL takes it.
    *
-   * A chip with no `options` is a TOGGLE — one question with no field behind
-   * it, which the panel shows as a preset.
-   * TRAP T-a-chip-with-no-field-is-a-preset
+   * FACTS ONLY. The panel builds its own menus from these, so nothing here
+   * reaches into a bar's shadow root to find a control.
+   * TRAP T-a-panel-builds-its-own-menus
    */
-  const asPanelField = (f, bar) => {
-    /* The chip's menu may be BORROWED into the panel right now — it goes home
-       on the next `#draw`, but this reads the bar BEFORE that. Look in both
-       places, or a field whose menu is away reads as a preset and the panel
-       grows a second Presets section every time it redraws.
-       TRAP T-a-borrowed-menu-is-not-on-its-chip */
-    const menu = bar?.shadowRoot
-      ?.querySelector(`.chips > .chip[data-id="${f.id}"] sherpa-menu`)
-      ?? panel?.shadowRoot
-        ?.querySelector(`.field[data-field="${f.id}"] sherpa-menu`)
-      ?? undefined;
-    return asPanelFieldWith(f, menu);
-  };
-
-  /**
-   * One bar chip, as the PANEL takes it.
-   *
-   * The menu may be BORROWED into the panel right now, so it is looked for in
-   * both places — and the VALUE ROWS are read from wherever it is. Reading
-   * them from the chip alone gave every field zero options while its menu was
-   * away, and a field with no options but a menu draws that MENU: the panel
-   * filled with search boxes and checkboxes instead of chips.
-   * TRAP T-a-borrowed-menu-is-not-on-its-chip
-   */
-  const fromChip = (id, bar) => {
-    const chip = bar?.shadowRoot?.querySelector(`.chips > .chip[data-id="${id}"]`);
-    const menu = chip?.querySelector('sherpa-menu')
-      ?? panel?.shadowRoot?.querySelector(`.field[data-field="${id}"] sherpa-menu`)
-      ?? undefined;
-    return asPanelFieldWith({
-      id,
-      label: chip?.dataset['label'] ?? id,
-      select: menu?.dataset['select'],
-      // From the MENU, wherever it is — never from the chip it may have left.
-      options: [...(menu?.querySelectorAll('label:not(.qf-all)') ?? [])]
-        .map((row) => ({
-          value: row.querySelector('input')?.value ?? '',
-          label: (row.textContent ?? '').trim(),
-          selected: !!row.querySelector('input')?.checked,
-        }))
-        .filter((o) => o.value),
-      removable: true,
-      conditions: menu?.hasAttribute('data-conditional'),
-      kind: chip?.querySelector('.qf-number') ? 'number' : undefined,
-    }, menu);
-  };
-
-  const asPanelFieldWith = (f, menu) => ({
+  const asPanelField = (f) => ({
     id: f.id,
     label: f.label,
     options: f.options,
     select: f.select,
     removable: f.removable,
     conditions: f.conditions,
-    /* A PRESET has no values AND no menu — one question, answered yes or no.
-       A date or a number range has no values either, but it HAS a menu, and
-       the panel draws that body. TRAP T-a-chip-with-no-field-is-a-preset */
-    preset: !f.options?.length && !f.kind && !menu,
+    kind: f.kind,
+    min: f.min,
+    max: f.max,
+    step: f.step,
+    range: f.range,
+    availableDates: f.availableDates,
+    op: f.op,
+    /* WHAT IS IN FORCE, from the bar's own read-back — so the panel opens on
+       the answer the rows are under. */
+    state: f.state,
+    /* A PRESET has no values AND no body of its own — one question, answered
+       yes or no. TRAP T-a-chip-with-no-field-is-a-preset */
+    preset: !f.options?.length && !f.kind && !f.conditions,
     /* A DATE is ONE chip with its menu. Its menu IS a calendar, and a calendar
        drawn inline is the whole panel. TRAP T-only-group-and-sort-stay-one-chip */
-    asChip: f.kind === 'date' || f.id === 'dateRange',
-    /* The field's OWN menu, where its chip has one — a number, a date, or a
-       field the reader may ask a condition of.
-       TRAP T-an-inline-menu-is-the-same-menu */
-    ...(menu ? { menu } : {}),
+    asChip: f.kind === 'date',
   });
 
   const grid      = root.querySelector('#grid');
@@ -340,10 +298,6 @@ export async function init(root, { session } = {}) {
      definitions the bars read; it never reaches into a toolbar.
      TRAP T-the-panel-is-the-toolbar-in-a-column */
   const fillPanel = () => {
-    /* GIVE THE MENUS BACK FIRST. This reads the bars, and a menu the panel is
-       holding is not on its chip — the field would arrive with no value rows.
-       TRAP T-a-borrowed-menu-is-not-on-its-chip */
-    panel?.release?.();
     const viewBar = header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
     /* CREATED DATE moves INTO the panel while it is open — it has a menu, so
        the panel draws that body. View, Customer and Region stay on the header:
@@ -357,23 +311,9 @@ export async function init(root, { session } = {}) {
         /* The VIEW chip is not a filter, and Customer and Region are GLOBAL —
            all three stay on the app header.
            TRAP T-the-view-chip-stays-on-the-header */
-        filters: (viewBar?.heldIds ?? [])
-          .filter((id) => !stays.includes(id))
-          .map((id) => {
-            const chip = viewBar?.shadowRoot?.querySelector(`.chips > .chip[data-id="${id}"]`);
-            return asPanelField({
-              id, label: chip?.dataset['label'] ?? id,
-              select: chip?.querySelector('sherpa-menu')?.dataset['select'],
-              options: [...(chip?.querySelectorAll('label:not(.qf-all)') ?? [])]
-                .map((row) => ({
-                  value: row.querySelector('input')?.value ?? '',
-                  label: (row.textContent ?? '').trim(),
-                  selected: !!row.querySelector('input')?.checked,
-                }))
-                .filter((o) => o.value),
-              removable: true,
-            }, viewBar);
-          }),
+        filters: (viewBar?.held ?? [])
+          .filter((f) => !stays.includes(f.id))
+          .map(asPanelField),
         available: globalAvailable(FIELD_VALUES, viewBar?.heldIds ?? []).map((f) => asPanelField(f)),
       },
       {
@@ -386,17 +326,11 @@ export async function init(root, { session } = {}) {
            never learns about a removal or an add, so the panel kept drawing a
            field the reader had taken off and never drew one they added.
            TRAP T-a-panel-adds-through-the-bar-that-owns-the-list */
-        filters: (qft.heldIds ?? []).map((id) => fromChip(id, qft)),
-        available: (qft.offering ?? []).map((f) => asPanelField(f)),
+        filters: (qft.held ?? []).map(asPanelField),
+        available: (qft.offering ?? []).map(asPanelField),
         // HOW the grid arranges its rows, above the filters.
         group: organiseCols,
         sort: organiseCols,
-        /* The BAR's own organise menus — the same control, moved.
-           TRAP T-an-inline-menu-is-the-same-menu */
-        groupMenu: qft.shadowRoot
-          ?.querySelector('.organise-zone [data-id="group"] sherpa-menu') ?? undefined,
-        sortMenu: qft.shadowRoot
-          ?.querySelector('.organise-zone [data-id="sort"] sherpa-menu') ?? undefined,
         sortField: grid.dataset['sortField'] ?? undefined,
         groupField: grid.dataset['groupField'] ?? undefined,
       },

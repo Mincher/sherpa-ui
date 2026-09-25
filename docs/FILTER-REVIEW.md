@@ -20,14 +20,14 @@ Kept as the work lands. Budgets from §15.4.
 | 3c-i the panel stops REACHING | ✅ | ≈ −60 | **−3** | `#barOf`, `#chipOf`, `#bars`, `#markConditioned` deleted; it reports `readings` |
 | 4b-i menu owns its bodies — TOOLBAR | ✅ | ≈ −60 | **+7** | toolbar −129, menu +166. The calendar CANNOT move: it projects into the menu's header slot |
 | 4b-ii the GRID uses them too | ✅ | ≈ −60 | **−57** | 13 direct reads moved; two grid templates and 81 CSS lines gone |
+| 3c-ii stop BORROWING menus | ✅ | ≈ −110 | **−45** | `menuFor()` is the one def→menu builder. Borrow machinery gone; the app stops scraping the bar's shadow root |
 | 4c a record TIMESTAMP, and one Date filter | | ≈ +60 | — | buys the series composition in §9.5 |
-| 3c-ii stop BORROWING menus | | ≈ −110 | — | needs 4b: the panel cannot build a calendar body without it |
 | 4 one field-row builder | | ≈ −250 | — | |
 | 5 collapse sort/group state | | ≈ −50 | — | |
 | 5.5 error reporting | | ≈ +80 | — | `debugState()` lands with 3 |
 | 6 split `filter-state.ts` | | ≈ 0 | — | |
 | test harness §13.2 | | ≈ −400 | — | 28 of 40 toolbar tests mount by hand |
-| **arc** | | **≈ −800** | **−3** | code only; docs counted separately |
+| **arc** | | **≈ −800** | **−48** | code only; docs counted separately |
 
 ---
 

@@ -56,6 +56,7 @@ attributes only, written before append.
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-app-header.spec.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/core/ui/filter-menu.ts`
 
 ### T-tokens-css-never-reaches-shadow
 
@@ -406,6 +407,7 @@ defers, and the Range switch moves the menu between the two modes at runtime.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/core/ui/filter-menu.ts`
 
 (none — `T-custom-element-upgrade` already exists and already lists this file as a Site.)
 
@@ -605,6 +607,8 @@ host's. That reads like an inconsistency and is a platform limit.
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
+- Site: `src/core/ui/filter-menu.ts`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
 ### T-projected-slot-content-crosses-two-shadow-boundaries
 
@@ -619,6 +623,7 @@ TRAP T-a-menu-owns-its-own-bodies
 
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/core/ui/filter-menu.ts`
 
 ### T-range-switch-swaps-not-rebuilds
 
@@ -2880,7 +2885,7 @@ Single-select menus are radio rows and get a SHARED NAME
 rather than JS unticking siblings.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/core/ui/filter-menu.ts`
 
 ### T-bounds-clamp-to-the-viewport
 
@@ -3131,6 +3136,7 @@ binding went from 194 lines to 152.
 - Site: `test/unit/bind-selection.test.mjs`
 - Site: `test/unit/field-selection.test.mjs`
 - Site: `examples/contexts/records.js`
+- Site: `src/core/ui/filter-menu.ts`
 
 ### T-an-operator-decides-pick-or-type
 
@@ -3195,6 +3201,7 @@ and would otherwise wipe it.
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/core/ui/filter-menu.ts`
 ### T-native-change-stops-at-the-host
 
 A native `change` is **NOT COMPOSED**: it stops at `sherpa-menu`, the shadow
@@ -5405,7 +5412,7 @@ regions, owners, plans — so the list is as long as their data is, and scrollin
 hundred owners to find one is the case it exists for. A CALENDAR menu is the
 exception (`T-calendar-header-has-no-heading`).
 
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/core/ui/filter-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 ### T-remove-is-opt-in-and-a-footer-button
 
@@ -7750,6 +7757,7 @@ is exactly what a reader asks "starts with" of.
 ---
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+- Site: `src/core/ui/filter-menu.ts`
 
 ### T-a-condition-badge-says-that-not-which
 
@@ -8086,32 +8094,6 @@ gone.
 ---
 - Site: `src/core/ui/render-icon.ts`
 
-### T-a-borrowed-menu-is-not-on-its-chip
-
-A menu the filter panel has BORROWED is not on its chip, and a host reading the
-bar for it finds nothing.
-
-`#giveBack()` runs at the top of every `#draw`, so the menu does go home — but
-the host builds its `populate()` payload BEFORE that, reading the bar as it is
-now. A field whose menu was away came back with `menu: undefined`, which reads
-as a chip with no field: a PRESET.
-
-Measured: removing one filter turned Created date into a preset and gave the
-panel a SECOND Presets section. Removing another added a third.
-
-The host looks in BOTH places — the chip, then the panel's own field box — and
-the panel offers `release()` so a host can give every menu back BEFORE it reads
-the bars.
-
-**Its VALUE ROWS travel with it.** Reading them from the chip alone gave every
-field zero options while its menu was away, and a field with no options but a
-menu draws that MENU: the panel filled with search boxes and checkboxes
-instead of chips.
-
----
-- Site: `examples/contexts/records.js`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-
 ### T-a-chip-menu-apply-is-the-panels-apply
 
 Pressing Apply in a CHIP's own menu inside the filter panel is the panel
@@ -8201,7 +8183,6 @@ returned the `input` itself, and the menu still closed.
 ---
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
 ### T-a-click-in-a-slotted-menu-is-not-a-press
 
@@ -8564,34 +8545,6 @@ TRAP T-grid-suspend-is-not-clear is the same rule in the data layer.
 - Site: `test/e2e/reforged-quick-filter.spec.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 
-### T-a-closed-panel-gives-its-menus-back
-
-The filter panel BORROWS a field's `<sherpa-menu>` — Group, Sort, a date range
-— and draws it inline. Three ways out of the panel gave it back: `release()`,
-`onDisconnect()` and a re-`#draw()`. The reader's own **Close did not.**
-
-So switching back to the toolbars left Group and Sort with NO menu at all.
-Nothing opened, and `#cycleSort` reads its column FROM that menu, so the
-tri-state cycle died with it. Will: *"Menus don't open. Cycling is broken.
-Happens in both the toolbar and the panel. Probably not just these chips,
-either."* All of it, from one missing line.
-
-Measured, before and after:
-
-    2 PANEL OPEN   group:NONE sort:NONE status:menu plan:menu …
-    3 BACK (was)   group:NONE sort:NONE   ← never returned
-    3 BACK (now)   group:menu sort:menu
-
-`close()` now gives them back, so a closed panel holds nothing. `open()` draws
-again when a field it holds has lost its menu — otherwise the fields come up
-empty the second time.
-
-**Why it hid for so long:** every probe that opened the panel and measured
-INSIDE it passed. The damage is on the way OUT, in the other component.
-
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
-
 ### T-a-conditions-only-menu-cannot-be-drilled
 
 The More chip drills into a folded filter by MOVING its menu's light-DOM rows
@@ -8652,6 +8605,7 @@ or-chain.
 - Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
+- Site: `src/core/ui/filter-menu.ts`
 
 ### T-a-section-heading-is-not-a-field
 
@@ -9029,8 +8983,8 @@ A filter PANEL has to show a field's condition rows, its number input, its
 range switch and its slider — every one of which the MENU already owns. Drawing
 a second copy of each means the next fix to either one has to be made twice.
 
-So the panel borrows the field's own menu, flags it inline, and gives it back
-untouched. `data-inline` undoes the four things the floating card needs:
+So the panel builds a `sherpa-menu` like everyone else and flags it inline.
+`data-inline` undoes the four things the floating card needs:
 
 | | |
 |---|---|
@@ -9044,13 +8998,9 @@ place.
 
 The attribute is in the TEMPLATE, so `#syncInline` REMOVES it rather than never
 writing it — and putting it back restores the floating card, which is how one
-element serves a chip and a panel in turn.
+element serves a chip and a panel.
 
-**Give it back before you drop what holds it.** The panel calls `#giveBack()`
-at the top of every redraw and on disconnect; a menu left inside a removed box
-is gone from its chip for good.
-
----
+- Site: `src/core/ui/filter-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
@@ -9058,7 +9008,40 @@ is gone from its chip for good.
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+
+### T-a-panel-builds-its-own-menus
+
+A second view of a field builds its OWN `<sherpa-menu>`. It never takes the
+first view's.
+
+The filter panel used to BORROW the toolbar's menu — move the element into its
+own field body and give it back on close. One element in two places looks like
+the strongest possible guarantee that the two agree. It cost six bugs:
+
+| what broke | why |
+|---|---|
+| the chip lost its menu | the panel was holding it |
+| Sort's cycle died | `column` reads the ticked row of a menu that was away |
+| a field became a PRESET | the host read the bar, found no menu, and `menu: undefined` reads as "no field" |
+| a second Presets section, then a third | every redraw repeated it |
+| the range toggle was dead | the listener was bound on the toolbar, not the moved element |
+| Close left the toolbars menuless | three ways out gave the menu back; the reader's own Close did not |
+
+Every one is the same mistake: an element has ONE parent, so moving it is a
+change to the component it came from.
+
+`menuFor(def)` in `src/core/ui/filter-menu.ts` is the one place a filter
+definition becomes a menu, so a bar, a panel and a column heading draw the same
+control without sharing the same element. What they DO share is the answer:
+`toolbar.held` hands over each def with the reading in force, and the panel
+seeds its own menu from that.
+
+- Site: `src/core/ui/filter-menu.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `examples/contexts/records.js`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+- Site: `test/unit/parity-sweep.test.mjs`
 
 ### T-the-panel-is-the-toolbar-in-a-column
 
@@ -9361,7 +9344,7 @@ flag that decides whether the menu defers to an Apply button. They read the same
 expression rather than repeating the condition.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/core/ui/filter-menu.ts`
 
 ### T-a-sub-pixel-border-reads-back-as-1px
 

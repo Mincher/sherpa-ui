@@ -379,28 +379,18 @@ test('group and sort lead the scope, report at once, and skip Apply',
   });
 
 /**
- * A FIELD ANSWERED BY ITS MENU DRAWS THAT MENU.
+ * A FIELD ANSWERED BY ITS MENU DRAWS ONE OF ITS OWN.
  *
  * A condition, a number, a range — none of them is a run of chips, and none of
  * them should be a second copy of a control the menu already owns. The panel
- * borrows the field's own `<sherpa-menu>`, draws it INLINE, and gives it back
- * untouched. TRAP T-an-inline-menu-is-the-same-menu
+ * BUILDS a `<sherpa-menu>` from the same `menuFor` a toolbar uses and draws it
+ * INLINE. It never takes another view's element.
+ * TRAP T-a-panel-builds-its-own-menus
+ * TRAP T-an-inline-menu-is-the-same-menu
  */
-test('a number field shows its own menu body, and gets it back', async ({ page }) => {
+test('a number field draws its own menu body, inline', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     const root = document.getElementById('root');
-
-    // A NUMBER field's menu, the shape a toolbar builds for one.
-    const holder = document.createElement('div');
-    const menu = document.createElement('sherpa-menu');
-    menu.setAttribute('slot', 'menu');
-    menu.setAttribute('data-heading', 'Seats');
-    const body = document.createElement('div');
-    body.className = 'qf-number';
-    body.innerHTML = '<input class="qf-number-one" type="number" value="42" />';
-    menu.append(body);
-    holder.append(menu);
-    root.append(holder);
 
     const el = document.createElement('sherpa-filter-panel');
     root.append(el);
@@ -409,17 +399,19 @@ test('a number field shows its own menu body, and gets it back', async ({ page }
     el.populate([{ scope: 'data', label: 'Grid', filters: [
       { id: 'status', label: 'Status', select: 'multiple',
         options: [{ value: 'active', label: 'active' }] },
-      // NO options, but a MENU — the panel draws that body instead.
-      { id: 'seats', label: 'Seats', menu },
+      // NO options, but a NUMBER — the panel draws that body instead.
+      { id: 'seats', label: 'Seats', kind: 'number', min: 0, max: 100 },
     ] }]);
     await new Promise((r) => setTimeout(r, 300));
     el.open();
-    await new Promise((r) => setTimeout(r, 200));
+    await new Promise((r) => setTimeout(r, 250));
 
     const sr = el.shadowRoot;
     const seats = sr.querySelector('.field[data-field="seats"]');
+    const menu = seats.querySelector('sherpa-menu');
+    await menu.rendered;
     const card = menu.shadowRoot.querySelector('.menu');
-    const drawn = {
+    return {
       fields: [...sr.querySelectorAll('.field')].map((f) => f.dataset.field),
       hasBody: seats.hasAttribute('data-body'),
       inline: menu.hasAttribute('data-inline'),
@@ -427,42 +419,27 @@ test('a number field shows its own menu body, and gets it back', async ({ page }
       popover: card.getAttribute('popover'),
       position: getComputedStyle(card).position,
       drawn: getComputedStyle(card).display,
-      // The field's OWN control travelled with it, state and all.
-      inputValue: seats.querySelector('.qf-number-one').value,
+      // The MENU owns the number body. TRAP T-a-menu-owns-its-own-bodies
+      body: menu.dataset.body,
+      numberBox: !!menu.shadowRoot.querySelector('.body-number'),
       // The chip run steps aside for it.
       chips: getComputedStyle(seats.querySelector('.field-values')).display,
     };
+  })()`) as Record<string, unknown>;
 
-    el.populate([{ scope: 'data', label: 'Grid', filters: [] }]);
-    await new Promise((r) => setTimeout(r, 250));
-    return { drawn, home: {
-      back: holder.contains(menu),
-      slot: menu.getAttribute('slot'),
-      inline: menu.hasAttribute('data-inline'),
-      popover: card.getAttribute('popover'),
-    } };
-  })()`) as Record<string, Record<string, unknown>>;
-
-  // A field with no options but a MENU is still drawn.
-  expect(r['drawn']!['fields']).toEqual(['status', 'seats']);
-  expect(r['drawn']!['hasBody']).toBe(true);
-  expect(r['drawn']!['inline']).toBe(true);
+  // A field with no options but a BODY is still drawn.
+  expect(r['fields']).toEqual(['status', 'seats']);
+  expect(r['hasBody']).toBe(true);
+  expect(r['inline']).toBe(true);
   // INLINE: no popover, in the flow, and showing.
-  expect(r['drawn']!['popover']).toBeNull();
-  expect(r['drawn']!['position']).toBe('static');
-  expect(r['drawn']!['drawn']).toBe('flex');
-  // The same input, not a copy of it.
-  expect(r['drawn']!['inputValue']).toBe('42');
-  expect(r['drawn']!['chips']).toBe('none');
-
-  /* HOME, exactly as it was: its slot back, and a popover again. `manual`,
-     not `auto` — the menu owns its own dismiss, because its rows are SLOTTED
-     and the browser reads the DOM tree for light-dismiss.
-     TRAP T-a-slotted-row-is-outside-its-own-popover */
-  expect(r['home']).toEqual({
-    back: true, slot: 'menu', inline: false, popover: 'manual',
-  });
+  expect(r['popover']).toBeNull();
+  expect(r['position']).toBe('static');
+  expect(r['drawn']).toBe('flex');
+  expect(r['body']).toBe('number');
+  expect(r['numberBox']).toBe(true);
+  expect(r['chips']).toBe('none');
 });
+
 
 /**
  * `Organise` is a HEADING over two separate controls, not their field.
@@ -513,17 +490,17 @@ test('clicking Sort leaves Group alone — Organise is a heading, not a field', 
   expect(r.afterGroup.sort).toBe(true);
 });
 
+
 /**
- * A BORROWED MENU GOES HOME WHEN THE PANEL CLOSES.
+ * THE PANEL NEVER TOUCHES A CHIP'S MENU.
  *
- * `release()`, `onDisconnect()` and a re-draw all gave it back; the reader's
- * own Close did not. So the toolbar came back with Group and Sort holding no
- * menu — nothing opened, and the sort cycle reads its column FROM that menu,
- * so cycling died too.
+ * It used to BORROW one — move the element into its own body and give it back
+ * on close. Six bugs came from that; see the trap. Opening, closing and
+ * re-opening must leave the chip exactly as it was.
  *
- * TRAP T-a-closed-panel-gives-its-menus-back
+ * TRAP T-a-panel-builds-its-own-menus
  */
-test('closing the panel returns every borrowed menu to its chip', async ({ page }) => {
+test('opening and closing the panel leaves a chip\'s own menu alone', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     const root = document.getElementById('root');
     root.replaceChildren();
@@ -534,10 +511,6 @@ test('closing the panel returns every borrowed menu to its chip', async ({ page 
     const menu = document.createElement('sherpa-menu');
     menu.setAttribute('slot', 'menu');
     menu.setAttribute('data-heading', 'Seats');
-    const body = document.createElement('div');
-    body.className = 'qf-number';
-    body.innerHTML = '<input type="number" value="42" />';
-    menu.append(body);
     chip.append(menu);
     root.append(chip);
 
@@ -546,34 +519,35 @@ test('closing the panel returns every borrowed menu to its chip', async ({ page 
     await customElements.whenDefined('sherpa-filter-panel');
     await el.rendered;
     el.populate([{ scope: 'data', label: 'Grid', filters: [
-      { id: 'seats', label: 'Seats', menu },
+      { id: 'seats', label: 'Seats', kind: 'number', min: 0, max: 100 },
     ] }]);
     await new Promise((r) => setTimeout(r, 300));
+
+    const home = () => chip.contains(menu) && menu.getAttribute('slot') === 'menu'
+      && !menu.hasAttribute('data-inline');
+
     el.open();
     await new Promise((r) => setTimeout(r, 250));
-
-    /* WHERE THE MENU LIVES. Borrowed, it is drawn inside the panel's SHADOW
-       root, which a plain contains() on the host does not reach. Home, it is
-       back on its chip with its original slot. */
-    const where = () => (chip.contains(menu) ? 'chip'
-      : el.shadowRoot.contains(menu) ? 'panel' : 'lost');
-    const whileOpen = where();
+    const whileOpen = home();
+    // The panel drew its OWN, and it is not this one.
+    const own = el.shadowRoot.querySelector('.field[data-field="seats"] sherpa-menu');
+    const mine = !!own && own !== menu;
 
     el.close();
     await new Promise((r) => setTimeout(r, 200));
-    // HOME, with its original slot put back, or the chip cannot see it.
-    const afterClose = where() + '/' + (menu.getAttribute('slot') ?? '');
+    const afterClose = home();
 
-    // Re-opening borrows it again, rather than showing an empty field.
     el.open();
     await new Promise((r) => setTimeout(r, 300));
-    return { whileOpen, afterClose, afterReopen: where() };
-  })()`) as Record<string, string>;
+    const afterReopen = home()
+      && !!el.shadowRoot.querySelector('.field[data-field="seats"] sherpa-menu');
+    return { whileOpen, mine, afterClose, afterReopen };
+  })()`) as Record<string, boolean>;
 
-  // Borrowed while open...
-  expect(r.whileOpen).toBe('panel');
-  // ...and HOME once closed, with its slot put back.
-  expect(r.afterClose).toBe('chip/menu');
-  // Opening again draws it, so the field is not empty the second time.
-  expect(r.afterReopen).toBe('panel');
+  // Untouched throughout — open, closed and open again.
+  expect(r.whileOpen).toBe(true);
+  expect(r.mine).toBe(true);
+  expect(r.afterClose).toBe(true);
+  // And the panel still has a body the second time.
+  expect(r.afterReopen).toBe(true);
 });

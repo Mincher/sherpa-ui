@@ -274,10 +274,15 @@ export class SherpaQuickFilter extends SherpaElement {
    * instead; the menu wins whenever there is a menu to ask.
    */
   get column(): string {
-    if (this.menu) {
-      return this.querySelector<HTMLInputElement>('[slot="menu"] input:checked')?.value ?? '';
-    }
-    return this.dataset['column'] ?? '';
+    /* THE MENU FIRST, the attribute second. A menu stamps its rows on its own
+       upgrade, so for one tick it reads unpicked — and a host that seeded the
+       column would have had it forgotten. Its rows are RADIOS, so this can
+       only ever fall back, never overrule a pick.
+       TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
+    const ticked = this.menu
+      ? this.querySelector<HTMLInputElement>('[slot="menu"] input:checked')?.value
+      : undefined;
+    return ticked || this.dataset['column'] || '';
   }
 
   /** Which way a SORT chip is pointing, or null when it is off. */
