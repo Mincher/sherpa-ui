@@ -100,6 +100,10 @@ export class SherpaDialog extends SherpaElement {
 
   /** The dialog closed, however it closed: say so. */
   #onClose = (): void => {
+    /* LATE. The native event is queued, so a dialog opened again in between
+       is open when it lands, and writing `open` off shut it again.
+       TRAP T-a-reopened-dialog-hears-a-late-close */
+    if (this.#dialog()?.open) return;
     this.toggleAttribute('open', false);
     this.emit('close', {});
   };

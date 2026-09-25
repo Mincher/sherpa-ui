@@ -527,9 +527,8 @@ export async function init(root, { session } = {}) {
      TRAP T-the-panel-saves-a-whole-scope */
   panel?.setAttribute('data-saveable', '');
   signal.addEventListener('abort', () => panel?.removeAttribute('data-saveable'), { once: true });
-  panel?.addEventListener('filter-save', (e) => {
-    saveAndPack(e.detail);
-    void refill();
+  panel?.addEventListener('filter-save', async (e) => {
+    if (await saveAndPack(e.detail)) void refill();
   }, { signal });
   panel?.addEventListener('filter-edit', async (e) => {
     await barFor(e.detail.scope)?.unpackFilter?.(e.detail.id);
@@ -846,14 +845,40 @@ export async function init(root, { session } = {}) {
      CUSTOMER records — not over this page — and the bar shows it in place of
      the fields it came from. TRAP T-save-packs-the-fields-into-one-chip
      TRAP T-a-saved-filter-lives-with-its-data */
-  const saveAndPack = ({ readings, label: was }) => {
+  const saveDialog = root.querySelector('#save-filter');
+  const saveName = root.querySelector('#save-filter-name');
+  /** The answer the open Save dialog names, and who waits for it. */
+  let saving = null;
+  /** ASK for the name in the page's own dialog. True once it is saved. */
+  const saveAndPack = ({ readings, label: was }) => new Promise((done) => {
+    saving?.done(false);
+    saving = { readings, done };
     // After an Edit the old name is offered, so the same name updates it.
-    const label = prompt('Name this filter', was ?? '')?.trim();
-    if (!label) return;
+    saveName.value = was ?? '';
+    saveDialog.show();
+    saveName.focus();
+  });
+  const commitSave = () => {
+    const label = String(saveName.value ?? '').trim();
+    // No name, no filter: the dialog stays open.
+    if (!label || !saving) return;
+    const { readings, done } = saving;
+    saving = null;
     saveFilterAs('customers', label, readings);
     qft.packFilter({ id: `custom:${labelId(label)}`, label, readings });
+    saveDialog.close();
+    done(true);
   };
-  qft.addEventListener('filter-save', (e) => saveAndPack(e.detail), { signal });
+  root.querySelector('#save-filter-ok').addEventListener('button-click', commitSave, { signal });
+  root.querySelector('#save-filter-cancel')
+    .addEventListener('button-click', () => saveDialog.close(), { signal });
+  saveName.addEventListener('keydown', (e) => { if (e.key === 'Enter') commitSave(); }, { signal });
+  // Cancel, ESC or the backdrop: nothing is saved.
+  saveDialog.addEventListener('close', () => {
+    saving?.done(false);
+    saving = null;
+  }, { signal });
+  qft.addEventListener('filter-save', (e) => void saveAndPack(e.detail), { signal });
   // DELETE: the bar has let it go; this page forgets it. TRAP T-edit-unpacks-a-saved-filter
   qft.addEventListener('filter-delete', (e) => {
     deleteSavedFilter('customers', e.detail.id.replace(/^custom:/, ''));

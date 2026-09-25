@@ -67,6 +67,34 @@ test('closing the dialog fires a composed close event', async ({ page }) => {
   expect(fired).toBe(1);
 });
 
+/**
+ * SHUT AND OPENED AGAIN AT ONCE, it stays open. The native close event is
+ * queued, so it lands after the second open — and it shut the dialog again.
+ * The page's Save filter dialog, cancelled and reopened, hit this.
+ * TRAP T-a-reopened-dialog-hears-a-late-close
+ */
+test('a dialog shut and opened again at once stays open', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-dialog') as DialogEl & { open: boolean };
+    el.innerHTML = '<p>body</p>';
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const heard: string[] = [];
+    el.addEventListener('close', () => heard.push('close'));
+    el.show!();
+    el.close!();
+    el.show!();
+    await new Promise((res) => setTimeout(res, 100));
+    const again = { open: el.open, attr: el.hasAttribute('open'), heard: [...heard] };
+    el.close!();
+    await new Promise((res) => setTimeout(res, 100));
+    return { again, shut: { open: el.open, heard } };
+  });
+  // The close that was undone before it landed is not reported.
+  expect(r.again).toEqual({ open: true, attr: true, heard: [] });
+  expect(r.shut).toEqual({ open: false, heard: ['close'] });
+});
+
 test('the card has a MINIMUM width, so a short form does not shrink it', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const root = document.getElementById('root')!;

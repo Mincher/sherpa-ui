@@ -1792,6 +1792,9 @@ The scope's buttons have their own row, under its heading.
 1. **The sections are Added Filters, Available Filters and Custom Filters**, and
    a filter is in ONE of them: an added saved filter is under Added only.
 2. **Save filter opens a `sherpa-dialog`**, not the browser's `prompt()`.
+   Done 2026-09-25 on the Records page. It found a dialog bug: one shut and
+   opened again at once was shut by its own late close
+   (`T-a-reopened-dialog-hears-a-late-close`).
 3. **Add condition is an icon button with a plus**, at the end of the LAST
    condition row. Every row before it shows Remove instead.
 4. **The breakpoint swap re-asks the data layer.** Below its width the panel

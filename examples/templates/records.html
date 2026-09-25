@@ -136,5 +136,17 @@
   </sherpa-container-footer>
 </sherpa-dialog>
 
+<!-- SAVE FILTER names the answered fields, kept as one saved filter. A dialog
+     of its own, like the two above. TRAP T-save-packs-the-fields-into-one-chip -->
+<sherpa-dialog id="save-filter" data-heading="Save filter">
+  <sherpa-input-text id="save-filter-name" data-label="Name" placeholder="My filter"
+                     autocomplete="off" required></sherpa-input-text>
+
+  <sherpa-container-footer slot="footer">
+    <sherpa-button id="save-filter-cancel">Cancel</sherpa-button>
+    <sherpa-button id="save-filter-ok" data-look="saturated">Save</sherpa-button>
+  </sherpa-container-footer>
+</sherpa-dialog>
+
 <!-- No toast region: sherpa-toast makes its own `.sherpa-toast-stack` on first
      use, so a hand-made one is a second stack in a different corner. -->

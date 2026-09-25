@@ -7609,6 +7609,22 @@ one was touched. The rows still come from each host's OWN templates.
 - Site: `src/core/ui/filters-button.ts`
 - Site: `test/e2e/reforged-one-filters-button.spec.ts`
 
+### T-a-reopened-dialog-hears-a-late-close
+
+**A `sherpa-dialog` shut and opened again at once must stay open.** The native
+`<dialog>` fires `close` on a QUEUED task, so it lands after the second
+`show()`. The dialog wrote `open` off when it heard it, and that attribute
+change shut the dialog again — with its new question on it.
+
+So `#onClose` does nothing while the native dialog is open. The close that was
+undone before it landed is not reported: the dialog is not closed.
+
+Found by the Records page's Save filter dialog: Cancel, then Save filter again
+at once, and the dialog vanished — or stayed, with its question dropped.
+
+- Site: `src/components/sherpa-dialog/sherpa-dialog.ts`
+- Site: `test/e2e/reforged-dialog.spec.ts`
+
 ### T-a-shut-scope-folds-like-a-bar
 
 **A SHUT scope in the filter panel hides its filters the way a narrow bar
@@ -11744,6 +11760,7 @@ a CONDITION into a chip. The Add menu packs it with the rest.
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
+- Site: `examples/templates/records.html`
 
 ### T-the-panel-saves-a-whole-scope
 

@@ -243,12 +243,14 @@ test('packFilter shows the saved chip ON and clears the fields it came from, in 
 
 /**
  * THE RECORDS PAGE, end to end — against the EXAMPLES server (:4200). A reader
- * answers Owner with a condition, saves it, and names it; the page keeps it over
+ * answers Owner with a condition, saves it, and names it in the page's own
+ * dialog — never the browser's prompt, Will 2026-09-25; the page keeps it over
  * the customer records, and the bar shows it in place of Owner. The rows do not
  * move: the same filter, one chip now.
  */
 test('the Records page saves a condition as a filter, and nothing filters twice', async ({ page }) => {
-  page.on('dialog', (d) => void d.accept('Dana accounts'));
+  const native: string[] = [];
+  page.on('dialog', (d) => { native.push(d.type()); void d.dismiss(); });
   await page.goto('http://localhost:4200/?context=records');
   await page.waitForFunction(() =>
     !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
@@ -274,6 +276,14 @@ test('the Records page saves a condition as a filter, and nothing filters twice'
     qft.shadowRoot!.querySelector('.chip[data-id="owner"] sherpa-menu')!
       .shadowRoot!.querySelector<HTMLElement>('.save')!.click();
   });
+  // THE PAGE'S DIALOG asks for the name, with the field ready to type in.
+  await expect.poll(() => page.evaluate(() => {
+    const d = document.querySelector('#save-filter') as HTMLElement & { open: boolean };
+    const field = document.querySelector('#save-filter-name');
+    return { open: d.open, typing: document.activeElement === field };
+  })).toEqual({ open: true, typing: true });
+  await page.keyboard.type('Dana accounts');
+  await page.keyboard.press('Enter');
   const bar = () => page.evaluate(() => {
     const qft = document.querySelector('#context-root sherpa-quick-filter-toolbar') as Bar & {
       savedReadings: Record<string, unknown>;
@@ -288,6 +298,9 @@ test('the Records page saves a condition as a filter, and nothing filters twice'
   });
   await expect.poll(bar).toEqual({ saved: ['custom:dana-accounts'], on: true, owner: false, kept: ['dana-accounts'] });
   await expect.poll(total).toBe(before);
+  expect(await page.evaluate(() => (document.querySelector('#save-filter') as HTMLElement & { open: boolean }).open))
+    .toBe(false);
+  expect(native).toEqual([]);
 
   // KEPT: after a reload it is offered in Add, under Custom.
   await page.reload();
@@ -473,8 +486,8 @@ test('Edit unpacks the answer into its fields, in one event; Delete forgets the 
 
 /** The Records page: Edit, then Save offers the old name back; Delete forgets it. */
 test('the Records page edits a saved filter under its own name, and deletes it', async ({ page }) => {
-  const asked: string[] = [];
-  page.on('dialog', (d) => { asked.push(d.defaultValue()); void d.accept('Dana accounts'); });
+  const native: string[] = [];
+  page.on('dialog', (d) => { native.push(d.type()); void d.dismiss(); });
   await page.goto('http://localhost:4200/?context=records');
   await page.waitForFunction(() =>
     !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
@@ -487,6 +500,18 @@ test('the Records page edits a saved filter under its own name, and deletes it',
     const el = qft.shadowRoot!.querySelector(s) as HTMLElement & { shadowRoot?: ShadowRoot } | null;
     (el?.shadowRoot?.querySelector<HTMLElement>('.save') ?? el)?.click();
   }, sel);
+  /** The page's own dialog asks for the name: keep what it offers, then Save. */
+  const asked: string[] = [];
+  const nameIt = async (name: string) => {
+    await expect.poll(() => page.evaluate(() =>
+      (document.querySelector('#save-filter') as HTMLElement & { open: boolean }).open)).toBe(true);
+    asked.push(await page.evaluate(() =>
+      (document.querySelector('#save-filter-name') as HTMLElement & { value: string }).value));
+    await page.evaluate((n) => {
+      (document.querySelector('#save-filter-name') as HTMLElement & { value: string }).value = n;
+      document.querySelector('#save-filter-ok')!.shadowRoot!.querySelector('button')!.click();
+    }, name);
+  };
 
   await page.evaluate(() => {
     localStorage.removeItem('sherpa:filters:customers');
@@ -496,13 +521,14 @@ test('the Records page edits a saved filter under its own name, and deletes it',
   });
   await expect.poll(() => inBar('.chip[data-id="owner"] sherpa-menu[data-saveable]')).toBe(true);
   await press('.chip[data-id="owner"] sherpa-menu');
+  await nameIt('Dana accounts');
   await expect.poll(kept).toEqual(['dana-accounts']);
 
   // EDIT: the answer goes back to Owner; saving again offers the same name.
   await press('.chip[data-id="custom:dana-accounts"] sherpa-menu button[value="edit"]');
   await expect.poll(() => inBar('.chip[data-id="owner"][data-current]')).toBe(true);
   await press('.add-btn sherpa-menu');
-  await expect.poll(() => asked.length).toBe(2);
+  await nameIt('Dana accounts');
   expect(asked).toEqual(['', 'Dana accounts']);
   await expect.poll(kept).toEqual(['dana-accounts']);
 
@@ -510,6 +536,7 @@ test('the Records page edits a saved filter under its own name, and deletes it',
   await press('.chip[data-id="custom:dana-accounts"] sherpa-menu button[value="delete"]');
   await expect.poll(kept).toEqual([]);
   expect(await inBar('.chip[data-id="custom:dana-accounts"]')).toBe(false);
+  expect(native).toEqual([]);
   await page.evaluate(() => localStorage.removeItem('sherpa:filters:customers'));
 });
 
@@ -575,7 +602,8 @@ test('the panel: saved presets wear fx, and a scope asks to save, edit and delet
 
 /** The Records page in PANEL mode: a scope saves as one chip, and the panel deletes it. */
 test('in panel mode the Records page saves a whole scope, and deletes it from the panel', async ({ page }) => {
-  page.on('dialog', (d) => void d.accept('Dana only'));
+  const native: string[] = [];
+  page.on('dialog', (d) => { native.push(d.type()); void d.dismiss(); });
   await page.setViewportSize({ width: 1440, height: 950 });
   await page.goto('http://localhost:4200/?context=records');
   await page.waitForFunction(() =>
@@ -601,7 +629,24 @@ test('in panel mode the Records page saves a whole scope, and deletes it from th
   await page.evaluate(() => document.querySelector('#filter-panel')!.shadowRoot!
     .querySelector('.scope[data-scope="data"] .scope-save')!
     .dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true })));
+  // Named in the page's own dialog. Cancel first: nothing is saved.
+  const dialogOpen = () => page.evaluate(() =>
+    (document.querySelector('#save-filter') as HTMLElement & { open: boolean }).open);
+  await expect.poll(dialogOpen).toBe(true);
+  await page.evaluate(() => document.querySelector('#save-filter-cancel')!.shadowRoot!
+    .querySelector('button')!.click());
+  await expect.poll(dialogOpen).toBe(false);
+  expect(await kept()).toEqual([]);
+  await page.evaluate(() => document.querySelector('#filter-panel')!.shadowRoot!
+    .querySelector('.scope[data-scope="data"] .scope-save')!
+    .dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true })));
+  await expect.poll(dialogOpen).toBe(true);
+  await page.keyboard.type('Dana only');
+  await page.evaluate(() => document.querySelector('#save-filter-ok')!.shadowRoot!
+    .querySelector('button')!.click());
   await expect.poll(kept).toEqual(['dana-only']);
+  await expect.poll(dialogOpen).toBe(false);
+  expect(native).toEqual([]);
   const preset = '.field[data-field="presets"] .value[data-value="custom:dana-only"]';
   await expect.poll(() => page.evaluate((s) => {
     const chip = document.querySelector('#filter-panel')!.shadowRoot!.querySelector<HTMLElement>(s);
