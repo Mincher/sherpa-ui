@@ -23,8 +23,10 @@ export const plans = ['Free','Starter','Pro','Enterprise'];
 export const states = ['active','trial','suspended','churned'];
 /** Exported: the header's Region chip filters these records, so its options must BE these values. */
 export const regions = ['EMEA','AMER','APAC','LATAM'];
-/** Who owns each account, internally — a member of staff, not the customer. */
-const owners  = ['Unassigned','Ravi Menon','Dana Whitlock','Pierre Sadler'];
+/** Who owns each account, internally — a member of staff, not the customer.
+    The last four each hold part of "Unassigned", so a search for it has near-misses. */
+const owners  = ['Unassigned','Ravi Menon','Dana Whitlock','Pierre Sadler',
+                 'Una Cassidy','Nassim Idris','Signe Holm','Ned Carver'];
 
 /** Organisations, not people — a record is a PERSON in one. The Customer chip narrows by it. */
 export const customerOrgs = [
