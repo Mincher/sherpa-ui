@@ -363,13 +363,69 @@ the same element, wired two ways, is a second door, so the request path calls
 `SherpaElement` is already flagged for its own bloat review. This is ~20 lines
 and belongs with that work, not before it.
 
-##### Consequence: the `as` adapter has to move
+##### The component DECLARES; the data layer COMPOSES
 
-`bind(grid, { as: (rows) => ({ columns, rows, key, actions }) })` is how the
-app shapes rows for one component today. A self-registering element cannot be
-handed that closure. Either the element declares what shape it wants, or the
-app keeps calling `bind()` for the ones that need adapting. **Open** — it is
-the one thing automatic registration does not obviously cover.
+Will, 2026-09-25:
+
+> Any component template can come in with a variety of attributes set that will
+> require data composition from the data layer. So this should probably just be
+> the mechanism for all UI components. **1 system, 1 implementation.**
+
+Today the app hands `bind()` a closure — `as` — that builds each component's
+shape by hand. Measured in `examples/contexts/records.js`:
+
+| | |
+|---|---|
+| components fed by an `as` closure | **9** |
+| lines of composition around them | **~569** |
+| data-layer helpers called by hand | `reduceRows` ×5, `countBy` ×5, `deltaPercent` ×3, `seriesBy` ×2, `aggregate` ×1 |
+
+A tile is built like this, in the app:
+
+```js
+summary('#m-spend', (rows) =>
+  tile('Total spend', money(reduceRows(rows, 'sum', 'spend')),
+       overMonths(rows, 'sum', 'spend')));
+```
+
+Every one of those helpers is already IN the data layer. The app is reaching in
+and doing the layer's job, per component, by hand — and a self-registering
+element has nobody to write the closure for it.
+
+**The component says what it needs, in its own attributes**, which is what a
+template already carries:
+
+```html
+<sherpa-metric data-label="Total spend" data-field="spend"
+               data-aggregate="sum" data-series-by="created"
+               data-series-step="month"></sherpa-metric>
+```
+
+The source reads that and composes `{ label, value, values, deltaPercent }`
+itself. No closure, and the same declaration works wherever the template is
+dropped.
+
+The shapes are a small closed set, not a language:
+
+| what a component needs | who needs it |
+|---|---|
+| ROWS | grid, list, transfer list |
+| ROWS + its own config | grid (columns, key, actions) |
+| an AGGREGATE of one field | metric, progress bar, gauge |
+| a SERIES over a field | metric sparkline, line and bar charts |
+| the VALUES of a field, with counts | menu, quick filter, chart legend |
+| the VIEW STATE only | pagination |
+
+**Configuration is not data.** `columns`, `key` and `actions` travel through
+`as` today only because `as` was the one door. They belong on the component,
+set once by the app; then `as` has nothing left to carry and goes.
+
+**Deletes:** the `as` and `into` options, `mergeInto`, and the ~569 lines of
+per-component composition in the example — replaced by attributes on the
+templates and one composer in the source.
+
+**This is a bigger step than the rest of §7** and touches every data-bound
+component, not just the filters. It should be its own item once step 3 lands.
 
 ### Step 4 — ONE field-row builder
 

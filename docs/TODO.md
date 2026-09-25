@@ -1372,6 +1372,16 @@ registration is AUTOMATIC. `DataSource` gains a small scope registry —
 and `SherpaElement` finds its source by dispatching a request on connect, which
 the nearest source answers.
 
+**And the component DECLARES what data it needs; the data layer COMPOSES it.**
+Will: *"Any component template can come in with a variety of attributes set
+that will require data composition from the data layer. So this should probably
+just be the mechanism for all UI components. 1 system, 1 implementation."* The
+example hand-builds 9 components through `as` closures over ~569 lines, calling
+`reduceRows`, `countBy`, `deltaPercent` and `seriesBy` — all of which are
+already IN the data layer. A metric says `data-field`, `data-aggregate`,
+`data-series-by` and the source composes the rest. `as`, `into` and `mergeInto`
+go. Its own item once step 3 lands — it touches every data-bound component.
+
 **First, though, "scope" already means three different things** — the query
 reach (`view`/`component`), which rows a bind is pushed (`page`/`all`), and the
 app's own surfaces (`view`/`data`). They are renamed apart in this step or the
