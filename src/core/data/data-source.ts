@@ -455,6 +455,87 @@ export class DataSource extends EventTarget {
     return [...this.#readings.keys()];
   }
 
+  /* ── Scopes: WHICH SURFACE holds a filter ──────────────────────────── */
+
+  /**
+   * A SCOPE is a named place a filter lives — a header bar, a grid's bar, a
+   * panel section. The app names them; this holds only what is true NOW.
+   *
+   * It is here because two controls must agree on it and NEITHER MAY KNOW THE
+   * OTHER EXISTS. A panel that asked a toolbar what it was holding is a panel
+   * coupled to a toolbar. TRAP T-a-scope-is-a-place-not-a-reach
+   */
+  #scopes = new Map<string, string[]>();
+
+  /** The fields a scope is holding, in the order it holds them. */
+  scope(name: string): string[] {
+    return [...(this.#scopes.get(name) ?? [])];
+  }
+
+  /** Every scope that has been named. */
+  get scopes(): string[] {
+    return [...this.#scopes.keys()];
+  }
+
+  /** Say what a scope holds now. An empty list forgets the scope. */
+  hold(name: string, fields: readonly string[]): void {
+    const next = [...fields];
+    const before = this.#scopes.get(name);
+    // A no-op must not wake every listener — a bar re-renders on this.
+    if (before && before.length === next.length && before.every((f, i) => f === next[i])) return;
+    if (next.length) this.#scopes.set(name, next);
+    else this.#scopes.delete(name);
+    this.dispatchEvent(new CustomEvent('scope-change', { detail: { scope: name } }));
+  }
+
+  /** Is this field held HERE? */
+  holds(name: string, field: string): boolean {
+    return (this.#scopes.get(name) ?? []).includes(field);
+  }
+
+  /**
+   * Which scope holds this field, or null.
+   *
+   * This is what SUPERSEDING is: a field the view scope holds is not the data
+   * bar's to narrow, and neither bar has to know the other is there.
+   */
+  scopeOf(field: string): string | null {
+    for (const [name, fields] of this.#scopes) if (fields.includes(field)) return name;
+    return null;
+  }
+
+  /**
+   * EVERYTHING THIS SOURCE THINKS IS TRUE, in one object.
+   *
+   * For a bug report, and for a test to assert against instead of counting
+   * rows in the DOM — where a page size of 25 makes a working filter look
+   * broken. DOM-free, like the rest of this module.
+   * TRAP T-a-bug-report-should-be-a-paste
+   */
+  debugState(): Record<string, unknown> {
+    return {
+      rows: this.#result.rows.length,
+      total: this.total,
+      page: this.#state.page,
+      pageSize: this.#state.pageSize,
+      totalPages: this.totalPages,
+      sort: this.#state.sort,
+      group: this.#state.group,
+      search: this.#state.search,
+      filter: this.#state.filter,
+      selections: Object.fromEntries(
+        [...this.#readings.keys()].map((f) => [f, this.selection(f)]),
+      ),
+      parts: Object.fromEntries(this.#parts),
+      scopes: Object.fromEntries(this.#scopes),
+      fields: Object.fromEntries(this.#fields),
+      bound: [...this.#bound.values()].map((e) => ({
+        rows: e.rows, readonly: e.readonly, steerOnly: e.steerOnly,
+      })),
+      loaded: this.#loaded,
+    };
+  }
+
   /** Every named part AND every field's own clause. */
   #composed(): Filter | undefined {
     const fields = [...this.#readings.keys()]

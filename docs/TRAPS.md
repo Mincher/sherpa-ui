@@ -8378,6 +8378,56 @@ row has and the view went to 0 rows. A `data-custom` chip is reported by
 - Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 
+### T-a-scope-is-a-place-not-a-reach
+
+A SCOPE is a named place a filter lives — a header bar, a grid's bar, a panel
+section. It is not how far a filter narrows; that is `reach`.
+TRAP T-three-things-called-scope
+
+It lives in the DATA LAYER because two controls must agree on it and **neither
+may know the other exists**. Will, 2026-09-25: *"The Panel and Bar should not
+be aware of each other. This is core to sherpa component agnosticism. The data
+layer is the coordinator."*
+
+Before this the panel searched the document for a toolbar, read its shadow root
+and called `heldIds` on it. That is what `scope(name)` replaces.
+
+`scopeOf(field)` is what SUPERSEDING is, said once: a field the `view` scope
+holds is not the `data` bar's to narrow, and neither bar has to know the other
+is there.
+
+Two details that are easy to get wrong:
+
+- **`hold()` on an unchanged list fires nothing.** A bar re-renders on
+  `scope-change`, so a no-op that wakes it is a redraw loop waiting to happen.
+- **`scope()` answers a COPY.** A caller that mutates the answer must not reach
+  into the registry through it.
+
+- Site: `src/core/data/data-source.ts`
+- Site: `test/unit/scope-registry.test.mjs`
+
+### T-a-bug-report-should-be-a-paste
+
+`source.debugState()` returns everything the source thinks is true in one
+JSON-safe object: rows, total, page, sort, group, search, filter, every
+selection, every named part, every scope, every declared field, and what is
+bound.
+
+Measured when it was written: the whole of `src/` had **one** `console.error`
+and three `console.warn`, against **55 silent `if (!x) return;`** in the filter
+family and data layer alone. Three bug reports in one day cost an hour each and
+were never reproduced — the system knew and had no way to say.
+
+**It is also what a test should assert against.** Counting rows in the DOM is
+how a page size of 25 made a working filter look broken, and a bug that did not
+exist got reported. `debugState().total` is the number; `.row` elements are a
+page of it.
+
+DOM-free, like the rest of `sherpa-ui/data`, so a node test reads it.
+
+- Site: `src/core/data/data-source.ts`
+- Site: `test/unit/scope-registry.test.mjs`
+
 ### T-three-things-called-scope
 
 One word was doing three unrelated jobs, and the third had no home at all:
@@ -8397,6 +8447,7 @@ axes will be read as the wrong one, and the reader will not know they did.
 
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/filter-state.ts`
+- Site: `test/unit/scope-registry.test.mjs`
 
 ### T-a-chip-knows-what-kind-it-is
 
