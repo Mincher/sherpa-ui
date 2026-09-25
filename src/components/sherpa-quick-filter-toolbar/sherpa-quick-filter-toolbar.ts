@@ -750,6 +750,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // TRAP T-render-captures-live-state — the live DOM is the only record of what
     // the user did since. `data-reset-on-populate` opts out.
     const live = new Map<string, { on: boolean; picked: Set<string> }>();
+    /* AND THE REST OF EACH ANSWER — op, typing, rows. A new menu starts from
+       its def. TRAP T-a-rebuild-keeps-every-answer */
+    const kept = this.hasAttribute('data-reset-on-populate') ? {} : this.readings;
     if (!this.hasAttribute('data-reset-on-populate')) {
       for (const chip of this.#chips()) {
         const id = chip.dataset['id'];
@@ -816,6 +819,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
     // The MENUS, now their chips are in the list.
     this.#flushItems();
+    for (const [id, reading] of Object.entries(kept)) this.#keepAnswer(id, reading);
 
     // These write into the chip's shadow root, so they wait on `el.rendered`.
     for (const [chip, text] of externalLabels) {
@@ -932,6 +936,46 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
     this.#pendingItems = [];
   }
+
+  /**
+   * Carry one chip's op, typing and rows into its REBUILT menu. Until that menu
+   * has drawn — a menu that has not drops rows — `readings` reports them from
+   * here, so an event sent straight after a rebuild still has them.
+   * TRAP T-a-rebuild-keeps-every-answer
+   */
+  #keepAnswer(id: string, reading: FieldReading): void {
+    const menu = this.#filterMenu(id) as (HTMLElement & {
+      conditionValue: string; conditions?: readonly FieldCondition[]; rendered?: Promise<void>;
+    }) | null;
+    if (!menu) return;
+    const op = reading.op ?? DEFAULT_OP;
+    const text = reading.text ?? '';
+    const conditions = reading.conditions ?? [];
+    // Nothing its def does not already give it.
+    if (!conditions.length && op === (menu.dataset['op'] ?? DEFAULT_OP)
+      && text === (menu.dataset['value'] ?? '')) return;
+    const held = { op, text, conditions };
+    this.#pendingAnswers.set(id, held);
+    void Promise.resolve(menu.rendered).then(() => {
+      // A later rebuild has taken over.
+      if (this.#pendingAnswers.get(id) !== held || !menu.isConnected) return;
+      this.#pendingAnswers.delete(id);
+      menu.dataset['op'] = op;
+      menu.conditionValue = text;
+      if (conditions.length) {
+        // The menu refuses custom mode unless the field opted in.
+        menu.setAttribute('data-custom', '');
+        menu.dataset['mode'] = 'custom';
+        menu.conditions = conditions;
+      }
+      // The chip draws its face from the menu it holds now; on or off as it was.
+      const chip = menu.closest<ChipEl>('sherpa-quick-filter');
+      if (chip) chip.current = !reading.suspended;
+    });
+  }
+
+  /** Answers a rebuilt menu has not drawn yet, by chip id. TRAP T-a-rebuild-keeps-every-answer */
+  #pendingAnswers = new Map<string, { op: FilterOp; text: string; conditions: readonly FieldCondition[] }>();
 
   /**
    * Settle after a REBUILD: every menu has stamped its rows.
@@ -1124,18 +1168,21 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
          TRAP T-grid-suspend-is-not-clear */
       const picked = this.#chipPicks(chip);
 
+      // A menu a rebuild has not drawn yet answers from what the rebuild kept.
+      const held = this.#pendingAnswers.get(field);
       out[field] = {
         label: chip.dataset['label'] ?? field,
         values: all,
         picked,
-        op: (menu.dataset['op'] ?? DEFAULT_OP) as FilterOp,
-        text: menu.conditionValue ?? '',
+        op: held?.op ?? (menu.dataset['op'] ?? DEFAULT_OP) as FilterOp,
+        text: held?.text ?? menu.conditionValue ?? '',
         /* THE ROWS. Without these `stateClause` saw no conditions and gave
            nothing back, so a chip full of answered rows read as on, wore its
            `fx` badge, and filtered NOTHING.
 
            TRAP T-a-conditioned-chip-answers-with-its-clause */
-        conditions: menu.mode === 'custom' ? (menu.conditions ?? []) : [],
+        conditions: held ? [...held.conditions]
+          : menu.mode === 'custom' ? (menu.conditions ?? []) : [],
         /* An OFF chip SUSPENDS: it keeps every row and applies none of them,
            exactly as it keeps its picks. Reporting none of them instead read
            as "no filter", and the chip could never switch itself back ON —

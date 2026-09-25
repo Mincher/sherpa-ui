@@ -11619,6 +11619,35 @@ ON ones itself, so a preset was a chip in one file and a query in another.
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 - Site: `test/unit/a-saved-filter-is-its-readings.test.mjs`
 
+### T-a-rebuild-keeps-every-answer
+
+**A rebuild of the bar must carry each chip's WHOLE answer — its op, what was
+typed, and its condition rows — not only on/off and ticks.**
+
+`#render` rebuilds the chip run whenever a filter is added or taken away, and
+a new menu starts from its def. `T-render-captures-live-state` carried on/off
+and the ticks across; nothing carried the rest. Measured: a chip answering
+"Owner contains Da OR is Ravi" read `conditions: []` after "Plan" was added
+beside it. So adding one filter silently took another one's condition away.
+
+**And the event said so first.** A menu that has not drawn DROPS rows —
+`set conditions()` returns when its shadow region is not there — and the
+rebuild's own `quick-filter-change` goes out before any menu has drawn. So even
+a restore that waited would have been too late: the source had been told the
+rows were gone.
+
+So `#render` reads `readings` BEFORE it rebuilds, and `#keepAnswer` holds each
+chip's op, typing and rows in `#pendingAnswers`. `readings` answers from there
+while the new menu draws, so a report sent at once still has them; once the
+menu has drawn they go into it, and the chip is set on or off as it was, which
+re-draws its face. A later rebuild takes over from an earlier one.
+
+This was found building pack (`§16.6`), which rebuilds the bar — it would have
+taken every OTHER chip's custom condition with it.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-a-rebuild-keeps-every-answer.spec.ts`
+
 ### T-a-saved-filter-lives-with-its-data
 
 **A saved custom filter is kept per DATA, not per page.** Will, 2026-09-25:
