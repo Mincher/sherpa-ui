@@ -40,6 +40,17 @@ export interface GridColumn {
   /** number → right-aligned mono cells; anything else → default text. */
   type?: string;
   sortable?: boolean;
+  /**
+   * How this column is ANSWERED — the same three states a filter chip takes.
+   * A text column defaults to `true` (a list AND a condition); `'only'` drops
+   * the list, for free text nobody picks from. The HOST decides, because how
+   * many values is too many is a question about the data.
+   * TRAP T-a-wall-of-values-is-not-a-filter
+   * TRAP T-a-filter-answers-by-values-conditions-or-both
+   */
+  conditions?: boolean | 'only';
+  /** Which condition this column OPENS on — `'contains'` for free text. */
+  op?: FilterOp;
   /** Drawn width in px, clamped. A user drag overrides it for the grid's life. */
   width?: number;
 }
@@ -470,6 +481,13 @@ export class SherpaDataGrid extends SherpaElement {
          "starts with" of. A chip over a closed set opts in instead.
          TRAP T-conditions-are-opt-in-per-field */
       menu.setAttribute('data-conditional', '');
+      /* VALUES, CONDITIONS, OR BOTH — the column says which, because how many
+         values is too many is a question about the data.
+         TRAP T-a-filter-answers-by-values-conditions-or-both */
+      if (col.conditions === 'only') {
+        menu.setAttribute('data-conditions-only', '');
+        menu.setAttribute('data-mode', 'condition');
+      }
       menu.setAttribute('data-search', '');
       /* THE SAME MENU a filter chip opens for this field, so it carries the
          same flags: MULTIPLE values (checkbox rows, and several picks become
@@ -480,7 +498,7 @@ export class SherpaDataGrid extends SherpaElement {
       /* `in` / `notin` are how SEVERAL picks read; the menu's own condition
          stays `eq` / `ne`, because its dropdown offers no "is one of" — the
          ticked list IS the "one of". */
-      const op = held?.op ?? DEFAULT_OP;
+      const op = held?.op ?? col.op ?? DEFAULT_OP;
       menu.setAttribute('data-op', op === 'in' ? 'eq' : op === 'notin' ? 'ne' : op);
       /* The header is rebuilt on every sort and keystroke, so what the reader
          TYPED has to be written back or it is lost. A PROPERTY, replayed after
@@ -489,7 +507,10 @@ export class SherpaDataGrid extends SherpaElement {
       if (held && (OP_TAKES[held.op as FilterOp] ?? 'list') === 'text') {
         menu.setAttribute('data-value', held.value);
       }
-      this.#addColumnValues(menu, col.field, held);
+      /* NO WALL OF ROWS. A conditions-only column has no list to tick, so
+         stamping its 240 values is work nobody sees.
+         TRAP T-a-wall-of-values-is-not-a-filter */
+      if (col.conditions !== 'only') this.#addColumnValues(menu, col.field, held);
     }
 
     // Restore the held clause — the header is rebuilt per sort and keystroke,

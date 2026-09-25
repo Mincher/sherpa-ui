@@ -52,6 +52,11 @@ export class SherpaMenu extends SherpaElement {
     'data-mode': { type: 'enum', kind: 'style', values: ['select', 'condition'] },
     /* Whether this field offers conditions AT ALL. TRAP T-conditions-are-opt-in-per-field */
     'data-conditional': { type: 'boolean', kind: 'style' },
+    /* CONDITIONS AND NOTHING ELSE. A field whose values are a wall — an email
+       column of 240 — has no list worth ticking, so there is no second mode to
+       switch to and the switch is hidden. It IMPLIES `data-conditional`.
+       TRAP T-a-filter-answers-by-values-conditions-or-both */
+    'data-conditions-only': { type: 'boolean', kind: 'style' },
     /* Draw in the FLOW, not the top layer. TRAP T-an-inline-menu-is-the-same-menu */
     'data-inline': { type: 'boolean', kind: 'style' },
     'data-heading': { type: 'string', kind: 'content', to: '.heading' },
@@ -161,9 +166,24 @@ export class SherpaMenu extends SherpaElement {
    *  refused, the same as a click. The attribute is not a second door.
    *  TRAP T-conditions-are-opt-in-per-field */
   #enforceMode(): void {
-    if (this.dataset['mode'] === 'condition' && !this.hasAttribute('data-conditional')) {
+    /* CONDITIONS ONLY has no other mode to be in, so it opens in one and
+       cannot leave. TRAP T-a-filter-answers-by-values-conditions-or-both */
+    if (this.#onlyConditions()) {
+      if (this.dataset['mode'] !== 'condition') this.dataset['mode'] = 'condition';
+      return;
+    }
+    if (this.dataset['mode'] === 'condition' && !this.#conditional()) {
       this.removeAttribute('data-mode');
     }
+  }
+
+  /** This field may be asked a condition. `only` implies it. */
+  #conditional(): boolean {
+    return this.hasAttribute('data-conditional') || this.#onlyConditions();
+  }
+
+  #onlyConditions(): boolean {
+    return this.hasAttribute('data-conditions-only');
   }
 
   #syncModeButton(): void {
@@ -179,13 +199,15 @@ export class SherpaMenu extends SherpaElement {
     /* A field that did not opt in has no condition mode to be in — the button
        is hidden, and a host writing the attribute must not get one either.
        TRAP T-conditions-are-opt-in-per-field */
-    if (next === 'condition' && !this.hasAttribute('data-conditional')) return;
+    if (next === 'condition' && !this.#conditional()) return;
+    // There is nowhere else to go. TRAP T-a-filter-answers-by-values-conditions-or-both
+    if (next === 'select' && this.#onlyConditions()) return;
     this.dataset['mode'] = next;
     this.#syncModeButton();
   }
 
   #onModeSwitch = (): void => {
-    if (!this.hasAttribute('data-conditional')) return;
+    if (!this.#conditional() || this.#onlyConditions()) return;
     const next = this.mode === 'condition' ? 'select' : 'condition';
     this.mode = next;
     // A condition mode with no rows has nothing to answer with.
@@ -474,7 +496,7 @@ export class SherpaMenu extends SherpaElement {
     /* A field that did not opt in has no rows at all — not a hidden one. A
        control nothing can reach should not exist.
        TRAP T-conditions-are-opt-in-per-field */
-    if (!this.$('.condition-rows') || !this.hasAttribute('data-conditional')) return;
+    if (!this.$('.condition-rows') || !this.#conditional()) return;
     if (!this.#rowEls().length) this.#addRow();
 
     const ops = this.#opList();

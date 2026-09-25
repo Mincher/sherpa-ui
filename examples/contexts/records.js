@@ -210,6 +210,15 @@ export async function init(root, { session } = {}) {
      TRAP T-one-comparison-rule-for-query-and-ui */
   const asOptions = (field) =>
     valuesOf(field).map((v) => ({ value: String(v), label: String(v) }));
+
+  /* ONE RULE for "is this a set anybody picks from", read by the bar's Add
+     menu AND by the grid's column headings. Ticking is only an answer when the
+     list is short enough to read; 100 distinct emails is a wall, and a search
+     box over a wall only FINDS in it — it does not filter.
+     TRAP T-a-wall-of-values-is-not-a-filter */
+  const PICKABLE_AT_MOST = 12;
+  const typedColumn = (col) =>
+    (col.type ?? 'text') === 'text' && valuesOf(col.field).length > PICKABLE_AT_MOST;
   /* `removable: true` — the DATA bar is the user's own to arrange, so each menu
      chip offers "Remove filter". `commit: true` on Owner and Created only:
      chips AUTO-APPLY by default, and committing is the opt-out for a field
@@ -278,17 +287,13 @@ export async function init(root, { session } = {}) {
     return { kind: 'number', min, max, step };
   };
 
-  /* A LIST or a CONDITION, decided by the data. Ticking is only an answer when
-     the set is small enough to read; 240 distinct emails is not a set anybody
-     picks from, so that column is asked "contains" instead.
+  /* A LIST or a CONDITION, from the SAME rule the grid headings read.
      TRAP T-a-condition-only-field-still-has-a-menu */
-  const PICKABLE_AT_MOST = 12;
-  const textFacts = (field) => {
-    const values = valuesOf(field);
-    return values.length <= PICKABLE_AT_MOST
-      ? { select: 'multiple', options: asOptions(field) }
-      : { conditions: true };
-  };
+  const textFacts = (field) =>
+    (typedColumn({ field })
+      // CONDITIONS ONLY, opening on Contains — there is no list worth ticking.
+      ? { conditions: 'only', op: 'contains' }
+      : { select: 'multiple', options: asOptions(field) });
 
   const DATA_AVAILABLE = columns
     .filter((c) => !heldSomewhere.has(c.field))
@@ -562,13 +567,22 @@ export async function init(root, { session } = {}) {
      the rows on screen is a one-way door: narrow on another field and three of
      four owners vanish from the Owner menu with no way to tick them back.
      TRAP T-unavailable-value-sorts-below-a-divider */
+  /* A WALL of values is asked a CONDITION, never ticked — and it opens on
+     "Contains", which is the question a reader really asks of an address.
+     TRAP T-a-filter-answers-by-values-conditions-or-both */
+  const gridColumns = columns.map((c) =>
+    (typedColumn(c) ? { ...c, conditions: 'only', op: 'contains' } : c));
+
   grid.setAttribute('data-column-values', columns
-    .filter((c) => (c.type ?? 'text') === 'text')
+    .filter((c) => (c.type ?? 'text') === 'text' && !typedColumn(c))
     .map((c) => `${c.field}:${valuesOf(c.field).join('|')}`)
     .join('\n'));
 
   source.bind(grid, {
-    as: (rows) => ({ columns, rows, key: 'email', actions: ROW_ACTIONS }),
+    /* The COLUMN says how it is answered. The grid never counts the values
+       itself — how many is too many is a question about the data.
+       TRAP T-a-wall-of-values-is-not-a-filter */
+    as: (rows) => ({ columns: gridColumns, rows, key: 'email', actions: ROW_ACTIONS }),
     ignore: ['filter-change'],
     signal,
   });

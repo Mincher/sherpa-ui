@@ -66,10 +66,14 @@ export interface QuickFilterDef {
    * OPT-IN, and off by default. A field answered by ticking a closed set —
    * Region, Customer — gets a plain list and no mode button; the reader never
    * meets a control that cannot help them.
+   * `true` offers BOTH — a list and a condition. `'only'` offers the condition
+   * ALONE, for a field whose values are a wall nobody ticks: an email column
+   * of 240 addresses. Pair it with `op` to say which condition it opens on.
    * TRAP T-conditions-are-opt-in-per-field
    * TRAP T-a-filter-menu-has-two-modes
+   * TRAP T-a-filter-answers-by-values-conditions-or-both
    */
-  conditions?: boolean;
+  conditions?: boolean | 'only';
   /** Which condition this chip is on. Defaults to `eq`. */
   op?: FilterOp;
   /** What the reader TYPED, for a condition that takes text rather than a pick. */
@@ -876,6 +880,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
          TRAP T-conditions-are-opt-in-per-field */
       if (def.conditions) {
         menu.setAttribute('data-conditional', '');
+        /* VALUES, CONDITIONS, OR BOTH. `only` opens in condition mode and
+           hides the switch — there is no list behind it.
+           TRAP T-a-filter-answers-by-values-conditions-or-both */
+        if (def.conditions === 'only') {
+          menu.setAttribute('data-conditions-only', '');
+          menu.setAttribute('data-mode', 'condition');
+        }
         /* A number or date chip returned above, so what is left is a VALUES
            chip — the text ops are the set it can answer. */
         const ops = OPS_FOR_TYPE['text'] ?? [];
@@ -1245,6 +1256,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const field = chip.dataset['id'];
       // A SUPERSEDED chip is the view's now; it narrows nothing here.
       if (!field || chip.hasAttribute('data-superseded')) continue;
+      /* A CUSTOM chip's id is NOT a field — it is `col:email`, the host's own
+         name for a clause the host already applies. Reporting it here made
+         `apply()` select on a field no row has, and the view went to 0 rows.
+         Custom chips are reported by `custom`, which is where they belong.
+         TRAP T-a-wall-of-values-is-not-a-filter */
+      if (chip.hasAttribute('data-custom')) continue;
 
       /* The MENU holds the condition — one field, one filter menu, whether a
          chip or a column heading opened it.

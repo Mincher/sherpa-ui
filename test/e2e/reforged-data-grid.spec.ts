@@ -2686,3 +2686,88 @@ test('a column filtered by a CONDITION wears the fx mark AND the info edge', asy
   // And clearing takes both off.
   expect(r.off).toEqual({ current: false, conditioned: false, icon: null });
 });
+
+/**
+ * A column of 100 distinct emails is a WALL, not a set anybody ticks. The
+ * menu's search box only FINDS in that wall — it never filters the rows — so a
+ * reader typing an address saw nothing happen.
+ *
+ * `conditions: 'only'` drops the list and leaves the condition rows, opening
+ * on the `op` the column names. The HOST sets it: how many values is too many
+ * is a question about the data.
+ *
+ * TRAP T-a-wall-of-values-is-not-a-filter
+ * TRAP T-a-filter-answers-by-values-conditions-or-both
+ */
+test('a conditions-only column drops its list and opens on its own op', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+      columnClause(field: string): unknown[] | null;
+    };
+    el.setAttribute('data-column-filters', '');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate({
+      columns: [
+        // Free text nobody picks from.
+        { field: 'email', header: 'Email', conditions: 'only', op: 'contains' },
+        // A short set — a list AND a condition, as every text column was.
+        { field: 'status', header: 'Status' },
+      ],
+      rows: [
+        { email: 'aisha@example.com', status: 'active' },
+        { email: 'omar@example.com', status: 'churned' },
+      ],
+    });
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await settle();
+
+    const sr = el.shadowRoot!;
+    const menuOf = (field: string) =>
+      sr.querySelector(`.head-cell[data-field="${field}"] .head-filter sherpa-menu`);
+
+    const email = menuOf('email') as HTMLElement & { shadowRoot: ShadowRoot };
+    const status = menuOf('status') as HTMLElement & { shadowRoot: ShadowRoot };
+    const switchOf = (m: HTMLElement & { shadowRoot: ShadowRoot }) => {
+      const sw = m.shadowRoot.querySelector('.use-condition');
+      return sw ? getComputedStyle(sw).display !== 'none' : null;
+    };
+    const shape = (m: HTMLElement & { shadowRoot: ShadowRoot }) => ({
+      only: m.hasAttribute('data-conditions-only'),
+      mode: m.getAttribute('data-mode'),
+      op: m.getAttribute('data-op'),
+      // NOTHING to switch to, so no button — and no wall of rows stamped.
+      switchShown: switchOf(m),
+      rows: [...m.children].filter((n) => n instanceof HTMLElement).length,
+    });
+    const before = { email: shape(email), status: shape(status) };
+
+    // Type into the condition row and apply.
+    const box = email.shadowRoot.querySelector('.condition-value') as
+      (HTMLElement & { shadowRoot?: ShadowRoot }) | null;
+    const inner = box?.shadowRoot?.querySelector('input') as HTMLInputElement | null;
+    if (inner) {
+      inner.value = 'aisha';
+      inner.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+      inner.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+      await settle();
+      email.dispatchEvent(new CustomEvent('menu-apply', { bubbles: true, composed: true }));
+      await settle();
+    }
+    return { before, typed: !!inner, clause: el.columnClause('email') };
+  });
+
+  // CONDITIONS ONLY: opens in condition mode, on its own op, no list, no switch.
+  expect(r.before.email).toEqual({
+    only: true, mode: 'condition', op: 'contains', switchShown: false, rows: 0,
+  });
+  // BOTH, as every text column was: a list of values and a switch to conditions.
+  expect(r.before.status.only).toBe(false);
+  expect(r.before.status.switchShown).toBe(true);
+  expect(r.before.status.rows).toBeGreaterThan(0);
+
+  expect(r.typed).toBe(true);
+  expect(r.clause).toEqual(['email', 'contains', 'aisha']);
+});

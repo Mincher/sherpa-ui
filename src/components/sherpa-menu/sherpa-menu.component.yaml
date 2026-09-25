@@ -189,7 +189,6 @@ anatomy:
                     attrs:
                       data-type: icon
                       data-size: xs
-                      data-look: transparent
                       data-icon-start: cross
                       aria-label: Remove condition
 props:
@@ -233,6 +232,16 @@ props:
     description: >-
       FILTER type only: a comma-separated op list ('eq,ne,contains') in place of the default text
       set.
+  - $type: prop
+    name: data-conditions-only
+    type: string
+    observed: false
+    kind: style
+    description: >-
+      FILTER type only: conditions and NOTHING else. Implies data-conditional, opens in condition
+      mode and cannot leave it, and hides the switch — there is no list behind it. For a field whose
+      values are a wall nobody ticks: 240 email addresses. TRAP
+      T-a-filter-answers-by-values-conditions-or-both
   - $type: prop
     name: data-drill
     type: string

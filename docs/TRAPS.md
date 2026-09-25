@@ -8347,6 +8347,91 @@ memory so one more click resumes it. TRAP T-grid-suspend-is-not-clear
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
+### T-a-wall-of-values-is-not-a-filter
+
+A text column's heading menu lists the column's distinct values to tick, with a
+search box above them. That is right for Status (4 values) and wrong for Email
+(100): the search box only FINDS in the wall, it never filters the rows.
+
+Measured on the running page — the search itself works, 101 rows down to 2 on
+"aisha" — which is exactly why the bug was confusing. Will: *"The search input
+in the email column filter doesn't work."* It worked; it just did not do what a
+reader typing an address expects.
+
+Such a column is answered by TYPING — `conditions: 'only'`, opening on
+`contains`. See TRAP T-a-filter-answers-by-values-conditions-or-both for the
+three states and how they are configured.
+
+**The HOST decides**, never the grid: how many values is too many is a question
+about the data. `examples/contexts/records.js` has one rule, `PICKABLE_AT_MOST`,
+read by the bar's Add menu AND by the grid's headings, so the same column can
+never be a list in one place and a box in the other.
+
+**And a custom chip's id is not a field.** Giving that column a real menu put
+`col:email` into the toolbar's `readings`, so `apply()` selected on a field no
+row has and the view went to 0 rows. A `data-custom` chip is reported by
+`custom` — the host already applies its clause — so `readings` skips it.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `examples/contexts/records.js`
+- Site: `test/e2e/reforged-data-grid.spec.ts`
+
+### T-a-filter-answers-by-values-conditions-or-both
+
+A filter is answered three ways, and the field says which:
+
+| `conditions` | the menu offers | for |
+|---|---|---|
+| absent / `false` | a list of values to tick | a closed set — Status, Plan |
+| `true` | BOTH, with a switch between them | Owner: a short list, and "starts with" |
+| `'only'` | the condition rows alone | a wall — 240 emails nobody ticks |
+
+Will, 2026-09-25: *"We should be able to configure a filter to be default,
+conditional, or both. I think it makes sense for Email data to always be a
+conditional filter, only, that defaults to 'Contains'."*
+
+ONE field, widened from a boolean, so nothing that already said `true` moved.
+`op` says which condition it opens on. `sherpa-menu` takes it as
+`data-conditions-only`, which IMPLIES `data-conditional`, forces
+`data-mode="condition"`, refuses to leave it, and hides the mode switch —
+there is no list behind it. Its CSS rule must come AFTER the one that shows the
+switch and be as specific, or the later rule wins and the button comes back.
+
+This REPLACED a bespoke one-box body on the grid (`filter: 'text'`) written an
+hour earlier. Two mechanisms for "this column is typed, not ticked" is one too
+many, and the condition rows already do it better — an operator, and an
+or-chain.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `examples/contexts/records.js`
+- Site: `test/e2e/reforged-data-grid.spec.ts`
+- Site: `test/e2e/reforged-filter-conditions.spec.ts`
+
+### T-a-section-heading-is-not-a-field
+
+The filter panel's `Organise` section holds Group and Sort. They share one
+`.field-values` container, and each is `select: 'single'`, so the single-select
+sweep — "one of many, untick the siblings" — cleared the OTHER control.
+
+Will: *"if I deactivate Sort then Group is also deactivated and bugs out.
+Group and Sort are still 2 separate filters, they're just organised under a
+custom header called 'Organise'. Organise is not the field for the filters in
+any way."*
+
+It bugs out twice over: the grid stays grouped while the chip reads OFF, so the
+next click on Group toggles it the wrong way.
+
+The sweep now clears only chips that resolve to the SAME `Held` — the same
+field. Two controls in one run have different `data-value`, so neither touches
+the other.
+
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+
 ### T-a-custom-chip-caret-must-open-its-condition
 
 `addCustomFilter()` put a chip on the bar carrying a finished phrase —

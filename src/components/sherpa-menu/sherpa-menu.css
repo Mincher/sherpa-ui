@@ -135,10 +135,16 @@
 /* The mode switch sits on the heading's own row, at its end — and ONLY when
    the field opted in. TRAP T-conditions-are-opt-in-per-field */
 .use-condition { display: none; }
+
 :host([data-type="filter"][data-conditional]) .use-condition {
   display: inline-flex;
   grid-area: mode;
 }
+
+/* NOWHERE TO SWITCH TO. A conditions-only field has no list behind the button.
+   AFTER the rule that shows it, and as specific, so it wins.
+   TRAP T-a-filter-answers-by-values-conditions-or-both */
+:host([data-type="filter"][data-conditions-only]) .use-condition { display: none; }
 
 /* SELECT mode (the default) shows the search; CONDITION mode shows the rows.
    One filter, two views of it. TRAP T-a-filter-menu-has-two-modes */

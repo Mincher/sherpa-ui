@@ -747,3 +747,79 @@ test('a chip in SELECT mode reports picks AND a clause, and is not conditioned',
        `values`; only a chip in CONDITION mode answers with its clause alone. */
     expect(r.conditioned).toBe(false);
   });
+
+/**
+ * THREE WAYS TO ANSWER A FILTER, and the field says which.
+ *
+ * `conditions` absent → a list of values. `true` → both, with a switch.
+ * `'only'` → the condition rows alone, for a field whose values are a wall
+ * nobody ticks. Will: "Email data … always a conditional filter, only, that
+ * defaults to 'Contains'."
+ *
+ * TRAP T-a-filter-answers-by-values-conditions-or-both
+ */
+test('a filter answers by values, by conditions, or by both', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    el.style.cssText = 'inline-size: 1200px';
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    const opts = [{ value: 'a', label: 'a' }, { value: 'b', label: 'b' }];
+    el.populate([
+      // DEFAULT — a closed set, ticked.
+      { id: 'status', label: 'Status', select: 'multiple', options: opts },
+      // BOTH — a short list, and a condition over it.
+      { id: 'owner', label: 'Owner', select: 'multiple', conditions: true, options: opts },
+      // ONLY — a wall. No list at all, opening on Contains.
+      { id: 'email', label: 'Email', conditions: 'only', op: 'contains' },
+    ]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const look = (id: string) => {
+      const chip = el.shadowRoot!.querySelector<HTMLElement>(`.chip[data-id="${id}"]`)!;
+      const menu = chip.querySelector('sherpa-menu') as
+        (HTMLElement & { shadowRoot: ShadowRoot; mode?: string }) | null;
+      if (!menu) return { menu: false };
+      const sw = menu.shadowRoot.querySelector('.use-condition');
+      return {
+        menu: true,
+        conditional: menu.hasAttribute('data-conditional'),
+        only: menu.hasAttribute('data-conditions-only'),
+        mode: menu.getAttribute('data-mode'),
+        op: menu.getAttribute('data-op'),
+        switchShown: sw ? getComputedStyle(sw).display !== 'none' : null,
+      };
+    };
+
+    // And a conditions-only menu must REFUSE to go back to a list.
+    const email = el.shadowRoot!.querySelector('.chip[data-id="email"] sherpa-menu') as
+      HTMLElement & { mode: string };
+    email.mode = 'select';
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    return {
+      status: look('status'), owner: look('owner'), email: look('email'),
+      afterForcingSelect: email.getAttribute('data-mode'),
+    };
+  });
+
+  // VALUES only — no condition offered at all.
+  expect(r.status.conditional).toBe(false);
+  expect(r.status.switchShown).toBe(false);
+
+  // BOTH — the switch is there, and it opens on the list.
+  expect(r.owner.conditional).toBe(true);
+  expect(r.owner.only).toBe(false);
+  expect(r.owner.switchShown).toBe(true);
+
+  // ONLY — opens in condition mode, on its own op, with nowhere to switch to.
+  expect(r.email).toEqual({
+    menu: true, conditional: true, only: true,
+    mode: 'condition', op: 'contains', switchShown: false,
+  });
+  // The attribute is not a second door back either.
+  expect(r.afterForcingSelect).toBe('condition');
+});
