@@ -1135,6 +1135,7 @@ guard rejected did the same; a value the guard accepted was kept.
 - Site: `src/core/browser/idb-store.ts`
 - Site: `src/core/data/stores.ts`
 - Site: `test/e2e/reforged-web-storage.spec.ts`
+- Site: `examples/contexts/records-data.js`
 
 ### T-one-snapshot-not-a-key-per-concern
 
