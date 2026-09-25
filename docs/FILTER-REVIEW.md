@@ -6,7 +6,8 @@ every command used is given so you can re-run it.
 ---
 
 **Diagrams of the target architecture are in §9.** §10 answers "are we
-reinventing the platform?" and §11 is where this could be simpler.
+reinventing the platform?", §11 is where this could be simpler, and §12 decides
+that a source is NAMED, never inferred.
 
 ## 1. The short version
 
@@ -595,21 +596,29 @@ if components could specify where to look for a field or value. e.g.
 A page can hold several sources — customers and invoices, live and saved. The
 declaration carries WHERE as well as WHAT:
 
+**The source is NAMED, never inferred — see §12.** The element says which one
+it reads, once; a dotted field overrides it for the rare component that reads
+two.
+
 | attribute | means |
 |---|---|
-| `data-field="spend"` | the field `spend`, in whichever source answered this element |
-| `data-field="invoices.total"` | the field `total`, in the source NAMED `invoices` |
+| `data-source="records"` | every field on this element comes from `records` |
+| `data-field="spend"` | the field `spend`, in this element's source |
+| `data-compare="invoices.total"` | the field `total`, in `invoices` — overriding |
 
-A source gets a name it answers to (`source.name = 'invoices'`), and the
-request in §9.2 carries the name when one is asked for. Unqualified stays the
-default, so nothing that ignores this changes.
+A source gets a name it answers to, and the request in §9.2 carries it, so
+there is no nearest-provider walk and nothing to tie-break.
 
 ```mermaid
 flowchart TB
-  M1["sherpa-metric<br/>data-field=spend"] --> N{"is the field<br/>qualified?"}
-  M2["sherpa-metric<br/>data-field=invoices.total"] --> N
-  N -- "no" --> NEAR[("the NEAREST source")]
-  N -- "yes" --> NAMED[("the source with that NAME")]
+  M1["sherpa-metric<br/>data-source=records<br/>data-field=spend"] --> N{"is the field<br/>dotted?"}
+  M2["sherpa-metric<br/>data-source=records<br/>data-compare=invoices.total"] --> N
+  N -- "no" --> OWN[("the element's own<br/>data-source")]
+  N -- "yes" --> NAMED[("the source named<br/>before the dot")]
+  OWN --> ERR{"does that<br/>source exist?"}
+  NAMED --> ERR
+  ERR -- "no" --> LOUD["a loud error,<br/>never silent wrong numbers"]
+  ERR -- "yes" --> OK["compose and push"]
 ```
 
 **One caution.** Two sources on one page is also how a field ends up filtered
@@ -844,3 +853,86 @@ direction and whether values explode into a run.
   way to fill a cloned element that has not upgraded.
 - **The longhand-then-`@supports` CSS function pattern.** It looks like
   duplication; without it a third of the web renders nothing.
+
+---
+
+## 12. Should the source namespace be REQUIRED?
+
+Will: *"I wonder if we should require the data source namespace in the
+attributes/properties. This will avoid having to handle the complexity in our
+codebase and ensure data correctness with reduced chance of errors."*
+
+### There is already a precedent, and it agrees
+
+`data-bounds` names the box a floating menu must stay inside. It is not
+inferred, not walked for — the host **names** it and the menu looks it up:
+
+```ts
+const box = document.querySelector(sel)?.getBoundingClientRect();
+```
+
+Named, explicit, one lookup, no ambiguity. The same shape works here.
+
+### What requiring it deletes
+
+| inferred (`data-field="spend"`) | required (`data-field="records.spend"`) |
+|---|---|
+| walk the tree for the nearest source | look the name up |
+| tie-break when two are equally near | nothing to tie-break |
+| a shadow boundary hides the provider | a name crosses every boundary |
+| wrong source → silently wrong numbers | unknown name → a loud error |
+| "which source answered this?" is a debugging question | it is written on the element |
+
+It also **simplifies the Context Protocol half** (§10): the request carries the
+name, and a source answers only if it matches. No "nearest" logic at all.
+
+### Two shapes — and they are not equal
+
+**A. On every value attribute**
+
+```html
+<sherpa-metric data-field="records.spend" data-series-by="records.created">
+```
+
+**B. Once on the element (recommended)**
+
+```html
+<sherpa-metric data-source="records" data-field="spend" data-series-by="created">
+```
+
+A component with five data attributes names its source **five times** under A
+and **once** under B. Under A a rename edits every attribute; under B, one per
+element. B is also the shape `data-bounds` already uses: one attribute naming
+one target.
+
+A qualified field stays legal under B for the case that needs it — a component
+reading from two sources at once:
+
+```html
+<sherpa-metric data-source="records" data-field="spend"
+               data-compare="invoices.total">
+```
+
+Rule: **the element's `data-source` is the default for every field on it; a
+dotted field overrides it.** One rule, one exception, both visible.
+
+### What it costs, honestly
+
+- **Every template gains an attribute**, including the many pages with exactly
+  one source, where the name says nothing new. That is the price of no
+  inference — and it is the price Will is choosing on purpose.
+- **A template cannot be dropped in without naming its source.** For a
+  component library that is a real cost. It is also the thing that makes the
+  error loud instead of silent, which is the trade being made.
+- **Renaming a source edits every element that names it.** An app constant in
+  one module keeps that to one edit in practice.
+
+### Does it break component agnosticism?
+
+No. The component does not know what `records` IS — not its shape, its fields
+or its store. It knows only that its data comes from a thing with that name.
+That is the same relationship a form control has with `name`, or a menu with
+`data-bounds`.
+
+**Recommendation: B, required.** One attribute per element, a dotted field for
+the rare second source, and nothing inferred anywhere.
