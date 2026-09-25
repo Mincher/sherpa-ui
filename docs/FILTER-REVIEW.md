@@ -25,10 +25,11 @@ Kept as the work lands. Budgets from §15.4.
 | 4 one field-row builder | ✅ | ≈ −250 | **−21** | the budget was wrong: 4b and 3c-ii had already taken the shared half. See §7 note |
 | 4c a record TIMESTAMP, and one Date filter | | ≈ +60 | — | buys the series composition in §9.5 |
 | 5 collapse sort/group state | ✅ | ≈ −50 | **+2** | two sync methods → one; `asc` written by ONE owner. Found the reported bug — see §4 |
+| — a group is a DATA concept | ✅ | — | **+95** | Will's ruling, §18. `source.groups()`; the grid is told, not the owner |
 | 5.5 error reporting | | ≈ +80 | — | `debugState()` lands with 3 |
 | 6 split `filter-state.ts` | | ≈ 0 | — | |
 | test harness §13.2 | ✅ | ≈ −400 | **−113** | `window.__mount()` in the harness page; the toolbar spec 2,799 → 2,600. The other specs' mounts are not mechanically alike |
-| **arc** | | **≈ −800** | **−150** | code only; docs counted separately |
+| **arc** | | **≈ −800** | **−55** | code only; docs counted separately |
 
 ---
 
@@ -1652,3 +1653,69 @@ in step by construction.
    fixed. It cannot be both, and the fold measurement reads whichever it is.
 4. **The empty case.** Nothing folded and nothing to add — does the button go,
    or stay and say so?
+
+
+---
+
+## 18. A group is a data-layer concept
+
+Will, 2026-09-25, on my step-5 commit message:
+
+> *"Is a group just a sort with no direction? It's also an association of data
+> records by a value. I guess sorting by value achieves that in a flat list but
+> what if we want to do something with the group as a whole? There's no object
+> or single entity to reference, unless I'm mistaken or misinformed."*
+
+He was not misinformed, and the sentence he was reading was wrong as written.
+It described two attribute-sync methods; it is not true of the model.
+
+### 18.1 What was there
+
+| layer | what it had |
+|---|---|
+| `applyOptions` | `group: 'x'` became a LEADING `SortSpec`, direction `asc`, hardcoded. Deliberate — `T-pipeline-order-and-no-grouping` |
+| the view | flat rows |
+| `sherpa-data-grid` | a `<tr data-group-key>` built while walking them, counted by `rows.filter(...)` over whatever rows it held |
+| everything else | nothing. No group could be named, counted or acted on |
+
+`groupRows(rows, field)` and `aggregateBy(...)` already existed in the data
+layer. Neither was called by the group feature — only by charts and tests.
+
+### 18.2 What it is now
+
+```
+groupSummaries(rows, field) -> { key, value, count }[]      store.ts
+DataSource.groups(field?)                                   over MATCHING rows
+grid populate({ ..., groups })                              told, not inferred
+```
+
+The grid still counts for itself when nobody tells it — that is a grid
+populated by hand with no source behind it. It was the default before, which is
+why a paged grid's group count was a page count.
+
+### 18.3 The split is paging's
+
+Will: *"It's similar to Paging. There are data pages and data grid visual
+pages."*
+
+Exactly. The store counts RECORDS; the grid pages SCREEN LINES and reports that
+back (`T-grouped-paging-belongs-to-the-view`, `#viewPages`). Groups divide the
+same way, and the words now match: **the data layer says which groups exist and
+how big they are; the grid decides which headings fit and which are shut.**
+
+Measured live, grouped by Plan — the source named four groups over 100 records,
+the grid drew the one that fitted its page, carrying the source's count:
+
+    told   Enterprise 24 · Free 25 · Pro 24 · Starter 27
+    drawn  Enterprise 24   (24 body rows — one visual page)
+
+### 18.4 What this unlocks, unscheduled
+
+Now that a group is an object, these become small rather than impossible:
+
+| | needs |
+|---|---|
+| a total or average in a group heading | `aggregateBy` per group — both halves exist |
+| select or act on a whole group | the keys, which `groups()` gives |
+| order the GROUPS, not the rows within them | the hardcoded `direction: 'asc'` in `applyOptions` becomes a parameter |
+| a chart or tile that draws the groups | `groups()` is DOM-free, so a server or the MCP can ask too |
