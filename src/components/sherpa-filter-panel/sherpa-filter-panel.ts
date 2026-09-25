@@ -296,8 +296,13 @@ export class SherpaFilterPanel extends SherpaElement {
           if (chip) {
             /* SEED THE CYCLE and let the chip draw itself: `data-direction`
                remembers the way, `data-current` (from `selected`, above) says
-               whether it runs. TRAP T-a-chip-knows-what-kind-it-is */
-            if (kind === 'sort') chip.dataset['direction'] = scope.sortDirection ?? 'asc';
+               whether it runs. Only a real direction is written — the chip
+               answers `asc` for a chip that is on with none set, and writing
+               one here would be a second owner.
+               TRAP T-a-chip-knows-what-kind-it-is */
+            if (kind === 'sort' && scope.sortDirection) {
+              chip.dataset['direction'] = scope.sortDirection;
+            }
             section.values.append(chip);
           }
         }

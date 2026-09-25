@@ -319,28 +319,38 @@ export class SherpaQuickFilter extends SherpaElement {
       return;
     }
     const next = nextSort(field, this.current ? field : null, this.direction);
-    // A suspended chip rewinds to `asc` — that is where a resume starts.
-    this.dataset['direction'] = next.direction ?? 'asc';
-    this.current = next.direction !== null;
-    this.#drawArrangement();
-    this.emit('sort-change', {
-      field: next.direction === null ? null : next.field,
-      direction: next.direction ?? 'asc',
-    });
+    this.#applySort(next.field, next.direction);
   }
 
   /** A column was picked from the menu: apply it and say so. */
   #arrangeFromMenu(): void {
     const field = this.column;
-    this.current = !!field;
-    this.#drawArrangement();
     if (this.dataset['kind'] === 'group') {
+      this.current = !!field;
+      this.#drawArrangement();
       this.emit('group-change', { field: field || null });
       return;
     }
+    // The way it is ALREADY pointing — picking a column does not rewind it.
+    this.#applySort(field, field ? sortDirectionFrom(this.dataset['direction']) ?? 'asc' : null);
+  }
+
+  /**
+   * Apply a sort and report it — the ONE place a chip's direction is written.
+   *
+   * The attribute is the state channel a host reads back, and `asc` used to be
+   * stamped at three moments by three owners: this cycle, the container that
+   * built the chip, and that container's attribute sync.
+   * TRAP T-one-cycle-for-one-value
+   */
+  #applySort(field: string | null, direction: SortDirection | null): void {
+    // A suspended chip rewinds to `asc` — that is where a resume starts.
+    this.dataset['direction'] = direction ?? 'asc';
+    this.current = direction !== null;
+    this.#drawArrangement();
     this.emit('sort-change', {
-      field: field || null,
-      direction: this.direction ?? 'asc',
+      field: direction === null ? null : field,
+      direction: direction ?? 'asc',
     });
   }
 

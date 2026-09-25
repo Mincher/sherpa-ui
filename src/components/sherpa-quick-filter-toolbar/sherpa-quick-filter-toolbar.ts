@@ -951,25 +951,25 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   };
 
   override onChange(): void {
-    this.#syncSortFromAttrs();
-    this.#syncGroupFromAttrs();
+    this.#syncArrangement('group');
+    this.#syncArrangement('sort');
     this.#syncFavouriteFromAttr();
   }
 
-  /** Follow `data-sort-field`. TRAP T-a-chip-body-cycles-its-states — no event; empty SUSPENDS. */
-  #syncSortFromAttrs(): void {
-    const chip = this.$<HTMLElement>('.organise-chip[data-id="sort"]');
+  /**
+   * Follow `data-group-field` / `data-sort-field` onto their chip.
+   *
+   * A GROUP IS A SORT WITH NO DIRECTION. These were two methods four apart, and
+   * they drifted: one kept the column when its chip went off and the other
+   * blanked it, so Group forgot what Sort remembered.
+   * TRAP T-a-chip-body-cycles-its-states — no event; an empty field SUSPENDS.
+   */
+  #syncArrangement(kind: 'group' | 'sort'): void {
+    const chip = this.$<HTMLElement>(`.organise-chip[data-id="${kind}"]`);
     if (!chip) return;
 
-    const field = this.dataset['sortField'] ?? '';
-    const raw = this.dataset['sortDirection'];
-    // The shared reader — TRAP T-one-cycle-for-one-value.
-    const direction = sortDirectionFrom(raw) ?? 'asc';
-    /* An EMPTY direction is a suspended sort: the column is still pushed, so only
-       the direction says whether it runs. TRAP T-a-suspended-sort-is-one-owners-job */
-    const suspended = raw === '';
-
-    // No field, no sort — off, keeping whatever pick it had.
+    // No field — OFF, keeping whatever pick it had. Off is not forgotten.
+    const field = this.dataset[kind === 'sort' ? 'sortField' : 'groupField'] ?? '';
     if (!field) {
       chip.removeAttribute('data-current');
       return;
@@ -980,36 +980,22 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        and its rows are RADIOS, so a later tick can only ever agree.
        TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
     chip.dataset['column'] = field;
-    this.#tickColumn(chip, field);
-    // A resume starts ASCENDING, so a suspended chip must not keep its `desc`.
-    chip.dataset['direction'] = suspended ? 'asc' : direction;
-    chip.toggleAttribute('data-current', !suspended);
-  }
-
-  /** Tick one column's radio, where the menu has stamped its rows. */
-  #tickColumn(chip: HTMLElement, field: string): void {
     for (const radio of chip.querySelectorAll<HTMLInputElement>('input[type="radio"]')) {
       radio.checked = radio.value === field;
     }
-  }
-
-  /** Follow `data-group-field`. The twin of `#syncSortFromAttrs`: empty suspends, no event. */
-  #syncGroupFromAttrs(): void {
-    const chip = this.$<HTMLElement>('.organise-chip[data-id="group"]');
-    if (!chip) return;
-
-    const field = this.dataset['groupField'] ?? '';
-
-    // No field means ungrouped — SUSPENDED, and the pick is kept.
-    if (!field) {
-      chip.removeAttribute('data-current');
+    if (kind === 'group') {
+      chip.toggleAttribute('data-current', true);
       return;
     }
 
-    // NAME THE COLUMN, then tick it — see `#syncSortFromAttrs`.
-    chip.dataset['column'] = field;
-    this.#tickColumn(chip, field);
-    chip.toggleAttribute('data-current', true);
+    /* An EMPTY direction is a SUSPENDED sort: the column is still pushed, so
+       only the direction says whether it runs — and a resume starts ASCENDING,
+       so a suspended chip must not keep its `desc`.
+       TRAP T-a-suspended-sort-is-one-owners-job · TRAP T-one-cycle-for-one-value */
+    const raw = this.dataset['sortDirection'];
+    const suspended = raw === '';
+    chip.dataset['direction'] = suspended ? 'asc' : sortDirectionFrom(raw) ?? 'asc';
+    chip.toggleAttribute('data-current', !suspended);
   }
 
   /** Report the whole filter state — the active toggle chips and every menu chip's picks. */
@@ -1522,9 +1508,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     for (const chip of this.$$<HTMLElement>('.organise-chip')) {
       chip.removeAttribute('data-current');
       for (const input of chip.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
-      if (chip.dataset['id'] === 'sort') {
-        chip.dataset['direction'] = 'asc';
-      }
+      /* FORGET the way, rather than write one: the chip answers `asc` for a
+         chip with none. TRAP T-one-cycle-for-one-value */
+      delete chip.dataset['direction'];
     }
     this.emit('filter-clear', {});
     this.#emitChange();
@@ -1617,10 +1603,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (sort.length) {
       // The MENU picks the column, the BODY cycles direction. Built OFF, so it
       // opens with the sort-none glyph.
-      const chip = this.#organiseChip('sort', 'Sort',
-        SherpaQuickFilterToolbar.#icons.sortNone, cols(sort, on.sort), on.sort);
-      chip.dataset['direction'] = 'asc';
-      zone.appendChild(chip);
+      /* NO `data-direction` here. `chip.direction` answers `asc` for a chip that
+         is ON with none set, so writing it is a third place that has to agree.
+         TRAP T-one-cycle-for-one-value */
+      zone.appendChild(this.#organiseChip('sort', 'Sort',
+        SherpaQuickFilterToolbar.#icons.sortNone, cols(sort, on.sort), on.sort));
     }
     // Both chips are in the zone now, so their menus have upgraded.
     this.#flushItems();
