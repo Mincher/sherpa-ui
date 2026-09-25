@@ -79,29 +79,6 @@ export const OP_TAKES: Record<FilterOp, 'list' | 'text' | 'range'> = {
 /** The condition a filter menu opens on. A reader picks a value far more often than typing one. */
 export const DEFAULT_OP: FilterOp = 'eq';
 
-/**
- * Each operator as a BADGE — the short sign a chip wears. An inverse is its
- * own sign with a leading `!`, so the pairs read as pairs.
- * TRAP T-an-operator-decides-pick-or-type
- */
-export const OP_SYMBOLS: Record<FilterOp, string> = {
-  // `eq` has a sign for the condition menu; `filterFace` omits it from a BADGE,
-  // where it would be on every default chip.
-  eq: '=',
-  ne: '!=',
-  lt: '<',
-  lte: '\u2264',
-  gt: '>',
-  gte: '\u2265',
-  contains: '\u2237',
-  notcontains: '!\u2237',
-  startswith: '\u2237*',
-  endswith: '*\u2237',
-  in: '\u2208',
-  notin: '!\u2208',
-  between: '\u2194',
-};
-
 export type FilterClause = [field: string, op: FilterOp, value: unknown];
 export type FilterGroup = ['and' | 'or', ...Filter[]];
 export type Filter = FilterClause | FilterGroup;

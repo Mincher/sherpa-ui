@@ -3112,16 +3112,11 @@ bar reported `values` and a typed answer is not in there. Three things had to
 agree: the chip's own on-state, the bar relaying `condition-change`, and the
 view reading `clauses` in place of re-deriving them from `values`.
 
-**The BADGE wears the condition, the caret keeps the value.** A prefix ate the
+**The BADGE marks the condition, the caret keeps the value.** A prefix ate the
 caret's width — "Does not equal: Gold" truncates where "Gold" would not — so
-the sign goes in the count badge instead: `!=`, `∷`, `!∷`, `∷*`, `*∷`, an
-inverse being its own sign with a leading `!`. `OP_SYMBOLS` sits beside
-`OP_LABELS` in `store.ts`.
-
-`eq` HAS a sign, because the condition menu names every row "Equals (=)" so a
-reader meets the word and the sign together once. But the badge skips it: it is
-the default, and a mark on every ordinary chip is noise. Two questions, one
-vocabulary.
+the mark goes in the count badge instead. The condition menu shows the WORD
+only (`OP_LABELS` in `store.ts`); there is no per-operator sign. `eq` is the
+default, so it gets no mark: a mark on every ordinary chip is noise.
 
 A badge shows a COUNT when several values are picked — the count is the thing a
 reader cannot get elsewhere, since the caret already shows the value. And a
@@ -3138,7 +3133,6 @@ and would otherwise wipe it.
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
 ### T-native-change-stops-at-the-host
 
 A native `change` is **NOT COMPOSED**: it stops at `sherpa-menu`, the shadow
@@ -7697,12 +7691,9 @@ is exactly what a reader asks "starts with" of.
 
 ### T-a-condition-badge-says-that-not-which
 
-The chip's badge wore the operator's sign — `!=`, `∷*`. It cannot any more.
-
-A sign can say which operator ONE row holds. A field holding
-`Contains "ab" or Equals churned` has no single operator, so a badge reading
-`∷` over it is not a simplification, it is wrong. And a badge reading `=` over
-three chained rows is worse than no badge: the reader believes it.
+A per-operator sign can say which operator ONE row holds. A field holding
+`Contains "ab" or Equals churned` has no single operator, so any one sign over
+it is wrong, and the reader believes it.
 
 So the badge is ONE mark — `fx`, the spreadsheet's formula sign — and it says
 only THAT conditions apply. The TOOLTIP spells out which:

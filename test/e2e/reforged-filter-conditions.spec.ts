@@ -351,9 +351,8 @@ test('a chip that did not opt in has NO condition mode at all', async ({ page })
 /**
  * ONE MARK, NOT A SIGN PER OPERATOR.
  *
- * The badge used to wear `!=` or `∷*`. A per-op sign cannot say anything true
- * about a field holding three chained rows, and a badge reading `=` over
- * `A or B and C` is worse than none. So it says only THAT conditions are
+ * A per-op sign cannot say anything true about a field holding three chained
+ * rows. So the badge says only THAT conditions are
  * applied — `fx`, like a spreadsheet's formula mark — and the TOOLTIP spells
  * out which. TRAP T-a-condition-badge-says-that-not-which
  */
@@ -430,10 +429,10 @@ test('the BADGE says THAT conditions apply, never WHICH', async ({ page }) => {
     return { rows, onEq, onNe, onTyped: badge() };
   });
 
-  // The word says what it does; the sign is what the chip will wear.
+  // The word alone. No operator sign.
   expect(r.rows).toEqual([
-    'Equals (=)', 'Does not equal (!=)', 'Contains (∷)',
-    'Does not contain (!∷)', 'Starts with (∷*)', 'Ends with (*∷)',
+    'Equals', 'Does not equal', 'Contains',
+    'Does not contain', 'Starts with', 'Ends with',
   ]);
   // The DEFAULT names no condition, so it wears no mark at all.
   expect(r.onEq).toEqual({ sign: null, spoken: null, caret: 'Gold' });

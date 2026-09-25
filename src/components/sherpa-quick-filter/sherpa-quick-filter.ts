@@ -520,8 +520,7 @@ export class SherpaQuickFilter extends SherpaElement {
   #emptyCheck = 0;
 
   #syncCountTip(values: string[]): void {
-    /* The CONDITION in words, never the sign: a tooltip is where a reader goes
-       to find out what `!∷` means, so showing it again answers nothing.
+    /* The CONDITION in words: the badge only says THAT one applies.
        TRAP T-one-state-per-filtered-field */
     const face = filterFace(this.#state(values));
 

@@ -12,7 +12,7 @@
  */
 import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import {
-  DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_SYMBOLS, OP_TAKES, type FilterOp, valueSet,
+  DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type FilterOp, valueSet,
 } from '../../core/data/store.js';
 import type { FieldCondition } from '../../core/data/filter-state.js';
 import { NON_VALUE_ROWS } from '../../core/ui/shared-constants.js';
@@ -294,7 +294,7 @@ export class SherpaMenu extends SherpaElement {
 
     const ops = this.#opList();
     void cond?.populate?.(ops.map((op) => ({
-      value: op, label: `${OP_LABELS[op]} (${OP_SYMBOLS[op]})`,
+      value: op, label: OP_LABELS[op],
     })));
     const op = seed?.op && ops.includes(seed.op) ? seed.op : (ops[0] ?? DEFAULT_OP);
     if (cond) cond.value = op;

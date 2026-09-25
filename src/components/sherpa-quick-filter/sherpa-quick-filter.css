@@ -134,10 +134,8 @@
   pointer-events: none;
 }
 
-/* SEMIBOLD, not regular: the badge carries a CONDITION SIGN as well as a
-   count, and `∷` or `!∷` at 12px in body weight is a grey smudge. On `.count`
-   itself, so it does not depend on the badge being shown.
-   TRAP T-an-operator-decides-pick-or-type */
+/* SEMIBOLD: `fx` at 12px in body weight is a grey smudge. On `.count`
+   itself, so it does not depend on the badge being shown. */
 .count {
   display: none;
   font-weight: var(--sherpa-font-weight-semibold, 600);
