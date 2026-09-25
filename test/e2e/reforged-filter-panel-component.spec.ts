@@ -462,3 +462,52 @@ test('a number field shows its own menu body, and gets it back', async ({ page }
     back: true, slot: 'menu', inline: false, popover: 'manual',
   });
 });
+
+/**
+ * `Organise` is a HEADING over two separate controls, not their field.
+ *
+ * Group and Sort share one `.field-values` container and are both
+ * `select: 'single'`, so the "one of many, untick the siblings" sweep cleared
+ * the other one. Will: "if I deactivate Sort then Group is also deactivated
+ * and bugs out." It bugs out twice: the grid stays grouped while the chip
+ * reads OFF, so the next click toggles it the wrong way.
+ *
+ * TRAP T-a-section-heading-is-not-a-field
+ */
+test('clicking Sort leaves Group alone — Organise is a heading, not a field', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const chip = (v) => sr.querySelector('.value[data-value="' + v + '"]');
+    const body = (v) => chip(v).shadowRoot.querySelector('.body');
+    const snap = () => ({
+      group: chip('group').hasAttribute('data-current'),
+      sort: chip('sort').hasAttribute('data-current'),
+    });
+
+    // Pick a column in each menu, then turn GROUP on.
+    for (const [id, field] of [['group', 'tier'], ['sort', 'name']]) {
+      const radio = chip(id).querySelector('input[value="' + field + '"]');
+      if (radio) { radio.checked = true;
+        radio.dispatchEvent(new Event('change', { bubbles: true })); }
+    }
+    chip('group').setAttribute('data-current', '');
+    await new Promise((r) => setTimeout(r, 120));
+    const before = snap();
+
+    // Click SORT's body — the gesture that used to clear Group.
+    body('sort').click();
+    await new Promise((r) => setTimeout(r, 160));
+    const afterSort = snap();
+
+    // And the other way round: clicking GROUP must not clear Sort.
+    body('group').click();
+    await new Promise((r) => setTimeout(r, 160));
+    return { before, afterSort, afterGroup: snap() };
+  })()`) as Record<string, { group: boolean; sort: boolean }>;
+
+  expect(r.before.group).toBe(true);
+  // SORT turned on, and GROUP is exactly where it was.
+  expect(r.afterSort).toEqual({ group: true, sort: true });
+  // Neither control owns the other.
+  expect(r.afterGroup.sort).toBe(true);
+});

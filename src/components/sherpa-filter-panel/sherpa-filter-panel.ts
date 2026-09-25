@@ -555,9 +555,17 @@ export class SherpaFilterPanel extends SherpaElement {
     if (!one) return;
     const held = this.#heldOfChip(one);
     if (!held) return;
+    /* ONE OF THIS FIELD'S VALUES, not one of the run. A section can hold two
+       SEPARATE controls — `Organise` is a heading over Group and Sort, and it
+       is not their field — so they share a `.values` container while answering
+       different questions. Sweeping the container unticked Group whenever Sort
+       was clicked, and left the grid grouped by a chip that read OFF.
+       TRAP T-a-section-heading-is-not-a-field */
     if (held.def.select === 'single') {
-      for (const other of held.values.querySelectorAll('.value')) {
-        if (other !== one) other.removeAttribute('data-current');
+      for (const other of held.values.querySelectorAll<HTMLElement>('.value')) {
+        if (other !== one && this.#heldOfChip(other) === held) {
+          other.removeAttribute('data-current');
+        }
       }
     }
     /* GROUP and SORT are not filters, so they report at once and by their own
