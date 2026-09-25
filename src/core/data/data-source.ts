@@ -6,6 +6,7 @@
  */
 import { andFilter, filterFields, filterNeedles, groupSummaries, valueKey } from './store.js';
 import { fieldState, stateClause } from './filter-state.js';
+import { report } from './report.js';
 import type { Populatable } from '../ui/apply-state.js';
 import type { FieldReading, FieldType, FilterState } from './filter-state.js';
 
@@ -440,6 +441,17 @@ export class DataSource extends EventTarget {
    */
   groups(field: string = this.#state.group ?? ''): GroupSummary[] {
     if (!field) return [];
+    if (!this.#loaded) {
+      /* NOT LOADED YET. An empty answer here reads as "no groups", which is
+         indistinguishable from a field nothing carries.
+         TRAP T-a-broken-assumption-reports */
+      report({
+        code: 'not-loaded',
+        message: 'groups() was asked before the first load, so it has nothing to count.',
+        at: { field },
+      });
+      return [];
+    }
     /* EVERY matching row. `#allRows` is filled only for a `rows: 'all'` bind,
        and a GROUPED load is never windowed, so the page IS everything then.
        TRAP T-a-summary-binds-to-all-the-rows */

@@ -8446,6 +8446,55 @@ Two details that are easy to get wrong:
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/scope-registry.test.mjs`
 
+### T-a-broken-assumption-reports
+
+**A guard that expresses a DECISION stays silent. A guard that expresses a
+BROKEN ASSUMPTION reports.** Never the reverse — a warning a reader cannot act
+on is noise that hides the real one.
+
+```ts
+if (!this.#wideEnough()) return;   // a DECISION. The panel is desktop-only.
+if (i < 0) return;                 // a FAULT. The caller named a filter that
+                                   //          is not on this bar.
+```
+
+Measured across the filter family: **82 early returns**, and roughly a third
+are the second kind. They returned early like the first, so a host that named
+a field nothing offered got an empty screen and no explanation.
+
+`src/core/data/report.ts` is the ONE channel:
+
+| | |
+|---|---|
+| `report({ code, message, at })` | say that an assumption broke. Never throws |
+| `onReport(fn)` | route it — a toast, a log, a test's array. Returns its undo |
+| default | `console.warn('sherpa [code] message key=value')` |
+
+**`console.warn` is the default, not the mechanism.** An app that cannot
+intercept a warning cannot silence or forward one either.
+
+**A broken SINK must not break the page.** The app asked to hear about a
+problem; its handler throwing is a second problem, not this one's — so the
+report falls through to the default and is still said.
+
+**Every report names the thing.** *"A filter could not be drawn"* is not a bug
+report; *"undrawable-filter scope=data id=ghost"* is.
+
+**And `Report` is not `Issue`.** `validate.ts` already owns that word, where it
+means a value a schema refused. This is a runtime assumption that broke.
+
+A thrown error still means the CALLER made a mistake — `apply: a component
+reach needs a key` is right to throw. A fault in the data or the DOM is
+reported: an app should not crash because one chip lost its menu.
+
+- Site: `src/core/data/report.ts`
+- Site: `src/data.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/unit/a-broken-assumption-reports.test.mjs`
+- Site: `test/e2e/reforged-a-broken-assumption-reports.spec.ts`
+
 ### T-a-bug-report-should-be-a-paste
 
 `source.debugState()` returns everything the source thinks is true in one

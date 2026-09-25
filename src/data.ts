@@ -219,6 +219,10 @@ export {
   type FieldCondition,
 } from './core/data/filter-state.js';
 
+/* ONE CHANNEL for "your assumption was wrong" — a host routes it, silences it
+   or lets it warn. TRAP T-a-broken-assumption-reports */
+export { report, onReport, type Report, type Reporter } from './core/data/report.js';
+
 /* WHAT A CONTROL SHOWS for that state — the badge, the value, the tooltip.
    TRAP T-a-condition-badge-says-that-not-which */
 export {

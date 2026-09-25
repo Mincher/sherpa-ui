@@ -9,6 +9,7 @@ import { sortDirectionFrom } from '../../core/data/cycle.js';
 import { allow, type AllowList } from '../../core/data/allow.js';
 import { kindOf, type FilterKind } from '../../core/ui/filter-kind.js';
 import { menuFor } from '../../core/ui/filter-menu.js';
+import { report } from '../../core/data/report.js';
 import {
   DEFAULT_OP, OP_TAKES,
   type Filter, type FilterOp,
@@ -1125,7 +1126,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   setClause(id: string, clause: readonly [string, FilterOp, unknown] | null): void {
     const menu = this.#filterMenu(id);
-    if (!menu) return;
+    if (!menu) {
+      /* A CONDITION needs a filter menu to live in. A chip that is a toggle,
+         a selector or a date has none, so the clause would vanish.
+         TRAP T-a-broken-assumption-reports */
+      report({
+        code: 'no-filter-menu',
+        message: 'setClause: that chip has no filter menu, so the clause was dropped.',
+        at: { id, held: this.#filters.map((f) => f.id).join(',') },
+      });
+      return;
+    }
 
     if (!clause) {
       menu.dataset['op'] = DEFAULT_OP;
@@ -1324,7 +1335,16 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const added: QuickFilterDef[] = [];
     for (const id of ids) {
       const i = this.#available.findIndex((f) => f.id === id);
-      if (i < 0) continue;
+      if (i < 0) {
+        // TRAP T-a-broken-assumption-reports — the caller named something the
+        // Add list does not hold, so nothing appears and nothing says why.
+        report({
+          code: 'unknown-filter',
+          message: 'addFilters: this bar offers no such filter, so nothing was added.',
+          at: { id, offering: this.#available.map((f) => f.id).join(',') },
+        });
+        continue;
+      }
       const [def] = this.#available.splice(i, 1);
       /* OFF, and REMOVABLE. A chip added ON holds no values yet, and "on but
          filtering by nothing" is the amber warning — shown to a reader who has
@@ -1345,7 +1365,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** Take one filter back OFF the bar. It returns to the Add menu, clean. */
   #removeFilter(id: string): void {
     const i = this.#filters.findIndex((f) => f.id === id);
-    if (i < 0) return;
+    if (i < 0) {
+      // TRAP T-a-broken-assumption-reports
+      report({
+        code: 'unknown-filter',
+        message: 'removeFilter: this bar is not holding that filter.',
+        at: { id, held: this.#filters.map((f) => f.id).join(',') },
+      });
+      return;
+    }
     const [def] = this.#filters.splice(i, 1);
     const { active: _active, ...clean } = def!;
     this.#available = [...this.#available, clean as QuickFilterDef];

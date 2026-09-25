@@ -26,10 +26,10 @@ Kept as the work lands. Budgets from §15.4.
 | 4c a record TIMESTAMP, and one Date filter | | ≈ +60 | — | buys the series composition in §9.5 |
 | 5 collapse sort/group state | ✅ | ≈ −50 | **+2** | two sync methods → one; `asc` written by ONE owner. Found the reported bug — see §4 |
 | — a group is a DATA concept | ✅ | — | **+95** | Will's ruling, §18. `source.groups()`; the grid is told, not the owner |
-| 5.5 error reporting | | ≈ +80 | — | `debugState()` lands with 3 |
+| 5.5 error reporting | ✅ | ≈ +80 | **+118** | ONE channel, `report()` / `onReport()`; 5 host-facing give-ups converted; 8 tests |
 | 6 split `filter-state.ts` | ✅ | ≈ 0 | **+25** | 548 → 324 + 93 + 156. The +25 is two file headers; the budget was right |
 | test harness §13.2 | ✅ | ≈ −400 | **−113** | `window.__mount()` in the harness page; the toolbar spec 2,799 → 2,600. The other specs' mounts are not mechanically alike |
-| **arc** | | **≈ −800** | **−30** | code only; docs counted separately |
+| **arc** | | **≈ −800** | **+88** | code only; docs counted separately |
 
 ---
 
@@ -742,11 +742,40 @@ through a getter, with the source as the only other owner.
 **Closes:** the intertwining in §4 — including, most likely, the bug I could
 not reproduce.
 
-### Step 5.5 — Error reporting, woven through
+### Step 5.5 — `[x]` Error reporting, woven through (done)
 
-Not a step of its own — see §14.5 for what each step above gains, and §14.6 for
-the five rules. `debugState()` lands with step 3, and a closing sweep judges
-the remaining silent give-ups one at a time.
+`src/core/data/report.ts` — one channel, three names:
+
+| | |
+|---|---|
+| `report({ code, message, at })` | say that an assumption broke. Never throws |
+| `onReport(fn)` | route it — a toast, a log, a test's array. Returns its undo |
+| default | `console.warn('sherpa [code] message key=value')` |
+
+**Measured before converting anything: 82 early returns** across the four
+filter components and the data layer, not the 55 §14.2 estimated. Most are
+decisions and stay silent. **Five were converted** — every one a case where a
+HOST named something that is not there, which is the kind that costs an hour:
+
+| site | code |
+|---|---|
+| `addFilters(ids)` on an id nothing offers | `unknown-filter` |
+| `removeFilter(id)` on an id not held | `unknown-filter` |
+| `setClause(id)` on a chip with no filter menu | `no-filter-menu` |
+| the panel drawing a field with no values and no body | `undrawable-filter` |
+| `groups()` before the first load | `not-loaded` |
+
+The other 77 stay silent on purpose. A warning a reader cannot act on hides the
+one they can.
+
+Two things it had to learn. **`Report` is not `Issue`** — `validate.ts` owns
+that word, where it means a value a schema refused. And **a broken sink must
+not break the page**: an app's handler throwing is a second problem, so the
+report falls through to `console.warn` and is still said.
+
+`debugState()` landed with step 3b, and the example app now exposes
+`window.sherpa.source` so it can actually be called on a running page — the gap
+that let one wrong diagnosis run twice.
 
 ### Step 6 — `[x]` Split `filter-state.ts` (done)
 

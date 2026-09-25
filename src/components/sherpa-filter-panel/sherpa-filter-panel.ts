@@ -11,6 +11,7 @@ import {
   arranges, hasOwnBody, kindOf, picksOne, type FilterKind,
 } from '../../core/ui/filter-kind.js';
 import { menuFor, type FilterMenuItem } from '../../core/ui/filter-menu.js';
+import { report } from '../../core/data/report.js';
 import type { FieldCondition, FieldReading } from '../../core/data/filter-state.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-container/sherpa-container.js';
@@ -421,9 +422,19 @@ export class SherpaFilterPanel extends SherpaElement {
   /** One field: its header, its actions, and its run of value chips. */
   #drawField(def: PanelFilter, scope: string, isPresets: boolean): HTMLElement | null {
     const options = def.options ?? [];
-    /* A field with NO VALUES and NO BODY has nothing to draw at all.
-       TRAP T-the-panel-is-the-toolbar-in-a-column */
-    if (!options.length && !hasOwnBody(kindOf(def))) return null;
+    /* A field with NO VALUES and NO BODY has nothing to draw at all — so it
+       SAYS SO rather than leaving a gap in the scope. A preset is the one
+       legitimate case, and it never reaches here.
+       TRAP T-the-panel-is-the-toolbar-in-a-column
+       TRAP T-a-broken-assumption-reports */
+    if (!options.length && !hasOwnBody(kindOf(def))) {
+      report({
+        code: 'undrawable-filter',
+        message: 'This filter has no values and no body of its own, so it was skipped.',
+        at: { scope, id: def.id, kind: kindOf(def) },
+      });
+      return null;
+    }
 
     /* ONLY GROUP AND SORT stay as one chip with their own menu. They are not
        filters — they say HOW the rows are arranged — so they read as the two
