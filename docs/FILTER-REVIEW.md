@@ -27,9 +27,9 @@ Kept as the work lands. Budgets from §15.4.
 | 5 collapse sort/group state | ✅ | ≈ −50 | **+2** | two sync methods → one; `asc` written by ONE owner. Found the reported bug — see §4 |
 | — a group is a DATA concept | ✅ | — | **+95** | Will's ruling, §18. `source.groups()`; the grid is told, not the owner |
 | 5.5 error reporting | | ≈ +80 | — | `debugState()` lands with 3 |
-| 6 split `filter-state.ts` | | ≈ 0 | — | |
+| 6 split `filter-state.ts` | ✅ | ≈ 0 | **+25** | 548 → 324 + 93 + 156. The +25 is two file headers; the budget was right |
 | test harness §13.2 | ✅ | ≈ −400 | **−113** | `window.__mount()` in the harness page; the toolbar spec 2,799 → 2,600. The other specs' mounts are not mechanically alike |
-| **arc** | | **≈ −800** | **−55** | code only; docs counted separately |
+| **arc** | | **≈ −800** | **−30** | code only; docs counted separately |
 
 ---
 
@@ -748,10 +748,23 @@ Not a step of its own — see §14.5 for what each step above gains, and §14.6 
 the five rules. `debugState()` lands with step 3, and a closing sweep judges
 the remaining silent give-ups one at a time.
 
-### Step 6 — Split `filter-state.ts`
+### Step 6 — `[x]` Split `filter-state.ts` (done)
 
-547 lines doing three jobs: the state model and query building; how a filter
-reads in words and badges; `bindSelection`. Tidiness, no behaviour change.
+548 lines doing three jobs. Now three files, each with one:
+
+| file | lines | job |
+|---|---:|---|
+| `filter-state.ts` | 324 | the state model and query building — what a field IS doing |
+| `filter-face.ts` | 93 | what a control SHOWS for it — badge, value, tooltip |
+| `bind-selection.ts` | 156 | the read/draw/write loop that wires a control to a field |
+
+No behaviour change, and no re-export shim: the barrel names three sources now
+and `sherpa-quick-filter` imports `filterFace` from its own file. A shim would
+be a second door to the same thing, which is what this whole review is about.
+
+Seven TRAP sites moved with the code they explain. The DOM-free boundary needed
+no edit — it is keyed on the FOLDER, `src/core/data/**`, exactly so a new file
+is covered the moment it lands.
 
 ---
 

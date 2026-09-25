@@ -881,7 +881,7 @@ tears down every binding, listener and persister a view made.
 
 - Site: `src/core/browser/persist-view.ts`
 - Site: `src/core/data/data-source.ts`
-- Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/bind-selection.ts`
 - Site: `src/components/sherpa-layout-grid/grouped-grid.ts`
 
 ### T-steer-only-populate-means-chips
@@ -3069,11 +3069,12 @@ picked values on the right, its unpicked on the left.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-- Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/filter-face.ts`
 - Site: `src/data.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `test/unit/parity-sweep.test.mjs`
+- Site: `src/core/data/filter-state.ts`
 ### T-one-field-one-filter-menu
 
 A filter CHIP and a COLUMN HEADING ask the same question of the same field, so
@@ -3128,7 +3129,7 @@ binding went from 194 lines to 152.
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/data/data-source.ts`
-- Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/bind-selection.ts`
 - Site: `src/data.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
@@ -7531,7 +7532,7 @@ exists to prevent.
 
 `scope` defaults to `view`, so every existing binding is unchanged.
 
-- Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/bind-selection.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
 - Site: `examples/contexts/records.js`
@@ -7772,7 +7773,7 @@ only THAT conditions apply. The TOOLTIP spells out which:
 The accessible name stays the WORD, never the mark: a sign announces as
 nothing, and `fx` announces as noise.
 
-- Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/filter-face.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 
 ---
@@ -8486,7 +8487,7 @@ the filter's kind in another until `kindOf()` settled it. A word that names two
 axes will be read as the wrong one, and the reader will not know they did.
 
 - Site: `src/core/data/data-source.ts`
-- Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/bind-selection.ts`
 - Site: `test/unit/scope-registry.test.mjs`
 
 ### T-a-chip-knows-what-kind-it-is
@@ -11169,10 +11170,11 @@ keeps its badge and value label, so it reads as set while claiming to be off.
 that follows is what makes it read as unset.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/bind-selection.ts`
 - Site: `test/unit/bind-selection.test.mjs`
 - Site: `test/unit/field-selection.test.mjs`
 - Site: `test/unit/filter-state.test.mjs`
+- Site: `src/core/data/filter-state.ts`
 ### T-a-breakdown-pick-is-a-legend-pick
 
 Unticking a folded category in the "Other" breakdown menu did NOTHING to the

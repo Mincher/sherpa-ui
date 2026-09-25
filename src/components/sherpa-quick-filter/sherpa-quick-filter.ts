@@ -9,8 +9,9 @@ import {
   DEFAULT_OP, OP_TAKES, type FilterOp, type SortDirection, valueSet,
 } from '../../core/data/store.js';
 import {
-  fieldState, filterFace, type FieldCondition, type FilterFace, type FilterState,
+  fieldState, type FieldCondition, type FilterState,
 } from '../../core/data/filter-state.js';
+import { filterFace, type FilterFace } from '../../core/data/filter-face.js';
 import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
 import { arranges, FILTER_KINDS, type FilterKind } from '../../core/ui/filter-kind.js';
 import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';

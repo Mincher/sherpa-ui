@@ -203,21 +203,12 @@ export {
 export {
   fieldState,
   stateClause,
-  filterFace,
   /* A reading as a clause, for a control that holds its own field facts.
      TRAP T-the-field-type-decides-the-clause */
   readingClause,
-  /* The ONE mark a control wears when conditions apply, and the words behind
-     it. TRAP T-a-condition-badge-says-that-not-which */
-  CONDITION_BADGE,
-  spellConditions,
   /* A field whose picks are ENDS, not a list to tick.
      TRAP T-the-field-type-decides-the-clause */
   isRanged,
-  /* The read/draw/write loop ANY control over a field needs — a chip, a
-     column heading, a chart legend, a tab strip. None of them hears about
-     another: they read the same answer. TRAP T-one-field-one-filter-menu */
-  bindSelection,
   type FieldState,
   type ValueState,
   type ValueEntry,
@@ -226,8 +217,25 @@ export {
   type FieldType,
   type FieldReading,
   type FieldCondition,
+} from './core/data/filter-state.js';
+
+/* WHAT A CONTROL SHOWS for that state — the badge, the value, the tooltip.
+   TRAP T-a-condition-badge-says-that-not-which */
+export {
+  filterFace,
+  /* The ONE mark a control wears when conditions apply, and the words behind
+     it. */
+  CONDITION_BADGE,
+  spellConditions,
   type FilterFace,
+} from './core/data/filter-face.js';
+
+/* The read/draw/write loop ANY control over a field needs — a chip, a column
+   heading, a chart legend, a tab strip. None of them hears about another:
+   they read the same answer. TRAP T-one-field-one-filter-menu */
+export {
+  bindSelection,
   type Selector,
   type SelectionBinding,
   type BoundSelection,
-} from './core/data/filter-state.js';
+} from './core/data/bind-selection.js';
