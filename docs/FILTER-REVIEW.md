@@ -23,13 +23,13 @@ Kept as the work lands. Budgets from §15.4.
 | 3c-ii stop BORROWING menus | ✅ | ≈ −110 | **−45** | `menuFor()` is the one def→menu builder. Borrow machinery gone; the app stops scraping the bar's shadow root |
 | — 3 red tests that pre-dated it | ✅ | — | **+30** | a report is the whole answer; a `min(…,100%)` floor collapsed the bar chart to 35px; a test dispatched an event nothing emits |
 | 4 one field-row builder | ✅ | ≈ −250 | **−21** | the budget was wrong: 4b and 3c-ii had already taken the shared half. See §7 note |
-| 4c a record TIMESTAMP, and one Date filter | | ≈ +60 | — | buys the series composition in §9.5 |
+| 4c a record TIMESTAMP, and one Date filter | ✅ | ≈ +60 | **+41** | `store: { key, time }`; the source declares it a date; the header chip is "Date" over `timeField` |
 | 5 collapse sort/group state | ✅ | ≈ −50 | **+2** | two sync methods → one; `asc` written by ONE owner. Found the reported bug — see §4 |
 | — a group is a DATA concept | ✅ | — | **+95** | Will's ruling, §18. `source.groups()`; the grid is told, not the owner |
 | 5.5 error reporting | ✅ | ≈ +80 | **+118** | ONE channel, `report()` / `onReport()`; 5 host-facing give-ups converted; 8 tests |
 | 6 split `filter-state.ts` | ✅ | ≈ 0 | **+25** | 548 → 324 + 93 + 156. The +25 is two file headers; the budget was right |
 | test harness §13.2 | ✅ | ≈ −400 | **−113** | `window.__mount()` in the harness page; the toolbar spec 2,799 → 2,600. The other specs' mounts are not mechanically alike |
-| **arc** | | **≈ −800** | **+88** | code only; docs counted separately |
+| **arc** | | **≈ −800** | **+129** | code only; docs counted separately |
 
 ---
 

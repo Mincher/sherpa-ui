@@ -31,6 +31,7 @@ export interface LiveStoreOptions extends StoreOptions {
 /** Shared plumbing for a store fed by a connection — only about the wire. */
 abstract class LiveStore extends EventTarget implements Store {
   readonly key: string;
+  readonly time: string | undefined;
   protected readonly inner: ArrayStore;
   protected readonly options: LiveStoreOptions;
   #connected = false;
@@ -39,6 +40,7 @@ abstract class LiveStore extends EventTarget implements Store {
     super();
     this.options = options;
     this.key = options.key ?? 'id';
+    this.time = options.time;
     this.inner = options.into ?? new ArrayStore(options.rows ?? [], options);
     // The inner store's changes are THIS store's changes, so a DataSource
     // listens to one thing and never learns there are two.

@@ -171,6 +171,19 @@ export class DataSource extends EventTarget {
     };
     // FORCED: the rows changed under an identical ViewState.
     this.store.addEventListener('change', () => void this.load({ force: true }));
+    /* A RECORD'S TIME IS A DATE, said once, by whoever knows it — the store.
+       Nothing downstream has to know the dataset calls it `created`.
+       TRAP T-a-record-has-a-time-of-its-own */
+    if (this.store.time) this.declareField(this.store.time, { type: 'date' });
+  }
+
+  /**
+   * The field holding each record's TIME, or undefined when the store has
+   * none. A view's Date filter binds to THIS, so it filters any dataset.
+   * TRAP T-a-record-has-a-time-of-its-own
+   */
+  get timeField(): string | undefined {
+    return this.store.time;
   }
 
   /* ── State ─────────────────────────────────────────────────────────── */
@@ -565,6 +578,9 @@ export class DataSource extends EventTarget {
       parts: Object.fromEntries(this.#parts),
       scopes: Object.fromEntries(this.#scopes),
       fields: Object.fromEntries(this.#fields),
+      // Which field a Date filter narrows — or `null`, which explains one
+      // that narrows nothing. TRAP T-a-record-has-a-time-of-its-own
+      time: this.store.time ?? null,
       bound: [...this.#bound.values()].map((e) => ({
         rows: e.rows, readonly: e.readonly, steerOnly: e.steerOnly,
       })),

@@ -10,6 +10,9 @@ import { validate, ValidationError, type Issue, type StandardSchema } from './va
 export interface StoreOptions {
   /** The field holding each row's identity. Default `'id'`. */
   key?: string;
+  /** The field holding each row's TIME. No default.
+   *  TRAP T-a-record-has-a-time-of-its-own */
+  time?: string;
   /** Refuse rows the store WRITES that fail. TRAP T-schema-guard-belongs-at-the-store */
   schema?: StandardSchema;
   /** Cap rows, dropping OLDEST first. TRAP T-max-rows-is-oldest-out-by-insertion */
@@ -21,6 +24,7 @@ export interface StoreOptions {
 /** Shared plumbing. EventTarget so `change` is a real event a DataSource can subscribe to. */
 export abstract class BaseStore extends EventTarget implements Store {
   readonly key: string;
+  readonly time: string | undefined;
   /** The write guard, if the caller gave one. */
   protected readonly schema: StandardSchema | undefined;
   /** How many rows a READ checks. 0 = all of them. */
@@ -29,6 +33,7 @@ export abstract class BaseStore extends EventTarget implements Store {
   constructor(options: StoreOptions = {}) {
     super();
     this.key = options.key ?? 'id';
+    this.time = options.time;
     this.schema = options.schema;
     this.sampleSize = options.sample ?? 0;
   }

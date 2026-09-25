@@ -11355,6 +11355,50 @@ label, which is a value of nothing.
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `test/e2e/reforged-chart-legend.spec.ts`
 
+### T-a-record-has-a-time-of-its-own
+
+**Every record says WHEN it is from, the way it says WHO it is.** A store names
+both: `{ key: 'email', time: 'created' }`.
+
+Will, 2026-09-25: *"The view scope filters in the examples have a 'Created
+date' filter that targets the 'Created' field. This should just be a generic
+Date filter to filter all view data by a specific date or date range. This
+means that every data record needs a generic timestamp for this to work. It's
+useful for other reasons, too. It also allows all data to have a history of
+values."*
+
+Before this the VIEW's date chip only worked because the Records dataset
+happened to have a column called `created`. The header mapped
+`dateRange → 'created'` by hand, the chip was labelled "Created date", and the
+app declared `created` a date itself. Point a second dataset at the same header
+and the chip filtered nothing, silently.
+
+Now:
+
+| | |
+|---|---|
+| `StoreOptions.time` / `Store.time` | which field is the record's time. **No default** — a store with no time has none, rather than a guess |
+| `DataSource` | declares that field a date on construction, and exposes `timeField` |
+| `debugState().time` | the field, or `null` — which explains a Date filter that narrows nothing |
+| the header chip | "Date", bound to `source.timeField` |
+
+**No default is deliberate.** `'created'` would be the exact assumption this
+removes: a dataset whose records are stamped `occurredAt` would get a Date
+filter over a column it does not have, and no error.
+
+What it buys, unscheduled: a record with a known time can be ORDERED newest
+first without naming a column, COMPARED to itself (a metric's delta, a
+sparkline's series), and BOUNDED "as at" a date — which is what a history of
+values is. `FILTER-REVIEW.md` §7 step 4c and §19 carry the rest.
+
+- Site: `src/core/data/store.ts`
+- Site: `src/core/data/base-store.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `examples/contexts/records-data.js`
+- Site: `examples/contexts/records.js`
+- Site: `examples/contexts/global-filters.js`
+- Site: `test/unit/a-record-has-a-time-of-its-own.test.mjs`
+
 ### T-a-date-chip-names-its-field
 
 Two faults in the Records example's header date chip, both of which made it
@@ -11364,6 +11408,11 @@ look broken when the machinery underneath was fine.
 date" — because a reader cannot act on one that does not say which date.
 `Region` and `Customer` beside it both name their field; this one named its
 shape.
+
+**Superseded 2026-09-25 for the VIEW chip.** It is labelled "Date" now, because
+it filters the RECORD'S TIME rather than a column called `created` — see
+`T-a-record-has-a-time-of-its-own`. The rule still holds for a component-scope
+date chip over one named column.
 
 **Its calendar offered days the data does not have.** `globalFilters` defaulted
 `availableDates` to the last 90 days, while every `created` date in Records
@@ -11388,7 +11437,6 @@ next reader does not chase them again:
   reports nothing.
 
 - Site: `examples/contexts/global-filters.js`
-- Site: `examples/contexts/records.js`
 
 ### T-any-component-can-be-bound
 

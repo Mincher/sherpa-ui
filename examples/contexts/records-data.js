@@ -129,16 +129,22 @@ export const customerSchema = rules({
  * REJECTS rather than reading as empty, so this choice is made HERE
  * (`T-idb-is-the-only-real-local-store`).
  */
+/* WHEN each record is from, said beside WHO it is. The view's Date filter asks
+   about this field, so a Context that swaps its dataset keeps its date filter.
+   TRAP T-a-record-has-a-time-of-its-own */
+const TIME = 'created';
+
 export const customerStore = IdbStore.available
   ? new IdbStore({
     name: 'customers',
     database: 'sherpa-examples',
     key: 'email',
+    time: TIME,
     schema: customerSchema,
     indexes: ['status', 'plan', 'tier', 'region', 'owner'],
     version: 1,
   })
-  : new ArrayStore(customers, { key: 'email', schema: customerSchema });
+  : new ArrayStore(customers, { key: 'email', time: TIME, schema: customerSchema });
 
 /**
  * BUMP when `customers` changes, or a browser that already holds the rows keeps

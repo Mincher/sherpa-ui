@@ -40,7 +40,9 @@ export async function init(root, { session } = {}) {
   /* WHAT KIND each field is, said ONCE. The data layer decides what two picks
      on a number mean — this page does not, and no longer can.
      TRAP T-the-field-type-decides-the-clause */
-  for (const field of ['created', 'lastSeen']) source.declareField(field, { type: 'date' });
+  /* `created` is the store's TIME, so the source already declared it a date.
+     TRAP T-a-record-has-a-time-of-its-own */
+  source.declareField('lastSeen', { type: 'date' });
   for (const field of ['seats', 'spend', 'openTickets', 'health']) {
     source.declareField(field, { type: 'number' });
   }
@@ -155,10 +157,11 @@ export async function init(root, { session } = {}) {
        See global-filters.js. Options are DERIVED from the view definitions and
        the records, so neither can name something the data does not have.
        TRAP T-a-chip-filters-the-values-the-data-has. */
-    /* The dates the RECORDS carry — not the default last-90-days, which no
-       record in this set falls inside. TRAP T-a-date-chip-names-its-field */
+    /* The days the RECORDS carry, read off their TIME — not the default
+       last-90-days, which no record in this set falls inside.
+       TRAP T-a-record-has-a-time-of-its-own */
     filters: globalFilters(viewOptions(RECORDS_VIEWS, 'all'), regions, customerOrgs,
-      [...new Set(customers.map((c) => c.created))].sort()),
+      [...new Set(customers.map((c) => c[source.timeField]))].filter(Boolean).sort()),
     /* What the header's ADD chip offers. Without this the button was disabled
        and the reader could add NOTHING at view scope.
        TRAP T-a-bar-offers-only-what-its-scope-holds */
@@ -818,7 +821,9 @@ export async function init(root, { session } = {}) {
      `view` is absent on purpose: it is the saved-view SELECTOR, handled by
      `onViewPicked` below, and folding it in would filter by a view id.
      TRAP T-the-header-chips-must-reach-the-query. */
-  const HEADER_FIELDS = { customer: 'customer', region: 'region', dateRange: 'created' };
+  /* The Date chip filters the RECORD'S TIME, whatever this dataset calls it.
+     TRAP T-a-record-has-a-time-of-its-own */
+  const HEADER_FIELDS = { customer: 'customer', region: 'region', dateRange: source.timeField };
 
   /* A chip the reader ADDED is named for its own field, so the id IS the field.
      `view` still narrows nothing — it is the saved-view selector. */

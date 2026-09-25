@@ -121,6 +121,13 @@ export interface Store extends EventTarget {
   totalCount(options?: LoadOptions): Promise<number>;
   /** The field holding each row's identity. */
   readonly key: string;
+  /**
+   * The field holding each row's TIME — when the record is from. A view's
+   * Date filter asks about this, never about a column some dataset happens to
+   * call `created`. No default: a store with no time has none.
+   * TRAP T-a-record-has-a-time-of-its-own
+   */
+  readonly time?: string | undefined;
 }
 
 /** Fired after an insert, update or remove. A DataSource just RELOADS. */

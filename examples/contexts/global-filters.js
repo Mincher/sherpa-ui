@@ -75,10 +75,11 @@ export function globalFilters(views, regions = REGIONS, customers = CUSTOMERS, d
     },
     {
       id: 'dateRange',
-      /* "Created date", not "Date range": a chip names the FIELD it filters,
-         and a reader cannot act on a chip that does not say which date.
-         TRAP T-a-date-chip-names-its-field */
-      label: 'Created date',
+      /* "Date" — the RECORD'S time, whatever this dataset calls it. It used to
+         be "Created date", because it could only filter a column named
+         `created`; a view-scope filter must work over any dataset.
+         TRAP T-a-record-has-a-time-of-its-own */
+      label: 'Date',
       icon: 'calendar',
       kind: 'date',
       /* SINGLE by default, like every other calendar. The reader flips the
