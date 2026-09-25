@@ -227,7 +227,8 @@ export class SherpaMenu extends SherpaElement {
     const inCondition = this.mode === 'condition';
     btn.setAttribute('data-icon-start', inCondition ? 'list' : 'function');
     btn.setAttribute('aria-pressed', String(inCondition));
-    btn.setAttribute('aria-label', inCondition ? 'Pick from a list' : 'Use condition');
+    // Will's two names for the two modes of ONE system. TRAP T-one-condition-system
+    btn.setAttribute('aria-label', inCondition ? 'Default condition' : 'Custom condition');
   }
 
   set mode(next: 'select' | 'condition') {

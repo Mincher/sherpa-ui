@@ -480,7 +480,7 @@ export class SherpaFilterPanel extends SherpaElement {
     const name = def.label;
     head?.querySelector('.field-clear')?.setAttribute('aria-label', `Clear ${name}`);
     head?.querySelector('.field-conditional')
-      ?.setAttribute('aria-label', `Use a condition for ${name}`);
+      ?.setAttribute('aria-label', `Custom condition for ${name}`);
 
     const values = box.querySelector('.field-values') as HTMLElement | null;
 

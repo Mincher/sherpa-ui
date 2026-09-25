@@ -500,13 +500,18 @@ export class SherpaQuickFilter extends SherpaElement {
       return;
     }
     const menu = this.menu;
-    /* A CONDITION is an answer of a different kind, and it reads differently:
-       info, never the plain on-tint. TRAP T-a-conditioned-chip-reads-as-info */
-    /* ANSWERED rows, not merely present ones: a menu in condition mode always
-       holds one row, and an unanswered row is not a condition.
-       TRAP T-an-untouched-select-is-not-an-answer */
-    const conditioned = menu?.dataset?.['mode'] === 'condition' && this.#hasTypedAnswer();
+    /* A CUSTOM Condition Filter reads differently: info, never the plain
+       on-tint. ASKED of the state, not worked out from the menu's mode — the
+       fx badge reads the same answer, and the two used to disagree.
+       TRAP T-a-conditioned-chip-reads-as-info · TRAP T-one-condition-system */
+    const state = this.#state((menu?.values ?? []) as string[]);
+    const conditioned = state.condition === 'custom';
     this.toggleAttribute('data-conditioned', conditioned);
+    /* …and the BADGE from the same state, at the same moment. It was drawn only
+       once a reader touched the chip, so one answered by a typed condition from
+       the start wore its blue and not its fx. ONLY with a menu to read: on a
+       chip without one, `data-count` is the host's to set. */
+    if (menu) this.#syncBadge(filterFace(state));
 
     /* A TYPED condition is an answer, so a chip holding one is not empty —
        "Contains Ravi" filters, and painting it as "filtering nothing" is a

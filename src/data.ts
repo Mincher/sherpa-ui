@@ -219,6 +219,9 @@ export {
   type FieldType,
   type FieldReading,
   type FieldCondition,
+  /* Default or Custom — the one type every control reads.
+     TRAP T-one-condition-system */
+  type ConditionType,
 } from './core/data/filter-state.js';
 
 /* ONE CHANNEL for "your assumption was wrong" — a host routes it, silences it

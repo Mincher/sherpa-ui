@@ -1971,7 +1971,34 @@ the other — four of the nine filter bugs on 2026-09-24 were a composed field
 reading as unanswered for a tick in exactly that hand-off
 (`T-a-rebuilt-row-reads-empty-for-a-tick`).
 
-### 21.4 What to settle first
+### 21.4 Done — 2026-09-25
+
+The engine and the type landed; see `T-one-condition-system`.
+
+- **One answer shape.** `fieldState()` builds `state.rows` — ticks, a range and
+  a typed condition all as rows — and `stateClause` compiles only those,
+  through one `rowClause`. The three branches are gone. All 247 existing unit
+  tests passed on it before anything else changed.
+- **One type.** `state.condition` is `'default' | 'custom' | null`, and BOTH
+  the chip's info-blue and its `fx` badge read it. They disagreed before: a
+  typed condition in list mode wore `fx` without the blue, and one set at
+  startup wore the blue without `fx`.
+- **The words.** The menu's mode button and the panel's condition button say
+  "Custom condition" / "Default condition".
+
+**Settled, from §21.4's own questions, and how:** `picked` survives as the
+input shape — `setChipValues`, the legend and the saved views all speak it —
+and `fieldState` turns it into a row. So the saved-view format did not change
+at all. And Default and Custom stay two MODES of one menu, over one data shape.
+
+### 21.5 Still open
+
+**The public attributes.** `data-mode="select" | "condition"`,
+`data-conditional` and `data-conditions-only` keep their names. Renaming them
+breaks every host that writes them; it wants a decision, and a `fallbackAttr`
+alias if it goes ahead.
+
+### 21.6 What was to be settled first
 
 1. Whether `picked` survives as a convenience on the reading, or goes entirely.
    It is the shape `setChipValues`, the legend and the saved views all speak.

@@ -155,7 +155,7 @@ anatomy:
                   data-look: transparent
                   data-icon-start: function
                   aria-pressed: "false"
-                  aria-label: Use condition
+                  aria-label: Custom condition
               - el: sherpa-input-text
                 class: search
                 part: search
@@ -170,7 +170,7 @@ anatomy:
                 part: condition-rows
                 attrs:
                   role: group
-                  aria-label: Conditions
+                  aria-label: Custom conditions
               - el: sherpa-button
                 class: add-condition
                 part: add-condition

@@ -7879,7 +7879,7 @@ populated from carry over, should default to a placeholder 'Select…' label."
 present ones, because a menu in condition mode always holds one row.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/core/data/filter-state.ts`
 
 ---
 
@@ -9390,11 +9390,16 @@ while it was filtering two thirds of the rows away. Will saw exactly that:
 So ON is one thing and WHAT KIND OF ANSWER is another, and they use different
 channels:
 
-| | fill | edge | badge | weight |
-|---|---|---|---|---|
-| off | default white | grey | — | 400 |
-| active | active purple | active purple | count | 500 |
-| conditioned | active purple | **info blue** | `fx` | 500 |
+| | fill | edge | badge |
+|---|---|---|---|
+| off | default white | grey | — |
+| active — a Default Condition Filter | active purple | active purple | count |
+| conditioned — a Custom Condition Filter | active purple | **info blue** | `fx` |
+
+**Which one a chip is, is the STATE's to say** — `state.condition`, see
+`T-one-condition-system`. The chip used to work it out from its menu's MODE
+while the badge read the state, so a typed condition in list mode wore `fx`
+and no blue.
 
 The same blue runs through to the cells: a `mark.match` in the grid is
 `--sherpa-style-info-border-base-1`, not the brand purple, so a reader follows
@@ -11452,6 +11457,63 @@ export, and 60 of 297 came out blank, cut off, or wrong — a section banner
 type's line describing the one below it. Every line gets a human pass.
 
 - Site: `scripts/code-map.mjs`
+
+### T-one-condition-system
+
+**Every answer a filter can have is condition rows, compiled by one function,
+and its TYPE — Default or Custom — is decided once.**
+
+Will, 2026-09-25: *"Default filter modes are also technically conditional
+filters… So we can use the same engine regardless of filtering mode… We should
+call it a Custom Condition Filter. Default is a Default Condition Filter. We
+use the blue info styling to represent active Custom Condition Filters.
+Bringing everything into the same condition composition system will help us
+deal with any discrepancies and bugs."*
+
+**There were three answer shapes, not two** — ticked picks, ONE typed
+condition (`op` + `text`), and a chain of rows — and `stateClause` had a
+branch for each. The bar sends all of them at once, so each reader of the state
+had to guess which counted.
+
+`fieldState()` now builds **`state.rows`** — the whole answer as rows:
+
+| the reader | becomes |
+|---|---|
+| ticked one value | `{ op: 'eq', picked: [x] }` — EQUALS X |
+| ticked several in ONE field | `{ op: 'eq', picked: [x, y] }` — EQUALS X **OR** EQUALS Y, so `in` |
+| dragged a range | `{ op: 'between', picked: [lo, hi] }` |
+| typed a condition | `{ op, text }` |
+| built a chain | the rows, as they are |
+
+`stateClause` compiles `rows` and nothing else, through one `rowClause`. The
+three branches are gone.
+
+**`state.condition`** is `'default'`, `'custom'` or `null`. Default is the
+field's own body answering with the default op — ticks, a slider, a day.
+Custom is anything else: a named op, typed text, or rows. **Both** the chip's
+info-blue and its `fx` badge read it. They used to decide it two ways — the
+blue from the MENU's mode, the badge from the state — so a typed condition in
+list mode wore `fx` and no blue. Fixing that exposed the opposite: a chip
+answered by a typed condition from the start drew its blue and never its fx,
+because the badge was drawn only once a reader touched the chip. Both are drawn
+from one state, at one moment, now — and only for a chip with a menu, because
+on a chip without one `data-count` is the host's to set.
+
+Proved first: all 247 existing unit tests passed on the single compiler before
+anything read the new fields.
+
+**Not renamed yet: the public attributes.** `data-mode="select" | "condition"`,
+`data-conditional` and `data-conditions-only` on `sherpa-menu` keep their
+names; the reader-facing words are Default and Custom condition. Renaming a
+public attribute breaks every host that writes it, so that is its own decision.
+
+- Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/filter-face.ts`
+- Site: `src/data.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `test/unit/one-condition-system.test.mjs`
+- Site: `test/e2e/reforged-one-condition-system.spec.ts`
 
 ### T-up-is-open-down-is-closed
 
