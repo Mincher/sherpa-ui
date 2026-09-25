@@ -83,6 +83,12 @@ export interface DataChangeDetail extends LoadResult {
   state: ViewState;
 }
 
+/**
+ * The scope ABOVE every component — the same word as `reach: 'view'`. Named
+ * once, so no caller spells it twice. TRAP T-up-is-open-down-is-closed
+ */
+export const VIEW_SCOPE = 'view';
+
 /** The events a bound component may send UP. TRAP T-steering-events-are-a-closed-list */
 const STEERING_EVENTS = [
   'sort-change',
@@ -553,6 +559,82 @@ export class DataSource extends EventTarget {
     return null;
   }
 
+  /* ── What a scope MAY hold ─────────────────────────────────────────────
+   * Will, 2026-09-25: "Any component field can be applied to the view scope
+   * as a filter. Only component fields can be added to that component's scoped
+   * filters." And: "A filter can't exist in both the view and component scope
+   * so adding to one removes it from the other. However, the same filter can
+   * exist across multiple component scopes."
+   * TRAP T-up-is-open-down-is-closed */
+
+  /** What each COMPONENT scope has — its own fields, not what it holds now. */
+  #offers = new Map<string, string[]>();
+
+  /** Say which fields a component scope HAS. The view needs none: up is open. */
+  offer(name: string, fields: readonly string[]): void {
+    const next = [...new Set(fields)];
+    const before = this.#offers.get(name);
+    if (before && before.length === next.length && before.every((f, i) => f === next[i])) return;
+    if (next.length) this.#offers.set(name, next);
+    else this.#offers.delete(name);
+    this.dispatchEvent(new CustomEvent('scope-change', { detail: { scope: name } }));
+  }
+
+  /**
+   * The fields a scope may hold. A COMPONENT's are its own; the VIEW's are
+   * every component's, because any field may be raised to narrow everything.
+   */
+  fields(name: string): string[] {
+    if (name === VIEW_SCOPE) return [...new Set([...this.#offers.values()].flat())];
+    return [...(this.#offers.get(name) ?? [])];
+  }
+
+  /** May this scope hold this field? Up is open; down is closed. */
+  canHold(name: string, field: string): boolean {
+    return name === VIEW_SCOPE || (this.#offers.get(name) ?? []).includes(field);
+  }
+
+  /**
+   * Move a filter between scopes — ONE call, because the removal is not
+   * optional. Two `hold()`s could be interrupted between them, and a field
+   * filtered in both the view and a component has nobody owning it.
+   *
+   * RAISED to the view, it leaves EVERY component: the view narrows them all.
+   * LOWERED, it leaves the view and lands in one component. Returns whether
+   * it moved; a component that does not have the field refuses, and says so.
+   */
+  move(field: string, from: string, to: string): boolean {
+    if (!this.canHold(to, field)) {
+      report({
+        code: 'scope-refused',
+        message: 'move: a component scope may hold only its own fields.',
+        at: { field, from, to, offers: (this.#offers.get(to) ?? []).join(',') },
+      });
+      return false;
+    }
+    const touched = new Set<string>([to]);
+    const drop = (name: string): void => {
+      const held = this.#scopes.get(name);
+      if (!held?.includes(field)) return;
+      const next = held.filter((f) => f !== field);
+      if (next.length) this.#scopes.set(name, next);
+      else this.#scopes.delete(name);
+      touched.add(name);
+    };
+    if (to === VIEW_SCOPE) {
+      for (const name of [...this.#scopes.keys()]) if (name !== VIEW_SCOPE) drop(name);
+    } else {
+      drop(VIEW_SCOPE);
+      if (from !== VIEW_SCOPE && from !== to) drop(from);
+    }
+    const into = this.#scopes.get(to) ?? [];
+    if (!into.includes(field)) this.#scopes.set(to, [...into, field]);
+    // ONE event, naming every scope that changed — a listener never sees the
+    // field in neither place, or in both.
+    this.dispatchEvent(new CustomEvent('scope-change', { detail: { scopes: [...touched] } }));
+    return true;
+  }
+
   /**
    * EVERYTHING THIS SOURCE THINKS IS TRUE, in one object.
    *
@@ -577,6 +659,7 @@ export class DataSource extends EventTarget {
       ),
       parts: Object.fromEntries(this.#parts),
       scopes: Object.fromEntries(this.#scopes),
+      offers: Object.fromEntries(this.#offers),
       fields: Object.fromEntries(this.#fields),
       // Which field a Date filter narrows — or `null`, which explains one
       // that narrows nothing. TRAP T-a-record-has-a-time-of-its-own

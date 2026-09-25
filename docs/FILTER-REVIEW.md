@@ -22,6 +22,7 @@ Kept as the work lands. Budgets from §15.4.
 | 4b-ii the GRID uses them too | ✅ | ≈ −60 | **−57** | 13 direct reads moved; two grid templates and 81 CSS lines gone |
 | 3c-ii stop BORROWING menus | ✅ | ≈ −110 | **−45** | `menuFor()` is the one def→menu builder. Borrow machinery gone; the app stops scraping the bar's shadow root |
 | — 3 red tests that pre-dated it | ✅ | — | **+30** | a report is the whole answer; a `min(…,100%)` floor collapsed the bar chart to 35px; a test dispatched an event nothing emits |
+| — the scope rules | ✅ | — | **+83** | up open, down closed, view/component exclusive. `offer`/`fields`/`canHold`/`move`; the header offers 11 fields, not 4 |
 | 4 one field-row builder | ✅ | ≈ −250 | **−21** | the budget was wrong: 4b and 3c-ii had already taken the shared half. See §7 note |
 | 4c a record TIMESTAMP, and one Date filter | ✅ | ≈ +60 | **+41** | `store: { key, time }`; the source declares it a date; the header chip is "Date" over `timeField` |
 | 5 collapse sort/group state | ✅ | ≈ −50 | **+2** | two sync methods → one; `asc` written by ONE owner. Found the reported bug — see §4 |
@@ -29,7 +30,7 @@ Kept as the work lands. Budgets from §15.4.
 | 5.5 error reporting | ✅ | ≈ +80 | **+118** | ONE channel, `report()` / `onReport()`; 5 host-facing give-ups converted; 8 tests |
 | 6 split `filter-state.ts` | ✅ | ≈ 0 | **+25** | 548 → 324 + 93 + 156. The +25 is two file headers; the budget was right |
 | test harness §13.2 | ✅ | ≈ −400 | **−113** | `window.__mount()` in the harness page; the toolbar spec 2,799 → 2,600. The other specs' mounts are not mechanically alike |
-| **arc** | | **≈ −800** | **+129** | code only; docs counted separately |
+| **arc** | | **≈ −800** | **+212** | code only; docs counted separately |
 
 ---
 
@@ -432,6 +433,17 @@ fields(scope)               what this component HAS — the down-is-closed rule
 canHold(scope, field)       scope === 'view' || fields(scope).includes(field)
 move(field, from, to)       one call, because the removal is not optional
 ```
+
+**DONE 2026-09-25** — `offer(name, fields)` / `fields(name)` / `canHold(name,
+field)` / `move(field, from, to)`, with `VIEW_SCOPE` exported and nine unit
+tests, one per rule. Measured live: the header's Add list went from 4
+hand-written fields to 11 — every grid field it does not hold — and raising
+Status takes it out of the grid's scope while the grid chip draws greyed.
+`T-up-is-open-down-is-closed`.
+
+**Still open:** no UI gesture calls `move()` yet — raising goes through the
+header's own Add and `supersede()`, and the registry is TOLD the result. And the
+view's Add list does not yet MARK where each field currently lives.
 
 `move()` matters. "Add to view" and "remove from the data bar" are one gesture
 and two writes, and a UI that does them separately is a UI that can be

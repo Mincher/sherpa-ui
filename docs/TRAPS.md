@@ -5259,9 +5259,9 @@ future caller's mistake visible as nothing drawn, rather than as a chip that
 steers one arbitrary component.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `examples/contexts/global-filters.js`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+- Site: `examples/contexts/records.js`
 
 ### T-a-bar-offers-only-what-its-scope-holds
 
@@ -11217,7 +11217,6 @@ The shape to remember: a comparison duplicated between the query and the UI is
 a contract with no gate on it, and it only breaks on the return journey — the
 outbound path works, which is what makes it hard to see.
 
-- Site: `examples/contexts/global-filters.js`
 - Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
@@ -11354,6 +11353,55 @@ label, which is a value of nothing.
 
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `test/e2e/reforged-chart-legend.spec.ts`
+
+### T-up-is-open-down-is-closed
+
+What may be filtered WHERE. Will, 2026-09-25:
+
+> *"Any component field can be applied to the view scope as a filter. Only
+> component fields can be added to that component's scoped filters."*
+>
+> *"A filter can't exist in both the view and component scope so adding to one
+> removes it from the other. However, the same filter can exist across
+> multiple component scopes."*
+
+Four rules, and they are not symmetric:
+
+| | |
+|---|---|
+| **UP is open** | the view may hold any field ANY component has |
+| **DOWN is closed** | a component may hold only its OWN fields |
+| **VIEW / COMPONENT exclusive** | raising a filter takes it out of EVERY component |
+| **COMPONENT / COMPONENT not** | two grids may both filter `owner` |
+
+The registry needed a second fact to say it. `hold()` records what a scope is
+filtering NOW; `offer(name, fields)` records what a component HAS. They are
+different questions, and answering "may it hold this?" from "is it holding
+this?" would forbid every first filter.
+
+| | |
+|---|---|
+| `offer(name, fields)` | a component's own fields. The view needs none |
+| `fields(name)` | its own, or for the view the union of every component's |
+| `canHold(name, field)` | `name === VIEW_SCOPE` or the component has it |
+| `move(field, from, to)` | ONE call, ONE `scope-change` naming every scope it touched |
+
+**`move()` is one call because the removal is not optional.** Two `hold()`s
+can be interrupted between them, and a field filtered in both the view and a
+component has nobody owning it. Its single event means no listener ever sees
+the field in both places, or in neither.
+
+**A refusal is not half a move.** A component asked to hold a field it does
+not have changes NOTHING and reports `scope-refused` — see
+`T-a-broken-assumption-reports`.
+
+`VIEW_SCOPE` is `'view'`, the same word as `reach: 'view'`, exported so no
+caller spells it twice.
+
+- Site: `src/core/data/data-source.ts`
+- Site: `src/data.ts`
+- Site: `test/unit/up-is-open-down-is-closed.test.mjs`
+- Site: `examples/contexts/records.js`
 
 ### T-a-record-has-a-time-of-its-own
 

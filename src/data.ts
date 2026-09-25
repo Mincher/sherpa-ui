@@ -94,6 +94,8 @@ export {
 } from './core/browser/view-sync.js';
 export {
   DataSource,
+  /* The scope above every component. TRAP T-up-is-open-down-is-closed */
+  VIEW_SCOPE,
   type BindOptions,
   type DataChangeDetail,
   type DataSourceOptions,

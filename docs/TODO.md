@@ -341,9 +341,11 @@ that, or the reader is punished for tidying up.
 - The panel draws Customer and Region from the HEADER bar today and hides the
   chip on its own bar. A promoted field joins them, so the panel's `STAYS` set
   and the scope a field is drawn under must both follow the move.
-- A field in `globalAvailable` already exists at view scope. Promoting the
-  Status chip must not give the header TWO Status chips — the add has to
-  consume the available entry, exactly as the Add button does.
+- A field the header's Add list offers already exists at view scope. Promoting
+  the Status chip must not give the header TWO Status chips — the add has to
+  consume the available entry, exactly as the Add button does. The list is
+  `source.fields(VIEW_SCOPE)` now (`T-up-is-open-down-is-closed`), and
+  `source.move()` is the one call that does the promotion.
 
 The reverse trip ("send back down") is not asked for. Leave it until it is.
 
