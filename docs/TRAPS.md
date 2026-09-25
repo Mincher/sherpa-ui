@@ -9014,6 +9014,52 @@ element serves a chip and a panel.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
+### T-a-percentage-floor-needs-a-definite-parent
+
+`minmax(min(var(--_plot-height), 100%), 1fr)` in `sherpa-barchart.css` reads as
+"180px, but yield when the host is shorter". In a host with NO height it
+collapses the plot to nothing.
+
+A percentage inside a track sizing function resolves against the grid
+container's block size. When that size is indefinite — the normal case for a
+chart dropped into a page — the percentage cannot resolve, the `min()` falls to
+zero, and the 180px floor is gone.
+
+Measured: a `sherpa-barchart` with only `inline-size: 400px` set was **35px
+tall**, plot 23px, bars 13px. The only test that caught it was a TOOLTIP test,
+which failed on "the tip sits above the bar" because there was no room above
+the bar. Nothing in the chart suite noticed the chart had no height.
+
+The floor is written bare. A host shorter than the floor overflows, which is
+visible and was the behaviour for the chart's whole life before this; a chart
+with no height at all is neither.
+
+- Site: `src/components/sherpa-barchart/sherpa-barchart.css`
+- Site: `test/e2e/reforged-chart-tooltips.spec.ts`
+
+### T-a-filter-report-is-the-whole-answer
+
+`quick-filter-change` is a control saying what it now filters by — ALL of it,
+not a delta. A field it answered last time and does not name now has been
+turned off, and the source clears it.
+
+`apply()` alone cannot do this: it walks the readings it was given, so
+`apply({})` changed nothing. Two tests caught it —
+
+    chips({})   →  rows 1 of 8, and `data-filter-fields` still "plan region"
+
+— a reader who cleared every chip and watched the table stay filtered.
+
+The clearing is per BOUND COMPONENT. `#bound` remembers the field set each
+control last reported, so two bars over one source each clear only their own
+fields; a view bar reporting three fields never wipes the grid bar's two.
+
+The alternative — clearing every field the source holds — is the bug this
+avoids, and it only shows up with two controls on one page.
+
+- Site: `src/core/data/data-source.ts`
+- Site: `test/e2e/reforged-data-source.spec.ts`
+
 ### T-a-panel-builds-its-own-menus
 
 A second view of a field builds its OWN `<sherpa-menu>`. It never takes the

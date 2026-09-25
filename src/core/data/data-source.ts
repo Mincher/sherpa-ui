@@ -111,6 +111,9 @@ export class DataSource extends EventTarget {
       rows: 'page' | 'all';
       /** The rows array last handed to this component — see `#push`. */
       lastRows?: readonly Row[];
+      /** The fields this component answered LAST time it reported.
+       *  TRAP T-a-filter-report-is-the-whole-answer */
+      answered?: Set<string>;
     }
   >();
   #result: LoadResult = { rows: [], total: 0 };
@@ -797,7 +800,17 @@ export class DataSource extends EventTarget {
         const bar = event.currentTarget as EventTarget & {
           readings?: Record<string, FieldReading>;
         } | null;
-        this.apply(bar?.readings ?? readingsOf(detail['values']));
+        const readings = bar?.readings ?? readingsOf(detail['values']);
+        /* A REPORT IS THE WHOLE ANSWER. A field this control answered before
+           and does not name now is a field it has stopped filtering by, so it
+           is cleared — its OWN fields only, never another control's.
+           TRAP T-a-filter-report-is-the-whole-answer */
+        const bind = this.#bound.get(event.currentTarget as Populatable);
+        for (const field of bind?.answered ?? []) {
+          if (!(field in readings)) this.select(field, []);
+        }
+        if (bind) bind.answered = new Set(Object.keys(readings));
+        this.apply(readings);
         return;
       }
       case 'filter-change': {

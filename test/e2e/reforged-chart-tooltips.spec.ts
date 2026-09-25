@@ -64,6 +64,9 @@ test('the shared tip rules resolve: anchored, flippable, hidden until hover', as
   expect(r.value).toBe('42');
 });
 
+/* This test is also the only guard on the chart HAVING A HEIGHT: a plot floor
+   that collapses leaves no room above the bar.
+   TRAP T-a-percentage-floor-needs-a-definite-parent */
 test('hovering a bar shows its tip ABOVE the bar, with a gap', async ({ page }) => {
   await page.evaluate(async () => {
     const el = document.createElement('sherpa-barchart') as HTMLElement & {

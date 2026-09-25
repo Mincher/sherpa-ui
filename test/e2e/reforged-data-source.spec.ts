@@ -385,6 +385,7 @@ test('source: unbind stops both halves', async ({ page }) => {
   expect(got.bound).toBe(0);
 });
 
+/* An empty report CLEARS. TRAP T-a-filter-report-is-the-whole-answer */
 test('source: quick-filter chips become a real filter — OR within a chip, AND across', async ({ page }) => {
   const got = await page.evaluate(async (data) => {
     const { ArrayStore, DataSource } = await import('/dist/index.js');

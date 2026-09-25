@@ -51,11 +51,14 @@ test('panel mode survives a reload, in both directions', async ({ page }) => {
     };
   });
 
-  // And CLOSING it is remembered too. The header is in the panel's SHADOW root.
+  /* And CLOSING it is remembered too. The door is `.to-toolbars` — the sidebar
+     button in the panel's header, which reports `filter-panel-close`. The
+     header itself has no X: an X says "gone", and this switches back to the
+     toolbars. */
   await page.evaluate(() => {
     const p = document.querySelector('#filter-panel') as HTMLElement & { shadowRoot: ShadowRoot };
-    p.shadowRoot.querySelector('.head')!
-      .dispatchEvent(new CustomEvent('header-dismiss', { bubbles: true, composed: true }));
+    p.shadowRoot.querySelector('.to-toolbars')!
+      .dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
   });
   await page.waitForTimeout(400);
   await page.reload();
