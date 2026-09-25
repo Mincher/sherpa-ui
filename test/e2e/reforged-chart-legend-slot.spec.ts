@@ -114,6 +114,46 @@ for (const tag of CHARTS) {
   });
 }
 
+// The x-axis ROW, not `.chart-body`: the body shrank and its row overflowed it,
+// so a body-box check passed while the labels sat on the legend.
+// TRAP T-a-percentage-floor-needs-a-definite-parent
+test('sherpa-barchart: a SHORT host shrinks the plot; an unsized one keeps 180px', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const measure = async (blockSize: string) => {
+      const box = document.createElement('div');
+      box.style.cssText = 'inline-size:600px';
+      const chart = document.createElement('sherpa-barchart') as HTMLElement & { rendered?: Promise<void>; populate(d: unknown): void };
+      chart.setAttribute('data-legend', 'horizontal');
+      chart.style.blockSize = blockSize;
+      const legend = document.createElement('sherpa-chart-legend') as HTMLElement & { rendered?: Promise<void>; populate(d: unknown): void };
+      legend.setAttribute('slot', 'legend');
+      legend.setAttribute('data-orientation', 'horizontal');
+      chart.appendChild(legend);
+      box.appendChild(chart);
+      root.appendChild(box);
+      await chart.rendered;
+      await legend.rendered;
+      chart.populate([{ label: 'a', value: 1 }, { label: 'b', value: 2 }]);
+      legend.populate([{ label: 'Alpha' }, { label: 'Beta' }]);
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      const sr = chart.shadowRoot!;
+      return {
+        plot: Math.round(sr.querySelector('.plot')!.getBoundingClientRect().height),
+        axisBottom: sr.querySelector('.x-axis-row')!.getBoundingClientRect().bottom,
+        legendTop: legend.getBoundingClientRect().top,
+      };
+    };
+    // 220px is the Records card's host: less than the 180px plot + axis + legend.
+    return { short: await measure('220px'), unsized: await measure('') };
+  });
+  expect(r.short.axisBottom).toBeLessThanOrEqual(r.short.legendTop);
+  expect(r.short.plot).toBeLessThan(180);
+  expect(r.unsized.plot).toBe(180);
+  expect(r.unsized.axisBottom).toBeLessThanOrEqual(r.unsized.legendTop);
+});
+
 test('the split is declared on the CHART, not read from the legend', async ({ page }) => {
   // A guard against the bug this replaced: `:host(:has(…))` does not parse, so a
   // chart that tried to read the legend's own data-orientation got NO rule at

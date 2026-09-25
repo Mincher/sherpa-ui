@@ -9030,12 +9030,21 @@ tall**, plot 23px, bars 13px. The only test that caught it was a TOOLTIP test,
 which failed on "the tip sits above the bar" because there was no room above
 the bar. Nothing in the chart suite noticed the chart had no height.
 
-The floor is written bare. A host shorter than the floor overflows, which is
-visible and was the behaviour for the chart's whole life before this; a chart
-with no height at all is neither.
+A BARE floor is wrong too. It cannot shrink, so the Records card (225px host,
+one row shorter than the Dashboard's) drew its x-axis labels over the legend:
+the `.chart-body` box shrank to 145px, but its 180px row overflowed it.
+
+The fix is a flex BASIS, not a track floor. `.chart-body` takes
+`flex: 1 1 <plot + x-axis row>` and rows `minmax(0, 1fr) auto`. A basis is the
+natural size: an unsized host gets it in full, a short host shrinks it, a tall
+one grows it. Measured the same in Chromium, Firefox and WebKit.
+
+A grid item has no flex basis, so the VERTICAL-legend mode (the host is a grid)
+keeps the bare floor. Without it, that chart falls to a 3px plot.
 
 - Site: `src/components/sherpa-barchart/sherpa-barchart.css`
 - Site: `test/e2e/reforged-chart-tooltips.spec.ts`
+- Site: `test/e2e/reforged-chart-legend-slot.spec.ts`
 
 ### T-a-filter-report-is-the-whole-answer
 

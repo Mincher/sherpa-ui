@@ -14,7 +14,7 @@
   flex-direction: column;
   gap: var(--sherpa-display-mode-space-sm, 12px);
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-  /* The plot's MINIMUM height, not its fixed one — see .chart-body. */
+  /* The plot's NATURAL height, not a floor — see .chart-body. */
   --_plot-height: 180px;
   /* Fill a sized parent; keep natural height in an unsized one. */
   min-block-size: 0;
@@ -48,9 +48,11 @@
   grid-column: 1 / -1;
   grid-row: 1;
 }
+/* A grid item has no flex basis, so beside a vertical legend the floor is a track. */
 :host([data-legend="vertical"]) .chart-body {
   grid-column: 1;
   grid-row: 2;
+  grid-template-rows: minmax(var(--_plot-height), 1fr) auto;
 }
 :host([data-legend="vertical"]) ::slotted([slot="legend"]) {
   grid-column: 2;
@@ -120,7 +122,7 @@
   display: flex;
   /* MUST match `.bars` gap. */
   gap: var(--sherpa-display-mode-space-xs, 8px);
-  margin-block-start: var(--sherpa-display-mode-space-2xs, 4px);
+  margin-block-start: var(--sherpa-display-mode-space-2xs, 4px); /* also in .chart-body's flex basis */
 }
 
 /* Figma Data Field: translucent fill, solid 1px stroke in the same series hue. */
@@ -198,14 +200,12 @@
 .chart-body {
   display: grid;
   grid-template-columns: auto auto minmax(0, 1fr);
-  /* `minmax(min, 1fr)`, not a fixed track: the plot row grows to fill a sized
-     host and floors at --_plot-height; in an unsized host 1fr resolves to that
-     minimum. */
-  /* A BARE `--_plot-height` floor. `min(…, 100%)` looks like the safer form
-     and silently collapses the chart to 35px in an unsized host.
+  grid-template-rows: minmax(0, 1fr) auto;
+  /* --_plot-height is a flex BASIS, not a track floor: it shrinks in a short
+     card and holds in an unsized host. The addend is the x-axis row — MUST
+     match its margin and label line-height.
      TRAP T-a-percentage-floor-needs-a-definite-parent */
-  grid-template-rows: minmax(var(--_plot-height), 1fr) auto;
-  flex: 1 1 auto;
+  flex: 1 1 calc(var(--_plot-height) + var(--sherpa-display-mode-space-2xs, 4px) + var(--sherpa-theme-content-line-height-small, 16px));
   min-block-size: 0;
   /* NO column gap: the axis LINE is the y-axis box's trailing border, so a gap
      floats it away from the plot. Breathing room lives in .y-axis's padding. */
