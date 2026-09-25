@@ -603,6 +603,8 @@ host's. That reads like an inconsistency and is a platform limit.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/e2e/reforged-data-grid.spec.ts`
 
 ### T-projected-slot-content-crosses-two-shadow-boundaries
 
@@ -616,6 +618,7 @@ body: it would have nothing to project into.
 TRAP T-a-menu-owns-its-own-bodies
 
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
 ### T-range-switch-swaps-not-rebuilds
 
@@ -648,6 +651,7 @@ template.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 
 ---
 
@@ -1453,6 +1457,9 @@ calendar.
 
 - Site: `src/core/data/store.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
 
 ### T-dropped-rows-must-be-countable
 
@@ -1822,6 +1829,7 @@ asked it anything.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `test/e2e/reforged-data-grid.spec.ts`
 
 ### T-grid-number-clause-must-coerce
 
@@ -3109,7 +3117,6 @@ ready clause, and stripping only the picks let the clause ride in anyway.
 one field have nothing to keep in step once both read `selection(field)`. The
 binding went from 194 lines to 152.
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
@@ -9328,6 +9335,7 @@ bounds first and drops the flag second, because the restore re-sets it.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-slider/sherpa-slider.ts`
+- Site: `test/e2e/reforged-data-grid.spec.ts`
 
 ### T-a-default-is-not-an-override
 

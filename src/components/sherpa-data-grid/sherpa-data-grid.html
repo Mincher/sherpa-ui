@@ -167,34 +167,7 @@
     <sherpa-menu slot="menu" data-commit></sherpa-menu>
   </template>
 
-  <!-- A TEXT column has NO body of its own: it is the sherpa-menu FILTER
-       variant, the same menu a filter chip opens for the same field. The
-       condition dropdown and its text box live in that menu's template; the
-       rows below are this column's own values.
-       TRAP T-one-field-one-filter-menu -->
-  <!-- The Range switch: the first row of a number or date filter menu. It flips
-       what the rows below it are. -->
-  <template class="head-range-tpl">
-    <div class="head-filter-range" data-row>
-      <sherpa-switch class="head-filter-range-switch" data-type="simple"></sherpa-switch>
-      <span class="head-filter-range-label">Range</span>
-    </div>
-  </template>
 
-  <!-- A NUMBER column's filter body. Both shapes exist from the start and CSS
-       reveals one, so flipping Range keeps what was typed on the other side.
-       "between" is the RANGE mode, not a seventh operator. -->
-  <template class="head-number-filter-tpl">
-    <div class="head-filter-body">
-      <select class="head-filter-op" aria-label="Condition"><option></option></select>
-      <input class="head-filter-value head-filter-num" type="number"
-             inputmode="decimal" aria-label="Value" placeholder="Value" />
-      <!-- Its ends are the column's real min and max, computed from the rows —
-           see #addColumnFilter. Unbounded it would be a slider over 0..100. -->
-      <sherpa-slider class="head-filter-slider" data-type="range"
-                     data-show-value></sherpa-slider>
-    </div>
-  </template>
 
   <!-- `data-embedded` makes the calendar sit in the menu card rather than float
        as its own popover; JS writes `data-type="range"` when Range is on. -->

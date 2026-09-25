@@ -67,6 +67,10 @@ export class SherpaMenu extends SherpaElement {
     'data-min': { type: 'string', kind: 'style' },
     'data-max': { type: 'string', kind: 'style' },
     'data-step': { type: 'string', kind: 'style' },
+    /* A HELD range's two ends, so a rebuilt heading does not forget itself.
+       TRAP T-range-switch-swaps-not-rebuilds */
+    'data-from': { type: 'string', kind: 'style' },
+    'data-to': { type: 'string', kind: 'style' },
     /* The days a DATE body may pick. A set, not a span. */
     'data-available': { type: 'string', kind: 'style' },
     /* The HOST pinned `data-commit`, so flipping Range must not move it. A
@@ -155,6 +159,7 @@ export class SherpaMenu extends SherpaElement {
     /* THE MENU OWNS ITS RANGE SWITCH. Both hosts had one, spelled differently,
        listened for separately. TRAP T-a-menu-owns-its-own-bodies */
     this.$('.body-range-switch')?.addEventListener('change', this.#onRangeSwitch);
+    this.$('.body-op')?.addEventListener('change', this.#onBodyOp);
     this.addEventListener('click', this.#onClick);
     this.$('.apply')?.addEventListener('click', this.#onApply);
     this.$('.cancel')?.addEventListener('click', this.#onCancel);
@@ -225,6 +230,17 @@ export class SherpaMenu extends SherpaElement {
     this.dataset['mode'] = next;
     this.#syncModeButton();
   }
+
+  /** Drawn once — a re-populate would lose what the reader picked. */
+  #opsDrawn = false;
+
+  /** The body's operator changed. */
+  #onBodyOp = (event: Event): void => {
+    const value = (event.target as HTMLElement & { value?: string }).value;
+    if (!value) return;
+    this.dataset['op'] = value;
+    this.#emitConditions(true);
+  };
 
   /** Range ON is two ends, OFF is one value; both shapes keep what they hold.
    *
@@ -487,6 +503,14 @@ export class SherpaMenu extends SherpaElement {
    * TRAP T-an-operator-decides-pick-or-type
    */
   get op(): FilterOp {
+    /* A NUMBER body's select is the LIVE answer. Reading `data-op` alone meant
+       a value set without a `change` event — a restore, a test, an agent —
+       reported the old operator. Read the control, not the echo of it.
+       TRAP T-a-menu-owns-its-own-bodies */
+    if (this.dataset['body'] === 'number') {
+      const picked = this.$<HTMLElement & { value?: string }>('.body-op')?.value;
+      if (picked && picked in OP_LABELS) return picked as FilterOp;
+    }
     return (this.dataset['op'] as FilterOp | undefined) ?? DEFAULT_OP;
   }
 
@@ -808,6 +832,20 @@ export class SherpaMenu extends SherpaElement {
       return;
     }
     if (body !== 'number') return;
+    /* THE OPERATOR, from the ONE vocabulary — the same list the condition rows
+       read. A host names the set; the menu draws it.
+       TRAP T-ops-follow-the-column-type */
+    const picker = this.$<HTMLElement & { populate?: (i: unknown[]) => void; value?: string }>('.body-op');
+    if (picker && this.hasAttribute('data-conditions')) {
+      const ops = this.#opList();
+      if (!this.#opsDrawn) {
+        this.#opsDrawn = true;
+        void picker.populate?.(ops.map((op) => ({ value: op, label: OP_LABELS[op] })));
+      }
+      const op = ops.includes(this.op) ? this.op : (ops[0] ?? DEFAULT_OP);
+      if (this.dataset['op'] !== op) this.dataset['op'] = op;
+      if (picker.value !== op) picker.value = op;
+    }
     const field = this.$<HTMLElement>('.body-number-one');
     const slider = this.$<HTMLElement>('.body-number-range');
     const min = this.dataset['min'] ?? '0';
@@ -818,11 +856,22 @@ export class SherpaMenu extends SherpaElement {
       el.setAttribute('max', max);
       if (this.dataset['step']) el.setAttribute('step', this.dataset['step']);
     }
-    // A fresh range excludes nothing, so it opens at both ends.
-    if (slider && !slider.hasAttribute('data-touched')) {
+    /* A HELD range wins; otherwise a fresh one opens at both ends and excludes
+       nothing. `data-touched` says the reader has moved it since.
+       TRAP T-a-full-range-is-still-a-range */
+    const from = this.dataset['from'];
+    const to = this.dataset['to'];
+    if (slider && from && to && !slider.hasAttribute('data-touched')) {
+      slider.setAttribute('value-start', from);
+      slider.setAttribute('value-end', to);
+      slider.setAttribute('data-touched', '');
+    } else if (slider && !slider.hasAttribute('data-touched')) {
       slider.setAttribute('value-start', min);
       slider.setAttribute('value-end', max);
     }
+    // A single held value goes in the field.
+    const one = this.dataset['value'];
+    if (one && field instanceof HTMLInputElement && field.value === '') field.value = one;
   }
 
   #sync(): void {

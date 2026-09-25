@@ -136,6 +136,11 @@
          what was typed on the other side.
          TRAP T-range-switch-swaps-not-rebuilds -->
     <div class="body-number" part="body-number">
+      <!-- The operator, where the host offers a choice of one. A chip does not;
+           a grid column heading does. Shown only when `data-conditions` names
+           the set. TRAP T-ops-follow-the-column-type -->
+      <sherpa-input-text class="body-op" data-type="select"
+                         aria-label="Condition"></sherpa-input-text>
       <input class="body-number-one sherpa-border-edges" type="number" inputmode="decimal"
              aria-label="Value" placeholder="Any" />
       <sherpa-slider class="body-number-range" data-type="range"

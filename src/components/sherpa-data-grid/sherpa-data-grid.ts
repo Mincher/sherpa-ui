@@ -101,9 +101,15 @@ interface ColumnFilter {
 
 /** Which body template each column type's filter menu holds — TEXT has none:
     it is the sherpa-menu FILTER variant. TRAP T-one-field-one-filter-menu */
+/* ONLY A DATE keeps a body of its own. A calendar projects its stepper into
+   the menu's `header` slot, and slot assignment reaches a host's LIGHT DOM
+   only — inside the menu's shadow root it has nothing to project into.
+   Everything else is the menu's now.
+   TRAP T-a-menu-owns-its-own-bodies
+   TRAP T-projected-slot-content-crosses-two-shadow-boundaries */
 const COLUMN_FILTER_BODIES: Record<string, string | null> = {
   text: null,
-  number: 'template.head-number-filter-tpl',
+  number: null,
   date: 'template.head-date-filter-tpl',
 };
 
@@ -401,20 +407,12 @@ export class SherpaDataGrid extends SherpaElement {
     const body = bodyTpl ? this.clone(bodyTpl) : null;
     if (bodyTpl && !body) return;
 
-    /* A NUMBER column keeps its own body, so its condition <select> is filled
-       here — from the ONE vocabulary in store.ts, the same one the shared
-       filter menu reads. TRAP T-ops-follow-the-column-type */
-    const picker = body?.querySelector<HTMLSelectElement>('.head-filter-op');
-    const proto = picker?.querySelector('option');
-    if (picker && proto) {
-      picker.replaceChildren(
-        ...(OPS_FOR_TYPE[kind] ?? []).map((op) => {
-          const option = proto.cloneNode(false) as HTMLOptionElement;
-          option.value = op;
-          option.textContent = OP_LABELS[op];
-          return option;
-        }),
-      );
+    /* THE MENU DRAWS THE OPERATOR SELECT. This heading only NAMES the set, from
+       the ONE vocabulary in store.ts — the same list the condition rows read.
+       TRAP T-ops-follow-the-column-type · TRAP T-a-menu-owns-its-own-bodies */
+    if (kind === 'number') {
+      const ops = OPS_FOR_TYPE[kind] ?? [];
+      if (ops.length) menu.setAttribute('data-conditions', ops.join(','));
     }
 
     // Clear empties the controls and keeps the menu open; Remove drops the clause.
@@ -435,8 +433,8 @@ export class SherpaDataGrid extends SherpaElement {
 
     // TRAP T-grid-slider-spans-real-values — the 0..100 default crushes a
     // spend column at the far left.
-    if (kind === 'number' && body) {
-      const slider = body.querySelector('.head-filter-slider');
+    if (kind === 'number') {
+      menu.setAttribute('data-body', 'number');
       /* `reduceRows`, not a hand-rolled Number() sweep: `null` and `''` coerce
          to a FINITE 0, so counting them gave a Spend column of 120..340 a
          slider starting at 0 — the very crush the comment above warns about.
@@ -445,14 +443,9 @@ export class SherpaDataGrid extends SherpaElement {
         const raw = row[col.field];
         return raw != null && raw !== '' && Number.isFinite(Number(raw));
       });
-      if (slider && hasNumbers) {
-        const min = Math.floor(reduceRows(this.#rows, 'min', col.field));
-        const max = Math.ceil(reduceRows(this.#rows, 'max', col.field));
-        slider.setAttribute('min', String(min));
-        slider.setAttribute('max', String(max));
-        // A fresh range spans the WHOLE column — 0..0 empties the view first.
-        slider.setAttribute('value-start', String(held?.from ?? min));
-        slider.setAttribute('value-end', String(held?.to ?? max));
+      if (hasNumbers) {
+        menu.setAttribute('data-min', String(Math.floor(reduceRows(this.#rows, 'min', col.field))));
+        menu.setAttribute('data-max', String(Math.ceil(reduceRows(this.#rows, 'max', col.field))));
       }
     }
 
@@ -461,12 +454,6 @@ export class SherpaDataGrid extends SherpaElement {
       // filter back to a range. TRAP T-a-default-is-not-an-override.
       const asRange = held ? !!held.range : kind === 'number';
 
-      const range = this.clone('template.head-range-tpl');
-      if (range) {
-        const sw = range.querySelector('sherpa-switch');
-        if (asRange) sw?.setAttribute('checked', '');
-        menu.appendChild(range);
-      }
       // The MENU carries the mode, because CSS selects the shape off it.
       if (asRange) menu.setAttribute('data-range', '');
     }
@@ -519,22 +506,25 @@ export class SherpaDataGrid extends SherpaElement {
     // Restore the held clause — the header is rebuilt per sort and keystroke,
     // so the menu would otherwise forget itself.
     if (held) {
-      if (body) {
-        const op = body.querySelector<HTMLSelectElement>('.head-filter-op');
-        if (op) op.value = held.op;
-        if (!held.range) {
-          const value = body.querySelector<HTMLInputElement>('.head-filter-value');
-          if (value) value.value = held.value;
+      /* THE MENU HOLDS ITS OWN. A number body reads `data-op` and `data-value`;
+         only the calendar is still this heading's to fill.
+         TRAP T-a-menu-owns-its-own-bodies */
+      if (kind === 'number') {
+        menu.setAttribute('data-op', held.op);
+        if (!held.range) menu.setAttribute('data-value', held.value);
+        else {
+          menu.setAttribute('data-from', held.from ?? '');
+          menu.setAttribute('data-to', held.to ?? '');
         }
-        const cal = body.querySelector('.head-filter-calendar');
-        if (cal) {
-          if (held.range) {
-            cal.setAttribute('data-type', 'range');
-            cal.setAttribute('data-value-start', held.from ?? '');
-            cal.setAttribute('data-value-end', held.to ?? '');
-          } else {
-            cal.setAttribute('data-value', held.value);
-          }
+      }
+      const cal = body?.querySelector('.head-filter-calendar');
+      if (cal) {
+        if (held.range) {
+          cal.setAttribute('data-type', 'range');
+          cal.setAttribute('data-value-start', held.from ?? '');
+          cal.setAttribute('data-value-end', held.to ?? '');
+        } else {
+          cal.setAttribute('data-value', held.value);
         }
       }
       chip.setAttribute('data-current', '');
@@ -737,23 +727,22 @@ export class SherpaDataGrid extends SherpaElement {
        answers `eq` for any menu, so only a FILTER menu may be asked.
        TRAP T-one-field-one-filter-menu */
     const isFilterMenu = menu?.getAttribute('data-type') === 'filter';
-    const op = (isFilterMenu
-      ? (menu as HTMLElement & { op?: string }).op
-      : chip.querySelector<HTMLSelectElement>('.head-filter-op')?.value)
-      ?? DEFAULT_OP;
+    /* THE MENU ANSWERS FOR ITS OWN BODY. A number body carries the operator
+       select and the value; only the calendar is still slotted here.
+       TRAP T-a-menu-owns-its-own-bodies */
+    const own = menu as (HTMLElement & { op?: string; values?: string[] }) | null;
+    const op = own?.op ?? DEFAULT_OP;
     const cal = chip.querySelector<HTMLElement>('.head-filter-calendar');
 
     if (range) {
-      // A calendar reports its span in data-*, a slider in value-start/-end.
-      const slider = chip.querySelector<HTMLElement>('.head-filter-slider');
-      const from = (cal
-        ? cal.dataset['valueStart']
-        : slider?.getAttribute('value-start')) ?? '';
-      const to = (cal
-        ? cal.dataset['valueEnd']
-        : slider?.getAttribute('value-end')) ?? '';
-      if (!from.trim() || !to.trim()) return null;
-      return { op: 'between', value: '', range: true, from: from.trim(), to: to.trim() };
+      // A calendar reports its span in data-*; a number body reports both ends.
+      const both = cal
+        ? [cal.dataset['valueStart'] ?? '', cal.dataset['valueEnd'] ?? '']
+        : (own?.values ?? []);
+      const from = String(both[0] ?? '').trim();
+      const to = String(both[1] ?? '').trim();
+      if (!from || !to) return null;
+      return { op: 'between', value: '', range: true, from, to };
     }
 
     /* A LIST condition is answered by the TICKED ROWS, a typing one by the
@@ -778,7 +767,7 @@ export class SherpaDataGrid extends SherpaElement {
     }
 
     // A DATE column has no condition picker, so the operator is equality.
-    const value = (cal ? cal.dataset['value'] : chip.querySelector<HTMLInputElement>('.head-filter-value')?.value) ?? '';
+    const value = (cal ? cal.dataset['value'] : (own?.values ?? [])[0]) ?? '';
     if (!value.trim()) return null;
     return { op: cal ? 'eq' : op, value: value.trim() };
   }

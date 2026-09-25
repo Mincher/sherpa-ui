@@ -532,3 +532,11 @@
   color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-size: var(--sherpa-theme-content-size-base, 14px);
 }
+
+/* The operator select rides with a NUMBER body, and only where the host has
+   named a set to choose from. TRAP T-ops-follow-the-column-type */
+.body-op { display: none; }
+:host([data-body="number"][data-conditions]) .body-op { display: block; }
+
+/* A RANGE has no operator to choose — it IS `between`. */
+:host([data-body="number"][data-range]) .body-op { display: none; }

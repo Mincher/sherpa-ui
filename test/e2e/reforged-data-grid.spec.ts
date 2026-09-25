@@ -1221,9 +1221,12 @@ test('a TEXT column heading offers a filter menu of DevExtreme conditions', asyn
       textShown: getComputedStyle(text).display,
       // A TEXT column has no Range switch: "between two strings" is not a
       // question a reader asks of a name.
-      textRange: !!text.querySelector('.head-filter-range'),
+      /* THE SWITCH IS THE MENU'S OWN, in its shadow root — it was spelled two
+         ways while each host handed one over.
+         TRAP T-a-menu-owns-its-own-bodies */
+      textRange: text.querySelector('sherpa-menu')?.getAttribute('data-body') === 'number',
       numberShown: getComputedStyle(number).display,
-      numberRange: !!number.querySelector('.head-filter-range'),
+      numberRange: number.querySelector('sherpa-menu')?.getAttribute('data-body') === 'number',
       order,
       cellDisplay,
       sideBySide,
@@ -1476,7 +1479,12 @@ test('a NUMBER column filters by condition, or by a RANGE, and coerces its ends'
     await el.rendered;
     el.populate({
       columns: [{ field: 'spend', header: 'Spend', type: 'number' }],
-      rows: [{ spend: 10 }],
+      /* A COLUMN THAT SPANS. The slider CLAMPS to the column's real ends —
+         "typing 500 into a 0..100 filter cannot ask for a row that cannot
+         exist" — so a one-row column clamps every range to that one value and
+         the test would assert the clamp rather than the range.
+         TRAP T-grid-slider-spans-real-values */
+      rows: [{ spend: 5 }, { spend: 10 }, { spend: 50 }],
     });
     const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
     await settle();
@@ -1496,25 +1504,30 @@ test('a NUMBER column filters by condition, or by a RANGE, and coerces its ends'
     // DevExtreme's numeric binary operations. The string family (contains,
     // startswith…) is absent — "starts with" on a spend column is not a
     // question, and offering it invites a comparison with no meaning.
-    const conditions = Array.from(chip().querySelectorAll('option')).map((o) => o.value);
+    /* THE OPERATOR SELECT is the MENU's, and a sherpa-input-text keeps its own
+       <select> in ITS shadow root — so this is two boundaries down.
+       TRAP T-a-menu-owns-its-own-bodies */
+    const opSelect = chip().querySelector('sherpa-menu')!.shadowRoot!
+      .querySelector('.body-op')!.shadowRoot!.querySelector('select')!;
+    const conditions = Array.from(opSelect.options).map((o) => o.value).filter(Boolean);
 
     /* SINGLE first — and a number column now OPENS as a range, so the switch
        has to be turned OFF to get there. That default is the point of
        T-a-default-is-not-an-override; this test is about the two SHAPES, and
        it still walks both, starting from the other end. */
-    const off = chip().querySelector('sherpa-switch') as HTMLElement & { checked: boolean };
+    const off = chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector('.body-range-switch') as HTMLElement & { checked: boolean };
     off.checked = false;
     off.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
     await settle();
 
     // SINGLE: a condition and one value.
-    chip().querySelector<HTMLSelectElement>('.head-filter-op')!.value = 'gte';
-    chip().querySelector<HTMLInputElement>('.head-filter-value')!.value = '100';
+    chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector<HTMLElement & { value: string }>('.body-op')!.value = 'gte';
+    chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector<HTMLInputElement>('.body-number-one')!.value = '100';
     await apply();
 
     // RANGE: the switch re-points the menu rather than rebuilding it, so what
     // was typed on the single side is still there on the way back.
-    const sw = chip().querySelector('sherpa-switch') as HTMLElement & { checked: boolean };
+    const sw = chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector('.body-range-switch') as HTMLElement & { checked: boolean };
     sw.checked = true;
     sw.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
     await settle();
@@ -1522,24 +1535,27 @@ test('a NUMBER column filters by condition, or by a RANGE, and coerces its ends'
       mode: chip().querySelector('sherpa-menu')!.hasAttribute('data-range'),
       // The condition picker goes: a range IS `between`, which the slider's two
       // thumbs say more plainly than a list could.
-      opHidden: getComputedStyle(chip().querySelector<HTMLElement>('.head-filter-op')!).display,
-      sliderShown: getComputedStyle(chip().querySelector<HTMLElement>('.head-filter-slider')!).display,
+      opHidden: getComputedStyle(chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector<HTMLElement>('.body-op')!).display,
+      sliderShown: getComputedStyle(chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector<HTMLElement>('.body-number-range')!).display,
       // The single value survives the flip — both shapes are in the DOM, so
       // nothing is rebuilt and nothing typed is lost.
-      kept: chip().querySelector<HTMLInputElement>('.head-filter-value')!.value,
+      kept: chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector<HTMLInputElement>('.body-number-one')!.value,
       // The slider spans the COLUMN's real values, not its own 0..100 default
       // — a spend column left at 0..100 would crush every row at the far left.
       bounds: [
-        chip().querySelector('.head-filter-slider')!.getAttribute('min'),
-        chip().querySelector('.head-filter-slider')!.getAttribute('max'),
+        chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector('.body-number-range')!.getAttribute('min'),
+        chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector('.body-number-range')!.getAttribute('max'),
       ],
     };
 
     // The slider keeps its ends in its own attributes, which is where the grid
     // reads them from.
-    const slider = chip().querySelector('.head-filter-slider')!;
+    const slider = chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector('.body-number-range')!;
     slider.setAttribute('value-start', '5');
     slider.setAttribute('value-end', '50');
+    /* A DRAG marks it TOUCHED, and an UNtouched span is not a filter — a range
+       nobody moved excludes nothing. TRAP T-a-full-range-is-still-a-range */
+    slider.setAttribute('data-touched', '');
     await apply();
 
     return { conditions, ranged, events };
@@ -1559,9 +1575,9 @@ test('a NUMBER column filters by condition, or by a RANGE, and coerces its ends'
   expect(r.ranged.opHidden).toBe('none');
   expect(r.ranged.sliderShown).not.toBe('none');
   expect(r.ranged.kept).toBe('100');
-  // One row of 10, so the column's span is a single point — but it is the
-  // COLUMN's, not the slider's default.
-  expect(r.ranged.bounds).toEqual(['10', '10']);
+  // The COLUMN's own span, not the slider's 0..100 default.
+  // TRAP T-grid-slider-spans-real-values
+  expect(r.ranged.bounds).toEqual(['5', '50']);
 
   // A span: the store's own `between`, ends coerced.
   const both = r.events[r.events.length - 1] as Record<string, unknown>;
@@ -1603,9 +1619,13 @@ test('a DATE column filters with a calendar, one day or a span', async ({ page }
 
     const shape = {
       hasCalendar: !!cal(),
-      hasRange: !!chip().querySelector('.head-filter-range'),
+      // THE SWITCH IS THE MENU'S OWN. TRAP T-a-menu-owns-its-own-bodies
+      hasRange: !!chip().querySelector('sherpa-menu')!.shadowRoot!
+        .querySelector('.body-range'),
       // No condition list — the grid IS the condition.
-      conditions: chip().querySelectorAll('option').length,
+      // A DATE menu offers no operator select at all — a calendar IS the answer.
+      conditions: chip().querySelector('sherpa-menu')!.shadowRoot!
+        .querySelectorAll('.body-op select option').length,
       // Embedded, so it sits inside the menu card rather than floating as its
       // own popover.
       embedded: cal().hasAttribute('data-embedded'),
@@ -1618,7 +1638,7 @@ test('a DATE column filters with a calendar, one day or a span', async ({ page }
 
     // RANGE. The switch re-points the CALENDAR — it already owns both shapes,
     // so there is no second calendar to swap in.
-    const sw = chip().querySelector('sherpa-switch') as HTMLElement & { checked: boolean };
+    const sw = chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector('.body-range-switch') as HTMLElement & { checked: boolean };
     sw.checked = true;
     sw.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
     await settle();
@@ -1690,8 +1710,8 @@ test('a TEXT column filter MARKS its matches; number and date cells stay plain',
         m.op = op;
         m.conditionValue = value;
       } else {
-        chip(field).querySelector<HTMLSelectElement>('.head-filter-op')!.value = op;
-        chip(field).querySelector<HTMLInputElement>('.head-filter-value')!.value = value;
+        chip(field).querySelector('sherpa-menu')!.shadowRoot!.querySelector<HTMLElement & { value: string }>('.body-op')!.value = op;
+        chip(field).querySelector('sherpa-menu')!.shadowRoot!.querySelector<HTMLInputElement>('.body-number-one')!.value = value;
       }
       chip(field).querySelector('sherpa-menu')!.shadowRoot!
         .querySelector<HTMLElement>('.apply')!.click();
@@ -1720,8 +1740,8 @@ test('a TEXT column filter MARKS its matches; number and date cells stay plain',
     // SUBSTRING of 204, and underlining the "20" would claim a precision the
     // filter does not have.
     await apply('name', 'contains', '');
-    chip('spend').querySelector<HTMLSelectElement>('.head-filter-op')!.value = 'gt';
-    chip('spend').querySelector<HTMLInputElement>('.head-filter-value')!.value = '20';
+    chip('spend').querySelector('sherpa-menu')!.shadowRoot!.querySelector<HTMLElement & { value: string }>('.body-op')!.value = 'gt';
+    chip('spend').querySelector('sherpa-menu')!.shadowRoot!.querySelector<HTMLInputElement>('.body-number-one')!.value = '20';
     chip('spend').querySelector('sherpa-menu')!.shadowRoot!
       .querySelector<HTMLElement>('.apply')!.click();
     await new Promise((res) => setTimeout(res, 40));
@@ -1966,10 +1986,10 @@ test('setColumnFilter restores a column from outside — the round trip a saved 
       return {
         lit: th.dataset['status'] ?? null,
         op: (chip.querySelector('sherpa-menu') as (HTMLElement & { op?: string }) | null)?.op
-          ?? chip.querySelector<HTMLSelectElement>('.head-filter-op')?.value ?? null,
+          ?? chip.querySelector('sherpa-menu')?.shadowRoot?.querySelector<HTMLElement & { value?: string }>('.body-op')?.value ?? null,
         value: (chip.querySelector('sherpa-menu') as
           (HTMLElement & { conditionValue?: string }) | null)?.conditionValue
-          ?? chip.querySelector<HTMLInputElement>('.head-filter-value')?.value ?? null,
+          ?? chip.querySelector('sherpa-menu')?.shadowRoot?.querySelector<HTMLInputElement>('.body-number-one')?.value ?? null,
         clause: el.columnClause(field),
         marks: sr.querySelectorAll('.cell mark.match').length,
       };
@@ -2618,7 +2638,7 @@ test('a number column with BLANKS bounds its slider on the real values', async (
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const slider = el.shadowRoot!
-      .querySelector('.head-cell[data-field="spend"] .head-filter-slider')!;
+      .querySelector('.head-cell[data-field="spend"] sherpa-menu')!.shadowRoot!.querySelector('.body-number-range')!;
     return { min: slider.getAttribute('min'), max: slider.getAttribute('max') };
   });
 

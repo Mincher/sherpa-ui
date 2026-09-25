@@ -19,7 +19,7 @@ Kept as the work lands. Budgets from §15.4.
 | 3b the scope registry + `debugState()` | ✅ | ≈ +40 | **+84** | registry +40, `debugState()` +26, docs the rest. 219 unit / 2209 e2e green |
 | 3c-i the panel stops REACHING | ✅ | ≈ −60 | **−3** | `#barOf`, `#chipOf`, `#bars`, `#markConditioned` deleted; it reports `readings` |
 | 4b-i menu owns its bodies — TOOLBAR | ✅ | ≈ −60 | **+7** | toolbar −129, menu +166. The calendar CANNOT move: it projects into the menu's header slot |
-| 4b-ii the GRID uses them too | | ≈ −60 | — | 13 direct reads to move first |
+| 4b-ii the GRID uses them too | ✅ | ≈ −60 | **−57** | 13 direct reads moved; two grid templates and 81 CSS lines gone |
 | 4c a record TIMESTAMP, and one Date filter | | ≈ +60 | — | buys the series composition in §9.5 |
 | 3c-ii stop BORROWING menus | | ≈ −110 | — | needs 4b: the panel cannot build a calendar body without it |
 | 4 one field-row builder | | ≈ −250 | — | |
