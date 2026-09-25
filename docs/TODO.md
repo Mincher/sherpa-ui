@@ -8,7 +8,7 @@ Status: `[ ]` open · `[~]` in progress · `[x]` done
 
 ## At a glance
 
-**36 numbered items · 12 done · 1 parked · 2 unclear · 21 open.** Numbers are the spine; the waves below
+**37 numbered items · 12 done · 1 parked · 2 unclear · 22 open.** Numbers are the spine; the waves below
 say what order. Anything not numbered is a sub-item of the section it sits in.
 
 | | # | Item | Wave |
@@ -54,6 +54,7 @@ say what order. Anything not numbered is a sub-item of the section it sits in.
 | | 34 | Figma: use the Navigation terms | 11 |
 | | 35 | Layout grid: plain grid templates, not a re-invented grid? | 10 |
 | | 36 | CSS: compiled where it should inherit? | 11 |
+| | 37 | Components are AGNOSTIC of the data, and of the example app | 10 |
 
 **Not blocked — and the values ARE readable live.** Items 3 and 33 needed
 values from `figma.extensions.json`. They are not on the variable, which is why
@@ -374,6 +375,7 @@ must pass.
 | 26 | A `Grouped` mode for the content area |
 | 27 | A consumer can supply their OWN templates and CSS |
 | 35 | Layout grid: plain grid templates, not a re-invented grid? |
+| 37 | Components are AGNOSTIC of the data, and of the example app |
 
 ### Wave 11 — the renames and the fold
 
@@ -1246,6 +1248,47 @@ breakpoint; the fit grid's last row must take the rest) before building.
 ---
 
 ## Architecture — component boundaries
+
+### `[ ]` 37 — Components are AGNOSTIC of the data, and of the example app
+
+Will, 2026-09-25, verbatim:
+
+> All sherpa UI components should be agnostic of the data. The data layer
+> should provision and inform them.
+>
+> They also shouldn't have any bespoke logic in them specific to the example
+> views.
+>
+> Components should be extended with custom templates, content, styling, and
+> scripts where the look or behaviour is not generic and reusable.
+>
+> For example toggling to the filter panel, from the filter toolbar, should be
+> a custom button added to the actions slot that triggers a custom script for
+> the example app to populate the left panel area of the app shell with a
+> filter panel in it (and vice versa).
+>
+> In fact, we should probably separate the example app to it's own codebase and
+> have it use the sherpa-ui framework library as a dependency.
+
+Four parts, smallest first:
+
+1. **Find the bespoke logic.** Anything in a component that only the Records or
+   Dashboard view needs. The panel/toolbar toggle is the named example: today
+   both components carry a built-in mode button. It should be a host-supplied
+   button in the `actions` slot, and the app's own script should put the panel
+   in the shell's left area.
+2. **Components take PARAMETERS, never data shapes.** The data layer provisions
+   and informs; a component should not know a field is called `openTickets`.
+   Measure what still does.
+3. **Extension, not forking** — item 27 is the mechanism (own template, own CSS
+   that EXTENDS the default). A custom script and custom content belong in the
+   same door.
+4. **Split the example app into its own repo**, depending on `sherpa-ui` as a
+   package. That is the real test of 1-3: anything the example cannot do from
+   outside the library is a boundary the library has not drawn.
+
+The split comes LAST. Doing it first hides the failures inside a monorepo path.
+
 
 ### `[ ]` CSS: compiled where it should inherit?
 
