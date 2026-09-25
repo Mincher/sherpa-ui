@@ -7,7 +7,7 @@ every command used is given so you can re-run it.
 
 **Diagrams of the target architecture are in §9.** §10 answers "are we
 reinventing the platform?", §11 is where this could be simpler, §12 is how a
-component reaches a source, and §13 is what this review missed, and §14 is error reporting — CONTAINED by its region, named only when a region
+component reaches a source, and §13 is what this review missed, §14 is error reporting, and §15 is conciseness and reuse — CONTAINED by its region, named only when a region
 offers more than one.
 
 ## 1. The short version
@@ -481,7 +481,8 @@ reads in words and badges; `bindSelection`. Tidiness, no behaviour change.
    and which step collects it.** State it in the commit message either way.
    (Step 2 is the first: it is net +73, and it buys ~250 lines in step 4,
    because two components cannot share a builder until they agree what a filter
-   IS. Writing the rule as an absolute was wrong.)
+   IS. Writing the rule as an absolute was wrong.) **§15 has the budgets per
+   step, the reuse rules, and the gate that would enforce them.**
 2. **Move code, do not rewrite it.** The old code carries lessons — comments,
    TRAP citations, guards — that new code has to re-learn through bugs.
 3. **Pin the invariant before moving it.** Off-keeps-the-value regressed
@@ -1170,3 +1171,89 @@ Not a step of its own — it is small at each point and large if left to the end
 5. **Every report names the thing.** Field, scope, component, id. "A filter
    could not be drawn" is not a bug report; "field `owner` in scope `data` has
    no definition" is.
+
+---
+
+## 15. Conciseness and reuse
+
+Will: *"Let's also ensure code conciseness, and reuse, is part of the plan. We
+only want to add new code where absolutely necessary. We should reduce code
+where possible."*
+
+This is §6 turned into something enforceable. Over this session the filter work
+was **+4,351 −1,095 — a ratio of 4:1**, and even the commit called a refactor
+was +264 −207. Good intentions did not hold; a rule and a gate might.
+
+### 15.1 There is a lot already there to reuse
+
+| | modules | exported names |
+|---|---:|---:|
+| `src/core/data` | 13 | **131** |
+| `src/core/ui` | 6 | 35 |
+| `src/core/browser` | 6 | 41 |
+
+**207 exported names**, plus eight shared stylesheets every shadow root already
+adopts. When I wrote `#arrange` and `#drawArrangement` into the chip instead of
+moving `#cycleSort` and `#toggleGroup` across, `nextSort` and `sortDirectionFrom`
+were already sitting in `core/data/cycle.ts` and the new code had to re-learn
+what the old code knew.
+
+### 15.2 The rules
+
+1. **Move code; do not rewrite it.** The old version carries its comments, its
+   TRAP citations and its guards — all of them paid for by a bug. A rewrite
+   re-learns them the same way.
+2. **Search `core/` before writing a helper.** 207 names. If the third
+   component needs it, it belongs there; if only one does, it stays private.
+3. **A step deletes the thing it replaces, in the same commit.** Two paths for
+   one job is worse than the old path alone, because now both are half-trusted.
+4. **No helper with one caller.** A private method used once is a named
+   paragraph; inline it, or find its second caller.
+5. **Declare the budget, report the actual.** Every step says its expected net
+   change up front and its real one in the commit message. Step 2 said "buys
+   ~250 in step 4" and landed at +73; that is fine, and it is only fine because
+   it was said out loud.
+
+### 15.3 A gate, in the shape this repo already uses
+
+`lint:css` counts theme-colour reads per component against
+`scripts/lint-css-baseline.json`, **which may only FALL** — a component above
+its baseline fails, and `--update-baseline` records a drop.
+
+The same shape works for size:
+
+```
+npm run check:size                    # every component against its baseline
+npm run check:size -- --update-baseline
+```
+
+`scripts/size-baseline.json` holds the current count per component file. A file
+that GROWS fails and must say why in the commit; one that shrinks updates the
+baseline. It is a ratchet, not a limit: no number is "right", but the direction
+is.
+
+**Not a line-length or complexity linter.** Those punish clear code. This
+counts one thing — did this component get bigger — and makes growth a decision
+somebody made on purpose.
+
+**Where it would have helped:** the panel went 0 → 898 lines over this session
+with no single commit looking unreasonable.
+
+### 15.4 The budgets
+
+Declared now, so the commits can be judged against them:
+
+| step | expected |
+|---|---:|
+| 1 — the chip owns its kind | **done: −129 containers, +118 chip** |
+| 2 — one derivation of the kind | **done: +73**, buys ~250 in step 4 |
+| 3 — the data layer coordinates | **≈ −130** |
+| 4 — one field-row builder | **≈ −250** |
+| 5 — collapse sort/group state | **≈ −50** |
+| 5.5 — error reporting | **≈ +80**, the one place new code is the point |
+| 6 — split `filter-state.ts` | **≈ 0**, a move |
+| — the test harness (§13.2) | **≈ −400** |
+| | **≈ −800 net** |
+
+If the arc does not land near that, the plan was wrong and should be said to be
+wrong rather than quietly exceeded.

@@ -1400,6 +1400,23 @@ app's own surfaces (`view`/`data`). They are renamed apart in this step or the
 collision is re-learned. Detail in `docs/FILTER-REVIEW.md` §7 step 3.
 Tidiness, no behaviour.
 
+#### Conciseness and reuse — with a budget per step
+
+Will: *"We only want to add new code where absolutely necessary. We should
+reduce code where possible."* Over this session the filter work was **+4,351
+−1,095, a ratio of 4:1**. `core/` already exports **207 names** and eight
+shared stylesheets; when new code went in beside the old, it had to re-learn
+what the old code knew.
+
+MOVE code, never rewrite it. Search `core/` before writing a helper. Delete the
+replaced path in the SAME commit. No helper with one caller. Declare the budget
+up front and report the actual.
+
+A gate in the shape `lint:css` already uses — `scripts/size-baseline.json`, a
+per-component count that **may only FALL**, with `--update-baseline` to record
+a drop. The panel went 0 → 898 lines this session with no single commit looking
+unreasonable. Budgets per step and the full rules: `docs/FILTER-REVIEW.md` §15.
+
 #### Rules for the work
 
 - **Land one move per commit**, full suite between. Every move deletes what it
