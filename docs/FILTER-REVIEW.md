@@ -19,6 +19,7 @@ Kept as the work lands. Budgets from §15.4.
 | 3b the scope registry + `debugState()` | ✅ | ≈ +40 | **+84** | registry +40, `debugState()` +26, docs the rest. 219 unit / 2209 e2e green |
 | 3c the panel stops reaching for the bar | | ≈ −170 | — | binds to the source; borrowing goes |
 | 4 one field-row builder | | ≈ −250 | — | |
+| 4b one set of menu templates | | ≈ −60 | — | the range switch is duplicated verbatim |
 | 5 collapse sort/group state | | ≈ −50 | — | |
 | 5.5 error reporting | | ≈ +80 | — | `debugState()` lands with 3 |
 | 6 split `filter-state.ts` | | ≈ 0 | — | |
@@ -472,6 +473,70 @@ by exactly two things: layout **direction**, and whether a field's values
 **Risk:** high; land 2 and 3 first.
 **Closes:** the class where the two containers drift apart visually and
 behaviourally.
+
+### Step 4b — ONE set of menu templates, in `sherpa-menu`
+
+Will, 2026-09-25: *"Should filter menus (both default lists and compound
+conditional) be defined as reusable HTML templates? Same goes for numerical
+menus, numerical range menus, and date-time menus… Perhaps we should keep all
+menu templates in the menu component's HTML file. That way we always have a
+single source to pull, or base new templates, from."*
+
+Measured — it is already duplicated, and the range switch is **identical bar
+the class names**:
+
+```html
+<!-- sherpa-quick-filter-toolbar.html -->
+<div class="qf-range-row" data-row>
+  <sherpa-switch class="qf-range-switch" data-type="simple"></sherpa-switch>
+  <span class="qf-row-label">Range</span>
+</div>
+
+<!-- sherpa-data-grid.html -->
+<div class="head-filter-range" data-row>
+  <sherpa-switch class="head-filter-range-switch" data-type="simple"></sherpa-switch>
+  <span class="head-filter-range-label">Range</span>
+</div>
+```
+
+Same three elements, same `data-row`, same switch, same word. Two spellings, so
+two sets of CSS to keep in step — 11 rules in the toolbar and 13 in the grid
+for menu bodies that are the same controls.
+
+| body | toolbar | grid | menu |
+|---|---|---|---|
+| value list (check / radio / all) | — | — | ✅ owns it |
+| condition rows | — | — | ✅ owns it |
+| range switch | `qf-range-tpl` | `head-range-tpl` | — |
+| number | `qf-number-tpl` | `head-number-filter-tpl` | — |
+| calendar | `qf-calendar-tpl` | `head-date-filter-tpl` | — |
+
+**`sherpa-menu` already owns two of the five** — the value rows and the
+condition rows — and nothing else re-implements those. The three that are
+duplicated are exactly the three it does not own.
+
+**So: every menu body lives in `sherpa-menu.html`.** A host asks the menu for a
+body by kind rather than cloning its own:
+
+```ts
+menu.body(kind)   // 'number' | 'date' | 'range-switch' | …
+```
+
+The kind vocabulary for this already exists — `kindOf()` from step 2.
+
+**Deletes:** five templates across two hosts, their two class-name vocabularies,
+and ~24 CSS rules. The date one may simply be `sherpa-calendar` with
+`data-embedded`, which the grid already does — so it may not need a template at
+all.
+
+**Why it is worth doing:** the next component that needs a number filter has
+somewhere to get one. Today it would write a third copy, and there would be
+three spellings of "Range".
+
+**Where it sits:** beside step 4. Step 4 makes one builder for the TypeScript;
+this makes one set of templates for the HTML. Same argument, same shape —
+**do them together**, because a builder that clones two different templates has
+not finished the job.
 
 ### Step 5 — Collapse the sort/group state
 
@@ -1271,6 +1336,7 @@ Declared now, so the commits can be judged against them:
 | 2 — one derivation of the kind | **done: +73**, buys ~250 in step 4 |
 | 3 — the data layer coordinates | **≈ −130** |
 | 4 — one field-row builder | **≈ −250** |
+| 4b — one set of menu templates | **≈ −60** |
 | 5 — collapse sort/group state | **≈ −50** |
 | 5.5 — error reporting | **≈ +80**, the one place new code is the point |
 | 6 — split `filter-state.ts` | **≈ 0**, a move |
