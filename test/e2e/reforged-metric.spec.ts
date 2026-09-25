@@ -441,7 +441,7 @@ test('the trend, delta and status all follow a filter', async ({ page }) => {
     src.bind(el, {
       readonly: true,
       // A summary counts ALL the rows, never the page.
-      scope: 'all',
+      rows: 'all',
       as: (rs: Record<string, unknown>[]) => {
         const withMonth = rs.map((x) => ({ ...x, month: String(x['created']).slice(0, 7) }));
         const values = seriesBy(withMonth, 'month', MONTHS, 'series', { kind: 'count' }).values;

@@ -46,7 +46,7 @@ test('a component filter narrows further and leaves the view untouched', async (
       field: 'os', values: ['mac', 'win', 'linux'],
       read: (l) => l.picked,
       draw: (l, picked) => { l.drawn = [...picked]; },
-      event: 'toggle', scope: 'component', key: 'legend',
+      event: 'toggle', reach: 'component', key: 'legend',
     });
     await settle();
 
@@ -86,7 +86,7 @@ test('a component filter cannot widen past the view', async ({ page }) => {
       field: 'os', values: ['mac', 'win', 'linux'],
       read: (l) => l.picked,
       draw: (l, picked) => { l.drawn = [...picked]; },
-      event: 'toggle', scope: 'component', key: 'legend',
+      event: 'toggle', reach: 'component', key: 'legend',
     });
     await settle();
 
@@ -120,7 +120,7 @@ test('two components over one field do not fight', async ({ page }) => {
         field: 'os', values: ['mac', 'win', 'linux'],
         read: (l) => l.picked,
         draw: () => {},
-        event: 'toggle', scope: 'component', key,
+        event: 'toggle', reach: 'component', key,
       });
       return el;
     };
@@ -189,7 +189,7 @@ test('a component scope REFUSES a source that cannot hold a part', async ({ page
     try {
       bindSelection(new EventTarget(), thin, {
         field: 'os', values: ['mac'], read: () => [], draw: () => {},
-        event: 'toggle', scope: 'component',
+        event: 'toggle', reach: 'component',
       });
       return '(no throw)';
     } catch (e) { return String(e.message); }

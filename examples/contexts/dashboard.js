@@ -80,13 +80,13 @@ export async function init(root) {
   const page = new AbortController();
   let content = new AbortController();
 
-  /* Every one of these is a SUMMARY, so `scope: 'all'`: the default bind hands
+  /* Every one of these is a SUMMARY, so `rows: 'all'`: the default bind hands
      over the page, and this source declares no pageSize only by luck — one day
      it will, and a chart counting a window looks perfectly reasonable.
      TRAP T-a-summary-binds-to-all-the-rows */
   const show = (sel, as) => {
     const el = $(sel);
-    if (el) source.bind(el, { readonly: true, scope: 'all', as, signal: page.signal });
+    if (el) source.bind(el, { readonly: true, rows: 'all', as, signal: page.signal });
   };
   const bindContent = (el, as) => {
     if (el) source.bind(el, { readonly: true, as, signal: content.signal });
@@ -192,11 +192,11 @@ export async function init(root) {
       l.off = picked.length ? values.filter((v) => !picked.includes(v)) : [];
     },
     event: 'legend-item-click',
-    /* COMPONENT scope: a series switched off filters THIS chart and nothing
+    /* COMPONENT reach: a series switched off filters THIS chart and nothing
        else — not the grid, not a sibling chart. It is still subject to the
        View filter, which does cascade down.
        TRAP T-a-filter-applies-down-its-scope */
-    scope: 'component',
+    reach: 'component',
     // One part per legend, or the second would replace the first.
     key: `legend:${el.id || field}`,
     signal: page.signal,

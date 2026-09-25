@@ -1,7 +1,7 @@
 /**
  * A SUMMARY BINDS TO ALL THE ROWS, NOT THE PAGE.
  *
- * A chart counting 25 of 100 is quietly wrong, and looks right. `scope: 'all'`
+ * A chart counting 25 of 100 is quietly wrong, and looks right. `rows: 'all'`
  * hands the adapter every row matching the filter; the default stays the page
  * a grid draws.
  *
@@ -38,7 +38,7 @@ test('scope all sees every filtered row; the default sees one page', async () =>
   const s = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }), pageSize: 25 });
   const page = el('page'); const all = el('all');
   s.bind(page, { readonly: true, as: (r) => r.length });
-  s.bind(all,  { readonly: true, scope: 'all', as: (r) => r.length });
+  s.bind(all,  { readonly: true, rows: 'all', as: (r) => r.length });
   await s.load({ force: true });
   assert.equal(page.got.at(-1), 25, 'a paged bind draws its window');
   assert.equal(all.got.at(-1), 100, 'a summary counts everything');
@@ -47,7 +47,7 @@ test('scope all sees every filtered row; the default sees one page', async () =>
 test('a filter narrows BOTH, and the summary still ignores the page', async () => {
   const s = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }), pageSize: 25 });
   const all = el('all');
-  s.bind(all, { readonly: true, scope: 'all', as: (r) => r.length });
+  s.bind(all, { readonly: true, rows: 'all', as: (r) => r.length });
   await s.load({ force: true });
   assert.equal(all.got.at(-1), 100);
   s.setState({ filter: ['band', 'eq', 'a'] });
@@ -59,7 +59,7 @@ test('a summary bound AFTER the first load is not blank', async () => {
   const s = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }), pageSize: 25 });
   await s.load({ force: true });
   const all = el('late');
-  s.bind(all, { readonly: true, scope: 'all', as: (r) => r.length });
+  s.bind(all, { readonly: true, rows: 'all', as: (r) => r.length });
   await new Promise((r) => setTimeout(r, 50));
   assert.equal(all.got.at(-1), 100, 'the late bind triggered the unpaged fetch');
 });

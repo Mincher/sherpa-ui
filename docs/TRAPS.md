@@ -8378,6 +8378,26 @@ row has and the view went to 0 rows. A `data-custom` chip is reported by
 - Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 
+### T-three-things-called-scope
+
+One word was doing three unrelated jobs, and the third had no home at all:
+
+| where | values | what it meant |
+|---|---|---|
+| `ApplyAt.scope` | `view` / `component` | how far a filter REACHES |
+| `BindOptions.scope` | `page` / `all` | which ROWS a bound element is pushed |
+| an app's own defs | `view` / `data` | WHICH SURFACE holds a filter |
+
+The first two are renamed `reach` and `rows`. `scope` is left to mean the
+third, which is Will's: *"Scoping of filters should live in the data layer."*
+
+This is the same disease as `kind`, which meant the value type in one place and
+the filter's kind in another until `kindOf()` settled it. A word that names two
+axes will be read as the wrong one, and the reader will not know they did.
+
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/filter-state.ts`
+
 ### T-a-chip-knows-what-kind-it-is
 
 Will, 2026-09-25: *"Group is a thing. Sort is a thing. Boolean filters are a
@@ -8414,6 +8434,7 @@ column in `data-column`; a menu, where there is one, is the answer.
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/core/ui/filter-kind.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/unit/parity-sweep.test.mjs`
 
 ### T-off-is-not-forgotten
 
@@ -8437,6 +8458,7 @@ TRAP T-grid-suspend-is-not-clear is the same rule in the data layer.
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `test/e2e/reforged-quick-filter.spec.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 
 ### T-a-closed-panel-gives-its-menus-back
 

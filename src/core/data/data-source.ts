@@ -9,10 +9,12 @@ import { fieldState, stateClause } from './filter-state.js';
 import type { Populatable } from '../ui/apply-state.js';
 import type { FieldReading, FieldType, FilterState } from './filter-state.js';
 
-/** WHERE a control's reading applies. TRAP T-a-filter-applies-down-its-scope */
+/** HOW FAR a control's reading reaches. TRAP T-a-filter-applies-down-its-scope
+ *  `reach`, not `scope`: SCOPE is which surface holds a filter, and the two
+ *  were one word doing two jobs. TRAP T-three-things-called-scope */
 export interface ApplyAt {
   /** `view` writes each field's own slot; `component` owns one named part. */
-  scope?: 'view' | 'component';
+  reach?: 'view' | 'component';
   /** Required for `component` — the part's name. */
   key?: string;
 }
@@ -70,7 +72,7 @@ export interface BindOptions {
    * SUMMARY needs, because a chart counting 25 of 100 is quietly wrong.
    * TRAP T-a-summary-binds-to-all-the-rows
    */
-  scope?: 'page' | 'all';
+  rows?: 'page' | 'all';
 }
 
 /** What `change` carries, for a listener that wants the result without asking. */
@@ -105,15 +107,15 @@ export class DataSource extends EventTarget {
       as?: BindOptions['as'];
       /** The named part of the payload this bind owns — see BindOptions.into. */
       into?: string;
-      /** See BindOptions.scope. */
-      scope: 'page' | 'all';
+      /** See BindOptions.rows. */
+      rows: 'page' | 'all';
       /** The rows array last handed to this component — see `#push`. */
       lastRows?: readonly Row[];
     }
   >();
   #result: LoadResult = { rows: [], total: 0 };
   /**
-   * Every row matching the filter, unpaged — for a `scope: 'all'` bind. Loaded
+   * Every row matching the filter, unpaged — for a `rows: 'all'` bind. Loaded
    * only when one exists, so a view with no summary asks the store once as
    * before. TRAP T-a-summary-binds-to-all-the-rows
    */
@@ -314,9 +316,9 @@ export class DataSource extends EventTarget {
    * that part. TRAP T-a-filter-applies-down-its-scope
    */
   apply(readings: Readonly<Record<string, FieldReading>>, at: ApplyAt = {}): void {
-    if (at.scope === 'component') {
+    if (at.reach === 'component') {
       const key = at.key;
-      if (!key) throw new Error('apply: a component scope needs a `key`');
+      if (!key) throw new Error('apply: a component reach needs a `key`');
       const clauses = Object.entries(readings)
         .map(([field, reading]) => stateClause(this.#stateFor(field, reading)))
         .filter((c): c is NonNullable<typeof c> => !!c);
@@ -517,7 +519,7 @@ export class DataSource extends EventTarget {
 
   /** Is any bind asking for the unpaged set? TRAP T-a-summary-binds-to-all-the-rows */
   #wantsAllRows(): boolean {
-    for (const entry of this.#bound.values()) if (entry.scope === 'all') return true;
+    for (const entry of this.#bound.values()) if (entry.rows === 'all') return true;
     return false;
   }
 
@@ -657,7 +659,7 @@ export class DataSource extends EventTarget {
       readonly: readonlyBind,
       steerOnly: options.steerOnly ?? false,
       off,
-      scope: options.scope ?? 'page',
+      rows: options.rows ?? 'page',
       ...(options.as ? { as: options.as } : {}),
       ...(options.into ? { into: options.into } : {}),
     });
@@ -670,7 +672,7 @@ export class DataSource extends EventTarget {
     /* A summary bound AFTER the first load would otherwise draw blank: the
        unpaged set is fetched by `load`, and nothing would ask for it again.
        TRAP T-a-summary-binds-to-all-the-rows */
-    const needsAll = options.scope === 'all' && !this.#allRows.length;
+    const needsAll = options.rows === 'all' && !this.#allRows.length;
     if (this.#autoLoad && (!this.#result.rows.length || needsAll)) {
       void this.load({ force: needsAll });
     }
@@ -803,7 +805,7 @@ export class DataSource extends EventTarget {
     // Skip a push that would hand over the same rows again.
     // TRAP T-no-op-load-guard
     // TRAP T-adapter-lives-at-the-binding — guard the ROWS ARRAY, not a payload.
-    const pushRows = entry?.scope === 'all' ? this.#allRows : this.#result.rows;
+    const pushRows = entry?.rows === 'all' ? this.#allRows : this.#result.rows;
     if (entry && entry.lastRows === pushRows) return;
     if (entry) entry.lastRows = pushRows;
 

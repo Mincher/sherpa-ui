@@ -592,12 +592,12 @@ export async function init(root, { session } = {}) {
      Every tile and chart is the SAME rows, counted a different way, so one
      filter re-draws all of them and nothing recounts by hand.
 
-     `scope: 'all'` is what makes them right: the default bind hands over the
+     `rows: 'all'` is what makes them right: the default bind hands over the
      PAGE, and a chart counting 25 of 100 looks perfectly reasonable.
      TRAP T-a-summary-binds-to-all-the-rows */
   const summary = (sel, as) => {
     const el = root.querySelector(sel);
-    if (el) source.bind(el, { readonly: true, scope: 'all', as, signal });
+    if (el) source.bind(el, { readonly: true, rows: 'all', as, signal });
   };
 
   const money = (n) => `$${Math.round(n).toLocaleString('en-GB')}`;
@@ -677,7 +677,7 @@ export async function init(root, { session } = {}) {
        View filter, which does cascade down, so a series the View has already
        removed cannot be switched back on here.
        TRAP T-a-filter-applies-down-its-scope */
-    scope: 'component',
+    reach: 'component',
     // One part per legend, or the second would replace the first.
     key: `legend:${el.id || field}`,
     signal,
@@ -903,7 +903,7 @@ export async function init(root, { session } = {}) {
       if (field && values?.length) readings[field] = { picked: values };
     }
     // Its OWN key, so it ANDs with the chips, the columns and a saved view.
-    source.apply(readings, { scope: 'component', key: 'global' });
+    source.apply(readings, { reach: 'component', key: 'global' });
   }, { signal });
 
   // A field ARRIVING at or LEAVING the header changes which scope owns it.

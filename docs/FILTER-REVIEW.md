@@ -5,6 +5,28 @@ every command used is given so you can re-run it.
 
 ---
 
+---
+
+## Ledger
+
+Kept as the work lands. Budgets from §15.4.
+
+| step | | budget | actual | note |
+|---|---|---:|---:|---|
+| 1 chip owns its KIND | ✅ | — | −129 / +118 | group and sort own their gesture; 6 methods deleted from the containers |
+| 2 one derivation of the kind | ✅ | — | **+73** | 15 inference sites → 1. Buys ~250 in step 4 |
+| 3a `scope` renamed three ways | ✅ | ≈ 0 | **+8** | `reach` / `rows` / `scope`. 31 call sites, 2210 tests green |
+| 3b the scope registry | | ≈ +40 | — | `scope`, `hold`, `holds`, `scopeOf`, `scope-change` |
+| 3c the panel stops reaching for the bar | | ≈ −170 | — | binds to the source; borrowing goes |
+| 4 one field-row builder | | ≈ −250 | — | |
+| 5 collapse sort/group state | | ≈ −50 | — | |
+| 5.5 error reporting | | ≈ +80 | — | `debugState()` lands with 3 |
+| 6 split `filter-state.ts` | | ≈ 0 | — | |
+| test harness §13.2 | | ≈ −400 | — | 28 of 40 toolbar tests mount by hand |
+| **arc** | | **≈ −800** | **−3** | code only; docs counted separately |
+
+---
+
 **Diagrams of the target architecture are in §9.** §10 answers "are we
 reinventing the platform?", §11 is where this could be simpler, §12 is how a
 component reaches a source, and §13 is what this review missed, §14 is error reporting, and §15 is conciseness and reuse — CONTAINED by its region, named only when a region

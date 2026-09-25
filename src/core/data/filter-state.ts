@@ -414,7 +414,8 @@ export interface Selector extends EventTarget {
   select: (field: string, picked: readonly unknown[]) => void;
   selection: (field: string) => FilterState;
   declareValues: (field: string, values: readonly unknown[]) => void;
-  /** A COMPONENT-scope control needs this; a VIEW-scope one does not. */
+  /** A COMPONENT-reach control needs this; a VIEW-reach one does not.
+   *  `reach`, not `scope`: TRAP T-three-things-called-scope */
   contribute?: (key: string, filter: FilterClause | undefined) => void;
 }
 
@@ -439,7 +440,7 @@ export interface SelectionBinding<T> {
    * own state. A legend, a chart's segment mode and a grid column filter are
    * all `component`. TRAP T-a-filter-applies-down-its-scope
    */
-  scope?: 'view' | 'component';
+  reach?: 'view' | 'component';
   /**
    * The part name a `component` binding owns. Two components over one field
    * need two names, or the second silently replaces the first. Defaults to
@@ -472,17 +473,17 @@ export function bindSelection<T extends EventTarget>(
 ): BoundSelection {
   const { field, values, read, draw, event, signal } = options;
   const known = new Set(values);
-  const scope = options.scope ?? 'view';
-  const key = options.key ?? `scope:${field}`;
+  const reach = options.reach ?? 'view';
+  const key = options.key ?? `reach:${field}`;
   source.declareValues(field, values);
 
   /* A component-scope binding needs a source that can hold a named part. The
      alternative — falling back to select() — is the exact clobber this scope
      exists to prevent, so it fails loudly instead.
      TRAP T-a-filter-applies-down-its-scope */
-  if (scope === 'component' && typeof source.contribute !== 'function') {
+  if (reach === 'component' && typeof source.contribute !== 'function') {
     throw new TypeError(
-      `bindSelection: scope "component" needs a source with contribute(); "${field}" got one without.`,
+      `bindSelection: reach "component" needs a source with contribute(); "${field}" got one without.`,
     );
   }
 
@@ -495,7 +496,7 @@ export function bindSelection<T extends EventTarget>(
    * the view's is a different, wider question and drawing it here would say the
    * reader had picked something they did not.
    */
-  const picked = (): string[] => (scope === 'component'
+  const picked = (): string[] => (reach === 'component'
     ? own
     : source.selection(field).values.filter((v) => v.state === 'picked').map((v) => v.value));
 
@@ -507,7 +508,7 @@ export function bindSelection<T extends EventTarget>(
     const want = next.filter((v) => known.has(v));
     // EVERYTHING picked is no constraint. TRAP T-everything-on-is-no-filter
     const answer = want.length === values.length ? [] : want;
-    if (scope === 'component') {
+    if (reach === 'component') {
       own = [...answer];
       // ANDed under the view's, so it can only narrow further.
       source.contribute!(key, answer.length ? [field, 'in', answer] : undefined);
@@ -535,7 +536,7 @@ export function bindSelection<T extends EventTarget>(
     control.removeEventListener(event, onControlChange);
     source.removeEventListener('selection-change', onSelectionChange);
     // A part outlives its control otherwise, and nothing else can name it.
-    if (scope === 'component') source.contribute!(key, undefined);
+    if (reach === 'component') source.contribute!(key, undefined);
   };
   signal?.addEventListener('abort', destroy, { once: true });
 

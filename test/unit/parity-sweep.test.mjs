@@ -43,6 +43,11 @@ const KNOWN = {
   'sherpa-code-block.code': 'ok: data-code attribute',
   'sherpa-data-grid.selectedKeys': 'ok: select(keys) / clearSelection()',
   'sherpa-data-grid.selectedRecords': 'ok: select(keys) — derived from the same set',
+  /* A group or sort chip's arrangement. Both are DECLARED props, so a host
+     writes them and the chip draws itself from them.
+     TRAP T-a-chip-knows-what-kind-it-is */
+  'sherpa-quick-filter.column': 'ok: data-column attribute, or its menu pick',
+  'sherpa-quick-filter.direction': 'ok: data-direction attribute',
   'sherpa-radial-chart.slices': 'ok: populate()',
   'sherpa-radial-chart.hiddenSlices': 'ok: setSliceHidden(index, hidden)',
   'sherpa-file-upload.files':

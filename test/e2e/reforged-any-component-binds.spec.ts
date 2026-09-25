@@ -42,11 +42,11 @@ test('a component with NO renderData still shows bound data', async ({ page }) =
       .make('sherpa-empty-state');
 
     src.bind(header, {
-      readonly: true, scope: 'all',
+      readonly: true, rows: 'all',
       as: (rs: unknown[]) => ({ heading: `${rs.length} records` }),
     });
     src.bind(empty, {
-      readonly: true, scope: 'all',
+      readonly: true, rows: 'all',
       as: (rs: unknown[]) => ({ heading: 'Nothing here', description: `searched ${rs.length}` }),
     });
 
@@ -80,7 +80,7 @@ test('an UNDECLARED key is ignored, so a payload cannot spray attributes', async
        declares may land — otherwise one adapter's keys become another
        component's attributes. */
     src.bind(header, {
-      readonly: true, scope: 'all',
+      readonly: true, rows: 'all',
       as: () => ({ heading: 'kept', totalPages: 999, columns: [], bogus: 'no' }),
     });
     await src.load({ force: true });
@@ -111,7 +111,7 @@ test('a component with its OWN renderData is untouched', async ({ page }) => {
     const metric = await (window as never as { make: (t: string) => Promise<HTMLElement> })
       .make('sherpa-metric');
     src.bind(metric, {
-      readonly: true, scope: 'all',
+      readonly: true, rows: 'all',
       as: (rs: unknown[]) => ({ label: 'Records', value: rs.length }),
     });
     await src.load({ force: true });
