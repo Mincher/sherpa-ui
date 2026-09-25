@@ -17,7 +17,8 @@ Kept as the work lands. Budgets from §15.4.
 | 2 one derivation of the kind | ✅ | — | **+73** | 15 inference sites → 1. Buys ~250 in step 4 |
 | 3a `scope` renamed three ways | ✅ | ≈ 0 | **+8** | `reach` / `rows` / `scope`. 31 call sites, 2210 tests green |
 | 3b the scope registry + `debugState()` | ✅ | ≈ +40 | **+84** | registry +40, `debugState()` +26, docs the rest. 219 unit / 2209 e2e green |
-| 3c the panel stops reaching for the bar | | ≈ −170 | — | binds to the source; borrowing goes |
+| 3c-i the panel stops REACHING | ✅ | ≈ −60 | **−3** | `#barOf`, `#chipOf`, `#bars`, `#markConditioned` deleted; it reports `readings` |
+| 3c-ii stop BORROWING menus | | ≈ −110 | — | the panel draws its own |
 | 4 one field-row builder | | ≈ −250 | — | |
 | 4b one set of menu templates | | ≈ −60 | — | the range switch is duplicated verbatim |
 | 5 collapse sort/group state | | ≈ −50 | — | |

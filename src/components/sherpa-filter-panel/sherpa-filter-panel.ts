@@ -8,6 +8,7 @@
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import { ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
 import { arranges, kindOf, picksOne } from '../../core/ui/filter-kind.js';
+import type { FieldCondition, FieldReading } from '../../core/data/filter-state.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-container/sherpa-container.js';
 import '../sherpa-container-header/sherpa-container-header.js';
@@ -173,6 +174,33 @@ export class SherpaFilterPanel extends SherpaElement {
       // GROUP and SORT arrange rows; they are not part of WHICH rows.
       if (held.def.id === 'group' || held.def.id === 'sort') continue;
       (out[held.scope] ??= {})[held.def.id] = this.#picked(held);
+    }
+    return out;
+  }
+
+  /**
+   * WHAT THE READER DID, per scope and field — picked values AND conditions.
+   *
+   * `values` is ticked chips only, so a field answered by a CONDITION reported
+   * nothing and Apply committed nothing. The panel used to fix that by ticking
+   * the BAR's chips and asking it to re-report, which is a panel that knows a
+   * toolbar exists. It reports its own whole answer instead, and the data
+   * layer decides what it means.
+   * TRAP T-the-panel-reports-its-own-reading
+   */
+  get readings(): Record<string, Record<string, FieldReading>> {
+    const out: Record<string, Record<string, FieldReading>> = {};
+    for (const [, held] of this.#held) {
+      // GROUP and SORT arrange rows; they are not part of WHICH rows.
+      if (arranges(kindOf(held.def))) continue;
+      const menu = held.menu as (HTMLElement & {
+        conditions?: FieldCondition[]; conditionValue?: string }) | undefined;
+      const conditions = menu?.conditions ?? [];
+      const reading: FieldReading = { picked: this.#picked(held) };
+      if (conditions.length) reading.conditions = conditions;
+      const typed = (menu?.conditionValue ?? '').trim();
+      if (typed) reading.text = typed;
+      (out[held.scope] ??= {})[held.def.id] = reading;
     }
     return out;
   }
@@ -775,76 +803,16 @@ export class SherpaFilterPanel extends SherpaElement {
   /** APPLY commits every field at once — one event, not one per field. */
   #onApply = (): void => {
     this.#snapshot();
+    /* THE WHOLE ANSWER, including conditions — see `readings`. `values` rides
+       along for a host that only wants the ticks.
+       TRAP T-the-panel-reports-its-own-reading */
     this.emit('quick-filter-change', {
       scope: 'panel',
+      readings: this.readings,
       values: this.values,
       picked: this.values,
     });
-    /* AND THEN ASK THE BARS. `values` is ticked chips only — a field in
-       CONDITION mode has no ticked chips, so its rows said nothing and Apply
-       committed nothing. The bar already reads its own chips AND their menus'
-       conditions, so it re-reports rather than the panel deriving a second
-       answer. TRAP T-the-panel-asks-the-bar-it-does-not-answer-for-it */
-    this.#markConditioned();
-    for (const bar of this.#bars()) bar.report?.();
   };
-
-  /** A field answered by CONDITIONS is on, and its chip has to say so.
-   *
-   *  The bar reads `data-current` to decide whether a field is suspended, and
-   *  a chip in the hidden toolbar was never ticked — the reader answered in
-   *  the panel. So the field read as suspended and gave no clause, with the
-   *  right conditions sitting in its own state.
-   *  TRAP T-a-conditioned-chip-answers-with-its-clause */
-  #markConditioned(): void {
-    for (const [, held] of this.#held) {
-      if (!held.box.hasAttribute('data-conditional')) continue;
-      const menu = held.menu as (HTMLElement & { conditions?: unknown[] }) | undefined;
-      const chip = this.#chipOf(held);
-      if (!chip) continue;
-      chip.toggleAttribute('data-current', (menu?.conditions?.length ?? 0) > 0);
-    }
-  }
-
-  /** Every toolbar a borrowed menu came from, each named once. */
-  #bars(): Array<HTMLElement & { report?: () => void }> {
-    const out = new Set<HTMLElement>();
-    for (const [, held] of this.#held) {
-      const bar = this.#barOf(held);
-      if (bar) out.add(bar);
-    }
-    return [...out] as Array<HTMLElement & { report?: () => void }>;
-  }
-
-  /** The toolbar a borrowed menu came from.
-   *
-   *  `closest()` STOPS at a shadow boundary, and a chip lives inside the
-   *  toolbar's shadow root — so it walked up to the chip and found no bar at
-   *  all. A root walk crosses the boundary.
-   *  TRAP T-closest-stops-at-the-shadow-boundary */
-  #barOf(held: Held): (HTMLElement & { report?: () => void }) | null {
-    const root = this.getRootNode() as Document | ShadowRoot;
-    const host = (root as ShadowRoot).host ?? root;
-    const bars = (host.ownerDocument ?? document)
-      .querySelectorAll<HTMLElement & { heldIds?: readonly string[];
-        report?: () => void; shadowRoot: ShadowRoot }>('sherpa-quick-filter-toolbar');
-    for (const bar of bars) {
-      if (bar.heldIds?.includes(held.def.id)) return bar;
-    }
-    return null;
-  }
-
-  /** The BAR's own chip for this field.
-   *
-   *  Not `menuHome.parent`: the flip path records the parent as it is AT THAT
-   *  MOMENT, and for a menu the panel already holds that is the PANEL's chip.
-   *  Ticking it told the bar nothing. The bar's chip is found by field id.
-   *  TRAP T-the-panel-asks-the-bar-it-does-not-answer-for-it */
-  #chipOf(held: Held): HTMLElement | null {
-    const bar = this.#barOf(held) as (HTMLElement & { shadowRoot: ShadowRoot }) | null;
-    return bar?.shadowRoot?.querySelector<HTMLElement>(
-      `.chip[data-id="${CSS.escape(held.def.id)}"]`) ?? null;
-  }
 
   /** DISCARD reverts to the last Apply, which is why it is not Cancel. */
   #onDiscard = (): void => {

@@ -476,6 +476,8 @@ export abstract class SherpaElement extends HTMLElement {
   /**
    * The first element on a composed event's path that matches.
    * TRAP T-composed-path-not-target — `target` RETARGETS at a shadow boundary.
+   * This is also why a host cannot just call `closest()` from the target:
+   * TRAP T-closest-stops-at-the-shadow-boundary
    */
   protected pathFind<T extends Element = HTMLElement>(event: Event, selector: string): T | null {
     for (const node of event.composedPath()) {

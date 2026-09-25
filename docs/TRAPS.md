@@ -8800,36 +8800,31 @@ a field's type to filter it, the type is in the wrong place.
 - Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
-### T-the-panel-asks-the-bar-it-does-not-answer-for-it
+### T-the-panel-reports-its-own-reading
 
-`sherpa-filter-panel` is a SECOND VIEW of a toolbar's filters, not a second
-filtering system. Every bug in it so far came from the panel deriving an answer
-the bar already gives.
+The filter panel reports WHAT THE READER DID — picked values and conditions —
+and the data layer decides what it means. It does not ask another component,
+and it does not reach into one.
 
-Apply built its own payload from `values` — the ticked chips. A field in
-CONDITION mode has NO ticked chips, so its rows said nothing and Apply
-committed nothing, while `menu.conditions` sat right there holding the answer.
+**This replaces `T-the-panel-asks-the-bar-it-does-not-answer-for-it`, which was
+half right.** That one correctly said the panel must not DERIVE a second
+answer, then prescribed the wrong cure: ask the toolbar. So the panel grew
+`#barOf` (a `document.querySelectorAll` for a toolbar), `#chipOf` (a reach into
+its shadow root), `#bars()`, and `#markConditioned` — which ticked the BAR's
+chips so the bar's own `readings` would see the panel's conditions — and then
+called `bar.report()` to make it re-emit.
 
-So Apply asks instead: `bar.report?.()`, which re-reads the bar's own chips AND
-their menus' conditions through `states`/`clauses` — one rule, one place.
+Will, 2026-09-25: *"The Panel and Bar should not be aware of each other. This
+is core to sherpa component agnosticism. The data layer is the coordinator."*
 
-Two reads it needs, and both were wrong in the obvious way:
-
-- **The bar.** `closest()` stops at a shadow boundary and a chip lives inside
-  the toolbar's shadow root, so the walk found the chip and no bar. The bar is
-  found by asking which one holds the field (`heldIds`).
-- **The chip.** `menuHome.parent` records the parent AT FLIP TIME, which for an
-  already-borrowed menu is the PANEL's chip. Ticking that told the bar nothing.
-  The bar's own chip is found by field id.
-
-The chip also has to be TICKED: the bar reads `data-current` to decide whether
-a field is suspended, and a chip in the hidden toolbar was never ticked because
-the reader answered in the panel. Suspended meant no clause, with correct
-conditions in the state.
-
-**A second view reports through the first, or it is a second system.**
+`values` was ticks only, which is why the fix-up existed: a field in CONDITION
+mode has no ticked chips, so Apply committed nothing. The panel has `readings`
+now — picked, conditions and typed text, per scope and field — so there is
+nothing left to fix up. All four reaching methods are deleted, and neither
+component names the other.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `examples/contexts/records.js`
 
 ### T-closest-stops-at-the-shadow-boundary
 
@@ -8850,7 +8845,7 @@ node = node instanceof ShadowRoot ? node.host : node.parentNode;
 `composedPath()` does the same job for an EVENT. `closest()` is correct only
 inside one tree.
 
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-a-borrowed-menu-is-still-its-chips
 
@@ -9122,7 +9117,6 @@ menu is right, and the grid does not move.
 
 ---
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-a-conditioned-chip-reads-as-info
 

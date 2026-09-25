@@ -141,8 +141,25 @@ export const customerStore = IdbStore.available
   : new ArrayStore(customers, { key: 'email', schema: customerSchema });
 
 /**
- * Seed the demo records, but ONLY on a first run — re-seeding would erase the
- * very edit that is meant to survive a reload.
+ * BUMP when `customers` changes, or a browser that already holds the rows keeps
+ * the old ones. A re-seed overwrites the seed rows; rows a person added stay.
+ */
+const SEED = 2;
+const SEED_KEY = 'sherpa-examples:customers-seed';
+
+/** Only a STORED copy can be stale — the ArrayStore is built from `customers` on every load. */
+function seedIsStale() {
+  if (!(customerStore instanceof IdbStore)) return false;
+  try {
+    return localStorage.getItem(SEED_KEY) !== String(SEED);
+  } catch {
+    return false; // TRAP T-storage-access-throws — no key to keep, so never re-seed on every load
+  }
+}
+
+/**
+ * Seed the demo records on a first run, or when `SEED` moves — re-seeding on
+ * every load would erase the very edit that is meant to survive a reload.
  *
  * `putAll` rather than 100 `insert()` calls: one transaction and ONE `change`
  * event (`T-idb-bulk-is-one-transaction`).
@@ -152,8 +169,9 @@ export const customerStore = IdbStore.available
  */
 export const customersReady = (async () => {
   try {
-    if (await customerStore.totalCount() === 0) {
+    if (await customerStore.totalCount() === 0 || seedIsStale()) {
       await customerStore.putAll(customers);
+      localStorage.setItem(SEED_KEY, String(SEED));
     }
   } catch {
     // Storage blocked mid-session, or a version clash with another tab. An

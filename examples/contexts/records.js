@@ -487,9 +487,14 @@ export async function init(root, { session } = {}) {
   /* APPLY. The panel reports every field in ONE event; each one goes to the
      source exactly as its chip would send it. */
   panel?.addEventListener('quick-filter-change', (e) => {
-    const byScope = e.detail.values ?? {};
+    /* THE PANEL'S OWN WHOLE ANSWER — picked values AND conditions. It used to
+       report ticks only and then reach into the bar to fix that up; the bar is
+       told here instead, and neither component knows the other exists.
+       TRAP T-the-panel-reports-its-own-reading */
+    const byScope = e.detail.readings ?? {};
     for (const [, fields] of Object.entries(byScope)) {
-      for (const [id, picked] of Object.entries(fields)) {
+      for (const [id, reading] of Object.entries(fields)) {
+        const picked = reading.picked ?? [];
         // PRESETS are toggles, not a field: relay each through its own chip.
         if (id === 'presets') {
           for (const chip of qft.shadowRoot?.querySelectorAll('.chips > .chip') ?? []) {
@@ -498,8 +503,12 @@ export async function init(root, { session } = {}) {
           }
           continue;
         }
-        if (FIELD_CHIPS.has(id)) source.select(id, picked);
-        else qft.setChipValues(id, picked);
+        /* THE FIELD'S OWN SLOT for a field the source owns; the BAR's chip
+           otherwise. `setChipReading` carries the conditions too, which
+           `setChipValues` could not — that is why the panel used to tick the
+           chip itself. */
+        if (FIELD_CHIPS.has(id)) source.select(id, picked, reading);
+        else qft.setChipReading(id, reading);
       }
     }
   }, { signal });
