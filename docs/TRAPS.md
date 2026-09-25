@@ -11653,6 +11653,37 @@ a CONDITION into a chip. The Add menu packs it with the rest.
 - Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 
+### T-edit-unpacks-a-saved-filter
+
+**Edit puts a saved filter's answer back into its fields — unpack — and Delete
+forgets it.** Will, 2026-09-25: a reader's own chip needs *"a menu button to
+expose an edit filter option. Editing should re-expose the conditional input
+UI"*. The UI already exists; unpack is the door back into it.
+
+Only a READER'S OWN saved chip (`editable`) opens "Edit filter" and "Delete
+filter" — `packFilter` marks one, and a host marks the ones it stored. An app
+preset opens nothing: it is the app's.
+
+`unpackFilter(id)` brings a field that is not on the bar onto it from the Add
+list, rebuilds, switches the saved chip OFF, and — once the rebuilt menus have
+DRAWN, because a menu that has not drops rows — clears each field and puts its
+part back through `setChipReading`. Then ONE event: the source sees the saved
+part go and the fields come back together, so the rows do not move.
+
+**The next Save offers the old name.** `filter-save` carries the `id` and
+`label` of the filter an Edit unpacked, so a host can offer the name back, and
+the same name saves over the old one (`T-derived-id-makes-resave-an-update`).
+Pack or Delete ends it.
+
+**Delete is not Remove.** Remove takes a chip off the bar and it waits in the
+Add menu's Custom section; Delete takes it out of both, and `filter-delete`
+tells the host to forget it.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
+- Site: `examples/contexts/records.js`
+- Site: `test/e2e/reforged-saved-filter.spec.ts`
+
 ### T-saved-filters-are-the-custom-section
 
 **Saved filters are offered LAST in the Add menu, under a "Custom" heading.**

@@ -353,3 +353,149 @@ test('the Add menu offers saved filters at the bottom, under Custom', async ({ p
   expect(r.own).toEqual(['owner*']);
   expect(r.added).toBe(true);
 });
+
+/**
+ * EDIT UNPACKS; DELETE FORGETS. A reader's OWN saved chip opens "Edit filter"
+ * and "Delete filter"; an app preset opens nothing — it is the app's. Edit puts
+ * the answer back into its fields — a field not on the bar comes onto it — and
+ * the saved chip goes off, in ONE event. Saving next offers the old name, so
+ * the same name updates it. TRAP T-edit-unpacks-a-saved-filter
+ */
+test('a reader\'s own saved chip opens Edit and Delete; a preset does not', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const readings = { health: { op: 'lt', text: '60' } };
+    const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [
+      { id: 'at-risk', label: 'At risk', readings },
+      { id: 'custom:mine', label: 'Mine', readings, editable: true, removable: true },
+    ], { style: 'inline-size: 1200px' });
+    await window.__settled();
+    const chip = (id: string) => bar.shadowRoot!.querySelector<HTMLElement>(`.chip[data-id="${id}"]`)!;
+    const actions = (id: string) =>
+      [...(chip(id).querySelector('sherpa-menu')?.querySelectorAll('button') ?? [])].map((b) => b.value);
+    return {
+      preset: { menu: chip('at-risk').hasAttribute('data-menu'), actions: actions('at-risk') },
+      own: { menu: chip('custom:mine').hasAttribute('data-menu'), actions: actions('custom:mine'),
+        condition: chip('custom:mine').getAttribute('data-condition') },
+    };
+  });
+
+  expect(r.preset).toEqual({ menu: false, actions: [] });
+  // Still a Custom Condition Filter with a menu: the answer is given.
+  expect(r.own).toEqual({ menu: true, actions: ['edit', 'delete'], condition: 'custom' });
+});
+
+test('Edit unpacks the answer into its fields, in one event; Delete forgets the chip', async ({ page }) => {
+  const r = await page.evaluate(async ({ OPTS }) => {
+    const { ArrayStore, DataSource } = await import('/dist/data.js') as unknown as {
+      ArrayStore: new (rows: unknown[]) => unknown;
+      DataSource: new (o: { store: unknown }) => Source;
+    };
+    const source = new DataSource({ store: new ArrayStore([
+      { id: 1, owner: 'Dana', tier: 'gold' }, { id: 2, owner: 'Dana', tier: 'silver' },
+      { id: 3, owner: 'Ravi', tier: 'gold' },
+    ]) });
+    const readings = { owner: { conditions: [{ op: 'contains', text: 'Da' }] }, tier: { picked: ['gold'] } };
+    const bar = await window.__mount<Bar & { savedReadings: Record<string, unknown> }>('sherpa-quick-filter-toolbar', [
+      { id: 'owner', label: 'Owner', select: 'multiple', custom: true, removable: true, options: OPTS },
+      { id: 'custom:mine', label: 'Mine', readings, editable: true, removable: true, active: true },
+    ], { style: 'inline-size: 1200px', 'data-saveable': true });
+    bar.available([{ id: 'tier', label: 'Tier', select: 'multiple',
+      options: [{ value: 'gold', label: 'Gold' }, { value: 'silver', label: 'Silver' }] }]);
+    source.bind(bar, { steerOnly: true });
+    bar.report();
+    await window.__settled();
+    await source.load();
+    const before = { total: source.debugState().total, parts: Object.keys(source.debugState().parts) };
+
+    let events = 0;
+    bar.addEventListener('quick-filter-change', () => { events += 1; });
+    const chip = (id: string) => bar.shadowRoot!.querySelector<HTMLElement>(`.chip[data-id="${id}"]`);
+    const press = (id: string, value: string) => chip(id)!.querySelector('sherpa-menu')!
+      .querySelector<HTMLButtonElement>(`button[value="${value}"]`)!.click();
+    press('custom:mine', 'edit');
+    await window.__settled();
+    await new Promise((res) => setTimeout(res, 150));
+    await source.load();
+    const fields = (bar as unknown as { readings: Record<string, { picked: unknown[]; conditions: unknown[] }> }).readings;
+    const edited = {
+      events,
+      saved: chip('custom:mine')!.hasAttribute('data-current'),
+      owner: { on: chip('owner')!.hasAttribute('data-current'), rows: fields.owner!.conditions },
+      tier: { on: chip('tier')?.hasAttribute('data-current') ?? null, picked: fields.tier?.picked ?? null },
+      total: source.debugState().total,
+      parts: Object.keys(source.debugState().parts),
+    };
+
+    const asked: unknown[] = [];
+    bar.addEventListener('filter-save', (e) => asked.push((e as CustomEvent).detail));
+    bar.shadowRoot!.querySelector('.add-btn sherpa-menu')!.shadowRoot!
+      .querySelector<HTMLElement>('.save')!.click();
+
+    const told: unknown[] = [];
+    bar.addEventListener('filter-delete', (e) => told.push((e as CustomEvent).detail));
+    press('custom:mine', 'delete');
+    await window.__settled();
+    const addRows = [...bar.shadowRoot!.querySelectorAll<HTMLInputElement>('.add-btn sherpa-menu input')]
+      .map((i) => i.value);
+    return { before, edited, asked, told, gone: !chip('custom:mine'), offered: addRows.includes('custom:mine') };
+  }, { OPTS });
+
+  expect(r.before).toEqual({ total: 1, parts: ['saved:custom:mine'] });
+  // ONE event: the saved chip off, and both fields holding their part again.
+  expect(r.edited).toEqual({
+    events: 1, saved: false,
+    owner: { on: true, rows: [{ op: 'contains', text: 'Da' }] },
+    tier: { on: true, picked: ['gold'] },
+    total: 1, parts: [],
+  });
+  // Saving next offers the name it came from — the same name updates it.
+  expect(r.asked).toEqual([{
+    readings: { owner: { conditions: [{ op: 'contains', text: 'Da' }] }, tier: { picked: ['gold'] } },
+    id: 'custom:mine', label: 'Mine',
+  }]);
+  expect(r.told).toEqual([{ id: 'custom:mine' }]);
+  expect(r.gone).toBe(true);
+  expect(r.offered).toBe(false);
+});
+
+/** The Records page: Edit, then Save offers the old name back; Delete forgets it. */
+test('the Records page edits a saved filter under its own name, and deletes it', async ({ page }) => {
+  const asked: string[] = [];
+  page.on('dialog', (d) => { asked.push(d.defaultValue()); void d.accept('Dana accounts'); });
+  await page.goto('http://localhost:4200/?context=records');
+  await page.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
+  const kept = () => page.evaluate(() =>
+    Object.keys(JSON.parse(localStorage.getItem('sherpa:filters:customers') ?? '{}')));
+  const inBar = (sel: string) => page.evaluate((s) => !!document
+    .querySelector('#context-root sherpa-quick-filter-toolbar')!.shadowRoot!.querySelector(s), sel);
+  const press = (sel: string) => page.evaluate((s) => {
+    const qft = document.querySelector('#context-root sherpa-quick-filter-toolbar')!;
+    const el = qft.shadowRoot!.querySelector(s) as HTMLElement & { shadowRoot?: ShadowRoot } | null;
+    (el?.shadowRoot?.querySelector<HTMLElement>('.save') ?? el)?.click();
+  }, sel);
+
+  await page.evaluate(() => {
+    localStorage.removeItem('sherpa:filters:customers');
+    const qft = document.querySelector('#context-root sherpa-quick-filter-toolbar') as Bar;
+    qft.setChipReading('owner', { conditions: [{ op: 'contains', text: 'Da' }] });
+    qft.report();
+  });
+  await expect.poll(() => inBar('.chip[data-id="owner"] sherpa-menu[data-saveable]')).toBe(true);
+  await press('.chip[data-id="owner"] sherpa-menu');
+  await expect.poll(kept).toEqual(['dana-accounts']);
+
+  // EDIT: the answer goes back to Owner; saving again offers the same name.
+  await press('.chip[data-id="custom:dana-accounts"] sherpa-menu button[value="edit"]');
+  await expect.poll(() => inBar('.chip[data-id="owner"][data-current]')).toBe(true);
+  await press('.add-btn sherpa-menu');
+  await expect.poll(() => asked.length).toBe(2);
+  expect(asked).toEqual(['', 'Dana accounts']);
+  await expect.poll(kept).toEqual(['dana-accounts']);
+
+  // DELETE: off the bar, and forgotten.
+  await press('.chip[data-id="custom:dana-accounts"] sherpa-menu button[value="delete"]');
+  await expect.poll(kept).toEqual([]);
+  expect(await inBar('.chip[data-id="custom:dana-accounts"]')).toBe(false);
+  await page.evaluate(() => localStorage.removeItem('sherpa:filters:customers'));
+});

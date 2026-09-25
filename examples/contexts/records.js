@@ -10,7 +10,7 @@
 import {
   DataSource, VIEW_SCOPE, SherpaToast, persistView, viewOptions, onViewPicked,
   countBy, reduceRows, bindSelection, andFilter, picksClause, stateClause,
-  seriesBy, deltaPercent, saveFilterAs, loadSavedFilters, labelId,
+  seriesBy, deltaPercent, saveFilterAs, loadSavedFilters, deleteSavedFilter, labelId,
 } from '../../dist/index.js';
 import { customerStore, customersReady, customers, columns, plans, regions, customerOrgs, states }
   from './records-data.js';
@@ -288,8 +288,9 @@ export async function init(root, { session } = {}) {
   const DATA_AVAILABLE = addable('data', heldSomewhere).map((d) => ({ ...d, type: 'data' }));
   /* THE READER'S OWN saved filters, offered at the bottom of Add, under Custom.
      TRAP T-saved-filters-are-the-custom-section */
-  const savedDefs = () => Object.entries(loadSavedFilters('customers'))
-    .map(([id, saved]) => ({ id: `custom:${id}`, label: saved.label, readings: saved.readings }));
+  const savedDefs = () => Object.entries(loadSavedFilters('customers')).map(([id, saved]) => ({
+    id: `custom:${id}`, label: saved.label, readings: saved.readings, editable: true,
+  }));
   qft.available([...DATA_AVAILABLE, ...savedDefs()]);
 
   /* UP IS OPEN: the header offers every field any component has — including
@@ -822,10 +823,15 @@ export async function init(root, { session } = {}) {
      the fields it came from. TRAP T-save-packs-the-fields-into-one-chip
      TRAP T-a-saved-filter-lives-with-its-data */
   qft.addEventListener('filter-save', (e) => {
-    const label = prompt('Name this filter')?.trim();
+    // After an Edit the old name is offered, so the same name updates it.
+    const label = prompt('Name this filter', e.detail.label ?? '')?.trim();
     if (!label) return;
     saveFilterAs('customers', label, e.detail.readings);
     qft.packFilter({ id: `custom:${labelId(label)}`, label, readings: e.detail.readings });
+  }, { signal });
+  // DELETE: the bar has let it go; this page forgets it. TRAP T-edit-unpacks-a-saved-filter
+  qft.addEventListener('filter-delete', (e) => {
+    deleteSavedFilter('customers', e.detail.id.replace(/^custom:/, ''));
   }, { signal });
   // Grouping needs no wiring: the source writes data-group-field on every bound
   // component, and the grid draws the collapsible group rows.

@@ -248,7 +248,7 @@ capabilities:
     api: js-methods
     description: >-
       callable from a view definition's state block (setChipValues, setChipReading, supersede,
-      packFilter, setClause, report, available, addFilters, removeFilter, allowFields,
+      unpackFilter, packFilter, setClause, report, available, addFilters, removeFilter, allowFields,
       addExternalFilter, addCustomFilter, clearAll, organise). See $extensions.sherpa.methods.
 events:
   - $type: event
@@ -290,6 +290,12 @@ events:
     composed: true
     detail:
       readings: unknown
+  - $type: event
+    name: filter-delete
+    bubbles: true
+    composed: true
+    detail:
+      id: unknown
   - $type: event
     name: filter-add
     bubbles: true
@@ -356,6 +362,10 @@ $extensions:
         name: supersede
         args: "ids: readonly string[], appliedAt?: string"
         description: supersede([...ids]) — the VIEW now owns these fields.
+      - $type: method
+        name: unpackFilter
+        args: "id: string"
+        description: Put a saved filter's answer back into its fields — UNPACK. A field not on
       - $type: method
         name: packFilter
         args: "saved: SavedFilter & { id: string }"

@@ -41,7 +41,8 @@
     group-change         — detail: { field }
     sort-change          — detail: { field, direction }
     filter-remove        — a chip was removed. detail: { id, filter }
-    filter-save          — "Save filter" was pressed. detail: { readings }
+    filter-save          — "Save filter" was pressed. detail: { readings, id?, label? } — the saved filter an Edit unpacked
+    filter-delete        — a saved filter's Delete: it is off the bar. detail: { id }
     filter-add           — the Add chip's body was clicked
     filter-clear         — the undo button: every chip reset
     ai-filter-request    — the AI button
@@ -185,6 +186,14 @@
       <input type="checkbox" style="margin: 0; flex: 0 0 auto;" />
       <span class="qf-toggle-label"></span>
     </label>
+  </template>
+
+  <!-- A reader's OWN saved filter opens these. TRAP T-edit-unpacks-a-saved-filter -->
+  <template class="qf-saved-menu-tpl">
+    <sherpa-menu slot="menu">
+      <button type="button" value="edit">Edit filter</button>
+      <button type="button" value="delete">Delete filter</button>
+    </sherpa-menu>
   </template>
 
 
