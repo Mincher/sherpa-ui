@@ -20,6 +20,14 @@
  *  - Skip OFF-SCALE values (radius 1, radius 5 have no token — leave them; they are
  *    a scale gap or intentional, not a binding failure).
  *  - Never touch INSTANCE internals — they inherit bindings from their main component.
+ *
+ * Map:
+ * - SPACE — Resolved pixel value → Core token name.
+ * - RADIUS — px radius → the Figma rounding variable it should bind
+ * - STROKE_WIDTH — px stroke → the Figma border-width variable it should bind
+ * - PROP_MAP — Figma property → { category, table }.
+ * - tokenForValue — Resolve a hardcoded value on a property to a Core token name, or null.
+ * - shouldBind — Should this property, with this value, on this node, be bound?
  */
 
 /** Resolved pixel value → Core token name. */

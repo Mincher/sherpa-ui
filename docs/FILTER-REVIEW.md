@@ -1980,3 +1980,50 @@ reading as unanswered for a tick in exactly that hand-off
    what §21.3 implies.
 3. The saved-view format. A `ViewSnapshot` stores readings, so a change of
    shape needs a reader for the old one.
+
+---
+
+## 22. Filter state per View, and a source per View — to explore
+
+Will, 2026-09-25: *"Filters, and their state, is applying to whole Areas of the
+app rather than being unique to individual Views within that Area. All Views in
+an Area are also using the same Data Source which is unrealistic. So we should
+generate more fake data and Data Sources. We should also customise the content
+and layouts for all Views, too."*
+
+**Not scheduled.** In the ratified nav words, the "Area" here is a **Context**
+(Records — a `?context=`), and its **Views** are the View chip's options: All,
+Mine, At risk, Renewals.
+
+### 22.1 What is true today
+
+| | scope today | should be |
+|---|---|---|
+| filter state (the chips, their picks) | the whole Context — every View shares it | per View |
+| the DataSource | ONE per Context — `records.js` builds a single source for every View | one per View, where the View's data differs |
+| a View's content and layout | the same grid and charts for every View; a View changes the QUERY only | customised per View |
+
+A View today is a `ViewSnapshot`: a query plus each component's state
+(`RECORDS_VIEWS` in `records-views.js`). Switching View re-applies the query
+over the SAME source and the SAME screen, so a filter chip set on "Mine" is
+still set on "At risk".
+
+### 22.2 What it touches
+
+- **State:** the filter bars' state would be keyed by View, not by Context —
+  the saved-view machinery (`persistView`, `ViewSnapshot`) already captures
+  "the query AND every component's state", so this may be a keying change
+  rather than new machinery.
+- **Data:** more fake datasets, and a source per View where the records differ
+  — which is also where §7 step 4c's `time` field and §18's groups earn their
+  keep, because they must work over any dataset.
+- **Content and layout:** a View supplying its own markup is already possible
+  (`T-view-content-is-markup`, parsed through an allow-list) — the example
+  simply does not use it yet.
+
+### 22.3 What to settle first
+
+1. When a reader switches View and comes back, do they get the View's SAVED
+   filters, or the ones they last left there?
+2. Does a filter raised to the App header (§7 scope rules) belong to the View,
+   or to the Context above every View?

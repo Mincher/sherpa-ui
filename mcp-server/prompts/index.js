@@ -7,6 +7,9 @@
  *
  * The old pattern-based prompts (build_ui, spec_ideate, spec_prototype) were
  * dropped — patterns/ was removed from the reforged tree.
+ *
+ * Map:
+ * - register — register the three guided prompts on an MCP server
  */
 import { z } from "zod/v3";
 import fs from "fs";

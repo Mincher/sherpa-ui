@@ -8,6 +8,9 @@
  *
  * Thin wrappers only — the same `validate()` a Store runs. Never re-implement a
  * check here; a second implementation eventually disagrees.
+ *
+ * Map:
+ * - register — register run_query and the schema tools, over sherpa-ui/data
  */
 import { z } from "zod/v3";
 import { loadDataLayer, dataLayerError } from "../lib/data-layer.js";

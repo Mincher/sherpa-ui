@@ -9,6 +9,15 @@
  * 2026-09-17. Token NAMES come from `loadCssTokenNames()` — the generated
  * sheet, which cannot go stale by hand. ROLE and PURPOSE have no source, and
  * that is now a stated gap rather than a silent null.
+ *
+ * Map:
+ * - loadCssTokenNames — Every `--sherpa-*` token name declared in the generated sheet, as a Set.
+ * - loadNameMap — the Figma-name → component map, cached
+ * - loadComponentNames — The list of real components (dir names in src/components).
+ * - loadSpec — The RAW spec — `<name>.component.yaml` as written, or null.
+ * - loadDef — a component's spec as a def, or null
+ * - PATHS — where every generation input lives
+ * - ROOT_DIR — the repo root, as an absolute path
  */
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';

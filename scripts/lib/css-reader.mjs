@@ -14,6 +14,12 @@
  *
  * Chromium-only CSS features (color-mix, @property, @function) are irrelevant here
  * — we only read selectors and `var(--sherpa-*)` bindings, which parse fine.
+ *
+ * Map:
+ * - authoredCss — Strip the generated projector region; return only hand-authored CSS.
+ * - extractBindings — every token a component binds, as { selector, property, token }
+ * - extractBindingsMap — Round-trip's shape: { '.el': { prop: 'sherpa-x-without-prefix' } }.
+ * - parseStates — a component's CSS states — :host([data-*]), :hover, :focus-visible
  */
 import postcss from 'postcss';
 

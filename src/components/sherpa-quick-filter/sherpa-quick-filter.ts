@@ -1,11 +1,8 @@
 /**
- * sherpa-quick-filter — a filter chip you can toggle, with an optional value menu.
+ * sherpa-quick-filter — one chip; knows its KIND, so Group toggles and Sort cycles on their own.
  *
  * @see TRAP T-chip-menu-is-a-boolean-state, TRAP T-one-pick-reads-field-and-value,
  * TRAP T-scope-does-not-stop-inheritance, TRAP T-icon-only-is-purely-css
- *
- * Map:
- * - SherpaQuickFilter — one chip; knows its KIND, so group toggles and sort cycles on their own
  */
 import { DATA_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import {

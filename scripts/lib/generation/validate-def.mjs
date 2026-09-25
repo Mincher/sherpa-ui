@@ -4,6 +4,9 @@
  *
  * Encodes the rules from docs/DEF-TO-FIGMA-BUILD-RULES.md so an AI can't ship a
  * def that repeats a known defect.
+ *
+ * Map:
+ * - validateDef — check a def against its schema; the errors, or none
  */
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';

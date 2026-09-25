@@ -4,6 +4,9 @@
  * A user's saved view and a shared link produce the same shape, so these
  * presets take no code path a saved view would not also take. Picking one in
  * the header's View chip calls `applyViewSnapshot`.
+ *
+ * Map:
+ * - RECORDS_VIEWS — the Records Context's saved views — All, Mine, At risk, Renewals
  */
 
 /** @type {Record<string, { label: string, snapshot: import('../../dist/index.js').ViewSnapshot }>} */

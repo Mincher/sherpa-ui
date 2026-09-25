@@ -2,6 +2,9 @@
  * sherpa-progress-step-tracker — a row of steps showing where you are in a flow.
  *
  * JS holds the steps and the current index; CSS draws done / active / to-do.
+ *
+ * Map:
+ * - Step — one step: a label and an optional description
  */
 import { SherpaElement, coerceNum } from '../../core/ui/sherpa-element.js';
 

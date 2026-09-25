@@ -8,6 +8,11 @@
  * below had been found and fixed in the generator; neither reached the copy, so
  * the two disagreed on 5 of 58 components — one reporting all green while the
  * other failed five.
+ *
+ * Map:
+ * - parseObserved — The `static override observed` list, as names.
+ * - expandArrayConst — Read a module-level `const NAME = ['a', 'b'] as const;` back into its strings.
+ * - parsePropKinds — The declared `kind` of each prop, from `static override props`.
  */
 
 /**

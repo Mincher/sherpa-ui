@@ -25,6 +25,10 @@
  * The spec does NOT carry the hand-written .ts body or the hand-written CSS state
  * rules — compileDef doesn't emit those either, so the adapter has nothing to map
  * there. That residue is the guard's declared "cannot round-trip" surface.
+ *
+ * Map:
+ * - refToToken — part after the `--sherpa-` prefix.
+ * - specToDef — Pure `spec → def`.
  */
 
 // ── {ref} → the token form compileDef's tokenVar() expects ─────────────────────

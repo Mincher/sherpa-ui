@@ -3,6 +3,9 @@
  * colour per bar; CSS grows each bar from the baseline.
  *
  * TRAP T-hiding-a-series-rescales-the-axis — the y-max comes from what is left.
+ *
+ * Map:
+ * - BarDatum — one bar: its label and value
  */
 import type { ChartDatum } from '../../core/data/chart-datum.js';
 import type { ChartScale } from '../../core/data/format-tick.js';

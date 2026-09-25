@@ -10,6 +10,10 @@
  *
  * Pure + importable. Neither the token pipeline nor the component pipeline
  * imports the other; they touch ONLY through this {ref} syntax.
+ *
+ * Map:
+ * - isRef — Is `s` a {ref} string?
+ * - resolveRef — The unified entry point.
  */
 
 /** Is `s` a {ref} string? */

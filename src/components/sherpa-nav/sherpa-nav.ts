@@ -3,6 +3,14 @@
  * Fill it with populate(config) — a NavConfig, or a NavEntry[] treated as one section.
  *
  * TRAP T-nav-state-writes-only-the-attribute
+ *
+ * Map:
+ * - NavRowInfo — What a stamped row shows.
+ * - NavEntry — An AREA when it has `children` (it toggles, never navigates); a CONTEXT when it has an `href`.
+ * - NavItem — DEPRECATED — the old name for NavEntry, kept for existing imports
+ * - NavSection — A SECTION: a label and divider over its entries.
+ * - NavConfig — the whole nav as data: product, quick items, sections, and the Settings sections
+ * - NavState — The five Figma Navigation modes.
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import { hasIcon, renderIcon } from '../../core/ui/render-icon.js';

@@ -13,6 +13,9 @@
  *   Resources sherpa://def/{name} · sherpa://ontology/{id}
  *             · sherpa://component/{name}/{ts|html|css|def} · sherpa://rules
  *   Prompts   generate_component · review_component_usage · debug_component
+ *
+ * Map:
+ * - createServer — build the MCP server with every tool, resource and prompt registered
  */
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 

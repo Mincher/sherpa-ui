@@ -2,6 +2,17 @@
  * records-data.js — the customer records, and the ONE store that holds them.
  * A STORE is app-level (a module `const`, alive as long as the tab); a
  * DataSource is Context-level.
+ *
+ * Map:
+ * - plans — every plan a record can have; the Add dialog offers exactly these
+ * - states — every status, in a fixed order, so a category keeps its chart colour
+ * - regions — every region a record can have; the header's Region chip offers exactly these
+ * - customerOrgs — Organisations, not people — a record is a PERSON in one.
+ * - customers — The seed records.
+ * - columns — the grid columns — what a record looks like, shared by any Context that shows one
+ * - customerSchema — what a valid customer record is, checked at the STORE so every write passes it
+ * - customerStore — the customer records: IndexedDB where it exists, in memory where not
+ * - customersReady — resolves once the demo records are seeded; seeds again only when SEED moves
  */
 import { IdbStore, ArrayStore, rules, required, number, email } from '../../dist/index.js';
 

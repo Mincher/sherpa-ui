@@ -6,6 +6,9 @@
  * The shared nav/header live once in index.html; chat wants a full-height
  * content region, so it sets the shell's data-no-header and clears it on the
  * cleanup returned to the router. Behaviour is identical to the old chat.html.
+ *
+ * Map:
+ * - init — bind the chat Context inside `root`
  */
 export async function init(root) {
   await Promise.all([

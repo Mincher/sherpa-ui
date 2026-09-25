@@ -1,6 +1,9 @@
 /**
  * The dashboard Context. init(root) populates the metric tiles, charts and
  * summary inside `root`; the nav and header live once in index.html.
+ *
+ * Map:
+ * - init — bind the dashboard Context — charts, tiles and legends — to one source
  */
 import {
   ArrayStore, DataSource, viewOptions, onViewPicked,

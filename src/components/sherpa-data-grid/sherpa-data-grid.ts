@@ -1,6 +1,8 @@
 /**
- * sherpa-data-grid — a sortable, filterable, groupable table. populate() draws
- * it; the grid REPORTS sort, filter, paging and selection, a host owns them.
+ * sherpa-data-grid — the table; REPORTS sort, filter, paging and selection.
+ *
+ * `populate()` draws it, and a host owns every one of those — the grid only
+ * reports what the reader did.
  *
  * TRAP T-grid-active-flag-is-not-a-tint
  * TRAP T-grid-group-drops-the-column
@@ -10,7 +12,6 @@
  * Map:
  * - GridColumn — one column: its field, heading, type, and whether it sorts or filters
  * - GridAction — One action a row offers.
- * - SherpaDataGrid — the table; REPORTS sort, filter, paging and selection, a host owns them
  */
 import { kindOf } from '../../core/ui/filter-kind.js';
 import {

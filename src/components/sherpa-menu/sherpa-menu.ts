@@ -1,5 +1,7 @@
 /**
- * sherpa-menu — a floating list of choices or actions, on the native popover API.
+ * sherpa-menu — the dropdown card: value rows, condition rows, number and date bodies.
+ *
+ * On the native popover API.
  *
  * The browser owns the top layer, Escape, outside-click and focus. `#place()`
  * measures the trigger: CSS anchoring cannot cross a shadow root.
@@ -12,7 +14,6 @@
  *
  * Map:
  * - MenuItem — One item a menu draws for itself.
- * - SherpaMenu — the dropdown card: value rows, condition rows, number and date bodies
  */
 import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import {

@@ -1,5 +1,5 @@
 /**
- * sherpa-filter-panel — the filter toolbars, as a column.
+ * sherpa-filter-panel — the filter toolbars as a column; builds its own menus.
  *
  * A SIBLING of sherpa-quick-filter-toolbar over the same DataSource: it takes
  * the same filter definitions and emits the same `quick-filter-change`.
@@ -10,7 +10,6 @@
  * - PanelFilter — One field the panel draws.
  * - PanelColumn — A column Group or Sort may arrange by.
  * - PanelScope — One scope: a named group of fields, plus what its Add button offers.
- * - SherpaFilterPanel — the filter toolbars as a column, drawn from facts; builds its own menus
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import { ORGANISE_ICONS } from '../../core/ui/shared-constants.js';

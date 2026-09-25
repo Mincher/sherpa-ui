@@ -9,6 +9,9 @@
  *
  * Requires an `anatomy` block on the def (only enriched defs have one) — the
  * caller is responsible for that check.
+ *
+ * Map:
+ * - compileDef — Pure `def → code`.
  */
 
 // ── helpers ───────────────────────────────────────────────────────────

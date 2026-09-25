@@ -3,6 +3,14 @@
  *
  * Records are the data; every total is DERIVED, so one filter reaches every
  * chart. Each aggregate is a plain rows→payload function used as a bind `as`.
+ *
+ * Map:
+ * - customerOrgs — The customers — organisations, not people.
+ * - alerts — One alert per row — the grain the charts summarise.
+ * - CATEGORY_ORDER — The orders the charts share.
+ * - OS_ORDER — the OS categories in a fixed order, so each keeps its colour
+ * - DAY_ORDER — The x-axis of the line chart — every day gets a point, quiet or not.
+ * - STORAGE_EDGES — The storage histogram's band edges.
  */
 
 const CATEGORIES = ['Disk', 'CPU', 'Memory', 'Network', 'Security', 'Services', 'Backup', 'Antivirus'];

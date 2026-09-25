@@ -16,6 +16,12 @@
  *   - No arbitrary script. A caller names an ELEMENT, a METHOD and JSON
  *     ARGUMENTS; the page-side code is fixed and lives here, not in the input.
  *   - Opt-in. Nothing launches until a tool asks, and `browser_close` ends it.
+ *
+ * Map:
+ * - checkUrl — Localhost only — a tool that executes in a browser must not fetch the internet.
+ * - getPage — Launch on first use.
+ * - closeBrowser — Shut the browser down.
+ * - browserState — What the bridge currently holds, for a status line.
  */
 let _chromium = null;
 let _browser = null;

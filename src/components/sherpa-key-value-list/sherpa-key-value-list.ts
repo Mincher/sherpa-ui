@@ -9,6 +9,9 @@
  *   data-orientation  horizontal | vertical (default: horizontal)
  *
  * No events — this is a display-only component.
+ *
+ * Map:
+ * - KeyValuePair — one row: a key and its value
  */
 import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 

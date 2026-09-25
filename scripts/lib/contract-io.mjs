@@ -12,6 +12,9 @@
  * `*.thin.yaml` (nor hydrated here) — `*.component.yaml` is the single component
  * contract, read directly (see scripts/lib/generation/data.mjs :: loadDef). This
  * loader now serves only the non-component contracts (ontology/structure/name-map).
+ *
+ * Map:
+ * - loadContract — Load an authored contract by path (with or without extension).
  */
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import yaml from 'js-yaml';

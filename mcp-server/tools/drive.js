@@ -8,6 +8,9 @@
  *
  * The two live tools are deliberately narrow: a named element, a named method,
  * JSON arguments. No arbitrary script crosses the boundary.
+ *
+ * Map:
+ * - register — register the tools that call and read a component in a live page
  */
 import { z } from "zod/v3";
 import { loadDef, loadSpec, loadComponentNames } from "../../scripts/lib/generation/data.mjs";

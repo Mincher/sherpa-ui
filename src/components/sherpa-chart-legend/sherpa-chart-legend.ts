@@ -8,6 +8,9 @@
  * TRAP T-legend-status-swatch-shares-the-band-tokens
  * TRAP T-legend-caps-at-six-and-rolls-up
  * TRAP T-rollup-row-has-its-own-prototype
+ *
+ * Map:
+ * - LegendItem — One legend row —
  */
 import { datumTotal, type LegendDatum } from '../../core/data/chart-datum.js';
 import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';

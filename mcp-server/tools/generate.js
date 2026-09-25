@@ -5,6 +5,9 @@
  *   validate_def  — run every design-system rule; returns errors + warnings
  *   compile_def   — def → { ts, html, css }
  *   token_for     — which Core token to bind for a hardcoded property=value (the meticulous rule)
+ *
+ * Map:
+ * - register — register scaffold_def, validate_def, compile_def and token_for
  */
 import { z } from "zod/v3";
 import { validateDef } from "../../scripts/lib/generation/validate-def.mjs";

@@ -4,6 +4,9 @@
  * Header chips trickle DOWN: they set the population every Context works within.
  * A Context's own filter bar narrows further inside that. VIEW leads, because
  * picking a saved view re-applies the other three.
+ *
+ * Map:
+ * - globalFilters — Build the header's filter set.
  */
 
 /** Default regions — a caller passes the list its own data carries. */

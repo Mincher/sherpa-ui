@@ -2,6 +2,9 @@
  * sherpa-breadcrumbs — the "you are here" trail of links.
  *
  * Separators are drawn by CSS. The last crumb is the current page, so no link.
+ *
+ * Map:
+ * - Crumb — one step in the trail: a label, and an href to go back to it
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 

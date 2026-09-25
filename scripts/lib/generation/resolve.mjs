@@ -2,6 +2,10 @@
  * resolve.mjs — the resolution primitives every generation tool shares.
  * "Which token for this value?" · "What role is this token?" · "Can this bind here?"
  * Thin wrappers over the encoded rule modules (scope-rules, audit-bindings).
+ *
+ * Map:
+ * - tokenForValue — Which Core token should a hardcoded PROPERTY=VALUE bind to?
+ * - scopeAllows — May a token (by its scopes) bind to a Figma property?
  */
 import { tokenForValue as _tokenForValue, shouldBind, PROP_MAP } from '../../audit-bindings.mjs';
 import { roleFromScopes, deriveScopes } from '../scope-rules.mjs';

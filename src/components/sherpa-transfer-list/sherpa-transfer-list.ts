@@ -1,6 +1,9 @@
 /**
  * sherpa-transfer-list — two panes you shuttle items between.
  * An item's `selected` flag IS its pane; each move fires transfer-change.
+ *
+ * Map:
+ * - TransferItem — A transfer-list item.
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 

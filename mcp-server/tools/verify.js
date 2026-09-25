@@ -6,6 +6,9 @@
  *
  * There is no ontology and no plan to rebuild one, so token ROLE and SCOPE are
  * never checked — only that a bound token NAME exists in tokens.css.
+ *
+ * Map:
+ * - register — register audit_component and check_bindings
  */
 import { z } from "zod/v3";
 import {

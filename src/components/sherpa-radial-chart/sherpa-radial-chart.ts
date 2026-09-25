@@ -7,6 +7,9 @@
  * TRAP T-donut-slice-is-a-closed-path — each slice is ONE closed <path>; a
  * stroked circle can express neither the full border nor the rounded corners.
  * TRAP T-hiding-a-series-rescales-the-axis — the rest re-share the full circle.
+ *
+ * Map:
+ * - RadialSlice — One slice — an alias of the shared `ChartDatum`.
  */
 import { datumTotal, type ChartDatum } from '../../core/data/chart-datum.js';
 import { SherpaElement } from '../../core/ui/sherpa-element.js';

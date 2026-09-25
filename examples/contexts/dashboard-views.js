@@ -5,6 +5,9 @@
  * Each view sets BOTH `source.filter` (what the charts summarise) and the
  * header's chips (what the reader sees) — a filter nobody can see is a filter
  * nobody can undo.
+ *
+ * Map:
+ * - DASHBOARD_VIEWS — the dashboard's saved views, keyed by the id its View chip carries
  */
 
 /** @type {Record<string, { label: string, snapshot: import('../../dist/index.js').ViewSnapshot }>} */

@@ -6,6 +6,10 @@
  * not the element.
  *
  * A fit grid needs no JS: its row count is authored. TRAP T-a-fit-grid-needs-its-row-count
+ *
+ * Map:
+ * - measureGroupedGrid — Write each child's POSITION in the grid, for `data-grouped`.
+ * - bindGroupedGrid — Keep a grid's positions measured: now, on resize, and whenever its children change.
  */
 
 /**

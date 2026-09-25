@@ -6,6 +6,10 @@
  *
  * Import `dist/data.js`, never `dist/core/*` — only the entry point is a stable
  * contract.
+ *
+ * Map:
+ * - loadDataLayer — The data layer, or `null` if it is not built.
+ * - dataLayerError — Why the data layer is unavailable, phrased for an agent that must act on it.
  */
 import { existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';

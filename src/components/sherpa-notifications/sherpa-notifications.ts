@@ -13,6 +13,8 @@
  *   new DataSource({ store: feed }).bind(notifications);
  *   feed.connect();
  *
+ * Map:
+ * - Notification — one notification: id, label, description, icon, time, and whether it is unread
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import '../sherpa-menu/sherpa-menu.js';

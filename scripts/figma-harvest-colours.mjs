@@ -13,6 +13,14 @@
  * Known false positives, none silenced: JS-driven colour (barchart series hues
  * live in the .ts), slotted specimens the component does not own, one Figma
  * node shared by several components, and status-cascade colour.
+ *
+ * Map:
+ * - componentMap — Every component dir → its Figma name, from the generated spec.
+ * - cssVarFor — Figma variable path → projected CSS custom property.
+ * - cssTokensUsed — every --sherpa-* a component's CSS names, its scoped-token region included
+ * - ownRows — Rows belonging to THIS component, not to something it instances.
+ * - resolvedColours — Every `--sherpa-*` token's resolved hex, following the alias chain in tokens.css.
+ * - diff — Diff a harvest against the CSS.
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';

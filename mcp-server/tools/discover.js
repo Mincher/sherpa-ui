@@ -6,6 +6,9 @@
  *   get_component     — the full def + code + Figma binding shape
  *
  * check-mcp-tools.mjs gates this list against the registrations below.
+ *
+ * Map:
+ * - register — register list_components, get_component and find_token
  */
 import { z } from "zod/v3";
 import {

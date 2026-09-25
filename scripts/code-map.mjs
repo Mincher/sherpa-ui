@@ -24,6 +24,7 @@ import { readFileSync, writeFileSync, globSync, existsSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import ts from 'typescript';
 
 export const SOURCES = [
   'src/*.ts',
@@ -77,55 +78,71 @@ function docAbove(lines, i) {
   return first.length > MAX_LINE ? first.slice(0, MAX_LINE - 1).trimEnd() + '…' : first;
 }
 
-/** The names a file DECLARES and exports — re-exports belong to their own file. */
-export function exportsOf(text) {
+/**
+ * The names a file DECLARES and exports — re-exports belong to their own file.
+ *
+ * Parsed by the TypeScript compiler, not by pattern. A hand-rolled scan read a
+ * generator's `export const` inside the template it WRITES as its own, because
+ * a backtick inside a regex flipped the count for the rest of the file.
+ */
+export function exportsOf(text, file = 'x.ts') {
   const lines = text.split('\n');
+  const kind = /\.(m?js)$/.test(file) ? ts.ScriptKind.JS : ts.ScriptKind.TS;
+  const sf = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, kind);
+  const lineOf = (node) => sf.getLineAndCharacterOfPosition(node.getStart(sf)).line;
+  const entry = (name, node) => ({ name, doc: docAbove(lines, lineOf(node)) });
+  const exported = (node) => ts.canHaveModifiers(node)
+    && (ts.getModifiers(node) ?? []).some((m) => m.kind === ts.SyntaxKind.ExportKeyword);
+  const declared = new Map();
   const out = [];
-  const component = /extends SherpaElement\b/.test(text);
-  lines.forEach((line, i) => {
-    const m = line.match(
-      /^export (?:default )?(?:declare )?(?:abstract )?(?:async )?(function\*?|const|let|var|class|interface|type|enum)\s+([A-Za-z_$][\w$]*)/,
-    );
-    if (!m) return;
-    out.push({ name: m[2], doc: docAbove(lines, i) });
-    if (m[1] !== 'class' || component) return;
-    const base = (line.match(/\bextends\s+([\w.]+)/) ?? [])[1] ?? '';
-    if (/\bimplements\b/.test(line) || !OWN_SURFACE_BASES.has(base)) return;
-    out.push(...membersOf(lines, i).map((mem) => ({ ...mem, name: `.${mem.name}` })));
-  });
+
+  for (const st of sf.statements) {
+    const names = ts.isVariableStatement(st)
+      ? st.declarationList.declarations.filter((d) => ts.isIdentifier(d.name)).map((d) => d.name.text)
+      : st.name && ts.isIdentifier(st.name) ? [st.name.text] : [];
+    for (const n of names) declared.set(n, st);
+    if (!exported(st)) continue;
+    const base = ts.isClassDeclaration(st)
+      ? (st.heritageClauses ?? []).find((h) => h.token === ts.SyntaxKind.ExtendsKeyword)
+        ?.types[0]?.expression.getText(sf) ?? ''
+      : null;
+    /* THE COMPONENT ITSELF is the header's first line, and its members are its
+       `.component.yaml`. A Map line for it would say the title again. */
+    if (base === 'SherpaElement') continue;
+    for (const n of names) out.push(entry(n, st));
+    if (base === null) continue;
+    const implementsSomething = (st.heritageClauses ?? [])
+      .some((h) => h.token === ts.SyntaxKind.ImplementsKeyword);
+    if (implementsSomething || !OWN_SURFACE_BASES.has(base)) continue;
+    out.push(...membersOf(st, sf, lines).map((mem) => ({ ...mem, name: `.${mem.name}` })));
+  }
+
   /* A LOCAL LIST — `export { a, b as c }` with no `from` — exports what this
      file declares. A name it only IMPORTED is a re-export, mapped in its own
-     file; a list was read as "exports nothing", so such a file needed no Map. */
-  for (const block of text.matchAll(/^export\s*\{([^}]*)\}\s*;?[ \t]*$/gm)) {
-    for (const part of block[1].split(',')) {
-      const [local, exported] = part.replace(/^\s*type\s+/, '').trim().split(/\s+as\s+/);
-      if (!local) continue;
-      const at = lines.findIndex((l) => new RegExp(
-        `^(?:async\\s+)?(?:function\\*?|const|let|var|class)\\s+${local}\\b`).test(l));
-      if (at >= 0) out.push({ name: exported ?? local, doc: docAbove(lines, at) });
+     file; a list was once read as "exports nothing", so it needed no Map. */
+  for (const st of sf.statements) {
+    if (!ts.isExportDeclaration(st) || st.moduleSpecifier || !st.exportClause
+      || !ts.isNamedExports(st.exportClause)) continue;
+    for (const el of st.exportClause.elements) {
+      const local = (el.propertyName ?? el.name).text;
+      const at = declared.get(local);
+      if (at) out.push(entry(el.name.text, at));
     }
   }
   return out;
 }
 
 /** An exported class's own public members, one entry per name. */
-function membersOf(lines, start) {
+function membersOf(cls, sf, lines) {
   const seen = new Map();
-  let depth = 0;
-  for (let i = start; i < lines.length; i++) {
-    const line = lines[i];
-    if (depth === 1) {
-      const m = line.match(
-        /^ {2}(?:static )?(?:readonly )?(?:override )?(?:async )?(?:get |set )?([A-Za-z_$][\w$]*)\s*[(<:=?]/,
-      );
-      if (m && !LIFECYCLE.has(m[1]) && !/^ {2}(?:private|protected)\b/.test(line)
-        && !seen.has(m[1])) seen.set(m[1], { name: m[1], doc: docAbove(lines, i) });
-    }
-    for (const ch of line.replace(/(['"`]).*?\1/g, '').replace(/\/\/.*$/, '')) {
-      if (ch === '{') depth++;
-      else if (ch === '}') depth--;
-    }
-    if (depth === 0 && i > start) break;
+  const hidden = new Set([ts.SyntaxKind.PrivateKeyword, ts.SyntaxKind.ProtectedKeyword]);
+  for (const m of cls.members) {
+    if (!m.name || ts.isPrivateIdentifier(m.name) || !ts.isIdentifier(m.name)) continue;
+    if ((ts.getModifiers(m) ?? []).some((mod) => hidden.has(mod.kind))) continue;
+    const name = m.name.text;
+    if (LIFECYCLE.has(name) || seen.has(name)) continue;
+    const line = sf.getLineAndCharacterOfPosition(m.getStart(sf)).line;
+    seen.set(name, { name, doc: docAbove(lines, line) });
   }
   return [...seen.values()];
 }
@@ -153,14 +170,16 @@ export function writeMap(file) {
   const map = readMap(text);
   if (!map) return `${file}: no header comment — write one first`;
   const have = new Map(map.entries.map((e) => [e.name, e.text]));
-  const want = exportsOf(text);
+  const want = exportsOf(text, file);
   if (!want.length && map.at < 0) return null;
   const body = want.map(({ name, doc }) =>
     ` * - ${name} — ${have.get(name) || doc || PLACEHOLDER}`);
   const lines = text.split('\n');
   const head = map.at >= 0 ? lines.slice(0, map.at) : lines.slice(0, map.close);
   while (head.length && head.at(-1).trim() === '*') head.pop();
-  const next = [...head, ' *', ' * Map:', ...body, ...lines.slice(map.close)].join('\n');
+  // Nothing to list: no block at all, rather than an empty heading.
+  const block = body.length ? [' *', ' * Map:', ...body] : [];
+  const next = [...head, ...block, ...lines.slice(map.close)].join('\n');
   if (next !== text) writeFileSync(file, next);
   return null;
 }
@@ -191,7 +210,7 @@ export function check({ staged = false } = {}) {
     const text = readFileSync(f, 'utf8');
     const map = readMap(text);
     if (!map) { errors.push(`${f}: no header comment. A file says what it holds.`); continue; }
-    const want = exportsOf(text).map((e) => e.name);
+    const want = exportsOf(text, f).map((e) => e.name);
     if (map.at < 0) {
       if (!want.length) continue;
       if (stagedFiles.has(f)) errors.push(`${f}: changed, so it needs its Map — npm run map:write ${f}`);
@@ -241,7 +260,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
     const unmapped = files().filter((f) => {
       const text = readFileSync(f, 'utf8');
       const map = readMap(text);
-      return map && map.at < 0 && exportsOf(text).length;
+      return map && map.at < 0 && exportsOf(text, f).length;
     });
     writeFileSync(BASELINE, JSON.stringify({ unmapped, undocumentedPrivate: undocumentedPrivate() }, null, 2) + '\n');
     console.log(`baseline: ${unmapped.length} unmapped files, ${undocumentedPrivate()} undocumented #private`);

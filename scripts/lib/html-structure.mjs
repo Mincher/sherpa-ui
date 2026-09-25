@@ -21,6 +21,10 @@
  * markup both sides emit: nested tags with attributes, void elements, and
  * `<slot>`. That is enough, and a real parser would accept markup the compiler
  * can never produce.
+ *
+ * Map:
+ * - parseTemplates — `<template id="x">…</template>` blocks → `{ id: nodes[] }`.
+ * - htmlDiff — Compare every `<template>` in two documents.
  */
 
 /* ══ parsing ═══════════════════════════════════════════════════════════════════ */

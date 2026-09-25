@@ -3,6 +3,9 @@
  *
  * The static helpers share one `.sherpa-toast-stack` column. CSS owns colour,
  * corner and both animations.
+ *
+ * Map:
+ * - ToastOptions — Options for the static factory helpers.
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';

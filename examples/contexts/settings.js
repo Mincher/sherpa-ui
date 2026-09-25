@@ -2,6 +2,9 @@
  * examples/contexts/settings.js — every Settings Context, inside the Settings
  * overlay. One page each, a section header before each set of settings; the
  * header's Jump to chip scrolls to them.
+ *
+ * Map:
+ * - init — wire one Settings page inside the overlay: each setting writes the app's session
  */
 import { SherpaToast } from '../../dist/index.js';
 

@@ -5,6 +5,9 @@
  *   sherpa://component/{name}/{kind}  — a component's shipped ts | html | css | def
  *   sherpa://rules                    — docs/DEF-TO-FIGMA-BUILD-RULES.md
  *   sherpa://data-rules               — docs/DATA-SOURCE-RULES.md
+ *
+ * Map:
+ * - register — register the sherpa:// resources on an MCP server
  */
 import fs from "fs";
 import path from "path";

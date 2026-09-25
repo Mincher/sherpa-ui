@@ -3,6 +3,9 @@
  *
  * Options come from the `options` slot or from populate(); either way they live
  * in the host's LIGHT DOM.
+ *
+ * Map:
+ * - SelectGroupOption — A single option in the group.
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import '../sherpa-select-checkbox/sherpa-select-checkbox.js';

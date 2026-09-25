@@ -4,6 +4,10 @@
  * Import this once to register components and establish the shared shadow-root
  * styles. The design-token layer (light DOM) is loaded separately via a
  * `<link>`/`@import` of tokens.css, or programmatically with `installTokens()`.
+ *
+ * Map:
+ * - installIcons — DEPRECATED — a no-op since the icons became SVGs in icon-paths.ts
+ * - installTokens — add tokens.css to the page once, so a component has its variables
  */
 import { SherpaElement } from './core/ui/sherpa-element.js';
 

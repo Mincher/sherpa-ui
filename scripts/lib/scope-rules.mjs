@@ -30,6 +30,13 @@
  * THE DEEP RULE: scope follows USAGE, not the name's segments. Rules cover the
  * common cases; the ontology (usage graph + human) is the authority for the rest.
  * `deriveScopes` returns `DEFER` for vars whose scope only usage can decide.
+ *
+ * Map:
+ * - SCOPE — the Figma variable scopes each binding kind may use
+ * - DEFER — Sentinel: scope is decided by USAGE (the ontology/human), not by rule.
+ * - isReferenceRamp — Reference ramps → fully permissive: Primitives AND Core::color (#6).
+ * - deriveScopes — Derive scopes for a variable.
+ * - roleFromScopes — Which token ROLE a scope set represents (for the resolver + ontology).
  */
 
 export const SCOPE = {
