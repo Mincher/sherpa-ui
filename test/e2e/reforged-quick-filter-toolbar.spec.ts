@@ -1,17 +1,11 @@
-import { test, expect } from './harness';
+import { test, expect, type Bar } from './harness';
 
 /** sherpa-quick-filter-toolbar — chips from populate(); toggling emits the active set (composedPath). */
 
 
 test('renders a quick-filter chip per filter, honouring initial active', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
-      rendered?: Promise<void>;
-      populate?: (d: unknown) => void;
-      active?: string[];
-    };
-    document.getElementById('root')!.appendChild(el);
-    await el.rendered;
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
     el.populate!([
       { id: 'status', label: 'Status' },
       { id: 'region', label: 'Region', active: true },
@@ -32,12 +26,7 @@ test('renders a quick-filter chip per filter, honouring initial active', async (
 
 test('toggling a chip emits quick-filter-change with all active ids', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
-      rendered?: Promise<void>;
-      populate?: (d: unknown) => void;
-    };
-    document.getElementById('root')!.appendChild(el);
-    await el.rendered;
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
     el.populate!([
       { id: 'a', label: 'A' },
       { id: 'b', label: 'B' },
@@ -70,19 +59,7 @@ test('the leading Group / Sort chips organise the grid, separate from filtering'
   // Figma Filter Toolbar Type=data (150:3688) opens its content slot with TWO menu
   // chips, then a 1x16 Divider, then the filter chips. These are those two.
   const r = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
-      rendered?: Promise<void>;
-      populate(d: unknown): void;
-      organise(d: unknown): void;
-      sortField: string | null;
-      sortDirection: string;
-      sortSuspended: boolean;
-      groupField: string | null;
-      active: string[];
-      values: Record<string, string[]>;
-    };
-    document.getElementById('root')!.replaceChildren(el);
-    await el.rendered;
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
     el.populate([
       { id: 'live', label: 'Live' },
       // A value-MENU chip: its id names a COLUMN, its menu holds the values.
@@ -200,14 +177,7 @@ test('a value-menu chip toggles OFF without clearing its picks', async ({ page }
   // the picks — the same "temporary disable" the Sort chip has. `values` reports
   // what is APPLIED; `pickedValues` reports what is REMEMBERED.
   const r = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
-      rendered?: Promise<void>;
-      populate(d: unknown): void;
-      values: Record<string, string[]>;
-      pickedValues: Record<string, string[]>;
-    };
-    document.getElementById('root')!.replaceChildren(el);
-    await el.rendered;
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
     el.populate([
       { id: 'plan', label: 'Plan', select: 'multiple',
         options: [{ value: 'pro', label: 'Pro' }, { value: 'free', label: 'Free' }] },
@@ -271,38 +241,15 @@ test('a value-menu chip toggles OFF without clearing its picks', async ({ page }
   expect(r.back.values).toEqual({ plan: ['pro', 'free'] });
 });
 
-/**
- * Mount a toolbar and wait for its CLUSTER to be measurable.
- *
- * The toolbar's own `rendered` resolves when ITS shadow root exists — but the
- * cluster is made of nested sherpa-buttons with shadow roots of their own, and
- * those are still zero-width at that point. Awaiting every child's `rendered`
- * is what makes a width or a corner radius mean anything. Passed into
- * page.evaluate as source, because it has to run in the browser.
- */
-const MOUNT = `
-  async function mountToolbar(type) {
-    const el = document.createElement('sherpa-quick-filter-toolbar');
-    if (type) el.setAttribute('data-type', type);
-    document.getElementById('root').appendChild(el);
-    await el.rendered;
-    const kids = [...el.shadowRoot.querySelectorAll('sherpa-button, sherpa-quick-filter')];
-    await Promise.all(kids.map((k) => k.rendered));
-    return el;
-  }
-`;
-
 /* ── The built-in action cluster ─────────────────────────────────────────────
  * Figma "Filter Toolbar" (150:3688) bakes the trailing cluster in and varies it
  * on a `Type` axis. This used to be an empty `actions` slot; these tests hold
  * the reversal in place. */
 
 test('the action cluster is built in, and data-type=view adds the save group', async ({ page }) => {
-  const r = await page.evaluate(async (mount) => {
-    // eslint-disable-next-line no-new-func
-    const mountToolbar = new Function(`${mount}; return mountToolbar;`)() as (t?: string) => Promise<HTMLElement>;
+  const r = await page.evaluate(async () => {
     const probe = async (type?: string) => {
-      const el = await mountToolbar(type);
+      const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': type });
       const sr = el.shadowRoot!;
       const shown = (sel: string) => {
         const n = sr.querySelector(sel) as HTMLElement | null;
@@ -321,7 +268,7 @@ test('the action cluster is built in, and data-type=view adds the save group', a
       };
     };
     return { data: await probe(), view: await probe('view') };
-  }, MOUNT);
+  });
 
   // Both types carry the shared run: Add · AI · undo · configure · | · refresh.
   for (const t of [r.data, r.view]) {
@@ -346,10 +293,8 @@ test('the action cluster is built in, and data-type=view adds the save group', a
 });
 
 test('every cluster button fires the event Figma names for it', async ({ page }) => {
-  const r = await page.evaluate(async (mount) => {
-    // eslint-disable-next-line no-new-func
-    const mountToolbar = new Function(`${mount}; return mountToolbar;`)() as (t?: string) => Promise<HTMLElement>;
-    const el = await mountToolbar('view');
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'view' });
 
     const seen: string[] = [];
     for (const ev of [
@@ -370,7 +315,7 @@ test('every cluster button fires the event Figma names for it', async ({ page })
     const add = el.shadowRoot!.querySelector('.add-btn') as HTMLElement;
     const expanded = () => add.shadowRoot!.querySelector('button')!.getAttribute('aria-expanded');
     return { seen, addIsButton: add.localName, addExpanded: expanded() };
-  }, MOUNT);
+  });
 
   expect(r.seen).toEqual([
     'ai-filter-request', 'filter-configure', 'data-refresh', 'filter-overflow',
@@ -383,10 +328,8 @@ test('every cluster button fires the event Figma names for it', async ({ page })
 });
 
 test('a trigger button goes active while its menu is open, and back on a second click', async ({ page }) => {
-  const r = await page.evaluate(async (mount) => {
-    // eslint-disable-next-line no-new-func
-    const mountToolbar = new Function(`${mount}; return mountToolbar;`)() as (t?: string) => Promise<HTMLElement>;
-    const el = await mountToolbar('view') as HTMLElement & { available?: (d: unknown) => void };
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'view' });
     const settled = (window as unknown as { __settled: () => Promise<void> }).__settled;
     // The Add menu is only stamped when something is LEFT to add.
     el.available!([{ id: 'seats', label: 'Seats', options: [{ value: '10', label: '10' }] }]);
@@ -413,17 +356,15 @@ test('a trigger button goes active while its menu is open, and back on a second 
     const closed = state();
 
     return { opened, closed };
-  }, MOUNT);
+  });
 
   expect(r.opened).toEqual({ open: true, active: true, expanded: 'true' });
   expect(r.closed).toEqual({ open: false, active: false, expanded: 'false' });
 });
 
 test('the star toggles, swaps its glyph, and reports both ways', async ({ page }) => {
-  const r = await page.evaluate(async (mount) => {
-    // eslint-disable-next-line no-new-func
-    const mountToolbar = new Function(`${mount}; return mountToolbar;`)() as (t?: string) => Promise<HTMLElement>;
-    const el = await mountToolbar('view');
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'view' });
 
     const detail: boolean[] = [];
     el.addEventListener('view-favorite', (e) => detail.push((e as CustomEvent).detail.favourite));
@@ -440,7 +381,7 @@ test('the star toggles, swaps its glyph, and reports both ways', async ({ page }
       };
     };
     return { first: await press(), second: await press(), detail };
-  }, MOUNT);
+  });
 
   // The GLYPH carries the state too (outline → solid), so it survives for anyone
   // who cannot tell the brand purple from the default ink.
@@ -457,10 +398,8 @@ test('the star toggles, swaps its glyph, and reports both ways', async ({ page }
 });
 
 test('a favourited star takes the ACTIVE Style mode, face ring and ink', async ({ page }) => {
-  const r = await page.evaluate(async (mount) => {
-    // eslint-disable-next-line no-new-func
-    const mountToolbar = new Function(`${mount}; return mountToolbar;`)() as (t?: string) => Promise<HTMLElement>;
-    const el = await mountToolbar('view');
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'view' });
     const star = el.shadowRoot!.querySelector('[data-act="favourite"]') as HTMLElement & {
       shadowRoot: ShadowRoot;
     };
@@ -511,7 +450,7 @@ test('a favourited star takes the ACTIVE Style mode, face ring and ink', async (
     await settled();
 
     return { off, on, backOff: read(), expected };
-  }, MOUNT);
+  });
 
   // Each resolved to a real colour, so the assertions below mean something — an
   // EMPTY value (the properties never reaching the button) is exactly the bug
@@ -553,16 +492,8 @@ test('a favourited star takes the ACTIVE Style mode, face ring and ink', async (
 });
 
 test('the undo button clears every chip and the organise state', async ({ page }) => {
-  const r = await page.evaluate(async (mount) => {
-    // eslint-disable-next-line no-new-func
-    const mountToolbar = new Function(`${mount}; return mountToolbar;`)() as (t?: string) => Promise<HTMLElement>;
-    const el = (await mountToolbar()) as HTMLElement & {
-      populate?: (d: unknown) => void;
-      organise?: (d: unknown) => void;
-      active?: string[];
-      values?: Record<string, string[]>;
-      groupField?: string | null;
-    };
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
     el.populate!([
       { id: 'active', label: 'Active', active: true },
       { id: 'trial', label: 'Trial', active: true },
@@ -591,7 +522,7 @@ test('the undo button clears every chip and the organise state', async ({ page }
       after: { active: el.active, values: el.values, group: el.groupField },
       seen,
     };
-  }, MOUNT);
+  });
 
   expect(r.before.active).toEqual(['active', 'trial']);
   expect(r.before.values).toEqual({ plan: ['pro'] });
@@ -607,10 +538,8 @@ test('the undo button clears every chip and the organise state', async ({ page }
 });
 
 test('the view group is snapped: outer corners round, inner ones square', async ({ page }) => {
-  const r = await page.evaluate(async (mount) => {
-    // eslint-disable-next-line no-new-func
-    const mountToolbar = new Function(`${mount}; return mountToolbar;`)() as (t?: string) => Promise<HTMLElement>;
-    const el = await mountToolbar('view');
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'view' });
     const kids = [...el.shadowRoot!.querySelector('.view-group')!.children] as HTMLElement[];
     return kids.map((k) => {
       const cs = getComputedStyle(k);
@@ -623,7 +552,7 @@ test('the view group is snapped: outer corners round, inner ones square', async 
         right: b.right,
       };
     });
-  }, MOUNT);
+  });
 
   // Figma's "Frame 1" joins the three at `structure-space/snapped` (0) so they sit
   // flush and read as ONE control. The rounding is set in the toolbar's own CSS, not
@@ -648,10 +577,8 @@ test('the view group is snapped: outer corners round, inner ones square', async 
 });
 
 test('a persistent chip is a SELECTOR: it cannot be switched off', async ({ page }) => {
-  const r = await page.evaluate(async (mount) => {
-    // eslint-disable-next-line no-new-func
-    const mountToolbar = new Function(`${mount}; return mountToolbar;`)() as (t?: string) => Promise<HTMLElement>;
-    const el = (await mountToolbar('view')) as HTMLElement & { populate?: (d: unknown) => void };
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'view' });
     el.populate!([
       {
         id: 'view',
@@ -686,7 +613,7 @@ test('a persistent chip is a SELECTOR: it cannot be switched off', async ({ page
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return { start, afterClick, afterTrial, afterReset: { view: on(view), trial: on(trial) } };
-  }, MOUNT);
+  });
 
   expect(r.start).toEqual({ view: true, trial: true });
 
@@ -716,13 +643,8 @@ test('a persistent chip is a SELECTOR: it cannot be switched off', async ({ page
  * for no `removable`. That is the failing shape.
  */
 test('the view chip offers no remove, defaults to its first option, and never goes amber', async ({ page }) => {
-  const r = await page.evaluate(async (mount) => {
-    // eslint-disable-next-line no-new-func
-    const mountToolbar = new Function(`${mount}; return mountToolbar;`)() as (t?: string) => Promise<HTMLElement>;
-    const el = (await mountToolbar('view')) as HTMLElement & {
-      populate?: (d: unknown) => void;
-      values: Record<string, string[]>;
-    };
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'view' });
     el.populate!([
       {
         id: 'view',
@@ -771,7 +693,7 @@ test('the view chip offers no remove, defaults to its first option, and never go
         region: !!chip('region').querySelector('sherpa-menu[data-removable]'),
       },
     };
-  }, MOUNT);
+  });
 
   // ONE value, the first, without the host having said so.
   expect(r.checked).toEqual(['fleet']);
@@ -788,14 +710,8 @@ test('the view chip offers no remove, defaults to its first option, and never go
 });
 
 test('the Add button puts an available filter on the bar and drops it from its menu', async ({ page }) => {
-  const r = await page.evaluate(async (mount) => {
-    // eslint-disable-next-line no-new-func
-    const mountToolbar = new Function(`${mount}; return mountToolbar;`)() as (t?: string) => Promise<HTMLElement>;
-    const el = (await mountToolbar()) as HTMLElement & {
-      populate?: (d: unknown) => void;
-      available?: (d: unknown) => void;
-      active?: string[];
-    };
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
     el.populate!([{ id: 'active', label: 'Active' }]);
     el.available!([
       { id: 'health', label: 'Health', options: [{ value: 'good', label: 'Good' }] },
@@ -831,7 +747,7 @@ test('the Add button puts an available filter on the bar and drops it from its m
       // On with no values is the AMBER warning, which is what we are avoiding.
       addedIsWarning: !!sr.querySelector('.chip[data-id="health"]')?.hasAttribute('data-empty'),
     };
-  }, MOUNT);
+  });
 
   expect(r.before.chips).toEqual(['active']);
   expect(r.before.offered).toEqual(['-health', '-seats']);
@@ -852,13 +768,8 @@ test('the Add button puts an available filter on the bar and drops it from its m
 });
 
 test('the Add menu is multi-select and searchable; a chip can be removed', async ({ page }) => {
-  const r = await page.evaluate(async (mount) => {
-    // eslint-disable-next-line no-new-func
-    const mountToolbar = new Function(`${mount}; return mountToolbar;`)() as (t?: string) => Promise<HTMLElement>;
-    const el = (await mountToolbar()) as HTMLElement & {
-      populate?: (d: unknown) => void;
-      available?: (d: unknown) => void;
-    };
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
     el.populate!([{ id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] }]);
     el.available!([
       { id: 'health', label: 'Health', options: [{ value: 'good', label: 'Good' }] },
@@ -910,7 +821,7 @@ test('the Add menu is multi-select and searchable; a chip can be removed', async
     await new Promise((res) => setTimeout(res, 200));
 
     return { menuShape, afterAdd, removeLabel, afterRemove: { chips: chips(), offered: offered() } };
-  }, MOUNT);
+  });
 
   // MULTI-select: checkbox rows, and a search for a long field list.
   expect(r.menuShape.select).toBe('multiple');
@@ -935,14 +846,8 @@ test('the Add menu is multi-select and searchable; a chip can be removed', async
 });
 
 test('adding or removing a filter never disturbs the others', async ({ page }) => {
-  const r = await page.evaluate(async (mount) => {
-    // eslint-disable-next-line no-new-func
-    const mountToolbar = new Function(`${mount}; return mountToolbar;`)() as (t?: string) => Promise<HTMLElement>;
-    const el = (await mountToolbar()) as HTMLElement & {
-      populate?: (d: unknown) => void;
-      available?: (d: unknown) => void;
-      values?: Record<string, string[]>;
-    };
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
     // `removable: true` — the opt-in that puts "Remove" in the menu.
     el.populate!([
       { id: 'plan', label: 'Plan', removable: true, options: [{ value: 'pro', label: 'Pro' }] },
@@ -987,7 +892,7 @@ test('adding or removing a filter never disturbs the others', async ({ page }) =
     const afterRemove = snap();
 
     return { before, afterAdd, afterRemove };
-  }, MOUNT);
+  });
 
   expect(r.before.values).toEqual({ plan: ['pro'], region: ['emea'] });
   expect(r.before.trialOn).toBe(true);
@@ -1005,13 +910,8 @@ test('adding or removing a filter never disturbs the others', async ({ page }) =
 });
 
 test('a DATE chip opens a calendar, commits through the menu, and labels its day', async ({ page }) => {
-  const r = await page.evaluate(async (mount) => {
-    // eslint-disable-next-line no-new-func
-    const mountToolbar = new Function(`${mount}; return mountToolbar;`)() as (t?: string) => Promise<HTMLElement>;
-    const el = (await mountToolbar()) as HTMLElement & {
-      populate?: (d: unknown) => void;
-      values?: Record<string, string[]>;
-    };
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
     el.populate!([
       { id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] },
       { id: 'created', label: 'Created', kind: 'date', removable: true },
@@ -1099,7 +999,7 @@ test('a DATE chip opens a calendar, commits through the menu, and labels its day
       afterToday: cal.dataset['value'] ?? null,
       todayIso: `${now.getFullYear()}-${p2(now.getMonth() + 1)}-${p2(now.getDate())}`,
     };
-  }, MOUNT);
+  });
 
   // The menu holds a CALENDAR, and only the menu draws an action row.
   expect(r.before.calFooter).toBe('none');
@@ -1160,12 +1060,7 @@ test('the VIEW selector keeps its own icon, whatever the app passes', async ({ p
     const read = async (icon?: string) => {
       const root = document.getElementById('root')!;
       root.innerHTML = '';
-      const bar = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
-        rendered?: Promise<void>;
-        populate: (d: unknown) => void;
-      };
-      root.appendChild(bar);
-      await bar.rendered;
+      const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
       bar.populate([
         { id: 'view', label: 'View', persistent: true, active: true, select: 'single',
           ...(icon ? { icon } : {}),
@@ -1201,13 +1096,7 @@ test('a PERSISTENT chip selects its first option on init; a plain filter chip do
     const build = async (def: Record<string, unknown>) => {
       const root = document.getElementById('root')!;
       root.innerHTML = '';
-      const bar = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
-        rendered?: Promise<void>;
-        populate: (d: unknown) => void;
-        values: Record<string, string[]>;
-      };
-      root.appendChild(bar);
-      await bar.rendered;
+      const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
       // NOTE: no `selected` on any option — the chip decides.
       bar.populate([{ ...def, options: [{ value: 'a', label: 'First' }, { value: 'b', label: 'Second' }] }]);
       await (window as unknown as { __settled: () => Promise<void> }).__settled();
@@ -1246,13 +1135,7 @@ test('a PERSISTENT chip selects its first option on init; a plain filter chip do
  */
 test('a NUMBER chip flips between a single field and a two-ended slider', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
-      rendered?: Promise<void>;
-      populate(d: unknown): void;
-      pickedValues: Record<string, string[]>;
-    };
-    document.getElementById('root')!.replaceChildren(el);
-    await el.rendered;
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
     /* `range: false` EXPLICITLY. A number chip now opens as a range by default
        (T-a-default-is-not-an-override), and this test is about the FLIP between
        the two shapes — so it declares the side it wants to start on. That the
@@ -1345,12 +1228,7 @@ test('a DATE chip carries the Range switch as a full-width row above its calenda
   page,
 }) => {
   const r = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
-      rendered?: Promise<void>;
-      populate(d: unknown): void;
-    };
-    document.getElementById('root')!.replaceChildren(el);
-    await el.rendered;
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
     el.populate([{ id: 'created', label: 'Created', kind: 'date', active: true }]);
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
@@ -1412,12 +1290,7 @@ test('a DATE chip carries the Range switch as a full-width row above its calenda
 test('the Range switch brings Apply/Cancel, and leads its own label', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const read = async (def: unknown, id: string): Promise<Record<string, unknown>> => {
-      const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
-        rendered?: Promise<void>;
-        populate(d: unknown): void;
-      };
-      document.getElementById('root')!.replaceChildren(el);
-      await el.rendered;
+      const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
       el.populate([def]);
       await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
@@ -1697,12 +1570,7 @@ test('the overflow menu drills into a folded filter and back out', async ({ page
  */
 test('a DATE chip names its whole range, day first, without truncating', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
-      rendered?: Promise<void>;
-      populate(d: unknown): void;
-    };
-    document.getElementById('root')!.replaceChildren(el);
-    await el.rendered;
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
     el.populate([{ id: 'when', label: 'When', kind: 'date', range: true, active: true }]);
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
@@ -1912,15 +1780,8 @@ test('a sort from the organise chip never reaches the host as a filter change', 
  */
 test('a folded BOOLEAN filter ticks in place; one with options still drills', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
-      rendered?: Promise<void>;
-      populate(defs: unknown): void;
-    };
-    el.setAttribute('data-type', 'data');
     // Narrow, so everything but the first chip folds.
-    el.style.cssText = 'max-inline-size: 300px';
-    document.getElementById('root')!.replaceChildren(el);
-    await el.rendered;
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'data', 'style': 'max-inline-size: 300px' });
     el.populate([
       { id: 'active', label: 'Active', type: 'data' },
       { id: 'trial', label: 'Trial', type: 'data' },
@@ -2001,14 +1862,7 @@ test('a folded BOOLEAN filter ticks in place; one with options still drills', as
  */
 test('a locked chip keeps its own state when its menu changes', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
-      rendered?: Promise<void>;
-      populate(defs: unknown): void;
-    };
-    el.setAttribute('data-type', 'data');
-    el.style.cssText = 'max-inline-size: 300px';
-    document.getElementById('root')!.replaceChildren(el);
-    await el.rendered;
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'data', 'style': 'max-inline-size: 300px' });
     el.populate([
       { id: 'active', label: 'Active', type: 'data' },
       { id: 'trial', label: 'Trial', type: 'data' },
@@ -2258,14 +2112,8 @@ test('data-group-field sets the Group chip, and an off chip reports nothing', as
  */
 test('the bar comes to rest fitting, not overflowing', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
-      rendered?: Promise<void>; populate(d: unknown): void;
-    };
-    el.setAttribute('data-type', 'data');
     // Narrow enough that chips MUST fold — the case the measuring exists for.
-    el.style.cssText = 'max-inline-size: 300px';
-    document.getElementById('root')!.replaceChildren(el);
-    await el.rendered;
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'data', 'style': 'max-inline-size: 300px' });
     el.populate([
       { id: 'active', label: 'Active', type: 'data' },
       { id: 'trial', label: 'Trial', type: 'data' },
@@ -2311,13 +2159,7 @@ test('the Group chip BODY toggles grouping, and reports it', async ({ page }) =>
      ungrouped, and told nobody. */
   const r = await page.evaluate(async () => {
     const settled = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
-    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
-      rendered?: Promise<void>;
-      organise(d: unknown): void;
-      groupField: string | null;
-    };
-    document.getElementById('root')!.replaceChildren(el);
-    await el.rendered;
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
     el.organise({
       group: [{ field: 'team', label: 'Team' }, { field: 'plan', label: 'Plan' }],
       sort: [{ field: 'name', label: 'Name' }],
@@ -2432,14 +2274,7 @@ test('allowFields limits the chips AND the Add menu, and null restores both', as
   page,
 }) => {
   const r = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
-      rendered?: Promise<void>;
-      populate(d: unknown): void;
-      available(d: unknown): void;
-      allowFields(list: readonly unknown[] | null): void;
-    };
-    document.getElementById('root')!.replaceChildren(el);
-    await el.rendered;
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
     el.populate([
       { id: 'status', label: 'Status', active: true },
       { id: 'plan', label: 'Plan', active: true },
@@ -2500,15 +2335,8 @@ test('allowFields limits the chips AND the Add menu, and null restores both', as
  */
 test('the More chip is active only when a folded filter is', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
-      rendered?: Promise<void>;
-      populate(defs: unknown): void;
-    };
-    el.setAttribute('data-type', 'data');
     // Narrow, so everything but the first chip folds.
-    el.style.cssText = 'max-inline-size: 300px';
-    document.getElementById('root')!.replaceChildren(el);
-    await el.rendered;
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'data', 'style': 'max-inline-size: 300px' });
     el.populate([
       { id: 'active', label: 'Active', type: 'data' },
       { id: 'trial', label: 'Trial', type: 'data' },
@@ -2588,12 +2416,7 @@ test('the More chip is active only when a folded filter is', async ({ page }) =>
  */
 test('a CONDITION-only field gets a menu, not a toggle', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
-      rendered?: Promise<void>;
-      populate(d: unknown): void;
-    };
-    document.getElementById('root')!.replaceChildren(el);
-    await el.rendered;
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
     el.populate([
       // No options, no kind — only the opt-in to conditions.
       { id: 'email', label: 'Email', conditions: true },
@@ -2631,15 +2454,8 @@ test('a CONDITION-only field gets a menu, not a toggle', async ({ page }) => {
  */
 test('a custom chip GIVEN its condition opens a menu on it', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
-      rendered?: Promise<void>;
-      populate(d: unknown): void;
-      addCustomFilter(s: unknown): void;
-    };
     // WIDE, so nothing folds into More — a folded chip is not in `.chips`.
-    el.style.cssText = 'inline-size: 1200px';
-    document.getElementById('root')!.replaceChildren(el);
-    await el.rendered;
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'style': 'inline-size: 1200px' });
     el.populate([{ id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] }]);
     /* SETTLE FIRST. `populate` defers to `renderData`, so a custom filter added
        before it lands is overwritten by the populate set. */
@@ -2689,14 +2505,8 @@ test('a custom chip GIVEN its condition opens a menu on it', async ({ page }) =>
  */
 test('a FOLDED conditions-only filter opens its own menu, not a blank drill', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
-      rendered?: Promise<void>;
-      populate(d: unknown): void;
-    };
     // NARROW, so the filters fold into More.
-    el.style.cssText = 'max-inline-size: 260px';
-    document.getElementById('root')!.replaceChildren(el);
-    await el.rendered;
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'style': 'max-inline-size: 260px' });
     el.populate([
       { id: 'status', label: 'Status', select: 'multiple',
         options: [{ value: 'a', label: 'a' }, { value: 'b', label: 'b' }] },
@@ -2750,15 +2560,7 @@ test('a FOLDED conditions-only filter opens its own menu, not a blank drill', as
  */
 test('the Add menu lists held AND offered, and an untick removes', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
-      rendered?: Promise<void>;
-      populate(d: unknown): void;
-      available(d: unknown): void;
-      heldIds: string[];
-    };
-    el.style.cssText = 'inline-size: 1400px';
-    document.getElementById('root')!.replaceChildren(el);
-    await el.rendered;
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'style': 'inline-size: 1400px' });
     const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     el.populate([

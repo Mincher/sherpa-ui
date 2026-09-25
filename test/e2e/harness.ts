@@ -63,3 +63,50 @@ export type SherpaEl = HTMLElement & {
   populate?: (data: unknown) => void;
   __settled?: () => Promise<void>;
 };
+
+/**
+ * The elements a spec mounts, and the members it reaches for.
+ *
+ * Each was written as an inline `as HTMLElement & { … }` at the mount site —
+ * 153 of them for `rendered` alone. Named once here, so a spec says what it
+ * mounts rather than re-describing it.
+ */
+declare global {
+  interface Window {
+    /** `__mount(tag, data?, attrs?)` — see `test/reforged/harness.html`. */
+    __mount<T = SherpaEl>(
+      tag: string,
+      data?: unknown,
+      attrs?: Record<string, string | boolean>,
+    ): Promise<T>;
+    __settled(): Promise<void>;
+  }
+}
+
+/** `sherpa-quick-filter-toolbar`, with the surface its specs read. */
+export type Bar = SherpaEl & {
+  populate(d: unknown): void;
+  available(d: unknown): void;
+  organise(d: unknown): void;
+  addFilters(ids: readonly string[]): void;
+  removeFilter(id: string): void;
+  supersede(ids: readonly string[]): void;
+  setClause(id: string, clause: readonly [string, string, unknown] | null): void;
+  allowFields(list: readonly string[] | null): void;
+  addCustomFilter(d: unknown): void;
+  active: string[];
+  values: Record<string, string[]>;
+  pickedValues: Record<string, string[]>;
+  readings: Record<string, unknown>;
+  states: Record<string, unknown>;
+  clauses: Record<string, unknown>;
+  held: Array<Record<string, unknown>>;
+  heldIds: string[];
+  offering: Array<Record<string, unknown>>;
+  customFilters: unknown[];
+  superseded: string[];
+  sortField: string | null;
+  sortDirection: string;
+  sortSuspended: boolean;
+  groupField: string | null;
+};

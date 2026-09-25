@@ -5,10 +5,7 @@ import { test, expect } from './harness';
 
 test('clicking toggles data-current and fires quick-filter-click', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-quick-filter') as HTMLElement & { rendered?: Promise<void> };
-    el.setAttribute('data-label', 'Status');
-    document.getElementById('root')!.appendChild(el);
-    await el.rendered;
+    const el = await window.__mount('sherpa-quick-filter', undefined, { 'data-label': 'Status' });
 
     const fired: boolean[] = [];
     el.addEventListener('quick-filter-click', (e) => fired.push((e as CustomEvent).detail.active));

@@ -144,6 +144,47 @@
         document.getAnimations().map((a) => a.finished.catch(() => {})),
       );
     };
+
+    /**
+     * MOUNT ONE COMPONENT, the way every spec was doing it by hand.
+     *
+     * The block below appeared 543 times across the e2e specs — create, append
+     * to #root, await `rendered`, populate, settle — with four spellings of
+     * "append" and an ad-hoc type cast on each. A change to how a component
+     * mounts was 543 edits, so it did not get made.
+     *
+     * Usage:  const el = await window.__mount('sherpa-foo', data, { 'data-type': 'view' });
+     *
+     * `replaceChildren`, so a spec that mounts twice starts clean. Pass
+     * `{ keep: true }` in the attributes to append beside what is there.
+     */
+    window.__mount = async function mount(tag, data, attrs) {
+      const root = document.getElementById('root');
+      const el = document.createElement(tag);
+      const keep = attrs && attrs.keep;
+      for (const [name, value] of Object.entries(attrs ?? {})) {
+        if (name === 'keep') continue;
+        if (value === true) el.setAttribute(name, '');
+        else if (value != null) el.setAttribute(name, String(value));
+      }
+      if (keep) root.appendChild(el);
+      else root.replaceChildren(el);
+      await el.rendered;
+      /* THE CHILDREN TOO. A component's own `rendered` resolves when ITS shadow
+         root exists; the buttons and chips inside have shadow roots of their
+         own and are still zero-width at that point. */
+      const kids = [...el.shadowRoot.querySelectorAll('*')].filter((k) => k.rendered);
+      await Promise.all(kids.map((k) => k.rendered));
+      /* SETTLE ONLY WHAT THIS MOUNTED. A spec that populates afterwards settles
+         itself, and an extra settle here is two more frames of layout before it
+         does — which a bar measuring its own fold can see.
+         TRAP T-the-fold-measures-whatever-font-is-loaded */
+      if (data !== undefined) {
+        el.populate(data);
+        await window.__settled();
+      }
+      return el;
+    };
   </script>
 </body>
 </html>

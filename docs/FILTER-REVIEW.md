@@ -27,8 +27,8 @@ Kept as the work lands. Budgets from §15.4.
 | 5 collapse sort/group state | | ≈ −50 | — | |
 | 5.5 error reporting | | ≈ +80 | — | `debugState()` lands with 3 |
 | 6 split `filter-state.ts` | | ≈ 0 | — | |
-| test harness §13.2 | | ≈ −400 | — | 28 of 40 toolbar tests mount by hand |
-| **arc** | | **≈ −800** | **−39** | code only; docs counted separately |
+| test harness §13.2 | ✅ | ≈ −400 | **−113** | `window.__mount()` in the harness page; the toolbar spec 2,799 → 2,600. The other specs' mounts are not mechanically alike |
+| **arc** | | **≈ −800** | **−152** | code only; docs counted separately |
 
 ---
 
@@ -1262,6 +1262,18 @@ a toolbar mounts is 28 edits, so it does not get made.
 and every test declares only what makes it different. The tests are the one
 thing that must keep working while the refactor happens, so they should be
 easy to change, not 28-edits-hard.
+
+**Landed at −113, not −400.** `window.__mount(tag, data?, attrs?)` lives in
+`test/reforged/harness.html`, and the toolbar spec is 2,799 → 2,600 lines with
+all 40 tests green. The remaining mounts across the other specs are NOT
+mechanically alike — conditional attributes, hand-built slotted children, a
+wrapper div for a width — so rewriting them would be 543 judgement calls, not a
+regex. `__mount` is there for them as each is next touched.
+
+One thing it had to learn: it settles only when it populated. Settling an empty
+bar gives it two extra frames of layout before its chips arrive, and the fold
+test measured the bar mid-flight — 50px in a 48px box.
+`T-the-fold-measures-whatever-font-is-loaded` is the same class.
 
 ### 13.3 `sherpa-menu` is not the same problem as the toolbar
 
