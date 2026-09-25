@@ -299,13 +299,77 @@ Plus `held()` and the binding, ≈40 new. **Net ≈ −130.**
 `#picked`, and its inline menu bodies are the borrowed ones.
 **Closes:** five of the seven bug classes in §5, and both borrowing bugs.
 
-#### Open questions for Will
+#### Decided — Will, 2026-09-25
 
-- **Does a scope's held set belong in the data layer at all?** It is UI state.
-  The argument for: two components must agree on it and neither may know the
-  other. The argument against: it is the first non-data thing in `DataSource`.
-- **Should `SherpaElement` register automatically**, or stay explicit per
-  component? Automatic is one line per component; explicit is easier to read.
+> 1. Scoping of filters should live in the data layer.
+> 2. [Registration is] automatic.
+
+##### First: "scope" already means three things
+
+The same disease as `kind`. `DataSource` uses the word twice, for unrelated
+axes, and the app uses it a third way:
+
+| where | values | what it actually means |
+|---|---|---|
+| `ApplyAt.scope` | `view` \| `component` | how a filter REACHES: narrow for everyone, or contribute a named part ANDed under the view |
+| `BindOptions.scope` | `page` \| `all` | which ROWS a bound element is pushed — the drawn page, or every match |
+| `records.js` | `view` \| `data` | WHICH SURFACE a filter lives on — the header bar, the grid's bar, a panel section |
+
+Only the third is what Will's ruling is about, and it is the one with no home.
+Naming them apart is part of this step, or the collision will be re-learned:
+
+- `reach` — `view` \| `component`. The query rule. (renamed from `ApplyAt.scope`)
+- `rows` — `page` \| `all`. What a bound element is given. (renamed from
+  `BindOptions.scope`)
+- `scope` — a NAMED place a filter lives. Free-form, the app's own words.
+
+##### The scope registry
+
+`DataSource` gains one small map, holding **current state only**:
+
+```
+scope(name)                 → the fields that scope is holding, in order
+hold(name, fields)          → set it
+holds(name, field)          → is this field held here?
+scopeOf(field)              → which scope holds it, or null
+```
+
+That answers, without any component knowing another exists:
+
+- the Add menu's whole list — *held here, ticked; offered, not*
+- superseding — a field held by `view` is not the `data` bar's to narrow
+- which fields the panel draws in which section
+- what a saved view restores
+
+A `scope-change` event joins `selection-change`, so a bar that gains or loses a
+filter redraws from the source rather than from a sibling.
+
+##### Automatic registration
+
+A component must not name its source — that is the coupling again. The web
+component idiom is a **provider request**: on connect the element dispatches a
+composed event, and the nearest `DataSource` in the tree answers it.
+
+```
+SherpaElement.onConnect  →  emit('sherpa-source-request', { accept })
+DataSource               →  listens on its host region, calls accept(this)
+```
+
+The element learns its source without naming one; the source learns the element
+without knowing its tag. `bind()` stays for a host that wants to be explicit —
+the same element, wired two ways, is a second door, so the request path calls
+`bind()` internally rather than duplicating it.
+
+`SherpaElement` is already flagged for its own bloat review. This is ~20 lines
+and belongs with that work, not before it.
+
+##### Consequence: the `as` adapter has to move
+
+`bind(grid, { as: (rows) => ({ columns, rows, key, actions }) })` is how the
+app shapes rows for one component today. A self-registering element cannot be
+handed that closure. Either the element declares what shape it wants, or the
+app keeps calling `bind()` for the ones that need adapting. **Open** — it is
+the one thing automatic registration does not obviously cover.
 
 ### Step 4 — ONE field-row builder
 

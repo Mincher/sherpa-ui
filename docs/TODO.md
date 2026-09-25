@@ -1366,10 +1366,16 @@ flags, not two implementations. ~250 lines, the biggest risk — land 3 first.
 **6. Split `filter-state.ts`** (547 lines, three jobs): the state model and
 query building, how a filter READS in words and badges, and `bindSelection`.
 
-**Open questions for Will**, in `docs/FILTER-REVIEW.md` §7 step 3: whether a
-scope's HELD set belongs in the data layer at all (it is UI state, not data),
-and whether `SherpaElement` should register a component automatically or leave
-it explicit.
+**Decided 2026-09-25:** filter SCOPING lives in the data layer, and
+registration is AUTOMATIC. `DataSource` gains a small scope registry —
+`scope(name)`, `hold(name, fields)`, `holds(name, field)`, `scopeOf(field)` —
+and `SherpaElement` finds its source by dispatching a request on connect, which
+the nearest source answers.
+
+**First, though, "scope" already means three different things** — the query
+reach (`view`/`component`), which rows a bind is pushed (`page`/`all`), and the
+app's own surfaces (`view`/`data`). They are renamed apart in this step or the
+collision is re-learned. Detail in `docs/FILTER-REVIEW.md` §7 step 3.
 Tidiness, no behaviour.
 
 #### Rules for the work
