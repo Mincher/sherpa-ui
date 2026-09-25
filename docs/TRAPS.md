@@ -7609,6 +7609,30 @@ one was touched. The rows still come from each host's OWN templates.
 - Site: `src/core/ui/filters-button.ts`
 - Site: `test/e2e/reforged-one-filters-button.spec.ts`
 
+### T-add-condition-ends-the-last-row
+
+**Add condition is an icon button with a plus, at the END of the LAST
+condition row.** Every row before it ends in Remove in that place. Will,
+2026-09-25. There is no Add condition button below the rows.
+
+Both buttons are in every row, and CSS shows one off the row's `data-last`,
+which `#numberRows` writes with `data-first`. So an added or a dropped row
+moves the plus with no rebuild. The last row has no Remove: a lone row has
+nothing to drop, and Clear is how a reader says "no filter".
+
+Pressing the plus HIDES it, so focus goes to the new row's condition field —
+once that field has drawn, as it renders on its own clock. Otherwise the
+focus falls out of the card.
+
+The Remove on every row but the last is the row's visible END, but the hidden
+plus is its `:last-child`, so its end edges are stated
+(`T-a-hidden-sibling-still-counts-as-first-child`).
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `test/e2e/reforged-filter-conditions.spec.ts`
+
 ### T-a-reopened-dialog-hears-a-late-close
 
 **A `sherpa-dialog` shut and opened again at once must stay open.** The native

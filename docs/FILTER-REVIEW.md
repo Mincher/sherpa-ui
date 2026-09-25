@@ -1796,7 +1796,8 @@ The scope's buttons have their own row, under its heading.
    opened again at once was shut by its own late close
    (`T-a-reopened-dialog-hears-a-late-close`).
 3. **Add condition is an icon button with a plus**, at the end of the LAST
-   condition row. Every row before it shows Remove instead.
+   condition row. Every row before it shows Remove instead. Done 2026-09-25
+   (`T-add-condition-ends-the-last-row`).
 4. **The breakpoint swap re-asks the data layer.** Below its width the panel
    goes and the toolbars come back, but a hide/show swap never re-queries, so
    each shows the data shape the other left. Add and remove them, or re-query

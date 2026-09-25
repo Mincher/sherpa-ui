@@ -198,8 +198,7 @@ export class SherpaMenu extends SherpaElement {
     region?.addEventListener('change', this.#onCondition);
     region?.addEventListener('input', this.#onCondition);
     this.$('.use-condition')?.addEventListener('click', this.#onModeSwitch);
-    this.$('.add-condition')?.addEventListener('click', this.#onAddCondition);
-    region?.addEventListener('click', this.#onDropCondition);
+    region?.addEventListener('click', this.#onRowButton);
   }
 
   /* ── The two modes ──────────────────────────────────────────────── */
@@ -326,19 +325,25 @@ export class SherpaMenu extends SherpaElement {
     ));
   }
 
-  /** Add a condition row, and report the chain. */
-  #onAddCondition = (): void => {
-    this.#addRow();
-    this.#emitConditions();
-  };
-
-  /** A row's own Remove. The LAST row is never dropped — an empty condition
-   *  mode reads as broken, and Clear is the way to mean "no filter". */
-  #onDropCondition = (event: Event): void => {
-    const hit = (event.target as HTMLElement | null)?.closest?.('.drop-condition');
-    if (!hit) return;
-    const rows = this.#rowEls();
-    if (rows.length <= 1) return;
+  /**
+   * A row's own button: Add on the last row, Remove on every row before it.
+   * The LAST row is never dropped — an empty condition mode reads as broken,
+   * and Clear is the way to mean "no filter".
+   * TRAP T-add-condition-ends-the-last-row
+   */
+  #onRowButton = (event: Event): void => {
+    const target = event.target as HTMLElement | null;
+    if (target?.closest?.('.add-condition')) {
+      const row = this.#addRow();
+      this.#emitConditions();
+      /* Focus goes WITH the button: the one pressed is hidden now. The new
+         field draws on its own clock, so it takes focus once it has. */
+      const field = row?.querySelector<HTMLElement & { rendered?: Promise<void> }>('.condition');
+      void Promise.resolve(field?.rendered).then(() => field?.focus());
+      return;
+    }
+    const hit = target?.closest?.('.drop-condition');
+    if (!hit || this.#rowEls().length <= 1) return;
     hit.closest('.condition-row')?.remove();
     this.#numberRows();
     this.#emitConditions();
@@ -448,9 +453,10 @@ export class SherpaMenu extends SherpaElement {
   /** Row ONE has no join. A flag, so CSS hides it and nothing is removed —
    *  a row moved to the front gets its select back. */
   #numberRows(): void {
-    this.#rowEls().forEach((row, i) => {
+    const rows = this.#rowEls();
+    rows.forEach((row, i) => {
       row.toggleAttribute('data-first', i === 0);
-      row.toggleAttribute('data-only', this.#rowEls().length === 1);
+      row.toggleAttribute('data-last', i === rows.length - 1);
     });
   }
 

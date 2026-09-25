@@ -221,6 +221,8 @@ test('Add condition chains rows, and each row asks its own question', async ({ p
       field.dispatchEvent(new Event(ev, { bubbles: true, composed: true }));
     };
 
+    // OPEN, so a control in it can take focus.
+    (menu as HTMLElement & { show(): void }).show();
     sr.querySelector<HTMLElement>('.use-condition')!.click();
     await wait();
 
@@ -229,14 +231,20 @@ test('Add condition chains rows, and each row asks its own question', async ({ p
     await wait();
     set(rows()[0]!, '.condition-value', 'gol', 'input');
     await wait();
+    const shown = (row: HTMLElement, sel: string): boolean =>
+      getComputedStyle(row.querySelector(sel)!).display !== 'none';
     const firstRow = {
       joinShown: getComputedStyle(rows()[0]!.querySelector('.join')!).display,
       // A LONE row has nothing to drop, so its Remove is hidden too.
       dropShown: getComputedStyle(rows()[0]!.querySelector('.drop-condition')!).display,
+      // It is the LAST row, so it ends in Add. TRAP T-add-condition-ends-the-last-row
+      addShown: shown(rows()[0]!, '.add-condition'),
+      // No second Add below the rows.
+      below: sr.querySelectorAll('.add-condition').length,
     };
 
     // ROW TWO: Or, Equals, picked from the field's own values.
-    sr.querySelector<HTMLElement>('.add-condition')!.click();
+    rows()[0]!.querySelector<HTMLElement>('.add-condition')!.click();
     await wait();
     set(rows()[1]!, '.join', 'or');
     set(rows()[1]!, '.condition-pick', 'silver');
@@ -245,8 +253,11 @@ test('Add condition chains rows, and each row asks its own question', async ({ p
     const secondRow = {
       count: rows().length,
       joinShown: getComputedStyle(rows()[1]!.querySelector('.join')!).display,
-      // Row ONE gains its Remove the moment there are two.
+      // Row ONE gains its Remove the moment there are two, and gives up Add.
       firstDropShown: getComputedStyle(rows()[0]!.querySelector('.drop-condition')!).display,
+      ends: rows().map((row) => [shown(row, '.drop-condition'), shown(row, '.add-condition')]),
+      // The focus went with the Add: to the new row.
+      focus: rows()[1]!.contains(sr.activeElement),
       joinOptions: [...(rows()[1]!.querySelector('.join') as HTMLElement).shadowRoot!
         .querySelectorAll('option')].map((o) => (o as HTMLOptionElement).value),
       /* `Equals` answers with the FIELD's own values, never a text box — one
@@ -270,10 +281,15 @@ test('Add condition chains rows, and each row asks its own question', async ({ p
   // Row ONE leads, so it has no join and — while alone — nothing to remove.
   expect(r.firstRow.joinShown).toBe('none');
   expect(r.firstRow.dropShown).toBe('none');
+  expect(r.firstRow.addShown).toBe(true);
+  expect(r.firstRow.below).toBe(1);
 
   expect(r.secondRow.count).toBe(2);
   expect(r.secondRow.joinShown).not.toBe('none');
   expect(r.secondRow.firstDropShown).not.toBe('none');
+  // [Remove, Add] per row: Remove before the last, Add on it.
+  expect(r.secondRow.ends).toEqual([[true, false], [false, true]]);
+  expect(r.secondRow.focus).toBe(true);
   expect(r.secondRow.joinOptions).toEqual(['and', 'or']);
   // Led by the `Select…` placeholder — an empty value is "not answered yet".
   expect(r.secondRow.pickOptions).toEqual(['', 'gold', 'silver']);
@@ -682,7 +698,9 @@ test('row ONE\'s value select is populated, not just later rows', async ({ page 
     };
     const first = opts(sr.querySelector('.condition-row')!);
 
-    sr.querySelector<HTMLElement>('.add-condition')!.click();
+    const lastAdd = (): HTMLElement =>
+      [...sr.querySelectorAll('.condition-row')].at(-1)!.querySelector<HTMLElement>('.add-condition')!;
+    lastAdd().click();
     await wait();
     const second = opts(sr.querySelectorAll('.condition-row')[1]!);
 
@@ -691,7 +709,7 @@ test('row ONE\'s value select is populated, not just later rows', async ({ page 
     pick.value = 'silver';
     pick.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
     await wait();
-    sr.querySelector<HTMLElement>('.add-condition')!.click();
+    lastAdd().click();
     await wait();
 
     return { first, second, kept: pick.value };
