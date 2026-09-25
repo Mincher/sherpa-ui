@@ -15,7 +15,9 @@
  */
 
 import { OPS_FOR_TYPE, type FilterOp } from '../data/store.js';
-import { hasOwnBody, kindOf, picksOne, type FilterKind, type KindSource } from './filter-kind.js';
+import {
+  customOf, hasOwnBody, kindOf, picksOne, type FilterKind, type KindSource,
+} from './filter-kind.js';
 
 /** One row a menu offers. */
 export interface FilterMenuItem {
@@ -123,13 +125,14 @@ export function menuFor(
     menu.setAttribute('data-type', 'filter');
     if (def.op) menu.setAttribute('data-op', def.op);
 
-    /* CONDITIONS ARE OPT-IN. TRAP T-conditions-are-opt-in-per-field */
-    if (def.conditions) {
+    /* CUSTOM IS OPT-IN. TRAP T-conditions-are-opt-in-per-field */
+    const custom = customOf(def);
+    if (custom) {
       menu.setAttribute('data-custom', '');
       /* VALUES, CONDITIONS, OR BOTH. `only` opens in custom mode and hides
          the switch — there is no list behind it.
          TRAP T-a-filter-answers-by-values-conditions-or-both */
-      if (def.conditions === 'only') {
+      if (custom === 'only') {
         menu.setAttribute('data-custom-only', '');
         menu.setAttribute('data-mode', 'custom');
       }

@@ -95,7 +95,7 @@ export async function init(root, { session } = {}) {
     options: f.options,
     select: f.select,
     removable: f.removable,
-    conditions: f.conditions,
+    custom: f.custom,
     kind: f.kind,
     min: f.min,
     max: f.max,
@@ -108,7 +108,7 @@ export async function init(root, { session } = {}) {
     state: f.state,
     /* A PRESET has no values AND no body of its own — one question, answered
        yes or no. TRAP T-a-chip-with-no-field-is-a-preset */
-    preset: !f.options?.length && !f.kind && !f.conditions,
+    preset: !f.options?.length && !f.kind && !f.custom,
     /* A DATE is ONE chip with its menu. Its menu IS a calendar, and a calendar
        drawn inline is the whole panel. TRAP T-only-group-and-sort-stay-one-chip */
     asChip: f.kind === 'date',
@@ -213,11 +213,11 @@ export async function init(root, { session } = {}) {
     { id: 'tier', label: 'Tier', type: 'data',
       select: 'multiple', removable: true, options: asOptions('tier') },
     /* COMMITTING: rows are a draft behind Apply/Cancel. And the one chip here
-       that OPTS IN to conditions — an owner is a person's name, so "starts
+       that OPTS IN to custom conditions — an owner is a person's name, so "starts
        with" is a question a reader really asks. Status, Plan and Tier are
        closed sets of three or four, and get a plain list.
        TRAP T-conditions-are-opt-in-per-field */
-    { id: 'owner', label: 'Owner', type: 'data', conditions: true,
+    { id: 'owner', label: 'Owner', type: 'data', custom: true,
       select: 'multiple', removable: true, commit: true, options: asOptions('owner') },
     /* No `created` chip here: the header's "Created date" already filters that
        field at VIEW scope, and one field lives in exactly ONE scope.
@@ -257,8 +257,8 @@ export async function init(root, { session } = {}) {
      TRAP T-a-condition-only-field-still-has-a-menu */
   const textFacts = (field) =>
     (typedColumn({ field })
-      // CONDITIONS ONLY, opening on Contains — there is no list worth ticking.
-      ? { conditions: 'only', op: 'contains' }
+      // CUSTOM ONLY, opening on Contains — there is no list worth ticking.
+      ? { custom: 'only', op: 'contains' }
       : { select: 'multiple', options: asOptions(field) });
 
   /* THE FIELDS EACH SCOPE HAS. The grid's are its columns; the VIEW's are
@@ -557,7 +557,7 @@ export async function init(root, { session } = {}) {
      "Contains", which is the question a reader really asks of an address.
      TRAP T-a-filter-answers-by-values-conditions-or-both */
   const gridColumns = columns.map((c) =>
-    (typedColumn(c) ? { ...c, conditions: 'only', op: 'contains' } : c));
+    (typedColumn(c) ? { ...c, custom: 'only', op: 'contains' } : c));
 
   grid.setAttribute('data-column-values', columns
     .filter((c) => (c.type ?? 'text') === 'text' && !typedColumn(c))

@@ -14,7 +14,7 @@
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import { ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
 import {
-  arranges, hasOwnBody, kindOf, picksOne, type FilterKind,
+  arranges, customOf, hasOwnBody, kindOf, picksOne, type FilterKind, type OffersCustom,
 } from '../../core/ui/filter-kind.js';
 import { menuFor, type FilterMenuItem } from '../../core/ui/filter-menu.js';
 import { report } from '../../core/data/report.js';
@@ -38,7 +38,7 @@ export interface PanelValue {
 }
 
 /** One field the panel draws. The shape a quick-filter toolbar takes. */
-export interface PanelFilter {
+export interface PanelFilter extends OffersCustom {
   id: string;
   label: string;
   options?: PanelValue[];
@@ -47,8 +47,6 @@ export interface PanelFilter {
   icon?: string;
   /** Offer Remove in this field's header. */
   removable?: boolean;
-  /** Offer the CONDITION switch. TRAP T-conditions-are-opt-in-per-field */
-  conditions?: boolean | 'only';
   /** WHAT THIS FILTER IS — see `core/ui/filter-kind.ts`. */
   kind?: FilterKind | 'values';
   /** A number filter's slider ends and field clamp. */
@@ -465,7 +463,7 @@ export class SherpaFilterPanel extends SherpaElement {
     box.toggleAttribute('data-chip', organise || !!def.asChip);
     box.toggleAttribute('data-clearable', !isPresets && !organise);
     box.toggleAttribute('data-removable', !isPresets && !organise && !!def.removable);
-    box.toggleAttribute('data-custom-ok', !isPresets && !organise && !!def.conditions);
+    box.toggleAttribute('data-custom-ok', !isPresets && !organise && !!customOf(def));
 
     /* REMOVE what this field does not offer, never hide it: `.sherpa-group`
        squares corners by POSITION, and a `display: none` first child still

@@ -13,7 +13,7 @@
  * - GridColumn — one column: its field, heading, type, and whether it sorts or filters
  * - GridAction — One action a row offers.
  */
-import { kindOf } from '../../core/ui/filter-kind.js';
+import { kindOf, type OffersCustom } from '../../core/ui/filter-kind.js';
 import {
   DATA_PROPS, SHARED_PROPS, SherpaElement, coerceNum, clampNum, markNeedle,
 } from '../../core/ui/sherpa-element.js';
@@ -49,21 +49,12 @@ import '../sherpa-switch/sherpa-switch.js';
 import '../sherpa-calendar/sherpa-calendar.js';
 import '../sherpa-slider/sherpa-slider.js';
 
-export interface GridColumn {
+export interface GridColumn extends OffersCustom {
   field: string;
   header?: string;
   /** number → right-aligned mono cells; anything else → default text. */
   type?: string;
   sortable?: boolean;
-  /**
-   * How this column is ANSWERED — the same three states a filter chip takes.
-   * A text column defaults to `true` (a list AND a condition); `'only'` drops
-   * the list, for free text nobody picks from. The HOST decides, because how
-   * many values is too many is a question about the data.
-   * TRAP T-a-wall-of-values-is-not-a-filter
-   * TRAP T-a-filter-answers-by-values-conditions-or-both
-   */
-  conditions?: boolean | 'only';
   /** Which condition this column OPENS on — `'contains'` for free text. */
   op?: FilterOp;
   /** Drawn width in px, clamped. A user drag overrides it for the grid's life. */
@@ -507,7 +498,7 @@ export class SherpaDataGrid extends SherpaElement {
          TRAP T-a-filter-answers-by-values-conditions-or-both */
       /* WHAT IT IS, from the ONE derivation the chips read.
          TRAP T-a-chip-knows-what-kind-it-is */
-      if (kindOf(col) === 'conditional') {
+      if (kindOf(col) === 'custom') {
         menu.setAttribute('data-custom-only', '');
         menu.setAttribute('data-mode', 'custom');
       }
@@ -530,10 +521,10 @@ export class SherpaDataGrid extends SherpaElement {
       if (held && (OP_TAKES[held.op as FilterOp] ?? 'list') === 'text') {
         menu.setAttribute('data-value', held.value);
       }
-      /* NO WALL OF ROWS. A conditions-only column has no list to tick, so
+      /* NO WALL OF ROWS. A custom-only column has no list to tick, so
          stamping its 240 values is work nobody sees.
          TRAP T-a-wall-of-values-is-not-a-filter */
-      if (kindOf(col) !== 'conditional') this.#addColumnValues(menu, col.field, held);
+      if (kindOf(col) !== 'custom') this.#addColumnValues(menu, col.field, held);
     }
 
     // Restore the held clause — the header is rebuilt per sort and keystroke,

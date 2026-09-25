@@ -2712,14 +2712,14 @@ test('a column filtered by a CONDITION wears the fx mark AND the info edge', asy
  * menu's search box only FINDS in that wall — it never filters the rows — so a
  * reader typing an address saw nothing happen.
  *
- * `conditions: 'only'` drops the list and leaves the condition rows, opening
+ * `custom: 'only'` drops the list and leaves the condition rows, opening
  * on the `op` the column names. The HOST sets it: how many values is too many
  * is a question about the data.
  *
  * TRAP T-a-wall-of-values-is-not-a-filter
  * TRAP T-a-filter-answers-by-values-conditions-or-both
  */
-test('a conditions-only column drops its list and opens on its own op', async ({ page }) => {
+test('a custom-only column drops its list and opens on its own op', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-data-grid') as HTMLElement & {
       rendered?: Promise<void>;
@@ -2732,7 +2732,7 @@ test('a conditions-only column drops its list and opens on its own op', async ({
     el.populate({
       columns: [
         // Free text nobody picks from.
-        { field: 'email', header: 'Email', conditions: 'only', op: 'contains' },
+        { field: 'email', header: 'Email', custom: 'only', op: 'contains' },
         // A short set — a list AND a condition, as every text column was.
         { field: 'status', header: 'Status' },
       ],

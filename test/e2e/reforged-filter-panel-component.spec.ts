@@ -26,7 +26,7 @@ const SETUP = `
             { value: 'active', label: 'active', selected: true },
             { value: 'churned', label: 'churned' },
           ] },
-        { id: 'owner', label: 'Owner', select: 'single', conditions: true,
+        { id: 'owner', label: 'Owner', select: 'single', custom: true,
           options: [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }] },
         // NO OPTIONS — a date has nothing honest to draw as a run of chips.
         { id: 'created', label: 'Created date' },

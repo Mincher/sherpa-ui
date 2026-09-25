@@ -14,7 +14,7 @@ import { DATA_PROPS, SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-el
 import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
 import { sortDirectionFrom } from '../../core/data/cycle.js';
 import { allow, type AllowList } from '../../core/data/allow.js';
-import { kindOf, type FilterKind } from '../../core/ui/filter-kind.js';
+import { customOf, kindOf, type FilterKind, type OffersCustom } from '../../core/ui/filter-kind.js';
 import { menuFor } from '../../core/ui/filter-menu.js';
 import { report } from '../../core/data/report.js';
 import {
@@ -45,7 +45,7 @@ export interface QuickFilterOption {
   note?: string;
 }
 
-export interface QuickFilterDef {
+export interface QuickFilterDef extends OffersCustom {
   id: string;
   label: string;
   type?: string;
@@ -55,7 +55,7 @@ export interface QuickFilterDef {
   options?: QuickFilterOption[];
   select?: 'single' | 'multiple';
   /** WHAT THIS FILTER IS — see `core/ui/filter-kind.ts`. A def that leaves it
-   *  out has it worked out from `select`, `conditions` and whether there are
+   *  out has it worked out from `select`, `custom` and whether there are
    *  options, in ONE place rather than at fifteen.
    *  TRAP T-number-and-date-lead-with-a-range-switch
    *  TRAP T-a-chip-knows-what-kind-it-is */
@@ -76,20 +76,6 @@ export interface QuickFilterDef {
   removable?: boolean;
   /** Defer picks behind Apply. TRAP T-commit-follows-select-mode — else the select mode decides. */
   commit?: boolean;
-  /**
-   * Offer the CONDITION mode: And/Or rows of Equals, Contains, Starts with…
-   *
-   * OPT-IN, and off by default. A field answered by ticking a closed set —
-   * Region, Customer — gets a plain list and no mode button; the reader never
-   * meets a control that cannot help them.
-   * `true` offers BOTH — a list and a condition. `'only'` offers the condition
-   * ALONE, for a field whose values are a wall nobody ticks: an email column
-   * of 240 addresses. Pair it with `op` to say which condition it opens on.
-   * TRAP T-conditions-are-opt-in-per-field
-   * TRAP T-a-filter-menu-has-two-modes
-   * TRAP T-a-filter-answers-by-values-conditions-or-both
-   */
-  conditions?: boolean | 'only';
   /** Which condition this chip is on. Defaults to `eq`. */
   op?: FilterOp;
   /** What the reader TYPED, for a condition that takes text rather than a pick. */
@@ -345,7 +331,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const into = chip?.querySelector<HTMLElement>('sherpa-menu');
     if (!from || !into || !chip) return;
 
-    /* NOTHING TO DRILL. A conditions-only menu answers with its condition
+    /* NOTHING TO DRILL. A custom-only menu answers with its condition
        ROWS, which live in its own shadow DOM — moving its empty light DOM put
        a blank card on screen, so the filter could never be answered, never
        went active, and never filtered. Show the menu ITSELF, anchored to the
@@ -786,12 +772,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         chip.setAttribute('data-current', '');
       }
       /* THE KIND DECIDES. A boolean has nothing to open; everything else does
-         — a date or number carries its own body, and so does a conditional,
+         — a date or number carries its own body, and so does a custom one,
          which can only be asked "contains" and never ticked from a list of 240.
          TRAP T-a-condition-only-field-still-has-a-menu
          TRAP T-a-chip-knows-what-kind-it-is */
       const kind = kindOf(f);
-      if (kind !== 'boolean' || f.conditions) this.#addMenu(chip, f, prior?.picked);
+      if (kind !== 'boolean' || customOf(f)) this.#addMenu(chip, f, prior?.picked);
       if (f.customValue) {
         // `data-custom` makes it findable: it is in neither `active` nor `values`.
         chip.setAttribute('data-custom', '');
@@ -1058,7 +1044,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * Every condition chip as a ready FilterClause, by chip id.
    *
-   * A chip WITHOUT `conditions: true` is absent: its meaning is `values`, and
+   * A chip WITHOUT `custom: true` is absent: its meaning is `values`, and
    * a second shape for the same fact is a second answer. A chip on a typing
    * condition with nothing typed is absent too — an empty value says nothing.
    *
@@ -1555,7 +1541,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
          condition mode showing what is applied, instead of opening nothing.
          TRAP T-a-custom-chip-caret-must-open-its-condition */
       ...(op || text
-        ? { conditions: true, ...(op ? { op } : {}), ...(text ? { text } : {}) }
+        ? { custom: true, ...(op ? { op } : {}), ...(text ? { text } : {}) }
         : {}),
     };
 

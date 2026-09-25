@@ -2412,18 +2412,18 @@ test('the More chip is active only when a folded filter is', async ({ page }) =>
 
 /**
  * A chip with no `options` is a TOGGLE — right for "At risk", wrong for a text
- * column nobody ticks. `conditions: true` names a field and answers it by
+ * column nobody ticks. `custom: true` names a field and answers it by
  * TYPING, so it needs a menu; it was falling through to the toggle branch and
  * getting none, which is why a 240-value column could not be filtered at all.
  *
  * TRAP T-a-condition-only-field-still-has-a-menu
  */
-test('a CONDITION-only field gets a menu, not a toggle', async ({ page }) => {
+test('a CUSTOM field with no options gets a menu, not a toggle', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
     el.populate([
       // No options, no kind — only the opt-in to conditions.
-      { id: 'email', label: 'Email', conditions: true },
+      { id: 'email', label: 'Email', custom: true },
       // The control: a real toggle, which must stay one.
       { id: 'at-risk', label: 'At risk' },
     ]);
@@ -2506,14 +2506,14 @@ test('a custom chip GIVEN its condition opens a menu on it', async ({ page }) =>
  *
  * TRAP T-a-conditions-only-menu-cannot-be-drilled
  */
-test('a FOLDED conditions-only filter opens its own menu, not a blank drill', async ({ page }) => {
+test('a FOLDED custom-only filter opens its own menu, not a blank drill', async ({ page }) => {
   const r = await page.evaluate(async () => {
     // NARROW, so the filters fold into More.
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'style': 'max-inline-size: 260px' });
     el.populate([
       { id: 'status', label: 'Status', select: 'multiple',
         options: [{ value: 'a', label: 'a' }, { value: 'b', label: 'b' }] },
-      { id: 'email', label: 'Email', conditions: 'only', op: 'contains' },
+      { id: 'email', label: 'Email', custom: 'only', op: 'contains' },
     ]);
     const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
     await settle();

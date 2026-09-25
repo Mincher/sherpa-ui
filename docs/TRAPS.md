@@ -7740,7 +7740,6 @@ each row is `[And|Or] [condition] [value]`.
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
 ---
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
@@ -7752,7 +7751,7 @@ three — Region, Customer, Status — gets a plain list and no mode button.
 
 `Contains` over four regions all visible on screen is a control that cannot
 help the reader, and offering it says the list might be incomplete when it is
-not. A field opts in with `conditions: true` on its def; the toolbar writes
+not. A field opts in with `custom: true` on its def; the toolbar writes
 `data-custom` and the menu shows the button.
 
 Two doors, both shut: the CLICK is refused, and so is a host writing
@@ -7768,7 +7767,7 @@ is exactly what a reader asks "starts with" of.
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/core/ui/filter-kind.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 
 ---
@@ -8417,7 +8416,7 @@ Measured on the running page — the search itself works, 101 rows down to 2 on
 in the email column filter doesn't work."* It worked; it just did not do what a
 reader typing an address expects.
 
-Such a column is answered by TYPING — `conditions: 'only'`, opening on
+Such a column is answered by TYPING — `custom: 'only'`, opening on
 `contains`. See TRAP T-a-filter-answers-by-values-conditions-or-both for the
 three states and how they are configured.
 
@@ -8673,7 +8672,7 @@ still names the column it would resume on.
 The More chip drills into a folded filter by MOVING its menu's light-DOM rows
 into the overflow menu: `into.replaceChildren(...from.childNodes)`.
 
-A conditions-only menu has no light-DOM children. Its answer is the condition
+A custom-only menu has no light-DOM children. Its answer is the condition
 ROWS, which live in its own shadow DOM and are driven by `data-custom-only`
 and `data-mode` — attributes the overflow menu does not have. So drilling put a
 blank card on screen.
@@ -8698,7 +8697,7 @@ rows are not the answer, so moving them is the wrong gesture.
 
 A filter is answered three ways, and the field says which:
 
-| `conditions` | the menu offers | for |
+| `custom` | the menu offers | for |
 |---|---|---|
 | absent / `false` | a list of values to tick | a closed set — Status, Plan |
 | `true` | BOTH, with a switch between them | Owner: a short list, and "starts with" |
@@ -8723,7 +8722,7 @@ or-chain.
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/core/ui/filter-kind.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
@@ -8786,14 +8785,14 @@ TRAP T-a-conditioned-chip-reads-as-info
 A chip with no `options` is a TOGGLE — that is the rule, and it is right for
 "At risk" or "Unassigned", which name no field.
 
-But a chip with `conditions: true` names a field and answers it by TYPING. It
+But a chip with `custom: true` names a field and answers it by TYPING. It
 carries no options because nobody ticks 240 distinct emails; it still needs a
 menu, and it was falling through to the toggle branch and getting none. So a
 high-cardinality text column could not be filtered at all — it silently became
 a switch that did nothing.
 
 `kind: 'date'` and `kind: 'number'` were already exempt for the same reason:
-their content is not a list of values either. `conditions` joins them.
+their content is not a list of values either. `custom` joins them.
 
 This is what stopped `examples/contexts/records.js` offering every column. It
 had hand-listed four of fourteen, with hand-written slider bounds that drifted
@@ -11556,13 +11555,19 @@ The chip's `data-condition` (it was a boolean, `data-conditioned`), the
 (`mode`, was `conditional: boolean`) are reports, and their readers follow the
 new words.
 
-**Not renamed:** the def key `conditions: true | 'only'` and the
-`'conditional'` kind. They are a def's data shape, not an attribute.
+**And the def.** A filter def says `custom: true | 'only'`, the same word as
+the menu, and that kind is `'custom'`. Both are a host's writes, so both keep
+their old spelling: `customOf()` reads `custom`, then `conditions`, and
+`kindOf()` believes `kind: 'conditional'`. The new key wins where a def names
+both. `OffersCustom` declares the key ONCE — four def types each declared
+`conditions` for themselves.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/core/ui/filter-kind.ts`
 - Site: `test/e2e/reforged-custom-condition-words.spec.ts`
+- Site: `test/unit/the-def-speaks-the-new-words.test.mjs`
 
 ### T-a-held-clause-op-is-not-a-reading-op
 

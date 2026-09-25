@@ -98,7 +98,7 @@ test('a chip says which condition it holds: default, custom, or none', async ({ 
     options: [{ value: 'Dana', label: 'Dana', selected: true }, { value: 'Ravi', label: 'Ravi' }],
   })).toBe('default');
   expect(await chipCondition(page, {
-    id: 'owner', label: 'Owner', select: 'multiple', active: true, conditions: true,
+    id: 'owner', label: 'Owner', select: 'multiple', active: true, custom: true,
     op: 'contains', text: 'Da', options: OWNERS,
   })).toBe('custom');
   expect(await chipCondition(page, {
@@ -160,7 +160,7 @@ test('the panel reports its mode in the menu\'s own words', async ({ page }) => 
   const r = await page.evaluate(async () => {
     const panel = await window.__mount<HTMLElement & { open(): void }>('sherpa-filter-panel', [{
       scope: 'data', label: 'Data', filters: [{
-        id: 'owner', label: 'Owner', select: 'multiple', conditions: true,
+        id: 'owner', label: 'Owner', select: 'multiple', custom: true,
         options: [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }],
       }],
     }], { style: 'inline-size: 400px', 'data-min-width': '0' });
@@ -186,4 +186,52 @@ test('the panel reports its mode in the menu\'s own words', async ({ page }) => 
     { scope: 'data', id: 'owner', mode: 'custom' },
     { scope: 'data', id: 'owner', mode: 'default' },
   ]);
+});
+
+/**
+ * THE DEF SPEAKS THEM TOO. `custom: true | 'only'` on a chip, a column and a
+ * panel field; the old `conditions` key still works.
+ */
+test('a def says custom — and the old conditions key still works', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const opts = [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }];
+    const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [
+      { id: 'owner', label: 'Owner', select: 'multiple', custom: true, options: opts },
+      { id: 'email', label: 'Email', custom: 'only', op: 'contains' },
+      { id: 'old', label: 'Old', conditions: 'only', op: 'contains' },
+    ], { style: 'inline-size: 1200px' });
+    await window.__settled();
+    const menu = (id: string) => {
+      const m = bar.shadowRoot!.querySelector(`.chip[data-id="${id}"] sherpa-menu`) as Menu | null;
+      return m && {
+        custom: m.hasAttribute('data-custom'),
+        only: m.hasAttribute('data-custom-only'),
+        mode: m.mode,
+      };
+    };
+    const chips = { owner: menu('owner'), email: menu('email'), old: menu('old') };
+
+    const grid = await window.__mount<HTMLElement>('sherpa-data-grid', {
+      columns: [{ field: 'email', header: 'Email', custom: 'only', op: 'contains' }],
+      rows: [{ email: 'a@x.io' }, { email: 'b@x.io' }],
+    }, { 'data-column-filters': true });
+    const col = grid.shadowRoot!.querySelector('.head-cell[data-field="email"] sherpa-menu')!;
+    const column = {
+      only: col.hasAttribute('data-custom-only'),
+      // NO WALL OF ROWS: a custom-only column stamps no values.
+      rows: [...col.children].length,
+    };
+
+    const panel = await window.__mount<HTMLElement>('sherpa-filter-panel', [{
+      scope: 'data', label: 'Data', filters: [{ id: 'owner', label: 'Owner', custom: true, options: opts }],
+    }], { 'data-min-width': '0' });
+    const field = !!panel.shadowRoot!.querySelector('.field[data-field="owner"] .field-custom');
+    return { chips, column, field };
+  });
+
+  expect(r.chips.owner).toEqual({ custom: true, only: false, mode: 'default' });
+  expect(r.chips.email).toEqual({ custom: true, only: true, mode: 'custom' });
+  expect(r.chips.old).toEqual({ custom: true, only: true, mode: 'custom' });
+  expect(r.column).toEqual({ only: true, rows: 0 });
+  expect(r.field).toBe(true);
 });

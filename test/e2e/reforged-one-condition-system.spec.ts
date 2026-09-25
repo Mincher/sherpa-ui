@@ -28,7 +28,7 @@ async function chip(page: import('@playwright/test').Page, def: Record<string, u
 
 test('a TYPED condition in list mode is custom: blue AND fx', async ({ page }) => {
   const r = await chip(page, {
-    id: 'owner', label: 'Owner', select: 'multiple', active: true, conditions: true,
+    id: 'owner', label: 'Owner', select: 'multiple', active: true, custom: true,
     op: 'contains', text: 'Da',
     options: [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }],
   });

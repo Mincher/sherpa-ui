@@ -55,7 +55,7 @@ export function globalFilters(views, regions = REGIONS, customers = CUSTOMERS, d
     {
       id: 'customer',
       label: 'Customer',
-      /* NO `conditions`. A reader picks an organisation from a list; nobody
+      /* NO `custom`. A reader picks an organisation from a list; nobody
          asks "customer starts with". TRAP T-conditions-are-opt-in-per-field */
       // One of the FIVE filters that carry a glyph. `buildings`, because there
       // is no `office` in the set. TRAP T-only-five-filter-chips-carry-an-icon

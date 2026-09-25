@@ -2016,11 +2016,20 @@ names still work. See `T-a-renamed-attribute-keeps-its-old-name`.
   connects, and only the badge was redrawn then. The condition is now written on
   the stamp too.
 
-### 21.5.1 Still open
+### 21.5.1 The def — done 2026-09-25
 
-- **The def key** `conditions: true | 'only'` and the `'conditional'` kind keep
-  their names. They are a def's data shape, not an attribute, and every filter
-  has conditions now — so `conditions: true` reads as a tautology.
+Will: *"B"* — fix the last old words before §16.
+
+| was | is | old spelling |
+|---|---|---|
+| def `conditions: true \| 'only'` | `custom: true \| 'only'` | still read — `customOf()` |
+| kind `'conditional'` | `'custom'` | still believed — `kindOf()` |
+
+`OffersCustom` in `core/ui/filter-kind.ts` declares the key once; the chip,
+column, panel and menu defs each declared `conditions` for themselves.
+
+### 21.5.2 Still open
+
 - **"Custom" means two things.** A Custom Condition Filter, and the toolbar's
   host-added chip — `addCustomFilter()`, `customFilters`, `customValue` and a
   private `data-custom` on that chip. §16's saved "Custom" filters would be a

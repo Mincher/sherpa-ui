@@ -26,7 +26,7 @@ async function bar(page: import('@playwright/test').Page): Promise<void> {
       {
         // OPT IN: conditions are off by default, so a chip that wants the
         // And/Or rows asks for them. TRAP T-conditions-are-opt-in-per-field
-        id: 'tier', label: 'Tier', select: 'multiple', removable: true, conditions: true,
+        id: 'tier', label: 'Tier', select: 'multiple', removable: true, custom: true,
         options: [{ value: 'gold', label: 'Gold' }, { value: 'silver', label: 'Silver' }],
       },
       // A SELECTOR, not a field question — "which saved view" has no Contains.
@@ -458,7 +458,7 @@ test('a TYPED condition survives Apply, and its hits mark', async ({ page }) => 
     el.populate([{
       // OPT IN. TRAP T-conditions-are-opt-in-per-field
       id: 'owner', label: 'Owner', select: 'single', removable: true, commit: true,
-      conditions: true,
+      custom: true,
       options: [{ value: 'ravi', label: 'Ravi' }, { value: 'dana', label: 'Dana' }],
     }]);
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
@@ -771,9 +771,9 @@ test('a filter answers by values, by conditions, or by both', async ({ page }) =
       // DEFAULT — a closed set, ticked.
       { id: 'status', label: 'Status', select: 'multiple', options: opts },
       // BOTH — a short list, and a condition over it.
-      { id: 'owner', label: 'Owner', select: 'multiple', conditions: true, options: opts },
+      { id: 'owner', label: 'Owner', select: 'multiple', custom: true, options: opts },
       // ONLY — a wall. No list at all, opening on Contains.
-      { id: 'email', label: 'Email', conditions: 'only', op: 'contains' },
+      { id: 'email', label: 'Email', custom: 'only', op: 'contains' },
     ]);
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 

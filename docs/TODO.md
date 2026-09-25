@@ -575,7 +575,7 @@ box. It is a select menu of the values for that field.
 **Done 2026-09-24.** All of the above, plus one thing the spec did not ask for:
 **conditions are OPT-IN.** Will, 2026-09-24 — "I don't think Customer or Region
 need conditional logic." A field answered by ticking a closed set of three gets
-a plain list and no mode button; `conditions: true` on the def turns it on. A
+a plain list and no mode button; `custom: true` on the def turns it on. A
 TEXT GRID COLUMN always opts in.
 
 | shipped | where |
@@ -1274,7 +1274,7 @@ possible. That's the whole reason that the filter-chip is its own component."*
 Six KINDS. A heading, a section, a zone, a bar, a panel — those are
 PRESENTATION and must never name a kind. `data-kind` carries it; `group` and
 `sort` are implemented, the other four are still spelled out of `select`,
-`conditions` and whether there are options.
+`custom` and whether there are options.
 
 #### The functionality that must survive any refactor
 
