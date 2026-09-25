@@ -2560,3 +2560,104 @@ test('the More chip is active only when a folded filter is', async ({ page }) =>
   expect(r.backOff!.activeFolded).toEqual([]);
   expect(r.backOff!.more).toBe(false);
 });
+
+/**
+ * A chip with no `options` is a TOGGLE — right for "At risk", wrong for a text
+ * column nobody ticks. `conditions: true` names a field and answers it by
+ * TYPING, so it needs a menu; it was falling through to the toggle branch and
+ * getting none, which is why a 240-value column could not be filtered at all.
+ *
+ * TRAP T-a-condition-only-field-still-has-a-menu
+ */
+test('a CONDITION-only field gets a menu, not a toggle', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+    };
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate([
+      // No options, no kind — only the opt-in to conditions.
+      { id: 'email', label: 'Email', conditions: true },
+      // The control: a real toggle, which must stay one.
+      { id: 'at-risk', label: 'At risk' },
+    ]);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const look = (id: string) => {
+      const chip = el.shadowRoot!.querySelector<HTMLElement>(`.chip[data-id="${id}"]`)!;
+      const menu = chip.querySelector('sherpa-menu');
+      return {
+        menu: !!menu,
+        // A filter menu is what carries the two modes.
+        type: menu?.getAttribute('data-type') ?? null,
+        conditional: !!menu?.querySelector('.mode-switch, [data-mode]'),
+      };
+    };
+    return { email: look('email'), toggle: look('at-risk') };
+  });
+
+  expect(r.email.menu).toBe(true);
+  expect(r.email.type).toBe('filter');
+  // And a chip that names no field is still a plain toggle.
+  expect(r.toggle.menu).toBe(false);
+});
+
+/**
+ * A caret that opens nothing is drawn exactly like every caret that does.
+ * `addCustomFilter` set `data-menu` so the phrase would read in the caret, and
+ * never gave the chip a menu — so a conditional column filter could not be
+ * opened or edited from the bar at all.
+ *
+ * TRAP T-a-custom-chip-caret-must-open-its-condition
+ */
+test('a custom chip GIVEN its condition opens a menu on it', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+      addCustomFilter(s: unknown): void;
+    };
+    // WIDE, so nothing folds into More — a folded chip is not in `.chips`.
+    el.style.cssText = 'inline-size: 1200px';
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate([{ id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] }]);
+    /* SETTLE FIRST. `populate` defers to `renderData`, so a custom filter added
+       before it lands is overwritten by the populate set. */
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    el.addCustomFilter({
+      id: 'col:name', label: 'Name', value: 'Contains: ana',
+      op: 'contains', text: 'ana',
+    });
+    // The same call WITHOUT a condition — the old shape, still supported.
+    el.addCustomFilter({ id: 'col:email', label: 'Email', value: 'Contains: z' });
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+
+    const look = (id: string) => {
+      const chip = el.shadowRoot!.querySelector<HTMLElement>(`.chip[data-id="${id}"]`);
+      if (!chip) return { missing: [...el.shadowRoot!.querySelectorAll<HTMLElement>('.chip')]
+        .map((c) => c.dataset['id']).join(',') };
+      const menu = chip.querySelector('sherpa-menu');
+      return {
+        // The caret still reads the phrase either way.
+        caret: chip.hasAttribute('data-menu'),
+        menu: !!menu,
+        conditional: menu?.hasAttribute('data-conditional') ?? false,
+        op: menu?.getAttribute('data-op') ?? null,
+        value: menu?.getAttribute('data-value') ?? null,
+      };
+    };
+    return { withCond: look('col:name'), bare: look('col:email') };
+  });
+
+  // It OPENS, in condition mode, holding what is applied.
+  expect(r.withCond).toEqual({
+    caret: true, menu: true, conditional: true, op: 'contains', value: 'ana',
+  });
+  // And the phrase-only call is unchanged.
+  expect(r.bare.caret).toBe(true);
+  expect(r.bare.menu).toBe(false);
+});

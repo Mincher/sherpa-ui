@@ -253,20 +253,61 @@ export async function init(root, { session } = {}) {
   ];
   qft.populate(DATA_FILTERS);
 
-  /* What the ADD chip offers — the columns the default set leaves out. These
-     four are `kind: 'number'`, not value lists: a column of 240 distinct seat
-     counts is not a set anybody picks from. Bounds are the data's own. */
-  const DATA_AVAILABLE = [
-    { id: 'seats', label: 'Seats', type: 'data',
-      kind: 'number', min: 1, max: 240, step: 1 },
-    { id: 'spend', label: 'Spend', type: 'data',
-      kind: 'number', min: 120, max: 10000, step: 20 },
-    { id: 'health', label: 'Health', type: 'data',
-      kind: 'number', min: 40, max: 100, step: 1 },
-    { id: 'openTickets', label: 'Open tickets', type: 'data',
-      kind: 'number', min: 0, max: 8, step: 1 },
-  ];
+  /* What the ADD chip offers: EVERY COLUMN the grid draws, minus the ones a
+     scope already holds. Hand-listing four of fourteen meant most of the data
+     could not be filtered at all, and the four bounds drifted from the rows.
+
+     One field lives in exactly ONE scope, so a column the header already
+     filters is not offered again here.
+     TRAP T-component-extends-view-never-alters-it */
+  const heldSomewhere = new Set([
+    ...DATA_FILTERS.map((f) => f.id),
+    ...HEADER_HELD,
+    // The header's "Created date" chip is this column under another name.
+    'created',
+  ]);
+
+  /** A number column's real ends, and a step that gives the slider ~200 stops. */
+  const NICE_STEPS = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000];
+  const numberFacts = (field) => {
+    const nums = customers.map((c) => Number(c[field])).filter(Number.isFinite);
+    const min = Math.floor(Math.min(...nums));
+    const max = Math.ceil(Math.max(...nums));
+    const span = max - min;
+    const step = span <= 1000 ? 1 : (NICE_STEPS.find((n) => n >= span / 200) ?? 1000);
+    return { kind: 'number', min, max, step };
+  };
+
+  /* A LIST or a CONDITION, decided by the data. Ticking is only an answer when
+     the set is small enough to read; 240 distinct emails is not a set anybody
+     picks from, so that column is asked "contains" instead.
+     TRAP T-a-condition-only-field-still-has-a-menu */
+  const PICKABLE_AT_MOST = 12;
+  const textFacts = (field) => {
+    const values = valuesOf(field);
+    return values.length <= PICKABLE_AT_MOST
+      ? { select: 'multiple', options: asOptions(field) }
+      : { conditions: true };
+  };
+
+  const DATA_AVAILABLE = columns
+    .filter((c) => !heldSomewhere.has(c.field))
+    .map((c) => ({
+      id: c.field,
+      label: c.header,
+      type: 'data',
+      removable: true,
+      ...(c.type === 'number' ? numberFacts(c.field)
+        : c.type === 'date' ? { kind: 'date' }
+        : textFacts(c.field)),
+    }));
   qft.available(DATA_AVAILABLE);
+
+  /* The WHITELIST still decides. `null` is "everything this bar offers", which
+     is what this example wants; a list here would narrow it for a role, a
+     context or a fetch without the bar knowing why.
+     TRAP T-an-allow-list-is-a-filter-not-an-order */
+  qft.allowFields(null);
 
   /* The leading Group and Sort chips — how the grid is ARRANGED. Their own
      events, so a group/sort pick is never mistaken for a filter change. */
@@ -757,7 +798,14 @@ export async function init(root, { session } = {}) {
        in each FIELD's own slot and leaves named parts alone, so this order is
        no longer load-bearing — it just reads in the order it happens.
        TRAP T-one-query-builder-in-the-data-layer */
-    qft.addCustomFilter({ id: `col:${field}`, label: header, value: label });
+    /* THE CONDITION, not only the phrase. Without it the chip's caret read
+       "Contains: ana" and opened nothing at all.
+       TRAP T-a-custom-chip-caret-must-open-its-condition */
+    qft.addCustomFilter({
+      id: `col:${field}`, label: header, value: label,
+      ...(clause ? { op: clause[1] } : {}),
+      ...(typeof clause?.[2] === 'string' ? { text: clause[2] } : {}),
+    });
     pushColumns();
   });
 

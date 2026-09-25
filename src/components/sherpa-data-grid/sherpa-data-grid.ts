@@ -930,6 +930,12 @@ export class SherpaDataGrid extends SherpaElement {
       && (OP_TAKES[held.op as FilterOp] ?? 'list') === 'text';
     if (typed) chip.setAttribute('data-icon-start', CONDITION_ICON);
     else chip.removeAttribute('data-icon-start');
+    /* THE COLOUR SAYS IT TOO. The glyph alone left the chip in the plain active
+       purple, so a column answered by a condition looked like one answered by
+       a ticked list. Written from the SAME `typed`, so the two can never
+       disagree. TRAP T-a-conditioned-chip-reads-as-info
+       TRAP T-a-custom-chip-caret-must-open-its-condition */
+    chip.toggleAttribute('data-conditioned', typed);
   }
 
   /** Re-light every heading without rebuilding the header row. */

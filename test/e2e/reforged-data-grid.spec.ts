@@ -2625,3 +2625,64 @@ test('a number column with BLANKS bounds its slider on the real values', async (
   expect(r.min).toBe('120');
   expect(r.max).toBe('340');
 });
+
+/**
+ * A column answered by a CONDITION reads as INFO, not the plain active purple.
+ *
+ * The glyph already said so — `fx` in place of the funnel — but nothing wrote
+ * `data-conditioned`, and the info rule is `:host([data-conditioned][data-current])`.
+ * So the mark and the colour disagreed. Will: "The Column filter button doesn't
+ * become an Info blue Condition style button when a conditional filter is applied."
+ *
+ * TRAP T-a-custom-chip-caret-must-open-its-condition
+ */
+test('a column filtered by a CONDITION wears the fx mark AND the info edge', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate(d: unknown): void;
+      setColumnFilter(field: string, clause: unknown[] | null): void;
+    };
+    el.setAttribute('data-column-filters', '');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate({
+      columns: [
+        { field: 'name', header: 'Name' },
+        { field: 'spend', header: 'Spend', type: 'number' },
+      ],
+      rows: [{ name: 'Marcus', spend: 10 }, { name: 'Omar', spend: 50 }],
+    });
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await settle();
+
+    const sr = el.shadowRoot!;
+    const read = (field: string) => {
+      const chip = sr.querySelector<HTMLElement>(
+        `.head-cell[data-field="${field}"] .head-filter`)!;
+      return {
+        current: chip.hasAttribute('data-current'),
+        conditioned: chip.hasAttribute('data-conditioned'),
+        icon: chip.getAttribute('data-icon-start'),
+      };
+    };
+
+    // TYPED — "contains ar" is a condition, not a ticked list.
+    el.setColumnFilter('name', ['name', 'contains', 'ar']);
+    // A RANGE is a filter, and it is not a condition.
+    el.setColumnFilter('spend', ['spend', 'between', [10, 50]]);
+    await settle();
+    const on = { name: read('name'), spend: read('spend') };
+
+    el.setColumnFilter('name', null);
+    await settle();
+    return { on, off: read('name') };
+  });
+
+  // Mark and colour come from the same answer, so they cannot disagree.
+  expect(r.on.name).toEqual({ current: true, conditioned: true, icon: 'function' });
+  // A range is filtered but NOT conditioned — it keeps the plain active look.
+  expect(r.on.spend).toEqual({ current: true, conditioned: false, icon: null });
+  // And clearing takes both off.
+  expect(r.off).toEqual({ current: false, conditioned: false, icon: null });
+});

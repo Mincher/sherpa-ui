@@ -749,8 +749,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         chip.setAttribute('data-locked', '');
         chip.setAttribute('data-current', '');
       }
-      // A date or number chip carries no `options`, so kind stamps the menu too.
-      const hasOwnContent = f.kind === 'date' || f.kind === 'number';
+      /* A date or number chip carries no `options`, so kind stamps the menu
+         too — and so does CONDITIONS: a high-cardinality text column (an email,
+         a name) can only be asked "contains", never ticked from a list of 240.
+         Without this it fell through to the no-menu branch and became a
+         TOGGLE. TRAP T-a-condition-only-field-still-has-a-menu */
+      const hasOwnContent = f.kind === 'date' || f.kind === 'number' || !!f.conditions;
       if (f.options?.length || hasOwnContent) this.#addMenu(chip, f, prior?.picked);
       if (f.customValue) {
         // `data-custom` makes it findable: it is in neither `active` nor `values`.
@@ -1653,9 +1657,19 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     btn.setAttribute('aria-pressed', String(on));
   }
 
-  /** Put a CUSTOM filter on the bar — one whose value is TYPED, not picked. */
-  addCustomFilter(spec: { id: string; label: string; value?: string | null }): void {
-    const { id, label, value } = spec;
+  /**
+   * Put a CUSTOM filter on the bar — one whose value is TYPED, not picked.
+   *
+   * Give it the CONDITION behind the phrase (`op`, `text`) and the chip gets a
+   * real filter menu that opens on it. Without one the caret still reads the
+   * phrase but opens nothing, which is drawn exactly like every caret that
+   * does. TRAP T-a-custom-chip-caret-must-open-its-condition
+   */
+  addCustomFilter(spec: {
+    id: string; label: string; value?: string | null;
+    op?: FilterOp; text?: string;
+  }): void {
+    const { id, label, value, op, text } = spec;
     const i = this.#filters.findIndex((f) => f.id === id);
 
     // No value, no filter — a chip reading "Name:" narrows nothing.
@@ -1672,9 +1686,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       id,
       label,
       active: true,
-      // Theirs to remove, and no `options`, so no menu — just a caret reading this.
+      // Theirs to remove.
       removable: true,
       customValue: value,
+      /* THE CONDITION, where the caller named it: the menu then opens in
+         condition mode showing what is applied, instead of opening nothing.
+         TRAP T-a-custom-chip-caret-must-open-its-condition */
+      ...(op || text
+        ? { conditions: true, ...(op ? { op } : {}), ...(text ? { text } : {}) }
+        : {}),
     };
 
     if (i >= 0) this.#filters[i] = def;

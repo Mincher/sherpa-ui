@@ -7428,6 +7428,7 @@ holds it.
 - Site: `test/unit/allow-list.test.mjs`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `examples/contexts/records.js`
 
 ### T-a-filter-applies-down-its-scope
 
@@ -8346,6 +8347,59 @@ memory so one more click resumes it. TRAP T-grid-suspend-is-not-clear
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
+### T-a-custom-chip-caret-must-open-its-condition
+
+`addCustomFilter()` put a chip on the bar carrying a finished phrase —
+"Contains: ana" — and set `data-menu` so the caret would draw and read it. It
+never gave the chip a menu. Its own comment said so: *"no `options`, so no
+menu — just a caret reading this."*
+
+A caret that opens nothing is drawn exactly like every caret that does. Will:
+*"When a conditional filter is applied, I can't open the filter chip menu in
+the filter toolbar for that conditional filter."* Measured on the running page:
+`col:name  menu=false  data-current data-custom data-menu data-full-value`.
+
+`data-menu` cannot simply come off — the caret is where `valueLabel` writes the
+phrase, so hiding it hides the filter. The caller names the CONDITION instead
+(`op`, `text`), and the chip gets a real filter menu that opens on it. The
+machinery was already there: `data-conditional`, `data-op`, `data-value`.
+
+**And the colour half.** `sherpa-data-grid.#lightFilterChip` gave a
+condition-answered column the `fx` glyph and left it in the plain active
+purple, because nothing wrote `data-conditioned` — the info rule is
+`:host([data-conditioned][data-current])`. Glyph and colour now come from the
+same `typed`, so they cannot disagree. TRAP T-a-conditioned-chip-reads-as-info
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `examples/contexts/records.js`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `test/e2e/reforged-data-grid.spec.ts`
+
+### T-a-condition-only-field-still-has-a-menu
+
+A chip with no `options` is a TOGGLE — that is the rule, and it is right for
+"At risk" or "Unassigned", which name no field.
+
+But a chip with `conditions: true` names a field and answers it by TYPING. It
+carries no options because nobody ticks 240 distinct emails; it still needs a
+menu, and it was falling through to the toggle branch and getting none. So a
+high-cardinality text column could not be filtered at all — it silently became
+a switch that did nothing.
+
+`kind: 'date'` and `kind: 'number'` were already exempt for the same reason:
+their content is not a list of values either. `conditions` joins them.
+
+This is what stopped `examples/contexts/records.js` offering every column. It
+had hand-listed four of fourteen, with hand-written slider bounds that drifted
+from the rows; the list is now built from `columns`, minus whatever a scope
+already holds, with a value list where the set is small enough to read and a
+condition where it is not. The `allowFields()` whitelist still decides on top.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `examples/contexts/records.js`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+
 ### T-one-query-builder-in-the-data-layer
 
 A reading becomes a query in exactly ONE place: `stateClause()`, reached through
@@ -8821,6 +8875,7 @@ surface, which is invisible on something whose job is to stand out.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
 ---
 
