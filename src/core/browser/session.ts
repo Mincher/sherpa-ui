@@ -6,6 +6,27 @@
  * subscriber can watch a BRANCH.
  *
  * TRAP T-session-store-is-the-third-tier
+ *
+ * Map:
+ * - PersistOptions — Where a persisted pointer is kept.
+ * - SessionStore — What an app knows about itself, addressed by pointer.
+ * - .get — the value at a pointer
+ * - .set — write a pointer; every overlapping subscriber hears it
+ * - .subscribe — watch a pointer, and anything beneath it; returns the undo
+ * - .snapshot — the whole store as plain data
+ * - .persist — Remember this pointer across reloads.
+ * - .list — A LIST at this pointer, with identity and a cap.
+ * - .forget — Stop persisting a pointer, and forget what was stored.
+ * - ListOptions — How a list decides identity, order and length.
+ * - SessionList — A list living at one SessionStore pointer: add, remove, has, toggle.
+ * - .all — The entries, newest-first when `front`.
+ * - .length — how many entries the list holds
+ * - .has — Is an entry with this identity present?
+ * - .add — Add it, or MOVE it to the newest end if it is already there.
+ * - .remove — drop the entry with this identity
+ * - .toggle — Add when absent, remove when present.
+ * - .clear — drop every entry
+ * - .subscribe — Watch the list.
  */
 import { getPointer, setPointer, pointersOverlap } from '../data/pointer.js';
 import { readJson, readText, removeKey, writeJson } from './web-storage.js';

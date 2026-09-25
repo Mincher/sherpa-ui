@@ -8,6 +8,15 @@
  *
  * A heading, a section, a zone, a bar or a panel is PRESENTATION and never
  * names a kind. TRAP T-a-chip-knows-what-kind-it-is
+ *
+ * Map:
+ * - FILTER_KINDS — Every way a filter can be answered.
+ * - FilterKind — boolean, single, multi, conditional, number, date, group or sort
+ * - KindSource — Enough of a filter definition to say what it is.
+ * - kindOf — what a filter IS, from its def — worked out here and nowhere else
+ * - hasOwnBody — Its menu holds a CONTROL of its own, not a list of values to tick.
+ * - arranges — It ARRANGES rows rather than choosing them.
+ * - picksOne — Exactly one answer, so its rows are radios and it applies as it is picked.
  */
 
 /** Every way a filter can be answered. `number` and `date` were already here,

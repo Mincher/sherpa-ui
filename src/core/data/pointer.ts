@@ -4,6 +4,11 @@
  * TRAP T-pointer-overlap-is-both-directions
  * TRAP T-pointer-stays-out-of-session — DOM-free by lint rule; never fold into
  * the browser-only `session.ts`.
+ *
+ * Map:
+ * - getPointer — Read the value at `pointer`, or `undefined`.
+ * - setPointer — Write `value` at `pointer`, creating the objects on the way.
+ * - pointersOverlap — Does a change at one pointer concern a subscriber at the other?
  */
 
 /** Decode an escaped token. TRAP T-pointer-escape-decode-order — `~1` before `~0`. */

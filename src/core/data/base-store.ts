@@ -2,6 +2,10 @@
  * base-store.ts — what every Store shares: the key field, the schema guard in
  * and out, `totalCount`, and announcing a change. Its own module so `IdbStore`
  * can extend it rather than re-implement it. TRAP T-one-class-to-catch
+ *
+ * Map:
+ * - StoreOptions — Options every store shares.
+ * - BaseStore — what every store shares: key, time, schema guard, change events
  */
 import type { LoadOptions, LoadResult, Row, Store, StoreChangeDetail } from './store.js';
 import { validate, ValidationError, type Issue, type StandardSchema } from './validate.js';

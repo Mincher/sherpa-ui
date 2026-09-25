@@ -3,6 +3,16 @@
  *
  * All answer the one interface in store.ts, so a view moves from an in-memory
  * array to an HTTP endpoint without a component knowing.
+ *
+ * Map:
+ * - ArrayStore — Records held in memory.
+ * - JsonStoreOptions — where the JSON lives, and how to read the rows out of it
+ * - JsonStore — A JSON document fetched once, then queried in memory.
+ * - RestStoreOptions — the endpoint, and how its query parameters are spelled
+ * - RestStore — Records behind an HTTP endpoint — the SERVER filters, sorts and pages.
+ * - HttpError — An HTTP response that was not ok.
+ * - LocalStoreOptions — the storage key, and local vs session
+ * - LocalStore — Records in Web Storage — saved views, column state, preferences.
  */
 import {
   applyOptions,

@@ -4,6 +4,17 @@
  * Not icons, despite one of them being icon names: `NON_VALUE_ROWS` is a CSS
  * selector, and three of the four importers want only that.
  * TRAP T-shared-values-two-components-must-agree-on
+ *
+ * Map:
+ * - ORGANISE_ICONS — The ORGANISE glyphs — grouping and the three sort states.
+ * - NON_VALUE_ROWS — Rows in a filter menu that are NOT values, as a selector.
+ * - MIRRORED_CONTROL_ATTRS — Native attributes a select control mirrors onto its inner `<input>`.
+ * - RADIAL_BOX — A radial chart's geometry, in viewBox units of a 100×100 box.
+ * - RADIAL_CENTRE — Centre of that box.
+ * - RADIAL_CORNER — Segment corner radius.
+ * - RADIAL_OUTLINE — Outline thickness, aligned INSIDE as in Figma.
+ * - RADIAL_INNER_RATIO — The hole, as a FRACTION of the outer radius.
+ * - DEFAULT_TICKS — Gridlines a cartesian chart draws when `data-ticks` is absent.
  */
 
 /**

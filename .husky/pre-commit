@@ -134,4 +134,18 @@ if [ $DOCS_RESULT -ne 0 ]; then
   exit 1
 fi
 
+# EVERY FILE SAYS WHAT IT HOLDS. A file's header ends in a `Map:` of its
+# exports — the higher-plane map `npm run map` prints. `--staged`: a file this
+# commit touches must carry its map, so updating it is the last step of any
+# change. TRAP T-a-file-says-what-it-holds
+echo "🗺️  Checking every changed file carries its map..."
+MAP_OUT=$(npm run check:map --silent -- --staged 2>&1)
+MAP_RESULT=$?
+
+if [ $MAP_RESULT -ne 0 ]; then
+  echo "$MAP_OUT"
+  echo "❌ A file's Map does not match what it exports. Run npm run map:write <file>. Commit blocked."
+  exit 1
+fi
+
 echo "✅ Pre-commit checks passed!"

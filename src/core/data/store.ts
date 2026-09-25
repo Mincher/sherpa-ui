@@ -3,6 +3,41 @@
  * the in-memory pipeline every store shares.
  *
  * TRAP T-store-is-stateless
+ *
+ * Map:
+ * - Row — one record, as plain data
+ * - SortDirection — Which way a sort runs.
+ * - SortSpec — One sort instruction.
+ * - FilterOp — one operator name — eq, contains, between, and the rest
+ * - OP_LABELS — How each operator READS to a person.
+ * - OPS_FOR_TYPE — The operators each COLUMN TYPE can answer.
+ * - OP_TAKES — WHAT a reader gives an operator: a value they PICK, or one they TYPE.
+ * - DEFAULT_OP — The condition a filter menu opens on.
+ * - FilterClause — [field, op, value] — one condition
+ * - FilterGroup — ['and' | 'or', ...filters] — conditions joined
+ * - Filter — a clause or a group; the one filter shape the whole layer speaks
+ * - LoadOptions — What a caller asks a store for.
+ * - LoadResult — What a load returns: the rows, plus the total BEFORE paging.
+ * - Store — where records come from; the same interface whatever backs it
+ * - StoreChangeDetail — Fired after an insert, update or remove.
+ * - readField — Read a field, following dots (`'customer.name'`) into nested objects.
+ * - compareValues — Compare two field values.
+ * - sortRows — Sort by specs, first wins and later ones break ties.
+ * - filterFields — Every FIELD a filter touches, first-appearance order.
+ * - filterNeedles — every substring clause in a filter, so a view can mark what matched
+ * - matchesFilter — Does one row satisfy one filter?
+ * - sameKey — Do two KEYS name the same row?
+ * - valueKey — A value as the string a CONTROL can put in an attribute.
+ * - valueSet — A set of values to test against, using the query's own comparison.
+ * - andFilter — several clauses as ONE filter, or undefined when there are none
+ * - picksClause — One field and the values picked for it, as a clause.
+ * - filterRows — Rows matching a filter.
+ * - searchRows — Rows matching a free-text search — `fields` when given, else every value.
+ * - RowGroup — One bunch of rows sharing a value in the grouped field.
+ * - GroupSummary — One group as the DATA LAYER sees it: the value, and how many rows carry it.
+ * - groupSummaries — Group by a field, keeping arrival order.
+ * - groupRows — rows grouped by a field, in the order they arrive
+ * - applyOptions — Apply search → filter → sort, then page.
  */
 
 /** One record. Plain object — structuredClone cannot clone a class instance. */

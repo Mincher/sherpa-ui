@@ -9,6 +9,12 @@
  * DOM-free, like everything in this folder.
  *
  * TRAP T-a-broken-assumption-reports
+ *
+ * Map:
+ * - Report — One thing that went wrong, NAMED.
+ * - Reporter — where a report goes — a toast, a log, a test array
+ * - onReport — Route every issue somewhere of your own — a toast, a log, a test's array.
+ * - report — Say that an assumption broke.
  */
 
 /**

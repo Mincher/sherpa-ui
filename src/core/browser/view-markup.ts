@@ -8,6 +8,12 @@
  * written in and drops the rest.
  *
  * TRAP T-saved-markup-is-untrusted-input
+ *
+ * Map:
+ * - MarkupReport — What `parseViewMarkup` dropped, for a caller that wants to report it.
+ * - ParseResult — the parsed fragment, plus what the allow-list dropped
+ * - parseViewMarkup — Parse saved view markup into a fragment, dropping anything outside the vocabulary.
+ * - checkViewMarkup — Check saved markup WITHOUT building it — the markup twin of `checkView`.
  */
 
 /* ── The vocabulary ────────────────────────────────────────────────────── */

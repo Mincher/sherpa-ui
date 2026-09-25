@@ -1,6 +1,6 @@
 # Principles
 
-The rules, stated once. Seventeen of them, and **thirteen are enforced by a gate**
+The rules, stated once. Eighteen of them, and **fourteen are enforced by a gate**
 — those are facts about the codebase, not aspirations. The other four are
 conventions a reviewer has to hold.
 
@@ -34,7 +34,7 @@ reaches past the source to a store, and two components never speak directly.
 
 ---
 
-## 1–13: the gated rules
+## 1–14: the gated rules
 
 Each one runs in the pre-commit hook. The gate is the statement; the words here
 are a reminder of why.
@@ -61,27 +61,30 @@ are a reminder of why.
 | 11 | A `TRAP T-…` citation resolves to an entry in `TRAPS.md`, and its Sites match who cites it | `check:traps` |
 | 12 | A `.component.yaml` regenerates the source it describes | `spec:check` |
 | 13 | The data layer imports no DOM — no `document`, `window`, `customElements`, storage | `lint` |
+| 14 | Every file's header says what it holds, and ends in a `Map:` of its exports — one line each. A changed file carries its map; `npm run map` prints them all | `check:map` |
 
 ---
 
-## 14–17: the ungated conventions
+## 15–18: the ungated conventions
 
 No gate, so a reviewer holds these. All four were checked on 2026-09-22 and the
 codebase obeys them.
 
-**14. `data-*` is the public API.** Native attributes (`disabled`, `name`,
+**15. `data-*` is the public API.** Native attributes (`disabled`, `name`,
 `value`) stay unprefixed. Component-private state is `--_*`, never a public
 `data-*`.
 
-**15. CSS owns visibility.** JS sets a `data-*` on the host; CSS selects it. JS
+**16. CSS owns visibility.** JS sets a `data-*` on the host; CSS selects it. JS
 never touches `.hidden`, `display` or `visibility` on a shadow node.
 
-**16. Every element the component will ever show is in the template.** No
+**17. Every element the component will ever show is in the template.** No
 `createElement()` for structure, no structural `innerHTML`. Repeating items use
-a cloning prototype. The four `createElement` calls that exist are a component
-creating *itself* (`sherpa-toast`) or a typed child by tag name.
+a cloning prototype. A typed child by tag name is not structure — `menuFor()`
+building a `<sherpa-menu>` is that. Measured 2026-09-25: ten calls, not the four
+this said; three are `menuFor`'s and the More chip's typed menus, and the other
+seven were not re-reviewed.
 
-**17. Events are unprefixed `noun-verb`** — `page-change`, `tree-select`. Never
+**18. Events are unprefixed `noun-verb`** — `page-change`, `tree-select`. Never
 a `sherpa-` prefix. A re-dispatched native event keeps its native name, which
 is why `sherpa-accordion` emits `toggle`.
 

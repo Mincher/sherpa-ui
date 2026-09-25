@@ -2,6 +2,12 @@
  * ONE datum shape for every chart, and the legend beside it.
  *
  * TRAP T-one-datum-shape-for-chart-and-legend
+ *
+ * Map:
+ * - ChartDatum — One category with its measurement — a bar, a slice, a legend row.
+ * - LegendDatum — `ChartDatum` plus the two things only a legend has.
+ * - datumValue — One datum's value as a NUMBER, or 0.
+ * - datumTotal — What a set of data ADDS UP TO — one answer, for the ring and for the label.
  */
 
 /** One category with its measurement — a bar, a slice, a legend row. */

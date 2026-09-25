@@ -6,6 +6,11 @@
  * TRAP T-grid-group-drops-the-column
  *
  * @see TRAP T-grid-reports-never-combines
+ *
+ * Map:
+ * - GridColumn — one column: its field, heading, type, and whether it sorts or filters
+ * - GridAction — One action a row offers.
+ * - SherpaDataGrid — the table; REPORTS sort, filter, paging and selection, a host owns them
  */
 import { kindOf } from '../../core/ui/filter-kind.js';
 import {

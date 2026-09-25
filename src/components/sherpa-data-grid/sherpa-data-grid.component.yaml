@@ -302,7 +302,9 @@ states:
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (selectedRecords, selectedKeys). See $extensions.sherpa.jsProps.
+    description: >-
+      read/write JS properties (groups, selectedRecords, selectedKeys). See
+      $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
     description: >-
@@ -418,26 +420,6 @@ tokens:
   head-cell.border-block-end: "{sherpa.border-bottom}"
   head-row-inner.gap: "{sherpa.display-mode-space-xs}"
   head-row-inner.padding-inline-end: "{sherpa.display-mode-space-xs}"
-  head-filter-body.gap: "{sherpa.display-mode-space-2xs}"
-  head-filter-body.padding: "{sherpa.display-mode-space-2xs}"
-  head-filter-range.gap: "{sherpa.display-mode-space-xs}"
-  head-filter-range.padding: "{sherpa.display-mode-space-2xs}"
-  head-filter-range-label.font-size: "{sherpa.theme-content-size-base}"
-  head-filter-range-label.line-height: "{sherpa.theme-content-line-height-base}"
-  head-filter-range-label.color: "{sherpa.theme-content-body-1}"
-  head-filter-op.min-block-size: "{sherpa.display-mode-size-2xl}"
-  head-filter-op.padding: "{sherpa.display-mode-space-2xs}"
-  head-filter-op.border-color: "{sherpa.style-border-base}"
-  head-filter-op.border-block-start-width: "{sherpa.border-top}"
-  head-filter-op.border-block-end-width: "{sherpa.border-bottom}"
-  head-filter-op.border-inline-start-width: "{sherpa.border-left}"
-  head-filter-op.border-inline-end-width: "{sherpa.border-right}"
-  head-filter-op.border-radius: "{sherpa.display-mode-border-rounding-base}"
-  head-filter-op.background: "{sherpa.style-surface-base}"
-  head-filter-op.color: "{sherpa.theme-content-body-1}"
-  head-filter-op.font-size: "{sherpa.theme-content-size-base}"
-  head-filter-num.font-family: "{sherpa.font-family-mono}"
-  head-filter-op.padding-inline-end: "{sherpa.display-mode-space-xs}"
   resize-grip.inline-size: "{sherpa.display-mode-space-xs}"
   head-btn.gap: "{sherpa.display-mode-space-2xs}"
   head-btn.padding-block: "{sherpa.display-mode-space-2xs}"
@@ -541,6 +523,9 @@ $extensions:
         column model, or scope the Figma component to match. Public API (data-sort-field/direction,
         grid-sort-change, row-click) is preserved on both sides.
     jsProps:
+      - name: groups
+        type: string
+        access: read
       - name: selectedRecords
         type: string
         access: read

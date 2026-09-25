@@ -3,6 +3,9 @@
  *
  * @see TRAP T-chip-menu-is-a-boolean-state, TRAP T-one-pick-reads-field-and-value,
  * TRAP T-scope-does-not-stop-inheritance, TRAP T-icon-only-is-purely-css
+ *
+ * Map:
+ * - SherpaQuickFilter — one chip; knows its KIND, so group toggles and sort cycles on their own
  */
 import { DATA_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import {

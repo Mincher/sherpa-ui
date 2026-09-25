@@ -5,6 +5,14 @@
  * `{type:'insert'|'update'|'remove', …}` — the same shape every store announces.
  *
  * TRAP T-sse-over-websocket-for-a-feed
+ *
+ * Map:
+ * - PushMessage — One thing a server can say.
+ * - LiveStoreOptions — the URL, the rows to show first, and how to read a message
+ * - EventStoreOptions — a live store over Server-Sent Events
+ * - EventStore — Records pushed over Server-Sent Events — `new EventStore({ url })`, then `.connect()`.
+ * - SocketStoreOptions — a live store over a WebSocket, which can also send
+ * - SocketStore — Records over a WebSocket — two-way.
  */
 import { ArrayStore } from './stores.js';
 import { readField, type LoadOptions, type LoadResult, type Row, type Store } from './store.js';

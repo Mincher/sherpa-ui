@@ -2,6 +2,14 @@
  * sherpa-quick-filter-toolbar — a row of filter chips above a grid or list.
  *
  * TRAP T-actions-were-a-slot
+ *
+ * Map:
+ * - QuickFilterOption — One value a filter chip's menu can offer.
+ * - QuickFilterDef — one filter chip as data: its id, kind, values, and how it answers
+ * - OrganiseColumn — One column the grid can be grouped or sorted by.
+ * - OrganiseDef — The columns the leading Group / Sort chips offer.
+ * - SortDirection — Matches the standard data-sort-direction values.
+ * - SherpaQuickFilterToolbar — the chip row: folds what does not fit, reports what the reader did
  */
 import { DATA_PROPS, SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';

@@ -9,6 +9,12 @@
  *
  * TRAP T-a-chip-body-cycles-its-states
  * TRAP T-one-cycle-for-one-value
+ *
+ * Map:
+ * - SortState — a field and a direction; a null direction is SUSPENDED, not cleared
+ * - nextSort — The next state after a click on `field`.
+ * - sortDirectionAttr — `data-sort-direction`: `asc` | `desc` | `''` suspended | absent for no sort.
+ * - sortDirectionFrom — read data-sort-direction back; '' means suspended
  */
 import type { SortDirection } from './store.js';
 

@@ -1,6 +1,26 @@
 /**
  * persist-view.ts — keep a view across a reload, and save named views.
  * TRAP T-persist-defaults-per-tab
+ *
+ * Map:
+ * - PersistOptions — where a view is kept, and who hears what could not be restored
+ * - persistView — Keep a whole view — the query AND every component's state — across a reload.
+ * - persistViewState — Keep just a `DataSource`'s view state.
+ * - ViewSnapshot — A whole VIEW DEFINITION — the query AND every component's state.
+ * - ApplyReport — what applyViewSnapshot could not do — a gone element, a gone method
+ * - applyViewSnapshot — Apply a whole view definition: the query, then each element's state.
+ * - captureView — Read the current state BACK into a definition — the other half of applying one.
+ * - clearViewState — Forget a saved view state — what a "reset this view" action does.
+ * - SavedView — One saved view in a set: what it is called, and what it does.
+ * - ViewLibrary — A page's saved views, keyed by the id its chip option carries.
+ * - ViewOption — A quick-filter option, as `populate()` takes it.
+ * - viewOptions — The View chip's options, DERIVED from the views themselves.
+ * - ViewPick — What `onViewPicked` hands back, so a host can do its own work after.
+ * - onViewPicked — Wire a View chip to a library: pick one, and the screen reconfigures.
+ * - SavedViewStore — The user's own saved views for one page, keyed by id like a preset set.
+ * - loadSavedViews — Read a page's user-saved views.
+ * - saveViewAs — Save what is on screen as a NEW named view, and hand back the whole set.
+ * - deleteSavedView — Forget one saved view.
  */
 import type { DataSource, ViewState } from '../data/data-source.js';
 import { applyState } from '../ui/apply-state.js';

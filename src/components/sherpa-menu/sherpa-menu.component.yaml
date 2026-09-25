@@ -70,6 +70,37 @@ anatomy:
             attrs:
               role: status
           - el: div
+            class: body-range
+            part: body-range
+            children:
+              - el: sherpa-switch
+                class: body-range-switch
+                attrs:
+                  data-type: simple
+              - el: span
+                class: body-range-label
+          - el: div
+            class: body-number
+            part: body-number
+            children:
+              - el: sherpa-input-text
+                class: body-op
+                attrs:
+                  data-type: select
+                  aria-label: Condition
+              - el: input
+                class: body-number-one sherpa-border-edges
+                attrs:
+                  type: number
+                  inputmode: decimal
+                  aria-label: Value
+                  placeholder: Any
+              - el: sherpa-slider
+                class: body-number-range
+                attrs:
+                  data-type: range
+                  data-show-value: ""
+          - el: div
             class: rows
             part: rows
             slot: ""
@@ -392,8 +423,14 @@ states:
     name: commit
     selector: ":host([data-commit])"
   - $type: state
+    name: number
+    selector: ":host([data-body=\"number\"])"
+  - $type: state
+    name: date
+    selector: ":host([data-body=\"date\"])"
+  - $type: state
     name: focus-visible
-    selector: ":focus-visible"
+    selector: .body-number-one:focus-visible
 capabilities:
   - $type: capability
     api: js-property-mirror
@@ -456,6 +493,12 @@ events:
     detail:
       mode: unknown
   - $type: event
+    name: menu-range-change
+    bubbles: true
+    composed: true
+    detail:
+      range: unknown
+  - $type: event
     name: menu-items
     bubbles: true
     composed: true
@@ -484,6 +527,15 @@ tokens:
   remove.--_status-border: "{sherpa.theme-border-critical-2}"
   remove.--_status-icon: "{sherpa.theme-content-critical-1}"
   rows.gap: "{sherpa.display-mode-space-2xs}"
+  body-number-one.min-block-size: "{sherpa.display-mode-size-2xl}"
+  body-number-one.padding: "{sherpa.display-mode-space-2xs}"
+  body-number-one.border-color: "{sherpa.style-border-base}"
+  body-number-one.border-radius: "{sherpa.display-mode-border-rounding-base}"
+  body-number-one.background: "{sherpa.style-surface-base}"
+  body-number-one.color: "{sherpa.theme-content-body-1}"
+  body-number-one.font-size: "{sherpa.theme-content-size-base}"
+  body-range-label.color: "{sherpa.theme-content-body-1}"
+  body-range-label.font-size: "{sherpa.theme-content-size-base}"
 $extensions:
   sherpa:
     figmaName: Menu

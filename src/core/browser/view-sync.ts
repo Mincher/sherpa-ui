@@ -10,6 +10,14 @@
  * TRAP T-restore-before-first-load
  * TRAP T-local-first-then-onward
  * TRAP T-sync-pushes-a-snapshot-not-a-diff
+ *
+ * Map:
+ * - ViewRemote — Where saved views go when they must outlive this browser.
+ * - SyncOptions — the page, the remote, and how often to push
+ * - ViewSync — What `syncViews` hands back.
+ * - syncViews — Keep one page's saved views in three tiers.
+ * - RestViewRemoteOptions — the URL and headers a REST remote talks to
+ * - restViewRemote — A `ViewRemote` over HTTP — GET to pull, PUT to push.
  */
 import { IdbStore } from './idb-store.js';
 import {

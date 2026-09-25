@@ -12,6 +12,16 @@
  * DOM-free: the rule, not the wiring.
  *
  * TRAP T-an-allow-list-is-a-filter-not-an-order
+ *
+ * Map:
+ * - Identified — An item with an identity.
+ * - AllowEntry — What names an item on an allow-list.
+ * - AllowList — A list, or nothing at all — which allows everything.
+ * - allowKey — The identity used for comparison: `id`, else `value`, else `field`, else the value itself through `valueKey`.
+ * - isAllowed — Is this item permitted?
+ * - allow — The permitted subset of `items`, in THEIR order — not the list's.
+ * - unknownEntries — What a list names that `items` does not have.
+ * - nextState — The next state in a cycle, given where it is now.
  */
 import { valueKey } from './store.js';
 

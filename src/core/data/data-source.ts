@@ -3,6 +3,57 @@
  *
  * TRAP T-one-comparator-one-source
  * TRAP T-view-state-lives-in-one-object
+ *
+ * Map:
+ * - ApplyAt — HOW FAR a control's reading reaches.
+ * - ViewState — The view state a source owns.
+ * - DataSourceOptions — the store, and the view it opens on: sort, group, page size, search fields
+ * - BindOptions — What a component may do with the source it is bound to.
+ * - DataChangeDetail — What `change` carries, for a listener that wants the result without asking.
+ * - VIEW_SCOPE — The scope ABOVE every component — the same word as `reach: 'view'`.
+ * - DataSource — ONE owner of how records are viewed: the query, scopes, groups, and binds
+ * - .store — the records it reads; a write goes here, a view never does
+ * - .timeField — The field holding each record's TIME, or undefined when the store has none.
+ * - .state — The current view state.
+ * - .setState — Restore a whole view state — a saved view, a deep link, a reload.
+ * - .result — The whole of the last load's answer.
+ * - .rows — the rows of the last load — one page when paged
+ * - .total — Matching rows before paging.
+ * - .totalPages — Pages at the current size, at least 1.
+ * - .setSort — Order by one field, or stop.
+ * - .resumeSort — Resume the suspended sort.
+ * - .clearSort — Forget the sort entirely — the gesture that is NOT a suspend.
+ * - .setGroup — group by a field, or stop; a grid draws it, the source owns it
+ * - .setFilter — Replace the WHOLE filter, clearing every contribution.
+ * - .contribute — Own ONE NAMED PART — the COMPONENT scope.
+ * - .contributions — Every named part currently applied — the component-scope filters.
+ * - .apply — Apply a whole control's READING of several fields, at one scope.
+ * - .declareValues — every value a field can take, so each control offers the same list
+ * - .declareField — Declare a field's KIND and its reader-facing name.
+ * - .fieldFacts — What `declareField` was told.
+ * - .valuesFor — What `declareValues` was told, as the data holds it.
+ * - .select — Select values for a FIELD — the VIEW scope.
+ * - .groups — THE GROUPS IN FORCE — each value, and how many rows carry it.
+ * - .suspendSelection — Stop applying a field without forgetting it.
+ * - .selection — one field's whole state, ready for any control to draw
+ * - .selectedFields — Every field currently selected.
+ * - .scope — The fields a scope is holding, in the order it holds them.
+ * - .scopes — Every scope that has been named.
+ * - .hold — Say what a scope holds now.
+ * - .holds — Is this field held HERE?
+ * - .scopeOf — Which scope holds this field, or null.
+ * - .offer — Say which fields a component scope HAS.
+ * - .fields — The fields a scope may hold.
+ * - .canHold — May this scope hold this field?
+ * - .move — Move a filter between scopes — ONE call, because the removal is not optional.
+ * - .debugState — EVERYTHING THIS SOURCE THINKS IS TRUE, in one object.
+ * - .setSearch — the search text, across searchFields
+ * - .setPage — which page to show
+ * - .setPageSize — rows per page, or null for all
+ * - .load — Re-read and push to every bound component.
+ * - .bind — Point a component at this source.
+ * - .unbind — Stop steering and stop populating this component.
+ * - .boundElements — Every component currently bound.
  */
 import { andFilter, filterFields, filterNeedles, groupSummaries, valueKey } from './store.js';
 import { fieldState, stateClause } from './filter-state.js';

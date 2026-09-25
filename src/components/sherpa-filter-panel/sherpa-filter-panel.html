@@ -34,6 +34,8 @@
     filter-panel-close — the header's close button. detail: {}
     filter-add-request — the Add button committed. detail: { scope, ids }
     filter-remove — a field's Remove. detail: { scope, id }
+    group-change — a Group chip, re-emitted with its scope. detail: { field, scope }
+    sort-change — a Sort chip, re-emitted with its scope. detail: { field, direction, scope }
 -->
 <template id="default">
   <!-- A CONTAINER, not a sherpa-panel: a panel draws LEFT and RIGHT edges only

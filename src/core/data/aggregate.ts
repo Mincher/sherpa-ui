@@ -8,6 +8,17 @@
  *
  * TRAP T-an-aggregate-returns-the-number
  * TRAP T-aggregation-is-data
+ *
+ * Map:
+ * - Aggregate — How a set of rows becomes one number.
+ * - reduceRows — Reduce rows to ONE number — what a gauge or a metric tile reads.
+ * - AggregateOptions — category order, and whether an empty category keeps its slot
+ * - aggregateBy — Group rows by a field and reduce each group to a number.
+ * - countBy — Count rows per category — `aggregateBy`'s commonest call, said plainly.
+ * - bandBy — Cut a CONTINUOUS field into bands — a histogram, not a pie.
+ * - deltaPercent — The change from the first point to the last, as a percentage.
+ * - Series — One named line, as `sherpa-line-chart` takes it.
+ * - seriesBy — One series: a value per point, in the caller's own point order.
  */
 import { readField, groupRows, valueKey, type Row } from './store.js';
 import type { ChartDatum } from './chart-datum.js';

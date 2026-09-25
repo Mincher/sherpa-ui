@@ -8,6 +8,12 @@
  * DOM-free, like everything in this folder.
  *
  * TRAP T-one-state-per-filtered-field
+ *
+ * Map:
+ * - FilterFace — What a control SHOWS for a field — the same six facts whatever draws them.
+ * - filterFace — How one field's state READS, for any control that draws it.
+ * - CONDITION_BADGE — The ONE mark a control wears when conditions are applied.
+ * - spellConditions — Chained rows, in words: `Contains "ab" or Equals cd`.
  */
 import { DEFAULT_OP, OP_LABELS, OP_TAKES } from './store.js';
 import type { FieldCondition, FilterState } from './filter-state.js';

@@ -1,6 +1,18 @@
 /**
  * format-tick.ts — the arithmetic the charts share: tick labels, gridline
  * placement, radial tips, ring-segment paths, series colours.
+ *
+ * Map:
+ * - formatTick — One axis tick, compacted — "1.5K", not "1500".
+ * - formatValue — ONE value, in full — what a tooltip shows.
+ * - ChartScale — A value axis: what it spans, where a value sits, and how it divides.
+ * - chartScale — The axis a set of values needs.
+ * - tickPercent — Where the i-th of `steps` divisions sits, as a percentage UP from the bottom.
+ * - radialArea — The `position-area` on the OUTWARD side of a radial mark.
+ * - RingSegmentOptions — the radii, angles and corner rounding of one donut slice
+ * - ringSegmentPath — The `d` for a CLOSED ring segment — a donut slice — with four rounded corners.
+ * - seriesVar — The custom property a mark paints with.
+ * - seriesBorderVar — the property a mark's OUTLINE paints with — the series' identity
  */
 
 /**

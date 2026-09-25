@@ -5,6 +5,30 @@
  * `insert`, and a form reporting on submit.
  *
  * TRAP T-standard-schema-is-duck-typed
+ *
+ * Map:
+ * - Issue — One thing that is wrong.
+ * - Result — What a validation says.
+ * - isValid — Did this pass?
+ * - StandardSchema — The duck type.
+ * - isSchema — Is this a Standard Schema?
+ * - validate — Run a schema, always as a promise — so nothing branches on sync vs async.
+ * - Rule — One check on one value: a message when WRONG, nothing when fine.
+ * - required — There has to be something here — the only rule that objects to emptiness.
+ * - number — A number, and a real one — NaN and Infinity are not values a field can hold.
+ * - min — At least this much.
+ * - max — At most this much.
+ * - pattern — Matches this pattern.
+ * - email — Looks like an email address.
+ * - url — A URL the platform's own parser accepts — no regex to get wrong.
+ * - oneOf — one of these, compared as STRINGS — so '2' passes oneOf([1, 2, 3])
+ * - custom — Anything else.
+ * - FieldRules — A field's rules — one, or several run in order.
+ * - RuleMap — A record's rules, keyed by field.
+ * - rules — Turn rules into a Standard Schema, so built-in and third-party are one kind of thing to every caller.
+ * - validateField — Run one field's rules on its own, for a field validating as it is typed.
+ * - issuesFor — Every issue for one field, path flattened, as a message list.
+ * - ValidationError — A write the schema refused.
  */
 // `oneOf` compares with `valueKey`, so a schema and a query agree about
 // what two values being the same means.

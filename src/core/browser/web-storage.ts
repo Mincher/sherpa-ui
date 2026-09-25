@@ -10,6 +10,15 @@
  * A failure here means the value is not KEPT. It never means the page breaks.
  *
  * TRAP T-storage-access-throws
+ *
+ * Map:
+ * - StorageKind — `local` outlives the tab; `session` dies with it.
+ * - readText — Read a raw string.
+ * - writeText — Write a raw string.
+ * - removeKey — delete one key, without throwing when storage is blocked
+ * - readJson — Read JSON, and FORGET the key when it cannot be understood.
+ * - writeJson — write a value as JSON, without throwing when storage is blocked
+ * - isPlainObject — A plain object, which is all a stored shape can be trusted to be.
  */
 
 /** `local` outlives the tab; `session` dies with it. */

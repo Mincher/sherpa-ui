@@ -6,6 +6,12 @@
  * TRAP T-one-field-one-filter-menu
  * TRAP T-a-panel-builds-its-own-menus
  * TRAP T-an-inline-menu-is-the-same-menu
+ *
+ * Map:
+ * - FilterMenuItem — One row a menu offers.
+ * - FilterMenuDef — Enough of a filter definition to draw its menu.
+ * - FilterMenuOptions — where the card stays inside, and whether it draws inline
+ * - menuFor — Build a field's menu.
  */
 
 import { OPS_FOR_TYPE, type FilterOp } from '../data/store.js';

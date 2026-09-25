@@ -1,6 +1,20 @@
 /**
  * sherpa-element.ts — the one base class every `sherpa-*` component extends.
  * TRAP T-base-class-does-four-things
+ *
+ * Map:
+ * - NumOptions — How `num()` narrows a parsed value.
+ * - PropKind — How a declared attribute is REALISED.
+ * - PropType — The declared type of an attribute's value.
+ * - PropDef — One declared attribute.
+ * - PropMap — A component's whole declared attribute surface.
+ * - DATA_PROPS — What `DataSource.#push` writes onto every component it binds, plus the guard.
+ * - SHARED_PROPS — Shared style attributes whose shape is identical wherever they appear.
+ * - coerceNum — Coerce a raw attribute string to a number, or return `fallback`.
+ * - markNeedle — Mark the first hit of `needle` in `el`, or write plain text when there is nothing to point at.
+ * - markMatch — Rebuild `el` as before + `<mark class="match">` + after, around one hit.
+ * - clampNum — Apply the min/max bounds from `opts`, if any.
+ * - SherpaElement — the base every component extends: template, props, slots, emit
  */
 
 import { hasIcon, renderIcon, upgradeIcons } from './render-icon.js';

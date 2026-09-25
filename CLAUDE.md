@@ -6,8 +6,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Read these first
 
-**[docs/PRINCIPLES.md](docs/PRINCIPLES.md) is the rules, stated once.** Seventeen
-of them, thirteen enforced by a gate. Start there; it is two pages.
+**[docs/PRINCIPLES.md](docs/PRINCIPLES.md) is the rules, stated once.** Eighteen
+of them, fourteen enforced by a gate. Start there; it is two pages.
+
+**`npm run map [path]` is the map of the code** — every file's one-line purpose
+and every export, read from the file headers. Run it BEFORE writing something
+new, to find what already does it. Updating a changed file's `Map:` is the last
+step of any change: `npm run map:write <file>`, and `check:map` blocks the commit
+until it matches.
 
 This file is the detail behind them — the commands, the architecture, and the
 worked examples. The handover docs hold the *why*: the traps, the rulings, and
@@ -75,6 +81,11 @@ npm run test:report       # open the last HTML report
 npm run sandbox           # build, then serve the repo on :4000 (sandbox/)
 npm run preview           # serve WITHOUT building — :4000
 npm run serve:examples    # express template server on :4200 (examples/)
+
+# The code map — every file's purpose and exports, from its header
+npm run map [path]        # print it; e.g. `npm run map src/core/data`
+npm run map:write <file>  # add missing names, drop stale ones — then edit the lines
+npm run check:map         # the gate; the hook runs it --staged
 
 # MCP server
 npm run mcp               # stdio transport — connect from Claude Desktop / Cursor
@@ -690,7 +701,7 @@ is a second place the truth lives, and it rots; this repo has the receipts.
 | Cut | Keep |
 |---|---|
 | Multi-paragraph rationale | One-line summary on an export |
-| Markdown tables in comments | A file header of one or two lines |
+| Markdown tables in comments | A file header of one or two lines, ending in its `Map:` — one line per export |
 | "It used to be X, which was wrong because Y" | A warning NOT obvious from the code — a silent failure, a browser quirk, an ordering constraint |
 | Restating what the code plainly says | A line that looks like a mistake and is not |
 | Worked examples longer than one line | `/* off-grid-ok */` and other pragmas |

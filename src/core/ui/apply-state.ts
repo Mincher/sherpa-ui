@@ -7,6 +7,10 @@
  *
  * TRAP T-state-is-the-saved-view-half  TRAP T-one-way-to-build-an-element
  * TRAP T-populatable-declared-four-times
+ *
+ * Map:
+ * - Populatable — An element that takes a data payload.
+ * - applyState — Apply a `state` block through an element's own public API.
  */
 
 /** An element that takes a data payload. TRAP T-populatable-declared-four-times */

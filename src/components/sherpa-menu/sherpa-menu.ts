@@ -9,6 +9,10 @@
  * @prop {string[]} values — the checked row values (read/write)
  *
  * @see TRAP T-footer-row-raises-on-any-flag
+ *
+ * Map:
+ * - MenuItem — One item a menu draws for itself.
+ * - SherpaMenu — the dropdown card: value rows, condition rows, number and date bodies
  */
 import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import {

@@ -4,6 +4,13 @@
  * A SIBLING of sherpa-quick-filter-toolbar over the same DataSource: it takes
  * the same filter definitions and emits the same `quick-filter-change`.
  * TRAP T-the-panel-is-the-toolbar-in-a-column
+ *
+ * Map:
+ * - PanelValue — One value a field offers.
+ * - PanelFilter — One field the panel draws.
+ * - PanelColumn — A column Group or Sort may arrange by.
+ * - PanelScope — One scope: a named group of fields, plus what its Add button offers.
+ * - SherpaFilterPanel — the filter toolbars as a column, drawn from facts; builds its own menus
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import { ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
@@ -627,7 +634,11 @@ export class SherpaFilterPanel extends SherpaElement {
     if (!held) return;
     event.stopImmediatePropagation();
     const detail = ((event as CustomEvent).detail ?? {}) as Record<string, unknown>;
-    this.emit(event.type, { ...detail, scope: held.scope });
+    /* BY NAME, not `event.type`: the contract is read from literals at the
+       emit, and a bare variable made both events vanish from the spec.
+       TRAP T-an-event-name-is-not-always-a-literal */
+    this.emit(event.type === 'sort-change' ? 'sort-change' : 'group-change',
+      { ...detail, scope: held.scope });
     this.#syncAnswered(held);
   };
 

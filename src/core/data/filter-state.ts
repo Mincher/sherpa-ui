@@ -12,6 +12,20 @@
  * DOM-free: the rule, not the wiring.
  *
  * TRAP T-one-state-per-filtered-field
+ *
+ * Map:
+ * - FieldState — What a field's selection is doing.
+ * - ValueState — What one value is doing inside its field.
+ * - ValueEntry — One value, and what it is doing.
+ * - FilterState — Everything every control needs to draw one field.
+ * - FieldType — What KIND of field this is.
+ * - isRanged — A field whose picks are ENDS, not a list to tick.
+ * - FieldFacts — What a caller knows about a field before anything is chosen.
+ * - FieldReading — What is true right now, which decides the STATES.
+ * - FieldCondition — One row of a multi-condition filter.
+ * - fieldState — work out one field's whole state — the only place that decides it
+ * - stateClause — One field's state as a ready `FilterClause`, or `undefined`.
+ * - readingClause — a reading as a clause, for a control holding its own field facts
  */
 import {
   DEFAULT_OP, OP_TAKES,

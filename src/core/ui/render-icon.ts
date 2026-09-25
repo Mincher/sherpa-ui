@@ -8,6 +8,11 @@
  * art's LONGEST axis at exactly 100% of the square wrapper, keeps it 1:1, and
  * makes overflow impossible at any wrapper size.
  * TRAP T-icon-box-is-not-the-glyph
+ *
+ * Map:
+ * - hasIcon — Is this a name the icon set actually holds?
+ * - renderIcon — Replace `el`'s contents with the icon's SVG.
+ * - upgradeIcons — turn every icon in a freshly stamped tree into a fitted SVG
  */
 import { ICON_PATHS } from './icon-paths.js';
 

@@ -9,6 +9,12 @@
  * never an element.
  *
  * TRAP T-one-field-one-filter-menu
+ *
+ * Map:
+ * - Selector — Enough of a DataSource to own a FIELD's selection.
+ * - SelectionBinding — How one control reads and draws a field.
+ * - BoundSelection — What a binding hands back.
+ * - bindSelection — join a control to a FIELD on a source — declare, draw, report, redraw
  */
 import type { FilterClause } from './store.js';
 import type { FilterState } from './filter-state.js';

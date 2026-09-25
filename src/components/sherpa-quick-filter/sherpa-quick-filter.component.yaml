@@ -322,7 +322,7 @@ events:
     composed: true
     detail:
       direction: string
-      field: unknown
+      field: boolean
 tokens:
   chip.block-size: "{sherpa.display-mode-size-lg}"
   body.gap: "{sherpa.display-mode-space-2xs}"

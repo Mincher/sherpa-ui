@@ -9918,6 +9918,7 @@ and an event missing from the comment is dropped however clearly the code emits
 it.
 
 - Site: `scripts/generate-component-spec.mjs`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-a-metric-condenses-by-wrapping
 
@@ -11353,6 +11354,52 @@ label, which is a value of nothing.
 
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `test/e2e/reforged-chart-legend.spec.ts`
+
+### T-a-file-says-what-it-holds
+
+Every file's header ends in a `Map:` — one line per export, what it is and
+does. `npm run map [path]` prints them all; it is the higher-plane map for
+deciding where code goes and what already exists.
+
+Will, 2026-09-25: *"Perhaps keep a lightweight record of each file, variable,
+and function that describes what they are, what they do, and why… This can be
+used as a higher plane traversal map when deeming where code should go, what
+can be refactored, combined, etc. You will need to update this as the final
+step of any change. 1 large file might not be the best for context & token use
+so maybe something in the file header."*
+
+**Why it is needed, measured.** §15 of `FILTER-REVIEW.md` found 207 exported
+names in `src/core` that nothing indexed — and new code re-learned lessons
+that `nextSort` and `sortDirectionFrom` already carried in `cycle.ts`, three
+folders away. The map is the answer to "does this already exist?" in one
+command: 297 lines for the whole data and UI core, instead of 30 files.
+
+**What goes where**, so it stays lightweight:
+
+| | lives in |
+|---|---|
+| a file's purpose | the header's first line — already the convention |
+| an export | one `Map:` line in that file's header |
+| a component's props, events, methods | its `.component.yaml` — generated and gated already, so NOT repeated |
+| a `#private` member | a one-line comment above it, in place |
+| the WHY of anything non-obvious | `docs/TRAPS.md`, cited |
+
+**Gated both ways**, like the traps: an export missing from its Map fails, and
+a Map line whose name is no longer exported fails — so it cannot rot. A line
+longer than 110 characters fails; that is a paragraph. `check:map --staged` in
+the hook makes a CHANGED file carry its map, which is how updating it becomes
+the final step of every change.
+
+**A ratchet for the rest.** 91 files had no Map when this landed; they sit in
+`scripts/code-map-baseline.json` and must leave it the first time they are
+touched. 283 `#private` members had no comment; that number may only fall.
+
+**The drafts are drafts.** `map:write` fills a line from the JSDoc above the
+export, and 60 of 297 came out blank, cut off, or wrong — a section banner
+(`── Grouped aggregation ──`) read as a description, *"Read it back."*, a
+type's line describing the one below it. Every line gets a human pass.
+
+- Site: `scripts/code-map.mjs`
 
 ### T-up-is-open-down-is-closed
 

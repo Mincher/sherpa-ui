@@ -6,6 +6,10 @@
  * TRAP T-idb-is-the-only-real-local-store
  * TRAP T-idb-open-is-a-handshake-not-a-call
  * TRAP T-idb-index-narrows-it-never-answers-it
+ *
+ * Map:
+ * - IdbStoreOptions — which database and store, its indexes, and the version that builds them
+ * - IdbStore — Records in IndexedDB — the real local store.
  */
 import {
   applyOptions,
