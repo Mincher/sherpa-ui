@@ -15,7 +15,8 @@ import { ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
 import { nextSort, sortDirectionAttr, sortDirectionFrom } from '../../core/data/cycle.js';
 import { reduceRows } from '../../core/data/aggregate.js';
 import {
-  filterRows, sortRows, type Filter, type SortDirection, type SortSpec,
+  filterRows, sortRows,
+  type Filter, type GroupSummary, type SortDirection, type SortSpec,
 } from '../../core/data/store.js';
 import {
   DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, picksClause, type FilterOp,
@@ -81,6 +82,14 @@ interface GridConfig {
   key?: string;
   /** Per-row actions. Reveals the pinned trailing column. */
   actions?: GridAction[];
+  /**
+   * THE GROUPS, from whoever owns the data. A grid DRAWS a group heading and
+   * collapses it — the same view-side half it owns for paging — but it does
+   * not create the group, and a count it works out itself is a count of the
+   * rows it happens to hold.
+   * TRAP T-a-group-is-a-data-layer-concept
+   */
+  groups?: GroupSummary[];
 }
 
 /**
@@ -228,6 +237,7 @@ export class SherpaDataGrid extends SherpaElement {
     this.#syncNeedles();
     this.#syncColumnValues();
     this.#actions = Array.isArray(cfg.actions) ? cfg.actions : [];
+    this.#groups = Array.isArray(cfg.groups) ? cfg.groups : null;
     this.toggleAttribute('data-actions', this.#actions.length > 0);
     // TRAP T-grid-populate-keeps-column-filters — header-row filters clear,
     // column filters drop only where the COLUMN went, selection re-resolves by KEY.
@@ -1122,8 +1132,25 @@ export class SherpaDataGrid extends SherpaElement {
 
   // TRAP T-grid-thead-sticks-as-one-block — no sticky-offset measurement here.
 
-  /** How many visible rows share one group value. */
+  /** The groups the data layer named, by key. Null until it names them. */
+  #groups: GroupSummary[] | null = null;
+
+  /** Every group in force, as the data layer counted them. */
+  get groups(): GroupSummary[] {
+    return this.#groups ? this.#groups.map((g) => ({ ...g })) : [];
+  }
+
+  /**
+   * How many rows share one group value.
+   *
+   * THE DATA LAYER'S COUNT where it gave one: this grid may hold a page, so
+   * its own tally is a page tally. The fallback is for a grid populated by
+   * hand, with no source behind it.
+   * TRAP T-a-group-is-a-data-layer-concept
+   */
   #groupSize(rows: GridRow[], field: string, key: string): number {
+    const told = this.#groups?.find((g) => g.key === key);
+    if (told) return told.count;
     return rows.filter((r) => String(r[field] ?? '') === key).length;
   }
 

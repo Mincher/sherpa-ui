@@ -524,7 +524,13 @@ export async function init(root, { session } = {}) {
     /* The COLUMN says how it is answered. The grid never counts the values
        itself — how many is too many is a question about the data.
        TRAP T-a-wall-of-values-is-not-a-filter */
-    as: (rows) => ({ columns: gridColumns, rows, key: 'email', actions: ROW_ACTIONS }),
+    /* THE GROUPS COME FROM THE SOURCE, not from the rows the grid holds. It
+       pages screen lines when grouped, so its own count would be a page count.
+       TRAP T-a-group-is-a-data-layer-concept */
+    as: (rows, src) => ({
+      columns: gridColumns, rows, key: 'email', actions: ROW_ACTIONS,
+      groups: src.groups(),
+    }),
     ignore: ['filter-change'],
     signal,
   });

@@ -4,7 +4,7 @@
  * TRAP T-one-comparator-one-source
  * TRAP T-view-state-lives-in-one-object
  */
-import { andFilter, filterFields, filterNeedles, valueKey } from './store.js';
+import { andFilter, filterFields, filterNeedles, groupSummaries, valueKey } from './store.js';
 import { fieldState, stateClause } from './filter-state.js';
 import type { Populatable } from '../ui/apply-state.js';
 import type { FieldReading, FieldType, FilterState } from './filter-state.js';
@@ -18,7 +18,9 @@ export interface ApplyAt {
   /** Required for `component` — the part's name. */
   key?: string;
 }
-import type { Filter, LoadOptions, LoadResult, Row, SortDirection, SortSpec, Store } from './store.js';
+import type {
+  Filter, GroupSummary, LoadOptions, LoadResult, Row, SortDirection, SortSpec, Store,
+} from './store.js';
 
 /** The view state a source owns. */
 export interface ViewState {
@@ -424,6 +426,25 @@ export class DataSource extends EventTarget {
     this.#setFilterValue(this.#composed());
     // AFTER the requery, so a listener sees the state the rows were fetched for.
     this.dispatchEvent(new CustomEvent('selection-change', { detail: { field } }));
+  }
+
+  /**
+   * THE GROUPS IN FORCE — each value, and how many rows carry it.
+   *
+   * A GROUP IS A DATA CONCEPT, the same way a data PAGE is. A grid draws a
+   * group as a heading row and collapses it, exactly as it pages screen lines
+   * — that is the VIEW's half, and neither makes the grid the owner. Counted
+   * over every matching row, so a group split across a page boundary still
+   * says how many rows it holds.
+   * TRAP T-a-group-is-a-data-layer-concept · TRAP T-grouped-paging-belongs-to-the-view
+   */
+  groups(field: string = this.#state.group ?? ''): GroupSummary[] {
+    if (!field) return [];
+    /* EVERY matching row. `#allRows` is filled only for a `rows: 'all'` bind,
+       and a GROUPED load is never windowed, so the page IS everything then.
+       TRAP T-a-summary-binds-to-all-the-rows */
+    const rows = this.#allRows.length ? this.#allRows : this.#result.rows;
+    return groupSummaries(rows, field);
   }
 
   /** Stop applying a field without forgetting it. TRAP T-grid-suspend-is-not-clear */

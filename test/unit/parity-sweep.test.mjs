@@ -42,6 +42,9 @@ const KNOWN = {
   'sherpa-calendar-cell.value': 'ok: data-value attribute',
   'sherpa-code-block.code': 'ok: data-code attribute',
   'sherpa-data-grid.selectedKeys': 'ok: select(keys) / clearSelection()',
+  // The groups the DATA LAYER named. A grid draws them; it does not own them,
+  // so populate() is the only door. TRAP T-a-group-is-a-data-layer-concept
+  'sherpa-data-grid.groups': 'ok: populate({ groups }) — the data layer names them',
   'sherpa-data-grid.selectedRecords': 'ok: select(keys) — derived from the same set',
   /* A group or sort chip's arrangement. Both are DECLARED props, so a host
      writes them and the chip draws itself from them.

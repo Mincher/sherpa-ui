@@ -399,7 +399,30 @@ export interface RowGroup {
   rows: Row[];
 }
 
+/**
+ * One group as the DATA LAYER sees it: the value, and how many rows carry it.
+ *
+ * A grid may DRAW a group as a heading row, but it does not create one — it
+ * sees a page, so a count it works out itself is a page count.
+ * TRAP T-a-group-is-a-data-layer-concept
+ */
+export interface GroupSummary {
+  /** The comparison key, as every other part of the layer spells a value. */
+  key: string;
+  /** The raw value the key stands for. TRAP T-a-value-can-be-an-object */
+  value: unknown;
+  count: number;
+}
+
 /** Group by a field, keeping arrival order. Grouped AFTER sorting. */
+export function groupSummaries(rows: readonly Row[], field: string): GroupSummary[] {
+  return groupRows(rows, field).map((g) => ({
+    key: g.key,
+    value: g.rows[0] ? readField(g.rows[0], field) : undefined,
+    count: g.rows.length,
+  }));
+}
+
 export function groupRows(rows: readonly Row[], field: string): RowGroup[] {
   /* `String(v)` is "[object Object]" for EVERY object, so grouping by an
      object field put every row in ONE group and a chart drew one meaningless

@@ -9069,6 +9069,46 @@ avoids, and it only shows up with two controls on one page.
 - Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-data-source.spec.ts`
 
+### T-a-group-is-a-data-layer-concept
+
+A GROUP is a data concept, exactly as a data PAGE is. The grid draws one and
+collapses it; that does not make the grid its owner.
+
+Will, 2026-09-25: *"Is a group just a sort with no direction? It's also an
+association of data records by a value… what if we want to do something with
+the group as a whole? There's no object or single entity to reference."* He was
+right. `applyOptions` turned `group: 'customer'` into a leading `SortSpec` and
+handed the view flat rows (`T-pipeline-order-and-no-grouping`). The only group
+that existed anywhere was a `<tr data-group-key>` the grid built while walking
+those rows, counting with a filter over whatever rows it held.
+
+So nothing outside that grid could name a group, ask how many there were, or
+act on one — and a paged grid's count was a page count.
+
+`DataSource.groups(field?)` answers it: `{ key, value, count }` per group, over
+every MATCHING row rather than the page. `groupSummaries(rows, field)` is the
+same answer for a caller with rows and no source. The grid takes `groups` in
+`populate()` and falls back to counting only when nobody told it — which is a
+grid populated by hand, with no source behind it.
+
+**The split is the one paging already uses.** Will: *"It's similar to Paging.
+There are data pages and data grid visual pages."* The store counts RECORDS;
+the grid pages SCREEN LINES and reports that back
+(`T-grouped-paging-belongs-to-the-view`). Groups divide the same way: the data
+layer says which groups exist and how big they are, the grid decides which
+headings fit on screen and which are shut.
+
+Measured on the running page, grouped by Plan: the source named four groups —
+Enterprise 24, Free 25, Pro 24, Starter 27 — and the grid drew the one that
+fitted its visual page, carrying the source's count of 24.
+
+- Site: `src/core/data/store.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/unit/groups-are-a-data-concept.test.mjs`
+- Site: `examples/contexts/records.js`
+- Site: `test/unit/parity-sweep.test.mjs`
+
 ### T-a-panel-builds-its-own-menus
 
 A second view of a field builds its OWN `<sherpa-menu>`. It never takes the
