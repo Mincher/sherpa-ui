@@ -1334,19 +1334,42 @@ panel annotates with `scope`. Deleted `#toggleGroup`, `#cycleSort`,
 `#syncSortLabel`, `#syncGroupLabel`, `#organiseClick`, `#organiseField` and the
 panel's shadow copy of the sort state. TRAP `T-a-chip-knows-what-kind-it-is`.
 
-**2. The panel ASKS instead of deriving.** It already reaches the bar for
-`report()` and `heldIds`; `states`, `readings` and `setChipReading` exist for
-the rest. `#picked`, `#clearField`, `#markConditioned` and `#flipCondition`
-become calls. ~150 lines, and it closes the "second answer" class.
-TRAP `T-the-panel-asks-the-bar-it-does-not-answer-for-it`.
+**2. `[x]` ONE derivation of what a filter IS** — done 2026-09-25. Fifteen
+sites worked a filter's kind out from `select`, `conditions` and whether there
+were options; `core/ui/filter-kind.ts` names all eight and `kindOf()` is the
+only place the older spelling is read. Net +73, which BUYS the ~250 lines step
+4 deletes. TRAP `T-a-chip-knows-what-kind-it-is`.
 
-**3. ONE field-row builder.** `#drawField` / `#drawChip` / `#drawSection` and
+**3. The DATA LAYER coordinates; no component knows another exists.** Will's
+ruling, 2026-09-25: *"The Panel and Bar should not be aware of each other.
+This is core to sherpa component agnosticism."* Measured, the panel searches
+the page for a toolbar, reaches into its shadow root, calls its methods and
+MOVES its menus — and neither component binds to a `DataSource` at all.
+
+`DataSource` is already the registry Will described: `bind()` registers,
+`selection()` gets, `select`/`apply` sets, `#push` broadcasts, and it holds
+current state only. It gains ONE slot — the held set per scope — which is the
+only thing the panel genuinely reaches sideways for.
+
+**Menu borrowing goes.** It exists because the menu held the truth; once the
+data layer does, two menus over one field are fine. That also kills both
+borrowing bugs. Net ≈ −130 lines.
+
+**4. ONE field-row builder.** `#drawField` / `#drawChip` / `#drawSection` and
 `#render` / `#addMenu` differ by exactly two things: the layout DIRECTION, and
 whether a field's values EXPLODE into a run or stay behind a menu. That is two
-flags, not two implementations. ~200 lines, and the biggest risk — land 2 first.
+flags, not two implementations. ~250 lines, the biggest risk — land 3 first.
 
-**4. Split `filter-state.ts`** (547 lines, three jobs): the state model and
+**5. Collapse the sort/group state.** One value, four attributes, seven owners
+(§4 of the review). The chip owns it; the source is the only other owner.
+
+**6. Split `filter-state.ts`** (547 lines, three jobs): the state model and
 query building, how a filter READS in words and badges, and `bindSelection`.
+
+**Open questions for Will**, in `docs/FILTER-REVIEW.md` §7 step 3: whether a
+scope's HELD set belongs in the data layer at all (it is UI state, not data),
+and whether `SherpaElement` should register a component automatically or leave
+it explicit.
 Tidiness, no behaviour.
 
 #### Rules for the work

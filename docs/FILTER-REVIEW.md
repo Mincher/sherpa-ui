@@ -201,15 +201,111 @@ be widened twice this week.
 **Risk:** low — it is a rename plus a lookup table.
 **Closes:** the class where a kind is inferred differently in two places.
 
-### Step 3 — The panel ASKS the bar
+### Step 3 — The DATA LAYER coordinates; no component knows another exists
 
-`#picked`, `#clearField`, `#markConditioned`, `#flipCondition` and
-`#syncAnswered` become calls to `states`, `readings` and `setChipReading`,
-which already exist and are already used for `report()` and `heldIds`.
+*Revised 2026-09-25 after Will's ruling. The earlier version of this step had
+the panel ASK the bar — which keeps them coupled and was the wrong answer.*
 
-**Deletes:** ≈150 lines of panel, including all five methods above.
-**Risk:** medium — the panel's Apply/Discard baseline depends on `#picked`.
-**Closes:** the "second answer" class, which is five of the seven bugs above.
+> Will: "The Panel and Bar should not be aware of each other. This is core to
+> sherpa component agnosticism. The data layer is the coordinator. If we need
+> to co-ordinate state then perhaps we need to have a state component in the
+> data layer that every component in the UI registers with (name, id) and
+> gets/sets state from. It would only be the current state that is tracked."
+
+#### How bad the coupling is today
+
+Measured. The panel does not merely read the bar — it searches the page for
+one, reaches into its shadow root, calls its methods and **takes its child
+elements**:
+
+| site | what it does |
+|---|---|
+| `#barOf` | `document.querySelectorAll('sherpa-quick-filter-toolbar')` |
+| `#chipOf` | `bar.shadowRoot.querySelector('.chip[data-id=…]')` |
+| `#bars` → `bar.report()` | calls a method on the other component |
+| `#barOf` → `bar.heldIds` | reads the other component's state |
+| `#borrow` / `#giveBack` | MOVES the bar's `<sherpa-menu>` into itself, and back |
+
+And **neither component binds to a `DataSource` at all.** The app wires both by
+hand today, and the panel closes the gaps by reaching sideways.
+
+#### Two ways to do what Will described
+
+**A — the `DataSource` IS the registry. (Recommended.)**
+
+It already does every part of the description:
+
+| Will's words | what exists |
+|---|---|
+| components register (name, id) | `source.bind(el, { as, scope, ignore })` |
+| gets state | `selection(field)` → the whole `FilterState`; `state`; `rows` |
+| sets state | `select`, `apply`, `contribute`, `setSort`, `setGroup` |
+| broadcasts | `#push(el)` per bound element, `selection-change` |
+| current state only | true today — nothing is historical |
+
+One thing is genuinely missing, and it is the thing the panel reaches for:
+**which filters a scope is currently HOLDING.** That is UI state, not data.
+Add one slot — `source.held(scope)` / `source.hold(scope, ids)` — and both
+components read and write it without either knowing the other exists.
+
+**B — a separate `StateRegistry` in the data layer**, as sketched: components
+register by (name, id) and get/set through it.
+
+Cleaner as a concept, but `bind()` already IS registration. Two registries
+means every component joins both, and every value has to be reasoned about
+twice — the exact failure this whole review is about. **A gets the same result
+with no second door.**
+
+`SherpaElement` could carry the registration so a component opts in with one
+line rather than the host wiring it. Worth doing — but as its own step, after
+the bloat review Will wants of `sherpa-element.ts` itself.
+
+#### The part that matters most: STOP BORROWING MENUS
+
+Both components draw their own menu from the same definitions the app already
+gives them both.
+
+Borrowing exists for `T-one-field-one-filter-menu`: one field, one menu, so two
+controls cannot disagree. **Move the truth into the data layer and that reason
+disappears** — two menus over one field are fine when neither of them is where
+the answer lives.
+
+This is also where the bugs are. Twice this week: menus dead after leaving the
+panel (`close()` never gave them back), and a borrowed menu breaking every
+listener bound on its old host.
+
+#### What changes
+
+1. The panel takes a `DataSource` the same way every other component does.
+2. `#picked`, `#clearField`, `#markConditioned`, `#flipCondition` and
+   `#syncAnswered` read `selection(field)` and write `select`/`apply`.
+3. `held(scope)` / `hold(scope, ids)` replaces `heldIds`, for the Add menus.
+4. The panel builds its own menus; `#borrow` and `#giveBack` go.
+5. `bar.report()` goes — the source publishes, it is not nudged.
+
+#### What it deletes
+
+| gone | lines |
+|---|---:|
+| `#barOf`, `#bars`, `#chipOf` | ~25 |
+| `#borrow`, `#giveBack`, `menuHome`, `release`, `#missingMenus` | ~60 |
+| `#picked`, `#clearField`, `#markConditioned`, `#syncAnswered` | ~30 |
+| `#flipCondition` | ~54 |
+| **total** | **≈170** |
+
+Plus `held()` and the binding, ≈40 new. **Net ≈ −130.**
+
+**Risk:** medium-high. The panel's Apply / Discard baseline is built on
+`#picked`, and its inline menu bodies are the borrowed ones.
+**Closes:** five of the seven bug classes in §5, and both borrowing bugs.
+
+#### Open questions for Will
+
+- **Does a scope's held set belong in the data layer at all?** It is UI state.
+  The argument for: two components must agree on it and neither may know the
+  other. The argument against: it is the first non-data thing in `DataSource`.
+- **Should `SherpaElement` register automatically**, or stay explicit per
+  component? Automatic is one line per component; explicit is easier to read.
 
 ### Step 4 — ONE field-row builder
 
