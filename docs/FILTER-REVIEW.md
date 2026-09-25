@@ -6,15 +6,16 @@ every command used is given so you can re-run it.
 ---
 
 **Diagrams of the target architecture are in §9.** §10 answers "are we
-reinventing the platform?", §11 is where this could be simpler, and §12 is how a
-component reaches a source — CONTAINED by its region, named only when a region
+reinventing the platform?", §11 is where this could be simpler, §12 is how a
+component reaches a source, and §13 is what this review missed — CONTAINED by its region, named only when a region
 offers more than one.
 
 ## 1. The short version
 
 Four components draw filters: `sherpa-quick-filter` (the chip), its toolbar,
 `sherpa-filter-panel`, and `sherpa-menu`. Together they are **4,561 lines of
-TypeScript**. The data layer under them is correct — I tested it directly and
+TypeScript** — and **6,569 lines counting their CSS and HTML**, with **6,860
+lines of tests** on top. See §13, which corrects what §3 left out. The data layer under them is correct — I tested it directly and
 it answers every question right. **Every filter bug in the last two days came
 from two components working out the same answer separately and disagreeing.**
 
@@ -966,3 +967,88 @@ A component moved between regions silently changes what it reads. That is the
 same trade as CSS inheritance, and the same answer: it is only surprising if
 the regions are not visible in the markup. Keep a region a real element with a
 real name, never an implicit wrapper.
+
+---
+
+## 13. What this review missed
+
+Asked for honestly. §3 counted **TypeScript only**, which understated the
+family by a third and left the tests out altogether.
+
+### 13.1 The real size
+
+| | ts | css | html | total |
+|---|---:|---:|---:|---:|
+| `sherpa-quick-filter-toolbar` | 1,863 | 268 | 215 | **2,346** |
+| `sherpa-menu` | 1,103 | 479 | 295 | **1,877** |
+| `sherpa-filter-panel` | 902 | 197 | 138 | **1,237** |
+| `sherpa-quick-filter` | 703 | 297 | 109 | **1,109** |
+| | | | | **6,569** |
+
+Not 4,561. Every line count in §3 and §7 is a TS count and should be read that
+way.
+
+### 13.2 There is more test code than component code
+
+**6,860 lines** across nine spec files for this family, against 6,569 of
+component.
+
+`reforged-quick-filter-toolbar.spec.ts` is **2,793 lines** — *bigger than the
+1,863-line component it tests*. Inside it, **28 of 40 tests build a toolbar
+from scratch by hand**:
+
+```js
+const el = document.createElement('sherpa-quick-filter-toolbar');
+el.style.cssText = 'inline-size: 1200px';
+document.getElementById('root').replaceChildren(el);
+await el.rendered;
+el.populate([…]);
+await window.__settled();
+```
+
+Twenty-eight near-identical blocks. A `mountToolbar()` helper exists and two
+tests use it. **This is the same disease the components have** — a thing
+written many times instead of once — and it has the same cost: a change to how
+a toolbar mounts is 28 edits, so it does not get made.
+
+**Worth its own step**, after the component work: one harness per component,
+and every test declares only what makes it different. The tests are the one
+thing that must keep working while the refactor happens, so they should be
+easy to change, not 28-edits-hard.
+
+### 13.3 `sherpa-menu` is not the same problem as the toolbar
+
+| | methods | largest method |
+|---|---:|---:|
+| `sherpa-quick-filter-toolbar` | 77 | **141** (`#addMenu`) |
+| `sherpa-menu` | 74 | 59 (`#onToggle`) |
+
+Nearly the same method count, very different shape. The menu is **decomposed**
+— its biggest method is a third of the toolbar's. Its size is breadth: it
+serves the default, filter and calendar templates, two modes, four row types
+and the popover placement, all in one element.
+
+**So it does not want the same treatment.** The toolbar has methods that are
+too big; the menu may simply have too many jobs, and the honest question for it
+is whether the calendar belongs in a separate element. That is a different
+review and should not be folded into this one.
+
+### 13.4 Still unexamined
+
+Named so they are not mistaken for "checked and fine":
+
+- **CSS scoping and inheritance.** 1,241 lines across the four, none of it
+  looked at here. Will, 2026-09-24: *"I am REALLY concerned about how this
+  framework is structuring the scoping of CSS and its inheritance from tokens
+  and base CSS down to component CSS."* That concern is still open and is its
+  own review.
+- **Accessibility.** Not measured. Roles, focus order through a borrowed menu,
+  what a screen reader hears when a filter applies. TODO 24 covers the sweep.
+- **Performance.** `#render` rebuilds every chip on every `populate()`, and the
+  panel redraws every scope on every draw. Never profiled — it may be fine at
+  this size and it is worth knowing before step 4 changes it.
+- **The three bugs I could not reproduce.** Compound conditions, group-and-sort
+  on reload, and sort appearing on Last Seen. All three needed state I could
+  not find. A `source.debugState()` that dumps the whole view state in one
+  object would have made them a paste instead of an hour — worth building
+  before chasing another.
