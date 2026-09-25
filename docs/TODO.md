@@ -1363,6 +1363,16 @@ flags, not two implementations. ~250 lines, the biggest risk — land 3 first.
 **5. Collapse the sort/group state.** One value, four attributes, seven owners
 (§4 of the review). The chip owns it; the source is the only other owner.
 
+**5.5. Error reporting, woven through.** Measured: the whole of `src/` has ONE
+`console.error` and three `console.warn`, against **55 silent `if (!x) return`**
+in the filter family and data layer alone. Three of Will's bug reports cost an
+hour each and were never reproduced because the system knew and could not say.
+`source.debugState()` lands with step 3 — one call that dumps rows, sort, group,
+filter, selections, parts, scopes and bound elements, so a bug report is a paste.
+A decision stays silent; a broken assumption reports. `LoadResult.issues` and
+`persist-view`'s callback are the two shapes to reuse. `docs/FILTER-REVIEW.md`
+§14.
+
 **6. Split `filter-state.ts`** (547 lines, three jobs): the state model and
 query building, how a filter READS in words and badges, and `bindSelection`.
 

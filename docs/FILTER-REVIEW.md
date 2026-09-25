@@ -7,7 +7,7 @@ every command used is given so you can re-run it.
 
 **Diagrams of the target architecture are in §9.** §10 answers "are we
 reinventing the platform?", §11 is where this could be simpler, §12 is how a
-component reaches a source, and §13 is what this review missed — CONTAINED by its region, named only when a region
+component reaches a source, and §13 is what this review missed, and §14 is error reporting — CONTAINED by its region, named only when a region
 offers more than one.
 
 ## 1. The short version
@@ -461,6 +461,12 @@ through a getter, with the source as the only other owner.
 `#syncGroupFromAttrs` (47 lines), and the panel's seeding.
 **Closes:** the intertwining in §4 — including, most likely, the bug I could
 not reproduce.
+
+### Step 5.5 — Error reporting, woven through
+
+Not a step of its own — see §14.5 for what each step above gains, and §14.6 for
+the five rules. `debugState()` lands with step 3, and a closing sweep judges
+the remaining silent give-ups one at a time.
 
 ### Step 6 — Split `filter-state.ts`
 
@@ -1052,3 +1058,115 @@ Named so they are not mistaken for "checked and fine":
   not find. A `source.debugState()` that dumps the whole view state in one
   object would have made them a paste instead of an hour — worth building
   before chasing another.
+
+---
+
+## 14. Error reporting and handling
+
+Will: *"That debugState one is huge. Actually improving error reporting and
+handling across the whole system is a great idea."*
+
+### 14.1 What the system says when something is wrong
+
+Measured across `src/`:
+
+| | count |
+|---|---:|
+| `throw new` | 16 |
+| `console.error` | **1** |
+| `console.warn` | 3 |
+| `catch` blocks | 42, of which **1** swallows |
+| silent `if (!x) return;` in the filter family + data layer | **55** |
+
+The one `console.error` is a template that failed to load. The three warnings
+are all in `persist-view.ts`. **Everything else fails quietly** — 55 places
+where the code gives up and tells nobody.
+
+That is why three of Will's bug reports cost an hour each and were never
+reproduced. The system knew something was wrong and had no way to say so.
+
+### 14.2 Not every silent return is a fault
+
+This matters, or the fix becomes noise:
+
+```ts
+if (!this.#wideEnough()) return;      // a DECISION. The panel is desktop-only.
+if (!held) return;                    // a FAULT. A chip with no state behind it.
+```
+
+**The rule: a guard that expresses a decision stays silent; a guard that
+expresses a broken assumption reports.** Roughly a third of the 55 are the
+second kind — a lookup that found nothing, a menu that should exist, a field
+with no definition.
+
+### 14.3 Two precedents already in the codebase
+
+The shapes exist; they are just not used outside the two places that grew them.
+
+**A report carried in the RESULT** — `LoadResult` already does this for rows a
+schema refused:
+
+```ts
+dropped?: number;
+issues?: ReadonlyArray<{ message: string; path?: ReadonlyArray<PropertyKey> }>;
+```
+
+**A report handed to a CALLBACK** — `persist-view.ts` already does this:
+
+> *"Called instead of the default `console.warn` when something was skipped."*
+
+One channel, two deliveries: the app reads it, or the app is told. Nothing new
+to invent.
+
+### 14.4 `debugState()`
+
+One call that answers "what does the system think is true right now":
+
+```ts
+source.debugState()
+// {
+//   name, rows: 48, total: 100, page: 1, pageSize: 25,
+//   sort: [{ field: 'email', direction: 'asc' }], group: 'customer',
+//   filter: ['or', […], […]],
+//   selections: { owner: { fieldState: 'active', conditions: [...] } },
+//   parts: { legend: [...] },
+//   scopes: { view: ['customer'], data: ['status','plan'] },
+//   bound: [{ tag: 'sherpa-data-grid', rows: 'page', flow: 'both' }, …],
+//   issues: [...]
+// }
+```
+
+A bug report becomes a paste. It is also what a test asserts against instead of
+counting rows in the DOM — which is how I mistook a page size of 25 for a
+broken filter and reported a bug that did not exist.
+
+**DOM-free**, so it lives with the rest of `sherpa-ui/data` and a node test can
+read it.
+
+### 14.5 Woven into the plan
+
+Not a step of its own — it is small at each point and large if left to the end.
+
+| step | what it gains |
+|---|---|
+| **3** — the data layer coordinates | `debugState()` lands here, because this is where the state arrives. A request that no region answers REPORTS rather than drawing empty. A `data-source` naming something the region does not offer is a loud error (§12). |
+| **4** — one field-row builder | the builder reports a definition it cannot draw, instead of returning `null` — that is `#drawField`'s `if (!options.length && !def.menu) return null` today |
+| **5** — collapse the sort/group state | a sort naming a column that does not exist says so |
+| **new, last** — the sweep | the remaining silent give-ups, judged one at a time against §14.2 |
+
+### 14.6 Rules
+
+1. **A decision is silent. A broken assumption reports.** Never the reverse —
+   a warning a reader cannot act on is noise that hides the real one.
+2. **Report through ONE channel.** `LoadResult.issues` for anything that came
+   back with the data; the callback for anything else. Not `console` directly,
+   which an app cannot intercept, silence or route.
+3. **`console.warn` is the default, not the mechanism.** As `persist-view`
+   already has it: warn unless the app said where else to send it.
+4. **A thrown error means the CALLER made a mistake** — `apply: a component
+   scope needs a key` is right to throw. A fault in the data or the DOM is
+   reported, never thrown: an app should not crash because one chip lost its
+   menu.
+5. **Every report names the thing.** Field, scope, component, id. "A filter
+   could not be drawn" is not a bug report; "field `owner` in scope `data` has
+   no definition" is.
