@@ -5,7 +5,8 @@ every command used is given so you can re-run it.
 
 ---
 
-**Diagrams of the target architecture are in §9.**
+**Diagrams of the target architecture are in §9.** §10 answers "are we
+reinventing the platform?" and §11 is where this could be simpler.
 
 ## 1. The short version
 
@@ -308,7 +309,7 @@ Plus `held()` and the binding, ≈40 new. **Net ≈ −130.**
 
 ##### First: "scope" already means three things
 
-*Diagram: §9.5.*
+*Diagram: §9.6.*
 
 The same disease as `kind`. `DataSource` uses the word twice, for unrelated
 axes, and the app uses it a third way:
@@ -371,7 +372,7 @@ and belongs with that work, not before it.
 
 ##### The component DECLARES; the data layer COMPOSES
 
-*Diagrams: §9.1 and §9.4.*
+*Diagrams: §9.1 and §9.5.*
 
 Will, 2026-09-25:
 
@@ -487,14 +488,19 @@ reads in words and badges; `bindSelection`. Tidiness, no behaviour change.
 
 ### 9.1 Two channels, and only two
 
-**Configuration comes from attributes — in HTML templates, or as JS
-properties.** It never travels through the data layer. **Data comes from the
-data layer.** It never travels between components.
+**Configuration comes from attributes — set on a component's own template, or
+as JS properties.** It never travels through the data layer. **Data comes from
+the data layer.** It never travels between components.
+
+The template is part of the component, not part of the app: every sherpa
+component ships a default `.html`. A consumer may supply their own — hand
+written, or from an engine — and it is still that component's template. Item 27
+is the door for that.
 
 ```mermaid
 flowchart LR
-  subgraph AUTHOR["App / template — CONFIGURATION"]
-    TPL["HTML template<br/>data-label, data-field,<br/>data-aggregate, data-kind"]
+  subgraph AUTHOR["CONFIGURATION"]
+    TPL["the component's own template<br/>default, or one a consumer supplies<br/>data-label, data-field, data-aggregate"]
     PROP["JS properties<br/>columns, actions, key"]
   end
 
@@ -539,7 +545,7 @@ sequenceDiagram
   SRC->>SRC: bind(el) — one wiring path, not two
   SRC-->>EL: accept(source)
   SRC->>EL: push the data it declared it needs
-  Note over EL,SRC: the element never named a source;<br/>the source never named a tag
+  Note over EL,SRC: the element never named a source.<br/>The source never named a tag.
 ```
 
 ### 9.3 The round trip — a reader changes something
@@ -550,17 +556,68 @@ sequenceDiagram
   actor R as Reader
   participant C as A chip, or a panel row
   participant SRC as DataSource
-  participant ALL as EVERY bound component
+  participant SUB as Components that asked for this
+  participant OTH as Everything else
 
   R->>C: tick a value / cycle the sort
   C->>SRC: apply(readings) — PARAMETERS, never a query
   Note right of SRC: stateClause → filter → sort → group → page<br/>the raw rows are never written to
-  SRC-->>ALL: data-change — rows + view state
-  ALL->>ALL: each redraws from what it was given
-  Note over C,ALL: the chip did not tell the panel anything.<br/>The panel redrew because the DATA changed.
+  SRC-->>SUB: push — only what each one declared it needs
+  SUB->>SUB: redraw
+  SRC--xOTH: nothing. Not registered, or did not ask for this
+  Note over C,OTH: the chip did not tell the panel anything.<br/>The panel redrew because the DATA changed.
 ```
 
-### 9.4 What a component declares, and what it gets back
+**Only components that asked are pushed to**, and only what they asked for. A
+pager never receives rows; a chart bound at `rows: all` is not woken by a page
+turn; an element that registered for `values of owner` hears nothing when
+`spend` changes.
+
+That is not new — `bind()` already keeps a per-element record and `#push`
+writes only that element's shape. What the declaration adds is the third
+filter: **which CHANGE is worth a push**. Today every bound element is pushed on
+every load.
+
+```mermaid
+flowchart LR
+  CH["a change<br/>filter · sort · group · page · selection"] --> SRC[("DataSource")]
+  SRC --> Q{"who declared<br/>an interest in<br/>THIS?"}
+  Q -- "yes" --> P["compose their shape<br/>and push"]
+  Q -- "no" --> N["nothing"]
+```
+
+### 9.4 More than one source
+
+Will: *"If we have multiple data sources and stores going on it would be good
+if components could specify where to look for a field or value. e.g.
+`data-field=dataSource1.sum`"*
+
+A page can hold several sources — customers and invoices, live and saved. The
+declaration carries WHERE as well as WHAT:
+
+| attribute | means |
+|---|---|
+| `data-field="spend"` | the field `spend`, in whichever source answered this element |
+| `data-field="invoices.total"` | the field `total`, in the source NAMED `invoices` |
+
+A source gets a name it answers to (`source.name = 'invoices'`), and the
+request in §9.2 carries the name when one is asked for. Unqualified stays the
+default, so nothing that ignores this changes.
+
+```mermaid
+flowchart TB
+  M1["sherpa-metric<br/>data-field=spend"] --> N{"is the field<br/>qualified?"}
+  M2["sherpa-metric<br/>data-field=invoices.total"] --> N
+  N -- "no" --> NEAR[("the NEAREST source")]
+  N -- "yes" --> NAMED[("the source with that NAME")]
+```
+
+**One caution.** Two sources on one page is also how a field ends up filtered
+in two places with no one owner — the bug class this whole review is about. The
+scope registry in §9.5 is per source, so `scopeOf('customer')` answers for its
+own source only. Crossing sources is the app's business, deliberately.
+
+### 9.5 What a component declares, and what it gets back
 
 The template already carries the declaration. The source does the composing —
 with the helpers it already owns, not with a closure the app writes.
@@ -569,7 +626,7 @@ with the helpers it already owns, not with a closure the app writes.
 flowchart LR
   DECL["sherpa-metric<br/>data-label=Total spend<br/>data-field=spend<br/>data-aggregate=sum<br/>data-series-by=created<br/>data-series-step=month"]
   SRC[("DataSource<br/>reduceRows · seriesBy · deltaPercent")]
-  OUT["{ label, value,<br/>values, deltaPercent }"]
+  OUT["label, value,<br/>values, deltaPercent"]
   MET["sherpa-metric<br/>draws it"]
 
   DECL -- "what I need" --> SRC
@@ -589,7 +646,7 @@ flowchart TB
   SRC --> E["the VIEW STATE only<br/>pagination"]
 ```
 
-### 9.5 Scope — three meanings, renamed apart
+### 9.6 Scope — three meanings, renamed apart
 
 ```mermaid
 flowchart TB
@@ -625,7 +682,7 @@ flowchart LR
 `scopeOf(field)` is what makes **superseding** work without one bar knowing the
 other: a field the `view` scope holds is not the `data` bar's to narrow.
 
-### 9.6 The coupling, before and after
+### 9.7 The coupling, before and after
 
 ```mermaid
 flowchart TB
@@ -653,3 +710,137 @@ flowchart TB
 Both components draw their own menus from their own configuration. Borrowing
 exists only because the menu held the truth; once the source does, two menus
 over one field cannot disagree.
+
+---
+
+## 10. Are we reinventing the platform?
+
+Will asked. Checked against what `src/` already uses.
+
+### Yes — one thing, and it has a name
+
+**The provider request in §9.2 is the Context Protocol.** A community protocol
+from the W3C Web Components Community Group: a child dispatches a
+`context-request` event carrying a context key and a callback, and the nearest
+provider answers. Lit ships it as `@lit/context`.
+
+Shape it the same way rather than inventing `sherpa-source-request`:
+
+```
+new ContextRequestEvent(SOURCE_CONTEXT, callback, subscribe?)
+```
+
+The `subscribe` flag is already the thing §9.3 needs — "keep telling me", as
+against "tell me once". Following the protocol means anyone who has used Lit
+context already knows how a sherpa component finds its source, and a non-sherpa
+provider could answer too.
+
+**Cost of not following it:** a second, sherpa-only spelling of a pattern the
+ecosystem has settled.
+
+### No — the rest is not reinvention
+
+| the idea | the platform's answer | verdict |
+|---|---|---|
+| configuration on attributes | that is just HTML | not reinvention |
+| a component's own template | `<template>`, already used | already right |
+| style isolation | `adoptedStyleSheets` — 2 files, shared sheets | already right |
+| styling hooks for a host | `part=` — 58 files | already right |
+| content injection | `slot` — 122 files | already right |
+| floating menus | `popover` + `anchor-name` — 22 and 8 files | already right |
+| form participation | `ElementInternals` / `formAssociated` — **1 file** | see below |
+
+**`ElementInternals` is used in one file.** If other inputs re-implement form
+participation by hand — name, value, validity, form reset — that is the
+platform being reinvented, quietly, per component. Worth its own measurement
+when the `sherpa-element` review happens.
+
+`customElements.whenDefined` appears **nowhere**, and that is correct: it
+resolves when a CLASS is registered, not when an ELEMENT upgrades. The
+`#pendingItems` / `#flushItems` dance solves a different problem — a cloned
+element does not upgrade until it enters the document — and there is no
+platform call for that. TRAP `T-custom-element-upgrade`.
+
+### Not the platform's job at all
+
+Composing data for a component, the query builder, the scope registry. Nothing
+in the platform does these. They are ours to get right.
+
+---
+
+## 11. Where this could be simpler
+
+Without losing anything, and without leaving sherpa's principles.
+
+### 11.1 `bind()` has seven options, and three spell one axis
+
+```ts
+interface BindOptions {
+  into?; signal?; readonly?; steerOnly?; ignore?; as?; scope?;
+}
+```
+
+`readonly`, `steerOnly` and `ignore` all answer **which way does this binding
+flow**:
+
+| today | means |
+|---|---|
+| `readonly: true` | it is pushed to, and steers nothing |
+| `steerOnly: true` | it steers, and is not pushed to |
+| `ignore: ['x']` | it steers, except `x` |
+
+One axis, three spellings — and a caller can set two that disagree. One
+property says it:
+
+```ts
+flow?: 'both' | 'in' | 'out'      // default 'both'
+ignore?: readonly string[]         // the scalpel, unchanged
+```
+
+`as` and `into` go with §9.5 (the component declares, the source composes).
+`scope` is renamed `rows` in step 3. **Seven options become three.**
+
+### 11.2 The toolbar answers the same question ten ways
+
+```
+active · values · superseded · pickedValues · clauses ·
+readings · states · customFilters · offering · heldIds
+```
+
+Ten getters, all "what is this bar holding". They exist because the APP had to
+rebuild state the data layer should own — every one grew to answer one host's
+question.
+
+Once the source holds the state (step 3), the app asks the source and most of
+these have no caller. **`readings` is the one that carries everything**; the
+rest are views of it that the source can answer better.
+
+### 11.3 A sort chip carries its state in three attributes
+
+`data-current` (is it running) + `data-direction` (which way) + `data-column`
+(what by). Three attributes that must agree, and §4 shows what happens when
+they do not.
+
+The platform has a shape for this: **one attribute, one value**. Sorting is
+already `asc | desc | '' suspended | absent`, in `sortDirectionAttr()` —
+`cycle.ts` had it right. The chip could carry `data-sort="email:desc"` and
+derive the rest.
+
+**Caution:** a compound attribute is harder to select on in CSS, and CSS owns
+visibility here. Worth doing only if the CSS stays as clear — measure before
+committing.
+
+### 11.4 Two components, one builder
+
+The biggest one, already step 4: `#drawField` / `#drawChip` / `#drawSection`
+and `#render` / `#addMenu` are the same job, twice, differing by layout
+direction and whether values explode into a run.
+
+### 11.5 What NOT to simplify
+
+- **`stateClause` and the query builder.** One door, correct, and tested. Leave
+  it alone.
+- **The `#pendingItems` upgrade dance.** It looks like ceremony; it is the only
+  way to fill a cloned element that has not upgraded.
+- **The longhand-then-`@supports` CSS function pattern.** It looks like
+  duplication; without it a third of the web renders nothing.
