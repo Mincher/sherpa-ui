@@ -21,8 +21,11 @@ export class SherpaCodeBlock extends SherpaElement {
 
   static override observed = ['data-code', 'data-line-numbers'];
 
+  /** Where the code is written. */
   #codeText: HTMLElement | null = null;
+  /** The line-number gutter. */
   #gutter: HTMLElement | null = null;
+  /** Resets the Copied state after a moment. */
   #resetTimer = 0;
 
   override onRender(): void {
@@ -64,6 +67,7 @@ export class SherpaCodeBlock extends SherpaElement {
     this.#gutter.textContent = out;
   };
 
+  /** Copy the code to the clipboard, and say so. */
   #onCopy = (): void => {
     const text = this.code;
     if (!text) return;

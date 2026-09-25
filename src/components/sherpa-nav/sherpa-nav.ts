@@ -76,6 +76,7 @@ export class SherpaNav extends SherpaElement {
   static override html = new URL('./sherpa-nav.html', import.meta.url);
   static override observed = ['data-current-id', 'data-nav-state'];
 
+  /** The nav as data, normalised. */
   #config: NavConfig = {};
   /** The mode Settings was entered from, so leaving it goes back there. */
   #beforeSettings: NavState = 'collapsed';
@@ -172,20 +173,24 @@ export class SherpaNav extends SherpaElement {
     this.$('.rail')?.setAttribute('aria-expanded', String(OPEN.has(state)));
   }
 
+  /** The pointer arrived: open to hover, unless pinned or in Settings. */
   #onEnter = (): void => {
     if (!LATCHED.has(this.state)) this.#setState('hover');
   };
 
+  /** The pointer left: collapse, unless pinned or in Settings. */
   #onLeave = (): void => {
     if (!LATCHED.has(this.state)) this.#setState('collapsed');
   };
 
+  /** Focus left the nav: collapse as if the pointer did. */
   #onFocusOut = (event: FocusEvent): void => {
     const next = event.relatedTarget as Node | null;
     if (next && this.contains(next)) return;
     this.#onLeave();
   };
 
+  /** Pin or unpin — and from Settings, go back to hover. */
   #onPin = (): void => {
     // Leaving settings goes to hover, not collapsed — the pointer is still on the rail.
     if (this.state === 'settings') {
@@ -195,6 +200,7 @@ export class SherpaNav extends SherpaElement {
     this.#setState(this.state === 'pinned' ? 'collapsed' : 'pinned');
   };
 
+  /** Enter Settings, or leave it. */
   #onSettings = (): void => {
     if (this.state !== 'settings') {
       this.#setState('settings');
@@ -206,16 +212,19 @@ export class SherpaNav extends SherpaElement {
 
   /* ── Content ────────────────────────────────────────────────────── */
 
+  /** Accept a bare list of entries as well as a whole NavConfig. */
   #normalise(data: unknown): NavConfig {
     if (Array.isArray(data)) return { sections: [{ items: data as NavEntry[] }] };
     if (data && typeof data === 'object') return data as NavConfig;
     return {};
   }
 
+  /** Is there anything configured to draw. */
   #hasContent(): boolean {
     return !!(this.#config.product || this.#config.quickItems?.length || this.#config.sections?.length);
   }
 
+  /** Draw the brand, the quick items and the sections, then mark the current row. */
   #render(): void {
     this.#renderBrand();
     this.#renderQuick();
@@ -224,6 +233,7 @@ export class SherpaNav extends SherpaElement {
     this.#applyState();
   }
 
+  /** The product name and icon — a slotted icon wins. */
   #renderBrand(): void {
     const iconSlot = this.$('.brand-icon');
     // A slotted icon wins over the configured one.
@@ -234,6 +244,7 @@ export class SherpaNav extends SherpaElement {
     if (this.#config.product) this.toggleAttribute('data-searchable', true);
   }
 
+  /** The quick items above the sections; none in Settings. */
   #renderQuick(): void {
     const list = this.$('.quick');
     if (!list) return;
@@ -243,6 +254,7 @@ export class SherpaNav extends SherpaElement {
     for (const entry of quick) for (const row of this.#buildRows(entry, 1)) list.appendChild(row);
   }
 
+  /** Stamp each section and its rows, keeping any hand-authored content. */
   #renderSections(): void {
     const content = this.$('.content');
     const sectionTpl = this.$<HTMLTemplateElement>('template.section-tpl');
@@ -328,6 +340,7 @@ export class SherpaNav extends SherpaElement {
     }
   }
 
+  /** Mark the row `data-current-id` names. */
   #applyActive(): void {
     const active = this.dataset['currentId'];
     for (const row of this.$$('.nav-row')) {
@@ -351,6 +364,7 @@ export class SherpaNav extends SherpaElement {
     return id ? this.entry(id) : null;
   }
 
+  /** A row was clicked: make it current and report it. */
   #onItemClick = (event: Event): void => {
     const row = (event.target as HTMLElement).closest<HTMLElement>('.nav-row');
     const id = row?.dataset['id'];
@@ -359,6 +373,7 @@ export class SherpaNav extends SherpaElement {
     this.emit('nav-select', { id, ...this.entry(id) });
   };
 
+  /** An Area opened or closed: show or hide its children. */
   #onItemExpand = (event: Event): void => {
     const row = (event.target as HTMLElement).closest<HTMLElement>('.nav-row');
     if (!row?.dataset['id']) return;
@@ -397,6 +412,7 @@ export class SherpaNav extends SherpaElement {
     }
   }
 
+  /** Typing in the search: filter the rows and report the query. */
   #onSearch = (event: Event): void => {
     const query = (event.target as HTMLInputElement).value;
     this.toggleAttribute('data-has-query', query.length > 0);
@@ -404,6 +420,7 @@ export class SherpaNav extends SherpaElement {
     this.emit('nav-search', { query });
   };
 
+  /** Clear the search and show every row again. */
   #onSearchClear = (): void => {
     const input = this.$<HTMLInputElement>('.search-input');
     if (input) input.value = '';
@@ -415,6 +432,7 @@ export class SherpaNav extends SherpaElement {
 
   /* ── Search ─────────────────────────────────────────────────────── */
 
+  /** Show only the rows whose label matches, highlighting the match. */
   #filter(rawQuery: string): void {
     const query = rawQuery.trim().toLowerCase();
 

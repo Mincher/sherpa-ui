@@ -30,8 +30,11 @@ export class SherpaLineChart extends SherpaElement {
 
   static override observed = ['data-type', 'data-min', 'data-max', 'data-ticks'];
 
+  /** The x-axis labels, one per point. */
   #labels: string[] = [];
+  /** The lines, as populated. */
   #series: Series[] = [];
+  /** Which series a legend has switched off, by index. */
   #hidden = new Set<number>();
 
   override onRender(): void {
@@ -80,6 +83,7 @@ export class SherpaLineChart extends SherpaElement {
     this.#render();
   }
 
+  /** Draw the gridlines, the x-axis and one path per series. */
   #render(): void {
     const layer = this.$('.series-layer');
     const grid = this.$('.grid');
@@ -195,6 +199,7 @@ export class SherpaLineChart extends SherpaElement {
     return this.num('data-ticks', DEFAULT_TICKS, { min: 0, int: true });
   }
 
+  /** The value ticks, placed on the same scale as the gridlines. */
   #renderYAxis(scale: ChartScale): void {
     const axis = this.$('.y-axis');
     const tpl = this.$<HTMLTemplateElement>('template.ytick-tpl');

@@ -24,6 +24,7 @@ export class SherpaOverlayPanel extends SherpaElement {
   } as const;
   static override observed = ['data-heading', 'data-icon', 'data-collapsed', 'data-collapsible', 'data-dismissible', 'open'];
 
+  /** The native dialog the panel draws in. */
   #dialog(): HTMLDialogElement | null {
     return this.$<HTMLDialogElement>('.root');
   }
@@ -92,25 +93,30 @@ export class SherpaOverlayPanel extends SherpaElement {
     }
   }
 
+  /** The dialog closed, however it closed: say so. */
   #onClose = (): void => {
     this.toggleAttribute('open', false);
     this.emit('close', {});
   };
 
+  /** The close button. */
   #onCloseClick = (): void => {
     this.close();
   };
 
+  /** Collapse or expand the panel, and report it. */
   #onCollapse = (): void => {
     const collapsed = !this.hasAttribute('data-collapsed');
     this.toggleAttribute('data-collapsed', collapsed);
     this.emit('panel-collapse', { collapsed });
   };
 
+  /** The expand button — full screen is the host's to do. */
   #onExpand = (): void => {
     this.emit('panel-expand', {});
   };
 
+  /** The open-elsewhere button — the host decides where. */
   #onExternal = (): void => {
     this.emit('panel-external', {});
   };

@@ -45,6 +45,7 @@ export class SherpaToast extends SherpaElement {
     'data-leaving': { type: 'boolean', kind: 'style' },
   } as const;
 
+  /** The auto-dismiss timer. */
   #timer: ReturnType<typeof setTimeout> | null = null;
 
   override onRender(): void {

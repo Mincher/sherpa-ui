@@ -73,18 +73,21 @@ export class SherpaListItem extends SherpaElement {
     if (box) box.checked = this.hasAttribute('data-selected');
   }
 
+  /** Tell assistive tech whether the row is expanded. */
   #syncExpanded(): void {
     this.$('.expand')?.setAttribute('aria-expanded', String(this.hasAttribute('data-expanded')));
   }
 
   /* ── Interaction ──────────────────────────────────────────────── */
 
+  /** Make an interactive row current and report it. */
   #activate(): void {
     if (this.dataset['interactive'] === undefined || this.hasAttribute('disabled')) return;
     this.current = true;
     this.emit('item-click', { label: this.#labelText() });
   }
 
+  /** A click on the row — unless it landed on its expand, select or drag control. */
   #onClick = (event: Event): void => {
     // A leading affordance handles its own click; don't also activate the row.
     const path = event.composedPath();
@@ -94,6 +97,7 @@ export class SherpaListItem extends SherpaElement {
     this.#activate();
   };
 
+  /** Expand or collapse the row. */
   #onExpand = (event: Event): void => {
     event.stopPropagation();
     const expanded = !this.hasAttribute('data-expanded');
@@ -101,6 +105,7 @@ export class SherpaListItem extends SherpaElement {
     this.emit('item-expand', { expanded });
   };
 
+  /** Tick or untick the row. */
   #onSelect = (event: Event): void => {
     event.stopPropagation();
     if (this.hasAttribute('disabled')) return;
@@ -109,6 +114,7 @@ export class SherpaListItem extends SherpaElement {
     this.emit('item-select', { selected });
   };
 
+  /** The drag handle was grabbed. */
   #onDrag = (): void => { this.emit('item-drag', {}); };
 }
 

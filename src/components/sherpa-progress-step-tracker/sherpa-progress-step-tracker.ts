@@ -18,6 +18,7 @@ export class SherpaProgressStepTracker extends SherpaElement {
   static override html = new URL('./sherpa-progress-step-tracker.html', import.meta.url);
   static override observed = ['data-current-step'];
 
+  /** The steps, as populated. */
   #steps: Step[] = [];
 
   override onRender(): void {
@@ -53,6 +54,7 @@ export class SherpaProgressStepTracker extends SherpaElement {
     this.dataset['currentStep'] = String(index);
   }
 
+  /** Draw each step and the connector between them. */
   #render(): void {
     const track = this.$('.steps');
     const stepTpl = this.$<HTMLTemplateElement>('template.step-tpl');
@@ -84,6 +86,7 @@ export class SherpaProgressStepTracker extends SherpaElement {
     }
   }
 
+  /** A step was clicked: report its index. */
   #onClick = (event: Event): void => {
     const node = (event.target as HTMLElement).closest<HTMLElement>('.step');
     if (!node) return;

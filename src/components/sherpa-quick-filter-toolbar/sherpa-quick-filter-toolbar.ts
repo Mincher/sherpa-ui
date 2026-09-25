@@ -154,13 +154,16 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-sort-field', 'data-sort-direction', 'data-group-field', 'data-favourite',
   ];
 
+  /** The filter defs this bar holds, in order. */
   #filters: QuickFilterDef[] = [];
+  /** The columns the Group and Sort chips offer. */
   #organise: OrganiseDef = {};
   /** Filters the user MAY add but has not — the Add chip's menu. */
   #available: QuickFilterDef[] = [];
 
   /* ── Fitting the bar ─────────────────────────────────────────────── */
 
+  /** Watches the bar, so the chips fold as it narrows. */
   #observer: ResizeObserver | null = null;
   /** The pending reflow frame — a burst of resizes measures once. */
   #frame: number | null = null;
@@ -380,10 +383,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#emitChange();
   };
 
+  /** A folded chip changed: redraw its badge in the More menu. */
   #onFoldedCountsChanged = (): void => {
     this.#syncFoldedBadges();
   };
 
+  /** The drill-in menu's back arrow. */
   #drillOutHandler = (): void => {
     this.#drillOut();
   };
@@ -433,6 +438,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
   }
 
+  /** The bar resized: fold again on the next frame. */
   #onResize = (): void => {
     /* TRAP T-resize-reschedule-never-drop — cancel and re-queue, never return
        when a frame is already pending. */
@@ -679,6 +685,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /** TRAP T-date-label-reads-in-full — UTC, day-then-month, in full, no badge. */
+  /** A date chip's caret shows its picked day or range, formatted. */
   #syncDateLabel(chip: HTMLElement): void {
     // The calendar is the MENU's, so ask what KIND of body it has.
     if (!chip.querySelector('sherpa-menu[data-body="date"]')) return;
@@ -726,10 +733,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     delete chip.dataset['count'];
   }
 
+  /** The filter chips in the run — not Group, Sort or More. */
   #chips(): ChipEl[] {
     return this.$$<ChipEl>('.chips > .chip');
   }
 
+  /** Rebuild the chip run from `#filters`, keeping what the reader did. */
   #render(): void {
     const list = this.$('.chips');
     const tpl = this.$<HTMLTemplateElement>('template.qf-tpl');
@@ -896,6 +905,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     });
   };
 
+  /** The pending re-report after a condition row rebuilt. */
   #conditionFrame: number | null = null;
 
   /** Menus whose items wait for their chip to enter the list. */
@@ -955,6 +965,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#removeFilter(id);
   };
 
+  /** A chip was toggled: report the whole bar. */
   #onChipClick = (event: Event): void => {
     // Composed → find the originating chip on the path.
     const path = event.composedPath();
@@ -1578,6 +1589,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /* ── Organise: the leading Group / Sort chips ───────────────────────── */
 
   /** TRAP T-organise-glyphs-are-named-not-inline — `view` stays here, the shared four in core/icons. */
+  /** The View chip glyph, plus the shared Group and Sort glyphs. */
   static readonly #icons = {
     view: 'desktop',
     ...ORGANISE_ICONS,
@@ -1702,6 +1714,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     return checked?.value;
   }
 
+  /** A Group or Sort pick is an arrangement: stop it reading as a filter change. */
   #onOrganiseChange = (event: Event): void => {
     /* This hears the chips' quick-filter-change AND the toolbar's own, emit()
        being composed. Registered in CAPTURE so it can stop a group/sort pick

@@ -21,6 +21,7 @@ export class SherpaTabs extends SherpaElement {
   static override html = new URL('./sherpa-tabs.html', import.meta.url);
   static override observed = ['data-current-id'];
 
+  /** The tabs, as populated. */
   #tabs: TabDef[] = [];
 
   override onRender(): void {
@@ -109,6 +110,7 @@ export class SherpaTabs extends SherpaElement {
       .filter((el): el is HTMLElement => el instanceof HTMLElement && el.hasAttribute('data-tab'));
   }
 
+  /** A tab was clicked: select it. */
   #onClick = (event: Event): void => {
     // Our own shadow buttons — target is not retargeted, so closest() suffices.
     const btn = (event.target as HTMLElement).closest<HTMLElement>('.tab');
@@ -116,6 +118,7 @@ export class SherpaTabs extends SherpaElement {
     if (id) this.select(id);
   };
 
+  /** Arrow keys, Home and End move between tabs. */
   #onKeyDown = (event: KeyboardEvent): void => {
     const keys = ['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'Home', 'End'];
     if (!keys.includes(event.key)) return;

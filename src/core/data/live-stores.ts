@@ -42,6 +42,7 @@ abstract class LiveStore extends EventTarget implements Store {
   readonly time: string | undefined;
   protected readonly inner: ArrayStore;
   protected readonly options: LiveStoreOptions;
+  /** Is the connection up. */
   #connected = false;
 
   constructor(options: LiveStoreOptions) {
@@ -94,6 +95,7 @@ abstract class LiveStore extends EventTarget implements Store {
     void this.#apply(message);
   }
 
+  /** Apply one pushed message to the rows: a whole set, or one change. */
   async #apply(message: PushMessage): Promise<void> {
     try {
       // A whole ARRAY replaces the set. `setRows` announces for us.
@@ -122,6 +124,7 @@ abstract class LiveStore extends EventTarget implements Store {
     }
   }
 
+  /** Report a failure as an `error` event, naming the stage it broke at. */
   #fail(stage: 'parse' | 'apply' | 'connection', error: unknown): void {
     this.dispatchEvent(new CustomEvent('error', { detail: { stage, error } }));
   }
@@ -168,6 +171,7 @@ export interface EventStoreOptions extends LiveStoreOptions {
  * `.connect()`. TRAP T-sse-over-websocket-for-a-feed
  */
 export class EventStore extends LiveStore {
+  /** The open Server-Sent Events stream, or null. */
   #source: EventSource | null = null;
 
   /* TRAP T-narrowing-constructor-is-not-useless — narrows the options type. */
@@ -225,9 +229,13 @@ export interface SocketStoreOptions extends LiveStoreOptions {
  * feed that only arrives, prefer EventStore, which reconnects and replays free.
  */
 export class SocketStore extends LiveStore {
+  /** The open socket, or null. */
   #socket: WebSocket | null = null;
+  /** How many reconnects in a row — the step into the back-off. */
   #retry = 0;
+  /** The pending reconnect. */
   #timer: ReturnType<typeof setTimeout> | null = null;
+  /** Closing on purpose, so a close is not retried. */
   #closing = false;
 
   /** How long to wait before retry N, capped. */
@@ -270,6 +278,7 @@ export class SocketStore extends LiveStore {
     });
   }
 
+  /** Reconnect after the next back-off step. */
   #scheduleRetry(): void {
     const steps = SocketStore.BACKOFF_MS;
     const wait = steps[Math.min(this.#retry, steps.length - 1)]!;

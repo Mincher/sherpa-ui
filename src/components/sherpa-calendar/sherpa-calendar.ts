@@ -48,6 +48,7 @@ export class SherpaCalendar extends SherpaElement {
 
   /** Currently viewed year / 0-indexed month. */
   #viewYear = new Date().getFullYear();
+  /** The month the day view is showing. */
   #viewMonth = new Date().getMonth();
   /** True while the USER's own click is writing a value. */
   #picking = false;
@@ -127,6 +128,7 @@ export class SherpaCalendar extends SherpaElement {
     host.appendChild(header);
   }
 
+  /** Draw the header label and the grid for the current view. */
   #render(): void {
     for (const label of this.#headerEls('.cal-label')) {
       label.textContent =
@@ -150,6 +152,7 @@ export class SherpaCalendar extends SherpaElement {
       : `${left} ${this.#viewYear} – ${right}`;
   }
 
+  /** One cloned day cell. */
   #cell(): HTMLElement {
     // Fails HERE with the selector named, not at whichever property is touched first.
     const cell = this.clone('template.cal-cell-tpl');
@@ -187,6 +190,7 @@ export class SherpaCalendar extends SherpaElement {
     return parseIso(latest);
   }
 
+  /** The days that may be picked, or null when every day may. */
   #availableDays(): Set<string> | null {
     const raw = this.dataset['available'];
     if (raw == null) return null;
@@ -280,6 +284,7 @@ export class SherpaCalendar extends SherpaElement {
     }
   }
 
+  /** Draw the twelve months. */
   #renderMonths(): void {
     const grid = this.$('.cal-months');
     if (!grid) return;
@@ -305,6 +310,7 @@ export class SherpaCalendar extends SherpaElement {
     });
   }
 
+  /** Draw a twelve-year block. */
   #renderYears(): void {
     const grid = this.$('.cal-years');
     if (!grid) return;
@@ -337,6 +343,7 @@ export class SherpaCalendar extends SherpaElement {
     return this.#viewYear - ((this.#viewYear % 12));
   }
 
+  /** Mirror the value's time onto the time field. */
   #syncTimeInput(): void {
     const input = this.$<HTMLInputElement>('.cal-time');
     if (!input) return;
@@ -347,7 +354,9 @@ export class SherpaCalendar extends SherpaElement {
 
   /* ── Interaction ────────────────────────────────────────────────────── */
 
+  /** Step back one month, year or block. */
   #onPrev = (): void => this.#step(-1);
+  /** Step forward one month, year or block. */
   #onNext = (): void => this.#step(+1);
 
   /** Steps by month, year, or 12-year block — whichever the view shows. */
@@ -370,6 +379,7 @@ export class SherpaCalendar extends SherpaElement {
     this.#render();
   };
 
+  /** A month was picked: show its days. */
   #onMonthClick = (event: Event): void => {
     const cell = (event.target as HTMLElement).closest<HTMLElement>('.cal-cell');
     const m = cell?.dataset['month'];
@@ -379,6 +389,7 @@ export class SherpaCalendar extends SherpaElement {
     this.#render();
   };
 
+  /** A year was picked: show its months. */
   #onYearClick = (event: Event): void => {
     const cell = (event.target as HTMLElement).closest<HTMLElement>('.cal-cell');
     const y = cell?.dataset['year'];
@@ -388,6 +399,7 @@ export class SherpaCalendar extends SherpaElement {
     this.#render();
   };
 
+  /** A day was picked: set the value, or one end of a range. */
   #onDayClick = (event: Event): void => {
     const cell = (event.target as HTMLElement).closest<HTMLElement>('.cal-cell');
     if (!cell || cell.hasAttribute('disabled') || cell.hasAttribute('data-blank')) return;
@@ -431,11 +443,13 @@ export class SherpaCalendar extends SherpaElement {
     }
   }
 
+  /** The time in the time field, or nothing if it is not a time. */
   #currentTime(): string {
     const input = this.$<HTMLInputElement>('.cal-time');
     return input && TIME_RE.test(input.value) ? input.value : '';
   }
 
+  /** The time changed: put it on the picked day. */
   #onTimeInput = (): void => {
     const date = datePart(this.dataset['value']);
     if (!date) return;
@@ -475,6 +489,7 @@ export class SherpaCalendar extends SherpaElement {
     this.emit('calendar-cancel', {});
   };
 
+  /** Apply: report the value. */
   #onApply = (): void => {
     this.emit('calendar-apply', { value: this.dataset['value'] ?? '' });
   };

@@ -30,6 +30,7 @@ export class SherpaKeyValueList extends SherpaElement {
     'data-orientation': SHARED_PROPS['data-orientation'],
   } as const;
 
+  /** The pairs, as populated. */
   #pairs: KeyValuePair[] = [];
 
   override onRender(): void {

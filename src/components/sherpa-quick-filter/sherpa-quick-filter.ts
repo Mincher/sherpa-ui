@@ -210,6 +210,7 @@ export class SherpaQuickFilter extends SherpaElement {
     // Borrowed, but only while it is still on the page.
     return this.#menu?.isConnected ? this.#menu : null;
   }
+  /** The slotted menu, cached once found. */
   #menu: MenuLike | null = null;
 
   /** The chip's picked values — the same list `quick-filter-change` reports. */
@@ -252,6 +253,7 @@ export class SherpaQuickFilter extends SherpaElement {
   /** The field name, remembered before a pick rewrites the visible label. */
   #field: string | null = null;
 
+  /** Write the label and the glyph into the shadow DOM. */
   #syncText(): void {
     const label = this.$('.label');
     const value = this.dataset['label'];
@@ -372,6 +374,7 @@ export class SherpaQuickFilter extends SherpaElement {
     }
   }
 
+  /** The body was clicked: toggle, or let Group and Sort do their own thing. */
   #onClick = (event: Event): void => {
     if (this.hasAttribute('disabled')) return;
 
@@ -414,6 +417,7 @@ export class SherpaQuickFilter extends SherpaElement {
    * and `toggle()` re-opens what the reader just closed. Measured before this:
    * open, open, open. TRAP T-a-trigger-click-follows-light-dismiss
    */
+  /** Open the value menu, or close it if it is open. */
   #openMenu(anchor?: HTMLElement): void {
     const wasOpen = this.hasAttribute('data-open');
     this.removeAttribute('data-open');
@@ -421,6 +425,7 @@ export class SherpaQuickFilter extends SherpaElement {
     else this.menu?.show?.(anchor ?? this);
   }
 
+  /** The caret opens the menu without toggling the chip. */
   #onCaret = (event: Event): void => {
     if (this.hasAttribute('disabled')) return;
     event.stopPropagation(); // opening the menu must not toggle the chip
@@ -445,6 +450,7 @@ export class SherpaQuickFilter extends SherpaElement {
     this.toggleAttribute('data-open', open);
   };
 
+  /** The menu changed: apply the picks — at once for an arrangement. */
   #onMenuChange = (event: Event): void => {
     const values = ((event as CustomEvent).detail?.values ?? []) as string[];
     /* AN ARRANGEMENT, not a filter: picking a column applies it AT ONCE and
@@ -533,8 +539,10 @@ export class SherpaQuickFilter extends SherpaElement {
       });
   }
 
+  /** The pending check for "on, but filtering nothing". */
   #emptyCheck = 0;
 
+  /** The tooltip: the values or the condition, in words. */
   #syncCountTip(values: string[]): void {
     /* The CONDITION in words: the badge only says THAT one applies.
        TRAP T-one-state-per-filtered-field */
@@ -576,6 +584,7 @@ export class SherpaQuickFilter extends SherpaElement {
     this.#syncBadge(filterFace(this.#state(values)));
   };
 
+  /** A condition row changed: re-derive the face from it. */
   #onCondition = (): void => {
     this.#applySelection((this.menu?.values ?? []) as string[]);
     this.#recheckConditions();
@@ -603,6 +612,7 @@ export class SherpaQuickFilter extends SherpaElement {
     });
   }
 
+  /** The pending recheck after a condition row rebuilds. */
   #recheck: number | null = null;
 
   override onDisconnect(): void {
@@ -649,6 +659,7 @@ export class SherpaQuickFilter extends SherpaElement {
    * TRAP T-caret-carries-the-value-not-the-label — the chip label is ALWAYS the
    * field name; the pick reads in the caret.
    */
+  /** One pick reads "Field: Value"; none or several reads the field alone. */
   #syncLabelForSelection(values: string[]): void {
     this.#field ??= this.dataset['label'] ?? null;
     const field = this.#field;

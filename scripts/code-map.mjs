@@ -10,6 +10,7 @@
  *   npm run map [paths…]          print the map (the whole repo by default)
  *   npm run map:write <files…>    add missing names, drop stale ones
  *   npm run check:map [--staged]  the gate
+ *   node scripts/code-map.mjs --privates [paths…]   the #private members still undocumented
  *
  * TRAP T-a-file-says-what-it-holds
  *
@@ -185,17 +186,20 @@ export function writeMap(file) {
 }
 
 /** Undocumented `#private` members across `src/`, for the ratchet. */
-function undocumentedPrivate() {
-  let n = 0;
+/** Every undocumented `#private` member under `src/`, as `file:line  code`. */
+function undocumentedPrivates(roots = []) {
+  const out = [];
   for (const f of globSync('src/**/*.ts')) {
+    if (roots.length && !roots.some((r) => f.startsWith(r))) continue;
     const lines = readFileSync(f, 'utf8').split('\n');
     lines.forEach((l, i) => {
       if (/^ {2}(?:static )?(?:readonly )?(?:async )?#[A-Za-z_$][\w$]*\s*[(=:<]/.test(l)
-        && !docAbove(lines, i)) n++;
+        && !docAbove(lines, i)) out.push(`${f}:${i + 1}  ${l.trim()}`);
     });
   }
-  return n;
+  return out;
 }
+const undocumentedPrivate = () => undocumentedPrivates().length;
 
 export function check({ staged = false } = {}) {
   const base = existsSync(BASELINE)
@@ -256,6 +260,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
     const problems = args.map(writeMap).filter(Boolean);
     for (const p of problems) console.error(`  ✗ ${p}`);
     process.exit(problems.length ? 1 : 0);
+  } else if (mode === '--privates') {
+    // Which #private members still need their line — the ratchet's worklist.
+    const list = undocumentedPrivates(args);
+    for (const row of list) console.log(row);
+    console.error(`${list.length} undocumented #private`);
   } else if (mode === '--baseline') {
     const unmapped = files().filter((f) => {
       const text = readFileSync(f, 'utf8');

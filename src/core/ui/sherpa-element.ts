@@ -318,8 +318,10 @@ export abstract class SherpaElement extends HTMLElement {
 
   #resolveRendered!: () => void;
 
+  /** Has `onRender` run — it fires exactly once. */
   #hasRendered = false;
 
+  /** Is the element in a document right now. */
   #connected = false;
 
   /**
@@ -629,6 +631,7 @@ export abstract class SherpaElement extends HTMLElement {
 
   /* ── Private — boot and stamp ────────────────────────────────────────── */
 
+  /** Adopt the styles, stamp the template, then run the first render. */
   async #bootstrap(): Promise<void> {
     const Ctor = this.constructor as typeof SherpaElement;
 
@@ -757,6 +760,7 @@ export abstract class SherpaElement extends HTMLElement {
 
   /* ── Private — slots ─────────────────────────────────────────────────── */
 
+  /** Listen to every slot, so `data-has-*` follows what is slotted. */
   #wireSlots(): void {
     for (const slot of this.root.querySelectorAll('slot')) {
       const update = (): void => this.#reflectSlot(slot);
@@ -769,6 +773,7 @@ export abstract class SherpaElement extends HTMLElement {
     }
   }
 
+  /** Set `data-has-<slot>` when a slot holds real content. */
   #reflectSlot(slot: HTMLSlotElement): void {
     // TRAP T-slot-guards-only-when-filled — no flatten, so a slot's own
     // fallback never counts as "present".

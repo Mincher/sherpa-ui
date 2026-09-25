@@ -37,6 +37,7 @@ export { ValidationError } from './validate.js';
 
 /** Records held in memory. TRAP T-array-store-copies-both-ways */
 export class ArrayStore extends BaseStore {
+  /** The records, in insertion order. */
   #rows: Row[];
   /** 0 or absent means no cap. */
   readonly #maxRows: number;
@@ -118,9 +119,13 @@ export interface JsonStoreOptions extends StoreOptions {
  * is shared by callers arriving mid-flight — three components, one request.
  */
 export class JsonStore extends BaseStore {
+  /** Holds the rows once fetched; every query runs over it. */
   #inner: ArrayStore;
+  /** Where the JSON lives, and how to read it. */
   #options: JsonStoreOptions;
+  /** The fetch in flight, shared by every load that waits on it. */
   #pending: Promise<void> | null = null;
+  /** Has the JSON been fetched. */
   #loaded = false;
 
   constructor(options: JsonStoreOptions) {
@@ -142,6 +147,7 @@ export class JsonStore extends BaseStore {
     await this.#pending;
   }
 
+  /** Fetch the JSON once, with a timeout, into the inner store. */
   async #fetch(): Promise<void> {
     const { url, init, timeout = 30_000, rowsPath } = this.#options;
     const response = await fetch(url, {
@@ -222,6 +228,7 @@ export interface RestStoreOptions extends StoreOptions {
  * TRAP T-rest-update-is-patch-not-put
  */
 export class RestStore extends BaseStore {
+  /** The endpoint, and how its query parameters are spelled. */
   #options: RestStoreOptions;
 
   constructor(options: RestStoreOptions) {
@@ -296,6 +303,7 @@ export class RestStore extends BaseStore {
     this.announce({ type: 'remove', key });
   }
 
+  /** One HTTP request, with the store headers, parsed as JSON. */
   async #request<T>(url: string, init: RequestInit): Promise<T> {
     const response = await fetch(url, {
       ...this.#options.init,
@@ -362,6 +370,7 @@ export interface LocalStoreOptions extends StoreOptions {
  * TRAP T-local-store-is-not-for-bulk-data
  */
 export class LocalStore extends BaseStore {
+  /** The storage key, and local vs session. */
   #options: LocalStoreOptions;
 
   constructor(options: LocalStoreOptions) {
@@ -377,6 +386,7 @@ export class LocalStore extends BaseStore {
     }
   }
 
+  /** The stored rows, or none when storage is blocked or unreadable. */
   #read(): Row[] {
     try {
       const raw = this.#storage?.getItem(this.#options.name);
@@ -389,6 +399,7 @@ export class LocalStore extends BaseStore {
     }
   }
 
+  /** Store the rows; a full or blocked storage is not an error. */
   #write(rows: readonly Row[]): void {
     try {
       this.#storage?.setItem(this.#options.name, JSON.stringify(rows));

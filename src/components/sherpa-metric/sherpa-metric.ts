@@ -133,6 +133,7 @@ export class SherpaMetric extends SherpaElement {
   }
 
   /** TRAP T-metric-status-follows-the-trend — "default" means NO attribute. */
+  /** A rising trend reads success, a falling one critical. */
   #applyStatus(trend: 'up' | 'down' | 'flat' | null): void {
     const status = trend === 'up' ? 'success' : trend === 'down' ? 'critical' : null;
     if (status) this.dataset['status'] = status;

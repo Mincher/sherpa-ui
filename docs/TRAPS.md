@@ -11434,9 +11434,11 @@ longer than 110 characters fails; that is a paragraph. `check:map --staged` in
 the hook makes a CHANGED file carry its map, which is how updating it becomes
 the final step of every change.
 
-**A ratchet for the rest.** 91 files had no Map when this landed; they sit in
-`scripts/code-map-baseline.json` and must leave it the first time they are
-touched. 283 `#private` members had no comment; that number may only fall.
+**A ratchet for the rest.** 91 files had no Map when this landed, and 283
+`#private` members had no comment. Both were then done by hand the same day —
+one file and 12 members remain, all in the two components another session was
+editing, and `scripts/code-map-baseline.json` holds exactly those. The numbers
+may only fall; `node scripts/code-map.mjs --privates` lists what is left.
 
 **An export LIST is exports too.** `export { generateSpec, toYaml };` at the
 bottom of a file read as "exports nothing", so the file never needed a Map —

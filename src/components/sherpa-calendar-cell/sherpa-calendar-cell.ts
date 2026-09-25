@@ -34,6 +34,7 @@ export class SherpaCalendarCell extends SherpaElement {
     return this.dataset['value'] ?? this.dataset['label'] ?? '';
   }
 
+  /** Write the label, only when one is given. */
   #sync(): void {
     const label = this.dataset['label'];
     // Only when GIVEN — otherwise an empty string wipes the slotted content.
@@ -45,6 +46,7 @@ export class SherpaCalendarCell extends SherpaElement {
     this.$<HTMLButtonElement>('.cell')?.toggleAttribute('disabled', this.hasAttribute('disabled'));
   }
 
+  /** The cell was clicked: report its value. */
   #onClick = (): void => {
     if (this.hasAttribute('disabled')) return;
     this.emit('cell-click', { value: this.value });

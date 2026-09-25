@@ -46,6 +46,7 @@ export class SherpaNotifications extends SherpaElement {
   static override html = new URL('./sherpa-notifications.html', import.meta.url);
   static override observed = ['data-empty-text'];
 
+  /** The notifications, as populated. */
   #items: Notification[] = [];
 
   override onRender(): void {
@@ -110,16 +111,19 @@ export class SherpaNotifications extends SherpaElement {
   /** Whether the card is open, as the last menu event reported it. */
   #open = false;
 
+  /** Track whether the menu is open. */
   #onMenuToggle = (event: Event): void => {
     this.#open = event.type === 'menu-open';
   };
 
   /* ── Private ─────────────────────────────────────────────────────── */
 
+  /** The dropdown menu the notifications list in. */
   #menu(): (HTMLElement & { show(t?: HTMLElement): void; hide(): void; toggle(t?: HTMLElement): void }) | null {
     return this.$('.menu');
   }
 
+  /** Draw the list, or the "all caught up" state when it is empty. */
   #render(): void {
     const menu = this.#menu();
     if (!menu) return;
@@ -156,6 +160,7 @@ export class SherpaNotifications extends SherpaElement {
     });
   }
 
+  /** Mark all read, or open one notification. */
   #onClick = (event: Event): void => {
     const path = event.composedPath();
 

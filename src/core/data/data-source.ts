@@ -156,8 +156,11 @@ const STEERING_EVENTS = [
 
 export class DataSource extends EventTarget {
   readonly store: Store;
+  /** The view this source owns: sort, group, search, page, filter. */
   #state: ViewState;
+  /** The fields a search matches, or every field. */
   #searchFields: string[] | undefined;
+  /** Every bound component, and how it is bound. */
   #bound = new Map<
     Populatable,
     {
@@ -176,6 +179,7 @@ export class DataSource extends EventTarget {
       answered?: Set<string>;
     }
   >();
+  /** The last load's answer: the rows, and the total before paging. */
   #result: LoadResult = { rows: [], total: 0 };
   /**
    * Every row matching the filter, unpaged — for a `rows: 'all'` bind. Loaded
@@ -188,6 +192,7 @@ export class DataSource extends EventTarget {
    * TRAP T-grouped-paging-belongs-to-the-view
    */
   #viewPages: number | null = null;
+  /** Load on the first bind, rather than waiting to be asked. */
   #autoLoad: boolean;
   // TRAP T-in-flight-ticket-discards-stale — three keys, and why not one.
   /** The load in flight, as a ticket the response is checked against. */

@@ -53,7 +53,9 @@ export interface PersistOptions<T = unknown> {
 /** What an app knows about itself, addressed by pointer.
  *  TRAP T-session-store-is-the-third-tier */
 export class SessionStore {
+  /** The whole state, as plain data. */
   #data: Record<string, unknown>;
+  /** Every subscriber, and the pointer it watches. */
   #subs = new Set<{ pointer: string; run: (value: unknown) => void }>();
   /** Pointers whose value is written to storage on every change. */
   #persisted = new Map<string, { key: string; shared: boolean }>();
@@ -130,6 +132,7 @@ export class SessionStore {
     removeKey(where.shared ? 'local' : 'session', where.key);
   }
 
+  /** Save one persisted pointer to local or session storage. */
   #write(pointer: string, where: { key: string; shared: boolean }): void {
     const kind = where.shared ? 'local' : 'session';
     const value = this.get(pointer);
@@ -159,10 +162,15 @@ export interface ListOptions<T> {
  * TRAP T-session-list-is-a-view-not-a-copy
  */
 export class SessionList<T> {
+  /** The store the list lives in. */
   readonly #store: SessionStore;
+  /** Where in the store the list lives. */
   readonly #pointer: string;
+  /** The field that gives an entry its identity, or the entry itself. */
   readonly #by: (keyof T & string) | undefined;
+  /** The longest the list may grow, or no cap. */
   readonly #max: number | undefined;
+  /** Add at the front — newest first. */
   readonly #front: boolean;
 
   constructor(store: SessionStore, pointer: string, options: ListOptions<T> = {}) {

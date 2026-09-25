@@ -42,8 +42,11 @@ export interface IdbStoreOptions extends StoreOptions {
 
 /** Records in IndexedDB — the real local store. */
 export class IdbStore extends BaseStore {
+  /** Which database and store, and its version. */
   readonly #options: IdbStoreOptions;
+  /** The row cap, oldest out first; 0 for none. */
   readonly #maxRows: number;
+  /** The fields IndexedDB indexes. */
   readonly #indexes: readonly string[];
 
   /** A PROMISE, so concurrent loads share ONE `open()` and never race upgrades. */

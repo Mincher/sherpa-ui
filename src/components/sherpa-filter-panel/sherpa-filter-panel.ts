@@ -245,6 +245,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /* ── Drawing ──────────────────────────────────────────────────────── */
 
+  /** Pass the heading to the panel's header component. */
   #syncHeading(): void {
     this.$('.head')?.setAttribute('data-heading', this.dataset['heading'] ?? 'Filters');
   }
@@ -588,12 +589,14 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /* ── Reading ──────────────────────────────────────────────────────── */
 
+  /** The values ticked in one field's run. */
   #picked(held: Held): string[] {
     return [...held.values.querySelectorAll<HTMLElement>('.value[data-current]')]
       .map((c) => c.dataset['value'] ?? '')
       .filter(Boolean);
   }
 
+  /** Remember every pick, so Discard can go back to it. */
   #snapshot(): void {
     this.#baseline = new Map([...this.#held].map(([key, held]) => [key, this.#picked(held)]));
   }
@@ -641,6 +644,7 @@ export class SherpaFilterPanel extends SherpaElement {
     this.#syncAnswered(held);
   };
 
+  /** A field's condition or Clear button. */
   #onAction = (event: Event): void => {
     const cond = this.#pathFind(event, '.field-conditional');
     if (cond) return this.#flipCondition(cond);
@@ -663,6 +667,7 @@ export class SherpaFilterPanel extends SherpaElement {
     return byId ?? [...this.#held.values()].find((h) => h.values.contains(chip));
   }
 
+  /** The field a node sits in. */
   #fieldOf(node: HTMLElement): Held | undefined {
     return [...this.#held.values()].find((h) => h.box.contains(node));
   }
@@ -715,6 +720,7 @@ export class SherpaFilterPanel extends SherpaElement {
     for (const [, held] of this.#held) this.#syncAnswered(held);
   }
 
+  /** Untick a field's values and clear its conditions. */
   #clearField(btn: HTMLElement): void {
     const held = this.#fieldOf(btn);
     if (!held) return;
@@ -806,17 +812,20 @@ export class SherpaFilterPanel extends SherpaElement {
     this.#syncAllAnswered();
   };
 
+  /** The header's switch back to the toolbars. */
   #onClose = (): void => {
     this.close('reader');
   };
 
   /* ── The breakpoint ───────────────────────────────────────────────── */
 
+  /** The width query the panel needs, or null without matchMedia. */
   #media(): MediaQueryList | null {
     if (typeof matchMedia !== 'function') return null;
     return matchMedia(`(min-width: ${this.dataset['minWidth'] ?? '1280'}px)`);
   }
 
+  /** Is the window wide enough for the panel. */
   #wideEnough(): boolean {
     return this.#media()?.matches ?? true;
   }
@@ -837,6 +846,7 @@ export class SherpaFilterPanel extends SherpaElement {
   get #closedByWidth(): boolean {
     return this.#lastClose === 'width' && !this.hasAttribute('data-open');
   }
+  /** How the panel last closed: by the reader, or for being too narrow. */
   #lastClose: 'reader' | 'width' | null = null;
 
   /** The first match on an event's composed path. */

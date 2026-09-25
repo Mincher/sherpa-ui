@@ -167,8 +167,11 @@ export class SherpaDataGrid extends SherpaElement {
   static readonly MAX_COL_WIDTH = 480;
   static readonly DEFAULT_COL_WIDTH = 160;
 
+  /** The columns, as populated. */
   #columns: GridColumn[] = [];
+  /** The rows, as populated. */
   #rows: GridRow[] = [];
+  /** The per-row actions, which reveal the pinned actions column. */
   #actions: GridAction[] = [];
   /** The row whose menu is open. A RECORD, because an index moves on a sort. */
   #actionRow: GridRow | null = null;
@@ -188,12 +191,15 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** The radio group name in single mode. Per instance, stable across renders. */
   static #uid = 0;
+  /** This grid's own number, so its radio group name is unique on the page. */
   #selectNameId = ++SherpaDataGrid.#uid;
   get #selectName(): string {
     return `sherpa-grid-select-${this.#selectNameId}`;
   }
 
+  /** The selected rows. */
   #selected = new Set<GridRow>();
+  /** The field that identifies a row, or null to select by position. */
   #key: string | null = null;
   /** Keys a caller asked to select. */
   #wantedKeys: string[] | null = null;
@@ -259,6 +265,7 @@ export class SherpaDataGrid extends SherpaElement {
 
   /* ── Render ─────────────────────────────────────────────────────── */
 
+  /** Draw the head and the body. */
   #render(): void {
     this.toggleAttribute('data-empty', this.#rows.length === 0);
     // "Select all" of nothing is a control that does nothing.
@@ -317,6 +324,7 @@ export class SherpaDataGrid extends SherpaElement {
     return this.#clampWidth(raw);
   }
 
+  /** A column width held between the minimum and the maximum. */
   #clampWidth(n: number): number {
     const { MIN_COL_WIDTH, MAX_COL_WIDTH, DEFAULT_COL_WIDTH } = SherpaDataGrid;
     if (!Number.isFinite(n)) return DEFAULT_COL_WIDTH;
@@ -344,6 +352,7 @@ export class SherpaDataGrid extends SherpaElement {
     if (actionsCol) this.$('.cols')?.appendChild(actionsCol);
   }
 
+  /** Draw the heading row: sort, filter and resize for each column. */
   #renderHead(): void {
     this.#renderCols();
     const headRow = this.$('.head-row');
@@ -406,6 +415,7 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   /** TRAP T-grid-untyped-column-gets-no-filter-button — text|number|date only. */
+  /** Give a heading its filter chip and menu, for the column's type. */
   #addColumnFilter(th: HTMLElement, col: GridColumn): void {
     const chip = th.querySelector<HTMLElement>('.head-filter');
     if (!chip) return;
@@ -1020,6 +1030,7 @@ export class SherpaDataGrid extends SherpaElement {
     return this.#columns.filter((c) => c.field !== group);
   }
 
+  /** Draw the rows — with a group heading at each change, when grouped. */
   #renderBody(): void {
     const body = this.$('.body');
     const rowTpl = this.$<HTMLTemplateElement>('template.row-tpl');
@@ -1392,6 +1403,7 @@ export class SherpaDataGrid extends SherpaElement {
   /** Eat exactly one click — the one a finished resize drag synthesises. */
   #swallowClick = false;
 
+  /** A heading was clicked: cycle its sort — unless a resize just ended. */
   #onHeaderClick = (event: Event): void => {
     // A RESIZE just ended and the browser is synthesising its click.
     if (this.#swallowClick) {
@@ -1432,6 +1444,7 @@ export class SherpaDataGrid extends SherpaElement {
     });
   };
 
+  /** A row was clicked: report it — unless it was the select box or the actions. */
   #onRowClick = (event: Event): void => {
     // A click on a selection checkbox is selection, not row activation.
     if ((event.target as HTMLElement).closest('.select-cell')) return;
@@ -1514,6 +1527,7 @@ export class SherpaDataGrid extends SherpaElement {
   /** A drag in flight — one object, so a stray pointermove has one thing to test. */
   #drag: { field: string; startX: number; startWidth: number } | null = null;
 
+  /** A resize grip was grabbed: start the drag. */
   #onGripDown = (event: PointerEvent): void => {
     const grip = (event.target as HTMLElement | null)?.closest?.('.resize-grip');
     if (!grip) return;
@@ -1536,6 +1550,7 @@ export class SherpaDataGrid extends SherpaElement {
     grip.addEventListener('pointercancel', this.#onGripUp as EventListener, { once: true });
   };
 
+  /** Dragging a grip: size the column live. */
   #onGripMove = (event: PointerEvent): void => {
     if (!this.#drag) return;
     const { field, startX, startWidth } = this.#drag;
@@ -1547,6 +1562,7 @@ export class SherpaDataGrid extends SherpaElement {
     if (col) col.style.width = `${next}px`;
   };
 
+  /** The grip was let go: keep the width and report it. */
   #onGripUp = (event: PointerEvent): void => {
     const drag = this.#drag;
     this.#drag = null;
@@ -1815,6 +1831,7 @@ export class SherpaDataGrid extends SherpaElement {
 
   /* ── Column filters ─────────────────────────────────────────────── */
 
+  /** Typing in a header filter box. */
   #onFilterInput = (event: Event): void => {
     const input = event.target as HTMLElement;
     if (!input.classList.contains('filter-input')) return;

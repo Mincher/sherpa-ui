@@ -22,6 +22,7 @@ export class SherpaTag extends SherpaElement {
     this.$('.close')?.addEventListener('button-click', this.#onRemove);
   }
 
+  /** The remove button: say so, without clicking the tag. */
   #onRemove = (event: Event): void => {
     event.stopPropagation();
     this.emit('tag-remove');

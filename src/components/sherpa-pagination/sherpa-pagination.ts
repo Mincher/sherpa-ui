@@ -109,6 +109,7 @@ export class SherpaPagination extends SherpaElement {
     });
   }
 
+  /** Draw the page field, the count and which buttons are live. */
   #render(): void {
     const total = this.totalPages;
     const page = this.page;
@@ -137,6 +138,7 @@ export class SherpaPagination extends SherpaElement {
     }
   }
 
+  /** First, back, next or last. */
   #onClick = (event: Event): void => {
     // TRAP T-composed-path-not-target — the click starts in the button's own
     // shadow root, so `closest` never reaches our `.btn` host.
@@ -159,6 +161,7 @@ export class SherpaPagination extends SherpaElement {
     }
   };
 
+  /** A page typed into the field. */
   #onPageInput = (event: Event): void => {
     const input = event.target as HTMLInputElement;
     this.goToPage(parseInt(input.value, 10));

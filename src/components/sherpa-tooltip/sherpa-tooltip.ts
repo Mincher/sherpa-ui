@@ -58,6 +58,7 @@ export class SherpaTooltip extends SherpaElement {
     return this.hasAttribute('data-floating');
   }
 
+  /** Open the bubble beside the trigger. */
   #onShow = (): void => {
     if (!this.#floating) return;
     // No text and no slotted tip would open an empty bubble.
@@ -77,11 +78,13 @@ export class SherpaTooltip extends SherpaElement {
     this.on(window, 'resize', this.#onHide, whileOpen);
   };
 
+  /** Close the bubble. */
   #onHide = (): void => {
     if (!this.#floating) return;
     this.#hide();
   };
 
+  /** Hide the popover and stop listening for its dismiss. */
   #hide(): void {
     const bubble = this.$<HTMLElement>('.bubble');
     // `matches` first: hidePopover() on a closed popover throws.

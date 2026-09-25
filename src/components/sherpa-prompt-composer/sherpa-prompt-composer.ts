@@ -19,6 +19,7 @@ export class SherpaPromptComposer extends SherpaElement {
   } as const;
   static override observed = ['data-placeholder', 'disabled'];
 
+  /** The text box. */
   #input: HTMLTextAreaElement | null = null;
 
   override onRender(): void {
@@ -56,10 +57,12 @@ export class SherpaPromptComposer extends SherpaElement {
     this.value = '';
   }
 
+  /** Mirror `data-placeholder` onto the text box. */
   #syncPlaceholder(): void {
     if (this.#input) this.#input.placeholder = this.dataset['placeholder'] ?? '';
   }
 
+  /** Disable the text box and every button with the host. */
   #syncDisabled(): void {
     const off = this.hasAttribute('disabled');
     if (this.#input) this.#input.disabled = off;
@@ -67,6 +70,7 @@ export class SherpaPromptComposer extends SherpaElement {
     this.$$<HTMLButtonElement>('.lead-btn').forEach((b) => b.toggleAttribute('disabled', off));
   }
 
+  /** Enter sends; Shift+Enter is a new line. */
   #onKeyDown = (e: KeyboardEvent): void => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -74,6 +78,7 @@ export class SherpaPromptComposer extends SherpaElement {
     }
   };
 
+  /** The send button. */
   #onSend = (): void => this.#submit();
 
   /** Emit a leading-button event unless disabled. */
@@ -82,6 +87,7 @@ export class SherpaPromptComposer extends SherpaElement {
     this.emit(name, {});
   }
 
+  /** The form's own submit, so Enter in any field sends. */
   #onSubmit = (e: Event): void => {
     e.preventDefault();
     this.#submit();

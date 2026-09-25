@@ -28,6 +28,7 @@ export class SherpaTransferList extends SherpaElement {
     'data-target-heading': { type: 'string', kind: 'content', to: '.target .pane-heading', default: 'Selected' },
   } as const;
 
+  /** Every item, and which side it is on. */
   #items: Item[] = [];
   /** Values staged (checked) for the next move, in either pane. */
   #staged = new Set<string>();
@@ -70,6 +71,7 @@ export class SherpaTransferList extends SherpaElement {
     return this.selected;
   }
 
+  /** Draw both panes from `#items`. */
   #render(): void {
     const sourceList = this.$('.source .pane-list');
     const targetList = this.$('.target .pane-list');
@@ -91,6 +93,7 @@ export class SherpaTransferList extends SherpaElement {
     this.$('.target')?.toggleAttribute('data-empty', !this.#items.some((i) => i.selected));
   }
 
+  /** A row was ticked or unticked. */
   #onRowSelect = (event: Event): void => {
     const row = (event.target as HTMLElement).closest<HTMLElement>('.row');
     const value = row?.dataset['value'];
@@ -100,6 +103,7 @@ export class SherpaTransferList extends SherpaElement {
     else this.#staged.delete(value);
   };
 
+  /** A move button: selected or all, left or right. */
   #onMoveClick = (event: Event): void => {
     const btn = (event.target as HTMLElement).closest<HTMLElement>('[data-move]');
     const move = btn?.dataset['move'];

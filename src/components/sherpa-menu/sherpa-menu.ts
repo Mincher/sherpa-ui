@@ -131,6 +131,7 @@ export class SherpaMenu extends SherpaElement {
   /** What Cancel restores. TRAP T-cancel-baseline-captured-on-open */
   #baseline: string[] = [];
 
+  /** The popover card. */
   #card(): HTMLElement | null {
     return this.$('.menu');
   }
@@ -214,10 +215,12 @@ export class SherpaMenu extends SherpaElement {
     return this.hasAttribute('data-conditional') || this.#onlyConditions();
   }
 
+  /** Answered by conditions alone — no value list behind them. */
   #onlyConditions(): boolean {
     return this.hasAttribute('data-conditions-only');
   }
 
+  /** The mode button shows where it goes: a list icon in conditions, fx in values. */
   #syncModeButton(): void {
     const btn = this.$('.use-condition');
     if (!btn) return;
@@ -267,6 +270,7 @@ export class SherpaMenu extends SherpaElement {
     this.emit('menu-range-change', { range: on });
   };
 
+  /** Switch between the value list and the condition rows. */
   #onModeSwitch = (): void => {
     if (!this.#conditional() || this.#onlyConditions()) return;
     const next = this.mode === 'condition' ? 'select' : 'condition';
@@ -299,6 +303,7 @@ export class SherpaMenu extends SherpaElement {
     ));
   }
 
+  /** Add a condition row, and report the chain. */
   #onAddCondition = (): void => {
     this.#addRow();
     this.#emitConditions();
@@ -318,6 +323,7 @@ export class SherpaMenu extends SherpaElement {
 
   /* ── The condition rows ─────────────────────────────────────────── */
 
+  /** Every condition row, in order. */
   #rowEls(): HTMLElement[] {
     return [...(this.$('.condition-rows')?.querySelectorAll<HTMLElement>('.condition-row') ?? [])];
   }
@@ -888,6 +894,7 @@ export class SherpaMenu extends SherpaElement {
     if (one && field instanceof HTMLInputElement && field.value === '') field.value = one;
   }
 
+  /** Bring the body, the inline state, the mode and the drill trail into line. */
   #sync(): void {
     this.#syncBody();
     this.#syncInline();
@@ -935,6 +942,7 @@ export class SherpaMenu extends SherpaElement {
     };
   }
 
+  /** Place the card against its trigger, inside the bounds. */
   #place(): void {
     const card = this.#card();
     const trigger = this.#trigger;
@@ -981,12 +989,14 @@ export class SherpaMenu extends SherpaElement {
     this.hide();
   };
 
+  /** Escape closes this menu, not whatever is under it. */
   #onEscape = (event: Event): void => {
     if ((event as KeyboardEvent).key !== 'Escape') return;
     event.stopPropagation();
     this.hide();
   };
 
+  /** Opened: remember the picks Cancel restores. Closed: settle them. */
   #onToggle = (event: Event): void => {
     const open = (event as ToggleEvent).newState === 'open';
     this.toggleAttribute('open', open);
@@ -1052,10 +1062,12 @@ export class SherpaMenu extends SherpaElement {
   /** Aborts when the menu SHUTS — the viewport listeners' own lifetime. */
   #openAc: AbortController | null = null;
 
+  /** Scrolled or resized while open: place the card again. */
   #reposition = (): void => {
     this.#place();
   };
 
+  /** The window resized: close rather than float somewhere wrong. */
   #onViewportResize = (): void => {
     this.hide();
   };
@@ -1131,6 +1143,7 @@ export class SherpaMenu extends SherpaElement {
     this.emit('menu-back', {});
   };
 
+  /** A row or a body control changed: report it, or hold it for Apply. */
   #onChange = (event: Event): void => {
     const input = event.target as HTMLInputElement | null;
     if (!input) return;
@@ -1162,6 +1175,7 @@ export class SherpaMenu extends SherpaElement {
    *  `#applying` is false again by then. TRAP T-a-condition-is-a-draft-too */
   #settledByAction = false;
 
+  /** Apply: commit the picks and close. */
   #onApply = (): void => {
     // Apply rewrites the baseline Cancel would restore.
     this.#applying = true;
@@ -1177,6 +1191,7 @@ export class SherpaMenu extends SherpaElement {
     this.#applying = false;
   };
 
+  /** Cancel: put the picks back as they were, then close. */
   #onCancel = (): void => {
     // Restore, THEN report.
     this.#applying = true;
@@ -1233,6 +1248,7 @@ export class SherpaMenu extends SherpaElement {
     this.hide();
   };
 
+  /** An ACTION row was clicked: report it and close; value rows stay open. */
   #onClick = (event: Event): void => {
     // Only plain ACTION rows close the menu; value rows stay open.
     const button = (event.target as HTMLElement).closest('button');

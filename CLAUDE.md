@@ -88,6 +88,7 @@ npm run serve:examples    # express template server on :4200 (examples/)
 npm run map [path]        # print it; e.g. `npm run map src/core/data`
 npm run map:write <file>  # add missing names, drop stale ones — then edit the lines
 npm run check:map         # the gate; the hook runs it --staged
+node scripts/code-map.mjs --privates [path]  # the #private members still without a line
 
 # MCP server
 npm run mcp               # stdio transport — connect from Claude Desktop / Cursor

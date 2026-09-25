@@ -17,6 +17,7 @@ export class SherpaBreadcrumbs extends SherpaElement {
   static override css = new URL('./sherpa-breadcrumbs.css', import.meta.url);
   static override html = new URL('./sherpa-breadcrumbs.html', import.meta.url);
 
+  /** The trail, as populated. */
   #crumbs: Crumb[] = [];
 
   override onRender(): void {
@@ -50,6 +51,7 @@ export class SherpaBreadcrumbs extends SherpaElement {
     });
   }
 
+  /** A crumb was clicked: report which. */
   #onClick = (event: Event): void => {
     const row = (event.target as HTMLElement).closest<HTMLElement>('.crumb');
     const raw = row?.dataset['index'];

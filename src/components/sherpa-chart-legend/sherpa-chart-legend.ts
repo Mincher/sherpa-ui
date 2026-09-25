@@ -40,6 +40,7 @@ export class SherpaChartLegend extends SherpaElement {
     'data-readonly': { type: 'boolean', kind: 'style' },
   } as const;
 
+  /** The legend rows, as populated. */
   #items: LegendItem[] = [];
   /**
    * The rows toggled OFF, by LABEL. By label and not by index because a
@@ -55,9 +56,11 @@ export class SherpaChartLegend extends SherpaElement {
    * TRAP T-a-suspended-legend-row-keeps-its-place
    */
   #seen = new Map<string, LegendItem>();
+  /** Are the smallest rows rolled up into one "Other" row. */
   #rolledUp = false;
   /** Folded categories and the on-set, both keyed by SOURCE index. */
   #rolled: Array<{ index: number; item: LegendItem }> = [];
+  /** Which of the rolled-up rows are still on. */
   #rolledActive = new Set<number>();
 
   override onRender(): void {
@@ -158,6 +161,7 @@ export class SherpaChartLegend extends SherpaElement {
     ];
   }
 
+  /** Draw a row per item — swatch, label and value. */
   #render(): void {
     const list = this.$('.legend');
     const tpl = this.$<HTMLTemplateElement>('template.item-tpl');
@@ -269,6 +273,7 @@ export class SherpaChartLegend extends SherpaElement {
     }) as EventListener);
   }
 
+  /** A row was clicked: switch its series on or off. */
   #onClick = (event: Event): void => {
     // Guarded here, not only in CSS, so pointer and keyboard agree.
     if (this.hasAttribute('data-readonly')) return;

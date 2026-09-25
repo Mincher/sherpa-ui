@@ -38,6 +38,7 @@ export class SherpaSelectGroup extends SherpaElement {
     'disabled',
   ];
 
+  /** The options, as populated. */
   #options: SelectGroupOption[] = [];
   /** Only what populate() stamped, so a re-render spares slotted children. */
   #stamped: HTMLElement[] = [];
@@ -48,6 +49,7 @@ export class SherpaSelectGroup extends SherpaElement {
     return this.hasAttribute('data-multiple');
   }
 
+  /** Checkboxes when several may be picked, radios when one. */
   #childTag(): 'sherpa-select-checkbox' | 'sherpa-select-radio' {
     return this.#multiple ? 'sherpa-select-checkbox' : 'sherpa-select-radio';
   }
@@ -118,6 +120,7 @@ export class SherpaSelectGroup extends SherpaElement {
     }
   }
 
+  /** Carry `disabled` down to every option. */
   #syncDisabled(): void {
     const disabled = this.hasAttribute('disabled');
     for (const child of this.#children()) child.toggleAttribute('disabled', disabled);

@@ -27,6 +27,7 @@ export class SherpaBarchart extends SherpaElement {
 
   static override observed = ['data-max', 'data-ticks'];
 
+  /** The bars, as populated. */
   #data: BarDatum[] = [];
   /** Bars a chart legend has switched off. */
   #hidden = new Set<number>();
@@ -66,6 +67,7 @@ export class SherpaBarchart extends SherpaElement {
     this.#render();
   }
 
+  /** Draw the bars, the value axis and the category labels. */
   #render(): void {
     const bars = this.$('.bars');
     const tpl = this.$<HTMLTemplateElement>('template.bar-tpl');
@@ -158,6 +160,7 @@ export class SherpaBarchart extends SherpaElement {
     });
   }
 
+  /** A bar was clicked: report which. */
   #onClick = (event: Event): void => {
     const col = (event.target as HTMLElement).closest<HTMLElement>('.bar-col');
     const raw = col?.dataset['index'];

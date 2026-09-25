@@ -45,14 +45,17 @@ export class SherpaContainerHeader extends SherpaElement {
     toggle?.setAttribute('aria-label', collapsed ? 'Expand' : 'Collapse');
   }
 
+  /** The dismiss button. */
   #onDismiss = (): void => { this.emit('header-dismiss', {}); };
 
+  /** Collapse or expand, and report it. */
   #onToggle = (): void => {
     const collapsed = !this.hasAttribute('data-collapsed');
     this.toggleAttribute('data-collapsed', collapsed);
     this.emit('header-collapse', { collapsed });
   };
 
+  /** The drag handle was grabbed. */
   #onDrag = (): void => { this.emit('header-drag', {}); };
 }
 

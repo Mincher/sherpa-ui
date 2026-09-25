@@ -30,12 +30,14 @@ export class SherpaChatMessage extends SherpaElement {
     this.#sync();
   }
 
+  /** Write the author, the time and the message. */
   #sync(): void {
     this.#text('.author', this.dataset['name'] ?? this.dataset['author']);
     this.#text('.time', this.dataset['timestamp'] ?? this.dataset['time']);
     this.#text('.content', this.dataset['message'] ?? this.dataset['content']);
   }
 
+  /** Write text into one part, or empty it. */
   #text(sel: string, value: string | undefined): void {
     const el = this.$(sel);
     if (el) el.textContent = value ?? '';

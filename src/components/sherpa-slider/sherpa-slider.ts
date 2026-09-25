@@ -36,7 +36,9 @@ export class SherpaSlider extends SherpaElement {
   ];
 
   /** TRAP T-slider-second-thumb-is-revealed-not-built — the whole control in single mode, the LOW end in range. */
+  /** The range input — the only one, or the START of a range. */
   #input: HTMLInputElement | null = null;
+  /** A range's END input. */
   #endInput: HTMLInputElement | null = null;
   /** Editable number field — the HIGH end in range mode. */
   #valueField: HTMLInputElement | null = null;
@@ -131,6 +133,7 @@ export class SherpaSlider extends SherpaElement {
     return n > 0 ? n : 1;
   }
 
+  /** A value held inside min and max; anything unreadable is min. */
   #clamp(raw: number | string | undefined | null): number {
     const n = typeof raw === 'number' ? raw : coerceNum(raw, NaN);
     const value = Number.isFinite(n) ? n : this.#min;
@@ -204,11 +207,13 @@ export class SherpaSlider extends SherpaElement {
 
   /* ── Native → re-dispatched events ───────────────────────────────────── */
 
+  /** An input's value, clamped. */
   #readInput(el: HTMLInputElement | null = this.#input): number {
     const n = parseFloat(el?.value ?? '');
     return this.#clamp(Number.isFinite(n) ? n : this.#min);
   }
 
+  /** The thumb is moving: report `input`. */
   #onInput = (): void => {
     if (this.#isRange) return this.#setEnd('start', this.#readInput(), 'input');
     const value = this.#readInput();
@@ -216,6 +221,7 @@ export class SherpaSlider extends SherpaElement {
     this.emit('input', { value });
   };
 
+  /** The thumb was let go: report `change`. */
   #onChange = (): void => {
     if (this.#isRange) return this.#setEnd('start', this.#readInput(), 'change');
     const value = this.#readInput();
@@ -225,10 +231,12 @@ export class SherpaSlider extends SherpaElement {
 
   /* ── The second thumb — range mode only ──────────────────────────────── */
 
+  /** The END thumb is moving. */
   #onEndInput = (): void => {
     this.#setEnd('end', this.#readInput(this.#endInput), 'input');
   };
 
+  /** The END thumb was let go. */
   #onEndChange = (): void => {
     this.#setEnd('end', this.#readInput(this.#endInput), 'change');
   };
@@ -240,6 +248,7 @@ export class SherpaSlider extends SherpaElement {
     return raw === '' || raw === '-' || raw.endsWith('.');
   }
 
+  /** Typing in the value field — ignored until it reads as a number. */
   #onFieldInput = (): void => {
     const raw = this.#valueField?.value ?? '';
     if (this.#partial(raw)) return;
@@ -249,6 +258,7 @@ export class SherpaSlider extends SherpaElement {
     this.emit('input', { value });
   };
 
+  /** The value field was committed: clamp it and show the clamped value. */
   #onFieldChange = (): void => {
     if (this.#isRange) {
       this.#setEnd('end', this.#clamp(this.#valueField?.value ?? ''), 'change');
@@ -263,12 +273,14 @@ export class SherpaSlider extends SherpaElement {
 
   /* ── The start field — range mode only ───────────────────────────────── */
 
+  /** Typing in a range's START field. */
   #onStartFieldInput = (): void => {
     const raw = this.#startField?.value ?? '';
     if (this.#partial(raw)) return;
     this.#setEnd('start', this.#clamp(raw), 'input');
   };
 
+  /** A range's START field was committed. */
   #onStartFieldChange = (): void => {
     this.#setEnd('start', this.#clamp(this.#startField?.value ?? ''), 'change');
     if (this.#startField) this.#startField.value = String(this.range[0]);

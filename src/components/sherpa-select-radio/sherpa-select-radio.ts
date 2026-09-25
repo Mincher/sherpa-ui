@@ -14,6 +14,7 @@ export class SherpaSelectRadio extends SherpaElement {
 
   static override observed = ['checked', ...MIRRORED];
 
+  /** The native radio. */
   #control: HTMLInputElement | null = null;
 
   override onRender(): void {

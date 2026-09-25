@@ -33,6 +33,7 @@ export class SherpaSelectCard extends SherpaElement {
     'disabled',
   ];
 
+  /** The card face a click on anywhere toggles. */
   #card: HTMLElement | null = null;
 
   override onRender(): void {
@@ -90,6 +91,7 @@ export class SherpaSelectCard extends SherpaElement {
 
   /* ── Interaction ──────────────────────────────────────────────────── */
 
+  /** A click on the card toggles it — unless it landed on the control itself. */
   #onCardClick = (event: MouseEvent): void => {
     if (this.hasAttribute('disabled')) return;
     // The control's own change handles it; don't double-toggle from the card.
@@ -100,6 +102,7 @@ export class SherpaSelectCard extends SherpaElement {
     this.#toggle();
   };
 
+  /** Space and Enter toggle it, as they would a checkbox. */
   #onKeydown = (event: KeyboardEvent): void => {
     if (this.hasAttribute('disabled')) return;
     if (event.key === ' ' || event.key === 'Enter') {

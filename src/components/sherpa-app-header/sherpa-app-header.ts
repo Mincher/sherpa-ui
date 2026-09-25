@@ -131,6 +131,7 @@ export class SherpaAppHeader extends SherpaElement {
     this.#toolbar()?.available?.([...defs]);
   }
 
+  /** The filter bar in the header, if there is one. */
   #toolbar():
     | (HTMLElement & {
         values: Record<string, readonly string[]>;
@@ -150,6 +151,7 @@ export class SherpaAppHeader extends SherpaElement {
     await Promise.resolve(el.populate?.(data));
   }
 
+  /** Write the icon, the badge and the open state. */
   #sync(): void {
     this.#syncOpen();
     const icon = this.$('.context-icon');

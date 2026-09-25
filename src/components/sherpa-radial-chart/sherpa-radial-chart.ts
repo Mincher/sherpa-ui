@@ -31,7 +31,9 @@ export class SherpaRadialChart extends SherpaElement {
     'data-sweep-start', 'data-sweep', 'data-inner',
   ];
 
+  /** The slices, as populated. */
   #slices: RadialSlice[] = [];
+  /** Which slices a legend has switched off, by index. */
   #hidden = new Set<number>();
 
   override onRender(): void {
@@ -75,6 +77,7 @@ export class SherpaRadialChart extends SherpaElement {
 
   /* ── Render ─────────────────────────────────────────────────────── */
 
+  /** Draw the ring: one closed path per slice, and its hotspot. */
   #renderRing(): void {
     const group = this.$('.slices');
     const tpl = this.$<HTMLTemplateElement>('template.slice-tpl');
@@ -209,6 +212,7 @@ export class SherpaRadialChart extends SherpaElement {
     return formatValue(datumTotal(shown, { clamp: false }));
   }
 
+  /** A slice was clicked: report which. */
   #onClick = (event: Event): void => {
     const arc = (event.target as Element).closest('.slice');
     const raw = (arc as HTMLElement | null)?.dataset['index'];

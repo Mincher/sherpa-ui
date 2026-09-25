@@ -16,7 +16,9 @@ export class SherpaFileUpload extends SherpaElement {
 
   static override observed = ['data-label', 'data-helper', 'data-max-size', 'data-accept', 'data-multiple', 'disabled'];
 
+  /** The hidden native file input. */
   #input: HTMLInputElement | null = null;
+  /** The files picked so far. */
   #files: File[] = [];
   /** Drag-enter counter — survives dragenter/leave on nested children. */
   #dragDepth = 0;
@@ -57,6 +59,7 @@ export class SherpaFileUpload extends SherpaElement {
     if (allowed) allowed.textContent = this.dataset['accept'] ? `Allowed file types: ${this.dataset['accept']}` : '';
   }
 
+  /** Mirror `data-accept` and `data-multiple` onto the native input. */
   #syncInput(): void {
     const input = this.#input;
     if (!input) return;
@@ -67,10 +70,12 @@ export class SherpaFileUpload extends SherpaElement {
 
   /* ── Open / drag / drop ────────────────────────────────────────────── */
 
+  /** Open the native file picker. */
   #open = (): void => {
     if (!this.hasAttribute('disabled')) this.#input?.click();
   };
 
+  /** A drag entered: show the drop state. */
   #onDragEnter = (event: Event): void => {
     event.preventDefault();
     if (this.hasAttribute('disabled')) return;
@@ -78,12 +83,14 @@ export class SherpaFileUpload extends SherpaElement {
     this.toggleAttribute('data-dragover', true);
   };
 
+  /** Say a drop here copies. */
   #onDragOver = (event: Event): void => {
     event.preventDefault();
     const e = event as DragEvent;
     if (e.dataTransfer && !this.hasAttribute('disabled')) e.dataTransfer.dropEffect = 'copy';
   };
 
+  /** A drag left: drop the state once it has left every child. */
   #onDragLeave = (event: Event): void => {
     event.preventDefault();
     if (--this.#dragDepth <= 0) {
@@ -92,6 +99,7 @@ export class SherpaFileUpload extends SherpaElement {
     }
   };
 
+  /** Files dropped: add them. */
   #onDrop = (event: Event): void => {
     event.preventDefault();
     this.#dragDepth = 0;
@@ -100,6 +108,7 @@ export class SherpaFileUpload extends SherpaElement {
     this.#add(Array.from((event as DragEvent).dataTransfer?.files ?? []));
   };
 
+  /** Files picked: add them, and let the same file be picked again. */
   #onInputChange = (): void => {
     this.#add(Array.from(this.#input?.files ?? []));
     if (this.#input) this.#input.value = ''; // allow re-picking the same file
@@ -107,6 +116,7 @@ export class SherpaFileUpload extends SherpaElement {
 
   /* ── File list ─────────────────────────────────────────────────────── */
 
+  /** Add files — one replaces, unless several are allowed. */
   #add(incoming: File[]): void {
     if (!incoming.length) return;
     const added = this.hasAttribute('data-multiple') ? incoming : incoming.slice(0, 1);
@@ -126,6 +136,7 @@ export class SherpaFileUpload extends SherpaElement {
     this.toggleAttribute('data-has-files', this.#files.length > 0);
   }
 
+  /** A file's remove button. */
   #onListClick = (event: Event): void => {
     // pathFind, not target.closest: a composed sherpa-button retargets its
     // event to the host, so the path is the honest place to look.
@@ -141,6 +152,7 @@ export class SherpaFileUpload extends SherpaElement {
     this.emit('files-change', { files: this.#files });
   };
 
+  /** Remove every file. */
   #onClearAll = (): void => {
     if (this.hasAttribute('disabled') || !this.#files.length) return;
     this.#files = [];
@@ -149,6 +161,7 @@ export class SherpaFileUpload extends SherpaElement {
     this.emit('files-change', { files: this.#files });
   };
 
+  /** Ask the host to upload the files. */
   #onUpload = (): void => {
     if (this.hasAttribute('disabled') || this.hasAttribute('data-loading') || !this.#files.length) return;
     this.emit('file-upload-start', { files: this.#files });
@@ -163,6 +176,7 @@ export class SherpaFileUpload extends SherpaElement {
     if (el) el.textContent = status;
   }
 
+  /** A byte count as B, KB or MB. */
   #formatSize(bytes: number): string {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;

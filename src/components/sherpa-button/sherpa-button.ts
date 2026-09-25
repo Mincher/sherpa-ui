@@ -89,6 +89,7 @@ export class SherpaButton extends SherpaElement {
     if (end) this.writeIcon(end, this.dataset['iconEnd'] ?? '');
   }
 
+  /** Carry `disabled` to the inner button, and say it to assistive tech. */
   #syncDisabled(): void {
     const disabled = this.hasAttribute('disabled');
     this.$<HTMLButtonElement>('.trigger')?.toggleAttribute('disabled', disabled);

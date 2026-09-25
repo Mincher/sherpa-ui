@@ -45,6 +45,7 @@ export class SherpaProgressBar extends SherpaElement {
 
   /* ── Private ─────────────────────────────────────────────────────────── */
 
+  /** The native progress element. */
   #bar(): HTMLProgressElement | null {
     return this.$<HTMLProgressElement>('.bar');
   }

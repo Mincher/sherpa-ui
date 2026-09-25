@@ -45,7 +45,9 @@ export class SherpaNavItem extends SherpaElement {
   /** `data-type` picks the tree, so a change to it must re-stamp. */
   static override variantAttrs = ['data-type'];
 
+  /** The name of the search highlight this row registered. */
   #highlightName: string | null = null;
+  /** Has the highlight style been added to the shadow root. */
   #highlightStyled = false;
 
   protected override get templateId(): string {
@@ -170,6 +172,7 @@ export class SherpaNavItem extends SherpaElement {
     this.#ensureHighlightStyle(name);
   }
 
+  /** Remove this row's search highlight. */
   #clearHighlight(): void {
     if (!this.#highlightName) return;
     (CSS as unknown as { highlights?: Map<string, Highlight> }).highlights?.delete(this.#highlightName);
@@ -193,6 +196,7 @@ export class SherpaNavItem extends SherpaElement {
     this.#clearHighlight();
   }
 
+  /** Report a click on a destination row. */
   #activate(): void {
     if (this.hasAttribute('disabled')) return;
     this.emit('item-click', {
@@ -201,6 +205,7 @@ export class SherpaNavItem extends SherpaElement {
     });
   }
 
+  /** Open or close an Area, and report it. */
   #toggleExpand(): void {
     if (this.hasAttribute('disabled')) return;
     const expanded = !this.hasAttribute('data-expanded');
@@ -208,6 +213,7 @@ export class SherpaNavItem extends SherpaElement {
     this.emit('item-expand', { expanded });
   }
 
+  /** An Area toggles; any other row navigates. */
   #onClick = (event: MouseEvent): void => {
     /* AN EXPANDABLE ROW IS NOT A DESTINATION. The whole row toggles, not just
        the chevron: an Area groups its children, and the Contexts are the children.

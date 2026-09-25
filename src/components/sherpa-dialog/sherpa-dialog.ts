@@ -17,6 +17,7 @@ export class SherpaDialog extends SherpaElement {
 
   static override observed = ['open'];
 
+  /** The native dialog. */
   #dialog(): HTMLDialogElement | null {
     return this.$<HTMLDialogElement>('.root');
   }
@@ -62,6 +63,7 @@ export class SherpaDialog extends SherpaElement {
     if (dialog && !dialog.open) this.#showDialog(dialog);
   }
 
+  /** Open it modal, or as a plain dialog. */
   #showDialog(dialog: HTMLDialogElement): void {
     if (this.#modal) {
       dialog.showModal();
@@ -89,12 +91,14 @@ export class SherpaDialog extends SherpaElement {
     this.hide();
   }
 
+  /** Escape closes a non-modal dialog; a modal one closes itself. */
   #onKeydown = (event: KeyboardEvent): void => {
     if (event.key !== 'Escape' || this.#modal || !this.open) return;
     event.preventDefault();
     this.hide();
   };
 
+  /** The dialog closed, however it closed: say so. */
   #onClose = (): void => {
     this.toggleAttribute('open', false);
     this.emit('close', {});

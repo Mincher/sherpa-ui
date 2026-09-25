@@ -44,6 +44,7 @@ export class SherpaGridCell extends SherpaElement {
     this.emit('sort-change', { field: this.dataset['field'] ?? '', direction: next });
   };
 
+  /** The cell's menu button — it must not sort or select the row. */
   #onMenu = (event: Event): void => {
     event.stopPropagation();
     this.emit('menu-open', {});

@@ -50,6 +50,7 @@ export class SherpaAppShell extends SherpaElement {
     sync();
   }
 
+  /** Watches each side panel slot, to say whether it holds anything. */
   #panelWatch: { start?: MutationObserver; end?: MutationObserver } = {};
 
   override onDisconnect(): void {
@@ -57,6 +58,7 @@ export class SherpaAppShell extends SherpaElement {
     this.#panelWatch.end?.disconnect();
   }
 
+  /** The nav changed state: mirror it, so the content can make room. */
   #onNavState = (event: Event): void => {
     if (this.hasAttribute('data-no-nav')) return;
     const state = (event as CustomEvent).detail?.state as string | undefined;

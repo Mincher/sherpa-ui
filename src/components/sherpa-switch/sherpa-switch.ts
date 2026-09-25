@@ -17,6 +17,7 @@ export class SherpaSwitch extends SherpaElement {
     'data-type',
   ];
 
+  /** The native checkbox the switch wraps. */
   #input(): HTMLInputElement | null {
     return this.$<HTMLInputElement>('.input');
   }
@@ -61,6 +62,7 @@ export class SherpaSwitch extends SherpaElement {
     input.disabled = this.hasAttribute('disabled');
   }
 
+  /** Mirror the checkbox onto `checked` and report it. */
   #onChange = (): void => {
     const checked = this.#input()?.checked ?? false;
     this.toggleAttribute('checked', checked);

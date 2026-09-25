@@ -25,6 +25,7 @@ export class SherpaSelectCheckbox extends SherpaElement {
     ...MIRRORED,
   ];
 
+  /** The native checkbox. */
   #control: HTMLInputElement | null = null;
 
   override onRender(): void {

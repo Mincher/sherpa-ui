@@ -27,6 +27,7 @@ export class SherpaList extends SherpaElement {
 
   static override observed = ['data-empty'];
 
+  /** The rows, as populated. */
   #rows: ListRow[] = [];
 
   override onRender(): void {
@@ -56,6 +57,7 @@ export class SherpaList extends SherpaElement {
     this.#render();
   }
 
+  /** Stamp the rows, keeping any slotted content. */
   #render(): void {
     // `own-children` — a blanket clear would take the <slot> with it.
     this.renderItems('.body', 'template.row-tpl', this.#rows, {

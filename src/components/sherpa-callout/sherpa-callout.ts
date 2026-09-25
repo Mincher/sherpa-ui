@@ -29,6 +29,7 @@ export class SherpaCallout extends SherpaElement {
     this.remove();
   }
 
+  /** The dismiss button. */
   #onDismiss = (event: Event): void => {
     event.stopPropagation();
     this.dismiss();
