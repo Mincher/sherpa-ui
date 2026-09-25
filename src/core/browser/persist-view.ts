@@ -26,7 +26,7 @@ import type { DataSource, ViewState } from '../data/data-source.js';
 import { applyState } from '../ui/apply-state.js';
 import { parseViewMarkup } from './view-markup.js';
 import {
-  isPlainObject, readJson, removeKey, writeJson, type StorageKind,
+  isPlainObject, labelId, readJson, removeKey, writeJson, type StorageKind,
 } from './web-storage.js';
 
 export interface PersistOptions {
@@ -408,7 +408,7 @@ export function saveViewAs(
   if (!trimmed) return loadSavedViews(page, options);
 
   const views = loadSavedViews(page, options);
-  views[viewId(trimmed)] = {
+  views[labelId(trimmed)] = {
     label: trimmed,
     snapshot: captureView(targets, reads),
     // TRAP T-view-content-is-a-view-definition — a built screen is remembered.
@@ -430,15 +430,6 @@ export function deleteSavedView(
   const kept = Object.fromEntries(Object.entries(views).filter(([key]) => key !== id));
   writeSavedViews(page, kept, options);
   return kept;
-}
-
-/**
- * A stable id from a label — lowercase, words joined by a hyphen.
- * TRAP T-derived-id-makes-resave-an-update — and the pure-punctuation fallback.
- */
-function viewId(label: string): string {
-  const slug = label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  return slug || label;
 }
 
 function writeSavedViews(

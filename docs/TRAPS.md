@@ -1210,6 +1210,7 @@ guard rejected did the same; a value the guard accepted was kept.
 
 - Site: `src/core/browser/web-storage.ts`
 - Site: `src/core/browser/persist-view.ts`
+- Site: `src/core/browser/saved-filters.ts`
 - Site: `src/core/browser/session.ts`
 - Site: `src/core/browser/idb-store.ts`
 - Site: `src/core/data/stores.ts`
@@ -1429,6 +1430,8 @@ that can carry a prototype key through — and this object came from storage, wh
 a person can edit (`T-storage-access-throws`).
 
 - Site: `src/core/browser/persist-view.ts`
+- Site: `src/core/browser/web-storage.ts`
+- Site: `src/core/browser/saved-filters.ts`
 
 ### T-store-is-stateless
 
@@ -11612,8 +11615,33 @@ ON ones itself, so a preset was a chip in one file and a query in another.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 - Site: `src/core/data/data-source.ts`
 - Site: `examples/contexts/records.js`
+- Site: `src/core/browser/saved-filters.ts`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 - Site: `test/unit/a-saved-filter-is-its-readings.test.mjs`
+
+### T-a-saved-filter-lives-with-its-data
+
+**A saved custom filter is kept per DATA, not per page.** Will, 2026-09-25:
+*"These saved custom filter configurations won't be able to transcend data
+sources/stores."* Its readings name fields, and other records may not have them.
+
+So `saveFilterAs(data, label, readings)` takes the NAME of the records it
+filters — the store, not the page — and every page over those records sees the
+same set, while a page over other records sees none. Otherwise it is the
+saved-view door: localStorage by default so every tab shares it, a
+`sherpa:filters:` prefix, and the whole set handed back from every write.
+
+**The same name saves over the old one** (`T-derived-id-makes-resave-an-update`)
+— which is how Edit, then Save, updates a filter rather than making a second.
+The id rule is `labelId()` in `web-storage.ts`, shared with saved views; a
+second copy of it was the first step to two ids for one name.
+
+**A broken entry is DROPPED on read**, one at a time: a set is trusted in shape
+and never in content, and a bar handed `{ label: 3 }` would draw a chip with no
+answer.
+
+- Site: `src/core/browser/saved-filters.ts`
+- Site: `test/e2e/reforged-saved-filter.spec.ts`
 
 ### T-a-held-clause-op-is-not-a-reading-op
 

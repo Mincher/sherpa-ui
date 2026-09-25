@@ -111,6 +111,11 @@ export {
   type SavedView, type ViewLibrary, type ViewOption, type ViewPick,
   type SavedViewStore,
 } from './core/browser/persist-view.js';
+// A data source's saved custom filters — kept per DATA, not per page.
+export {
+  loadSavedFilters, saveFilterAs, deleteSavedFilter,
+  type SavedFilter, type SavedFilterSet, type SavedFilterOptions,
+} from './core/browser/saved-filters.js';
 export {
   EventStore,
   SocketStore,

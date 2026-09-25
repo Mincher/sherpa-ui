@@ -19,6 +19,7 @@
  * - readJson — Read JSON, and FORGET the key when it cannot be understood.
  * - writeJson — write a value as JSON, without throwing when storage is blocked
  * - isPlainObject — A plain object, which is all a stored shape can be trusted to be.
+ * - labelId — a stable id from a label — words joined by a hyphen
  */
 
 /** `local` outlives the tab; `session` dies with it. */
@@ -104,4 +105,13 @@ export function writeJson(kind: StorageKind, key: string, value: unknown): void 
 /** A plain object, which is all a stored shape can be trusted to be. */
 export function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * A stable id from a label — lowercase, words joined by a hyphen.
+ * TRAP T-derived-id-makes-resave-an-update — and the pure-punctuation fallback.
+ */
+export function labelId(label: string): string {
+  const slug = label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return slug || label;
 }
