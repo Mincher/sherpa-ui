@@ -1685,6 +1685,31 @@ LIVES is the open question — the same tier question the saved views answered
 3. Whether §16.3 clears the fields it was built from. That one is a product
    decision, not an implementation one.
 
+### 16.6 The plan — 2026-09-25
+
+Will: *"A"* — build §16 — and *"Pack / unpack"* for Save and Edit. That
+settles §16.5.3: **Save moves the answered fields into ONE chip, which comes
+on, and the fields clear. Edit moves the chip's answer back into its fields,
+and the chip goes off.** Nothing filters twice, and no new editor is needed.
+
+**One shape.** A saved custom filter is DATA — a name and the READINGS it
+applies, field by field: `{ label, readings: { health: { op: 'lt', text: '60' } } }`.
+Readings, not a clause, because readings are what the fields held, so Edit can
+put them back; a clause cannot be re-opened. It applies as ONE named part —
+`source.apply(readings, { reach: 'component', key })` already does that.
+
+**A preset is one**, shipped by the app — as `RECORDS_VIEWS` ships Views. Same
+code path, so a preset and a reader's own filter cannot drift apart.
+
+| step | what |
+|---|---|
+| 1 | **A chip carries its answer.** A def with `readings` is a toggle whose kind is `custom`: it wears `fx`, and info-blue when on. The bar reports the ON ones, and a bound source applies each as a named part. The app's `TOGGLES` map and `pushChips` go — the three presets become data |
+| 2 | **Where they live.** `saveFilterAs` / `loadSavedFilters` / `deleteSavedFilter`: one set per DATA SOURCE, in localStorage — the saved-view door, keyed by source, not by page |
+| 3 | **Save = pack.** "Save as filter" on a chip that holds a Custom Condition, and on the bar for every answered field. The bar asks (`filter-save`); the host names and stores it and hands it back; the bar adds the chip ON and CLEARS the fields it came from |
+| 4 | **The Custom section.** Saved filters not on the bar are offered at the bottom of the Add menu, under a "Custom" heading. The menu grows section rows |
+| 5 | **Edit = unpack, and Delete.** A reader's own chip opens Edit filter and Delete filter. Edit puts its readings back into their fields, adding a field's chip if it is not on the bar, and switches the saved chip OFF. Saving under the same name again updates it. An app preset has no Edit — it is the app's |
+| 6 | **The panel.** Its Presets section wears the same `fx`, and a whole scope saves as one chip |
+
 ---
 
 ## 17. Merge More and Add filter — to explore

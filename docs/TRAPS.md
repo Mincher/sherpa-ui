@@ -11581,6 +11581,40 @@ no alias. TRAP T-external-chips-are-reported-separately
 - Site: `test/e2e/reforged-external-filter.spec.ts`
 - Site: `test/unit/the-def-speaks-the-new-words.test.mjs`
 
+### T-a-saved-filter-is-its-readings
+
+**A saved custom filter is a name and its READINGS, field by field — never a
+clause.** Will, 2026-09-25: presets *"are actually compound conditional filters
+that (potentially) use more than 1 field and those fields values"*, and a
+reader must be able to save and edit their own.
+
+Readings, because readings are what the fields HELD. Edit puts them back into
+those fields (§16.6, pack / unpack); a clause cannot be re-opened in any UI. So
+`{ health: { op: 'lt', text: '60' } }`, not `['health', 'lt', 60]` — and the
+data layer compiles it, with the field's type, as it compiles every reading.
+
+**It applies as ONE named part.** A def with `readings` is a toggle of kind
+`custom`. The bar reports every ON one in `savedReadings`, by chip id, and a
+bound source applies each with `apply(readings, { reach: 'component', key:
+'saved:<id>' })` — so two saved filters AND, one over two fields is one part,
+and one switched off takes its part with it (`bind.saved`).
+
+**The chip draws it.** A `custom` chip with no FILTER menu holds a given answer
+(`#given()`), so it reads as `data-condition="custom"` and wears `fx` from
+the start, and the info-blue when on. It has no field menu to derive either from.
+
+Before this the page held a `TOGGLES` map of id → clause and contributed the
+ON ones itself, so a preset was a chip in one file and a query in another.
+
+- Site: `src/core/ui/filter-kind.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
+- Site: `src/core/data/data-source.ts`
+- Site: `examples/contexts/records.js`
+- Site: `test/e2e/reforged-saved-filter.spec.ts`
+- Site: `test/unit/a-saved-filter-is-its-readings.test.mjs`
+
 ### T-a-held-clause-op-is-not-a-reading-op
 
 **The grid held a CLAUSE op, and handed it to the data layer as a READING op.**
@@ -12081,6 +12115,9 @@ Each ON toggle contributes its own clause, ANDed with the rest, so two toggles
 NARROW. The old status set ORed instead, because four values of one field
 cannot all be true at once — which is another sign they were a menu wearing
 toggles.
+
+Since 2026-09-25 each is a saved custom filter that carries its own answer, and
+the page holds no clause for it. TRAP T-a-saved-filter-is-its-readings
 
 - Site: `examples/contexts/records.js`
 

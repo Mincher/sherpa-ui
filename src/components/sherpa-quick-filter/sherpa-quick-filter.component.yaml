@@ -176,8 +176,12 @@ props:
     observed: false
     kind: style
     description: >-
-      WHAT THIS CHIP IS: group | sort. Both ARRANGE rows rather than choosing them, so they have no
-      values to be empty of, and both own their gesture — group toggles, sort cycles
+      WHAT THIS CHIP IS: group | sort | custom. Group and sort ARRANGE rows rather than choosing
+      them, so they have no values to be empty of, and both own their gesture — group toggles, sort
+      cycles asc / desc / off — and report it themselves. "Organise" is not a kind; it is a heading
+      a panel may draw above the two. TRAP T-a-chip-knows-what-kind-it-is `custom` with no filter
+      menu is a SAVED filter: its answer is given, so the chip is a toggle that reads as custom.
+      TRAP T-a-saved-filter-is-its-readings
   - $type: prop
     name: data-label
     type: string

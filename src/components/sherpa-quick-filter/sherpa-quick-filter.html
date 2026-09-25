@@ -50,12 +50,16 @@
                     definition's `persistent` flag. The view chip is the case —
                     you are always in SOME view, so the amber "on but filtering
                     by nothing" state is one it cannot be in.
-    data-kind       WHAT THIS CHIP IS: group | sort. Both ARRANGE rows rather
-                    than choosing them, so they have no values to be empty of,
-                    and both own their gesture — group toggles, sort cycles
-                    asc / desc / off — and report it themselves. "Organise" is
-                    not a kind; it is a heading a panel may draw above the two.
+    data-kind       WHAT THIS CHIP IS: group | sort | custom. Group and sort
+                    ARRANGE rows rather than choosing them, so they have no
+                    values to be empty of, and both own their gesture — group
+                    toggles, sort cycles asc / desc / off — and report it
+                    themselves. "Organise" is not a kind; it is a heading a
+                    panel may draw above the two.
                     TRAP T-a-chip-knows-what-kind-it-is
+                    `custom` with no filter menu is a SAVED filter: its answer
+                    is given, so the chip is a toggle that reads as custom.
+                    TRAP T-a-saved-filter-is-its-readings
     data-column     which column a group or sort chip arranges by, for a host
                     that draws the choice without a menu. A menu, where there is
                     one, is the answer.

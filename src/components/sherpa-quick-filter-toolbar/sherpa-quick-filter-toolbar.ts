@@ -99,6 +99,10 @@ export interface QuickFilterDef extends OffersCustom {
   /** What the ADD menu shows beside it — where it lives now, if somewhere else.
    *  The host's to say: this bar cannot see another scope. */
   note?: string;
+  /** A SAVED custom filter: its answer, given field by field. The chip is a
+   *  toggle, and a bound source applies it as one part.
+   *  TRAP T-a-saved-filter-is-its-readings */
+  readings?: Record<string, FieldReading>;
 }
 
 interface ChipEl extends HTMLElement {
@@ -790,7 +794,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
          TRAP T-a-condition-only-field-still-has-a-menu
          TRAP T-a-chip-knows-what-kind-it-is */
       const kind = kindOf(f);
-      if (kind !== 'boolean' || customOf(f)) this.#addMenu(chip, f, prior?.picked);
+      /* A SAVED filter's answer is given, so it has no field menu: it is a
+         toggle, told what it is. TRAP T-a-saved-filter-is-its-readings */
+      if (f.readings) chip.dataset['kind'] = kind;
+      else if (kind !== 'boolean' || customOf(f)) this.#addMenu(chip, f, prior?.picked);
       const phrase = f.externalValue ?? f.customValue;
       if (phrase) {
         // `data-external` makes it findable: it is in neither `active` nor `values`.
@@ -1238,6 +1245,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const op = (menu.dataset['op'] ?? DEFAULT_OP) as FilterOp;
     if ((OP_TAKES[op] ?? 'list') !== 'text') return false;
     return (menu.conditionValue ?? '').trim() !== '';
+  }
+
+  /**
+   * Every ON saved filter's readings, by chip id — what a bound source applies,
+   * one named part each. TRAP T-a-saved-filter-is-its-readings
+   */
+  get savedReadings(): Record<string, Record<string, FieldReading>> {
+    const on = new Set(this.#chips().filter((c) => c.current).map((c) => c.dataset['id']));
+    const out: Record<string, Record<string, FieldReading>> = {};
+    for (const f of this.#filters) if (f.readings && on.has(f.id)) out[f.id] = f.readings;
+    return out;
   }
 
   /**

@@ -11,7 +11,7 @@ import {
 import {
   fieldState, type FieldCondition, type FilterState,
 } from '../../core/data/filter-state.js';
-import { filterFace, type FilterFace } from '../../core/data/filter-face.js';
+import { CONDITION_BADGE, filterFace, type FilterFace } from '../../core/data/filter-face.js';
 import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
 import { arranges, FILTER_KINDS, type FilterKind } from '../../core/ui/filter-kind.js';
 import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
@@ -501,13 +501,15 @@ export class SherpaQuickFilter extends SherpaElement {
     }
     const menu = this.menu;
     const state = this.#state((menu?.values ?? []) as string[]);
-    const custom = state.condition === 'custom';
+    const custom = this.#given() || state.condition === 'custom';
     this.#syncCondition(state);
     /* …and the BADGE from the same state, at the same moment. It was drawn only
        once a reader touched the chip, so one answered by a typed condition from
        the start wore its blue and not its fx. ONLY with a menu to read: on a
        chip without one, `data-count` is the host's to set. */
-    if (menu) this.#syncBadge(filterFace(state));
+    if (this.#given()) {
+      this.#syncBadge({ ...filterFace(state), badge: CONDITION_BADGE, condition: 'Custom condition', count: 0 });
+    } else if (menu) this.#syncBadge(filterFace(state));
 
     /* A TYPED condition is an answer, so a chip holding one is not empty —
        "Contains Ravi" filters, and painting it as "filtering nothing" is a
@@ -538,8 +540,15 @@ export class SherpaQuickFilter extends SherpaElement {
    */
   #syncCondition(state: FilterState): void {
     if (!this.#answersForItself()) return;
-    if (state.condition) this.dataset['condition'] = state.condition;
+    const condition = this.#given() ? 'custom' : state.condition;
+    if (condition) this.dataset['condition'] = condition;
     else this.removeAttribute('data-condition');
+  }
+
+  /** A CUSTOM chip with no filter menu holds a GIVEN answer — a saved filter.
+   *  TRAP T-a-saved-filter-is-its-readings */
+  #given(): boolean {
+    return this.dataset['kind'] === 'custom' && this.menu?.getAttribute('data-type') !== 'filter';
   }
 
   /** Drop a warning the menu answers once it has stamped. Never raises one. */

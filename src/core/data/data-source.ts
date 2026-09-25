@@ -177,6 +177,8 @@ export class DataSource extends EventTarget {
       /** The fields this component answered LAST time it reported.
        *  TRAP T-a-filter-report-is-the-whole-answer */
       answered?: Set<string>;
+      /** The saved-filter parts it applied last time. TRAP T-a-saved-filter-is-its-readings */
+      saved?: Set<string>;
     }
   >();
   /** The last load's answer: the rows, and the total before paging. */
@@ -991,6 +993,7 @@ export class DataSource extends EventTarget {
            TRAP T-one-query-builder-in-the-data-layer */
         const bar = event.currentTarget as EventTarget & {
           readings?: Record<string, FieldReading>;
+          savedReadings?: Record<string, Record<string, FieldReading>>;
         } | null;
         const readings = bar?.readings ?? readingsOf(detail['values']);
         /* A REPORT IS THE WHOLE ANSWER. A field this control answered before
@@ -1003,6 +1006,16 @@ export class DataSource extends EventTarget {
         }
         if (bind) bind.answered = new Set(Object.keys(readings));
         this.apply(readings);
+        /* SAVED FILTERS: one named part each, over any fields — and one switched
+           off or taken away takes its part with it.
+           TRAP T-a-saved-filter-is-its-readings */
+        const saved = bar?.savedReadings ?? {};
+        const parts = new Set(Object.keys(saved).map((id) => `saved:${id}`));
+        for (const key of bind?.saved ?? []) if (!parts.has(key)) this.contribute(key, undefined);
+        for (const [id, given] of Object.entries(saved)) {
+          this.apply(given, { reach: 'component', key: `saved:${id}` });
+        }
+        if (bind) bind.saved = parts;
         return;
       }
       case 'filter-change': {

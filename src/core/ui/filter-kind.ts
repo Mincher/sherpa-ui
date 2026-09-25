@@ -46,6 +46,8 @@ export interface KindSource extends OffersCustom {
   kind?: string;
   select?: 'single' | 'multiple';
   options?: readonly unknown[];
+  /** A SAVED custom filter's answer, given field by field. TRAP T-a-saved-filter-is-its-readings */
+  readings?: Readonly<Record<string, unknown>>;
 }
 
 const KNOWN = new Set<string>(FILTER_KINDS);
@@ -68,6 +70,8 @@ export function kindOf(def: KindSource): FilterKind {
   if (named && KNOWN.has(named)) return named as FilterKind;
   // `group` and `sort` are named for their job; their id IS the kind.
   if (def.id === 'group' || def.id === 'sort') return def.id;
+  // Its answer is GIVEN, over any fields: a saved Custom Condition Filter.
+  if (def.readings) return 'custom';
   // No list to tick and no list behind the rows: the condition IS the answer.
   if (customOf(def) === 'only') return 'custom';
   // Nothing to pick from is a question with a yes/no answer.

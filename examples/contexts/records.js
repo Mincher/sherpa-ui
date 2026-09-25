@@ -51,20 +51,6 @@ export async function init(root, { session } = {}) {
     source.declareField(field, { type: 'number' });
   }
 
-  /* TOGGLE chips are a whole CLAUSE the reader flips on or off — a question
-     with a yes/no answer, not a value of some field. They arrive in `active`,
-     separately from the menu chips' `values`.
-
-     Deliberately over fields NO menu chip covers. Four status toggles used to
-     sit beside the Status and Plan menus, so one field had two controls on one
-     bar and the reader had to guess which was in force.
-     TRAP T-a-toggle-is-a-clause-not-a-value */
-  const TOGGLES = {
-    'has-tickets': ['openTickets', 'gt', 0],
-    'at-risk': ['health', 'lt', 60],
-    unassigned: ['owner', 'eq', 'Unassigned'],
-  };
-
   /* One clause per filtered column heading. The grid reports a ready
      FilterClause and lights the column but does not narrow its own rows —
      combining them is this Context's job. Kept by field, so a second condition on
@@ -190,14 +176,19 @@ export async function init(root, { session } = {}) {
      PANEL draws it as a column. A second copy would drift the first time
      either changed. TRAP T-the-panel-is-the-toolbar-in-a-column */
   const DATA_FILTERS = [
-    /* Three TOGGLES, each a question the data answers yes or no, and none of
-       them a field a menu chip below also filters.
-       TRAP T-a-toggle-is-a-clause-not-a-value */
+    /* Three PRESETS — saved custom filters the app ships. Each carries its
+       answer, field by field, and the bound source applies it: none is a
+       field a menu chip below also filters.
+       TRAP T-a-toggle-is-a-clause-not-a-value
+       TRAP T-a-saved-filter-is-its-readings */
     /* "Has open tickets", not "Open tickets": the number FIELD carries that
        name, and the two now sit in one add/remove list. */
-    { id: 'has-tickets', label: 'Has open tickets', type: 'data', removable: true },
-    { id: 'at-risk',     label: 'At risk',      type: 'data', removable: true },
-    { id: 'unassigned',  label: 'Unassigned',   type: 'data', removable: true },
+    { id: 'has-tickets', label: 'Has open tickets', type: 'data', removable: true,
+      readings: { openTickets: { op: 'gt', text: '0' } } },
+    { id: 'at-risk', label: 'At risk', type: 'data', removable: true,
+      readings: { health: { op: 'lt', text: '60' } } },
+    { id: 'unassigned', label: 'Unassigned', type: 'data', removable: true,
+      readings: { owner: { op: 'eq', picked: ['Unassigned'] } } },
     /* The STATUS legend's menu. A multi-select over the same field the bar
        chart splits on, so unticking a value and dimming its legend row are the
        same gesture. Not the four toggles above: those are one-tap presets, and
@@ -736,22 +727,12 @@ export async function init(root, { session } = {}) {
     grid.setColumnFilter(field, stateClause(state) ?? null);
   }, { signal });
 
-  /* ONLY the toggles. A toggle is a whole clause a reader flips, with no single
-     field behind it, so it cannot go through `apply()`. Every FIELD chip does —
-     letting one ride here too would AND two clauses over one field, and
-     `eq Pro` AND `eq Free` matches nothing. */
-  const pushChips = () => {
-    const clauses = (qft.active ?? []).map((id) => TOGGLES[id]).filter(Boolean);
-    source.contribute('chips', andFilter(clauses));
-  };
-
-  /* NO `ignore` for `quick-filter-change`: the bound source now asks the bar
-     for its `readings` and applies them itself, which is the whole point of
-     one query builder. This page only adds what the bar cannot say — the
-     toggles, which name no field. TRAP T-one-query-builder-in-the-data-layer */
+  /* NO `ignore` for `quick-filter-change`: the bound source asks the bar for
+     its `readings` — and its presets' `savedReadings` — and applies them
+     itself, which is the whole point of one query builder.
+     TRAP T-one-query-builder-in-the-data-layer */
   source.bind(qft, { steerOnly: true, signal });
   qft.addEventListener('quick-filter-change', (e) => {
-    pushChips();
     /* An external chip's body is a TOGGLE: off means "stop applying this", not
        "delete it" — only REMOVE deletes. So this suspends and restores the
        clause and never touches the chip. An external chip shows in neither
@@ -892,8 +873,6 @@ export async function init(root, { session } = {}) {
     /* The App Header owns these fields now, and the chips below say so rather
        than going quietly grey. TRAP T-an-inactive-chip-says-where-its-filter-went */
     qft.supersede(raised, SCOPE_LABELS[VIEW_SCOPE]);
-    // The bar's own filters changed shape, so re-read them.
-    pushChips();
     // The header's Add notes say where each field lives — which just changed.
     header?.available(addable(VIEW_SCOPE, viewHeld()));
   };
