@@ -345,6 +345,14 @@ props:
     kind: style
     description: show a "Remove" button in the footer (after Today); it emits menu-select with value="remove"
   - $type: prop
+    name: data-saveable
+    type: string
+    observed: false
+    kind: style
+    description: >-
+      show a "Save filter" button in the footer; it emits menu-select with value="save". TRAP
+      T-save-packs-the-fields-into-one-chip
+  - $type: prop
     name: data-search
     type: string
     observed: true
@@ -426,6 +434,9 @@ states:
   - $type: state
     name: removable
     selector: ":host([data-removable])"
+  - $type: state
+    name: saveable
+    selector: ":host([data-saveable])"
   - $type: state
     name: calendar
     selector: ":host([data-type=\"calendar\"])"

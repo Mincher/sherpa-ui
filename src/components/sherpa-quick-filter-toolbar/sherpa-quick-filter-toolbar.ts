@@ -23,9 +23,10 @@ import {
   type Filter, type FilterOp,
 } from '../../core/data/store.js';
 import {
-  fieldState, stateClause,
+  fieldState, savedReading, stateClause,
   type FieldCondition, type FieldReading, type FilterState,
 } from '../../core/data/filter-state.js';
+import type { SavedFilter } from '../../core/browser/saved-filters.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-button/sherpa-button.js';
@@ -155,6 +156,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    *  paint the star. TRAP T-the-star-reports-it-does-not-decide */
   static override observed = [
     'data-sort-field', 'data-sort-direction', 'data-group-field', 'data-favourite',
+    // The host saves filters. TRAP T-save-packs-the-fields-into-one-chip
+    'data-saveable',
   ];
 
   /** The filter defs this bar holds, in order. */
@@ -831,6 +834,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        deferred, so a host calling `available()` first had nothing to tick.
        TRAP T-the-add-menu-is-the-whole-list */
     this.#renderAvailable();
+    // "Save filter" follows what the rebuilt menus answer, once they have drawn.
+    void this.#settled().then(() => { if (this.isConnected) this.#syncSaveable(); });
 
     // A ResizeObserver fires only on a SIZE change; populating is not one, and
     // what fits just changed.
@@ -1005,7 +1010,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** A "Remove" row. `menu-select` is for ACTION rows; value rows commit via `menu-change`. */
   #onMenuSelect = (event: Event): void => {
-    if ((event as CustomEvent).detail?.value !== 'remove') return;
+    const value = (event as CustomEvent).detail?.value;
+    if (value === 'save') {
+      event.stopImmediatePropagation();
+      const fromAdd = !!this.pathFind(event, '.add-btn');
+      this.#requestSave(this.pathFind(event, 'sherpa-quick-filter'), fromAdd);
+      return;
+    }
+    if (value !== 'remove') return;
     // TRAP T-remove-matches-the-tag-not-the-class — the PATH, and the TAG.
     const chip = this.pathFind(event, 'sherpa-quick-filter');
     const id = chip?.dataset['id'];
@@ -1046,6 +1058,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#syncArrangement('group');
     this.#syncArrangement('sort');
     this.#syncFavouriteFromAttr();
+    this.#syncSaveable();
   }
 
   /**
@@ -1104,6 +1117,86 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // that offers no conditions never sees this and reads `values` as before.
       clauses: this.clauses,
     });
+    this.#syncSaveable();
+  }
+
+  /**
+   * "Save filter" where there is something to save, and only if the host saves:
+   * a chip holding a Custom Condition, and the Add menu once any field is on.
+   * TRAP T-save-packs-the-fields-into-one-chip
+   */
+  #syncSaveable(): void {
+    const saves = this.hasAttribute('data-saveable');
+    let any = false;
+    for (const [field, state] of Object.entries(this.states)) {
+      const on = state.fieldState === 'active';
+      any ||= on;
+      this.#filterMenu(field)?.toggleAttribute('data-saveable',
+        saves && on && state.condition === 'custom');
+    }
+    this.$('.add-btn sherpa-menu')?.toggleAttribute('data-saveable', saves && any);
+  }
+
+  /**
+   * "Save filter" was pressed: ASK the host, with the readings to keep — one
+   * field's from its own chip, every ON field's from the Add menu.
+   * TRAP T-save-packs-the-fields-into-one-chip
+   */
+  #requestSave(chip: HTMLElement | null, fromAdd: boolean): void {
+    const states = this.states;
+    const fields = fromAdd
+      ? Object.keys(states).filter((f) => states[f]!.fieldState === 'active')
+      : [chip?.dataset['id'] ?? ''].filter((f) => f in states);
+    const readings: Record<string, FieldReading> = {};
+    for (const field of fields) {
+      const reading = savedReading(states[field]!);
+      if (reading) readings[field] = reading;
+    }
+    if (Object.keys(readings).length) this.emit('filter-save', { readings });
+  }
+
+  /**
+   * Show a SAVED filter in place of the fields it was made from — PACK. Its chip
+   * comes ON and those fields clear, in ONE event. The host calls it once it
+   * has stored the filter. TRAP T-save-packs-the-fields-into-one-chip
+   */
+  packFilter(saved: SavedFilter & { id: string }): void {
+    const { id, label, readings } = saved;
+    if (this.#filters.some((f) => f.id === id && !f.readings)) {
+      // TRAP T-a-broken-assumption-reports — two chips, one id.
+      report({
+        code: 'id-taken',
+        message: 'packFilter: a field chip already has that id, so the saved filter was not shown.',
+        at: { id },
+      });
+      return;
+    }
+    // First: the rebuild below carries every answer across, these included.
+    for (const field of Object.keys(readings)) this.#clearField(field);
+    const def: QuickFilterDef = { id, label, readings, active: true, removable: true };
+    const i = this.#filters.findIndex((f) => f.id === id);
+    if (i >= 0) this.#filters[i] = def;
+    else this.#filters = [...this.#filters, def];
+    this.#available = this.#available.filter((f) => f.id !== id);
+    this.#render();
+    // ON, even where it was already on the bar and switched off.
+    const chip = this.#chips().find((c) => c.dataset['id'] === id);
+    if (chip) chip.current = true;
+    this.#emitChange();
+  }
+
+  /** Empty one field chip — ticks, op, typing and rows — and switch it off. */
+  #clearField(id: string): void {
+    const menu = this.#filterMenu(id) as (HTMLElement & {
+      conditionValue: string; conditions?: readonly FieldCondition[]; mode?: string;
+    }) | null;
+    if (!menu) return;
+    this.#pendingAnswers.delete(id);
+    menu.dataset['op'] = this.#filters.find((f) => f.id === id)?.op ?? DEFAULT_OP;
+    menu.conditionValue = '';
+    if ((menu.conditions ?? []).length) menu.conditions = [];
+    menu.mode = 'default';
+    this.setChipValues(id, []);
   }
 
   /**
@@ -1434,6 +1527,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // Its host is already in the page, so the items can go now.
     this.#flushItems();
     add.querySelector('sherpa-menu')?.toggleAttribute('data-search', true);
+    this.#syncSaveable();
   }
 
   /** Move the chosen available filters onto the bar. */

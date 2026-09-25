@@ -27,6 +27,10 @@
     data-sort-field      the field the Sort chip points at (the standard name)
     data-sort-direction  asc (default) | desc
     data-group-field     the field the Group chip points at (the standard name)
+    data-saveable    the host SAVES filters: a chip holding a Custom Condition,
+                  and the Add menu once any field is on, offer "Save filter",
+                  which fires filter-save. The host stores it and calls
+                  packFilter(). TRAP T-save-packs-the-fields-into-one-chip
 
   Slots:
     view     — leading view chip (view type)
@@ -37,6 +41,7 @@
     group-change         — detail: { field }
     sort-change          — detail: { field, direction }
     filter-remove        — a chip was removed. detail: { id, filter }
+    filter-save          — "Save filter" was pressed. detail: { readings }
     filter-add           — the Add chip's body was clicked
     filter-clear         — the undo button: every chip reset
     ai-filter-request    — the AI button

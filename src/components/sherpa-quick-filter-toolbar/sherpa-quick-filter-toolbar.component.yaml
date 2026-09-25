@@ -174,6 +174,15 @@ props:
       a filter PANEL is answering for this bar: AI, Reset, the panel toggle and Add filter are
       hidden, and a `data` bar goes entirely. TRAP T-panel-mode-hides-what-the-panel-answers
   - $type: prop
+    name: data-saveable
+    type: string
+    observed: true
+    kind: style
+    description: >-
+      the host SAVES filters: a chip holding a Custom Condition, and the Add menu once any field is
+      on, offer "Save filter", which fires filter-save. The host stores it and calls packFilter().
+      TRAP T-save-packs-the-fields-into-one-chip
+  - $type: prop
     name: data-sort-direction
     type: enum
     observed: true
@@ -239,8 +248,8 @@ capabilities:
     api: js-methods
     description: >-
       callable from a view definition's state block (setChipValues, setChipReading, supersede,
-      setClause, report, available, addFilters, removeFilter, allowFields, addExternalFilter,
-      addCustomFilter, clearAll, organise). See $extensions.sherpa.methods.
+      packFilter, setClause, report, available, addFilters, removeFilter, allowFields,
+      addExternalFilter, addCustomFilter, clearAll, organise). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: quick-filter-change
@@ -275,6 +284,12 @@ events:
     detail:
       filter: unknown
       id: unknown
+  - $type: event
+    name: filter-save
+    bubbles: true
+    composed: true
+    detail:
+      readings: unknown
   - $type: event
     name: filter-add
     bubbles: true
@@ -341,6 +356,10 @@ $extensions:
         name: supersede
         args: "ids: readonly string[], appliedAt?: string"
         description: supersede([...ids]) — the VIEW now owns these fields.
+      - $type: method
+        name: packFilter
+        args: "saved: SavedFilter & { id: string }"
+        description: Show a SAVED filter in place of the fields it was made from — PACK. Its chip
       - $type: method
         name: setClause
         args: "id: string, clause: readonly [string, FilterOp, unknown] | null"

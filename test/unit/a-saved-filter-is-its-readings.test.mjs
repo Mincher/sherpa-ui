@@ -14,7 +14,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ArrayStore, DataSource } from '../../dist/data.js';
+import { ArrayStore, DataSource, fieldState, savedReading, stateClause } from '../../dist/data.js';
 import { kindOf } from '../../dist/core/ui/filter-kind.js';
 
 /** A bar with nothing but what a source asks of it. */
@@ -39,6 +39,26 @@ test('a def that carries its readings is a custom kind', () => {
   assert.equal(kindOf({ id: 'at-risk', readings: { health: { op: 'lt', text: '60' } } }), 'custom');
   // A NAMED kind is still believed first.
   assert.equal(kindOf({ id: 'x', kind: 'boolean', readings: {} }), 'boolean');
+});
+
+test('an answer is saved as it was: rows when custom, ticks or ends when default', () => {
+  const plan = { field: 'plan', values: ['Free', 'Pro', 'Enterprise'] };
+  // In the field's own order, as the state lists them.
+  assert.deepEqual(savedReading(fieldState(plan, { picked: ['Pro', 'Free'] })), { picked: ['Free', 'Pro'] });
+  const owner = { field: 'owner' };
+  // A typed op is a custom answer, so it is saved as the row it is.
+  assert.deepEqual(savedReading(fieldState(owner, { op: 'contains', text: 'Da' })),
+    { conditions: [{ op: 'contains', text: 'Da' }] });
+  const rows = [{ op: 'contains', text: 'Da' }, { join: 'or', op: 'eq', picked: ['Ravi'] }];
+  assert.deepEqual(savedReading(fieldState(owner, { conditions: rows })), { conditions: rows });
+  const seats = { field: 'seats', type: 'number' };
+  assert.deepEqual(savedReading(fieldState(seats, { range: true, picked: [10, 50] })),
+    { picked: [10, 50], range: true });
+  // Nothing answered, nothing to save.
+  assert.equal(savedReading(fieldState(plan, {})), undefined);
+  // What it saves applies the SAME filter.
+  const state = fieldState(owner, { conditions: rows });
+  assert.deepEqual(stateClause(fieldState(owner, savedReading(state))), stateClause(state));
 });
 
 test('each ON saved filter is one named part, over any fields; off drops it', async () => {

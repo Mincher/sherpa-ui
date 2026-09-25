@@ -24,6 +24,9 @@
     data-search   show a search input under the heading that filters the rows
     data-removable  show a "Remove" button in the footer (after Today);
                     it emits menu-select with value="remove"
+    data-saveable   show a "Save filter" button in the footer; it emits
+                    menu-select with value="save".
+                    TRAP T-save-packs-the-fields-into-one-chip
     data-drill      the list has been replaced by a SUB-LIST — shows a back arrow
                     and a breadcrumb in the header. Drilling IN PLACE rather than
                     opening a second card means one box to position, nothing to
@@ -195,13 +198,14 @@
       <!-- Today is the calendar's left slot, and REPLACES Clear rather than joining it. -->
       <sherpa-button class="today" part="today">Today</sherpa-button>
       <!--
-        Clear and Remove act on the filter, not on the draft, so they lead the
+        Clear, Save and Remove act on the filter, not on the draft, so they lead the
         row, separated from Cancel·Apply by the spacer. Default look — NOT
         transparent — as Figma pins them. Remove's critical ink is re-stated in
         CSS: a bare [data-status] rule in tokens.css reaches the document only,
         never a shadow root.
       -->
       <sherpa-button class="clear" part="clear">Clear</sherpa-button>
+      <sherpa-button class="save" part="save">Save filter</sherpa-button>
       <sherpa-button class="remove" part="remove" data-status="critical">Remove</sherpa-button>
       <span class="footer-spacer"></span>
       <sherpa-button class="cancel" part="cancel">Cancel</sherpa-button>
@@ -317,13 +321,14 @@
       <!-- Today is the calendar's left slot, and REPLACES Clear rather than joining it. -->
       <sherpa-button class="today" part="today">Today</sherpa-button>
       <!--
-        Clear and Remove act on the filter, not on the draft, so they lead the
+        Clear, Save and Remove act on the filter, not on the draft, so they lead the
         row, separated from Cancel·Apply by the spacer. Default look — NOT
         transparent — as Figma pins them. Remove's critical ink is re-stated in
         CSS: a bare [data-status] rule in tokens.css reaches the document only,
         never a shadow root.
       -->
       <sherpa-button class="clear" part="clear">Clear</sherpa-button>
+      <sherpa-button class="save" part="save">Save filter</sherpa-button>
       <sherpa-button class="remove" part="remove" data-status="critical">Remove</sherpa-button>
       <span class="footer-spacer"></span>
       <sherpa-button class="cancel" part="cancel">Cancel</sherpa-button>

@@ -27,6 +27,7 @@
  * - fieldState — work out one field's whole state — the only place that decides it
  * - stateClause — One field's state as a ready `FilterClause`, or `undefined`.
  * - readingClause — a reading as a clause, for a control holding its own field facts
+ * - savedReading — a field's answer as it can be SAVED, and put back as it was
  */
 import {
   DEFAULT_OP, OP_TAKES,
@@ -288,6 +289,18 @@ export function stateClause(state: FilterState): Filter | undefined {
  */
 export function readingClause(facts: FieldFacts, reading: FieldReading): Filter | undefined {
   return stateClause(fieldState(facts, reading));
+}
+
+/**
+ * A field's answer as it can be SAVED, and put back as it was: its rows when it
+ * is custom, its ticks or ends when it is default. Nothing when it has no answer.
+ * TRAP T-a-saved-filter-is-its-readings
+ */
+export function savedReading(state: FilterState): FieldReading | undefined {
+  if (!state.rows.length) return undefined;
+  if (state.condition === 'custom') return { conditions: state.rows.map((row) => ({ ...row })) };
+  const picked = [...(state.rows[0]?.picked ?? [])];
+  return state.range ? { picked, range: true } : { picked };
 }
 
 /** Picks as the data holds them — a number column's values are numbers. */

@@ -336,9 +336,10 @@
    order and the accessibility tree. */
 .rows ::slotted([data-filtered-out]) { display: none; }
 
-/* Clear, Remove, Today — each opt-in, so a plain menu is unchanged. */
+/* Clear, Save, Remove, Today — each opt-in, so a plain menu is unchanged. */
 .clear,
 .today,
+.save,
 .remove,
 .footer-spacer { display: none; }
 
@@ -346,6 +347,7 @@
    menu holding a value has anything to clear. */
 :host([data-clearable]) .clear { display: inline-flex; }
 :host([data-removable]) .remove { display: inline-flex; }
+:host([data-saveable]) .save { display: inline-flex; }
 
 /* CRITICAL ink set here, not left to the status cascade: `[data-status]` in
    tokens.css is a bare document-sheet rule and never applies inside a shadow
@@ -362,7 +364,7 @@
 
 /* The spacer splits the row: filter actions lead, the commit pair trails. It
    earns its place whenever BOTH sides are occupied. */
-:host(:is([data-type="calendar"], [data-clearable], [data-removable])) .footer-spacer {
+:host(:is([data-type="calendar"], [data-clearable], [data-removable], [data-saveable])) .footer-spacer {
   display: block;
   flex: 1 1 auto;
 }
@@ -437,11 +439,11 @@
  * padding, gap and top stroke; this only says WHEN it appears. `display: none`
  * beats the component's own [data-has-content-slot] rule.
  *
- * Four things can raise the row and any ONE of them earns it: data-commit
- * (Cancel·Apply), data-removable, data-clearable, Type=calendar (Today). Each
- * control hides itself on its own flag, below. */
+ * Five things can raise the row and any ONE of them earns it: data-commit
+ * (Cancel·Apply), data-removable, data-clearable, data-saveable, Type=calendar
+ * (Today). Each control hides itself on its own flag, below. */
 .footer { display: none; }
-:host(:is([data-commit], [data-type="calendar"], [data-clearable], [data-removable])) .footer {
+:host(:is([data-commit], [data-type="calendar"], [data-clearable], [data-removable], [data-saveable])) .footer {
   display: block;
 }
 

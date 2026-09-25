@@ -118,3 +118,175 @@ test('saved filters live with their data: saved, read back, replaced by name, de
   expect(r.read).toEqual(['big-spenders']);
   expect(r.guarded).toEqual(['ok']);
 });
+
+/**
+ * SAVE PACKS. Will, 2026-09-25: "Pack / unpack" — Save moves the answered
+ * fields into ONE chip, which comes on, and the fields clear. The bar offers
+ * "Save filter" only where there is something to save, and only when its host
+ * saves: a chip holding a Custom Condition, and the Add menu for every answered
+ * field. The bar ASKS (`filter-save`); the host names and stores it, and hands
+ * it back with `packFilter`. TRAP T-save-packs-the-fields-into-one-chip
+ */
+const OPTS = [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }];
+const PLANS = [{ value: 'Pro', label: 'Pro', selected: true }, { value: 'Free', label: 'Free' }];
+
+test('"Save filter" shows where there is something to save, and asks with its readings', async ({ page }) => {
+  const r = await page.evaluate(async ({ OPTS, PLANS }) => {
+    const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [
+      { id: 'owner', label: 'Owner', select: 'multiple', custom: true, active: true,
+        op: 'contains', text: 'Da', options: OPTS },
+      { id: 'plan', label: 'Plan', select: 'multiple', active: true, options: PLANS },
+    ], { style: 'inline-size: 1200px' });
+    bar.available([{ id: 'tier', label: 'Tier', options: [{ value: 'gold', label: 'Gold' }] }]);
+    await window.__settled();
+    const menu = (id: string) => bar.shadowRoot!.querySelector<HTMLElement>(`.chip[data-id="${id}"] sherpa-menu`)!;
+    const addMenu = () => bar.shadowRoot!.querySelector<HTMLElement>('.add-btn sherpa-menu')!;
+    const saveable = () => ({
+      owner: menu('owner').hasAttribute('data-saveable'),
+      plan: menu('plan').hasAttribute('data-saveable'),
+      add: addMenu().hasAttribute('data-saveable'),
+    });
+    const off = saveable();
+    bar.setAttribute('data-saveable', '');
+    await window.__settled();
+    const on = saveable();
+
+    const asked: unknown[] = [];
+    bar.addEventListener('filter-save', (e) => asked.push((e as CustomEvent).detail.readings));
+    const press = (m: HTMLElement) => m.shadowRoot!.querySelector<HTMLElement>('.save')!.click();
+    press(menu('owner'));
+    await window.__settled();
+    press(addMenu());
+    await window.__settled();
+    return { off, on, asked };
+  }, { OPTS, PLANS });
+
+  // No host that saves, no Save.
+  expect(r.off).toEqual({ owner: false, plan: false, add: false });
+  // A Custom Condition is saveable on its own; a ticked value is not, but the
+  // whole bar is.
+  expect(r.on).toEqual({ owner: true, plan: false, add: true });
+  expect(r.asked).toEqual([
+    { owner: { conditions: [{ op: 'contains', text: 'Da' }] } },
+    { owner: { conditions: [{ op: 'contains', text: 'Da' }] }, plan: { picked: ['Pro'] } },
+  ]);
+});
+
+test('packFilter shows the saved chip ON and clears the fields it came from, in one event', async ({ page }) => {
+  const r = await page.evaluate(async ({ OPTS, PLANS }) => {
+    const { ArrayStore, DataSource, onReport } = await import('/dist/data.js') as unknown as {
+      ArrayStore: new (rows: unknown[]) => unknown;
+      DataSource: new (o: { store: unknown }) => Source;
+      onReport(fn: (r: { code: string }) => void): () => void;
+    };
+    const source = new DataSource({ store: new ArrayStore([
+      { id: 1, owner: 'Dana', plan: 'Pro' }, { id: 2, owner: 'Ravi', plan: 'Pro' },
+      { id: 3, owner: 'Dana', plan: 'Free' },
+    ]) });
+    const bar = await window.__mount<Bar & {
+      packFilter(s: { id: string; label: string; readings: Record<string, unknown> }): void;
+      savedReadings: Record<string, unknown>;
+    }>('sherpa-quick-filter-toolbar', [
+      { id: 'owner', label: 'Owner', select: 'multiple', custom: true, active: true,
+        op: 'contains', text: 'Da', options: OPTS },
+      { id: 'plan', label: 'Plan', select: 'multiple', active: true, options: PLANS },
+    ], { style: 'inline-size: 1200px', 'data-saveable': true });
+    source.bind(bar, { steerOnly: true });
+    bar.report();
+    await window.__settled();
+    await source.load();
+    const before = source.debugState().total;
+
+    let events = 0;
+    bar.addEventListener('quick-filter-change', () => { events += 1; });
+    const readings = { owner: { conditions: [{ op: 'contains', text: 'Da' }] }, plan: { picked: ['Pro'] } };
+    bar.packFilter({ id: 'custom:mine', label: 'Mine', readings });
+    await window.__settled();
+    await source.load();
+
+    const chip = (id: string) => bar.shadowRoot!.querySelector<HTMLElement>(`.chip[data-id="${id}"]`)!;
+    const fields = (bar as unknown as { readings: Record<string, { picked: unknown[]; conditions: unknown[]; text: string }> }).readings;
+    const reports: string[] = [];
+    const stop = onReport((rep) => reports.push(rep.code));
+    bar.packFilter({ id: 'owner', label: 'Owner again', readings });
+    stop();
+    return {
+      before, events,
+      saved: { on: chip('custom:mine').hasAttribute('data-current'),
+        condition: chip('custom:mine').getAttribute('data-condition') },
+      owner: { on: chip('owner').hasAttribute('data-current'), text: fields.owner.text,
+        rows: fields.owner.conditions.length, picked: fields.owner.picked },
+      plan: { on: chip('plan').hasAttribute('data-current'), picked: fields.plan.picked },
+      savedReadings: bar.savedReadings,
+      total: source.debugState().total,
+      parts: Object.keys(source.debugState().parts),
+      reports,
+    };
+  }, { OPTS, PLANS });
+
+  expect(r.before).toBe(1);
+  // ONE event, for the whole pack.
+  expect(r.events).toBe(1);
+  expect(r.saved).toEqual({ on: true, condition: 'custom' });
+  // The fields it came from are EMPTY and off — their answer is the chip's now.
+  expect(r.owner).toEqual({ on: false, text: '', rows: 0, picked: [] });
+  expect(r.plan).toEqual({ on: false, picked: [] });
+  expect(r.savedReadings).toEqual({ 'custom:mine': {
+    owner: { conditions: [{ op: 'contains', text: 'Da' }] }, plan: { picked: ['Pro'] },
+  } });
+  // The same rows, one part now, and nothing filters twice.
+  expect(r.total).toBe(1);
+  expect(r.parts).toEqual(['saved:custom:mine']);
+  // A saved chip cannot take a FIELD's id.
+  expect(r.reports).toEqual(['id-taken']);
+});
+
+/**
+ * THE RECORDS PAGE, end to end — against the EXAMPLES server (:4200). A reader
+ * answers Owner with a condition, saves it, and names it; the page keeps it over
+ * the customer records, and the bar shows it in place of Owner. The rows do not
+ * move: the same filter, one chip now.
+ */
+test('the Records page saves a condition as a filter, and nothing filters twice', async ({ page }) => {
+  page.on('dialog', (d) => void d.accept('Dana accounts'));
+  await page.goto('http://localhost:4200/?context=records');
+  await page.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
+  const total = () => page.evaluate(() =>
+    (window as unknown as { sherpa: { source: Source } }).sherpa.source.debugState().total);
+  const all = await total();
+
+  await page.evaluate(() => {
+    localStorage.removeItem('sherpa:filters:customers');
+    const qft = document.querySelector('#context-root sherpa-quick-filter-toolbar') as Bar;
+    qft.setChipReading('owner', { conditions: [{ op: 'contains', text: 'Da' }] });
+    qft.report();
+  });
+  await expect.poll(async () => page.evaluate(() => !!document
+    .querySelector('#context-root sherpa-quick-filter-toolbar')!.shadowRoot!
+    .querySelector('.chip[data-id="owner"] sherpa-menu[data-saveable]'))).toBe(true);
+  // The SOURCE loads on its own clock: wait for the condition to narrow the rows.
+  await expect.poll(total).toBeLessThan(all);
+  const before = await total();
+
+  await page.evaluate(() => {
+    const qft = document.querySelector('#context-root sherpa-quick-filter-toolbar')!;
+    qft.shadowRoot!.querySelector('.chip[data-id="owner"] sherpa-menu')!
+      .shadowRoot!.querySelector<HTMLElement>('.save')!.click();
+  });
+  const bar = () => page.evaluate(() => {
+    const qft = document.querySelector('#context-root sherpa-quick-filter-toolbar') as Bar & {
+      savedReadings: Record<string, unknown>;
+    };
+    const chip = qft.shadowRoot!.querySelector<HTMLElement>('.chip[data-id="custom:dana-accounts"]');
+    return {
+      saved: Object.keys(qft.savedReadings),
+      on: chip?.hasAttribute('data-current') ?? false,
+      owner: qft.shadowRoot!.querySelector('.chip[data-id="owner"]')!.hasAttribute('data-current'),
+      kept: Object.keys(JSON.parse(localStorage.getItem('sherpa:filters:customers') ?? '{}')),
+    };
+  });
+  await expect.poll(bar).toEqual({ saved: ['custom:dana-accounts'], on: true, owner: false, kept: ['dana-accounts'] });
+  await expect.poll(total).toBe(before);
+  await page.evaluate(() => localStorage.removeItem('sherpa:filters:customers'));
+});

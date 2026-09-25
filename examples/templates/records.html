@@ -81,7 +81,8 @@
          Type=data bar binds a bottom stroke weight but paints no stroke), so at
          "none" the grid sits flush against it. -->
     <sherpa-stack data-gap="md" data-grow data-fill>
-      <sherpa-quick-filter-toolbar id="qft"></sherpa-quick-filter-toolbar>
+      <!-- data-saveable: this page keeps the filters a reader saves. -->
+      <sherpa-quick-filter-toolbar id="qft" data-saveable></sherpa-quick-filter-toolbar>
       <!-- data-grow: takes the card's leftover height, so the grid scrolls
            INSIDE the card while header and footer stay put. -->
       <sherpa-data-grid id="grid" data-grow data-selectable data-column-filters></sherpa-data-grid>

@@ -116,6 +116,8 @@ export {
   loadSavedFilters, saveFilterAs, deleteSavedFilter,
   type SavedFilter, type SavedFilterSet, type SavedFilterOptions,
 } from './core/browser/saved-filters.js';
+// The id a saved view or filter takes from its name.
+export { labelId } from './core/browser/web-storage.js';
 export {
   EventStore,
   SocketStore,
@@ -216,6 +218,8 @@ export {
   /* A field whose picks are ENDS, not a list to tick.
      TRAP T-the-field-type-decides-the-clause */
   isRanged,
+  // A field's answer as it can be SAVED. TRAP T-a-saved-filter-is-its-readings
+  savedReading,
   type FieldState,
   type ValueState,
   type ValueEntry,

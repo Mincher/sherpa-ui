@@ -11616,8 +11616,61 @@ ON ones itself, so a preset was a chip in one file and a query in another.
 - Site: `src/core/data/data-source.ts`
 - Site: `examples/contexts/records.js`
 - Site: `src/core/browser/saved-filters.ts`
+- Site: `src/core/data/filter-state.ts`
+- Site: `src/data.ts`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 - Site: `test/unit/a-saved-filter-is-its-readings.test.mjs`
+
+### T-save-packs-the-fields-into-one-chip
+
+**Save moves the answered fields into ONE chip, which comes on, and the fields
+clear — pack.** Will, 2026-09-25, choosing *"Pack / unpack"*. Nothing filters
+twice, and no second editor is needed: Edit puts the answer back (unpack).
+
+**The bar ASKS; the host keeps.** A host that saves filters sets
+`data-saveable` on the bar. "Save filter" then shows only where there is
+something to save — in the menu of a chip holding a Custom Condition, and in
+the Add menu once any field is on — and fires `filter-save { readings }`, each
+field as `savedReading()` gives it. The host names it, stores it
+(`saveFilterAs`), and hands it back with `packFilter({ id, label, readings })`.
+
+`packFilter` clears the fields FIRST, then rebuilds — the rebuild carries every
+other chip's answer across (`T-a-rebuild-keeps-every-answer`) — switches the
+saved chip ON even where it was already on the bar and off, and fires ONE
+event, so the source sees the part arrive and the fields go in one report.
+
+**A saved chip cannot take a FIELD's id** — two chips with one id — so
+`packFilter` reports `id-taken`. The Records page names its own
+`custom:<id>`.
+
+A ticked, DEFAULT answer is not saveable from its own chip: the ask was to turn
+a CONDITION into a chip. The Add menu packs it with the rest.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `examples/contexts/records.js`
+- Site: `test/e2e/reforged-saved-filter.spec.ts`
+
+### T-row-one-is-data-op
+
+**A filter menu's FIRST condition row is `data-op` and `data-value`.**
+`#syncConditions` rebuilds row one from those two on every sync — any
+attribute the menu observes — which is how a re-stamp keeps what was typed.
+
+So rows set from outside, with the two left behind, lasted only until anything
+moved. `setChipReading` wrote "contains Da" as rows while `data-op` still said
+`eq`, and the next sync turned it into an empty equals. Measured on the Records
+page: the Owner chip read `conditions: [{ op: 'eq' }]` 300ms later. Found when
+Save flagged the menu (`data-saveable`), which is a sync — but the panel and
+`#keepAnswer` write rows the same way.
+
+`set conditions` now writes row one's op and typed value back to the two
+attributes, so the menu's own record and its rows agree.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `test/e2e/reforged-menu-row-one.spec.ts`
 
 ### T-a-rebuild-keeps-every-answer
 
@@ -11670,6 +11723,7 @@ and never in content, and a bar handed `{ label: 3 }` would draw a chip with no
 answer.
 
 - Site: `src/core/browser/saved-filters.ts`
+- Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 
 ### T-a-held-clause-op-is-not-a-reading-op

@@ -101,6 +101,8 @@ export class SherpaMenu extends SherpaElement {
     /* A RANGE body offers two ends; `data-commit` holds its Apply until asked. */
     'data-range': { type: 'boolean', kind: 'style' },
     'data-commit': { type: 'boolean', kind: 'style' },
+    // A "Save filter" action. TRAP T-save-packs-the-fields-into-one-chip
+    'data-saveable': { type: 'boolean', kind: 'style' },
   } as const;
 
   static override observed = [
@@ -184,6 +186,7 @@ export class SherpaMenu extends SherpaElement {
     this.$('.clear')?.addEventListener('click', this.#onClear);
     this.$('.today')?.addEventListener('click', this.#onToday);
     this.$('.remove')?.addEventListener('click', this.#onRemove);
+    this.$('.save')?.addEventListener('click', this.#onSave);
     this.$('.search')?.addEventListener('input', this.#onSearch);
     /* Composed sherpa-input-texts, which re-dispatch `change` and `input`
        from the HOST — so ONE listener on the region covers every stamped row.
@@ -478,9 +481,16 @@ export class SherpaMenu extends SherpaElement {
        async fill of each new row's value select, this menu reports NO
        conditions — and anything reading it in that gap is told the filter is
        gone. TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
-    if (JSON.stringify(this.conditions) === JSON.stringify(rows)) return;
-    region.replaceChildren();
-    for (const row of rows.length ? rows : [{ op: DEFAULT_OP } as FieldCondition]) this.#addRow(row);
+    if (JSON.stringify(this.conditions) !== JSON.stringify(rows)) {
+      region.replaceChildren();
+      for (const row of rows.length ? rows : [{ op: DEFAULT_OP } as FieldCondition]) this.#addRow(row);
+    }
+    // Every sync rebuilds row one from these two. TRAP T-row-one-is-data-op
+    const first = rows[0];
+    if (!first) return;
+    if (this.dataset['op'] !== first.op) this.dataset['op'] = first.op;
+    const text = (OP_TAKES[first.op] ?? 'list') === 'text' ? (first.text ?? '') : '';
+    if (this.conditionValue !== text) this.conditionValue = text;
   }
 
   /**
@@ -1257,6 +1267,12 @@ export class SherpaMenu extends SherpaElement {
     for (const cal of this.querySelectorAll<HTMLElement & { today?: () => void }>('sherpa-calendar')) {
       cal.today?.();
     }
+  };
+
+  /** Save — asks for this filter to be kept, as `menu-select` with value="save". */
+  #onSave = (): void => {
+    this.emit('menu-select', { value: 'save', label: 'Save filter' });
+    this.hide();
   };
 
   /** Remove — the footer-button form of a `<button value="remove">` row. */

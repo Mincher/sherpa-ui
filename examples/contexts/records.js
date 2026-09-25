@@ -10,7 +10,7 @@
 import {
   DataSource, VIEW_SCOPE, SherpaToast, persistView, viewOptions, onViewPicked,
   countBy, reduceRows, bindSelection, andFilter, picksClause, stateClause,
-  seriesBy, deltaPercent,
+  seriesBy, deltaPercent, saveFilterAs, labelId,
 } from '../../dist/index.js';
 import { customerStore, customersReady, customers, columns, plans, regions, customerOrgs, states }
   from './records-data.js';
@@ -813,6 +813,16 @@ export async function init(root, { session } = {}) {
     grid.clearColumnFilter(field);
     pushColumns();
   });
+  /* SAVE PACKS: the bar asks, this page names the filter and keeps it over the
+     CUSTOMER records — not over this page — and the bar shows it in place of
+     the fields it came from. TRAP T-save-packs-the-fields-into-one-chip
+     TRAP T-a-saved-filter-lives-with-its-data */
+  qft.addEventListener('filter-save', (e) => {
+    const label = prompt('Name this filter')?.trim();
+    if (!label) return;
+    saveFilterAs('customers', label, e.detail.readings);
+    qft.packFilter({ id: `custom:${labelId(label)}`, label, readings: e.detail.readings });
+  }, { signal });
   // Grouping needs no wiring: the source writes data-group-field on every bound
   // component, and the grid draws the collapsible group rows.
 
