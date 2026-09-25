@@ -9,7 +9,7 @@
     data-type      icon            (default omitted)
     data-status    critical | warning | success | info | urgent  (tints the look tier)
     data-icon-start / data-icon-end   icon glyph value
-    data-badge     trailing badge glyph/text value (or slot a node into "badge")
+    data-badge     the text of the trailing sherpa-badge (or slot a node into "badge")
     data-label     label text (or use the default slot)
     data-open      set by JS while its slotted menu is open — CSS only
     disabled       native disabled state
@@ -26,7 +26,7 @@
     <i class="icon sherpa-icon-box icon-start" aria-hidden="true"></i>
     <span class="label"><slot></slot></span>
     <i class="icon sherpa-icon-box icon-end" aria-hidden="true"></i>
-    <span class="badge"><slot name="badge" data-accepts="badge"></slot></span>
+    <span class="badge"><slot name="badge" data-accepts="badge"><sherpa-badge class="badge-value"></sherpa-badge></slot></span>
     <!-- Named, not default: a popover in the default slot joins the label's textContent and widens the button. -->
     <span class="menu-slot"><slot name="menu" data-accepts="menu"></slot></span>
   </button>

@@ -59,7 +59,7 @@
 }
 
 /* The scope's HEADER stays put while its fields scroll past — a reader deep in
-   a long list still knows which scope they are in, and the Add button stays
+   a long list still knows which scope they are in, and the Filters button stays
    reachable. `::part`, because the summary row is in the accordion's shadow. */
 /* ONE SIZE UP. A panel header is the app's own chrome, not a card's, so its
    glyph and its switch read at the next step rather than the container
@@ -180,21 +180,36 @@
    POSITION, and a hidden first child still counts.
    TRAP T-a-hidden-sibling-still-counts-as-first-child */
 
-/* A scope with nothing to add offers no Add button. */
-/* The Add-filter button and the chevron share the accordion's header gap, and
-   at the accordion's own 4px they read as one control. Wider, here only —
-   every other accordion in the library keeps its own spacing. */
-.scope::part(header) { gap: var(--sherpa-display-mode-space-sm, 12px); }
+/* THE SCOPE'S BUTTONS get a row of their own, under the heading: beside it
+   they crowded the title. Will, 2026-09-25. */
+.scope::part(header) {
+  flex-wrap: wrap;
+  row-gap: var(--sherpa-display-mode-space-xs, 8px);
+}
+.scope::part(actions) {
+  order: 1;
+  flex-basis: 100%;
+}
 
-.scope-actions { display: block; }
+.scope-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
+}
 .scope-add,
 .scope-save { display: none; }
 /* Only a scope with something to save, in a host that saves. */
 .scope[data-can-save] .scope-save { display: inline-flex; }
+/* No wrap: "Save / filter" on two lines reads as two controls. */
 .scope[data-can-add] .scope-add {
   display: inline-flex;
-  /* It does not wrap: a 288px column is narrow, and "Add / filter" on two
-     lines reads as two controls. The heading beside it shrinks instead. */
   white-space: nowrap;
-  flex: 0 0 auto;
 }
+
+/* ── A shut scope's hidden filters, in its Filters menu ──────────────── */
+.scope-add .qf-folded { display: block; }
+/* The flag sits on the ROW because a badge inside a menu is not a host. */
+.scope-add .qf-folded-count { display: none; }
+.scope-add .qf-folded[data-count] .qf-folded-count { display: block; }
+/* Decorative: the ROW is the click target, so it must not swallow the click. */
+.scope-add .qf-folded-caret { pointer-events: none; }

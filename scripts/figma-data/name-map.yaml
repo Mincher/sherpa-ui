@@ -16,6 +16,10 @@ map:
   sherpa-tag:
     figma: Tag
     status: matched
+  sherpa-badge:
+    figma: Indicator (atom)
+    status: matched
+    note: Type=count only; the chip's `.count` and its dot are the same atom, still hand-drawn
   sherpa-switch:
     figma: Switch
     status: matched
@@ -280,12 +284,6 @@ figmaOnly:
       composition-covered — sherpa-chart-legend binds the atomic Legend Item; the composed Chart
       Legend is assembled from Legend Items
   # --- atoms / sub-components used inside built components ---
-  - figma: Indicator (atom)
-    nodeId: '145:3385'
-    tier: sub-component
-    note: >-
-      atomic count/dot badge (Type=count|dot); replaces the old "Badge" placeholder. Rendered inline
-      as the trailing badge of nav rows / count indicators; no standalone code element.
   - figma: Checkbox (Atom)
     nodeId: '49:66148'
     tier: sub-component

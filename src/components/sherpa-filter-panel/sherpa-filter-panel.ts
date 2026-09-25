@@ -16,7 +16,10 @@ import { ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
 import {
   arranges, customOf, hasOwnBody, kindOf, picksOne, type FilterKind, type OffersCustom,
 } from '../../core/ui/filter-kind.js';
-import { menuFor, type FilterMenuItem } from '../../core/ui/filter-menu.js';
+import { menuFor, type FilterMenuDef, type FilterMenuItem } from '../../core/ui/filter-menu.js';
+import {
+  FILTERS_LABEL, MenuDrill, addHiddenRows, filtersMenuItems, syncHiddenCounts, type HiddenFilter,
+} from '../../core/ui/filters-button.js';
 import { report } from '../../core/data/report.js';
 import {
   fieldState, savedReading, type FieldCondition, type FieldReading,
@@ -31,6 +34,8 @@ import '../sherpa-stack/sherpa-stack.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-input-text/sherpa-input-text.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
+import '../sherpa-list-item/sherpa-list-item.js';
+import '../sherpa-tag/sherpa-tag.js';
 
 /** One value a field offers. */
 export interface PanelValue {
@@ -123,6 +128,15 @@ interface Held {
   menu?: HTMLElement;
 }
 
+/** What the panel asks of a `<sherpa-menu>`. */
+type MenuApi = HTMLElement & {
+  rendered?: Promise<void>;
+  open?: boolean;
+  values?: string[];
+  items?: (i: readonly FilterMenuItem[]) => void;
+  hide?: () => void;
+};
+
 export class SherpaFilterPanel extends SherpaElement {
   static override css = new URL('./sherpa-filter-panel.css', import.meta.url);
   static override html = new URL('./sherpa-filter-panel.html', import.meta.url);
@@ -150,8 +164,14 @@ export class SherpaFilterPanel extends SherpaElement {
   #baseline = new Map<string, string[]>();
   /** The scopes as last given. */
   #scopes: PanelScope[] = [];
-  /** Which removable ids each scope's Add menu was told about. */
-  #addable = new Map<string, string[]>();
+  /** Each scope's Filters list: the removable fields it holds, then what it may add. */
+  #lists = new Map<string, { held: PanelFilter[]; offers: PanelFilter[] }>();
+  /** The scopes a reader SHUT, kept across a redraw. TRAP T-a-shut-scope-folds-like-a-bar */
+  #shut = new Set<string>();
+  /** A hidden filter's rows, moved into its scope's Filters menu. TRAP T-drill-moves-not-clones */
+  #drill = new MenuDrill();
+  /** The menu the panel built for a drill, and the field it answers. */
+  #built: { menu: HTMLElement; held: Held } | null = null;
 
   override onRender(): void {
     this.$('.to-toolbars')?.addEventListener('button-click', this.#onClose);
@@ -163,6 +183,12 @@ export class SherpaFilterPanel extends SherpaElement {
     this.$('.scopes')?.addEventListener('quick-filter-click', this.#onValueClick);
     this.$('.scopes')?.addEventListener('menu-change', this.#onAddCommit);
     this.$('.scopes')?.addEventListener('menu-select', this.#onSavedAction);
+    // A SHUT scope's Filters menu leads with what it hides. TRAP T-a-shut-scope-folds-like-a-bar
+    this.$('.scopes')?.addEventListener('toggle', this.#onScopeToggle);
+    // CLICK, not hover: a passing pointer would drill the list out from under it.
+    this.$('.scopes')?.addEventListener('click', this.#onDoorClick, true);
+    this.$('.scopes')?.addEventListener('menu-back', this.#onDrillBack);
+    this.$('.scopes')?.addEventListener('menu-close', this.#onDrillBack);
     /* THE CHIP says WHAT changed; only this panel knows WHICH SCOPE it belongs
        to, so it annotates and passes it on rather than working the
        arrangement out again. TRAP T-a-chip-knows-what-kind-it-is */
@@ -283,6 +309,7 @@ export class SherpaFilterPanel extends SherpaElement {
       if (!box) continue;
       box.setAttribute('data-heading', scope.label);
       box.setAttribute('data-scope', scope.scope);
+      if (this.#shut.has(scope.scope)) box.removeAttribute('open');
 
       const mine = (scope.filters ?? []).filter((f) => {
         if (taken.has(f.id)) return false;
@@ -360,12 +387,8 @@ export class SherpaFilterPanel extends SherpaElement {
       /* WHAT THE MENU WAS TOLD, kept. `#held` knows a preset only as the
          `presets` SECTION it was drawn in, so it cannot say which ones are
          held. TRAP T-the-add-menu-is-the-whole-list */
-      this.#addable.set(scope.scope, removable.map((f) => f.id));
-      const add = box.querySelector('.scope-add');
-      box.toggleAttribute('data-can-add', offers.length + removable.length > 0);
-      if (add && (offers.length || removable.length)) {
-        this.#fillAdd(add as HTMLElement, removable, offers);
-      }
+      this.#lists.set(scope.scope, { held: removable, offers });
+      this.#fillFilters(box);
 
       /* An empty scope SAYS SO. Absent, it reads as a bug rather than as an
          answer — and a scope can legitimately be empty. */
@@ -584,25 +607,233 @@ export class SherpaFilterPanel extends SherpaElement {
     this.#pending = [];
   }
 
-  /** Hand the Add button the WHOLE list: what is held, ticked, and what is not.
-   *  TRAP T-the-add-menu-is-the-whole-list */
-  #fillAdd(btn: HTMLElement, held: PanelFilter[], offers: PanelFilter[]): void {
-    const menu = document.createElement('sherpa-menu');
-    menu.setAttribute('slot', 'menu');
-    menu.setAttribute('data-heading', 'Add filter');
-    menu.setAttribute('data-select', 'multiple');
-    menu.setAttribute('data-search', '');
-    menu.setAttribute('data-commit', '');
+  /**
+   * The scope's Filters menu — the toolbar's, row for row. A SHUT scope leads
+   * it with every filter it hides, as a narrow bar leads with its folded chips.
+   * TRAP T-a-shut-scope-folds-like-a-bar
+   */
+  #fillFilters(box: HTMLElement): void {
+    const btn = box.querySelector<HTMLElement>('.scope-add');
+    const scope = box.dataset['scope'] ?? '';
+    const list = this.#lists.get(scope);
+    if (!btn || !list) return;
+    if (this.#drill.menu && btn.contains(this.#drill.menu)) this.#drillOut();
+
+    const hidden = box.hasAttribute('open') ? [] : this.#hiddenOf(scope);
+    const any = list.held.length + list.offers.length + hidden.length > 0;
+    box.toggleAttribute('data-can-add', any);
+    if (hidden.length) btn.dataset['badge'] = String(hidden.length);
+    else btn.removeAttribute('data-badge');
+    btn.querySelector('sherpa-menu')?.remove();
+    if (!any) return;
+
+    const { menu, items } = menuFor({
+      id: 'add', label: FILTERS_LABEL, select: 'multiple', commit: true,
+      options: filtersMenuItems(list.held, list.offers, hidden.length > 0),
+    });
     btn.append(menu);
-    // `items()`, not populate(): a cloned menu has not upgraded.
-    // TRAP T-custom-element-upgrade
-    void Promise.resolve((menu as HTMLElement & { rendered?: Promise<void> }).rendered)
-      .then(() => {
-        (menu as HTMLElement & { items?: (i: unknown[]) => void }).items?.([
-          ...held.map((f) => ({ value: f.id, label: f.label, selected: true })),
-          ...offers.map((f) => ({ value: f.id, label: f.label, selected: false })),
-        ]);
-      });
+    /* The hidden rows go in FIRST: the menu lifts `data-lead` rows above its
+       own when it stamps, whenever that is. TRAP T-custom-element-upgrade */
+    addHiddenRows(menu, hidden, (selector) => this.clone(selector), this.#onHiddenToggle);
+    (menu as MenuApi).items?.(items);
+    this.#syncScopeFilters(scope);
+  }
+
+  /** What a SHUT scope hides, in the order it draws them. Each preset is its own. */
+  #hiddenOf(scope: string): HiddenFilter[] {
+    const out: HiddenFilter[] = [];
+    for (const [, held] of this.#held) {
+      if (held.scope !== scope) continue;
+      if (held.def.id === 'presets') {
+        for (const o of held.def.options ?? []) {
+          out.push({
+            id: o.value, label: o.label ?? o.value, door: false,
+            on: !!this.#chipIn(held, o.value)?.hasAttribute('data-current'),
+          });
+        }
+        continue;
+      }
+      out.push({ id: held.def.id, label: held.def.label, icon: held.def.icon, door: true, on: this.#isOn(held) });
+    }
+    return out;
+  }
+
+  /** A field is ON when it answers — for one drawn as a single chip, when that chip does. */
+  #isOn(held: Held): boolean {
+    const chip = this.#oneChip(held);
+    return chip ? chip.hasAttribute('data-current') : held.box.hasAttribute('data-answered');
+  }
+
+  /** The ONE chip a whole field is drawn as — Group, Sort, a date — or null for a run. */
+  #oneChip(held: Held): HTMLElement | null {
+    if (!arranges(kindOf(held.def)) && !held.def.asChip) return null;
+    return this.#chipIn(held, held.def.id);
+  }
+
+  /** The chip for one value in a field's run. */
+  #chipIn(held: Held, value: string): HTMLElement | null {
+    return held.values.querySelector<HTMLElement>(`.value[data-value="${CSS.escape(value)}"]`);
+  }
+
+  /**
+   * The Filters button is ON only while a filter its SHUT scope hides is, and
+   * each door counts its field's picks. An open scope speaks for itself.
+   * TRAP T-the-filters-button-is-a-door-not-a-filter
+   */
+  #syncScopeFilters(scope: string): void {
+    const box = this.$<HTMLElement>(`.scope[data-scope="${CSS.escape(scope)}"]`)
+      ?? [...this.#held.values()].find((h) => h.scope === scope)?.box.closest<HTMLElement>('.scope');
+    const btn = box?.querySelector<HTMLElement>('.scope-add');
+    if (!box || !btn) return;
+    const shut = !box.hasAttribute('open');
+    if (shut && this.#hiddenOf(scope).some((f) => f.on)) btn.dataset['status'] = 'active';
+    else btn.removeAttribute('data-status');
+    const menu = btn.querySelector<HTMLElement>('sherpa-menu');
+    if (!menu || !shut) return;
+    syncHiddenCounts(menu, (id) => {
+      const held = this.#held.get(`${scope}:${id}`);
+      if (!held) return null;
+      return this.#oneChip(held) ? ((held.menu as MenuApi | undefined)?.values?.length ?? 0)
+        : this.#picked(held).length;
+    });
+  }
+
+  /** A scope opened or shut: its Filters menu is rebuilt for what it now hides. */
+  #onScopeToggle = (event: Event): void => {
+    const box = event.target;
+    if (!(box instanceof HTMLElement) || !box.classList.contains('scope')) return;
+    const scope = box.dataset['scope'] ?? '';
+    if (box.hasAttribute('open')) this.#shut.delete(scope);
+    else this.#shut.add(scope);
+    this.#fillFilters(box);
+  };
+
+  /** A preset ticked in a shut scope's Filters menu: flip its chip, as a click on it would. */
+  #onHiddenToggle = (event: Event): void => {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement)) return;
+    const row = input.closest<HTMLElement>('.qf-toggle');
+    const scope = row?.closest<HTMLElement>('.scope')?.dataset['scope'];
+    const held = scope ? this.#held.get(`${scope}:presets`) : undefined;
+    const chip = held && row ? this.#chipIn(held, row.dataset['for'] ?? '') : null;
+    if (!held || !chip) return;
+    chip.toggleAttribute('data-current', input.checked);
+    this.#syncAnswered(held);
+  };
+
+  /** A door in a shut scope's Filters menu. TRAP T-a-shut-scope-folds-like-a-bar */
+  #onDoorClick = (event: Event): void => {
+    const path = event.composedPath();
+    // A preset's TOGGLE ticks in place — stopping the click leaves the box unticked.
+    if (path.some((n) => n instanceof HTMLElement && n.classList.contains('qf-toggle'))) return;
+    const row = path.find(
+      (n): n is HTMLElement => n instanceof HTMLElement && n.classList.contains('qf-folded'),
+    );
+    const box = row?.closest<HTMLElement>('.scope');
+    const menu = row?.closest<HTMLElement>('.scope-add')?.querySelector<HTMLElement>('sherpa-menu');
+    const held = box ? this.#held.get(`${box.dataset['scope']}:${row?.dataset['for']}`) : undefined;
+    if (!row || !box || !menu || !held) return;
+    event.preventDefault();
+    event.stopPropagation();
+    void this.#openDoor(held, box, menu, row.dataset['label'] ?? held.def.label);
+  };
+
+  /**
+   * DRILL IN, as the toolbar does: into a single chip's own menu, or into one
+   * built for a run of values. A field answered by a body of its own — a
+   * number, a condition — is drawn in the scope, so the door opens the scope.
+   */
+  async #openDoor(held: Held, box: HTMLElement, menu: HTMLElement, label: string): Promise<void> {
+    this.#drillOut();
+    const chip = !!this.#oneChip(held);
+    const run = !chip && !held.box.hasAttribute('data-custom') && !held.box.hasAttribute('data-body')
+      && (held.def.options?.length ?? 0) > 0;
+    const home = chip ? held.menu ?? null : run ? await this.#buildDrillMenu(held) : null;
+    // A second door, opened while these rows were built, has the drill now.
+    if (run && this.#built?.menu !== home) return;
+    if (!home?.children.length) {
+      this.#dropBuilt();
+      (menu as MenuApi).hide?.();
+      (box as HTMLElement & { open: boolean }).open = true;
+      held.box.scrollIntoView({ block: 'nearest' });
+      return;
+    }
+    // It may have shut while the rows were built.
+    if (!(menu as MenuApi).open) {
+      this.#dropBuilt();
+      return;
+    }
+    this.#drill.into(menu, home, label);
+  }
+
+  /**
+   * A run of values has no menu — its values ARE its chips — so the drill gets
+   * one built from the same def, ticked as the chips are. TRAP T-one-field-one-filter-menu
+   */
+  async #buildDrillMenu(held: Held): Promise<HTMLElement> {
+    const picked = new Set(this.#picked(held));
+    const def: FilterMenuDef = {
+      id: held.def.id,
+      label: held.def.label,
+      ...(held.def.select ? { select: held.def.select } : {}),
+      options: (held.def.options ?? []).map((o) => ({
+        value: o.value, label: o.label ?? o.value, selected: picked.has(o.value),
+      })),
+    };
+    const { menu, items } = menuFor(def);
+    // A filter's menu in the panel COMMITS. TRAP T-a-chip-menu-in-the-panel-commits
+    menu.setAttribute('data-commit', '');
+    held.box.append(menu);
+    this.#built = { menu, held };
+    await (menu as MenuApi).rendered;
+    (menu as MenuApi).items?.(items);
+    return menu;
+  }
+
+  /**
+   * A DRILLED pick. The rows go HOME first, so the filter reads its own; a chip
+   * then hears it as its own menu's, and a run is ticked from it.
+   * TRAP T-a-drilled-pick-goes-home-first
+   */
+  #onDrilled(event: Event): void {
+    const values = ((event as CustomEvent).detail?.values ?? []) as string[];
+    const home = this.#drill.home;
+    const menu = this.#drill.menu as MenuApi | null;
+    const built = this.#built;
+    this.#drill.out();
+    if (built && home === built.menu) {
+      const want = new Set(values);
+      for (const one of built.held.values.querySelectorAll<HTMLElement>('.value')) {
+        if (this.#heldOfChip(one) !== built.held) continue;
+        one.toggleAttribute('data-current', want.has(one.dataset['value'] ?? ''));
+      }
+      this.#dropBuilt();
+      this.#syncAnswered(built.held);
+      // Its Apply is the panel's. TRAP T-a-chip-menu-apply-is-the-panels-apply
+      this.#onApply();
+    } else {
+      home?.dispatchEvent(new CustomEvent('menu-change', {
+        bubbles: true, composed: true, detail: { values },
+      }));
+    }
+    menu?.hide?.();
+  }
+
+  /** Back, or the Filters menu shut: put the drilled rows home. */
+  #onDrillBack = (event: Event): void => {
+    if (event.target === this.#drill.menu) this.#drillOut();
+  };
+
+  /** Put a drilled filter's rows home, and drop a menu built for the drill. */
+  #drillOut(): void {
+    this.#drill.out();
+    this.#dropBuilt();
+  }
+
+  /** Remove the menu built for a drill. */
+  #dropBuilt(): void {
+    this.#built?.menu.remove();
+    this.#built = null;
   }
 
   /* ── Reading ──────────────────────────────────────────────────────── */
@@ -735,6 +966,7 @@ export class SherpaFilterPanel extends SherpaElement {
       && (menu?.conditions?.length ?? 0) > 0;
     held.box.toggleAttribute('data-answered', ticked || custom);
     this.#syncSaveable();
+    this.#syncScopeFilters(held.scope);
   }
 
   /** Every field, after anything that could have changed an answer. */
@@ -831,6 +1063,8 @@ export class SherpaFilterPanel extends SherpaElement {
 
     const btn = this.#pathFind(event, '.scope-add');
     if (!btn) return;
+    // A DRILLED filter's pick is that filter's — never an Add or a Remove.
+    if (this.#drill.home) return this.#onDrilled(event);
     const scope = btn.closest('.scope')?.getAttribute('data-scope') ?? '';
     const want = new Set(((event as CustomEvent).detail?.values ?? []) as string[]);
 
@@ -838,7 +1072,7 @@ export class SherpaFilterPanel extends SherpaElement {
        difference between what it now says and what the panel is drawing — a
        row unticked is a REMOVE, and that is the only way to remove one.
        TRAP T-the-add-menu-is-the-whole-list */
-    const held = new Set(this.#addable.get(scope) ?? []);
+    const held = new Set((this.#lists.get(scope)?.held ?? []).map((f) => f.id));
     const added = [...want].filter((id) => !held.has(id));
     const gone = [...held].filter((id) => !want.has(id));
 

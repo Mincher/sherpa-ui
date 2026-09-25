@@ -65,7 +65,7 @@
 
 .chips {
   display: flex;
-  /* Overflow is answered by the overflow chip, never by reflow. `min-inline-size:
+  /* Overflow is answered by the Filters button, never by reflow. `min-inline-size:
      0` lets the run shrink below its content so the measure sees an overflow. */
   flex-wrap: nowrap;
   align-items: center;
@@ -142,17 +142,6 @@
   margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
 }
 
-/* ── The overflow chip ───────────────────────────────────────────────
- * A sibling of `.chips`, so the run's clipping cannot cut off the control that
- * reports the overflow. NOT `.chip` — that class means "a filter the host put
- * on the bar", and counting this would report one filter too many.
- */
-.overflow-chip {
-  display: none;
-  flex: 0 0 auto;
-}
-:host([data-folded]) .overflow-chip { display: inline-flex; }
-
 /* A folded chip. NOT `display: none`: its menu is still live as a submenu, and
    a menu in a display:none host measures 0x0 and lands in the viewport corner.
    `position: absolute` also takes it out of the run, so the next measure sees
@@ -162,7 +151,7 @@
   /* The park-it-off-screen idiom, not a spacing value. */
   inset-inline-start: -9999px; /* off-grid-ok */
   inset-block-start: 0;
-  /* Out of the tab order; its values stay reachable via the overflow menu. */
+  /* Out of the tab order; its values stay reachable via the Filters menu. */
   visibility: hidden;
   pointer-events: none;
 }
@@ -176,7 +165,7 @@
 
 /* PANEL MODE. A filter PANEL is answering for this bar, so the controls it
    also carries are hidden here: AI, Reset and the panel toggle itself, plus
-   Add filter, which is now the scope's own action. Two of each is two answers
+   Filters, which is now the scope's own action. Two of each is two answers
    to one question. A DATA bar has nothing left, so it goes entirely.
    TRAP T-panel-mode-hides-what-the-panel-answers */
 :host([data-panel-mode]) :is([data-act="ai"], [data-act="clear"],
@@ -188,12 +177,12 @@
    still in use. TRAP T-the-view-chip-stays-on-the-header */
 .chips > .chip[data-panelled] { display: none; }
 
-/* ── The overflow chip's menu rows ─────────────────────────────────── */
-:is(.chip, .overflow-chip) .qf-folded { display: block; }
+/* ── The Filters menu's hidden-chip rows ───────────────────────────── */
+:is(.chip, .add-btn) .qf-folded { display: block; }
 
 /* The flag sits on the ROW because a badge inside a menu is not a host. */
-:is(.chip, .overflow-chip) .qf-folded-count { display: none; }
-:is(.chip, .overflow-chip) .qf-folded[data-count] .qf-folded-count { display: block; }
+:is(.chip, .add-btn) .qf-folded-count { display: none; }
+:is(.chip, .add-btn) .qf-folded[data-count] .qf-folded-count { display: block; }
 
 /* Decorative: the ROW is the click target, so it must not swallow the click. */
-:is(.chip, .overflow-chip) .qf-folded-caret { pointer-events: none; }
+:is(.chip, .add-btn) .qf-folded-caret { pointer-events: none; }

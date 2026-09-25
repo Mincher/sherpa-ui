@@ -7,6 +7,7 @@
  * @fires button-click — the button is activated. bubbles + composed.
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import '../sherpa-badge/sherpa-badge.js';
 
 /** What the button needs of a slotted menu. */
 interface MenuLike extends HTMLElement {
@@ -69,11 +70,10 @@ export class SherpaButton extends SherpaElement {
     if (label && value != null) label.textContent = value;
   }
 
-  /** Mirrors data-badge into the badge slot fallback; CSS shows it. */
+  /** Writes data-badge into the composed sherpa-badge; CSS shows it. */
   #syncBadge(): void {
-    const slot = this.$('.badge slot');
-    const value = this.dataset['badge'];
-    if (slot) slot.textContent = value ?? '';
+    const badge = this.$('.badge-value');
+    if (badge) badge.textContent = this.dataset['badge'] ?? '';
   }
 
   /**

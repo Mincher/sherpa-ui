@@ -473,7 +473,7 @@ The overflow chip went active when NONE of its child filters were active.
 filter. It is now written by the toolbar from the folded chips' own state, in
 `#syncFoldedBadges()` — the path that runs on every change.
 
-`T-the-more-chip-is-a-door-not-a-filter`.
+`T-the-filters-button-is-a-door-not-a-filter`.
 
 ### `[ ]` The data toolbar is clipped away below 800px tall
 

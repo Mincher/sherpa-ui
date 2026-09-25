@@ -1738,7 +1738,7 @@ in using twice the amount of space if we don't need to."*
 | its menu lists | the filters that did not FIT | the filters the bar does not HOLD |
 | a row does | open that filter's own menu, as a submenu | tick it on, untick it off |
 | built by | `#renderFolded()` | `#renderAvailable()` |
-| trap | `T-the-more-chip-is-a-door-not-a-filter` | `T-the-add-menu-is-the-whole-list` |
+| trap | `T-the-filters-button-is-a-door-not-a-filter` | `T-the-add-menu-is-the-whole-list` |
 
 Both are **a menu of filters keyed by id**, drawn beside the run. One lists the
 held-but-hidden, the other the holdable-but-not-held. A reader looking for
@@ -1760,12 +1760,44 @@ in step by construction.
 1. **The badge.** More carries a count of folded filters; Add carries none. One
    button needs one rule for what its badge counts.
 2. **`data-current`.** More is active when a folded filter is
-   (`T-the-more-chip-is-a-door-not-a-filter`); Add is never active. Merged, "on"
+   (`T-the-filters-button-is-a-door-not-a-filter`); Add is never active. Merged, "on"
    has to mean one thing.
 3. **Where it sits.** In the run it folds with the chips; in the cluster it is
    fixed. It cannot be both, and the fold measurement reads whichever it is.
 4. **The empty case.** Nothing folded and nothing to add — does the button go,
    or stay and say so?
+
+### 17.4 Done — 2026-09-25
+
+ONE button, **Filters**, with a plus on the left, in the action group. The
+answers to 17.3, in order:
+
+1. The badge counts the FOLDED filters. It is a `sherpa-badge` — a new
+   component for Figma's Indicator (atom), pinned `default` like every Badge
+   instance, so it keeps its border and fill on an active button.
+2. It is ON only while a folded filter is (`T-the-filters-button-is-a-door-not-a-filter`).
+3. In the action group, so it never folds.
+4. It stays while there is anything to hide or add, as Add did.
+
+The menu leads with **More filters** (a door per folded chip, a tick per on/off
+one), then **All filters**, then **Custom**. `T-one-filters-button`.
+
+**The panel has the same button.** Each scope's Filters button is the toolbar's
+— one module, `core/ui/filters-button.ts` — and a SHUT scope leads its menu
+with every filter it hides, as a folded bar does. `T-a-shut-scope-folds-like-a-bar`.
+The scope's buttons have their own row, under its heading.
+
+### 17.5 Asked for next — 2026-09-25
+
+1. **The sections are Added Filters, Available Filters and Custom Filters**, and
+   a filter is in ONE of them: an added saved filter is under Added only.
+2. **Save filter opens a `sherpa-dialog`**, not the browser's `prompt()`.
+3. **Add condition is an icon button with a plus**, at the end of the LAST
+   condition row. Every row before it shows Remove instead.
+4. **The breakpoint swap re-asks the data layer.** Below its width the panel
+   goes and the toolbars come back, but a hide/show swap never re-queries, so
+   each shows the data shape the other left. Add and remove them, or re-query
+   on the show.
 
 
 ---

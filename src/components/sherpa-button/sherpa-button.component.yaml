@@ -50,6 +50,9 @@ anatomy:
               - slot: badge
                 attrs:
                   data-accepts: badge
+                children:
+                  - el: sherpa-badge
+                    class: badge-value
           - el: span
             class: menu-slot
             children:
@@ -73,7 +76,7 @@ props:
     type: string
     observed: true
     kind: style
-    description: trailing badge glyph/text value (or slot a node into "badge")
+    description: the text of the trailing sherpa-badge (or slot a node into "badge")
   - $type: prop
     name: data-icon-end
     type: string

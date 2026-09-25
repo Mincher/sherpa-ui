@@ -19,7 +19,7 @@
   Public API:
     data-type      data (default) | view   (view adds the ★/Save/▾ group)
     data-panel-mode  a filter PANEL is answering for this bar: AI, Reset, the
-                  panel toggle and Add filter are hidden, and a `data` bar goes
+                  panel toggle and Filters are hidden, and a `data` bar goes
                   entirely. TRAP T-panel-mode-hides-what-the-panel-answers
     data-no-actions  hide the built-in cluster entirely (host owns the trailing end)
     data-favourite   the ★ is lit (view type) — the value, IN
@@ -71,20 +71,6 @@
     <div class="chips" part="chips"></div>
 
     <!--
-      THE OVERFLOW CHIP — where filter chips go when there is no room.
-
-      Chips fold in from the END of the run, so the fold order is the reverse of
-      the unfold order. CSS reveals it; #reflow() sets the count. It is a real
-      <sherpa-quick-filter> so it reads as one of the run; its menu lists the
-      folded chips, each opening a submenu carrying that chip's real menu.
-    -->
-    <!-- NO data-current here: More is active only when a folded chip is, and
-         the toolbar writes that. TRAP T-the-more-chip-is-a-door-not-a-filter -->
-    <sherpa-quick-filter class="overflow-chip" part="overflow-chip"
-                         data-label="More" data-icon-start="filter"
-                         data-persistent data-no-value
-                         data-locked></sherpa-quick-filter>
-    <!--
       ACTION CLUSTER — Figma's `right-actions` slot. Nothing is created at
       runtime. Icon-only buttons at the DEFAULT look (white face, 0.5px #B3B3C3
       ring) — read from the node's own pins, not tertiary. Each carries an
@@ -95,15 +81,17 @@
       <slot name="actions"></slot>
 
       <!--
-        ADD — one button, label plus an END caret (Figma 150:3688
-        right-actions[0]); the instance's icon-start is `visible: false`.
+        FILTERS — ONE button for every filter: the chips folded away for want
+        of room (its badge counts them), every filter to add, and the saved
+        ones. Chips fold in from the END of the run. Figma 150:3688
+        right-actions[0]. TRAP T-one-filters-button
 
         A <sherpa-menu> here must go in the button's `menu` SLOT — in the
         default slot it lands inside the label and widens the box.
       -->
       <sherpa-button class="act add-btn" data-act="add" data-size="sm"
-                     data-icon-end="triangle-down"
-                     aria-haspopup="menu">Add filter</sherpa-button>
+                     data-icon-start="plus" data-icon-end="triangle-down"
+                     aria-haspopup="menu">Filters</sherpa-button>
 
       <sherpa-button class="act" data-size="sm" data-act="ai" data-type="icon"
                      data-icon-start="wand-magic-sparkles"
@@ -175,7 +163,7 @@
     this same element, not a second template.
   -->
   <!--
-    A FOLDED TOGGLE — a boolean chip's row in the overflow menu.
+    A FOLDED TOGGLE — a boolean chip's row in the Filters menu.
 
     A chip with no `options` has nothing to drill into, so it gets the value-row
     shape rather than a drill row (whose handler needs a menu it has not got).
@@ -186,6 +174,12 @@
       <input type="checkbox" style="margin: 0; flex: 0 0 auto;" />
       <span class="qf-toggle-label"></span>
     </label>
+  </template>
+
+  <!-- The heading over the chips folded into the Filters menu. It LEADS the
+       menu's own rows. TRAP T-one-filters-button -->
+  <template class="qf-section-tpl">
+    <p class="menu-section" data-lead></p>
   </template>
 
   <!-- A reader's OWN saved filter opens these. TRAP T-edit-unpacks-a-saved-filter -->

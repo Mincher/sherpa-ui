@@ -553,7 +553,7 @@ test('several live stores can feed ONE shared store', async () => {
 });
 
 test('the `sherpa-ui/data` entry point is importable and usable in Node', async () => {
-  /* WHAT THIS GUARDS: `dist/index.js` exports all 58 components, and importing
+  /* WHAT THIS GUARDS: `dist/index.js` exports all 62 components, and importing
      a component DEFINES a custom element — so `import 'sherpa-ui'` throws
      "HTMLElement is not defined" in Node. The data layer was always headless;
      there was no DOOR into it until this entry point existed.

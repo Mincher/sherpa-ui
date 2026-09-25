@@ -90,6 +90,7 @@ anatomy:
                   class: scope-add
                   attrs:
                     data-size: sm
+                    data-icon-start: plus
                     data-icon-end: triangle-down
                     aria-haspopup: menu
                 - el: sherpa-button
@@ -214,8 +215,13 @@ events:
     name: filter-panel-reopen
     bubbles: true
     composed: true
+  - $type: event
+    name: menu-change
+    bubbles: true
+    composed: true
 tokens:
   field.column-gap: "{sherpa.display-mode-space-xs}"
+  scope-actions.gap: "{sherpa.display-mode-space-2xs}"
 $extensions:
   sherpa:
     methods:

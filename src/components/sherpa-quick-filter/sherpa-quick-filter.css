@@ -209,8 +209,8 @@
   max-inline-size: none;
 }
 
-/* A chip with no VALUE to name — the More chip opens a list of filters, not
-   values; its badge says how many are inside. */
+/* A chip with no VALUE to name — a column heading's filter and sort chips,
+   whose column says what they act on. */
 :host([data-no-value]) .caret-label { display: none; }
 
 .caret-label:empty {

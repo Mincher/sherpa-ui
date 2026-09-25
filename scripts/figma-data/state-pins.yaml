@@ -59,6 +59,8 @@ sherpa-button:
   '&[disabled]': inactive
   '&[disabled][data-look="transparent"]': transparent/inactive
   '&[disabled][data-look="saturated"]': saturated/inactive
+  # The badge is a Badge instance pinned Style=default — never the button's tint.
+  '& .badge-value': default
 
 sherpa-nav-item:
   # Navigation Item pins Transparent=default at its root. A promo is its own

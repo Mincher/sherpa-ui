@@ -1411,10 +1411,11 @@ test('the bar folds its actions, then its chips, and never wraps', async ({ page
         // ONE LINE, at every width. Wrapping pushed the bar to two rows and the
         // action cluster then sat against a short second line, not the bar's end.
         rows: new Set(on.map((c) => Math.round(c.getBoundingClientRect().y))).size,
-        overflowChip: shown('.overflow-chip'),
+        // The Filters button counts what folded into it.
+        badge: sr.querySelector('.add-btn')?.getAttribute('data-badge') ?? null,
         ellipsis: shown('.act[data-act="overflow"]'),
-        // Add survives every fold: putting a filter ON the bar is the one action
-        // a collapsed bar still needs.
+        // Filters survives every fold: putting a filter ON the bar, or reaching
+        // one that folded, is what a collapsed bar still needs.
         add: shown('.act[data-act="add"]'),
       };
     };
@@ -1427,7 +1428,7 @@ test('the bar folds its actions, then its chips, and never wraps', async ({ page
   expect(r.wide.collapse).toBeNull();
   expect(r.wide.folded).toBeNull();
   expect(r.wide.ellipsis).toBe(false);
-  expect(r.wide.overflowChip).toBe(false);
+  expect(r.wide.badge).toBeNull();
   expect(r.wide.rows).toBe(1);
 
   // MID: the ACTIONS have folded and the ⋮ has appeared to hold them.
@@ -1435,13 +1436,13 @@ test('the bar folds its actions, then its chips, and never wraps', async ({ page
   expect(r.mid.ellipsis).toBe(true);
   expect(r.mid.rows).toBe(1);
 
-  // NARROW: chips fold too, and the overflow chip appears to hold them.
+  // NARROW: chips fold too, into the Filters menu, and its badge counts them.
   expect(Number(r.narrow.folded)).toBeGreaterThan(0);
-  expect(r.narrow.overflowChip).toBe(true);
+  expect(Number(r.narrow.badge)).toBe(Number(r.narrow.folded));
   expect(Number(r.narrow.chipsOnBar)).toBeLessThan(Number(r.mid.chipsOnBar));
   expect(r.narrow.rows).toBe(1);
 
-  // Add is still there at every width.
+  // Filters is still there at every width.
   for (const step of [r.wide, r.mid, r.narrow]) expect(step.add).toBe(true);
 });
 
@@ -1453,7 +1454,7 @@ test('the bar folds its actions, then its chips, and never wraps', async ({ page
  * pointer crosses a gap, and no way for two cards to disagree about what is
  * ticked — which is exactly what a hover-spawned submenu got wrong.
  */
-test('the overflow menu drills into a folded filter and back out', async ({ page }) => {
+test('the Filters menu drills into a folded filter and back out', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
       rendered?: Promise<void>;
@@ -1476,7 +1477,7 @@ test('the overflow menu drills into a folded filter and back out', async ({ page
     await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
 
     const sr = el.shadowRoot!;
-    const chip = sr.querySelector('.overflow-chip') as HTMLElement & { rendered?: Promise<void> };
+    const chip = sr.querySelector('.add-btn') as HTMLElement & { rendered?: Promise<void> };
     await chip.rendered;
     const menu = chip.querySelector('sherpa-menu') as HTMLElement & {
       rendered?: Promise<void>;
@@ -1495,7 +1496,10 @@ test('the overflow menu drills into a folded filter and back out', async ({ page
       drill: menu.hasAttribute('data-drill'),
       heading: menu.shadowRoot.querySelector('.heading')?.textContent,
       // The rows ARE the folded filters, or ARE that filter's values.
-      firstRow: menu.firstElementChild?.className ?? menu.firstElementChild?.tagName,
+      firstRow: (() => {
+        const first = [...menu.children].find((n) => !n.classList.contains('menu-section'));
+        return first?.className || first?.tagName;
+      })(),
       trail: getComputedStyle(menu.shadowRoot.querySelector('.drill-trail')!).display !== 'none',
       open: getComputedStyle(menu.shadowRoot.querySelector('.menu')!).display !== 'none',
     });
@@ -1505,7 +1509,7 @@ test('the overflow menu drills into a folded filter and back out', async ({ page
       ...snap(),
       // The badge counts the FOLDED FILTERS — "three are in here" is what a
       // reader needs before opening it.
-      badge: chip.dataset['count'],
+      badge: chip.getAttribute('data-badge'),
       rowCount: rows.length,
       // Composed components, not hand-rolled markup.
       rowTag: rows[0]?.tagName,
@@ -1539,7 +1543,7 @@ test('the overflow menu drills into a folded filter and back out', async ({ page
 
   // The overflow list: composed list items, one per folded filter.
   expect(r.list.drill).toBe(false);
-  expect(r.list.heading).toBe('More filters');
+  expect(r.list.heading).toBe('Filters');
   expect(r.list.rowTag).toBe('SHERPA-LIST-ITEM');
   expect(Number(r.list.badge)).toBe(r.list.rowCount);
   expect(r.list.trail).toBe(false);
@@ -1556,7 +1560,7 @@ test('the overflow menu drills into a folded filter and back out', async ({ page
 
   // BACK: the list is restored and the menu stays open.
   expect(r.out.drill).toBe(false);
-  expect(r.out.heading).toBe('More filters');
+  expect(r.out.heading).toBe('Filters');
   expect(r.out.firstRow).toBe('qf-folded');
   expect(r.out.open).toBe(true);
 });
@@ -1791,7 +1795,7 @@ test('a folded BOOLEAN filter ticks in place; one with options still drills', as
     ]);
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const sr = el.shadowRoot!;
-    for (let i = 0; i < 25 && !sr.querySelector('.overflow-chip sherpa-menu .qf-toggle'); i++) {
+    for (let i = 0; i < 25 && !sr.querySelector('.add-btn sherpa-menu .qf-toggle'); i++) {
       await new Promise((res) => setTimeout(res, 100));
     }
     /* …AND WAIT FOR THE FOLD TO SETTLE. The rows existing is not the same as
@@ -1808,8 +1812,8 @@ test('a folded BOOLEAN filter ticks in place; one with options still drills', as
       await new Promise((res) => requestAnimationFrame(() => res(null)));
       await new Promise((res) => setTimeout(res, 40));
     }
-    const menu = sr.querySelector('.overflow-chip sherpa-menu');
-    if (!menu) return { err: 'no overflow menu' };
+    const menu = sr.querySelector('.add-btn sherpa-menu');
+    if (!menu) return { err: 'no Filters menu' };
 
     const toggles = [...menu.querySelectorAll<HTMLElement>('.qf-toggle')]
       .map((t) => t.dataset['for']);
@@ -1852,15 +1856,11 @@ test('a folded BOOLEAN filter ticks in place; one with options still drills', as
 });
 
 /**
- * Ticking a folded boolean must not re-point the MORE chip.
- *
- * "More" is CHROME, not a filter: it stands for "these filters are folded in
- * here", its badge counts FOLDED FILTERS, and the rows in its menu belong to
- * other chips. A chip normally derives `data-current` and `data-count` from its
- * own menu — so without `data-locked` the first tick turned More OFF and wiped
- * its badge.
+ * Ticking a folded on/off chip must not re-count the Filters button. It is
+ * CHROME, not a filter: its badge counts FOLDED FILTERS, and it reads ON while
+ * one of them is. TRAP T-the-filters-button-is-a-door-not-a-filter
  */
-test('a locked chip keeps its own state when its menu changes', async ({ page }) => {
+test('the Filters button follows a folded chip on and off, and its badge never moves', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'data', 'style': 'max-inline-size: 300px' });
     el.populate([
@@ -1871,7 +1871,7 @@ test('a locked chip keeps its own state when its menu changes', async ({ page })
     ]);
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const sr = el.shadowRoot!;
-    for (let i = 0; i < 25 && !sr.querySelector('.overflow-chip sherpa-menu .qf-toggle'); i++) {
+    for (let i = 0; i < 25 && !sr.querySelector('.add-btn sherpa-menu .qf-toggle'); i++) {
       await new Promise((res) => setTimeout(res, 100));
     }
     /* …AND WAIT FOR THE FOLD TO SETTLE. The rows existing is not the same as
@@ -1890,16 +1890,15 @@ test('a locked chip keeps its own state when its menu changes', async ({ page })
     }
     // RE-QUERY every time. A row can be re-stamped when the fold is recomputed,
     // and a handle held across that reports the OLD element's state.
-    const more = (): HTMLElement => sr.querySelector<HTMLElement>('.overflow-chip')!;
+    const more = (): HTMLElement => sr.querySelector<HTMLElement>('.add-btn')!;
     const id = sr.querySelector<HTMLElement>('.qf-toggle')!.dataset['for']!;
     const box = (): HTMLInputElement =>
       sr.querySelector<HTMLInputElement>(`.qf-toggle[data-for="${id}"] input`)!;
     const chip = (): HTMLElement =>
       sr.querySelector<HTMLElement>(`.chips > .chip[data-id="${id}"]`)!;
     const snap = () => ({
-      locked: more().hasAttribute('data-locked'),
-      moreCurrent: more().hasAttribute('data-current'),
-      moreCount: more().dataset['count'] ?? null,
+      moreCurrent: more().getAttribute('data-status') === 'active',
+      moreCount: more().getAttribute('data-badge'),
       chip: chip().hasAttribute('data-current'),
     });
     const start = snap();
@@ -1911,11 +1910,7 @@ test('a locked chip keeps its own state when its menu changes', async ({ page })
     return { start, ticked, unticked: snap() };
   });
 
-  expect(r.start.locked).toBe(true);
-  /* A LOCKED chip does not flip ITSELF — the host owns its state. What the host
-     writes is a different question: More reports whether a folded filter is on,
-     so it follows the row rather than sitting on.
-     TRAP T-the-more-chip-is-a-door-not-a-filter */
+  // It reports whether a folded filter is on, so it follows the row.
   expect(r.start.moreCurrent).toBe(false);
   expect(r.ticked.moreCurrent).toBe(true);
   expect(r.unticked.moreCurrent).toBe(false);
@@ -2332,12 +2327,10 @@ test('allowFields limits the chips AND the Add menu, and null restores both', as
 });
 
 /**
- * More is a DOOR to filters, not a filter. `data-current` was hard-coded in the
- * template, so it drew as an applied filter while every chip behind it was off —
- * the one state on the bar that could never be wrong in the reader's favour.
- * TRAP T-the-more-chip-is-a-door-not-a-filter
+ * The Filters button is a DOOR to filters, not a filter: it reads ON only while
+ * a chip folded into it is. TRAP T-the-filters-button-is-a-door-not-a-filter
  */
-test('the More chip is active only when a folded filter is', async ({ page }) => {
+test('the Filters button is active only when a folded filter is', async ({ page }) => {
   const r = await page.evaluate(async () => {
     // Narrow, so everything but the first chip folds.
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'data', 'style': 'max-inline-size: 300px' });
@@ -2349,7 +2342,7 @@ test('the More chip is active only when a folded filter is', async ({ page }) =>
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = el.shadowRoot!;
-    for (let i = 0; i < 25 && !sr.querySelector('.overflow-chip sherpa-menu .qf-toggle'); i++) {
+    for (let i = 0; i < 25 && !sr.querySelector('.add-btn sherpa-menu .qf-toggle'); i++) {
       await new Promise((res) => setTimeout(res, 100));
     }
     // Wait for the fold to SETTLE — the ResizeObserver fires more than once.
@@ -2362,16 +2355,16 @@ test('the More chip is active only when a folded filter is', async ({ page }) =>
       await new Promise((res) => setTimeout(res, 40));
     }
 
-    const more = sr.querySelector('.overflow-chip') as HTMLElement;
-    const menu = sr.querySelector('.overflow-chip sherpa-menu');
-    if (!more || !menu) return { err: 'no overflow chip' };
+    const more = sr.querySelector('.add-btn') as HTMLElement;
+    const menu = sr.querySelector('.add-btn sherpa-menu');
+    if (!more || !menu) return { err: 'no Filters menu' };
 
     const settled = async (): Promise<void> => {
       await (window as unknown as { __settled: () => Promise<void> }).__settled();
       await new Promise((res) => setTimeout(res, 60));
     };
     const state = (): { more: boolean; activeFolded: string[] } => ({
-      more: more.hasAttribute('data-current'),
+      more: more.getAttribute('data-status') === 'active',
       activeFolded: [...sr.querySelectorAll<HTMLElement>('.chips > .chip[data-folded-away]')]
         .filter((c) => c.hasAttribute('data-current'))
         .map((c) => c.dataset['id'] ?? ''),
@@ -2499,7 +2492,7 @@ test('an external chip GIVEN its condition opens a menu on it', async ({ page })
 });
 
 /**
- * The More chip drills into a folded filter by MOVING its menu's rows. A
+ * The Filters menu drills into a folded filter by MOVING its menu's rows. A
  * conditions-only menu has none — its answer is the condition rows in its own
  * shadow DOM — so drilling showed a blank card, the filter could never be
  * answered, never went active, and never filtered.
@@ -2508,7 +2501,7 @@ test('an external chip GIVEN its condition opens a menu on it', async ({ page })
  */
 test('a FOLDED custom-only filter opens its own menu, not a blank drill', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    // NARROW, so the filters fold into More.
+    // NARROW, so the filters fold into the Filters menu.
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'style': 'max-inline-size: 260px' });
     el.populate([
       { id: 'status', label: 'Status', select: 'multiple',
@@ -2522,7 +2515,7 @@ test('a FOLDED custom-only filter opens its own menu, not a blank drill', async 
     }
 
     const sr = el.shadowRoot!;
-    const overflow = sr.querySelector<HTMLElement>('.overflow-chip')!;
+    const overflow = sr.querySelector<HTMLElement>('.add-btn')!;
     const row = overflow.querySelector<HTMLElement>('.qf-folded[data-for="email"]');
     const menu = sr.querySelector('.chip[data-id="email"] sherpa-menu') as
       (HTMLElement & { shadowRoot: ShadowRoot }) | null;
@@ -2539,7 +2532,7 @@ test('a FOLDED custom-only filter opens its own menu, not a blank drill', async 
       mode: menu.getAttribute('data-mode'),
       // ...with a condition row a reader can actually type into.
       hasConditionRow: !!menu.shadowRoot.querySelector('.condition-row'),
-      // ...and the More menu was NOT filled with its (empty) light DOM.
+      // ...and the Filters menu was NOT filled with its (empty) light DOM.
       overflowStillListsFilters: overflowMenu.querySelectorAll('.qf-folded, .qf-toggle').length > 0,
     };
   });

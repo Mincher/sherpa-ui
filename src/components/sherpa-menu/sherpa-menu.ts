@@ -637,7 +637,9 @@ export class SherpaMenu extends SherpaElement {
         under = false;
         continue;
       }
-      const hit = !q || (row.textContent ?? '').toLowerCase().includes(q);
+      // A composed row draws its name in its own shadow root, so say it here.
+      const text = row.getAttribute('data-label') ?? row.textContent ?? '';
+      const hit = !q || text.toLowerCase().includes(q);
       // JS writes the flag; CSS owns the hiding.
       row.toggleAttribute('data-filtered-out', !hit);
       if (hit) {
@@ -828,7 +830,9 @@ export class SherpaMenu extends SherpaElement {
       section = item.section;
       rows.push(stamp(item));
     }
-    const out: Element[] = all ? [all, ...rows] : rows;
+    // SELECT ALL belongs to the section it heads, so it follows a leading heading.
+    const head = rows[0]?.classList.contains('menu-section') ? [rows.shift()!] : [];
+    const out: Element[] = all ? [...head, all, ...rows] : [...head, ...rows];
     /* KEEP what the menu does not own. A caller's own rows — a Select-all, a
        Remove action — live here too, and a blanket replace ate them the moment
        this stamped late. Only the menu's own items are replaced. */
@@ -838,8 +842,11 @@ export class SherpaMenu extends SherpaElement {
       }
     }
     /* FIRST, keeping whatever the caller put below — in practice a Remove
-       action, which a chip appends after this. */
+       action, which a chip appends after this. A caller's row marked
+       `data-lead` stays above them all. TRAP T-one-filters-button */
     this.prepend(...out);
+    const lead = [...this.children].filter((n) => n.hasAttribute('data-lead'));
+    if (lead.length) this.prepend(...lead);
 
     /* SAY SO. A host reads its own face off the menu's values, and pre-ticked
        rows fire no native change — so a chip built before its items arrived

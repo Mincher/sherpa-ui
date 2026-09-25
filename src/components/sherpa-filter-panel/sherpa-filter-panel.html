@@ -82,21 +82,16 @@
   <!-- PROTOTYPES. Every element the panel will ever show exists here from the
        start; JS clones, it never createElement()s. -->
   <template class="scope-tpl">
-    <!-- THE SAME BUTTON the toolbar shows, attribute for attribute: this is a
-         MOVE, not a recreation, and a reader must not have to notice. -->
-    <!-- ADD FILTER sits in its OWN row under the heading, in the accordion's
-         `description` slot — beside the chevron it crowded the title in a
-         360px column. The SAME button the toolbar shows, attribute for
-         attribute: this is a MOVE, not a recreation. -->
     <sherpa-accordion class="scope" open>
-      <!-- ADD FILTER rides the same right-hand column the field actions do,
-           still in the accordion's header. -->
+      <!-- The ACTIONS slot, so a press is never a toggle; the CSS gives the
+           buttons their own row under the heading.
+           TRAP T-an-accordion-action-is-not-a-toggle -->
       <span slot="actions" class="scope-actions">
         <!-- The SAME button the toolbar shows, attribute for attribute: this
              is a MOVE, not a recreation, and a reader must not have to notice. -->
         <sherpa-button class="scope-add" data-size="sm"
-                       data-icon-end="triangle-down"
-                       aria-haspopup="menu">Add filter</sherpa-button>
+                       data-icon-start="plus" data-icon-end="triangle-down"
+                       aria-haspopup="menu">Filters</sherpa-button>
         <!-- The whole scope as ONE saved filter. TRAP T-the-panel-saves-a-whole-scope -->
         <sherpa-button class="scope-save" data-size="sm">Save filter</sherpa-button>
       </span>
@@ -143,6 +138,28 @@
       <button type="button" value="edit">Edit filter</button>
       <button type="button" value="delete">Delete filter</button>
     </sherpa-menu>
+  </template>
+
+  <!-- A SHUT scope's filters, leading its Filters menu — the rows the toolbar
+       folds its chips into. TRAP T-a-shut-scope-folds-like-a-bar -->
+  <template class="qf-section-tpl">
+    <p class="menu-section" data-lead></p>
+  </template>
+  <template class="qf-folded-tpl">
+    <sherpa-list-item class="qf-folded" data-interactive>
+      <sherpa-tag class="qf-folded-count" slot="trailing" hidden></sherpa-tag>
+      <!-- Decorative: the whole ROW is the click target. -->
+      <sherpa-button class="qf-folded-caret" slot="trailing" data-type="icon"
+                     data-size="xs" data-look="transparent" tabindex="-1"
+                     aria-hidden="true"
+                     data-icon-start="chevron-right"></sherpa-button>
+    </sherpa-list-item>
+  </template>
+  <template class="qf-toggle-tpl">
+    <label class="qf-toggle">
+      <input type="checkbox" style="margin: 0; flex: 0 0 auto;" />
+      <span class="qf-toggle-label"></span>
+    </label>
   </template>
 
   <!-- A scope with nothing to draw says so; empty, it reads as broken. -->

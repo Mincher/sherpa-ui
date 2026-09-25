@@ -140,6 +140,7 @@ light, 264 of 264 in dark.
 - Site: `src/components/sherpa-chip/sherpa-chip.css`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
 - Site: `src/components/sherpa-grid-cell/sherpa-grid-cell.css`
+- Site: `src/components/sherpa-badge/sherpa-badge.css`
 
 ### T-scope-does-not-stop-inheritance
 
@@ -431,8 +432,8 @@ Three things it must do in order, each one a bug if skipped:
    narrowed could never widen again, because each pass would see the collapsed
    layout as the one that fits.
 3. **Re-measure after every single fold.** A chip's width is its own; there is
-   no arithmetic that predicts how many will fit. The overflow chip is itself a
-   chip, so folding the last one and revealing it can be a net LOSS of room.
+   no arithmetic that predicts how many will fit. The Filters button that holds
+   them is always drawn, so it is in every measure.
 
 `scrollWidth > clientWidth` on the clipped run is the overflow test, read AFTER
 the resets, which force the layout the browser would have drawn with
@@ -481,27 +482,29 @@ intact, and Back is the same move in reverse. Three consequences:
 
 Drill is one level deep, never a chain: an existing drill is undone first.
 
+The move itself is `MenuDrill`, shared by the bar and the panel. The panel
+drills into a menu it BUILDS for a run of values (`T-a-shut-scope-folds-like-a-bar`).
+
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/core/ui/filters-button.ts`
 
 ### T-drill-flags-travel-and-replace
 
-`DRILL_FLAGS` (`data-commit`, `data-range`, `data-select`, `data-search`,
-`data-type`) are the menu attributes that belong to a FILTER rather than to the
-overflow card. They travel with the rows on a drill and go home with them, so a
-filter's mode is never left on the overflow list and the overflow list's never
-lands on a filter.
-
-`data-type` is in the list because a calendar needs its own LAYOUT. Without it
-a calendar dropped into a list-shaped menu had its grid crushed to a
-**hairline** — and the flag then stayed behind on the way home, so the filter's
-own menu was distorted too.
+`DRILL_FLAGS` (`data-commit`, `data-range`, `data-select`, `data-search`) are
+the menu attributes that belong to a FILTER rather than to the Filters menu.
+They travel with the rows on a drill and go home with them, so a filter's mode
+is never left on the Filters list and the list's never lands on a filter.
 
 Every flag is **restored to what the TARGET had, not merged**: an attribute the
-overflow list carried and the filter does not must go, or the filter inherits a
-mode it never asked for. On the way home the overflow list is stripped of all
-five — it is a plain list of doors: no draft to apply, no search, no calendar.
+list carried and the filter does not must go, or the filter inherits a mode it
+never asked for. On the way out the Filters menu gets its OWN settings back
+(`T-one-filters-button`).
 
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+`data-type` left the list on 2026-09-22. A drilled calendar still draws whole —
+month stepper, full grid, its own Apply — measured 2026-09-25 in the panel.
+
+- Site: `src/core/ui/filters-button.ts`
 
 ### T-path-not-target-finds-chip-host
 
@@ -3157,6 +3160,7 @@ binding went from 194 lines to 152.
 - Site: `test/unit/field-selection.test.mjs`
 - Site: `examples/contexts/records.js`
 - Site: `src/core/ui/filter-menu.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-an-operator-decides-pick-or-type
 
@@ -3419,9 +3423,9 @@ Placement itself is measured, not declared: `T-anchor-cross-root`.
 
 ### T-locked-chip-relays-and-nothing-else
 
-A LOCKED chip's menu is **not a list of ITS values** — the toolbar's More chip
-stands for "these filters are folded in here", so its rows belong to other
-chips. Nothing in there may re-point its label, its badge or its on/off state.
+A LOCKED chip's menu is **not a list of ITS values** — a data grid's column
+chip holds the grid's condition, which the grid owns. Nothing in there may
+re-point its label, its badge or its on/off state.
 
 It still RELAYS `quick-filter-change`, because the toolbar is listening for
 exactly that. And a body click still emits `quick-filter-click` without
@@ -3464,8 +3468,8 @@ Two kinds of chip are exempt, and the flag is the amber-paint bug in both:
   warning — the flag was read before the rows existed to count
   (`T-persistent-chip-is-a-selector`).
 - **LOCKED.** It cannot be judged this way at all, because a locked chip's menu
-  is not a list of its values: the More chip's rows stand for other filters, and
-  a data grid's column-filter menu holds a condition and a typed value. Either
+  is not a list of its values: a data grid's column-filter menu holds a
+  condition and a typed value. Either
   way "no rows ticked" says nothing about whether the chip is filtering, and
   reading it as "on but empty" painted a WORKING filter in the amber warning
   state — the exact colour that means "this is doing nothing"
@@ -5190,7 +5194,7 @@ either one as a pick is a visible bug:
 
 ONE DEFINITION because the two readers had DRIFTED: `sherpa-menu` excluded both,
 while the toolbar and quick-filter excluded only `.qf-all`. Harmless at the time —
-`.qf-toggle` rows only ever live in the overflow chip's menu, which the toolbar's
+`.qf-toggle` rows only ever live in the Filters menu, which the toolbar's
 chip loop does not reach — but the two were one refactor apart from disagreeing about
 what a pick is.
 
@@ -7560,32 +7564,117 @@ exists to prevent.
 - Site: `examples/contexts/records.js`
 - Site: `examples/contexts/dashboard.js`
 
-### T-the-more-chip-is-a-door-not-a-filter
+### T-one-filters-button
 
-The overflow chip carried `data-current` **hard-coded in the template**, so it
-always drew as an applied filter — while every chip it stands for was off.
+**ONE "Filters" button holds every filter: the chips folded off the run for want
+of room, every filter a reader may add, and the saved ones.** Will, 2026-09-25:
+*"We should merge the overflow 'More' button and the 'Add filter' button … into
+1 button"* — in the action group, labelled "Filters", with a plus on the left.
 
-It is the one state on a filter bar that could never be wrong in the reader's
-favour: a bar showing an active filter that is not applied says the rows are
-narrowed when they are not.
+Its menu, top to bottom:
 
-More is a DOOR to filters, not a filter. It is active when one of the chips
-BEHIND it is, and off otherwise. The chip is `data-locked`, which makes the
-toolbar the one owner of that state — so the toolbar writes it, in
-`#syncFoldedBadges()`, which already runs on every change. Writing it in
-`#renderFolded()` instead looks equivalent and is not: that runs only when the
-fold is recomputed, so ticking a folded row would not move it.
+| section | rows | a row does |
+|---|---|---|
+| More filters — only when chips are folded | a door per folded chip; a tick per folded on/off chip | opens that chip's own menu in place; flips it at once |
+| All filters — headed only under the folded ones | every removable filter, held ones ticked | adds or removes, on Apply |
+| Custom | saved filters | adds or removes, on Apply |
 
-**The BADGE is a different count and does not move.** It says how many filters
-are folded away, not how many are on — those are two questions, and a reader
-needs both.
+Its badge counts the folded chips, and it reads active while one of them is on
+(`T-the-filters-button-is-a-door-not-a-filter`).
 
-A test asserted the old behaviour in as many words — *"The MORE chip never
-moves: on throughout"*. Its real subject was that a LOCKED chip does not flip
-ITSELF, which is still true; what the host writes is a separate question.
+**The folded rows LEAD the menu's own rows.** The menu stamps its items first
+and keeps a caller's rows after them; a row marked `data-lead` is kept above
+instead. Select all follows a leading section heading, not the other way round.
+
+**A drill borrows the menu, and gives it back.** Drilling copies the folded
+chip's own settings onto the Filters menu — its Apply, its search, one pick or
+many — so the Filters menu SAVES its own first and restores them on the way
+out, with its heading. The old More menu had no settings of its own to lose.
+And while drilled, a pick is that chip's: `#onAddCommit` reports the bar
+instead of reading the rows as filters to add or remove. The bar's own Save
+waits outside a drill.
+
+**A fold rebuilds the menu**, so it closes first (`#closeOverflow`), as the
+More menu did. A chip rebuilt by `#render` is folded again before it is shown,
+so a stale fold lists nothing: only connected chips are listed.
+
+**The words, the list, the hidden rows and the drill are ONE module**,
+`core/ui/filters-button.ts`, because the filter panel has the same button
+(`T-a-shut-scope-folds-like-a-bar`). Two copies of this drifted every time
+one was touched. The rows still come from each host's OWN templates.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/core/ui/filters-button.ts`
+- Site: `test/e2e/reforged-one-filters-button.spec.ts`
+
+### T-a-shut-scope-folds-like-a-bar
+
+**A SHUT scope in the filter panel hides its filters the way a narrow bar
+folds its chips, so its Filters button does what the bar's does.** Will,
+2026-09-25: *"make the Add Filters button in the filter panel behave the same
+as the toolbar version BUT shows More Filters when the accordion is
+collapsed."*
+
+Shut, the scope's menu leads with **More filters**: every filter it draws, in
+its order — a door each, and a tick for each preset. The badge counts them and
+the button reads active while one of them is on. Open, there is no such
+section, no badge and no active state: an open scope speaks for itself.
+
+A door drills IN PLACE, as the bar's does, but the panel has fewer menus to
+borrow. Group, Sort and a date are ONE chip each, with a menu: the drill moves
+those rows. A run of values has no menu at all — its values ARE its chips — so
+the panel BUILDS one from the same def, ticked as the chips are
+(`T-one-field-one-filter-menu`), and drops it on the way out. A field answered
+by a body of its own — a number, a condition — keeps that body in the menu's
+shadow, which a drill cannot move, so its door OPENS THE SCOPE on the field.
+
+**Which scopes are shut is the panel's own**, kept across a redraw: nothing
+outside can see it, and a populate re-opened every scope the reader had shut.
+
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
+- Site: `test/e2e/reforged-panel-filters-button.spec.ts`
+
+### T-a-drilled-pick-goes-home-first
+
+**The panel puts a drilled filter's rows back BEFORE it reports the pick.**
+
+A chip reads its answer from its OWN menu. While drilled, that menu is empty —
+the rows are in the Filters menu — so a pick reported there reached a chip
+that read nothing, and its face and its report were both wrong. Home first,
+then the same `menu-change` is sent from the chip's own menu, and the chip
+and the panel take it exactly as a pick made there.
+
+A run's built menu is not a chip's, so its pick ticks the chips instead. Its
+Apply is the panel's Apply (`T-a-chip-menu-apply-is-the-panels-apply`).
+
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+
+### T-the-filters-button-is-a-door-not-a-filter
+
+**The Filters button is a DOOR to filters, not a filter.** It reads active —
+`data-status="active"` — while a chip folded INTO it is on, and off otherwise.
+
+That is the one state on a filter bar that could never be wrong in the reader's
+favour: a bar showing an active filter that is not applied says the rows are
+narrowed when they are not. The More chip it replaced once carried
+`data-current` hard-coded in its template, and always drew as applied.
+
+The toolbar writes it in `#syncFoldedBadges()`, which runs on every change —
+not only when the fold is recomputed, or ticking a folded row would not move it.
+
+**The BADGE is a different count and does not move.** `data-badge` says how
+many filters are folded away, not how many are on — two questions, and a
+reader needs both. It is a `sherpa-badge`, pinned `default` like every Badge
+instance, so the button's own active tint never reaches it.
+
+The panel's scope button is the same door, over a SHUT scope
+(`T-a-shut-scope-folds-like-a-bar`).
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 
 ### T-only-five-filter-chips-carry-an-icon
@@ -8062,6 +8151,7 @@ event still has to reach the button.
 ---
 - Site: `src/components/sherpa-accordion/sherpa-accordion.ts`
 - Site: `src/components/sherpa-accordion/sherpa-accordion.html`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 
 ### T-a-composed-chrome-row-takes-its-inline-padding-from-its-container
 
@@ -8675,12 +8765,12 @@ still names the column it would resume on.
 
 ### T-a-conditions-only-menu-cannot-be-drilled
 
-The More chip drills into a folded filter by MOVING its menu's light-DOM rows
-into the overflow menu: `into.replaceChildren(...from.childNodes)`.
+The Filters menu drills into a folded filter by MOVING that filter's light-DOM
+rows into itself: `into.replaceChildren(...from.childNodes)`.
 
 A custom-only menu has no light-DOM children. Its answer is the condition
 ROWS, which live in its own shadow DOM and are driven by `data-custom-only`
-and `data-mode` — attributes the overflow menu does not have. So drilling put a
+and `data-mode` — attributes the Filters menu does not have. So drilling put a
 blank card on screen.
 
 Three reports, one cause. Will: *"Still can't open the menu from a conditional
@@ -8693,7 +8783,7 @@ Measured: the same chip driven directly works end to end — open, type, apply,
 25 rows to 2. Only the FOLDED path failed, which is why it looked like three
 bugs.
 
-A menu with nothing to drill is SHOWN instead, anchored to the More chip. The
+A menu with nothing to drill is SHOWN instead, anchored to the Filters button. The
 rows are not the answer, so moving them is the wrong gesture.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
@@ -8900,6 +8990,7 @@ a list of them, so the list is where they are managed. Will's ruling
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `src/core/ui/filters-button.ts`
 
 ### T-the-field-type-decides-the-clause
 
@@ -11743,6 +11834,7 @@ heads.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
+- Site: `src/core/ui/filters-button.ts`
 
 ### T-row-one-is-data-op
 

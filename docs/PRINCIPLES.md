@@ -21,7 +21,7 @@ Everything below serves one separation:
 | | |
 |---|---|
 | **Data layer** | `src/core/*.ts` minus the element. Getting, setting and transforming rows. Touches no DOM, so a server, a test or an MCP tool imports it |
-| **Presentation layer** | `SherpaElement` + the 58 components. Shows what it is given; asks for what it wants; decides nothing about the data |
+| **Presentation layer** | `SherpaElement` + the 62 components. Shows what it is given; asks for what it wants; decides nothing about the data |
 
 The join is `DataSource.bind(el, options)` and nothing else. A component never
 reaches past the source to a store, and two components never speak directly.
@@ -81,8 +81,8 @@ never touches `.hidden`, `display` or `visibility` on a shadow node.
 `createElement()` for structure, no structural `innerHTML`. Repeating items use
 a cloning prototype. A typed child by tag name is not structure — `menuFor()`
 building a `<sherpa-menu>` is that. Measured 2026-09-25: ten calls, not the four
-this said; three are `menuFor`'s and the More chip's typed menus, and the other
-seven were not re-reviewed.
+this said; two are `menuFor`'s typed children, and the other eight were not
+re-reviewed.
 
 **18. Events are unprefixed `noun-verb`** — `page-change`, `tree-select`. Never
 a `sherpa-` prefix. A re-dispatched native event keeps its native name, which

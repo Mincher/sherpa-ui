@@ -39,15 +39,6 @@ anatomy:
         - el: div
           class: chips
           part: chips
-        - el: sherpa-quick-filter
-          class: overflow-chip
-          part: overflow-chip
-          attrs:
-            data-label: More
-            data-icon-start: filter
-            data-persistent: ""
-            data-no-value: ""
-            data-locked: ""
         - el: div
           class: actions-zone
           part: actions
@@ -58,6 +49,7 @@ anatomy:
               attrs:
                 data-act: add
                 data-size: sm
+                data-icon-start: plus
                 data-icon-end: triangle-down
                 aria-haspopup: menu
             - el: sherpa-button
@@ -171,8 +163,8 @@ props:
     observed: false
     kind: style
     description: >-
-      a filter PANEL is answering for this bar: AI, Reset, the panel toggle and Add filter are
-      hidden, and a `data` bar goes entirely. TRAP T-panel-mode-hides-what-the-panel-answers
+      a filter PANEL is answering for this bar: AI, Reset, the panel toggle and Filters are hidden,
+      and a `data` bar goes entirely. TRAP T-panel-mode-hides-what-the-panel-answers
   - $type: prop
     name: data-saveable
     type: string
@@ -231,9 +223,6 @@ states:
   - $type: state
     name: no-actions
     selector: ":host([data-no-actions])"
-  - $type: state
-    name: folded
-    selector: ":host([data-folded])"
   - $type: state
     name: panel-mode
     selector: ":host([data-panel-mode])"
