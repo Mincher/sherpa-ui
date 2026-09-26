@@ -2640,3 +2640,36 @@ test('the Add menu lists held AND offered, and an untick removes', async ({ page
   // And the menu re-reads as the whole list, the other way round.
   expect(r.after.sort()).toEqual(['+seats', '-status']);
 });
+
+/**
+ * A SILENT STEER STILL REDRAWS ITS CHIP. The panel's Apply sets a chip's rows
+ * with `setChipReading`, which fires no menu event — so the chip filtered the
+ * rows and kept an empty value and a stale tip. It is told to `refresh()`.
+ * TRAP T-a-silent-steer-still-redraws-its-chip
+ */
+test('a chip steered with conditions redraws its value and tip', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [
+      { id: 'owner', label: 'Owner', select: 'multiple', custom: true,
+        options: [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }] },
+      { id: 'email', label: 'Email', custom: 'only', op: 'contains' },
+    ], { style: 'inline-size: 1200px' });
+    await window.__settled();
+    const steer = el as Bar & { setChipReading(id: string, r: unknown): void };
+    steer.setChipReading('owner', { picked: [], conditions: [
+      { op: 'contains', text: 'Da' }, { op: 'startswith', text: 'R', join: 'or' }] });
+    steer.setChipReading('email', { picked: [], conditions: [{ op: 'contains', text: 'zz' }] });
+    await window.__settled();
+    await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(() =>
+      requestAnimationFrame(res))));
+    const face = (id: string) => {
+      const c = el.shadowRoot!.querySelector<HTMLElement & { valueLabel: string }>(`.chip[data-id="${id}"]`)!;
+      return { on: c.hasAttribute('data-current'), condition: c.getAttribute('data-condition'),
+        value: c.valueLabel, tip: c.shadowRoot!.querySelector<HTMLElement>('.count-wrap')?.dataset['text'] };
+    };
+    return { owner: face('owner'), email: face('email') };
+  });
+  expect(r.owner).toEqual({ on: true, condition: 'custom',
+    value: 'Contains: Da or Starts with: R', tip: '2 conditions applied' });
+  expect(r.email).toEqual({ on: true, condition: 'custom', value: 'zz', tip: '1 condition applied' });
+});

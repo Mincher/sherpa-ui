@@ -118,6 +118,9 @@ interface ChipEl extends HTMLElement {
   current: boolean;
   /** Setting these brings the chip's label and badge along. */
   values: readonly string[];
+  /** Redraw the face after a silent steer. A property type, so the spec does
+   *  not read it as one of the TOOLBAR's methods. */
+  readonly refresh: () => void;
 }
 
 /** One column the grid can be grouped or sorted by. */
@@ -531,6 +534,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         menu.dataset['mode'] = 'custom';
         menu.conditions = rows;
         chip.current = true;
+        // SILENT, so the chip is told. TRAP T-a-silent-steer-still-redraws-its-chip
+        chip.refresh();
         return;
       }
       /* NO ROWS: set the picks and LEAVE THE MODE ALONE. Which mode a menu is
@@ -905,6 +910,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // The chip draws its face from the menu it holds now; on or off as it was.
       const chip = menu.closest<ChipEl>('sherpa-quick-filter');
       if (chip) chip.current = !reading.suspended;
+      // TRAP T-a-silent-steer-still-redraws-its-chip
+      chip?.refresh();
     });
   }
 

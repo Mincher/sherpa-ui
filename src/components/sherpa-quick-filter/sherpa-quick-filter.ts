@@ -611,15 +611,38 @@ export class SherpaQuickFilter extends SherpaElement {
    * TRAP T-chip-empty-check-waits-for-onconnect
    */
   #onMenuItems = (): void => {
+    // A TICKED answer is only readable once the rows stamp.
+    if (!((this.menu?.values ?? []) as string[]).length) return;
+    this.#drawFace();
+  };
+
+  /**
+   * refresh() — redraw the FACE (value, tip, badge, condition) off the menu,
+   * once its rows have filled. For a host that set the rows SILENTLY: a steer
+   * fires no menu event, so the chip never heard it and kept a stale face.
+   * Never on or off — that stays the host's.
+   * TRAP T-a-silent-steer-still-redraws-its-chip
+   */
+  refresh(): void {
+    // A rebuilt row fills a frame late. TRAP T-a-rebuilt-row-reads-empty-for-a-tick
+    const token = ++this.#refreshing;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (token === this.#refreshing && this.isConnected) this.#drawFace();
+    }));
+  }
+
+  /** The pending `refresh()`; a later one takes over. */
+  #refreshing = 0;
+
+  /** Label, tip, badge and condition, from ONE read of the menu. */
+  #drawFace(): void {
     const values = (this.menu?.values ?? []) as string[];
-    if (!values.length) return;
     this.#syncLabelForSelection(values);
     this.#syncCountTip(values);
-    // A TICKED answer is only readable once the rows stamp.
     const state = this.#state(values);
     this.#syncBadge(filterFace(state));
     this.#syncCondition(state);
-  };
+  }
 
   /** A condition row changed: re-derive the face from it. */
   #onCondition = (): void => {

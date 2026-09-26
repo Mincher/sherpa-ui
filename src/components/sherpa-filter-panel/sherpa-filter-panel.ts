@@ -555,7 +555,10 @@ export class SherpaFilterPanel extends SherpaElement {
     box.toggleAttribute('data-chip', organise || !!def.asChip);
     box.toggleAttribute('data-clearable', !isPresets && !organise);
     box.toggleAttribute('data-removable', !isPresets && !organise && !!def.removable);
-    box.toggleAttribute('data-custom-ok', !isPresets && !organise && !!customOf(def));
+    /* A switch only where there is somewhere to switch TO: a conditions-only
+       field has no list behind it, as its menu says too. Will, 2026-09-26.
+       TRAP T-a-filter-answers-by-values-conditions-or-both */
+    box.toggleAttribute('data-custom-ok', !isPresets && !organise && customOf(def) === true);
 
     // What this field does not offer is not drawn.
     if (!box.hasAttribute('data-custom-ok')) box.querySelector('.field-custom')?.remove();

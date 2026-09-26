@@ -227,10 +227,24 @@ test('a def says custom — and the old conditions key still works', async ({ pa
     };
 
     const panel = await window.__mount<HTMLElement>('sherpa-filter-panel', [{
-      scope: 'data', label: 'Data', filters: [{ id: 'owner', label: 'Owner', custom: true, options: opts }],
+      scope: 'data', label: 'Data', filters: [
+        { id: 'owner', label: 'Owner', custom: true, options: opts },
+        { id: 'email', label: 'Email', custom: 'only', op: 'contains' },
+      ],
     }], { 'data-min-width': '0' });
-    const field = !!panel.shadowRoot!.querySelector('.field[data-field="owner"] .field-custom');
-    return { chips, column, field };
+    (panel as HTMLElement & { open(): void }).open();
+    await window.__settled();
+    const psr = panel.shadowRoot!;
+    const field = !!psr.querySelector('.field[data-field="owner"] .field-custom');
+    /* CONDITIONS ONLY: nowhere to switch to, so no switch — and its rows show
+       from the start. Will, 2026-09-26. */
+    const emailRows = psr.querySelector('.field[data-field="email"] sherpa-menu')
+      ?.shadowRoot?.querySelector('.condition-row');
+    const onlyField = {
+      switch: !!psr.querySelector('.field[data-field="email"] .field-custom'),
+      rows: !!emailRows && emailRows.getClientRects().length > 0,
+    };
+    return { chips, column, field, onlyField };
   });
 
   expect(r.chips.owner).toEqual({ custom: true, only: false, mode: 'default' });
@@ -238,4 +252,5 @@ test('a def says custom — and the old conditions key still works', async ({ pa
   expect(r.chips.old).toEqual({ custom: true, only: true, mode: 'custom' });
   expect(r.column).toEqual({ only: true, rows: 0 });
   expect(r.field).toBe(true);
+  expect(r.onlyField).toEqual({ switch: false, rows: true });
 });

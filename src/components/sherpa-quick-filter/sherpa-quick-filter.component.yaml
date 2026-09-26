@@ -289,7 +289,9 @@ capabilities:
       $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
-    description: callable from a view definition's state block (toggleMenu). See $extensions.sherpa.methods.
+    description: >-
+      callable from a view definition's state block (toggleMenu, refresh). See
+      $extensions.sherpa.methods.
 events:
   - $type: event
     name: quick-filter-click
@@ -350,6 +352,10 @@ $extensions:
         name: toggleMenu
         args: "anchor?: HTMLElement"
         description: Open or shut this chip's menu — what a HOST calls to drive the chip from
+      - $type: method
+        name: refresh
+        args: ""
+        description: refresh() — redraw the FACE (value, tip, badge, condition) off the menu,
     category: control
     variantAxes:
       - name: State

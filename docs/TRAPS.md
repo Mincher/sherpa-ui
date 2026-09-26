@@ -8933,6 +8933,11 @@ hour earlier. Two mechanisms for "this column is typed, not ticked" is one too
 many, and the condition rows already do it better — an operator, and an
 or-chain.
 
+**The PANEL asks the same question.** It drew its Conditional switch for any
+truthy `customOf()`, and `'only'` is truthy — so Email showed a switch with
+nothing behind it (Will, 2026-09-26). The switch is for `custom === true` only.
+
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
@@ -13385,3 +13390,22 @@ and a top-layer popover inherits the same way.
 - Site: `src/components/sherpa-button/sherpa-button.css`
 - Site: `src/core/sherpa-anchor.css`
 - Site: `test/e2e/reforged-button-tip.spec.ts`
+
+### T-a-silent-steer-still-redraws-its-chip
+
+**A steer is silent, so the chip must be TOLD to redraw.** Measured
+2026-09-26: after the filter panel's Apply, the rows were filtered and every
+bar chip was `data-current` and `data-condition="custom"` — but Owner showed no
+value and no tip, and Email's tip read only `Contains`. The chip draws its face
+when its menu fires an event, and `setChipReading` / a rebuild's
+`#keepAnswer` set `menu.conditions` from code, which fires none — on purpose,
+so a steer never echoes back as a reader's intent.
+
+So the chip has `refresh()`: it redraws the face (value, tip, badge, condition)
+off the menu two frames later — a rebuilt row fills a frame late
+(`T-a-rebuilt-row-reads-empty-for-a-tick`) — and never turns the chip on or
+off, which stays the host's. Both silent paths call it.
+
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
