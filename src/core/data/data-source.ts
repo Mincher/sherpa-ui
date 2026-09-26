@@ -29,6 +29,7 @@
  * - .contribute — Own ONE NAMED PART — the COMPONENT scope.
  * - .contributions — Every named part currently applied — the component-scope filters.
  * - .apply — Apply a whole control's READING of several fields, at one scope.
+ * - .answer — ONE SCOPE'S WHOLE ANSWER — a bar's report.
  * - .declareValues — every value a field can take, so each control offers the same list
  * - .declareField — Declare a field's KIND and its reader-facing name.
  * - .fieldFacts — What `declareField` was told.
@@ -122,6 +123,9 @@ export interface BindOptions {
   ignore?: readonly string[];
   /** Reshape the rows before they reach this component. TRAP T-adapter-lives-at-the-binding */
   as?: (rows: Row[], source: DataSource) => unknown;
+  /** The SCOPE this bar answers for. Its report is that scope's whole answer:
+   *  a field that has moved to another scope is no longer its to clear. */
+  scope?: string;
   /**
    * Which rows this component is given. `'page'` (the default) is the window a
    * grid draws; `'all'` is every row matching the filter, unpaged — what a
@@ -178,6 +182,8 @@ export class DataSource extends EventTarget {
       lastRows?: readonly Row[];
       /** The ONLY-THIS-COMPONENT parts it was last pushed with — see `#push`. */
       lastOwn?: string;
+      /** See BindOptions.scope. */
+      scope?: string;
       /** The fields this component answered LAST time it reported.
        *  TRAP T-a-filter-report-is-the-whole-answer */
       answered?: Set<string>;
@@ -448,6 +454,18 @@ export class DataSource extends EventTarget {
     for (const [field, reading] of Object.entries(readings)) {
       this.select(field, reading.picked ?? [], reading);
     }
+  }
+
+  /**
+   * ONE SCOPE'S WHOLE ANSWER — a bar's report. Each reading lands at its
+   * field's home; a reading that lives in this scope and is not named here is
+   * cleared. A field raised to another scope is not this one's to clear.
+   * TRAP T-a-filter-report-is-the-whole-answer · TRAP T-one-query-one-owner
+   */
+  answer(scope: string, readings: Readonly<Record<string, FieldReading>>): void {
+    const was = Object.keys(this.#applied.scopes[scope]?.readings ?? {});
+    for (const field of was) if (!(field in readings)) this.select(field, []);
+    this.apply(readings);
   }
 
   /** One field's state from a reading this source has NOT stored. */
@@ -1017,6 +1035,7 @@ export class DataSource extends EventTarget {
       rows: options.rows ?? 'page',
       ...(options.as ? { as: options.as } : {}),
       ...(options.into ? { into: options.into } : {}),
+      ...(options.scope ? { scope: options.scope } : {}),
     });
 
     // TRAP T-signal-not-a-teardown-list — drops the BINDING; `once` leaves nothing.
@@ -1080,11 +1099,14 @@ export class DataSource extends EventTarget {
            is cleared — its OWN fields only, never another control's.
            TRAP T-a-filter-report-is-the-whole-answer */
         const bind = this.#bound.get(event.currentTarget as Populatable);
-        for (const field of bind?.answered ?? []) {
-          if (!(field in readings)) this.select(field, []);
+        if (bind?.scope) this.answer(bind.scope, readings);
+        else {
+          for (const field of bind?.answered ?? []) {
+            if (!(field in readings)) this.select(field, []);
+          }
+          if (bind) bind.answered = new Set(Object.keys(readings));
+          this.apply(readings);
         }
-        if (bind) bind.answered = new Set(Object.keys(readings));
-        this.apply(readings);
         /* SAVED FILTERS: one named part each, over any fields — and one switched
            off or taken away takes its part with it.
            TRAP T-a-saved-filter-is-its-readings */

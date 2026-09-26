@@ -9406,6 +9406,12 @@ fields; a view bar reporting three fields never wipes the grid bar's two.
 The alternative — clearing every field the source holds — is the bug this
 avoids, and it only shows up with two controls on one page.
 
+A bar bound with a `scope` (or a host calling `source.answer(scope, …)`) is
+that scope's whole answer instead: it clears the readings that LIVE in its
+scope. So a field raised to the View — whose answer moves with it — is no
+longer the grid bar's to clear, and the bar's next report cannot wipe it.
+
+- Site: `examples/contexts/records.js`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-data-source.spec.ts`
 
@@ -13655,6 +13661,10 @@ scope, else the View, which narrows everyone. A `hold` or `move` carries the
 reading with its field, so the rows never change on a move. The named parts
 (`contribute`) are still compiled clauses, ANDed on top, until steps 4–5.
 
+Step 4a: the Records header answers the View scope (`source.answer`) — its
+compiled `global` part is gone, so its picks are readings in the Query.
+
+- Site: `examples/contexts/records.js`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/query.ts`
 - Site: `src/data.ts`

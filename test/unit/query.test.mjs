@@ -139,3 +139,22 @@ test('the Query a source hands out is a copy — writing to it steers nothing', 
   src.query.applied.scopes[VIEW].readings.region.picked = ['EMEA'];
   assert.deepEqual(src.selection('region').rows[0].picked, ['APAC']);
 });
+
+test('a scope\'s whole answer clears what it no longer names — never a field raised out of it', async () => {
+  const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
+  await src.ready;
+  src.offer('grid', ['status', 'region']);
+  src.hold('grid', ['status', 'region']);
+  src.answer('grid', { status: { picked: ['active'] }, region: { picked: ['EMEA'] } });
+  assert.deepEqual(ids(src.state.filter), [1, 4]);
+  // Region is RAISED: its answer goes with it, and the grid's next report
+  // does not name it.
+  src.move('region', 'grid', VIEW);
+  src.answer('grid', { status: { picked: ['active'] } });
+  assert.deepEqual(src.query.applied.scopes[VIEW].readings, { region: { picked: ['EMEA'] } });
+  assert.deepEqual(ids(src.state.filter), [1, 4]);
+  // Its own field, dropped from its report, is cleared.
+  src.answer('grid', {});
+  assert.equal(src.query.applied.scopes.grid.readings.status, undefined);
+  assert.deepEqual(ids(src.state.filter), [1, 2, 4]);
+});

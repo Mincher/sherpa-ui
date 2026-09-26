@@ -813,7 +813,9 @@ export async function init(root, { session, view } = {}) {
      its `readings` — and its presets' `savedReadings` — and applies them
      itself, which is the whole point of one query builder.
      TRAP T-one-query-builder-in-the-data-layer */
-  source.bind(qft, { steerOnly: true, signal });
+  /* Its report is the `data` scope's whole answer, so a field raised to the
+     View is no longer this bar's to clear. TRAP T-a-filter-report-is-the-whole-answer */
+  source.bind(qft, { steerOnly: true, scope: 'data', signal });
   qft.addEventListener('quick-filter-change', (e) => {
     /* An external chip's body is a TOGGLE: off means "stop applying this", not
        "delete it" — only REMOVE deletes. So this suspends and restores the
@@ -1012,8 +1014,8 @@ export async function init(root, { session, view } = {}) {
       const field = headerField(id);
       if (field && values?.length) readings[field] = { picked: values };
     }
-    // Its OWN key, so it ANDs with the chips, the columns and a saved view.
-    source.apply(readings, { reach: 'component', key: 'global' });
+    // The VIEW scope's whole answer, in the Query. TRAP T-one-query-one-owner
+    source.answer(VIEW_SCOPE, readings);
     syncHeadings();
   }, { signal });
 
@@ -1035,7 +1037,7 @@ export async function init(root, { session, view } = {}) {
       if (below[field]) carried.push([id, below[field]]);
     }
     syncScopes();
-    // The grid re-announces WITHOUT the raised field, so its selection clears.
+    // The grid re-announces WITHOUT the raised field — whose answer moved with it.
     qft.report();
     if (!carried.length) return;
     /* The new chip's menu stamps its rows a frame or two after it lands.
