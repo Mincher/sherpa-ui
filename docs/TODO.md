@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**47 open.** Reviewed 2026-09-26: one list (the draft `todo-filter-2609.md`
+**49 open.** Reviewed 2026-09-26: one list (the draft `todo-filter-2609.md`
 is merged in), 3 items culled or merged, the rest re-ordered. Numbers are ids,
 not order — the table IS the order.
 
@@ -67,14 +67,16 @@ not order — the table IS the order.
 | 38 | 25 | `sherpa-layout-canvas` + minimap | component |
 | 39 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
 | 40 | 27 | A consumer can supply their OWN templates and CSS | feature |
+| 41 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
+| 42 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
 | | | **J — Tidy-ups and renames** | |
-| 41 | 11 | `sherpa-group`: what is left | tidy |
-| 42 | 28 | A Figma component is NOT always a web component | tidy |
-| 43 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
-| 44 | 33 | Density as step offsets, and a breakpoint step | tokens |
-| 45 | 36 | CSS: compiled where it should inherit? | tidy |
-| 46 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
-| 47 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
+| 43 | 11 | `sherpa-group`: what is left | tidy |
+| 44 | 28 | A Figma component is NOT always a web component | tidy |
+| 45 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| 46 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| 47 | 36 | CSS: compiled where it should inherit? | tidy |
+| 48 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| 49 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 
 **Why this order.**
 
@@ -703,7 +705,58 @@ In `src/core/ui/sherpa-element.ts`, `static css` / `static html` are plain
 the door is open. Missing: a "default, then mine" CSS order; an API that is not
 subclass-and-redefine; and a check that a custom template still provides the
 parts, slots and classes the JS and CSS expect — the `.component.yaml`
-anatomy is the natural thing to check against.
+anatomy is the natural thing to check against. Do it with 68: "use my template" and "the
+template changed" are one mechanism.
+
+### `[ ]` 67 — A UTILITY layer: `sherpa-router`, on the Navigation API
+
+Will, 2026-09-26: *"We have a presentation layer and data layer that are
+working great together. We need to further enhance sherpa with a utility
+layer. The first candidate … will be a Sherpa Router web component for
+handling navigation. It should use the Navigation API extensively."*
+
+**Where routing lives today: the example app.** `examples/index.html` does it
+by hand — `history.pushState` / `replaceState` at four sites, a `popstate`
+listener, `urlFor()`, `contextFromURL()`, `hrefParam()` and `loadContext()`,
+23 lines of the page touching the URL. Nothing in `src/` routes.
+
+**The router owns the URL**, one owner for one value: which Context, which
+View, and whether Settings is open over them (`?context=records&view=risk&settings=profile`,
+CLAUDE.md "Navigation terms"). A nav row, a breadcrumb, the View chip and
+browser Back all REQUEST a navigation; the router intercepts it
+(`navigation.addEventListener('navigate', e => e.intercept(…))`), updates the
+URL, and reports what changed. The shell and the Context listen; none of them
+touches `history`. Settings-over-a-Context stays one navigation with two
+parts, so leaving Settings never reloads the Context.
+
+To settle when it starts: the Navigation API is not in every engine the tests
+run (check Chromium, Firefox and WebKit on the day), so decide the fallback —
+`history` + `popstate` behind the same surface, or require it. And where a
+utility lives: a component in `sherpa-ui`, or a third entry point beside
+`sherpa-ui/data` — it needs a DOM, so not the DOM-free one. This is also most
+of 37's step 4: an example app that routes through the library can leave it.
+
+### `[ ]` 68 — `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement`
+
+Will, 2026-09-26: Sherpa's equivalent of hot reloading is fetching and
+modifying HTML templates — *"this might be mashing 2 concerns together. So I'm
+open to having a Sherpa Templater component that does this. I think we do all
+of the template stuff in sherpa-element currently so it would be good to be
+able to offload that and slim the base UI component down."*
+
+**What would move out of `sherpa-element.ts` (948 lines):** `loadHtml()` and
+`loadSheet()`, the `templateCache`, `#resolveTemplate`, `#stamp` /
+`#restampIfVariantChanged` and `variantAttrs`, and `#adoptStyles`. What stays:
+props, slots, `emit`, `$` / `$$`, the lifecycle — the part every component
+needs. `T-rendered-settles-even-when-the-markup-does-not` and
+`T-template-id-read-once-was-permanent` move with the code.
+
+**Hot reload** is then the templater's job: re-fetch a changed template or
+sheet, and re-stamp every live instance of that component — keeping its
+attributes, slotted content and state, as a variant re-stamp does today. 27
+(a consumer's OWN templates and CSS) is the same door from the other side:
+"use this template instead" and "this template changed" are one mechanism.
+Do 27 with it.
 
 ---
 
