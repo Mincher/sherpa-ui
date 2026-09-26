@@ -255,6 +255,42 @@ test('a field header keeps one height with or without its buttons, and the switc
 });
 
 /**
+ * RESET ALL clears BOTH scopes — picks, presets, Group and Sort — and applies
+ * at once, as the toolbar's Reset does. Both header buttons wear the DEFAULT
+ * look. Will, 2026-09-26.
+ */
+test('Reset all clears every scope, Group and Sort too, and applies', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const heard = [];
+    for (const n of ['quick-filter-change', 'group-change', 'sort-change']) {
+      el.addEventListener(n, (e) => heard.push([n, e.detail]));
+    }
+    const before = q('.value[data-current]').map((c) => c.dataset.value);
+    press('.reset-all');
+    await new Promise((r) => setTimeout(r, 150));
+    const applied = heard.find(([n]) => n === 'quick-filter-change');
+    return {
+      before, after: q('.value[data-current]').length,
+      picked: applied ? Object.values(applied[1].readings).flatMap((f) =>
+        Object.values(f).flatMap((x) => x.picked ?? [])) : null,
+      organise: heard.filter(([n]) => n !== 'quick-filter-change'),
+      looks: ['.reset-all', '.to-toolbars'].map((s) => sr.querySelector(s).getAttribute('data-look')),
+    };
+  })()`) as { before: string[]; after: number; picked: string[] | null;
+    organise: unknown[]; looks: (string | null)[] };
+
+  expect(r.before.length).toBeGreaterThan(0);
+  expect(r.after).toBe(0);
+  expect(r.picked).toEqual([]);
+  expect(r.organise).toEqual([
+    ['group-change', { scope: 'data', field: null }],
+    ['sort-change', { scope: 'data', field: null, direction: 'asc' }],
+  ]);
+  expect(r.looks).toEqual([null, null]);
+});
+
+/**
  * ONE SEARCH, ACROSS EVERY VALUE. It hides value chips, never field labels: a
  * reader searching "gold" still needs to see that Gold is a Tier.
  */

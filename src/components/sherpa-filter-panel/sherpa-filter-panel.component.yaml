@@ -35,13 +35,21 @@ anatomy:
             data-icon: filter
           children:
             - el: sherpa-button
+              class: reset-all
+              part: reset-all
+              attrs:
+                slot: actions
+                data-type: icon
+                data-size: sm
+                data-icon-start: arrow-rotate-left
+                aria-label: Reset all filters
+            - el: sherpa-button
               class: to-toolbars
               part: to-toolbars
               attrs:
                 slot: actions
                 data-type: icon
                 data-size: sm
-                data-look: transparent
                 data-icon-start: fullscreen-exit
                 aria-label: Filter in the toolbars instead
             - el: sherpa-input-text
@@ -184,10 +192,17 @@ events:
     name: group-change
     bubbles: true
     composed: true
+    detail:
+      field: unknown
+      scope: unknown
   - $type: event
     name: sort-change
     bubbles: true
     composed: true
+    detail:
+      direction: string
+      field: unknown
+      scope: unknown
   - $type: event
     name: filter-save
     bubbles: true

@@ -181,6 +181,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
   override onRender(): void {
     this.$('.to-toolbars')?.addEventListener('button-click', this.#onClose);
+    this.$('.reset-all')?.addEventListener('button-click', this.#onResetAll);
     this.$('.search')?.addEventListener('input', this.#onSearch);
     this.$('.apply')?.addEventListener('button-click', this.#onApply);
     this.$('.discard')?.addEventListener('button-click', this.#onDiscard);
@@ -1241,6 +1242,30 @@ export class SherpaFilterPanel extends SherpaElement {
     }
     this.#syncAllAnswered();
     this.#onEdited();
+  };
+
+  /** RESET ALL: every field in both scopes, Group and Sort too, then applied —
+   *  as the toolbar's Reset is. Will, 2026-09-26. */
+  #onResetAll = (): void => {
+    for (const held of this.#held.values()) {
+      for (const one of held.values.querySelectorAll<HTMLElement>('.value')) {
+        if (this.#heldOfChip(one) !== held) continue;
+        one.removeAttribute('data-current');
+        delete one.dataset['direction'];
+      }
+      const menu = held.menu as (HTMLElement & {
+        conditions?: readonly FieldCondition[]; conditionValue?: string }) | undefined;
+      if (menu?.conditions?.length) menu.conditions = [];
+      if (menu?.conditionValue) menu.conditionValue = '';
+    }
+    for (const scope of new Set([...this.#held.values()].map((h) => h.scope))) {
+      if (this.#held.has(`${scope}:group`)) this.emit('group-change', { scope, field: null });
+      if (this.#held.has(`${scope}:sort`)) {
+        this.emit('sort-change', { scope, field: null, direction: 'asc' });
+      }
+    }
+    this.#syncAllAnswered();
+    this.#onApply();
   };
 
   /** The header's switch back to the toolbars. */
