@@ -63,6 +63,16 @@
 }
 .act-divider { flex: 0 0 auto; }
 
+/* A DIVIDER needs a neighbour on BOTH sides. Will, 2026-09-26. `.bar:has()`,
+   as `:host(:has())` fails in Chromium. TRAP T-a-divider-needs-a-neighbour-on-both-sides */
+:host(:not([data-has-organise]))
+  .bar:not(:has(.chips > .chip:not([data-folded-away], [data-panelled]))) .view-zone::after,
+.bar:not(:has(.chips > .chip:not([data-folded-away], [data-panelled]))) .organise-zone::after {
+  display: none;
+}
+/* Panel mode takes every action before it. */
+:host([data-panel-mode]:not([data-has-actions])) .act-divider { display: none; }
+
 .chips {
   display: flex;
   /* Overflow is answered by the Filters button, never by reflow. `min-inline-size:

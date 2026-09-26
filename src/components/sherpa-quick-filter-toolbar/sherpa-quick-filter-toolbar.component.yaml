@@ -226,6 +226,9 @@ states:
   - $type: state
     name: panel-mode
     selector: ":host([data-panel-mode])"
+  - $type: state
+    name: not-has-organise
+    selector: ":host(:not([data-has-organise]))"
 capabilities:
   - $type: capability
     api: js-property-mirror

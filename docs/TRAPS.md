@@ -7611,6 +7611,25 @@ one was touched.
 - Site: `src/core/ui/filters-button.ts`
 - Site: `test/e2e/reforged-one-filters-button.spec.ts`
 
+### T-a-divider-needs-a-neighbour-on-both-sides
+
+**A toolbar divider shows only with something on both sides of it.** Will,
+2026-09-26. The three dividers — after the View zone, after the Organise zone,
+and in the action group — each went on standing alone:
+
+| divider | alone when |
+|---|---|
+| View zone's | no Organise zone and no chip shown after it — a panel took them all |
+| Organise zone's | no chip shown after it |
+| the action group's | panel mode hides every action before it |
+
+CSS only: the rules read what the chip run SHOWS — a chip neither folded away
+nor drawn by a panel — through `.bar:has()`, because `:host(:has())` fails in
+Chromium. A folded chip is not display:none, so it must be named, not assumed.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
+- Site: `test/e2e/reforged-toolbar-dividers.spec.ts`
+
 ### T-add-condition-sits-below-the-rows
 
 **Add condition is a labelled button in the default look, BELOW the last
