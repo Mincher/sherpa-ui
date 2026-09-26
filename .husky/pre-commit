@@ -150,4 +150,17 @@ if [ $MAP_RESULT -ne 0 ]; then
   exit 1
 fi
 
+# A REFACTOR DELETES WHAT IT REPLACES. Lines per file may only fall; growth
+# is recorded on purpose with `npm run check:size -- --update-baseline`.
+# Will, 2026-09-26 — docs/QUERY-DESIGN.md §10.
+echo "📏 Checking no file grew past its baseline..."
+SIZE_OUT=$(npm run check:size --silent 2>&1)
+SIZE_RESULT=$?
+
+if [ $SIZE_RESULT -ne 0 ]; then
+  echo "$SIZE_OUT"
+  echo "❌ A file grew. Delete what it replaced, or record the growth: npm run check:size -- --update-baseline. Commit blocked."
+  exit 1
+fi
+
 echo "✅ Pre-commit checks passed!"

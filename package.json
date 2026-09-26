@@ -51,6 +51,7 @@
     "map:write": "node scripts/code-map.mjs --write",
     "check:map": "node scripts/code-map.mjs --check",
     "check:extensions": "node scripts/check-extensions.mjs",
+    "check:size": "node scripts/check-size.mjs",
     "format": "prettier --write 'src/**/*.css'",
     "format:check": "prettier --check 'src/**/*.css'",
     "mcp": "node mcp-server/index.js",
