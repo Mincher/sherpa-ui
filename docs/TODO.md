@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**47 open.** Reviewed 2026-09-26: one list (the draft `todo-filter-2609.md`
+**49 open.** Reviewed 2026-09-26: one list (the draft `todo-filter-2609.md`
 is merged in), 3 items culled or merged, the rest re-ordered. Numbers are ids,
 not order — the table IS the order.
 
@@ -21,60 +21,62 @@ not order — the table IS the order.
 | | | **A — Quick wins** | |
 | 1 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
 | | | **B — Bugs: the app says one thing and does another** | |
-| 2 | 44c | A heading shows an answer held at VIEW scope | bug |
-| 3 | 42 | A legend toggle filters the whole view | bug |
-| 4 | 61 | Add customer saves with required fields empty | bug |
-| 5 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
-| 6 | 45 | A picked date does not show in the chip | bug |
-| 7 | 16 | Favourite and Save apply to the Context, not the View | bug |
-| 8 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
+| 2 | 72 | Adding a second conditional filter resets the first | bug |
+| 3 | 44c | A heading shows an answer held at VIEW scope | bug |
+| 4 | 42 | A legend toggle filters the whole view | bug |
+| 5 | 61 | Add customer saves with required fields empty | bug |
+| 6 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
+| 7 | 45 | A picked date does not show in the chip | bug |
+| 8 | 16 | Favourite and Save apply to the Context, not the View | bug |
+| 9 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
 | | | **C — Filters: Will's features** | |
-| 9 | 62 | Apply and Discard only for a REMOTE fetch; a debug flag spoofs one | feature |
-| 10 | 66 | The footer owns "nothing to save": Save and Cancel wait for a change | feature |
-| 11 | 46 | A PENDING state: changed, not yet applied | feature |
-| 12 | 60 | Once applied, a chip's badge shows the number of results | feature |
-| 13 | 49 | A preset conditional chip shows its conditions, read-only | feature |
-| 14 | 50 | A custom conditional chip shows its conditions, editable | feature |
-| 15 | 47 | More than 20 values: one chip, not a run | feature |
-| 16 | 48 | A child menu opens on hover or click of its row | feature |
-| 17 | 21c | A condition's matches must ALL highlight | feature |
-| 18 | 21f | "Send to view filters" | feature |
-| 19 | 21b | Which header chips carry over between views | feature |
-| 20 | 20b | The Date filter should be a view-scope date RANGE | feature |
-| 21 | 21d | EXPLORE — conditions for a DATE field | explore |
-| 22 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
+| 10 | 62 | Apply and Discard only for a REMOTE fetch; a debug flag spoofs one | feature |
+| 11 | 66 | The footer owns "nothing to save": Save and Cancel wait for a change | feature |
+| 12 | 46 | A PENDING state: changed, not yet applied | feature |
+| 13 | 60 | Once applied, a chip's badge shows the number of results | feature |
+| 14 | 49 | A preset conditional chip shows its conditions, read-only | feature |
+| 15 | 50 | A custom conditional chip shows its conditions, editable | feature |
+| 16 | 47 | More than 20 values: one chip, not a run | feature |
+| 17 | 48 | A child menu opens on hover or click of its row | feature |
+| 18 | 21c | A condition's matches must ALL highlight | feature |
+| 19 | 21f | "Send to view filters" | feature |
+| 20 | 21b | Which header chips carry over between views | feature |
+| 21 | 20b | The Date filter should be a view-scope date RANGE | feature |
+| 22 | 21d | EXPLORE — conditions for a DATE field | explore |
+| 23 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
 | | | **D — The filter family, finished** | |
-| 23 | 38 | One model, one builder, one owner — what is left | refactor |
-| 24 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
+| 24 | 38 | One model, one builder, one owner — what is left | refactor |
+| 25 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | | | **E — Views and navigation** | |
-| 25 | 70 | EXPLORE — a view definition bundles its filters; one JSON renders the page | explore |
-| 26 | 15 | Save a View, and the Save split-button menu | feature |
-| 27 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
-| 28 | 34 | Figma: use the Navigation terms | figma |
+| 26 | 70 | EXPLORE — a view definition bundles its filters; one JSON renders the page | explore |
+| 27 | 73 | EXPLORE — one compiled QUERY, built as the reader sets it up, run on Apply | explore |
+| 28 | 15 | Save a View, and the Save split-button menu | feature |
+| 29 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
+| 30 | 34 | Figma: use the Navigation terms | figma |
 | | | **F — Data states and charts** | |
-| 29 | 58 | Loading, empty and error states in a container | feature |
-| 30 | 9b | A Data Viz header, for metrics and chart containers | component |
-| 31 | 14 | An example of real-time data | feature |
-| 32 | 59 | EXPLORE, later — Will's own loading pattern | explore |
+| 31 | 58 | Loading, empty and error states in a container | feature |
+| 32 | 9b | A Data Viz header, for metrics and chart containers | component |
+| 33 | 14 | An example of real-time data | feature |
+| 34 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | | | **G — Overlay panels** | |
-| 33 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
-| 34 | 23 | A focused grid row opens a details panel | feature |
+| 35 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
+| 36 | 23 | A focused grid row opens a details panel | feature |
 | | | **H — The accessibility gate** | |
-| 35 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
+| 37 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
 | | | **I — The big builds** | |
-| 36 | 25 | `sherpa-layout-canvas` + minimap | component |
-| 37 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
-| 38 | 27 | A consumer can supply their OWN templates and CSS | feature |
-| 39 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
-| 40 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
+| 38 | 25 | `sherpa-layout-canvas` + minimap | component |
+| 39 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
+| 40 | 27 | A consumer can supply their OWN templates and CSS | feature |
+| 41 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
+| 42 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
 | | | **J — Tidy-ups and renames** | |
-| 41 | 11 | `sherpa-group`: what is left | tidy |
-| 42 | 28 | A Figma component is NOT always a web component | tidy |
-| 43 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
-| 44 | 33 | Density as step offsets, and a breakpoint step | tokens |
-| 45 | 36 | CSS: compiled where it should inherit? | tidy |
-| 46 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
-| 47 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
+| 43 | 11 | `sherpa-group`: what is left | tidy |
+| 44 | 28 | A Figma component is NOT always a web component | tidy |
+| 45 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| 46 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| 47 | 36 | CSS: compiled where it should inherit? | tidy |
+| 48 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| 49 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 
 **Why this order.**
 
@@ -106,6 +108,16 @@ background fill. (base / +1 / +2 are default / hover / down.) Bind the Style
 name, never a Theme colour: a state is the mode's own step. Open sections keep
 today's fill. **Wait for the other session**: `sherpa-accordion.css` has its
 uncommitted edits in the working tree.
+
+### `[ ]` 72 — BUG: adding a second conditional filter resets the first
+
+Will, 2026-09-26: with Owner already answered by a condition, he added a
+second conditional filter — Email — and on Apply the Owner condition was
+reset completely. Adding a field REBUILDS the bar (`#addFilters` → `#render`),
+and a rebuilt menu reads empty until it stamps
+(`T-a-rebuilt-bar-reads-empty-until-its-menus-stamp`); `#keepAnswer` carries
+a chip's rows across a rebuild. Reproduce in the toolbar AND the panel, and
+read the TOTAL before and after.
 
 ### `[ ]` 44c — BUG: a heading shows an answer held at VIEW scope
 
@@ -508,6 +520,38 @@ Settle before building: is the JSON a superset of `SavedView` or its
 replacement; how it meets the templates (68's templater, 27's own
 templates); and how much of it is 38's "a component DECLARES the data it
 needs". Design first — 15 builds on the answer.
+
+### `[ ]` 73 — EXPLORE: one compiled QUERY, built as the reader sets it up, run on Apply
+
+Will, 2026-09-26: *"A query language that is compiled as conditions
+(grouping, sorting, filtering, conditions, segmentation, aggregation etc.)
+are built up. The data layer compiles this query then executes it when
+triggered (e.g. user clicks apply). The aim here is to avoid reloads,
+refreshes, state changes etc. causing a loss of set up parameters. The data
+layer can probably also use this query to help inform other UI components
+alongside the component state tracking feature. We probably have a
+proto-version of this going already but it needs work if we do."*
+
+**The proto-version, as it stands:**
+
+| piece | where | what it is |
+|---|---|---|
+| `ViewState` | `data-source.ts` | filter, sort, group, search, page — one flat state |
+| named parts + field readings | `DataSource` (`contribute`, `select`) | the filter is COMPOSED from them, and `state.filter` is the composed result |
+| the clause grammar | `store.ts` (`Filter`, `andFilter`, `picksClause`) | the query's filter language |
+| `FieldReading` → clause | `filter-state.ts` (`fieldState`, `readingClause`, `clauseConditions`) | a reader's answer as data, compiled one way |
+| aggregation | `aggregate.ts` (`reduceRows`, `countBy`, `seriesBy`) | run by hand in the example's `as` closures |
+| `debugState()`, `ViewSnapshot` | source, `persist-view.ts` | the query read back, and saved |
+
+**What is missing:** the query is not ONE object. Filter parts, readings,
+sort and group live in the source; segmentation and aggregation live in each
+Context's code; and `state.filter` is the compiled OUTPUT, which is why a
+restored one showed rows no chip explained (21e). A single query — every
+parameter, in the reader's own terms, compiled on demand — could be the one
+thing that is saved (21e), shared (70's view definition), applied on a
+trigger (62's remote Apply), and read by every control to draw itself (38
+step 3). Design it with 70; 62's "only a remote fetch needs Apply" decides
+when it runs.
 
 ### `[ ]` 15 — Save a View, and the Save split-button menu
 
