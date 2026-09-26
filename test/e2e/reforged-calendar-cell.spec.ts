@@ -8,12 +8,13 @@ import { test, expect } from './harness';
 
 test('each State paints the fill the node names, on the inner content box', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const mk = async (state?: string) => {
+    const mk = async (state?: string, disabled = false) => {
       const cell = document.createElement('sherpa-calendar-cell') as HTMLElement & {
         rendered?: Promise<void>;
       };
       cell.setAttribute('data-label', '15');
       if (state) cell.setAttribute('data-state', state);
+      if (disabled) cell.setAttribute('disabled', '');
       document.getElementById('root')!.appendChild(cell);
       await cell.rendered;
       const content = cell.shadowRoot!.querySelector('.content') as HTMLElement;
@@ -51,6 +52,7 @@ test('each State paints the fill the node names, on the inner content box', asyn
     return {
       default: await mk(),
       today: await mk('today'),
+      todayOff: await mk('today', true),
       selected: await mk('selected'),
       rangeMid: await mk('range-mid'),
       active: [active[0], active[1], active[2], active[3] ?? 1],
@@ -67,6 +69,8 @@ test('each State paints the fill the node names, on the inner content box', asyn
   // today → style-surface/info at 30% (#008BBA4D). Today is a statement of
   // fact, not a selection, which is why it is the info tint and not the active.
   expect(r.today.bg).toEqual([0, 139, 186, 0.3]);
+  // A DISABLED today — no records that day — is still today. Will, 2026-09-26.
+  expect(r.todayOff.bg).toEqual(r.today.bg);
 
   // selected → Figma pins Style=active; an on state is the mode's BASE step.
   // TRAP T-a-state-colour-binds-the-style-mode

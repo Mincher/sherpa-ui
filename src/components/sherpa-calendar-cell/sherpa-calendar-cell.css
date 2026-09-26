@@ -85,5 +85,6 @@
 }
 :host([disabled]) .content {
   color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */
-  background: transparent;
 }
+/* A disabled TODAY is still today — a day with no records keeps its fill. */
+:host([disabled]:not([data-state="today"])) .content { background: transparent; }
