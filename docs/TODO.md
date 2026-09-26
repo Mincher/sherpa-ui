@@ -127,7 +127,12 @@ when it runs.
 together — the query object, the view definition, and when Apply runs — as a
 page Will reviews before any of it is built.
 
+**The design is written: `docs/QUERY-DESIGN.md`** (2026-09-26), with three
+questions for Will at its end. Nothing is built until he has answered them.
+
 ### `[ ]` 70 — EXPLORE: a view definition bundles its filters; one JSON renders the page
+
+**Designed with 73 — see `docs/QUERY-DESIGN.md`.**
 
 Will, 2026-09-26, ruling on 21e: a View change is a clean slate (both bars
 empty their filter chips) — *"but default filter fields, values, and states
@@ -157,6 +162,8 @@ templates); and how much of it is 38's "a component DECLARES the data it
 needs". Design first — 15 builds on the answer.
 
 ### `[ ]` 62 — Apply and Discard only for a REMOTE fetch; a debug flag spoofs one
+
+**Designed with 73 — see `docs/QUERY-DESIGN.md`.**
 
 Will, 2026-09-26: *"Apply and Discard are actions that are only needed if
 there is a data fetch that reaches outside the Data Layer. If the change is
