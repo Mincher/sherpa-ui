@@ -787,7 +787,14 @@ export async function init(root, { session, view } = {}) {
     }
     /* The grid's heading takes a ready CLAUSE, which is the one shape that
        carries either answer. */
-    grid.setColumnFilter(field, stateClause(state) ?? null);
+    const clause = stateClause(state) ?? null;
+    /* …but an EMPTY answer never wipes a heading condition it could not have
+       made. `At risk` sets `status ne churned` on the grid; the view's own reset
+       emptied Status 13ms later, and this cleared the view's filter with it.
+       TRAP T-an-empty-selection-never-wipes-a-condition */
+    const held = grid.columnClause(field);
+    const selectionShaped = !held || Array.isArray(held[2]) || held[1] === 'eq';
+    if (clause || selectionShaped) grid.setColumnFilter(field, clause);
   }, { signal });
 
   /* NO `ignore` for `quick-filter-change`: the bound source asks the bar for
@@ -1045,6 +1052,9 @@ export async function init(root, { session, view } = {}) {
           : null;
         if (FIELD_CHIPS.has(col.field) && (picks || !clause)) {
           source.select(col.field, picks ?? []);
+          /* …and a `col:` chip an EARLIER view put up for a condition goes: a
+             field chip answers it now, and the old phrase stayed on the bar. */
+          qft.addExternalFilter({ id: `col:${col.field}`, label: col.header, value: null });
           continue;
         }
         qft.addExternalFilter({

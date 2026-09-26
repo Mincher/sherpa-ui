@@ -386,3 +386,39 @@ test('a view change resets a header chip the new view does not set', async ({ pa
   // All of Ravi's accounts — the view's own filter, and nothing the chip claims.
   await expect.poll(read).toEqual({ total: 12, region: false });
 });
+
+/**
+ * A VIEW'S OWN COLUMN CONDITION HOLDS. At risk sets `status ne churned` on the
+ * grid; the view's reset emptied Status a moment later and the selection mirror
+ * wiped the condition — 20 rows where 13 are at risk. Going back to All left
+ * the old `col:status` phrase on the bar. TRAP T-an-empty-selection-never-wipes-a-condition
+ */
+test('At risk keeps its own column condition, and All drops its chip', async ({ page }) => {
+  await page.goto('http://localhost:4200/?context=records');
+  await page.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot
+      ?.querySelector('.row, [role="row"]'));
+  const pick = (id: string) => page.evaluate((v) => {
+    const bar = document.querySelector('sherpa-app-shell > sherpa-app-header sherpa-quick-filter-toolbar[slot="filters"]') as
+      HTMLElement & { setChipValues(id: string, v: string[]): void; report(): void };
+    bar.setChipValues('view', [v]);
+    bar.report();
+  }, id);
+  const read = () => page.evaluate(() => {
+    const grid = document.querySelector('#context-root sherpa-data-grid') as HTMLElement & {
+      columnClause(f: string): unknown };
+    const chip = document.querySelector('#context-root sherpa-quick-filter-toolbar')!.shadowRoot!
+      .querySelector('.chip[data-id="col:status"]');
+    return {
+      total: (window as unknown as { sherpa: { source: { debugState(): { total: number } } } })
+        .sherpa.source.debugState().total,
+      clause: grid.columnClause('status'),
+      chip: chip ? chip.hasAttribute('data-current') : null,
+    };
+  });
+
+  await pick('risk');
+  await expect.poll(read).toEqual({ total: 13, clause: ['status', 'ne', 'churned'], chip: true });
+  await pick('all');
+  await expect.poll(read).toEqual({ total: 100, clause: null, chip: null });
+});

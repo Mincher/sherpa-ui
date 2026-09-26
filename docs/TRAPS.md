@@ -13469,3 +13469,21 @@ lives in memory and dies with the page.
 - Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-records-persist.spec.ts`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
+
+### T-an-empty-selection-never-wipes-a-condition
+
+**An empty field selection must not wipe a column condition it could not have
+made.** Records mirrors every `selection-change` onto the grid's heading, so
+one field reads the same in the chip, the panel and the column. Measured
+2026-09-26: At risk set `status ne churned` on the grid; the view change's own
+reset emptied Status 13ms later, and the mirror wrote `null` over the view's
+condition — 20 rows where 13 are at risk.
+
+A selection can only hold PICKS (`eq` / `in`). So the mirror writes an EMPTY
+answer only over a heading that holds picks or nothing; a condition such as
+`ne` stays, owned by its `col:` chip. And when a field chip answers a column
+again, a `col:` chip an earlier view put up is taken down, or its phrase
+stayed on the bar after going back to All.
+
+- Site: `examples/contexts/records.js`
+- Site: `test/e2e/reforged-view-chips.spec.ts`
