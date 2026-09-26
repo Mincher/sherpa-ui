@@ -9600,7 +9600,7 @@ returned nothing — a chip full of answered rows reported an EMPTY clause. That
 one is the quietest of the three: the chip looks right, the badge is right, the
 menu is right, and the grid does not move.
 
-- Site: `examples/contexts/records.js`
+- Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
 ---

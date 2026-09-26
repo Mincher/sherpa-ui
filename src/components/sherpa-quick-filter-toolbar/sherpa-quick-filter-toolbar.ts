@@ -559,6 +559,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
+   * drawReading(field, reading) — a bound source tells this bar one field's
+   * answer, whoever set it. SILENT, as every steer is. A SUPERSEDED chip keeps
+   * the reader's own picks for when the view lets go.
+   * TRAP T-a-superseded-chip-suspends-it-is-never-removed
+   */
+  drawReading(field: string, reading: FieldReading): void {
+    if (this.superseded.includes(field)) return;
+    this.setChipReading(field, reading);
+  }
+
+  /**
    * supersede([...ids]) — the VIEW now owns these fields.
    *
    * The chips are SUSPENDED, never removed: each keeps its value and its place,

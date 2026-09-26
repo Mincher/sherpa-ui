@@ -753,8 +753,9 @@ export async function init(root, { session, view } = {}) {
   const FIELD_CHIPS = new Set(['status', 'plan', 'tier', 'owner']);
   for (const field of FIELD_CHIPS) source.declareValues(field, valuesOf(field));
 
-  /* Every control over a field re-reads when ANY of them changes it. The grid's
-     column menu is the one that had no way to hear before. */
+  /* The grid's column menu and the open panel re-read when ANY control changes
+     a field. The BAR needs none of this: its bound source draws it.
+     TRAP T-one-query-one-owner */
   /* The headings this mirror has written, so an empty answer clears only its
      own. TRAP T-an-empty-selection-never-wipes-a-condition */
   const mirrored = new Set();
@@ -762,27 +763,9 @@ export async function init(root, { session, view } = {}) {
     const { field } = e.detail;
     const state = source.selection(field);
     const picked = state.values.filter((v) => v.state === 'picked').map((v) => v.value);
-    /* A SUSPENDED field keeps its values and applies none of them, so steering
-       the chip would switch it straight back on — the chip is already showing
-       exactly this, which is what suspending means. Its picks are safe; only
-       the APPLYING stops. TRAP T-grid-suspend-is-not-clear */
+    /* A SUSPENDED field keeps its values and applies none of them.
+       TRAP T-grid-suspend-is-not-clear */
     if (state.fieldState === 'suspended') return;
-    /* CONDITIONS STEER TOO. This used to `return` for a field answered by rows,
-       so a condition typed in one place reached the data and NO other control
-       over the same field — the chip stayed blank while it was filtering.
-       `setChipReading` is the only write path that can carry rows.
-       TRAP T-a-conditioned-chip-answers-with-its-clause */
-    // SILENT writes, so none of them echoes back as another change.
-    /* …but NEVER into a SUPERSEDED chip. The view owns that field now, and the
-       chip keeps the reader's picks for when the view lets go — writing the
-       grid's now-empty answer into it threw them away on every raise.
-       TRAP T-a-superseded-chip-suspends-it-is-never-removed */
-    if (!(qft.superseded ?? []).includes(field)) {
-      qft.setChipReading(field, {
-        picked,
-        ...(state.conditions.length ? { conditions: state.conditions } : {}),
-      });
-    }
     /* THE OPEN PANEL FOLLOWS TOO — one field, so a reader's unapplied picks in
        the others stay. It was filled once, on open, so its Apply put its old
        answer back over what another control had just set.

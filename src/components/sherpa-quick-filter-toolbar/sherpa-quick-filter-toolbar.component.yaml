@@ -240,9 +240,9 @@ capabilities:
     api: js-methods
     description: >-
       callable from a view definition's state block (setChipValues, setChipActive, setChipReading,
-      supersede, unpackFilter, deleteFilter, packFilter, setClause, report, available, addFilters,
-      removeFilter, restoreAnswers, allowFields, addExternalFilter, addCustomFilter, clearAll,
-      organise). See $extensions.sherpa.methods.
+      drawReading, supersede, unpackFilter, deleteFilter, packFilter, setClause, report, available,
+      addFilters, removeFilter, restoreAnswers, allowFields, addExternalFilter, addCustomFilter,
+      clearAll, organise). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: quick-filter-change
@@ -353,6 +353,10 @@ $extensions:
         name: setChipReading
         args: "id: string, reading: FieldReading"
         description: setChipReading(id, reading) — steer ONE chip with a whole reading.
+      - $type: method
+        name: drawReading
+        args: "field: string, reading: FieldReading"
+        description: drawReading(field, reading) — a bound source tells this bar one field's
       - $type: method
         name: supersede
         args: "ids: readonly string[], appliedAt?: string"

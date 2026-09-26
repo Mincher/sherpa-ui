@@ -158,3 +158,22 @@ test('a scope\'s whole answer clears what it no longer names — never a field r
   assert.equal(src.query.applied.scopes.grid.readings.status, undefined);
   assert.deepEqual(ids(src.state.filter), [1, 2, 4]);
 });
+
+test('a bar bound with a scope is DRAWN each answer in its scope, whoever set it', async () => {
+  const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
+  const drawn = [];
+  const bar = Object.assign(new EventTarget(), {
+    setAttribute() {}, removeAttribute() {}, hasAttribute: () => false,
+    drawReading: (field, reading) => drawn.push([field, reading]),
+  });
+  src.bind(bar, { steerOnly: true, scope: 'grid' });
+  src.hold('grid', ['status']);
+  // A heading, a legend or the panel — not the bar — answers Status.
+  src.select('status', [], { conditions: [{ op: 'contains', text: 'tri' }] });
+  // Region is the View's, so this bar is not told.
+  src.select('region', ['EMEA']);
+  assert.deepEqual(drawn, [['status', { picked: [], conditions: [{ op: 'contains', text: 'tri' }] }]]);
+  // SUSPENDED keeps the chip as it is — nothing is drawn.
+  src.suspendSelection('status');
+  assert.equal(drawn.length, 1);
+});

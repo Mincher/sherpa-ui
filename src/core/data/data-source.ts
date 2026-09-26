@@ -562,6 +562,24 @@ export class DataSource extends EventTarget {
     this.#recompose();
     // AFTER the requery, so a listener sees the state the rows were fetched for.
     this.dispatchEvent(new CustomEvent('selection-change', { detail: { field } }));
+    this.#draw(field);
+  }
+
+  /**
+   * TELL EACH BAR over this field's scope what it now holds — a chip, a heading
+   * or the panel changed it, and the bar is a VIEW of the Query, not a copy.
+   * Its CONDITIONS go too, or a chip stays blank while its field filters.
+   * A SUSPENDED field is skipped: the chip already shows it, and drawing it
+   * would switch it back on. TRAP T-one-query-one-owner · TRAP T-grid-suspend-is-not-clear
+   * TRAP T-a-conditioned-chip-answers-with-its-clause
+   */
+  #draw(field: string): void {
+    const home = this.#home(field);
+    const state = this.selection(field);
+    if (state.fieldState === 'suspended') return;
+    const picked = state.values.filter((v) => v.state === 'picked').map((v) => v.value);
+    const reading = { picked, ...(state.conditions.length ? { conditions: state.conditions } : {}) };
+    for (const [el, entry] of this.#bound) if (entry.scope === home) el.drawReading?.(field, reading);
   }
 
   /**

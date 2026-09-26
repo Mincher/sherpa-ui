@@ -12,11 +12,14 @@
  * - Populatable — An element that takes a data payload.
  * - applyState — Apply a `state` block through an element's own public API.
  */
+import type { FieldReading } from '../data/filter-state.js';
 
 /** An element that takes a data payload. TRAP T-populatable-declared-four-times */
 export interface Populatable extends HTMLElement {
   populate?: (data: unknown) => void | Promise<void>;
   rendered?: Promise<void>;
+  /** One field's answer, drawn SILENTLY — a bound bar told what its scope now holds. */
+  drawReading?: (field: string, reading: FieldReading) => void;
 }
 
 /** A list of CALLS, not one argument list? TRAP T-state-value-may-be-a-call-list */
