@@ -273,6 +273,8 @@
            Row one has no join select; every later row starts with one. -->
       <div class="condition-rows" part="condition-rows" role="group"
            aria-label="Custom conditions"></div>
+      <sherpa-button class="add-condition" part="add-condition"
+                     data-icon-start="plus">Add condition</sherpa-button>
     </div>
 
     <!-- Without this the card collapses to an empty box and reads as broken. -->
@@ -288,7 +290,7 @@
          chip menu and a column heading menu drifted into different controls.
          No `id`, so the multi-template parser leaves them alone.
          TRAP T-one-field-one-filter-menu -->
-    <!-- CONDITION ROW — [And|Or] [condition] [value] [x|+]. The join is dropped on
+    <!-- CONDITION ROW — [And|Or] [condition] [value] [x]. The join is dropped on
          the first row in CSS, never removed, so re-ordering cannot lose it.
          `.sherpa-group` snaps the three into one object by POSITION.
          TRAP T-a-filter-menu-has-two-modes -->
@@ -310,11 +312,6 @@
         <sherpa-button class="drop-condition" data-type="icon"
                        data-icon-start="cross"
                        aria-label="Remove condition"></sherpa-button>
-        <!-- ADD ends the LAST row, in the place Remove takes on every row
-             before it. TRAP T-add-condition-ends-the-last-row -->
-        <sherpa-button class="add-condition" data-type="icon"
-                       data-icon-start="plus"
-                       aria-label="Add condition"></sherpa-button>
       </div>
     </template>
 

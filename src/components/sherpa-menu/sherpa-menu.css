@@ -151,7 +151,8 @@
 
 /* DEFAULT mode shows the search; CUSTOM mode shows the condition rows.
    One filter, two views of it. TRAP T-a-filter-menu-has-two-modes */
-.condition-rows { display: none; }
+.condition-rows,
+.add-condition { display: none; }
 
 :host([data-type="filter"]) .search { grid-area: filter; }
 
@@ -161,13 +162,21 @@
   display: grid;
   row-gap: var(--sherpa-display-mode-space-xs, 8px);
 }
+/* ADD CONDITION sits BELOW the last row, labelled, in the default look.
+   Will, 2026-09-26. TRAP T-add-condition-sits-below-the-rows */
+:host([data-mode="custom"]) .add-condition {
+  display: inline-flex;
+  grid-area: add;
+  justify-self: start;
+}
 :host([data-mode="custom"]) .header {
   grid-template-areas:
     "heading  mode"
-    "filter   filter";
+    "filter   filter"
+    "add      add";
 }
 
-/* ONE OBJECT per row: [And|Or] [condition] [value] [x|+], snapped with no gap by
+/* ONE OBJECT per row: [And|Or] [condition] [value] [x], snapped with no gap by
    `.sherpa-group`, which squares the inner corners by POSITION. */
 .condition-row {
   display: grid;
@@ -183,26 +192,26 @@
   align-items: center;
 }
 
-/* Row ONE has no join. The LAST row ends in Add; every row before it ends in
-   Remove. All HIDDEN, never removed — a re-order gives the control straight
-   back. TRAP T-add-condition-ends-the-last-row */
+/* Row ONE has no join, and a lone row has nothing to drop. Both are HIDDEN,
+   never removed — a re-order gives the control straight back. */
 .condition-row[data-first] .join,
-.condition-row[data-last] .drop-condition,
-.condition-row:not([data-last]) .add-condition { display: none; }
+.condition-row[data-only] .drop-condition { display: none; }
 .condition-row[data-first] { grid-template-columns: minmax(6.5rem, 2fr) minmax(0, 3fr) auto; }
+.condition-row[data-only] { grid-template-columns: minmax(6.5rem, 2fr) minmax(0, 3fr); }
 
 /* THE GROUP'S REAL ENDS. `.sherpa-group` squares corners by POSITION, and a
    `display: none` sibling still counts as `:first-child` / `:last-child` — so
-   the join (hidden on row one) took the rounded start, and the Add (hidden on
-   every row but the last) the rounded end, while the controls a reader can
-   see kept square ones. Both ends are stated.
+   the join (hidden on row one) and the Remove (hidden on a lone row) took the
+   rounded ends while the controls a reader can see kept square ones.
+   Three of the five children are conditional, so both ends are stated.
    TRAP T-a-hidden-sibling-still-counts-as-first-child */
 .condition-row[data-first] > .condition {
   --sherpa-border-left: var(--sherpa-display-mode-border-width-sm, 0.5px);
   --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
   --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
-.condition-row:not([data-last]) > .drop-condition {
+.condition-row[data-only][data-takes="list"] > .condition-pick,
+.condition-row[data-only][data-takes="text"] > .condition-value {
   --sherpa-border-right: var(--sherpa-display-mode-border-width-sm, 0.5px);
   --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
   --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);

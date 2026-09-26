@@ -171,6 +171,11 @@ anatomy:
                 attrs:
                   role: group
                   aria-label: Custom conditions
+              - el: sherpa-button
+                class: add-condition
+                part: add-condition
+                attrs:
+                  data-icon-start: plus
           - el: p
             class: no-matches
             part: no-matches
@@ -214,12 +219,6 @@ anatomy:
                       data-type: icon
                       data-icon-start: cross
                       aria-label: Remove condition
-                  - el: sherpa-button
-                    class: add-condition
-                    attrs:
-                      data-type: icon
-                      data-icon-start: plus
-                      aria-label: Add condition
 props:
   - $type: prop
     name: data-align
