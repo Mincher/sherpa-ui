@@ -13599,3 +13599,32 @@ should be suspended, as a chip is.
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
+
+### T-a-component-part-narrows-one-component
+
+**A `component` part on the SHARED source is the View's reach under another
+name.** Will, 2026-09-26: *"Chart legend toggling is behaving like View scope
+filtering. They should only affect their chart."* `bindSelection(…, { reach:
+'component' })` contributed a named part to the source — and every component
+bound to that ONE source obeys every part, so switching a series off in the
+bar chart's legend narrowed the grid, the metrics and the donut too.
+
+So a part can name the ONE bound component it narrows:
+`source.contribute(key, filter, { only: el })`, and `bindSelection(…, { only })`
+passes it. Such a part is kept OUT of the shared query and applied to that
+component's rows as they are pushed (`#push`), and the push guard re-pushes
+when the component's own parts change. The component must be bound
+`rows: 'all'` — filtering one PAGE would lie about its total — so a part on a
+paged bind is refused and reported. A legend passes its chart, the element
+whose `legend` slot it sits in. Measured on Records: the bar chart 4 → 3 bars,
+the grid stays at 100, the donut at 4 slices.
+
+The stub source the older scope tests use records `contributions` and never
+applies them, which is why none of them caught it; the new test uses a real
+`DataSource` with a chart and a grid bound.
+
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/bind-selection.ts`
+- Site: `examples/contexts/dashboard.js`
+- Site: `examples/contexts/records.js`
+- Site: `test/e2e/reforged-filter-scope.spec.ts`

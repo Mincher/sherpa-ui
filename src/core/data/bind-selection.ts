@@ -30,7 +30,7 @@ export interface Selector extends EventTarget {
   declareValues: (field: string, values: readonly unknown[]) => void;
   /** A COMPONENT-reach control needs this; a VIEW-reach one does not.
    *  `reach`, not `scope`: TRAP T-three-things-called-scope */
-  contribute?: (key: string, filter: FilterClause | undefined) => void;
+  contribute?: (key: string, filter: FilterClause | undefined, at?: { only?: EventTarget }) => void;
 }
 
 /** How one control reads and draws a field. */
@@ -61,6 +61,12 @@ export interface SelectionBinding<T> {
    * `scope:<field>`, which is right only when there is ONE such control.
    */
   key?: string;
+  /**
+   * The ONE bound component a `component` answer narrows — a legend's own
+   * chart. Omitted, the part reaches every component on the source, which is
+   * the whole view. TRAP T-a-component-part-narrows-one-component
+   */
+  only?: EventTarget;
   /** Drop the wiring when this aborts. TRAP T-signal-not-a-teardown-list */
   signal?: AbortSignal;
 }
@@ -89,6 +95,7 @@ export function bindSelection<T extends EventTarget>(
   const known = new Set(values);
   const reach = options.reach ?? 'view';
   const key = options.key ?? `reach:${field}`;
+  const at = options.only ? { only: options.only } : {};
   source.declareValues(field, values);
 
   /* A component-scope binding needs a source that can hold a named part. The
@@ -125,7 +132,7 @@ export function bindSelection<T extends EventTarget>(
     if (reach === 'component') {
       own = [...answer];
       // ANDed under the view's, so it can only narrow further.
-      source.contribute!(key, answer.length ? [field, 'in', answer] : undefined);
+      source.contribute!(key, answer.length ? [field, 'in', answer] : undefined, at);
       /* Draw its OWN answer back. `selection-change` never fires for a part —
          it is not a field selection — so without this a control driven by
          `set()` keeps showing whatever it was last drawn with. */
@@ -150,7 +157,7 @@ export function bindSelection<T extends EventTarget>(
     control.removeEventListener(event, onControlChange);
     source.removeEventListener('selection-change', onSelectionChange);
     // A part outlives its control otherwise, and nothing else can name it.
-    if (reach === 'component') source.contribute!(key, undefined);
+    if (reach === 'component') source.contribute!(key, undefined, at);
   };
   signal?.addEventListener('abort', destroy, { once: true });
 

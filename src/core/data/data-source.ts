@@ -55,7 +55,7 @@
  * - .unbind — Stop steering and stop populating this component.
  * - .boundElements — Every component currently bound.
  */
-import { andFilter, filterFields, filterNeedles, groupSummaries, valueKey } from './store.js';
+import { andFilter, filterFields, filterNeedles, filterRows, groupSummaries, valueKey } from './store.js';
 import { fieldState, stateClause } from './filter-state.js';
 import { report } from './report.js';
 import type { Populatable } from '../ui/apply-state.js';
@@ -174,6 +174,8 @@ export class DataSource extends EventTarget {
       rows: 'page' | 'all';
       /** The rows array last handed to this component — see `#push`. */
       lastRows?: readonly Row[];
+      /** The ONLY-THIS-COMPONENT parts it was last pushed with — see `#push`. */
+      lastOwn?: string;
       /** The fields this component answered LAST time it reported.
        *  TRAP T-a-filter-report-is-the-whole-answer */
       answered?: Set<string>;
@@ -374,11 +376,34 @@ export class DataSource extends EventTarget {
    *
    * TRAP T-contribute-beats-last-writer · TRAP T-a-filter-applies-down-its-scope
    */
-  contribute(key: string, filter: Filter | undefined): void {
+  contribute(key: string, filter: Filter | undefined, at: { only?: Populatable } = {}): void {
+    /* ONE COMPONENT ONLY: a legend's switched-off series narrows ITS chart, and
+       no other bound component. Kept out of the shared query and applied to
+       that component's rows as they are pushed. Its rows must be EVERY
+       matching row — filtering one page would be a lie about the total.
+       TRAP T-a-component-part-narrows-one-component */
+    if (at.only) {
+      const bind = this.#bound.get(at.only);
+      if (bind && bind.rows !== 'all') {
+        report({
+          code: 'component-part-on-a-page',
+          message: 'contribute: a one-component part needs a `rows: "all"` bind; it was not applied.',
+          at: { key },
+        });
+        return;
+      }
+      if (filter) this.#ownParts.set(key, { el: at.only, filter });
+      else this.#ownParts.delete(key);
+      this.#push(at.only);
+      return;
+    }
     if (filter) this.#parts.set(key, filter);
     else this.#parts.delete(key);
     this.#setFilterValue(this.#composed());
   }
+
+  /** Parts that narrow ONE bound component, by key. TRAP T-a-component-part-narrows-one-component */
+  #ownParts = new Map<string, { el: Populatable; filter: Filter }>();
 
   /** Every named part currently applied — the component-scope filters. */
   get contributions(): string[] {
@@ -716,6 +741,8 @@ export class DataSource extends EventTarget {
         [...this.#readings.keys()].map((f) => [f, this.selection(f)]),
       ),
       parts: Object.fromEntries(this.#parts),
+      // …and the parts that narrow ONE component, by key.
+      ownParts: Object.fromEntries([...this.#ownParts].map(([k, p]) => [k, p.filter])),
       scopes: Object.fromEntries(this.#scopes),
       offers: Object.fromEntries(this.#offers),
       fields: Object.fromEntries(this.#fields),
@@ -962,6 +989,8 @@ export class DataSource extends EventTarget {
   unbind(el: Populatable): void {
     this.#bound.get(el)?.off();
     this.#bound.delete(el);
+    // Its OWN parts go with it. TRAP T-a-component-part-narrows-one-component
+    for (const [key, part] of this.#ownParts) if (part.el === el) this.#ownParts.delete(key);
   }
 
   /** Every component currently bound. */
@@ -1104,9 +1133,17 @@ export class DataSource extends EventTarget {
     // Skip a push that would hand over the same rows again.
     // TRAP T-no-op-load-guard
     // TRAP T-adapter-lives-at-the-binding — guard the ROWS ARRAY, not a payload.
-    const pushRows = entry?.rows === 'all' ? this.#allRows : this.#result.rows;
-    if (entry && entry.lastRows === pushRows) return;
-    if (entry) entry.lastRows = pushRows;
+    const base = entry?.rows === 'all' ? this.#allRows : this.#result.rows;
+    /* ITS OWN parts, on top of the shared query — this component's only.
+       TRAP T-a-component-part-narrows-one-component */
+    const own = [...this.#ownParts.values()].filter((p) => p.el === el).map((p) => p.filter);
+    const ownKey = JSON.stringify(own);
+    if (entry && entry.lastRows === base && entry.lastOwn === ownKey) return;
+    if (entry) {
+      entry.lastRows = base;
+      entry.lastOwn = ownKey;
+    }
+    const pushRows = own.length ? filterRows(base, andFilter(own)) : base;
 
     // populate() waits for the first render itself, so a component bound
     // before it upgraded still gets its rows.

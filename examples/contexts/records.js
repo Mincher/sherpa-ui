@@ -714,6 +714,11 @@ export async function init(root, { session, view } = {}) {
        removed cannot be switched back on here.
        TRAP T-a-filter-applies-down-its-scope */
     reach: 'component',
+    /* …and ONLY ITS CHART. A part on the shared source narrows every bound
+       component — the grid, the metrics, the other chart — which is the View's
+       reach under another name. The legend sits in its chart's `legend` slot.
+       TRAP T-a-component-part-narrows-one-component */
+    only: el.parentElement ?? undefined,
     // One part per legend, or the second would replace the first.
     key: `legend:${el.id || field}`,
     signal,

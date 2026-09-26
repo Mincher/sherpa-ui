@@ -260,3 +260,44 @@ test('suspending a field keeps its values; clearing does not', async ({ page }) 
   // CLEAR is the other instruction: the values go.
   expect(r.cleared).toEqual({ rows: 3, state: 'off', picked: '' });
 });
+
+/**
+ * A LEGEND NARROWS ITS OWN CHART, AND NOTHING ELSE. A `component` part on the
+ * SHARED source narrowed every bound component — the grid too — which is the
+ * View's reach under another name (Will, 2026-09-26: "They should only affect
+ * their chart"). `only` keeps it out of the shared query and applies it to
+ * that one component's rows. TRAP T-a-component-part-narrows-one-component
+ */
+test('a legend with `only` narrows its chart, never the grid beside it', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const got = new Map();
+    const bound = (name) => ({ populate: (rows) => got.set(name, rows.map((x) => x.os).sort().join('+')),
+      addEventListener() {}, removeEventListener() {}, setAttribute() {}, removeAttribute() {},
+      hasAttribute: () => false, getAttribute: () => null, dataset: {} });
+    const chart = bound('chart');
+    const grid = bound('grid');
+    src.bind(chart, { readonly: true, rows: 'all' });
+    src.bind(grid, { readonly: true });
+    const legend = new EventTarget();
+    legend.off = [];
+    bindSelection(legend, src, {
+      field: 'os', values: ['mac', 'win', 'linux'],
+      read: (l) => ['mac', 'win', 'linux'].filter((v) => !l.off.includes(v)),
+      draw: () => {}, event: 'legend-item-click', reach: 'component', key: 'legend', only: chart,
+    });
+    await src.load();
+    await settle();
+    legend.off = ['mac'];
+    legend.dispatchEvent(new Event('legend-item-click'));
+    await settle();
+    const d = src.debugState();
+    return { chart: got.get('chart'), grid: got.get('grid'), total: d.total,
+      shared: Object.keys(d.parts), own: Object.keys(d.ownParts) };
+  })()`) as Record<string, unknown>;
+  expect(r['chart']).toBe('linux+win');
+  expect(r['grid']).toBe('linux+mac+mac+win');
+  expect(r['total']).toBe(4);
+  expect(r['shared']).toEqual([]);
+  expect(r['own']).toEqual(['legend']);
+});
