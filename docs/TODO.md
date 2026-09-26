@@ -127,8 +127,10 @@ when it runs.
 together — the query object, the view definition, and when Apply runs — as a
 page Will reviews before any of it is built.
 
-**The design is written: `docs/QUERY-DESIGN.md`** (2026-09-26), with three
-questions for Will at its end. Nothing is built until he has answered them.
+**The design is written: `docs/QUERY-DESIGN.md`** (2026-09-26). **Decided the
+same day:** a View is markup + a JSON Query; "remote" is on the STORE, spoofed
+by a wrapping store in the data layer; build steps 1–5 first (one owner), then
+6–8. Building now, one step per commit.
 
 ### `[ ]` 70 — EXPLORE: a view definition bundles its filters; one JSON renders the page
 

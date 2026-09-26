@@ -182,12 +182,14 @@ source.query.draft     // what the reader is editing
 | is already in the data layer (local) | `applied` directly | none |
 | needs a fetch outside it (remote) | `draft` | Apply commits `draft` → `applied`, then loads |
 
-- **Remote is a fact about the FIELD** (Will: *"a debug attribute/property that
-  we can set on a filter"*): `declareField(field, { remote: true })`. A field
-  is remote if its store says so, or the flag does.
-- **The debug spoof**: `new DataSource({ store, debug: { remote: ['owner'],
-  delay: 800, fail: 0.1 } })` — a wrapping store that waits `delay` ms and
-  fails at the rate given. The example sprinkles it on two filters. 58
+- **Remote is a fact about the STORE** (decided, Will 2026-09-26: *"Remote
+  data will need to come into the data layer to be formatted ready for
+  components to use"*). A store says `remote: true`; every field on that
+  source then edits the `draft` and waits for Apply. A local store applies at
+  once, as today.
+- **The spoof lives in the data layer**: `spoofRemote(store, { delay: 800,
+  fail: 0 })` wraps any store, marks it remote, waits `delay` ms per load and
+  fails at the rate given. The example wraps one Context's store with it. 58
   (loading, empty and error states) uses the same wrapper to show each state.
 - **Pending (46)** is one derived fact: `draft.readings[f]` differs from
   `applied.readings[f]`. The chip reads it and wears the pending look.
@@ -314,7 +316,17 @@ count that may only fall — 38's plan), so each step shows what it deleted.
 
 ---
 
-## 11. Questions for Will
+## 11. Decisions — Will, 2026-09-26
+
+| # | question | answer |
+|---|---|---|
+| 1 | the view definition's format | **A** — markup for layout, JSON for the Query only |
+| 2 | where "remote" is decided | **B** — on the STORE: remote data comes into the data layer to be formatted, so the spoof is a wrapping store there (§5) |
+| 3 | build order | **A** — steps 1–5 first (one owner), then 6–8 |
+
+The questions as asked, kept for the reasoning:
+
+### The questions
 
 **1. The view definition's format.**
 - **A — markup for layout, JSON for the Query only.** Keeps the 2026-09-18
