@@ -86,3 +86,36 @@ test('panel mode survives a reload, in both directions', async ({ page }) => {
   // …and closing is remembered too, with the toolbar back.
   expect(closedAgain).toEqual({ shut: true, barBack: true });
 });
+
+/**
+ * THE PANEL IS THREE COLUMNS WIDE — exactly a 3-column card of the grid the
+ * page has with the panel shut, at every desktop width. The content keeps its
+ * own grid in what is left. Will, 2026-09-26. TRAP T-the-shell-owns-the-panel-areas
+ */
+for (const width of [1280, 1600, 1920]) {
+  test(`the filter panel is three grid columns wide at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.goto('http://localhost:4200/?context=records');
+    await page.waitForFunction(() =>
+      !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot
+        ?.querySelector('.row, [role="row"]'));
+    // A metric tile spans three columns at desktop widths.
+    const tile = () => page.evaluate(() => Math.round(document.querySelector(
+      '#context-root [data-col-span="xsmall"]')!.getBoundingClientRect().width));
+    const shut = await tile();
+
+    await page.evaluate(() => {
+      document.querySelector('#context-root sherpa-quick-filter-toolbar')!
+        .dispatchEvent(new CustomEvent('filter-configure', { bubbles: true, composed: true }));
+    });
+    await expect.poll(() => page.evaluate(() =>
+      document.querySelector('#filter-panel')!.hasAttribute('data-open'))).toBe(true);
+    const r = await page.evaluate(() => ({
+      card: Math.round(document.querySelector('#filter-panel')!.shadowRoot!
+        .querySelector('.panel')!.getBoundingClientRect().width),
+      scrolls: document.documentElement.scrollWidth > innerWidth,
+    }));
+    expect(r.card).toBe(shut);
+    expect(r.scrolls).toBe(false);
+  });
+}
