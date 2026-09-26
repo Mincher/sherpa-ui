@@ -99,23 +99,23 @@
   </template>
 
   <template class="field-tpl">
-    <!-- A FIELD: its header — the label, and the field's own buttons at the
-         right, which never move — then its chips or its body. Will, 2026-09-26. -->
+    <!-- A FIELD: its header — the label, and Clear at the right — then the
+         Conditional switch, then its chips or its body. Will, 2026-09-26. -->
     <div class="field">
       <sherpa-section-header class="field-head" data-size="sm" data-divider="none">
         <!-- The TYPE SCALE's small class, in caps and light, as a metric's title. -->
         <h3 slot="heading" class="field-title sherpa-text-small"></h3>
-        <!-- A Conditional SWITCH, as the menu's, then Clear in the DEFAULT
-             look. No Remove: the scope's Add menu is the whole list. -->
+        <!-- DEFAULT look. No Remove: the scope's Add menu is the whole list. -->
         <span slot="actions" class="field-acts">
-          <span class="field-custom">
-            <sherpa-switch class="field-custom-switch" data-type="simple"></sherpa-switch>
-            <span class="sherpa-text-small">Conditional</span>
-          </span>
           <sherpa-button class="field-clear" data-type="icon" data-size="sm"
                          data-icon-start="arrow-rotate-left"></sherpa-button>
         </span>
       </sherpa-section-header>
+      <!-- BELOW the header, as the menu's Range switch is. -->
+      <div class="field-custom">
+        <sherpa-switch class="field-custom-switch" data-type="simple"></sherpa-switch>
+        <span class="sherpa-text-small">Conditional</span>
+      </div>
       <!-- `hug`: each chip at its own width. Every other value STRETCHES its
            items to share the line, which makes a chip read as a button. -->
       <sherpa-stack class="field-values" data-direction="inline" data-gap="sm"

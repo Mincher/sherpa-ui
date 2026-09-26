@@ -220,7 +220,7 @@ test('the condition button flags the field and hides its chips', async ({ page }
  * does not jump as Clear comes and goes. A token gap sits under it.
  * Will, 2026-09-26.
  */
-test('a field header keeps one height with or without its buttons, and a gap under it', async ({ page }) => {
+test('a field header keeps one height with or without its buttons, and the switch sits under it', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     const shown = (e) => e.getClientRects().length > 0;
@@ -235,14 +235,19 @@ test('a field header keeps one height with or without its buttons, and a gap und
         gap: next ? Math.round(next.getBoundingClientRect().top - head.bottom) : null,
       };
     });
-    return read();
-  })()`) as { field: string; acts: boolean; height: number; gap: number | null }[];
+    // The Conditional switch is its OWN row, under the header. Will, 2026-09-26.
+    const owner = sr.querySelector('.field[data-field="owner"]');
+    const below = owner.querySelector('.field-custom').getBoundingClientRect().top
+      >= owner.querySelector('.field-head').getBoundingClientRect().bottom;
+    return { fields: read(), below };
+  })()`) as { below: boolean; fields: { field: string; acts: boolean; height: number; gap: number | null }[] };
 
   // Both kinds are here, so the height is tested across the change.
-  expect(r.some((f) => f.acts)).toBe(true);
-  expect(r.some((f) => !f.acts)).toBe(true);
-  expect(new Set(r.map((f) => f.height)).size).toBe(1);
-  for (const f of r) if (f.gap !== null) expect(f.gap).toBe(8);
+  expect(r.fields.some((f) => f.acts)).toBe(true);
+  expect(r.fields.some((f) => !f.acts)).toBe(true);
+  expect(new Set(r.fields.map((f) => f.height)).size).toBe(1);
+  for (const f of r.fields) if (f.gap !== null) expect(f.gap).toBe(8);
+  expect(r.below).toBe(true);
 });
 
 /**

@@ -102,27 +102,14 @@
   font-weight: var(--sherpa-font-weight-light, 300);
   text-transform: uppercase;
 }
-.field-acts {
+.field-acts { display: flex; }
+/* CLEAR only appears once there is something to clear. Will, 2026-09-24. */
+.field:not([data-answered]) .field-acts { display: none; }
+
+.field-custom {
   display: flex;
   align-items: center;
-  gap: var(--sherpa-display-mode-space-sm, 12px);
-}
-.field-custom {
-  display: inline-flex;
-  align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
-}
-/* A field with nothing to act on shows no column at all. */
-.field:not([data-clearable]):not([data-removable]):not([data-custom-ok]) .field-acts {
-  display: none;
-}
-
-/* CLEAR only appears once there is something to clear. Will, 2026-09-24. */
-.field:not([data-answered]) .field-clear { display: none; }
-
-/* A field with ONLY a Clear, and nothing to clear, shows no column. */
-.field[data-clearable]:not([data-answered]):not([data-custom-ok]) .field-acts {
-  display: none;
 }
 
 /* The search hides a VALUE; JS writes the flag, CSS owns the hiding. */
