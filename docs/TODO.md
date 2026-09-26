@@ -178,6 +178,10 @@ trigger (62's remote Apply), and read by every control to draw itself (38
 step 3). Design it with 70; 62's "only a remote fetch needs Apply" decides
 when it runs.
 
+**Will, 2026-09-26: DESIGN FIRST.** One short design covering 73, 70 and 62
+together — the query object, the view definition, and when Apply runs — as a
+page Will reviews before any of it is built.
+
 ### `[ ]` 70 — EXPLORE: a view definition bundles its filters; one JSON renders the page
 
 Will, 2026-09-26, ruling on 21e: a View change is a clean slate (both bars
