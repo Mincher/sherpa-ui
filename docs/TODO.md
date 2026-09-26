@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**49 open.** Pruned 2026-09-26: 10 items were done or stale and are gone, and
+**51 open.** Pruned 2026-09-26: 10 items were done or stale and are gone, and
 the audit that checked them found 3 new bugs. Numbers are ids, not order — the
 table IS the order. Quick wins first, then bugs, then features, then the big
 builds and the tidy-ups.
@@ -54,28 +54,30 @@ builds and the tidy-ups.
 | 30 | 17 | Breadcrumbs are for workflow, not for the nav | feature |
 | 31 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
 | 32 | 34 | Figma: use the Navigation terms | figma |
-| | | **D — Data and charts** | |
-| 33 | 13 | A sparkline does not follow its record deltas | bug |
-| 34 | 14 | An example of real-time data | feature |
-| 35 | 9b | A Data Viz header, for metrics and chart containers | component |
+| | | **D — Data states and charts** | |
+| 33 | 58 | Loading, empty and error states in a container | feature |
+| 34 | 13 | A sparkline does not follow its record deltas | bug |
+| 35 | 14 | An example of real-time data | feature |
+| 36 | 9b | A Data Viz header, for metrics and chart containers | component |
+| 37 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | | | **E — Overlay panels** | |
-| 36 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
-| 37 | 23 | A focused grid row opens a details panel | feature |
+| 38 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
+| 39 | 23 | A focused grid row opens a details panel | feature |
 | | | **F — The accessibility gate** | |
-| 38 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
+| 40 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
 | | | **G — The big builds** | |
-| 39 | 25 | `sherpa-layout-canvas` + minimap | component |
-| 40 | 26 | A `Grouped` mode for the content area | feature |
-| 41 | 35 | Layout grid: plain grid templates? | explore |
-| 42 | 27 | A consumer can supply their OWN templates and CSS | feature |
+| 41 | 25 | `sherpa-layout-canvas` + minimap | component |
+| 42 | 26 | A `Grouped` mode for the content area | feature |
+| 43 | 35 | Layout grid: plain grid templates? | explore |
+| 44 | 27 | A consumer can supply their OWN templates and CSS | feature |
 | | | **H — Tidy-ups and renames** | |
-| 43 | 11 | `sherpa-group`: what is left | tidy |
-| 44 | 28 | A Figma component is NOT always a web component | tidy |
-| 45 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
-| 46 | 33 | Density as step offsets, and a breakpoint step | tokens |
-| 47 | 36 | CSS: compiled where it should inherit? | tidy |
-| 48 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
-| 49 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
+| 45 | 11 | `sherpa-group`: what is left | tidy |
+| 46 | 28 | A Figma component is NOT always a web component | tidy |
+| 47 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| 48 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| 49 | 36 | CSS: compiled where it should inherit? | tidy |
+| 50 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| 51 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 
 **Why this order.** A is Will's live list, and he tests on the running app as
 each lands. B comes before C–G because two of A's bugs (41, 44) are two views
@@ -489,7 +491,32 @@ Each code-only difference is also in that component's `_divergence` block.
 
 ---
 
-## D — Data and charts
+## D — Data states and charts
+
+### `[ ]` 58 — Loading, empty and error states in a container
+
+Will, 2026-09-26: *"Gracefully handle data loading and loading, or no data,
+errors."* It mirrors Apex for now; it is not his favourite pattern (see 59).
+
+| state | the content area shows, IN PLACE of its content |
+|---|---|
+| loading | a spinner and a short loading message |
+| no data | the relevant empty-state illustration and message |
+| failure | the relevant illustration, the error message, and action buttons |
+
+On a failure, an action that RESOLVES the issue (Retry) is the CTA; one that
+does not (Dismiss) is a plain button.
+
+**The parts exist; the wiring does not.** `sherpa-container` already has
+`data-loading` and `loading` / `empty` / `error` slots; `sherpa-empty-state`
+has `data-illustration` = `empty | search | data | error | …` and an `action`
+slot; `sherpa-loader` is the spinner. What is missing is the DATA LAYER
+driving them: a bound source reports loading, empty and failed, and the
+container of each bound component follows — so no host writes
+`data-loading` by hand. `LoadResult` and `report()` (38 step 5.5) are the
+shapes to reuse. "No data" must not fire on a filter that matched nothing —
+that is a different message ("No matches", clear the filter), and a zero-row
+view already reads as a broken filter.
 
 ### `[ ]` 13 — A sparkline does not follow its record deltas
 
@@ -519,6 +546,20 @@ The title is NOT the normal heading: `content/font/body`, `weight/light`,
 `size/small` (12px), `line-height/small` (16px), `content/body/+1`,
 **UPPERCASE**. The filter panel's field titles use the same look
 (`sherpa-text-small`, caps, light). Compose both Buttons from `sherpa-button`.
+
+### `[ ]` 59 — EXPLORE, later: Will's own loading pattern
+
+Will, 2026-09-26, an alternative to 58 for later. Content is never replaced:
+
+- **Loading:** an INDETERMINATE loading bar along the bottom of the container
+  header (`sherpa-progress-bar data-indeterminate`), and the content locked to
+  read-only while it runs.
+- **Failure or no data:** a message BANNER in the content area that explains
+  the error and says the PREVIOUS data is still shown. It carries Retry,
+  Dismiss and the like.
+
+Build 58 so its states are data, not markup, and this is a second rendering of
+the same three states.
 
 ---
 
