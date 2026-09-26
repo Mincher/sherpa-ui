@@ -768,6 +768,16 @@ export async function init(root, { session } = {}) {
         ...(state.conditions.length ? { conditions: state.conditions } : {}),
       });
     }
+    /* THE OPEN PANEL FOLLOWS TOO — one field, so a reader's unapplied picks in
+       the others stay. It was filled once, on open, so its Apply put its old
+       answer back over what another control had just set.
+       TRAP T-an-open-panel-follows-the-data-layer */
+    if (panel?.hasAttribute('data-open')) {
+      panel.setFieldReading?.(field, {
+        picked,
+        ...(state.conditions.length ? { conditions: state.conditions } : {}),
+      });
+    }
     /* The grid's heading takes a ready CLAUSE, which is the one shape that
        carries either answer. */
     grid.setColumnFilter(field, stateClause(state) ?? null);

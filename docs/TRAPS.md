@@ -7654,6 +7654,28 @@ at once, and the dialog vanished — or stayed, with its question dropped.
 - Site: `src/components/sherpa-dialog/sherpa-dialog.ts`
 - Site: `test/e2e/reforged-dialog.spec.ts`
 
+### T-an-open-panel-follows-the-data-layer
+
+**An open filter panel follows every field another control changes.** It was
+filled ONCE, when it opened. A chart legend or a column heading then changed
+a field, the data and the bar followed, and the panel still showed the old
+answer — so its next Apply, with nothing touched, put that answer back.
+Measured on the Records page: 25 rows went back to 100.
+
+The page steers the panel from the same `selection-change` it steers the bar
+from, with `setFieldReading(id, reading)`. ONE field, not a refill: a refill
+redraws every field and throws away the reader's unapplied picks. The steer
+is that field's last Apply too, so Discard keeps it.
+
+Will asked, 2026-09-25, whether the swap at the breakpoint needs a re-query.
+Measured after the Apply fixes (`T-a-chip-press-applies-its-menus-draft`):
+the swap itself keeps every answer both ways — the bar is steered on Apply,
+and the panel is refilled when it comes back. The panel open was the hole.
+
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `examples/contexts/records.js`
+- Site: `test/e2e/reforged-panel-apply.spec.ts`
+
 ### T-a-shut-scope-folds-like-a-bar
 
 **A SHUT scope in the filter panel hides its filters the way a narrow bar

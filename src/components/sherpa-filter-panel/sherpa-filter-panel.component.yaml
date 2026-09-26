@@ -148,7 +148,7 @@ capabilities:
   - $type: capability
     api: js-methods
     description: >-
-      callable from a view definition's state block (open, close, toggle). See
+      callable from a view definition's state block (setFieldReading, open, close, toggle). See
       $extensions.sherpa.methods.
 events:
   - $type: event
@@ -225,6 +225,10 @@ tokens:
 $extensions:
   sherpa:
     methods:
+      - $type: method
+        name: setFieldReading
+        args: "id: string, reading: FieldReading"
+        description: "setFieldReading(id, reading) — steer ONE field with a whole reading: what"
       - $type: method
         name: open
         args: ""

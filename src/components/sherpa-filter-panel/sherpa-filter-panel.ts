@@ -256,6 +256,36 @@ export class SherpaFilterPanel extends SherpaElement {
     return out;
   }
 
+  /**
+   * setFieldReading(id, reading) — steer ONE field with a whole reading: what
+   * another control set while the panel shows. SILENT, like every steer, and
+   * it is that field's last Apply now, so Discard keeps it. A field drawn as
+   * one chip — Group, Sort, a date — is left alone.
+   * TRAP T-an-open-panel-follows-the-data-layer
+   */
+  setFieldReading(id: string, reading: FieldReading): void {
+    for (const [key, held] of this.#held) {
+      if (held.def.id !== id || this.#oneChip(held)) continue;
+      const rows = reading.conditions ?? [];
+      if (rows.length) {
+        this.#setCustom(held, true);
+        const menu = held.menu as (HTMLElement & { conditions?: readonly FieldCondition[] }) | undefined;
+        if (menu) menu.conditions = rows;
+      } else {
+        // NO ROWS: the picks, and the mode left as the reader set it.
+        const want = new Set((reading.picked ?? []).map(String));
+        for (const one of held.values.querySelectorAll<HTMLElement>('.value')) {
+          if (this.#heldOfChip(one) === held) {
+            one.toggleAttribute('data-current', want.has(one.dataset['value'] ?? ''));
+          }
+        }
+      }
+      this.#baseline.set(key, this.#picked(held));
+      this.#syncAnswered(held);
+      return;
+    }
+  }
+
   /** Show the panel, unless the window is too narrow.
    *  TRAP T-the-panel-is-desktop-only */
   open(): void {
@@ -930,8 +960,18 @@ export class SherpaFilterPanel extends SherpaElement {
     const held = this.#fieldOf(btn);
     if (!held) return;
     const on = !held.box.hasAttribute('data-custom');
+    this.#setCustom(held, on);
+    this.#syncAnswered(held);
+    // The menu's own words, so one reader hears both. TRAP T-one-condition-system
+    this.emit('filter-condition-change', {
+      scope: held.scope, id: held.def.id, mode: on ? 'custom' : 'default',
+    });
+  }
+
+  /** Put a field in custom mode, or take it out: its flag, its button, its menu. */
+  #setCustom(held: Held, on: boolean): void {
     held.box.toggleAttribute('data-custom', on);
-    btn.setAttribute('aria-pressed', String(on));
+    held.box.querySelector('.field-custom')?.setAttribute('aria-pressed', String(on));
 
     /* THE ROWS ARE THE MENU'S, and this field may not have needed one until
        now — a run of chips answers it otherwise. CSS shows the body off
@@ -949,12 +989,6 @@ export class SherpaFilterPanel extends SherpaElement {
       if (on) held.menu.setAttribute('data-custom', '');
       held.menu.dataset['mode'] = on ? 'custom' : 'default';
     }
-
-    this.#syncAnswered(held);
-    // The menu's own words, so one reader hears both. TRAP T-one-condition-system
-    this.emit('filter-condition-change', {
-      scope: held.scope, id: held.def.id, mode: on ? 'custom' : 'default',
-    });
   }
 
   /** Has this field been ANSWERED — any ticked chip, or a condition row?

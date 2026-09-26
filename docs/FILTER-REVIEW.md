@@ -1805,6 +1805,10 @@ The scope's buttons have their own row, under its heading.
    goes and the toolbars come back, but a hide/show swap never re-queries, so
    each shows the data shape the other left. Add and remove them, or re-query
    on the show.
+   Measured 2026-09-25, after the Apply fixes below: the swap keeps every
+   answer both ways. The hole was the panel while OPEN — it never heard a
+   field another control changed, and its Apply undid that change. It
+   follows now, one field at a time (`T-an-open-panel-follows-the-data-layer`).
 
 **Bugs, 2026-09-25.** The panel's Apply switched no preset or saved filter on
 or off: it "clicked" the bar's chip host, which a chip never hears. A field
