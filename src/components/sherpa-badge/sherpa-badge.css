@@ -7,6 +7,8 @@
   display: inline-flex;
   vertical-align: middle;
 }
+/* No count, no badge. */
+:host(:empty) { display: none; }
 
 .box {
   display: inline-flex;

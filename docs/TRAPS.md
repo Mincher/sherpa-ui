@@ -5189,20 +5189,14 @@ not a dumping ground for every icon in the system.
 
 ### T-non-value-rows-is-one-selector
 
-`NON_VALUE_ROWS` is `'.qf-all, .qf-toggle'` — the rows in a filter menu that are NOT
-values. Two checkbox shapes stand for something other than a value, and counting
-either one as a pick is a visible bug:
+`NON_VALUE_ROWS` is `'.qf-all'` — the rows in a filter menu that are NOT values.
+Select all is a control OVER the set: counted in, it reports its own "on" as a
+picked value, and the badge reads one too high with everything ticked.
 
-| row | what it is |
-|---|---|
-| `.qf-all` | Select all — a control OVER the set. Counted in, it reports its own "on" as a picked value and the badge reads one too high with everything ticked. |
-| `.qf-toggle` | a folded BOOLEAN filter — it stands for a whole CHIP, and the toolbar reports it as one, not as a value of this menu. |
-
-ONE DEFINITION because the two readers had DRIFTED: `sherpa-menu` excluded both,
-while the toolbar and quick-filter excluded only `.qf-all`. Harmless at the time —
-`.qf-toggle` rows only ever live in the Filters menu, which the toolbar's
-chip loop does not reach — but the two were one refactor apart from disagreeing about
-what a pick is.
+ONE DEFINITION because the readers had DRIFTED: `sherpa-menu` excluded two row
+shapes while the toolbar and quick-filter excluded one. The second, `.qf-toggle`
+— a folded on/off chip's tick — went on 2026-09-25, when a folded chip became a
+row with a caret (`T-a-row-opens-its-child-menu`).
 
 - Site: `src/core/ui/shared-constants.ts`
 
@@ -7581,20 +7575,19 @@ Its menu, top to bottom:
 
 | section | rows | a row does |
 |---|---|---|
-| More filters — only when chips are folded | a door per folded chip; a tick per folded on/off chip | opens that chip's own menu in place; flips it at once |
-| Added filters | every removable filter it holds, saved ones too — ticked | removes, on Apply |
+| Added filters | every filter it holds a reader can take off, ticked — and every chip folded away, with a caret | the tick removes, on Apply; the caret opens its child menu |
 | Available filters | what it may add | adds, on Apply |
 | Custom filters | the saved filters it may add | adds, on Apply |
 
-**A filter is in ONE of the last three.** Will, 2026-09-25: *"If it's in Added
-Filters then it shouldn't be in Available or Custom filters."*
+**A filter is in ONE of them.** Will, 2026-09-25: *"If it's in Added Filters
+then it shouldn't be in Available or Custom filters."* A folded chip is an ADDED
+filter, so it is a row there, not in a section of its own — there was a "More
+filters" section above, and Will folded it in the same day
+(`T-a-row-opens-its-child-menu`). A folded chip that cannot be taken off has no
+box; its row is the caret's alone.
 
 Its badge counts the folded chips, and it reads active while one of them is on
 (`T-the-filters-button-is-a-door-not-a-filter`).
-
-**The folded rows LEAD the menu's own rows.** The menu stamps its items first
-and keeps a caller's rows after them; a row marked `data-lead` is kept above
-instead. Select all follows a leading section heading, not the other way round.
 
 **A drill borrows the menu, and gives it back.** Drilling copies the folded
 chip's own settings onto the Filters menu — its Apply, its search, one pick or
@@ -7608,14 +7601,13 @@ waits outside a drill.
 More menu did. A chip rebuilt by `#render` is folded again before it is shown,
 so a stale fold lists nothing: only connected chips are listed.
 
-**The words, the list, the hidden rows and the drill are ONE module**,
+**The words, the list and the drill are ONE module**,
 `core/ui/filters-button.ts`, because the filter panel has the same button
 (`T-a-shut-scope-folds-like-a-bar`). Two copies of this drifted every time
-one was touched. The rows still come from each host's OWN templates.
+one was touched.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/core/ui/filters-button.ts`
 - Site: `test/e2e/reforged-one-filters-button.spec.ts`
 
@@ -7659,6 +7651,42 @@ at once, and the dialog vanished — or stayed, with its question dropped.
 - Site: `src/components/sherpa-dialog/sherpa-dialog.ts`
 - Site: `test/e2e/reforged-dialog.spec.ts`
 
+### T-a-row-opens-its-child-menu
+
+**A menu row can open a CHILD MENU: a caret at its end.** Will, 2026-09-25: the
+Filters menu's Added filters *"show a child menu caret (and child menu of values
+of course) during reflow of the filter chips"* — one section, in place of a
+second "More filters" section for the folded.
+
+A `MenuItem` with `drill: true` gets the caret and a `count` badge; the caret
+reports `menu-drill { value }` and the HOST drills, as it knows where the child
+menu is. `pickable: false` gives a row with no box — a filter that cannot be
+taken off — and the whole of that row opens its child menu.
+
+**The caret never ticks the row's box.** It sits inside the row's `<label>`,
+and a click on a label ticks its box; the menu calls `preventDefault` on it.
+The box is a different answer — added or not — from what the child menu holds.
+
+**An on/off chip has no menu to open**, so its child menu is BUILT for the
+drill: one row, "On" (Will's pick). In the bar it applies at once, as the
+chip's body does; in the panel it waits for Apply, as a press on the chip
+does. It is dropped on the way out.
+
+**`::slotted` reaches the row, never its children**, so the row is a GRID —
+box, label, count, caret — and needs no rule on any child. An empty
+`sherpa-badge` draws nothing (`:host(:empty)`), so a count of 0 shows no badge.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-menu-child-rows.spec.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `test/e2e/reforged-one-filters-button.spec.ts`
+- Site: `test/e2e/reforged-panel-filters-button.spec.ts`
+
 ### T-an-open-panel-follows-the-data-layer
 
 **An open filter panel follows every field another control changes.** It was
@@ -7689,12 +7717,13 @@ folds its chips, so its Filters button does what the bar's does.** Will,
 as the toolbar version BUT shows More Filters when the accordion is
 collapsed."*
 
-Shut, the scope's menu leads with **More filters**: every filter it draws, in
-its order — a door each, and a tick for each preset. The badge counts them and
-the button reads active while one of them is on. Open, there is no such
-section, no badge and no active state: an open scope speaks for itself.
+Shut, every filter the scope draws is listed under **Added filters**, in its
+order, each with a caret into its child menu — a preset's is one row, "On"
+(`T-a-row-opens-its-child-menu`). The badge counts them and the button reads
+active while one of them is on. Open, there are no carets, no badge and no
+active state: an open scope speaks for itself.
 
-A door drills IN PLACE, as the bar's does, but the panel has fewer menus to
+A caret drills IN PLACE, as the bar's does, but the panel has fewer menus to
 borrow. Group, Sort and a date are ONE chip each, with a menu: the drill moves
 those rows. A run of values has no menu at all — its values ARE its chips — so
 the panel BUILDS one from the same def, ticked as the chips are
@@ -7706,7 +7735,6 @@ shadow, which a drill cannot move, so its door OPENS THE SCOPE on the field.
 outside can see it, and a populate re-opened every scope the reader had shut.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-panel-filters-button.spec.ts`
 
 ### T-a-drilled-pick-goes-home-first

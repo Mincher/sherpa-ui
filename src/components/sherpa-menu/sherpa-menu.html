@@ -17,7 +17,6 @@
 
     values  — <label><input type="checkbox|radio" value="…" /> Label</label>
     actions — <button type="button" value="…">Label</button>
-    A caller's row marked data-lead stays above the menu's own rows.
 
   Public API:
     data-commit     show the Apply / Cancel footer and DEFER changes until Apply
@@ -99,6 +98,7 @@
     menu-cancel — Cancel was clicked; the values are already restored. detail: {}
     menu-clear  — Clear was clicked; the selection is already empty. detail: {}
     menu-select — an action row was clicked. detail: { value, label }
+    menu-drill — a row's child-menu caret. detail: { value }
     menu-open — detail: {}
     menu-close — detail: {}
     condition-change — the condition or its typed value changed.
@@ -192,6 +192,19 @@
     <!-- A SECTION heading, drawn where an item's `section` changes. -->
     <template class="menu-section-tpl">
       <p class="menu-row menu-section"></p>
+    </template>
+    <!-- A row with NO tick box: it names what it cannot pick. -->
+    <template class="menu-bare-tpl">
+      <label class="menu-row menu-row-bare"><span class="menu-row-label"></span></label>
+    </template>
+    <!-- A CHILD MENU's door, at a row's end: its pick count, then its caret.
+         TRAP T-a-row-opens-its-child-menu -->
+    <template class="menu-count-tpl">
+      <sherpa-badge class="menu-row-count"></sherpa-badge>
+    </template>
+    <template class="menu-drill-tpl">
+      <sherpa-button class="menu-row-drill" data-type="icon" data-size="xs"
+                     data-look="transparent" data-icon-start="chevron-right"></sherpa-button>
     </template>
 
     <!--
@@ -321,6 +334,19 @@
     <!-- A SECTION heading, drawn where an item's `section` changes. -->
     <template class="menu-section-tpl">
       <p class="menu-row menu-section"></p>
+    </template>
+    <!-- A row with NO tick box: it names what it cannot pick. -->
+    <template class="menu-bare-tpl">
+      <label class="menu-row menu-row-bare"><span class="menu-row-label"></span></label>
+    </template>
+    <!-- A CHILD MENU's door, at a row's end: its pick count, then its caret.
+         TRAP T-a-row-opens-its-child-menu -->
+    <template class="menu-count-tpl">
+      <sherpa-badge class="menu-row-count"></sherpa-badge>
+    </template>
+    <template class="menu-drill-tpl">
+      <sherpa-button class="menu-row-drill" data-type="icon" data-size="xs"
+                     data-look="transparent" data-icon-start="chevron-right"></sherpa-button>
     </template>
 
     <!--

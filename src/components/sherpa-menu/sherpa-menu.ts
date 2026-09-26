@@ -26,6 +26,7 @@ import '../sherpa-breadcrumbs/sherpa-breadcrumbs.js';
 import '../sherpa-input-text/sherpa-input-text.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-container-footer/sherpa-container-footer.js';
+import '../sherpa-badge/sherpa-badge.js';
 
 /** One item a menu draws for itself. */
 export interface MenuItem {
@@ -41,6 +42,13 @@ export interface MenuItem {
   /** The section it is in. A heading is drawn where the section changes.
    *  TRAP T-saved-filters-are-the-custom-section */
   section?: string;
+  /** It opens a CHILD MENU: a caret at its end, which reports `menu-drill`.
+   *  TRAP T-a-row-opens-its-child-menu */
+  drill?: boolean;
+  /** `false`: no tick box — a row naming what it cannot pick. */
+  pickable?: boolean;
+  /** How many picks its child menu holds, as a badge. */
+  count?: number;
 }
 
 /** The mode's spellings before 2026-09-25, still heard.
@@ -664,6 +672,34 @@ export class SherpaMenu extends SherpaElement {
     this.toggleAttribute('data-no-matches', !!q && shown === 0);
   };
 
+  /** A CHILD MENU's door on a row: its pick count, then its caret.
+   *  TRAP T-a-row-opens-its-child-menu */
+  #addDrill(row: HTMLElement, value: string, label: string, count: number): void {
+    row.dataset['drill'] = '';
+    row.dataset['value'] = value;
+    // The SEARCH reads this: the badge's number is not part of the name.
+    row.dataset['label'] = label;
+    const badge = this.clone('template.menu-count-tpl');
+    const caret = this.clone('template.menu-drill-tpl');
+    if (badge) {
+      badge.textContent = count > 0 ? String(count) : '';
+      row.append(badge);
+    }
+    if (caret) {
+      caret.setAttribute('aria-label', `Open ${label}`);
+      row.append(caret);
+    }
+  }
+
+  /** Write a child menu's pick count on its row. An empty badge draws nothing. */
+  setCount(value: string, count: number): void {
+    for (const row of this.querySelectorAll<HTMLElement>('.menu-row[data-drill]')) {
+      if (row.dataset['value'] !== value) continue;
+      const badge = row.querySelector('.menu-row-count');
+      if (badge) badge.textContent = count > 0 ? String(count) : '';
+    }
+  }
+
   /** Every slotted row — label rows and action buttons alike. */
   #rows(): HTMLElement[] {
     return [...this.children].filter((n): n is HTMLElement => n instanceof HTMLElement);
@@ -821,19 +857,24 @@ export class SherpaMenu extends SherpaElement {
 
     const name = `sherpa-menu-${this.dataset['heading'] ?? 'group'}`;
     const stamp = (item: MenuItem): HTMLElement => {
-      const row = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-      const box = row.querySelector('input')!;
-      box.value = item.value;
-      box.checked = !!item.selected;
-      if (single) box.name = name;
-      row.querySelector('.menu-row-label')!.textContent = item.label ?? item.value;
+      const bare = item.pickable === false ? this.clone('template.menu-bare-tpl') : null;
+      const row = bare ?? tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      const box = row.querySelector('input');
+      if (box) {
+        box.value = item.value;
+        box.checked = !!item.selected;
+        if (single) box.name = name;
+      }
+      const label = item.label ?? item.value;
+      row.querySelector('.menu-row-label')!.textContent = label;
       /* AN ATTRIBUTE, drawn by CSS: the row is light DOM, and `::slotted` cannot
          reach its children — only the row itself and its pseudo-elements.
          Said to assistive tech too, since generated content is not reliably. */
       if (item.note) {
         row.dataset['note'] = item.note;
-        box.setAttribute('aria-description', item.note);
+        box?.setAttribute('aria-description', item.note);
       }
+      if (item.drill) this.#addDrill(row, item.value, label, item.count ?? 0);
       return row;
     };
 
@@ -873,11 +914,8 @@ export class SherpaMenu extends SherpaElement {
       }
     }
     /* FIRST, keeping whatever the caller put below — in practice a Remove
-       action, which a chip appends after this. A caller's row marked
-       `data-lead` stays above them all. TRAP T-one-filters-button */
+       action, which a chip appends after this. */
     this.prepend(...out);
-    const lead = [...this.children].filter((n) => n.hasAttribute('data-lead'));
-    if (lead.length) this.prepend(...lead);
 
     /* SAY SO. A host reads its own face off the menu's values, and pre-ticked
        rows fire no native change — so a chip built before its items arrived
@@ -1350,8 +1388,19 @@ export class SherpaMenu extends SherpaElement {
 
   /** An ACTION row was clicked: report it and close; value rows stay open. */
   #onClick = (event: Event): void => {
+    /* A CHILD MENU's caret — or the whole of a row with no tick box — opens
+       it. preventDefault, or the label ticks its box as well.
+       TRAP T-a-row-opens-its-child-menu */
+    const target = event.target as HTMLElement;
+    const row = target.closest<HTMLElement>('.menu-row[data-drill]');
+    if (row && (target.closest('.menu-row-drill') || row.classList.contains('menu-row-bare'))) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.emit('menu-drill', { value: row.dataset['value'] ?? '' });
+      return;
+    }
     // Only plain ACTION rows close the menu; value rows stay open.
-    const button = (event.target as HTMLElement).closest('button');
+    const button = target.closest('button');
     if (!button || button.disabled) return;
     this.emit('menu-select', { value: button.value, label: button.textContent?.trim() ?? '' });
     this.hide();

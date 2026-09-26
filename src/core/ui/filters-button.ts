@@ -1,35 +1,34 @@
 /**
  * filters-button.ts — the ONE Filters button's menu, for a bar and a panel.
  *
- * The filters a view hides lead it, each a door into its own menu or a tick
- * for an on/off one; then the filters it holds, what it may add, and the saved
- * ones it may add. TRAP T-one-filters-button
+ * The filters a view holds, then what it may add, then the saved ones it may
+ * add. A held filter the view HIDES — folded off a bar, or in a shut scope —
+ * keeps its row, and a caret on it opens its child menu. TRAP T-one-filters-button
  *
  * Map:
  * - FILTERS_LABEL — The button's name, and its menu's heading.
- * - HIDDEN_SECTION — The heading over the filters the view hides.
- * - ADDED_SECTION — The heading over the filters the view holds, ticked.
+ * - ADDED_SECTION — The heading over the filters the view holds.
  * - AVAILABLE_SECTION — The heading over the filters it may add.
  * - CUSTOM_SECTION — The heading over the saved filters it may add, at the bottom.
+ * - ON — The one value an on/off filter's child menu offers.
  * - DRILL_FLAGS — Menu attributes owned by the FILTER, not by the Filters menu.
  * - ListedFilter — One filter the menu lists.
+ * - AddedFilter — One filter the view holds.
  * - filtersMenuItems — The menu's list: added, available, then custom.
- * - HiddenFilter — One filter the view hides.
- * - addHiddenRows — Lead a Filters menu with the filters its view hides.
- * - syncHiddenCounts — Write each door row's pick count.
+ * - onOffMenu — An on/off filter's child menu: one row, "On".
  * - MenuDrill — One filter's rows, moved into the Filters menu and back.
  * - .home — The menu drilled into, or null.
  * - .menu — The Filters menu it is drilled into, or null.
  * - .into — Move a menu's rows into the Filters menu.
  * - .out — Put the rows home and the Filters menu's own list back.
  */
-import type { FilterMenuItem } from './filter-menu.js';
+import { menuFor, type FilterMenuItem } from './filter-menu.js';
 
 export const FILTERS_LABEL = 'Filters';
-export const HIDDEN_SECTION = 'More filters';
 export const ADDED_SECTION = 'Added filters';
 export const AVAILABLE_SECTION = 'Available filters';
 export const CUSTOM_SECTION = 'Custom filters';
+export const ON = 'on';
 
 /** TRAP T-drill-flags-travel-and-replace — never merged. */
 export const DRILL_FLAGS = ['data-commit', 'data-range', 'data-select', 'data-search'] as const;
@@ -44,17 +43,33 @@ export interface ListedFilter {
   readings?: unknown;
 }
 
+/** One filter the view holds. */
+export interface AddedFilter extends ListedFilter {
+  /** A tick takes it off. Without one its row has no box. */
+  removable: boolean;
+  /** Folded off a bar, or in a shut scope: its row opens its child menu. */
+  hidden: boolean;
+  /** Picks its child menu holds. */
+  count?: number;
+}
+
 /**
- * Ticked is held, so a tick adds and an untick removes. A filter is in ONE
- * section: a held saved filter is ADDED, never Custom too. Will, 2026-09-25.
+ * ONE section for what the view holds: a hidden filter is a row there with a
+ * caret, not a second section. Will, 2026-09-25. A filter is in ONE section —
+ * a held saved filter is Added, never Custom too.
  * TRAP T-the-add-menu-is-the-whole-list
  * TRAP T-saved-filters-are-the-custom-section
  */
 export function filtersMenuItems(
-  held: readonly ListedFilter[], offer: readonly ListedFilter[],
+  added: readonly AddedFilter[], offer: readonly ListedFilter[],
 ): Array<FilterMenuItem & { label: string }> {
   return [
-    ...held.map((f) => ({ value: f.id, label: f.label, selected: true, section: ADDED_SECTION })),
+    // A held filter the reader cannot take off is listed only while hidden.
+    ...added.filter((f) => f.removable || f.hidden).map((f) => ({
+      value: f.id, label: f.label, section: ADDED_SECTION,
+      ...(f.removable ? { selected: true } : { pickable: false }),
+      ...(f.hidden ? { drill: true, count: f.count ?? 0 } : {}),
+    })),
     ...offer.filter((f) => !f.readings).map((f) => ({
       value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}), section: AVAILABLE_SECTION,
     })),
@@ -63,65 +78,15 @@ export function filtersMenuItems(
   ];
 }
 
-/** One filter the view hides. */
-export interface HiddenFilter {
-  id: string;
-  label: string;
-  icon?: string | undefined;
-  /** It has a menu to drill into. Without one it is ticked in place. */
-  door: boolean;
-  on: boolean;
-}
-
-/** The rows come from the host's own templates: qf-section-tpl, qf-toggle-tpl, qf-folded-tpl. */
-export function addHiddenRows(
-  menu: HTMLElement,
-  hidden: readonly HiddenFilter[],
-  clone: (selector: string) => HTMLElement | null,
-  onToggle: (event: Event) => void,
-): void {
-  if (!hidden.length) return;
-  const head = clone('template.qf-section-tpl');
-  if (head) {
-    head.textContent = HIDDEN_SECTION;
-    menu.appendChild(head);
-  }
-  for (const one of hidden) {
-    if (!one.door) {
-      const toggle = clone('template.qf-toggle-tpl');
-      if (!toggle) continue;
-      toggle.dataset['for'] = one.id;
-      toggle.setAttribute('data-lead', '');
-      const box = toggle.querySelector<HTMLInputElement>('input');
-      const text = toggle.querySelector('.qf-toggle-label');
-      if (text) text.textContent = one.label;
-      if (box) box.checked = one.on;
-      // Bound to the BOX: a native `change` is not composed and stops at the menu.
-      box?.addEventListener('change', onToggle);
-      menu.appendChild(toggle);
-      continue;
-    }
-    const row = clone('template.qf-folded-tpl');
-    if (!row) continue;
-    row.dataset['for'] = one.id;
-    row.dataset['label'] = one.label;
-    row.setAttribute('data-lead', '');
-    if (one.icon) row.dataset['icon'] = one.icon;
-    menu.appendChild(row);
-  }
-}
-
-/** `countOf` answers null for a row it does not know, which is left alone. */
-export function syncHiddenCounts(menu: HTMLElement, countOf: (id: string) => number | null): void {
-  for (const row of menu.querySelectorAll<HTMLElement>('.qf-folded')) {
-    const id = row.dataset['for'];
-    const badge = row.querySelector<HTMLElement>('.qf-folded-count');
-    const count = id ? countOf(id) : null;
-    if (!badge || count == null) continue;
-    badge.textContent = String(count);
-    // A data-* ON THE ROW: nothing can write `:host(...)` for an element inside a menu.
-    row.toggleAttribute('data-count', count > 0);
-  }
+/** Its pick applies at once, as the chip's own body would. Will, 2026-09-25. */
+export function onOffMenu(label: string, on: boolean): { menu: HTMLElement; items: FilterMenuItem[] } {
+  const built = menuFor({
+    label, select: 'multiple', commit: false, selectAll: false,
+    options: [{ value: ON, label: 'On', selected: on }],
+  });
+  // One row: nothing to search.
+  built.menu.removeAttribute('data-search');
+  return built;
 }
 
 /** TRAP T-drill-moves-not-clones — the rows are moved, never copied. */

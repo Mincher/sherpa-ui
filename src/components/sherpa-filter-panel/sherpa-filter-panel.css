@@ -206,10 +206,3 @@
   white-space: nowrap;
 }
 
-/* ── A shut scope's hidden filters, in its Filters menu ──────────────── */
-.scope-add .qf-folded { display: block; }
-/* The flag sits on the ROW because a badge inside a menu is not a host. */
-.scope-add .qf-folded-count { display: none; }
-.scope-add .qf-folded[data-count] .qf-folded-count { display: block; }
-/* Decorative: the ROW is the click target, so it must not swallow the click. */
-.scope-add .qf-folded-caret { pointer-events: none; }

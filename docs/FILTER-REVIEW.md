@@ -1792,9 +1792,12 @@ The scope's buttons have their own row, under its heading.
 
 1. **The sections are Added Filters, Available Filters and Custom Filters**, and
    a filter is in ONE of them: an added saved filter is under Added only.
-   Done 2026-09-25, in the bar and the panel. More filters still leads the
-   menu while filters are hidden. It has no Select all: adding every filter
-   at once is never the answer (`selectAll: false`, `data-no-select-all`).
+   Done 2026-09-25, in the bar and the panel. It has no Select all: adding
+   every filter at once is never the answer (`selectAll: false`,
+   `data-no-select-all`). And there is no More filters section either: a
+   folded chip is an ADDED filter, so its row is there, with a caret into its
+   child menu — an on/off chip's holds one row, "On"
+   (`T-a-row-opens-its-child-menu`).
 2. **Save filter opens a `sherpa-dialog`**, not the browser's `prompt()`.
    Done 2026-09-25 on the Records page. It found a dialog bug: one shut and
    opened again at once was shut by its own late close

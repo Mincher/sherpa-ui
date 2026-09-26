@@ -33,16 +33,17 @@ async function mount(page: import('@playwright/test').Page, width: number) {
   }, { SIX, width });
 }
 
-/** The button, and its menu's rows in order: `§Heading`, `>door`, `~toggle`, `tick`. */
+/** The button, and its menu's rows in order: `§Heading`, a tick's value, `›` for a caret. */
 const look = (page: import('@playwright/test').Page) => page.evaluate(() => {
   const sr = document.querySelector('sherpa-quick-filter-toolbar')!.shadowRoot!;
   const btn = sr.querySelector<HTMLElement>('.add-btn')!;
   const menu = btn.querySelector('sherpa-menu')!;
   const rows = [...menu.children].filter((n) => !n.classList.contains('qf-all')).map((n) => {
     if (n.classList.contains('menu-section')) return `§${n.textContent}`;
-    if (n.classList.contains('qf-folded')) return `>${(n as HTMLElement).dataset['for']}`;
-    if (n.classList.contains('qf-toggle')) return `~${(n as HTMLElement).dataset['for']}`;
-    return n.querySelector('input')?.value ?? n.tagName;
+    const box = n.querySelector('input');
+    // A folded chip's row opens its child menu: `›` is its caret.
+    const caret = n.hasAttribute('data-drill') ? '›' : '';
+    return box ? `${box.value}${caret}` : `${caret}${(n as HTMLElement).dataset['value']}`;
   });
   return {
     more: !!sr.querySelector('.overflow-chip'),
@@ -74,16 +75,18 @@ test('ONE button: "Filters", a plus; hidden chips first, then Added, Available, 
   expect(wide.badge).toBeNull();
   expect(wide.rows).toEqual(['§Available filters', 'tier', '§Custom filters', 'custom:mine']);
 
-  // HIDDEN chips lead, under their own heading; the badge counts them.
+  /* HIDDEN chips are ADDED filters — ONE section, not a second one — and each
+     row has a caret into its child menu. None here can be taken off, so none
+     has a box. Will, 2026-09-25. TRAP T-a-row-opens-its-child-menu */
   expect(narrow.more).toBe(false);
   expect(narrow.selectAll).toBe(false);
   const hidden = narrow.rows.slice(1, narrow.rows.indexOf('§Available filters'));
-  expect(narrow.rows[0]).toBe('§More filters');
+  expect(narrow.rows[0]).toBe('§Added filters');
+  expect(narrow.rows).not.toContain('§More filters');
   expect(hidden.length).toBeGreaterThan(0);
   expect(Number(narrow.badge)).toBe(hidden.length);
-  // The on/off chip ticks in place; a chip with a menu is a door.
-  expect(hidden.at(-1)).toBe('~at-risk');
-  expect(hidden.slice(0, -1).every((r) => r.startsWith('>'))).toBe(true);
+  expect(hidden.at(-1)).toBe('›at-risk');
+  expect(hidden.every((r) => r.startsWith('›'))).toBe(true);
   expect(narrow.rows.slice(narrow.rows.indexOf('§Available filters'))).toEqual(
     ['§Available filters', 'tier', '§Custom filters', 'custom:mine']);
 });
@@ -100,20 +103,30 @@ test('the button is ON while a hidden chip is, and a drill inside it adds nothin
     const settle = () => new Promise<void>((res) => requestAnimationFrame(() => requestAnimationFrame(() => res())));
     const held = [...el.heldIds];
 
-    // Tick the hidden on/off chip in place.
-    const toggle = menu.querySelector<HTMLInputElement>('.qf-toggle[data-for="at-risk"] input')!;
+    const wait = () => new Promise((res) => setTimeout(res, 200));
+    const back = async () => {
+      (menu.shadowRoot.querySelector('.drill-back') as HTMLElement).shadowRoot!.querySelector('button')!.click();
+      await settle();
+    };
+    menu.show(btn);
+    await window.__settled();
+
+    // The hidden ON/OFF chip: its caret opens "On", and "On" turns it on.
+    menu.querySelector<HTMLElement>('.menu-row[data-value="at-risk"] .menu-row-drill')!.click();
+    await wait();
+    const toggle = menu.querySelector<HTMLInputElement>('input[value="on"]')!;
     toggle.checked = true;
     toggle.dispatchEvent(new Event('change', { bubbles: true }));
     await settle();
     const on = btn.getAttribute('data-status');
+    await back();
 
     // DRILL into a hidden chip's own menu, and tick one of its values.
-    menu.show(btn);
-    await window.__settled();
-    const door = menu.querySelector<HTMLElement>('.qf-folded')!;
-    const target = door.dataset['for']!;
-    door.click();
-    await settle();
+    const door = [...menu.querySelectorAll<HTMLElement>('.menu-row[data-drill]')]
+      .find((r) => r.dataset['value'] !== 'at-risk')!;
+    const target = door.dataset['value']!;
+    door.querySelector<HTMLElement>('.menu-row-drill')!.click();
+    await wait();
     const drilled = { heading: menu.getAttribute('data-heading'), drill: menu.hasAttribute('data-drill') };
     const box = menu.querySelector<HTMLInputElement>('label:not(.qf-all) input')!;
     box.checked = true;
@@ -150,9 +163,15 @@ test('its badge is a sherpa-badge, drawn exactly as a chip draws its count', asy
     const sr = document.querySelector('sherpa-quick-filter-toolbar')!.shadowRoot!;
     const btn = sr.querySelector<HTMLElement>('.add-btn')!;
     // ON, so the button's own tint is there to leak in if the pin were missing.
-    const toggle = btn.querySelector<HTMLInputElement>('.qf-toggle[data-for="at-risk"] input')!;
+    const menu = btn.querySelector('sherpa-menu') as HTMLElement & { show(t: HTMLElement): void; hide(): void };
+    menu.show(btn);
+    await window.__settled();
+    menu.querySelector<HTMLElement>('.menu-row[data-value="at-risk"] .menu-row-drill')!.click();
+    await new Promise((res) => setTimeout(res, 200));
+    const toggle = menu.querySelector<HTMLInputElement>('input[value="on"]')!;
     toggle.checked = true;
     toggle.dispatchEvent(new Event('change', { bubbles: true }));
+    menu.hide();
 
     const chip = document.createElement('sherpa-quick-filter');
     chip.setAttribute('data-label', 'Region');

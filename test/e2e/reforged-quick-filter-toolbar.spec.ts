@@ -1500,28 +1500,27 @@ test('the Filters menu drills into a folded filter and back out', async ({ page 
     const snap = (): Record<string, unknown> => ({
       drill: menu.hasAttribute('data-drill'),
       heading: menu.shadowRoot.querySelector('.heading')?.textContent,
-      // The rows ARE the folded filters, or ARE that filter's values.
-      firstRow: (() => {
-        const first = [...menu.children].find((n) => !n.classList.contains('menu-section'));
-        return first?.className || first?.tagName;
-      })(),
+      // The rows ARE the Filters list, a folded one opening its child menu —
+      // or ARE that filter's values.
+      firstDrill: [...menu.children].find((n) => !n.classList.contains('menu-section'))
+        ?.hasAttribute('data-drill') ?? false,
       trail: getComputedStyle(menu.shadowRoot.querySelector('.drill-trail')!).display !== 'none',
       open: getComputedStyle(menu.shadowRoot.querySelector('.menu')!).display !== 'none',
     });
 
-    const rows = [...chip.querySelectorAll('.qf-folded')] as HTMLElement[];
+    const rows = [...chip.querySelectorAll('.menu-row[data-drill]')] as HTMLElement[];
     const list = {
       ...snap(),
       // The badge counts the FOLDED FILTERS — "three are in here" is what a
       // reader needs before opening it.
       badge: chip.getAttribute('data-badge'),
       rowCount: rows.length,
-      // Composed components, not hand-rolled markup.
-      rowTag: rows[0]?.tagName,
+      // The caret is a composed sherpa-button, not hand-rolled markup.
+      caretTag: rows[0]?.querySelector('.menu-row-drill')?.tagName,
     };
 
-    const target = rows[0]!.dataset['for']!;
-    rows[0]!.click();
+    const target = rows[0]!.dataset['value']!;
+    rows[0]!.querySelector<HTMLElement>('.menu-row-drill')!.click();
     await settle();
     const drilled = snap();
 
@@ -1546,10 +1545,10 @@ test('the Filters menu drills into a folded filter and back out', async ({ page 
     return { list, drilled, ticked, target, out, kept: el.pickedValues[target] ?? null };
   });
 
-  // The overflow list: composed list items, one per folded filter.
+  // The Filters list: a row with a caret for each folded filter.
   expect(r.list.drill).toBe(false);
   expect(r.list.heading).toBe('Filters');
-  expect(r.list.rowTag).toBe('SHERPA-LIST-ITEM');
+  expect(r.list.caretTag).toBe('SHERPA-BUTTON');
   expect(Number(r.list.badge)).toBe(r.list.rowCount);
   expect(r.list.trail).toBe(false);
 
@@ -1557,7 +1556,7 @@ test('the Filters menu drills into a folded filter and back out', async ({ page 
   expect(r.drilled.drill).toBe(true);
   expect(r.drilled.trail).toBe(true);
   expect(r.drilled.open).toBe(true);
-  expect(r.drilled.firstRow).not.toBe('qf-folded');
+  expect(r.drilled.firstDrill).toBe(false);
 
   // A pick made while drilled is live, and survives coming back out.
   expect(r.ticked).toEqual(['a']);
@@ -1566,7 +1565,7 @@ test('the Filters menu drills into a folded filter and back out', async ({ page 
   // BACK: the list is restored and the menu stays open.
   expect(r.out.drill).toBe(false);
   expect(r.out.heading).toBe('Filters');
-  expect(r.out.firstRow).toBe('qf-folded');
+  expect(r.out.firstDrill).toBe(true);
   expect(r.out.open).toBe(true);
 });
 
@@ -1780,14 +1779,13 @@ test('a sort from the organise chip never reaches the host as a filter change', 
 });
 
 /**
- * A BOOLEAN filter folded into the overflow is a TICKABLE row, not a drill row.
- *
- * A chip with no `options` is on or off — there is nothing inside it to open.
- * It used to get the same drill row every other folded filter does, so it wore
- * a chevron, read as a parent, and did NOTHING when clicked: the drill handler
- * needs the chip's own menu, and a boolean chip has none.
+ * A chip with no `options` is on or off. Folded, its row's caret opens a child
+ * menu of ONE row, "On" — the same door every folded filter has, Will's pick,
+ * 2026-09-25. It once wore a chevron that did NOTHING, because the drill
+ * needed a menu a boolean chip has not got: the bar builds one for the drill.
+ * TRAP T-a-row-opens-its-child-menu
  */
-test('a folded BOOLEAN filter ticks in place; one with options still drills', async ({ page }) => {
+test('a folded BOOLEAN filter opens "On"; one with options opens its values', async ({ page }) => {
   const r = await page.evaluate(async () => {
     // Narrow, so everything but the first chip folds.
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'data', 'style': 'max-inline-size: 300px' });
@@ -1800,7 +1798,7 @@ test('a folded BOOLEAN filter ticks in place; one with options still drills', as
     ]);
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const sr = el.shadowRoot!;
-    for (let i = 0; i < 25 && !sr.querySelector('.add-btn sherpa-menu .qf-toggle'); i++) {
+    for (let i = 0; i < 25 && !sr.querySelector('.add-btn sherpa-menu .menu-row[data-drill]'); i++) {
       await new Promise((res) => setTimeout(res, 100));
     }
     /* …AND WAIT FOR THE FOLD TO SETTLE. The rows existing is not the same as
@@ -1817,47 +1815,61 @@ test('a folded BOOLEAN filter ticks in place; one with options still drills', as
       await new Promise((res) => requestAnimationFrame(() => res(null)));
       await new Promise((res) => setTimeout(res, 40));
     }
-    const menu = sr.querySelector('.add-btn sherpa-menu');
+    const add = sr.querySelector<HTMLElement>('.add-btn')!;
+    const menu = add.querySelector('sherpa-menu') as (HTMLElement & { show(t: HTMLElement): void }) | null;
     if (!menu) return { err: 'no Filters menu' };
+    menu.show(add);
+    await new Promise((res) => setTimeout(res, 100));
 
-    const toggles = [...menu.querySelectorAll<HTMLElement>('.qf-toggle')]
-      .map((t) => t.dataset['for']);
-    const drills = [...menu.querySelectorAll<HTMLElement>('.qf-folded')]
-      .map((d) => d.dataset['for']);
+    // EVERY folded chip has a row with a caret, in bar order.
+    const drills = [...menu.querySelectorAll<HTMLElement>('.menu-row[data-drill]')]
+      .map((d) => d.dataset['value']);
+    const inputs = () => [...menu.querySelectorAll<HTMLInputElement>('input')]
+      .filter((i) => !i.closest('.qf-all')).map((i) => i.value);
+    const drillInto = async (id: string) => {
+      menu.querySelector<HTMLElement>(`.menu-row[data-value="${id}"] .menu-row-drill`)!.click();
+      await new Promise((res) => setTimeout(res, 200));
+    };
+    const back = async () => {
+      (menu.shadowRoot!.querySelector('.drill-back') as HTMLElement).shadowRoot!.querySelector('button')!.click();
+      await new Promise((res) => setTimeout(res, 100));
+    };
 
-    // Ticking the row must flip the CHIP it stands for, and report it.
+    // A boolean one opens "On", and "On" drives the CHIP, and reports.
     const seen: unknown[] = [];
     el.addEventListener('quick-filter-change', (e) => seen.push((e as CustomEvent).detail));
-    const row = menu.querySelector<HTMLElement>('.qf-toggle')!;
-    const box = row.querySelector<HTMLInputElement>('input')!;
-    const chip = sr.querySelector<HTMLElement>(
-      `.chips > .chip[data-id="${row.dataset['for']}"]`,
-    )!;
-    box.click();
+    const id = drills.find((d) => d !== 'plan')!;
+    const chip = sr.querySelector<HTMLElement>(`.chips > .chip[data-id="${id}"]`)!;
+    await drillInto(id);
+    const onRows = inputs();
+    const box = () => menu.querySelector<HTMLInputElement>('input[value="on"]')!;
+    box().click();
     await new Promise((res) => setTimeout(res, 200));
-    const on = { box: box.checked, chip: chip.hasAttribute('data-current') };
-    box.click();
+    const on = { box: box().checked, chip: chip.hasAttribute('data-current') };
+    box().click();
     await new Promise((res) => setTimeout(res, 200));
-    const off = { box: box.checked, chip: chip.hasAttribute('data-current') };
-    return { toggles, drills, on, off, seen, id: row.dataset['for'] };
+    const off = { box: box().checked, chip: chip.hasAttribute('data-current') };
+    await back();
+
+    // The one with options opens its VALUES.
+    await drillInto('plan');
+    const planRows = inputs();
+    return { drills, id, onRows, on, off, planRows, seen };
   });
 
   // Which chips fold depends on the measured width, so the test does not name
-  // them — what matters is that EVERY folded boolean ticks and the one with
-  // options drills, whichever of them ended up in the menu.
-  expect(r.toggles!.length).toBeGreaterThan(0);
-  expect(r.drills).toEqual(['plan']);
-  // Neither list may hold the other's rows.
-  expect(r.toggles).not.toContain('plan');
+  // them — what matters is that EVERY folded one has a caret.
+  expect(r.err).toBeUndefined();
+  expect(r.drills!.length).toBeGreaterThan(1);
+  expect(r.drills).toContain('plan');
+  expect(r.onRows).toEqual(['on']);
+  expect(r.planRows).toEqual(['pro']);
 
-  // The tick drives the CHIP, so the bar and the menu can never disagree.
+  // "On" drives the CHIP, so the bar and the menu can never disagree.
   expect(r.on).toEqual({ box: true, chip: true });
   expect(r.off).toEqual({ box: false, chip: false });
-  // …and it reports, so a host hears a folded toggle exactly as it hears a
-  // toggle on the bar.
-  expect(r.seen).toContainEqual(
-    expect.objectContaining({ id: r.id, active: true, source: 'overflow' }),
-  );
+  // …and the bar reports it, as it reports a toggle on the bar.
+  expect(r.seen).toContainEqual(expect.objectContaining({ scope: 'bar', active: [r.id] }));
 });
 
 /**
@@ -1876,7 +1888,7 @@ test('the Filters button follows a folded chip on and off, and its badge never m
     ]);
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const sr = el.shadowRoot!;
-    for (let i = 0; i < 25 && !sr.querySelector('.add-btn sherpa-menu .qf-toggle'); i++) {
+    for (let i = 0; i < 25 && !sr.querySelector('.add-btn sherpa-menu .menu-row[data-drill]'); i++) {
       await new Promise((res) => setTimeout(res, 100));
     }
     /* …AND WAIT FOR THE FOLD TO SETTLE. The rows existing is not the same as
@@ -1896,9 +1908,15 @@ test('the Filters button follows a folded chip on and off, and its badge never m
     // RE-QUERY every time. A row can be re-stamped when the fold is recomputed,
     // and a handle held across that reports the OLD element's state.
     const more = (): HTMLElement => sr.querySelector<HTMLElement>('.add-btn')!;
-    const id = sr.querySelector<HTMLElement>('.qf-toggle')!.dataset['for']!;
-    const box = (): HTMLInputElement =>
-      sr.querySelector<HTMLInputElement>(`.qf-toggle[data-for="${id}"] input`)!;
+    const menu = more().querySelector('sherpa-menu') as HTMLElement & { show(t: HTMLElement): void };
+    menu.show(more());
+    await new Promise((res) => setTimeout(res, 100));
+    // A folded ON/OFF chip — its caret opens "On".
+    const id = [...menu.querySelectorAll<HTMLElement>('.menu-row[data-drill]')]
+      .map((d) => d.dataset['value']!).find((v) => v !== 'plan')!;
+    menu.querySelector<HTMLElement>(`.menu-row[data-value="${id}"] .menu-row-drill`)!.click();
+    await new Promise((res) => setTimeout(res, 200));
+    const box = (): HTMLInputElement => menu.querySelector<HTMLInputElement>('input[value="on"]')!;
     const chip = (): HTMLElement =>
       sr.querySelector<HTMLElement>(`.chips > .chip[data-id="${id}"]`)!;
     const snap = () => ({
@@ -2347,7 +2365,7 @@ test('the Filters button is active only when a folded filter is', async ({ page 
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = el.shadowRoot!;
-    for (let i = 0; i < 25 && !sr.querySelector('.add-btn sherpa-menu .qf-toggle'); i++) {
+    for (let i = 0; i < 25 && !sr.querySelector('.add-btn sherpa-menu .menu-row[data-drill]'); i++) {
       await new Promise((res) => setTimeout(res, 100));
     }
     // Wait for the fold to SETTLE — the ResizeObserver fires more than once.
@@ -2361,7 +2379,7 @@ test('the Filters button is active only when a folded filter is', async ({ page 
     }
 
     const more = sr.querySelector('.add-btn') as HTMLElement;
-    const menu = sr.querySelector('.add-btn sherpa-menu');
+    const menu = sr.querySelector('.add-btn sherpa-menu') as (HTMLElement & { show(t: HTMLElement): void }) | null;
     if (!more || !menu) return { err: 'no Filters menu' };
 
     const settled = async (): Promise<void> => {
@@ -2377,9 +2395,13 @@ test('the Filters button is active only when a folded filter is', async ({ page 
 
     const closed = state();
 
-    // Tick ONE folded row — that flips the chip it stands for.
-    const box = menu.querySelector<HTMLInputElement>('.qf-toggle input');
-    if (!box) return { err: 'no folded toggle' };
+    // Turn ONE folded chip on — its caret opens "On".
+    menu.show(more);
+    await settled();
+    menu.querySelector<HTMLElement>('.menu-row[data-drill] .menu-row-drill')?.click();
+    await settled();
+    const box = menu.querySelector<HTMLInputElement>('input[value="on"]');
+    if (!box) return { err: 'no On row' };
     box.checked = true;
     box.dispatchEvent(new Event('change', { bubbles: true }));
     await settled();
@@ -2521,12 +2543,14 @@ test('a FOLDED custom-only filter opens its own menu, not a blank drill', async 
 
     const sr = el.shadowRoot!;
     const overflow = sr.querySelector<HTMLElement>('.add-btn')!;
-    const row = overflow.querySelector<HTMLElement>('.qf-folded[data-for="email"]');
+    const row = overflow.querySelector<HTMLElement>('.menu-row[data-drill][data-value="email"]');
     const menu = sr.querySelector('.chip[data-id="email"] sherpa-menu') as
       (HTMLElement & { shadowRoot: ShadowRoot }) | null;
     if (!row || !menu) return { folded: el.getAttribute('data-folded'), row: !!row, menu: !!menu };
 
-    row.click();
+    (overflow.querySelector('sherpa-menu') as HTMLElement & { show(t: HTMLElement): void }).show(overflow);
+    await settle();
+    row.querySelector<HTMLElement>('.menu-row-drill')!.click();
     await settle();
     await new Promise((res) => setTimeout(res, 120));
 
@@ -2538,7 +2562,7 @@ test('a FOLDED custom-only filter opens its own menu, not a blank drill', async 
       // ...with a condition row a reader can actually type into.
       hasConditionRow: !!menu.shadowRoot.querySelector('.condition-row'),
       // ...and the Filters menu was NOT filled with its (empty) light DOM.
-      overflowStillListsFilters: overflowMenu.querySelectorAll('.qf-folded, .qf-toggle').length > 0,
+      overflowStillListsFilters: overflowMenu.querySelectorAll('.menu-row[data-drill]').length > 0,
     };
   });
 

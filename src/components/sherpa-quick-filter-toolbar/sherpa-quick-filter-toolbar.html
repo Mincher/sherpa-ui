@@ -138,49 +138,9 @@
        menu's `header` slot, and slot assignment only reaches a host's LIGHT
        DOM. The Range switch above it IS the menu's.
        TRAP T-a-menu-owns-its-own-bodies -->
-  <!-- One row of the OVERFLOW chip's menu: a folded filter with a count badge.
-       It is a DOOR — clicking it swaps the menu's list for that filter's rows.
-       `data-expandable` is the wrong thing here: its toggle sits on the LEADING
-       side and fires item-expand. -->
-  <template class="qf-folded-tpl">
-    <sherpa-list-item class="qf-folded" data-interactive>
-      <sherpa-tag class="qf-folded-count" slot="trailing" hidden></sherpa-tag>
-      <!-- Decorative: the whole ROW is the click target, so no tab stop and no
-           label to announce twice. -->
-      <sherpa-button class="qf-folded-caret" slot="trailing" data-type="icon"
-                     data-size="xs" data-look="transparent" tabindex="-1"
-                     aria-hidden="true"
-                     data-icon-start="chevron-right"></sherpa-button>
-    </sherpa-list-item>
-  </template>
-
-  <!--
-    A DATE filter's menu content: the calendar in place of value rows.
-
-    `data-embedded` drops the calendar's own Apply/Cancel — the MENU owns the
-    action row, so a date chip commits through the same Apply as every other
-    chip. Range and time variants set `data-type="range"` / `data-has-time` on
-    this same element, not a second template.
-  -->
-  <!--
-    A FOLDED TOGGLE — a boolean chip's row in the Filters menu.
-
-    A chip with no `options` has nothing to drill into, so it gets the value-row
-    shape rather than a drill row (whose handler needs a menu it has not got).
-    The tick mirrors the chip's own on/off state.
-  -->
-  <template class="qf-toggle-tpl">
-    <label class="qf-toggle">
-      <input type="checkbox" style="margin: 0; flex: 0 0 auto;" />
-      <span class="qf-toggle-label"></span>
-    </label>
-  </template>
-
-  <!-- The heading over the chips folded into the Filters menu. It LEADS the
-       menu's own rows. TRAP T-one-filters-button -->
-  <template class="qf-section-tpl">
-    <p class="menu-section" data-lead></p>
-  </template>
+  <!-- Where an on/off chip's child menu is built for a drill: never shown,
+       only its rows move. TRAP T-a-row-opens-its-child-menu -->
+  <div class="qf-built" hidden></div>
 
   <!-- A reader's OWN saved filter opens these. TRAP T-edit-unpacks-a-saved-filter -->
   <template class="qf-saved-menu-tpl">

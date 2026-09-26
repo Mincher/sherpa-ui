@@ -140,28 +140,6 @@
     </sherpa-menu>
   </template>
 
-  <!-- A SHUT scope's filters, leading its Filters menu — the rows the toolbar
-       folds its chips into. TRAP T-a-shut-scope-folds-like-a-bar -->
-  <template class="qf-section-tpl">
-    <p class="menu-section" data-lead></p>
-  </template>
-  <template class="qf-folded-tpl">
-    <sherpa-list-item class="qf-folded" data-interactive>
-      <sherpa-tag class="qf-folded-count" slot="trailing" hidden></sherpa-tag>
-      <!-- Decorative: the whole ROW is the click target. -->
-      <sherpa-button class="qf-folded-caret" slot="trailing" data-type="icon"
-                     data-size="xs" data-look="transparent" tabindex="-1"
-                     aria-hidden="true"
-                     data-icon-start="chevron-right"></sherpa-button>
-    </sherpa-list-item>
-  </template>
-  <template class="qf-toggle-tpl">
-    <label class="qf-toggle">
-      <input type="checkbox" style="margin: 0; flex: 0 0 auto;" />
-      <span class="qf-toggle-label"></span>
-    </label>
-  </template>
-
   <!-- A scope with nothing to draw says so; empty, it reads as broken. -->
   <template class="empty-tpl">
     <sherpa-section-header class="scope-empty" data-size="sm" data-divider="none"

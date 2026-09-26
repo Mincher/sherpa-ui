@@ -471,8 +471,8 @@ capabilities:
   - $type: capability
     api: js-methods
     description: >-
-      callable from a view definition's state block (show, hide, close, toggle, apply, items). See
-      $extensions.sherpa.methods.
+      callable from a view definition's state block (setCount, show, hide, close, toggle, apply,
+      items). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: menu-change
@@ -501,6 +501,12 @@ events:
     detail:
       label: string
       value: unknown
+  - $type: event
+    name: menu-drill
+    bubbles: true
+    composed: true
+    detail:
+      value: string
   - $type: event
     name: menu-open
     bubbles: true
@@ -571,6 +577,10 @@ $extensions:
   sherpa:
     figmaName: Menu
     methods:
+      - $type: method
+        name: setCount
+        args: "value: string, count: number"
+        description: Write a child menu's pick count on its row. An empty badge draws nothing.
       - $type: method
         name: show
         args: "trigger?: HTMLElement"

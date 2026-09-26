@@ -177,12 +177,3 @@
    still in use. TRAP T-the-view-chip-stays-on-the-header */
 .chips > .chip[data-panelled] { display: none; }
 
-/* ── The Filters menu's hidden-chip rows ───────────────────────────── */
-:is(.chip, .add-btn) .qf-folded { display: block; }
-
-/* The flag sits on the ROW because a badge inside a menu is not a host. */
-:is(.chip, .add-btn) .qf-folded-count { display: none; }
-:is(.chip, .add-btn) .qf-folded[data-count] .qf-folded-count { display: block; }
-
-/* Decorative: the ROW is the click target, so it must not swallow the click. */
-:is(.chip, .add-btn) .qf-folded-caret { pointer-events: none; }

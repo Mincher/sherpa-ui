@@ -249,10 +249,8 @@ events:
       active: unknown
       clauses: unknown
       external: unknown
-      id: unknown
       picked: unknown
       scope: string
-      source: string
       values: unknown
   - $type: event
     name: group-change

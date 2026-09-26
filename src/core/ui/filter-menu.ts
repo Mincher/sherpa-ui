@@ -29,6 +29,12 @@ export interface FilterMenuItem {
   note?: string;
   /** The section it is in, headed where it changes. */
   section?: string;
+  /** It opens a child menu: a caret at its end. */
+  drill?: boolean;
+  /** `false`: no tick box. */
+  pickable?: boolean;
+  /** Picks its child menu holds. */
+  count?: number;
 }
 
 /** Enough of a filter definition to draw its menu. */

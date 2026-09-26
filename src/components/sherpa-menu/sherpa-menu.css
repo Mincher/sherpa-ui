@@ -317,6 +317,17 @@
   white-space: nowrap;
 }
 
+/* A CHILD MENU's row: [box] label, then its count and caret at the end. A GRID,
+   because `::slotted` reaches the row and never its children.
+   TRAP T-a-row-opens-its-child-menu */
+.rows ::slotted(.menu-row[data-drill]) {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+}
+.rows ::slotted(.menu-row-bare[data-drill]) {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
 /* A SECTION heading inside the list, set as the menu's own heading is, with a
    rule above it. TRAP T-saved-filters-are-the-custom-section */
 .rows ::slotted(.menu-section) {

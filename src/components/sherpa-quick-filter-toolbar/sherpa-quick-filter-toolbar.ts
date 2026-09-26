@@ -18,7 +18,7 @@ import { allow, type AllowList } from '../../core/data/allow.js';
 import { customOf, kindOf, type FilterKind, type OffersCustom } from '../../core/ui/filter-kind.js';
 import { menuFor } from '../../core/ui/filter-menu.js';
 import {
-  FILTERS_LABEL, MenuDrill, addHiddenRows, filtersMenuItems, syncHiddenCounts,
+  FILTERS_LABEL, MenuDrill, ON, filtersMenuItems, onOffMenu, type AddedFilter,
 } from '../../core/ui/filters-button.js';
 import { report } from '../../core/data/report.js';
 import {
@@ -36,8 +36,6 @@ import '../sherpa-button/sherpa-button.js';
 import '../sherpa-calendar/sherpa-calendar.js';
 import '../sherpa-slider/sherpa-slider.js';
 import '../sherpa-switch/sherpa-switch.js';
-import '../sherpa-list-item/sherpa-list-item.js';
-import '../sherpa-tag/sherpa-tag.js';
 
 /** One value a filter chip's menu can offer. */
 export interface QuickFilterOption {
@@ -229,32 +227,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** The chips the last fold took off the run, in bar order. */
   #folded: HTMLElement[] = [];
 
-  /**
-   * Lead the Filters menu with the chips folded away: a door into each one's
-   * own menu, or a tick for an on/off chip. The button's badge counts them.
-   * TRAP T-one-filters-button
-   */
-  #addFoldedRows(menu: HTMLElement, folded: readonly HTMLElement[]): void {
-    addHiddenRows(menu, folded.map((source) => {
-      const id = source.dataset['id'] ?? '';
-      return {
-        id, label: source.dataset['label'] ?? id, icon: source.dataset['iconStart'],
-        // A boolean chip has no menu to drill into, so it gets a tickable row.
-        door: !!source.querySelector('sherpa-menu'),
-        on: source.hasAttribute('data-current'),
-      };
-    }), (selector) => this.clone(selector), this.#onFoldedToggle);
-    this.#syncFoldedBadges();
-  }
-
-  /** Re-read every folded row's count. Separate from stamping, which rebuilds the open list. */
+  /** Re-read every folded chip's pick count on its row. Separate from stamping, which rebuilds the open list. */
   #syncFoldedBadges(): void {
-    const menu = this.$<HTMLElement>('.add-btn')?.querySelector<HTMLElement>('sherpa-menu');
-    if (!menu) return;
-    syncHiddenCounts(menu, (id) => {
-      const source = this.$<HTMLElement>(`.chips > .chip[data-id="${CSS.escape(id)}"]`);
-      return source ? this.#chipPicks(source).length : null;
-    });
+    const menu = this.$<HTMLElement>('.add-btn')
+      ?.querySelector<HTMLElement & { setCount?(value: string, count: number): void }>('sherpa-menu');
+    for (const chip of this.#folded) {
+      if (chip.isConnected) menu?.setCount?.(chip.dataset['id'] ?? '', this.#chipPicks(chip).length);
+    }
     this.#syncOverflowActive();
   }
 
@@ -273,46 +252,42 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     else add.removeAttribute('data-status');
   }
 
-  /** A folded toggle was ticked — flip the chip it stands for. */
-  #onFoldedToggle = (event: Event): void => {
-    const box = event.target;
-    if (!(box instanceof HTMLInputElement)) return;
-    const row = box.closest('.qf-toggle');
-    if (!(row instanceof HTMLElement)) return;
-    const id = row.dataset['for'];
-    const chip = id ? this.$<HTMLElement>(`.chips > .chip[data-id="${CSS.escape(id)}"]`) : null;
-    if (!chip) return;
-    if (box.checked) chip.setAttribute('data-current', '');
-    else chip.removeAttribute('data-current');
-    this.emit('quick-filter-change', {
-      scope: 'chip', id, active: box.checked, values: [], source: 'overflow',
-    });
-  };
-
   /** A folded chip's rows, moved into the Filters menu. TRAP T-drill-moves-not-clones */
   #drill = new MenuDrill();
 
-  /** A folded row was clicked — drill into that filter. */
-  #onFoldedClick = (event: Event): void => {
-    const path = event.composedPath();
+  /** The menu built for an on/off chip's drill, and that chip. */
+  #built: { menu: HTMLElement; chip: HTMLElement } | null = null;
 
-    // A folded TOGGLE ticks in place — stopping the click leaves the box unticked.
-    if (path.some((n) => n instanceof HTMLElement && n.classList.contains('qf-toggle'))) return;
-
-    // The path, not `target`: the click starts in the list item's shadow root.
-    const row = path.find(
-      (n): n is HTMLElement => n instanceof HTMLElement && n.classList.contains('qf-folded'),
-    );
-    if (!row) return;
-    event.preventDefault();
+  /**
+   * A folded chip's row asked for its child menu: drill into it. An on/off
+   * chip has no menu of its own, so its child menu is one row, "On".
+   * TRAP T-a-row-opens-its-child-menu
+   */
+  #onMenuDrill = async (event: Event): Promise<void> => {
+    const add = this.pathFind(event, '.add-btn');
+    const into = add?.querySelector<HTMLElement & { open?: boolean }>('sherpa-menu');
+    const id = String((event as CustomEvent).detail?.value ?? '');
+    const chip = id ? this.$<HTMLElement>(`.chips > .chip[data-id="${CSS.escape(id)}"]`) : null;
+    if (!add || !into || !chip) return;
     event.stopPropagation();
+    // Back stays one level deep, never a chain.
+    if (this.#drill.home) this.#drillOut();
+    const label = this.#filters.find((f) => f.id === id)?.label ?? chip.dataset['label'] ?? id;
 
-    const id = row.dataset['for'];
-    const source = id ? this.$<HTMLElement>(`.chips > .chip[data-id="${CSS.escape(id)}"]`) : null;
-    const from = source?.querySelector<HTMLElement>('sherpa-menu');
-    const chip = this.$<HTMLElement>('.add-btn');
-    const into = chip?.querySelector<HTMLElement>('sherpa-menu');
-    if (!from || !into || !chip) return;
+    let from = chip.querySelector<HTMLElement>('sherpa-menu');
+    if (!from) {
+      const { menu, items } = onOffMenu(label, (chip as ChipEl).current);
+      this.$('.qf-built')?.append(menu);
+      this.#built = { menu, chip };
+      await (menu as HTMLElement & { rendered?: Promise<void> }).rendered;
+      (menu as HTMLElement & { items?: (i: unknown[]) => void }).items?.(items);
+      // It may have shut, or another row taken the drill, while it drew.
+      if (!into.open || this.#built?.menu !== menu) {
+        if (this.#built?.menu === menu) this.#dropBuilt();
+        return;
+      }
+      from = menu;
+    }
 
     /* NOTHING TO DRILL. A custom-only menu answers with its condition
        ROWS, which live in its own shadow DOM — moving its empty light DOM put
@@ -321,14 +296,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        Filters button. TRAP T-a-conditions-only-menu-cannot-be-drilled */
     if (!from.children.length) {
       this.#closeOverflow();
-      (from as HTMLElement & { show?: (t?: HTMLElement) => void }).show?.(chip);
+      (from as HTMLElement & { show?: (t?: HTMLElement) => void }).show?.(add);
       return;
     }
-
-    // Back stays one level deep, never a chain.
-    if (this.#drill.home) this.#drillOut();
-    this.#drill.into(into, from, row.dataset['label'] ?? '');
+    this.#drill.into(into, from, label);
   };
+
+  /** Remove the menu built for an on/off chip's drill. */
+  #dropBuilt(): void {
+    this.#built?.menu.remove();
+    this.#built = null;
+  }
 
   /** A calendar picked a day or range — relabel its chip. */
   #onDatePicked = (event: Event): void => {
@@ -359,10 +337,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     menu?.hide();
   }
 
-  /** Put a drilled-in filter's rows back and restore the overflow list. */
+  /** Put a drilled-in filter's rows back and restore the Filters list. */
   #drillOut(): void {
     // Deferred: the badges are read once the rows are back in place.
     if (this.#drill.out()) queueMicrotask(() => this.#syncFoldedBadges());
+    this.#dropBuilt();
   }
 
   /** Does the chip run want more room than it has? TRAP T-overflowing-needs-1px-slack */
@@ -416,7 +395,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#syncFavouriteFromAttr();
 
     // CLICK, not hover: a passing pointer would drill the list out from under it.
-    this.addEventListener('click', this.#onFoldedClick, true);
+    this.addEventListener('menu-drill', this.#onMenuDrill as EventListener);
     // The back arrow is two shadow boundaries away; the menu re-emits it composed.
     this.addEventListener('menu-back', this.#drillOutHandler);
 
@@ -828,6 +807,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       this.#pendingItems.push([
         menu,
         items.map((item) => ({
+          // A Filters row's own flags — a child menu, no box, a count — go too.
+          ...item,
           value: item.value,
           label: item.label,
           selected: picked
@@ -1545,6 +1526,25 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // A rebuilt run is folded again before it is shown, so a stale fold lists nothing.
     const folded = this.#folded.filter((c) => c.isConnected);
     const any = offer.length > 0 || held.length > 0 || folded.length > 0;
+    /* IN BAR ORDER: every chip a reader can take off, and every chip folded
+       away — a folded one's row opens its child menu. ONE section, not a
+       second one for the folded. Will, 2026-09-25. TRAP T-one-filters-button */
+    const heldIds = new Set(held.map((f) => f.id));
+    const hidden = new Set(folded);
+    const run = this.#chips();
+    const inRun = new Set(run.map((c) => c.dataset['id'] ?? ''));
+    const added: AddedFilter[] = [
+      ...run.filter((c) => heldIds.has(c.dataset['id'] ?? '') || hidden.has(c)).map((c) => {
+        const id = c.dataset['id'] ?? '';
+        return {
+          id, label: this.#filters.find((f) => f.id === id)?.label ?? c.dataset['label'] ?? id,
+          removable: heldIds.has(id), hidden: hidden.has(c),
+          ...(hidden.has(c) ? { count: this.#chipPicks(c).length } : {}),
+        };
+      }),
+      ...held.filter((f) => !inRun.has(f.id))
+        .map((f) => ({ id: f.id, label: f.label, removable: true, hidden: false })),
+    ];
     this.toggleAttribute('data-can-add', any);
     add.toggleAttribute('disabled', !any);
     if (folded.length) add.dataset['badge'] = String(folded.length);
@@ -1560,13 +1560,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // TRAP T-add-menu-batches — the one menu that KEEPS Apply: each tick stamps
       // a chip, so per-tick apply rebuilds the run mid-selection.
       commit: true,
-      options: filtersMenuItems(held, offer),
+      options: filtersMenuItems(added, offer),
     });
     // Its host is already in the page, so the items can go now.
     this.#flushItems();
-    const menu = add.querySelector<HTMLElement>('sherpa-menu');
-    menu?.toggleAttribute('data-search', true);
-    if (menu) this.#addFoldedRows(menu, folded);
+    add.querySelector<HTMLElement>('sherpa-menu')?.toggleAttribute('data-search', true);
+    this.#syncOverflowActive();
     this.#syncSaveable();
   }
 
@@ -1677,6 +1676,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     event.stopImmediatePropagation();
     // A DRILLED chip's pick is that chip's — never an Add or a Remove.
     if (this.#drill.home) {
+      // An on/off chip's "On" row turns it on or off, at once.
+      if (this.#built && this.#drill.home === this.#built.menu) {
+        const values = ((event as CustomEvent).detail?.values ?? []) as string[];
+        (this.#built.chip as ChipEl).current = values.includes(ON);
+        this.#syncOverflowActive();
+      }
       this.#emitChange();
       return;
     }

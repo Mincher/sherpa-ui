@@ -45,14 +45,14 @@ const SETUP = `
   const scope = () => sr.querySelector('.scope[data-scope="data"]');
   const btn = () => scope().querySelector('.scope-add');
   const menu = () => btn().querySelector('sherpa-menu');
-  /* The menu's rows in order: §Heading, >door, ~toggle, or a tick's value. */
+  /* The menu's rows in order: §Heading, a tick's value (+ ticked), › a caret. */
   const rows = () => [...menu().children].filter((n) => !n.classList.contains('qf-all')).map((n) => {
     if (n.classList.contains('menu-section')) return '§' + n.textContent;
-    if (n.classList.contains('qf-folded')) return '>' + n.dataset.for;
-    if (n.classList.contains('qf-toggle')) return '~' + n.dataset.for;
     const box = n.querySelector('input');
-    return box ? box.value + (box.checked ? '+' : '') : n.tagName;
+    const caret = n.hasAttribute('data-drill') ? '›' : '';
+    return box ? box.value + (box.checked ? '+' : '') + caret : caret + n.dataset.value;
   });
+  const caret = (id) => menu().querySelector('.menu-row[data-value="' + id + '"] .menu-row-drill');
   const look = () => ({
     rows: rows(), badge: btn().getAttribute('data-badge'), on: btn().getAttribute('data-status'),
   });
@@ -99,17 +99,19 @@ test('open, it is the whole list; shut, it leads with what the scope hides', asy
     rows: ['§Added filters', 'status+', '§Available filters', 'plan', '§Custom filters', 'custom:mine'],
     badge: null, on: null,
   });
-  // SHUT: every filter it draws, in its order — a door each, a tick each preset.
+  /* SHUT: every filter it draws, in its order, IN Added filters — one section,
+     each row with a caret into its child menu. Only Status can be taken off,
+     so only Status has a box. TRAP T-a-row-opens-its-child-menu */
   expect(r['shut']!.rows).toEqual([
-    '§More filters', '>sort', '~at-risk', '~unassigned', '>status', '>seats',
-    '§Added filters', 'status+', '§Available filters', 'plan', '§Custom filters', 'custom:mine',
+    '§Added filters', '›sort', '›at-risk', '›unassigned', 'status+›', '›seats',
+    '§Available filters', 'plan', '§Custom filters', 'custom:mine',
   ]);
   expect(r['shut']!.badge).toBe('5');
   // ON: Status is answered, and it is hidden.
   expect(r['shut']!.on).toBe('active');
 });
 
-test('a hidden preset ticks in place; the button is ON only while a hidden filter is', async ({ page }) => {
+test('a hidden preset opens "On"; the button is ON only while a hidden filter is', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     // Nothing on: Status cleared.
@@ -117,7 +119,11 @@ test('a hidden preset ticks in place; the button is ON only while a hidden filte
       new CustomEvent('button-click', { bubbles: true, composed: true }));
     await shut();
     const before = look().on;
-    const box = menu().querySelector('.qf-toggle[data-for="at-risk"] input');
+    menu().show(btn());
+    await settle();
+    caret('at-risk').click();
+    await new Promise((r) => setTimeout(r, 200));
+    const box = menu().querySelector('input[value="on"]');
     box.checked = true;
     box.dispatchEvent(new Event('change', { bubbles: true }));
     await settle();
@@ -143,7 +149,7 @@ test('a door drills into a run of values; its Apply ticks the chips and applies'
     await shut();
     menu().show(btn());
     await settle();
-    menu().querySelector('.qf-folded[data-for="status"]').click();
+    caret('status').click();
     await settle();
     await new Promise((r) => setTimeout(r, 50));
     const drilled = { heading: menu().getAttribute('data-heading'), drill: menu().hasAttribute('data-drill'),
@@ -169,7 +175,7 @@ test('a door drills into a run of values; its Apply ticks the chips and applies'
   });
   expect(r['chips']).toEqual(['active', 'churned']);
   expect(r['heard']).toEqual([['active', 'churned']]);
-  expect(r['back']).toEqual({ drill: false, first: '§More filters', selectAll: false });
+  expect(r['back']).toEqual({ drill: false, first: '§Added filters', selectAll: false });
   expect(r['built']).toBe(0);
 });
 
@@ -181,7 +187,7 @@ test('a door drills into Sort, and the chip hears the pick as its own', async ({
     await shut();
     menu().show(btn());
     await settle();
-    menu().querySelector('.qf-folded[data-for="sort"]').click();
+    caret('sort').click();
     await settle();
     const heading = menu().getAttribute('data-heading');
     const spend = [...menu().querySelectorAll('input')].find((i) => i.value === 'spend');
@@ -211,19 +217,19 @@ test('Back returns the list; a body of its own opens the scope on it', async ({ 
     await shut();
     menu().show(btn());
     await settle();
-    menu().querySelector('.qf-folded[data-for="status"]').click();
+    caret('status').click();
     await settle();
     await new Promise((r) => setTimeout(r, 50));
     press(menu().shadowRoot.querySelector('.drill-back'));
     await settle();
     const back = { heading: menu().getAttribute('data-heading'), first: rows()[0], drill: menu().hasAttribute('data-drill') };
     // SEATS is a number: its answer is drawn in the scope, so the door opens it.
-    menu().querySelector('.qf-folded[data-for="seats"]').click();
+    caret('seats').click();
     await settle();
     return { back, open: scope().hasAttribute('open'), after: look() };
   })()`) as Record<string, unknown>;
 
-  expect(r['back']).toEqual({ heading: 'Filters', first: '§More filters', drill: false });
+  expect(r['back']).toEqual({ heading: 'Filters', first: '§Added filters', drill: false });
   expect(r['open']).toBe(true);
   expect(r['after']).toMatchObject({ badge: null });
 });
@@ -234,8 +240,8 @@ test('a shut scope stays shut when the panel is filled again', async ({ page }) 
     await shut();
     el.populate(SCOPES);
     await new Promise((r) => setTimeout(r, 250));
-    return { open: scope().hasAttribute('open'), first: rows()[0], view: sr.querySelector('.scope[data-scope="view"]').hasAttribute('open') };
+    return { open: scope().hasAttribute('open'), carets: rows().filter((x) => x.includes('›')).length, view: sr.querySelector('.scope[data-scope="view"]').hasAttribute('open') };
   })()`) as Record<string, unknown>;
 
-  expect(r).toEqual({ open: false, first: '§More filters', view: true });
+  expect(r).toEqual({ open: false, carets: 5, view: true });
 });
