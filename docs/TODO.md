@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**47 open.** Reviewed 2026-09-26: one list (the draft `todo-filter-2609.md`
+**48 open.** Reviewed 2026-09-26: one list (the draft `todo-filter-2609.md`
 is merged in), 3 items culled or merged, the rest re-ordered. Numbers are ids,
 not order — the table IS the order.
 
@@ -48,33 +48,34 @@ not order — the table IS the order.
 | 24 | 38 | One model, one builder, one owner — what is left | refactor |
 | 25 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | | | **E — Views and navigation** | |
-| 26 | 15 | Save a View, and the Save split-button menu | feature |
-| 27 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
-| 28 | 34 | Figma: use the Navigation terms | figma |
+| 26 | 70 | EXPLORE — a view definition bundles its filters; one JSON renders the page | explore |
+| 27 | 15 | Save a View, and the Save split-button menu | feature |
+| 28 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
+| 29 | 34 | Figma: use the Navigation terms | figma |
 | | | **F — Data states and charts** | |
-| 29 | 58 | Loading, empty and error states in a container | feature |
-| 30 | 9b | A Data Viz header, for metrics and chart containers | component |
-| 31 | 14 | An example of real-time data | feature |
-| 32 | 59 | EXPLORE, later — Will's own loading pattern | explore |
+| 30 | 58 | Loading, empty and error states in a container | feature |
+| 31 | 9b | A Data Viz header, for metrics and chart containers | component |
+| 32 | 14 | An example of real-time data | feature |
+| 33 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | | | **G — Overlay panels** | |
-| 33 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
-| 34 | 23 | A focused grid row opens a details panel | feature |
+| 34 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
+| 35 | 23 | A focused grid row opens a details panel | feature |
 | | | **H — The accessibility gate** | |
-| 35 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
+| 36 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
 | | | **I — The big builds** | |
-| 36 | 25 | `sherpa-layout-canvas` + minimap | component |
-| 37 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
-| 38 | 27 | A consumer can supply their OWN templates and CSS | feature |
-| 39 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
-| 40 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
+| 37 | 25 | `sherpa-layout-canvas` + minimap | component |
+| 38 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
+| 39 | 27 | A consumer can supply their OWN templates and CSS | feature |
+| 40 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
+| 41 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
 | | | **J — Tidy-ups and renames** | |
-| 41 | 11 | `sherpa-group`: what is left | tidy |
-| 42 | 28 | A Figma component is NOT always a web component | tidy |
-| 43 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
-| 44 | 33 | Density as step offsets, and a breakpoint step | tokens |
-| 45 | 36 | CSS: compiled where it should inherit? | tidy |
-| 46 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
-| 47 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
+| 42 | 11 | `sherpa-group`: what is left | tidy |
+| 43 | 28 | A Figma component is NOT always a web component | tidy |
+| 44 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| 45 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| 46 | 36 | CSS: compiled where it should inherit? | tidy |
+| 47 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| 48 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 
 **Why this order.**
 
@@ -477,6 +478,35 @@ Will, 2026-09-25:
 ---
 
 ## E — Views and navigation
+
+### `[ ]` 70 — EXPLORE: a view definition bundles its filters; one JSON renders the page
+
+Will, 2026-09-26, ruling on 21e: a View change is a clean slate (both bars
+empty their filter chips) — *"but default filter fields, values, and states
+need to be bundled in a view definition. I'm not sure how we'd do that with
+our templates. So perhaps we need a JSON definition that gets translated to a
+template and data layer requests for all components. Something to
+investigate."*
+
+**What a view definition holds today** (`SavedView`, `persist-view.ts`): a
+label; a `snapshot` — the source's state plus, per element, a map of public
+METHOD CALLS (`applyViewSnapshot`; the Dashboard's EMEA view sets Region this
+way); and optional `content` markup, parsed through an allow-list
+(`parseViewMarkup`). What it CANNOT say: which filter chips each bar HOLDS,
+nor their default values and on/off states — the Context's own code decides
+those (`DATA_FILTERS` and `globalFilters()` in the Records example).
+
+**The question:** one JSON definition per View that declares, for every
+component, what it is, where it sits, which fields it offers, and each
+field's default answer — and a translator that turns it into the template AND
+the data-layer requests (`declareValues`, `hold`, `select`, `contribute`).
+Then a View change applies the view's own defaults onto the clean slate, and
+Save (15) writes the same shape back.
+
+Settle before building: is the JSON a superset of `SavedView` or its
+replacement; how it meets the templates (68's templater, 27's own
+templates); and how much of it is 38's "a component DECLARES the data it
+needs". Design first — 15 builds on the answer.
 
 ### `[ ]` 15 — Save a View, and the Save split-button menu
 

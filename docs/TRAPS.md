@@ -13455,7 +13455,9 @@ Three orderings make it work:
   (`T-a-view-change-resets-the-header-chips`).
 - **The kept answers belong to ONE View.** They replay only on the View they
   were made on; a View change is a clean slate — both bars empty their filter
-  chips, and the grid's bar keeps the Group and Sort the view set.
+  chips, and the grid's bar keeps the Group and Sort the view set. Will kept the
+  clean slate, 2026-09-26; a view's OWN default filters belong in its
+  definition (TODO 70).
 - **The grid's column filters are read back FIRST**, because that read clears
   any field chip no column names; the bars replay after it.
 
