@@ -12,44 +12,45 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**49 open.** Reviewed 2026-09-26: one list (the draft `todo-filter-2609.md`
-is merged in), 3 items culled or merged, the rest re-ordered. Numbers are ids,
-not order — the table IS the order.
+**49 open.** Reassessed 2026-09-26: the bugs that lie first, then the
+FOUNDATION — the one compiled query, the view definition and when Apply runs —
+before the filter features that stand on it. Numbers are ids, not order; the
+table IS the order.
 
 | Pri | # | Item | Kind |
 |---:|---:|---|---|
-| | | **A — Quick wins** | |
-| 1 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
-| | | **B — Bugs: the app says one thing and does another** | |
-| 2 | 72 | Adding a second conditional filter resets the first | bug |
-| 3 | 44c | A heading shows an answer held at VIEW scope | bug |
-| 4 | 42 | A legend toggle filters the whole view | bug |
-| 5 | 61 | Add customer saves with required fields empty | bug |
-| 6 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
-| 7 | 45 | A picked date does not show in the chip | bug |
-| 8 | 16 | Favourite and Save apply to the Context, not the View | bug |
-| 9 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
-| | | **C — Filters: Will's features** | |
-| 10 | 62 | Apply and Discard only for a REMOTE fetch; a debug flag spoofs one | feature |
-| 11 | 66 | The footer owns "nothing to save": Save and Cancel wait for a change | feature |
-| 12 | 46 | A PENDING state: changed, not yet applied | feature |
-| 13 | 60 | Once applied, a chip's badge shows the number of results | feature |
-| 14 | 49 | A preset conditional chip shows its conditions, read-only | feature |
-| 15 | 50 | A custom conditional chip shows its conditions, editable | feature |
-| 16 | 47 | More than 20 values: one chip, not a run | feature |
-| 17 | 48 | A child menu opens on hover or click of its row | feature |
-| 18 | 21c | A condition's matches must ALL highlight | feature |
-| 19 | 21f | "Send to view filters" | feature |
-| 20 | 21b | Which header chips carry over between views | feature |
-| 21 | 20b | The Date filter should be a view-scope date RANGE | feature |
-| 22 | 21d | EXPLORE — conditions for a DATE field | explore |
-| 23 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
-| | | **D — The filter family, finished** | |
-| 24 | 38 | One model, one builder, one owner — what is left | refactor |
-| 25 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
+| | | **A — Bugs that make the app LIE** | |
+| 1 | 72 | Adding a second conditional filter resets the first | bug |
+| 2 | 44c | A heading shows an answer held at VIEW scope | bug |
+| 3 | 42 | A legend toggle filters the whole view | bug |
+| | | **B — The foundation: design, then build** | |
+| 4 | 73 | EXPLORE — one compiled QUERY, built as the reader sets it up, run on Apply | explore |
+| 5 | 70 | EXPLORE — a view definition bundles its filters; one JSON renders the page | explore |
+| 6 | 62 | Apply and Discard only for a REMOTE fetch; a debug flag spoofs one | feature |
+| 7 | 66 | The footer owns "nothing to save": Save and Cancel wait for a change | feature |
+| 8 | 38 | One model, one builder, one owner — what is left | refactor |
+| 9 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
+| | | **C — Contained bugs** | |
+| 10 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
+| 11 | 61 | Add customer saves with required fields empty | bug |
+| 12 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
+| 13 | 45 | A picked date does not show in the chip | bug |
+| 14 | 16 | Favourite and Save apply to the Context, not the View | bug |
+| 15 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
+| | | **D — Filters: Will's features, on the foundation** | |
+| 16 | 46 | A PENDING state: changed, not yet applied | feature |
+| 17 | 60 | Once applied, a chip's badge shows the number of results | feature |
+| 18 | 49 | A preset conditional chip shows its conditions, read-only | feature |
+| 19 | 50 | A custom conditional chip shows its conditions, editable | feature |
+| 20 | 47 | More than 20 values: one chip, not a run | feature |
+| 21 | 48 | A child menu opens on hover or click of its row | feature |
+| 22 | 21c | A condition's matches must ALL highlight | feature |
+| 23 | 21f | "Send to view filters" | feature |
+| 24 | 21b | Which header chips carry over between views | feature |
+| 25 | 20b | The Date filter should be a view-scope date RANGE | feature |
+| 26 | 21d | EXPLORE — conditions for a DATE field | explore |
+| 27 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
 | | | **E — Views and navigation** | |
-| 26 | 70 | EXPLORE — a view definition bundles its filters; one JSON renders the page | explore |
-| 27 | 73 | EXPLORE — one compiled QUERY, built as the reader sets it up, run on Apply | explore |
 | 28 | 15 | Save a View, and the Save split-button menu | feature |
 | 29 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
 | 30 | 34 | Figma: use the Navigation terms | figma |
@@ -64,11 +65,11 @@ not order — the table IS the order.
 | | | **H — The accessibility gate** | |
 | 37 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
 | | | **I — The big builds** | |
-| 38 | 25 | `sherpa-layout-canvas` + minimap | component |
-| 39 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
+| 38 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
+| 39 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
 | 40 | 27 | A consumer can supply their OWN templates and CSS | feature |
-| 41 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
-| 42 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
+| 41 | 25 | `sherpa-layout-canvas` + minimap | component |
+| 42 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
 | | | **J — Tidy-ups and renames** | |
 | 43 | 11 | `sherpa-group`: what is left | tidy |
 | 44 | 28 | A Figma component is NOT always a web component | tidy |
@@ -78,36 +79,21 @@ not order — the table IS the order.
 | 48 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
 | 49 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 
-**Why this order.**
+**Why this order** (reassessed 2026-09-26).
 
-1. **A — quick wins.** Each is under an hour and needs no design.
-2. **B — bugs, the ones that LIE first.** A chip lit that filters nothing, or
-   rows filtered by something no chip shows, teaches a reader to distrust
-   every filter. Where two controls hold one field and disagree, fix it as
-   38 step 3 (see 38), not as a patch.
-3. **C — Will's filter features, in dependency order.** Remote-only Apply
-   (62) before pending (46), since it decides which fields can pend; pending
-   before result counts (60), since a pending chip has no count yet; the read-only
-   `fx` menu (49) before the editable one (50); 56 before 21b; the date
-   formatter (45) before the date range (20b) before date conditions (21d).
-4. **D — the rest of the filter family**, once B has moved what it can.
-5. **E–G** are independent of each other; do them in any order.
-6. **H — the accessibility gate** comes after the work that changes markup, so
-   its report does not go stale, and before I, so new components must pass it.
-7. **I and J last.** 29 dead last: it touches every import.
+- **A — Bugs that make the app LIE.** A chip or heading that shows one thing while the rows obey another. Will tests on the running app daily, so these come first.
+- **B — The foundation: design, then build.** Most of this session's bugs were ONE cause — a filter held in several places that disagree. Design the one compiled query (73), the view definition that bundles its defaults (70) and when Apply runs (62) as ONE design; then build 38 on it, with 66's shared footer. The filter features below all stand on it.
+- **C — Contained bugs.** Each is fixable in its own component or page. 64 waits for the other session's accordion edits.
+- **D — Filters: Will's features, on the foundation.** In dependency order: pending (46) before result counts (60); the read-only `fx` menu (49) before the editable one (50); the date range (20b) before date conditions (21d).
+- **E — Views and navigation.** 15 writes 70's shape back.
+- **F — Data states and charts.** 58 uses 62's debug flag to show its states.
+- **H — The accessibility gate.** After the markup settles, before new components, so they must pass it.
+- **I — The big builds.** 68 and 27 are one door.
+- **J — Tidy-ups and renames.** 29 dead last: it touches every import.
 
 ---
 
-## A — Quick wins
-
-### `[ ]` 64 — A collapsed accordion section fills with the down (+2) surface
-
-Will, 2026-09-26: a COLLAPSED `sherpa-accordion` section takes the Style
-surface's DOWN step — `base +2`, `--sherpa-style-surface-base-2` — as its
-background fill. (base / +1 / +2 are default / hover / down.) Bind the Style
-name, never a Theme colour: a state is the mode's own step. Open sections keep
-today's fill. **Wait for the other session**: `sherpa-accordion.css` has its
-uncommitted edits in the working tree.
+## A — Bugs that make the app LIE
 
 ### `[ ]` 72 — BUG: adding a second conditional filter resets the first
 
@@ -116,8 +102,16 @@ second conditional filter — Email — and on Apply the Owner condition was
 reset completely. Adding a field REBUILDS the bar (`#addFilters` → `#render`),
 and a rebuilt menu reads empty until it stamps
 (`T-a-rebuilt-bar-reads-empty-until-its-menus-stamp`); `#keepAnswer` carries
-a chip's rows across a rebuild. Reproduce in the toolbar AND the panel, and
-read the TOTAL before and after.
+a chip's rows across a rebuild.
+
+**Reproduced 2026-09-26, toolbar, through the real menus:** Owner Contains Da
+→ 10 rows, chip on. Add Email → the rebuilt Owner chip comes back OFF — its
+rows kept (`mode: custom`, `contains Da`), so it reads as SUSPENDED. Email
+Contains `example` → the bar reports, the suspended Owner applies nothing:
+100 rows. So the rebuild keeps the answer and loses the ON. Suspect the
+rebuilt row reading empty for a tick (`T-a-rebuilt-row-reads-empty-for-a-tick`)
+switching the chip off in `#applySelection`, with nothing turning it back on.
+Check the panel too.
 
 ### `[ ]` 44c — BUG: a heading shows an answer held at VIEW scope
 
@@ -147,6 +141,199 @@ source obeys every part. So "component" scope narrows the whole view, not
 the chart. A per-component filter needs the part to reach only the component
 that owns it (a part keyed to a bind, applied at that bind's push), or its own
 source.
+
+---
+
+## B — The foundation: design, then build
+
+### `[ ]` 73 — EXPLORE: one compiled QUERY, built as the reader sets it up, run on Apply
+
+Will, 2026-09-26: *"A query language that is compiled as conditions
+(grouping, sorting, filtering, conditions, segmentation, aggregation etc.)
+are built up. The data layer compiles this query then executes it when
+triggered (e.g. user clicks apply). The aim here is to avoid reloads,
+refreshes, state changes etc. causing a loss of set up parameters. The data
+layer can probably also use this query to help inform other UI components
+alongside the component state tracking feature. We probably have a
+proto-version of this going already but it needs work if we do."*
+
+**The proto-version, as it stands:**
+
+| piece | where | what it is |
+|---|---|---|
+| `ViewState` | `data-source.ts` | filter, sort, group, search, page — one flat state |
+| named parts + field readings | `DataSource` (`contribute`, `select`) | the filter is COMPOSED from them, and `state.filter` is the composed result |
+| the clause grammar | `store.ts` (`Filter`, `andFilter`, `picksClause`) | the query's filter language |
+| `FieldReading` → clause | `filter-state.ts` (`fieldState`, `readingClause`, `clauseConditions`) | a reader's answer as data, compiled one way |
+| aggregation | `aggregate.ts` (`reduceRows`, `countBy`, `seriesBy`) | run by hand in the example's `as` closures |
+| `debugState()`, `ViewSnapshot` | source, `persist-view.ts` | the query read back, and saved |
+
+**What is missing:** the query is not ONE object. Filter parts, readings,
+sort and group live in the source; segmentation and aggregation live in each
+Context's code; and `state.filter` is the compiled OUTPUT, which is why a
+restored one showed rows no chip explained (21e). A single query — every
+parameter, in the reader's own terms, compiled on demand — could be the one
+thing that is saved (21e), shared (70's view definition), applied on a
+trigger (62's remote Apply), and read by every control to draw itself (38
+step 3). Design it with 70; 62's "only a remote fetch needs Apply" decides
+when it runs.
+
+### `[ ]` 70 — EXPLORE: a view definition bundles its filters; one JSON renders the page
+
+Will, 2026-09-26, ruling on 21e: a View change is a clean slate (both bars
+empty their filter chips) — *"but default filter fields, values, and states
+need to be bundled in a view definition. I'm not sure how we'd do that with
+our templates. So perhaps we need a JSON definition that gets translated to a
+template and data layer requests for all components. Something to
+investigate."*
+
+**What a view definition holds today** (`SavedView`, `persist-view.ts`): a
+label; a `snapshot` — the source's state plus, per element, a map of public
+METHOD CALLS (`applyViewSnapshot`; the Dashboard's EMEA view sets Region this
+way); and optional `content` markup, parsed through an allow-list
+(`parseViewMarkup`). What it CANNOT say: which filter chips each bar HOLDS,
+nor their default values and on/off states — the Context's own code decides
+those (`DATA_FILTERS` and `globalFilters()` in the Records example).
+
+**The question:** one JSON definition per View that declares, for every
+component, what it is, where it sits, which fields it offers, and each
+field's default answer — and a translator that turns it into the template AND
+the data-layer requests (`declareValues`, `hold`, `select`, `contribute`).
+Then a View change applies the view's own defaults onto the clean slate, and
+Save (15) writes the same shape back.
+
+Settle before building: is the JSON a superset of `SavedView` or its
+replacement; how it meets the templates (68's templater, 27's own
+templates); and how much of it is 38's "a component DECLARES the data it
+needs". Design first — 15 builds on the answer.
+
+### `[ ]` 62 — Apply and Discard only for a REMOTE fetch; a debug flag spoofs one
+
+Will, 2026-09-26: *"Apply and Discard are actions that are only needed if
+there is a data fetch that reaches outside the Data Layer. If the change is
+just shaping data that's already in the data layer then there's no need."*
+
+- **The panel footer goes.** A field whose change needs a remote fetch shows a
+  small, ICON-ONLY Apply and Discard at the right of its section header row,
+  beside Clear. Every other field applies as it is changed.
+- **The same rule reaches a chip's menu.** Its Apply/Cancel (`commit: true`,
+  `data-commit` — Owner and Region today) is only for a remote field too.
+- **"Remote" is a fact about the FILTER**, so it is on the filter def and
+  asked of the data layer — never guessed by a component.
+
+**There is no remote source, so spoof one.** A DEBUG attribute/property on a
+filter pretends that its change fetches from a remote source — a delay, and
+optionally a failure. Sprinkle it into the example filters so both paths are
+always on screen. 58 (loading, empty and error states) reuses the same flag to
+drive its loading and failure states.
+
+Before 46: a pending state only exists on a field that has an Apply, and this
+item decides which fields those are. `T-apply-and-discard-wait-for-a-change`
+changes with it.
+
+### `[ ]` 66 — The footer owns "nothing to save": Save and Cancel wait for a change
+
+Will, 2026-09-26: wire the inactive Save & Cancel (or Apply & Discard, or any
+equivalent pair) into `sherpa-container-footer`, *"so that all menus etc can
+inherit this common behaviour."* Today each host does it by hand, or not at
+all: the filter panel built its own (`#syncDirty`,
+`T-apply-and-discard-wait-for-a-change`), and `sherpa-menu` has a `dirty`
+getter its footer does not use.
+
+The FOOTER turns its commit and revert controls off while the host says
+nothing has changed, and on when it has. The host only REPORTS dirty — one
+attribute or property, e.g. `data-dirty` on the footer, or a `dirty` it asks
+of its host — and never touches the buttons. Nine templates compose the
+footer (calendar, dialog, container, filter panel, menu, nav, overlay-panel,
+panel, select-card); each then drops its own copy. Which buttons are the pair
+must be declared, not guessed from their labels.
+
+Do it with 62: 62 decides WHICH fields have Apply and Discard at all, this
+decides how any such pair behaves.
+
+### `[~]` 38 — One model, one builder, one owner: what is left
+
+Will, 2026-09-25: *"I'm juggling bugs here between the filter panel and filter
+toolbar when the overlap is considerable so the code should be singular, and
+reused, where possible."* The full review is `docs/FILTER-REVIEW.md`.
+
+Will's taxonomy stands: **six KINDS** — group, sort, boolean, single, multi,
+conditional. "Organise" is a label, never a kind.
+
+**Done:** 1 the chip owns its kind · 2 one derivation of a kind
+(`core/ui/filter-kind.ts`) · 5 sort/group state collapsed (fe8eba65) · 5.5
+error reporting, `report()` / `onReport()` (7c1a36d3) · 6 `filter-state.ts`
+split into state, face and `bind-selection` (4f747cae).
+
+**Step 3 — the data layer coordinates — is PART done.** The scope registry
+(`scope`/`hold`/`holds`/`scopeOf`/`move`), `debugState()`, the panel no
+longer reaching into the bar (789fe50b), and menu borrowing gone
+(`menuFor()`). Left:
+
+- The panel is bound to NO `DataSource`. `records.js` carries readings between
+  the panel and the bars by hand (~472-510), and still reads the header bar's
+  shadow root (~419). Both go when the panel binds.
+- Auto-registration does not exist: a component should find its source by a
+  request on connect that the nearest source answers (decided 2026-09-25).
+- "Scope" still means three things — query reach (`view`/`component`), which
+  rows a bind is pushed (`page`/`all`), and the app's surfaces (`view`/`data`).
+  Rename them apart.
+
+**Step 4 — ONE field-row builder — is NOT done.** It was ticked at −21 lines
+(b67266f8), but that is one chip builder per container. The panel keeps its
+own `#draw`, `#drawSection` and `#drawField`. The two differ by the layout
+DIRECTION and whether values EXPLODE into a run — two flags (and 47's), not
+two implementations.
+
+**The size gate was never built.** `scripts/size-baseline.json`, a per-component
+line count that may only fall, as `lint:css` does for Theme reads. Since the
+plan: the panel 898 → 1288 lines, the toolbar 1857 → 1982. Rules for the work:
+MOVE code, never rewrite it; delete the replaced path in the same commit; no
+helper with one caller; state the budget up front and report the actual.
+
+**44b and 44c are this step, wearing different clothes** — two controls holding one
+field and disagreeing, in the glue `records.js` carries by hand. Fix it at its
+cause: MOVE the state into the source rather than patching the glue. The bug
+fix and this step are then the same commit.
+
+**Then its own item:** a component DECLARES the data it needs (`data-field`,
+`data-aggregate`, `data-series-by`) and the source composes it. The example
+hand-builds 9 components through `as` closures over ~569 lines.
+
+### `[ ]` 37 — Components are AGNOSTIC of the data, and of the example app
+
+Will, 2026-09-25:
+
+> All sherpa UI components should be agnostic of the data. The data layer
+> should provision and inform them. They also shouldn't have any bespoke logic
+> in them specific to the example views. [...] For example toggling to the
+> filter panel, from the filter toolbar, should be a custom button added to the
+> actions slot [...] In fact, we should probably separate the example app to
+> it's own codebase and have it use the sherpa-ui framework library as a
+> dependency.
+
+1. **Find the bespoke logic.** Still true, measured 2026-09-26: both toggles
+   are built in — `data-act="configure"` in the toolbar (emits
+   `filter-configure`) and `.to-toolbars` in the panel. The toolbar's `actions`
+   slot is not used for it.
+2. **Components take PARAMETERS, never data shapes.** A component should not
+   know a field is called `openTickets`. Measure what still does.
+3. **Extension, not forking** — item 27 is the mechanism.
+4. **Split the example app into its own repo**, LAST. Anything it cannot do
+   from outside the library is a boundary the library has not drawn.
+
+---
+
+## C — Contained bugs
+
+### `[ ]` 64 — A collapsed accordion section fills with the down (+2) surface
+
+Will, 2026-09-26: a COLLAPSED `sherpa-accordion` section takes the Style
+surface's DOWN step — `base +2`, `--sherpa-style-surface-base-2` — as its
+background fill. (base / +1 / +2 are default / hover / down.) Bind the Style
+name, never a Theme colour: a state is the mode's own step. Open sections keep
+today's fill. **Wait for the other session**: `sherpa-accordion.css` has its
+uncommitted edits in the working tree.
 
 ### `[ ]` 61 — BUG: Add customer saves with required fields empty
 
@@ -227,51 +414,7 @@ filter opens On".
 
 ---
 
-## C — Filters: Will's features
-
-### `[ ]` 62 — Apply and Discard only for a REMOTE fetch; a debug flag spoofs one
-
-Will, 2026-09-26: *"Apply and Discard are actions that are only needed if
-there is a data fetch that reaches outside the Data Layer. If the change is
-just shaping data that's already in the data layer then there's no need."*
-
-- **The panel footer goes.** A field whose change needs a remote fetch shows a
-  small, ICON-ONLY Apply and Discard at the right of its section header row,
-  beside Clear. Every other field applies as it is changed.
-- **The same rule reaches a chip's menu.** Its Apply/Cancel (`commit: true`,
-  `data-commit` — Owner and Region today) is only for a remote field too.
-- **"Remote" is a fact about the FILTER**, so it is on the filter def and
-  asked of the data layer — never guessed by a component.
-
-**There is no remote source, so spoof one.** A DEBUG attribute/property on a
-filter pretends that its change fetches from a remote source — a delay, and
-optionally a failure. Sprinkle it into the example filters so both paths are
-always on screen. 58 (loading, empty and error states) reuses the same flag to
-drive its loading and failure states.
-
-Before 46: a pending state only exists on a field that has an Apply, and this
-item decides which fields those are. `T-apply-and-discard-wait-for-a-change`
-changes with it.
-
-### `[ ]` 66 — The footer owns "nothing to save": Save and Cancel wait for a change
-
-Will, 2026-09-26: wire the inactive Save & Cancel (or Apply & Discard, or any
-equivalent pair) into `sherpa-container-footer`, *"so that all menus etc can
-inherit this common behaviour."* Today each host does it by hand, or not at
-all: the filter panel built its own (`#syncDirty`,
-`T-apply-and-discard-wait-for-a-change`), and `sherpa-menu` has a `dirty`
-getter its footer does not use.
-
-The FOOTER turns its commit and revert controls off while the host says
-nothing has changed, and on when it has. The host only REPORTS dirty — one
-attribute or property, e.g. `data-dirty` on the footer, or a `dirty` it asks
-of its host — and never touches the buttons. Nine templates compose the
-footer (calendar, dialog, container, filter panel, menu, nav, overlay-panel,
-panel, select-card); each then drops its own copy. Which buttons are the pair
-must be declared, not guessed from their labels.
-
-Do it with 62: 62 decides WHICH fields have Apply and Discard at all, this
-decides how any such pair behaves.
+## D — Filters: Will's features, on the foundation
 
 ### `[ ]` 46 — A PENDING state: changed, not yet applied
 
@@ -415,143 +558,7 @@ step 3, which puts scopes in the data layer.
 
 ---
 
-## D — The filter family, finished
-
-### `[~]` 38 — One model, one builder, one owner: what is left
-
-Will, 2026-09-25: *"I'm juggling bugs here between the filter panel and filter
-toolbar when the overlap is considerable so the code should be singular, and
-reused, where possible."* The full review is `docs/FILTER-REVIEW.md`.
-
-Will's taxonomy stands: **six KINDS** — group, sort, boolean, single, multi,
-conditional. "Organise" is a label, never a kind.
-
-**Done:** 1 the chip owns its kind · 2 one derivation of a kind
-(`core/ui/filter-kind.ts`) · 5 sort/group state collapsed (fe8eba65) · 5.5
-error reporting, `report()` / `onReport()` (7c1a36d3) · 6 `filter-state.ts`
-split into state, face and `bind-selection` (4f747cae).
-
-**Step 3 — the data layer coordinates — is PART done.** The scope registry
-(`scope`/`hold`/`holds`/`scopeOf`/`move`), `debugState()`, the panel no
-longer reaching into the bar (789fe50b), and menu borrowing gone
-(`menuFor()`). Left:
-
-- The panel is bound to NO `DataSource`. `records.js` carries readings between
-  the panel and the bars by hand (~472-510), and still reads the header bar's
-  shadow root (~419). Both go when the panel binds.
-- Auto-registration does not exist: a component should find its source by a
-  request on connect that the nearest source answers (decided 2026-09-25).
-- "Scope" still means three things — query reach (`view`/`component`), which
-  rows a bind is pushed (`page`/`all`), and the app's surfaces (`view`/`data`).
-  Rename them apart.
-
-**Step 4 — ONE field-row builder — is NOT done.** It was ticked at −21 lines
-(b67266f8), but that is one chip builder per container. The panel keeps its
-own `#draw`, `#drawSection` and `#drawField`. The two differ by the layout
-DIRECTION and whether values EXPLODE into a run — two flags (and 47's), not
-two implementations.
-
-**The size gate was never built.** `scripts/size-baseline.json`, a per-component
-line count that may only fall, as `lint:css` does for Theme reads. Since the
-plan: the panel 898 → 1288 lines, the toolbar 1857 → 1982. Rules for the work:
-MOVE code, never rewrite it; delete the replaced path in the same commit; no
-helper with one caller; state the budget up front and report the actual.
-
-**44b and 44c are this step, wearing different clothes** — two controls holding one
-field and disagreeing, in the glue `records.js` carries by hand. Fix it at its
-cause: MOVE the state into the source rather than patching the glue. The bug
-fix and this step are then the same commit.
-
-**Then its own item:** a component DECLARES the data it needs (`data-field`,
-`data-aggregate`, `data-series-by`) and the source composes it. The example
-hand-builds 9 components through `as` closures over ~569 lines.
-
-### `[ ]` 37 — Components are AGNOSTIC of the data, and of the example app
-
-Will, 2026-09-25:
-
-> All sherpa UI components should be agnostic of the data. The data layer
-> should provision and inform them. They also shouldn't have any bespoke logic
-> in them specific to the example views. [...] For example toggling to the
-> filter panel, from the filter toolbar, should be a custom button added to the
-> actions slot [...] In fact, we should probably separate the example app to
-> it's own codebase and have it use the sherpa-ui framework library as a
-> dependency.
-
-1. **Find the bespoke logic.** Still true, measured 2026-09-26: both toggles
-   are built in — `data-act="configure"` in the toolbar (emits
-   `filter-configure`) and `.to-toolbars` in the panel. The toolbar's `actions`
-   slot is not used for it.
-2. **Components take PARAMETERS, never data shapes.** A component should not
-   know a field is called `openTickets`. Measure what still does.
-3. **Extension, not forking** — item 27 is the mechanism.
-4. **Split the example app into its own repo**, LAST. Anything it cannot do
-   from outside the library is a boundary the library has not drawn.
-
----
-
 ## E — Views and navigation
-
-### `[ ]` 70 — EXPLORE: a view definition bundles its filters; one JSON renders the page
-
-Will, 2026-09-26, ruling on 21e: a View change is a clean slate (both bars
-empty their filter chips) — *"but default filter fields, values, and states
-need to be bundled in a view definition. I'm not sure how we'd do that with
-our templates. So perhaps we need a JSON definition that gets translated to a
-template and data layer requests for all components. Something to
-investigate."*
-
-**What a view definition holds today** (`SavedView`, `persist-view.ts`): a
-label; a `snapshot` — the source's state plus, per element, a map of public
-METHOD CALLS (`applyViewSnapshot`; the Dashboard's EMEA view sets Region this
-way); and optional `content` markup, parsed through an allow-list
-(`parseViewMarkup`). What it CANNOT say: which filter chips each bar HOLDS,
-nor their default values and on/off states — the Context's own code decides
-those (`DATA_FILTERS` and `globalFilters()` in the Records example).
-
-**The question:** one JSON definition per View that declares, for every
-component, what it is, where it sits, which fields it offers, and each
-field's default answer — and a translator that turns it into the template AND
-the data-layer requests (`declareValues`, `hold`, `select`, `contribute`).
-Then a View change applies the view's own defaults onto the clean slate, and
-Save (15) writes the same shape back.
-
-Settle before building: is the JSON a superset of `SavedView` or its
-replacement; how it meets the templates (68's templater, 27's own
-templates); and how much of it is 38's "a component DECLARES the data it
-needs". Design first — 15 builds on the answer.
-
-### `[ ]` 73 — EXPLORE: one compiled QUERY, built as the reader sets it up, run on Apply
-
-Will, 2026-09-26: *"A query language that is compiled as conditions
-(grouping, sorting, filtering, conditions, segmentation, aggregation etc.)
-are built up. The data layer compiles this query then executes it when
-triggered (e.g. user clicks apply). The aim here is to avoid reloads,
-refreshes, state changes etc. causing a loss of set up parameters. The data
-layer can probably also use this query to help inform other UI components
-alongside the component state tracking feature. We probably have a
-proto-version of this going already but it needs work if we do."*
-
-**The proto-version, as it stands:**
-
-| piece | where | what it is |
-|---|---|---|
-| `ViewState` | `data-source.ts` | filter, sort, group, search, page — one flat state |
-| named parts + field readings | `DataSource` (`contribute`, `select`) | the filter is COMPOSED from them, and `state.filter` is the composed result |
-| the clause grammar | `store.ts` (`Filter`, `andFilter`, `picksClause`) | the query's filter language |
-| `FieldReading` → clause | `filter-state.ts` (`fieldState`, `readingClause`, `clauseConditions`) | a reader's answer as data, compiled one way |
-| aggregation | `aggregate.ts` (`reduceRows`, `countBy`, `seriesBy`) | run by hand in the example's `as` closures |
-| `debugState()`, `ViewSnapshot` | source, `persist-view.ts` | the query read back, and saved |
-
-**What is missing:** the query is not ONE object. Filter parts, readings,
-sort and group live in the source; segmentation and aggregation live in each
-Context's code; and `state.filter` is the compiled OUTPUT, which is why a
-restored one showed rows no chip explained (21e). A single query — every
-parameter, in the reader's own terms, compiled on demand — could be the one
-thing that is saved (21e), shared (70's view definition), applied on a
-trigger (62's remote Apply), and read by every control to draw itself (38
-step 3). Design it with 70; 62's "only a remote fetch needs Apply" decides
-when it runs.
 
 ### `[ ]` 15 — Save a View, and the Save split-button menu
 
@@ -708,48 +715,6 @@ component. Its first finding is fixed: a HOST `aria-label` named nothing
 
 ## I — The big builds
 
-### `[ ]` 25 — `sherpa-layout-canvas` — an infinite canvas content area
-
-Pans and zooms without an edge, on a CROSSHAIR grid pattern. A floating button
-group at the BOTTOM RIGHT: Pan, Zoom in, Zoom out, Options (a menu). Compose
-from `sherpa-button` and the menu; do not hand-roll either.
-
-**A minimap** shows the whole canvas and where the viewport sits; the user
-moves the viewport from it. PART OF the canvas, not its own component: it needs
-the canvas's pan and zoom, and a separate element would be a second owner of
-one value. Split it out only if a second host wants one.
-
-### `[ ]` 26 — A `Grouped` mode for the content area
-
-Every container in the content area reads as ONE stitched object: gutters
-`0px`, MID rounding on every container, only the top-most keeps its own.
-
-**Will's ruling: this is `sherpa-group` applied to the layout grid.** The work
-is how the two meet — `<sherpa-layout-grid>` owns the tracks, `<sherpa-group
-data-direction="grid">` the joins. Likely: the layout grid gains a
-`data-grouped` that gives up its gaps and applies the group rules.
-
-**Ask first (Will, 2026-09-24): are we re-inventing the grid?** A scenario is
-spread over `data-rows`, `data-row-count`, a named `data-col-span` and a
-`data-row-span` per child, and JS for `data-grouped`. A named
-`grid-template-areas` per scenario, each child naming its AREA, might replace
-most of it. Find what it cannot do — spans re-scale per breakpoint; the fit
-grid's last row takes the rest — before building either.
-
-### `[ ]` 27 — A consumer can supply their OWN templates and CSS
-
-Someone building with Sherpa-UI must be able to give a component their own
-HTML template, and their own CSS that EXTENDS the default rather than
-replacing it. Make it possible, and easy.
-
-In `src/core/ui/sherpa-element.ts`, `static css` / `static html` are plain
-`URL`s a subclass can re-point, and the template cache is keyed by `href`. Half
-the door is open. Missing: a "default, then mine" CSS order; an API that is not
-subclass-and-redefine; and a check that a custom template still provides the
-parts, slots and classes the JS and CSS expect — the `.component.yaml`
-anatomy is the natural thing to check against. Do it with 68: "use my template" and "the
-template changed" are one mechanism.
-
 ### `[ ]` 67 — A UTILITY layer: `sherpa-router`, on the Navigation API
 
 Will, 2026-09-26: *"We have a presentation layer and data layer that are
@@ -799,6 +764,48 @@ attributes, slotted content and state, as a variant re-stamp does today. 27
 (a consumer's OWN templates and CSS) is the same door from the other side:
 "use this template instead" and "this template changed" are one mechanism.
 Do 27 with it.
+
+### `[ ]` 27 — A consumer can supply their OWN templates and CSS
+
+Someone building with Sherpa-UI must be able to give a component their own
+HTML template, and their own CSS that EXTENDS the default rather than
+replacing it. Make it possible, and easy.
+
+In `src/core/ui/sherpa-element.ts`, `static css` / `static html` are plain
+`URL`s a subclass can re-point, and the template cache is keyed by `href`. Half
+the door is open. Missing: a "default, then mine" CSS order; an API that is not
+subclass-and-redefine; and a check that a custom template still provides the
+parts, slots and classes the JS and CSS expect — the `.component.yaml`
+anatomy is the natural thing to check against. Do it with 68: "use my template" and "the
+template changed" are one mechanism.
+
+### `[ ]` 25 — `sherpa-layout-canvas` — an infinite canvas content area
+
+Pans and zooms without an edge, on a CROSSHAIR grid pattern. A floating button
+group at the BOTTOM RIGHT: Pan, Zoom in, Zoom out, Options (a menu). Compose
+from `sherpa-button` and the menu; do not hand-roll either.
+
+**A minimap** shows the whole canvas and where the viewport sits; the user
+moves the viewport from it. PART OF the canvas, not its own component: it needs
+the canvas's pan and zoom, and a separate element would be a second owner of
+one value. Split it out only if a second host wants one.
+
+### `[ ]` 26 — A `Grouped` mode for the content area
+
+Every container in the content area reads as ONE stitched object: gutters
+`0px`, MID rounding on every container, only the top-most keeps its own.
+
+**Will's ruling: this is `sherpa-group` applied to the layout grid.** The work
+is how the two meet — `<sherpa-layout-grid>` owns the tracks, `<sherpa-group
+data-direction="grid">` the joins. Likely: the layout grid gains a
+`data-grouped` that gives up its gaps and applies the group rules.
+
+**Ask first (Will, 2026-09-24): are we re-inventing the grid?** A scenario is
+spread over `data-rows`, `data-row-count`, a named `data-col-span` and a
+`data-row-span` per child, and JS for `data-grouped`. A named
+`grid-template-areas` per scenario, each child naming its AREA, might replace
+most of it. Find what it cannot do — spans re-scale per breakpoint; the fit
+grid's last row takes the rest — before building either.
 
 ---
 
