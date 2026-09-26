@@ -81,27 +81,22 @@
 
 .field + .field { margin-block-start: var(--sherpa-display-mode-space-md, 16px); }
 
-/* A FIELD is a two-column grid: its label and chips, then the actions column.
-   The actions sit on the FIRST chip row, not in the header — a header row of
-   icons reads as chrome for the section, and these act on the field. */
+/* A FIELD: its header, then its chips or its body across the whole column —
+   a condition row needs it all. The header's label and buttons share its
+   BOTTOM line. Will, 2026-09-26. TRAP T-an-inline-condition-row-keeps-its-tracks */
 .field {
   display: grid;
-  /* Two named rows, so the actions land on the CHIPS row rather than wherever
-     the implicit flow puts them. */
-  grid-template-columns: 1fr auto;
-  grid-template-areas:
-    "label label"
-    "body  acts";
-  column-gap: var(--sherpa-display-mode-space-xs, 8px);
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr);
 }
-.field-head { grid-area: label; }
-.field-values,
-.field-body { grid-area: body; }
-.field-acts {
-  grid-area: acts;
-  display: flex;
+.field-head::part(row) { align-items: flex-end; }
+/* The type scale's small class sets the size; caps and light, as a metric's title. */
+.field-title {
+  margin: 0;
+  color: var(--sherpa-style-content-secondary, #35353d);
+  font-weight: var(--sherpa-font-weight-light, 300);
+  text-transform: uppercase;
 }
+.field-acts { display: flex; }
 /* A field with nothing to act on shows no column at all. */
 .field:not([data-clearable]):not([data-removable]):not([data-custom-ok]) .field-acts {
   display: none;
@@ -135,20 +130,6 @@
 /* CUSTOM MODE REPLACES the value chips — the rows are the answer now, and
    two answers side by side is the thing this mode exists to avoid. */
 .field[data-custom] .field-values { display: none; }
-
-/* …and it gives the rows the WHOLE column. A condition row is one grouped
-   object — `[And|Or] [condition] [answer] [x]` — and the actions column took
-   80 of the field's 294px, which left 214 and forced the row to stack.
-   Measured 2026-09-24: body 214px beside the actions, 294px under them.
-   So in custom mode the field is ONE column and the actions ride the label
-   row, where they still act on the field.
-   TRAP T-an-inline-condition-row-keeps-its-tracks */
-.field[data-custom] {
-  grid-template-columns: 1fr auto;
-  grid-template-areas:
-    "label acts"
-    "body  body";
-}
 
 /* A NUMBER body's two shapes. The rows are the TOOLBAR's clones, and its sheet
    does not reach this shadow root — so both showed at once and the bare input

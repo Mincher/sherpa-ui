@@ -220,7 +220,8 @@ events:
     bubbles: true
     composed: true
 tokens:
-  field.column-gap: "{sherpa.display-mode-space-xs}"
+  field-title.color: "{sherpa.style-content-secondary}"
+  field-title.font-weight: "{sherpa.font-weight-light}"
   scope-actions.gap: "{sherpa.display-mode-space-2xs}"
 $extensions:
   sherpa:

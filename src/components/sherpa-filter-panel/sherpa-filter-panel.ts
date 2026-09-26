@@ -449,7 +449,8 @@ export class SherpaFilterPanel extends SherpaElement {
   #drawSection(id: string, label: string): { box: HTMLElement; values: HTMLElement } {
     const box = this.clone('template.field-tpl')!;
     box.setAttribute('data-field', id);
-    box.querySelector('.field-head')?.setAttribute('data-heading', label);
+    const title = box.querySelector('.field-title');
+    if (title) title.textContent = label;
     // A section is not a field: nothing here to clear, remove or condition.
     box.querySelector('.field-acts')?.remove();
     return { box, values: box.querySelector('.field-values') as HTMLElement };
@@ -551,7 +552,8 @@ export class SherpaFilterPanel extends SherpaElement {
     if (!box.hasAttribute('data-clearable')) box.querySelector('.field-clear')?.remove();
 
     const head = box.querySelector('.field-head');
-    head?.setAttribute('data-heading', def.label);
+    const title = box.querySelector('.field-title');
+    if (title) title.textContent = def.label;
     const name = def.label;
     head?.querySelector('.field-clear')?.setAttribute('aria-label', `Clear ${name}`);
     head?.querySelector('.field-custom')
