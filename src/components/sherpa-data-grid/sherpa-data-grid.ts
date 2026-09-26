@@ -521,6 +521,12 @@ export class SherpaDataGrid extends SherpaElement {
       if (held && (OP_TAKES[held.op as FilterOp] ?? 'list') === 'text') {
         menu.setAttribute('data-value', held.value);
       }
+      /* A held CONDITION opens on its rows, not on an unticked list that hides
+         it — the same test the heading's `fx` reads. Will, 2026-09-26.
+         TRAP T-a-heading-menu-opens-on-what-it-holds */
+      if (held && fieldState({ field: col.field }, this.#columnReading(held)).condition === 'custom') {
+        menu.setAttribute('data-mode', 'custom');
+      }
       /* NO WALL OF ROWS. A custom-only column has no list to tick, so
          stamping its 240 values is work nobody sees.
          TRAP T-a-wall-of-values-is-not-a-filter */

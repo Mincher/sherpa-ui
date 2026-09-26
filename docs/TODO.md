@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**47 open.** Reviewed 2026-09-26: one list (the draft `todo-filter-2609.md`
+**48 open.** Reviewed 2026-09-26: one list (the draft `todo-filter-2609.md`
 is merged in), 3 items culled or merged, the rest re-ordered. Numbers are ids,
 not order — the table IS the order.
 
@@ -21,60 +21,61 @@ not order — the table IS the order.
 | | | **A — Quick wins** | |
 | 1 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
 | | | **B — Bugs: the app says one thing and does another** | |
-| 2 | 44 | A column heading's menu does not show what is set | bug |
-| 3 | 42 | A legend toggle filters the whole view | bug |
-| 4 | 61 | Add customer saves with required fields empty | bug |
-| 5 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
-| 6 | 45 | A picked date does not show in the chip | bug |
-| 7 | 16 | Favourite and Save apply to the Context, not the View | bug |
-| 8 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
+| 2 | 44b | A heading holds a whole reading, so a CHAIN shows and applies | bug |
+| 3 | 44c | A heading shows an answer held at VIEW scope | bug |
+| 4 | 42 | A legend toggle filters the whole view | bug |
+| 5 | 61 | Add customer saves with required fields empty | bug |
+| 6 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
+| 7 | 45 | A picked date does not show in the chip | bug |
+| 8 | 16 | Favourite and Save apply to the Context, not the View | bug |
+| 9 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
 | | | **C — Filters: Will's features** | |
-| 9 | 62 | Apply and Discard only for a REMOTE fetch; a debug flag spoofs one | feature |
-| 10 | 66 | The footer owns "nothing to save": Save and Cancel wait for a change | feature |
-| 11 | 46 | A PENDING state: changed, not yet applied | feature |
-| 12 | 60 | Once applied, a chip's badge shows the number of results | feature |
-| 13 | 49 | A preset conditional chip shows its conditions, read-only | feature |
-| 14 | 50 | A custom conditional chip shows its conditions, editable | feature |
-| 15 | 47 | More than 20 values: one chip, not a run | feature |
-| 16 | 48 | A child menu opens on hover or click of its row | feature |
-| 17 | 21c | A condition's matches must ALL highlight | feature |
-| 18 | 21f | "Send to view filters" | feature |
-| 19 | 21b | Which header chips carry over between views | feature |
-| 20 | 20b | The Date filter should be a view-scope date RANGE | feature |
-| 21 | 21d | EXPLORE — conditions for a DATE field | explore |
-| 22 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
+| 10 | 62 | Apply and Discard only for a REMOTE fetch; a debug flag spoofs one | feature |
+| 11 | 66 | The footer owns "nothing to save": Save and Cancel wait for a change | feature |
+| 12 | 46 | A PENDING state: changed, not yet applied | feature |
+| 13 | 60 | Once applied, a chip's badge shows the number of results | feature |
+| 14 | 49 | A preset conditional chip shows its conditions, read-only | feature |
+| 15 | 50 | A custom conditional chip shows its conditions, editable | feature |
+| 16 | 47 | More than 20 values: one chip, not a run | feature |
+| 17 | 48 | A child menu opens on hover or click of its row | feature |
+| 18 | 21c | A condition's matches must ALL highlight | feature |
+| 19 | 21f | "Send to view filters" | feature |
+| 20 | 21b | Which header chips carry over between views | feature |
+| 21 | 20b | The Date filter should be a view-scope date RANGE | feature |
+| 22 | 21d | EXPLORE — conditions for a DATE field | explore |
+| 23 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
 | | | **D — The filter family, finished** | |
-| 23 | 38 | One model, one builder, one owner — what is left | refactor |
-| 24 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
+| 24 | 38 | One model, one builder, one owner — what is left | refactor |
+| 25 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | | | **E — Views and navigation** | |
-| 25 | 70 | EXPLORE — a view definition bundles its filters; one JSON renders the page | explore |
-| 26 | 15 | Save a View, and the Save split-button menu | feature |
-| 27 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
-| 28 | 34 | Figma: use the Navigation terms | figma |
+| 26 | 70 | EXPLORE — a view definition bundles its filters; one JSON renders the page | explore |
+| 27 | 15 | Save a View, and the Save split-button menu | feature |
+| 28 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
+| 29 | 34 | Figma: use the Navigation terms | figma |
 | | | **F — Data states and charts** | |
-| 29 | 58 | Loading, empty and error states in a container | feature |
-| 30 | 9b | A Data Viz header, for metrics and chart containers | component |
-| 31 | 14 | An example of real-time data | feature |
-| 32 | 59 | EXPLORE, later — Will's own loading pattern | explore |
+| 30 | 58 | Loading, empty and error states in a container | feature |
+| 31 | 9b | A Data Viz header, for metrics and chart containers | component |
+| 32 | 14 | An example of real-time data | feature |
+| 33 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | | | **G — Overlay panels** | |
-| 33 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
-| 34 | 23 | A focused grid row opens a details panel | feature |
+| 34 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
+| 35 | 23 | A focused grid row opens a details panel | feature |
 | | | **H — The accessibility gate** | |
-| 35 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
+| 36 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
 | | | **I — The big builds** | |
-| 36 | 25 | `sherpa-layout-canvas` + minimap | component |
-| 37 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
-| 38 | 27 | A consumer can supply their OWN templates and CSS | feature |
-| 39 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
-| 40 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
+| 37 | 25 | `sherpa-layout-canvas` + minimap | component |
+| 38 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
+| 39 | 27 | A consumer can supply their OWN templates and CSS | feature |
+| 40 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
+| 41 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
 | | | **J — Tidy-ups and renames** | |
-| 41 | 11 | `sherpa-group`: what is left | tidy |
-| 42 | 28 | A Figma component is NOT always a web component | tidy |
-| 43 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
-| 44 | 33 | Density as step offsets, and a breakpoint step | tokens |
-| 45 | 36 | CSS: compiled where it should inherit? | tidy |
-| 46 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
-| 47 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
+| 42 | 11 | `sherpa-group`: what is left | tidy |
+| 43 | 28 | A Figma component is NOT always a web component | tidy |
+| 44 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| 45 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| 46 | 36 | CSS: compiled where it should inherit? | tidy |
+| 47 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| 48 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 
 **Why this order.**
 
@@ -107,12 +108,30 @@ name, never a Theme colour: a state is the mode's own step. Open sections keep
 today's fill. **Wait for the other session**: `sherpa-accordion.css` has its
 uncommitted edits in the working tree.
 
-### `[ ]` 44 — BUG: a column heading's menu does not show what is set
+### `[ ]` 44b — BUG: a heading holds a whole reading, so a CHAIN shows and applies
 
-A heading's filter menu does not show the ticked values or the conditions
-already set on its field, at view or component scope. So a reader can apply a
-filter that contradicts the one in force. The heading must read the state the
-chip and the panel read — a second view ASKS the first.
+The single-condition half of 44 is done (a held condition opens its menu on
+the condition, `T-a-heading-menu-opens-on-what-it-holds`). What is left: the
+grid's `ColumnFilter` holds ONE condition — an op and a value or picks. So:
+
+- a chain set from outside (`owner contains Da or starts with R`, from the
+  chip mirror) is GARBLED — `setColumnFilter` reads `['or', a, b]` as an op
+  and a list of picks;
+- a chain a reader types INTO the heading applies only its first row
+  (`#readColumnFilter` reads `op` and `conditionValue`).
+
+The fix is the model: a column holds a whole `FieldReading` (picks, op, text,
+conditions, range, suspended), as a chip does, and the clause comes from the
+data layer's own `readingClause`. The grid then stops being a second filter
+model.
+
+### `[ ]` 44c — BUG: a heading shows an answer held at VIEW scope
+
+Region = EMEA in the header lights the grid's Region heading — `#isFiltered`
+counts the query's `data-filter-fields` — but its menu shows nothing ticked,
+so a reader can pick a contradicting value there. The heading must show the
+View's answer. How it behaves once shown is a ruling (see the question with
+Will).
 
 ### `[ ]` 42 — BUG: a legend toggle filters the whole view
 
@@ -431,7 +450,7 @@ plan: the panel 898 → 1288 lines, the toolbar 1857 → 1982. Rules for the wor
 MOVE code, never rewrite it; delete the replaced path in the same commit; no
 helper with one caller; state the budget up front and report the actual.
 
-**44 is this step, wearing different clothes** — two controls holding one
+**44b and 44c are this step, wearing different clothes** — two controls holding one
 field and disagreeing, in the glue `records.js` carries by hand. Fix it at its
 cause: MOVE the state into the source rather than patching the glue. The bug
 fix and this step are then the same commit.
@@ -876,6 +895,7 @@ One line each. The detail is in git and in the trap named.
 - 56: a view change resets the header chips the new view does not set — Region no longer stays lit over My accounts; this is 21b's default — `T-a-view-change-resets-the-header-chips`
 - 21e: filters survive a reload and a trip away, for the session, on the View they were made on — each bar keeps its `answers` and replays them with `restoreAnswers()`; the combined query is never restored; a View change empties both bars' filter chips — `T-a-reload-replays-the-readers-answers`
 - 55: At risk keeps its own `status ne churned` (13 rows, was 20); going back to All drops the old `col:status` chip — `T-an-empty-selection-never-wipes-a-condition`
+- 44 (first half): a heading holding a condition opens its menu on the condition, not on an unticked list — `T-a-heading-menu-opens-on-what-it-holds`
 
 **Culled or merged in the 2026-09-26 review**
 - 13, a sparkline did not follow its record deltas — each tile's sparkline and its delta are ONE series now (`T-a-delta-is-derived-not-declared`)

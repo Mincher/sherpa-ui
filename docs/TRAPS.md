@@ -13487,3 +13487,19 @@ stayed on the bar after going back to All.
 
 - Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-view-chips.spec.ts`
+
+### T-a-heading-menu-opens-on-what-it-holds
+
+**A column heading's menu opens on the answer it holds.** Will, 2026-09-26:
+heading menus did not show what was set, so a reader could apply a filter that
+contradicts the one in force. A column held a condition — `owner contains Da`,
+set from outside by the chip mirror — and its menu opened in list mode, on an
+unticked list of values, with the condition row hidden behind the mode.
+
+The heading already derives `condition === 'custom'` to wear `fx`; the menu
+now reads the SAME test and opens in `data-mode="custom"`. Picks stay a ticked
+list. Still open: a CHAIN (`A or B`) — the grid holds one condition per column
+(TODO 44b) — and an answer held at VIEW scope (TODO 44c).
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/e2e/reforged-data-grid.spec.ts`

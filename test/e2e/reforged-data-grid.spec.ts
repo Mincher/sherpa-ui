@@ -2791,3 +2791,32 @@ test('a custom-only column drops its list and opens on its own op', async ({ pag
   expect(r.typed).toBe(true);
   expect(r.clause).toEqual(['email', 'contains', 'aisha']);
 });
+
+/**
+ * A HEADING MENU OPENS ON WHAT IT HOLDS. A column filtered by a condition —
+ * set from outside, as the chip mirror does — opened on its unticked value
+ * list, which hides the condition and invites a contradicting pick.
+ * Will, 2026-09-26. TRAP T-a-heading-menu-opens-on-what-it-holds
+ */
+test('a heading filtered by a condition opens its menu on the condition', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const grid = await window.__mount<HTMLElement & {
+      setColumnFilter(f: string, c: unknown[] | null): void }>('sherpa-data-grid', {
+      columns: [{ field: 'owner', header: 'Owner' }, { field: 'status', header: 'Status' }],
+      rows: [{ owner: 'Dana', status: 'active' }, { owner: 'Ravi', status: 'trial' }],
+    }, { 'data-column-filters': true });
+    grid.setColumnFilter('owner', ['owner', 'contains', 'Da']);
+    grid.setColumnFilter('status', ['status', 'in', ['active']]);
+    await window.__settled();
+    const menu = (f: string) => grid.shadowRoot!
+      .querySelector(`.head-cell[data-field="${f}"] sherpa-menu`) as HTMLElement & {
+        mode: string; conditions: unknown[]; values: string[] };
+    return {
+      owner: { mode: menu('owner').mode, conditions: menu('owner').conditions },
+      status: { mode: menu('status').mode, values: menu('status').values },
+    };
+  });
+  expect(r.owner).toEqual({ mode: 'custom', conditions: [{ op: 'contains', text: 'Da' }] });
+  // PICKS stay a ticked list.
+  expect(r.status).toEqual({ mode: 'default', values: ['active'] });
+});
