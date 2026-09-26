@@ -21,8 +21,8 @@ not order — the table IS the order.
 | | | **A — Quick wins** | |
 | 1 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
 | | | **B — Bugs: the app says one thing and does another** | |
-| 2 | 44b | A heading holds a whole reading, so a CHAIN shows and applies | bug |
-| 3 | 44c | A heading shows an answer held at VIEW scope | bug |
+| 2 | 44c | A heading shows an answer held at VIEW scope | bug |
+| 3 | 71 | The chart legend's Other menu does not open; check it filters the chart | bug |
 | 4 | 42 | A legend toggle filters the whole view | bug |
 | 5 | 61 | Add customer saves with required fields empty | bug |
 | 6 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
@@ -108,23 +108,6 @@ name, never a Theme colour: a state is the mode's own step. Open sections keep
 today's fill. **Wait for the other session**: `sherpa-accordion.css` has its
 uncommitted edits in the working tree.
 
-### `[ ]` 44b — BUG: a heading holds a whole reading, so a CHAIN shows and applies
-
-The single-condition half of 44 is done (a held condition opens its menu on
-the condition, `T-a-heading-menu-opens-on-what-it-holds`). What is left: the
-grid's `ColumnFilter` holds ONE condition — an op and a value or picks. So:
-
-- a chain set from outside (`owner contains Da or starts with R`, from the
-  chip mirror) is GARBLED — `setColumnFilter` reads `['or', a, b]` as an op
-  and a list of picks;
-- a chain a reader types INTO the heading applies only its first row
-  (`#readColumnFilter` reads `op` and `conditionValue`).
-
-The fix is the model: a column holds a whole `FieldReading` (picks, op, text,
-conditions, range, suspended), as a chip does, and the clause comes from the
-data layer's own `readingClause`. The grid then stops being a second filter
-model.
-
 ### `[ ]` 44c — BUG: a heading shows an answer held at VIEW scope
 
 Region = EMEA in the header lights the grid's Region heading — `#isFiltered`
@@ -138,6 +121,15 @@ the heading's menu shows EMEA ticked, greyed, with the tip "Filter applied at
 higher scope", and it cannot be changed there — the reader changes it in the
 header. One owner for one value. Build on 44b: the heading then just holds
 the View's reading, read-only.
+
+### `[ ]` 71 — BUG: the chart legend's Other menu does not open
+
+Will, 2026-09-26: the Other row's breakdown menu no longer displays. Check,
+too, that changing its selections shows and hides those segments in the chart
+(`T-the-breakdown-button-shares-the-other-row`,
+`T-legend-toggle-is-a-filter`). Suspect first: every `sherpa-button`'s
+`.trigger` now carries `anchor-name` for its tip (2cbc6c6d) — check it does
+not take the anchor a slotted menu positions against.
 
 ### `[ ]` 42 — BUG: a legend toggle filters the whole view
 
@@ -902,6 +894,7 @@ One line each. The detail is in git and in the trap named.
 - 21e: filters survive a reload and a trip away, for the session, on the View they were made on — each bar keeps its `answers` and replays them with `restoreAnswers()`; the combined query is never restored; a View change empties both bars' filter chips — `T-a-reload-replays-the-readers-answers`
 - 55: At risk keeps its own `status ne churned` (13 rows, was 20); going back to All drops the old `col:status` chip — `T-an-empty-selection-never-wipes-a-condition`
 - 44 (first half): a heading holding a condition opens its menu on the condition, not on an unticked list — `T-a-heading-menu-opens-on-what-it-holds`
+- 44b: a heading holds a whole reading — a chain set from outside or typed in shows and applies whole; `clauseConditions()` turns a chained clause back into rows — `T-a-heading-holds-a-whole-reading`
 
 **Culled or merged in the 2026-09-26 review**
 - 13, a sparkline did not follow its record deltas — each tile's sparkline and its delta are ONE series now (`T-a-delta-is-derived-not-declared`)

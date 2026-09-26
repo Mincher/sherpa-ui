@@ -28,8 +28,11 @@ import {
   DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, picksClause, type FilterOp,
 } from '../../core/data/store.js';
 import {
-  fieldState, readingClause, type FieldReading, type FieldType,
+  clauseConditions, fieldState, readingClause,
+  type FieldCondition, type FieldReading, type FieldType,
 } from '../../core/data/filter-state.js';
+import { spellConditions } from '../../core/data/filter-face.js';
+import { report } from '../../core/data/report.js';
 
 /** The `fx` glyph a CONDITION wears, wherever one is drawn. */
 const CONDITION_ICON = 'function';
@@ -110,6 +113,9 @@ interface ColumnFilter {
   suspended?: boolean;
   /** SEVERAL ticked values, for an `in` / `notin` clause. */
   picks?: string[];
+  /** A CHAIN of rows — `A or B` — when one condition cannot say it. The op and
+   *  value above are then row one. TRAP T-a-heading-holds-a-whole-reading */
+  conditions?: FieldCondition[];
 }
 
 /** Which body template each column type's filter menu holds — TEXT has none:
@@ -408,8 +414,24 @@ export class SherpaDataGrid extends SherpaElement {
 
     // Every heading is in the table now, so its menu has upgraded.
     this.#flushItems();
+    this.#flushChains();
 
     this.#renderFilterRow();
+  }
+
+  /**
+   * A CHAIN's rows into its heading menu, once the menu has DRAWN: a detached
+   * clone is not upgraded, and a row set before its rows region exists is lost.
+   * TRAP T-a-heading-holds-a-whole-reading
+   */
+  #flushChains(): void {
+    for (const [field, held] of this.#columnFilters) {
+      const rows = held.conditions;
+      if (!rows?.length) continue;
+      const menu = this.$<HTMLElement & { rendered?: Promise<void>; conditions?: FieldCondition[] }>(
+        `.head-cell[data-field="${CSS.escape(field)}"] sherpa-menu`);
+      if (menu) void Promise.resolve(menu.rendered).then(() => { menu.conditions = rows; });
+    }
   }
 
   /** TRAP T-grid-untyped-column-gets-no-filter-button — text|number|date only. */
@@ -778,6 +800,15 @@ export class SherpaDataGrid extends SherpaElement {
     /* A LIST condition is answered by the TICKED ROWS, a typing one by the
        menu's own box. TRAP T-an-operator-decides-pick-or-type */
     if (!cal && isFilterMenu) {
+      /* A CHAIN is read WHOLE: every answered row, not row one alone, which
+         applied `A` of `A or B`. TRAP T-a-heading-holds-a-whole-reading */
+      const custom = menu as HTMLElement & { mode?: string; conditions?: FieldCondition[] };
+      const rows = custom.mode === 'custom'
+        ? (custom.conditions ?? []).filter((r) => (r.text ?? '').trim() || (r.picked ?? []).length)
+        : [];
+      if (rows.length > 1) {
+        return { op: rows[0]!.op, value: (rows[0]!.text ?? '').trim(), conditions: rows };
+      }
       if ((OP_TAKES[op as FilterOp] ?? 'list') === 'text') {
         const typed = (menu as HTMLElement & { conditionValue?: string })
           .conditionValue ?? '';
@@ -820,6 +851,7 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** One column's filter as a reading — what a reader gave, not a query. */
   #columnReading(held: ColumnFilter): FieldReading {
+    if (held.conditions?.length) return { conditions: held.conditions };
     const op = readingOp(held.op);
     if (held.range) {
       return { op, range: true, picked: [held.from ?? '', held.to ?? ''] };
@@ -831,6 +863,10 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** One column filter as a chip reads it — "Contains: ana", "Between: 10 - 20". */
   #columnFilterLabel(held: ColumnFilter): string {
+    // A chain says itself: `Contains: Da or Starts with: R`.
+    if (held.conditions?.length) {
+      return spellConditions(fieldState({ field: '' }, { conditions: held.conditions }));
+    }
     const name = OP_LABELS[held.op as keyof typeof OP_LABELS] ?? held.op;
     if (held.range) return `${name}: ${held.from} - ${held.to}`;
     // A COUNT, not a list: "Is one of: 4" beats a chip that runs off the bar.
@@ -850,6 +886,28 @@ export class SherpaDataGrid extends SherpaElement {
   setColumnFilter(field: string, clause: unknown[] | null): void {
     if (!clause) {
       this.clearColumnFilter(field);
+      return;
+    }
+
+    /* A CHAIN — `['or', a, b]` from a chip's rows — held as its rows. Read as
+       `[field, op, value]` it became an op of `a` and picks of `b`.
+       TRAP T-a-heading-holds-a-whole-reading */
+    if (clause[0] === 'and' || clause[0] === 'or') {
+      const rows = clauseConditions(clause as Filter);
+      if (!rows) {
+        report({
+          code: 'unheld-column-clause',
+          message: 'setColumnFilter: a chained clause these rows cannot say was not held.',
+          at: { field, clause: JSON.stringify(clause) },
+        });
+        return;
+      }
+      this.#columnFilters.set(field, {
+        op: rows[0]!.op, value: rows[0]!.text ?? '', conditions: rows,
+      });
+      this.#renderHead();
+      this.#syncColumnFilterStatus();
+      this.#renderBody();
       return;
     }
 

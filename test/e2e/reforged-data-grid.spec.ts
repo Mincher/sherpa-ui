@@ -2820,3 +2820,46 @@ test('a heading filtered by a condition opens its menu on the condition', async 
   // PICKS stay a ticked list.
   expect(r.status).toEqual({ mode: 'default', values: ['active'] });
 });
+
+/**
+ * A HEADING HOLDS A WHOLE READING. A chain set from outside was read as one
+ * op and a list of picks; a chain typed INTO the heading applied only row one.
+ * TRAP T-a-heading-holds-a-whole-reading
+ */
+test('a heading holds a chain: set from outside, or typed in, it shows and applies whole', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    type Grid = HTMLElement & { setColumnFilter(f: string, c: unknown[] | null): void;
+      columnClause(f: string): unknown; columnLabel(f: string): string | null };
+    const grid = await window.__mount<Grid>('sherpa-data-grid', {
+      columns: [{ field: 'owner', header: 'Owner' }],
+      rows: [{ owner: 'Dana' }, { owner: 'Ravi' }, { owner: 'Nassim' }],
+    }, { 'data-column-filters': true });
+    const chain = ['or', ['owner', 'contains', 'Da'], ['owner', 'startswith', 'R']];
+    grid.setColumnFilter('owner', chain);
+    await window.__settled();
+    await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+    const menu = grid.shadowRoot!.querySelector('.head-cell[data-field="owner"] sherpa-menu') as
+      HTMLElement & { mode: string; conditions: unknown[] };
+    const held = { clause: grid.columnClause('owner'), label: grid.columnLabel('owner'),
+      mode: menu.mode, rows: menu.conditions };
+
+    // TYPED IN: the menu's own rows, read whole on Apply.
+    const heard: unknown[] = [];
+    grid.addEventListener('column-filter-change', (e) => heard.push((e as CustomEvent).detail.clause));
+    menu.conditions = [{ op: 'contains', text: 'Na' }, { op: 'startswith', text: 'D', join: 'or' }];
+    // A rebuilt row fills a frame late.
+    await window.__settled();
+    await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+    // The heading commits on its menu's APPLY, as a reader's press does.
+    menu.dispatchEvent(new CustomEvent('menu-apply', { bubbles: true, composed: true, detail: {} }));
+    await window.__settled();
+    return { held, typed: grid.columnClause('owner'), heard };
+  });
+  expect(r.held).toEqual({
+    clause: ['or', ['owner', 'contains', 'Da'], ['owner', 'startswith', 'R']],
+    label: 'Contains: Da or Starts with: R',
+    mode: 'custom',
+    rows: [{ op: 'contains', text: 'Da' }, { op: 'startswith', text: 'R', join: 'or' }],
+  });
+  expect(r.typed).toEqual(['or', ['owner', 'contains', 'Na'], ['owner', 'startswith', 'D']]);
+});

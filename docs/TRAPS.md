@@ -13479,9 +13479,11 @@ one field reads the same in the chip, the panel and the column. Measured
 reset emptied Status 13ms later, and the mirror wrote `null` over the view's
 condition — 20 rows where 13 are at risk.
 
-A selection can only hold PICKS (`eq` / `in`). So the mirror writes an EMPTY
-answer only over a heading that holds picks or nothing; a condition such as
-`ne` stays, owned by its `col:` chip. And when a field chip answers a column
+So the mirror clears only what THE MIRROR WROTE — it keeps the set of
+headings it has written. A view's own condition, or one typed in the heading
+(owned by its `col:` chip), is never its to clear. A first try judged by the
+clause's SHAPE (picks may be wiped, a condition may not); that left a
+chip-made `contains Da` on the heading after the chip was cleared. And when a field chip answers a column
 again, a `col:` chip an earlier view put up is taken down, or its phrase
 stayed on the bar after going back to All.
 
@@ -13502,4 +13504,30 @@ list. Still open: a CHAIN (`A or B`) — the grid holds one condition per column
 (TODO 44b) — and an answer held at VIEW scope (TODO 44c).
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/e2e/reforged-data-grid.spec.ts`
+
+### T-a-heading-holds-a-whole-reading
+
+**A grid heading holds a whole reading, not one condition.** `ColumnFilter`
+held an op and a value or picks, so:
+
+- a CHAIN set from outside (`['or', ['owner','contains','Da'], ['owner','startswith','R']]`,
+  from the chip mirror) was read as `[field, op, value]` — an op of the first
+  sub-clause and "picks" of the second: `["owner","in",["owner","startswith","R"]]`;
+- a chain typed INTO the heading applied only its first row.
+
+It now carries `conditions` for a chain; the clause and the label come from
+the data layer (`readingClause`, `spellConditions`), and `clauseConditions()`
+turns a chained clause back into its rows — the inverse of the chain, `A or
+(B and C)`. A shape the rows cannot say is reported, never guessed.
+
+The rows reach the menu only once it has DRAWN: a heading menu is a detached
+clone, not upgraded, so rows set before its rows region exists are replayed
+at connect into a setter that drops them. `#flushChains()` runs after
+`#renderHead` has put every menu in the table.
+
+- Site: `src/core/data/filter-state.ts`
+- Site: `src/data.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/unit/filter-state.test.mjs`
 - Site: `test/e2e/reforged-data-grid.spec.ts`

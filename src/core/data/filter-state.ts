@@ -28,6 +28,7 @@
  * - stateClause — One field's state as a ready `FilterClause`, or `undefined`.
  * - readingClause — a reading as a clause, for a control holding its own field facts
  * - savedReading — a field's answer as it can be SAVED, and put back as it was
+ * - clauseConditions — a one-field chained clause back as its rows — the inverse of the chain
  */
 import {
   DEFAULT_OP, OP_TAKES,
@@ -354,6 +355,44 @@ function rowClause(state: FilterState, row: FieldCondition): Filter | undefined 
   const picked = [...(row.picked ?? [])];
   if (takes === 'range') return rangeClause(state.field, state.type, picked, row.op);
   return picksClause(state.field, cast(picked, state.type), row.op);
+}
+
+/** A held CLAUSE op as a reader's ROW op: several `eq` picks are `in`. */
+const ROW_OPS: Readonly<Record<string, FilterOp>> = { in: 'eq', notin: 'ne' };
+
+/** One clause leaf as a row, or undefined when it is not one. */
+function leafRow(leaf: Filter): FieldCondition | undefined {
+  if (!Array.isArray(leaf) || typeof leaf[0] !== 'string' || leaf[0] === 'and' || leaf[0] === 'or') {
+    return undefined;
+  }
+  const [, clauseOp, value] = leaf as FilterClause;
+  const op = ROW_OPS[clauseOp] ?? clauseOp;
+  if ((OP_TAKES[op] ?? 'list') === 'text') return { op, text: String(value ?? '') };
+  return { op, picked: Array.isArray(value) ? [...value] : [value] };
+}
+
+/**
+ * clauseConditions(filter) — a ONE-FIELD chained clause back as its rows: the
+ * inverse of the chain, `A or (B and C)` to three rows joined `or`, `and`.
+ * For a control that is handed a clause and draws rows — a grid heading.
+ * `undefined` for a shape the rows cannot say, never a guess.
+ * TRAP T-a-heading-holds-a-whole-reading
+ */
+export function clauseConditions(filter: Filter): FieldCondition[] | undefined {
+  const groups = Array.isArray(filter) && filter[0] === 'or'
+    ? (filter.slice(1) as Filter[]) : [filter];
+  const rows: FieldCondition[] = [];
+  for (const [g, group] of groups.entries()) {
+    const leaves = Array.isArray(group) && group[0] === 'and' ? (group.slice(1) as Filter[]) : [group];
+    for (const [l, leaf] of leaves.entries()) {
+      const row = leafRow(leaf);
+      if (!row) return undefined;
+      if (g > 0 && l === 0) row.join = 'or';
+      else if (l > 0) row.join = 'and';
+      rows.push(row);
+    }
+  }
+  return rows.length ? rows : undefined;
 }
 
 /**

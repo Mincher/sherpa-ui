@@ -750,6 +750,9 @@ export async function init(root, { session, view } = {}) {
 
   /* Every control over a field re-reads when ANY of them changes it. The grid's
      column menu is the one that had no way to hear before. */
+  /* The headings this mirror has written, so an empty answer clears only its
+     own. TRAP T-an-empty-selection-never-wipes-a-condition */
+  const mirrored = new Set();
   source.addEventListener('selection-change', (e) => {
     const { field } = e.detail;
     const state = source.selection(field);
@@ -788,13 +791,17 @@ export async function init(root, { session, view } = {}) {
     /* The grid's heading takes a ready CLAUSE, which is the one shape that
        carries either answer. */
     const clause = stateClause(state) ?? null;
-    /* …but an EMPTY answer never wipes a heading condition it could not have
-       made. `At risk` sets `status ne churned` on the grid; the view's own reset
-       emptied Status 13ms later, and this cleared the view's filter with it.
+    /* …and an EMPTY answer clears only what THIS mirror wrote. `At risk` sets
+       `status ne churned` on the grid itself; the view's own reset emptied
+       Status 13ms later, and this cleared the view's filter with it. A
+       condition typed in the heading is its `col:` chip's, not this mirror's.
        TRAP T-an-empty-selection-never-wipes-a-condition */
-    const held = grid.columnClause(field);
-    const selectionShaped = !held || Array.isArray(held[2]) || held[1] === 'eq';
-    if (clause || selectionShaped) grid.setColumnFilter(field, clause);
+    if (clause) {
+      grid.setColumnFilter(field, clause);
+      mirrored.add(field);
+    } else if (mirrored.delete(field)) {
+      grid.setColumnFilter(field, null);
+    }
   }, { signal });
 
   /* NO `ignore` for `quick-filter-change`: the bound source asks the bar for

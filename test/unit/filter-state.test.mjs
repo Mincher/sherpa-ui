@@ -16,7 +16,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-const { fieldState, stateClause, filterFace, CONDITION_BADGE } =
+const { fieldState, stateClause, filterFace, CONDITION_BADGE, readingClause, clauseConditions } =
   await import(new URL('../../dist/data.js', import.meta.url));
 
 const OWNERS = ['Ravi Menon', 'Dana Whitlock', 'Unassigned'];
@@ -199,4 +199,27 @@ test('a control with NO values is off, never broken', () => {
   assert.deepEqual(empty.values, []);
   assert.equal(stateClause(empty), undefined);
   assert.equal(filterFace(empty).tip, '');
+});
+
+/* ── clauseConditions — the chain, back as rows ─────────────────────── */
+
+test('a chained clause comes back as the rows that made it', () => {
+  // TRAP T-a-heading-holds-a-whole-reading
+  const rows = [
+    { op: 'contains', text: 'Da' },
+    { op: 'startswith', text: 'R', join: 'or' },
+    { op: 'ne', picked: ['Ravi Menon'], join: 'and' },
+  ];
+  const clause = readingClause({ field: 'owner' }, { conditions: rows });
+  // `A or (B and C)`, the precedence the chain uses.
+  assert.deepEqual(clause, ['or', ['owner', 'contains', 'Da'],
+    ['and', ['owner', 'startswith', 'R'], ['owner', 'ne', 'Ravi Menon']]]);
+  assert.deepEqual(clauseConditions(clause), rows);
+});
+
+test('clauseConditions reads picks as a list row, and refuses what rows cannot say', () => {
+  assert.deepEqual(clauseConditions(['status', 'in', ['active', 'trial']]),
+    [{ op: 'eq', picked: ['active', 'trial'] }]);
+  // An `and` INSIDE an `or` inside an `and` is no chain of rows.
+  assert.equal(clauseConditions(['and', ['or', ['a', 'eq', 1], ['a', 'eq', 2]], ['a', 'eq', 3]]), undefined);
 });

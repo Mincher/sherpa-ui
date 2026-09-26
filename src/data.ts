@@ -220,6 +220,8 @@ export {
   isRanged,
   // A field's answer as it can be SAVED. TRAP T-a-saved-filter-is-its-readings
   savedReading,
+  // A chained clause back as its rows. TRAP T-a-heading-holds-a-whole-reading
+  clauseConditions,
   type FieldState,
   type ValueState,
   type ValueEntry,
