@@ -8,7 +8,7 @@
  * - init — bind this Context to its source and wire every control; returns nothing
  */
 import {
-  DataSource, VIEW_SCOPE, SherpaToast, persistView, viewOptions, onViewPicked,
+  DataSource, VIEW_SCOPE, SherpaToast, persistView, viewOptions, onViewPicked, applyViewSnapshot,
   countBy, reduceRows, bindSelection, andFilter, picksClause, stateClause,
   seriesBy, deltaPercent, saveFilterAs, loadSavedFilters, deleteSavedFilter, labelId,
 } from '../../dist/index.js';
@@ -19,7 +19,7 @@ import { RECORDS_VIEWS } from './records-views.js';
 import { globalFilters } from './global-filters.js';
 
 
-export async function init(root, { session } = {}) {
+export async function init(root, { session, view } = {}) {
   /* The store is the APP's (records outlive a screen); the source is this
      Context's (one query over them). */
   const store = customerStore;
@@ -33,6 +33,11 @@ export async function init(root, { session } = {}) {
     pageSize: 25,
     searchFields: ['name', 'email', 'owner'],
   });
+
+  /* THE VIEW THE URL ASKS FOR, applied here at the start — so the host's pick
+     after init is a no-op, and never resets what the session kept.
+     TRAP T-a-reload-replays-the-readers-answers */
+  const startView = view && RECORDS_VIEWS[view] ? view : 'all';
 
   /* THE SOURCE, REACHABLE. `debugState()` answers every question a filter bug
      raises in one paste — rows, total, sort, group, filter, selections,
@@ -150,7 +155,7 @@ export async function init(root, { session } = {}) {
     /* The days the RECORDS carry, read off their TIME — not the default
        last-90-days, which no record in this set falls inside.
        TRAP T-a-record-has-a-time-of-its-own */
-    filters: globalFilters(viewOptions(RECORDS_VIEWS, 'all'), regions, customerOrgs,
+    filters: globalFilters(viewOptions(RECORDS_VIEWS, startView), regions, customerOrgs,
       [...new Set(customers.map((c) => c[source.timeField]))].filter(Boolean).sort()),
     /* The header's ADD list is set once the columns are known — below, from
        the same builder the grid's bar uses. TRAP T-up-is-open-down-is-closed */
@@ -445,6 +450,9 @@ export async function init(root, { session } = {}) {
     })();
   }, { signal });
 
+  /* The bars' kept answers, once replayed — the panel waits for them. */
+  let restored = Promise.resolve();
+
   /* RESTORE. The panel opens itself if the reader left it open — after the
      bars are populated, because it reads their chips. */
   if (session?.get?.('/filters/mode') === 'panel') {
@@ -455,6 +463,8 @@ export async function init(root, { session } = {}) {
        TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
     void (async () => {
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      // AFTER the kept answers are back, or it opens showing none of them.
+      await restored;
       fillPanel();
       panel?.open();
       // `open()` refuses below its breakpoint, so follow what it actually did.
@@ -903,7 +913,9 @@ export async function init(root, { session } = {}) {
       if (calls.length) state.setColumnFilter = calls.length === 1 ? calls[0] : calls;
       return state;
     },
-  });
+  /* NOT the filter: the bars replay their own answers (below), and a restored
+     COMBINED filter is one no chip shows. TRAP T-a-reload-replays-the-readers-answers */
+  }, { filter: false });
 
   /* WHICH FIELD each header chip narrows, for THESE records. A header chip is
      named for the business question and the answering field differs per page —
@@ -1006,59 +1018,116 @@ export async function init(root, { session } = {}) {
      the query AND every component's state, so picking one reconfigures the
      screen. `onViewPicked` applies it; `after` is the half only this page knows,
      because the query here is composed from named parts. */
+  /* THE GRID'S COLUMN FILTERS, told to the source and shown on the bar — after
+     a view or a restore set them on the grid, which is silent.
+     TRAP T-a-restored-filter-still-needs-its-chip */
+  const syncColumns = () => {
+    /* The snapshot set the clauses ON THE GRID; the source still has to be
+       told. Cleared first — a view naming no column filters means none. */
+    columnClauses.clear();
+    queueMicrotask(() => {
+      for (const col of columns) {
+        const clause = grid.columnClause(col.field);
+        if (clause) columnClauses.set(col.field, clause);
+        /* AND ONTO THE BAR. `setColumnFilter` is silent by design, so a view
+           that restores a column filter fires no `column-filter-change` and
+           the chip an interaction would have added never appears — the grid
+           narrows and nothing says why.
+
+           A FIELD_CHIPS field is drawn by its own chip ONLY where the clause
+           is a pick list, which is all `source.select` can hold. `At risk`
+           restores `status ne churned`, which is not — so it needs a `col:`
+           chip like any other condition, or nothing on the bar reports it.
+           That is the same split the live `column-filter-change` handler
+           makes. TRAP T-a-restored-filter-still-needs-its-chip */
+        const picks = Array.isArray(clause?.[2]) ? clause[2].map(String)
+          : clause?.[1] === 'eq' ? [String(clause[2])]
+          : null;
+        if (FIELD_CHIPS.has(col.field) && (picks || !clause)) {
+          source.select(col.field, picks ?? []);
+          continue;
+        }
+        qft.addExternalFilter({
+          id: `col:${col.field}`,
+          label: col.header,
+          value: clause ? grid.columnLabel(col.field) : null,
+        });
+      }
+      pushColumns();
+    });
+  };
+
+  /* The half of a view only this page knows: the query here is composed from
+     named parts. */
+  const afterView = (view) => {
+    /* AFTER the snapshot, not before: `setState` treats a restored filter as
+       the WHOLE query and clears the named parts with it, so the view's own
+       clause goes back under its own key. The order is the whole subtlety. */
+    source.contribute('view', view.snapshot.source?.filter);
+    /* THE GRID'S BAR RESETS TOO. `setState` cleared every field's answer, so a
+       chip left lit would show a filter the rows no longer obey. Group and
+       Sort stay: the view has just set its own.
+       TRAP T-a-view-change-resets-the-header-chips */
+    qft.clearAll({ organise: false });
+    syncColumns();
+  };
+
+  /* The View on screen — what the session's kept answers belong to. */
+  let currentView = startView;
+
   onViewPicked(header, RECORDS_VIEWS, { source, elements: { grid } }, {
     signal,
-    /* 'all' is on screen already. Without this the first Region or Customer
-       pick of a session re-applies it and wipes the pick.
+    /* The start view is on screen already. Without this the first Region or
+       Customer pick of a session re-applies it and wipes the pick.
        TRAP T-a-persistent-chip-reports-on-every-change. */
-    applied: 'all',
-    after: ({ view }) => {
-      /* AFTER the snapshot, not before: `setState` treats a restored filter as
-         the WHOLE query and clears the named parts with it, so the view's own
-         clause goes back under its own key. The order is the whole subtlety. */
-      source.contribute('view', view.snapshot.source?.filter);
-
-      /* The snapshot set the clauses ON THE GRID; the source still has to be
-         told. Cleared first — a view naming no column filters means none. */
-      columnClauses.clear();
-      queueMicrotask(() => {
-        for (const col of columns) {
-          const clause = grid.columnClause(col.field);
-          if (clause) columnClauses.set(col.field, clause);
-          /* AND ONTO THE BAR. `setColumnFilter` is silent by design, so a view
-             that restores a column filter fires no `column-filter-change` and
-             the chip an interaction would have added never appears — the grid
-             narrows and nothing says why.
-
-             A FIELD_CHIPS field is drawn by its own chip ONLY where the clause
-             is a pick list, which is all `source.select` can hold. `At risk`
-             restores `status ne churned`, which is not — so it needs a `col:`
-             chip like any other condition, or nothing on the bar reports it.
-             That is the same split the live `column-filter-change` handler
-             makes. TRAP T-a-restored-filter-still-needs-its-chip */
-          const picks = Array.isArray(clause?.[2]) ? clause[2].map(String)
-            : clause?.[1] === 'eq' ? [String(clause[2])]
-            : null;
-          if (FIELD_CHIPS.has(col.field) && (picks || !clause)) {
-            source.select(col.field, picks ?? []);
-            continue;
-          }
-          qft.addExternalFilter({
-            id: `col:${col.field}`,
-            label: col.header,
-            value: clause ? grid.columnLabel(col.field) : null,
-          });
-        }
-        pushColumns();
-      });
+    applied: startView,
+    after: ({ id, view }) => {
+      currentView = id;
+      afterView(view);
     },
   });
-
-  /* Same read-back after a restore, so this view's map agrees with the grid. */
-  for (const col of columns) {
-    const clause = grid.columnClause(col.field);
-    if (clause) columnClauses.set(col.field, clause);
+  // The URL's View, here, so the host's pick after init finds it on screen.
+  if (startView !== 'all') {
+    applyViewSnapshot(RECORDS_VIEWS[startView].snapshot, { source, elements: { grid } });
+    afterView(RECORDS_VIEWS[startView]);
   }
+
+  /* FILTERS SURVIVE A RELOAD, and a trip away and back — for this SESSION, and
+     only on the View they were made on. Each bar keeps what the reader did to
+     it and REPLAYS it, so the filter always comes from the chips — never from
+     a restored query no chip shows. Will, 2026-09-24.
+     TRAP T-a-reload-replays-the-readers-answers */
+  const FILTERS_KEY = '/filters/records';
+  const headerBar = header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
+  let restoring = true;
+  let keepFrame = 0;
+  const keep = () => {
+    if (restoring) return;
+    // One write per frame, after every bar has reported.
+    cancelAnimationFrame(keepFrame);
+    keepFrame = requestAnimationFrame(() => session?.set?.(FILTERS_KEY, {
+      view: currentView, header: headerBar?.answers, data: qft.answers,
+    }));
+  };
+  for (const bar of [headerBar, qft]) {
+    for (const type of ['quick-filter-change', 'filter-add', 'filter-remove']) {
+      bar?.addEventListener(type, keep, { signal });
+    }
+  }
+  const kept = session?.get?.(FILTERS_KEY);
+  restored = (async () => {
+    /* The grid's own column filters FIRST — the persisted snapshot put them on
+       the grid silently, and reading them back clears any field chip they do
+       not name, which must not undo the bars' replay below. */
+    syncColumns();
+    await new Promise((r) => queueMicrotask(r));
+    if (kept?.view === startView) {
+      if (kept.header) await headerBar?.restoreAnswers(kept.header);
+      if (kept.data) await qft.restoreAnswers(kept.data);
+    }
+    restoring = false;
+  })();
+  await restored;
 
   await source.load();
 

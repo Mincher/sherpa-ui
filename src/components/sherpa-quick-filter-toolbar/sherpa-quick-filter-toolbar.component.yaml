@@ -234,15 +234,15 @@ capabilities:
     api: js-property-mirror
     description: >-
       read/write JS properties (active, values, superseded, pickedValues, clauses, readings, states,
-      savedReadings, externalFilters, offering, heldIds, held, groupField, sortField, sortDirection,
-      sortSuspended). See $extensions.sherpa.jsProps.
+      savedReadings, externalFilters, offering, heldIds, answers, held, groupField, sortField,
+      sortDirection, sortSuspended). See $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
     description: >-
       callable from a view definition's state block (setChipValues, setChipActive, setChipReading,
       supersede, unpackFilter, deleteFilter, packFilter, setClause, report, available, addFilters,
-      removeFilter, allowFields, addExternalFilter, addCustomFilter, clearAll, organise). See
-      $extensions.sherpa.methods.
+      removeFilter, restoreAnswers, allowFields, addExternalFilter, addCustomFilter, clearAll,
+      organise). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: quick-filter-change
@@ -390,6 +390,10 @@ $extensions:
         args: "id: string"
         description: removeFilter(id) — take one filter off this bar, as its menu's Remove
       - $type: method
+        name: restoreAnswers
+        args: "answers: BarAnswers"
+        description: restoreAnswers(answers) — put kept `answers` back and REPORT, so the host
+      - $type: method
         name: allowFields
         args: "list: AllowList"
         description: allowFields([...]) — the ONLY fields this bar may offer, or `null` for all.
@@ -403,8 +407,8 @@ $extensions:
         description: The old name of `addExternalFilter()`, still a door.
       - $type: method
         name: clearAll
-        args: ""
-        description: TRAP T-clear-all-resets-organise-too — organise chips included; three events afterwards.
+        args: "options: { organise?: boolean } = {}"
+        description: TRAP T-clear-all-resets-organise-too — organise chips included; three events
       - $type: method
         name: organise
         args: "def: OrganiseDef"
@@ -459,6 +463,9 @@ $extensions:
         type: string
         access: read
       - name: heldIds
+        type: string
+        access: read
+      - name: answers
         type: string
         access: read
       - name: held

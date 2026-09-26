@@ -150,3 +150,68 @@ test('a stale seed is re-written — and a row a person added stays', async ({ p
 
   expect(after).toEqual({ stale: 0, added: 1, seed: '2' });
 });
+
+/**
+ * FILTERS SURVIVE A RELOAD AND A TRIP AWAY — for the session, on the View they
+ * were made on — and every chip comes back SHOWING them. A restored combined
+ * query used to filter the rows while every chip came back empty: a filter no
+ * one could see or clear. Now each bar replays its own answers.
+ * TRAP T-a-reload-replays-the-readers-answers
+ */
+test('filters survive a reload and a trip away, and the chips show them', async ({ page }) => {
+  const ready = () => page.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
+  const read = () => page.evaluate(() => {
+    const hb = document.querySelector('sherpa-app-shell > sherpa-app-header sherpa-quick-filter-toolbar[slot="filters"]')!;
+    const qft = document.querySelector('#context-root sherpa-quick-filter-toolbar')!;
+    const chip = (bar: Element, id: string) => {
+      const c = bar.shadowRoot!.querySelector<HTMLElement & { valueLabel: string }>(`.chip[data-id="${id}"]`);
+      return c ? `${c.hasAttribute('data-current') ? 'on' : 'off'}:${c.valueLabel ?? ''}` : 'none';
+    };
+    return {
+      total: (window as unknown as { sherpa: { source: { debugState(): { total: number } } } })
+        .sherpa.source.debugState().total,
+      region: chip(hb, 'region'), status: chip(qft, 'status'), email: chip(qft, 'email'),
+    };
+  });
+  await page.goto('http://localhost:4200/?context=records');
+  await ready();
+  await page.evaluate(() => {
+    type Bar = HTMLElement & { setChipValues(id: string, v: string[]): void; report(): void;
+      addFilters(ids: string[]): void; setChipReading(id: string, r: unknown): void };
+    const hb = document.querySelector('sherpa-app-shell > sherpa-app-header sherpa-quick-filter-toolbar[slot="filters"]') as Bar;
+    hb.setChipValues('region', ['EMEA']);
+    hb.report();
+    const qft = document.querySelector('#context-root sherpa-quick-filter-toolbar') as Bar;
+    qft.setChipValues('status', ['active']);
+    qft.report();
+    qft.addFilters(['email']);
+  });
+  await page.waitForTimeout(400);
+  await page.evaluate(() => {
+    const qft = document.querySelector('#context-root sherpa-quick-filter-toolbar') as HTMLElement & {
+      setChipReading(id: string, r: unknown): void; report(): void };
+    qft.setChipReading('email', { picked: [], conditions: [{ op: 'contains', text: '@' }] });
+    qft.report();
+  });
+  const want = { total: 4, region: 'on:EMEA', status: 'on:active', email: 'on:@' };
+  await expect.poll(read).toEqual(want);
+
+  await page.reload();
+  await ready();
+  await expect.poll(read).toEqual(want);
+
+  await page.goto('http://localhost:4200/?context=dashboard');
+  await page.goto('http://localhost:4200/?context=records');
+  await ready();
+  await expect.poll(read).toEqual(want);
+
+  // A VIEW CHANGE is a clean slate: every chip empties with the query.
+  await page.evaluate(() => {
+    const hb = document.querySelector('sherpa-app-shell > sherpa-app-header sherpa-quick-filter-toolbar[slot="filters"]') as
+      HTMLElement & { setChipValues(id: string, v: string[]): void; report(): void };
+    hb.setChipValues('view', ['mine']);
+    hb.report();
+  });
+  await expect.poll(read).toEqual({ total: 12, region: 'off:', status: 'off:', email: 'off:' });
+});

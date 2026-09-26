@@ -7,6 +7,7 @@
  * - QuickFilterOption — One value a filter chip's menu can offer.
  * - ExternalFilterSpec — An external filter: its chip, its finished phrase, and the condition behind it.
  * - QuickFilterDef — one filter chip as data: its id, kind, values, and how it answers
+ * - BarAnswers — What a reader did to a bar, as a session keeps it.
  * - OrganiseColumn — One column the grid can be grouped or sorted by.
  * - OrganiseDef — The columns the leading Group / Sort chips offer.
  * - SortDirection — Matches the standard data-sort-direction values.
@@ -121,6 +122,16 @@ interface ChipEl extends HTMLElement {
   /** Redraw the face after a silent steer. A property type, so the spec does
    *  not read it as one of the TOOLBAR's methods. */
   readonly refresh: () => void;
+}
+
+/** What a reader did to a bar, as a session keeps it. */
+export interface BarAnswers {
+  /** The chips it holds, by id. */
+  held: string[];
+  /** Each menu chip's reading, by id. */
+  readings: Record<string, FieldReading>;
+  /** The on/off chips that are on. */
+  active: string[];
 }
 
 /** One column the grid can be grouped or sorted by. */
@@ -1476,6 +1487,53 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
+   * What a reader DID to this bar, as data a session can keep: the chips it
+   * holds, each chip's reading, and the on/off chips that are on.
+   * `restoreAnswers()` puts it back. TRAP T-a-reload-replays-the-readers-answers
+   */
+  get answers(): BarAnswers {
+    const readings: Record<string, FieldReading> = {};
+    for (const [id, { label: _label, values: _values, ...reading }] of Object.entries(this.readings)) {
+      readings[id] = reading;
+    }
+    return { held: this.heldIds, readings, active: this.active };
+  }
+
+  /**
+   * restoreAnswers(answers) — put kept `answers` back and REPORT, so the host
+   * applies them by the path a live change takes. The chips first, then their
+   * readings once the menus have stamped. A PERSISTENT chip (the View) is the
+   * host's to set, so it is left alone.
+   * TRAP T-a-reload-replays-the-readers-answers
+   */
+  async restoreAnswers(answers: BarAnswers): Promise<void> {
+    const want = new Set(answers.held);
+    for (const def of [...this.#filters]) {
+      if (!want.has(def.id) && def.removable) this.#removeFilter(def.id);
+    }
+    const add = answers.held.filter((id) => !this.heldIds.includes(id));
+    if (add.length) this.#addFilters(add);
+    // A rebuilt bar reads empty until its menus stamp. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp
+    await this.#settled();
+    await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+    const persistent = new Set(this.#chips()
+      .filter((c) => c.hasAttribute('data-persistent')).map((c) => c.dataset['id']));
+    for (const [id, reading] of Object.entries(answers.readings)) {
+      if (persistent.has(id)) continue;
+      this.setChipReading(id, reading);
+      // OFF keeps the answer and applies none of it. TRAP T-grid-suspend-is-not-clear
+      if (reading.suspended) this.setChipActive(id, false);
+    }
+    for (const chip of this.#chips()) {
+      const id = chip.dataset['id'] ?? '';
+      if (!chip.hasAttribute('data-menu') && !persistent.has(id)) {
+        this.setChipActive(id, answers.active.includes(id));
+      }
+    }
+    this.report();
+  }
+
+  /**
    * The DEFS this bar holds, each carrying what the reader has answered.
    *
    * A SECOND VIEW of the same fields — a filter panel — draws from this. It
@@ -1790,14 +1848,35 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.addExternalFilter(spec);
   }
 
-  /** TRAP T-clear-all-resets-organise-too — organise chips included; three events afterwards. */
-  clearAll(): void {
+  /**
+   * TRAP T-clear-all-resets-organise-too — organise chips included; three events
+   * afterwards. `{ organise: false }` keeps Group and Sort, which a VIEW sets
+   * itself. A field chip is EMPTIED — ticks, op, typing and rows — and redrawn,
+   * so an off chip never still names what it held.
+   */
+  clearAll(options: { organise?: boolean } = {}): void {
+    const organise = options.organise ?? true;
     for (const chip of this.#chips()) {
       // TRAP T-persistent-chip-is-a-selector — survives a reset, PICK included.
       if (chip.hasAttribute('data-persistent')) continue;
+      const id = chip.dataset['id'] ?? '';
+      if (this.#filterMenu(id)) {
+        this.#clearField(id);
+        continue;
+      }
       chip.removeAttribute('data-current');
       for (const input of chip.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
     }
+    if (organise) this.#clearOrganise();
+    this.emit('filter-clear', {});
+    this.#emitChange();
+    if (!organise) return;
+    this.emit('group-change', { field: null });
+    this.emit('sort-change', { field: null, direction: 'asc' });
+  }
+
+  /** Group and Sort off, and the Sort's way forgotten. */
+  #clearOrganise(): void {
     for (const chip of this.$$<HTMLElement>('.organise-chip')) {
       chip.removeAttribute('data-current');
       for (const input of chip.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
@@ -1805,10 +1884,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
          chip with none. TRAP T-one-cycle-for-one-value */
       delete chip.dataset['direction'];
     }
-    this.emit('filter-clear', {});
-    this.#emitChange();
-    this.emit('group-change', { field: null });
-    this.emit('sort-change', { field: null, direction: 'asc' });
   }
 
   /* ── Organise: the leading Group / Sort chips ───────────────────────── */

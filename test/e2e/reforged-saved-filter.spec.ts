@@ -248,7 +248,7 @@ test('packFilter shows the saved chip ON and clears the fields it came from, in 
  * the customer records, and the bar shows it in place of Owner. The rows do not
  * move: the same filter, one chip now.
  */
-test('the Records page saves a condition as a filter, and nothing filters twice', async ({ page }) => {
+test('the Records page saves a condition as a filter, and nothing filters twice', async ({ page, browser }) => {
   const native: string[] = [];
   page.on('dialog', (d) => { native.push(d.type()); void d.dismiss(); });
   await page.goto('http://localhost:4200/?context=records');
@@ -302,11 +302,23 @@ test('the Records page saves a condition as a filter, and nothing filters twice'
     .toBe(false);
   expect(native).toEqual([]);
 
-  // KEPT: after a reload it is offered in Add, under Custom.
+  // KEPT FOR THE SESSION: after a reload it is still on, and so are its rows.
+  // TRAP T-a-reload-replays-the-readers-answers
   await page.reload();
   await page.waitForFunction(() =>
     !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
-  await expect.poll(() => page.evaluate(() => {
+  await expect.poll(bar).toMatchObject({ saved: ['custom:dana-accounts'], on: true });
+  await expect.poll(total).toBe(before);
+
+  /* KEPT FOR GOOD: a FRESH session — a new browser context, carrying only the
+     saved filters, which live in localStorage — offers it in Add, under Custom. */
+  const saved = await page.evaluate(() => localStorage.getItem('sherpa:filters:customers'));
+  const fresh = await (await browser.newContext()).newPage();
+  await fresh.addInitScript((v) => { if (v) localStorage.setItem('sherpa:filters:customers', v); }, saved);
+  await fresh.goto('http://localhost:4200/?context=records');
+  await fresh.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
+  await expect.poll(() => fresh.evaluate(() => {
     const menu = document.querySelector('#context-root sherpa-quick-filter-toolbar')!.shadowRoot!
       .querySelector('.add-btn sherpa-menu')!;
     // The heading of the section the saved row is IN — the last one above it.
@@ -316,6 +328,7 @@ test('the Records page saves a condition as a filter, and nothing filters twice'
     return { head: head?.textContent ?? null, row: at >= 0 };
   })).toEqual({ head: 'Custom filters', row: true });
   await page.evaluate(() => localStorage.removeItem('sherpa:filters:customers'));
+  await fresh.context().close();
 });
 
 /**

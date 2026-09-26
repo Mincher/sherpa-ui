@@ -32,6 +32,10 @@ import {
 export interface PersistOptions {
   /** Share across TABS via localStorage. Off by default — TRAP T-persist-defaults-per-tab. */
   shared?: boolean;
+  /** Keep the source's FILTER too. `false` when the controls keep their own
+   *  answers and replay them: a restored COMBINED filter is one no chip shows.
+   *  TRAP T-a-reload-replays-the-readers-answers */
+  filter?: boolean;
   /** Stop persisting when this aborts. TRAP T-signal-not-a-teardown-list */
   signal?: AbortSignal;
 }
@@ -66,12 +70,18 @@ export function persistView(
      `readJson` forgets a key it cannot understand, so a stored shape this
      version no longer reads leaves the reader exactly where they would have
      been without it. TRAP T-restore-before-first-load */
+  const keepFilter = options.filter ?? true;
   const stored = readJson<ViewSnapshot | null>(kind, key, null, isSnapshot);
+  // One kept from before the controls replayed their own is dropped, not trusted.
+  if (stored?.source && !keepFilter) delete stored.source.filter;
   if (stored) applyViewSnapshot(stored, targets);
 
   const save = (): void => {
     const snapshot: ViewSnapshot = { v: 1 };
-    if (targets.source) snapshot.source = targets.source.state;
+    if (targets.source) {
+      snapshot.source = targets.source.state;
+      if (!keepFilter) delete snapshot.source.filter;
+    }
 
     const elements: Record<string, Record<string, unknown>> = {};
     for (const [id, contribute] of Object.entries(contributors)) {
