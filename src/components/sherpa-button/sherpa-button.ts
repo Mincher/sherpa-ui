@@ -26,10 +26,15 @@ export class SherpaButton extends SherpaElement {
     'data-size': { type: 'enum', kind: 'style', values: ['2xs', 'xs', 'sm', 'lg', 'xl'] },
     /* Written BY the button while its slotted menu is open. */
     'data-open': { type: 'boolean', kind: 'style' },
+    /* A composing host says the action itself. TRAP T-every-button-says-its-action */
+    'data-no-tip': { type: 'boolean', kind: 'visibility' },
   } as const;
 
+  // A host label names this. TRAP T-a-host-label-must-reach-its-control
+  static override labelTarget = '.trigger';
   static override observed = [
     'data-label',
+    'data-tip',
     'data-icon-start',
     'data-icon-end',
     'data-badge',
@@ -49,6 +54,8 @@ export class SherpaButton extends SherpaElement {
     this.#syncIcons();
     this.#syncBadge();
     this.#syncDisabled();
+    this.#syncTip();
+    this.$('.label slot')?.addEventListener('slotchange', this.#syncTip);
 
     this.$('.trigger')?.addEventListener('click', this.#onClick);
     // The menu is a LIGHT DOM child, so its events reach the host.
@@ -57,6 +64,7 @@ export class SherpaButton extends SherpaElement {
   }
 
   override onChange(name: string): void {
+    if (name === 'data-label' || name === 'data-tip' || name === 'aria-label') this.#syncTip();
     if (name === 'data-label') this.#syncLabel();
     else if (name === 'data-icon-start' || name === 'data-icon-end') this.#syncIcons();
     else if (name === 'data-badge') this.#syncBadge();
@@ -69,6 +77,20 @@ export class SherpaButton extends SherpaElement {
     const value = this.dataset['label'];
     if (label && value != null) label.textContent = value;
   }
+
+  /**
+   * A button with no VISIBLE label says its action in a tip — its name. A
+   * labelled one already says it, so only `data-tip` gives it one. Empty, CSS
+   * shows none. Will, 2026-09-26. TRAP T-every-button-says-its-action
+   */
+  #syncTip = (): void => {
+    const tip = this.$('.tip');
+    if (!tip) return;
+    const slot = this.$<HTMLSlotElement>('.label slot');
+    const slotted = slot?.assignedNodes({ flatten: true }).map((n) => n.textContent ?? '').join('');
+    const label = (this.dataset['label'] ?? slotted ?? '').trim();
+    tip.textContent = (this.dataset['tip'] ?? (label ? '' : this.getAttribute('aria-label')) ?? '').trim();
+  };
 
   /** Writes data-badge into the composed sherpa-badge; CSS shows it. */
   #syncBadge(): void {

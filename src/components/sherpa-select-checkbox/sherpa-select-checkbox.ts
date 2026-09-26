@@ -17,6 +17,8 @@ export class SherpaSelectCheckbox extends SherpaElement {
     'data-description': { type: 'string', kind: 'content', to: '.description' },
   } as const;
 
+  // A host label names this. TRAP T-a-host-label-must-reach-its-control
+  static override labelTarget = '.control';
   static override observed = [
     'checked',
     'indeterminate',

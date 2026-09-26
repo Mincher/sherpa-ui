@@ -19,11 +19,11 @@ not order — the table IS the order.
 | Pri | # | Item | Kind |
 |---:|---:|---|---|
 | | | **A — Quick wins** | |
-| 1 | 40 | A switch has no accessible name | quick |
-| 2 | 17 | Breadcrumbs are for workflow, not for the nav | quick |
-| 3 | 54 | An Added Filters row drills only if it has many values | quick |
-| 4 | 57 | The filter panel's width is a hard-coded 400px | quick |
-| 5 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
+| 1 | 17 | Breadcrumbs are for workflow, not for the nav | quick |
+| 2 | 54 | An Added Filters row drills only if it has many values | quick |
+| 3 | 57 | The filter panel's width is a hard-coded 400px | quick |
+| 4 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
+| 5 | 65 | A horizontal legend has a max width, and is centred | quick |
 | | | **B — Bugs: the app says one thing and does another** | |
 | 6 | 41 | A conditional filter applies for Owner only | bug |
 | 7 | 63 | A conditions-only field shows the Conditional switch | bug |
@@ -103,13 +103,6 @@ not order — the table IS the order.
 
 ## A — Quick wins
 
-### `[ ]` 40 — A switch has no accessible name
-
-`sherpa-switch` does not pass an `aria-label` to its inner `role="switch"`
-input, and its visible text is a sibling span. So the Range and Conditional
-switches are unnamed to a screen reader. Mirror `aria-label` onto the input,
-or label the input by the text beside it.
-
 ### `[ ]` 17 — Breadcrumbs are for workflow, not for the nav
 
 Breadcrumbs must not show movement between Contexts — the nav does that. They
@@ -121,6 +114,13 @@ details Context.
 `chat.js`) — Home is the Dashboard Context, so the trail IS nav movement.
 Drop both; Dashboard already sets `[]`. The first real trail comes with a
 drilldown (23).
+
+### `[ ]` 65 — A horizontal legend has a max width, and is centred
+
+Will, 2026-09-26: a horizontal `sherpa-chart-legend` spreads its entries across
+a whole 12-column container — far too wide to read as one key. Give it a
+max width and centre it horizontally in its container. A token for the width,
+never a hand-typed px; check it in the Dashboard's wide charts.
 
 ### `[ ]` 64 — A collapsed accordion section fills with the down (+2) surface
 
@@ -698,7 +698,9 @@ wrong, which criterion it breaks, and HOW to correct it.
 
 Prove the checker reaches inside a shadow root before trusting a green
 result — one that reads the light DOM sees almost nothing of a Sherpa
-component. 40 is a first finding for it.
+component. Its first finding is fixed: a HOST `aria-label` named nothing
+(`T-a-host-label-must-reach-its-control`). Assert names with `getByRole(…,
+{ name })`, never the attribute.
 
 ---
 
@@ -867,6 +869,8 @@ One line each. The detail is in git and in the trap named.
 - A disabled Today keeps its Today fill — 9baa9f57
 - 39: the panel header's Reset all clears both scopes, and both header buttons wear the default look
 - 53: a conditional chip's tooltip says "X conditions applied" — `T-a-condition-tip-counts-its-rows`
+- 40: a host's `aria-label` names its inner control — button, input, checkbox, radio, switch; 59 template sites + 18 in code were unnamed — `T-a-host-label-must-reach-its-control`
+- A button with no visible label shows a tip that says its action; `data-tip` sets one, `data-no-tip` turns it off — `T-every-button-says-its-action`
 
 **Culled or merged in the 2026-09-26 review**
 - 13, a sparkline did not follow its record deltas — each tile's sparkline and its delta are ONE series now (`T-a-delta-is-derived-not-declared`)

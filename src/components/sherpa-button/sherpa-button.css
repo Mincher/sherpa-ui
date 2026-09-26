@@ -203,3 +203,11 @@
 /* The menu popover paints in the top layer; `display: contents` keeps this span
    out of layout so the menu's width cannot widen the button. */
 .menu-slot { display: contents; }
+
+/* A button with no visible label says its action in a tip — the shared
+   anchored one. Will, 2026-09-26. Hidden when empty, while its menu is open,
+   and where a composing host opts out. TRAP T-every-button-says-its-action */
+:host { --_anchor: --sherpa-button-tip; }
+.trigger:is(:hover, :focus-visible) + .tip:empty,
+:host([data-no-tip]) .trigger:is(:hover, :focus-visible) + .tip,
+:host([data-open]) .trigger:is(:hover, :focus-visible) + .tip { display: none; }

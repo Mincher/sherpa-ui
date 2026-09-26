@@ -77,6 +77,7 @@ anatomy:
                 class: body-range-switch
                 attrs:
                   data-type: simple
+                  aria-label: Range
               - el: span
                 class: body-range-label
           - el: div

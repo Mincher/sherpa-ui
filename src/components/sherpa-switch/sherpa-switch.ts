@@ -10,6 +10,8 @@ export class SherpaSwitch extends SherpaElement {
   static override css = new URL('./sherpa-switch.css', import.meta.url);
   static override html = new URL('./sherpa-switch.html', import.meta.url);
 
+  // A host label names this. TRAP T-a-host-label-must-reach-its-control
+  static override labelTarget = '.input';
   static override observed = [
     'checked',
     'disabled',

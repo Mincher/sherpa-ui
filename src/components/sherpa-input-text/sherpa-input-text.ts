@@ -2,6 +2,9 @@
  * sherpa-input-text — a text field with a label.
  *
  * JS carries text and value; CSS owns the look and all visibility.
+ *
+ * Map:
+ * - InputOption — One choice in a `data-type="select"` field.
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import { renderIcon, hasIcon } from '../../core/ui/render-icon.js';
@@ -50,6 +53,8 @@ export class SherpaInputText extends SherpaElement {
   /** A form cannot see an <input> through a shadow root. TRAP T-shadow-input-needs-element-internals */
   static readonly formAssociated = true;
 
+  // A host label names this. TRAP T-a-host-label-must-reach-its-control
+  static override labelTarget = '.control';
   static override observed = [
     'data-label',
     'data-description',

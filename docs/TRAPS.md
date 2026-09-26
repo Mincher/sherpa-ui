@@ -13313,3 +13313,58 @@ nothing, so counting it would promise a filter that is not there.
 
 - Site: `src/core/data/filter-face.ts`
 - Site: `test/unit/filter-state.test.mjs`
+
+### T-a-host-label-must-reach-its-control
+
+**An `aria-label` on a Sherpa host names NOTHING.** Measured 2026-09-26 on the
+running page: the panel's Reset all and to-toolbar buttons read as unnamed
+`button`s, and every switch as an unnamed `switch`. The host is a custom
+element with no role, so the platform drops its label, and the real control
+inside the shadow root has none of its own. 59 sites in the templates and
+examples, plus 18 in code, were written this way — the natural way to write
+it.
+
+So a component DECLARES which inner control a host label names —
+`static labelTarget` — and the base class copies the host's `aria-label`
+there, follows every change, and removes it when the host's is removed. It
+only ever removes a label it wrote, so a component that names its own control
+keeps it. Five declare one: button (`.trigger`), input-text, select-checkbox,
+select-radio (`.control`) and switch (`.input`).
+
+The test asks the accessibility tree (`getByRole(…, { name })`), not the
+attribute: an attribute check passes on exactly the bug.
+
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/components/sherpa-button/sherpa-button.ts`
+- Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
+- Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.ts`
+- Site: `src/components/sherpa-select-radio/sherpa-select-radio.ts`
+- Site: `src/components/sherpa-switch/sherpa-switch.ts`
+- Site: `test/e2e/reforged-host-label.spec.ts`
+
+### T-every-button-says-its-action
+
+**A `sherpa-button` with no visible label shows a tip that says what it
+does** — its name (`aria-label`). Will, 2026-09-26. A LABELLED button already
+says it, so a tip would repeat it: only `data-tip` gives one a tip. A button
+with no name shows none; one whose menu is open shows none; a host that
+composes the button and says the action itself sets `data-no-tip`.
+
+It is the SHARED anchored tip (`.sherpa-tip` in `sherpa-anchor.css`), not a
+nested `sherpa-tooltip` per button: pure CSS on `:hover` / `:focus-visible`,
+anchored to the button's own `.trigger`. With no room above — a button at the
+top of the page — `position-try-fallbacks` moves it to the side; a test that
+asserts "above" must give the button room first.
+
+**The tip carries its own colour boundary.** It inherits the host's custom
+properties like any child, so a saturated button's white ink became its
+bubble. `.sherpa-tip` therefore binds the DEFAULT mode's own names
+(`--sherpa-style-default-content-base`, `…-default-surface-shadow`), which no
+pin re-points — so every host's tip, a chart's too, is immune. `@scope` alone
+does not do this: it limits what a rule MATCHES, never what a child INHERITS,
+and a top-layer popover inherits the same way.
+
+- Site: `src/components/sherpa-button/sherpa-button.ts`
+- Site: `src/components/sherpa-button/sherpa-button.css`
+- Site: `src/core/sherpa-anchor.css`
+- Site: `test/e2e/reforged-button-tip.spec.ts`

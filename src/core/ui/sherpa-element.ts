@@ -296,6 +296,13 @@ export abstract class SherpaElement extends HTMLElement {
    */
   static variantAttrs: readonly string[] = [];
 
+  /**
+   * The inner control the host's `aria-label` NAMES. A host has no role, so a
+   * label on it names nothing; declaring this copies it inward.
+   * TRAP T-a-host-label-must-reach-its-control
+   */
+  static labelTarget?: string;
+
   /** Declared props + `variantAttrs` + `observed`, deduped. */
   static get observedAttributes(): string[] {
     const defs = Object.values(this.props);
@@ -306,6 +313,7 @@ export abstract class SherpaElement extends HTMLElement {
         ...defs.map((d) => d.fallbackAttr).filter((a): a is string => a !== undefined),
         ...this.variantAttrs,
         ...this.observed,
+        ...(this.labelTarget ? ['aria-label'] : []),
       ]),
     ];
   }
@@ -374,6 +382,7 @@ export abstract class SherpaElement extends HTMLElement {
       // The prop itself, and any prop that FALLS BACK to it.
       if (prop === name || def.fallbackAttr === name) this.#syncProp(prop, def);
     }
+    if (name === 'aria-label') this.#syncLabel();
     this.onChange(name, oldVal, newVal);
     // TRAP T-restamp-runs-after-on-change
     this.#restampIfVariantChanged();
@@ -708,9 +717,26 @@ export abstract class SherpaElement extends HTMLElement {
     // Props and icons BEFORE onRender, so a component's setup reads a
     // populated tree. A template `data-icon` draws nothing until upgraded.
     this.#syncAllProps();
+    this.#syncLabel();
     upgradeIcons(this.root);
     this.onRender();
     this.#wireSlots();
+  }
+
+  /** Did `#syncLabel` write the inner label — so only it ever removes one. */
+  #labelled = false;
+
+  /** Copy the host's `aria-label` onto `labelTarget`. */
+  #syncLabel(): void {
+    const target = (this.constructor as typeof SherpaElement).labelTarget;
+    if (!target) return;
+    const label = this.getAttribute('aria-label');
+    if (!label && !this.#labelled) return;
+    for (const el of this.$$(target)) {
+      if (label) el.setAttribute('aria-label', label);
+      else el.removeAttribute('aria-label');
+    }
+    this.#labelled = !!label;
   }
 
   /**

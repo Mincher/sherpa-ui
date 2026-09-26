@@ -11,6 +11,9 @@
     data-icon-start / data-icon-end   icon glyph value
     data-badge     the text of the trailing sherpa-badge (or slot a node into "badge")
     data-label     label text (or use the default slot)
+    data-tip       the tooltip's text. Unset: an unlabelled button's tip is its
+                   aria-label, and a labelled one has none
+    data-no-tip    no tooltip — for a host that composes the button and says it itself
     data-open      set by JS while its slotted menu is open — CSS only
     disabled       native disabled state
 
@@ -22,7 +25,7 @@
   Fires: button-click
 -->
 <template id="default">
-  <button class="trigger" part="trigger" type="button">
+  <button class="trigger sherpa-anchor" part="trigger" type="button">
     <i class="icon sherpa-icon-box icon-start" aria-hidden="true"></i>
     <span class="label"><slot></slot></span>
     <i class="icon sherpa-icon-box icon-end" aria-hidden="true"></i>
@@ -30,10 +33,13 @@
     <!-- Named, not default: a popover in the default slot joins the label's textContent and widens the button. -->
     <span class="menu-slot"><slot name="menu" data-accepts="menu"></slot></span>
   </button>
+  <!-- What the button DOES, on hover and focus. aria-hidden: the name already says it. -->
+  <span class="tip sherpa-tip" part="tip" aria-hidden="true"></span>
 </template>
 
 <template id="icon">
-  <button class="trigger" part="trigger" type="button">
+  <button class="trigger sherpa-anchor" part="trigger" type="button">
     <i class="icon sherpa-icon-box icon-start" aria-hidden="true"></i>
   </button>
+  <span class="tip sherpa-tip" part="tip" aria-hidden="true"></span>
 </template>
