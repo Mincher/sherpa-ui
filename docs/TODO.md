@@ -130,15 +130,21 @@ nothing to drill into. See `DRILL_FLAGS` and `filtersMenuItems()` in
 
 ### `[ ]` 57 — The filter panel's width is a hard-coded 400px
 
-Found by the 2026-09-26 audit. The panel area reads
+Found by the 2026-09-26 audit. The shell's panel areas read
 `--sherpa-panel-area-width`, which is defined NOWHERE
 (`sherpa-app-shell.css:130`), so it is always its 400px fallback. The comment
-there says 4 columns; the original ask said 3. Settle 3 or 4, then derive the
-width from the layout grid's columns.
+there says 4 columns.
 
----
-
-## B — Bugs: the app says one thing and does another
+**Will, 2026-09-26: 3 columns — and KEEP the shell's panel areas.** *"We need
+to consider the other containers in the view and their responsiveness. The
+left/right panel areas that we have might be the better solution (it works
+well right now, tbh)."* So the panel stays in the app shell's left area,
+OUTSIDE the content's layout grid, and the grid's containers keep their own
+breakpoints. The change is the width: define the token as 3 of the layout
+grid's columns plus their gutters, per breakpoint. Then check, with the panel
+open, that every container in Records and Dashboard still re-flows as it does
+with the panel shut — the grid is narrower, not re-counted. Fix the comment
+to say 3.
 
 ### `[ ]` 41 — BUG: a conditional filter applies for Owner only
 
