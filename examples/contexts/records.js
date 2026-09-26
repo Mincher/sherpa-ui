@@ -957,6 +957,25 @@ export async function init(root, { session, view } = {}) {
     return (bar?.heldIds ?? []).map(headerField).filter(Boolean);
   };
 
+  /* THE GRID'S HEADINGS SHOW WHAT THE VIEW HOLDS: each field the header bar
+     holds, with the header's answer, read-only in its heading — so a heading
+     cannot contradict it. Will, 2026-09-26.
+     TRAP T-a-view-held-heading-shows-and-refuses */
+  const syncHeadings = () => {
+    const bar = header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
+    const readings = bar?.readings ?? {};
+    const held = {};
+    for (const id of bar?.heldIds ?? []) {
+      const field = headerField(id);
+      if (!field || !byField.has(field)) continue;
+      const r = readings[id];
+      held[field] = r && !r.suspended
+        ? { picked: r.picked, op: r.op, text: r.text, conditions: r.conditions }
+        : {};
+    }
+    grid.supersedeColumns?.(held, SCOPE_LABELS[VIEW_SCOPE]);
+  };
+
   /* The component bar SUSPENDS any field the view took. It keeps the chip and
      the reader's picks; both come back when the view lets the field go.
      TRAP T-a-superseded-chip-suspends-it-is-never-removed */
@@ -971,6 +990,7 @@ export async function init(root, { session, view } = {}) {
     /* The App Header owns these fields now, and the chips below say so rather
        than going quietly grey. TRAP T-an-inactive-chip-says-where-its-filter-went */
     qft.supersede(raised, SCOPE_LABELS[VIEW_SCOPE]);
+    syncHeadings();
     // The header's Add notes say where each field lives — which just changed.
     header?.available(addable(VIEW_SCOPE, viewHeld()));
   };
@@ -989,6 +1009,7 @@ export async function init(root, { session, view } = {}) {
     }
     // Its OWN key, so it ANDs with the chips, the columns and a saved view.
     source.apply(readings, { reach: 'component', key: 'global' });
+    syncHeadings();
   }, { signal });
 
   /* RAISING CARRIES THE ANSWER. A field the view takes from a component keeps

@@ -308,9 +308,9 @@ capabilities:
   - $type: capability
     api: js-methods
     description: >-
-      callable from a view definition's state block (setColumnFilter, columnClause, columnLabel,
-      suspendColumnFilter, openColumnFilter, clearColumnFilter, actionsFor, select, clearSelection).
-      See $extensions.sherpa.methods.
+      callable from a view definition's state block (setColumnFilter, supersedeColumns,
+      columnClause, columnLabel, suspendColumnFilter, openColumnFilter, clearColumnFilter,
+      actionsFor, select, clearSelection). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: column-resize
@@ -472,6 +472,10 @@ $extensions:
         name: setColumnFilter
         args: "field: string, clause: unknown[] | null"
         description: Set one column's filter from OUTSIDE. TRAP
+      - $type: method
+        name: supersedeColumns
+        args: "readings: Readonly<Record<string, FieldReading>>, appliedAt?: string"
+        description: supersedeColumns(readings, appliedAt) — the fields a HIGHER scope holds,
       - $type: method
         name: columnClause
         args: "field: string"

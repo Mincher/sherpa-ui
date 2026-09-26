@@ -2863,3 +2863,42 @@ test('a heading holds a chain: set from outside, or typed in, it shows and appli
   });
   expect(r.typed).toEqual(['or', ['owner', 'contains', 'Na'], ['owner', 'startswith', 'D']]);
 });
+
+/**
+ * A HEADING WHOSE FIELD A HIGHER SCOPE HOLDS shows that answer — ticked,
+ * greyed, read-only — so no contradicting pick can be made in it. Will's
+ * ruling, 2026-09-26: shown, but held higher. TRAP T-a-view-held-heading-shows-and-refuses
+ */
+test('a view-held heading shows the view\'s answer, read-only, and is released after', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    type Grid = HTMLElement & { supersedeColumns(r: Record<string, unknown>, at?: string): void;
+      columnClause(f: string): unknown };
+    const grid = await window.__mount<Grid>('sherpa-data-grid', {
+      columns: [{ field: 'region', header: 'Region' }],
+      rows: [{ region: 'EMEA' }, { region: 'APAC' }],
+    }, { 'data-column-filters': true });
+    const read = () => {
+      const chip = grid.shadowRoot!.querySelector<HTMLElement>('.head-cell[data-field="region"] .head-filter')!;
+      const menu = chip.querySelector('sherpa-menu') as HTMLElement & { values: string[] };
+      return {
+        superseded: chip.hasAttribute('data-superseded'),
+        readonly: menu.hasAttribute('data-readonly'),
+        inert: !!menu.shadowRoot?.querySelector('.rows')?.hasAttribute('inert'),
+        ticked: menu.values,
+        tip: chip.shadowRoot?.querySelector<HTMLElement>('.count-wrap')?.dataset['text'] ?? null,
+        own: grid.columnClause('region'),
+      };
+    };
+    grid.supersedeColumns({ region: { picked: ['EMEA'] } }, 'App header');
+    await window.__settled();
+    await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+    const held = read();
+    grid.supersedeColumns({});
+    await window.__settled();
+    await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+    return { held, released: read() };
+  });
+  expect(r.held).toEqual({ superseded: true, readonly: true, inert: true, ticked: ['EMEA'],
+    tip: 'Filter applied at higher scope. This chip holds EMEA.', own: null });
+  expect(r.released).toMatchObject({ superseded: false, readonly: false, inert: false, ticked: [], own: null });
+});

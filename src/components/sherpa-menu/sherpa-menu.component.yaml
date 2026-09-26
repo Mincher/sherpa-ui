@@ -348,6 +348,14 @@ props:
       FILTER type only: which condition is picked. Defaults to `eq`. The FIRST row's op — a menu in
       condition mode holds many.
   - $type: prop
+    name: data-readonly
+    type: string
+    observed: true
+    kind: style
+    description: >-
+      SHOW an answer held elsewhere — rows and conditions inert, no footer, no Add condition, no
+      Conditional switch
+  - $type: prop
     name: data-removable
     type: string
     observed: true
@@ -461,6 +469,9 @@ states:
   - $type: state
     name: date
     selector: ":host([data-body=\"date\"])"
+  - $type: state
+    name: readonly
+    selector: ":host([data-readonly])"
   - $type: state
     name: focus-visible
     selector: .body-number-one:focus-visible

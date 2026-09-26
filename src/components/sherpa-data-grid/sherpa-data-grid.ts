@@ -425,8 +425,9 @@ export class SherpaDataGrid extends SherpaElement {
    * TRAP T-a-heading-holds-a-whole-reading
    */
   #flushChains(): void {
-    for (const [field, held] of this.#columnFilters) {
-      const rows = held.conditions;
+    const fields = new Set([...this.#columnFilters.keys(), ...this.#superseded.keys()]);
+    for (const field of fields) {
+      const rows = this.#shown(field)?.conditions;
       if (!rows?.length) continue;
       const menu = this.$<HTMLElement & { rendered?: Promise<void>; conditions?: FieldCondition[] }>(
         `.head-cell[data-field="${CSS.escape(field)}"] sherpa-menu`);
@@ -475,7 +476,8 @@ export class SherpaDataGrid extends SherpaElement {
     const bounds = this.dataset['bounds'];
     if (bounds) menu.setAttribute('data-bounds', bounds);
 
-    const held = this.#columnFilters.get(col.field);
+    const held = this.#shown(col.field);
+    const superseded = this.#superseded.has(col.field);
 
     // TRAP T-grid-slider-spans-real-values — the 0..100 default crushes a
     // spend column at the far left.
@@ -585,6 +587,12 @@ export class SherpaDataGrid extends SherpaElement {
       const cal = body.querySelector('.head-filter-calendar');
       if (cal && menu.hasAttribute('data-range')) cal.setAttribute('data-type', 'range');
     }
+
+    /* HELD HIGHER: shown, greyed, and refused here — the reader changes it where
+       it is held. TRAP T-a-view-held-heading-shows-and-refuses */
+    chip.toggleAttribute('data-superseded', superseded);
+    if (superseded && this.#supersededAt) chip.setAttribute('data-applied-at', this.#supersededAt);
+    menu.toggleAttribute('data-readonly', superseded);
 
     if (body) menu.appendChild(body);
     chip.appendChild(menu);
@@ -884,11 +892,20 @@ export class SherpaDataGrid extends SherpaElement {
    * `column-filter-change` reports.
    */
   setColumnFilter(field: string, clause: unknown[] | null): void {
-    if (!clause) {
+    const held = clause ? this.#heldFromClause(field, clause) : null;
+    if (!held) {
       this.clearColumnFilter(field);
       return;
     }
+    this.#columnFilters.set(field, held);
+    // The HEADER is rebuilt, not reached into: one path writes a menu.
+    this.#renderHead();
+    this.#syncColumnFilterStatus();
+    this.#renderBody();
+  }
 
+  /** A clause as what a heading HOLDS, or null when it filters by nothing. */
+  #heldFromClause(field: string, clause: unknown[]): ColumnFilter | null {
     /* A CHAIN — `['or', a, b]` from a chip's rows — held as its rows. Read as
        `[field, op, value]` it became an op of `a` and picks of `b`.
        TRAP T-a-heading-holds-a-whole-reading */
@@ -900,15 +917,9 @@ export class SherpaDataGrid extends SherpaElement {
           message: 'setColumnFilter: a chained clause these rows cannot say was not held.',
           at: { field, clause: JSON.stringify(clause) },
         });
-        return;
+        return null;
       }
-      this.#columnFilters.set(field, {
-        op: rows[0]!.op, value: rows[0]!.text ?? '', conditions: rows,
-      });
-      this.#renderHead();
-      this.#syncColumnFilterStatus();
-      this.#renderBody();
-      return;
+      return { op: rows[0]!.op, value: rows[0]!.text ?? '', conditions: rows };
     }
 
     const [, op, value] = clause as [string, string, unknown];
@@ -921,21 +932,39 @@ export class SherpaDataGrid extends SherpaElement {
     } else {
       held = { op, value: String(value ?? '') };
     }
-
     // Nothing to filter by is not a filter — as the menu's own commit says.
     const empty = held.range
       ? !held.from || !held.to
       : held.picks ? !held.picks.length : !held.value;
-    if (empty) {
-      this.clearColumnFilter(field);
-      return;
-    }
+    return empty ? null : held;
+  }
 
-    this.#columnFilters.set(field, held);
-    // The HEADER is rebuilt, not reached into: one path writes a menu.
+  /**
+   * supersedeColumns(readings, appliedAt) — the fields a HIGHER scope holds,
+   * each with the answer it holds there. A named heading SHOWS that answer,
+   * read-only, with the superseded look and tip, so no contradicting pick can
+   * be made in it; a heading not named is released. Will, 2026-09-26.
+   * TRAP T-a-view-held-heading-shows-and-refuses
+   */
+  supersedeColumns(readings: Readonly<Record<string, FieldReading>>, appliedAt?: string): void {
+    this.#superseded = new Map(Object.entries(readings));
+    this.#supersededAt = appliedAt;
     this.#renderHead();
     this.#syncColumnFilterStatus();
-    this.#renderBody();
+  }
+
+  /** The fields a higher scope holds, and its answer for each. */
+  #superseded = new Map<string, FieldReading>();
+
+  /** Where they are held, for each chip's tip. */
+  #supersededAt: string | undefined;
+
+  /** What a heading SHOWS: a higher scope's answer when it holds the field, else its own. */
+  #shown(field: string): ColumnFilter | undefined {
+    const view = this.#superseded.get(field);
+    if (!view) return this.#columnFilters.get(field);
+    const clause = readingClause({ field }, view);
+    return (clause && this.#heldFromClause(field, clause as unknown[])) || undefined;
   }
 
   /**
@@ -1026,7 +1055,7 @@ export class SherpaDataGrid extends SherpaElement {
        so a reader can tell a typed rule from a ticked list without opening it.
        An icon-only chip falls back to its funnel when no icon is named.
        TRAP T-a-condition-badge-says-that-not-which */
-    const held = this.#columnFilters.get(field);
+    const held = this.#shown(field);
     /* THE SAME ANSWER a toolbar chip reads — `state.condition`, from this
        column's reading. TRAP T-one-condition-system */
     const condition = held ? fieldState({ field }, this.#columnReading(held)).condition : null;

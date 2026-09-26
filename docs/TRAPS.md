@@ -13571,3 +13571,31 @@ its snapshot again so Apply and Discard still read "unchanged".
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `test/e2e/reforged-panel-apply.spec.ts`
+
+### T-a-view-held-heading-shows-and-refuses
+
+**A grid heading whose field a HIGHER scope holds shows that answer, and
+refuses changes.** Will, 2026-09-26: Region = EMEA in the header lit the grid's
+Region heading (the query's `data-filter-fields`), but its menu showed nothing
+ticked — so a reader could pick a contradicting value there. His ruling:
+shown, but held higher.
+
+`supersedeColumns(readings, appliedAt)` names the fields a higher scope holds,
+each with its answer. Such a heading draws that answer — through the same
+clause path its own filter takes (`readingClause` → `#heldFromClause`) — with
+the chip's superseded look and tip ("Filter applied at higher scope. This chip
+holds EMEA."), and its menu `data-readonly`: rows and conditions `inert`, no
+footer, no Add condition, no Conditional switch. The heading's own filter is
+never set by it (`columnClause` stays null), so nothing applies twice. A field
+not named is released.
+
+The host calls it whenever the header's answers change (Records'
+`syncHeadings`). Still open: a heading that ALREADY held its own filter when
+the view took the field keeps it applied — one field in one scope says it
+should be suspended, as a chip is.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `examples/contexts/records.js`
+- Site: `test/e2e/reforged-data-grid.spec.ts`

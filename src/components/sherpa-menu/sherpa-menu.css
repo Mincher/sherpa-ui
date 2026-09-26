@@ -588,3 +588,10 @@
 
 /* A RANGE has no operator to choose — it IS `between`. */
 :host([data-body="number"][data-range]) .body-op { display: none; }
+
+/* READ-ONLY: the answer is shown and nothing here changes it — no footer, no
+   Add condition, no Conditional switch. `!important`: each is a composed
+   component whose own `:host` display wins otherwise.
+   TRAP T-a-composed-child-hides-with-important
+   TRAP T-a-view-held-heading-shows-and-refuses */
+:host([data-readonly]) :is(.footer, .add-condition, .use-condition) { display: none !important; }

@@ -119,6 +119,8 @@ export class SherpaMenu extends SherpaElement {
   } as const;
 
   static override observed = [
+    // Shows an answer held ELSEWHERE, unchangeable here. TRAP T-a-view-held-heading-shows-and-refuses
+    'data-readonly',
     'data-heading',
     'data-align',
     'data-search',
@@ -1023,6 +1025,7 @@ export class SherpaMenu extends SherpaElement {
 
   /** Bring the body, the inline state, the mode and the drill trail into line. */
   #sync(): void {
+    this.#syncReadonly();
     this.#syncBody();
     this.#syncInline();
     this.#enforceMode();
@@ -1044,6 +1047,14 @@ export class SherpaMenu extends SherpaElement {
       }
     }
 
+  }
+
+  /** READ-ONLY: every answer region is `inert` — shown, never changed. */
+  #syncReadonly(): void {
+    const readonly = this.hasAttribute('data-readonly');
+    for (const region of this.$$('.rows, .condition-rows, .search, .body-range, .body-number')) {
+      region.toggleAttribute('inert', readonly);
+    }
   }
 
   /** The box the card stays inside — viewport, or a host's `data-bounds`.
