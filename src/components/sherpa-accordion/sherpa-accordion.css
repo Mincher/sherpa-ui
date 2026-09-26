@@ -9,8 +9,6 @@
 
   --_surface: var(--sherpa-style-surface-base, #ffffff);
   --_border: var(--sherpa-style-border-base-1, #b3b3c3);
-  /* The header's stroke. */
-  --_divider: var(--sherpa-style-border-base-1, #b3b3c3);
 
   background: var(--_surface);
   border-style: solid;
@@ -39,7 +37,8 @@
      TRAP T-an-accordion-chevron-rides-the-heading-row */
   align-items: start;
   gap: var(--sherpa-theme-gap-sm, 4px);
-  padding: var(--sherpa-theme-padding-md, 8px);
+  padding-block: var(--sherpa-theme-padding-lg, 16px) var(--sherpa-theme-padding-sm, 4px);
+  padding-inline: var(--sherpa-theme-padding-md, 8px);
   cursor: pointer;
   list-style: none;
   color: var(--sherpa-style-content-base, #0c0b11);
@@ -117,5 +116,4 @@
 /* ── Body ────────────────────────────────────────────────────────────── */
 .body {
   padding: var(--_pad);
-  border-block-start: var(--sherpa-style-border-width, 0.5px) solid var(--_divider);
 }

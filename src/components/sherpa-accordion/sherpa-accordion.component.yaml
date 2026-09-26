@@ -115,7 +115,8 @@ events:
       open: unknown
 tokens:
   header.gap: "{sherpa.theme-gap-sm}"
-  header.padding: "{sherpa.theme-padding-md}"
+  header.padding-block: "{sherpa.theme-padding-lg}"
+  header.padding-inline: "{sherpa.theme-padding-md}"
   header.color: "{sherpa.style-content-base}"
   actions.min-block-size: "{sherpa.theme-content-line-height-base}"
   actions.gap: "{sherpa.display-mode-space-2xs}"
@@ -128,7 +129,6 @@ tokens:
   description.font-size: "{sherpa.font-size-body-small}"
   description.line-height: "{sherpa.theme-content-line-height-small}"
   chevron.margin-block: "{sherpa.theme-content-line-height-base}"
-  body.border-block-start: "{sherpa.style-border-width}"
 $extensions:
   sherpa:
     figmaName: Accordion
