@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**51 open.** Pruned 2026-09-26: 10 items were done or stale and are gone, and
+**52 open.** Pruned 2026-09-26: 10 items were done or stale and are gone, and
 the audit that checked them found 3 new bugs. Numbers are ids, not order — the
 table IS the order. Quick wins first, then bugs, then features, then the big
 builds and the tidy-ups.
@@ -32,52 +32,53 @@ builds and the tidy-ups.
 | 10 | 55 | The At risk view's own column filter never applies | bug |
 | 11 | 56 | A view change leaves a lit chip that filters nothing | bug |
 | 12 | 21e | A reload keeps a filter nothing on screen shows | bug |
-| 13 | 46 | A PENDING state: changed, not yet applied | feature |
-| 14 | 60 | Once applied, a chip's badge shows the number of results | feature |
-| 15 | 47 | More than 20 values: one chip, not a run | feature |
-| 16 | 48 | A child menu opens on hover or click of its row | feature |
-| 17 | 49 | A preset conditional chip shows its conditions, read-only | feature |
-| 18 | 50 | A custom conditional chip shows its conditions, editable | feature |
-| 19 | 51 | NOTE — warning and critical, for a condition with a problem | note |
-| 20 | 21c | A condition's matches must ALL highlight | feature |
-| 21 | 21f | "Send to view filters" | feature |
-| 22 | 21b | Which header chips carry over between views | feature |
-| 23 | 20b | The Date filter should be a view-scope date RANGE | feature |
-| 24 | 21d | EXPLORE — conditions for a DATE field | explore |
-| 25 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
+| 13 | 61 | Add customer saves with required fields empty | bug |
+| 14 | 46 | A PENDING state: changed, not yet applied | feature |
+| 15 | 60 | Once applied, a chip's badge shows the number of results | feature |
+| 16 | 47 | More than 20 values: one chip, not a run | feature |
+| 17 | 48 | A child menu opens on hover or click of its row | feature |
+| 18 | 49 | A preset conditional chip shows its conditions, read-only | feature |
+| 19 | 50 | A custom conditional chip shows its conditions, editable | feature |
+| 20 | 51 | NOTE — warning and critical, for a condition with a problem | note |
+| 21 | 21c | A condition's matches must ALL highlight | feature |
+| 22 | 21f | "Send to view filters" | feature |
+| 23 | 21b | Which header chips carry over between views | feature |
+| 24 | 20b | The Date filter should be a view-scope date RANGE | feature |
+| 25 | 21d | EXPLORE — conditions for a DATE field | explore |
+| 26 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
 | | | **B — The filter family, finished** | |
-| 26 | 38 | One model, one builder, one owner — what is left | refactor |
-| 27 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
+| 27 | 38 | One model, one builder, one owner — what is left | refactor |
+| 28 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | | | **C — Views and navigation** | |
-| 28 | 15 | Save a View, and the Save split-button menu | feature |
-| 29 | 16 | Favourite and Save apply to the View, not the Context | bug |
-| 30 | 17 | Breadcrumbs are for workflow, not for the nav | feature |
-| 31 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
-| 32 | 34 | Figma: use the Navigation terms | figma |
+| 29 | 15 | Save a View, and the Save split-button menu | feature |
+| 30 | 16 | Favourite and Save apply to the View, not the Context | bug |
+| 31 | 17 | Breadcrumbs are for workflow, not for the nav | feature |
+| 32 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
+| 33 | 34 | Figma: use the Navigation terms | figma |
 | | | **D — Data states and charts** | |
-| 33 | 58 | Loading, empty and error states in a container | feature |
-| 34 | 13 | A sparkline does not follow its record deltas | bug |
-| 35 | 14 | An example of real-time data | feature |
-| 36 | 9b | A Data Viz header, for metrics and chart containers | component |
-| 37 | 59 | EXPLORE, later — Will's own loading pattern | explore |
+| 34 | 58 | Loading, empty and error states in a container | feature |
+| 35 | 13 | A sparkline does not follow its record deltas | bug |
+| 36 | 14 | An example of real-time data | feature |
+| 37 | 9b | A Data Viz header, for metrics and chart containers | component |
+| 38 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | | | **E — Overlay panels** | |
-| 38 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
-| 39 | 23 | A focused grid row opens a details panel | feature |
+| 39 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
+| 40 | 23 | A focused grid row opens a details panel | feature |
 | | | **F — The accessibility gate** | |
-| 40 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
+| 41 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
 | | | **G — The big builds** | |
-| 41 | 25 | `sherpa-layout-canvas` + minimap | component |
-| 42 | 26 | A `Grouped` mode for the content area | feature |
-| 43 | 35 | Layout grid: plain grid templates? | explore |
-| 44 | 27 | A consumer can supply their OWN templates and CSS | feature |
+| 42 | 25 | `sherpa-layout-canvas` + minimap | component |
+| 43 | 26 | A `Grouped` mode for the content area | feature |
+| 44 | 35 | Layout grid: plain grid templates? | explore |
+| 45 | 27 | A consumer can supply their OWN templates and CSS | feature |
 | | | **H — Tidy-ups and renames** | |
-| 45 | 11 | `sherpa-group`: what is left | tidy |
-| 46 | 28 | A Figma component is NOT always a web component | tidy |
-| 47 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
-| 48 | 33 | Density as step offsets, and a breakpoint step | tokens |
-| 49 | 36 | CSS: compiled where it should inherit? | tidy |
-| 50 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
-| 51 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
+| 46 | 11 | `sherpa-group`: what is left | tidy |
+| 47 | 28 | A Figma component is NOT always a web component | tidy |
+| 48 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| 49 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| 50 | 36 | CSS: compiled where it should inherit? | tidy |
+| 51 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| 52 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 
 **Why this order.** A is Will's live list, and he tests on the running app as
 each lands. B comes before C–G because two of A's bugs (41, 44) are two views
@@ -221,6 +222,28 @@ what a reload must give back to the chips, and what `ViewSnapshot` will want.
 SessionStore, not IdbStore: a reload keeps it, closing the tab does not. The
 panel-or-toolbar mode already persists this way (`session '/filters/mode'`,
 24c3a57c) — done.
+
+### `[ ]` 61 — BUG: Add customer saves with required fields empty
+
+Will, 2026-09-26: the Add customer dialog let him save with Name and Email
+empty. `#f-name` and `#f-email` carry `required`
+(`examples/templates/records.html`), and `sherpa-input-text` has `validate()`,
+`checkValidity()` and `data-error` — but the Save handler
+(`examples/contexts/records.js`, `#save-btn`) asks none of them. Worse, it
+FILLS the blanks: a blank name becomes `New customer`, a blank email a made-up
+`new.customer@example.com`.
+
+**Use and handle required-field logic, once, for every form.** Save checks
+every field, shows each one's error, focuses the first invalid one, and saves
+nothing until all pass. Prefer the platform: a native `<form>` and
+`reportValidity()` reach a shadow-DOM input only if it is form-associated
+(`ElementInternals`) — check `sherpa-input-text` first. The fallbacks go.
+
+**And did it save at all?** Will could not tell. `store.insert` runs, but the
+new row is created TODAY with status `trial`: the header's Date chip (2024
+data), the current view, the sort or the page can each hide it. Measure with
+`source.debugState().total` before and after. Then make the result visible —
+the toast says where the row went, or the grid shows it.
 
 ### `[ ]` 46 — A PENDING state: changed, not yet applied
 
