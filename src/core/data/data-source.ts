@@ -30,6 +30,7 @@
  * - .contributions — Every named part currently applied — the component-scope filters.
  * - .apply — Apply a whole control's READING of several fields, at one scope.
  * - .answer — ONE SCOPE'S WHOLE ANSWER — a bar's report.
+ * - .declarePreset — A saved filter's readings, by id — the library a preset that is ON compiles from.
  * - .declareValues — every value a field can take, so each control offers the same list
  * - .declareField — Declare a field's KIND and its reader-facing name.
  * - .fieldFacts — What `declareField` was told.
@@ -228,6 +229,9 @@ export class DataSource extends EventTarget {
    * TRAP T-one-query-one-owner · TRAP T-one-field-one-filter-menu
    */
   #applied: Query = { v: 1, scopes: {} };
+  /** Each saved filter's readings, by id. A scope says only whether one is ON.
+   *  TRAP T-a-saved-filter-is-its-readings */
+  #presets = new Map<string, Readonly<Record<string, FieldReading>>>();
   /** The last compile, so a load does not redo it. Written by `#recompose` — and
    *  by `setFilter`/`setState`, whose whole filter has no readings until step 7. */
   #filter: Filter | undefined;
@@ -463,10 +467,28 @@ export class DataSource extends EventTarget {
    * cleared. A field raised to another scope is not this one's to clear.
    * TRAP T-a-filter-report-is-the-whole-answer · TRAP T-one-query-one-owner
    */
-  answer(scope: string, readings: Readonly<Record<string, FieldReading>>): void {
+  answer(
+    scope: string,
+    readings: Readonly<Record<string, FieldReading>>,
+    presets?: Readonly<Record<string, boolean>>,
+  ): void {
     const was = Object.keys(this.#applied.scopes[scope]?.readings ?? {});
     for (const field of was) if (!(field in readings)) this.select(field, []);
     this.apply(readings);
+    if (!presets) return;
+    // The saved filters it holds, on or off — the whole set. TRAP T-a-saved-filter-is-its-readings
+    if (Object.keys(presets).length) this.#scope(scope).presets = { ...presets };
+    else if (this.#applied.scopes[scope]) delete this.#applied.scopes[scope]!.presets;
+    this.#prune();
+    this.#recompose();
+  }
+
+  /** A saved filter's readings, by id — the library a preset that is ON
+   *  compiles from. `undefined` forgets one. TRAP T-a-saved-filter-is-its-readings */
+  declarePreset(id: string, readings: Readonly<Record<string, FieldReading>> | undefined): void {
+    if (readings) this.#presets.set(id, readings);
+    else this.#presets.delete(id);
+    this.#recompose();
   }
 
   /** One field's state from a reading this source has NOT stored. */
@@ -685,7 +707,9 @@ export class DataSource extends EventTarget {
   /** Forget a scope that holds nothing and answers nothing. */
   #prune(): void {
     for (const [id, scope] of Object.entries(this.#applied.scopes)) {
-      if (!scope.holds.length && !Object.keys(scope.readings).length) delete this.#applied.scopes[id];
+      if (!scope.holds.length && !Object.keys(scope.readings).length && !Object.keys(scope.presets ?? {}).length) {
+        delete this.#applied.scopes[id];
+      }
     }
   }
 
@@ -836,6 +860,7 @@ export class DataSource extends EventTarget {
       filter: this.#filter,
       // The readings and holds the filter is compiled from. TRAP T-one-query-one-owner
       query: structuredClone(this.#applied),
+      presets: [...this.#presets.keys()],
       selections: Object.fromEntries(this.selectedFields.map((f) => [f, this.selection(f)])),
       parts: Object.fromEntries(this.#parts),
       // …and the parts that narrow ONE component, by key.
@@ -856,7 +881,10 @@ export class DataSource extends EventTarget {
   /** Compile the Query under every named part, and load. The ONE place the
    *  filter is made. TRAP T-one-query-one-owner */
   #recompose(): void {
-    const { filter } = compile(this.#applied, { field: (f) => this.#facts(f) });
+    const { filter } = compile(this.#applied, {
+      field: (f) => this.#facts(f),
+      preset: (id) => this.#presets.get(id),
+    });
     this.#filter = andFilter([...this.#parts.values(), ...(filter ? [filter] : [])]);
     this.#requery();
   }
@@ -1115,6 +1143,7 @@ export class DataSource extends EventTarget {
         const bar = event.currentTarget as EventTarget & {
           readings?: Record<string, FieldReading>;
           savedReadings?: Record<string, Record<string, FieldReading>>;
+          presets?: Record<string, { on: boolean; readings: Record<string, FieldReading> }>;
         } | null;
         const readings = bar?.readings ?? readingsOf(detail['values']);
         /* A REPORT IS THE WHOLE ANSWER. A field this control answered before
@@ -1122,14 +1151,20 @@ export class DataSource extends EventTarget {
            is cleared — its OWN fields only, never another control's.
            TRAP T-a-filter-report-is-the-whole-answer */
         const bind = this.#bound.get(event.currentTarget as Populatable);
-        if (typeof bind?.scope === 'string') this.answer(bind.scope, readings);
-        else {
-          for (const field of bind?.answered ?? []) {
-            if (!(field in readings)) this.select(field, []);
-          }
-          if (bind) bind.answered = new Set(Object.keys(readings));
-          this.apply(readings);
+        /* A SCOPED bar answers in the Query: its saved filters are presets, on
+           or off, and their readings go to the library. TRAP T-one-query-one-owner */
+        if (typeof bind?.scope === 'string') {
+          const presets = bar?.presets ?? {};
+          for (const [id, p] of Object.entries(presets)) this.#presets.set(id, p.readings);
+          this.answer(bind.scope, readings,
+            Object.fromEntries(Object.entries(presets).map(([id, p]) => [id, p.on])));
+          return;
         }
+        for (const field of bind?.answered ?? []) {
+          if (!(field in readings)) this.select(field, []);
+        }
+        if (bind) bind.answered = new Set(Object.keys(readings));
+        this.apply(readings);
         /* SAVED FILTERS: one named part each, over any fields — and one switched
            off or taken away takes its part with it.
            TRAP T-a-saved-filter-is-its-readings */

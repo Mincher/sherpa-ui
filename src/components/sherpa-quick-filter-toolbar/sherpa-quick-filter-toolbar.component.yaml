@@ -234,8 +234,8 @@ capabilities:
     api: js-property-mirror
     description: >-
       read/write JS properties (active, values, superseded, pickedValues, clauses, readings, states,
-      savedReadings, externalFilters, offering, heldIds, answers, held, groupField, sortField,
-      sortDirection, sortSuspended). See $extensions.sherpa.jsProps.
+      savedReadings, presets, externalFilters, offering, heldIds, answers, held, groupField,
+      sortField, sortDirection, sortSuspended). See $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
     description: >-
@@ -458,6 +458,9 @@ $extensions:
         type: string
         access: read
       - name: savedReadings
+        type: string
+        access: read
+      - name: presets
         type: string
         access: read
       - name: externalFilters

@@ -13663,6 +13663,10 @@ reading with its field, so the rows never change on a move. The named parts
 
 Step 4a: the Records header answers the View scope (`source.answer`) — its
 compiled `global` part is gone, so its picks are readings in the Query.
+4b–4c: a bind's `scope` makes the source DRAW that control each answer in it
+(`drawReading`), so the bar and the open panel need no mirror. A scoped bar's
+saved filters are `presets` in its scope, on or off; their readings sit in
+the source's library (`declarePreset`), never in the Query.
 
 - Site: `examples/contexts/records.js`
 - Site: `src/core/data/data-source.ts`

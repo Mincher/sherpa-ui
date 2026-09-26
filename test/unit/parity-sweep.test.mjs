@@ -70,6 +70,7 @@ const KNOWN = {
   'sherpa-quick-filter-toolbar.pickedValues': 'ok: the `values` setter',
   'sherpa-quick-filter-toolbar.externalFilters': 'ok: addExternalFilter()',
   'sherpa-quick-filter-toolbar.savedReadings': 'ok: populate() — a def carries `readings`; `active: true` turns it on',
+  'sherpa-quick-filter-toolbar.presets': 'ok: populate() — a def carries `readings`; setChipActive() turns it on or off',
   'sherpa-quick-filter-toolbar.sortField': 'ok: data-sort-field attribute',
   'sherpa-quick-filter-toolbar.sortDirection': 'ok: data-sort-direction attribute',
   'sherpa-quick-filter-toolbar.sortSuspended': 'ok: data-sort-field="" suspends it',

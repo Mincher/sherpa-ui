@@ -1448,6 +1448,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
+   * Every saved filter this bar holds, ON OR OFF, with its readings — what a
+   * scoped source keeps as presets. TRAP T-a-saved-filter-is-its-readings
+   */
+  get presets(): Record<string, { on: boolean; readings: Record<string, FieldReading> }> {
+    const on = new Set(this.#chips().filter((c) => c.current).map((c) => c.dataset['id']));
+    const out: Record<string, { on: boolean; readings: Record<string, FieldReading> }> = {};
+    for (const f of this.#filters) if (f.readings) out[f.id] = { on: on.has(f.id), readings: f.readings };
+    return out;
+  }
+
+  /**
    * Every EXTERNAL chip and whether it is on — `{ 'col:name': true }`.
    *
    * TRAP T-external-chips-are-reported-separately — a typed value has no rows to
