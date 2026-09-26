@@ -96,12 +96,13 @@ test('open, it is the whole list; shut, it leads with what the scope hides', asy
 
   // OPEN: nothing is hidden, so no section of hidden filters and no badge.
   expect(r['open']).toEqual({
-    rows: ['status+', 'plan', '§Custom', 'custom:mine'], badge: null, on: null,
+    rows: ['§Added filters', 'status+', '§Available filters', 'plan', '§Custom filters', 'custom:mine'],
+    badge: null, on: null,
   });
   // SHUT: every filter it draws, in its order — a door each, a tick each preset.
   expect(r['shut']!.rows).toEqual([
     '§More filters', '>sort', '~at-risk', '~unassigned', '>status', '>seats',
-    '§All filters', 'status+', 'plan', '§Custom', 'custom:mine',
+    '§Added filters', 'status+', '§Available filters', 'plan', '§Custom filters', 'custom:mine',
   ]);
   expect(r['shut']!.badge).toBe('5');
   // ON: Status is answered, and it is hidden.

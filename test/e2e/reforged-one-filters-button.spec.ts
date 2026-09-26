@@ -57,7 +57,7 @@ const look = (page: import('@playwright/test').Page) => page.evaluate(() => {
   };
 });
 
-test('ONE button: "Filters", a plus; hidden chips first, then every filter, then Custom', async ({ page }) => {
+test('ONE button: "Filters", a plus; hidden chips first, then Added, Available, Custom', async ({ page }) => {
   await mount(page, 1400);
   const wide = await look(page);
   await mount(page, 560);
@@ -69,19 +69,19 @@ test('ONE button: "Filters", a plus; hidden chips first, then every filter, then
   expect(wide.heading).toBe('Filters');
   // Nothing hidden: no badge, no section of hidden chips.
   expect(wide.badge).toBeNull();
-  expect(wide.rows).toEqual(['tier', '§Custom', 'custom:mine']);
+  expect(wide.rows).toEqual(['§Available filters', 'tier', '§Custom filters', 'custom:mine']);
 
   // HIDDEN chips lead, under their own heading; the badge counts them.
   expect(narrow.more).toBe(false);
-  const hidden = narrow.rows.slice(1, narrow.rows.indexOf('§All filters'));
+  const hidden = narrow.rows.slice(1, narrow.rows.indexOf('§Available filters'));
   expect(narrow.rows[0]).toBe('§More filters');
   expect(hidden.length).toBeGreaterThan(0);
   expect(Number(narrow.badge)).toBe(hidden.length);
   // The on/off chip ticks in place; a chip with a menu is a door.
   expect(hidden.at(-1)).toBe('~at-risk');
   expect(hidden.slice(0, -1).every((r) => r.startsWith('>'))).toBe(true);
-  expect(narrow.rows.slice(narrow.rows.indexOf('§All filters'))).toEqual(
-    ['§All filters', 'tier', '§Custom', 'custom:mine']);
+  expect(narrow.rows.slice(narrow.rows.indexOf('§Available filters'))).toEqual(
+    ['§Available filters', 'tier', '§Custom filters', 'custom:mine']);
 });
 
 test('the button is ON while a hidden chip is, and a drill inside it adds nothing', async ({ page }) => {

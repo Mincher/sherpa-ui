@@ -1556,7 +1556,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // TRAP T-add-menu-batches — the one menu that KEEPS Apply: each tick stamps
       // a chip, so per-tick apply rebuilds the run mid-selection.
       commit: true,
-      options: filtersMenuItems(held, offer, folded.length > 0),
+      options: filtersMenuItems(held, offer),
     });
     // Its host is already in the page, so the items can go now.
     this.#flushItems();

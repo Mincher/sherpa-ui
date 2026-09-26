@@ -260,7 +260,7 @@ test('the Add menu adds AND removes, and changes nothing by itself', async ({ pa
     const menu = sr.querySelector('.scope[data-scope="data"] .scope-add sherpa-menu');
     await new Promise((r) => setTimeout(r, 200));
     const rows = [...menu.querySelectorAll('.menu-row')]
-      .filter((row) => !row.matches('.qf-all, .menu-all'))
+      .filter((row) => !row.matches('.qf-all, .menu-all, .menu-section'))
       .map((row) => [row.querySelector('input').value, row.querySelector('input').checked]);
 
     /* SEATS ticked, STATUS unticked — one of each, in one commit. */

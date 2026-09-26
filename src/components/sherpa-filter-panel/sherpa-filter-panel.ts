@@ -629,7 +629,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
     const { menu, items } = menuFor({
       id: 'add', label: FILTERS_LABEL, select: 'multiple', commit: true,
-      options: filtersMenuItems(list.held, list.offers, hidden.length > 0),
+      options: filtersMenuItems(list.held, list.offers),
     });
     btn.append(menu);
     /* The hidden rows go in FIRST: the menu lifts `data-lead` rows above its

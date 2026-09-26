@@ -1780,7 +1780,8 @@ answers to 17.3, in order:
 4. It stays while there is anything to hide or add, as Add did.
 
 The menu leads with **More filters** (a door per folded chip, a tick per on/off
-one), then **All filters**, then **Custom**. `T-one-filters-button`.
+one), then **All filters**, then **Custom** — since 17.5, **Added**, **Available**
+and **Custom filters**. `T-one-filters-button`.
 
 **The panel has the same button.** Each scope's Filters button is the toolbar's
 — one module, `core/ui/filters-button.ts` — and a SHUT scope leads its menu
@@ -1791,6 +1792,8 @@ The scope's buttons have their own row, under its heading.
 
 1. **The sections are Added Filters, Available Filters and Custom Filters**, and
    a filter is in ONE of them: an added saved filter is under Added only.
+   Done 2026-09-25, in the bar and the panel. More filters still leads the
+   menu while filters are hidden.
 2. **Save filter opens a `sherpa-dialog`**, not the browser's `prompt()`.
    Done 2026-09-25 on the Records page. It found a dialog bug: one shut and
    opened again at once was shut by its own late close

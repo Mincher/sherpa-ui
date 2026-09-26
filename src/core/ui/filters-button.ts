@@ -2,17 +2,18 @@
  * filters-button.ts — the ONE Filters button's menu, for a bar and a panel.
  *
  * The filters a view hides lead it, each a door into its own menu or a tick
- * for an on/off one; then every filter, ticked when held; then the saved ones.
- * TRAP T-one-filters-button
+ * for an on/off one; then the filters it holds, what it may add, and the saved
+ * ones it may add. TRAP T-one-filters-button
  *
  * Map:
  * - FILTERS_LABEL — The button's name, and its menu's heading.
  * - HIDDEN_SECTION — The heading over the filters the view hides.
- * - ALL_SECTION — The heading over every filter, under the hidden ones.
- * - CUSTOM_SECTION — The heading over the saved filters, at the bottom.
+ * - ADDED_SECTION — The heading over the filters the view holds, ticked.
+ * - AVAILABLE_SECTION — The heading over the filters it may add.
+ * - CUSTOM_SECTION — The heading over the saved filters it may add, at the bottom.
  * - DRILL_FLAGS — Menu attributes owned by the FILTER, not by the Filters menu.
  * - ListedFilter — One filter the menu lists.
- * - filtersMenuItems — The menu's list: every filter, then the saved ones.
+ * - filtersMenuItems — The menu's list: added, available, then custom.
  * - HiddenFilter — One filter the view hides.
  * - addHiddenRows — Lead a Filters menu with the filters its view hides.
  * - syncHiddenCounts — Write each door row's pick count.
@@ -26,8 +27,9 @@ import type { FilterMenuItem } from './filter-menu.js';
 
 export const FILTERS_LABEL = 'Filters';
 export const HIDDEN_SECTION = 'More filters';
-export const ALL_SECTION = 'All filters';
-export const CUSTOM_SECTION = 'Custom';
+export const ADDED_SECTION = 'Added filters';
+export const AVAILABLE_SECTION = 'Available filters';
+export const CUSTOM_SECTION = 'Custom filters';
 
 /** TRAP T-drill-flags-travel-and-replace — never merged. */
 export const DRILL_FLAGS = ['data-commit', 'data-range', 'data-select', 'data-search'] as const;
@@ -43,22 +45,19 @@ export interface ListedFilter {
 }
 
 /**
- * Ticked is held, so a tick adds and an untick removes. Saved filters go LAST,
- * under their own heading. TRAP T-the-add-menu-is-the-whole-list
+ * Ticked is held, so a tick adds and an untick removes. A filter is in ONE
+ * section: a held saved filter is ADDED, never Custom too. Will, 2026-09-25.
+ * TRAP T-the-add-menu-is-the-whole-list
  * TRAP T-saved-filters-are-the-custom-section
  */
 export function filtersMenuItems(
-  held: readonly ListedFilter[], offer: readonly ListedFilter[], hidden: boolean,
+  held: readonly ListedFilter[], offer: readonly ListedFilter[],
 ): Array<FilterMenuItem & { label: string }> {
-  // Under the hidden filters, the list needs a heading of its own.
-  const all = hidden ? { section: ALL_SECTION } : {};
   return [
-    ...held.filter((f) => !f.readings)
-      .map((f) => ({ value: f.id, label: f.label, selected: true, ...all })),
-    ...offer.filter((f) => !f.readings)
-      .map((f) => ({ value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}), ...all })),
-    ...held.filter((f) => f.readings)
-      .map((f) => ({ value: f.id, label: f.label, selected: true, section: CUSTOM_SECTION })),
+    ...held.map((f) => ({ value: f.id, label: f.label, selected: true, section: ADDED_SECTION })),
+    ...offer.filter((f) => !f.readings).map((f) => ({
+      value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}), section: AVAILABLE_SECTION,
+    })),
     ...offer.filter((f) => f.readings)
       .map((f) => ({ value: f.id, label: f.label, section: CUSTOM_SECTION })),
   ];

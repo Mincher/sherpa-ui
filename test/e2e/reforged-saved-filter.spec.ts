@@ -309,16 +309,18 @@ test('the Records page saves a condition as a filter, and nothing filters twice'
   await expect.poll(() => page.evaluate(() => {
     const menu = document.querySelector('#context-root sherpa-quick-filter-toolbar')!.shadowRoot!
       .querySelector('.add-btn sherpa-menu')!;
-    const head = [...menu.children].find((n) => n.classList.contains('menu-section'));
-    const row = menu.querySelector('input[value="custom:dana-accounts"]');
-    return { head: head?.textContent ?? null, row: !!row };
-  })).toEqual({ head: 'Custom', row: true });
+    // The heading of the section the saved row is IN — the last one above it.
+    const kids = [...menu.children];
+    const at = kids.findIndex((n) => n.querySelector('input[value="custom:dana-accounts"]'));
+    const head = kids.slice(0, at).reverse().find((n) => n.classList.contains('menu-section'));
+    return { head: head?.textContent ?? null, row: at >= 0 };
+  })).toEqual({ head: 'Custom filters', row: true });
   await page.evaluate(() => localStorage.removeItem('sherpa:filters:customers'));
 });
 
 /**
  * THE CUSTOM SECTION. Will: saved filters go "to the add filters menu under a
- * 'Custom' section at the bottom". The menu draws the heading where a section
+ * 'Custom' section at the bottom" — the ones not added yet. The menu draws the heading where a section
  * starts, and its search hides the heading when nothing under it matches. A
  * saved filter added from there comes ON: its answer is given.
  * TRAP T-saved-filters-are-the-custom-section
@@ -359,11 +361,16 @@ test('the Add menu offers saved filters at the bottom, under Custom', async ({ p
     return { all, big, own, added: chip?.hasAttribute('data-current') ?? null };
   });
 
-  // Fields first; the saved ones LAST, under their heading — a held one ticked.
-  expect(r.all).toEqual(['owner*', 'tier', '§Custom', 'custom:held*', 'custom:mine', 'custom:big']);
+  /* ADDED, AVAILABLE, CUSTOM — and a filter in ONE of them: the held saved
+     one is Added, not Custom too. Will, 2026-09-25. */
+  expect(r.all).toEqual([
+    '§Added filters', 'owner*', 'custom:held*',
+    '§Available filters', 'tier',
+    '§Custom filters', 'custom:mine', 'custom:big',
+  ]);
   // The heading goes with the rows under it.
-  expect(r.big).toEqual(['§Custom', 'custom:big']);
-  expect(r.own).toEqual(['owner*']);
+  expect(r.big).toEqual(['§Custom filters', 'custom:big']);
+  expect(r.own).toEqual(['§Added filters', 'owner*']);
   expect(r.added).toBe(true);
 });
 

@@ -7577,8 +7577,12 @@ Its menu, top to bottom:
 | section | rows | a row does |
 |---|---|---|
 | More filters — only when chips are folded | a door per folded chip; a tick per folded on/off chip | opens that chip's own menu in place; flips it at once |
-| All filters — headed only under the folded ones | every removable filter, held ones ticked | adds or removes, on Apply |
-| Custom | saved filters | adds or removes, on Apply |
+| Added filters | every removable filter it holds, saved ones too — ticked | removes, on Apply |
+| Available filters | what it may add | adds, on Apply |
+| Custom filters | the saved filters it may add | adds, on Apply |
+
+**A filter is in ONE of the last three.** Will, 2026-09-25: *"If it's in Added
+Filters then it shouldn't be in Available or Custom filters."*
 
 Its badge counts the folded chips, and it reads active while one of them is on
 (`T-the-filters-button-is-a-door-not-a-filter`).
@@ -11850,19 +11854,19 @@ tells the host to forget it.
 
 ### T-saved-filters-are-the-custom-section
 
-**Saved filters are offered LAST in the Add menu, under a "Custom" heading.**
+**Saved filters are offered LAST in the Filters menu, under "Custom filters".**
 Will, 2026-09-25: *"add them to the add filters menu under a 'Custom' section
-at the bottom"*.
+at the bottom"*. Only the ones not added: a held saved filter is under Added
+filters, with every other filter the bar holds (`T-one-filters-button`).
 
 A def with `readings` IS a saved filter, so the bar needs no second list: the
-host hands them over through `available()` beside the fields, and the Add menu
-puts fields first and saved filters after, held ones ticked. A saved chip taken
-off the bar goes back there by itself (`#removeFilter`).
+host hands them over through `available()` beside the fields. A saved chip
+taken off the bar goes back there by itself (`#removeFilter`).
 
 **The heading is the MENU's**, not the bar's: `MenuItem.section` names the
 section an item is in, and the menu draws a heading row where it changes. Its
 search hides a heading when nothing under it matches — a heading is never
-matched on its own name, so "Custom" over no rows cannot happen.
+matched on its own name, so "Custom filters" over no rows cannot happen.
 
 **One added from there comes ON.** A new field chip comes off, because on with
 no answer is the amber warning (`T-a-new-chip-opens-in-default-not-warning`);
