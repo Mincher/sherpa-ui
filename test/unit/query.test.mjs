@@ -211,3 +211,28 @@ test('a scoped bar\'s saved filters are PRESETS in the Query — on or off, read
   assert.deepEqual(src.query.applied.scopes.grid.presets, { 'at-risk': false });
   assert.equal(src.state.filter, undefined);
 });
+
+test('setQuery restores the WHOLE Query and draws each bound scope — nothing replays a control', async () => {
+  const kept = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
+  kept.hold('grid', ['status']);
+  // A bar's reading carries its label and values; only the ANSWER is kept.
+  kept.select('status', ['active'], { label: 'Status', values: ['active', 'trial'] });
+  kept.select('region', ['EMEA']);
+  const saved = JSON.parse(JSON.stringify(kept.query.applied));
+  assert.deepEqual(saved.scopes.grid.readings.status, { picked: ['active'] });
+
+  const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
+  const drawn = [];
+  const bar = Object.assign(new EventTarget(), {
+    setAttribute() {}, removeAttribute() {}, hasAttribute: () => false,
+    drawScope: async (slice, scope) => { drawn.push([scope, slice]); },
+  });
+  src.bind(bar, { steerOnly: true, scope: 'grid' });
+  await src.setQuery(saved);
+  assert.deepEqual(src.query.applied, saved);
+  assert.deepEqual(ids(src.state.filter), [1, 4]);
+  assert.deepEqual(drawn, [['grid', saved.scopes.grid]]);
+  // Not a v1 Query: refused, and nothing changes.
+  await src.setQuery({ scopes: {} });
+  assert.deepEqual(src.query.applied, saved);
+});

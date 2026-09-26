@@ -13,6 +13,7 @@
  * - applyState — Apply a `state` block through an element's own public API.
  */
 import type { FieldReading } from '../data/filter-state.js';
+import type { ScopeQuery } from '../data/query.js';
 
 /** An element that takes a data payload. TRAP T-populatable-declared-four-times */
 export interface Populatable extends HTMLElement {
@@ -20,6 +21,8 @@ export interface Populatable extends HTMLElement {
   rendered?: Promise<void>;
   /** One field's answer, drawn SILENTLY — a bound bar told what its scope now holds. */
   drawReading?: (field: string, reading: FieldReading, scope: string) => void;
+  /** A whole scope, drawn SILENTLY — its chips, answers and presets, on a restore. */
+  drawScope?: (slice: ScopeQuery, scope: string) => void | Promise<void>;
 }
 
 /** A list of CALLS, not one argument list? TRAP T-state-value-may-be-a-call-list */

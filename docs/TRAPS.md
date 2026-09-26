@@ -13442,38 +13442,38 @@ TODO 21b. This is its default.
 
 ### T-a-reload-replays-the-readers-answers
 
-**Filters survive a reload by REPLAYING the reader's answers, never by
-restoring a query.** Will, 2026-09-24: filters and conditional filters survive
-a refresh and a trip away and back, for the session. Measured 2026-09-26
-before the fix: `persistView` kept the source's COMBINED filter and restored
-it as one base filter — Region = EMEA + Status = active came back as 4 rows
-with every chip empty and no part or selection in the source. A filter no one
-could see or clear.
+**Filters survive a reload by restoring the reader's QUERY — their answers,
+in their own terms — never a compiled filter.** Will, 2026-09-24: filters and
+conditional filters survive a refresh and a trip away and back, for the
+session. Measured 2026-09-26 before the fix: `persistView` kept the source's
+COMBINED filter — Region = EMEA + Status = active came back as 4 rows with
+every chip empty. A filter no one could see or clear.
 
-So each bar keeps what the reader DID to it — `answers`: the chips it holds,
-each chip's reading, the on/off chips that are on — and `restoreAnswers()`
-puts it back and REPORTS, so the host applies it by the same path a live change
-takes. `persistView(…, { filter: false })` keeps sort, group, page and the
-grid's own state, and never the combined filter.
+The session keeps `source.query.applied`. `source.setQuery()` puts it back and
+DRAWS each bound bar its scope (`drawScope`, silent) — nothing replays a
+control (step 3 of docs/QUERY-DESIGN.md). `persistView(…, { filter: false })`
+keeps sort, group, page and the grid's own state, never the filter.
 
-Three orderings make it work:
+Four orderings make it work:
 
 - **The URL's View is applied by the Context at init** (`init(root, { view })`).
-  A host that picked it after init would reset the header chips just replayed
+  A host that picked it after init would reset the header chips just restored
   (`T-a-view-change-resets-the-header-chips`).
-- **The kept answers belong to ONE View.** They replay only on the View they
-  were made on; a View change is a clean slate — both bars empty their filter
-  chips, and the grid's bar keeps the Group and Sort the view set. Will kept the
-  clean slate, 2026-09-26; a view's OWN default filters belong in its
-  definition (TODO 70).
-- **The grid's column filters are read back FIRST**, because that read clears
-  any field chip no column names; the bars replay after it.
+- **The kept Query belongs to ONE View.** It is restored only on the View it
+  was made on; a View change is a clean slate. Will, 2026-09-26; a view's OWN
+  default filters belong in its definition (TODO 70).
+- **The grid's column filters are read back FIRST**, so their chips are on the
+  bar before it is drawn.
+- **Every saved filter's readings are declared first** (`declarePreset`). The
+  Query says only that a preset is ON; without its readings it restores lit
+  and filters nothing.
 
 The session path must be `persist()`ed in the app (`/filters/records`), or it
 lives in memory and dies with the page.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/browser/persist-view.ts`
+- Site: `src/core/data/data-source.ts`
 - Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-records-persist.spec.ts`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
@@ -13667,8 +13667,11 @@ compiled `global` part is gone, so its picks are readings in the Query.
 (`drawReading`), so the bar and the open panel need no mirror. A scoped bar's
 saved filters are `presets` in its scope, on or off; their readings sit in
 the source's library (`declarePreset`), never in the Query.
+Step 3: the session keeps the Query; `setQuery` restores it and draws each
+bound bar (`drawScope`) — see `T-a-reload-replays-the-readers-answers`.
 
 - Site: `examples/contexts/records.js`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/query.ts`
 - Site: `src/data.ts`

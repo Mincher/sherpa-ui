@@ -7,7 +7,6 @@
  * - QuickFilterOption — One value a filter chip's menu can offer.
  * - ExternalFilterSpec — An external filter: its chip, its finished phrase, and the condition behind it.
  * - QuickFilterDef — one filter chip as data: its id, kind, values, and how it answers
- * - BarAnswers — What a reader did to a bar, as a session keeps it.
  * - OrganiseColumn — One column the grid can be grouped or sorted by.
  * - OrganiseDef — The columns the leading Group / Sort chips offer.
  * - SortDirection — Matches the standard data-sort-direction values.
@@ -31,6 +30,7 @@ import {
   type FieldCondition, type FieldReading, type FilterState,
 } from '../../core/data/filter-state.js';
 import type { SavedFilter } from '../../core/browser/saved-filters.js';
+import type { ScopeQuery } from '../../core/data/query.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-button/sherpa-button.js';
@@ -122,16 +122,6 @@ interface ChipEl extends HTMLElement {
   /** Redraw the face after a silent steer. A property type, so the spec does
    *  not read it as one of the TOOLBAR's methods. */
   readonly refresh: () => void;
-}
-
-/** What a reader did to a bar, as a session keeps it. */
-export interface BarAnswers {
-  /** The chips it holds, by id. */
-  held: string[];
-  /** Each menu chip's reading, by id. */
-  readings: Record<string, FieldReading>;
-  /** The on/off chips that are on. */
-  active: string[];
 }
 
 /** One column the grid can be grouped or sorted by. */
@@ -1515,50 +1505,33 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
-   * What a reader DID to this bar, as data a session can keep: the chips it
-   * holds, each chip's reading, and the on/off chips that are on.
-   * `restoreAnswers()` puts it back. TRAP T-a-reload-replays-the-readers-answers
+   * drawScope(slice) — draw what a scope holds, SILENTLY: its chips, each
+   * field's answer and each saved filter on or off. A reload, a trip away and
+   * back. Nothing is reported — the source already holds all of it. A
+   * PERSISTENT chip (the View) is the host's to set, so it is left alone.
+   * TRAP T-one-query-one-owner · TRAP T-a-reload-replays-the-readers-answers
    */
-  get answers(): BarAnswers {
-    const readings: Record<string, FieldReading> = {};
-    for (const [id, { label: _label, values: _values, ...reading }] of Object.entries(this.readings)) {
-      readings[id] = reading;
-    }
-    return { held: this.heldIds, readings, active: this.active };
-  }
-
-  /**
-   * restoreAnswers(answers) — put kept `answers` back and REPORT, so the host
-   * applies them by the path a live change takes. The chips first, then their
-   * readings once the menus have stamped. A PERSISTENT chip (the View) is the
-   * host's to set, so it is left alone.
-   * TRAP T-a-reload-replays-the-readers-answers
-   */
-  async restoreAnswers(answers: BarAnswers): Promise<void> {
-    const want = new Set(answers.held);
+  async drawScope(slice: ScopeQuery): Promise<void> {
+    const presets = slice.presets ?? {};
+    const want = new Set([...slice.holds, ...Object.keys(presets)]);
     for (const def of [...this.#filters]) {
-      if (!want.has(def.id) && def.removable) this.#removeFilter(def.id);
+      if (!want.has(def.id) && def.removable) this.#removeFilter(def.id, { silent: true });
     }
-    const add = answers.held.filter((id) => !this.heldIds.includes(id));
-    if (add.length) this.#addFilters(add);
+    const add = [...want].filter((id) => !this.heldIds.includes(id)
+      && this.#available.some((f) => f.id === id));
+    if (add.length) this.#addFilters(add, { silent: true });
     // A rebuilt bar reads empty until its menus stamp. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp
     await this.#settled();
     await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
     const persistent = new Set(this.#chips()
       .filter((c) => c.hasAttribute('data-persistent')).map((c) => c.dataset['id']));
-    for (const [id, reading] of Object.entries(answers.readings)) {
+    for (const [id, reading] of Object.entries(slice.readings)) {
       if (persistent.has(id)) continue;
       this.setChipReading(id, reading);
       // OFF keeps the answer and applies none of it. TRAP T-grid-suspend-is-not-clear
       if (reading.suspended) this.setChipActive(id, false);
     }
-    for (const chip of this.#chips()) {
-      const id = chip.dataset['id'] ?? '';
-      if (!chip.hasAttribute('data-menu') && !persistent.has(id)) {
-        this.setChipActive(id, answers.active.includes(id));
-      }
-    }
-    this.report();
+    for (const [id, on] of Object.entries(presets)) this.setChipActive(id, on);
   }
 
   /**
@@ -1662,8 +1635,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#syncSaveable();
   }
 
-  /** Move the chosen available filters onto the bar. */
-  #addFilters(ids: string[]): void {
+  /** Move the chosen available filters onto the bar. SILENT for a restore. */
+  #addFilters(ids: string[], { silent = false } = {}): void {
     const added: QuickFilterDef[] = [];
     for (const id of ids) {
       const i = this.#available.findIndex((f) => f.id === id);
@@ -1690,6 +1663,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#filters = [...this.#filters, ...added];
     this.#render();
     this.#renderAvailable();
+    if (silent) return;
     // ONE event for the batch — a host re-queries once.
     this.emit('filter-add', { ids: added.map((f) => f.id), filters: added });
     // AFTER the rebuild. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp
@@ -1697,7 +1671,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /** Take one filter back OFF the bar. It returns to the Add menu, clean. */
-  #removeFilter(id: string): void {
+  #removeFilter(id: string, { silent = false } = {}): void {
     const i = this.#filters.findIndex((f) => f.id === id);
     if (i < 0) {
       // TRAP T-a-broken-assumption-reports
@@ -1713,6 +1687,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#available = [...this.#available, clean as QuickFilterDef];
     this.#render();
     this.#renderAvailable();
+    if (silent) return;
     this.emit('filter-remove', { id, filter: clean });
     /* AFTER the rebuild has settled. Emitting here read `values: {}` from a
        bar whose menus had not stamped, and the host answered by clearing every

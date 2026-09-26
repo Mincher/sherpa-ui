@@ -314,6 +314,14 @@ the clause grammar, `bind()`, `select()` (a write into the view scope),
 A size gate lands with step 1 (`scripts/size-baseline.json`, a per-file line
 count that may only fall — 38's plan), so each step shows what it deleted.
 
+**Built so far (2026-09-26): 1, 2, 4a–4d, 3** — in that order, because a bar
+must be drawn FROM the Query before a restore can draw it. 4a: the header
+answers the View scope. 4b–4c: a bound `scope` draws the bar and the open
+panel (the mirror's bar and panel halves are gone). 4d: saved filters are
+presets. 3: the session keeps the Query, and `setQuery` restores it. Still to
+do in 4: the panel's refill glue, and holds owned by the source (Add and
+Remove as requests).
+
 ---
 
 ## 11. Decisions — Will, 2026-09-26

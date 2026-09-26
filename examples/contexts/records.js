@@ -305,6 +305,11 @@ export async function init(root, { session, view } = {}) {
     id: `custom:${id}`, label: saved.label, readings: saved.readings, editable: true,
   }));
   qft.available([...DATA_AVAILABLE, ...savedDefs()]);
+  /* EVERY saved filter's readings, told to the source — a restored Query says
+     only which are ON. TRAP T-a-saved-filter-is-its-readings */
+  for (const f of [...DATA_FILTERS, ...savedDefs()]) {
+    if (f.readings) source.declarePreset(f.id, f.readings);
+  }
 
   /* UP IS OPEN: the header offers every field any component has — including
      one the grid's bar holds, because raising a filter is the point. What the
@@ -883,6 +888,7 @@ export async function init(root, { session, view } = {}) {
     const label = await askFilterName(was ?? '');
     if (!label) return false;
     saveFilterAs('customers', label, readings);
+    source.declarePreset(`custom:${labelId(label)}`, readings);
     qft.packFilter({ id: `custom:${labelId(label)}`, label, readings });
     return true;
   };
@@ -890,6 +896,7 @@ export async function init(root, { session, view } = {}) {
   // DELETE: the bar has let it go; this page forgets it. TRAP T-edit-unpacks-a-saved-filter
   qft.addEventListener('filter-delete', (e) => {
     deleteSavedFilter('customers', e.detail.id.replace(/^custom:/, ''));
+    source.declarePreset(e.detail.id, undefined);
   }, { signal });
   // Grouping needs no wiring: the source writes data-group-field on every bound
   // component, and the grid draws the collapsible group rows.
@@ -1113,37 +1120,44 @@ export async function init(root, { session, view } = {}) {
   }
 
   /* FILTERS SURVIVE A RELOAD, and a trip away and back — for this SESSION, and
-     only on the View they were made on. Each bar keeps what the reader did to
-     it and REPLAYS it, so the filter always comes from the chips — never from
-     a restored query no chip shows. Will, 2026-09-24.
-     TRAP T-a-reload-replays-the-readers-answers */
+     only on the View they were made on. The session keeps the QUERY; a restore
+     puts it back and each bar is DRAWN from it, so the chips always show what
+     the rows are under. Will, 2026-09-24.
+     TRAP T-a-reload-replays-the-readers-answers · TRAP T-one-query-one-owner */
   const FILTERS_KEY = '/filters/records';
   const headerBar = header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
   let restoring = true;
   let keepFrame = 0;
   const keep = () => {
     if (restoring) return;
-    // One write per frame, after every bar has reported.
+    // One write per frame, after every control has answered.
     cancelAnimationFrame(keepFrame);
     keepFrame = requestAnimationFrame(() => session?.set?.(FILTERS_KEY, {
-      view: currentView, header: headerBar?.answers, data: qft.answers,
+      view: currentView, query: source.query.applied,
     }));
   };
-  for (const bar of [headerBar, qft]) {
-    for (const type of ['quick-filter-change', 'filter-add', 'filter-remove']) {
-      bar?.addEventListener(type, keep, { signal });
-    }
-  }
+  for (const type of ['selection-change', 'scope-change']) source.addEventListener(type, keep, { signal });
+  for (const bar of [headerBar, qft]) bar?.addEventListener('quick-filter-change', keep, { signal });
+  /* The header's chips are named for the question, the Query for the field. */
+  const headerId = (field) =>
+    Object.keys(HEADER_FIELDS).find((id) => HEADER_FIELDS[id] === field) ?? field;
   const kept = session?.get?.(FILTERS_KEY);
   restored = (async () => {
     /* The grid's own column filters FIRST — the persisted snapshot put them on
-       the grid silently, and reading them back clears any field chip they do
-       not name, which must not undo the bars' replay below. */
+       the grid silently, and its chips must be on the bar before it is drawn. */
     syncColumns();
     await new Promise((r) => queueMicrotask(r));
-    if (kept?.view === startView) {
-      if (kept.header) await headerBar?.restoreAnswers(kept.header);
-      if (kept.data) await qft.restoreAnswers(kept.data);
+    if (kept?.view === startView && kept.query) {
+      // The grid's bar is bound to the `data` scope, so the source draws it.
+      await source.setQuery(kept.query);
+      const view = kept.query.scopes?.[VIEW_SCOPE];
+      if (view) {
+        await headerBar?.drawScope({
+          holds: view.holds.map(headerId),
+          readings: Object.fromEntries(Object.entries(view.readings).map(([f, r]) => [headerId(f), r])),
+        });
+      }
+      syncScopes();
     }
     restoring = false;
   })();

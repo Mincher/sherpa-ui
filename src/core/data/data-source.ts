@@ -16,6 +16,7 @@
  * - .timeField — The field holding each record's TIME, or undefined when the store has none.
  * - .state — The current view state.
  * - .query — The Query the rows are under. A copy.
+ * - .setQuery — Restore a whole Query — a reload, a trip away and back.
  * - .setState — Restore a whole view state — a saved view, a deep link, a reload.
  * - .result — The whole of the last load's answer.
  * - .rows — the rows of the last load — one page when paged
@@ -280,6 +281,33 @@ export class DataSource extends EventTarget {
   /** The Query the rows are under. A copy. TRAP T-one-query-one-owner */
   get query(): { applied: Query } {
     return { applied: structuredClone(this.#applied) };
+  }
+
+  /**
+   * Restore a whole Query — a reload, a trip away and back. Each bound control
+   * over a scope is DRAWN its slice; nothing replays a control. The named parts
+   * are left alone. Resolves once every control has drawn.
+   * TRAP T-one-query-one-owner · TRAP T-a-reload-replays-the-readers-answers
+   */
+  async setQuery(query: Query): Promise<void> {
+    if (query?.v !== 1 || typeof query.scopes !== 'object') {
+      report({ code: 'unknown-query', message: 'setQuery: not a v1 Query, so nothing was restored.' });
+      return;
+    }
+    const before = new Set(this.selectedFields);
+    this.#applied = structuredClone(query);
+    this.#rehome();
+    this.#recompose();
+    this.dispatchEvent(new CustomEvent('scope-change', { detail: { scopes: this.scopes } }));
+    for (const field of new Set([...before, ...this.selectedFields])) {
+      this.dispatchEvent(new CustomEvent('selection-change', { detail: { field } }));
+    }
+    const drawn: Array<void | Promise<void>> = [];
+    for (const [el, { scope }] of this.#bound) {
+      if (typeof scope !== 'string' || !el.drawScope) continue;
+      drawn.push(el.drawScope(structuredClone(this.#applied.scopes[scope] ?? { holds: [], readings: {} }), scope));
+    }
+    await Promise.all(drawn);
   }
 
   /** Restore a whole view state — a saved view, a deep link, a reload.
@@ -573,7 +601,7 @@ export class DataSource extends EventTarget {
        TRAP T-a-value-can-be-an-object */
     const declared = this.#domainByKey(field);
     const raws = picked.map((v) => declared.get(valueKey(v)) ?? v);
-    const next: FieldReading = { ...reading, picked: raws };
+    const next: FieldReading = { ...answerOf(reading), picked: raws };
     /* CONDITIONS count. A field answered only by rows — "starts with Go", or
        an or-chain over two owners — has no picked values and no typed text, so
        this deleted the reading and the filter never applied.
@@ -1317,6 +1345,15 @@ function mergeInto(el: Populatable, path: string, value: unknown): unknown {
   node[segments[segments.length - 1]!] = value;
   return host[DRAFT];
 }
+
+/** The ANSWER keys of a reading only — a bar's reading also carries its label
+ *  and every value it offers, which are facts, not what the reader chose. */
+function answerOf(reading: FieldReading): FieldReading {
+  const out: Record<string, unknown> = {};
+  for (const key of READING_KEYS) if (reading[key] !== undefined) out[key] = reading[key];
+  return out as FieldReading;
+}
+const READING_KEYS = ['picked', 'present', 'op', 'text', 'conditions', 'range', 'suspended'] as const;
 
 /** Write or remove an attribute. `undefined` removes, so CSS stops matching. */
 function setAttr(el: HTMLElement, name: string, value: string | undefined): void {
