@@ -44,6 +44,11 @@
   justify-content: stretch;
   column-gap: var(--sherpa-display-mode-space-md, 16px);
   row-gap: var(--sherpa-display-mode-space-xs, 8px);
+  /* A KEY, not a row of the page: across a 12-column card the three cells sat
+     a third of the page apart. Capped in rem, so it follows the text size, and
+     centred. Will, 2026-09-26. TRAP T-a-horizontal-legend-is-three-by-two */
+  max-inline-size: 40rem;
+  margin-inline: auto;
 }
 
 /* The rows that adopt the parent legend's tracks. An ENTRY takes the first

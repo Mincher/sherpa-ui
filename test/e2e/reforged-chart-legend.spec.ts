@@ -850,3 +850,29 @@ test('a second click on the breakdown control CLOSES it', async ({ page }) => {
   expect(second).toBe(false);
   expect(third).toBe(true);
 });
+
+/**
+ * A HORIZONTAL legend is a KEY, capped and centred — across a 12-column card
+ * its cells sat a third of the page apart. Narrow, it fills. Will, 2026-09-26.
+ * TRAP T-a-horizontal-legend-is-three-by-two
+ */
+test('a horizontal legend is capped and centred, and fills a narrow box', async ({ page }) => {
+  const read = (width: number) => page.evaluate(async (w) => {
+    const el = await window.__mount<HTMLElement & { populate(d: unknown): void }>(
+      'sherpa-chart-legend', undefined,
+      { 'data-orientation': 'horizontal', style: `inline-size: ${w}px` });
+    el.populate([{ label: 'Free', value: 10 }, { label: 'Pro', value: 20 }, { label: 'Team', value: 30 }]);
+    await window.__settled();
+    const host = el.getBoundingClientRect();
+    const grid = el.shadowRoot!.querySelector('.legend')!.getBoundingClientRect();
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    return { host: host.width, grid: grid.width, rem,
+      left: Math.round(grid.left - host.left), right: Math.round(host.right - grid.right) };
+  }, width);
+
+  const wide = await read(1400);
+  expect(wide.grid).toBeLessThanOrEqual(40 * wide.rem + 1);
+  expect(Math.abs(wide.left - wide.right)).toBeLessThanOrEqual(1);
+  const narrow = await read(300);
+  expect(narrow.grid).toBeCloseTo(narrow.host, 0);
+});

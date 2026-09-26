@@ -11556,6 +11556,11 @@ three equal cells are what keep the second row's entries under the first row's.
 Entries are centred in their cell, since a two-row grid leaves a cell taller
 than its entry wherever a label wraps.
 
+**And the grid is capped and centred.** Will, 2026-09-26: across a 12-column
+card the three cells sat a third of the page apart, too far to read as one
+key. `max-inline-size: 40rem` — rem, so it follows the text size, as the tip's
+`16rem` does — and `margin-inline: auto`. Narrower than that, it fills.
+
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.css`
 - Site: `test/e2e/reforged-chart-legend.spec.ts`
 

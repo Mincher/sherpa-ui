@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**50 open.** Reviewed 2026-09-26: one list (the draft `todo-filter-2609.md`
+**49 open.** Reviewed 2026-09-26: one list (the draft `todo-filter-2609.md`
 is merged in), 3 items culled or merged, the rest re-ordered. Numbers are ids,
 not order — the table IS the order.
 
@@ -20,64 +20,63 @@ not order — the table IS the order.
 |---:|---:|---|---|
 | | | **A — Quick wins** | |
 | 1 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
-| 2 | 65 | A horizontal legend has a max width, and is centred | quick |
 | | | **B — Bugs: the app says one thing and does another** | |
-| 3 | 41 | A conditional filter applies for Owner only | bug |
-| 4 | 63 | A conditions-only field shows the Conditional switch | bug |
-| 5 | 56 | A view change leaves a lit chip that filters nothing | bug |
-| 6 | 21e | A reload keeps a filter nothing on screen shows | bug |
-| 7 | 55 | The At risk view's own column filter never applies | bug |
-| 8 | 44 | A column heading's menu does not show what is set | bug |
-| 9 | 42 | A legend toggle filters the whole view | bug |
-| 10 | 61 | Add customer saves with required fields empty | bug |
-| 11 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
-| 12 | 45 | A picked date does not show in the chip | bug |
-| 13 | 16 | Favourite and Save apply to the Context, not the View | bug |
-| 14 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
+| 2 | 41 | A conditional filter applies for Owner only | bug |
+| 3 | 63 | A conditions-only field shows the Conditional switch | bug |
+| 4 | 56 | A view change leaves a lit chip that filters nothing | bug |
+| 5 | 21e | A reload keeps a filter nothing on screen shows | bug |
+| 6 | 55 | The At risk view's own column filter never applies | bug |
+| 7 | 44 | A column heading's menu does not show what is set | bug |
+| 8 | 42 | A legend toggle filters the whole view | bug |
+| 9 | 61 | Add customer saves with required fields empty | bug |
+| 10 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
+| 11 | 45 | A picked date does not show in the chip | bug |
+| 12 | 16 | Favourite and Save apply to the Context, not the View | bug |
+| 13 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
 | | | **C — Filters: Will's features** | |
-| 15 | 62 | Apply and Discard only for a REMOTE fetch; a debug flag spoofs one | feature |
-| 16 | 66 | The footer owns "nothing to save": Save and Cancel wait for a change | feature |
-| 17 | 46 | A PENDING state: changed, not yet applied | feature |
-| 18 | 60 | Once applied, a chip's badge shows the number of results | feature |
-| 19 | 49 | A preset conditional chip shows its conditions, read-only | feature |
-| 20 | 50 | A custom conditional chip shows its conditions, editable | feature |
-| 21 | 47 | More than 20 values: one chip, not a run | feature |
-| 22 | 48 | A child menu opens on hover or click of its row | feature |
-| 23 | 21c | A condition's matches must ALL highlight | feature |
-| 24 | 21f | "Send to view filters" | feature |
-| 25 | 21b | Which header chips carry over between views | feature |
-| 26 | 20b | The Date filter should be a view-scope date RANGE | feature |
-| 27 | 21d | EXPLORE — conditions for a DATE field | explore |
-| 28 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
+| 14 | 62 | Apply and Discard only for a REMOTE fetch; a debug flag spoofs one | feature |
+| 15 | 66 | The footer owns "nothing to save": Save and Cancel wait for a change | feature |
+| 16 | 46 | A PENDING state: changed, not yet applied | feature |
+| 17 | 60 | Once applied, a chip's badge shows the number of results | feature |
+| 18 | 49 | A preset conditional chip shows its conditions, read-only | feature |
+| 19 | 50 | A custom conditional chip shows its conditions, editable | feature |
+| 20 | 47 | More than 20 values: one chip, not a run | feature |
+| 21 | 48 | A child menu opens on hover or click of its row | feature |
+| 22 | 21c | A condition's matches must ALL highlight | feature |
+| 23 | 21f | "Send to view filters" | feature |
+| 24 | 21b | Which header chips carry over between views | feature |
+| 25 | 20b | The Date filter should be a view-scope date RANGE | feature |
+| 26 | 21d | EXPLORE — conditions for a DATE field | explore |
+| 27 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
 | | | **D — The filter family, finished** | |
-| 29 | 38 | One model, one builder, one owner — what is left | refactor |
-| 30 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
+| 28 | 38 | One model, one builder, one owner — what is left | refactor |
+| 29 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | | | **E — Views and navigation** | |
-| 31 | 15 | Save a View, and the Save split-button menu | feature |
-| 32 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
-| 33 | 34 | Figma: use the Navigation terms | figma |
+| 30 | 15 | Save a View, and the Save split-button menu | feature |
+| 31 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
+| 32 | 34 | Figma: use the Navigation terms | figma |
 | | | **F — Data states and charts** | |
-| 34 | 58 | Loading, empty and error states in a container | feature |
-| 35 | 9b | A Data Viz header, for metrics and chart containers | component |
-| 36 | 14 | An example of real-time data | feature |
-| 37 | 59 | EXPLORE, later — Will's own loading pattern | explore |
+| 33 | 58 | Loading, empty and error states in a container | feature |
+| 34 | 9b | A Data Viz header, for metrics and chart containers | component |
+| 35 | 14 | An example of real-time data | feature |
+| 36 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | | | **G — Overlay panels** | |
-| 38 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
-| 39 | 23 | A focused grid row opens a details panel | feature |
+| 37 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
+| 38 | 23 | A focused grid row opens a details panel | feature |
 | | | **H — The accessibility gate** | |
-| 40 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
+| 39 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
 | | | **I — The big builds** | |
-| 41 | 25 | `sherpa-layout-canvas` + minimap | component |
-| 42 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
-| 43 | 27 | A consumer can supply their OWN templates and CSS | feature |
+| 40 | 25 | `sherpa-layout-canvas` + minimap | component |
+| 41 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
+| 42 | 27 | A consumer can supply their OWN templates and CSS | feature |
 | | | **J — Tidy-ups and renames** | |
-| 44 | 11 | `sherpa-group`: what is left | tidy |
-| 45 | 28 | A Figma component is NOT always a web component | tidy |
-| 46 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
-| 47 | 33 | Density as step offsets, and a breakpoint step | tokens |
-| 48 | 36 | CSS: compiled where it should inherit? | tidy |
-| 49 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
-| 50 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
+| 43 | 11 | `sherpa-group`: what is left | tidy |
+| 44 | 28 | A Figma component is NOT always a web component | tidy |
+| 45 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| 46 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| 47 | 36 | CSS: compiled where it should inherit? | tidy |
+| 48 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| 49 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 
 **Why this order.**
 
@@ -100,13 +99,6 @@ not order — the table IS the order.
 ---
 
 ## A — Quick wins
-
-### `[ ]` 65 — A horizontal legend has a max width, and is centred
-
-Will, 2026-09-26: a horizontal `sherpa-chart-legend` spreads its entries across
-a whole 12-column container — far too wide to read as one key. Give it a
-max width and centre it horizontally in its container. A token for the width,
-never a hand-typed px; check it in the Dashboard's wide charts.
 
 ### `[ ]` 64 — A collapsed accordion section fills with the down (+2) surface
 
@@ -875,6 +867,7 @@ One line each. The detail is in git and in the trap named.
 - Toolbar icon actions named in Will's words: Suggest filters, Reset all filters, View as filter panel, Add to / Remove from Favorites, Save view options
 - 17: no breadcrumb trail on Records or Assistant — moving between Contexts is the nav's to show
 - 57: a shell panel area is exactly three grid columns wide, worked out in CSS; the shell's panel areas stay — `T-the-shell-owns-the-panel-areas`
+- 65: a horizontal legend is capped at 40rem and centred; narrow, it fills — `T-a-horizontal-legend-is-three-by-two`
 
 **Culled or merged in the 2026-09-26 review**
 - 13, a sparkline did not follow its record deltas — each tile's sparkline and its delta are ONE series now (`T-a-delta-is-derived-not-declared`)
