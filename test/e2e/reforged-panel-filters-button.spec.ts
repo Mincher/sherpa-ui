@@ -62,28 +62,31 @@ const SETUP = `
   const press = (host) => host.shadowRoot.querySelector('button').click();
 `;
 
-test('the Filters and Save filter buttons have their own row, under the heading', async ({ page }) => {
+test('one header row: the chevron leads the heading, and the buttons sit on the right', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     el.setAttribute('data-saveable', '');
     await settle();
     const box = scope();
-    const rect = (n) => { const b = n.getBoundingClientRect(); return { top: b.top, bottom: b.bottom, left: b.left }; };
+    const rect = (n) => { const b = n.getBoundingClientRect();
+      return { top: b.top, bottom: b.bottom, left: b.left, right: b.right, mid: (b.top + b.bottom) / 2 }; };
     return {
+      header: rect(box.shadowRoot.querySelector('.header')),
       heading: rect(box.shadowRoot.querySelector('.heading')),
       chevron: rect(box.shadowRoot.querySelector('.chevron')),
       add: rect(btn()),
       save: rect(box.querySelector('.scope-save')),
     };
-  })()`) as Record<string, { top: number; bottom: number; left: number }>;
+  })()`) as Record<string, { top: number; bottom: number; left: number; right: number; mid: number }>;
 
-  // A row of their own, BELOW the heading, starting where it starts.
-  expect(r['add']!.top).toBeGreaterThanOrEqual(r['heading']!.bottom);
-  expect(Math.abs(r['add']!.left - r['heading']!.left)).toBeLessThanOrEqual(1);
+  // Will, 2026-09-26: the chevron LEFT of the label, the Filters button on its row.
+  expect(r['chevron']!.right).toBeLessThanOrEqual(r['heading']!.left);
+  expect(r['add']!.left).toBeGreaterThanOrEqual(r['heading']!.right);
+  expect(Math.abs(r['add']!.mid - r['heading']!.mid)).toBeLessThanOrEqual(2);
   expect(r['save']!.top).toBe(r['add']!.top);
   expect(r['save']!.left).toBeGreaterThan(r['add']!.left);
-  // The chevron stays on the heading's row.
-  expect(r['chevron']!.bottom).toBeLessThanOrEqual(r['add']!.top);
+  // …at the header's right edge.
+  expect(r['header']!.right - r['save']!.right).toBeLessThanOrEqual(12);
 });
 
 test('open, it is the whole list; shut, it leads with what the scope hides', async ({ page }) => {

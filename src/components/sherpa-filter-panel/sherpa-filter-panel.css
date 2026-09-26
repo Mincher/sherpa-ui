@@ -180,16 +180,12 @@
    POSITION, and a hidden first child still counts.
    TRAP T-a-hidden-sibling-still-counts-as-first-child */
 
-/* THE SCOPE'S BUTTONS get a row of their own, under the heading: beside it
-   they crowded the title. Will, 2026-09-25. */
-.scope::part(header) {
-  flex-wrap: wrap;
-  row-gap: var(--sherpa-display-mode-space-xs, 8px);
-}
-.scope::part(actions) {
-  order: 1;
-  flex-basis: 100%;
-}
+/* ONE ROW: the chevron LEADS the heading, and the scope's buttons sit on the
+   right. Will, 2026-09-26. The chevron has no part, so the two parts after it
+   are reordered instead. Centred: a scope has no description row. */
+.scope::part(header) { align-items: center; }
+.scope::part(titles) { order: 1; }
+.scope::part(actions) { order: 2; }
 
 .scope-actions {
   display: flex;
