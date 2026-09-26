@@ -462,8 +462,10 @@ export class SherpaFilterPanel extends SherpaElement {
     box.setAttribute('data-field', id);
     const title = box.querySelector('.field-title');
     if (title) title.textContent = label;
-    // A section is not a field: nothing here to clear, remove or condition.
+    /* A section is not a field: nothing here to clear, remove or condition.
+       Group and Sort ARRANGE rows; they never filter. Will, 2026-09-26. */
     box.querySelector('.field-acts')?.remove();
+    box.querySelector('.field-custom')?.remove();
     return { box, values: box.querySelector('.field-values') as HTMLElement };
   }
 

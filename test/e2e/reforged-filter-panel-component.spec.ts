@@ -61,8 +61,11 @@ test('a scope draws its presets, its fields, and nothing it cannot', async ({ pa
         .filter((a) => !!sr.querySelector('.field[data-field="owner"] .field-' + a)),
       statusActions: ['custom', 'clear', 'remove']
         .filter((a) => !!sr.querySelector('.field[data-field="status"] .field-' + a)),
-      presetActions: ['clear', 'remove']
+      presetActions: ['custom', 'clear', 'remove']
         .filter((a) => !!sr.querySelector('.field[data-field="presets"] .field-' + a)),
+      // Group and Sort ARRANGE; a condition means nothing to them.
+      organiseActions: ['custom', 'clear', 'remove']
+        .filter((a) => !!sr.querySelector('.field[data-field="organise"] .field-' + a)),
       canAdd: q('.scope[data-can-add]').map((s) => s.getAttribute('data-scope')),
       emptyScopes: q('.scope-empty').length,
     };
@@ -87,6 +90,7 @@ test('a scope draws its presets, its fields, and nothing it cannot', async ({ pa
   expect(r['statusActions']).toEqual(['clear']);
   // A PRESETS section has no field to clear or remove.
   expect(r['presetActions']).toEqual([]);
+  expect(r['organiseActions']).toEqual([]);
 
   expect(r['canAdd']).toEqual(['data']);
   // An empty scope SAYS SO; absent, it reads as a bug rather than an answer.
