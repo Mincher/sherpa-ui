@@ -89,7 +89,7 @@ table IS the order.
 
 ---
 
-## A — Bugs that make the app LIE
+## B — The foundation: design, then build
 
 ### `[ ]` 73 — EXPLORE: one compiled QUERY, built as the reader sets it up, run on Apply
 
