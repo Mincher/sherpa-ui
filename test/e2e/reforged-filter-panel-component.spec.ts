@@ -218,6 +218,36 @@ test('the condition button flags the field and hides its chips', async ({ page }
 });
 
 /**
+ * A FIELD'S HEADER IS ONE HEIGHT, with or without its buttons, so the column
+ * does not jump as Clear comes and goes. A token gap sits under it.
+ * Will, 2026-09-26.
+ */
+test('a field header keeps one height with or without its buttons, and a gap under it', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const shown = (e) => e.getClientRects().length > 0;
+    const read = () => q('.field').filter(shown).map((f) => {
+      const head = f.querySelector('.field-head').getBoundingClientRect();
+      const next = [...f.children].find((c) => !c.classList.contains('field-head') && shown(c));
+      const acts = f.querySelector('.field-acts');
+      return {
+        field: f.dataset.field,
+        acts: !!acts && shown(acts),
+        height: Math.round(head.height),
+        gap: next ? Math.round(next.getBoundingClientRect().top - head.bottom) : null,
+      };
+    });
+    return read();
+  })()`) as { field: string; acts: boolean; height: number; gap: number | null }[];
+
+  // Both kinds are here, so the height is tested across the change.
+  expect(r.some((f) => f.acts)).toBe(true);
+  expect(r.some((f) => !f.acts)).toBe(true);
+  expect(new Set(r.map((f) => f.height)).size).toBe(1);
+  for (const f of r) if (f.gap !== null) expect(f.gap).toBe(8);
+});
+
+/**
  * ONE SEARCH, ACROSS EVERY VALUE. It hides value chips, never field labels: a
  * reader searching "gold" still needs to see that Gold is a Tier.
  */
@@ -550,4 +580,54 @@ test('opening and closing the panel leaves a chip\'s own menu alone', async ({ p
   expect(r.afterClose).toBe(true);
   // And the panel still has a body the second time.
   expect(r.afterReopen).toBe(true);
+});
+
+/**
+ * APPLY AND DISCARD WAIT FOR A CHANGE. Will, 2026-09-26: "The Apply & Discard
+ * buttons should be inactive unless there are changes to the filters to apply
+ * or discard." A change is any field's whole answer — picks, rows or text —
+ * against the last Apply. TRAP T-apply-and-discard-wait-for-a-change
+ */
+test('Apply and Discard are off until a field changes, and off again after either', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const off = () => ({
+      apply: sr.querySelector('.apply').hasAttribute('disabled'),
+      discard: sr.querySelector('.discard').hasAttribute('disabled'),
+    });
+    const wait = () => new Promise((r) => setTimeout(r, 120));
+    const chip = (field, value) => sr.querySelector('.field[data-field="' + field + '"] .value[data-value="' + value + '"]');
+    const opened = off();
+
+    chip('status', 'churned').shadowRoot.querySelector('.body').click();
+    await wait();
+    const picked = off();
+    press('.discard');
+    await wait();
+    const discarded = { ...off(), churned: chip('status', 'churned').hasAttribute('data-current') };
+
+    // A CONDITION typed in a row is a change too.
+    press('.field[data-field="owner"] .field-custom');
+    await wait();
+    const menu = sr.querySelector('.field[data-field="owner"] sherpa-menu');
+    const row = menu.shadowRoot.querySelector('.condition-row');
+    const cond = row.querySelector('.condition');
+    cond.value = 'contains';
+    cond.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+    await wait();
+    const text = row.querySelector('.condition-value');
+    text.value = 'Da';
+    text.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+    await wait();
+    const typed = off();
+    press('.apply');
+    await wait();
+    return { opened, picked, discarded, typed, applied: off() };
+  })()`) as Record<string, Record<string, boolean>>;
+
+  expect(r['opened']).toEqual({ apply: true, discard: true });
+  expect(r['picked']).toEqual({ apply: false, discard: false });
+  expect(r['discarded']).toEqual({ apply: true, discard: true, churned: false });
+  expect(r['typed']).toEqual({ apply: false, discard: false });
+  expect(r['applied']).toEqual({ apply: true, discard: true });
 });

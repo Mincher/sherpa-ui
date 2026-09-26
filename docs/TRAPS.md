@@ -13263,3 +13263,23 @@ one nobody tests.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `examples/contexts/records.js`
 
+
+### T-apply-and-discard-wait-for-a-change
+
+**Apply and Discard are off until a field differs from the last Apply.** Will,
+2026-09-26. The panel keeps a snapshot of every field's reading — picks,
+condition rows, typed text — taken at open, at Apply, and when another control
+steers a field. Any edit compares each field's reading against it; one
+difference turns both buttons on, and Apply or Discard turns them off again.
+
+Two things this changed. Discard now puts back condition rows and typed text,
+not only picks — before, it restored picks and left a typed condition standing.
+And an Apply with nothing changed can no longer be pressed, so a test that
+pressed one to prove "nothing happens" now asserts the button is off.
+
+A field that only ARRANGES (group, sort) is left out of the snapshot; it acts
+at once and has nothing to apply.
+
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+- Site: `test/e2e/reforged-panel-apply.spec.ts`

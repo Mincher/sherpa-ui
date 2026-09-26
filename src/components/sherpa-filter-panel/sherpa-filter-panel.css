@@ -87,8 +87,14 @@
 .field {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+  row-gap: var(--sherpa-display-mode-space-xs, 8px);
 }
-.field-head::part(row) { align-items: flex-end; }
+/* The row is ALWAYS one sm button tall, so it does not jump as its buttons
+   come and go. */
+.field-head::part(row) {
+  align-items: flex-end;
+  min-block-size: var(--sherpa-display-mode-space-xl, 24px);
+}
 /* The type scale's small class sets the size; caps and light, as a metric's title. */
 .field-title {
   margin: 0;

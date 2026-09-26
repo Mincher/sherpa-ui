@@ -165,8 +165,9 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** Every drawn field, by `${scope}:${id}`. */
   #held = new Map<string, Held>();
-  /** What Apply last committed, so Discard can restore it. */
-  #baseline = new Map<string, string[]>();
+  /** What Apply last committed, per field — what Discard restores, and what
+   *  "nothing to apply" is measured against. */
+  #applied = new Map<string, FieldReading>();
   /** The scopes as last given. */
   #scopes: PanelScope[] = [];
   /** Each scope's Filters list: the removable fields it holds, then what it may add. */
@@ -188,6 +189,10 @@ export class SherpaFilterPanel extends SherpaElement {
     this.$('.scopes')?.addEventListener('quick-filter-click', this.#onValueClick);
     this.$('.scopes')?.addEventListener('menu-change', this.#onAddCommit);
     this.$('.scopes')?.addEventListener('menu-select', this.#onSavedAction);
+    // Rows and bodies change their answer without a chip click.
+    for (const type of ['condition-change', 'input', 'change', 'menu-change']) {
+      this.$('.scopes')?.addEventListener(type, this.#onEdited);
+    }
     // A SHUT scope's Filters menu leads with what it hides. TRAP T-a-shut-scope-folds-like-a-bar
     this.$('.scopes')?.addEventListener('toggle', this.#onScopeToggle);
     // CLICK, not hover: a passing pointer would drill the list out from under it.
@@ -249,16 +254,21 @@ export class SherpaFilterPanel extends SherpaElement {
     for (const [, held] of this.#held) {
       // GROUP and SORT arrange rows; they are not part of WHICH rows.
       if (arranges(kindOf(held.def))) continue;
-      const menu = held.menu as (HTMLElement & {
-        conditions?: FieldCondition[]; conditionValue?: string }) | undefined;
-      const conditions = menu?.conditions ?? [];
-      const reading: FieldReading = { picked: this.#picked(held) };
-      if (conditions.length) reading.conditions = conditions;
-      const typed = (menu?.conditionValue ?? '').trim();
-      if (typed) reading.text = typed;
-      (out[held.scope] ??= {})[held.def.id] = reading;
+      (out[held.scope] ??= {})[held.def.id] = this.#readingOf(held);
     }
     return out;
+  }
+
+  /** One field's whole answer: its picks, its condition rows, its typed text. */
+  #readingOf(held: Held): FieldReading {
+    const menu = held.menu as (HTMLElement & {
+      conditions?: FieldCondition[]; conditionValue?: string }) | undefined;
+    const conditions = menu?.conditions ?? [];
+    const reading: FieldReading = { picked: this.#picked(held) };
+    if (conditions.length) reading.conditions = conditions;
+    const typed = (menu?.conditionValue ?? '').trim();
+    if (typed) reading.text = typed;
+    return reading;
   }
 
   /**
@@ -285,7 +295,7 @@ export class SherpaFilterPanel extends SherpaElement {
           }
         }
       }
-      this.#baseline.set(key, this.#picked(held));
+      this.#applied.set(key, this.#readingOf(held));
       this.#syncAnswered(held);
       return;
     }
@@ -907,10 +917,40 @@ export class SherpaFilterPanel extends SherpaElement {
       .filter(Boolean);
   }
 
-  /** Remember every pick, so Discard can go back to it. */
+  /** Remember every field's answer, so Discard can go back to it. */
   #snapshot(): void {
-    this.#baseline = new Map([...this.#held].map(([key, held]) => [key, this.#picked(held)]));
+    this.#applied = new Map([...this.#held]
+      .filter(([, held]) => !arranges(kindOf(held.def)))
+      .map(([key, held]) => [key, this.#readingOf(held)]));
+    this.#syncDirty();
   }
+
+  /**
+   * Apply and Discard are OFF while no field differs from the last Apply.
+   * Will, 2026-09-26. Group and Sort apply as they are picked, so they never count.
+   * TRAP T-apply-and-discard-wait-for-a-change
+   */
+  #syncDirty(): void {
+    const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
+    const dirty = [...this.#applied].some(([key, applied]) => {
+      const held = this.#held.get(key);
+      return !!held && !same(this.#readingOf(held), applied);
+    });
+    this.$('.apply')?.toggleAttribute('disabled', !dirty);
+    this.$('.discard')?.toggleAttribute('disabled', !dirty);
+  }
+
+  /** A body or a condition row changed: re-read, once its rows have settled. */
+  #onEdited = (): void => {
+    if (this.#editFrame != null) return;
+    this.#editFrame = requestAnimationFrame(() => {
+      this.#editFrame = null;
+      this.#syncDirty();
+    });
+  };
+
+  /** The pending re-read after an edit. */
+  #editFrame: number | null = null;
 
   /* ── Acting ───────────────────────────────────────────────────────── */
 
@@ -1033,6 +1073,7 @@ export class SherpaFilterPanel extends SherpaElement {
     held.box.toggleAttribute('data-answered', ticked || custom);
     this.#syncSaveable();
     this.#syncScopeFilters(held.scope);
+    this.#syncDirty();
   }
 
   /** Every field, after anything that could have changed an answer. */
@@ -1176,15 +1217,26 @@ export class SherpaFilterPanel extends SherpaElement {
     });
   };
 
-  /** DISCARD reverts to the last Apply, which is why it is not Cancel. */
+  /** DISCARD reverts to the last Apply — picks, rows and text — which is why it is not Cancel. */
   #onDiscard = (): void => {
-    for (const [key, held] of this.#held) {
-      const want = new Set(this.#baseline.get(key) ?? []);
+    for (const [key, applied] of this.#applied) {
+      const held = this.#held.get(key);
+      if (!held) continue;
+      const want = new Set(applied.picked ?? []);
       for (const one of held.values.querySelectorAll<HTMLElement>('.value')) {
-        one.toggleAttribute('data-current', want.has(one.dataset['value'] ?? ''));
+        if (this.#heldOfChip(one) === held) {
+          one.toggleAttribute('data-current', want.has(one.dataset['value'] ?? ''));
+        }
       }
+      const menu = held.menu as (HTMLElement & {
+        conditions?: readonly FieldCondition[]; conditionValue?: string }) | undefined;
+      if (!menu) continue;
+      const rows = applied.conditions ?? [];
+      if (JSON.stringify(menu.conditions ?? []) !== JSON.stringify(rows)) menu.conditions = rows;
+      if ((menu.conditionValue ?? '').trim() !== (applied.text ?? '')) menu.conditionValue = applied.text ?? '';
     }
     this.#syncAllAnswered();
+    this.#onEdited();
   };
 
   /** The header's switch back to the toolbars. */

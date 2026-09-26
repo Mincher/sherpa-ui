@@ -104,8 +104,8 @@ test('the open panel follows a field another control changes, and keeps the read
   await expect.poll(() => ticked('tier')).toEqual([]);
   expect(await ticked('status')).toEqual(['trial']);
 
-  // APPLY, with nothing touched, changes nothing.
-  await apply(page);
+  // Nothing is left to apply, so APPLY is off. TRAP T-apply-and-discard-wait-for-a-change
+  await expect(page.locator('#filter-panel .foot .apply')).toHaveAttribute('disabled', '');
   await page.waitForTimeout(400);
   expect(await total(page)).toBe(narrowed);
 });
