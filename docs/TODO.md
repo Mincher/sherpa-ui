@@ -12,82 +12,94 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**51 open.** Pruned 2026-09-26: 10 items were done or stale and are gone, and
-the audit that checked them found 3 new bugs. Numbers are ids, not order — the
-table IS the order. Quick wins first, then bugs, then features, then the big
-builds and the tidy-ups.
+**49 open.** Reviewed 2026-09-26: one list (the draft `todo-filter-2609.md`
+is merged in), 3 items culled or merged, the rest re-ordered. Numbers are ids,
+not order — the table IS the order.
 
 | Pri | # | Item | Kind |
 |---:|---:|---|---|
-| | | **A — Filters: Will's list, 2026-09-26** | |
+| | | **A — Quick wins** | |
 | 1 | 40 | A switch has no accessible name | quick |
-| 2 | 57 | The filter panel's width is a hard-coded 400px | quick |
-| 3 | 54 | An Added Filters row drills only if it has many values | bug |
-| 4 | 41 | A conditional filter applies for Owner only | bug |
-| 5 | 42 | A legend toggle filters the whole view | bug |
-| 6 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
-| 7 | 44 | A column heading's menu does not show what is set | bug |
-| 8 | 45 | A picked date does not show in the chip | bug |
-| 9 | 55 | The At risk view's own column filter never applies | bug |
-| 10 | 56 | A view change leaves a lit chip that filters nothing | bug |
-| 11 | 21e | A reload keeps a filter nothing on screen shows | bug |
-| 12 | 61 | Add customer saves with required fields empty | bug |
-| 13 | 46 | A PENDING state: changed, not yet applied | feature |
-| 14 | 60 | Once applied, a chip's badge shows the number of results | feature |
-| 15 | 47 | More than 20 values: one chip, not a run | feature |
-| 16 | 48 | A child menu opens on hover or click of its row | feature |
-| 17 | 49 | A preset conditional chip shows its conditions, read-only | feature |
-| 18 | 50 | A custom conditional chip shows its conditions, editable | feature |
-| 19 | 51 | NOTE — warning and critical, for a condition with a problem | note |
-| 20 | 21c | A condition's matches must ALL highlight | feature |
-| 21 | 21f | "Send to view filters" | feature |
-| 22 | 21b | Which header chips carry over between views | feature |
-| 23 | 20b | The Date filter should be a view-scope date RANGE | feature |
-| 24 | 21d | EXPLORE — conditions for a DATE field | explore |
-| 25 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
-| | | **B — The filter family, finished** | |
-| 26 | 38 | One model, one builder, one owner — what is left | refactor |
-| 27 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
-| | | **C — Views and navigation** | |
-| 28 | 15 | Save a View, and the Save split-button menu | feature |
-| 29 | 16 | Favourite and Save apply to the View, not the Context | bug |
-| 30 | 17 | Breadcrumbs are for workflow, not for the nav | feature |
+| 2 | 17 | Breadcrumbs are for workflow, not for the nav | quick |
+| 3 | 54 | An Added Filters row drills only if it has many values | quick |
+| 4 | 57 | The filter panel's width is a hard-coded 400px | quick |
+| | | **B — Bugs: the app says one thing and does another** | |
+| 5 | 41 | A conditional filter applies for Owner only | bug |
+| 6 | 56 | A view change leaves a lit chip that filters nothing | bug |
+| 7 | 21e | A reload keeps a filter nothing on screen shows | bug |
+| 8 | 55 | The At risk view's own column filter never applies | bug |
+| 9 | 44 | A column heading's menu does not show what is set | bug |
+| 10 | 42 | A legend toggle filters the whole view | bug |
+| 11 | 61 | Add customer saves with required fields empty | bug |
+| 12 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
+| 13 | 45 | A picked date does not show in the chip | bug |
+| 14 | 16 | Favourite and Save apply to the Context, not the View | bug |
+| | | **C — Filters: Will's features** | |
+| 15 | 62 | Apply and Discard only for a REMOTE fetch; a debug flag spoofs one | feature |
+| 16 | 46 | A PENDING state: changed, not yet applied | feature |
+| 17 | 60 | Once applied, a chip's badge shows the number of results | feature |
+| 18 | 49 | A preset conditional chip shows its conditions, read-only | feature |
+| 19 | 50 | A custom conditional chip shows its conditions, editable | feature |
+| 20 | 47 | More than 20 values: one chip, not a run | feature |
+| 21 | 48 | A child menu opens on hover or click of its row | feature |
+| 22 | 21c | A condition's matches must ALL highlight | feature |
+| 23 | 21f | "Send to view filters" | feature |
+| 24 | 21b | Which header chips carry over between views | feature |
+| 25 | 20b | The Date filter should be a view-scope date RANGE | feature |
+| 26 | 21d | EXPLORE — conditions for a DATE field | explore |
+| 27 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
+| | | **D — The filter family, finished** | |
+| 28 | 38 | One model, one builder, one owner — what is left | refactor |
+| 29 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
+| | | **E — Views and navigation** | |
+| 30 | 15 | Save a View, and the Save split-button menu | feature |
 | 31 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
 | 32 | 34 | Figma: use the Navigation terms | figma |
-| | | **D — Data states and charts** | |
+| | | **F — Data states and charts** | |
 | 33 | 58 | Loading, empty and error states in a container | feature |
-| 34 | 13 | A sparkline does not follow its record deltas | bug |
+| 34 | 9b | A Data Viz header, for metrics and chart containers | component |
 | 35 | 14 | An example of real-time data | feature |
-| 36 | 9b | A Data Viz header, for metrics and chart containers | component |
-| 37 | 59 | EXPLORE, later — Will's own loading pattern | explore |
-| | | **E — Overlay panels** | |
-| 38 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
-| 39 | 23 | A focused grid row opens a details panel | feature |
-| | | **F — The accessibility gate** | |
-| 40 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
-| | | **G — The big builds** | |
-| 41 | 25 | `sherpa-layout-canvas` + minimap | component |
-| 42 | 26 | A `Grouped` mode for the content area | feature |
-| 43 | 35 | Layout grid: plain grid templates? | explore |
-| 44 | 27 | A consumer can supply their OWN templates and CSS | feature |
-| | | **H — Tidy-ups and renames** | |
-| 45 | 11 | `sherpa-group`: what is left | tidy |
-| 46 | 28 | A Figma component is NOT always a web component | tidy |
-| 47 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
-| 48 | 33 | Density as step offsets, and a breakpoint step | tokens |
-| 49 | 36 | CSS: compiled where it should inherit? | tidy |
-| 50 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
-| 51 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
+| 36 | 59 | EXPLORE, later — Will's own loading pattern | explore |
+| | | **G — Overlay panels** | |
+| 37 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
+| 38 | 23 | A focused grid row opens a details panel | feature |
+| | | **H — The accessibility gate** | |
+| 39 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
+| | | **I — The big builds** | |
+| 40 | 25 | `sherpa-layout-canvas` + minimap | component |
+| 41 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
+| 42 | 27 | A consumer can supply their OWN templates and CSS | feature |
+| | | **J — Tidy-ups and renames** | |
+| 43 | 11 | `sherpa-group`: what is left | tidy |
+| 44 | 28 | A Figma component is NOT always a web component | tidy |
+| 45 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| 46 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| 47 | 36 | CSS: compiled where it should inherit? | tidy |
+| 48 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| 49 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 
-**Why this order.** A is Will's live list, and he tests on the running app as
-each lands. B comes before C–G because two of A's bugs (41, 44) are two views
-of one field disagreeing — the class of bug 38 exists to end. F sits after the
-work that changes markup, so its report does not go stale, and before G, so
-new components must pass it. 29 is last: it touches every import.
+**Why this order.**
+
+1. **A — quick wins.** Each is under an hour and needs no design. 57 needs one
+   answer from Will first: 3 columns or 4.
+2. **B — bugs, the ones that LIE first.** A chip lit that filters nothing, or
+   rows filtered by something no chip shows, teaches a reader to distrust
+   every filter. 41–21e are that. Five of them are one cause — two controls
+   holding one field — so fix them as 38 step 3 (see 38), not as patches.
+3. **C — Will's filter features, in dependency order.** Remote-only Apply
+   (62) before pending (46), since it decides which fields can pend; pending
+   before result counts (60), since a pending chip has no count yet; the read-only
+   `fx` menu (49) before the editable one (50); 56 before 21b; the date
+   formatter (45) before the date range (20b) before date conditions (21d).
+4. **D — the rest of the filter family**, once B has moved what it can.
+5. **E–G** are independent of each other; do them in any order.
+6. **H — the accessibility gate** comes after the work that changes markup, so
+   its report does not go stale, and before I, so new components must pass it.
+7. **I and J last.** 29 dead last: it touches every import.
 
 ---
 
-## A — Filters: Will's list, 2026-09-26
+## A — Quick wins
 
 ### `[ ]` 40 — A switch has no accessible name
 
@@ -95,6 +107,25 @@ new components must pass it. 29 is last: it touches every import.
 input, and its visible text is a sibling span. So the Range and Conditional
 switches are unnamed to a screen reader. Mirror `aria-label` onto the input,
 or label the input by the text beside it.
+
+### `[ ]` 17 — Breadcrumbs are for workflow, not for the nav
+
+Breadcrumbs must not show movement between Contexts — the nav does that. They
+are for a workflow redirect or a drilldown, e.g. a link in a grid cell opens a
+details Context.
+
+**Still wrong, measured 2026-09-26, and small.** Records and Assistant set a
+`Home › Records` / `Home › Assistant` trail (`examples/contexts/records.js`,
+`chat.js`) — Home is the Dashboard Context, so the trail IS nav movement.
+Drop both; Dashboard already sets `[]`. The first real trail comes with a
+drilldown (23).
+
+### `[ ]` 54 — BUG: an Added Filters row drills only if it has many values
+
+Will: a row in the Filters menu's Added section gets a child menu only when
+its field has MULTIPLE values. A one-value field (a preset, a toggle) has
+nothing to drill into. See `DRILL_FLAGS` and `filtersMenuItems()` in
+`src/core/ui/filters-button.ts`.
 
 ### `[ ]` 57 — The filter panel's width is a hard-coded 400px
 
@@ -104,12 +135,9 @@ Found by the 2026-09-26 audit. The panel area reads
 there says 4 columns; the original ask said 3. Settle 3 or 4, then derive the
 width from the layout grid's columns.
 
-### `[ ]` 54 — BUG: an Added Filters row drills only if it has many values
+---
 
-Will: a row in the Filters menu's Added section gets a child menu only when
-its field has MULTIPLE values. A one-value field (a preset, a toggle) has
-nothing to drill into. See `DRILL_FLAGS` and `filtersMenuItems()` in
-`src/core/ui/filters-button.ts`.
+## B — Bugs: the app says one thing and does another
 
 ### `[ ]` 41 — BUG: a conditional filter applies for Owner only
 
@@ -129,62 +157,6 @@ and every other field through `bar.setChipReading()`. That sets
 `menu.conditions` SILENTLY: the chip's value and tooltip are not redrawn
 (a probe read an empty tip and value after it). Owner working and the rest not
 is exactly that split.
-
-### `[ ]` 42 — BUG: a legend toggle filters the whole view
-
-Will: *"Chart legend toggling is behaving like View scope filtering. They
-should only affect their chart."* This was fixed on 2026-09-24
-(`bindSelection` `scope: 'component'`, `T-a-filter-applies-down-its-scope`),
-so something has undone it. Find what, and add the test that would have
-caught it.
-
-### `[ ]` 43 — BUG: the toolbar ⋯ overflow menu shows nothing
-
-The ⋮ `overflow` button ("More actions") opens no items. With every action
-overflowed, the menu is, from the top:
-
-- Suggest filters
-- Reset filters
-- Show Filter Panel
-- *(divider)*
-- Favorite
-- Save view
-- Save view as
-- Refresh view
-
-### `[ ]` 44 — BUG: a column heading's menu does not show what is set
-
-A heading's filter menu does not show the ticked values or the conditions
-already set on its field, at view or component scope. So a reader can apply a
-filter that contradicts the one in force. The heading must read the state the
-chip and the panel read — a second view ASKS the first.
-
-### `[ ]` 45 — BUG: a picked date does not show in the chip
-
-After a pick in the calendar the chip's right half stays empty. The formats:
-
-| picked | reads |
-|---|---|
-| one day | `DD Mmm YYYY` |
-| a range | `DD Mmm YYYY to DD Mmm YYYY` |
-| a range in one year | `DD Mmm to DD Mmm YYYY` |
-| a range in one month | `DD to DD Mmm YYYY` |
-
-Build ONE shared formatter in the data layer, DOM-free, beside
-`format-tick.ts`, so every date label reads the same. More formats will join
-it later; this is the first. (The range chip reads `02 Jan - 11 Dec, 2024`
-today — a third spelling.)
-
-### `[ ]` 55 — BUG: the At risk view's own column filter never applies
-
-Found by the 2026-09-26 audit. At risk sets
-`grid.setColumnFilter(status, ne churned)`, and 9ms later the selection
-handler (`examples/contexts/records.js` ~783) calls
-`setColumnFilter(status, null)`. So At risk shows 20 rows where it should show
-13. And a `col:status` chip stays on the bar, `data-current` with no value,
-still lit after going back to All customers.
-
-(The old bug — All → At risk → All left 1 page of 4 — is fixed.)
 
 ### `[ ]` 56 — BUG: a view change leaves a lit chip that filters nothing
 
@@ -220,6 +192,32 @@ SessionStore, not IdbStore: a reload keeps it, closing the tab does not. The
 panel-or-toolbar mode already persists this way (`session '/filters/mode'`,
 24c3a57c) — done.
 
+### `[ ]` 55 — BUG: the At risk view's own column filter never applies
+
+Found by the 2026-09-26 audit. At risk sets
+`grid.setColumnFilter(status, ne churned)`, and 9ms later the selection
+handler (`examples/contexts/records.js` ~783) calls
+`setColumnFilter(status, null)`. So At risk shows 20 rows where it should show
+13. And a `col:status` chip stays on the bar, `data-current` with no value,
+still lit after going back to All customers.
+
+(The old bug — All → At risk → All left 1 page of 4 — is fixed.)
+
+### `[ ]` 44 — BUG: a column heading's menu does not show what is set
+
+A heading's filter menu does not show the ticked values or the conditions
+already set on its field, at view or component scope. So a reader can apply a
+filter that contradicts the one in force. The heading must read the state the
+chip and the panel read — a second view ASKS the first.
+
+### `[ ]` 42 — BUG: a legend toggle filters the whole view
+
+Will: *"Chart legend toggling is behaving like View scope filtering. They
+should only affect their chart."* This was fixed on 2026-09-24
+(`bindSelection` `scope: 'component'`, `T-a-filter-applies-down-its-scope`),
+so something has undone it. Find what, and add the test that would have
+caught it.
+
 ### `[ ]` 61 — BUG: Add customer saves with required fields empty
 
 Will, 2026-09-26: the Add customer dialog let him save with Name and Email
@@ -242,13 +240,77 @@ data), the current view, the sort or the page can each hide it. Measure with
 `source.debugState().total` before and after. Then make the result visible —
 the toast says where the row went, or the grid shows it.
 
+### `[ ]` 43 — BUG: the toolbar ⋯ overflow menu shows nothing
+
+The ⋮ `overflow` button ("More actions") opens no items. With every action
+overflowed, the menu is, from the top:
+
+- Suggest filters
+- Reset filters
+- Show Filter Panel
+- *(divider)*
+- Favorite
+- Save view
+- Save view as
+- Refresh view
+
+### `[ ]` 45 — BUG: a picked date does not show in the chip
+
+After a pick in the calendar the chip's right half stays empty. The formats:
+
+| picked | reads |
+|---|---|
+| one day | `DD Mmm YYYY` |
+| a range | `DD Mmm YYYY to DD Mmm YYYY` |
+| a range in one year | `DD Mmm to DD Mmm YYYY` |
+| a range in one month | `DD to DD Mmm YYYY` |
+
+Build ONE shared formatter in the data layer, DOM-free, beside
+`format-tick.ts`, so every date label reads the same. More formats will join
+it later; this is the first. (The range chip reads `02 Jan - 11 Dec, 2024`
+today — a third spelling.)
+
+### `[ ]` 16 — BUG: Favourite and Save apply to the Context, not the View
+
+The ★ stars the Context (`examples/index.html` ~396, the `view-favorite`
+listener), so it applies to every View in that Context. It must apply to the
+one View.
+
+---
+
+## C — Filters: Will's features
+
+### `[ ]` 62 — Apply and Discard only for a REMOTE fetch; a debug flag spoofs one
+
+Will, 2026-09-26: *"Apply and Discard are actions that are only needed if
+there is a data fetch that reaches outside the Data Layer. If the change is
+just shaping data that's already in the data layer then there's no need."*
+
+- **The panel footer goes.** A field whose change needs a remote fetch shows a
+  small, ICON-ONLY Apply and Discard at the right of its section header row,
+  beside Clear. Every other field applies as it is changed.
+- **The same rule reaches a chip's menu.** Its Apply/Cancel (`commit: true`,
+  `data-commit` — Owner and Region today) is only for a remote field too.
+- **"Remote" is a fact about the FILTER**, so it is on the filter def and
+  asked of the data layer — never guessed by a component.
+
+**There is no remote source, so spoof one.** A DEBUG attribute/property on a
+filter pretends that its change fetches from a remote source — a delay, and
+optionally a failure. Sprinkle it into the example filters so both paths are
+always on screen. 58 (loading, empty and error states) reuses the same flag to
+drive its loading and failure states.
+
+Before 46: a pending state only exists on a field that has an Apply, and this
+item decides which fields those are. `T-apply-and-discard-wait-for-a-change`
+changes with it.
+
 ### `[ ]` 46 — A PENDING state: changed, not yet applied
 
 A chip that goes straight to active before its change is applied misleads the
 reader. Between the change and Apply, a chip is PENDING: an active purple
 BORDER, no fill. A conditional chip is the same — it turns green only once
-applied. Only a committing (Apply) field has a pending state; one that applies
-at once goes straight to active.
+applied. Only a committing (Apply) field has a pending state — after 62, that is a
+REMOTE one; a field that applies at once goes straight to active.
 
 A state is a pin, as data (`scripts/figma-data/state-pins.yaml`), not a
 colour rule in the chip. Check what the pin's surface resolves to first.
@@ -258,8 +320,8 @@ colour rule in the chip. Check what the pin's surface resolves to first.
 Will, 2026-09-26: when a filter change is APPLIED and its results are fetched,
 the chip's badge shows the NUMBER OF RESULTS. It replaces what the badge says
 today — a count of picks, or `fx` (`T-a-condition-badge-says-that-not-which`,
-which changes with it) — and it replaces 53's first ask, a count of
-conditions. The picks stay in the tip.
+which changes with it) — and it replaces Will's first ask, a count of
+conditions (the tip says that now). The picks stay in the tip.
 
 **Decided, Will 2026-09-26: the rows THIS chip's own answer matches** — not
 the whole filter's total, which would put one number on every chip. Counted
@@ -267,6 +329,25 @@ out of what the chip's scope can see: a component chip counts within the
 rows the View already allows. A pending chip (46) has no results yet, so it
 shows no number until Apply. Read the count from the source
 (`debugState().total` is the measure; the pager reports pages only).
+
+### `[ ]` 49 — A preset conditional chip shows its conditions, read-only
+
+A PRESET conditional chip (a saved filter the app ships) gets the `fx` button
+in the Success look. It opens a menu of its condition rows, read-only. It sits
+on the chip in the toolbar, in the section header in the panel, and on a column
+heading — only those three. Everywhere else a filter changes mode with the
+Conditional switch (done 2026-09-26).
+
+**Later, with 50:** Success is the look of a WORKING condition. Warning and
+critical are free for a condition that cannot apply, or a filter that failed
+to — Will's note, not asked for yet.
+
+### `[ ]` 50 — A custom conditional chip shows its conditions, editable
+
+The same `fx` button, with rows that can be edited. On a SAVED custom filter
+that is applied, an edit is a temporary DRAFT; the saved filter does not
+change. When the draft differs, the menu and the panel section header offer
+Save. Needs 49, and 46's pending look for the draft.
 
 ### `[ ]` 47 — More than 20 values: one chip, not a run
 
@@ -279,27 +360,6 @@ already needs: whether values EXPLODE into a run or stay behind a menu.
 Not from a caret button nested in the row: the whole row is the door, as in an
 OS menu. The panel's drill is click-only on purpose (a passing pointer drilled
 the list away), so give hover a short delay, or rule per host.
-
-### `[ ]` 49 — A preset conditional chip shows its conditions, read-only
-
-A PRESET conditional chip (a saved filter the app ships) gets the `fx` button
-in the Success look. It opens a menu of its condition rows, read-only. It sits
-on the chip in the toolbar, in the section header in the panel, and on a column
-heading — only those three. Everywhere else a filter changes mode with the
-Conditional switch (done 2026-09-26).
-
-### `[ ]` 50 — A custom conditional chip shows its conditions, editable
-
-The same `fx` button, with rows that can be edited. On a SAVED custom filter
-that is applied, an edit is a temporary DRAFT; the saved filter does not
-change. When the draft differs, the menu and the panel section header offer
-Save. Needs 49, and 46's pending look for the draft.
-
-### `[ ]` 51 — NOTE: warning and critical, for a condition with a problem
-
-Success is the look of a working condition. Warning and critical are free for
-a condition that cannot apply, or a filter that failed to. Not asked for yet;
-design it with 49 and 50.
 
 ### `[ ]` 21c — A condition's matches must ALL highlight
 
@@ -383,7 +443,7 @@ step 3, which puts scopes in the data layer.
 
 ---
 
-## B — The filter family, finished
+## D — The filter family, finished
 
 ### `[~]` 38 — One model, one builder, one owner: what is left
 
@@ -425,6 +485,12 @@ plan: the panel 898 → 1288 lines, the toolbar 1857 → 1982. Rules for the wor
 MOVE code, never rewrite it; delete the replaced path in the same commit; no
 helper with one caller; state the budget up front and report the actual.
 
+**Five bugs in B are this step, wearing different clothes** — 41, 44, 55, 56
+and 21e are each two controls holding one field and disagreeing, and four of
+them live in the glue `records.js` carries by hand. Fix each at its cause:
+where the cause is that glue, MOVE the state into the source rather than
+patching the glue. The bug fix and this step are then the same commit.
+
 **Then its own item:** a component DECLARES the data it needs (`data-field`,
 `data-aggregate`, `data-series-by`) and the source composes it. The example
 hand-builds 9 components through `as` closures over ~569 lines.
@@ -453,7 +519,7 @@ Will, 2026-09-25:
 
 ---
 
-## C — Views and navigation
+## E — Views and navigation
 
 ### `[ ]` 15 — Save a View, and the Save split-button menu
 
@@ -472,18 +538,6 @@ configuration — to a view definition. **Load** from the View chip's menu, in a
 |---|---|
 | `Save As` | A dialog. The user edits the View name, then saves or cancels. |
 | `Delete View` | Critical style. A dialog asks to confirm. ONLY a custom View. |
-
-### `[ ]` 16 — BUG: Favourite and Save apply to the Context, not the View
-
-The ★ stars the Context (`examples/index.html` ~396, the `view-favorite`
-listener), so it applies to every View in that Context. It must apply to the
-one View.
-
-### `[ ]` 17 — Breadcrumbs are for workflow, not for the nav
-
-Breadcrumbs must not show movement between Contexts — the nav does that. They
-are for a workflow redirect or a drilldown, e.g. a link in a grid cell opens a
-details Context.
 
 ### `[ ]` 17b — At the mobile breakpoint the nav becomes a menu
 
@@ -520,7 +574,7 @@ Each code-only difference is also in that component's `_divergence` block.
 
 ---
 
-## D — Data states and charts
+## F — Data states and charts
 
 ### `[ ]` 58 — Loading, empty and error states in a container
 
@@ -543,19 +597,9 @@ slot; `sherpa-loader` is the spinner. What is missing is the DATA LAYER
 driving them: a bound source reports loading, empty and failed, and the
 container of each bound component follows — so no host writes
 `data-loading` by hand. `LoadResult` and `report()` (38 step 5.5) are the
-shapes to reuse. "No data" must not fire on a filter that matched nothing —
+shapes to reuse, and 62's debug flag is how the example shows each state. "No data" must not fire on a filter that matched nothing —
 that is a different message ("No matches", clear the filter), and a zero-row
 view already reads as a broken filter.
-
-### `[ ]` 13 — A sparkline does not follow its record deltas
-
-The sparkline does not show the change in the record values, so it reads as
-disconnected from the total value above it.
-
-### `[ ]` 14 — An example of real-time data
-
-Data that changes in real time — WebSocket, or like it — coming through the
-data layer into a piece of content. Last of D: it proves 13 is really fixed.
 
 ### `[ ]` 9b — A Data Viz header, for metrics and chart containers
 
@@ -576,6 +620,11 @@ The title is NOT the normal heading: `content/font/body`, `weight/light`,
 **UPPERCASE**. The filter panel's field titles use the same look
 (`sherpa-text-small`, caps, light). Compose both Buttons from `sherpa-button`.
 
+### `[ ]` 14 — An example of real-time data
+
+Data that changes in real time — WebSocket, or like it — coming through the
+data layer into a piece of content. Last of D: it proves 13 is really fixed.
+
 ### `[ ]` 59 — EXPLORE, later: Will's own loading pattern
 
 Will, 2026-09-26, an alternative to 58 for later. Content is never replaced:
@@ -592,7 +641,7 @@ the same three states.
 
 ---
 
-## E — Overlay panels
+## G — Overlay panels
 
 ### `[ ]` 22 — The `Ask N-zo` panel is too narrow, and cannot be resized
 
@@ -607,7 +656,7 @@ and down chevrons that step the focused row. Needs 22's resizing panel.
 
 ---
 
-## F — The accessibility gate
+## H — The accessibility gate
 
 ### `[ ]` 24 — Playwright must test accessibility — WCAG 2.1 AA
 
@@ -622,7 +671,7 @@ component. 40 is a first finding for it.
 
 ---
 
-## G — The big builds
+## I — The big builds
 
 ### `[ ]` 25 — `sherpa-layout-canvas` — an infinite canvas content area
 
@@ -645,14 +694,12 @@ is how the two meet — `<sherpa-layout-grid>` owns the tracks, `<sherpa-group
 data-direction="grid">` the joins. Likely: the layout grid gains a
 `data-grouped` that gives up its gaps and applies the group rules.
 
-### `[ ]` 35 — Layout grid: plain grid templates, not a re-invented grid?
-
-Will, 2026-09-24: are we re-inventing the wheel? Today a scenario is spread
-over `data-rows`, `data-row-count`, a named `data-col-span` and a
+**Ask first (Will, 2026-09-24): are we re-inventing the grid?** A scenario is
+spread over `data-rows`, `data-row-count`, a named `data-col-span` and a
 `data-row-span` per child, and JS for `data-grouped`. A named
 `grid-template-areas` per scenario, each child naming its AREA, might replace
-most of it. Find what it cannot do — column spans re-scale per breakpoint; the
-fit grid's last row takes the rest — before building. Do it with 26.
+most of it. Find what it cannot do — spans re-scale per breakpoint; the fit
+grid's last row takes the rest — before building either.
 
 ### `[ ]` 27 — A consumer can supply their OWN templates and CSS
 
@@ -669,7 +716,7 @@ anatomy is the natural thing to check against.
 
 ---
 
-## H — Tidy-ups and renames
+## J — Tidy-ups and renames
 
 ### `[ ]` 11 — `sherpa-group`: what is left
 
@@ -789,6 +836,12 @@ One line each. The detail is in git and in the trap named.
 - A disabled Today keeps its Today fill — 9baa9f57
 - 39: the panel header's Reset all clears both scopes, and both header buttons wear the default look
 - 53: a conditional chip's tooltip says "X conditions applied" — `T-a-condition-tip-counts-its-rows`
+
+**Culled or merged in the 2026-09-26 review**
+- 13, a sparkline did not follow its record deltas — each tile's sparkline and its delta are ONE series now (`T-a-delta-is-derived-not-declared`)
+- 51, warning and critical for a condition — a note, folded into 49
+- 35, plain grid templates — the question 26 asks first; merged into it
+- The draft list `todo-filter-2609.md` — merged here, and deleted
 
 **Found done or stale by the 2026-09-26 audit, and removed**
 - The data toolbar clipped below 800px — fine at 1280x720 since 39b6537c
