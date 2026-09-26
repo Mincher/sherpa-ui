@@ -75,6 +75,9 @@ export async function init(root, { session } = {}) {
    * reaches into a bar's shadow root to find a control.
    * TRAP T-a-panel-builds-its-own-menus
    */
+  /** A bar's filter with no values and no body: an on/off chip. */
+  const isPreset = (f) => !f.options?.length && !f.kind && !f.custom;
+
   const asPanelField = (f) => ({
     id: f.id,
     label: f.label,
@@ -100,7 +103,7 @@ export async function init(root, { session } = {}) {
     active: f.active,
     /* A PRESET has no values AND no body of its own — one question, answered
        yes or no. TRAP T-a-chip-with-no-field-is-a-preset */
-    preset: !f.options?.length && !f.kind && !f.custom,
+    preset: isPreset(f),
     /* A DATE is ONE chip with its menu. Its menu IS a calendar, and a calendar
        drawn inline is the whole panel. TRAP T-only-group-and-sort-stay-one-chip */
     asChip: f.kind === 'date',
@@ -473,15 +476,21 @@ export async function init(root, { session } = {}) {
        told here instead, and neither component knows the other exists.
        TRAP T-the-panel-reports-its-own-reading */
     const byScope = e.detail.readings ?? {};
-    for (const [, fields] of Object.entries(byScope)) {
+    /* The bars steered here. Every steer is SILENT, so each one reports. */
+    const steered = new Set();
+    for (const [scope, fields] of Object.entries(byScope)) {
+      const bar = barFor(scope);
+      if (!bar) continue;
       for (const [id, reading] of Object.entries(fields)) {
         const picked = reading.picked ?? [];
-        // PRESETS are toggles, not a field: relay each through its own chip.
+        /* PRESETS — saved filters too — are the bar's own on/off chips, each
+           STEERED. A click on a chip's host is not a press: the chip hears
+           only its body, so the old `chip.click()` changed nothing. */
         if (id === 'presets') {
-          for (const chip of qft.shadowRoot?.querySelectorAll('.chips > .chip') ?? []) {
-            const want = picked.includes(chip.dataset['id']);
-            if (chip.hasAttribute('data-current') !== want) chip.click();
+          for (const f of bar.held ?? []) {
+            if (isPreset(f)) bar.setChipActive(f.id, picked.includes(f.id));
           }
+          steered.add(bar);
           continue;
         }
         /* THE FIELD'S OWN SLOT for a field the source owns; the BAR's chip
@@ -489,8 +498,17 @@ export async function init(root, { session } = {}) {
            `setChipValues` could not — that is why the panel used to tick the
            chip itself. */
         if (FIELD_CHIPS.has(id)) source.select(id, picked, reading);
-        else qft.setChipReading(id, reading);
+        else {
+          bar.setChipReading(id, reading);
+          steered.add(bar);
+        }
       }
+    }
+    /* …once its menus have stamped, or it reads its own new rows as empty.
+       TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
+    if (steered.size) {
+      void new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
+        .then(() => { for (const bar of steered) bar.report(); });
     }
   }, { signal });
 

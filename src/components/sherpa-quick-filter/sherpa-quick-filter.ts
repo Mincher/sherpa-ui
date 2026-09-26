@@ -389,11 +389,20 @@ export class SherpaQuickFilter extends SherpaElement {
       return;
     }
 
+    const menu = this.menu as (HTMLElement & { dirty?: boolean; apply?: () => void }) | null;
+    /* AN OPEN DRAFT IS APPLIED. A reader who typed a condition or ticked a
+       value, then pressed the chip, meant "filter by that" — and closing the
+       menu threw it away. TRAP T-a-chip-press-applies-its-menus-draft */
+    if (menu?.dirty && this.hasAttribute('data-open')) {
+      event.stopPropagation();
+      menu.apply?.();
+      return;
+    }
+
     /* TRAP T-an-empty-chip-opens-its-menu — the body cycles a chip's states
      * (TRAP T-a-chip-body-cycles-its-states), and an empty chip has none to cycle.
      * Only when there IS a menu: a toggle-only chip keeps toggling.
      */
-    const menu = this.menu;
     /* A CONDITIONED chip has no ticks and is NOT empty — its rows are its
        answer. Its body toggles, like any other answered chip.
        TRAP T-toggling-a-conditioned-chip-suspends-its-condition */

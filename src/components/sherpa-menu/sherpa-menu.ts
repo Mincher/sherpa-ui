@@ -499,7 +499,12 @@ export class SherpaMenu extends SherpaElement {
     if (!first) return;
     if (this.dataset['op'] !== first.op) this.dataset['op'] = first.op;
     const text = (OP_TAKES[first.op] ?? 'list') === 'text' ? (first.text ?? '') : '';
-    if (this.conditionValue !== text) this.conditionValue = text;
+    /* `data-value` TOO. A rebuilt row already holds the text, so comparing the
+       box alone skipped the write — and the next re-sync put back the empty
+       attribute over what a host had set. TRAP T-row-one-is-data-op */
+    if (this.conditionValue !== text || (this.dataset['value'] ?? '') !== text) {
+      this.conditionValue = text;
+    }
   }
 
   /**
@@ -708,6 +713,23 @@ export class SherpaMenu extends SherpaElement {
   set open(value: boolean) {
     if (value) this.show();
     else this.hide();
+  }
+
+  /** Commit the draft and close, as the Apply button does. */
+  apply(): void {
+    this.#onApply();
+  }
+
+  /**
+   * An OPEN committing menu holding a change Apply has not taken — ticks, or
+   * condition rows. TRAP T-a-chip-press-applies-its-menus-draft
+   */
+  get dirty(): boolean {
+    if (!this.#commits || !this.open) return false;
+    const key = (values: readonly string[]): string => [...values].sort().join('\u0000');
+    if (key(this.values) !== key(this.#baseline)) return true;
+    return this.mode === 'custom'
+      && JSON.stringify(this.conditions) !== JSON.stringify(this.#conditionBaseline);
   }
 
   /** What the menu holds. A NUMBER or CALENDAR menu has no rows.

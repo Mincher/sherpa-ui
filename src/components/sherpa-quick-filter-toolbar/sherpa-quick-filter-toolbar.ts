@@ -515,6 +515,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
+   * setChipActive(id, on) — steer one ON/OFF chip: a preset, a saved filter.
+   * SILENT, like every steer, so `report()` when it should be heard. A chip
+   * answered by its menu takes `setChipValues` or `setChipReading` instead.
+   * TRAP T-a-silent-write-still-needs-a-way-to-report
+   */
+  setChipActive(id: string, on: boolean): void {
+    const chip = this.#chips().find((c) => c.dataset['id'] === id);
+    if (chip) chip.current = on;
+  }
+
+  /**
    * setChipReading(id, reading) — steer ONE chip with a whole reading.
    *
    * The write path for `readings`, and the only one that can carry a CONDITION.

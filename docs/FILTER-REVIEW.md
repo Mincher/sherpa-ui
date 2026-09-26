@@ -1803,6 +1803,13 @@ The scope's buttons have their own row, under its heading.
    each shows the data shape the other left. Add and remove them, or re-query
    on the show.
 
+**Bugs, 2026-09-25.** The panel's Apply switched no preset or saved filter on
+or off: it "clicked" the bar's chip host, which a chip never hears. A field
+only the bar holds was steered in silently, so the data layer never heard it —
+and its typed text was then lost, as a steered condition skipped `data-value`.
+And a condition typed, then applied by pressing the chip, was thrown away with
+the menu. All four fixed (`T-a-chip-press-applies-its-menus-draft`).
+
 
 ---
 

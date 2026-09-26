@@ -1917,6 +1917,7 @@ See `T-grid-read-without-write-is-half-an-api` for the other half of the same
 idea — a value you can read and not write.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-panel-apply.spec.ts`
 
 ### T-grid-read-without-write-is-half-an-api
 
@@ -11895,6 +11896,7 @@ attributes, so the menu's own record and its rows agree.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-menu-row-one.spec.ts`
+- Site: `test/e2e/reforged-a-chip-press-applies-its-draft.spec.ts`
 
 ### T-a-rebuild-keeps-every-answer
 
@@ -12339,8 +12341,30 @@ The close branch of `#onToggle` now restores the baseline, guarded by an
 `#applying` flag so Apply and Cancel — which both call `hide()` — keep the
 values they just decided.
 
+One press is not a walk-away: the chip's own body APPLIES its open draft
+(`T-a-chip-press-applies-its-menus-draft`).
+
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-menu.spec.ts`
+
+### T-a-chip-press-applies-its-menus-draft
+
+**A press on a chip's body, while its menu is open with a draft, APPLIES the
+draft.** Will, 2026-09-25: values typed in condition rows were not applied
+when he *activated the chip*.
+
+The press shut the menu, and a committing menu throws its draft away when it
+shuts any way but Apply (`T-a-draft-dies-with-its-menu`). So a reader typed
+"contains Da", pressed the chip to turn it on, and got nothing — no filter,
+and the rows they typed gone.
+
+The menu says whether it holds one — `dirty`: open, committing, and its ticks
+or rows differ from what it opened with — and `apply()` is its Apply button.
+The chip asks, and applies. With nothing drafted, a press does what it did.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `test/e2e/reforged-a-chip-press-applies-its-draft.spec.ts`
 
 ### T-a-chart-datum-is-reachable-without-a-pointer
 
