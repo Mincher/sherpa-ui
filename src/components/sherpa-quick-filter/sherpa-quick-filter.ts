@@ -484,13 +484,11 @@ export class SherpaQuickFilter extends SherpaElement {
    * TRAP T-an-inactive-chip-says-where-its-filter-went
    */
   #tipText(values: string): string {
-    const where = this.dataset['appliedAt'];
     if (this.hasAttribute('data-superseded')) {
-      const place = where ? `the ${where}` : 'another filter';
       // The VALUES too where there are any: they come back when the field is free.
       return values
-        ? `Filtered by ${place}. This chip holds ${values}.`
-        : `Filtered by ${place}.`;
+        ? `Filter applied at higher scope. This chip holds ${values}.`
+        : 'Filter applied at higher scope.';
     }
     return values;
   }

@@ -7872,13 +7872,12 @@ both:
 
 | | |
 |---|---|
-| no picks of its own | `Filtered by the App header.` |
-| picks it still holds | `Filtered by the App header. This chip holds active, churned.` |
+| no picks of its own | `Filter applied at higher scope.` |
+| picks it still holds | `Filter applied at higher scope. This chip holds active, churned.` |
 
-**The HOST names the place.** A chip cannot know which control took its field —
-`supersede(ids, appliedAt)` carries it, and the chip renders it. Without the
-second argument the tooltip says "another filter", which is still better than
-silence.
+**It names the SCOPE, not the place.** It said "Filtered by the App header"
+until Will, 2026-09-26. `supersede(ids, appliedAt)` still records the place in
+`data-applied-at`; the words no longer carry it.
 
 The tooltip follows `data-superseded` and `data-applied-at` from `onChange`,
 because neither touches the VALUES and nothing else re-syncs it.

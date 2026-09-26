@@ -657,12 +657,13 @@ test('a superseded chip says where its field is filtered instead', async ({ page
   // Nothing picked, nothing taken — nothing to say.
   expect(r.bare).toBe('');
   // Taken, with no picks of its own: the REASON alone.
-  expect(r.empty).toBe('Filtered by the App header.');
+  // Will, 2026-09-26: the scope, not the place.
+  expect(r.empty).toBe('Filter applied at higher scope.');
   // Its own values, when it owns the field.
   expect(r.withValues).toBe('active, churned');
   /* Taken, WITH picks: both facts. The picks are the half a reader panics
      about, so the tooltip says they are still there. */
-  expect(r.both).toBe('Filtered by the App header. This chip holds active, churned.');
+  expect(r.both).toBe('Filter applied at higher scope. This chip holds active, churned.');
   // And it goes back when the field is free again.
   expect(r.released).toBe('active, churned');
 });
