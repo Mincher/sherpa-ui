@@ -348,17 +348,15 @@ export async function init(root, { session } = {}) {
      TRAP T-the-panel-is-the-toolbar-in-a-column */
   const fillPanel = () => {
     const viewBar = header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
-    /* CREATED DATE moves INTO the panel while it is open — it has a menu, so
-       the panel draws that body. View, Customer and Region stay on the header:
-       they are global, and the View chip is not a filter at all.
+    /* Every header filter moves INTO the panel while it is open — Customer,
+       Region and the date too. Only the View chip stays: it is not a filter.
        TRAP T-the-view-chip-stays-on-the-header */
-    const stays = ['view', 'customer', 'region'];
+    const stays = ['view'];
     panel?.populate([
       {
         scope: 'view',
         label: 'View filters',
-        /* The VIEW chip is not a filter, and Customer and Region are GLOBAL —
-           all three stay on the app header.
+        /* The VIEW chip is not a filter, so it stays on the app header.
            TRAP T-the-view-chip-stays-on-the-header */
         filters: (viewBar?.held ?? [])
           .filter((f) => !stays.includes(f.id))
@@ -420,7 +418,7 @@ export async function init(root, { session } = {}) {
     const viewBar = header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
     for (const chip of viewBar?.shadowRoot?.querySelectorAll('.chips > .chip') ?? []) {
       const id = chip.dataset['id'];
-      chip.toggleAttribute('data-panelled', on && !['view', 'customer', 'region'].includes(id));
+      chip.toggleAttribute('data-panelled', on && id !== 'view');
     }
   };
 

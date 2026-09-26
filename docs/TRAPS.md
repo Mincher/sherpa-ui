@@ -9508,11 +9508,12 @@ under the panel. Narrowing the GRID's own box is what makes `full` mean full.
 
 ### T-the-view-chip-stays-on-the-header
 
-Three chips are never drawn in the filter panel.
+One chip is never drawn in the filter panel: `view`. It is not a filter at
+all — it is what the filters apply WITHIN.
 
-`view` is not a filter at all — it is what the filters apply WITHIN. `customer`
-and `region` are GLOBAL: a reader sets them once and they follow from page to
-page, so burying them in a per-Context panel makes a global answer look local.
+`customer` and `region` stayed on the header too, as GLOBAL filters, until
+Will, 2026-09-26: *"Let's move the Customer and Region filters to the View
+scope in the filter panel."* They are in its View filters now.
 
 Every OTHER field the panel draws is hidden on its bar (`data-panelled`,
 written by the host). Two controls over one field make a reader guess which is
