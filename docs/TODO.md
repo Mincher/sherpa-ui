@@ -2,320 +2,285 @@
 
 The list of open work. One file. Add to it, tick items off, do not start a second one.
 
-Status: `[ ]` open · `[~]` in progress · `[x]` done
+Status: `[ ]` open · `[~]` in progress. A DONE item leaves the body and gets one
+line under **Done**, at the bottom — git and `docs/TRAPS.md` keep the detail.
+
+**A bug is queued like any other item.** Will, 2026-09-26: bugs do not demand
+immediate attention. Add it here, in its place in the order, and carry on.
 
 ---
 
 ## At a glance
 
-**38 numbered items · 12 done · 1 parked · 2 unclear · 23 open.** Numbers are the spine; the waves below
-say what order. Anything not numbered is a sub-item of the section it sits in.
+**49 open.** Pruned 2026-09-26: 10 items were done or stale and are gone, and
+the audit that checked them found 3 new bugs. Numbers are ids, not order — the
+table IS the order. Quick wins first, then bugs, then features, then the big
+builds and the tidy-ups.
 
-| | # | Item | Wave |
-|---|---:|---|---|
-| ✅ | 1 | Context vs View — the naming, settled | 1 |
-| ✅ | 2 | Filter scope — down, never up | 1 |
-| ✅ | 3 | Style/Transparent tokens — done by 7f1f95a3, verified vs live Figma | 1 |
-| ✅ | 4 | The `More` chip shows active when it is not | 2 |
-| ✅ | 5 | Metric item — no surface or border colour | 2 |
-| ✅ | 6 | Every metric item uses the xsmall container class | 2 |
-| ✅ | 7 | Only five filter chips carry an icon | 2 |
-| ❓ | 8 | Fixed-height row gutter — **cannot reproduce**, needs a pointer | 2 |
-| ✅ | 9 | Pagination row-count select is not a Sherpa select | 2 |
-| ✅ | 10 | Notifications button — swept, 4 components fixed | 3 |
-| ⏸️ | 11 | Button borders and status — **parked**, overlaps CSS-inheritance work | 3 |
-| ❓ | 12 | Metric trend — **works when measured**, may be the Apply step | 4 |
-| | 13 | Sparkline does not follow its record deltas | 4 |
-| | 14 | An example of real-time data (WebSocket) | 4 |
-| | 15 | Save a View, and the Save split-button menu | 5 |
-| | 16 | Favourite and Save apply to the Context, not the View | 5 |
-| | 17 | Breadcrumbs are for workflow, not for the nav | 5 |
-| ✅ | 18 | An optional allow-list on ANY component axis | 6 |
-| ~~19~~ | ~~Rework the filter menu — two modes, many conditions~~ — DONE 2026-09-24 | 7 |
-| ✅ | 20 | An inactive chip must say where its filter is applied | 7 |
-| | 21 | A filter PANEL, as an alternative to the toolbars | 7 |
-| | 21b | Which header chips CARRY OVER between views — configurable | 7 |
-| | 21c | A condition's matches must ALL highlight, not just one string | 7 |
-| | 21d | **EXPLORE** — date conditions. Undesigned, and much bigger | 7 |
-| | 21e | Filters survive a RELOAD — compiled into the data layer | 7 |
-| | 21f | "Send to view filters" — promote a local filter to view scope | 7 |
-| | 22 | `Ask N-zo` panel — width, and a draggable edge | 8 |
-| | 23 | A focused grid row opens a details panel | 8 |
-| | 24 | Playwright tests accessibility — WCAG 2.1 AA | 9 |
-| | 25 | `sherpa-layout-canvas` + minimap | 10 |
-| | 26 | A `Grouped` mode for the content area | 10 |
-| | 27 | A consumer can supply their OWN templates and CSS | 10 |
-| | 28 | A Figma component is NOT always a web component | 11 |
-| | 29 | Rename `src/index.ts` to `src/app.ts` | 11 |
-| | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | 11 |
-| ✅ | 31 | The grid is TWO tokens — 4px spacing, 2px text | 11 |
-| ✅ | 32 | Donut folded into `sherpa-radial-chart` | 11 |
-| ⛔ | 33 | Density scaling as step offsets — **part done**, rest blocked | 11 |
-| | 34 | Figma: use the Navigation terms | 11 |
-| | 35 | Layout grid: plain grid templates, not a re-invented grid? | 10 |
-| | 36 | CSS: compiled where it should inherit? | 11 |
-| | 37 | Components are AGNOSTIC of the data, and of the example app | 10 |
-| | 38 | The FILTER family — one model, one builder, one owner | 7 |
+| Pri | # | Item | Kind |
+|---:|---:|---|---|
+| | | **A — Filters: Will's list, 2026-09-26** | |
+| 1 | 39 | The panel header gets Reset all filters | quick |
+| 2 | 53 | A conditional chip's badge counts its conditions | quick |
+| 3 | 40 | A switch has no accessible name | quick |
+| 4 | 57 | The filter panel's width is a hard-coded 400px | quick |
+| 5 | 54 | An Added Filters row drills only if it has many values | bug |
+| 6 | 41 | A conditional filter applies for Owner only | bug |
+| 7 | 42 | A legend toggle filters the whole view | bug |
+| 8 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
+| 9 | 44 | A column heading's menu does not show what is set | bug |
+| 10 | 45 | A picked date does not show in the chip | bug |
+| 11 | 55 | The At risk view's own column filter never applies | bug |
+| 12 | 56 | A view change leaves a lit chip that filters nothing | bug |
+| 13 | 21e | A reload keeps a filter nothing on screen shows | bug |
+| 14 | 46 | A PENDING state: changed, not yet applied | feature |
+| 15 | 47 | More than 20 values: one chip, not a run | feature |
+| 16 | 48 | A child menu opens on hover or click of its row | feature |
+| 17 | 49 | A preset conditional chip shows its conditions, read-only | feature |
+| 18 | 50 | A custom conditional chip shows its conditions, editable | feature |
+| 19 | 51 | NOTE — warning and critical, for a condition with a problem | note |
+| 20 | 21c | A condition's matches must ALL highlight | feature |
+| 21 | 21f | "Send to view filters" | feature |
+| 22 | 21b | Which header chips carry over between views | feature |
+| 23 | 20b | The Date filter should be a view-scope date RANGE | feature |
+| 24 | 21d | EXPLORE — conditions for a DATE field | explore |
+| 25 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
+| | | **B — The filter family, finished** | |
+| 26 | 38 | One model, one builder, one owner — what is left | refactor |
+| 27 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
+| | | **C — Views and navigation** | |
+| 28 | 15 | Save a View, and the Save split-button menu | feature |
+| 29 | 16 | Favourite and Save apply to the View, not the Context | bug |
+| 30 | 17 | Breadcrumbs are for workflow, not for the nav | feature |
+| 31 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
+| 32 | 34 | Figma: use the Navigation terms | figma |
+| | | **D — Data and charts** | |
+| 33 | 13 | A sparkline does not follow its record deltas | bug |
+| 34 | 14 | An example of real-time data | feature |
+| 35 | 9b | A Data Viz header, for metrics and chart containers | component |
+| | | **E — Overlay panels** | |
+| 36 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
+| 37 | 23 | A focused grid row opens a details panel | feature |
+| | | **F — The accessibility gate** | |
+| 38 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
+| | | **G — The big builds** | |
+| 39 | 25 | `sherpa-layout-canvas` + minimap | component |
+| 40 | 26 | A `Grouped` mode for the content area | feature |
+| 41 | 35 | Layout grid: plain grid templates? | explore |
+| 42 | 27 | A consumer can supply their OWN templates and CSS | feature |
+| | | **H — Tidy-ups and renames** | |
+| 43 | 11 | `sherpa-group`: what is left | tidy |
+| 44 | 28 | A Figma component is NOT always a web component | tidy |
+| 45 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| 46 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| 47 | 36 | CSS: compiled where it should inherit? | tidy |
+| 48 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| 49 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 
-**Not blocked — and the values ARE readable live.** Items 3 and 33 needed
-values from `figma.extensions.json`. They are not on the variable, which is why
-several reads returned base values; they are on the **collection**:
-`collection.variableOverrides`, keyed by its own mode ids. Found by the agent
-doing the CSS-inheritance work, 2026-09-24. Will's ruling stands: **do not build
-a regenerator — read what you need through the figma-console MCP** and
-hand-patch the file. `npm run check:extensions` guards the hand-patch.
-
-**Done but not numbered:** a nav item goes to a Context · Settings opens as an
-overlay · shared constants swept · event detail shapes swept · toggle chips
-settled.
+**Why this order.** A is Will's live list, and he tests on the running app as
+each lands. B comes before C–G because two of A's bugs (41, 44) are two views
+of one field disagreeing — the class of bug 38 exists to end. F sits after the
+work that changes markup, so its report does not go stale, and before G, so
+new components must pass it. 29 is last: it touches every import.
 
 ---
 
-## The order to do them in
+## A — Filters: Will's list, 2026-09-26
 
-43 items. Ordered so that nothing is built twice.
+### `[ ]` 39 — The panel header gets Reset all filters
 
-Includes the six findings the 2026-09-23 component audit left open; its other 13
-are done. `docs/COMPONENT-AUDIT.md` keeps the measurements behind every one.
+A button in the filter panel's header that resets BOTH scopes, View and
+component, in one press. It and the toggle-to-toolbar button (`.to-toolbars`)
+take the DEFAULT button look, not transparent.
 
-Three rules set the order:
+### `[ ]` 53 — A conditional chip's badge counts its conditions
 
-1. A decision that other work depends on comes FIRST. Build on a wrong model and
-   you build twice.
-2. A cheap fix that is already understood comes before a big build.
-3. A big build comes last, and only after the thing it stands on is settled.
+Will: the badge shows the NUMBER of conditions applied, as a ticked chip's
+badge counts its picks. Today it shows `fx` for any number
+(`T-a-condition-badge-says-that-not-which`, `CONDITION_BADGE` in
+`filter-face`); that ruling changes. The Success colour and the `fx` button
+(49, 50) still say "conditional", so the badge is free to count. Count
+ANSWERED rows only — an empty row is not a condition.
 
-### Wave 1 — decide the model (nothing else is safe until these land)
+### `[ ]` 40 — A switch has no accessible name
 
-| # | Item | Why first |
-|---|---|---|
-| ~~1~~ | ~~Context vs View~~ DECIDED 2026-09-24 — CLAUDE.md "Navigation terms" | Views, Save, Favourite, breadcrumbs and filter scope ALL sit on this. Every later item reads differently if the model is wrong. |
-| 2 | Filter scope — down, never up | The panel, the menu rework and the allow-list all need the scope rule fixed. |
-| 3 | Style/Transparent tokens | BLOCKED on your Figma export. Unblock it early — the button border item may turn out to be the same fault. |
+`sherpa-switch` does not pass an `aria-label` to its inner `role="switch"`
+input, and its visible text is a sibling span. So the Range and Conditional
+switches are unnamed to a screen reader. Mirror `aria-label` onto the input,
+or label the input by the text beside it.
 
-### Wave 2 — cheap, understood, unblocks judgement
+### `[ ]` 57 — The filter panel's width is a hard-coded 400px
 
-Small fixes. Each is a day or less. They also make the app honest to look at,
-which matters for the design work in Wave 4.
+Found by the 2026-09-26 audit. The panel area reads
+`--sherpa-panel-area-width`, which is defined NOWHERE
+(`sherpa-app-shell.css:130`), so it is always its 400px fallback. The comment
+there says 4 columns; the original ask said 3. Settle 3 or 4, then derive the
+width from the layout grid's columns.
 
-| # | Item |
+### `[ ]` 54 — BUG: an Added Filters row drills only if it has many values
+
+Will: a row in the Filters menu's Added section gets a child menu only when
+its field has MULTIPLE values. A one-value field (a preset, a toggle) has
+nothing to drill into. See `DRILL_FLAGS` and `filtersMenuItems()` in
+`src/core/ui/filters-button.ts`.
+
+### `[ ]` 41 — BUG: a conditional filter applies for Owner only
+
+Will: *"Conditional filters don't apply or go active at all for any field other
+than Owner."* Owner is the only chip def with `custom: true`
+(`examples/contexts/records.js`); every other conditioned field arrives through
+the Filters (Add) menu or a column heading. Look first at how an ADDED field,
+or a heading's condition, reaches the source.
+
+Reproduce on the running page and read the TOTAL
+(`source.debugState().total`), never the drawn page. Try the same field as a
+toolbar chip, a panel field and a column heading.
+
+### `[ ]` 42 — BUG: a legend toggle filters the whole view
+
+Will: *"Chart legend toggling is behaving like View scope filtering. They
+should only affect their chart."* This was fixed on 2026-09-24
+(`bindSelection` `scope: 'component'`, `T-a-filter-applies-down-its-scope`),
+so something has undone it. Find what, and add the test that would have
+caught it.
+
+### `[ ]` 43 — BUG: the toolbar ⋯ overflow menu shows nothing
+
+The ⋮ `overflow` button ("More actions") opens no items. With every action
+overflowed, the menu is, from the top:
+
+- Suggest filters
+- Reset filters
+- Show Filter Panel
+- *(divider)*
+- Favorite
+- Save view
+- Save view as
+- Refresh view
+
+### `[ ]` 44 — BUG: a column heading's menu does not show what is set
+
+A heading's filter menu does not show the ticked values or the conditions
+already set on its field, at view or component scope. So a reader can apply a
+filter that contradicts the one in force. The heading must read the state the
+chip and the panel read — a second view ASKS the first.
+
+### `[ ]` 45 — BUG: a picked date does not show in the chip
+
+After a pick in the calendar the chip's right half stays empty. The formats:
+
+| picked | reads |
 |---|---|
-| 4 | The `More` chip shows active when it is not |
-| 5 | Metric item — no surface or border colour |
-| 6 | Every metric item uses the xsmall container class |
-| 7 | Only five filter chips carry an icon |
-| 8 | Fixed-height row uses a hard-coded gutter |
-| 9 | Pagination row-count select is not a Sherpa select |
+| one day | `DD Mmm YYYY` |
+| a range | `DD Mmm YYYY to DD Mmm YYYY` |
+| a range in one year | `DD Mmm to DD Mmm YYYY` |
+| a range in one month | `DD to DD Mmm YYYY` |
 
-### Wave 2b — the Data Viz header
+Build ONE shared formatter in the data layer, DOM-free, beside
+`format-tick.ts`, so every date label reads the same. More formats will join
+it later; this is the first. (The range chip reads `02 Jan - 11 Dec, 2024`
+today — a third spelling.)
 
-| # | Item |
-|---|---|
-| 9b | A Data Viz header, for metrics and chart containers |
+### `[ ]` 55 — BUG: the At risk view's own column filter never applies
 
-After the metric fixes (5, 6), because it changes the same components. Before
-the new components in Wave 10, so the canvas inherits it.
+Found by the 2026-09-26 audit. At risk sets
+`grid.setColumnFilter(status, ne churned)`, and 9ms later the selection
+handler (`examples/contexts/records.js` ~783) calls
+`setColumnFilter(status, null)`. So At risk shows 20 rows where it should show
+13. And a `col:status` chip stays on the bar, `data-current` with no value,
+still lit after going back to All customers.
 
-### Wave 3 — the consistency sweep
+(The old bug — All → At risk → All left 1 page of 4 — is fixed.)
 
-Do this as ONE pass, not two. Both items are the same job: find the hand-rolled
-thing and delete it.
+### `[ ]` 56 — BUG: a view change leaves a lit chip that filters nothing
 
-| # | Item |
-|---|---|
-| 10 | Notifications button — and sweep every component for the same fault |
-| 11 | Button borders do not inherit the status colour |
+Found by the 2026-09-26 audit. Region = EMEA (27 rows), then the My accounts
+view: the Region chip stays `data-current`, but its `global` part is dropped.
+12 rows — all of Ravi's; EMEA would be 5. A lit chip must filter, or go off.
+21b decides whether the chip SHOULD survive; this is that it must not lie.
 
-Doing the sweep before Wave 4 means the new components inherit clean behaviour
-instead of copying a fault.
-
-### Wave 3b — the audit's leftovers
-
-The component audit (2026-09-23) closed 13 of 15 findings. Six things it did NOT
-close are below. They sit here because they are all "find the inconsistency and
-rule on it" — the same job as Wave 3, and the new components in Wave 10 should
-inherit the answers.
-
-| # | Item |
-|---|---|
-| 11b | ~~`sherpa-group` — a wrapper component~~ **BUILT 2026-09-23** |
-| 11c | ~~Shared constants — sweep~~ **DONE 2026-09-23 — 5 folded in** |
-| 11d | `data-type` means nine things; `data-empty` means three |
-| 11e | ~~Event detail shapes~~ **SWEPT 2026-09-23 — nothing to fix** |
-| 11f | ~~3 toggle chips: owner or reporter?~~ **FIXED 2026-09-23 — it was the PERSISTENT chips** |
-| 11g | `sherpa-nav-section` — measured; it is item 28's question |
-
-### Wave 4 — the data-to-UI faults
-
-These three are one family: the data layer moves, the component does not follow.
-Fix them together and the cause is probably shared.
-
-| # | Item |
-|---|---|
-| 12 | Metric trend does not update after a data-layer change |
-| 13 | Sparkline does not follow its record deltas |
-| 14 | An example of real-time data (WebSocket) |
-
-Item 14 last of the three — it is the proof that 12 and 13 are really fixed.
-
-### Wave 5 — the View lifecycle
-
-Needs Wave 1 item 1 to have landed.
-
-| # | Item |
-|---|---|
-| 15 | Save a View, and the Save split-button menu |
-| 16 | Favourite and Save apply to the Context, not the View |
-| 17 | Breadcrumbs are for workflow, not for the nav |
-| 17b | At the mobile breakpoint the nav becomes a menu |
-
-### Wave 6 — the allow-list primitive
-
-| # | Item |
-|---|---|
-| 18 | An optional allow-list on ANY component axis |
-
-On its own, because the filter menu rework (item 19) uses it. Build the
-primitive, then build on it.
-
-### Wave 7 — the filter surface
-
-| # | Item |
-|---|---|
-| ~~19~~ | ~~Rework the filter menu — two modes, MANY conditions~~ — DONE 2026-09-24 |
-| 20 | An inactive chip must say where its filter is applied |
-| 20b | The Created-date filter should be a top-level date RANGE |
-| 20c | **BUG** — a range filter refuses its default max; the chip stays inactive |
-| 21 | A filter PANEL, as an alternative to the toolbars |
-| 21b | Which header chips CARRY OVER between views — configurable |
-| 21c | A condition's matches must ALL highlight, not just one string |
-| 21d | **EXPLORE** — date conditions. Undesigned, and much bigger |
-| 21e | Filters survive a RELOAD — compiled into the data layer |
-| 21f | "Send to view filters" — promote a local filter to view scope |
-
-Item 21 is undesigned. Do it last of the three, once the menu is settled — the
-panel shows the same controls in a different frame.
-
-### `[ ]` 21b — which header chips carry over between views
-
-Will, 2026-09-24:
-
-> App header filters shouldn't carry over between preset or custom views unless
-> already set in the initial view definition. The View chip is obviously a
-> different scenario altogether. Which chips carry over should be CONFIGURABLE
-> though, in case we do want to persist things like Customer and Region later.
->
-> It's kinda like some data blocks are singular, and global to the application.
-> When this is the case then there's a chance the consumer of Sherpa would want
-> their value selections to persist across contexts and views.
-
-So a chip def gains a flag — one axis, two answers: reset on a view change
-(the default), or SURVIVE it. The View chip is neither; it IS the thing that
-changed.
-
-Not started. It belongs with 21 because both are about what a view owns.
-
-### `[ ]` 21c — a condition's matches must ALL highlight
-
-Will, 2026-09-24, in two messages — the second corrects the first:
-
-> Conditional filters don't need to highlight string matches in target
-> components.
->
-> Actually they do but there will be multiple strings to match and highlight.
-> Not just one.
-
-`.cell mark.match` marks ONE substring today, from one `text` value. A field
-answered by `Contains "ab" or Starts with "R"` has TWO strings to find, and a
-three-row chain has three. The mark is already INFO blue, matching the chip
-that found it (`T-a-conditioned-chip-reads-as-success`), so only the FINDING
-changes — walk every answered row's text, not just `state.text`.
-
-Not started.
-
-### `[ ]` 21d — EXPLORE: conditions for a DATE field
-
-Will, 2026-09-24. **Nothing here is designed yet, so design comes first.**
-
-A date is not a string, and the text ops (`Contains`, `Starts with`) say
-nothing about one. The conditions it wants instead:
-
-| condition | takes |
-|---|---|
-| On | a date |
-| Before | a date **and** a time |
-| After | a date **and** a time |
-| Between | two dates **and** two times |
-| Last X | a DURATION — `7 days`, `3 months` |
-| Next X | a duration |
-| Includes | a boolean per weekday? — Mon…Sun toggles |
-
-Will: "Much more complicated than current conditional filters."
-
-**Why it is bigger than it looks.** `OP_TAKES` has three answers today —
-`list`, `text`, `range` — and a row shows ONE control for whichever it is.
-Every row above wants something else:
-
-- a DATE takes a calendar, which `sherpa-menu`'s `calendar` template already
-  owns — but that is a whole template, not a control inside a row
-- a TIME has no control at all yet
-- `Between` needs TWO of each, in one row
-- a DURATION is a number and a unit, which is two controls and no component
-- `Includes` is seven toggles, and it is not clear it is a condition at all
-  rather than a second axis
-
-So this is not "add seven entries to `OPS_FOR_TYPE`". Explore first: what a row
-looks like when its answer is two calendars, and whether `Last X` / `Includes`
-belong in the same list as `On` or somewhere else entirely.
-
-`OPS_FOR_TYPE['date']` is `[]` today, on purpose — "a date is answered by
-clicking a calendar, no operator list". That decision is what this item
-reopens.
-
-Not started. **Design before code.**
-
-### `[ ]` 21e — filters survive a reload, but not the session
+### `[ ]` 21e — BUG: a reload keeps a filter nothing on screen shows
 
 Will, 2026-09-24:
 
 > Filters & conditional filters need to survive page refreshes and navigating
 > away and coming back. So they need to be compiled and stored in the data
-> layer. They don't need to survive the session. For that a user can save the
-> view (when done) to save the filter configurations to the view definition.
+> layer. They don't need to survive the session.
 
-**The PANEL-OR-TOOLBAR choice rides along.** Will, 2026-09-24: "Whether the app
-is in filter toolbar or filter panel mode needs to be remembered across
-refreshes and view changes, too." That is app chrome, the same tier as the nav
-pin and the theme mode — `sherpa-app-chrome-state-is-session-store`. One flag
-beside the compiled filters.
+**Half-built, and wrong.** Measured 2026-09-26: `persistView` stores the whole
+filter as ONE flat query. Region = EMEA + Status = active (4 rows), reload:
+still 4 rows, but parts `{}`, selections `{}`, and no chip lit. Navigating
+away and back is the same. The rows obey a filter the reader cannot see or
+clear.
 
-**So it is SessionStore, not IdbStore.** The tiers are already decided — see
-`sherpa-local-data-tiers` and `sherpa-app-chrome-state-is-session-store`: the
-nav pin and the theme mode persist exactly this way. A reload keeps it, closing
-the tab does not.
-
-**What gets stored is the COMPILED form, not the controls.** A bar full of
-chips is markup; what a reload must bring back is the FILTER — the same shape
-`clauses` already reports, plus each field's picks and its suspended flag.
-`DataSource` already owns all of it: `selection(field)`, the named
-`contribute()` parts, and the conditions now on `FilterState`. That whole set
-is one JSON object, and it is what `ViewSnapshot` will want too.
-
-The two halves:
+**What to store is the COMPILED form, per field** — each field's picks,
+conditions and suspended flag, plus the named `contribute()` parts. That is
+what a reload must give back to the chips, and what `ViewSnapshot` will want.
 
 | | |
 |---|---|
 | WRITE | on every `quick-filter-change` / `condition-change`, keyed by Context |
-| READ | at Context load, before `bind()` — a bar painted then re-filtered flashes |
+| READ | at Context load, BEFORE `bind()` — a bar painted then re-filtered flashes |
 
-**Careful with the read order.** `sherpa-example-uses-idbstore` records the
-same trap from the other end: seed BEFORE bind, because bind paints
-immediately.
+SessionStore, not IdbStore: a reload keeps it, closing the tab does not. The
+panel-or-toolbar mode already persists this way (`session '/filters/mode'`,
+24c3a57c) — done.
 
-A saved VIEW is the other tier and stays as it is — a deliberate act, and a
-different lifetime.
+### `[ ]` 46 — A PENDING state: changed, not yet applied
 
-Not started.
+A chip that goes straight to active before its change is applied misleads the
+reader. Between the change and Apply, a chip is PENDING: an active purple
+BORDER, no fill. A conditional chip is the same — it turns green only once
+applied. Only a committing (Apply) field has a pending state; one that applies
+at once goes straight to active.
+
+A state is a pin, as data (`scripts/figma-data/state-pins.yaml`), not a
+colour rule in the chip. Check what the pin's surface resolves to first.
+
+### `[ ]` 47 — More than 20 values: one chip, not a run
+
+A panel field with more than 20 values draws the toolbar's single chip, with a
+dropdown of its values, not one chip per value. It is the flag 38's builder
+already needs: whether values EXPLODE into a run or stay behind a menu.
+
+### `[ ]` 48 — A child menu opens on hover or click of its parent row
+
+Not from a caret button nested in the row: the whole row is the door, as in an
+OS menu. The panel's drill is click-only on purpose (a passing pointer drilled
+the list away), so give hover a short delay, or rule per host.
+
+### `[ ]` 49 — A preset conditional chip shows its conditions, read-only
+
+A PRESET conditional chip (a saved filter the app ships) gets the `fx` button
+in the Success look. It opens a menu of its condition rows, read-only. It sits
+on the chip in the toolbar, in the section header in the panel, and on a column
+heading — only those three. Everywhere else a filter changes mode with the
+Conditional switch (done 2026-09-26).
+
+### `[ ]` 50 — A custom conditional chip shows its conditions, editable
+
+The same `fx` button, with rows that can be edited. On a SAVED custom filter
+that is applied, an edit is a temporary DRAFT; the saved filter does not
+change. When the draft differs, the menu and the panel section header offer
+Save. Needs 49, and 46's pending look for the draft.
+
+### `[ ]` 51 — NOTE: warning and critical, for a condition with a problem
+
+Success is the look of a working condition. Warning and critical are free for
+a condition that cannot apply, or a filter that failed to. Not asked for yet;
+design it with 49 and 50.
+
+### `[ ]` 21c — A condition's matches must ALL highlight
+
+Will, 2026-09-24: *"there will be multiple strings to match and highlight. Not
+just one."*
+
+`.cell mark.match` marks ONE substring. `filterNeedles` keeps one needle per
+field (`store.ts:255`, `seen.has(field)`), and the grid marks one hit
+(`sherpa-data-grid.ts` `markNeedle`). A field answered by
+`Contains "ab" or Starts with "R"` has two strings; a three-row chain has
+three. The mark is already Success green, matching the chip
+(`T-a-conditioned-chip-reads-as-success`), so only the FINDING changes.
 
 ### `[ ]` 21f — "Send to view filters"
 
@@ -323,1951 +288,463 @@ Will, 2026-09-24:
 
 > Add an option to 'Send to view filters' for local scope filters. This will
 > elevate them from their component toolbar to the app-header toolbar and allow
-> it trickle down across all view components/data.
->
-> Include this next to clear and remove buttons in the panel.
+> it trickle down across all view components/data. Include this next to clear
+> and remove buttons in the panel.
 
-So it is a THIRD action in each field's `sherpa-section-header` actions slot,
-beside Clear and Remove — and it only exists in the `data` scope, because a
-view-scope field has nowhere to go up to.
+A third action in a data-scope field's header, beside Clear. `source.move()`
+is the one call that does the promotion, and the header's `filter-add`
+already uses it. The values travel with the field — a field promoted while
+filtering by `active` keeps that. Promoting Status must not give the header
+TWO Status chips: the move consumes the header's available entry.
 
-**What it does is a MOVE between two bars**, and both halves already exist:
-`#removeFilter` takes it off one, `#addFilters` puts it on the other. The
-values travel with it — a field promoted while filtering by `active` keeps
-that, or the reader is punished for tidying up.
+The reverse trip is not asked for. Leave it until it is.
 
-**Two things to settle first.**
+### `[ ]` 21b — Which header chips carry over between views
 
-- The panel draws Customer and Region from the HEADER bar today and hides the
-  chip on its own bar. A promoted field joins them, so the panel's `STAYS` set
-  and the scope a field is drawn under must both follow the move.
-- A field the header's Add list offers already exists at view scope. Promoting
-  the Status chip must not give the header TWO Status chips — the add has to
-  consume the available entry, exactly as the Add button does. The list is
-  `source.fields(VIEW_SCOPE)` now (`T-up-is-open-down-is-closed`), and
-  `source.move()` is the one call that does the promotion.
+Will, 2026-09-24:
 
-The reverse trip ("send back down") is not asked for. Leave it until it is.
+> App header filters shouldn't carry over between preset or custom views unless
+> already set in the initial view definition. The View chip is obviously a
+> different scenario altogether. Which chips carry over should be CONFIGURABLE
+> though, in case we do want to persist things like Customer and Region later.
 
-Not started.
+A chip def gains one flag, two answers: reset on a view change (the default),
+or SURVIVE it. The View chip is neither; it IS the thing that changed. No flag
+exists yet. Fix 56 first: today a chip survives in LOOK and not in FACT.
 
-### Wave 8 — overlay panels
+### `[ ]` 20b — The Date filter should be a view-scope date RANGE
 
-| # | Item |
+Will, 2026-09-23: a top-level date range that slices the records across the
+whole view. It is at view scope now — "Date", over `source.timeField`
+(cae7e964) — but still `kind: 'date'`, single by default with a Range switch,
+over a list of `availableDates` (`examples/contexts/global-filters.js`).
+
+A VIEW-scope date wants range by default; a component-scope one keeps single,
+where one day is the common case. Settle whether `kind: 'date'` gains a range
+variant or the chip takes the menu's `data-range`. A range wants bounds —
+`dates[0]` and `dates.at(-1)` — not a set of days.
+
+### `[ ]` 21d — EXPLORE: conditions for a DATE field
+
+Will, 2026-09-24. **Design before code.** A date is not a string, and the text
+ops say nothing about one:
+
+| condition | takes |
 |---|---|
-| 22 | `Ask N-zo` panel — width, and drag the left edge to resize |
-| 23 | A focused grid row opens a details panel on the right |
+| On | a date |
+| Before / After | a date **and** a time |
+| Between | two dates **and** two times |
+| Last X / Next X | a DURATION — `7 days`, `3 months` |
+| Includes | a toggle per weekday? |
 
-22 before 23. Item 23 needs the resizing panel that 22 builds.
+Will: *"Much more complicated than current conditional filters."* A row shows
+ONE control per `OP_TAKES` answer (`list`, `text`, `range`); these want a
+calendar, a time (no control exists), two of each, or a number-and-unit. And
+`Includes` may be a second axis, not a condition. `OPS_FOR_TYPE['date']` is
+`[]` on purpose today; this item reopens that.
 
-### Wave 9 — the accessibility gate
+### `[ ]` 52 — EXPLORE, later: a data viz scope in the filter panel
 
-| # | Item |
-|---|---|
-| 24 | Playwright tests accessibility — WCAG 2.1 AA |
-
-Here, and not earlier. Waves 1-8 change markup in most components, so an earlier
-report goes stale. Here it also becomes the gate that Wave 10's new components
-must pass.
-
-### Wave 10 — the big builds
-
-| # | Item |
-|---|---|
-| 25 | `sherpa-layout-canvas` + minimap |
-| 26 | A `Grouped` mode for the content area |
-| 27 | A consumer can supply their OWN templates and CSS |
-| 35 | Layout grid: plain grid templates, not a re-invented grid? |
-| 37 | Components are AGNOSTIC of the data, and of the example app |
-
-### Wave 11 — the renames and the fold
-
-Last, because they touch everything and block nothing.
-
-| # | Item |
-|---|---|
-| 28 | A Figma component is NOT always a web component (sweep, then fold `sherpa-grid-cell`) |
-| 29 | Rename `src/index.ts` to `src/app.ts` |
-| 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? |
-| ~~31~~ | ~~The grid should be a TOKEN~~ — DONE 2026-09-24. It is TWO grids, 4px + 2px |
-| ~~32~~ | ~~Fold donut + gauge~~ — DONE 2026-09-24. One ring; the gauge shares its pen |
-| 33 | Two scaling multipliers, in place of the remapped density modes |
-| 34 | Figma: use the Navigation terms |
-| 36 | CSS: compiled where it should inherit? |
-
-Item 29 dead last. It is a rename across the whole repo, so it is cheapest when
-no other work is in flight.
-
-### If you only do three things
-
-1. ~~**Context vs View** (item 1).~~ Decided 2026-09-24.
-2. **The consistency sweep** (items 10-11). It stops the next fault being copied.
-3. **The allow-list** (item 18). It is one primitive that makes four later items
-   smaller.
+A legend toggle IS a filter (see 42), so a chart could have its own component
+scope in the panel. It may want chips for its AXES or its AGGREGATION, the way
+the grid has Group and Sort. Larger; design first. After 42, and after 38
+step 3, which puts scopes in the data layer.
 
 ---
 
-## Consistency — no hand-rolled behaviour
+## B — The filter family, finished
 
-### `[x]` The notifications button — and three more — DONE 2026-09-24
+### `[~]` 38 — One model, one builder, one owner: what is left
 
-The notifications button opened a menu in its own way. The sweep found the same
-fault in three more places, and it was worse than a style difference: **each one
-opened on the first click and could never be closed.**
+Will, 2026-09-25: *"I'm juggling bugs here between the filter panel and filter
+toolbar when the overlap is considerable so the code should be singular, and
+reused, where possible."* The full review is `docs/FILTER-REVIEW.md`.
 
-Measured live, every one `open, open, open`:
+Will's taxonomy stands: **six KINDS** — group, sort, boolean, single, multi,
+conditional. "Organise" is a label, never a kind.
 
-| component | what it did | fix |
-|---|---|---|
-| `sherpa-notifications` | proxied `toggle()` straight to the menu | track `#open` from the menu events |
-| `sherpa-chart-legend` | menu was a SIBLING of its button | slot it INTO the button |
-| `sherpa-quick-filter` | `menu.toggle(this)` on a native caret | read its own `data-open` |
-| `sherpa-data-grid` | reached past its chip to the menu | ask the CHIP, pass the anchor on |
+**Done:** 1 the chip owns its kind · 2 one derivation of a kind
+(`core/ui/filter-kind.ts`) · 5 sort/group state collapsed (fe8eba65) · 5.5
+error reporting, `report()` / `onReport()` (7c1a36d3) · 6 `filter-state.ts`
+split into state, face and `bind-selection` (4f747cae).
 
-The cause is one thing, already solved once in `sherpa-button`: the native
-popover light-dismisses on `pointerdown`, so by click time an open menu reads
-shut and `toggle()` re-opens it. `T-a-trigger-click-follows-light-dismiss` now
-carries the sweep and the rule — **a component that owns a menu never calls
-`toggle()` from a click.**
+**Step 3 — the data layer coordinates — is PART done.** The scope registry
+(`scope`/`hold`/`holds`/`scopeOf`/`move`), `debugState()`, the panel no
+longer reaching into the bar (789fe50b), and menu borrowing gone
+(`menuFor()`). Left:
 
-Two smaller findings on the way:
+- The panel is bound to NO `DataSource`. `records.js` carries readings between
+  the panel and the bars by hand (~472-510), and still reads the header bar's
+  shadow root (~419). Both go when the panel binds.
+- Auto-registration does not exist: a component should find its source by a
+  request on connect that the nearest source answers (decided 2026-09-25).
+- "Scope" still means three things — query reach (`view`/`component`), which
+  rows a bind is pushed (`page`/`all`), and the app's surfaces (`view`/`data`).
+  Rename them apart.
 
-- **A host cannot hold `aria-expanded`.** `sherpa-button` keeps it on its inner
-  `.trigger`; a host-level copy freezes and is what a screen reader meets first.
-  The legend announced "closed" over an open menu.
-  `T-a-host-cannot-hold-aria-expanded`.
-- `sherpa-container-header` keeps a host `aria-expanded` and is NOT that trap —
-  its own TS maintains it, and it is a collapse toggle, not a menu.
+**Step 4 — ONE field-row builder — is NOT done.** It was ticked at −21 lines
+(b67266f8), but that is one chip builder per container. The panel keeps its
+own `#draw`, `#drawSection` and `#drawField`. The two differ by the layout
+DIRECTION and whether values EXPLODE into a run — two flags (and 47's), not
+two implementations.
 
-### `[ ]` Button borders do not inherit the status colour — PARKED 2026-09-24
+**The size gate was never built.** `scripts/size-baseline.json`, a per-component
+line count that may only fall, as `lint:css` does for Theme reads. Since the
+plan: the panel 898 → 1288 lines, the toolbar 1857 → 1982. Rules for the work:
+MOVE code, never rewrite it; delete the replaced path in the same commit; no
+helper with one caller; state the budget up front and report the actual.
 
-A button border does not take the `[data-status]` colour correctly.
+**Then its own item:** a component DECLARES the data it needs (`data-field`,
+`data-aggregate`, `data-series-by`) and the source composes it. The example
+hand-builds 9 components through `as` closures over ~569 lines.
 
-**Measured, and the button is not the fault.** It reads `--_status-border`,
-which resolves to the same neutral `#b3b3c3` under critical, warning, success,
-info and urgent. That is the documented model — CLAUDE.md: `--_status-border`
-is "neutral in most modes", `--_status-border-strong` is the tinted one.
+### `[ ]` 37 — Components are AGNOSTIC of the data, and of the example app
 
-| token | consumers |
-|---|---|
-| `--_status-border` (neutral) | **18 components**, including the button |
-| `--_status-border-strong` (tinted) | **1** — `sherpa-data-grid` |
+Will, 2026-09-25:
 
-So the button matches 17 peers, and switching it alone would make "does a
-border follow status?" have two answers. Will's ruling: **the TOKEN is wrong**,
-not the button — a component inside `[data-status="critical"]` should show a
-critical border.
+> All sherpa UI components should be agnostic of the data. The data layer
+> should provision and inform them. They also shouldn't have any bespoke logic
+> in them specific to the example views. [...] For example toggling to the
+> filter panel, from the filter toolbar, should be a custom button added to the
+> actions slot [...] In fact, we should probably separate the example app to
+> it's own codebase and have it use the sherpa-ui framework library as a
+> dependency.
 
-**Parked, not dropped.** Another agent is working on CSS inheritance in this
-project and that work overlaps. Do this after it lands, in the token layer, so
-all 18 components follow at once.
-
----
-
-## Filters
-
-### `[x]` The `More` chip shows active when it is not — DONE 2026-09-24
-
-The overflow chip went active when NONE of its child filters were active.
-`data-current` was hard-coded in the template, so it always drew as an applied
-filter. It is now written by the toolbar from the folded chips' own state, in
-`#syncFoldedBadges()` — the path that runs on every change.
-
-`T-the-filters-button-is-a-door-not-a-filter`.
-
-### `[ ]` The data toolbar is clipped away below 800px tall
-
-Measured 2026-09-24 at 1280x720 on `?context=records`: the data toolbar's
-`Add filter` button sits at y=773 with `document.scrollHeight` also 720. So the
-button is off-screen AND the page does not scroll — `elementFromPoint` returns
-null and no click can reach it. At 1600x1100 the same button is at y=785 and
-works.
-
-The app shell is a fixed-height fit grid, so a row that does not fit is clipped
-rather than scrolled. Whatever the fix, the rule is: nothing interactive may be
-clipped out of reach at a supported height.
-
-Two ways out, to choose when the work starts:
-- The content area scrolls when its rows exceed the viewport.
-- The grid card gives up height first, so the toolbars always fit.
-
-### `[ ]` Fold the `More` overflow into the `Add filter` button
-
-Two buttons at the end of the bar do nearly the same job. `More` holds the chips
-that did not fit; `Add filter` holds the chips not yet on the bar. Both open a
-menu, both are a list of filters, both end with the reader picking one.
-
-Merge them into ONE button. Its menu has two parts: the filters already on the
-bar but folded away, and the filters available to add.
-
-Open questions, to settle when the work starts:
-- Does a folded chip still DRILL (its own rows, one level in), while an
-  available one only ADDS?
-- What does the button say when only one of the two sets is non-empty?
-- The badge on `More` counts ACTIVE folded filters — does the merged button keep
-  that count, and does it count the addable ones too?
-
-Related: the `More` chip's active state is already an open item above.
-
-### `[x]` An inactive chip must say where its filter is applied — DONE 2026-09-24
-
-The tooltip on an inactive filter chip told the user nothing — measured, every
-inactive chip on the records view had an empty tooltip.
-
-A superseded chip now says where its field went, in two halves:
-
-| | |
-|---|---|
-| no picks of its own | `Filtered by the App header.` |
-| picks it still holds | `Filtered by the App header. This chip holds active, churned.` |
-
-The HOST names the place — `supersede(ids, appliedAt)` — because a chip cannot
-know which control took its field. `T-an-inactive-chip-says-where-its-filter-went`.
-
-### `[ ]` BUG — switching BACK to a view leaves the last view's column filter
-
-Found 2026-09-24 while fixing the hidden-filter bug, and it is NOT caused by
-that fix: measured on unchanged code, `All customers → At risk → All customers`
-leaves the page count at **1 of 1** when it should be 4.
-
-`clearColumnFilter` runs and `grid.columnClause('status')` reads `null`, so the
-GRID is clean — the stale clause is somewhere in the query the source composes.
-The `col:` chip stays on the bar with it, which is now at least visible.
-
-Start at `onViewPicked`'s `after` in `examples/contexts/records.js`: the loop
-rebuilds `columnClauses` from the grid, and something the view cleared is not
-reaching `pushColumns()`.
-
-### `[x]` Rework the filter menu — two modes, and MANY conditions — DONE 2026-09-24
-
-Today the filter menu has a condition dropdown, and the chosen condition symbol
-shows in the badge. Replace all of it.
-
-**The badge.** Drop the per-condition symbol. Show ONE symbol that says only
-"conditions are applied", like Excel's `f(x)` icon but for conditions. The right
-glyph is not decided — pick one and show it.
-
-**The default mode — selection.** The menu opens as a plain list:
-
-- A search input at the top.
-- Menu items with checkboxes.
-
-**The condition mode.** An icon-only `Use condition` button in the menu header
-switches to it. It shows:
-
-- The condition select and its input.
-- An `Add condition` button.
-
-`Add condition` appends a row. Every row after the first STARTS with a chaining
-select — `And` or `Or`. So a row is:
-
-```
-[And|Or] [condition] [value]
-```
-
-The first row has no chaining select.
-
-**`Equals` stays a condition.** For `Equals`, the second input is NOT a text
-box. It is a select menu of the values for that field.
+1. **Find the bespoke logic.** Still true, measured 2026-09-26: both toggles
+   are built in — `data-act="configure"` in the toolbar (emits
+   `filter-configure`) and `.to-toolbars` in the panel. The toolbar's `actions`
+   slot is not used for it.
+2. **Components take PARAMETERS, never data shapes.** A component should not
+   know a field is called `openTickets`. Measure what still does.
+3. **Extension, not forking** — item 27 is the mechanism.
+4. **Split the example app into its own repo**, LAST. Anything it cannot do
+   from outside the library is a boundary the library has not drawn.
 
 ---
 
-**Done 2026-09-24.** All of the above, plus one thing the spec did not ask for:
-**conditions are OPT-IN.** Will, 2026-09-24 — "I don't think Customer or Region
-need conditional logic." A field answered by ticking a closed set of three gets
-a plain list and no mode button; `custom: true` on the def turns it on. A
-TEXT GRID COLUMN always opts in.
+## C — Views and navigation
 
-| shipped | where |
-|---|---|
-| `data-mode` = default \| custom, an icon-only header button | `sherpa-menu` `filter` template |
-| `data-custom` — the opt-in gate, refused by click AND by attribute | `sherpa-menu.ts` `#enforceMode` |
-| `[And\|Or] [condition] [value]` rows, stamped from a prototype | `.condition-row-tpl` |
-| `Equals` answers with the field's OWN values, per ROW | `.condition-pick` |
-| ONE badge, `fx` — never the per-op sign | `filterFace`, `CONDITION_BADGE` |
-| the tip SPELLS the chain: `Contains: ab or Equals: churned` | `spellConditions()` |
-| a custom chip reads as `info`, not the on-tint | `data-condition`, `state-pins.yaml` |
+### `[ ]` 15 — Save a View, and the Save split-button menu
 
-The old light-DOM condition row is **deleted** — `#addConditionRow`,
-`qf-op-tpl`, `qf-text-tpl` and their CSS. The menu owns its own rows.
+Not started, measured 2026-09-26: only Dashboard saves a view
+(`dashboard.js`, asks in a dialog since f8dfd128); Records has no `view-save`
+handler; `viewOptions` is a flat list.
 
-Traps: `T-a-filter-menu-has-two-modes`, `T-conditions-are-opt-in-per-field`,
-`T-a-condition-badge-says-that-not-which`, `T-a-conditioned-chip-reads-as-success`,
-`T-equals-answers-with-the-fields-own-values`,
-`T-a-select-does-not-hug-its-own-text`.
+**Save** writes the current View — layout, content and its WHOLE filter
+configuration — to a view definition. **Load** from the View chip's menu, in a
+`Custom Views` section at the BOTTOM. **A name clash** in `Presets` or
+`Custom Views` appends ` - Copy-001`.
 
-### `[x]` The conditional filter shake-down — DONE 2026-09-24
-
-Will drove the built menu and reported nine faults in a row. Every one was
-real, every one is measured in the browser, and eight of nine were SILENT — the
-menu looked right and did the wrong thing.
-
-| what he saw | what it was |
-|---|---|
-| "the chip never goes active" | `info` pins the surface to WHITE, so a conditioned chip painted like an off one. Active FILL + info EDGE now |
-| nothing happens on Apply | the toolbar's `states` never read `menu.conditions`, so a chip full of answered rows reported an EMPTY clause |
-| the old select lists don't work | the host skipped `select()` on `clauses[field]`, and a TICKED list reports a clause too — every list stopped filtering |
-| the Equals select is empty | row one is stamped before the menu's value rows arrive; `#refillPicks` on `slotchange` |
-| applied on every keystroke | `#emitConditions` now returns early on a committing menu, and Apply forces it |
-| values don't carry over | an untouched `<select>` reported its first option as a pick, so the seed believed the rows were answered |
-| no placeholder | a `<select>` has no `placeholder`; the empty `Select…` option is both the prompt and the "unanswered" flag |
-| Clear leaves the rows | Clear empties both modes and reports at once |
-| toggling does nothing | a conditioned chip read as EMPTY so its body opened the menu; and an off chip reported `[]` rather than `suspended` |
-
-Plus two he asked for: an active chip is `font-weight: medium` and a `1px`
-border, and the grid's `mark.match` is INFO blue so one colour runs from the
-chip to the cell it found.
-
-Traps: `T-a-condition-is-a-draft-too`, `T-a-mode-switch-carries-the-answer-over`,
-`T-an-untouched-select-is-not-an-answer`, `T-a-rebuilt-row-reads-empty-for-a-tick`,
-`T-a-value-select-waits-for-the-rows`, `T-clear-empties-both-modes`,
-`T-toggling-a-conditioned-chip-suspends-its-condition`,
-`T-a-conditioned-chip-answers-with-its-clause`,
-`T-an-active-chip-is-heavier-and-more-strongly-drawn`.
-
-**The recurring shape, worth naming once:** a composed `sherpa-input-text`
-fills ASYNCHRONOUSLY, so anything that rebuilds a condition row reads it as
-unanswered for one tick. Four of the nine were that, wearing different clothes.
-
-### `[x]` Two chip bugs found while building it — DONE 2026-09-24
-
-Both reported by Will, both reproduced, both worse than described.
-
-**A new chip opened in the AMBER warning.** It arrived `active: true` holding
-no values, which is exactly the state `data-empty` paints amber — so the reader
-pressed Add, got what they asked for, and was shown a warning about it. It now
-arrives OFF and lights when it has an answer.
-`T-a-new-chip-opens-in-default-not-warning`.
-
-**Removing ONE filter cleared every other one.** Measured: `#removeFilter`
-emitted `quick-filter-change` with `values: {}` on a bar whose chips were still
-ticked, because `items()` on a freshly cloned `<sherpa-menu>` stamps NOTHING
-until the element upgrades. The host answered the only way it could —
-`select(field, [])` for every field. `#settled()` now awaits every chip and
-every menu before the emit. `T-a-rebuilt-bar-reads-empty-until-its-menus-stamp`.
-
-### `[x]` Only five filter chips carry an icon — DONE 2026-09-24
-
-A component-scoped filter chip needs NO icon. Only these five carry one:
-
-| Filter | Icon | note |
-|---|---|---|
-| Views | `desktop` | already correct |
-| Regions | `globe` | already correct |
-| Customer / Organisation | `buildings` | ADDED |
-| Date filters | `calendar` | already correct |
-| Time filters | `time` | no such filter in the examples yet |
-
-**Dropped:** `plan` wore `price-tag` and `openTickets` wore `ticket` — both
-decorative, neither on the list.
-
-**Two names in the table are not the icon's name**, which cost a detour:
-`monitor` and `desktop` are byte-identical files, the same drawing exported
-twice, and the toolbar fixes the view selector's glyph itself rather than
-reading it from the chip def. There is no `office`; `buildings` is the set's
-word for it.
-
-Verified live: the view bar carries `desktop / buildings / globe / calendar`,
-and the data bar carries none. `T-only-five-filter-chips-carry-an-icon`.
-
-### `[x]` A filter applies DOWN its scope only, never up — DONE 2026-09-24
-
-Two scopes. The same filter in each scope gives a different result.
-
-| Scope | What it touches |
-|---|---|
-| View | every piece of content in the View — it cascades DOWN |
-| Component | that component or container only, plus its own parts (a grid filter also reaches the column header components) |
-
-- A component filter NEVER trickles UP to the View or to a sibling.
-- A component filter is already blocked when the View scope applies that same
-  filter. Keep that.
-
-**A LEGEND TOGGLE is a component-scope filter.** Will, 2026-09-23. Switching a
-series off in `sherpa-chart-legend` filters THAT chart and nothing else — it
-does not trickle down to a sibling chart, a grid or a metric. And it is still
-subject to the View filter, which does cascade down: a series the View has
-already filtered out cannot be switched back on by its legend.
-
-So it is an instance of this rule, not a separate feature. The mechanism is
-already right — the legend emits `legend-item-click` and the PAGE calls the
-filter, which is why `bindLegendFilter` was deleted in favour of
-`bindSelection` (`T-readonly-legend-is-a-key-not-a-filter`). What is missing is
-the scope being STATED and enforced, the same as every other component filter.
-
-Check the same question for every control that filters its own component: a
-grid column filter, a metric's own scope, a chart's segment mode.
-
----
-
-**Done 2026-09-24.** `bindSelection` gains `scope: 'view' | 'component'` and a
-`key`. A component binding contributes a NAMED PART instead of writing the
-field, and because parts are ANDed with every field selection that gives the
-whole rule at once — narrows further, cannot widen past the View, two
-components intersect rather than fight, and the View's own state is untouched.
-
-**The bug was real and measured.** A View chip picked `mac+win`, a legend
-switched `mac` off, and the chip's own state came back as `["win"]` — the
-reader's choice overwritten, and the chip re-drew showing the legend's answer.
-
-`scope` defaults to `view`, so every existing binding is unchanged. The four
-example legends now use `component`, per Will's ruling. Verified live: a legend
-click takes the donut from 4 slices to 3 and leaves the grid at 25 rows.
-
-`T-a-filter-applies-down-its-scope`. 15 tests across three engines.
-
-**Still to check, and now cheap:** a grid column filter, a metric's own scope,
-a chart's segment mode. Each is the same one-word change at the point it binds,
-plus a look at whether it should have been narrowing everything all along.
-
-### `[ ]` BUG — a range filter refuses its default max, and the chip stays inactive
-
-Will, 2026-09-23, two faults in one flow:
-
-1. **The default MAX range is not accepted.** Picking the full span the filter
-   offers is rejected, so the widest selection is the one you cannot make.
-2. **The chip does not go active on Apply.** `data-current` is not set, so the
-   bar reads as unfiltered while the filter is applied.
-
-Where to start, from a scan 2026-09-23:
-
-- `sherpa-quick-filter-toolbar.ts:909` — `#onRangeToggle` swaps the menu between
-  its two shapes with `menu.toggleAttribute('data-range', on)`.
-- `:891` sets `data-range` when a chip is stamped in range mode.
-- `#onDatePicked` handles both `datetime-change` and `range-select` (`:395-396`),
-  so a date range and a single date arrive on different events.
-- `#onRangeToggle` listens for a bare `change` (`:398`) — the comment notes a
-  `sherpa-switch` re-dispatches composed while a bare checkbox does not, which
-  is a likely place for one of the two paths to be missed.
-
-Only ONE range-capable chip exists in the Records example today — `Created date`
-— and its menu carries no `data-range`, so the second fault may only show after
-the Range switch is flipped. Reproduce that first: flip Range, pick the full
-span, press Apply, and watch `data-current` on the chip.
-
-Fault 2 is the same shape as the persistent-chip finding in 11f: a chip that
-should be current and is not. Check whether the Apply path writes
-`data-current` at all, or whether it writes and something clears it.
-
-### `[ ]` The Created-date filter should be a top-level date RANGE
-
-Will, 2026-09-23: it should be a top-level date range filter that slices the
-records to a subset across the whole view.
-
-**Where it is today.** `examples/contexts/global-filters.js:74` — it IS already at
-view scope, in `globalFilters()`, so the scope half is right. What is wrong is
-the SHAPE:
-
-| | today | wanted |
-|---|---|---|
-| kind | `date` | a date RANGE |
-| opens as | SINGLE, with a Range switch to flip | a range |
-| offers | `availableDates` — the discrete days the data carries | a span |
-
-The chip's own comment argues for single: *"opening in range mode makes the
-common case — one day — take two clicks and a mode change."* That reasoning
-holds for a COMPONENT-scope date chip. It does not hold for a view-level slice,
-where "records created between X and Y" is the common case and a single day is
-the rare one.
-
-So this is not "change the default everywhere" — it is that a VIEW-scope date
-filter and a component-scope one want different defaults.
-
-Things to settle:
-
-1. **Does `kind: 'date'` gain a range variant**, or does the chip take
-   `data-range` (which `sherpa-menu` already has — see its `data-range` prop)?
-2. **`availableDates` is a SET of days.** A range wants bounds — min and max —
-   which the same data gives for free (`dates[0]` and `dates.at(-1)`). The
-   calendar already accepts both; `T-a-date-chip-names-its-field` records why
-   the default last-90-days matched nothing here.
-3. **It cascades DOWN.** Once it is a view-scope range, every component in the
-   view reads the subset — which is the rule in "A filter applies DOWN its scope
-   only", and the same ruling as the legend toggle.
-
-### `[ ]` A filter PANEL, as an alternative to the toolbars
-
-A panel in the content area, toggled from the options button (the sliders icon).
-
-- 3 columns wide, on the left. It fills all rows.
-- Sections for the View filter and for every component-level filter.
-- At tablet and phone widths, filtering goes back to the toolbars.
-- The user can put it back to toolbars.
-
-Not designed yet. Do this one by trying things.
-
----
-
-## Views
-
-### `[x]` A nav item goes to a CONTEXT, not a View
-
-Done in code 2026-09-24. The four terms are in CLAUDE.md "Navigation terms":
-Section, Area, Context, View. A `View` is what the View chip in the App Header
-selects.
-
-- A View is a preset, or one the user saved.
-- A View has its own layout and its own content.
-- A View can have its own Data Sources and Stores.
-- Views under one Context DO NOT have to share data.
-
-### `[ ]` Save a View, and the Save split-button menu
-
-**Save.** Clicking `Save` in the App Header writes the current View — its layout,
-its content and its WHOLE filter configuration — to a view definition. The user
-can load it again at any time.
-
-**Load.** A saved View loads from the View filter chip menu, in a section at the
-BOTTOM of that menu, labelled `Custom Views`.
-
-**A name clash.** If a View of that name already exists, in `Presets` or in
-`Custom Views`, append ` - Copy-001` to the name.
-
-**The menu button, to the right of Save.** It shows two options:
+**The menu button, right of Save:**
 
 | Option | What it does |
 |---|---|
-| `Save As` | A dialog. The user edits the View name, then saves. The user can cancel. |
-| `Delete View` | Critical style. A dialog asks the user to confirm. ONLY a custom View can be deleted. |
+| `Save As` | A dialog. The user edits the View name, then saves or cancels. |
+| `Delete View` | Critical style. A dialog asks to confirm. ONLY a custom View. |
 
-### `[ ]` Favourite and Save apply to the Context, not the View
+### `[ ]` 16 — BUG: Favourite and Save apply to the Context, not the View
 
-Favouriting or saving a View applies to every View in that Context. It must
-apply only to the one View. Today the ★ stars the Context
-(`examples/index.html`, the `view-favorite` listener).
+The ★ stars the Context (`examples/index.html` ~396, the `view-favorite`
+listener), so it applies to every View in that Context. It must apply to the
+one View.
 
----
+### `[ ]` 17 — Breadcrumbs are for workflow, not for the nav
 
-## Navigation
+Breadcrumbs must not show movement between Contexts — the nav does that. They
+are for a workflow redirect or a drilldown, e.g. a link in a grid cell opens a
+details Context.
 
-### `[ ]` At the mobile breakpoint the nav becomes a menu
+### `[ ]` 17b — At the mobile breakpoint the nav becomes a menu
 
-At mobile width the left nav rail is GONE. A menu takes its place.
+Not started. At mobile width the rail is GONE and a menu takes its place.
 
-**The trigger.** A menu button in the App Header, to the RIGHT of the Context title.
+- **The trigger:** a menu button in the App Header, RIGHT of the Context title.
+- **The rail:** hidden, and its padding on the header and content goes to `0`.
+- **The menu:** fills the viewport; no `Pin`; `Settings` at the BOTTOM; a
+  footer `Cancel` that closes it and goes nowhere.
+- **A Context row** closes the menu AND navigates.
 
-**The rail.** Hidden. The padding it puts on the App Header and on the content
-area goes to `0`. No empty gutter left behind.
+**Put the nav on the data layer while you are here.** `sherpa-nav` has
+`renderData()` but never calls `bind()` — a one-shot draw. Bind it to a Store,
+so the rail and the menu are two renderings of one nav model.
 
-**The menu.**
-
-- It fills the WHOLE viewport when open.
-- No `Pin` option. Pinning means nothing here.
-- `Settings` is a menu item, at the BOTTOM of the list.
-- The footer holds a `Cancel` button. It closes the menu and redirects nowhere.
-
-**Pressing a nav item that targets a Context** closes the menu AND performs the
-redirect.
-
-**Put the nav on the data layer while you are here.** The rail and this menu are
-TWO renderings of ONE nav model. Do not let each draw itself its own way.
-
-Checked 2026-09-23: `sherpa-nav` has `renderData()` (line 131), so
-`populate(config)` works — but it never calls `bind()`. It is a one-shot draw,
-not a live binding. `sherpa-nav-item` touches the data layer not at all.
-
-Bind the nav to a Store and both renderings follow one source. A change to the
-nav then reaches the rail and the menu together.
-
-### `[x]` Settings opens as an overlay, and closing it puts you back
-
-Done 2026-09-24. `sherpa-dialog data-type="overlay"` sits in the app shell's new
-`overlay` slot and covers the header and content; the rail stays beside it. The
-Context under it is never reloaded, so its View survives. The URL carries both:
-`?context=records&settings=profile`. Proven by
-`test/e2e/reforged-settings-overlay.spec.ts` — four ways out, one per test.
-
-### `[ ]` Figma: use the Navigation terms
+### `[ ]` 34 — Figma: use the Navigation terms
 
 The code moved to Section / Area / Context / View on 2026-09-24 (CLAUDE.md
 "Navigation terms"). Figma still uses the old words. Rename there, then resync:
 
-- App Header: the `View title` layer is the Context title. Code parts are now
+- App Header: the `View title` layer is the Context title. Code parts are
   `row-context` and `context-icon`.
 - Navigation: a parent row is an Area; a leaf row is a Context. A Section is
   the label + divider only.
 - Any `Views` section label, or frame named for a page, is a Context.
 - Keep `View` only for the View chip and its View group (★ · Save · ▾).
-- `sherpa-dialog` has a new `data-type="overlay"` (fills the app area, non-modal)
-  and `sherpa-app-shell` a new `overlay` slot. Neither exists in Figma yet.
+- `sherpa-dialog data-type="overlay"` and `sherpa-app-shell`'s `overlay` slot
+  do not exist in Figma yet.
 - Navigation: collapsed `nav-layout/width` is pinned to 40px. Bind it to
-  `size/3xl` so the closed rail follows density (36 / 40 / 48), as the code
-  already does. Then drop the override in `sherpa-nav.css`.
+  `size/3xl` so the closed rail follows density (36 / 40 / 48), then drop the
+  override in `sherpa-nav.css`.
 
-Each code-only difference above is also in that component's `_divergence` block.
-
-### `[ ]` Breadcrumbs are for workflow, not for the nav
-
-Breadcrumbs must not show movement between Contexts — the nav does that.
-Breadcrumbs are for a workflow redirect or a drilldown, e.g. a link in a grid
-cell opens a details Context.
+Each code-only difference is also in that component's `_divergence` block.
 
 ---
 
-## Overlay panels
+## D — Data and charts
 
-### `[ ]` The `Ask N-zo` panel is too narrow, and cannot be resized
+### `[ ]` 13 — A sparkline does not follow its record deltas
 
-- Make the panel wider.
-- The user can drag the LEFT edge to resize any overlay panel.
-- Set a sensible minimum width.
+The sparkline does not show the change in the record values, so it reads as
+disconnected from the total value above it.
 
-### `[ ]` A focused grid row opens a details panel on the right
+### `[ ]` 14 — An example of real-time data
 
-Focus a row in `sherpa-data-grid` → an overlay panel opens on the right with more
-detail about that record.
+Data that changes in real time — WebSocket, or like it — coming through the
+data layer into a piece of content. Last of D: it proves 13 is really fixed.
 
-- Any other open overlay panel closes first.
-- The panel header has up and down chevron buttons.
-- Those buttons step the focused row up and down the grid.
+### `[ ]` 9b — A Data Viz header, for metrics and chart containers
 
----
-
-## Components
-
-### `[ ]` A Data Viz header, for metrics and chart containers
-
-New Figma design: `Data Viz Header`, node `1456:30467`, on page `✅ Headers`.
-Use it for Metrics, and for any Container that holds a chart or other data viz.
-
-Read from Figma 2026-09-23. It is 32px tall, horizontal, `gap/sm`, `padding/md`
-on all four sides, with a `border/width/sm` bottom rule in `style-border/base +1`
-and no fill.
-
-Its parts, left to right:
+Figma `Data Viz Header`, node `1456:30467`, page `✅ Headers`. For Metrics,
+and any Container that holds a chart. 32px tall, horizontal, `gap/sm`,
+`padding/md` all round, a `border/width/sm` bottom rule in
+`style-border/base +1`, no fill.
 
 | Part | What |
 |---|---|
 | Drag handle | a Button, icon only. Toggled by `hasDragHandle` |
-| `left` | a SLOT. Holds the leading icon. Toggled by `hasIcon` |
+| `left` | a SLOT. The leading icon. Toggled by `hasIcon` |
 | `Labels` | vertical, `gap:2` — the `title`, then a `metadata` SLOT |
 | `actions` | a SLOT. Icon-only Buttons |
 
-The title is the notable part. It is NOT the normal container heading:
-
-- `content/font/body`, `content/weight/light`
-- `content/size/small` (12px), `content/line-height/small` (16px)
-- `content/body/+1`
-- **UPPERCASE** (`textCase: UPPER`)
-
-The `metadata` slot sits UNDER the title, `gap:12`, and holds an optional
-description.
-
-Compose the two Buttons from `sherpa-button`. Do not hand-roll them.
-
-### `[x]` The pagination row-count select is not a Sherpa select — DONE 2026-09-24
-
-The row-count select box did not follow the `sherpa-input` select design.
-
-**Measured against a real `sherpa-input-text`:** same height (32), same border
-colour, same fill — and `border-radius: 0` where every other control is 4px.
-These two fields were the only controls in the system drawn square.
-
-The cause was the native control. At `appearance: auto` the ENGINE draws a
-`<select>`, and its shape wins: WebKit rounded it to 5px and the page field
-beside it to 4px, whatever the CSS said — invisible in Chromium, which gave 4px
-for both. `appearance: none` then took two more things with it:
-
-- **the caret**, which a `<select>` cannot get back via `::after`, so it is a
-  `background-image` of the same triangle-down `sherpa-input-text` masks in;
-- **the border**, whose declared colour had never drawn because the native
-  control supplied its own — there was no `border-width` at all.
-
-Both fields now read 4px corners, 0.5px per-edge border, 32px tall, in both
-engines. `T-a-native-select-keeps-its-own-shape`, which also records why the
-test does not assert the select's border COLOUR: WebKit reports `currentcolor`
-until a forced recalc, so asserting it tests the engine.
-
-### `[~]` A metric trend does not update after a data-layer change — WORKS 2026-09-24
-
-The trend direction icon and the trend label on the metric component do not
-update when the data layer transforms the records — a filter, for example. The
-total value moves; the trend does not follow it.
-
-**Could not reproduce; it follows correctly.** Measured on `?context=records`
-by ticking a Region value and pressing Apply:
-
-| tile | value | delta |
-|---|---|---|
-| Customers | 100 → **27** | −60% → **−50%** |
-| Total spend | $496,749 → **$119,110** | −78.3% → **−75.93%** |
-| Seats | 12,308 → **3,665** | −73.35% → **−56.93%** |
-| Open tickets | 456 → **129** | −72.09% → **−55.56%** |
-
-The trend DIRECTION stayed `down` because EMEA genuinely still falls — correct,
-not stuck. Proved separately with a fixture of two regions with opposite shapes:
-same row count either way, and the trend flips `up` / `down` with the status and
-the sign of the delta. That test is now in `reforged-metric.spec.ts`.
-
-**Why it may have looked broken.** The Region menu COMMITS — `data-commit`, so a
-tick is a draft until Apply. Ticking a value and watching the tiles shows
-nothing move, because no filter has been applied yet. That cost me three probes
-before I noticed.
-
-**If it is still wrong, say which control.** A chip that applies on tick and
-does not move the tiles would be a different fault from the one described.
-
-### `[ ]` A sparkline does not follow its record deltas
-
-The sparkline does not show the change in the record values, so it reads as
-disconnected from the total value label above it.
-
-### `[x]` The metric item has no surface or border colour — DONE 2026-09-24
-
-Figma gives the metric item a surface colour and a border colour. The coded
-component did not apply either.
-
-**Measured against live Figma** (`Metric`, 61:263): the frame binds `fills →
-style-surface/base` AND `strokes → style-border/base`, 0.5px `INSIDE`, with
-`rounding/*` on each corner. The CSS had the fill only, so every tile floated
-with no edge.
-
-Fixed with the same shape `sherpa-container` uses — per-edge widths and
-per-corner radii, not a shorthand, so a grouped run can zero one side. The
-shared `.sherpa-border-edges` class cannot help: a `:host` cannot wear a class
-from its own sheet.
-
-Verified live: fill `#ffffff`, border `#b3b3c3`, radius 4px. The widths read
-back as `1px`, which is `T-a-sub-pixel-border-reads-back-as-1px`, not a wrong
-value.
-
-### `[x]` Every metric item uses the xsmall container class — DONE 2026-09-24
-
-Some did not: the four dashboard tiles were `data-col-span="small"` while the
-four records tiles were `xsmall`.
-
-It matters only below desktop, which is why it was easy to miss:
-
-| breakpoint | `small` | `xsmall` |
-|---|---|---|
-| ≤767px | span 4 | **span 1** |
-| ≤1279px | span 4 | **span 2** |
-| ≤1919px | span 3 | span 3 |
-| ≥1920px | span 3 | span 3 |
-
-So at desktop the two are identical, and at mobile `small` put every tile on its
-own row. Verified after the change: four tiles, ONE row, equal widths at 700,
-1100 and 1600px.
+The title is NOT the normal heading: `content/font/body`, `weight/light`,
+`size/small` (12px), `line-height/small` (16px), `content/body/+1`,
+**UPPERCASE**. The filter panel's field titles use the same look
+(`sherpa-text-small`, caps, light). Compose both Buttons from `sherpa-button`.
 
 ---
 
-## Testing
+## E — Overlay panels
 
-### `[ ]` Playwright must test accessibility — WCAG 2.1 AA
+### `[ ]` 22 — The `Ask N-zo` panel is too narrow, and cannot be resized
 
-Target: WCAG 2.1 level AA, every component.
+- Make it wider, with a sensible minimum.
+- The user can drag the LEFT edge to resize any overlay panel.
 
-**Starting point, checked 2026-09-23:** none. 93 spec files in `test/e2e/`, not
-one for accessibility. `axe-core` is NOT a dependency of this repo.
+### `[ ]` 23 — A focused grid row opens a details panel on the right
 
-**The output is a REPORT, one per component.** A pass/fail list is not enough.
-For each failure state:
-
-- what is wrong,
-- which WCAG 2.1 AA criterion it breaks, and
-- HOW to correct it.
-
-Watch out for the shadow DOM. A checker that reads only the light DOM sees
-almost nothing of a Sherpa component. Prove it reaches inside a shadow root
-before trusting a green result. See `sherpa-read-pixels-not-computed-style` —
-a tool that reported the wrong thing cost three wrong diagnoses.
+Focus a row in `sherpa-data-grid` → an overlay panel opens on the right with
+more about that record. Any other open overlay closes first. Its header has up
+and down chevrons that step the focused row. Needs 22's resizing panel.
 
 ---
 
-## New components
+## F — The accessibility gate
 
-### `[ ]` `sherpa-layout-canvas` — an infinite canvas content area
+### `[ ]` 24 — Playwright must test accessibility — WCAG 2.1 AA
 
-A content area that pans and zooms without an edge.
+Every component, level AA. None today; `axe-core` is not a dependency.
 
-- The surface carries a CROSSHAIR grid pattern.
-- A floating button group sits at the BOTTOM RIGHT, over the canvas.
+**The output is a REPORT, one per component**: for each failure, what is
+wrong, which criterion it breaks, and HOW to correct it.
 
-The button group holds four controls:
-
-| Control | Does |
-|---|---|
-| Pan | the pan tool |
-| Zoom in | step the zoom up |
-| Zoom out | step the zoom down |
-| Options | opens a menu |
-
-Compose it from `sherpa-button` and the existing menu component. Do not
-hand-roll either — see the Consistency group.
-
-**A minimap, to navigate the canvas.** A small map of the whole canvas showing
-where the viewport sits. The user moves the viewport from it.
-
-Open question: its own component, or part of `sherpa-layout-canvas`?
-
-Lean: PART OF the canvas. Nothing else will use it, and it needs the canvas's
-pan and zoom state to draw itself. A separate element would have to be handed
-that state, which is a second owner of one value — the recurring bug. See
-`sherpa-state-ownership-and-parity`.
-
-It becomes its own component only if a second host wants one.
+Prove the checker reaches inside a shadow root before trusting a green
+result — one that reads the light DOM sees almost nothing of a Sherpa
+component. 40 is a first finding for it.
 
 ---
 
-## Data layer
+## G — The big builds
 
-### `[ ]` An example of real-time data
+### `[ ]` 25 — `sherpa-layout-canvas` — an infinite canvas content area
 
-Show data that changes in real time — over WebSocket, or something like it —
-coming through the data layer and into a piece of content in the UI.
+Pans and zooms without an edge, on a CROSSHAIR grid pattern. A floating button
+group at the BOTTOM RIGHT: Pan, Zoom in, Zoom out, Options (a menu). Compose
+from `sherpa-button` and the menu; do not hand-roll either.
 
----
+**A minimap** shows the whole canvas and where the viewport sits; the user
+moves the viewport from it. PART OF the canvas, not its own component: it needs
+the canvas's pan and zoom, and a separate element would be a second owner of
+one value. Split it out only if a second host wants one.
 
-## Architecture — allow-lists
+### `[ ]` 26 — A `Grouped` mode for the content area
 
-### `[x]` An optional allow-list on ANY component axis — DONE 2026-09-24
+Every container in the content area reads as ONE stitched object: gutters
+`0px`, MID rounding on every container, only the top-most keeps its own.
 
-One primitive, for every component. A component takes an optional allow-list of
-what it may show or do. No list → everything is allowed. This is the default, so
-nothing breaks.
+**Will's ruling: this is `sherpa-group` applied to the layout grid.** The work
+is how the two meet — `<sherpa-layout-grid>` owns the tracks, `<sherpa-group
+data-direction="grid">` the joins. Likely: the layout grid gains a
+`data-grouped` that gives up its gaps and applies the group rules.
 
-It applies to four axes:
+### `[ ]` 35 — Layout grid: plain grid templates, not a re-invented grid?
 
-| Axis | Example |
-|---|---|
-| Fields | which data fields a filter toolbar offers |
-| Values | which values a filter menu offers |
-| States | which states a control may cycle through |
-| Actions | which actions a component may perform |
+Will, 2026-09-24: are we re-inventing the wheel? Today a scenario is spread
+over `data-rows`, `data-row-count`, a named `data-col-span` and a
+`data-row-span` per child, and JS for `data-grouped`. A named
+`grid-template-areas` per scenario, each child naming its AREA, might replace
+most of it. Find what it cannot do — column spans re-scale per breakpoint; the
+fit grid's last row takes the rest — before building. Do it with 26.
 
-Rules:
+### `[ ]` 27 — A consumer can supply their OWN templates and CSS
 
-- A value must exist in the field's own value set to be allow-listed.
-- A value that is not on the list is NOT shown.
-- The list is a plain array of objects. Data, not code.
+Someone building with Sherpa-UI must be able to give a component their own
+HTML template, and their own CSS that EXTENDS the default rather than
+replacing it. Make it possible, and easy.
 
-Why it is worth doing:
-
-- A filter toolbar becomes easy to control — hand it a list.
-- Contextual and access-based variation needs no per-component branch.
-- A state list makes a boolean toggle and a tri-state cycle THE SAME control.
-  Two states or three; the component does not care.
-
----
-
-**Done 2026-09-24.** `src/core/data/allow.ts`, DOM-free like `cycle.ts` and
-`validate.ts`, exported from `sherpa-ui/data`:
-
-| | |
-|---|---|
-| `allow(items, list)` | the permitted subset, in the ITEMS' order |
-| `isAllowed(item, list)` | one item |
-| `allowKey(item)` | id → value → field → `valueKey`, first present wins |
-| `unknownEntries(items, list)` | what a list names that nothing has |
-| `nextState(states, current)` | the states axis — a toggle and a cycle, one control |
-
-Two rules carry it, and both are invisible when wrong. **No list allows
-everything**, so nothing that ignores this changes; an EMPTY array is a list
-that names no one. And **a list says which, never in what order** — returning
-the list's order would overwrite a component's own sort with a caller's typing
-order. `T-an-allow-list-is-a-filter-not-an-order`.
-
-Proven on a real component rather than left as a library nobody calls:
-`sherpa-quick-filter-toolbar.allowFields()` limits both the chips on the bar and
-what Add offers. 12 node tests, 1 e2e across three engines.
-
-**Still to wire, when a caller needs it:** values (menus), actions
-(`sherpa-data-grid.actionsFor`), and folding `cycle.ts`'s sort into
-`nextState`. The primitive is there; each is a small call at the point a list is
-already built.
+In `src/core/ui/sherpa-element.ts`, `static css` / `static html` are plain
+`URL`s a subclass can re-point, and the template cache is keyed by `href`. Half
+the door is open. Missing: a "default, then mine" CSS order; an API that is not
+subclass-and-redefine; and a check that a custom template still provides the
+parts, slots and classes the JS and CSS expect — the `.component.yaml`
+anatomy is the natural thing to check against.
 
 ---
 
-## Layout — the content area
+## H — Tidy-ups and renames
 
-### `[~]` A fixed-height row uses a hard-coded gutter — NOT REPRODUCIBLE 2026-09-24
+### `[ ]` 11 — `sherpa-group`: what is left
 
-In a fixed-height content area, the LAST content item does not use the spacing
-token for the gutter between the row above it and itself.
+`<sherpa-group>` is BUILT (2026-09-23), but only `sherpa-pagination` uses it.
+Measured 2026-09-26, all three still open:
 
-So the spacing breaks the moment `compact` or `comfortable` density is applied —
-the token moves, the hard-coded value does not.
+1. The 16 generated `grid-*` / `vertical-*` blocks are still in
+   `sherpa-group-positions.css` AND `tokens.css`, with 0 callers. The wrapper
+   derives those positions; they can go.
+2. `.sherpa-border-edges` / `.sherpa-border-corners` are not grouping — 21
+   components use them. Move them to their own `sherpa-borders.css`.
+3. The `.sherpa-group` class is still used in calendar, menu,
+   quick-filter-toolbar and select-checkbox.
 
-**Could not reproduce.** Measured every layer of the `data-rows="fit"` path on
-both `?context=records` and `?context=dashboard`, in all three densities. Every
-value follows the token:
+### `[ ]` 28 — A Figma component is NOT always a web component
 
-| what | default | compact | comfortable |
-|---|---|---|---|
-| grid `row-gap` | 16 | 12 | 20 |
-| gutters BETWEEN rows | 16, 16 | 12, 12 | 20, 20 |
-| grid padding, all four sides | 16 | 12 | 20 |
-| gap BELOW the last row | 16 | 12 | 20 |
-| `sherpa-stack[data-gap=md]` | 8 | 4 | 12 |
-| bulk-actions inline gap | 8 | 4 | 12 |
+A sub-component is often only a `<template>` in its parent's `.html`, or a set
+of CSS classes. `sherpa-grid-cell` is the clear case.
 
-A grep for raw px in `src/core/`, `examples/` and the layout components found
-no un-tokenised spacing either. The app shell adds none of its own — every
-padding and gap on it reads 0.
+1. Sweep all components: real element, template, or CSS only.
+2. For each that is not a real element, cost the fold — spec, MCP, tests,
+   Figma link.
+3. Fold the clear ones. Start with `sherpa-grid-cell`.
 
-**Two possibilities, and the second is likely.** Either the report predates a
-fix — `060674d2` fixed exactly this class of bug in the nav, where the closed
-rail was pinned to 40px while the tile and inset followed density — or the
-hard-coded value is somewhere I did not look.
+**`sherpa-nav-section` is the same question** — still composed by nothing
+(only exported and listed in the sandbox). `sherpa-nav` draws its own label
+and rule. Compose it (the nav mirrors `data-collapsed` onto each section — one
+`setAttribute`), fold it, or leave its 65 correct lines. A Figma component
+stays a Figma component either way.
 
-**To close this, say which view and which gap.** A screenshot at compact vs
-comfortable with the offending gutter circled would settle it in a minute; I
-would rather that than guess at a fix for something I cannot see.
-
-### `[ ]` A `Grouped` mode for the content area
-
-A new mode. When it is on, every container in the content area reads as ONE
-stitched object.
-
-- Every gutter goes to `0px`.
-- Every content container uses the MID grouping rounding (`0px`) on its borders.
-- Only the TOP-MOST container keeps its own rounding.
-
-**Will's ruling: this is `sherpa-group` applied to the layout grid.** The
-wrapper already derives grid position from `sibling-index()` and rounds only the
-four outer corners — which is exactly what "one stitched object" means. Built
-2026-09-23 and proved equivalent to the class in all three engines.
-
-So the work is not a new mode's CSS. It is deciding how the two wrappers meet:
-`<sherpa-layout-grid>` owns the tracks and `<sherpa-group data-direction="grid">`
-owns the joins. Either the layout grid gains a `data-grouped` that turns its own
-gaps to 0 and applies the group rules, or a group wraps a layout grid. Try both;
-the first is likely, because the gutter is the layout grid's to give up.
-
-### `[ ]` Layout grid: plain grid templates, not a re-invented grid?
-
-Will, 2026-09-24: are we re-inventing the wheel? A layout element could state its
-scenario with HTML attributes, and a CSS grid template (`grid-template-areas`,
-named lines) could set each one up.
-
-Today the scenario is spread over several parts: `data-rows` (fit / fixed),
-`data-row-count`, a named `data-col-span` per child, a `data-row-span` per
-child, and JS for `data-grouped`. A named template per scenario, with each child
-naming its AREA, might replace most of that — and the spans with it.
-
-Find out what it replaces and what it cannot do (the column spans re-scale per
-breakpoint; the fit grid's last row must take the rest) before building.
-
----
-
-## Architecture — the filter family
-
-### `[ ]` 38 — The FILTER family: one model, one builder, one owner
-
-Will, 2026-09-25: *"There's SO MUCH code in the filter panel and filter toolbar
-components. I feel like so much has been reinvented that we had working in the
-toolbar for the sake of some visual reorganisation and selection component
-differences for values. All of the events and data transformations would be the
-same."*
-
-And: *"I'm juggling bugs here between the filter panel and filter toolbar when
-the overlap is considerable so the code should be singular, and reused, where
-possible. That's the whole reason that the filter-chip is its own component."*
-
-#### What a filter IS — Will's taxonomy, 2026-09-25
-
-> Group is a thing. Sort is a thing. Boolean filters are a thing. Single select
-> value filters are a thing. Multi select value filters are a thing. Compound
-> Conditional filters are a thing. **Organise is not.** It's just a label on the
-> screen.
-
-Six KINDS. A heading, a section, a zone, a bar, a panel — those are
-PRESENTATION and must never name a kind. `data-kind` carries it; `group` and
-`sort` are implemented, the other four are still spelled out of `select`,
-`custom` and whether there are options.
-
-#### The functionality that must survive any refactor
-
-| | boolean | single | multi | conditional | group | sort |
-|---|---|---|---|---|---|---|
-| draw on the toolbar | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| draw in the panel | ✅ preset | ✅ run | ✅ run | ✅ inline menu | ✅ chip | ✅ chip |
-| draw in a grid heading | — | ✅ | ✅ | ✅ | — | ✅ |
-| add / remove from the Add menu | ✅ | ✅ | ✅ | ✅ | — | — |
-| answer | tap | pick | tick | rows | pick | pick |
-| suspend, keeping the answer | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| clear | — | ✅ | ✅ | ✅ | ✅ | ✅ |
-| report | `quick-filter-change` | ← | ← | ← | `group-change` | `sort-change` |
-
-Plus, across all of them: the **scopes** (view narrows, component contributes),
-**folding** into More, **superseding** when another scope owns the field, and
-**commit** (Apply) versus applying at once.
-
-#### Where the code is now
-
-| file | ts | css | html |
-|---|---:|---:|---:|
-| `sherpa-quick-filter-toolbar` | **1857** | 268 | 215 |
-| `sherpa-menu` | 1103 | 479 | 295 |
-| `sherpa-filter-panel` | **898** | 197 | 138 |
-| `sherpa-quick-filter` | 703 | 297 | 103 |
-
-The toolbar has **77 methods**, the panel **44**. The panel's own list —
-`#drawField` (106), `#draw` (109), `#flipCondition` (54), `#drawChip` (36),
-`#fillAdd`, `#syncAnswered`, `#heldOfChip`, `#clearField`, `#markConditioned` —
-is a second answer to questions the toolbar already answers with `#render`
-(86), `#addMenu` (141), `#renderAvailable`, `#chipPicks`, `setChipReading`.
-
-#### The bug classes, and which structural cause each came from
-
-Every one of these was a real report in one day:
-
-| symptom | cause |
-|---|---|
-| amber Sort chip | `data-current` written from 26 places; the reader judged it |
-| Group off cleared its column | TWO hosts painted the chip, and disagreed |
-| Sort off also killed Group | one container swept a run it did not own |
-| menus dead after leaving the panel | the borrower did not give them back on close |
-| conditional chip opened a blank card | the drill moves ROWS; conditions are not rows |
-| Add could not remove | the bar's menu listed what was LEFT, not the whole list |
-
-**Not one of them was in the data layer.** All six are two components
-re-deriving what one of them, or the chip, already knows.
-
-**The full review is `docs/FILTER-REVIEW.md`** — measured sizes, the 61 sites
-that touch sort state, every bug mapped to its cause, and the six steps below
-with what each one DELETES.
-
-#### The plan — four moves, smallest first
-
-**1. `[x]` The chip owns its KIND** — done 2026-09-25. Group and Sort own their
-gesture, draw themselves and report by name; the containers place them and the
-panel annotates with `scope`. Deleted `#toggleGroup`, `#cycleSort`,
-`#syncSortLabel`, `#syncGroupLabel`, `#organiseClick`, `#organiseField` and the
-panel's shadow copy of the sort state. TRAP `T-a-chip-knows-what-kind-it-is`.
-
-**2. `[x]` ONE derivation of what a filter IS** — done 2026-09-25. Fifteen
-sites worked a filter's kind out from `select`, `conditions` and whether there
-were options; `core/ui/filter-kind.ts` names all eight and `kindOf()` is the
-only place the older spelling is read. Net +73, which BUYS the ~250 lines step
-4 deletes. TRAP `T-a-chip-knows-what-kind-it-is`.
-
-**3. The DATA LAYER coordinates; no component knows another exists.** Will's
-ruling, 2026-09-25: *"The Panel and Bar should not be aware of each other.
-This is core to sherpa component agnosticism."* Measured, the panel searches
-the page for a toolbar, reaches into its shadow root, calls its methods and
-MOVES its menus — and neither component binds to a `DataSource` at all.
-
-`DataSource` is already the registry Will described: `bind()` registers,
-`selection()` gets, `select`/`apply` sets, `#push` broadcasts, and it holds
-current state only. It gains ONE slot — the held set per scope — which is the
-only thing the panel genuinely reaches sideways for.
-
-**Menu borrowing goes.** It exists because the menu held the truth; once the
-data layer does, two menus over one field are fine. That also kills both
-borrowing bugs. Net ≈ −130 lines.
-
-**4. ONE field-row builder.** `#drawField` / `#drawChip` / `#drawSection` and
-`#render` / `#addMenu` differ by exactly two things: the layout DIRECTION, and
-whether a field's values EXPLODE into a run or stay behind a menu. That is two
-flags, not two implementations. ~250 lines, the biggest risk — land 3 first.
-
-**5. Collapse the sort/group state.** One value, four attributes, seven owners
-(§4 of the review). The chip owns it; the source is the only other owner.
-
-**5.5. Error reporting, woven through.** Measured: the whole of `src/` has ONE
-`console.error` and three `console.warn`, against **55 silent `if (!x) return`**
-in the filter family and data layer alone. Three of Will's bug reports cost an
-hour each and were never reproduced because the system knew and could not say.
-`source.debugState()` lands with step 3 — one call that dumps rows, sort, group,
-filter, selections, parts, scopes and bound elements, so a bug report is a paste.
-A decision stays silent; a broken assumption reports. `LoadResult.issues` and
-`persist-view`'s callback are the two shapes to reuse. `docs/FILTER-REVIEW.md`
-§14.
-
-**6. Split `filter-state.ts`** (547 lines, three jobs): the state model and
-query building, how a filter READS in words and badges, and `bindSelection`.
-
-**Decided 2026-09-25:** filter SCOPING lives in the data layer; registration is
-AUTOMATIC; a source is PROVIDED OVER A REGION so a component cannot reach one
-outside where it is mounted; and `data-source` is available on every data-bound
-component, optional, required only where a region offers more than one. `DataSource` gains a small scope registry —
-`scope(name)`, `hold(name, fields)`, `holds(name, field)`, `scopeOf(field)` —
-and `SherpaElement` finds its source by dispatching a request on connect, which
-the nearest source answers.
-
-**What may be added where** (Will, 2026-09-25): UP is open — any field a
-component has can be added to the VIEW scope. DOWN is closed — a component
-scope holds only its OWN fields. View and component are EXCLUSIVE, so adding to
-one removes it from the other, in ONE call. Two component scopes are NOT
-exclusive: two grids may both filter `owner` without elevating it. Detail and
-what the registry must answer: `docs/FILTER-REVIEW.md` §7 step 3.
-
-**And the component DECLARES what data it needs; the data layer COMPOSES it.**
-Will: *"Any component template can come in with a variety of attributes set
-that will require data composition from the data layer. So this should probably
-just be the mechanism for all UI components. 1 system, 1 implementation."* The
-example hand-builds 9 components through `as` closures over ~569 lines, calling
-`reduceRows`, `countBy`, `deltaPercent` and `seriesBy` — all of which are
-already IN the data layer. A metric says `data-field`, `data-aggregate`,
-`data-series-by` and the source composes the rest. `as`, `into` and `mergeInto`
-go. Its own item once step 3 lands — it touches every data-bound component.
-
-**First, though, "scope" already means three different things** — the query
-reach (`view`/`component`), which rows a bind is pushed (`page`/`all`), and the
-app's own surfaces (`view`/`data`). They are renamed apart in this step or the
-collision is re-learned. Detail in `docs/FILTER-REVIEW.md` §7 step 3.
-Tidiness, no behaviour.
-
-#### Conciseness and reuse — with a budget per step
-
-Will: *"We only want to add new code where absolutely necessary. We should
-reduce code where possible."* Over this session the filter work was **+4,351
-−1,095, a ratio of 4:1**. `core/` already exports **207 names** and eight
-shared stylesheets; when new code went in beside the old, it had to re-learn
-what the old code knew.
-
-MOVE code, never rewrite it. Search `core/` before writing a helper. Delete the
-replaced path in the SAME commit. No helper with one caller. Declare the budget
-up front and report the actual.
-
-A gate in the shape `lint:css` already uses — `scripts/size-baseline.json`, a
-per-component count that **may only FALL**, with `--update-baseline` to record
-a drop. The panel went 0 → 898 lines this session with no single commit looking
-unreasonable. Budgets per step and the full rules: `docs/FILTER-REVIEW.md` §15.
-
-#### Rules for the work
-
-- **Land one move per commit**, full suite between. Every move deletes what it
-  replaces — a refactor that leaves both is worse than none.
-- **Pin the invariant before moving it.** Off-keeps-the-value regressed because
-  nothing tested it across kinds; it does now.
-- **Measure on the running page, not in the abstract.** A probe that walks every
-  shadow root and prints `data-*` finds in minutes what a dozen readings miss —
-  and read the TOTAL, never the drawn page, or a page-size of 25 reads as "the
-  filter did nothing".
-
-#### Open bug, to fix after move 2
-
-A **compound** (multi-row) Owner condition from the panel appears not to widen:
-one row and two rows ORed both give the same result. The reading is correct and
-live — `conditions: [{eq, Dana}, {eq, or, Ravi}]`, `suspended: false` — so the
-break is at or after `chainConditions`, not in the UI. Needs a row-COUNT read
-to confirm; the pager reports pages only.
-
-## Architecture — component boundaries
-
-### `[ ]` 37 — Components are AGNOSTIC of the data, and of the example app
-
-Will, 2026-09-25, verbatim:
-
-> All sherpa UI components should be agnostic of the data. The data layer
-> should provision and inform them.
->
-> They also shouldn't have any bespoke logic in them specific to the example
-> views.
->
-> Components should be extended with custom templates, content, styling, and
-> scripts where the look or behaviour is not generic and reusable.
->
-> For example toggling to the filter panel, from the filter toolbar, should be
-> a custom button added to the actions slot that triggers a custom script for
-> the example app to populate the left panel area of the app shell with a
-> filter panel in it (and vice versa).
->
-> In fact, we should probably separate the example app to it's own codebase and
-> have it use the sherpa-ui framework library as a dependency.
-
-Four parts, smallest first:
-
-1. **Find the bespoke logic.** Anything in a component that only the Records or
-   Dashboard view needs. The panel/toolbar toggle is the named example: today
-   both components carry a built-in mode button. It should be a host-supplied
-   button in the `actions` slot, and the app's own script should put the panel
-   in the shell's left area.
-2. **Components take PARAMETERS, never data shapes.** The data layer provisions
-   and informs; a component should not know a field is called `openTickets`.
-   Measure what still does.
-3. **Extension, not forking** — item 27 is the mechanism (own template, own CSS
-   that EXTENDS the default). A custom script and custom content belong in the
-   same door.
-4. **Split the example app into its own repo**, depending on `sherpa-ui` as a
-   package. That is the real test of 1-3: anything the example cannot do from
-   outside the library is a boundary the library has not drawn.
-
-The split comes LAST. Doing it first hides the failures inside a monorepo path.
-
-
-### `[ ]` CSS: compiled where it should inherit?
-
-Will, 2026-09-24: the system is designed on INHERITANCE — `sherpa-element` and
-`sherpa-base.css` hold the core logic and styling every component inherits — so
-why is so much of the CSS compiled?
-
-Two things are generated today:
-
-- **State pins.** `scripts/figma-data/state-pins.yaml` writes rules into
-  `tokens.css` and `sherpa-style-modes.css`. One line per state becomes ~21
-  re-pointed Style names, because CSS has no mixin to say "use mode X". The
-  values still reach every part by inheritance when the page runs.
-- **The dist transform.** PostCSS (preset-env, autoprefixer, cssnano) rewrites
-  every component sheet on build.
-
-Find what can move into `sherpa-base.css` / `sherpa-element` as inherited rules,
-and what genuinely needs a generator.
-
-### `[x]` Donut is now sherpa-radial-chart — DONE 2026-09-24
-
-Will, 2026-09-23: *"the donut and gauge could be consolidated into a single
-chart component (and also support pie charts) if we add an inner radius, sweep
-start angle and sweep angle variables. Booleans for the gauge needle etc and
-we're golden."*
-
-**The drawing engine is ALREADY one thing**, and it already takes every
-variable named. `RingSegmentOptions` in `src/core/data/format-tick.ts:204`:
-
-| option | what it is |
-|---|---|
-| `inner` | inner radius — *"0 draws a solid wedge — a pie slice"*, its own comment |
-| `outer` | outer radius |
-| `startDeg` / `endDeg` | the sweep, clockwise from 12 o'clock |
-| `radius` | corner rounding |
-
-Both components call `ringSegmentPath()` with the same three geometry constants,
-which is why those moved to `shared-constants.ts` as `RADIAL_CENTRE`,
-`RADIAL_CORNER` and `RADIAL_OUTLINE` — a value that drifted in one would draw
-two different rings from one function.
-
-**And pie already exists.** `sherpa-donut-chart` takes
-`data-type="donut | pie"`, where pie fills to the centre. So this is folding
-TWO components, not building a third mode.
-
-Will's rule for it — *"0 inner radius and no corner rounding on segments"* —
-found a live bug on the way in: the inner radius was right, but `radius: CORNER`
-went to every slice, so a pie's point was rounded off and its path began one
-unit short of the centre. Fixed 2026-09-23,
-`T-a-pie-slice-has-no-rounded-corner`. The consolidated component needs the same
-rule: rounding belongs to a corner that sits on two ARCS, not to one where two
-straight edges meet.
-
-What is actually different, measured:
-
-| | donut | gauge |
-|---|---:|---:|
-| TS | 188 | 290 |
-| CSS | 161 | 304 |
-| HTML | 55 | 103 |
-
-The gauge's extra ~290 lines are its own features, not a different ring:
-`data-value` with a needle, `data-min` / `data-max` bounds, `data-caption`, and
-a `caption` slot. Those become the booleans and attributes Will describes.
-
-Proposed shape:
-
-```html
-<sherpa-radial-chart data-type="donut">   <!-- default -->
-<sherpa-radial-chart data-type="pie">     <!-- inner: 0 -->
-<sherpa-radial-chart data-type="gauge" data-value="60" data-min="0" data-max="100">
-```
-
-with `data-sweep-start` and `data-sweep` for the arc, since a gauge is a donut
-that stops short — today that is hard-coded as the top half.
-
-#### Settled 2026-09-24 — measured, then ruled
-
-**1. The name: `sherpa-radial-chart`.** It says what it draws; `sherpa-chart`
-would claim bar and line too.
-
-**2. The gauge COMPOSES the radial chart — it does not fold into it.** The
-measurement decided this:
-
-| | |
-|---|---|
-| shared CSS classes | `centre` `ring` `value` `hotspot` `hotspots` `chart-tip` |
-| gauge-only | `needle` `hub` `hub-cap` `scale` `zone` `caption` `gauge` `gauge-wrap` `chart-body` `chart-figure` `chart-header` `title` |
-| donut-only | `slice` `inner` `layout` `ring-wrap` `sub` |
-| **overlap** | **7 of 24 = 29%** |
-
-The DRAWING is already one engine — both call `ringSegmentPath()` with the same
-`cx/cy/inner/outer/radius` and differ only in the sweep, which the gauge already
-holds as `START_DEG = 270` and `SPAN_DEG = 180`. So the ring consolidates. But a
-single component would be 71% two disjoint halves behind a `data-type` switch,
-with a needle branch a donut never takes. Composing keeps ONE ring
-implementation and leaves the gauge's twelve classes where they are used.
-Consistent with the COMPOSE-never-reimplement rule and with item 28.
-
-**3. Figma unchanged.** Donut and Gauge stay separate components there; this is
-a CODE consolidation, per the layout-grid precedent. `name-map.yaml` now reads
-`sherpa-radial-chart → Donut Chart`, with the divergence noted.
-
----
-
-**Done 2026-09-24.** `sherpa-donut-chart` → `sherpa-radial-chart`, with the arc
-variables you named:
-
-```html
-<sherpa-radial-chart>                                   <!-- donut -->
-<sherpa-radial-chart data-type="pie">                   <!-- inner 0, no rounding -->
-<sherpa-radial-chart data-inner="0.9">                  <!-- a thin ring -->
-<sherpa-radial-chart data-sweep-start="270" data-sweep="180">   <!-- an arc -->
-```
-
-`data-inner` is a FRACTION of the outer radius, clamped 0–1, so a host never has
-to know this component's private 100-unit box.
-
-**A DOM composition turned out to be impossible, and it is worth recording why.**
-The gauge's SVG is `viewBox="0 0 100 50"` at `aspect-ratio: 2` — the top half of
-the ring's box — while the ring is `0 0 100 100` at `aspect-ratio: 1`. A nested
-`<sherpa-radial-chart>` brings its own square box and its own shadow root, so
-the gauge's crop cannot reach it. They compose at the DRAWING layer instead,
-which is where they already shared `ringSegmentPath()`.
-
-**One value was written twice.** The gauge computed its hole as `CENTRE - 15`
-and the ring as `CENTRE * 0.7` — both 35.25, two spellings of one number, which
-drift the moment either moves. Now `RADIAL_INNER_RATIO`, shared.
-
-`T-a-gauge-composes-the-ring`. 36 chart tests pass across three engines,
-including a new one for the arc variables.
-
-**Not done, and deliberately:** the gauge keeps its needle, zones, scale and
-caption. The 29% overlap says that is right.
-
-### `[ ]` Do we still need `icon-paths.ts` and `render-icon.ts`?
+### `[ ]` 30 — Do we still need `icon-paths.ts` and `render-icon.ts`?
 
 Will, twice: *"HTML & CSS should be handling this."*
 
-**Measured 2026-09-23, and the first answer was "keep both".** Worth re-opening
-with what has changed since, but start from these numbers rather than re-deriving
-them.
+**The first answer's main reason is STALE.** It was "the TS carries each
+icon's INK BOX, and the files' 14x14 frame draws them 15% small". But
+bbe7c2ef (2026-09-24) reversed that: an icon now renders at its 14x14 frame,
+the same `viewBox` its `.svg` already has. So the files are enough as they
+are, and `render-icon.ts`'s header comment (line 4) is now wrong.
 
-`icon-paths.ts` (231 lines, 307KB, generated) carries the drawings AND each
-one's INK BOX. The `.svg` files do not:
+What still stands: the `.svg` files do not ship (no `dist/icons/`), and 48 of
+76 icon sites take a name from OUTSIDE the component
+(`data-icon-start="gear"`), which a static template cannot cover. Options: a
+sprite sheet (`<use href="#gear">` — check across a shadow root), or a CSS
+`mask-image` set coloured by `background-color`. Measure, then choose.
 
-| | |
-|---|---|
-| `.svg` files saying `viewBox="0 0 14 14"` | **all 214** |
-| whose real ink box is tighter | **206** |
-| a 24px wrapper, using the ink box | fills it — 25.2px |
-| a 24px wrapper, using the file's frame | **20.4px — 15% small** |
+### `[ ]` 33 — Density as step offsets, and a breakpoint step
 
-`dist/icons/` does not exist either: the files never ship, so a runtime fetch
-would mean 214 requests and an async icon API in a zero-dependency library.
+Will, 2026-09-23: in code, two scalings would do what Figma's remapped modes
+do — by BREAKPOINT (bigger on touch), then by MODE (compact / comfortable),
+relative to it.
 
-`render-icon.ts` (68 lines) is the writer. 48 of 76 icon sites take a name from
-OUTSIDE the component — `data-icon-start="gear"` on a host — which a static
-template cannot cover.
+**The rule is measured and holds exactly: a density mode is ONE STEP on the
+primitive scale** — compact −1, comfortable +1, clamped at both ends. Steps,
+not multipliers: a multiplier leaves the 4px grid at once (×0.8 puts 10 of 12
+space values off it), a step cannot.
 
-**What would change the answer.** Any of these makes the TS unnecessary:
+1. **Emit the scale ONCE** plus a step offset, not three copies of every space
+   and size token in `tokens.css`.
+2. **Add the breakpoint step**, applied before the mode's. Mobile and tablet
+   step UP. It does not exist yet: the layout grid's gap and padding are
+   `space-base` at every breakpoint.
+3. **Consume `--sherpa-grid-space-step`** — it is emitted and nothing reads
+   it but `lint:css`. `round()` against it is for genuinely dynamic sizes only
+   (`T-round-is-for-dynamic-sizes-only`).
 
-1. **Ship the SVGs with a corrected `viewBox`.** If `generate-icons.mjs` wrote
-   the ink box INTO each file, a `<img>` or an `<svg><use>` would fit correctly
-   with no JS. 214 files, one generator change. This is the strongest option.
-2. **One sprite sheet.** All 214 in a single `<symbol>` file, referenced by
-   `<use href="#gear">`. One request, no per-icon module, and the viewBox lives
-   on the symbol. But `<use>` across a shadow boundary needs checking.
-3. **A CSS `mask-image` set.** Each icon a masked box, coloured by
-   `background-color` so `currentColor` still works. No SVG in the DOM at all.
+The density values live in the hand-kept `figma.extensions.json`; read them
+live through the figma-console MCP
+(`T-an-override-collection-is-keyed-by-its-parent`).
 
-Measure before choosing. The thing that decides it is whether the chosen route
-keeps the ink box — that is the whole reason the TS exists, and
-`T-icon-box-is-not-the-glyph` records what a 15%-small icon looked like.
+### `[ ]` 36 — CSS: compiled where it should inherit?
 
-### `[ ]` A consumer can supply their OWN templates and CSS
+Will, 2026-09-24: the system is designed on INHERITANCE, so why is so much CSS
+compiled? Two generators: the state pins (`state-pins.yaml` → ~21 re-pointed
+Style names per line, into `tokens.css` and `sherpa-style-modes.css`, because
+CSS has no mixin) and the dist PostCSS transform. Find what can move into
+`sherpa-base.css` / `sherpa-element` as inherited rules, and what genuinely
+needs a generator.
 
-Someone building an app with Sherpa-UI must be able to:
+### `[ ]` 11d — `data-type` means nine things; `data-empty` means three
 
-- give a component their own HTML template, in place of the default, and
-- give it their own CSS file, which EXTENDS the default component CSS rather
-  than replacing it.
+`data-type` selects: which control element, how many thumbs, pill vs
+rectangle, square vs labelled, a look, a template variant, a scope, a
+cardinality, a role. `data-empty` is a message string (list), a host boolean
+(grid), a per-pane boolean (transfer-list). Both are rulings, not bugs. The
+question: reserve `data-type` for TEMPLATE SELECTION, as four of its nine uses
+already do?
 
-Make it possible, and make it easy.
+### `[ ]` 29 — Rename `src/index.ts` to `src/app.ts`
 
-Where it stands today, in `src/core/ui/sherpa-element.ts`:
-
-- `static css` and `static html` are plain `URL`s (lines 246, 249). A subclass
-  can already re-point them, so half the door is open.
-- `templateCache` is keyed by the template URL's `href` (line 64), so two URLs
-  do not collide.
-- `sharedStyles` (line 255) is a `URL[]` adopted into EVERY shadow root.
-
-What is missing:
-
-1. A supported way to EXTEND the CSS. Re-pointing `static css` replaces it;
-   there is no "default, then mine" order.
-2. A consumer-facing API. Today it means subclassing and re-defining the custom
-   element, which is not easy.
-3. A rule for what a custom template must still provide — the parts, the slots
-   and the classes the component's JS and CSS expect. A template that drops one
-   fails silently.
-
-The `.component.yaml` spec already states the anatomy. It is the natural place
-to check a custom template against.
-
-### `[ ]` Rename `src/index.ts` to `src/app.ts`
-
-`src/index.ts` does not hold an index. It registers every component, installs
-the icons and installs the tokens — it SCAFFOLDS a Sherpa app. Name it for that.
-
-Knock-on work, because it is the package entry point:
-
-- `package.json` — the `exports` and `main` fields.
-- The build script and the `dist/` output name.
-- Every import of `sherpa-ui` in `examples/`, `sandbox/` and `test/`.
-- The MCP server, if it reads the entry point by name.
-
-Keep `sherpa-ui/data` (`src/data.ts`) as it is. That one is named right.
-
-### `[ ]` A Figma component is NOT always a web component
-
-We have been assuming that every Figma component becomes a `sherpa-*` custom
-element. That is wrong. A sub-component is often only:
-
-- a `<template>` inside its parent's `.html`, or
-- a set of CSS classes.
-
-`sherpa-grid-cell` is the clear case. It is a set of HTML templates and the CSS
-that goes with them, used by the data grid. It does not need to be an element.
-
-Work to do:
-1. Sweep all 58 components. Mark each one: real element, template, or CSS only.
-2. For each that is not a real element, say what it costs to fold it into its
-   parent — the spec, the MCP, the tests, the Figma link.
-3. Fold the clear ones in. Start with `sherpa-grid-cell`.
-
-Note: a Figma component stays a Figma component either way. Only the CODE side
-changes. The def keeps the Figma link.
+It does not hold an index: it registers every component and installs the icons
+and tokens — it SCAFFOLDS a Sherpa app. Knock-on: `package.json` `main`
+(`./dist/index.js`) and `exports`, the build and `dist/` name, every
+`sherpa-ui` import in `examples/`, `sandbox/` and `test/`, and the MCP server if
+it reads the entry by name. Keep `src/data.ts`. **Dead last** — cheapest when
+nothing else is in flight.
 
 ---
 
-## From the component audit
-
-The audit closed 13 of 15 findings — the fixes are in git, and
-`docs/COMPONENT-AUDIT.md` holds the measurements behind each one. These six are
-what it left open.
-
-### `[ ]` `sherpa-group` — a wrapper component, and grouping props on the base class
-
-**BUILT 2026-09-23.** `<sherpa-group>` ships with `data-direction="row|column|grid"`
-and `data-col-count`, proved equivalent to the `.sherpa-group` class in all
-three engines, and `sherpa-pagination` is retrofitted — 4 `data-group`
-attributes gone, geometry byte-identical. `data-group` is now declared in
-`SHARED_PROPS`; it was used at 15 sites and declared by nothing.
-
-**What is LEFT of this item**, and why it is still open:
-
-1. The generated `grid-*` / `vertical-*` blocks — 160 of 200 lines, in two
-   copies — can now go, because the wrapper derives those positions.
-2. `.sherpa-border-edges` / `.sherpa-border-corners` belong in their own
-   `sherpa-borders.css`. **21 components** use them and they are not grouping.
-3. The rest of the callers (calendar, menu, quick-filter-toolbar,
-   select-checkbox) still use the class.
-
----
-
-**The original proposal, kept for the reasoning.** Make a group a WRAPPER COMPONENT
-that applies position and gap to its own children, the same way
-`sherpa-layout-grid` wraps the layout grid. Then a grouped row, column or grid
-needs no per-item bookkeeping: the wrapper owns it.
-
-`sherpa-element` gains the grouping props so ANY component can be grouped. Not
-every component will be, but it is generic enough to be worth it.
-
-#### Proved before proposing — measured 2026-09-23
-
-A wrapper CAN style its slotted children by position. Three results, all three
-engines:
-
-| | result |
-|---|---|
-| Corners by position | `4px/0px` · `0px/0px` · `0px/4px` — ends keep their outer corners |
-| The halved shared edge | `0.5/0.25` · `0.25/0.25` · `0.25/0.5` — the Figma pattern |
-| GRID position from `sibling-index()` | `0,0 1,0 2,0 0,1 1,1 2,1` — exact in Chromium, Firefox AND WebKit |
-
-Two things make it work, and both are already in place:
-
-- `::slotted()` sets CUSTOM PROPERTIES, which inherit through the child's own
-  shadow boundary. That is why the existing classes work at all.
-- The five `--sherpa-group-*` are registered with `@property` in `tokens.css`,
-  which is the DOCUMENT — so the maths resolves. Unregistered, the property
-  stores the expression as text and nothing computes.
-  `T-at-property-needs-the-document`.
-
-An escape hatch exists: an inline style on a child beats the wrapper, so a
-component that must not be grouped can say so.
-
-#### What it replaces
-
-`src/core/sherpa-grouping.css` (173 lines, hand-written) and
-`src/core/sherpa-group-positions.css` (231 lines, generated), whose blocks are
-ALSO written into `tokens.css`. Today there are two doors:
-
-| | what | sites |
-|---|---|---|
-| `data-group="start"` | the position STATED | **15** |
-| `.sherpa-group` on a wrapper | the position DERIVED | **8** |
-
-`T-grouping-is-an-attribute-and-a-class` explains why the generated blocks are
-emitted twice: a bare `[data-group]` rule in `tokens.css` cannot reach a shadow
-root, and the same rule in an adopted sheet cannot reach the page. **A wrapper
-COMPONENT collapses that** — its own shadow sheet reaches its slotted children
-wherever they are, so one copy serves both cases.
-
-**And it retires the dead weight.** The generator emits all 21 Figma positions;
-only four have callers:
-
-| position | real callers |
-|---|---:|
-| `start` · `end` | 6 each |
-| `mid` | 3 |
-| `solo` | 0 — generated only |
-| the 16 `grid-*` and `vertical-*` | **0** |
-
-**160 of 200 generated lines are dead**, in two copies — ~320 lines adopted into
-all 59 shadow roots for nothing. A wrapper derives those positions instead of
-enumerating them.
-
-#### The work
-
-1. **`sherpa-element`** — add the grouping props to `SHARED_PROPS`, which is
-   already "shared style attributes whose shape is identical wherever they
-   appear". `data-group` is declared by NOTHING today: 15 sites use it and it
-   works only through a document CSS rule, so it is invisible to every spec.
-2. **`sherpa-group`** — the wrapper. `data-direction="row|column|grid"` and
-   `data-col-count` for the grid. Its shadow sheet does the `::slotted()` work.
-3. **Keep the attribute door** for a host that states a position in its own
-   markup — but the wrapper becomes the recommended way, and the generated
-   `grid-*` / `vertical-*` blocks can go.
-4. **`.sherpa-border-edges` and `.sherpa-border-corners` are NOT grouping.**
-   They are the per-edge primitives grouping happens to use, and **21
-   components** use them directly — they replaced 26 hand-written copies. Move
-   them to their own `sherpa-borders.css` rather than leaving them in a file
-   that will no longer be about grouping.
-
-Name it `sherpa-group`, not `sherpa-grouping`: it is the thing, not the idea.
-The same ruling as `sherpa-layout-grid`, which is a util component with no Figma
-node — see `docs/COMPONENT-AUDIT.md` finding 15.
-
-### `[x]` Shared constants — swept 2026-09-23
-
-`src/core/ui/shared-constants.ts` holds two values today: `ORGANISE_ICONS` and
-`NON_VALUE_ROWS`. It was renamed from `icons.ts` during the audit because three
-of its four importers wanted the CSS selector, not the icons.
-
-**Done.** Five more folded in, each verified identical in value AND use first:
-
-| | shared by |
-|---|---|
-| `MIRRORED_CONTROL_ATTRS` | select-checkbox + select-radio |
-| `RADIAL_CENTRE` · `RADIAL_CORNER` · `RADIAL_OUTLINE` | donut + gauge |
-| `DEFAULT_TICKS` | barchart + line-chart |
-
-The radial three mattered most: both charts hand them to `ringSegmentPath()`, so
-a value that moved in one and not the other would draw two different rings from
-one function.
-
-NOT moved: `sherpa-input-text`'s `MIRRORED`. It is a SUPERSET — a text field
-also mirrors `placeholder`, `pattern`, `inputmode` and the length limits. A
-superset is not the same value.
-
-### `[ ]` `data-type` means nine things; `data-empty` means three
-
-`data-type` selects: which control element, how many thumbs, pill vs rectangle,
-square vs labelled, a look, a template variant, a scope, a cardinality, a role.
-
-`data-empty` means: a message string (list), a host boolean (grid), a per-pane
-boolean (transfer-list).
-
-Neither is a bug — both are rulings. The question for `data-type` is whether it
-should be reserved for TEMPLATE SELECTION, which is what four of its nine uses
-already do.
-
-### `[x]` Event detail shapes — swept, and there was nothing to fix
-
-Swept 2026-09-23 with the TypeScript AST rather than a regex. **3 events carry
-more than one detail shape, and all three are correct.**
-
-| event | shapes | verdict |
-|---|---|---|
-| `change` | 5 | **Correct.** A checkbox reports `checked`, a card `selected`, a switch `checked` alone. The native event's detail follows the control. |
-| `item-click` | `{label}` vs `{href, label}` | **Correct.** `sherpa-list-item` has no `href` — measured, zero references. A nav item navigates; a list item does not. |
-| `quick-filter-change` | `{scope, values}` vs two toolbar shapes | **Correct, and deliberate** — see below. |
-
-**The audit's two headline examples were already fixed.** `sort-change` is
-`{field, direction}` in all three emitters and `group-toggle` is
-`{value, collapsed}` in both — commit `379e5fd2`. The `{expanded}` vs
-`{collapsed}` inversion no longer exists.
-
-**`quick-filter-change` is a TAGGED UNION, not drift.** `scope` says which
-shape you have: `'chip'` carries a bare `string[]`, `'bar'` a
-`Record<id, string[]>`. `T-values-carries-two-shapes` records why that matters —
-reading one as the other once *"turned a sort pick into a filter and emptied the
-grid."*
-
-The chip's shape never escapes. Verified by dispatching one by hand at a chip:
-the toolbar catches it in CAPTURE (`#onOrganiseChange`,
-`T-capture-beats-registration-order`) and re-emits the `'bar'` shape, so a
-document listener only ever sees the record. `examples/contexts/records.js:553`
-does `Object.entries(e.detail.values)` with no `scope` guard and is safe for
-that reason — though a guard there would cost nothing.
-
-**A note on method.** Four regex passes reported 8 disagreeing events. Every one
-of the extra five was a parser artefact — a ternary's `null` read as a key, a
-multi-line object read as two. The AST reports 3. A regex over TypeScript
-answers a question about the regex.
-
-### `[x]` Toggle chips: owner or reporter? — fixed, and it was a different chip
-
-**The audit's three menu-less toggle chips are fine.** Measured with a real
-mouse click: one click, ONE `data-current` write. They are not persistent, so
-the toolbar never overwrites them.
-
-**The real two-owner case was the PERSISTENT chips**, which the audit did not
-mention. The toolbar's own comment said "A selector: always on, and its body
-does not flip it" — which is what `data-locked` means — but it set only
-`data-persistent`, so the chip flipped itself off and the toolbar wrote it back
-on the next line.
-
-| | writes per click |
-|---|---|
-| before | **2** — the chip flips, the toolbar undoes it |
-| after | **0**, and the chip stays current |
-
-Fixed by setting `data-locked` alongside `data-persistent`. `data-persistent`
-keeps its own job: it says the chip stays on the bar when off, which is a
-different fact from who owns its state.
-
-#### The original text, for the record
-
-
-
-The audit's "15 unguarded `data-current` writes" measured down to **3**. A chip
-WITH a menu returns before the self-flip line, so only the three menu-less
-toggle chips — `Open tickets`, `At risk`, `Unassigned` — can write their own
-state. A real mouse click produces exactly ONE write, so the two owners do not
-conflict today.
-
-Still two owners on paper. Decide per site whether the toolbar owns the chip or
-reports it. `check-ownership.mjs` now tells `this` from a child, so the gate
-will not mislead you — `T-writing-a-child-is-not-owning-yourself`.
-
-### `[ ]` `sherpa-nav-section` is a component nothing uses
-
-`sherpa-nav` draws the same label-plus-rule itself. Measured 2026-09-23: **zero**
-components compose it, though it is exported, has 3 passing tests, and maps to a
-real Figma node (`Navigation Section/default`, `32:43134`).
-
-**It is not dead code** — the component works. `data-collapsed` correctly takes
-the label from `display: block` to `none`; both sides draw the same hairline
-from the same two tokens (`--sherpa-border-top` over
-`--sherpa-theme-border-default-2`). What differs is the structure:
-
-| | `sherpa-nav-section` | `sherpa-nav`'s own |
-|---|---|---|
-| label | `<span class="label">` | `<h2 class="section-label">` inside `<section>` |
-| rule | a sibling `<span class="rule">` | an `::after` on the label |
-
-**The blocker for composing is measured, and it is the shadow boundary.** The
-nav collapses its label from `:host([data-nav-state="collapsed"]) .section-label`
-— a rule in the NAV's sheet. Tested by putting a real `<sherpa-nav-section>`
-inside a collapsed nav's shadow root: the child's label stayed
-`rgb(53, 53, 61)` at 10px, untouched. A parent's `:host` rule cannot style a
-child component's shadow content.
-
-So composing costs one `setAttribute` — the nav mirrors its state onto each
-section's own `data-collapsed`, which already works. That is cheap, and it is
-the same shape as `sherpa-app-shell` mirroring the rail's state.
-
-Three ways to go, and this is really item 28's question:
-
-1. **Compose it.** The nav stamps `<sherpa-nav-section>` and mirrors
-   `data-collapsed`. Two components, one drawing, and the Figma link stays
-   meaningful.
-2. **Fold it.** Delete the element, keep the templates and CSS inside
-   `sherpa-nav`. Loses the standalone spec and 3 tests; the Figma component
-   stays a Figma component, as the layout-grid ruling allows.
-3. **Leave it.** It costs 65 lines and is correct.
-
-Answer it with `sherpa-grid-cell` in item 28 — the same question, and the grid
-is the bigger case.
-
----
-
-## Tokens
-
-### `[ ]` Two scaling multipliers, in place of the remapped density modes
-
-Will, 2026-09-23: in Figma the Comfortable and Compact modes are remapped
-aliases for every size and space variable — necessary there, but in code two
-multipliers would do it.
-
-| | what it does |
-|---|---|
-| **Breakpoint scaling** | scales sizing and spacing by breakpoint. Bigger on mobile and tablet, for touch targets. |
-| **Mode scaling** | Compact and Comfortable, applied RELATIVE to the breakpoint scale. |
-
-Breakpoint first, then mode.
-
-#### What the modes actually are today — measured
-
-Not a multiplier. The ratios are all over the place: compact runs 0.500 → 0.900
-of default, comfortable 2.000 → 1.125. But laid against the scale itself it is
-**a step shift**:
-
-```
-default scale   0  2  4  8  12  16  20  24  32  40  48  56  64
-```
-
-**Re-measured 2026-09-24 against the PRIMITIVE scale, and there are no
-exceptions at all:**
-
-```
-primitives/scale   0  2  4  8  12  16  20  24  28  32  36  40  48  56  64
-```
-
-| scale | compact (−1) | comfortable (+1) |
-|---|---|---|
-| space | 11 exact, 2 clamped, **0 wrong** | 11 exact, 2 clamped, **0 wrong** |
-| size | 12 exact, 1 clamped, **0 wrong** | 11 exact, 2 clamped, **0 wrong** |
-
-The only misses are values already at an end of the scale, which clamp — correct
-behaviour, not drift. So the rule holds exactly:
-
-> **A density mode is ONE STEP on the primitive scale.** Compact −1,
-> comfortable +1, clamped at both ends.
-
-The earlier "10 of 13 / 9 of 13" measured the offset against the SPACE scale,
-which omits `28` and `36`. Those are real primitive steps that space skips, so a
-shift that lands on one looked like an exception. Against the scale the aliases
-actually point at, nothing is exceptional. Verified against LIVE Figma, not the
-export: `:root` matches the live Display Mode collection value for value.
-
-#### And it must keep the grid — Will, 2026-09-23
-
-This is the argument that settles step-vs-multiplier, and it is measurable.
-
-**A multiplier leaves the grid immediately.** Applied to the space scale:
-
-| multiplier | values off the 4px sub-grid |
-|---|---|
-| ×0.75 | 8 of 12 |
-| ×0.8 | **10 of 12** — including `9.600000000000001` |
-| ×0.875 | 10 of 12 |
-| ×1.25 | 8 of 12 |
-
-**A step shift cannot leave it**, because every result IS a scale value. And
-both scales are already clean — measured, **zero off-grid steps**:
-
-```
-space   0  2  4  8  12  16  20  24  32  40  48  56  64
-size    0  2  4  8  12  16  20  24  28  32  40  48  56  64
-        └ 2px edge cases ┘ └── 4px sub-grid ──┘ └─ 8px grid ─┘
-```
-
-The gaps widen 2 → 4 → 8 as the scale climbs, which is what keeps a small step
-on the sub-grid and a large one on the 8px grid.
-
-So: **steps, not multipliers**, for both the breakpoint and the mode. `round()`
-is not needed either — `T-round-is-for-dynamic-sizes-only` says it is for
-dynamic content, and a step offset is not dynamic.
-
-So "mode scaling" is better expressed as `--sherpa-scale-step: -1 | 0 | +1`
-against one scale, not a multiplier against a value. A multiplier on `12px`
-gives `10.8`; a step gives `8`, which is on the grid.
-
-#### Breakpoint scaling does not exist yet
-
-Measured: `--sherpa-layout-grid-gap-horizontal` and `-padding` resolve to
-`--sherpa-display-mode-space-base` at **every** breakpoint — mobile, tablet,
-desktop and wide all point at the same token. Only the COLUMN COUNT and the
-grid's own geometry move.
-
-So the touch-target half is new work, not a re-expression of something Figma
-already does.
-
-#### The extension cache is 8 days stale — and it gates the rest
-
-Measured 2026-09-24. The density values do NOT come from `figma.tokens.json`:
-`display-mode-compact` and `display-mode-comfortable` are in the export but
-**empty** (`$extensions` only, zero variables). The real values live in
-`figma.extensions.json`, which `densityBlock()` reads.
-
-| file | last written |
-|---|---|
-| `figma.tokens.json` | 23 Sept |
-| `figma.extensions.json` | **15 Sept** |
-
-Nothing in the repo WRITES the cache — `project-tokens.mjs` and
-`figma-extract-component.js` both only read it. Same blocker as the
-Style/Transparent item.
-
-**Attempted 2026-09-24, and it does not work through the plugin API.** An
-override collection keys `valuesByMode` by its PARENT's mode ids — measured
-across all ten, `sawOwnMode: false` every time — so a capture returns the base
-values and looks complete while every override is gone.
-`T-an-override-collection-is-keyed-by-its-parent` has the three dead ends.
-
-**Will's ruling: stop trying.** Read what a task needs live through the
-figma-console MCP, and hand-patch the file when a value changes. It does not
-block this item — the step rule was verified against live Figma, not the file.
-
-It does not block the step rule (verified against LIVE Figma through the plugin
-bridge: `:root` matches the Display Mode collection value for value, and the
-primitive scale matches exactly). It DOES block trusting any density value the
-cache alone asserts.
-
-#### Order of work
-
-1. **Settle the step rule.** `28px` is already a size step, so the space scale
-   may simply be missing it; `36px` is on no scale and is the one real
-   exception. A rule with exceptions is not a rule.
-2. **Emit the scale ONCE** plus a step offset, rather than three full copies of
-   every space and size token. `tokens.css` currently carries the whole scale
-   three times.
-3. **Add the breakpoint step.** One offset per breakpoint, applied before the
-   mode's. Mobile and tablet step UP.
-4. It composes with item 31: `--sherpa-grid-step` says what a step IS, and this
-   says how many steps to move.
-
-### `[x]` The grid is now TWO tokens — DONE 2026-09-24
-
-Will, 2026-09-23: *"This will allow us to easily adjust them for new themes &
-token sets in the future."*
-
-**Today the grid is a number in a SCRIPT.** `scripts/lint-css.mjs:126` is the
-whole rule:
-
-```js
-if (v <= 1 || v === 999) continue;   // strokes + the pill idiom
-if (v % 2 === 0) continue;           // <- the grid, hard-coded
-```
-
-So the spacing SCALE lives in Figma and the grid it is meant to sit on lives in
-a build script, and the script cannot read the tokens. A new theme moves one and
-not the other.
-
-**And the grid is 4px, not 8px.** Re-measured 2026-09-24 against the real
-`tokens.css`, every `space-*` and `size-*` value in all three density modes:
-
-| mode | off the 4px grid | off the 8px grid |
-|---|---|---|
-| compact | **none** | 4, 12, 20, 28, 36 |
-| default | **none** | 4, 12, 20, 28, 36 |
-| comfortable | **none** | 4, 12, 20, 28, 36 |
-
-So the scale is NOT mixed, and compact is not a special case: all three modes
-carry the same scale, every value sits on 4px, and the five that miss 8px are
-simply the odd multiples of 4. **8px is the even half of a 4px scale**, not a
-grid the scale sometimes leaves.
-
-(An earlier note here claimed `space-sm` was 12/8/16 per mode and that `2xl` was
-off-grid in two modes. Both were wrong — the real values are 8/16/16 and 28/36/36,
-and none of them is off the 4px grid.)
-
-That also explains the lint result honestly: `% 2` passes everything because the
-scale is on 4px, not because the rule is too loose for a mixed scale.
-
-**What to do.** Emit the grid from Figma as two properties, so a theme states
-its own:
-
-```css
---sherpa-grid-step: 8px;      /* sizing, spacing, radius */
---sherpa-grid-substep: 4px;   /* text and icon alignment */
-```
-
-Then:
-
-1. `lint-css.mjs` READS them out of `tokens.css` instead of hard-coding `% 2`.
-   One source, and a theme that changes the step changes the lint.
-2. CSS can consume them directly where a value is computed rather than taken
-   from the scale — `round(var(--_measured), var(--sherpa-grid-step))` is
-   exactly the dynamic case `T-round-is-for-dynamic-sizes-only` describes.
-3. The SCALE can then be checked against its own grid. `space-2xl: 36px` is not
-   on an 8px step; today nothing says so.
-
-Decide first whether the step is per-MODE (compact 4, default 8) or one value
-the modes all sit on. The measurements above say per-mode, but that is Figma's
-call, not the code's.
-
-Base CSS or tokens? **Tokens.** `sherpa-base.css` is adopted into shadow roots;
-the linter reads a file on disk, and `tokens.css` is the file it can read.
-
----
-
-**Done 2026-09-24.** The open question above — per-mode or one value — was
-answered by measuring: one value, because all three density modes carry the same
-scale. But the measurement also changed the shape of the answer.
-
-`@layer core` now emits two properties, DERIVED from the scales by a GCD over
-their own values, never typed in:
-
-```css
---sherpa-grid-space-step: 4px;   /* sizing, spacing, radius */
---sherpa-grid-text-step:  2px;   /* text, and the icons that alias it */
-```
-
-1. `lint-css.mjs` reads both out of `tokens.css` and picks per declaration.
-2. The rule went from `v % 2` to the real grids. It surfaced 52 sites: 24 icon
-   boxes judged against the wrong grid (fixed — judge by the token in the VALUE,
-   not the property name), 26 `space-3xs`, a real 2px token (exempted — a px
-   inside `var()` is the token's own value), and **2 genuine** drawn-geometry
-   cases, now marked `/* off-grid-ok */`.
-3. `project-tokens.mjs` checks each scale against the grid it produced. Silent
-   today, as it must be; forcing the step to 8 made it report exactly
-   `4, 12, 20, 28`, which is the proof it fires.
-
-`lint:css` is at 0 errors, 0 warnings on a rule twice as strict, and the
-projector is idempotent. `T-the-grid-is-two-grids` has the measurements.
-
-Still open, and now visible: **`--sherpa-grid-*` is emitted but nothing CONSUMES
-it yet.** Point 2 of the original plan — `round(var(--_measured), var(--sherpa-grid-space-step))`
-for genuinely dynamic sizes — is the follow-on, and belongs with item 33.
-
-
-### `[x]` Consume the tweaked Style/Transparent content aliases — DONE 2026-09-24
-
-The Style/Transparent content colour aliases changed in Figma. Apply the new
-values across the CSS that uses them.
-
-**Done by `7f1f95a3`** (sherpa-ui-7f's Style-modes work), which reads the look
-overrides from the collection's `variableOverrides` and emits them as REFS
-rather than light-mode hex. Verified 2026-09-24 against live Figma — every
-`style-content/base` alias matches:
-
-| mode | Figma | emitted |
-|---|---|---|
-| default | `content/body/+1` | `--sherpa-theme-content-body-1` |
-| info | `content/info/+1` | `--sherpa-theme-content-info-1` |
-| critical | `content/critical/+2` | `--sherpa-theme-content-critical-2` |
-| warning | `content/warning/+2` | `--sherpa-theme-content-warning-2` |
-| urgent | `content/urgent/+2` | `--sherpa-theme-content-urgent-2` |
-| success | `content/success/+1` | `--sherpa-theme-content-success-1` |
-| active | `content/active/base` | `--sherpa-theme-content-active-base` |
-
-**The block is NOT the variables export.** Re-checked 2026-09-23 against live
-Figma, and the diagnosis was wrong.
-
-The look tiers do not come from `figma.tokens.json` at all. They come from
-`src/styles/tokens/figma.extensions.json`, which
-`scripts/project-tokens.mjs:820` reads — *"Values are literal hex (extension
-overrides don't serialise as refs)."* That file is dated **2026-09-15**, eight
-days stale, and no script writes it.
-
-**Measured drift, cache vs live: 11 values.** Exactly the ones this item names:
-
-| variable | mode | cache | live |
-|---|---|---|---|
-| `style-content/base` | default | `#35353d` | `#0c0b11` |
-| `style-content/base` | critical | `#701100` | `#b72200` |
-| `style-content/base` | warning | `#a27500` | `#0c0b11` |
-| `style-content/base` | active | `#8300b6` | `#240036` |
-| `style-content/tertiary` | warning | `#35353d` | `#b3b3c3` |
-| `style-indicator/accent` | info · critical · warning · urgent · success · active | all darker | all the mid ramp |
-
-**Why it cannot be read back through the plugin API.** A look collection's
-`variableIds` point at the STYLE collection's variables — their `valuesByMode`
-is keyed by Style's mode ids (`18:2`, `951:27`…), not the look's own
-(`951:90`…). Reading them live returns the BASE value, which is why
-`Transparent` and `Saturated` come back identical when they are not: the cache
-has `#ffffff00` for a transparent surface and `#3b4ccd` for a saturated one.
-
-So the override lives at the collection's mode ids and the variable does not
-carry it. Regenerating the cache needs whatever produced it — a Figma plugin
-export, not `figma_export_tokens` and not `getVariableByIdAsync`.
-
-Order of work:
-1. **Find or rebuild the extension-cache exporter.** It is the blocker, and
-   nothing in `scripts/` writes `figma.extensions.json`.
-2. Regenerate the cache, then `node scripts/project-tokens.mjs`.
-3. The 11 values above land in `[data-look="transparent"]` in `tokens.css`
-   automatically — no component CSS needs touching, because the look block
-   re-points `--_status-*` and the components already read those.
+## Done
+
+One line each. The detail is in git and in the trap named.
+
+**2026-09-26, Will's list**
+- The superseded-chip tip reads "Filter applied at higher scope" — c0f5e32f, `T-an-inactive-chip-says-where-its-filter-went`
+- The panel's to-toolbar button uses `fullscreen-exit` — 1e98a823
+- Customer and Region moved to the panel's View filters — aba1f583
+- Add condition is a labelled default button BELOW the rows — 5b40c4f3, `T-add-condition-sits-below-the-rows`
+- A toolbar divider hides with nothing on one side — b80eb9f4, `T-a-divider-needs-a-neighbour-on-both-sides`
+- A scope's chevron leads its heading; its buttons ride that row — 8e60cf78
+- A field's label is caps and light, its buttons in its header — a161e054
+- Apply and Discard wait for a change; a field header keeps one height — 3c1d306e, `T-apply-and-discard-wait-for-a-change`
+- A conditioned chip reads as Success, not info — a24d020a, `T-a-conditioned-chip-reads-as-success`
+- A Conditional switch moves a filter between its modes — 91fd57be, `T-a-filter-menu-has-two-modes`
+- The Conditional switch is its own row, under the field header — 7c6bb862
+- Organise and Presets carry no Conditional switch — 8623c084
+- A disabled Today keeps its Today fill — 9baa9f57
+
+**Found done or stale by the 2026-09-26 audit, and removed**
+- The data toolbar clipped below 800px — fine at 1280x720 since 39b6537c
+- Fold `More` into `Add filter` — ONE Filters button with Added / Available sections
+- A filter PANEL as an alternative to the toolbars — built; its width is 57
+- Switching back to a view left the last column filter — fixed; a new bug is 55
+- A range filter refused its default max — does not reproduce (45163ad4)
+- Button borders did not inherit the status colour — 52b5857f; buttons bind the Style pins
+- A metric trend did not update — did not reproduce, twice
+- A fixed-height row's hard-coded gutter — did not reproduce, twice
+- 38's compound Owner condition did not widen — does not reproduce (Dana 10, Dana OR Nassim 17)
+- Allow-list follow-ons (values, actions, `nextState`) — the primitive is there; wire each when a caller needs it
+
+**2026-09-23 to 09-25**
+- Context vs View — the naming, settled (CLAUDE.md "Navigation terms")
+- A filter applies DOWN its scope only — `T-a-filter-applies-down-its-scope`
+- Style/Transparent tokens consumed — 7f1f95a3
+- The `More` chip showed active when it was not — `T-the-filters-button-is-a-door-not-a-filter`
+- Metric item surface and border; every metric uses the xsmall container class
+- Only five filter chips carry an icon — `T-only-five-filter-chips-carry-an-icon`
+- Pagination row-count select is a Sherpa select — `T-a-native-select-keeps-its-own-shape`
+- Notifications button, and three more menus that could never close — `T-a-trigger-click-follows-light-dismiss`
+- An optional allow-list on any axis — `src/core/data/allow.ts`, `T-an-allow-list-is-a-filter-not-an-order`
+- The filter menu's two modes and many conditions, and its shake-down — `T-a-filter-menu-has-two-modes`
+- An inactive chip says where its filter went
+- The grid is TWO tokens, 4px and 2px — `T-the-grid-is-two-grids`
+- Donut folded into `sherpa-radial-chart`; the gauge composes the ring — `T-a-gauge-composes-the-ring`
+- Settings opens as an overlay — `test/e2e/reforged-settings-overlay.spec.ts`
+- A nav item goes to a Context
+- Shared constants swept; event detail shapes swept; toggle chips' owner settled
+- The panel-or-toolbar mode survives a reload — 24c3a57c
