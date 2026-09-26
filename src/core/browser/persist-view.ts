@@ -347,6 +347,14 @@ export function onViewPicked(
       host.replaceChildren(...original);
     }
 
+    /* THE OLD VIEW'S FILTERS DO NOT CARRY OVER. Will, 2026-09-24: a header
+       chip resets on a view change unless the view itself sets it — so the
+       bar that reported the pick is reset FIRST, and the view then sets what
+       it states. Left lit, a chip read as filtering while `setState` had
+       already dropped its part. The View chip is persistent and keeps its pick.
+       TRAP T-a-view-change-resets-the-header-chips */
+    (event.target as { clearAll?: () => void } | null)?.clearAll?.();
+
     const report = applyViewSnapshot(view.snapshot, targets);
     const pick: ViewPick = { id, view, report };
 

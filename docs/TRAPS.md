@@ -13409,3 +13409,24 @@ off, which stays the host's. Both silent paths call it.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+
+### T-a-view-change-resets-the-header-chips
+
+**Picking a View resets the header chips the view does not set.** Will,
+2026-09-24: *"App header filters shouldn't carry over between preset or custom
+views unless already set in the initial view definition."* Measured
+2026-09-26: Region = EMEA (27 rows), then My accounts — the Region chip stayed
+lit, but `setState` had already dropped its `global` part: 12 rows, all of
+Ravi's. A chip that says it filters and does not.
+
+`onViewPicked` resets the bar that reported the pick — `clearAll()` — BEFORE
+the snapshot applies, so a view that states a chip (the Dashboard's EMEA
+operations sets Region) still sets it. The View chip is persistent and keeps
+its pick (`T-persistent-chip-is-a-selector`). A synthetic event from a host
+that is no bar has nothing to reset.
+
+Which chips may SURVIVE a view change is a per-chip flag still to build —
+TODO 21b. This is its default.
+
+- Site: `src/core/browser/persist-view.ts`
+- Site: `test/e2e/reforged-view-chips.spec.ts`

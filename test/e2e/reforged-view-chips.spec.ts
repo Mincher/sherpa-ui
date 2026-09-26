@@ -355,3 +355,34 @@ test('delete asks before it deletes, and reports a refusal', async ({ page }) =>
   // STILL TICKED, so the reader can try again without re-picking.
   expect(failed.stillSelected).toBe(2);
 });
+
+/**
+ * A VIEW CHANGE RESETS THE HEADER CHIPS the new view does not set. Region
+ * stayed LIT on "My accounts" while `setState` had dropped its part — a chip
+ * that says it filters and does not. Will, 2026-09-24: header filters do not
+ * carry over between views. TRAP T-a-view-change-resets-the-header-chips
+ */
+test('a view change resets a header chip the new view does not set', async ({ page }) => {
+  await page.goto('http://localhost:4200/?context=records');
+  await page.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot
+      ?.querySelector('.row, [role="row"]'));
+  const steer = (id: string, values: string[]) => page.evaluate(([i, v]) => {
+    const bar = document.querySelector('sherpa-app-shell > sherpa-app-header sherpa-quick-filter-toolbar[slot="filters"]') as
+      HTMLElement & { setChipValues(id: string, v: string[]): void; report(): void };
+    bar.setChipValues(i as string, v as string[]);
+    bar.report();
+  }, [id, values] as const);
+  const read = () => page.evaluate(() => ({
+    total: (window as unknown as { sherpa: { source: { debugState(): { total: number } } } })
+      .sherpa.source.debugState().total,
+    region: document.querySelector('sherpa-app-shell > sherpa-app-header sherpa-quick-filter-toolbar[slot="filters"]')!
+      .shadowRoot!.querySelector('.chip[data-id="region"]')!.hasAttribute('data-current'),
+  }));
+
+  await steer('region', ['EMEA']);
+  await expect.poll(read).toEqual({ total: 27, region: true });
+  await steer('view', ['mine']);
+  // All of Ravi's accounts — the view's own filter, and nothing the chip claims.
+  await expect.poll(read).toEqual({ total: 12, region: false });
+});
