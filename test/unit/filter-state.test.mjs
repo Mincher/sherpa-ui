@@ -114,16 +114,17 @@ test('the DEFAULT condition wears no badge', () => {
   assert.equal(face.tip, 'Ravi Menon');
 });
 
-test('another condition wears the ONE badge, and spells itself in the tip', () => {
+test('another condition wears the ONE badge, and its tip counts the conditions', () => {
   const face = filterFace(fieldState(facts, { op: 'notcontains', text: 'Ravi' }));
   assert.equal(face.current, true);
   /* ONE badge, not a per-op sign. A reader cannot learn six glyphs, and a
      chained filter has no single sign to show anyway.
      TRAP T-a-condition-badge-says-that-not-which */
   assert.equal(face.badge, CONDITION_BADGE);
-  // A tooltip is where a reader finds out what the sign MEANS.
   assert.equal(face.condition, 'Does not contain');
-  assert.equal(face.tip, 'Does not contain: Ravi');
+  // HOW MANY apply; the rows themselves are read in the menu. Will, 2026-09-26.
+  // TRAP T-a-condition-tip-counts-its-rows
+  assert.equal(face.tip, '1 condition applied');
   assert.equal(face.value, 'Ravi', 'the caret keeps the whole width for the value');
 });
 
@@ -132,6 +133,15 @@ test('several picks read as first + ellipsis, and count', () => {
   assert.equal(face.value, 'Ravi Menon…');
   assert.equal(face.count, 2);
   assert.equal(face.tip, 'Ravi Menon, Unassigned');
+});
+
+test('a chained condition counts only its ANSWERED rows', () => {
+  const face = filterFace(fieldState(facts, { conditions: [
+    { op: 'contains', text: 'Ra' },
+    { op: 'startswith', text: 'U', join: 'or' },
+    { op: 'contains', text: '', join: 'and' },
+  ] }));
+  assert.equal(face.tip, '2 conditions applied');
 });
 
 test('an OFF field draws nothing', () => {

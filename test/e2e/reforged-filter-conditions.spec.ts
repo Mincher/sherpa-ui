@@ -560,7 +560,7 @@ test('the grid marks what a filter matched, from EITHER direction', async ({ pag
   expect(r.exact).toBe(0);
 });
 
-test('the badge is legible, and the tooltip SPELLS the condition', async ({ page }) => {
+test('the badge is legible, and the tooltip COUNTS the conditions', async ({ page }) => {
   await bar(page);
   const r = await page.evaluate(async () => {
     const el = document.querySelector('sherpa-quick-filter-toolbar')!;
@@ -602,7 +602,7 @@ test('the badge is legible, and the tooltip SPELLS the condition', async ({ page
      while `notcontains` is what the field holds.
      TRAP T-one-state-per-filtered-field */
   expect(r.onCondition).toEqual({
-    badge: 'fx', weight: '600', tip: 'Does not contain: Ravi',
+    badge: 'fx', weight: '600', tip: '1 condition applied',
   });
 });
 

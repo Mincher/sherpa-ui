@@ -7992,8 +7992,9 @@ A per-operator sign can say which operator ONE row holds. A field holding
 it is wrong, and the reader believes it.
 
 So the badge is ONE mark — `fx`, the spreadsheet's formula sign — and it says
-only THAT conditions apply. The TOOLTIP spells out which:
-`Contains: ab or Equals: churned`, from `spellConditions()`.
+only THAT conditions apply. The tooltip says HOW MANY
+(`T-a-condition-tip-counts-its-rows`); the chip's value and accessible name
+spell the chain, `Contains: ab or Equals: churned`, from `spellConditions()`.
 
 The accessible name stays the WORD, never the mark: a sign announces as
 nothing, and `fx` announces as noise.
@@ -13299,3 +13300,16 @@ at once and has nothing to apply.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `test/e2e/reforged-panel-apply.spec.ts`
+
+### T-a-condition-tip-counts-its-rows
+
+**A conditional chip's tooltip says how many conditions apply:** `1 condition
+applied`, `3 conditions applied`. Will, 2026-09-26. It used to spell the chain,
+which the chip's own value already does; the `fx` button is where a reader
+reads the rows themselves.
+
+It counts `state.rows` — the ANSWERED rows only. A half-built row narrows
+nothing, so counting it would promise a filter that is not there.
+
+- Site: `src/core/data/filter-face.ts`
+- Site: `test/unit/filter-state.test.mjs`

@@ -40,7 +40,7 @@ export interface FilterFace {
   value: string;
   /** How many values are chosen. */
   count: number;
-  /** The whole truth, spelled out: the condition and every value. */
+  /** The tooltip: every value, or for conditions how many apply. */
   tip: string;
 }
 
@@ -64,17 +64,21 @@ export function filterFace(state: FilterState): FilterFace {
 
   /* Many rows say their own story; one row falls back to the old wording. */
   const chained = state.conditions.length > 1 ? spellConditions(state) : '';
+  // Answered rows only. Will, 2026-09-26. TRAP T-a-condition-tip-counts-its-rows
+  const rows = state.rows.length;
+  const counted = `${rows} condition${rows === 1 ? '' : 's'} applied`;
 
   return {
     current: state.fieldState === 'active',
     /* `fx` — the mark says a CUSTOM condition is applied, and the tip says
-       which. Read from the state's own type, which the chip's info-blue reads
+       how many. Read from the state's own type, which the chip's green reads
        too. TRAP T-a-condition-badge-says-that-not-which · TRAP T-one-condition-system */
     badge: state.condition === 'custom' ? CONDITION_BADGE : '',
     condition: chained || condition,
     value: chained ? chained : value,
     count: picks.length,
-    tip: chained || (condition && spelled ? `${condition}: ${spelled}` : (spelled || condition)),
+    tip: state.condition === 'custom' ? counted
+      : (condition && spelled ? `${condition}: ${spelled}` : (spelled || condition)),
   };
 }
 
@@ -82,9 +86,8 @@ export function filterFace(state: FilterState): FilterFace {
 export const CONDITION_BADGE = 'fx';
 
 /**
- * Chained rows, in words: `Contains "ab" or Equals cd`.
- *
- * The badge cannot carry this, so the tip must. TRAP T-a-condition-badge-says-that-not-which
+ * Chained rows, in words: `Contains "ab" or Equals cd` — the chip's value and
+ * its accessible name. TRAP T-a-condition-badge-says-that-not-which
  */
 export function spellConditions(state: FilterState): string {
   const part = (row: FieldCondition): string => {
