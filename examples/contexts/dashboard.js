@@ -12,6 +12,7 @@ import {
   countBy, bandBy, seriesBy, reduceRows, deltaPercent, bindSelection,
 } from '../../dist/index.js';
 import { globalFilters } from './global-filters.js';
+import { namePrompt } from './ask-name.js';
 import { DASHBOARD_VIEWS } from './dashboard-views.js';
 import { customerStore, customersReady } from './records-data.js';
 import {
@@ -267,8 +268,10 @@ export async function init(root) {
   // SAVE THIS VIEW. `captureView` reads state back through the same API a
   // definition writes it through. The `reads` map names which properties are
   // view state — the header's chips are, a scroll position is not.
-  header?.addEventListener('view-save', () => {
-    const label = prompt('Name this view');
+  const askViewName = namePrompt(root.querySelector('#save-view'), page.signal);
+  header?.addEventListener('view-save', async () => {
+    // The page's own dialog, never the browser's prompt(). Will, 2026-09-25.
+    const label = await askViewName();
     if (!label) return;
     const id = label.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     // The saved view names ITSELF in the View chip, or picking it shows the one it was saved from.

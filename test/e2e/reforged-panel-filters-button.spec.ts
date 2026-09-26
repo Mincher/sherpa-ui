@@ -147,7 +147,9 @@ test('a door drills into a run of values; its Apply ticks the chips and applies'
     await settle();
     await new Promise((r) => setTimeout(r, 50));
     const drilled = { heading: menu().getAttribute('data-heading'), drill: menu().hasAttribute('data-drill'),
-      rows: rows(), commit: menu().hasAttribute('data-commit') };
+      rows: rows(), commit: menu().hasAttribute('data-commit'),
+      // The FIELD's own Select all comes with its rows; the Filters list has none.
+      selectAll: !!menu().querySelector('.qf-all') };
     const churned = [...menu().querySelectorAll('input')].find((i) => i.value === 'churned');
     churned.checked = true;
     churned.dispatchEvent(new Event('change', { bubbles: true }));
@@ -156,18 +158,18 @@ test('a door drills into a run of values; its Apply ticks the chips and applies'
     return {
       drilled, heard,
       chips: [...sr.querySelectorAll('.field[data-field="status"] .value[data-current]')].map((c) => c.dataset.value),
-      back: { drill: menu().hasAttribute('data-drill'), first: rows()[0] },
+      back: { drill: menu().hasAttribute('data-drill'), first: rows()[0], selectAll: !!menu().querySelector('.qf-all') },
       // The menu built for the drill is gone with it.
       built: sr.querySelectorAll('.field[data-field="status"] sherpa-menu').length,
     };
   })()`) as Record<string, unknown>;
 
   expect(r['drilled']).toEqual({
-    heading: 'Status', drill: true, rows: ['active+', 'churned'], commit: true,
+    heading: 'Status', drill: true, rows: ['active+', 'churned'], commit: true, selectAll: true,
   });
   expect(r['chips']).toEqual(['active', 'churned']);
   expect(r['heard']).toEqual([['active', 'churned']]);
-  expect(r['back']).toEqual({ drill: false, first: '§More filters' });
+  expect(r['back']).toEqual({ drill: false, first: '§More filters', selectAll: false });
   expect(r['built']).toBe(0);
 });
 

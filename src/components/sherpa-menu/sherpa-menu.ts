@@ -62,6 +62,8 @@ export class SherpaMenu extends SherpaElement {
     'data-bounds': SHARED_PROPS['data-bounds'],
     'data-select': { type: 'enum', kind: 'style', values: ['single', 'multiple'] },
     'data-drill': { type: 'boolean', kind: 'style' },
+    // A list of filters: no Select all. Read when the items stamp.
+    'data-no-select-all': { type: 'boolean', kind: 'style' },
     /* FILTER type only — which ops its condition dropdown offers, and which
        body answers it. TRAP T-an-operator-decides-pick-or-type */
     'data-conditions': { type: 'string', kind: 'style' },
@@ -836,9 +838,10 @@ export class SherpaMenu extends SherpaElement {
     };
 
     /* SELECT ALL is the MENU's row, not the caller's — one of the two used to
-       add its own and the other did not, so the same field read two ways.
-       TRAP T-select-all-is-not-a-value */
-    const all = !single && this.#items.length ? this.clone('template.menu-all-tpl') : null;
+       add its own and the other did not, so the same field read two ways. A
+       list of FILTERS asks for none. TRAP T-select-all-is-not-a-value */
+    const all = !single && this.#items.length && !this.hasAttribute('data-no-select-all')
+      ? this.clone('template.menu-all-tpl') : null;
 
     /* ONE list, in the order the caller gave. A value no remaining row carries
        is still listed and still ticks — that is what `available` is for. It

@@ -2872,6 +2872,10 @@ second place to do what the footer's Clear button does, and one that moved
 under the reader depending on what was ticked. `ALL_LABEL` is "Select all",
 always.
 
+A list of FILTERS has none: `data-no-select-all`, from a def's
+`selectAll: false`. Adding every filter at once is never the answer, and under
+"Added filters" it read as selecting only those. Will, 2026-09-25.
+
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 ### T-drill-crumbs-carry-no-href
@@ -2972,6 +2976,7 @@ The Cancel baseline is snapshotted here too —
 `T-cancel-baseline-captured-on-open`.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 
 ### T-select-all-ticks-boxes-not-values
 

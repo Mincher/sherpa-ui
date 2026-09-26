@@ -42,6 +42,8 @@ export interface FilterMenuDef extends KindSource {
   range?: boolean;
   persistent?: boolean;
   commit?: boolean;
+  /** `false`: no Select all — a list of filters, where "every one" is never the answer. */
+  selectAll?: boolean;
   op?: FilterOp;
   text?: string;
 }
@@ -83,6 +85,7 @@ export function menuFor(
   menu.setAttribute('data-search', '');
   if (opts.bounds) menu.setAttribute('data-bounds', opts.bounds);
   if (opts.inline) menu.setAttribute('data-inline', '');
+  if (def.selectAll === false) menu.setAttribute('data-no-select-all', '');
 
   /* THE MENU OWNS ITS BODY. This says WHICH and hands over the numbers; the
      switch, the field, the slider and their rules are the menu's.

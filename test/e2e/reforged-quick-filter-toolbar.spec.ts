@@ -334,6 +334,11 @@ test('a trigger button goes active while its menu is open, and back on a second 
     // The Add menu is only stamped when something is LEFT to add.
     el.available!([{ id: 'seats', label: 'Seats', options: [{ value: '10', label: '10' }] }]);
     await settled();
+    /* AT REST first. The bar measures itself again a frame or two after it
+       fills, and a reflow closes an open menu — so a click made before that
+       lands was shut by it. TRAP T-open-menu-resize-closes */
+    await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+    await settled();
 
     const add = el.shadowRoot!.querySelector('.add-btn') as HTMLElement;
     const trigger = add.shadowRoot!.querySelector('button') as HTMLElement;
@@ -878,9 +883,9 @@ test('adding or removing a filter never disturbs the others', async ({ page }) =
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const before = snap();
 
-    // ADD one…
+    // ADD one — by name: the Filters menu has no Select all to lead it.
     const add = sr.querySelector('.add-btn')!;
-    (add.querySelector('input') as HTMLInputElement).click();
+    (add.querySelector('input[value="seats"]') as HTMLInputElement).click();
     await apply(add);
     const afterAdd = snap();
 

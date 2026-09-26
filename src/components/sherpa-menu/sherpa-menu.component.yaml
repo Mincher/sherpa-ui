@@ -330,6 +330,14 @@ props:
       the header switches between them. The old values select | condition are read, and rewritten to
       the new ones. TRAP T-a-filter-menu-has-two-modes
   - $type: prop
+    name: data-no-select-all
+    type: string
+    observed: false
+    kind: style
+    description: >-
+      a multi-select list with no Select all row — the Filters menu, where adding every filter at
+      once is never the answer. Read when the items stamp.
+  - $type: prop
     name: data-op
     type: string
     observed: true

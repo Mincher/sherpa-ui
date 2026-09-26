@@ -658,7 +658,7 @@ export class SherpaFilterPanel extends SherpaElement {
     if (!any) return;
 
     const { menu, items } = menuFor({
-      id: 'add', label: FILTERS_LABEL, select: 'multiple', commit: true,
+      id: 'add', label: FILTERS_LABEL, select: 'multiple', commit: true, selectAll: false,
       options: filtersMenuItems(list.held, list.offers),
     });
     btn.append(menu);

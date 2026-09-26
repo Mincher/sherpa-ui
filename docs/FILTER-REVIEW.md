@@ -1793,11 +1793,13 @@ The scope's buttons have their own row, under its heading.
 1. **The sections are Added Filters, Available Filters and Custom Filters**, and
    a filter is in ONE of them: an added saved filter is under Added only.
    Done 2026-09-25, in the bar and the panel. More filters still leads the
-   menu while filters are hidden.
+   menu while filters are hidden. It has no Select all: adding every filter
+   at once is never the answer (`selectAll: false`, `data-no-select-all`).
 2. **Save filter opens a `sherpa-dialog`**, not the browser's `prompt()`.
    Done 2026-09-25 on the Records page. It found a dialog bug: one shut and
    opened again at once was shut by its own late close
-   (`T-a-reopened-dialog-hears-a-late-close`).
+   (`T-a-reopened-dialog-hears-a-late-close`). The Dashboard's Save view asks
+   the same way; both pages share `examples/contexts/ask-name.js`.
 3. **Add condition is an icon button with a plus**, at the end of the LAST
    condition row. Every row before it shows Remove instead. Done 2026-09-25
    (`T-add-condition-ends-the-last-row`).

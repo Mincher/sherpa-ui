@@ -53,6 +53,8 @@ const look = (page: import('@playwright/test').Page) => page.evaluate(() => {
     badge: btn.getAttribute('data-badge'),
     on: btn.getAttribute('data-status'),
     heading: menu.getAttribute('data-heading'),
+    // Adding EVERY filter at once is never the answer. Will, 2026-09-25.
+    selectAll: !!menu.querySelector('.qf-all'),
     rows,
   };
 });
@@ -67,12 +69,14 @@ test('ONE button: "Filters", a plus; hidden chips first, then Added, Available, 
   expect(wide.label).toBe('Filters');
   expect(wide.icon).toBe('plus');
   expect(wide.heading).toBe('Filters');
+  expect(wide.selectAll).toBe(false);
   // Nothing hidden: no badge, no section of hidden chips.
   expect(wide.badge).toBeNull();
   expect(wide.rows).toEqual(['§Available filters', 'tier', '§Custom filters', 'custom:mine']);
 
   // HIDDEN chips lead, under their own heading; the badge counts them.
   expect(narrow.more).toBe(false);
+  expect(narrow.selectAll).toBe(false);
   const hidden = narrow.rows.slice(1, narrow.rows.indexOf('§Available filters'));
   expect(narrow.rows[0]).toBe('§More filters');
   expect(hidden.length).toBeGreaterThan(0);

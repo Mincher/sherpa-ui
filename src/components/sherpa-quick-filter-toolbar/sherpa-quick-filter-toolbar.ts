@@ -91,6 +91,8 @@ export interface QuickFilterDef extends OffersCustom {
   range?: boolean;
   /** A chip that cannot be switched OFF. TRAP T-persistent-chip-is-a-selector */
   persistent?: boolean;
+  /** `false`: its menu has no Select all row. */
+  selectAll?: boolean;
   /** Offer "Remove" in this chip's menu. OPT-IN: a host-placed chip must not delete itself. */
   removable?: boolean;
   /** Defer picks behind Apply. TRAP T-commit-follows-select-mode — else the select mode decides. */
@@ -1553,6 +1555,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       id: 'add',
       label: FILTERS_LABEL,
       select: 'multiple',
+      // Adding EVERY filter at once is never the answer. Will, 2026-09-25.
+      selectAll: false,
       // TRAP T-add-menu-batches — the one menu that KEEPS Apply: each tick stamps
       // a chip, so per-tick apply rebuilds the run mid-selection.
       commit: true,
