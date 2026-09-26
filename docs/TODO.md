@@ -130,8 +130,14 @@ model.
 Region = EMEA in the header lights the grid's Region heading — `#isFiltered`
 counts the query's `data-filter-fields` — but its menu shows nothing ticked,
 so a reader can pick a contradicting value there. The heading must show the
-View's answer. How it behaves once shown is a ruling (see the question with
-Will).
+View's answer.
+
+**Will's ruling, 2026-09-26: shown, but held higher.** As a component chip
+whose field the View took (`T-a-superseded-chip-suspends-it-is-never-removed`):
+the heading's menu shows EMEA ticked, greyed, with the tip "Filter applied at
+higher scope", and it cannot be changed there — the reader changes it in the
+header. One owner for one value. Build on 44b: the heading then just holds
+the View's reading, read-only.
 
 ### `[ ]` 42 — BUG: a legend toggle filters the whole view
 
