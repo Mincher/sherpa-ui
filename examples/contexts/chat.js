@@ -26,13 +26,8 @@ export async function init(root) {
   // ── Shared header (populate for when the user leaves chat + comes back) ──
   const header = document.querySelector('sherpa-app-shell > sherpa-app-header');
   header?.populate({
-    breadcrumb: [
-      // Every crumb links to a REAL page. The trail used to name sections
-      // that do not exist ('Monitoring', 'Workspace') and point at dead `#`
-      // anchors, so clicking one went nowhere.
-      { label: 'Home', href: '?context=dashboard' },
-      { label: 'Assistant' },
-    ],
+    // No trail: moving between Contexts is the NAV's to show. Will, 2026-09-26.
+    breadcrumb: [],
   });
 
   // ── Chat wiring ───────────────────────────────────────────

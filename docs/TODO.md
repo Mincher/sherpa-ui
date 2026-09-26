@@ -12,73 +12,72 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**51 open.** Reviewed 2026-09-26: one list (the draft `todo-filter-2609.md`
+**50 open.** Reviewed 2026-09-26: one list (the draft `todo-filter-2609.md`
 is merged in), 3 items culled or merged, the rest re-ordered. Numbers are ids,
 not order — the table IS the order.
 
 | Pri | # | Item | Kind |
 |---:|---:|---|---|
 | | | **A — Quick wins** | |
-| 1 | 17 | Breadcrumbs are for workflow, not for the nav | quick |
-| 2 | 54 | An Added Filters row drills only if it has many values | quick |
-| 3 | 57 | The filter panel's width is a hard-coded 400px | quick |
-| 4 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
-| 5 | 65 | A horizontal legend has a max width, and is centred | quick |
+| 1 | 54 | An Added Filters row drills only if it has many values | quick |
+| 2 | 57 | The filter panel's width is a hard-coded 400px | quick |
+| 3 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
+| 4 | 65 | A horizontal legend has a max width, and is centred | quick |
 | | | **B — Bugs: the app says one thing and does another** | |
-| 6 | 41 | A conditional filter applies for Owner only | bug |
-| 7 | 63 | A conditions-only field shows the Conditional switch | bug |
-| 8 | 56 | A view change leaves a lit chip that filters nothing | bug |
-| 9 | 21e | A reload keeps a filter nothing on screen shows | bug |
-| 10 | 55 | The At risk view's own column filter never applies | bug |
-| 11 | 44 | A column heading's menu does not show what is set | bug |
-| 12 | 42 | A legend toggle filters the whole view | bug |
-| 13 | 61 | Add customer saves with required fields empty | bug |
-| 14 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
-| 15 | 45 | A picked date does not show in the chip | bug |
-| 16 | 16 | Favourite and Save apply to the Context, not the View | bug |
+| 5 | 41 | A conditional filter applies for Owner only | bug |
+| 6 | 63 | A conditions-only field shows the Conditional switch | bug |
+| 7 | 56 | A view change leaves a lit chip that filters nothing | bug |
+| 8 | 21e | A reload keeps a filter nothing on screen shows | bug |
+| 9 | 55 | The At risk view's own column filter never applies | bug |
+| 10 | 44 | A column heading's menu does not show what is set | bug |
+| 11 | 42 | A legend toggle filters the whole view | bug |
+| 12 | 61 | Add customer saves with required fields empty | bug |
+| 13 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
+| 14 | 45 | A picked date does not show in the chip | bug |
+| 15 | 16 | Favourite and Save apply to the Context, not the View | bug |
 | | | **C — Filters: Will's features** | |
-| 17 | 62 | Apply and Discard only for a REMOTE fetch; a debug flag spoofs one | feature |
-| 18 | 46 | A PENDING state: changed, not yet applied | feature |
-| 19 | 60 | Once applied, a chip's badge shows the number of results | feature |
-| 20 | 49 | A preset conditional chip shows its conditions, read-only | feature |
-| 21 | 50 | A custom conditional chip shows its conditions, editable | feature |
-| 22 | 47 | More than 20 values: one chip, not a run | feature |
-| 23 | 48 | A child menu opens on hover or click of its row | feature |
-| 24 | 21c | A condition's matches must ALL highlight | feature |
-| 25 | 21f | "Send to view filters" | feature |
-| 26 | 21b | Which header chips carry over between views | feature |
-| 27 | 20b | The Date filter should be a view-scope date RANGE | feature |
-| 28 | 21d | EXPLORE — conditions for a DATE field | explore |
-| 29 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
+| 16 | 62 | Apply and Discard only for a REMOTE fetch; a debug flag spoofs one | feature |
+| 17 | 46 | A PENDING state: changed, not yet applied | feature |
+| 18 | 60 | Once applied, a chip's badge shows the number of results | feature |
+| 19 | 49 | A preset conditional chip shows its conditions, read-only | feature |
+| 20 | 50 | A custom conditional chip shows its conditions, editable | feature |
+| 21 | 47 | More than 20 values: one chip, not a run | feature |
+| 22 | 48 | A child menu opens on hover or click of its row | feature |
+| 23 | 21c | A condition's matches must ALL highlight | feature |
+| 24 | 21f | "Send to view filters" | feature |
+| 25 | 21b | Which header chips carry over between views | feature |
+| 26 | 20b | The Date filter should be a view-scope date RANGE | feature |
+| 27 | 21d | EXPLORE — conditions for a DATE field | explore |
+| 28 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
 | | | **D — The filter family, finished** | |
-| 30 | 38 | One model, one builder, one owner — what is left | refactor |
-| 31 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
+| 29 | 38 | One model, one builder, one owner — what is left | refactor |
+| 30 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | | | **E — Views and navigation** | |
-| 32 | 15 | Save a View, and the Save split-button menu | feature |
-| 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
-| 34 | 34 | Figma: use the Navigation terms | figma |
+| 31 | 15 | Save a View, and the Save split-button menu | feature |
+| 32 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
+| 33 | 34 | Figma: use the Navigation terms | figma |
 | | | **F — Data states and charts** | |
-| 35 | 58 | Loading, empty and error states in a container | feature |
-| 36 | 9b | A Data Viz header, for metrics and chart containers | component |
-| 37 | 14 | An example of real-time data | feature |
-| 38 | 59 | EXPLORE, later — Will's own loading pattern | explore |
+| 34 | 58 | Loading, empty and error states in a container | feature |
+| 35 | 9b | A Data Viz header, for metrics and chart containers | component |
+| 36 | 14 | An example of real-time data | feature |
+| 37 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | | | **G — Overlay panels** | |
-| 39 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
-| 40 | 23 | A focused grid row opens a details panel | feature |
+| 38 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
+| 39 | 23 | A focused grid row opens a details panel | feature |
 | | | **H — The accessibility gate** | |
-| 41 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
+| 40 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
 | | | **I — The big builds** | |
-| 42 | 25 | `sherpa-layout-canvas` + minimap | component |
-| 43 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
-| 44 | 27 | A consumer can supply their OWN templates and CSS | feature |
+| 41 | 25 | `sherpa-layout-canvas` + minimap | component |
+| 42 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
+| 43 | 27 | A consumer can supply their OWN templates and CSS | feature |
 | | | **J — Tidy-ups and renames** | |
-| 45 | 11 | `sherpa-group`: what is left | tidy |
-| 46 | 28 | A Figma component is NOT always a web component | tidy |
-| 47 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
-| 48 | 33 | Density as step offsets, and a breakpoint step | tokens |
-| 49 | 36 | CSS: compiled where it should inherit? | tidy |
-| 50 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
-| 51 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
+| 44 | 11 | `sherpa-group`: what is left | tidy |
+| 45 | 28 | A Figma component is NOT always a web component | tidy |
+| 46 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| 47 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| 48 | 36 | CSS: compiled where it should inherit? | tidy |
+| 49 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| 50 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 
 **Why this order.**
 
@@ -102,18 +101,6 @@ not order — the table IS the order.
 ---
 
 ## A — Quick wins
-
-### `[ ]` 17 — Breadcrumbs are for workflow, not for the nav
-
-Breadcrumbs must not show movement between Contexts — the nav does that. They
-are for a workflow redirect or a drilldown, e.g. a link in a grid cell opens a
-details Context.
-
-**Still wrong, measured 2026-09-26, and small.** Records and Assistant set a
-`Home › Records` / `Home › Assistant` trail (`examples/contexts/records.js`,
-`chat.js`) — Home is the Dashboard Context, so the trail IS nav movement.
-Drop both; Dashboard already sets `[]`. The first real trail comes with a
-drilldown (23).
 
 ### `[ ]` 65 — A horizontal legend has a max width, and is centred
 
@@ -684,6 +671,7 @@ the same three states.
 Focus a row in `sherpa-data-grid` → an overlay panel opens on the right with
 more about that record. Any other open overlay closes first. Its header has up
 and down chevrons that step the focused row. Needs 22's resizing panel.
+A drilldown like this is where a breadcrumb trail belongs — the first real one.
 
 ---
 
@@ -871,6 +859,8 @@ One line each. The detail is in git and in the trap named.
 - 53: a conditional chip's tooltip says "X conditions applied" — `T-a-condition-tip-counts-its-rows`
 - 40: a host's `aria-label` names its inner control — button, input, checkbox, radio, switch; 59 template sites + 18 in code were unnamed — `T-a-host-label-must-reach-its-control`
 - A button with no visible label shows a tip that says its action; `data-tip` sets one, `data-no-tip` turns it off — `T-every-button-says-its-action`
+- Toolbar icon actions named in Will's words: Suggest filters, Reset all filters, View as filter panel, Add to / Remove from Favorites, Save view options
+- 17: no breadcrumb trail on Records or Assistant — moving between Contexts is the nav's to show
 
 **Culled or merged in the 2026-09-26 review**
 - 13, a sparkline did not follow its record deltas — each tile's sparkline and its delta are ONE series now (`T-a-delta-is-derived-not-declared`)

@@ -139,11 +139,9 @@ export async function init(root, { session } = {}) {
 
   // Awaited, so a host picking a View after init() finds the chips.
   await header?.populate({
-    breadcrumb: [
-      // Every crumb links to a REAL page.
-      { label: 'Home', href: '?context=dashboard' },
-      { label: 'Records' },
-    ],
+    /* No trail: moving between Contexts is the NAV's to show. A crumb is for a
+       workflow or a drilldown. Will, 2026-09-26. */
+    breadcrumb: [],
     /* THE GLOBAL FILTERS — View, Customer, Region, Date range. They sit above
        every page and trickle DOWN; the bar below narrows further inside that.
        See global-filters.js. Options are DERIVED from the view definitions and
