@@ -753,8 +753,8 @@ export async function init(root, { session, view } = {}) {
   const FIELD_CHIPS = new Set(['status', 'plan', 'tier', 'owner']);
   for (const field of FIELD_CHIPS) source.declareValues(field, valuesOf(field));
 
-  /* The grid's column menu and the open panel re-read when ANY control changes
-     a field. The BAR needs none of this: its bound source draws it.
+  /* The grid's column menu re-reads when ANY control changes a field. The bar
+     and the open panel need none of this: the source draws them.
      TRAP T-one-query-one-owner */
   /* The headings this mirror has written, so an empty answer clears only its
      own. TRAP T-an-empty-selection-never-wipes-a-condition */
@@ -762,20 +762,9 @@ export async function init(root, { session, view } = {}) {
   source.addEventListener('selection-change', (e) => {
     const { field } = e.detail;
     const state = source.selection(field);
-    const picked = state.values.filter((v) => v.state === 'picked').map((v) => v.value);
     /* A SUSPENDED field keeps its values and applies none of them.
        TRAP T-grid-suspend-is-not-clear */
     if (state.fieldState === 'suspended') return;
-    /* THE OPEN PANEL FOLLOWS TOO — one field, so a reader's unapplied picks in
-       the others stay. It was filled once, on open, so its Apply put its old
-       answer back over what another control had just set.
-       TRAP T-an-open-panel-follows-the-data-layer */
-    if (panel?.hasAttribute('data-open')) {
-      panel.setFieldReading?.(field, {
-        picked,
-        ...(state.conditions.length ? { conditions: state.conditions } : {}),
-      });
-    }
     /* The grid's heading takes a ready CLAUSE, which is the one shape that
        carries either answer. */
     const clause = stateClause(state) ?? null;
@@ -799,6 +788,9 @@ export async function init(root, { session, view } = {}) {
   /* Its report is the `data` scope's whole answer, so a field raised to the
      View is no longer this bar's to clear. TRAP T-a-filter-report-is-the-whole-answer */
   source.bind(qft, { steerOnly: true, scope: 'data', signal });
+  /* The open PANEL is drawn each answer in both scopes — it steers nothing
+     through the source, so it is bound read-only. TRAP T-an-open-panel-follows-the-data-layer */
+  if (panel) source.bind(panel, { readonly: true, steerOnly: true, scope: [VIEW_SCOPE, 'data'], signal });
   qft.addEventListener('quick-filter-change', (e) => {
     /* An external chip's body is a TOGGLE: off means "stop applying this", not
        "delete it" — only REMOVE deletes. So this suspends and restores the

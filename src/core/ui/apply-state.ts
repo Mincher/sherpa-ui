@@ -19,7 +19,7 @@ export interface Populatable extends HTMLElement {
   populate?: (data: unknown) => void | Promise<void>;
   rendered?: Promise<void>;
   /** One field's answer, drawn SILENTLY — a bound bar told what its scope now holds. */
-  drawReading?: (field: string, reading: FieldReading) => void;
+  drawReading?: (field: string, reading: FieldReading, scope: string) => void;
 }
 
 /** A list of CALLS, not one argument list? TRAP T-state-value-may-be-a-call-list */

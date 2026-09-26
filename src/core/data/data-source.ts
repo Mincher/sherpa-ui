@@ -123,9 +123,10 @@ export interface BindOptions {
   ignore?: readonly string[];
   /** Reshape the rows before they reach this component. TRAP T-adapter-lives-at-the-binding */
   as?: (rows: Row[], source: DataSource) => unknown;
-  /** The SCOPE this bar answers for. Its report is that scope's whole answer:
-   *  a field that has moved to another scope is no longer its to clear. */
-  scope?: string;
+  /** The SCOPE this control is a view of: it is DRAWN each answer in it. A bar's
+   *  report is its scope's whole answer, so a field raised out is not its to
+   *  clear. A LIST is for a control that draws several — the filter panel. */
+  scope?: string | readonly string[];
   /**
    * Which rows this component is given. `'page'` (the default) is the window a
    * grid draws; `'all'` is every row matching the filter, unpaged — what a
@@ -183,7 +184,7 @@ export class DataSource extends EventTarget {
       /** The ONLY-THIS-COMPONENT parts it was last pushed with — see `#push`. */
       lastOwn?: string;
       /** See BindOptions.scope. */
-      scope?: string;
+      scope?: string | readonly string[];
       /** The fields this component answered LAST time it reported.
        *  TRAP T-a-filter-report-is-the-whole-answer */
       answered?: Set<string>;
@@ -579,7 +580,11 @@ export class DataSource extends EventTarget {
     if (state.fieldState === 'suspended') return;
     const picked = state.values.filter((v) => v.state === 'picked').map((v) => v.value);
     const reading = { picked, ...(state.conditions.length ? { conditions: state.conditions } : {}) };
-    for (const [el, entry] of this.#bound) if (entry.scope === home) el.drawReading?.(field, reading);
+    for (const [el, { scope }] of this.#bound) {
+      if (scope === home || (Array.isArray(scope) && scope.includes(home))) {
+        el.drawReading?.(field, reading, home);
+      }
+    }
   }
 
   /**
@@ -1117,7 +1122,7 @@ export class DataSource extends EventTarget {
            is cleared — its OWN fields only, never another control's.
            TRAP T-a-filter-report-is-the-whole-answer */
         const bind = this.#bound.get(event.currentTarget as Populatable);
-        if (bind?.scope) this.answer(bind.scope, readings);
+        if (typeof bind?.scope === 'string') this.answer(bind.scope, readings);
         else {
           for (const field of bind?.answered ?? []) {
             if (!(field in readings)) this.select(field, []);

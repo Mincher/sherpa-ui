@@ -156,8 +156,8 @@ capabilities:
   - $type: capability
     api: js-methods
     description: >-
-      callable from a view definition's state block (setFieldReading, open, close, toggle). See
-      $extensions.sherpa.methods.
+      callable from a view definition's state block (setFieldReading, drawReading, open, close,
+      toggle). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: quick-filter-change
@@ -247,6 +247,10 @@ $extensions:
         name: setFieldReading
         args: "id: string, reading: FieldReading"
         description: "setFieldReading(id, reading) — steer ONE field with a whole reading: what"
+      - $type: method
+        name: drawReading
+        args: "field: string, reading: FieldReading, scope: string"
+        description: drawReading(field, reading, scope) — a bound source tells the OPEN panel one
       - $type: method
         name: open
         args: ""

@@ -177,3 +177,17 @@ test('a bar bound with a scope is DRAWN each answer in its scope, whoever set it
   src.suspendSelection('status');
   assert.equal(drawn.length, 1);
 });
+
+test('a control bound over SEVERAL scopes — the panel — is drawn each, told which', async () => {
+  const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
+  const drawn = [];
+  const panel = Object.assign(new EventTarget(), {
+    setAttribute() {}, removeAttribute() {}, hasAttribute: () => false,
+    drawReading: (field, _reading, scope) => drawn.push([field, scope]),
+  });
+  src.bind(panel, { readonly: true, steerOnly: true, scope: [VIEW, 'grid'] });
+  src.hold('grid', ['status']);
+  src.select('status', ['active']);
+  src.select('region', ['EMEA']);
+  assert.deepEqual(drawn, [['status', 'grid'], ['region', VIEW]]);
+});

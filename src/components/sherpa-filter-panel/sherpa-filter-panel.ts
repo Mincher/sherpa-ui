@@ -303,6 +303,16 @@ export class SherpaFilterPanel extends SherpaElement {
     }
   }
 
+  /**
+   * drawReading(field, reading, scope) — a bound source tells the OPEN panel one
+   * field's answer, in the scope that holds it. Shut, it draws nothing: it is
+   * refilled when it opens. TRAP T-an-open-panel-follows-the-data-layer
+   */
+  drawReading(field: string, reading: FieldReading, scope: string): void {
+    if (!this.hasAttribute('data-open')) return;
+    if (this.#held.has(`${scope}:${field}`)) this.setFieldReading(field, reading);
+  }
+
   /** Show the panel, unless the window is too narrow.
    *  TRAP T-the-panel-is-desktop-only */
   open(): void {
