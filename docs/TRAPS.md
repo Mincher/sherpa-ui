@@ -13531,3 +13531,19 @@ at connect into a setter that drops them. `#flushChains()` runs after
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
+
+### T-an-icon-button-still-slots-its-menu
+
+**An icon-only `sherpa-button` must still slot its menu.** The button has two
+templates; only the default one had `<slot name="menu">`. The chart legend's
+Other row puts its Breakdown menu in an ICON button (since ad7f91be, which
+moved it in to fix the light-dismiss race), so from then on the menu had no
+slot: it opened — the button read `data-open`, the popover read
+`:popover-open` — and drew nothing, 0x0. Will saw it as "the Other menu
+doesn't display any more".
+
+Every state said open, which is why a state test could never catch it — the
+test reads the popover's BOX.
+
+- Site: `src/components/sherpa-button/sherpa-button.html`
+- Site: `test/e2e/reforged-chart-legend.spec.ts`

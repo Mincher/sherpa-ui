@@ -40,6 +40,9 @@
 <template id="icon">
   <button class="trigger sherpa-anchor" part="trigger" type="button">
     <i class="icon sherpa-icon-box icon-start" aria-hidden="true"></i>
+    <!-- An icon button opens a slotted MENU too — the legend's Other row is one.
+         Without the slot the menu had nowhere to render. TRAP T-an-icon-button-still-slots-its-menu -->
+    <span class="menu-slot"><slot name="menu" data-accepts="menu"></slot></span>
   </button>
   <span class="tip sherpa-tip" part="tip" aria-hidden="true"></span>
 </template>

@@ -876,3 +876,27 @@ test('a horizontal legend is capped and centred, and fills a narrow box', async 
   const narrow = await read(300);
   expect(narrow.grid).toBeCloseTo(narrow.host, 0);
 });
+
+/**
+ * THE OTHER ROW'S MENU DRAWS. It is slotted into an icon-only button, and the
+ * button's ICON template had no menu slot — so the menu opened (every state
+ * read "open") and drew nothing, 0x0. Measured in PIXELS, never by state.
+ * TRAP T-an-icon-button-still-slots-its-menu
+ */
+test('the Other row opens a breakdown menu that is actually drawn', async ({ page }) => {
+  await page.evaluate(async () => {
+    const el = await window.__mount<HTMLElement & { populate(d: unknown): void }>(
+      'sherpa-chart-legend', undefined, { 'data-orientation': 'horizontal', style: 'inline-size: 900px; margin-top: 40px' });
+    el.populate(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map((label, i) => ({ label, value: 10 - i })));
+    await window.__settled();
+  });
+  await page.locator('sherpa-chart-legend .rollup-menu-btn button.trigger').first().click();
+  const r = await page.evaluate(() => {
+    const menu = document.querySelector('sherpa-chart-legend')!.shadowRoot!.querySelector('.rollup-menu')!;
+    const pop = menu.shadowRoot!.querySelector<HTMLElement>('[popover]')!;
+    const box = pop.getBoundingClientRect();
+    return { open: pop.matches(':popover-open'), drawn: box.width > 0 && box.height > 0,
+      rows: menu.querySelectorAll('input').length };
+  });
+  expect(r).toEqual({ open: true, drawn: true, rows: 3 });
+});

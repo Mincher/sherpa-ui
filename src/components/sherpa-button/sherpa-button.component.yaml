@@ -75,6 +75,12 @@ anatomy:
             class: icon sherpa-icon-box icon-start
             attrs:
               aria-hidden: "true"
+          - el: span
+            class: menu-slot
+            children:
+              - slot: menu
+                attrs:
+                  data-accepts: menu
       - el: span
         class: tip sherpa-tip
         part: tip
