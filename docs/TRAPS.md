@@ -13649,6 +13649,13 @@ compiled filter is never saved; the Query is.
 Step 1 of the build proves the move is invisible: a Query holding today's
 answers keeps exactly the rows today's DataSource keeps for the same answers.
 
+Step 2: the DataSource holds it (`source.query.applied`). Each reading lives
+in the scope that holds its field — the View first, else the one component
+scope, else the View, which narrows everyone. A `hold` or `move` carries the
+reading with its field, so the rows never change on a move. The named parts
+(`contribute`) are still compiled clauses, ANDed on top, until steps 4–5.
+
+- Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/query.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/query.test.mjs`

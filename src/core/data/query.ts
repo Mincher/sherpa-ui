@@ -32,7 +32,8 @@ export interface Query {
 export interface ScopeQuery {
   /** The fields this scope holds, in order — the chips on its bar. */
   holds: string[];
-  /** Each held field's answer — the shape every filter control reports. */
+  /** Each field's answer — the shape every filter control reports. The View's
+   *  may answer a field no bar holds: a legend, or a column heading. */
   readings: Record<string, FieldReading>;
   /** Saved filters on this scope, on or off. Their readings live in the library. */
   presets?: Record<string, boolean>;
@@ -71,8 +72,8 @@ export const VIEW = 'view';
  * Turn a Query into what the source runs — the ONE place a Query becomes a
  * filter. Pure: the same Query and facts always compile to the same thing.
  *
- * - A field the VIEW holds is answered there alone: a component scope holding
- *   it too is superseded, and its reading applies nothing.
+ * - Every reading applies, held or not — except that a field the VIEW holds
+ *   is answered there alone: a component scope's reading of it applies nothing.
  * - A SUSPENDED reading keeps its answer and applies none of it.
  * - A scope with `narrows` reaches only those components.
  *
@@ -86,11 +87,10 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
 
   for (const [id, scope] of Object.entries(query.scopes)) {
     const clauses: Filter[] = [];
-    for (const field of scope.holds) {
+    for (const [field, reading] of Object.entries(scope.readings)) {
       // One field, one scope: the View's answer wins. TRAP T-a-view-held-heading-shows-and-refuses
       if (id !== VIEW && viewHolds.has(field)) continue;
-      const reading = scope.readings[field];
-      if (!reading || reading.suspended) continue;
+      if (reading.suspended) continue;
       const clause = readingClause({ field, ...facts.field?.(field) }, reading);
       if (clause) clauses.push(clause);
     }

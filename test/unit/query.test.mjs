@@ -4,7 +4,7 @@
  * Step 1 of docs/QUERY-DESIGN.md: `compile()` exists and is PURE, and a Query
  * holding today's answers keeps exactly the rows today's DataSource keeps for
  * the same answers — so the source can move onto it without a change anyone
- * can see. TRAP T-one-query-one-owner
+ * can see. Step 2: the source holds it. TRAP T-one-query-one-owner
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -96,4 +96,46 @@ test('a preset that is ON applies its saved readings; one that is off, nothing',
 
 test('an empty Query filters nothing and arranges nothing', () => {
   assert.deepEqual(compile({ v: 1, scopes: {} }), { only: {}, sort: [], group: null, search: '' });
+});
+
+/* ── Step 2: the source holds the Query ─────────────────────────────── */
+
+test('the source keeps each reading in the scope that holds its field, and compiles its filter from them', async () => {
+  const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
+  await src.ready;
+  src.hold('grid', ['status']);
+  src.select('status', ['active']);
+  // A field no bar holds is the View's — it narrows everyone.
+  src.select('owner', ['Dana Whitlock']);
+  const { applied } = src.query;
+  assert.deepEqual(applied.scopes.grid.readings, { status: { picked: ['active'] } });
+  assert.deepEqual(Object.keys(applied.scopes[VIEW].readings), ['owner']);
+  assert.deepEqual(ids(src.state.filter), ids(compile(applied).filter));
+  assert.deepEqual(ids(src.state.filter), [1, 3]);
+});
+
+test('moving a field moves its reading with it — and the rows do not change', async () => {
+  const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
+  await src.ready;
+  src.offer('grid', ['status']);
+  src.hold('grid', ['status']);
+  src.select('status', ['trial']);
+  const before = ids(src.state.filter);
+  src.move('status', 'grid', VIEW);
+  const { applied } = src.query;
+  assert.equal(applied.scopes.grid, undefined, 'a scope that holds and answers nothing is forgotten');
+  assert.deepEqual(applied.scopes[VIEW], { holds: ['status'], readings: { status: { picked: ['trial'] } } });
+  assert.deepEqual(ids(src.state.filter), before);
+  // Clearing the field clears it from the Query, not just from the filter.
+  src.select('status', []);
+  assert.deepEqual(src.query.applied.scopes[VIEW].readings, {});
+  assert.equal(src.state.filter, undefined);
+});
+
+test('the Query a source hands out is a copy — writing to it steers nothing', async () => {
+  const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
+  await src.ready;
+  src.select('region', ['APAC']);
+  src.query.applied.scopes[VIEW].readings.region.picked = ['EMEA'];
+  assert.deepEqual(src.selection('region').rows[0].picked, ['APAC']);
 });

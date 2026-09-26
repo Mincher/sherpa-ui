@@ -15,6 +15,7 @@
  * - .store — the records it reads; a write goes here, a view never does
  * - .timeField — The field holding each record's TIME, or undefined when the store has none.
  * - .state — The current view state.
+ * - .query — The Query the rows are under. A copy.
  * - .setState — Restore a whole view state — a saved view, a deep link, a reload.
  * - .result — The whole of the last load's answer.
  * - .rows — the rows of the last load — one page when paged
@@ -57,9 +58,10 @@
  */
 import { andFilter, filterFields, filterNeedles, filterRows, groupSummaries, valueKey } from './store.js';
 import { fieldState, stateClause } from './filter-state.js';
+import { compile, VIEW, type Query, type ScopeQuery } from './query.js';
 import { report } from './report.js';
 import type { Populatable } from '../ui/apply-state.js';
-import type { FieldReading, FieldType, FilterState } from './filter-state.js';
+import type { FieldFacts, FieldReading, FieldType, FilterState } from './filter-state.js';
 
 /** HOW FAR a control's reading reaches. TRAP T-a-filter-applies-down-its-scope
  *  `reach`, not `scope`: SCOPE is which surface holds a filter, and the two
@@ -138,7 +140,7 @@ export interface DataChangeDetail extends LoadResult {
  * The scope ABOVE every component — the same word as `reach: 'view'`. Named
  * once, so no caller spells it twice. TRAP T-up-is-open-down-is-closed
  */
-export const VIEW_SCOPE = 'view';
+export const VIEW_SCOPE = VIEW;
 
 /** The events a bound component may send UP. TRAP T-steering-events-are-a-closed-list */
 const STEERING_EVENTS = [
@@ -156,8 +158,8 @@ const STEERING_EVENTS = [
 
 export class DataSource extends EventTarget {
   readonly store: Store;
-  /** The view this source owns: sort, group, search, page, filter. */
-  #state: ViewState;
+  /** The view this source owns: sort, group, search, page. The filter is compiled. */
+  #state: Omit<ViewState, 'filter'>;
   /** The fields a search matches, or every field. */
   #searchFields: string[] | undefined;
   /** Every bound component, and how it is bound. */
@@ -212,11 +214,16 @@ export class DataSource extends EventTarget {
   /** The filter's named parts, in contribution order. TRAP T-parts-order-must-be-stable */
   #parts = new Map<string, Filter>();
   /**
-   * WHAT IS SELECTED, BY FIELD — not by which control did the selecting, so a
-   * chip, a column heading and a legend cannot show two answers.
-   * TRAP T-one-field-one-filter-menu
+   * THE QUERY — which scope holds each field, and each field's reading, in the
+   * reader's terms. The filter is compiled from it, never kept beside it.
+   * One reading per field, in the scope that holds it — so a chip, a column
+   * heading and a legend cannot show two answers.
+   * TRAP T-one-query-one-owner · TRAP T-one-field-one-filter-menu
    */
-  #readings = new Map<string, FieldReading>();
+  #applied: Query = { v: 1, scopes: {} };
+  /** The last compile, so a load does not redo it. Written by `#recompose` — and
+   *  by `setFilter`/`setState`, whose whole filter has no readings until step 7. */
+  #filter: Filter | undefined;
   /** Every value a field can take, for the controls that draw its rows. */
   #domains = new Map<string, unknown[]>();
   /** A field's declared KIND and label. TRAP T-the-field-type-decides-the-clause */
@@ -233,8 +240,8 @@ export class DataSource extends EventTarget {
       search: '',
       page: 1,
       pageSize: options.pageSize ?? null,
-      ...(options.filter ? { filter: options.filter } : {}),
     };
+    this.#filter = options.filter;
     // FORCED: the rows changed under an identical ViewState.
     this.store.addEventListener('change', () => void this.load({ force: true }));
     /* A RECORD'S TIME IS A DATE, said once, by whoever knows it — the store.
@@ -256,7 +263,12 @@ export class DataSource extends EventTarget {
 
   /** The current view state. A copy — mutating it must not steer the source. */
   get state(): ViewState {
-    return structuredClone(this.#state);
+    return structuredClone(this.#filter ? { ...this.#state, filter: this.#filter } : this.#state);
+  }
+
+  /** The Query the rows are under. A copy. TRAP T-one-query-one-owner */
+  get query(): { applied: Query } {
+    return { applied: structuredClone(this.#applied) };
   }
 
   /** Restore a whole view state — a saved view, a deep link, a reload.
@@ -266,9 +278,8 @@ export class DataSource extends EventTarget {
       this.#parts.clear();
       // A whole filter REPLACES every field selection too, or a restored view
       // keeps ticks the query no longer carries.
-      this.#readings.clear();
-      if (next.filter) this.#state.filter = next.filter;
-      else delete this.#state.filter;
+      this.#clearReadings();
+      this.#filter = next.filter;
     }
     if (next.sort) this.#state.sort = next.sort;
     // A view captured mid-suspend restores as it was left.
@@ -362,8 +373,9 @@ export class DataSource extends EventTarget {
   /** Replace the WHOLE filter, clearing every contribution. TRAP T-contribute-beats-last-writer */
   setFilter(filter: Filter | undefined): void {
     this.#parts.clear();
-    this.#readings.clear();
-    this.#setFilterValue(filter);
+    this.#clearReadings();
+    this.#filter = filter;
+    this.#requery();
   }
 
   /**
@@ -399,7 +411,7 @@ export class DataSource extends EventTarget {
     }
     if (filter) this.#parts.set(key, filter);
     else this.#parts.delete(key);
-    this.#setFilterValue(this.#composed());
+    this.#recompose();
   }
 
   /** Parts that narrow ONE bound component, by key. TRAP T-a-component-part-narrows-one-component */
@@ -440,17 +452,21 @@ export class DataSource extends EventTarget {
 
   /** One field's state from a reading this source has NOT stored. */
   #stateFor(field: string, reading: FieldReading): FilterState {
+    return fieldState({ field, ...this.#facts(field) }, reading);
+  }
+
+  /** What a field's clause needs to know: its values, kind and label.
+   *  A RANGE field has no declared list, and passing an empty one would say
+   *  it has no values at all. TRAP T-the-field-type-decides-the-clause */
+  #facts(field: string, label?: string): Omit<FieldFacts, 'field'> {
     const facts = this.#fields.get(field) ?? {};
     const values = this.#domains.get(field);
-    return fieldState(
-      {
-        field,
-        ...(values ? { values } : {}),
-        ...(facts.type ? { type: facts.type } : {}),
-        ...(facts.label ? { label: facts.label } : {}),
-      },
-      reading,
-    );
+    const named = label ?? facts.label;
+    return {
+      ...(values ? { values } : {}),
+      ...(facts.type ? { type: facts.type } : {}),
+      ...(named ? { label: named } : {}),
+    };
   }
 
   /* ── Selection, by FIELD ───────────────────────────────────────────── */
@@ -524,9 +540,8 @@ export class DataSource extends EventTarget {
     const answered = picked.length > 0
       || (next.text ?? '').trim() !== ''
       || (next.conditions ?? []).length > 0;
-    if (answered) this.#readings.set(field, next);
-    else this.#readings.delete(field);
-    this.#setFilterValue(this.#composed());
+    this.#setReading(field, answered ? next : undefined);
+    this.#recompose();
     // AFTER the requery, so a listener sees the state the rows were fetched for.
     this.dispatchEvent(new CustomEvent('selection-change', { detail: { field } }));
   }
@@ -563,7 +578,7 @@ export class DataSource extends EventTarget {
 
   /** Stop applying a field without forgetting it. TRAP T-grid-suspend-is-not-clear */
   suspendSelection(field: string, suspended = true): void {
-    const held = this.#readings.get(field);
+    const held = this.#reading(field);
     if (!held) return;
     this.select(field, held.picked ?? [], { ...held, suspended });
   }
@@ -573,24 +588,64 @@ export class DataSource extends EventTarget {
    * chip, a column menu, a legend row or anything else that draws it.
    */
   selection(field: string, label?: string): FilterState {
-    const facts = this.#fields.get(field) ?? {};
-    /* A RANGE field has no declared list, and passing an empty one would say
-       it has no values at all. TRAP T-the-field-type-decides-the-clause */
-    const values = this.#domains.get(field);
-    return fieldState(
-      {
-        field,
-        ...(values ? { values } : {}),
-        ...(facts.type ? { type: facts.type } : {}),
-        ...(label ?? facts.label ? { label: label ?? facts.label! } : {}),
-      },
-      this.#readings.get(field) ?? {},
-    );
+    return fieldState({ field, ...this.#facts(field, label) }, this.#reading(field) ?? {});
   }
 
   /** Every field currently selected. */
   get selectedFields(): string[] {
-    return [...this.#readings.keys()];
+    return Object.values(this.#applied.scopes).flatMap((s) => Object.keys(s.readings));
+  }
+
+  /* ── The Query: one reading per field, in the scope that holds it ─── */
+
+  /** Where a field's reading lives: the View when it holds the field, else the
+   *  one component scope that does, else the View — which narrows everyone. */
+  #home(field: string): string {
+    return this.scopeOf(field) ?? VIEW;
+  }
+
+  /** One field's reading, or undefined. */
+  #reading(field: string): FieldReading | undefined {
+    return this.#applied.scopes[this.#home(field)]?.readings[field];
+  }
+
+  /** One scope's entry, made when first written. */
+  #scope(id: string): ScopeQuery {
+    return (this.#applied.scopes[id] ??= { holds: [], readings: {} });
+  }
+
+  /** Write one field's reading at its home, or remove it. */
+  #setReading(field: string, reading: FieldReading | undefined): void {
+    for (const scope of Object.values(this.#applied.scopes)) delete scope.readings[field];
+    if (reading) this.#scope(this.#home(field)).readings[field] = reading;
+    this.#prune();
+  }
+
+  /** Forget every reading; the holds stay. */
+  #clearReadings(): void {
+    for (const scope of Object.values(this.#applied.scopes)) scope.readings = {};
+    this.#prune();
+  }
+
+  /** A hold MOVED fields, so move each reading to its new home. Every reading
+   *  still applies once, so the filter does not change. */
+  #rehome(): void {
+    for (const [id, scope] of Object.entries(this.#applied.scopes)) {
+      for (const [field, reading] of Object.entries(scope.readings)) {
+        const home = this.#home(field);
+        if (home === id) continue;
+        delete scope.readings[field];
+        this.#scope(home).readings[field] = reading;
+      }
+    }
+    this.#prune();
+  }
+
+  /** Forget a scope that holds nothing and answers nothing. */
+  #prune(): void {
+    for (const [id, scope] of Object.entries(this.#applied.scopes)) {
+      if (!scope.holds.length && !Object.keys(scope.readings).length) delete this.#applied.scopes[id];
+    }
   }
 
   /* ── Scopes: WHICH SURFACE holds a filter ──────────────────────────── */
@@ -601,44 +656,46 @@ export class DataSource extends EventTarget {
    *
    * It is here because two controls must agree on it and NEITHER MAY KNOW THE
    * OTHER EXISTS. A panel that asked a toolbar what it was holding is a panel
-   * coupled to a toolbar. TRAP T-a-scope-is-a-place-not-a-reach
+   * coupled to a toolbar. Held in the Query. TRAP T-a-scope-is-a-place-not-a-reach
    */
-  #scopes = new Map<string, string[]>();
 
   /** The fields a scope is holding, in the order it holds them. */
   scope(name: string): string[] {
-    return [...(this.#scopes.get(name) ?? [])];
+    return [...(this.#applied.scopes[name]?.holds ?? [])];
   }
 
-  /** Every scope that has been named. */
+  /** Every scope that holds a field. */
   get scopes(): string[] {
-    return [...this.#scopes.keys()];
+    return Object.keys(this.#applied.scopes).filter((id) => this.#applied.scopes[id]!.holds.length);
   }
 
   /** Say what a scope holds now. An empty list forgets the scope. */
   hold(name: string, fields: readonly string[]): void {
     const next = [...fields];
-    const before = this.#scopes.get(name);
+    const before = this.#applied.scopes[name]?.holds ?? [];
     // A no-op must not wake every listener — a bar re-renders on this.
-    if (before && before.length === next.length && before.every((f, i) => f === next[i])) return;
-    if (next.length) this.#scopes.set(name, next);
-    else this.#scopes.delete(name);
+    if (before.length === next.length && before.every((f, i) => f === next[i])) return;
+    this.#scope(name).holds = next;
+    this.#rehome();
     this.dispatchEvent(new CustomEvent('scope-change', { detail: { scope: name } }));
   }
 
   /** Is this field held HERE? */
   holds(name: string, field: string): boolean {
-    return (this.#scopes.get(name) ?? []).includes(field);
+    return (this.#applied.scopes[name]?.holds ?? []).includes(field);
   }
 
   /**
-   * Which scope holds this field, or null.
+   * Which scope holds this field, or null — the View first, when it does.
    *
    * This is what SUPERSEDING is: a field the view scope holds is not the data
    * bar's to narrow, and neither bar has to know the other is there.
    */
   scopeOf(field: string): string | null {
-    for (const [name, fields] of this.#scopes) if (fields.includes(field)) return name;
+    if (this.holds(VIEW, field)) return VIEW;
+    for (const [name, scope] of Object.entries(this.#applied.scopes)) {
+      if (scope.holds.includes(field)) return name;
+    }
     return null;
   }
 
@@ -697,21 +754,20 @@ export class DataSource extends EventTarget {
     }
     const touched = new Set<string>([to]);
     const drop = (name: string): void => {
-      const held = this.#scopes.get(name);
-      if (!held?.includes(field)) return;
-      const next = held.filter((f) => f !== field);
-      if (next.length) this.#scopes.set(name, next);
-      else this.#scopes.delete(name);
+      const scope = this.#applied.scopes[name];
+      if (!scope?.holds.includes(field)) return;
+      scope.holds = scope.holds.filter((f) => f !== field);
       touched.add(name);
     };
     if (to === VIEW_SCOPE) {
-      for (const name of [...this.#scopes.keys()]) if (name !== VIEW_SCOPE) drop(name);
+      for (const name of Object.keys(this.#applied.scopes)) if (name !== VIEW_SCOPE) drop(name);
     } else {
       drop(VIEW_SCOPE);
       if (from !== VIEW_SCOPE && from !== to) drop(from);
     }
-    const into = this.#scopes.get(to) ?? [];
-    if (!into.includes(field)) this.#scopes.set(to, [...into, field]);
+    const into = this.#scope(to);
+    if (!into.holds.includes(field)) into.holds = [...into.holds, field];
+    this.#rehome();
     // ONE event, naming every scope that changed — a listener never sees the
     // field in neither place, or in both.
     this.dispatchEvent(new CustomEvent('scope-change', { detail: { scopes: [...touched] } }));
@@ -736,14 +792,14 @@ export class DataSource extends EventTarget {
       sort: this.#state.sort,
       group: this.#state.group,
       search: this.#state.search,
-      filter: this.#state.filter,
-      selections: Object.fromEntries(
-        [...this.#readings.keys()].map((f) => [f, this.selection(f)]),
-      ),
+      filter: this.#filter,
+      // The readings and holds the filter is compiled from. TRAP T-one-query-one-owner
+      query: structuredClone(this.#applied),
+      selections: Object.fromEntries(this.selectedFields.map((f) => [f, this.selection(f)])),
       parts: Object.fromEntries(this.#parts),
       // …and the parts that narrow ONE component, by key.
       ownParts: Object.fromEntries([...this.#ownParts].map(([k, p]) => [k, p.filter])),
-      scopes: Object.fromEntries(this.#scopes),
+      scopes: Object.fromEntries(this.scopes.map((id) => [id, this.scope(id)])),
       offers: Object.fromEntries(this.#offers),
       fields: Object.fromEntries(this.#fields),
       // Which field a Date filter narrows — or `null`, which explains one
@@ -756,18 +812,11 @@ export class DataSource extends EventTarget {
     };
   }
 
-  /** Every named part AND every field's own clause. */
-  #composed(): Filter | undefined {
-    const fields = [...this.#readings.keys()]
-      .map((field) => stateClause(this.selection(field)))
-      .filter((c): c is NonNullable<typeof c> => !!c);
-    return andFilter([...this.#parts.values(), ...fields]);
-  }
-
-  /** The shared tail of `setFilter` and `contribute`. */
-  #setFilterValue(filter: Filter | undefined): void {
-    if (filter) this.#state.filter = filter;
-    else delete this.#state.filter;
+  /** Compile the Query under every named part, and load. The ONE place the
+   *  filter is made. TRAP T-one-query-one-owner */
+  #recompose(): void {
+    const { filter } = compile(this.#applied, { field: (f) => this.#facts(f) });
+    this.#filter = andFilter([...this.#parts.values(), ...(filter ? [filter] : [])]);
     this.#requery();
   }
 
@@ -826,7 +875,8 @@ export class DataSource extends EventTarget {
 
   /** Build the load options the store is asked with. */
   #loadOptions(): LoadOptions {
-    const { filter, sort, group, search, page, pageSize } = this.#state;
+    const { sort, group, search, page, pageSize } = this.#state;
+    const filter = this.#filter;
     const options: LoadOptions = {};
     if (filter) options.filter = filter;
     if (sort.length) options.sort = sort;
@@ -1100,7 +1150,8 @@ export class DataSource extends EventTarget {
 
   /** Give one component the rows and the view state. TRAP T-push-writes-state-as-attributes */
   #push(el: Populatable): void {
-    const { sort, group, page, pageSize, filter, sortSuspended } = this.#state;
+    const { sort, group, page, pageSize, sortSuspended } = this.#state;
+    const filter = this.#filter;
     const first = sort[0];
 
     /* The FIELD survives a suspend; the DIRECTION says whether it is applied.
