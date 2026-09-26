@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**51 open.** Pruned 2026-09-26: 10 items were done or stale and are gone, and
+**52 open.** Pruned 2026-09-26: 10 items were done or stale and are gone, and
 the audit that checked them found 3 new bugs. Numbers are ids, not order — the
 table IS the order. Quick wins first, then bugs, then features, then the big
 builds and the tidy-ups.
@@ -21,7 +21,7 @@ builds and the tidy-ups.
 |---:|---:|---|---|
 | | | **A — Filters: Will's list, 2026-09-26** | |
 | 1 | 39 | The panel header gets Reset all filters | quick |
-| 2 | 53 | A conditional chip's badge counts its conditions | quick |
+| 2 | 53 | A conditional chip's tip says "X conditions applied" | quick |
 | 3 | 40 | A switch has no accessible name | quick |
 | 4 | 57 | The filter panel's width is a hard-coded 400px | quick |
 | 5 | 54 | An Added Filters row drills only if it has many values | bug |
@@ -34,50 +34,51 @@ builds and the tidy-ups.
 | 12 | 56 | A view change leaves a lit chip that filters nothing | bug |
 | 13 | 21e | A reload keeps a filter nothing on screen shows | bug |
 | 14 | 46 | A PENDING state: changed, not yet applied | feature |
-| 15 | 47 | More than 20 values: one chip, not a run | feature |
-| 16 | 48 | A child menu opens on hover or click of its row | feature |
-| 17 | 49 | A preset conditional chip shows its conditions, read-only | feature |
-| 18 | 50 | A custom conditional chip shows its conditions, editable | feature |
-| 19 | 51 | NOTE — warning and critical, for a condition with a problem | note |
-| 20 | 21c | A condition's matches must ALL highlight | feature |
-| 21 | 21f | "Send to view filters" | feature |
-| 22 | 21b | Which header chips carry over between views | feature |
-| 23 | 20b | The Date filter should be a view-scope date RANGE | feature |
-| 24 | 21d | EXPLORE — conditions for a DATE field | explore |
-| 25 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
+| 15 | 60 | Once applied, a chip's badge shows the number of results | feature |
+| 16 | 47 | More than 20 values: one chip, not a run | feature |
+| 17 | 48 | A child menu opens on hover or click of its row | feature |
+| 18 | 49 | A preset conditional chip shows its conditions, read-only | feature |
+| 19 | 50 | A custom conditional chip shows its conditions, editable | feature |
+| 20 | 51 | NOTE — warning and critical, for a condition with a problem | note |
+| 21 | 21c | A condition's matches must ALL highlight | feature |
+| 22 | 21f | "Send to view filters" | feature |
+| 23 | 21b | Which header chips carry over between views | feature |
+| 24 | 20b | The Date filter should be a view-scope date RANGE | feature |
+| 25 | 21d | EXPLORE — conditions for a DATE field | explore |
+| 26 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
 | | | **B — The filter family, finished** | |
-| 26 | 38 | One model, one builder, one owner — what is left | refactor |
-| 27 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
+| 27 | 38 | One model, one builder, one owner — what is left | refactor |
+| 28 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | | | **C — Views and navigation** | |
-| 28 | 15 | Save a View, and the Save split-button menu | feature |
-| 29 | 16 | Favourite and Save apply to the View, not the Context | bug |
-| 30 | 17 | Breadcrumbs are for workflow, not for the nav | feature |
-| 31 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
-| 32 | 34 | Figma: use the Navigation terms | figma |
+| 29 | 15 | Save a View, and the Save split-button menu | feature |
+| 30 | 16 | Favourite and Save apply to the View, not the Context | bug |
+| 31 | 17 | Breadcrumbs are for workflow, not for the nav | feature |
+| 32 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
+| 33 | 34 | Figma: use the Navigation terms | figma |
 | | | **D — Data states and charts** | |
-| 33 | 58 | Loading, empty and error states in a container | feature |
-| 34 | 13 | A sparkline does not follow its record deltas | bug |
-| 35 | 14 | An example of real-time data | feature |
-| 36 | 9b | A Data Viz header, for metrics and chart containers | component |
-| 37 | 59 | EXPLORE, later — Will's own loading pattern | explore |
+| 34 | 58 | Loading, empty and error states in a container | feature |
+| 35 | 13 | A sparkline does not follow its record deltas | bug |
+| 36 | 14 | An example of real-time data | feature |
+| 37 | 9b | A Data Viz header, for metrics and chart containers | component |
+| 38 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | | | **E — Overlay panels** | |
-| 38 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
-| 39 | 23 | A focused grid row opens a details panel | feature |
+| 39 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
+| 40 | 23 | A focused grid row opens a details panel | feature |
 | | | **F — The accessibility gate** | |
-| 40 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
+| 41 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
 | | | **G — The big builds** | |
-| 41 | 25 | `sherpa-layout-canvas` + minimap | component |
-| 42 | 26 | A `Grouped` mode for the content area | feature |
-| 43 | 35 | Layout grid: plain grid templates? | explore |
-| 44 | 27 | A consumer can supply their OWN templates and CSS | feature |
+| 42 | 25 | `sherpa-layout-canvas` + minimap | component |
+| 43 | 26 | A `Grouped` mode for the content area | feature |
+| 44 | 35 | Layout grid: plain grid templates? | explore |
+| 45 | 27 | A consumer can supply their OWN templates and CSS | feature |
 | | | **H — Tidy-ups and renames** | |
-| 45 | 11 | `sherpa-group`: what is left | tidy |
-| 46 | 28 | A Figma component is NOT always a web component | tidy |
-| 47 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
-| 48 | 33 | Density as step offsets, and a breakpoint step | tokens |
-| 49 | 36 | CSS: compiled where it should inherit? | tidy |
-| 50 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
-| 51 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
+| 46 | 11 | `sherpa-group`: what is left | tidy |
+| 47 | 28 | A Figma component is NOT always a web component | tidy |
+| 48 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| 49 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| 50 | 36 | CSS: compiled where it should inherit? | tidy |
+| 51 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| 52 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 
 **Why this order.** A is Will's live list, and he tests on the running app as
 each lands. B comes before C–G because two of A's bugs (41, 44) are two views
@@ -95,14 +96,14 @@ A button in the filter panel's header that resets BOTH scopes, View and
 component, in one press. It and the toggle-to-toolbar button (`.to-toolbars`)
 take the DEFAULT button look, not transparent.
 
-### `[ ]` 53 — A conditional chip's badge counts its conditions
+### `[ ]` 53 — A conditional chip's tip says "X conditions applied"
 
-Will: the badge shows the NUMBER of conditions applied, as a ticked chip's
-badge counts its picks. Today it shows `fx` for any number
-(`T-a-condition-badge-says-that-not-which`, `CONDITION_BADGE` in
-`filter-face`); that ruling changes. The Success colour and the `fx` button
-(49, 50) still say "conditional", so the badge is free to count. Count
-ANSWERED rows only — an empty row is not a condition.
+Will, 2026-09-26. The tooltip of a conditional chip reads `3 conditions
+applied` (`1 condition applied` for one). Count ANSWERED rows only — an empty
+row is not a condition. Today the tip spells the chain (`Contains: ab or
+Equals: churned`, `spellConditions()`); the `fx` button (49, 50) is where the
+rows themselves are read now. The badge is NOT a condition count — Will
+changed that ask for 60.
 
 ### `[ ]` 40 — A switch has no accessible name
 
@@ -238,6 +239,19 @@ at once goes straight to active.
 
 A state is a pin, as data (`scripts/figma-data/state-pins.yaml`), not a
 colour rule in the chip. Check what the pin's surface resolves to first.
+
+### `[ ]` 60 — Once applied, a chip's badge shows the number of results
+
+Will, 2026-09-26: when a filter change is APPLIED and its results are fetched,
+the chip's badge shows the NUMBER OF RESULTS. It replaces what the badge says
+today — a count of picks, or `fx` (`T-a-condition-badge-says-that-not-which`,
+which changes with it) — and it replaces 53's first ask, a count of
+conditions. The picks stay in the tip.
+
+To settle when it starts: is the number the rows the WHOLE filter returns, or
+the rows THIS chip's own answer matches? And a pending chip (46) has no
+results yet, so it shows no number until Apply. Read the count from the source
+(`debugState().total` is the measure; the pager reports pages only).
 
 ### `[ ]` 47 — More than 20 values: one chip, not a run
 
