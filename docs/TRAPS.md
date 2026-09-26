@@ -7933,24 +7933,26 @@ is the same shape of gap.
 
 A filter menu asks ONE question two ways, and they are not two menus.
 
-**SELECT** is the default: a search over ticked rows. **CONDITION** is the
-And/Or rows. An icon-only button in the header switches between them, and the
-icon says where it GOES — sliders to enter the rows, a list to come back.
+**DEFAULT** is a search over ticked rows. **CUSTOM** is the And/Or rows. A
+switch labelled **Conditional** in the header moves between them, as the Range
+switch does — in the menu and in a panel field's header alike. Will,
+2026-09-26: the icon-only `fx` button it replaced is kept for the CHIPS (the
+toolbar, a panel section, a column heading), to open their conditions.
 
 Both stay STAMPED. Flipping a mode is a change of VIEW, not a reset: the ticks
-survive a trip through condition mode, and the typed rows survive a trip back.
-A mode that cleared the other would make the button a destructive control
+survive a trip through custom mode, and the typed rows survive a trip back.
+A mode that cleared the other would make the switch a destructive control
 wearing no warning.
 
-`data-mode` = `select` | `condition`. The rows live in `.condition-rows`, and
+`data-mode` = `default` | `custom` (the old `select` | `condition` are read). The rows live in `.condition-rows`, and
 each row is `[And|Or] [condition] [value]`.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 
 ---
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 
 ### T-conditions-are-opt-in-per-field
 
@@ -8361,17 +8363,8 @@ not by its own `select` mode. `T-commit-follows-select-mode`.
 `.sherpa-group` squares a run's inner corners by POSITION — `:first-child` and
 `:last-child` — and a `display: none` child still holds its position.
 
-So a filter field with no condition button had a Clear that kept the MIDDLE's
-square edges: the hidden button was `:first-child`, and Clear was merely second.
-
-The panel REMOVES the actions a field does not offer rather than hiding them.
-That is the rule for any `.sherpa-group`: a control that is not there must not
-be in the DOM.
-
----
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+The rule for any `.sherpa-group`: a control that is not there must not be in
+the DOM, or the group states its ends per flag.
 
 **A CONDITION ROW states BOTH ends.** Three of its five children are
 conditional — the join is hidden on row one, the Remove on a lone row, and the
@@ -9612,8 +9605,7 @@ and no colour.
 
 The same green runs through to the cells: a `mark.match` in the grid is
 `--sherpa-style-success-border-base-1`, so a reader follows ONE colour from
-the chip that found the match to the text it matched. The panel's pressed
-`fx` switch pins the same mode.
+the chip that found the match to the text it matched. 
 
 `data-condition` is written by the chip in `#syncCondition`, and a custom
 chip is never `data-empty` — a condition is an answer, so the amber "on but
@@ -11743,7 +11735,7 @@ when it holds none. It is written again when the menu STAMPS its rows
 by its def said nothing at all.
 
 **And so does the grid.** `#lightFilterChip` asks `fieldState()` for its
-column's condition, so a heading's `fx` and blue follow the same rule as a
+column's condition, so a heading's `fx` and green follow the same rule as a
 toolbar chip — "Is not" is custom there too.
 TRAP T-a-held-clause-op-is-not-a-reading-op
 

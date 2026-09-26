@@ -207,7 +207,7 @@ export class SherpaMenu extends SherpaElement {
     const region = this.$('.condition-rows');
     region?.addEventListener('change', this.#onCondition);
     region?.addEventListener('input', this.#onCondition);
-    this.$('.use-condition')?.addEventListener('click', this.#onModeSwitch);
+    this.$('.use-condition-switch')?.addEventListener('change', this.#onModeSwitch);
     this.$('.add-condition')?.addEventListener('click', this.#onAddCondition);
     region?.addEventListener('click', this.#onDropCondition);
   }
@@ -250,16 +250,9 @@ export class SherpaMenu extends SherpaElement {
     return this.hasAttribute('data-custom-only') || this.hasAttribute('data-conditions-only');
   }
 
-  /** The button says where it GOES, not where you are: fx into the condition
-   *  rows, a list icon back to the ticked values. */
+  /** The Conditional switch is ON in custom mode. */
   #syncModeButton(): void {
-    const btn = this.$('.use-condition');
-    if (!btn) return;
-    const inCustom = this.mode === 'custom';
-    btn.setAttribute('data-icon-start', inCustom ? 'list' : 'function');
-    btn.setAttribute('aria-pressed', String(inCustom));
-    // Will's two names for the two modes of ONE system. TRAP T-one-condition-system
-    btn.setAttribute('aria-label', inCustom ? 'Default condition' : 'Custom condition');
+    this.$('.use-condition-switch')?.toggleAttribute('checked', this.mode === 'custom');
   }
 
   set mode(next: ConditionType | 'select' | 'condition') {
@@ -304,9 +297,13 @@ export class SherpaMenu extends SherpaElement {
   };
 
   /** Switch between the value list and the condition rows. */
-  #onModeSwitch = (): void => {
-    if (!this.#offersCustom() || this.#customOnly()) return;
-    const next: ConditionType = this.mode === 'custom' ? 'default' : 'custom';
+  #onModeSwitch = (event: Event): void => {
+    // The menu's own control, not a value change. As Range.
+    event.stopPropagation();
+    if (!this.#offersCustom() || this.#customOnly()) return this.#syncModeButton();
+    const on = !!(event.target as HTMLElement & { checked?: boolean }).checked;
+    const next: ConditionType = on ? 'custom' : 'default';
+    if (next === this.mode) return;
     this.mode = next;
     // A custom mode with no rows has nothing to answer with.
     if (next === 'custom' && !this.#rowEls().length) this.#addRow();
@@ -315,6 +312,7 @@ export class SherpaMenu extends SherpaElement {
        `Equals <first option>` throws their answer away without saying so.
        TRAP T-a-mode-switch-carries-the-answer-over */
     if (next === 'custom') this.#seedFromPicks();
+    // Will's two words for the two modes of ONE system. TRAP T-one-condition-system
     this.emit('filter-mode-change', { mode: next });
     this.#emitConditions();
   };

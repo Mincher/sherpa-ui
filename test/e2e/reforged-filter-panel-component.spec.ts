@@ -45,6 +45,7 @@ const SETUP = `
   const q = (s) => [...sr.querySelectorAll(s)];
   const press = (s) => sr.querySelector(s).dispatchEvent(
     new CustomEvent('button-click', { bubbles: true, composed: true }));
+  const flip = (s) => sr.querySelector(s + ' sherpa-switch').shadowRoot.querySelector('input').click();
 `;
 
 test('a scope draws its presets, its fields, and nothing it cannot', async ({ page }) => {
@@ -55,10 +56,7 @@ test('a scope draws its presets, its fields, and nothing it cannot', async ({ pa
       fields: q('.field').map((f) => f.dataset.field),
       presets: q('.field[data-field="presets"] .value').map((c) => c.dataset.value),
       presetOn: q('.field[data-field="presets"] .value[data-current]').map((c) => c.dataset.value),
-      /* The three field actions are OPT-IN, per field — and the ones a field
-         does not offer are REMOVED, not hidden: a group squares corners by
-         POSITION, and a hidden first child still counts.
-         TRAP T-a-hidden-sibling-still-counts-as-first-child */
+      // The field actions are OPT-IN, per field; one not offered is not drawn.
       ownerActions: ['custom', 'clear', 'remove']
         .filter((a) => !!sr.querySelector('.field[data-field="owner"] .field-' + a)),
       statusActions: ['custom', 'clear', 'remove']
@@ -192,17 +190,17 @@ test('the condition button flags the field and hides its chips', async ({ page }
     el.addEventListener('filter-condition-change', (e) => heard.push(e.detail));
     const read = () => ({
       flag: sr.querySelector('.field[data-field="owner"]').hasAttribute('data-custom'),
-      pressed: sr.querySelector('.field[data-field="owner"] .field-custom')
-        .getAttribute('aria-pressed'),
+      pressed: String(sr.querySelector('.field[data-field="owner"] .field-custom sherpa-switch')
+        .hasAttribute('checked')),
       chips: getComputedStyle(
         sr.querySelector('.field[data-field="owner"] .field-values')).display,
     });
 
     const before = read();
-    press('.field[data-field="owner"] .field-custom');
+    flip('.field[data-field="owner"] .field-custom');
     await new Promise((r) => setTimeout(r, 120));
     const on = read();
-    press('.field[data-field="owner"] .field-custom');
+    flip('.field[data-field="owner"] .field-custom');
     await new Promise((r) => setTimeout(r, 120));
     return { before, on, off: read(), heard };
   })()`) as Record<string, unknown>;
@@ -607,7 +605,7 @@ test('Apply and Discard are off until a field changes, and off again after eithe
     const discarded = { ...off(), churned: chip('status', 'churned').hasAttribute('data-current') };
 
     // A CONDITION typed in a row is a change too.
-    press('.field[data-field="owner"] .field-custom');
+    flip('.field[data-field="owner"] .field-custom');
     await wait();
     const menu = sr.querySelector('.field[data-field="owner"] sherpa-menu');
     const row = menu.shadowRoot.querySelector('.condition-row');

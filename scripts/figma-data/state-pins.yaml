@@ -31,12 +31,6 @@ sherpa-quick-filter:
   # The count is a Badge, which pins Style=default in Figma — never the on tint.
   '& .count': default
 
-sherpa-filter-panel:
-  # The `fx` switch is ON while the field answers with rows. SUCCESS, the same
-  # mode a conditioned chip wears, so the pair reads as one idea.
-  # TRAP T-a-conditioned-chip-reads-as-success
-  '& .field-custom[aria-pressed="true"]': success
-
 sherpa-menu:
   # Every Menu variant pins Style=default, so a menu slotted into an ON chip
   # does not inherit its mode.

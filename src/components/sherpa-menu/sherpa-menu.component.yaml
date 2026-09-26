@@ -147,15 +147,17 @@ anatomy:
                 class: heading
                 part: heading
               - slot: header
-              - el: sherpa-button
+              - el: div
                 class: use-condition
                 part: use-condition
-                attrs:
-                  data-type: icon
-                  data-look: transparent
-                  data-icon-start: function
-                  aria-pressed: "false"
-                  aria-label: Custom condition
+                children:
+                  - el: sherpa-switch
+                    class: use-condition-switch
+                    attrs:
+                      data-type: simple
+                      aria-label: Conditional
+                  - el: span
+                    class: use-condition-label
               - el: sherpa-input-text
                 class: search
                 part: search
@@ -325,8 +327,8 @@ props:
     kind: style
     description: >-
       FILTER type only: default | custom. `default` is a Default Condition Filter, a ticked list
-      with a search; `custom` is a Custom Condition Filter, the And/Or rows. An icon-only button in
-      the header switches between them. The old values select | condition are read, and rewritten to
+      with a search; `custom` is a Custom Condition Filter, the And/Or rows. A Conditional switch in
+      the header moves between them. The old values select | condition are read, and rewritten to
       the new ones. TRAP T-a-filter-menu-has-two-modes
   - $type: prop
     name: data-no-select-all
@@ -553,6 +555,8 @@ tokens:
   menu.color: "{sherpa.theme-content-body-base}"
   menu.font-family: "{sherpa.font-family-body}"
   menu.box-shadow: "{sherpa.shadow-md}"
+  use-condition-label.color: "{sherpa.style-content-base}"
+  use-condition-label.font-size: "{sherpa.theme-content-size-base}"
   heading.padding-inline: "{sherpa.theme-padding-none}"
   heading.color: "{sherpa.theme-content-body-1}"
   heading.font-size: "{sherpa.theme-content-size-small}"

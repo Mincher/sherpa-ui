@@ -102,7 +102,16 @@
   font-weight: var(--sherpa-font-weight-light, 300);
   text-transform: uppercase;
 }
-.field-acts { display: flex; }
+.field-acts {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-sm, 12px);
+}
+.field-custom {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+}
 /* A field with nothing to act on shows no column at all. */
 .field:not([data-clearable]):not([data-removable]):not([data-custom-ok]) .field-acts {
   display: none;
@@ -110,16 +119,6 @@
 
 /* CLEAR only appears once there is something to clear. Will, 2026-09-24. */
 .field:not([data-answered]) .field-clear { display: none; }
-
-/* …and the button beside it takes BOTH ends back. `.sherpa-group` squares
-   corners by POSITION and cannot see a `display: none` sibling, so the
-   condition button kept a square right edge with nothing against it.
-   TRAP T-a-hidden-sibling-still-counts-as-first-child */
-.field:not([data-answered]) .field-custom {
-  --sherpa-border-right: var(--sherpa-display-mode-border-width-sm, 0.5px);
-  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
-  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
-}
 
 /* A field with ONLY a Clear, and nothing to clear, shows no column. */
 .field[data-clearable]:not([data-answered]):not([data-custom-ok]) .field-acts {
@@ -161,11 +160,6 @@
 .field[data-custom] .field-body,
 .field[data-body] .field-body { display: block; }
 .field[data-body] .field-values { display: none; }
-
-/* The three field actions are opt-in, and the ones a field does not offer are
-   REMOVED in JS rather than hidden here — `.sherpa-group` squares corners by
-   POSITION, and a hidden first child still counts.
-   TRAP T-a-hidden-sibling-still-counts-as-first-child */
 
 /* ONE ROW: the chevron LEADS the heading, and the scope's buttons sit on the
    right. Will, 2026-09-26. The chevron has no part, so the two parts after it

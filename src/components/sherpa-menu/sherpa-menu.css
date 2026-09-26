@@ -140,7 +140,14 @@
 :host([data-type="filter"][data-custom]) .use-condition,
 :host([data-type="filter"][data-conditional]) .use-condition {
   display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
   grid-area: mode;
+}
+
+.use-condition-label {
+  color: var(--sherpa-style-content-base, #35353d);
+  font-size: var(--sherpa-theme-content-size-base, 14px);
 }
 
 /* NOWHERE TO SWITCH TO. A custom-only field has no list behind the button.

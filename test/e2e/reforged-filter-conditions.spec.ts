@@ -125,7 +125,7 @@ test('the two modes swap, and NEITHER loses what the other holds', async ({ page
     };
 
     // The header button switches to CUSTOM mode.
-    sr.querySelector<HTMLElement>('.use-condition')!.click();
+    sr.querySelector<HTMLElement>('.use-condition sherpa-switch')!.shadowRoot!.querySelector('input')!.click();
     await wait();
     const onCustom = {
       mode: menu.mode,
@@ -155,7 +155,7 @@ test('the two modes swap, and NEITHER loses what the other holds', async ({ page
     };
 
     // …and BACK to default. The rows are still there; so is the typing.
-    sr.querySelector<HTMLElement>('.use-condition')!.click();
+    sr.querySelector<HTMLElement>('.use-condition sherpa-switch')!.shadowRoot!.querySelector('input')!.click();
     await wait();
     return {
       onDefault, onCustom, typed,
@@ -223,7 +223,7 @@ test('Add condition chains rows, and each row asks its own question', async ({ p
 
     // OPEN, so a control in it can take focus.
     (menu as HTMLElement & { show(): void }).show();
-    sr.querySelector<HTMLElement>('.use-condition')!.click();
+    sr.querySelector<HTMLElement>('.use-condition sherpa-switch')!.shadowRoot!.querySelector('input')!.click();
     await wait();
 
     // ROW ONE: a typed Contains. It has NO join — nothing precedes it.
@@ -345,7 +345,7 @@ test('a chip that did not opt in has NO custom mode at all', async ({ page }) =>
     const before = { custom: menu.hasAttribute('data-custom'), btn: getComputedStyle(btn).display };
 
     // Press it anyway. Nothing happens — the mode does not exist for this field.
-    btn.click();
+    btn.querySelector('sherpa-switch')!.shadowRoot!.querySelector('input')!.click();
     await new Promise((res) => { setTimeout(res, 120); });
     const afterClick = { mode: menu.mode, rows: sr.querySelectorAll('.condition-row').length };
 
@@ -394,7 +394,7 @@ test('the BADGE says THAT conditions apply, never WHICH', async ({ page }) => {
     let inCondition = false;
     const pick = async (op: string): Promise<void> => {
       if (!inCondition) {
-        menu.shadowRoot!.querySelector<HTMLElement>('.use-condition')!.click();
+        menu.shadowRoot!.querySelector<HTMLElement>('.use-condition sherpa-switch')!.shadowRoot!.querySelector('input')!.click();
         inCondition = true;
         // The row's composed fields upgrade on their own schedule.
         await wait();
@@ -488,7 +488,7 @@ test('a TYPED condition survives Apply, and its hits mark', async ({ page }) => 
     const wait = (): Promise<void> => new Promise((res) => { setTimeout(res, 120); });
 
     // Into CONDITION mode; the rows live there.
-    menu.shadowRoot!.querySelector<HTMLElement>('.use-condition')!.click();
+    menu.shadowRoot!.querySelector<HTMLElement>('.use-condition sherpa-switch')!.shadowRoot!.querySelector('input')!.click();
     await wait();
     const row = menu.shadowRoot!.querySelector('.condition-row')!;
 
@@ -693,7 +693,7 @@ test('row ONE\'s value select is populated, not just later rows', async ({ page 
     const sr = menu.shadowRoot;
     const wait = (ms = 150): Promise<void> => new Promise((res) => { setTimeout(res, ms); });
 
-    sr.querySelector<HTMLElement>('.use-condition')!.click();
+    sr.querySelector<HTMLElement>('.use-condition sherpa-switch')!.shadowRoot!.querySelector('input')!.click();
     await wait();
     const opts = (row: Element): string[] => {
       const pick = row.querySelector('.condition-pick') as HTMLElement & { shadowRoot: ShadowRoot };

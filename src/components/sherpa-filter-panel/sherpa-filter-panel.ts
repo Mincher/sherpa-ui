@@ -186,6 +186,7 @@ export class SherpaFilterPanel extends SherpaElement {
     this.$('.discard')?.addEventListener('button-click', this.#onDiscard);
     // ONE listener for every drawn control — a field added later needs no wiring.
     this.$('.scopes')?.addEventListener('button-click', this.#onAction);
+    this.$('.scopes')?.addEventListener('change', this.#onConditionalSwitch);
     this.$('.scopes')?.addEventListener('quick-filter-click', this.#onValueClick);
     this.$('.scopes')?.addEventListener('menu-change', this.#onAddCommit);
     this.$('.scopes')?.addEventListener('menu-select', this.#onSavedAction);
@@ -553,11 +554,7 @@ export class SherpaFilterPanel extends SherpaElement {
     box.toggleAttribute('data-removable', !isPresets && !organise && !!def.removable);
     box.toggleAttribute('data-custom-ok', !isPresets && !organise && !!customOf(def));
 
-    /* REMOVE what this field does not offer, never hide it: `.sherpa-group`
-       squares corners by POSITION, and a `display: none` first child still
-       counts as `:first-child` — so a field with no condition button had a
-       Clear that kept the middle's square edges.
-       TRAP T-a-hidden-sibling-still-counts-as-first-child */
+    // What this field does not offer is not drawn.
     if (!box.hasAttribute('data-custom-ok')) box.querySelector('.field-custom')?.remove();
     if (!box.hasAttribute('data-clearable')) box.querySelector('.field-clear')?.remove();
 
@@ -566,8 +563,8 @@ export class SherpaFilterPanel extends SherpaElement {
     if (title) title.textContent = def.label;
     const name = def.label;
     head?.querySelector('.field-clear')?.setAttribute('aria-label', `Clear ${name}`);
-    head?.querySelector('.field-custom')
-      ?.setAttribute('aria-label', `Custom condition for ${name}`);
+    head?.querySelector('.field-custom-switch')
+      ?.setAttribute('aria-label', `Conditional ${name}`);
 
     const values = box.querySelector('.field-values') as HTMLElement | null;
 
@@ -995,12 +992,19 @@ export class SherpaFilterPanel extends SherpaElement {
     this.#syncAnswered(held);
   };
 
-  /** A field's condition or Clear button. */
+  /** A field's Conditional switch. */
+  #onConditionalSwitch = (event: Event): void => {
+    const sw = this.#pathFind(event, '.field-custom-switch');
+    const held = sw && this.#fieldOf(sw);
+    if (!held) return;
+    const on = !!(sw as HTMLElement & { checked?: boolean }).checked;
+    if (on !== held.box.hasAttribute('data-custom')) this.#flipCondition(held);
+  };
+
+  /** A field's Save or Clear button. */
   #onAction = (event: Event): void => {
     const save = this.#pathFind(event, '.scope-save');
     if (save) return this.#requestSave(save);
-    const cond = this.#pathFind(event, '.field-custom');
-    if (cond) return this.#flipCondition(cond);
     const clear = this.#pathFind(event, '.field-clear');
     if (clear) return this.#clearField(clear);
   };
@@ -1028,9 +1032,7 @@ export class SherpaFilterPanel extends SherpaElement {
   /** CUSTOM MODE replaces the value chips. The rows are the host's to draw:
    *  the panel reports the intent and flags the field.
    *  TRAP T-conditions-are-opt-in-per-field */
-  #flipCondition(btn: HTMLElement): void {
-    const held = this.#fieldOf(btn);
-    if (!held) return;
+  #flipCondition(held: Held): void {
     const on = !held.box.hasAttribute('data-custom');
     this.#setCustom(held, on);
     this.#syncAnswered(held);
@@ -1043,7 +1045,7 @@ export class SherpaFilterPanel extends SherpaElement {
   /** Put a field in custom mode, or take it out: its flag, its button, its menu. */
   #setCustom(held: Held, on: boolean): void {
     held.box.toggleAttribute('data-custom', on);
-    held.box.querySelector('.field-custom')?.setAttribute('aria-pressed', String(on));
+    held.box.querySelector('.field-custom-switch')?.toggleAttribute('checked', on);
 
     /* THE ROWS ARE THE MENU'S, and this field may not have needed one until
        now — a run of chips answers it otherwise. CSS shows the body off

@@ -105,12 +105,13 @@
       <sherpa-section-header class="field-head" data-size="sm" data-divider="none">
         <!-- The TYPE SCALE's small class, in caps and light, as a metric's title. -->
         <h3 slot="heading" class="field-title sherpa-text-small"></h3>
-        <!-- `sm`, and the DEFAULT look: transparent read as decoration, and
-             these are the field's own controls. No Remove: the scope's Add
-             menu is the whole list, and unticking a row removes it. -->
-        <span slot="actions" class="field-acts sherpa-group">
-          <sherpa-button class="field-custom" data-type="icon" data-size="sm"
-                         data-icon-start="function" aria-pressed="false"></sherpa-button>
+        <!-- A Conditional SWITCH, as the menu's, then Clear in the DEFAULT
+             look. No Remove: the scope's Add menu is the whole list. -->
+        <span slot="actions" class="field-acts">
+          <span class="field-custom">
+            <sherpa-switch class="field-custom-switch" data-type="simple"></sherpa-switch>
+            <span class="sherpa-text-small">Conditional</span>
+          </span>
           <sherpa-button class="field-clear" data-type="icon" data-size="sm"
                          data-icon-start="arrow-rotate-left"></sherpa-button>
         </span>

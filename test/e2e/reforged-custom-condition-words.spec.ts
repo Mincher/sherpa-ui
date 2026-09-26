@@ -16,16 +16,18 @@ test('a menu speaks the new words', async ({ page }) => {
     const menu = await window.__mount<HTMLElement & { mode: string }>('sherpa-menu', undefined,
       { 'data-type': 'filter', 'data-custom': true });
     const btn = menu.shadowRoot!.querySelector<HTMLElement>('.use-condition')!;
+    const flip = () => btn.querySelector('sherpa-switch')!.shadowRoot!.querySelector('input')!.click();
     const heard: unknown[] = [];
     menu.addEventListener('filter-mode-change', (e) => heard.push((e as CustomEvent).detail));
     const shown = getComputedStyle(btn).display !== 'none';
     const start = menu.mode;
-    btn.click();
+    flip();
     await window.__settled();
-    const on = { mode: menu.mode, attr: menu.getAttribute('data-mode') };
-    btn.click();
+    const sw = btn.querySelector('sherpa-switch')!;
+    const on = { mode: menu.mode, attr: menu.getAttribute('data-mode'), checked: sw.hasAttribute('checked') };
+    flip();
     await window.__settled();
-    const off = { mode: menu.mode, attr: menu.getAttribute('data-mode') };
+    const off = { mode: menu.mode, attr: menu.getAttribute('data-mode'), checked: sw.hasAttribute('checked') };
 
     // CUSTOM ONLY opens in custom, hides the switch, and cannot leave.
     const only = await window.__mount<HTMLElement & { mode: string }>('sherpa-menu', undefined,
@@ -34,15 +36,17 @@ test('a menu speaks the new words', async ({ page }) => {
     await window.__settled();
     const onlyBtn = only.shadowRoot!.querySelector<HTMLElement>('.use-condition')!;
     return {
-      shown, start, on, off, heard,
+      shown, start, on, off, heard, label: btn.textContent!.trim(),
       only: { mode: only.mode, attr: only.getAttribute('data-mode'), btn: getComputedStyle(onlyBtn).display },
     };
   });
 
   expect(r.shown).toBe(true);
   expect(r.start).toBe('default');
-  expect(r.on).toEqual({ mode: 'custom', attr: 'custom' });
-  expect(r.off).toEqual({ mode: 'default', attr: 'default' });
+  // A SWITCH labelled Conditional, as Range is. Will, 2026-09-26.
+  expect(r.label).toBe('Conditional');
+  expect(r.on).toEqual({ mode: 'custom', attr: 'custom', checked: true });
+  expect(r.off).toEqual({ mode: 'default', attr: 'default', checked: false });
   expect(r.heard).toEqual([{ mode: 'custom' }, { mode: 'default' }]);
   expect(r.only).toEqual({ mode: 'custom', attr: 'custom', btn: 'none' });
 });
@@ -169,8 +173,8 @@ test('the panel reports its mode in the menu\'s own words', async ({ page }) => 
     const heard: unknown[] = [];
     panel.addEventListener('filter-condition-change', (e) => heard.push((e as CustomEvent).detail));
     const sr = panel.shadowRoot!;
-    const press = () => sr.querySelector('.field[data-field="owner"] .field-custom')!
-      .dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
+    const press = () => sr.querySelector('.field[data-field="owner"] .field-custom sherpa-switch')!
+      .shadowRoot!.querySelector('input')!.click();
     press();
     await window.__settled();
     const menu = sr.querySelector('.field[data-field="owner"] sherpa-menu') as Menu | null;
