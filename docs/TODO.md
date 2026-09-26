@@ -248,9 +248,11 @@ today — a count of picks, or `fx` (`T-a-condition-badge-says-that-not-which`,
 which changes with it) — and it replaces 53's first ask, a count of
 conditions. The picks stay in the tip.
 
-To settle when it starts: is the number the rows the WHOLE filter returns, or
-the rows THIS chip's own answer matches? And a pending chip (46) has no
-results yet, so it shows no number until Apply. Read the count from the source
+**Decided, Will 2026-09-26: the rows THIS chip's own answer matches** — not
+the whole filter's total, which would put one number on every chip. Counted
+out of what the chip's scope can see: a component chip counts within the
+rows the View already allows. A pending chip (46) has no results yet, so it
+shows no number until Apply. Read the count from the source
 (`debugState().total` is the measure; the pager reports pages only).
 
 ### `[ ]` 47 — More than 20 values: one chip, not a run
