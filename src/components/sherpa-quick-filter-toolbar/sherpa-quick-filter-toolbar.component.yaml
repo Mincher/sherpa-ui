@@ -59,7 +59,7 @@ anatomy:
                 data-act: ai
                 data-type: icon
                 data-icon-start: wand-magic-sparkles
-                aria-label: Filter with AI
+                aria-label: Suggest filters
             - el: sherpa-button
               class: act
               attrs:
@@ -67,7 +67,7 @@ anatomy:
                 data-act: clear
                 data-type: icon
                 data-icon-start: arrow-rotate-left
-                aria-label: Reset filters
+                aria-label: Reset all filters
             - el: sherpa-button
               class: act
               attrs:
@@ -75,7 +75,7 @@ anatomy:
                 data-act: configure
                 data-type: icon
                 data-icon-start: sidebar
-                aria-label: Filter in a panel instead
+                aria-label: View as filter panel
             - el: span
               class: act-divider
               attrs:
@@ -91,7 +91,7 @@ anatomy:
                     data-type: icon
                     data-group: start
                     data-icon-start: star
-                    aria-label: Favourite this view
+                    aria-label: Add to Favorites
                     aria-pressed: "false"
                 - el: sherpa-button
                   class: act
@@ -108,7 +108,7 @@ anatomy:
                     data-type: icon
                     data-group: end
                     data-icon-start: triangle-down
-                    aria-label: View options
+                    aria-label: Save view options
                     aria-haspopup: menu
             - el: sherpa-button
               class: act

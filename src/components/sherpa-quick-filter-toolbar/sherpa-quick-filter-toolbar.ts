@@ -1728,6 +1728,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        never filled. TRAP T-favourite-star-swaps-its-glyph */
     btn.setAttribute('data-icon-start', on ? 'star-filled' : 'star');
     btn.setAttribute('aria-pressed', String(on));
+    // The name and its tip say what a press DOES. Will, 2026-09-26.
+    btn.setAttribute('aria-label', on ? 'Remove from Favorites' : 'Add to Favorites');
   }
 
   /**

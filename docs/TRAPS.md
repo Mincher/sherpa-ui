@@ -13341,6 +13341,7 @@ attribute: an attribute check passes on exactly the bug.
 - Site: `src/components/sherpa-select-radio/sherpa-select-radio.ts`
 - Site: `src/components/sherpa-switch/sherpa-switch.ts`
 - Site: `test/e2e/reforged-host-label.spec.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 
 ### T-every-button-says-its-action
 

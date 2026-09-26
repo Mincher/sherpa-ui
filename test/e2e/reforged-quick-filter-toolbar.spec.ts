@@ -367,6 +367,21 @@ test('a trigger button goes active while its menu is open, and back on a second 
   expect(r.closed).toEqual({ open: false, active: false, expanded: 'false' });
 });
 
+/**
+ * THE ACTION NAMES, Will's words, 2026-09-26 — each is the button's name and
+ * its tip. Asked of the accessibility tree. TRAP T-a-host-label-must-reach-its-control
+ */
+test('the bar\'s icon actions are named for what they do', async ({ page }) => {
+  await page.evaluate(async () => {
+    await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'view' });
+    await window.__settled();
+  });
+  for (const name of ['Suggest filters', 'Reset all filters', 'View as filter panel',
+    'Add to Favorites', 'Save view options']) {
+    await expect(page.getByRole('button', { name, exact: true })).toHaveCount(1);
+  }
+});
+
 test('the star toggles, swaps its glyph, and reports both ways', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'view' });
@@ -381,6 +396,8 @@ test('the star toggles, swaps its glyph, and reports both ways', async ({ page }
         on: el.hasAttribute('data-favourite'),
         icon: star.getAttribute('data-icon-start'),
         pressed: star.getAttribute('aria-pressed'),
+        // The name says what the NEXT press does. Will, 2026-09-26.
+        name: star.getAttribute('aria-label'),
         // The DRAWING, not the name — TRAP T-favourite-star-swaps-its-glyph.
         d: star.shadowRoot?.querySelector('svg path')?.getAttribute('d') ?? null,
       };
@@ -390,8 +407,8 @@ test('the star toggles, swaps its glyph, and reports both ways', async ({ page }
 
   // The GLYPH carries the state too (outline → solid), so it survives for anyone
   // who cannot tell the brand purple from the default ink.
-  expect(r.first).toMatchObject({ on: true, icon: 'star-filled', pressed: 'true' });
-  expect(r.second).toMatchObject({ on: false, icon: 'star', pressed: 'false' });
+  expect(r.first).toMatchObject({ on: true, icon: 'star-filled', pressed: 'true', name: 'Remove from Favorites' });
+  expect(r.second).toMatchObject({ on: false, icon: 'star', pressed: 'false', name: 'Add to Favorites' });
   /* The PATH must differ. Asserting the name alone is what let the two states
      resolve to one outline drawing for three months: the two weights were one
      Font Awesome name, and the weight token was dropped on the way in. They are
