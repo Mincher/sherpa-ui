@@ -13595,6 +13595,7 @@ the view took the field keeps it applied — one field in one scope says it
 should be suspended, as a chip is.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/core/data/query.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `examples/contexts/records.js`
@@ -13624,7 +13625,30 @@ applies them, which is why none of them caught it; the new test uses a real
 `DataSource` with a chart and a grid bound.
 
 - Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/query.ts`
 - Site: `src/core/data/bind-selection.ts`
 - Site: `examples/contexts/dashboard.js`
 - Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
+
+### T-one-query-one-owner
+
+**A page's data is under ONE Query, in the reader's terms, and a filter is
+only ever its OUTPUT.** docs/QUERY-DESIGN.md. Nearly every filter bug of
+2026-09-26 — 41, 55, 56, 21e, 44, 72, 42 — was one answer held in two places
+that disagreed: a chip and the source, a heading and a selection, a compiled
+filter restored over empty chips.
+
+A `Query` holds scopes; each scope holds fields, each field's `FieldReading`,
+the saved filters that are on, and — for one scope — sort, group and search.
+`compile(query, facts)` is the ONE place it becomes a filter, and it is pure:
+a field the View holds is answered there alone, a suspended reading applies
+nothing, and a scope that `narrows` reaches only those components. The
+compiled filter is never saved; the Query is.
+
+Step 1 of the build proves the move is invisible: a Query holding today's
+answers keeps exactly the rows today's DataSource keeps for the same answers.
+
+- Site: `src/core/data/query.ts`
+- Site: `src/data.ts`
+- Site: `test/unit/query.test.mjs`

@@ -235,6 +235,18 @@ export {
   type ConditionType,
 } from './core/data/filter-state.js';
 
+/* THE QUERY — the one state a page's data is under, in the reader's terms, and
+   the one place it becomes a filter. docs/QUERY-DESIGN.md.
+   TRAP T-one-query-one-owner */
+export {
+  compile,
+  VIEW,
+  type Query,
+  type ScopeQuery,
+  type CompileFacts,
+  type Compiled,
+} from './core/data/query.js';
+
 /* ONE CHANNEL for "your assumption was wrong" — a host routes it, silences it
    or lets it warn. TRAP T-a-broken-assumption-reports */
 export { report, onReport, type Report, type Reporter } from './core/data/report.js';
