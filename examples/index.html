@@ -290,9 +290,10 @@
       const markup = await (await fetch(`/template/context/${name}`)).text();
       if (token !== loadToken) return;   // a newer navigation superseded us
 
-      /* Home is the root, so it has nothing to go back from. */
+      /* NO back button: moving between Contexts is the NAV's to show, as the
+         breadcrumbs are. Settings keeps its own, which leaves Settings.
+         Will, 2026-09-26. */
       const header = mainHeader();
-      header?.toggleAttribute('data-back', name !== DEFAULT_CONTEXT);
 
       /* Title and icon ARE the selected nav row's — one value, one owner. */
       syncHeaderToNav(header, name);
