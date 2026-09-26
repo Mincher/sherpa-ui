@@ -2673,3 +2673,36 @@ test('a chip steered with conditions redraws its value and tip', async ({ page }
     value: 'Contains: Da or Starts with: R', tip: '2 conditions applied' });
   expect(r.email).toEqual({ on: true, condition: 'custom', value: 'zz', tip: '1 condition applied' });
 });
+
+/**
+ * ADDING A FILTER KEEPS EVERY ANSWER ALREADY ON THE BAR. Adding a field
+ * rebuilds the bar, and a rebuilt condition row reads empty for a tick — the
+ * report in that gap said Owner had no answer, so adding Email reset Owner.
+ * Will, 2026-09-26. TRAP T-a-rebuilt-row-reads-empty-for-a-tick
+ */
+test('adding a second conditional filter keeps the first one\'s rows in every report', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [
+      { id: 'owner', label: 'Owner', select: 'multiple', custom: true,
+        options: [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }] },
+    ], { style: 'inline-size: 1200px' });
+    el.available([{ id: 'email', label: 'Email', custom: 'only', op: 'contains' }]);
+    await window.__settled();
+    const bar = el as Bar & { setChipReading(id: string, r: unknown): void;
+      readings: Record<string, { conditions?: unknown[] }> };
+    bar.setChipReading('owner', { picked: [], conditions: [{ op: 'contains', text: 'Da' }] });
+    await window.__settled();
+    await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+    const heard: unknown[] = [];
+    el.addEventListener('quick-filter-change', () => heard.push(bar.readings['owner']?.conditions ?? null));
+    bar.addFilters(['email']);
+    for (let i = 0; i < 6; i++) await new Promise((res) => requestAnimationFrame(res));
+    await window.__settled();
+    const chip = el.shadowRoot!.querySelector('.chip[data-id="owner"]')!;
+    return { heard, on: chip.hasAttribute('data-current'), now: bar.readings['owner']?.conditions };
+  });
+  expect(r.heard.length).toBeGreaterThan(0);
+  for (const h of r.heard) expect(h).toEqual([{ op: 'contains', text: 'Da' }]);
+  expect(r.on).toBe(true);
+  expect(r.now).toEqual([{ op: 'contains', text: 'Da' }]);
+});

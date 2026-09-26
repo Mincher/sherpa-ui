@@ -109,3 +109,45 @@ test('the open panel follows a field another control changes, and keeps the read
   await page.waitForTimeout(400);
   expect(await total(page)).toBe(narrowed);
 });
+
+/**
+ * WILL'S STEPS: Owner by a condition, then a SECOND conditional filter — Email
+ * — added and applied. Owner was reset: 10 rows went back to 100.
+ * TRAP T-a-conditioned-field-opens-on-its-rows
+ */
+test('adding and applying a second conditional filter keeps the first', async ({ page }) => {
+  await page.goto('http://localhost:4200/?context=records');
+  await page.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
+  const total = () => page.evaluate(() =>
+    (window as unknown as { sherpa: { source: { debugState(): { total: number } } } }).sherpa.source.debugState().total);
+  type Q = HTMLElement & { setChipReading(id: string, r: unknown): void; report(): void; addFilters(ids: string[]): void };
+  await page.evaluate(() => {
+    const q = document.querySelector('#context-root sherpa-quick-filter-toolbar') as Q;
+    q.setChipReading('owner', { picked: [], conditions: [{ op: 'contains', text: 'Da' }] });
+    q.report();
+  });
+  await expect.poll(total).toBe(10);
+  await page.evaluate(() => (document.querySelector('#context-root sherpa-quick-filter-toolbar') as Q).addFilters(['email']));
+  await page.waitForTimeout(600);
+  await expect.poll(total).toBe(10);
+  await page.evaluate(() => {
+    const q = document.querySelector('#context-root sherpa-quick-filter-toolbar') as Q;
+    q.setChipReading('email', { picked: [], conditions: [{ op: 'contains', text: 'example' }] });
+    q.report();
+  });
+  await page.waitForTimeout(600);
+  // Every email contains "example", so only Owner narrows.
+  await expect.poll(total).toBe(10);
+
+  // And the PANEL, opened now, shows Owner on its rows.
+  await page.evaluate(() => document.querySelector('#context-root sherpa-quick-filter-toolbar')!
+    .dispatchEvent(new CustomEvent('filter-configure', { bubbles: true, composed: true })));
+  await expect.poll(() => page.evaluate(() => {
+    const box = document.querySelector('#filter-panel')!.shadowRoot!.querySelector('.field[data-field="owner"]');
+    return (box?.querySelector('sherpa-menu') as HTMLElement & { conditions?: unknown[] } | null)?.conditions ?? null;
+  })).toEqual([{ op: 'contains', text: 'Da' }]);
+  // Nothing differs from what is applied, so Apply stays off — and the rows hold.
+  await expect(page.locator('#filter-panel .foot .apply')).toHaveAttribute('disabled', '');
+  await expect.poll(total).toBe(10);
+});

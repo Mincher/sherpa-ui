@@ -909,7 +909,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     void Promise.resolve(menu.rendered).then(() => {
       // A later rebuild has taken over.
       if (this.#pendingAnswers.get(id) !== held || !menu.isConnected) return;
-      this.#pendingAnswers.delete(id);
+      /* HELD two frames MORE: a rebuilt row fills a frame late, and a report in
+         that gap read Owner as unanswered — the source dropped it, and the
+         mirror switched the chip off. Adding Email reset Owner.
+         TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (this.#pendingAnswers.get(id) === held) this.#pendingAnswers.delete(id);
+      }));
       menu.dataset['op'] = op;
       menu.conditionValue = text;
       if (conditions.length) {

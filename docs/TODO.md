@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**49 open.** Reassessed 2026-09-26: the bugs that lie first, then the
+**48 open.** Reassessed 2026-09-26: the bugs that lie first, then the
 FOUNDATION — the one compiled query, the view definition and when Apply runs —
 before the filter features that stand on it. Numbers are ids, not order; the
 table IS the order.
@@ -20,64 +20,63 @@ table IS the order.
 | Pri | # | Item | Kind |
 |---:|---:|---|---|
 | | | **A — Bugs that make the app LIE** | |
-| 1 | 72 | Adding a second conditional filter resets the first | bug |
-| 2 | 44c | A heading shows an answer held at VIEW scope | bug |
-| 3 | 42 | A legend toggle filters the whole view | bug |
+| 1 | 44c | A heading shows an answer held at VIEW scope | bug |
+| 2 | 42 | A legend toggle filters the whole view | bug |
 | | | **B — The foundation: design, then build** | |
-| 4 | 73 | EXPLORE — one compiled QUERY, built as the reader sets it up, run on Apply | explore |
-| 5 | 70 | EXPLORE — a view definition bundles its filters; one JSON renders the page | explore |
-| 6 | 62 | Apply and Discard only for a REMOTE fetch; a debug flag spoofs one | feature |
-| 7 | 66 | The footer owns "nothing to save": Save and Cancel wait for a change | feature |
-| 8 | 38 | One model, one builder, one owner — what is left | refactor |
-| 9 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
+| 3 | 73 | EXPLORE — one compiled QUERY, built as the reader sets it up, run on Apply | explore |
+| 4 | 70 | EXPLORE — a view definition bundles its filters; one JSON renders the page | explore |
+| 5 | 62 | Apply and Discard only for a REMOTE fetch; a debug flag spoofs one | feature |
+| 6 | 66 | The footer owns "nothing to save": Save and Cancel wait for a change | feature |
+| 7 | 38 | One model, one builder, one owner — what is left | refactor |
+| 8 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | | | **C — Contained bugs** | |
-| 10 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
-| 11 | 61 | Add customer saves with required fields empty | bug |
-| 12 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
-| 13 | 45 | A picked date does not show in the chip | bug |
-| 14 | 16 | Favourite and Save apply to the Context, not the View | bug |
-| 15 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
+| 9 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
+| 10 | 61 | Add customer saves with required fields empty | bug |
+| 11 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
+| 12 | 45 | A picked date does not show in the chip | bug |
+| 13 | 16 | Favourite and Save apply to the Context, not the View | bug |
+| 14 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
 | | | **D — Filters: Will's features, on the foundation** | |
-| 16 | 46 | A PENDING state: changed, not yet applied | feature |
-| 17 | 60 | Once applied, a chip's badge shows the number of results | feature |
-| 18 | 49 | A preset conditional chip shows its conditions, read-only | feature |
-| 19 | 50 | A custom conditional chip shows its conditions, editable | feature |
-| 20 | 47 | More than 20 values: one chip, not a run | feature |
-| 21 | 48 | A child menu opens on hover or click of its row | feature |
-| 22 | 21c | A condition's matches must ALL highlight | feature |
-| 23 | 21f | "Send to view filters" | feature |
-| 24 | 21b | Which header chips carry over between views | feature |
-| 25 | 20b | The Date filter should be a view-scope date RANGE | feature |
-| 26 | 21d | EXPLORE — conditions for a DATE field | explore |
-| 27 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
+| 15 | 46 | A PENDING state: changed, not yet applied | feature |
+| 16 | 60 | Once applied, a chip's badge shows the number of results | feature |
+| 17 | 49 | A preset conditional chip shows its conditions, read-only | feature |
+| 18 | 50 | A custom conditional chip shows its conditions, editable | feature |
+| 19 | 47 | More than 20 values: one chip, not a run | feature |
+| 20 | 48 | A child menu opens on hover or click of its row | feature |
+| 21 | 21c | A condition's matches must ALL highlight | feature |
+| 22 | 21f | "Send to view filters" | feature |
+| 23 | 21b | Which header chips carry over between views | feature |
+| 24 | 20b | The Date filter should be a view-scope date RANGE | feature |
+| 25 | 21d | EXPLORE — conditions for a DATE field | explore |
+| 26 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
 | | | **E — Views and navigation** | |
-| 28 | 15 | Save a View, and the Save split-button menu | feature |
-| 29 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
-| 30 | 34 | Figma: use the Navigation terms | figma |
+| 27 | 15 | Save a View, and the Save split-button menu | feature |
+| 28 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
+| 29 | 34 | Figma: use the Navigation terms | figma |
 | | | **F — Data states and charts** | |
-| 31 | 58 | Loading, empty and error states in a container | feature |
-| 32 | 9b | A Data Viz header, for metrics and chart containers | component |
-| 33 | 14 | An example of real-time data | feature |
-| 34 | 59 | EXPLORE, later — Will's own loading pattern | explore |
+| 30 | 58 | Loading, empty and error states in a container | feature |
+| 31 | 9b | A Data Viz header, for metrics and chart containers | component |
+| 32 | 14 | An example of real-time data | feature |
+| 33 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | | | **G — Overlay panels** | |
-| 35 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
-| 36 | 23 | A focused grid row opens a details panel | feature |
+| 34 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
+| 35 | 23 | A focused grid row opens a details panel | feature |
 | | | **H — The accessibility gate** | |
-| 37 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
+| 36 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
 | | | **I — The big builds** | |
-| 38 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
-| 39 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
-| 40 | 27 | A consumer can supply their OWN templates and CSS | feature |
-| 41 | 25 | `sherpa-layout-canvas` + minimap | component |
-| 42 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
+| 37 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
+| 38 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
+| 39 | 27 | A consumer can supply their OWN templates and CSS | feature |
+| 40 | 25 | `sherpa-layout-canvas` + minimap | component |
+| 41 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
 | | | **J — Tidy-ups and renames** | |
-| 43 | 11 | `sherpa-group`: what is left | tidy |
-| 44 | 28 | A Figma component is NOT always a web component | tidy |
-| 45 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
-| 46 | 33 | Density as step offsets, and a breakpoint step | tokens |
-| 47 | 36 | CSS: compiled where it should inherit? | tidy |
-| 48 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
-| 49 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
+| 42 | 11 | `sherpa-group`: what is left | tidy |
+| 43 | 28 | A Figma component is NOT always a web component | tidy |
+| 44 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| 45 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| 46 | 36 | CSS: compiled where it should inherit? | tidy |
+| 47 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| 48 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 
 **Why this order** (reassessed 2026-09-26).
 
@@ -94,24 +93,6 @@ table IS the order.
 ---
 
 ## A — Bugs that make the app LIE
-
-### `[ ]` 72 — BUG: adding a second conditional filter resets the first
-
-Will, 2026-09-26: with Owner already answered by a condition, he added a
-second conditional filter — Email — and on Apply the Owner condition was
-reset completely. Adding a field REBUILDS the bar (`#addFilters` → `#render`),
-and a rebuilt menu reads empty until it stamps
-(`T-a-rebuilt-bar-reads-empty-until-its-menus-stamp`); `#keepAnswer` carries
-a chip's rows across a rebuild.
-
-**Reproduced 2026-09-26, toolbar, through the real menus:** Owner Contains Da
-→ 10 rows, chip on. Add Email → the rebuilt Owner chip comes back OFF — its
-rows kept (`mode: custom`, `contains Da`), so it reads as SUSPENDED. Email
-Contains `example` → the bar reports, the suspended Owner applies nothing:
-100 rows. So the rebuild keeps the answer and loses the ON. Suspect the
-rebuilt row reading empty for a tick (`T-a-rebuilt-row-reads-empty-for-a-tick`)
-switching the chip off in `#applySelection`, with nothing turning it back on.
-Check the panel too.
 
 ### `[ ]` 44c — BUG: a heading shows an answer held at VIEW scope
 
@@ -948,6 +929,7 @@ One line each. The detail is in git and in the trap named.
 - 44 (first half): a heading holding a condition opens its menu on the condition, not on an unticked list — `T-a-heading-menu-opens-on-what-it-holds`
 - 44b: a heading holds a whole reading — a chain set from outside or typed in shows and applies whole; `clauseConditions()` turns a chained clause back into rows — `T-a-heading-holds-a-whole-reading`
 - 71: the legend's Other menu draws again — an icon button had no menu slot since ad7f91be; unticking a folded category and Apply takes the bar chart 16 → 14 bars — `T-an-icon-button-still-slots-its-menu`
+- 72: adding a second conditional filter keeps the first — the toolbar holds a rebuilt chip's answer until its rows fill; the panel draws a conditioned field on its rows and writes them once each menu has drawn — `T-a-conditioned-field-opens-on-its-rows`
 
 **Culled or merged in the 2026-09-26 review**
 - 13, a sparkline did not follow its record deltas — each tile's sparkline and its delta are ONE series now (`T-a-delta-is-derived-not-declared`)

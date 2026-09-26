@@ -600,6 +600,14 @@ export class SherpaFilterPanel extends SherpaElement {
     }
 
     this.#held.set(key, held);
+    /* A field ALREADY answered by conditions opens ON them — custom mode, its
+       rows. Drawn as plain chips, the refill after an Add hid Owner's rows,
+       and the next Apply reported it unanswered: adding Email reset Owner.
+       Not flushed here: the menus are not in the page yet, and the draw's own
+       flush hands over the rows. TRAP T-a-conditioned-field-opens-on-its-rows */
+    if (box.hasAttribute('data-custom-ok') && (def.state?.conditions ?? []).length) {
+      this.#setCustom(held, true, false);
+    }
     return box;
   }
 
@@ -644,17 +652,34 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** Hand each waiting menu its rows, and the answer already in force. */
   #flushMenus(): void {
+    const answers: Promise<void>[] = [];
     for (const [menu, items, state] of this.#pending) {
       const api = menu as HTMLElement & {
         items?: (i: readonly FilterMenuItem[]) => void;
         conditions?: readonly FieldCondition[];
         conditionValue?: string;
+        rendered?: Promise<void>;
       };
       if (items.length) api.items?.(items);
-      if (state?.conditions?.length) api.conditions = state.conditions;
-      if (state?.text) api.conditionValue = state.text;
+      /* The ANSWER once the menu has DRAWN: its rows region is not there
+         before, and rows set into nothing were dropped — Owner came back as a
+         blank `equals`. TRAP T-a-conditioned-field-opens-on-its-rows */
+      if (!state?.conditions?.length && !state?.text) continue;
+      answers.push(Promise.resolve(api.rendered).then(() => {
+        if (state.conditions?.length) api.conditions = state.conditions;
+        if (state.text) api.conditionValue = state.text;
+      }));
     }
     this.#pending = [];
+    if (!answers.length) return;
+    /* …then what "applied" means is read AGAIN, once the rows have filled — a
+       rebuilt row reads empty for a tick. TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
+    void Promise.all(answers)
+      .then(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))))
+      .then(() => {
+        this.#syncAllAnswered();
+        this.#snapshot();
+      });
   }
 
   /**
@@ -1048,8 +1073,9 @@ export class SherpaFilterPanel extends SherpaElement {
     });
   }
 
-  /** Put a field in custom mode, or take it out: its flag, its button, its menu. */
-  #setCustom(held: Held, on: boolean): void {
+  /** Put a field in custom mode, or take it out: its flag, its switch, its menu.
+   *  `flush: false` while the field is still being drawn, off the page. */
+  #setCustom(held: Held, on: boolean, flush = true): void {
     held.box.toggleAttribute('data-custom', on);
     held.box.querySelector('.field-custom-switch')?.toggleAttribute('checked', on);
 
@@ -1060,7 +1086,7 @@ export class SherpaFilterPanel extends SherpaElement {
     const body = held.box.querySelector('.field-body');
     if (on && !held.menu && body) {
       this.#giveMenu(held, body as HTMLElement, true, true);
-      this.#flushMenus();
+      if (flush) this.#flushMenus();
     }
     if (held.menu) {
       /* The MENU refuses custom mode unless the field opted in, and a

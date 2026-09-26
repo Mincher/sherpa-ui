@@ -8108,6 +8108,8 @@ fight the reader: switching a conditioned chip off flipped it straight back on.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 
 ---
 
@@ -13547,3 +13549,25 @@ test reads the popover's BOX.
 
 - Site: `src/components/sherpa-button/sherpa-button.html`
 - Site: `test/e2e/reforged-chart-legend.spec.ts`
+
+### T-a-conditioned-field-opens-on-its-rows
+
+**A field already answered by conditions is DRAWN on them, and every rebuild
+keeps them.** Will, 2026-09-26: with Owner answered by `contains Da`, adding a
+second conditional filter — Email — and applying it reset Owner. Three gaps,
+one per surface, and each looked like the other two:
+
+| surface | the gap |
+|---|---|
+| the toolbar | adding a field REBUILDS the bar; `#keepAnswer` let go of Owner's kept rows as its menu drew, one frame before the rebuilt rows FILLED, and the report in that gap said "unanswered" — the source dropped Owner and the mirror switched the chip off |
+| the panel's draw | a field with options is drawn as value chips and gets a menu only when Conditional is flipped — so a refill drew Owner as plain chips, rows gone, and its Apply reported it unanswered |
+| the panel's flush | rows written into a menu before it has DRAWN go nowhere — Owner came back a blank `equals` |
+
+So: a rebuilt chip's answer is held two frames past its menu's draw; a field
+whose state has conditions opens in custom mode as it is drawn; and the
+panel writes rows and typed text only once each menu has drawn, then takes
+its snapshot again so Apply and Discard still read "unchanged".
+
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+- Site: `test/e2e/reforged-panel-apply.spec.ts`
