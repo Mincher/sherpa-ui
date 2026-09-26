@@ -2022,7 +2022,7 @@ It will make tracking state and type much easier, too."*
 | the value list — "default" mode, `data-mode="select"` | **Default Condition Filter** |
 | the condition rows — "conditional" mode, `data-mode="condition"` | **Custom Condition Filter** |
 | `conditions: 'only'` (Email) | a Custom Condition Filter with no Default half |
-| the info-blue chip (`T-a-conditioned-chip-reads-as-info`) | an ACTIVE Custom Condition Filter — already the rule |
+| the success-green chip (`T-a-conditioned-chip-reads-as-success`) | an ACTIVE Custom Condition Filter — already the rule |
 
 The rename is wide: across `src` and `examples`, `conditional` appears 42
 times, `data-conditional` 21, `data-mode` 18, `'condition'` 25 and

@@ -228,7 +228,7 @@ Will, 2026-09-24, in two messages — the second corrects the first:
 `.cell mark.match` marks ONE substring today, from one `text` value. A field
 answered by `Contains "ab" or Starts with "R"` has TWO strings to find, and a
 three-row chain has three. The mark is already INFO blue, matching the chip
-that found it (`T-a-conditioned-chip-reads-as-info`), so only the FINDING
+that found it (`T-a-conditioned-chip-reads-as-success`), so only the FINDING
 changes — walk every answered row's text, not just `state.text`.
 
 Not started.
@@ -592,7 +592,7 @@ The old light-DOM condition row is **deleted** — `#addConditionRow`,
 `qf-op-tpl`, `qf-text-tpl` and their CSS. The menu owns its own rows.
 
 Traps: `T-a-filter-menu-has-two-modes`, `T-conditions-are-opt-in-per-field`,
-`T-a-condition-badge-says-that-not-which`, `T-a-conditioned-chip-reads-as-info`,
+`T-a-condition-badge-says-that-not-which`, `T-a-conditioned-chip-reads-as-success`,
 `T-equals-answers-with-the-fields-own-values`,
 `T-a-select-does-not-hug-its-own-text`.
 

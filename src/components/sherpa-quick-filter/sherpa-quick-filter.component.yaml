@@ -113,7 +113,7 @@ props:
     kind: style
     description: >-
       written BY the chip: default | custom — which condition it holds, absent when it holds none.
-      `custom` reads as `info`, not the plain on-tint. TRAP T-a-conditioned-chip-reads-as-info
+      `custom` reads as `success`, not the plain on-tint. TRAP T-a-conditioned-chip-reads-as-success
   - $type: prop
     name: data-count
     type: string

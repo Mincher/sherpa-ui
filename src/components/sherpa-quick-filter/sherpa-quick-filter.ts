@@ -55,7 +55,7 @@ export class SherpaQuickFilter extends SherpaElement {
        TRAP T-a-superseded-chip-suspends-it-is-never-removed */
     'data-superseded': { type: 'boolean', kind: 'style' },
     /* Written BY the chip: which condition it holds — `state.condition`.
-       TRAP T-a-conditioned-chip-reads-as-info */
+       TRAP T-a-conditioned-chip-reads-as-success */
     'data-condition': { type: 'enum', kind: 'style', values: ['default', 'custom'] },
     /* A filter PANEL is drawing this field instead, so the bar hides the chip.
        Written by the HOST. TRAP T-the-view-chip-stays-on-the-header */
@@ -542,8 +542,8 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /**
    * `data-condition` is `state.condition`. A CUSTOM Condition Filter reads as
-   * info, never the plain on-tint — ASKED of the state, as the fx badge is.
-   * TRAP T-a-conditioned-chip-reads-as-info · TRAP T-one-condition-system
+   * success, never the plain on-tint — ASKED of the state, as the fx badge is.
+   * TRAP T-a-conditioned-chip-reads-as-success · TRAP T-one-condition-system
    */
   #syncCondition(state: FilterState): void {
     if (!this.#answersForItself()) return;

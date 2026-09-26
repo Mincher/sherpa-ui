@@ -94,14 +94,14 @@
 }
 
 /* A CUSTOM chip keeps the active FILL — on must read as on — and takes
-   an INFO edge and ink. The `fx` badge says the same thing in the other
-   channel. TRAP T-a-conditioned-chip-reads-as-info */
+   a SUCCESS edge and ink. The `fx` badge says the same thing in the other
+   channel. TRAP T-a-conditioned-chip-reads-as-success */
 :host([data-condition="custom"][data-current]) :is(.body, .caret) {
-  border-color: var(--sherpa-style-info-border-base-1, #008bba);
+  border-color: var(--sherpa-style-success-border-base-1, #00ad62);
 }
 :host([data-condition="custom"][data-current]) .count {
-  border-color: var(--sherpa-style-info-border-base-1, #008bba);
-  color: var(--sherpa-style-info-content-base, #006c91);
+  border-color: var(--sherpa-style-success-border-base-1, #00ad62);
+  color: var(--sherpa-style-success-content-base, #00ad62);
 }
 
 /* AI type carries the active mode's accent even when off. */
