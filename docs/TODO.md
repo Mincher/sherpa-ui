@@ -19,22 +19,22 @@ not order — the table IS the order.
 | Pri | # | Item | Kind |
 |---:|---:|---|---|
 | | | **A — Quick wins** | |
-| 1 | 54 | An Added Filters row drills only if it has many values | quick |
-| 2 | 57 | The filter panel's width is a hard-coded 400px | quick |
-| 3 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
-| 4 | 65 | A horizontal legend has a max width, and is centred | quick |
+| 1 | 57 | The filter panel's width is a hard-coded 400px | quick |
+| 2 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
+| 3 | 65 | A horizontal legend has a max width, and is centred | quick |
 | | | **B — Bugs: the app says one thing and does another** | |
-| 5 | 41 | A conditional filter applies for Owner only | bug |
-| 6 | 63 | A conditions-only field shows the Conditional switch | bug |
-| 7 | 56 | A view change leaves a lit chip that filters nothing | bug |
-| 8 | 21e | A reload keeps a filter nothing on screen shows | bug |
-| 9 | 55 | The At risk view's own column filter never applies | bug |
-| 10 | 44 | A column heading's menu does not show what is set | bug |
-| 11 | 42 | A legend toggle filters the whole view | bug |
-| 12 | 61 | Add customer saves with required fields empty | bug |
-| 13 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
-| 14 | 45 | A picked date does not show in the chip | bug |
-| 15 | 16 | Favourite and Save apply to the Context, not the View | bug |
+| 4 | 41 | A conditional filter applies for Owner only | bug |
+| 5 | 63 | A conditions-only field shows the Conditional switch | bug |
+| 6 | 56 | A view change leaves a lit chip that filters nothing | bug |
+| 7 | 21e | A reload keeps a filter nothing on screen shows | bug |
+| 8 | 55 | The At risk view's own column filter never applies | bug |
+| 9 | 44 | A column heading's menu does not show what is set | bug |
+| 10 | 42 | A legend toggle filters the whole view | bug |
+| 11 | 61 | Add customer saves with required fields empty | bug |
+| 12 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
+| 13 | 45 | A picked date does not show in the chip | bug |
+| 14 | 16 | Favourite and Save apply to the Context, not the View | bug |
+| 15 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
 | | | **C — Filters: Will's features** | |
 | 16 | 62 | Apply and Discard only for a REMOTE fetch; a debug flag spoofs one | feature |
 | 17 | 66 | The footer owns "nothing to save": Save and Cancel wait for a change | feature |
@@ -118,13 +118,6 @@ background fill. (base / +1 / +2 are default / hover / down.) Bind the Style
 name, never a Theme colour: a state is the mode's own step. Open sections keep
 today's fill. **Wait for the other session**: `sherpa-accordion.css` has its
 uncommitted edits in the working tree.
-
-### `[ ]` 54 — BUG: an Added Filters row drills only if it has many values
-
-Will: a row in the Filters menu's Added section gets a child menu only when
-its field has MULTIPLE values. A one-value field (a preset, a toggle) has
-nothing to drill into. See `DRILL_FLAGS` and `filtersMenuItems()` in
-`src/core/ui/filters-button.ts`.
 
 ### `[ ]` 57 — The filter panel's width is a hard-coded 400px
 
@@ -294,6 +287,25 @@ today — a third spelling.)
 The ★ stars the Context (`examples/index.html` ~396, the `view-favorite`
 listener), so it applies to every View in that Context. It must apply to the
 one View.
+
+### `[ ]` 54 — BUG: a one-value filter's row in the Filters menu: its tick means On
+
+Will: a row in the Filters menu's Added section gets a child menu only when
+its field has MULTIPLE values. A one-value filter (a preset, a toggle) has
+nothing to drill into — today it drills into a menu of one row, `On`
+(`onOffMenu()` in `src/core/ui/filters-button.ts`, `DRILL_FLAGS`,
+`filtersMenuItems()`).
+
+**Will's rule, 2026-09-26: a tick on a value means that value is ON — in
+every filter.** A one-value filter's row IS its value, so its tick turns it
+on; there is no caret. A filter that is OFF with its value on is the same as
+an inactive chip holding a value — suspended, not cleared.
+
+This changes what a tick means in the Added section, where it means HELD
+today (untick removes). Settle, when it starts: how a one-value filter is
+removed from this menu, and whether a multi-value row's tick keeps meaning
+held. Update `T-the-add-menu-is-the-whole-list` and the test "a folded BOOLEAN
+filter opens On".
 
 ---
 
