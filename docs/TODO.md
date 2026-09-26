@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**49 open.** Reviewed 2026-09-26: one list (the draft `todo-filter-2609.md`
+**50 open.** Reviewed 2026-09-26: one list (the draft `todo-filter-2609.md`
 is merged in), 3 items culled or merged, the rest re-ordered. Numbers are ids,
 not order — the table IS the order.
 
@@ -25,58 +25,59 @@ not order — the table IS the order.
 | 4 | 57 | The filter panel's width is a hard-coded 400px | quick |
 | | | **B — Bugs: the app says one thing and does another** | |
 | 5 | 41 | A conditional filter applies for Owner only | bug |
-| 6 | 56 | A view change leaves a lit chip that filters nothing | bug |
-| 7 | 21e | A reload keeps a filter nothing on screen shows | bug |
-| 8 | 55 | The At risk view's own column filter never applies | bug |
-| 9 | 44 | A column heading's menu does not show what is set | bug |
-| 10 | 42 | A legend toggle filters the whole view | bug |
-| 11 | 61 | Add customer saves with required fields empty | bug |
-| 12 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
-| 13 | 45 | A picked date does not show in the chip | bug |
-| 14 | 16 | Favourite and Save apply to the Context, not the View | bug |
+| 6 | 63 | A conditions-only field shows the Conditional switch | bug |
+| 7 | 56 | A view change leaves a lit chip that filters nothing | bug |
+| 8 | 21e | A reload keeps a filter nothing on screen shows | bug |
+| 9 | 55 | The At risk view's own column filter never applies | bug |
+| 10 | 44 | A column heading's menu does not show what is set | bug |
+| 11 | 42 | A legend toggle filters the whole view | bug |
+| 12 | 61 | Add customer saves with required fields empty | bug |
+| 13 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
+| 14 | 45 | A picked date does not show in the chip | bug |
+| 15 | 16 | Favourite and Save apply to the Context, not the View | bug |
 | | | **C — Filters: Will's features** | |
-| 15 | 62 | Apply and Discard only for a REMOTE fetch; a debug flag spoofs one | feature |
-| 16 | 46 | A PENDING state: changed, not yet applied | feature |
-| 17 | 60 | Once applied, a chip's badge shows the number of results | feature |
-| 18 | 49 | A preset conditional chip shows its conditions, read-only | feature |
-| 19 | 50 | A custom conditional chip shows its conditions, editable | feature |
-| 20 | 47 | More than 20 values: one chip, not a run | feature |
-| 21 | 48 | A child menu opens on hover or click of its row | feature |
-| 22 | 21c | A condition's matches must ALL highlight | feature |
-| 23 | 21f | "Send to view filters" | feature |
-| 24 | 21b | Which header chips carry over between views | feature |
-| 25 | 20b | The Date filter should be a view-scope date RANGE | feature |
-| 26 | 21d | EXPLORE — conditions for a DATE field | explore |
-| 27 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
+| 16 | 62 | Apply and Discard only for a REMOTE fetch; a debug flag spoofs one | feature |
+| 17 | 46 | A PENDING state: changed, not yet applied | feature |
+| 18 | 60 | Once applied, a chip's badge shows the number of results | feature |
+| 19 | 49 | A preset conditional chip shows its conditions, read-only | feature |
+| 20 | 50 | A custom conditional chip shows its conditions, editable | feature |
+| 21 | 47 | More than 20 values: one chip, not a run | feature |
+| 22 | 48 | A child menu opens on hover or click of its row | feature |
+| 23 | 21c | A condition's matches must ALL highlight | feature |
+| 24 | 21f | "Send to view filters" | feature |
+| 25 | 21b | Which header chips carry over between views | feature |
+| 26 | 20b | The Date filter should be a view-scope date RANGE | feature |
+| 27 | 21d | EXPLORE — conditions for a DATE field | explore |
+| 28 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
 | | | **D — The filter family, finished** | |
-| 28 | 38 | One model, one builder, one owner — what is left | refactor |
-| 29 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
+| 29 | 38 | One model, one builder, one owner — what is left | refactor |
+| 30 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | | | **E — Views and navigation** | |
-| 30 | 15 | Save a View, and the Save split-button menu | feature |
-| 31 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
-| 32 | 34 | Figma: use the Navigation terms | figma |
+| 31 | 15 | Save a View, and the Save split-button menu | feature |
+| 32 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
+| 33 | 34 | Figma: use the Navigation terms | figma |
 | | | **F — Data states and charts** | |
-| 33 | 58 | Loading, empty and error states in a container | feature |
-| 34 | 9b | A Data Viz header, for metrics and chart containers | component |
-| 35 | 14 | An example of real-time data | feature |
-| 36 | 59 | EXPLORE, later — Will's own loading pattern | explore |
+| 34 | 58 | Loading, empty and error states in a container | feature |
+| 35 | 9b | A Data Viz header, for metrics and chart containers | component |
+| 36 | 14 | An example of real-time data | feature |
+| 37 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | | | **G — Overlay panels** | |
-| 37 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
-| 38 | 23 | A focused grid row opens a details panel | feature |
+| 38 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
+| 39 | 23 | A focused grid row opens a details panel | feature |
 | | | **H — The accessibility gate** | |
-| 39 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
+| 40 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
 | | | **I — The big builds** | |
-| 40 | 25 | `sherpa-layout-canvas` + minimap | component |
-| 41 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
-| 42 | 27 | A consumer can supply their OWN templates and CSS | feature |
+| 41 | 25 | `sherpa-layout-canvas` + minimap | component |
+| 42 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
+| 43 | 27 | A consumer can supply their OWN templates and CSS | feature |
 | | | **J — Tidy-ups and renames** | |
-| 43 | 11 | `sherpa-group`: what is left | tidy |
-| 44 | 28 | A Figma component is NOT always a web component | tidy |
-| 45 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
-| 46 | 33 | Density as step offsets, and a breakpoint step | tokens |
-| 47 | 36 | CSS: compiled where it should inherit? | tidy |
-| 48 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
-| 49 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
+| 44 | 11 | `sherpa-group`: what is left | tidy |
+| 45 | 28 | A Figma component is NOT always a web component | tidy |
+| 46 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| 47 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| 48 | 36 | CSS: compiled where it should inherit? | tidy |
+| 49 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| 50 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 
 **Why this order.**
 
@@ -149,7 +150,7 @@ or a heading's condition, reaches the source.
 
 Reproduce on the running page and read the TOTAL
 (`source.debugState().total`), never the drawn page. Try the same field as a
-toolbar chip, a panel field and a column heading.
+toolbar chip, a panel field and a column heading. Fix 63 in the same pass.
 
 **A lead, measured 2026-09-26.** The panel's Apply (`records.js`) sends the
 four `FIELD_CHIPS` — Status, Plan, Tier, OWNER — through `source.select()`,
@@ -157,6 +158,20 @@ and every other field through `bar.setChipReading()`. That sets
 `menu.conditions` SILENTLY: the chip's value and tooltip are not redrawn
 (a probe read an empty tip and value after it). Owner working and the rest not
 is exactly that split.
+
+### `[ ]` 63 — BUG: a conditions-only field shows the Conditional switch
+
+Will, 2026-09-26: the panel's Email field shows the Conditional switch, but
+Email is CONDITIONS-ONLY — there is no list to switch to. The menu already
+hides its own switch for `data-custom-only`
+(`T-a-filter-answers-by-values-conditions-or-both`); the panel does not. Its
+`data-custom-ok` is `!!customOf(def)` (`sherpa-filter-panel.ts`), and
+`customOf()` answers `'only'` for Email, which is truthy. So: no switch for
+`'only'`, and the field opens in custom mode with its rows showing.
+
+**Fix it with 41**, as Will suggests — both are how a conditioned field is
+drawn and answered, and a test that walks every conditioned field's panel,
+chip and heading covers both.
 
 ### `[ ]` 56 — BUG: a view change leaves a lit chip that filters nothing
 
