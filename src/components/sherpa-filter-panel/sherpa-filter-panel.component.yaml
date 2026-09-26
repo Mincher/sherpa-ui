@@ -42,7 +42,7 @@ anatomy:
                 data-type: icon
                 data-size: sm
                 data-look: transparent
-                data-icon-start: sidebar
+                data-icon-start: fullscreen-exit
                 aria-label: Filter in the toolbars instead
             - el: sherpa-input-text
               class: search
