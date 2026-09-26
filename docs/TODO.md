@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**50 open.** Reviewed 2026-09-26: one list (the draft `todo-filter-2609.md`
+**51 open.** Reviewed 2026-09-26: one list (the draft `todo-filter-2609.md`
 is merged in), 3 items culled or merged, the rest re-ordered. Numbers are ids,
 not order — the table IS the order.
 
@@ -37,47 +37,48 @@ not order — the table IS the order.
 | 15 | 16 | Favourite and Save apply to the Context, not the View | bug |
 | | | **C — Filters: Will's features** | |
 | 16 | 62 | Apply and Discard only for a REMOTE fetch; a debug flag spoofs one | feature |
-| 17 | 46 | A PENDING state: changed, not yet applied | feature |
-| 18 | 60 | Once applied, a chip's badge shows the number of results | feature |
-| 19 | 49 | A preset conditional chip shows its conditions, read-only | feature |
-| 20 | 50 | A custom conditional chip shows its conditions, editable | feature |
-| 21 | 47 | More than 20 values: one chip, not a run | feature |
-| 22 | 48 | A child menu opens on hover or click of its row | feature |
-| 23 | 21c | A condition's matches must ALL highlight | feature |
-| 24 | 21f | "Send to view filters" | feature |
-| 25 | 21b | Which header chips carry over between views | feature |
-| 26 | 20b | The Date filter should be a view-scope date RANGE | feature |
-| 27 | 21d | EXPLORE — conditions for a DATE field | explore |
-| 28 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
+| 17 | 66 | The footer owns "nothing to save": Save and Cancel wait for a change | feature |
+| 18 | 46 | A PENDING state: changed, not yet applied | feature |
+| 19 | 60 | Once applied, a chip's badge shows the number of results | feature |
+| 20 | 49 | A preset conditional chip shows its conditions, read-only | feature |
+| 21 | 50 | A custom conditional chip shows its conditions, editable | feature |
+| 22 | 47 | More than 20 values: one chip, not a run | feature |
+| 23 | 48 | A child menu opens on hover or click of its row | feature |
+| 24 | 21c | A condition's matches must ALL highlight | feature |
+| 25 | 21f | "Send to view filters" | feature |
+| 26 | 21b | Which header chips carry over between views | feature |
+| 27 | 20b | The Date filter should be a view-scope date RANGE | feature |
+| 28 | 21d | EXPLORE — conditions for a DATE field | explore |
+| 29 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
 | | | **D — The filter family, finished** | |
-| 29 | 38 | One model, one builder, one owner — what is left | refactor |
-| 30 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
+| 30 | 38 | One model, one builder, one owner — what is left | refactor |
+| 31 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | | | **E — Views and navigation** | |
-| 31 | 15 | Save a View, and the Save split-button menu | feature |
-| 32 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
-| 33 | 34 | Figma: use the Navigation terms | figma |
+| 32 | 15 | Save a View, and the Save split-button menu | feature |
+| 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
+| 34 | 34 | Figma: use the Navigation terms | figma |
 | | | **F — Data states and charts** | |
-| 34 | 58 | Loading, empty and error states in a container | feature |
-| 35 | 9b | A Data Viz header, for metrics and chart containers | component |
-| 36 | 14 | An example of real-time data | feature |
-| 37 | 59 | EXPLORE, later — Will's own loading pattern | explore |
+| 35 | 58 | Loading, empty and error states in a container | feature |
+| 36 | 9b | A Data Viz header, for metrics and chart containers | component |
+| 37 | 14 | An example of real-time data | feature |
+| 38 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | | | **G — Overlay panels** | |
-| 38 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
-| 39 | 23 | A focused grid row opens a details panel | feature |
+| 39 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
+| 40 | 23 | A focused grid row opens a details panel | feature |
 | | | **H — The accessibility gate** | |
-| 40 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
+| 41 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
 | | | **I — The big builds** | |
-| 41 | 25 | `sherpa-layout-canvas` + minimap | component |
-| 42 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
-| 43 | 27 | A consumer can supply their OWN templates and CSS | feature |
+| 42 | 25 | `sherpa-layout-canvas` + minimap | component |
+| 43 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
+| 44 | 27 | A consumer can supply their OWN templates and CSS | feature |
 | | | **J — Tidy-ups and renames** | |
-| 44 | 11 | `sherpa-group`: what is left | tidy |
-| 45 | 28 | A Figma component is NOT always a web component | tidy |
-| 46 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
-| 47 | 33 | Density as step offsets, and a breakpoint step | tokens |
-| 48 | 36 | CSS: compiled where it should inherit? | tidy |
-| 49 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
-| 50 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
+| 45 | 11 | `sherpa-group`: what is left | tidy |
+| 46 | 28 | A Figma component is NOT always a web component | tidy |
+| 47 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| 48 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| 49 | 36 | CSS: compiled where it should inherit? | tidy |
+| 50 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| 51 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 
 **Why this order.**
 
@@ -321,6 +322,26 @@ drive its loading and failure states.
 Before 46: a pending state only exists on a field that has an Apply, and this
 item decides which fields those are. `T-apply-and-discard-wait-for-a-change`
 changes with it.
+
+### `[ ]` 66 — The footer owns "nothing to save": Save and Cancel wait for a change
+
+Will, 2026-09-26: wire the inactive Save & Cancel (or Apply & Discard, or any
+equivalent pair) into `sherpa-container-footer`, *"so that all menus etc can
+inherit this common behaviour."* Today each host does it by hand, or not at
+all: the filter panel built its own (`#syncDirty`,
+`T-apply-and-discard-wait-for-a-change`), and `sherpa-menu` has a `dirty`
+getter its footer does not use.
+
+The FOOTER turns its commit and revert controls off while the host says
+nothing has changed, and on when it has. The host only REPORTS dirty — one
+attribute or property, e.g. `data-dirty` on the footer, or a `dirty` it asks
+of its host — and never touches the buttons. Nine templates compose the
+footer (calendar, dialog, container, filter panel, menu, nav, overlay-panel,
+panel, select-card); each then drops its own copy. Which buttons are the pair
+must be declared, not guessed from their labels.
+
+Do it with 62: 62 decides WHICH fields have Apply and Discard at all, this
+decides how any such pair behaves.
 
 ### `[ ]` 46 — A PENDING state: changed, not yet applied
 
