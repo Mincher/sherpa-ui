@@ -76,7 +76,7 @@
   "src/core/data/bind-selection.ts": 179,
   "src/core/data/chart-datum.ts": 61,
   "src/core/data/cycle.ts": 60,
-  "src/core/data/data-source.ts": 1625,
+  "src/core/data/data-source.ts": 1701,
   "src/core/data/filter-face.ts": 104,
   "src/core/data/filter-state.ts": 415,
   "src/core/data/format-tick.ts": 329,
@@ -97,7 +97,7 @@
   "src/core/ui/render-icon.ts": 85,
   "src/core/ui/shared-constants.ts": 79,
   "src/core/ui/sherpa-element.ts": 1064,
-  "src/data.ts": 283,
+  "src/data.ts": 285,
   "src/index.ts": 197,
   "src/components/sherpa-accordion/sherpa-accordion.css": 120,
   "src/components/sherpa-app-header/sherpa-app-header.css": 237,
@@ -233,6 +233,6 @@
   "examples/contexts/global-filters.js": 103,
   "examples/contexts/records-data.js": 198,
   "examples/contexts/records-views.js": 70,
-  "examples/contexts/records.js": 1076,
+  "examples/contexts/records.js": 1038,
   "examples/contexts/settings.js": 89
 }

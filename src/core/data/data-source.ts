@@ -6,6 +6,8 @@
  *
  * Map:
  * - ApplyAt — HOW FAR a control's reading reaches.
+ * - FieldDeclaration — What a field IS, said once — its kind, its name, and how a control answers it.
+ * - FieldFilter — A field's filter as any bar or panel draws it — its declaration and values.
  * - ViewState — The view state a source owns.
  * - DataSourceOptions — the store, and the view it opens on: sort, group, page size, search fields
  * - BindOptions — What a component may do with the source it is bound to.
@@ -17,10 +19,6 @@
  * - .state — The current view state.
  * - .query — The Query the rows are under. A copy.
  * - .setQuery — Restore a whole Query — a reload, a trip away and back.
- * - .commit — SEND the draft — Apply, on a remote source.
- * - .discard — Put the applied answers back over the draft — Discard, on a remote source.
- * - .pending — Has this field been changed and not yet applied?
- * - .dirty — Has anything in this scope — or any scope — been changed and not applied?
  * - .setState — Restore a whole view state — a saved view, a deep link, a reload.
  * - .loaded — Has any load completed?
  * - .result — The whole of the last load's answer.
@@ -42,6 +40,10 @@
  * - .declareValues — every value a field can take, so each control offers the same list
  * - .declareField — Declare a field's KIND and its reader-facing name.
  * - .fieldFacts — What `declareField` was told.
+ * - .filterDef — A field's filter, as every bar, panel and heading draws it.
+ * - .declareScope — Name a scope as a reader sees it — a panel's section, an Add list's note.
+ * - .scopeLabel — A scope's name as a reader sees it, or its id.
+ * - .addable — What a scope may still add, each noting where it lives now.
  * - .valuesFor — What `declareValues` was told, as the data holds it.
  * - .select — Select values for a FIELD — the VIEW scope.
  * - .groups — THE GROUPS IN FORCE — each value, and how many rows carry it.
@@ -58,6 +60,10 @@
  * - .canHold — May this scope hold this field?
  * - .move — Move a filter between scopes — ONE call, because the removal is not optional.
  * - .debugState — EVERYTHING THIS SOURCE THINKS IS TRUE, in one object.
+ * - .commit — SEND the draft — Apply, on a remote source.
+ * - .discard — Put the applied answers back over the draft — Discard, on a remote source.
+ * - .pending — Has this field been changed and not yet applied?
+ * - .dirty — Has anything in this scope — or any scope — been changed and not applied?
  * - .setSearch — the search text, across searchFields
  * - .setPage — which page to show
  * - .setPageSize — rows per page, or null for all
@@ -83,8 +89,35 @@ export interface ApplyAt {
   key?: string;
 }
 import type {
-  Filter, GroupSummary, LoadOptions, LoadResult, Row, SortDirection, SortSpec, Store,
+  Filter, FilterOp, GroupSummary, LoadOptions, LoadResult, Row, SortDirection, SortSpec, Store,
 } from './store.js';
+
+/** What a field IS, said once — its kind, its name, and how a control answers
+ *  it. JSON. TRAP T-a-field-is-declared-once */
+export interface FieldDeclaration {
+  type?: FieldType;
+  label?: string;
+  select?: 'single' | 'multiple';
+  /** Conditions beside its values (`true`), or instead of them (`'only'`). */
+  custom?: boolean | 'only';
+  /** The condition its filter opens on. */
+  op?: FilterOp;
+  /** A number filter's ends, and its step. */
+  min?: number;
+  max?: number;
+  step?: number;
+}
+
+/** A field's filter as any bar or panel draws it — its declaration and values. */
+export interface FieldFilter extends Omit<FieldDeclaration, 'type'> {
+  id: string;
+  label: string;
+  /** A number or a date draws a control of its own; any other field, its values. */
+  kind?: 'number' | 'date';
+  options?: { value: string; label: string }[];
+  /** Where it lives now, when an Add list offers it from another scope. */
+  note?: string;
+}
 
 /** The view state a source owns. */
 export interface ViewState {
@@ -262,7 +295,9 @@ export class DataSource extends EventTarget {
   /** Every value a field can take, for the controls that draw its rows. */
   #domains = new Map<string, unknown[]>();
   /** A field's declared KIND and label. TRAP T-the-field-type-decides-the-clause */
-  #fields = new Map<string, { type?: FieldType; label?: string }>();
+  #fields = new Map<string, FieldDeclaration>();
+  /** Each scope's name as a reader sees it. */
+  #scopeLabels = new Map<string, string>();
 
   constructor(options: DataSourceOptions) {
     super();
@@ -627,14 +662,55 @@ export class DataSource extends EventTarget {
    * that happens to know `seats` is a number.
    * TRAP T-the-field-type-decides-the-clause
    */
-  declareField(field: string, facts: { type?: FieldType; label?: string } = {}): void {
+  declareField(field: string, facts: FieldDeclaration = {}): void {
     const held = this.#fields.get(field) ?? {};
     this.#fields.set(field, { ...held, ...facts });
   }
 
   /** What `declareField` was told. */
-  fieldFacts(field: string): { type?: FieldType; label?: string } {
+  fieldFacts(field: string): FieldDeclaration {
     return { ...(this.#fields.get(field) ?? {}) };
+  }
+
+  /** A field's filter, as any bar or panel draws it — ONE definition, so two
+   *  controls over a field cannot offer it two ways. Its options are the values
+   *  the rows HOLD, never a lower-cased copy a heading's menu would not share.
+   *  TRAP T-a-field-is-declared-once · TRAP T-one-comparison-rule-for-query-and-ui */
+  filterDef(field: string): FieldFilter {
+    const { type, label, ...rest } = this.#fields.get(field) ?? {};
+    const body = type === 'number' || type === 'date' ? type : undefined;
+    const values = body || rest.custom === 'only' ? [] : this.valuesFor(field).map(valueKey);
+    return {
+      id: field, label: label ?? field, ...rest,
+      ...(body ? { kind: body } : {}),
+      ...(values.length ? { options: values.map((v) => ({ value: v, label: v })) } : {}),
+    };
+  }
+
+  /** Name a scope as a reader sees it — a panel's section, an Add list's note. */
+  declareScope(scope: string, facts: { label: string }): void {
+    this.#scopeLabels.set(scope, facts.label);
+  }
+
+  /** A scope's name as a reader sees it, or its id. */
+  scopeLabel(scope: string): string {
+    return this.#scopeLabels.get(scope) ?? scope;
+  }
+
+  /**
+   * What a scope may still ADD: the declared fields it has, less those it
+   * holds or `taken` names — each saying where it lives now, when that is
+   * somewhere else, because adding it here MOVES it. Declared FIELDS only, so
+   * Group and Sort — which arrange one component — are never offered.
+   * TRAP T-a-bar-offers-only-what-its-scope-holds
+   * TRAP T-group-and-sort-are-component-scope
+   */
+  addable(scope: string, taken: Iterable<string> = this.scope(scope)): FieldFilter[] {
+    const skip = new Set(taken);
+    return this.fields(scope).filter((f) => !skip.has(f) && this.#fields.has(f)).map((f) => {
+      const at = this.scopeOf(f);
+      return at && at !== scope ? { ...this.filterDef(f), note: `in ${this.scopeLabel(at)}` } : this.filterDef(f);
+    });
   }
 
   /** What `declareValues` was told, as the data holds it. */

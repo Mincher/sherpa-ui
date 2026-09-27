@@ -5299,7 +5299,7 @@ steers one arbitrary component.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
-- Site: `examples/contexts/records.js`
+- Site: `src/core/data/data-source.ts`
 
 ### T-a-bar-offers-only-what-its-scope-holds
 
@@ -5318,7 +5318,7 @@ either bar is never offered again — `offerable()` in `src/core/data/filter-sco
 is the DOM-free rule; the caller supplies the two held-id lists.
 
 - Site: `src/components/sherpa-app-header/sherpa-app-header.ts`
-- Site: `examples/contexts/records.js`
+- Site: `src/core/data/data-source.ts`
 
 ### T-a-superseded-chip-suspends-it-is-never-removed
 
@@ -11213,7 +11213,6 @@ SERIES ("Sessions" is every non-critical row), not values of one field, so
 there is nothing to filter on and inventing a field would be a lie.
 
 - Site: `examples/contexts/dashboard.js`
-- Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 
@@ -11476,12 +11475,12 @@ The shape to remember: a comparison duplicated between the query and the UI is
 a contract with no gate on it, and it only breaks on the return journey — the
 outbound path works, which is what makes it hard to see.
 
-- Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/store.ts`
 - Site: `test/unit/filter-state.test.mjs`
+- Site: `src/core/data/data-source.ts`
 ### T-one-field-does-not-own-the-whole-map
 
 `sherpa-quick-filter-toolbar`'s `values` setter takes the WHOLE map, and a chip
@@ -13370,6 +13369,29 @@ never been bound.
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/query.ts`
 - Site: `test/unit/query.test.mjs`
+
+### T-a-field-is-declared-once
+
+**A field's filter — its name, its kind, how a control answers it — is
+declared ONCE on the source, and every bar, panel and heading draws it from
+`source.filterDef(field)`.** Provider P3a, 2026-09-27. Before it, Records built
+each field's def three ways: `DATA_FILTERS` for the bar's own chips,
+`fieldDef` for the Add lists, and the panel copied both through
+`asPanelField`. Owner offered conditions in one and not the other.
+
+`declareField(field, { label, type, select, custom, op, min, max, step })`
+says it; `declareValues` gives its options, as the rows hold them. A number
+or a date gets `kind`, and a control of its own; a field that is `custom:
+'only'` offers no list. `declareScope(scope, { label })` names a scope as a
+reader sees it, and `addable(scope)` is what it may still add — each noting
+where it lives now, because adding it MOVES it.
+
+Removable is NOT here: whether a chip may be taken off is the bar's policy,
+not a fact about the field.
+
+- Site: `examples/contexts/records.js`
+- Site: `src/core/data/data-source.ts`
+- Site: `test/unit/headless-data-layer.test.mjs`
 
 ### T-configuration-is-not-data
 

@@ -162,14 +162,6 @@ export async function init(root, { session, view, remote = false } = {}) {
     const have = [...new Set(customers.map((c) => c[field]))];
     return ORDER[field] ? ORDER[field].filter((v) => have.includes(v)) : have.sort();
   };
-  /* THE VALUE THE ROW HOLDS, not a lower-cased copy. The query compares
-     loosely either way, but a column heading's menu offers the raw value — so
-     a lower-cased chip option meant two menus over one field held two
-     different strings and could never share a selection.
-     TRAP T-one-comparison-rule-for-query-and-ui */
-  const asOptions = (field) =>
-    valuesOf(field).map((v) => ({ value: String(v), label: String(v) }));
-
   /* ONE RULE for "is this a set anybody picks from", read by the bar's Add
      menu AND by the grid's column headings. Ticking is only an answer when the
      list is short enough to read; 100 distinct emails is a wall, and a search
@@ -178,6 +170,40 @@ export async function init(root, { session, view, remote = false } = {}) {
   const PICKABLE_AT_MOST = 12;
   const typedColumn = (col) =>
     (col.type ?? 'text') === 'text' && valuesOf(col.field).length > PICKABLE_AT_MOST;
+
+  /** A number column's real ends, and a step that gives the slider ~200 stops. */
+  const NICE_STEPS = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000];
+  const numberFacts = (field) => {
+    const nums = customers.map((c) => Number(c[field])).filter(Number.isFinite);
+    const min = Math.floor(Math.min(...nums));
+    const max = Math.ceil(Math.max(...nums));
+    const span = max - min;
+    const step = span <= 1000 ? 1 : (NICE_STEPS.find((n) => n >= span / 200) ?? 1000);
+    return { min, max, step };
+  };
+
+  /* EVERY COLUMN, DECLARED ONCE — its name, its kind and how a filter answers
+     it — so a bar, the panel and a heading draw it one way. Its values too: a
+     chip, a heading and a legend offer the same STRINGS, so they share one
+     selection. BEFORE the provider: a legend picks from them when answered.
+     TRAP T-a-field-is-declared-once · TRAP T-one-field-one-filter-menu */
+  source.declareScope(VIEW_SCOPE, { label: 'App header' });
+  source.declareScope('data', { label: 'Customer records' });
+  /* Owner OPTS IN to conditions — a person's name, so "starts with" is a real
+     question. TRAP T-conditions-are-opt-in-per-field */
+  const OPTS_IN = { owner: { custom: true } };
+  for (const c of columns) {
+    const type = c.type ?? 'text';
+    // A wall is asked a condition, opening on Contains. TRAP T-a-condition-only-field-still-has-a-menu
+    const wall = typedColumn(c);
+    source.declareField(c.field, {
+      label: c.header,
+      ...(type === 'number' ? numberFacts(c.field)
+        : wall ? { custom: 'only', op: 'contains' }
+        : type === 'text' ? { select: 'multiple', ...OPTS_IN[c.field] } : {}),
+    });
+    if (type === 'text' && !wall) source.declareValues(c.field, valuesOf(c.field));
+  }
   /* `removable: true` — the DATA bar is the user's own to arrange, so each menu
      chip offers "Remove filter". No `commit`: a pick applies at once, and
      only a REMOTE source makes a menu wait for Apply (`?remote`).
@@ -199,26 +225,11 @@ export async function init(root, { session, view, remote = false } = {}) {
       readings: { health: { op: 'lt', text: '60' } } },
     { id: 'unassigned', label: 'Unassigned', type: 'data', removable: true,
       readings: { owner: { op: 'eq', picked: ['Unassigned'] } } },
-    /* The STATUS legend's menu. A multi-select over the same field the bar
-       chart splits on, so unticking a value and dimming its legend row are the
-       same gesture. Not the four toggles above: those are one-tap presets, and
-       this is the legend's own face.
-       TRAP T-a-legend-toggle-is-a-filter */
-    { id: 'status', label: 'Status', type: 'data',
-      select: 'multiple', removable: true, options: asOptions('status') },
-    // MULTI-select: one pick reads back as "Plan: Pro", two or more show a count.
-    { id: 'plan', label: 'Plan', type: 'data',
-      select: 'multiple', removable: true, options: asOptions('plan') },
-    // No Region chip: it is a GLOBAL filter in the app header, and two chips for
-    // one field would make the reader guess which is in force.
-    { id: 'tier', label: 'Tier', type: 'data',
-      select: 'multiple', removable: true, options: asOptions('tier') },
-    /* The one chip here that OPTS IN to custom conditions — an owner is a person's name, so "starts
-       with" is a question a reader really asks. Status, Plan and Tier are
-       closed sets of three or four, and get a plain list.
-       TRAP T-conditions-are-opt-in-per-field */
-    { id: 'owner', label: 'Owner', type: 'data', custom: true,
-      select: 'multiple', removable: true, options: asOptions('owner') },
+    /* The data scope's own fields, each as it is DECLARED. Region is a GLOBAL
+       filter in the header instead: two chips for one field make the reader
+       guess which is in force. */
+    ...['status', 'plan', 'tier', 'owner']
+      .map((f) => ({ ...source.filterDef(f), type: 'data', removable: true })),
     /* No `created` chip here: the header's "Created date" already filters that
        field at VIEW scope, and one field lives in exactly ONE scope.
        TRAP T-component-extends-view-never-alters-it */
@@ -242,59 +253,18 @@ export async function init(root, { session, view, remote = false } = {}) {
     source.timeField,
   ].filter(Boolean));
 
-  /** A number column's real ends, and a step that gives the slider ~200 stops. */
-  const NICE_STEPS = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000];
-  const numberFacts = (field) => {
-    const nums = customers.map((c) => Number(c[field])).filter(Number.isFinite);
-    const min = Math.floor(Math.min(...nums));
-    const max = Math.ceil(Math.max(...nums));
-    const span = max - min;
-    const step = span <= 1000 ? 1 : (NICE_STEPS.find((n) => n >= span / 200) ?? 1000);
-    return { kind: 'number', min, max, step };
-  };
 
-  /* A LIST or a CONDITION, from the SAME rule the grid headings read.
-     TRAP T-a-condition-only-field-still-has-a-menu */
-  const textFacts = (field) =>
-    (typedColumn({ field })
-      // CUSTOM ONLY, opening on Contains — there is no list worth ticking.
-      ? { custom: 'only', op: 'contains' }
-      : { select: 'multiple', options: asOptions(field) });
 
   /* THE FIELDS EACH SCOPE HAS. The grid's are its columns; the VIEW's are
      every component's, because any field may be raised to narrow everything.
      A component may hold only its own. TRAP T-up-is-open-down-is-closed */
   source.offer('data', columns.map((c) => c.field));
-
-  /** One column as a filter — the SAME def whichever bar offers it. */
   const byField = new Map(columns.map((c) => [c.field, c]));
-  const fieldDef = (c) => ({
-    id: c.field,
-    label: c.header,
-    removable: true,
-    ...(c.type === 'number' ? numberFacts(c.field)
-      : c.type === 'date' ? { kind: 'date' }
-      : textFacts(c.field)),
-  });
-  /** Each scope's name AS A READER SEES IT — the panel's sections and the
-   *  Add notes read this, so the two cannot spell it differently. */
-  const SCOPE_LABELS = { [VIEW_SCOPE]: 'App header', data: 'Customer records' };
 
-  /** What a scope may still add: the fields it HAS, less what it holds.
-   *  COLUMNS only, so Group and Sort are never offered at the view — they
-   *  arrange one component. TRAP T-a-bar-offers-only-what-its-scope-holds
-   *  TRAP T-group-and-sort-are-component-scope */
-  const addable = (scope, taken) => source.fields(scope)
-    .filter((f) => !taken.has(f) && byField.has(f))
-    .map((f) => {
-      /* WHERE IT LIVES NOW, when that is somewhere else — adding it here MOVES
-         it, and the reader should know before ticking. */
-      const at = source.scopeOf(f);
-      const note = at && at !== scope ? `in ${SCOPE_LABELS[at] ?? at}` : undefined;
-      return { ...fieldDef(byField.get(f)), ...(note ? { note } : {}) };
-    });
 
-  const DATA_AVAILABLE = addable('data', heldSomewhere).map((d) => ({ ...d, type: 'data' }));
+  /** What a scope may still add, as a bar offers it: the reader's own, so removable. */
+  const addList = (scope, taken) => source.addable(scope, taken).map((d) => ({ ...d, removable: true }));
+  const DATA_AVAILABLE = addList('data', heldSomewhere).map((d) => ({ ...d, type: 'data' }));
   /* THE READER'S OWN saved filters, offered at the bottom of Add, under Custom.
      TRAP T-saved-filters-are-the-custom-section */
   const savedDefs = () => Object.entries(loadSavedFilters('customers')).map(([id, saved]) => ({
@@ -317,7 +287,7 @@ export async function init(root, { session, view, remote = false } = {}) {
     ...((header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]')?.heldIds ?? [])
       .map((id) => (id === 'dateRange' ? source.timeField : id))),
   ].filter(Boolean));
-  header?.available(addable(VIEW_SCOPE, viewHeld()));
+  header?.available(addList(VIEW_SCOPE, viewHeld()));
 
   /* The WHITELIST still decides. `null` is "everything this bar offers", which
      is what this example wants; a list here would narrow it for a role, a
@@ -366,14 +336,14 @@ export async function init(root, { session, view, remote = false } = {}) {
           .filter((f) => !stays.includes(f.id))
           .map(asPanelField),
         // The SAME list the header's Add offers. TRAP T-up-is-open-down-is-closed
-        available: addable(VIEW_SCOPE, viewHeld()).map(asPanelField),
+        available: addList(VIEW_SCOPE, viewHeld()).map(asPanelField),
       },
       {
         scope: 'data',
         /* The CONTENT's own name, not "this context" — a reader with two grids
            on one page has to know which one a section answers for.
            TRAP T-a-scope-is-named-for-its-content */
-        label: SCOPE_LABELS.data,
+        label: source.scopeLabel('data'),
         /* WHAT THE BAR HOLDS NOW, not the list it was born with. `DATA_FILTERS`
            never learns about a removal or an add, so the panel kept drawing a
            field the reader had taken off and never drew one they added.
@@ -598,14 +568,6 @@ export async function init(root, { session, view, remote = false } = {}) {
   grid.columns = gridColumns;
   grid.key = 'email';
   grid.actions = ROW_ACTIONS;
-  /* ONE FIELD, ONE SELECTION. The SOURCE holds what is picked for a field, so
-     a chip, a column heading and a legend read the same answer instead of each
-     keeping a copy. Declaring the values is what lets them offer the same rows
-     — and the same STRINGS, which is what made two menus shareable at all.
-     BEFORE the provider: a legend picks from them when it is answered.
-     TRAP T-one-field-one-filter-menu */
-  const FIELD_CHIPS = new Set(['status', 'plan', 'tier', 'owner']);
-  for (const field of FIELD_CHIPS) source.declareValues(field, valuesOf(field));
   const provider = document.querySelector('sherpa-provider');
   provider?.provide({ sources: { records: source } });
   // Gone with the Context, so the next one's components never reach this source.
@@ -747,7 +709,7 @@ export async function init(root, { session, view, remote = false } = {}) {
       const r = view.readings[f];
       return [f, r && !r.suspended ? r : {}];
     }));
-    grid.supersedeColumns?.(held, SCOPE_LABELS[VIEW_SCOPE]);
+    grid.supersedeColumns?.(held, source.scopeLabel(VIEW_SCOPE));
   };
   for (const type of ['scope-change', 'selection-change']) {
     source.addEventListener(type, syncHeadings, { signal });
@@ -766,9 +728,9 @@ export async function init(root, { session, view, remote = false } = {}) {
     source.hold('data', (qft.heldIds ?? []).filter((id) => !raised.includes(id)));
     /* The App Header owns these fields now, and the chips below say so rather
        than going quietly grey. TRAP T-an-inactive-chip-says-where-its-filter-went */
-    qft.supersede(raised, SCOPE_LABELS[VIEW_SCOPE]);
+    qft.supersede(raised, source.scopeLabel(VIEW_SCOPE));
     // The header's Add notes say where each field lives — which just changed.
-    header?.available(addable(VIEW_SCOPE, viewHeld()));
+    header?.available(addList(VIEW_SCOPE, viewHeld()));
   };
 
   header?.addEventListener('quick-filter-change', (e) => {

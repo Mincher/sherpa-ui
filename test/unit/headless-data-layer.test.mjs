@@ -914,3 +914,30 @@ test('deliver: a bind hands its data to a callback instead of populate()', async
   assert.equal(populated, 0);
   assert.equal(source.loaded, true);
 });
+
+/* A field's filter is DECLARED ONCE, and every bar, panel and heading draws it
+   from the source. TRAP T-a-field-is-declared-once */
+test('filterDef, declareScope and addable: one definition per field, and what a scope may add', () => {
+  const source = new DataSource({ store: new ArrayStore([{ id: 1, plan: 'Pro', seats: 5 }], { key: 'id' }), autoLoad: false });
+  source.declareField('plan', { label: 'Plan', select: 'multiple' });
+  source.declareValues('plan', ['Free', 'Pro']);
+  source.declareField('seats', { label: 'Seats', type: 'number', min: 0, max: 50, step: 1 });
+  source.declareField('email', { label: 'Email', custom: 'only', op: 'contains' });
+  source.declareValues('email', ['a@x', 'b@x']);
+  assert.deepEqual(source.filterDef('plan'), {
+    id: 'plan', label: 'Plan', select: 'multiple',
+    options: [{ value: 'Free', label: 'Free' }, { value: 'Pro', label: 'Pro' }],
+  });
+  assert.deepEqual(source.filterDef('seats'), { id: 'seats', label: 'Seats', min: 0, max: 50, step: 1, kind: 'number' });
+  // Conditions only: no list to tick.
+  assert.equal(source.filterDef('email').options, undefined);
+
+  source.declareScope('view', { label: 'App header' });
+  source.offer('grid', ['plan', 'seats', 'email', 'undeclared']);
+  source.hold('grid', ['plan']);
+  source.hold('view', ['seats']);
+  // Held here is not offered; held above says where it lives; undeclared is never offered.
+  assert.deepEqual(source.addable('grid').map((d) => [d.id, d.note]),
+    [['seats', 'in App header'], ['email', undefined]]);
+  assert.equal(source.scopeLabel('grid'), 'grid');
+});

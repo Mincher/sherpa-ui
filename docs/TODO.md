@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**58 open.** Reassessed 2026-09-26: the bugs that lie first, then the
+**60 open.** Reassessed 2026-09-26: the bugs that lie first, then the
 FOUNDATION — the one compiled query, the view definition and when Apply runs —
 before the filter features that stand on it. Numbers are ids, not order; the
 table IS the order.
@@ -23,6 +23,8 @@ table IS the order.
 | 1 | 73 | EXPLORE — one compiled QUERY, built as the reader sets it up, run on Apply | explore |
 | 2 | 85 | `sherpa-provider`: a component ASKS for data, a scope, a query, a View or a template | foundation |
 | 2b | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
+| 2c | 91 | The APP SHELL switches Filter toolbar and Filter panel modes, for any View in the content area | foundation |
+| 2d | 92 | Navigating SETS UP the content — its definitions, data layer, filters and state — not only swaps the template | foundation |
 | 3 | 70 | EXPLORE — a view definition bundles its filters; one JSON renders the page | explore |
 | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
 | 5 | 75 | Filter modes are SIMPLE and COMPLEX, not Default and Conditional — every file | refactor |
@@ -240,6 +242,37 @@ and date each get their own list (21d is the date half). Switching back to
 Simple keeps what it can show and says what it cannot, never drops a
 condition silently. **The word:** Will says *Advanced* here; 75 says
 *Complex* — one of them, everywhere (75).
+
+### `[ ]` 91 — The APP SHELL switches Filter toolbar and Filter panel modes, for any View in the content area
+
+Will, 2026-09-27: *"The app shell should be able to toggle between Filter
+Toolbar and Filter Panel modes for any View that is showing in the content
+area."*
+
+Today Records wires it by hand: `togglePanel`, `setPanelMode`,
+`syncPanelled`, the reopen and restore code, and the session's
+`/filters/mode`. The shell already owns WHERE the panel sits
+(`T-the-shell-owns-the-panel-areas`), so it owns the MODE too — for whatever
+content it shows, with no page code. With provider P3c the panel asks for its
+own scopes, so the shell needs only to open it.
+
+### `[ ]` 92 — Navigating SETS UP the content — its definitions, data layer, filters and state — not only swaps the template
+
+Will, 2026-09-27: *"When the app shell navigates to new content we shouldn't
+only be swapping the content area content/templates. We need to be getting
+and setting the definitions, data layer etc. to ensure all the correct filters
+are available, shown, and in the correct state. Same goes for all other view
+content. We're probably already doing this somewhere but there are gaps. I
+assume the new provider comes into play here."*
+
+Today each Context's `init()` does it by hand — make a source, declare its
+fields, give the provider its source, restore the session's Query, draw the
+bars — and anything a Context forgets is a gap (the Dashboard gave the
+provider no source until P2). Yes, the provider: a Context DEFINITION (JSON —
+its sources, fields, scopes, Views and template) handed to it on navigation,
+so it sets up the data layer, answers every component, and restores the
+state. Provider P4 (definitions) and 70 (a view definition renders the page)
+are its halves. First: audit where it is done today, and list the gaps.
 
 ### `[ ]` 70 — EXPLORE: a view definition bundles its filters; one JSON renders the page
 
