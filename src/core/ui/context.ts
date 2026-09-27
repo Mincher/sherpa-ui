@@ -14,7 +14,7 @@
  * - ContextRequestEvent — The request: bubbles and is composed; the provider that answers stops it.
  * - DataAsk — What a component asks its provider for: the shape of its data, and the events it keeps.
  * - DATA_CONTEXT — A component's data, in the shape it declared — pushed on every change.
- * - SOURCE_CONTEXT — The DataSource over this region itself — for page code, never a component.
+ * - SOURCE_CONTEXT — The DataSource over this subtree itself — for page code, never a component.
  */
 
 /** A key a component asks for, typed by its answer. */
@@ -52,5 +52,5 @@ export interface DataAsk {
 /** A component's data, in the shape it declared — pushed on every change. */
 export const DATA_CONTEXT = createContext<unknown>('sherpa:data');
 
-/** The DataSource over this region itself — for page code, never a component. */
+/** The DataSource over this subtree itself — for page code, never a component. */
 export const SOURCE_CONTEXT = createContext<unknown>('sherpa:source');

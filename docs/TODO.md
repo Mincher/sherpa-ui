@@ -158,7 +158,7 @@ Dashboard. **Next: step 8** — segment and aggregate in a component scope.
 **Designed — `docs/PROVIDER-DESIGN.md`, for Will's review.** Will, 2026-09-27:
 *"Why can't any component ask for data, a definition, a conditional query
 definition or a template from the data layer?"* — the Context Protocol
-(choice A), a provider over a region, and each request can subscribe. It was
+(choice A), a provider over a subtree, and each request can subscribe. It was
 designed in `FILTER-REVIEW.md` §9–§12 on 2026-09-25 and never built. Step 8
 of the Query folds into its P2. Target: `records.js` 853 → ~250 lines of code,
 `dashboard.js` 222 → ~50. Closes most of 37 and 38.

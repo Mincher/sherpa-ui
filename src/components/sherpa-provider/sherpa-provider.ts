@@ -1,9 +1,9 @@
 /**
- * sherpa-provider — the data layer, over a REGION of the page: a component
+ * sherpa-provider — the data layer, over a SUBTREE of the page: a component
  * inside it ASKS, and this ANSWERS.
  *
  * A thin DOM door onto the DOM-free data layer. It holds the sources it is
- * given and joins each component that asks to the one its region provides —
+ * given and joins each component that asks to the one its subtree provides —
  * by `bind()`, delivering through the callback the component asked with. A
  * request that arrives before any source waits, and `provide()` answers it.
  * docs/PROVIDER-DESIGN.md. TRAP T-a-component-asks-its-provider
@@ -34,7 +34,7 @@ export class SherpaProvider extends SherpaElement {
   static override css = new URL('./sherpa-provider.css', import.meta.url);
   static override html = new URL('./sherpa-provider.html', import.meta.url);
 
-  /** The sources this region provides, by name. */
+  /** The sources this subtree provides, by name. */
   #sources: Record<string, DataSource> = {};
   /** Every component that asked, by the element that asked. */
   #asked = new Map<Element, Asked>();
@@ -45,7 +45,7 @@ export class SherpaProvider extends SherpaElement {
     this.addEventListener('context-request', this.#onRequest);
   }
 
-  /** Give this region its sources. Every component already asking is answered
+  /** Give this subtree its sources. Every component already asking is answered
    *  again — a Context that swaps its source swaps it for everything in it. */
   provide(options: ProvideOptions): void {
     this.#sources = { ...options.sources };
@@ -111,7 +111,7 @@ export class SherpaProvider extends SherpaElement {
   }
 
   /**
-   * The source a component's region provides. Named only when the region
+   * The source a component's subtree provides. Named only when the subtree
    * offers two; an unnamed ask of two, or a name not offered, is LOUD — never
    * a guess. FILTER-REVIEW §12, decided 2026-09-25.
    */
@@ -123,7 +123,7 @@ export class SherpaProvider extends SherpaElement {
       if (!source && names.length) {
         report({
           code: 'provider-unknown-source',
-          message: 'sherpa-provider: this region provides no source by that name.',
+          message: 'sherpa-provider: this subtree provides no source by that name.',
           at: { tag: el.localName, name: named, offers: names.join(',') },
         });
       }
@@ -132,7 +132,7 @@ export class SherpaProvider extends SherpaElement {
     if (names.length > 1) {
       report({
         code: 'provider-ambiguous',
-        message: 'sherpa-provider: this region provides several sources, so a component must name one.',
+        message: 'sherpa-provider: this subtree provides several sources, so a component must name one.',
         at: { tag: el.localName, offers: names.join(',') },
       });
       return null;

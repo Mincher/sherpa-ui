@@ -28,4 +28,4 @@ $extensions:
       - $type: method
         name: provide
         args: "options: ProvideOptions"
-        description: Give this region its sources. Every component already asking is answered
+        description: Give this subtree its sources. Every component already asking is answered

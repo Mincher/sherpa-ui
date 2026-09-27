@@ -12,7 +12,7 @@ too!"*
 
 **It was designed, never built.** `FILTER-REVIEW.md` §9.2, §10, §12 and §19
 (2026-09-25) chose all of it: the Context Protocol, a source PROVIDED over a
-region, `data-source` optional, a component DECLARING what it needs, and
+subtree, `data-source` optional, a component DECLARING what it needs, and
 aggregation folded into the data layer. None of it exists in `src/`. This
 document is that design, brought up to date with the Query (`QUERY-DESIGN.md`)
 and Will's three questions, and turned into build steps.
@@ -49,15 +49,15 @@ exist only because a page wires them (`bind()`'s seven — FILTER-REVIEW §11.1)
 
 ## 2. The rules
 
-1. **A component ASKS; the nearest provider over its region ANSWERS.** A
+1. **A component ASKS; the nearest provider over its subtree ANSWERS.** A
    `context-request` event — composed, so it crosses shadow roots upward — with
    a key, a callback and `subscribe`. The Context Protocol (W3C Web Components
    Community Group; Lit ships it as `@lit/context`). Will, 2026-09-27: **A**.
 2. **`subscribe: true` means "keep telling me".** The provider pushes each
    change to what asked — only what it asked for (FILTER-REVIEW §9.3).
-3. **Containment comes from the TREE.** A component reaches what its region
-   provides, never wider. `data-source` names one only when a region offers
-   two; a name the region does not offer is a loud error (decided 2026-09-25).
+3. **Containment comes from the TREE.** A component reaches what its subtree
+   provides, never wider. `data-source` names one only when a subtree offers
+   two; a name the subtree does not offer is a loud error (decided 2026-09-25).
 4. **Both a declaration and a definition — one owner.** A component's
    ATTRIBUTES are its defaults (`data-field="status" data-aggregate="count"`);
    a View's JSON may change them. When the component joins, its defaults
@@ -73,7 +73,7 @@ exist only because a page wires them (`bind()`'s seven — FILTER-REVIEW §11.1)
 
 ## 3. The provider
 
-One element, a real region with a real name (FILTER-REVIEW §12: *"never an
+One element, a real subtree with a real name (FILTER-REVIEW §12: *"never an
 implicit wrapper"*):
 
 ```html
@@ -97,7 +97,7 @@ provider.provide({
 ```
 
 It is thin: a DOM adapter over the DOM-free data layer. It holds no data of
-its own. Providers NEST — an inner region answers what it provides, and a key
+its own. Providers NEST — an inner subtree answers what it provides, and a key
 it does not provide keeps travelling up.
 
 ---
@@ -182,6 +182,7 @@ The size gate shows each step's deletions.
 |---|---|---|
 | 1 | the provider's name | **A** — `sherpa-provider` |
 | 2 | how a control's request travels back | **A** — as the events it fires today; the provider routes them |
+| 3 | the name for the part of the page a provider wraps | **subtree** — the element and everything under it. Never "region": that is a field in the example data |
 
 And a standing ask: *"Look for opportunities to refactor code to be simpler,
 and leaner, with this improvement. I suspect that a lot of sherpa-elements

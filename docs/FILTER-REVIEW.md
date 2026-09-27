@@ -37,7 +37,7 @@ Kept as the work lands. Budgets from §15.4.
 
 **Diagrams of the target architecture are in §9.** §10 answers "are we
 reinventing the platform?", §11 is where this could be simpler, §12 is how a
-component reaches a source, and §13 is what this review missed, §14 is error reporting, and §15 is conciseness and reuse — CONTAINED by its region, named only when a region
+component reaches a source, and §13 is what this review missed, §14 is error reporting, and §15 is conciseness and reuse — CONTAINED by its subtree, named only when a subtree
 offers more than one.
 
 ## 1. The short version
@@ -495,7 +495,7 @@ composed event, and the nearest `DataSource` in the tree answers it.
 
 ```
 SherpaElement.onConnect  →  emit('sherpa-source-request', { accept })
-DataSource               →  listens on its host region, calls accept(this)
+DataSource               →  listens on its host subtree, calls accept(this)
 ```
 
 The element learns its source without naming one; the source learns the element
@@ -948,25 +948,25 @@ if components could specify where to look for a field or value. e.g.
 A page can hold several sources — customers and invoices, live and saved. The
 declaration carries WHERE as well as WHAT:
 
-**A source is PROVIDED OVER A REGION, and named only when a region offers more
+**A source is PROVIDED OVER A SUBTREE, and named only when a subtree offers more
 than one — see §12.** Where a component is mounted decides what it can reach;
 it cannot widen that itself.
 
 | attribute | means |
 |---|---|
-| *(none)* | the one source this element's region provides |
-| `data-source="invoices"` | that region provides two, and this is the one |
+| *(none)* | the one source this element's subtree provides |
+| `data-source="invoices"` | that subtree provides two, and this is the one |
 | `data-field="spend"` | the field `spend`, in whichever of those applies |
 
-A name is resolvable only inside the region that provides it, so it is a label
+A name is resolvable only inside the subtree that provides it, so it is a label
 on what is already on offer — not a key to every source on the page.
 
 ```mermaid
 flowchart TB
   EL["a component asks<br/>for its source"] --> REQ["context request<br/>composed, travels UP"]
-  REQ --> REG{"does a region<br/>above it provide?"}
+  REQ --> REG{"does a subtree<br/>above it provide?"}
   REG -- "no" --> NONE["nothing reaches it.<br/>It draws its empty state."]
-  REG -- "yes" --> HOW{"how many does<br/>that region offer?"}
+  REG -- "yes" --> HOW{"how many does<br/>that subtree offer?"}
   HOW -- "one" --> OK["that one. No attribute needed."]
   HOW -- "two or more" --> NAMED{"did the element<br/>name one?"}
   NAMED -- "yes, and it is offered here" --> OK
@@ -1225,18 +1225,18 @@ not *bounded*.
 
 ### Containment comes from the TREE
 
-A source is **provided over a region**. Elements inside can reach it; elements
+A source is **provided over a subtree**. Elements inside can reach it; elements
 outside cannot — not because they are forbidden, but because the request never
 gets there.
 
 ```mermaid
 flowchart TB
-  subgraph R1["region A — provides: records"]
+  subgraph R1["subtree A — provides: records"]
     G["sherpa-data-grid"]
     M["sherpa-metric"]
     B["sherpa-quick-filter-toolbar"]
   end
-  subgraph R2["region B — provides: invoices"]
+  subgraph R2["subtree B — provides: invoices"]
     L["sherpa-list"]
   end
   OUT["a component outside both"]
@@ -1258,29 +1258,29 @@ app's business and nobody else's. A component cannot widen its own reach.
 
 ### Naming is the override, not the rule
 
-Inside one region there is usually **one** source, and then nothing needs
+Inside one subtree there is usually **one** source, and then nothing needs
 saying:
 
 ```html
-<!-- region A provides `records` -->
+<!-- subtree A provides `records` -->
 <sherpa-metric data-field="spend" data-aggregate="sum"></sherpa-metric>
 ```
 
-When a region genuinely provides two, the element says which:
+When a subtree genuinely provides two, the element says which:
 
 ```html
 <sherpa-metric data-source="invoices" data-field="total"></sherpa-metric>
 ```
 
-**And a name is only resolvable inside the region that provides it.** Naming
-`invoices` from region A reaches nothing and errors — the name is not a key to
-a global registry, it is a label on what this region already offers.
+**And a name is only resolvable inside the subtree that provides it.** Naming
+`invoices` from subtree A reaches nothing and errors — the name is not a key to
+a global registry, it is a label on what this subtree already offers.
 
 | | costs Will objected to | still true? |
 |---|---|---|
-| every template gains an attribute | **gone** — only when a region has two sources |
-| cannot drop a template in without naming its source | **gone** — it inherits its region |
-| renaming a source edits every element | **gone** — the region names it, once |
+| every template gains an attribute | **gone** — only when a subtree has two sources |
+| cannot drop a template in without naming its source | **gone** — it inherits its subtree |
+| renaming a source edits every element | **gone** — the subtree names it, once |
 
 ### Decided — Will, 2026-09-25
 
@@ -1290,19 +1290,19 @@ a global registry, it is a label on what this region already offers.
 **`data-source` is available on every data-bound component, and optional.**
 
 ```html
-<!-- the region provides one source -->
+<!-- the subtree provides one source -->
 <sherpa-metric data-field="spend" data-aggregate="sum"></sherpa-metric>
 
-<!-- the region provides two, or you want it said out loud -->
+<!-- the subtree provides two, or you want it said out loud -->
 <sherpa-metric data-source="invoices" data-field="total"></sherpa-metric>
 ```
 
 | | |
 |---|---|
-| reach | **bounded by the region.** A component cannot widen it |
-| one source in a region | `data-source` optional — write it for clarity if you like |
-| two or more | the region REFUSES an unnamed request: loud error, never a guess |
-| a name the region does not offer | loud error |
+| reach | **bounded by the subtree.** A component cannot widen it |
+| one source in a subtree | `data-source` optional — write it for clarity if you like |
+| two or more | the subtree REFUSES an unnamed request: loud error, never a guess |
+| a name the subtree does not offer | loud error |
 
 `data-source` joins `SHARED_PROPS`, beside `data-bounds` — the same shape, for
 the same reason: a named target, resolved by lookup, never inferred.
@@ -1313,9 +1313,9 @@ no information.
 
 ### The one thing to watch
 
-A component moved between regions silently changes what it reads. That is the
+A component moved between subtrees silently changes what it reads. That is the
 same trade as CSS inheritance, and the same answer: it is only surprising if
-the regions are not visible in the markup. Keep a region a real element with a
+the subtrees are not visible in the markup. Root each subtree in a real element with a
 real name, never an implicit wrapper.
 
 ---
@@ -1505,7 +1505,7 @@ Not a step of its own — it is small at each point and large if left to the end
 
 | step | what it gains |
 |---|---|
-| **3** — the data layer coordinates | `debugState()` lands here, because this is where the state arrives. A request that no region answers REPORTS rather than drawing empty. A `data-source` naming something the region does not offer is a loud error (§12). |
+| **3** — the data layer coordinates | `debugState()` lands here, because this is where the state arrives. A request that no subtree answers REPORTS rather than drawing empty. A `data-source` naming something the subtree does not offer is a loud error (§12). |
 | **4** — one field-row builder | the builder reports a definition it cannot draw, instead of returning `null` — that is `#drawField`'s `if (!options.length && !def.menu) return null` today |
 | **5** — collapse the sort/group state | a sort naming a column that does not exist says so |
 | **new, last** — the sweep | the remaining silent give-ups, judged one at a time against §14.2 |
