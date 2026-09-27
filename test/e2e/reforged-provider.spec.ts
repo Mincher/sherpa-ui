@@ -210,3 +210,43 @@ test('a provider exports its state as JSON; another takes it in and draws the sa
   expect(r['back']).toEqual({ rows: 4, view: 'all' });
   expect(r['reports']).toEqual([]);
 });
+
+/* THE PROVIDER OWNS THE PANEL MODE, for every page in it: a bar's Configure
+   opens the panel and steps every bar back — one that joins later too — and a
+   reader's close brings the bars back. TRAP T-the-provider-owns-the-panel-mode */
+test('panel mode: Configure opens the panel and steps bars back; a later bar joins it; a close restores', async ({ page }) => {
+  await page.setViewportSize({ width: 1600, height: 900 });
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const provider = document.createElement('sherpa-provider');
+    const bar = document.createElement('sherpa-quick-filter-toolbar');
+    bar.setAttribute('data-scope', 'data');
+    const panel = document.createElement('sherpa-filter-panel');
+    panel.setAttribute('data-scope', 'view data');
+    provider.append(bar, panel);
+    root.append(provider);
+    const heard = [];
+    provider.addEventListener('filter-mode-change', (e) => heard.push(e.detail.mode));
+    const src = source(2, 'p');
+    src.offer('data', ['name']);
+    src.declareField('name', { label: 'Name' });
+    await provider.provide({ sources: { s: src } });
+    await settle();
+    bar.dispatchEvent(new CustomEvent('filter-configure', { bubbles: true, composed: true }));
+    await settle();
+    const opened = { open: panel.hasAttribute('data-open'), bar: bar.hasAttribute('data-panel-mode'), mode: provider.filterMode };
+    const late = document.createElement('sherpa-quick-filter-toolbar');
+    late.setAttribute('data-scope', 'data');
+    provider.append(late);
+    await settle();
+    const joined = late.hasAttribute('data-panel-mode');
+    panel.close();
+    await settle();
+    return { opened, joined, closed: { open: panel.hasAttribute('data-open'), bar: bar.hasAttribute('data-panel-mode'), late: late.hasAttribute('data-panel-mode') }, heard, reports };
+  })()`) as Record<string, unknown>;
+  expect(r['opened']).toEqual({ open: true, bar: true, mode: 'panel' });
+  expect(r['joined']).toBe(true);
+  expect(r['closed']).toEqual({ open: false, bar: false, late: false });
+  expect(r['heard']).toEqual(['panel', 'toolbars']);
+  expect(r['reports']).toEqual([]);
+});

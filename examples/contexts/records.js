@@ -262,63 +262,9 @@ export async function init(root, { session, view, remote = false } = {}) {
   const page = new AbortController();
   const signal = page.signal;
 
-  /* EITHER bar's Configure button toggles the panel, and the panel is filled
-     the moment it opens — the bars may have changed since last time. */
-  /** TOOLBARS or PANEL, remembered for the session.
-   *  TRAP T-panel-mode-hides-what-the-panel-answers */
-  const setMode = (mode) => session?.set?.('/filters/mode', mode);
-
-  const togglePanel = () => {
-    if (!panel) return;
-    if (panel.hasAttribute('data-open')) { panel.close(); return; }
-    // The panel ASKED for its scopes, so it is drawn already.
-    panel.open();
-    setMode('panel');
-    setPanelMode(true);
-  };
-
-  /** Both bars step back while the panel answers for them — the header keeps
-   *  only its View chip. TRAP T-panel-mode-hides-what-the-panel-answers
-   *  TRAP T-the-view-chip-stays-on-the-header */
-  const setPanelMode = (on) => {
-    qft.toggleAttribute('data-panel-mode', on);
-    header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]')
-      ?.toggleAttribute('data-panel-mode', on);
-  };
-
-  qft.addEventListener('filter-configure', togglePanel, { signal });
-  header?.addEventListener('filter-configure', togglePanel, { signal });
-  panel?.addEventListener('filter-panel-close', (e) => {
-    setPanelMode(false);
-    /* Only a READER's close is a choice worth remembering. A window too narrow
-       to hold the panel is not — storing that would let the window size forget
-       what they asked for.
-       TRAP T-every-close-reports-or-the-toolbars-stay-hidden */
-    if (e.detail?.reason !== 'width') setMode('toolbars');
-  }, { signal });
-
-  /* WIDE AGAIN, and the window was what took the panel away. Give it back. */
-  panel?.addEventListener('filter-panel-reopen', () => {
-    void (async () => {
-      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-      panel.open();
-      if (panel.hasAttribute('data-open')) setPanelMode(true);
-    })();
-  }, { signal });
-
-  /* The bars' kept answers, once replayed — the panel waits for them. */
-  let restored = Promise.resolve();
-
-  /* RESTORE. The panel opens itself if the reader left it open — after the
-     kept answers are back, so it opens on them. */
-  if (session?.get?.('/filters/mode') === 'panel') {
-    void (async () => {
-      await restored;
-      panel?.open();
-      // `open()` refuses below its breakpoint, so follow what it actually did.
-      if (panel?.hasAttribute('data-open')) setPanelMode(true);
-    })();
-  }
+  /* TOOLBARS or PANEL is the provider's, for every page: it hears either bar's
+     Configure, steps the bars back, and opens the panel.
+     TRAP T-the-provider-owns-the-panel-mode */
 
   /* THE PANEL ASKS for its scopes (`data-scope="view data"`): the source draws
      each whole and hears its answers, its Add and Remove, its Apply and
@@ -452,7 +398,7 @@ export async function init(root, { session, view, remote = false } = {}) {
      so a View's sort wins over a kept one. TRAP T-a-provider-keeps-the-views
      TRAP T-a-reload-replays-the-readers-answers · TRAP T-a-view-is-json */
   await qftFilled;
-  restored = provider?.provide({
+  const restored = provider?.provide({
     sources: { records: source }, views: RECORDS_VIEWS, view: startView,
     session, key: '/filters/records',
   }) ?? Promise.resolve();

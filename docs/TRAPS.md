@@ -8434,8 +8434,8 @@ selector is not a filter, and Customer and Region are global.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
-- Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-filter-panel-mode.spec.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
 
 ### T-a-panel-flush-between-surfaces-draws-two-edges
 
@@ -9534,7 +9534,6 @@ use at all, because the panel draws value chips rather than the menu.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
-- Site: `examples/contexts/records.js`
 
 ### T-the-panel-is-desktop-only
 
@@ -13289,7 +13288,7 @@ the state change, never from one path's handler. The second path is always the
 one nobody tests.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `examples/contexts/records.js`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
 
 
 ### T-apply-and-discard-wait-for-a-change
@@ -13371,6 +13370,31 @@ never been bound.
 - Site: `src/core/data/query.ts`
 - Site: `test/unit/query.test.mjs`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
+
+### T-the-provider-owns-the-panel-mode
+
+**TOOLBARS or PANEL is the provider's, for every page in its subtree.** TODO
+91, 2026-09-27. Will: *"The app shell should be able to toggle between Filter
+Toolbar and Filter Panel modes for any View that is showing in the content
+area."* Before it, Records wired it by hand — `togglePanel`, `setPanelMode`,
+the session key, and the close, reopen and restore listeners — and the
+Dashboard's Configure button did nothing.
+
+The provider hears any bar's `filter-configure` and the panel's
+`filter-panel-close` and `filter-panel-reopen`. It opens or shuts every panel
+that asked, and steps every bar that asked back (`data-panel-mode`) — a bar
+on a page loaded later takes the mode when it asks. The APP keeps the choice:
+it sets `provider.filterMode` from its session, and saves each
+`filter-mode-change` — a reader's change only; a window too narrow is not a
+choice, and the panel comes back when it is wide again.
+
+A panel asks for `view data` on every page; a scope a page does not have —
+nothing held, nothing to offer — is not drawn, so the Dashboard's panel shows
+its View filters alone.
+
+- Site: `examples/contexts/records.js`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `test/e2e/reforged-provider.spec.ts`
 
 ### T-a-page-goes-out-as-json
 
@@ -13595,6 +13619,7 @@ not a fact about the field.
 - Site: `examples/contexts/records.js`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
+- Site: `examples/contexts/dashboard.js`
 
 ### T-configuration-is-not-data
 

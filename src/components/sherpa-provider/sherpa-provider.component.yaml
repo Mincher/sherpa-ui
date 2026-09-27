@@ -21,13 +21,19 @@ anatomy:
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (view, elements). See $extensions.sherpa.jsProps.
+    description: read/write JS properties (filterMode, view, elements). See $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
     description: >-
       callable from a view definition's state block (provide, export, import). See
       $extensions.sherpa.methods.
 events:
+  - $type: event
+    name: filter-mode-change
+    bubbles: true
+    composed: true
+    detail:
+      mode: unknown
   - $type: event
     name: view-change
     bubbles: true
@@ -50,6 +56,9 @@ $extensions:
         args: "state: ProviderState"
         description: "Take a state back in, exactly: each named source's question, and its View"
     jsProps:
+      - name: filterMode
+        type: string
+        access: read-write
       - name: view
         type: string
         access: read

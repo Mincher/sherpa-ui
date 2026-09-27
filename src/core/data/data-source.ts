@@ -814,7 +814,11 @@ export class DataSource extends EventTarget {
     queueMicrotask(() => {
       this.#drawingScopes = false;
       for (const [el, { scope }] of this.#bound) {
-        if (Array.isArray(scope) && el.drawScopes) void el.drawScopes(scope.map((s) => this.describe(s)));
+        // A scope this page does not have — nothing held, nothing to offer — is not drawn.
+        if (Array.isArray(scope) && el.drawScopes) {
+          void el.drawScopes(scope.map((s) => this.describe(s))
+            .filter((d) => d.scope === VIEW || d.filters.length || d.available.length));
+        }
       }
     });
   }

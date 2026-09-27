@@ -128,6 +128,11 @@
     session.persist('/filters/mode', {
       guard: (v) => v === 'toolbars' || v === 'panel',
     });
+    /* The PROVIDER switches toolbars and panel for every page; the app keeps
+       the reader's choice. TRAP T-the-provider-owns-the-panel-mode */
+    const provider = document.querySelector('sherpa-provider');
+    provider.filterMode = session.get('/filters/mode');
+    provider.addEventListener('filter-mode-change', (e) => session.set('/filters/mode', e.detail.mode));
     /* A Context's FILTER ANSWERS, with the View they were made on. They survive
        a reload and a trip away and back, and die with the session.
        TRAP T-a-reload-replays-the-readers-answers */

@@ -73,8 +73,16 @@ export async function init(root) {
   /* ONE SOURCE, and the PROVIDER answers the page: each chart and tile
      DECLARES what it needs of the rows in dashboard.html and asks, so a filter
      set once re-summarises every one. TRAP T-a-component-declares-its-summary */
-  const source = new DataSource({ store: new ArrayStore(alerts(), { key: 'id' }) });
+  const rows = alerts();
+  const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }) });
   source.declareField('storage', { type: 'number' });
+  /* The header's fields, declared once — the panel draws them from these.
+     TRAP T-a-field-is-declared-once */
+  source.declareScope(VIEW_SCOPE, { label: 'View filters' });
+  for (const [field, label] of [['region', 'Region'], ['customer', 'Customer']]) {
+    source.declareField(field, { label, select: 'multiple' });
+    source.declareValues(field, [...new Set(rows.map((r) => r[field]))].sort());
+  }
   // A category keeps its slot and colour; a quiet day keeps its point.
   // TRAP T-a-category-keeps-its-colour
   source.declareValues('category', CATEGORY_ORDER);

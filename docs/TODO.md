@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**61 open.** Reassessed 2026-09-26: the bugs that lie first, then the
+**60 open.** Reassessed 2026-09-26: the bugs that lie first, then the
 FOUNDATION — the one compiled query, the view definition and when Apply runs —
 before the filter features that stand on it. Numbers are ids, not order; the
 table IS the order.
@@ -23,7 +23,6 @@ table IS the order.
 | 1 | 73 | EXPLORE — one compiled QUERY, built as the reader sets it up, run on Apply | explore |
 | 2 | 85 | `sherpa-provider`: a component ASKS for data, a scope, a query, a View or a template | foundation |
 | 2b | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
-| 2c | 91 | The APP SHELL switches Filter toolbar and Filter panel modes, for any View in the content area | foundation |
 | 2d | 92 | Navigating SETS UP the content — its definitions, data layer, filters and state — not only swaps the template | foundation |
 | 3 | 70 | EXPLORE — a view definition bundles its filters; one JSON renders the page | explore |
 | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
@@ -233,19 +232,6 @@ and date each get their own list (21d is the date half). Switching back to
 Simple keeps what it can show and says what it cannot, never drops a
 condition silently. **The word is Advanced** — Will chose it over
 *Complex*, 2026-09-27 (75).
-
-### `[ ]` 91 — The APP SHELL switches Filter toolbar and Filter panel modes, for any View in the content area
-
-Will, 2026-09-27: *"The app shell should be able to toggle between Filter
-Toolbar and Filter Panel modes for any View that is showing in the content
-area."*
-
-Today Records wires it by hand: `togglePanel`, `setPanelMode`,
-`syncPanelled`, the reopen and restore code, and the session's
-`/filters/mode`. The shell already owns WHERE the panel sits
-(`T-the-shell-owns-the-panel-areas`), so it owns the MODE too — for whatever
-content it shows, with no page code. With provider P3c the panel asks for its
-own scopes, so the shell needs only to open it.
 
 ### `[ ]` 92 — Navigating SETS UP the content — its definitions, data layer, filters and state — not only swaps the template
 
@@ -1149,6 +1135,7 @@ One line each. The detail is in git and in the trap named.
 
 **2026-09-27, the provider (85)**
 - 93: a grid-scope filter narrowed the charts and tiles too — only the View trickles down now; a summary is under the View alone — `T-only-the-view-trickles-down`
+- 91: the provider owns TOOLBARS or PANEL for every page — Configure opens the panel on the Dashboard too; the app keeps the choice — `T-the-provider-owns-the-panel-mode`
 - 87 and 88: a field raised to the View stays in its component scope's Filters list, its section keeps its heading and says "Filter applied at higher scope." — provider P3c, `T-a-panel-asks-for-its-scopes`
 
 **2026-09-27, the Query — steps 1 to 6 (73)**
