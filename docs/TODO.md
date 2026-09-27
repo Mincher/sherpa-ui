@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**60 open.** Reassessed 2026-09-26: the bugs that lie first, then the
+**61 open.** Reassessed 2026-09-26: the bugs that lie first, then the
 FOUNDATION — the one compiled query, the view definition and when Apply runs —
 before the filter features that stand on it. Numbers are ids, not order; the
 table IS the order.
@@ -40,6 +40,7 @@ table IS the order.
 | 14 | 16 | Favourite and Save apply to the Context, not the View | bug |
 | 15 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
 | 15a | 87 | Adding a filter to the View scope must not remove it from the component scope's Filters list | bug |
+| 15aa | 94 | A number (and range) filter menu needs Apply and Cancel buttons | bug |
 | | | **D — Filters: Will's features, on the foundation** | |
 | 15b | 88 | A filter raised to the View scope: its component section keeps its heading, hides its options, and says where it went | feature |
 | 15c | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
@@ -273,6 +274,15 @@ its sources, fields, scopes, Views and template) handed to it on navigation,
 so it sets up the data layer, answers every component, and restores the
 state. Provider P4 (definitions) and 70 (a view definition renders the page)
 are its halves. First: audit where it is done today, and list the gaps.
+
+### `[ ]` 94 — A number (and range) filter menu needs Apply and Cancel buttons
+
+Will, 2026-09-27: *"Numerical (and range) filter menus need apply/cancel
+buttons."* A number is TYPED, so applying each keystroke filters on "1" on
+the way to "150". Locally a PICK applies at once (Will's ruling on 62, "No
+Apply locally"); a number body is the exception — it waits for Apply, and
+Cancel puts back what was applied. The calendar's footer is the pattern, and
+83 is its bug, so fix the two together.
 
 ### `[ ]` 70 — EXPLORE: a view definition bundles its filters; one JSON renders the page
 
@@ -1126,6 +1136,9 @@ and edited the same way as a designed one.
 ## Done
 
 One line each. The detail is in git and in the trap named.
+
+**2026-09-27, the provider (85)**
+- 93: a grid-scope filter narrowed the charts and tiles too — only the View trickles down now; a summary is under the View alone — `T-only-the-view-trickles-down`
 
 **2026-09-27, the Query — steps 1 to 6 (73)**
 - Steps 1–5: one Query, held by the source, compiled on demand; bars, the open panel, the header, legends and headings are drawn from it; the session saves and restores it — 827cadd8 to b59363d4, `T-one-query-one-owner`

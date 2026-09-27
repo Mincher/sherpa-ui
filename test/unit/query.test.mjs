@@ -95,7 +95,19 @@ test('a preset that is ON applies its saved readings; one that is off, nothing',
 });
 
 test('an empty Query filters nothing and arranges nothing', () => {
-  assert.deepEqual(compile({ v: 1, scopes: {} }), { only: {}, sort: [], group: null, search: '' });
+  assert.deepEqual(compile({ v: 1, scopes: {} }), { scoped: {}, only: {}, sort: [], group: null, search: '' });
+});
+
+/* ONLY THE VIEW TRICKLES DOWN. A component scope narrows a page of its own
+   rows, never a summary beside it. TRAP T-only-the-view-trickles-down */
+test('a component scope compiles apart from the View: a page sees both, a summary the View alone', () => {
+  const c = compile({ v: 1, scopes: {
+    view: { holds: ['region'], readings: { region: { picked: ['EMEA'] } } },
+    data: { holds: ['status'], readings: { status: { picked: ['active'] } } },
+  } });
+  assert.deepEqual(c.view, ['region', 'eq', 'EMEA']);
+  assert.deepEqual(c.scoped, { data: ['status', 'eq', 'active'] });
+  assert.deepEqual(c.filter, ['and', ['region', 'eq', 'EMEA'], ['status', 'eq', 'active']]);
 });
 
 /* ── Step 2: the source holds the Query ─────────────────────────────── */

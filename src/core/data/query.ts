@@ -68,8 +68,13 @@ export interface CompileFacts {
 
 /** A Query as the source runs it: one shared filter, and each one-component filter. */
 export interface Compiled {
-  /** What every bound component is under. */
+  /** What a PAGE of rows is under: the View, and every component scope. */
   filter?: Filter;
+  /** The View's answer alone — what every OTHER component is under. Only the
+   *  View trickles down. TRAP T-only-the-view-trickles-down */
+  view?: Filter;
+  /** Each component scope's own answer, by scope id. */
+  scoped: Record<string, Filter>;
   /** Per bound component id, what narrows it alone. */
   only: Record<string, Filter>;
   sort: SortSpec[];
@@ -93,6 +98,8 @@ export const VIEW = 'view';
  */
 export function compile(query: Query, facts: CompileFacts = {}): Compiled {
   const shared: Filter[] = [];
+  const view: Filter[] = [];
+  const scoped: Record<string, Filter> = {};
   const only: Record<string, Filter[]> = {};
   const viewHolds = new Set(query.scopes[VIEW]?.holds ?? []);
   let arranged: ScopeQuery | undefined;
@@ -127,6 +134,11 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
       for (const el of scope.narrows) (only[el] ??= []).push(...clauses);
     } else {
       shared.push(...clauses);
+      if (id === VIEW) view.push(...clauses);
+      else {
+        const own = andFilter(clauses);
+        if (own) scoped[id] = own;
+      }
     }
 
     if (scope.sort || scope.group !== undefined || scope.search !== undefined) {
@@ -143,6 +155,7 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
   }
 
   const out: Compiled = {
+    scoped,
     only: Object.fromEntries(Object.entries(only)
       .map(([el, clauses]) => [el, andFilter(clauses)] as const)
       .filter((e): e is readonly [string, Filter] => !!e[1])),
@@ -152,5 +165,7 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
   };
   const filter = andFilter(shared);
   if (filter) out.filter = filter;
+  const viewed = andFilter(view);
+  if (viewed) out.view = viewed;
   return out;
 }

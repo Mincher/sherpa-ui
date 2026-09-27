@@ -13370,6 +13370,34 @@ never been bound.
 - Site: `src/core/data/query.ts`
 - Site: `test/unit/query.test.mjs`
 
+### T-only-the-view-trickles-down
+
+**Only the View scope's filters reach every component. A component scope —
+the grid's bar, the grid's headings — narrows the components IN it, and never
+a chart or a tile beside them.** Will, 2026-09-27 (TODO 93): *"Changing data
+grid scoped filters is still affecting data viz content and metric content.
+This is trickle across/up behaviour which we don't want."*
+
+It was one filter for everything: `compile()` put every scope's answer that
+did not name a component into one shared filter, and the source loaded the
+charts' full row set under it — so a Status pick on the grid's bar took the
+Customers tile from 100 to 24.
+
+`compile()` now keeps them apart: `filter` (the View and every component
+scope — what a PAGE of rows is under), `view` (the View alone) and
+`scoped[id]` (each component scope's own). The source loads a summary's rows
+(`rows: 'all'`) under `view`; a summary bound INTO a component scope adds that
+scope's answer in memory.
+
+A field's answer goes to the scope that HOLDS it. One that no component scope
+holds lives at the View — and so reaches everything — which is right, and is
+why a test must `hold` the field in the grid's scope first.
+
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/query.ts`
+- Site: `test/e2e/reforged-provider-summary.spec.ts`
+- Site: `test/unit/query.test.mjs`
+
 ### T-a-field-is-declared-once
 
 **A field's filter — its name, its kind, how a control answers it — is

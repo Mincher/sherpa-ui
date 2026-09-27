@@ -292,6 +292,12 @@ export class DataSource extends EventTarget {
   /** The last compile, so a load does not redo it. Written by `#recompose` — and
    *  by `setFilter`/`setState`, whose whole filter has no readings until step 7. */
   #filter: Filter | undefined;
+  /** What a component OUTSIDE every component scope is under — the View alone.
+   *  Unsplit (`null`), a whole filter set by hand: it is the View's.
+   *  TRAP T-only-the-view-trickles-down */
+  #viewFilter: Filter | undefined | null = null;
+  /** Each component scope's own answer — for a summary bound INTO that scope. */
+  #scoped: Record<string, Filter> = {};
   /** Every value a field can take, for the controls that draw its rows. */
   #domains = new Map<string, unknown[]>();
   /** A field's declared KIND and label. TRAP T-the-field-type-decides-the-clause */
@@ -388,6 +394,7 @@ export class DataSource extends EventTarget {
       // A whole view is a clean slate, applied — not a draft. TRAP T-apply-and-discard-wait-for-a-change
       if (this.#remote) this.#applied = structuredClone(this.#draft);
       this.#filter = next.filter;
+      this.#viewFilter = null;
     }
     if (next.sort) this.#state.sort = next.sort;
     // A view captured mid-suspend restores as it was left.
@@ -489,6 +496,7 @@ export class DataSource extends EventTarget {
     this.#clearReadings();
     if (this.#remote) this.#applied = structuredClone(this.#draft);
     this.#filter = filter;
+    this.#viewFilter = null;
     this.#requery();
   }
 
@@ -1067,17 +1075,21 @@ export class DataSource extends EventTarget {
   /** Compile the Query under every named part, and load. The ONE place the
    *  filter is made. TRAP T-one-query-one-owner */
   #recompose(): void {
-    const { filter, only } = compile(this.#applied, {
+    const { filter, view, scoped, only } = compile(this.#applied, {
       field: (f) => this.#facts(f),
       preset: (id) => this.#presets.get(id),
     });
-    const next = andFilter([...this.#parts.values(), ...(filter ? [filter] : [])]);
+    const parts = [...this.#parts.values()];
+    const next = andFilter([...parts, ...(filter ? [filter] : [])]);
+    const viewed = andFilter([...parts, ...(view ? [view] : [])]);
     /* A DRAFT edit on a remote source changes nothing applied: no load, and
        the page stays where it is. It only changes what is pending. */
     const same = this.#remote && JSON.stringify(next) === JSON.stringify(this.#filter)
       && JSON.stringify(only) === JSON.stringify(this.#only);
     this.#only = only;
     this.#filter = next;
+    this.#viewFilter = viewed;
+    this.#scoped = scoped;
     this.#syncPending();
     if (!same) this.#requery();
   }
@@ -1318,12 +1330,16 @@ export class DataSource extends EventTarget {
       /* A SUMMARY sees every matching row. When nothing was windowed the page
          IS everything, so the second ask is skipped.
          TRAP T-a-summary-binds-to-all-the-rows */
+      /* …under the VIEW alone: a component scope narrows its own components,
+         never a summary beside them. TRAP T-only-the-view-trickles-down */
       const windowed = this.#state.pageSize != null && !this.#state.group;
+      const viewed = this.#viewFilter === null ? this.#filter : this.#viewFilter;
+      const split = JSON.stringify(viewed) !== JSON.stringify(this.#filter);
       if (!this.#wantsAllRows()) this.#allRows = [];
-      else if (!windowed) this.#allRows = result.rows;
+      else if (!windowed && !split) this.#allRows = result.rows;
       else {
-        const { skip: _skip, take: _take, ...rest } = this.#loadOptions();
-        const all = await this.store.load(rest);
+        const { skip: _skip, take: _take, filter: _filter, ...rest } = this.#loadOptions();
+        const all = await this.store.load(viewed ? { ...rest, filter: viewed } : rest);
         if (this.#inFlight !== ticket) return this.#result;
         this.#allRows = all.rows;
       }
@@ -1593,9 +1609,11 @@ export class DataSource extends EventTarget {
     // TRAP T-no-op-load-guard
     // TRAP T-adapter-lives-at-the-binding — guard the ROWS ARRAY, not a payload.
     const base = entry?.rows === 'all' ? this.#allRows : this.#result.rows;
-    /* What narrows THIS component alone, on top of the shared query.
+    /* What narrows THIS component alone, on top of the shared query — and, for
+       a summary bound INTO a component scope, that scope's answer.
        TRAP T-a-component-part-narrows-one-component */
-    const own = entry ? this.#only[entry.id] : undefined;
+    const into = entry?.rows === 'all' && typeof entry.scope === 'string' ? this.#scoped[entry.scope] : undefined;
+    const own = andFilter([entry ? this.#only[entry.id] : undefined, into].filter((f): f is Filter => !!f));
     const ownKey = JSON.stringify(own ?? null);
     if (entry && entry.lastRows === base && entry.lastOwn === ownKey) return;
     if (entry) {

@@ -123,3 +123,38 @@ test('a child uses the nearest data-source above it; a new declaration asks agai
   expect(r['bBound']).toBe(1);
   expect(r['reports']).toEqual(['provider-unknown-aggregate']);
 });
+
+/* ONLY THE VIEW TRICKLES DOWN. The grid's own scope narrows the grid; a tile
+   beside it follows the View alone. Will, 2026-09-27.
+   TRAP T-only-the-view-trickles-down */
+test('a grid scope filter narrows the grid, never a tile; a View filter narrows both', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    provider.innerHTML = \`
+      <sherpa-metric id="count" data-aggregate="count"></sherpa-metric>
+      <sherpa-data-grid id="grid" data-scope="data"></sherpa-data-grid>\`;
+    const grid = provider.querySelector('#grid');
+    grid.columns = [{ field: 'plan', header: 'Plan' }];
+    grid.key = 'id';
+    const source = make();
+    provider.provide({ sources: { sales: source } });
+    await source.load();
+    await settle();
+    const drawn = () => grid.shadowRoot.querySelectorAll('.body .row').length;
+    const tile = () => provider.querySelector('#count').dataset.value;
+    // The grid's scope HOLDS plan, so the answer is the grid's alone.
+    source.hold('data', ['plan']);
+    source.answer('data', { plan: { picked: ['Pro'] } });
+    await settle();
+    const scoped = { grid: drawn(), tile: tile() };
+    source.answer('data', {});
+    source.hold('data', []);
+    source.hold('view', ['plan']);
+    source.answer('view', { plan: { picked: ['Enterprise', 'Pro'] } });
+    await settle();
+    return { scoped, viewed: { grid: drawn(), tile: tile() }, reports };
+  })()`) as Record<string, Record<string, unknown>>;
+  expect(r['scoped']).toEqual({ grid: 2, tile: '4' });
+  expect(r['viewed']).toEqual({ grid: 3, tile: '3' });
+  expect(r['reports']).toEqual([]);
+});
