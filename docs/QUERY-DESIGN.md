@@ -314,7 +314,7 @@ the clause grammar, `bind()`, `select()` (a write into the view scope),
 A size gate lands with step 1 (`scripts/size-baseline.json`, a per-file line
 count that may only fall — 38's plan), so each step shows what it deleted.
 
-**Built (2026-09-27): steps 1 to 5**, in the order 1, 2, 4a–4e, 3, 5a–5c —
+**Built (2026-09-27): steps 1 to 6**, in the order 1, 2, 4a–4e, 3, 5a–5c, 6a–6e —
 a bar must be drawn FROM the Query before a restore can draw it.
 
 - 4a–4e: the header answers the View scope; a bound `scope` draws the bars,
@@ -326,11 +326,18 @@ a bar must be drawn FROM the Query before a restore can draw it.
   NORMAL chip (Will, 2026-09-27 — the `col:` chips and the toolbar's external
   chips are gone). A field a scope lets go of, held nowhere else, is cleared.
 - 5c: superseded headings are built from the View scope.
+- 6: a remote store (`spoofRemote`, `?remote`) gives the source a DRAFT;
+  `commit` / `discard` take a field, a scope or all; `pending` and `dirty`
+  reach bound controls as `data-pending` / `data-dirty`. Apply is ONLY for a
+  remote fetch (Will, 2026-09-27, choice A): locally every pick applies at
+  once, and the panel has no footer — a remote field has its own Apply and
+  Discard. A pending chip wears the active edge and no fill; the footer owns
+  "nothing to save".
 
-Left for later steps: the panel still refills from the bars and routes its
-Apply through them (step 6, with the draft); the bars still own which chips
-they hold, and Records reports it (`syncScopes`); the grid keeps its own
-`ColumnFilter` shape internally, as a drawn copy of the reading.
+Left for later steps: the panel still refills its LIST of fields from the
+bars; the bars still own which chips they hold, and Records reports it
+(`syncScopes`); the grid keeps its own `ColumnFilter` shape internally, as a
+drawn copy of the reading. Next: step 7 — a saved View is markup + a Query.
 
 ---
 

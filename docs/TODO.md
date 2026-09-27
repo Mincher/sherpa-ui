@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**51 open.** Reassessed 2026-09-26: the bugs that lie first, then the
+**49 open.** Reassessed 2026-09-26: the bugs that lie first, then the
 FOUNDATION — the one compiled query, the view definition and when Apply runs —
 before the filter features that stand on it. Numbers are ids, not order; the
 table IS the order.
@@ -23,63 +23,61 @@ table IS the order.
 | 1 | 73 | EXPLORE — one compiled QUERY, built as the reader sets it up, run on Apply | explore |
 | 2 | 70 | EXPLORE — a view definition bundles its filters; one JSON renders the page | explore |
 | 3 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
-| 4 | 62 | Apply and Discard only for a REMOTE fetch; a debug flag spoofs one | feature |
-| 5 | 66 | The footer owns "nothing to save": Save and Cancel wait for a change | feature |
-| 6 | 75 | Filter modes are SIMPLE and COMPLEX, not Default and Conditional — every file | refactor |
-| 7 | 38 | One model, one builder, one owner — what is left | refactor |
-| 8 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
+| 4 | 75 | Filter modes are SIMPLE and COMPLEX, not Default and Conditional — every file | refactor |
+| 5 | 38 | One model, one builder, one owner — what is left | refactor |
+| 6 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | | | **C — Contained bugs** | |
-| 9 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
-| 10 | 61 | Add customer saves with required fields empty | bug |
-| 11 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
-| 12 | 45 | A picked date does not show in the chip | bug |
-| 13 | 16 | Favourite and Save apply to the Context, not the View | bug |
-| 14 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
+| 7 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
+| 8 | 61 | Add customer saves with required fields empty | bug |
+| 9 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
+| 10 | 45 | A picked date does not show in the chip | bug |
+| 11 | 16 | Favourite and Save apply to the Context, not the View | bug |
+| 12 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
 | | | **D — Filters: Will's features, on the foundation** | |
-| 15 | 46 | A PENDING state: changed, not yet applied | feature |
-| 16 | 60 | Once applied, a chip's badge shows the number of results | feature |
-| 17 | 49 | A preset conditional chip shows its conditions, read-only | feature |
-| 18 | 50 | A custom conditional chip shows its conditions, editable | feature |
-| 19 | 47 | More than 20 values: one chip, not a run | feature |
-| 20 | 48 | A child menu opens on hover or click of its row | feature |
-| 21 | 21c | A condition's matches must ALL highlight | feature |
-| 22 | 21f | "Send to view filters" | feature |
-| 23 | 21b | Which header chips carry over between views | feature |
-| 24 | 20b | The Date filter should be a view-scope date RANGE | feature |
-| 25 | 21d | EXPLORE — conditions for a DATE field | explore |
-| 26 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
+| 13 | 60 | Once applied, a chip's badge shows the number of results | feature |
+| 14 | 49 | A preset conditional chip shows its conditions, read-only | feature |
+| 15 | 50 | A custom conditional chip shows its conditions, editable | feature |
+| 16 | 47 | More than 20 values: one chip, not a run | feature |
+| 17 | 48 | A child menu opens on hover or click of its row | feature |
+| 18 | 21c | A condition's matches must ALL highlight | feature |
+| 19 | 21f | "Send to view filters" | feature |
+| 20 | 21b | Which header chips carry over between views | feature |
+| 21 | 20b | The Date filter should be a view-scope date RANGE | feature |
+| 22 | 21d | EXPLORE — conditions for a DATE field | explore |
+| 23 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
 | | | **E — Views and navigation** | |
-| 27 | 15 | Save a View, and the Save split-button menu | feature |
-| 28 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
-| 29 | 34 | Figma: use the Navigation terms | figma |
+| 24 | 15 | Save a View, and the Save split-button menu | feature |
+| 25 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
+| 26 | 34 | Figma: use the Navigation terms | figma |
+| 27 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
 | | | **F — Data states and charts** | |
-| 30 | 58 | Loading, empty and error states in a container | feature |
-| 31 | 9b | A Data Viz header, for metrics and chart containers | component |
-| 32 | 14 | An example of real-time data | feature |
-| 33 | 59 | EXPLORE, later — Will's own loading pattern | explore |
+| 28 | 58 | Loading, empty and error states in a container | feature |
+| 29 | 9b | A Data Viz header, for metrics and chart containers | component |
+| 30 | 14 | An example of real-time data | feature |
+| 31 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | | | **G — Overlay panels** | |
-| 34 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
-| 35 | 23 | A focused grid row opens a details panel | feature |
+| 32 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
+| 33 | 23 | A focused grid row opens a details panel | feature |
 | | | **H — The accessibility gate** | |
-| 36 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
+| 34 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
 | | | **I — The big builds** | |
-| 37 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
-| 38 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
-| 39 | 27 | A consumer can supply their OWN templates and CSS | feature |
-| 40 | 25 | `sherpa-layout-canvas` + minimap | component |
-| 41 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
+| 35 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
+| 36 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
+| 37 | 27 | A consumer can supply their OWN templates and CSS | feature |
+| 38 | 25 | `sherpa-layout-canvas` + minimap | component |
+| 39 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
 | | | **J — Tidy-ups and renames** | |
-| 42 | 11 | `sherpa-group`: what is left | tidy |
-| 43 | 28 | A Figma component is NOT always a web component | tidy |
-| 44 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
-| 45 | 33 | Density as step offsets, and a breakpoint step | tokens |
-| 46 | 36 | CSS: compiled where it should inherit? | tidy |
-| 47 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
-| 48 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
+| 40 | 11 | `sherpa-group`: what is left | tidy |
+| 41 | 28 | A Figma component is NOT always a web component | tidy |
+| 42 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| 43 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| 44 | 36 | CSS: compiled where it should inherit? | tidy |
+| 45 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| 46 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 | | | **K — Agentic UI: much later** | |
-| 49 | 76 | WebMCP: agents do UI tasks through Sherpa's own contracts — a core system | explore |
-| 50 | 77 | CONTRACTED UX patterns, so a generated experience is consistent and useful | explore |
-| 51 | 78 | A node-based WORKFLOW creator: make, edit and view patterns and generated workflows | explore |
+| 47 | 76 | WebMCP: agents do UI tasks through Sherpa's own contracts — a core system | explore |
+| 48 | 77 | CONTRACTED UX patterns, so a generated experience is consistent and useful | explore |
+| 49 | 78 | A node-based WORKFLOW creator: make, edit and view patterns and generated workflows | explore |
 
 **Why this order** (reassessed 2026-09-26).
 
@@ -138,13 +136,14 @@ same day:** a View is markup + a JSON Query; "remote" is on the STORE, spoofed
 by a wrapping store in the data layer; build steps 1–5 first (one owner), then
 6–8. Building now, one step per commit.
 
-**Steps 1 to 5 are built (2026-09-27)** — see `QUERY-DESIGN.md` §10 for what
+**Steps 1 to 6 are built (2026-09-27)** — see `QUERY-DESIGN.md` §10 for what
 each did and what is left. The source holds the Query; the bars, the open
 panel, the header, the legends and the grid headings are drawn from it; the
 session saves and restores it. Will's choice A: a heading filter wears its
-field's normal chip, so the `col:` and external chips are gone. **Next: step
-6** — draft and applied, the spoofed remote store, pending, dirty and Discard
-(62, 46, 66).
+field's normal chip, so the `col:` and external chips are gone. Step 6 gave a
+remote store a draft, Apply only for a remote fetch, the pending chip and the
+footer's "nothing to save" (62, 46, 66). **Next: step 7** — a saved View is
+markup plus a Query (70).
 
 ### `[ ]` 70 — EXPLORE: a view definition bundles its filters; one JSON renders the page
 
@@ -196,52 +195,6 @@ long as the whole situation is captured and can be recreated then we're
 good."* The sub-query IS the field's slice of the Query — its `FieldReading`,
 condition rows and all — shown and saved as JSON, and restored by
 `setQuery`. No grammar, no parser, no second spelling of a condition.
-
-### `[ ]` 62 — Apply and Discard only for a REMOTE fetch; a debug flag spoofs one
-
-**Designed with 73 — see `docs/QUERY-DESIGN.md`.**
-
-Will, 2026-09-26: *"Apply and Discard are actions that are only needed if
-there is a data fetch that reaches outside the Data Layer. If the change is
-just shaping data that's already in the data layer then there's no need."*
-
-- **The panel footer goes.** A field whose change needs a remote fetch shows a
-  small, ICON-ONLY Apply and Discard at the right of its section header row,
-  beside Clear. Every other field applies as it is changed.
-- **The same rule reaches a chip's menu.** Its Apply/Cancel (`commit: true`,
-  `data-commit` — Owner and Region today) is only for a remote field too.
-- **"Remote" is a fact about the FILTER**, so it is on the filter def and
-  asked of the data layer — never guessed by a component.
-
-**There is no remote source, so spoof one.** A DEBUG attribute/property on a
-filter pretends that its change fetches from a remote source — a delay, and
-optionally a failure. Sprinkle it into the example filters so both paths are
-always on screen. 58 (loading, empty and error states) reuses the same flag to
-drive its loading and failure states.
-
-Before 46: a pending state only exists on a field that has an Apply, and this
-item decides which fields those are. `T-apply-and-discard-wait-for-a-change`
-changes with it.
-
-### `[ ]` 66 — The footer owns "nothing to save": Save and Cancel wait for a change
-
-Will, 2026-09-26: wire the inactive Save & Cancel (or Apply & Discard, or any
-equivalent pair) into `sherpa-container-footer`, *"so that all menus etc can
-inherit this common behaviour."* Today each host does it by hand, or not at
-all: the filter panel built its own (`#syncDirty`,
-`T-apply-and-discard-wait-for-a-change`), and `sherpa-menu` has a `dirty`
-getter its footer does not use.
-
-The FOOTER turns its commit and revert controls off while the host says
-nothing has changed, and on when it has. The host only REPORTS dirty — one
-attribute or property, e.g. `data-dirty` on the footer, or a `dirty` it asks
-of its host — and never touches the buttons. Nine templates compose the
-footer (calendar, dialog, container, filter panel, menu, nav, overlay-panel,
-panel, select-card); each then drops its own copy. Which buttons are the pair
-must be declared, not guessed from their labels.
-
-Do it with 62: 62 decides WHICH fields have Apply and Discard at all, this
-decides how any such pair behaves.
 
 ### `[ ]` 75 — Filter modes are SIMPLE and COMPLEX, not Default and Conditional — every file
 
@@ -428,17 +381,6 @@ filter opens On".
 
 ## D — Filters: Will's features, on the foundation
 
-### `[ ]` 46 — A PENDING state: changed, not yet applied
-
-A chip that goes straight to active before its change is applied misleads the
-reader. Between the change and Apply, a chip is PENDING: an active purple
-BORDER, no fill. A conditional chip is the same — it turns green only once
-applied. Only a committing (Apply) field has a pending state — after 62, that is a
-REMOTE one; a field that applies at once goes straight to active.
-
-A state is a pin, as data (`scripts/figma-data/state-pins.yaml`), not a
-colour rule in the chip. Check what the pin's surface resolves to first.
-
 ### `[ ]` 60 — Once applied, a chip's badge shows the number of results
 
 Will, 2026-09-26: when a filter change is APPLIED and its results are fetched,
@@ -624,6 +566,20 @@ The code moved to Section / Area / Context / View on 2026-09-24 (CLAUDE.md
 Each code-only difference is also in that component's `_divergence` block.
 
 ---
+
+### `[ ]` 79 — Nav header: Settings and Pin are one Button group in an Actions slot
+
+Will, 2026-09-27, from Figma: in the Navigation Panel's header the Settings
+and Pinning buttons are now GROUPED and use the DEFAULT button style. Settings
+takes the Grouping START class, Pinning the Grouping END class — Settings
+first, then Pin, the reverse of the code today. Button size is unchanged. The
+group is a SLOT called `Actions`, so more buttons can join it later.
+
+Today `sherpa-nav.html` draws both as raw `<button class="hdr-btn …">`. So:
+COMPOSE two `sherpa-button`s (never a re-drawn button), wrapped in
+`.sherpa-group` (start/end by position), inside a `<slot name="actions">` in
+the header — the default content being these two. Resync the nav's spec and
+check the pixels against Figma.
 
 ## F — Data states and charts
 
@@ -967,6 +923,14 @@ and edited the same way as a designed one.
 ## Done
 
 One line each. The detail is in git and in the trap named.
+
+**2026-09-27, the Query — steps 1 to 6 (73)**
+- Steps 1–5: one Query, held by the source, compiled on demand; bars, the open panel, the header, legends and headings are drawn from it; the session saves and restores it — 827cadd8 to b59363d4, `T-one-query-one-owner`
+- Choice A: a heading filter wears its field's NORMAL chip; the `col:` and external chips are gone — 731d2bc3, c5d6e513
+- Removing a chip clears its filter (it had moved to the View and kept filtering) — 731d2bc3
+- 62: Apply only for a REMOTE fetch — locally every pick applies at once; `?remote` spoofs a remote store; the panel's footer is gone, a remote field has its own Apply and Discard — 7c7cdf5c, 9294cfd6, c92adec0, `T-apply-and-discard-wait-for-a-change`, `T-commit-follows-select-mode`
+- 46: a pending chip wears the active edge and no fill — 6050eddf, `T-a-pending-chip-has-no-fill`
+- 66: the footer owns "nothing to save" — a committing menu's Apply and Cancel wait for a change — 23094c86, `T-the-footer-owns-nothing-to-save`
 
 **2026-09-26, Will's list**
 - The superseded-chip tip reads "Filter applied at higher scope" — c0f5e32f, `T-an-inactive-chip-says-where-its-filter-went`
