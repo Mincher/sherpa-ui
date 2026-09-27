@@ -314,7 +314,7 @@ the clause grammar, `bind()`, `select()` (a write into the view scope),
 A size gate lands with step 1 (`scripts/size-baseline.json`, a per-file line
 count that may only fall — 38's plan), so each step shows what it deleted.
 
-**Built (2026-09-27): steps 1 to 6**, in the order 1, 2, 4a–4e, 3, 5a–5c, 6a–6e —
+**Built (2026-09-27): steps 1 to 7**, in the order 1, 2, 4a–4e, 3, 5a–5c, 6a–6e, 7 —
 a bar must be drawn FROM the Query before a restore can draw it.
 
 - 4a–4e: the header answers the View scope; a bound `scope` draws the bars,
@@ -326,6 +326,11 @@ a bar must be drawn FROM the Query before a restore can draw it.
   NORMAL chip (Will, 2026-09-27 — the `col:` chips and the toolbar's external
   chips are gone). A field a scope lets go of, held nowhere else, is cleared.
 - 5c: superseded headings are built from the View scope.
+- 7 (Records): a saved View is JSON — `{ label, query, ui }` — and a View
+  change is `setQuery(view.query, { holds: 'keep' })` onto a clean slate:
+  its defaults show on the chips, and its sort and group set the source's.
+  The hidden `view` part is gone. The Dashboard's views still use the old
+  `snapshot` (7b); a view's LAYOUT as JSON waits for the Templater (68).
 - 6: a remote store (`spoofRemote`, `?remote`) gives the source a DRAFT;
   `commit` / `discard` take a field, a scope or all; `pending` and `dirty`
   reach bound controls as `data-pending` / `data-dirty`. Apply is ONLY for a
@@ -337,7 +342,8 @@ a bar must be drawn FROM the Query before a restore can draw it.
 Left for later steps: the panel still refills its LIST of fields from the
 bars; the bars still own which chips they hold, and Records reports it
 (`syncScopes`); the grid keeps its own `ColumnFilter` shape internally, as a
-drawn copy of the reading. Next: step 7 — a saved View is markup + a Query.
+drawn copy of the reading. Next: 7b (the Dashboard's views as JSON), then
+step 8 (segment and aggregate).
 
 ---
 
@@ -345,7 +351,7 @@ drawn copy of the reading. Next: step 7 — a saved View is markup + a Query.
 
 | # | question | answer |
 |---|---|---|
-| 1 | the view definition's format | **A** — markup for layout, JSON for the Query only |
+| 1 | the view definition's format | ~~**A** — markup for layout, JSON for the Query only~~ → **B, 2026-09-27**: ONE JSON definition. *"JSON is the de facto universal standard for configuration data … we can much more readily send and receive content from other services."* The Templater (68) builds the layout from it |
 | 2 | where "remote" is decided | **B** — on the STORE: remote data comes into the data layer to be formatted, so the spoof is a wrapping store there (§5) |
 | 3 | build order | **A** — steps 1–5 first (one owner), then 6–8 |
 

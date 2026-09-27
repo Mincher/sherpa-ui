@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**50 open.** Reassessed 2026-09-26: the bugs that lie first, then the
+**52 open.** Reassessed 2026-09-26: the bugs that lie first, then the
 FOUNDATION — the one compiled query, the view definition and when Apply runs —
 before the filter features that stand on it. Numbers are ids, not order; the
 table IS the order.
@@ -31,54 +31,56 @@ table IS the order.
 | 8 | 61 | Add customer saves with required fields empty | bug |
 | 9 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
 | 10 | 45 | A picked date does not show in the chip | bug |
-| 11 | 16 | Favourite and Save apply to the Context, not the View | bug |
-| 12 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
+| 11 | 82 | A number chip set by a View shows no value on its face | bug |
+| 12 | 16 | Favourite and Save apply to the Context, not the View | bug |
+| 13 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
 | | | **D — Filters: Will's features, on the foundation** | |
-| 13 | 60 | Once applied, a chip's badge shows the number of results | feature |
-| 14 | 49 | A preset conditional chip shows its conditions, read-only | feature |
-| 15 | 50 | A custom conditional chip shows its conditions, editable | feature |
-| 16 | 47 | More than 20 values: one chip, not a run | feature |
-| 17 | 48 | A child menu opens on hover or click of its row | feature |
-| 18 | 21c | A condition's matches must ALL highlight | feature |
-| 19 | 21f | "Send to view filters" | feature |
-| 20 | 21b | Which header chips carry over between views | feature |
-| 21 | 20b | The Date filter should be a view-scope date RANGE | feature |
-| 22 | 21d | EXPLORE — conditions for a DATE field | explore |
-| 23 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
+| 14 | 60 | Once applied, a chip's badge shows the number of results | feature |
+| 15 | 49 | A preset conditional chip shows its conditions, read-only | feature |
+| 16 | 50 | A custom conditional chip shows its conditions, editable | feature |
+| 17 | 47 | More than 20 values: one chip, not a run | feature |
+| 18 | 48 | A child menu opens on hover or click of its row | feature |
+| 19 | 21c | A condition's matches must ALL highlight | feature |
+| 20 | 21f | "Send to view filters" | feature |
+| 21 | 21b | Which header chips carry over between views | feature |
+| 22 | 20b | The Date filter should be a view-scope date RANGE | feature |
+| 23 | 21d | EXPLORE — conditions for a DATE field | explore |
+| 24 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
 | | | **E — Views and navigation** | |
-| 24 | 15 | Save a View, and the Save split-button menu | feature |
-| 25 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
-| 26 | 34 | Figma: use the Navigation terms | figma |
-| 27 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
+| 25 | 15 | Save a View, and the Save split-button menu | feature |
+| 26 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
+| 27 | 34 | Figma: use the Navigation terms | figma |
+| 28 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
 | | | **F — Data states and charts** | |
-| 28 | 58 | Loading, empty and error states in a container | feature |
-| 29 | 9b | A Data Viz header, for metrics and chart containers | component |
-| 30 | 80 | Container and Data Viz headers: Figma's new button styling and grouping | component |
-| 31 | 14 | An example of real-time data | feature |
-| 32 | 59 | EXPLORE, later — Will's own loading pattern | explore |
+| 29 | 58 | Loading, empty and error states in a container | feature |
+| 30 | 9b | A Data Viz header, for metrics and chart containers | component |
+| 31 | 80 | Container and Data Viz headers: Figma's new button styling and grouping | component |
+| 32 | 14 | An example of real-time data | feature |
+| 33 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | | | **G — Overlay panels** | |
-| 33 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
-| 34 | 23 | A focused grid row opens a details panel | feature |
+| 34 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
+| 35 | 23 | A focused grid row opens a details panel | feature |
 | | | **H — The accessibility gate** | |
-| 35 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
+| 36 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
 | | | **I — The big builds** | |
-| 36 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
-| 37 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
-| 38 | 27 | A consumer can supply their OWN templates and CSS | feature |
-| 39 | 25 | `sherpa-layout-canvas` + minimap | component |
-| 40 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
+| 37 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
+| 38 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
+| 39 | 27 | A consumer can supply their OWN templates and CSS | feature |
+| 40 | 25 | `sherpa-layout-canvas` + minimap | component |
+| 41 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
 | | | **J — Tidy-ups and renames** | |
-| 41 | 11 | `sherpa-group`: what is left | tidy |
-| 42 | 28 | A Figma component is NOT always a web component | tidy |
-| 43 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
-| 44 | 33 | Density as step offsets, and a breakpoint step | tokens |
-| 45 | 36 | CSS: compiled where it should inherit? | tidy |
-| 46 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
-| 47 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
+| 42 | 11 | `sherpa-group`: what is left | tidy |
+| 43 | 28 | A Figma component is NOT always a web component | tidy |
+| 44 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| 45 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| 46 | 36 | CSS: compiled where it should inherit? | tidy |
+| 47 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| 48 | 81 | Component contracts move from YAML to JSON | refactor |
+| 49 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 | | | **K — Agentic UI: much later** | |
-| 48 | 76 | WebMCP: agents do UI tasks through Sherpa's own contracts — a core system | explore |
-| 49 | 77 | CONTRACTED UX patterns, so a generated experience is consistent and useful | explore |
-| 50 | 78 | A node-based WORKFLOW creator: make, edit and view patterns and generated workflows | explore |
+| 50 | 76 | WebMCP: agents do UI tasks through Sherpa's own contracts — a core system | explore |
+| 51 | 77 | CONTRACTED UX patterns, so a generated experience is consistent and useful | explore |
+| 52 | 78 | A node-based WORKFLOW creator: make, edit and view patterns and generated workflows | explore |
 
 **Why this order** (reassessed 2026-09-26).
 
@@ -137,14 +139,15 @@ same day:** a View is markup + a JSON Query; "remote" is on the STORE, spoofed
 by a wrapping store in the data layer; build steps 1–5 first (one owner), then
 6–8. Building now, one step per commit.
 
-**Steps 1 to 6 are built (2026-09-27)** — see `QUERY-DESIGN.md` §10 for what
+**Steps 1 to 7 are built (2026-09-27)** — see `QUERY-DESIGN.md` §10 for what
 each did and what is left. The source holds the Query; the bars, the open
 panel, the header, the legends and the grid headings are drawn from it; the
 session saves and restores it. Will's choice A: a heading filter wears its
 field's normal chip, so the `col:` and external chips are gone. Step 6 gave a
 remote store a draft, Apply only for a remote fetch, the pending chip and the
-footer's "nothing to save" (62, 46, 66). **Next: step 7** — a saved View is
-markup plus a Query (70).
+footer's "nothing to save" (62, 46, 66). Step 7: a saved View is JSON — its
+Query onto a clean slate, its defaults on the chips (Records; the Dashboard is
+7b). **Next: 7b, then step 8** — segment and aggregate in a component scope.
 
 ### `[ ]` 70 — EXPLORE: a view definition bundles its filters; one JSON renders the page
 
@@ -176,6 +179,12 @@ Settle before building: is the JSON a superset of `SavedView` or its
 replacement; how it meets the templates (68's templater, 27's own
 templates); and how much of it is 38's "a component DECLARES the data it
 needs". Design first — 15 builds on the answer.
+
+**Settled 2026-09-27: ONE JSON definition** (`T-a-view-is-json`). Built for
+Records in step 7 of 73: `{ label, query, ui }`, applied onto a clean slate
+with its defaults on the chips. Left: the Dashboard's views (7b), and a
+view's LAYOUT as JSON, which the Templater (68) turns into a template —
+`content` markup stays until then.
 
 ### `[ ]` 74 — EXPLORE: the Query builds every group, sort and filter menu; a menu shows its sub-query
 
@@ -352,6 +361,15 @@ Build ONE shared formatter in the data layer, DOM-free, beside
 `format-tick.ts`, so every date label reads the same. More formats will join
 it later; this is the first. (The range chip reads `02 Jan - 11 Dec, 2024`
 today — a third spelling.)
+
+### `[ ]` 82 — BUG: a number chip set by a View shows no value on its face
+
+Found in step 7 (2026-09-27). The At risk view gives the bar an Open tickets
+chip with `> 2`: the chip holds it (its menu reads `2`, op `gt`), the rows
+obey it (13), and a report keeps it — but the chip's face shows no value.
+The number body's value reaches the menu without the chip's label being
+re-derived for a number. Same family as 45 (a picked date showed nothing),
+fixed for dates by `#syncDateLabel`.
 
 ### `[ ]` 16 — BUG: Favourite and Save apply to the Context, not the View
 
@@ -877,6 +895,20 @@ cardinality, a role. `data-empty` is a message string (list), a host boolean
 (grid), a per-pane boolean (transfer-list). Both are rulings, not bugs. The
 question: reserve `data-type` for TEMPLATE SELECTION, as four of its nine uses
 already do?
+
+### `[ ]` 81 — Component contracts move from YAML to JSON
+
+Will, 2026-09-27: *"We can probably accept moving the component YAML contracts
+to JSON, too."* The same rule as views and queries: JSON is what other
+services send and receive. Each `sherpa-<name>.component.yaml` becomes
+`.component.json`, still GENERATED, still validated against
+`schemas/component.v1.json` (already JSON Schema). What reads the YAML today:
+`generate-component-spec`, `validate-component`, `roundtrip-component`,
+`resync-figma`, `compile-def`, `code-map`, `figma-harvest-colours`,
+`scripts/lib/component-ref.mjs` and `generation/data.mjs`, and the MCP
+server (`server.js`, `tools/discover.js`). One sweep, with `spec:check`
+proving every contract round-trips the same before and after. The
+hand-maintained YAML in `scripts/figma-data/` is a separate question.
 
 ### `[ ]` 29 — Rename `src/index.ts` to `src/app.ts`
 
