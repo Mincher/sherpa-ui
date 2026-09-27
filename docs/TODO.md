@@ -190,6 +190,13 @@ building their own. And any filter menu can SHOW the sub-query behind it: the
 conditions it compiles to, readable, perhaps editable. Explore with 49 and 50
 (a conditional chip shows its conditions), which are this seen from a chip.
 
+**No query LANGUAGE — JSON.** Will, 2026-09-27: *"I don't think we should
+construct a query language for it. We're probably best served using JSON. As
+long as the whole situation is captured and can be recreated then we're
+good."* The sub-query IS the field's slice of the Query — its `FieldReading`,
+condition rows and all — shown and saved as JSON, and restored by
+`setQuery`. No grammar, no parser, no second spelling of a condition.
+
 ### `[ ]` 62 — Apply and Discard only for a REMOTE fetch; a debug flag spoofs one
 
 **Designed with 73 — see `docs/QUERY-DESIGN.md`.**
