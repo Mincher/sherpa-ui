@@ -91,7 +91,7 @@ table IS the order.
 
 ## B — The foundation: design, then build
 
-### `[ ]` 73 — EXPLORE: one compiled QUERY, built as the reader sets it up, run on Apply
+### `[~]` 73 — EXPLORE: one compiled QUERY, built as the reader sets it up, run on Apply
 
 Will, 2026-09-26: *"A query language that is compiled as conditions
 (grouping, sorting, filtering, conditions, segmentation, aggregation etc.)
@@ -131,6 +131,14 @@ page Will reviews before any of it is built.
 same day:** a View is markup + a JSON Query; "remote" is on the STORE, spoofed
 by a wrapping store in the data layer; build steps 1–5 first (one owner), then
 6–8. Building now, one step per commit.
+
+**Steps 1 to 5 are built (2026-09-27)** — see `QUERY-DESIGN.md` §10 for what
+each did and what is left. The source holds the Query; the bars, the open
+panel, the header, the legends and the grid headings are drawn from it; the
+session saves and restores it. Will's choice A: a heading filter wears its
+field's normal chip, so the `col:` and external chips are gone. **Next: step
+6** — draft and applied, the spoofed remote store, pending, dirty and Discard
+(62, 46, 66).
 
 ### `[ ]` 70 — EXPLORE: a view definition bundles its filters; one JSON renders the page
 
