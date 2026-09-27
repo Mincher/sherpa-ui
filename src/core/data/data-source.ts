@@ -307,6 +307,7 @@ export class DataSource extends EventTarget {
     this.dispatchEvent(new CustomEvent('scope-change', { detail: { scopes: this.scopes } }));
     for (const field of new Set([...before, ...this.selectedFields])) {
       this.dispatchEvent(new CustomEvent('selection-change', { detail: { field } }));
+      this.#draw(field);
     }
     const drawn: Array<void | Promise<void>> = [];
     for (const [el, { scope }] of this.#bound) {
@@ -655,7 +656,12 @@ export class DataSource extends EventTarget {
     const state = this.selection(field);
     if (state.fieldState === 'suspended') return;
     const picked = state.values.filter((v) => v.state === 'picked').map((v) => v.value);
-    const reading = { picked, ...(state.conditions.length ? { conditions: state.conditions } : {}) };
+    /* The WHOLE answer — its operator and its typed text too: "is not churned"
+       drawn as "churned" is the opposite answer, and "contains an" drawn
+       without its text is none. */
+    // Its rows as the STATE reads them — an empty row is none.
+    const { conditions: _raw, ...held } = answerOf(this.#reading(field) ?? {});
+    const reading = { ...held, picked, ...(state.conditions.length ? { conditions: state.conditions } : {}) };
     for (const [el, { scope }] of this.#bound) {
       if (scope === home || (Array.isArray(scope) && scope.includes(home))) {
         el.drawReading?.(field, reading, home);
@@ -795,6 +801,16 @@ export class DataSource extends EventTarget {
     const before = this.#applied.scopes[name]?.holds ?? [];
     // A no-op must not wake every listener — a bar re-renders on this.
     if (before.length === next.length && before.every((f, i) => f === next[i])) return;
+    /* LET GO, and held nowhere else: its answer goes with it. Removing a chip
+       is a clear — without this the filter moved to the View, and kept
+       filtering with no chip on screen. Cleared FIRST, while this scope still
+       holds it, so the controls over this scope are drawn the clear.
+       TRAP T-one-query-one-owner */
+    const elsewhere = (field: string): boolean => Object.entries(this.#applied.scopes)
+      .some(([id, s]) => id !== name && !s.narrows && s.holds.includes(field));
+    for (const field of before) {
+      if (!next.includes(field) && !elsewhere(field) && this.#reading(field)) this.select(field, []);
+    }
     this.#scope(name).holds = next;
     this.#rehome();
     this.dispatchEvent(new CustomEvent('scope-change', { detail: { scope: name } }));
@@ -1375,11 +1391,12 @@ function mergeInto(el: Populatable, path: string, value: unknown): unknown {
 }
 
 /** Does a reading answer anything? CONDITIONS count — a field answered only by
- *  rows has no picks and no text. TRAP T-many-conditions-are-one-reading */
+ *  rows has no picks and no text — but an EMPTY row does not: a cleared menu
+ *  keeps one. TRAP T-many-conditions-are-one-reading */
 function answers(reading: FieldReading): boolean {
   return (reading.picked ?? []).length > 0
     || (reading.text ?? '').trim() !== ''
-    || (reading.conditions ?? []).length > 0;
+    || (reading.conditions ?? []).some((r) => (r.text ?? '').trim() !== '' || (r.picked ?? []).length > 0);
 }
 
 /** The ANSWER keys of a reading only — a bar's reading also carries its label

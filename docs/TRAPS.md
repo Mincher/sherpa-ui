@@ -8999,7 +8999,6 @@ TRAP T-a-conditioned-chip-reads-as-success
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
-- Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 
@@ -13675,11 +13674,20 @@ Step 3: the session keeps the Query; `setQuery` restores it and draws each
 bound bar (`drawScope`) — see `T-a-reload-replays-the-readers-answers`.
 5a: a legend's answer is a scope that `narrows` its chart (`source.write`);
 `ownParts` is gone, and the legend now survives a reload with the rest.
+5b: a column heading is a view of its field's reading too — the grid is
+bound to the `data` scope and drawn (`drawReading`); its commit is a
+`select`, and a field with no chip gets its NORMAL chip (Will, 2026-09-27:
+no `col:` chips). A field a scope lets go of, held nowhere else, loses its
+answer — removing a chip is a clear. The draw carries the WHOLE answer: an
+operator dropped reads "is not churned" as "churned", and a typed text
+dropped reads "contains an" as nothing.
 
 - Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/query.ts`
 - Site: `src/data.ts`
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
+- Site: `test/e2e/reforged-view-chips.spec.ts`
 - Site: `test/unit/query.test.mjs`

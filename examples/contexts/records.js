@@ -9,7 +9,7 @@
  */
 import {
   DataSource, VIEW_SCOPE, SherpaToast, persistView, viewOptions, onViewPicked, applyViewSnapshot,
-  countBy, reduceRows, bindSelection, andFilter, picksClause, stateClause,
+  countBy, reduceRows, bindSelection,
   seriesBy, deltaPercent, saveFilterAs, loadSavedFilters, deleteSavedFilter, labelId,
 } from '../../dist/index.js';
 import { namePrompt } from './ask-name.js';
@@ -57,19 +57,6 @@ export async function init(root, { session, view } = {}) {
     source.declareField(field, { type: 'number' });
   }
 
-  /* One clause per filtered column heading. The grid reports a ready
-     FilterClause and lights the column but does not narrow its own rows —
-     combining them is this Context's job. Kept by field, so a second condition on
-     one column replaces the first rather than fighting it. */
-  const columnClauses = new Map();
-
-  /* THREE WRITERS, THREE NAMED PARTS: the saved view, this page's chips, and
-     the grid's column headings each own a `contribute` key and the source ANDs
-     them — so no writer has to know about the others. */
-  const pushColumns = () => {
-    const clauses = [...columnClauses.values()];
-    source.contribute('columns', andFilter(clauses));
-  };
 
   /** Already on the header bar, so never offered again. */
   const HEADER_HELD = ['view', 'customer', 'region', 'dateRange'];
@@ -626,6 +613,8 @@ export async function init(root, { session, view } = {}) {
       groups: src.groups(),
     }),
     ignore: ['filter-change'],
+    // Its HEADINGS are drawn each answer in the `data` scope. TRAP T-one-query-one-owner
+    scope: 'data',
     signal,
   });
   source.bind(pager, { signal });
@@ -759,33 +748,6 @@ export async function init(root, { session, view } = {}) {
   const FIELD_CHIPS = new Set(['status', 'plan', 'tier', 'owner']);
   for (const field of FIELD_CHIPS) source.declareValues(field, valuesOf(field));
 
-  /* The grid's column menu re-reads when ANY control changes a field. The bar
-     and the open panel need none of this: the source draws them.
-     TRAP T-one-query-one-owner */
-  /* The headings this mirror has written, so an empty answer clears only its
-     own. TRAP T-an-empty-selection-never-wipes-a-condition */
-  const mirrored = new Set();
-  source.addEventListener('selection-change', (e) => {
-    const { field } = e.detail;
-    const state = source.selection(field);
-    /* A SUSPENDED field keeps its values and applies none of them.
-       TRAP T-grid-suspend-is-not-clear */
-    if (state.fieldState === 'suspended') return;
-    /* The grid's heading takes a ready CLAUSE, which is the one shape that
-       carries either answer. */
-    const clause = stateClause(state) ?? null;
-    /* …and an EMPTY answer clears only what THIS mirror wrote. `At risk` sets
-       `status ne churned` on the grid itself; the view's own reset emptied
-       Status 13ms later, and this cleared the view's filter with it. A
-       condition typed in the heading is its `col:` chip's, not this mirror's.
-       TRAP T-an-empty-selection-never-wipes-a-condition */
-    if (clause) {
-      grid.setColumnFilter(field, clause);
-      mirrored.add(field);
-    } else if (mirrored.delete(field)) {
-      grid.setColumnFilter(field, null);
-    }
-  }, { signal });
 
   /* NO `ignore` for `quick-filter-change`: the bound source asks the bar for
      its `readings` — and its presets' `savedReadings` — and applies them
@@ -801,87 +763,24 @@ export async function init(root, { session, view } = {}) {
   /* The open PANEL is drawn each answer in both scopes — it steers nothing
      through the source, so it is bound read-only. TRAP T-an-open-panel-follows-the-data-layer */
   if (panel) source.bind(panel, { readonly: true, steerOnly: true, scope: [VIEW_SCOPE, 'data'], signal });
-  qft.addEventListener('quick-filter-change', (e) => {
-    /* An external chip's body is a TOGGLE: off means "stop applying this", not
-       "delete it" — only REMOVE deletes. So this suspends and restores the
-       clause and never touches the chip. An external chip shows in neither
-       `active` nor `values`, so the toolbar reports it in `external`. */
-    for (const [id, on] of Object.entries(e.detail.external ?? {})) {
-      if (!id.startsWith('col:')) continue;
-      const field = id.slice(4);
-      /* The grid keeps the clause; this only says whether it is APPLIED.
-         Suspended, the heading stops reading active — a lit column that filters
-         nothing is a lie. */
-      grid.suspendColumnFilter(field, !on);
-      const clause = on ? grid.columnClause(field) : null;
-      if (clause) columnClauses.set(field, clause);
-      else columnClauses.delete(field);
-    }
-    pushColumns();
-  });
-
-  /* The column chip's CARET opens that column's own grid menu, so the two
-     places cannot drift. The caret, not the body — the body is the on/off
-     toggle, handled above. */
-  qft.addEventListener('click', (e) => {
-    const path = e.composedPath();
-    if (!path.some((n) => n.classList?.contains?.('caret'))) return;
-    const chip = path.find((n) => n.dataset?.id?.startsWith?.('col:'));
-    if (!chip) return;
-    grid.openColumnFilter(chip.dataset.id.slice(4), chip);
-  }, true); /* CAPTURE: the chip's caret handler calls stopPropagation() to
-               guard its menu, so a bubbling listener here never runs. */
-
-  /* COLUMN FILTERS — the funnel in each column heading. The clause arrives
-     ready; this Context decides what it means for the query, because only it knows
-     what else is filtering. It also goes onto the toolbar as a chip, so a
-     sideways scroll still shows the view is narrowed and by what. */
+  /* COLUMN FILTERS — the funnel in each column heading. Its answer is the
+     FIELD's, in the Query, so a heading and its chip are two views of one
+     reading. A field with no chip yet gets its NORMAL chip — the one Add
+     offers — so the bar says what the rows are under. Will, 2026-09-27.
+     TRAP T-one-query-one-owner */
   grid.addEventListener('column-filter-change', (e) => {
-    const { field, header, clause, label } = e.detail;
-
-    /* A FIELD THE SOURCE OWNS. The heading writes the same selection a chip
-       writes, so the two can never say different things — and no second
-       `col:` chip appears beside the one already on the bar. Only a LIST
-       condition maps onto a selection; "Contains ana" has no ticks, so it
-       still becomes its own chip below. TRAP T-one-field-one-filter-menu */
-    if (FIELD_CHIPS.has(field)) {
-      const picks = Array.isArray(clause?.[2]) ? clause[2].map(String)
-        : clause?.[1] === 'eq' ? [String(clause[2])]
-        : null;
-      if (picks || !clause) {
-        source.select(field, picks ?? []);
-        return;
-      }
-    }
-
-    if (clause) columnClauses.set(field, clause);
-    else columnClauses.delete(field);
-    /* The chip first, then the contribution. `quick-filter-change` now lands
-       in each FIELD's own slot and leaves named parts alone, so this order is
-       no longer load-bearing — it just reads in the order it happens.
-       TRAP T-one-query-builder-in-the-data-layer */
-    /* THE CONDITION, not only the phrase. Without it the chip's caret read
-       "Contains: ana" and opened nothing at all.
-       TRAP T-an-external-chip-caret-must-open-its-condition */
-    qft.addExternalFilter({
-      id: `col:${field}`, label: header, value: label,
-      ...(clause ? { op: clause[1] } : {}),
-      ...(typeof clause?.[2] === 'string' ? { text: clause[2] } : {}),
-    });
-    pushColumns();
-  });
-
-  /* Taking the chip off the bar must reach back and clear the column, or the
-     heading stays lit. `clearColumnFilter` is silent by design — echoing the
-     event back would clear the clause twice. */
-  qft.addEventListener('filter-remove', (e) => {
-    const id = e.detail?.id ?? '';
-    if (!id.startsWith('col:')) return;
-    const field = id.slice(4);
-    columnClauses.delete(field);
-    grid.clearColumnFilter(field);
-    pushColumns();
-  });
+    const { field, reading } = e.detail;
+    source.select(field, reading?.picked ?? [], reading ?? {});
+    void showChip(field, reading);
+  }, { signal });
+  /** Put a field's NORMAL chip on the bar, drawn with its answer — silently,
+   *  so the bar never reports it half-built. */
+  const showChip = async (field, reading) => {
+    if (!reading || qft.heldIds.includes(field)) return;
+    if (!(qft.offering ?? []).some((f) => f.id === field)) return;
+    await qft.drawScope({ holds: [...qft.heldIds, field], readings: { [field]: reading } });
+    syncScopes();
+  };
   /* SAVE PACKS: the bar asks, this page names the filter and keeps it over the
      CUSTOMER records — not over this page — and the bar shows it in place of
      the fields it came from. TRAP T-save-packs-the-fields-into-one-chip
@@ -913,15 +812,9 @@ export async function init(root, { session, view } = {}) {
     /* What the grid contributes: the view names it, because only this view
        knows a column filter belongs in a saved view and a scroll position does
        not. Each entry is an ElementNode.state block. */
-    grid: () => {
-      const state = { select: [grid.selectedKeys] };
-      // A LIST OF CALLS: setColumnFilter runs once per filtered column, and a
-      // state block is a map — one method, one key.
-      const calls = [...columnClauses].map(([field, clause]) => [field, clause]);
-      if (calls.length) state.setColumnFilter = calls.length === 1 ? calls[0] : calls;
-      return state;
-    },
-  /* NOT the filter: the bars replay their own answers (below), and a restored
+    // NOT its column filters: they are readings, and the Query restores them.
+    grid: () => ({ select: [grid.selectedKeys] }),
+  /* NOT the filter: the session keeps the Query (below), and a restored
      COMBINED filter is one no chip shows. TRAP T-a-reload-replays-the-readers-answers */
   }, { filter: false });
 
@@ -1047,47 +940,6 @@ export async function init(root, { session, view } = {}) {
      the query AND every component's state, so picking one reconfigures the
      screen. `onViewPicked` applies it; `after` is the half only this page knows,
      because the query here is composed from named parts. */
-  /* THE GRID'S COLUMN FILTERS, told to the source and shown on the bar — after
-     a view or a restore set them on the grid, which is silent.
-     TRAP T-a-restored-filter-still-needs-its-chip */
-  const syncColumns = () => {
-    /* The snapshot set the clauses ON THE GRID; the source still has to be
-       told. Cleared first — a view naming no column filters means none. */
-    columnClauses.clear();
-    queueMicrotask(() => {
-      for (const col of columns) {
-        const clause = grid.columnClause(col.field);
-        if (clause) columnClauses.set(col.field, clause);
-        /* AND ONTO THE BAR. `setColumnFilter` is silent by design, so a view
-           that restores a column filter fires no `column-filter-change` and
-           the chip an interaction would have added never appears — the grid
-           narrows and nothing says why.
-
-           A FIELD_CHIPS field is drawn by its own chip ONLY where the clause
-           is a pick list, which is all `source.select` can hold. `At risk`
-           restores `status ne churned`, which is not — so it needs a `col:`
-           chip like any other condition, or nothing on the bar reports it.
-           That is the same split the live `column-filter-change` handler
-           makes. TRAP T-a-restored-filter-still-needs-its-chip */
-        const picks = Array.isArray(clause?.[2]) ? clause[2].map(String)
-          : clause?.[1] === 'eq' ? [String(clause[2])]
-          : null;
-        if (FIELD_CHIPS.has(col.field) && (picks || !clause)) {
-          source.select(col.field, picks ?? []);
-          /* …and a `col:` chip an EARLIER view put up for a condition goes: a
-             field chip answers it now, and the old phrase stayed on the bar. */
-          qft.addExternalFilter({ id: `col:${col.field}`, label: col.header, value: null });
-          continue;
-        }
-        qft.addExternalFilter({
-          id: `col:${col.field}`,
-          label: col.header,
-          value: clause ? grid.columnLabel(col.field) : null,
-        });
-      }
-      pushColumns();
-    });
-  };
 
   /* The half of a view only this page knows: the query here is composed from
      named parts. */
@@ -1096,12 +948,21 @@ export async function init(root, { session, view } = {}) {
        the WHOLE query and clears the named parts with it, so the view's own
        clause goes back under its own key. The order is the whole subtlety. */
     source.contribute('view', view.snapshot.source?.filter);
+    /* THE VIEW'S HEADING FILTERS — its snapshot set them on the grid, silently.
+       READ FIRST: the bar's reset below draws every heading from the Query and
+       would empty them. Then each goes in as its field's reading, with its
+       normal chip. TRAP T-a-restored-filter-still-needs-its-chip
+       TRAP T-an-empty-selection-never-wipes-a-condition */
+    const headings = columns.map((c) => [c.field, grid.columnReading(c.field)]).filter(([, r]) => r);
     /* THE GRID'S BAR RESETS TOO. `setState` cleared every field's answer, so a
        chip left lit would show a filter the rows no longer obey. Group and
        Sort stay: the view has just set its own.
        TRAP T-a-view-change-resets-the-header-chips */
     qft.clearAll({ organise: false });
-    syncColumns();
+    for (const [field, reading] of headings) {
+      source.select(field, reading.picked ?? [], reading);
+      void showChip(field, reading);
+    }
   };
 
   /* The View on screen — what the session's kept answers belong to. */
@@ -1145,9 +1006,7 @@ export async function init(root, { session, view } = {}) {
   for (const bar of [headerBar, qft]) bar?.addEventListener('quick-filter-change', keep, { signal });
   const kept = session?.get?.(FILTERS_KEY);
   restored = (async () => {
-    /* The grid's own column filters FIRST — the persisted snapshot put them on
-       the grid silently, and its chips must be on the bar before it is drawn. */
-    syncColumns();
+    // After the start View's own heading filters have reached the source.
     await new Promise((r) => queueMicrotask(r));
     if (kept?.view === startView && kept.query) {
       // Both bars are bound to their scope, so the source draws them.

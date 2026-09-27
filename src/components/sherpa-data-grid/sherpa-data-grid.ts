@@ -770,6 +770,8 @@ export class SherpaDataGrid extends SherpaElement {
       // Ready for a DataSource — the <option> values ARE store FilterOps.
       // TRAP T-grid-number-clause-must-coerce.
       clause: held ? this.#columnClause(field, held, col?.type) : null,
+      // …and as a READING, which the data layer keeps. TRAP T-one-query-one-owner
+      reading: held ? this.#columnReading(held) : null,
       // What a toolbar chip shows: "Contains: ana". The field half is `header`.
       label: held ? this.#columnFilterLabel(held) : null,
     });
@@ -976,6 +978,24 @@ export class SherpaDataGrid extends SherpaElement {
     if (!held) return null;
     const col = this.#columns.find((c) => c.field === field);
     return this.#columnClause(field, held, col?.type);
+  }
+
+  /** One column's filter as a READING, or null — what a saved view set on it. */
+  columnReading(field: string): FieldReading | null {
+    const held = this.#columnFilters.get(field);
+    return held ? this.#columnReading(held) : null;
+  }
+
+  /**
+   * drawReading(field, reading) — a bound source tells this grid one column's
+   * answer, whoever set it: a chip, the panel, a restored Query. SILENT.
+   * TRAP T-one-query-one-owner
+   */
+  drawReading(field: string, reading: FieldReading): void {
+    // Kept even before the columns arrive — a restore draws first.
+    const col = this.#columns.find((c) => c.field === field);
+    const clause = readingClause({ field, ...(col?.type ? { type: col.type as FieldType } : {}) }, reading);
+    this.setColumnFilter(field, (clause as unknown[] | undefined) ?? null);
   }
 
   /**

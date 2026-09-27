@@ -236,3 +236,26 @@ test('setQuery restores the WHOLE Query and draws each bound scope — nothing r
   await src.setQuery({ scopes: {} });
   assert.deepEqual(src.query.applied, saved);
 });
+
+test('a field a scope lets go of, held nowhere else, loses its answer — removing a chip is a clear', async () => {
+  const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
+  src.hold('grid', ['status', 'region']);
+  src.select('status', ['active']);
+  src.select('region', ['EMEA']);
+  // Region moves UP: still held, so its answer goes with it.
+  src.hold(VIEW, ['region']);
+  src.hold('grid', ['status']);
+  assert.deepEqual(src.query.applied.scopes[VIEW].readings, { region: { picked: ['EMEA'] } });
+  // Status is let go of and held nowhere: gone, and the rows come back.
+  src.hold('grid', []);
+  assert.equal(src.reading(VIEW, 'status'), undefined);
+  assert.equal(src.selection('status').fieldState, 'off');
+  assert.deepEqual(ids(src.state.filter), [1, 2, 4]);
+});
+
+test('an EMPTY condition row is no answer — a cleared menu keeps one', async () => {
+  const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
+  src.select('owner', [], { op: 'contains', text: '', conditions: [{ op: 'eq' }], suspended: true });
+  assert.equal(src.reading(VIEW, 'owner'), undefined);
+  assert.deepEqual(src.selectedFields, []);
+});

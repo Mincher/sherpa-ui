@@ -531,7 +531,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         (HTMLElement & { conditions?: readonly FieldCondition[] }) | null;
       if (!menu) return;
 
-      const rows = reading.conditions ?? [];
+      /* A TYPED answer — a heading's "contains @a" — is one condition row.
+         TRAP T-many-conditions-are-one-reading */
+      const typed = (reading.text ?? '').trim();
+      // An EMPTY row is no answer — a cleared menu keeps one.
+      const given = (reading.conditions ?? [])
+        .filter((r) => (r.text ?? '').trim() !== '' || (r.picked ?? []).length > 0);
+      const rows = given.length ? given
+        : typed ? [{ op: reading.op ?? DEFAULT_OP, text: typed }] : [];
       if (rows.length) {
         /* The MENU refuses custom mode unless the field opted in, and a
            steer IS that opt-in reaching it. */
@@ -547,6 +554,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
          in is the reader's choice, and a steer that flipped it back to the
          list emptied the reading the bar reports one tick later — the
          condition then read as gone and the filter cleared itself. */
+      // The OPERATOR goes with the picks, or "is not" reports back as "is".
+      if (reading.op) menu.dataset['op'] = reading.op;
       this.setChipValues(id, (reading.picked ?? []).map(String));
       return;
     }

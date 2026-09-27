@@ -309,8 +309,8 @@ capabilities:
     api: js-methods
     description: >-
       callable from a view definition's state block (setColumnFilter, supersedeColumns,
-      columnClause, columnLabel, suspendColumnFilter, openColumnFilter, clearColumnFilter,
-      actionsFor, select, clearSelection). See $extensions.sherpa.methods.
+      columnClause, columnReading, drawReading, columnLabel, suspendColumnFilter, openColumnFilter,
+      clearColumnFilter, actionsFor, select, clearSelection). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: column-resize
@@ -354,6 +354,7 @@ events:
       header: unknown
       label: unknown
       op: unknown
+      reading: unknown
       to: unknown
       value: unknown
   - $type: event
@@ -480,6 +481,14 @@ $extensions:
         name: columnClause
         args: "field: string"
         description: One column's filter as a ready FilterClause, or null. TRAP
+      - $type: method
+        name: columnReading
+        args: "field: string"
+        description: One column's filter as a READING, or null — what a saved view set on it.
+      - $type: method
+        name: drawReading
+        args: "field: string, reading: FieldReading"
+        description: drawReading(field, reading) — a bound source tells this grid one column's
       - $type: method
         name: columnLabel
         args: "field: string"

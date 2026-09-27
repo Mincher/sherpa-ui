@@ -389,11 +389,12 @@ test('a view change resets a header chip the new view does not set', async ({ pa
 
 /**
  * A VIEW'S OWN COLUMN CONDITION HOLDS. At risk sets `status ne churned` on the
- * grid; the view's reset emptied Status a moment later and the selection mirror
- * wiped the condition — 20 rows where 13 are at risk. Going back to All left
- * the old `col:status` phrase on the bar. TRAP T-an-empty-selection-never-wipes-a-condition
+ * grid; the view's reset emptied Status a moment later and wiped the condition
+ * — 20 rows where 13 are at risk. It is Status's own chip that shows it, as a
+ * condition (Will, 2026-09-27: a heading filter wears the field's NORMAL chip),
+ * and All turns it off. TRAP T-an-empty-selection-never-wipes-a-condition
  */
-test('At risk keeps its own column condition, and All drops its chip', async ({ page }) => {
+test('At risk keeps its own column condition on the Status chip, and All clears it', async ({ page }) => {
   await page.goto('http://localhost:4200/?context=records');
   await page.waitForFunction(() =>
     !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot
@@ -408,17 +409,60 @@ test('At risk keeps its own column condition, and All drops its chip', async ({ 
     const grid = document.querySelector('#context-root sherpa-data-grid') as HTMLElement & {
       columnClause(f: string): unknown };
     const chip = document.querySelector('#context-root sherpa-quick-filter-toolbar')!.shadowRoot!
-      .querySelector('.chip[data-id="col:status"]');
+      .querySelector<HTMLElement>('.chip[data-id="status"]')!;
     return {
       total: (window as unknown as { sherpa: { source: { debugState(): { total: number } } } })
         .sherpa.source.debugState().total,
       clause: grid.columnClause('status'),
-      chip: chip ? chip.hasAttribute('data-current') : null,
+      chip: `${chip.hasAttribute('data-current') ? 'on' : 'off'}:${chip.dataset['condition'] ?? ''}`,
     };
   });
 
   await pick('risk');
-  await expect.poll(read).toEqual({ total: 13, clause: ['status', 'ne', 'churned'], chip: true });
+  await expect.poll(read).toEqual({ total: 13, clause: ['status', 'ne', 'churned'], chip: 'on:custom' });
   await pick('all');
-  await expect.poll(read).toEqual({ total: 100, clause: null, chip: null });
+  await expect.poll(read).toEqual({ total: 100, clause: null, chip: 'off:' });
+});
+
+/**
+ * A HEADING FILTER WEARS ITS FIELD'S NORMAL CHIP — the one Add offers — so the
+ * bar says what the rows are under (Will, 2026-09-27). One reading in the
+ * Query, two views of it: it survives a reload in both, and REMOVING the chip
+ * clears the heading and the rows. That removal used to move the answer to
+ * the View, where it kept filtering with no chip. TRAP T-one-query-one-owner
+ */
+test('a heading filter adds its normal chip; a reload keeps both; Remove clears both', async ({ page }) => {
+  const loaded = () => page.waitForFunction(() =>
+    (window as unknown as { sherpa?: { source?: { debugState(): { loaded: boolean } } } })
+      .sherpa?.source?.debugState().loaded);
+  const read = () => page.evaluate(() => {
+    const grid = document.querySelector('#context-root sherpa-data-grid') as HTMLElement & {
+      columnClause(f: string): unknown };
+    const chip = document.querySelector('#context-root sherpa-quick-filter-toolbar')?.shadowRoot
+      ?.querySelector<HTMLElement>('.chip[data-id="email"]');
+    return {
+      total: (window as unknown as { sherpa?: { source?: { debugState(): { total: number } } } })
+        .sherpa?.source?.debugState().total,
+      heading: grid?.columnClause('email') ?? null,
+      chip: chip ? `${chip.hasAttribute('data-current') ? 'on' : 'off'}:${chip.dataset['condition'] ?? ''}` : 'none',
+    };
+  });
+  await page.goto('http://localhost:4200/?context=records');
+  await loaded();
+  await page.evaluate(() => {
+    const grid = document.querySelector('#context-root sherpa-data-grid') as HTMLElement & {
+      setColumnFilter(f: string, c: unknown[]): void };
+    grid.setColumnFilter('email', ['email', 'contains', 'an']);
+    // The commit the heading's own menu sends.
+    grid.shadowRoot!.querySelector('.head-cell[data-field="email"] .head-filter')!
+      .dispatchEvent(new CustomEvent('menu-apply', { bubbles: true, composed: true, detail: {} }));
+  });
+  const on = { total: 18, heading: ['email', 'contains', 'an'], chip: 'on:custom' };
+  await expect.poll(read).toEqual(on);
+  await page.reload();
+  await loaded();
+  await expect.poll(read).toEqual(on);
+  await page.evaluate(() => (document.querySelector('#context-root sherpa-quick-filter-toolbar') as
+    HTMLElement & { removeFilter(id: string): void }).removeFilter('email'));
+  await expect.poll(read).toEqual({ total: 100, heading: null, chip: 'none' });
 });
