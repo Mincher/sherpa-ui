@@ -46,24 +46,24 @@ export const DASHBOARD_VIEWS = {
        capacity names the devices that are nearly full, so it wants a table and
        a distribution. */
     /* `content` is the view's own MARKUP until the Templater (68) builds a view
-       from JSON — parsed through the allow-list in core/view-markup.ts on the
-       way in. Its ids are what this page binds. */
+       from JSON — parsed through the allow-list in core/view-markup.ts. Its
+       components ask for their data; `ui` below configures them by id. Its
+       cards go STRAIGHT into the page's grid (`data-view-content`), each
+       spanning its columns — a wrapper would be one cell of it. */
     content: `
-      <div class="sherpa-grid">
-        <!-- A histogram, not a donut: storage is continuous. -->
-        <sherpa-container data-col-span="full" data-row-span="4">
-          <sherpa-container-header slot="header"
-            data-heading="Storage used, by band"></sherpa-container-header>
-          <sherpa-barchart id="hist" data-label="Devices per storage band"
-            data-segment-field="storage" data-bands="0,20,40,60,80,100"></sherpa-barchart>
-        </sherpa-container>
+      <!-- A histogram, not a donut: storage is continuous. -->
+      <sherpa-container data-col-span="full" data-row-span="4">
+        <sherpa-container-header slot="header"
+          data-heading="Storage used, by band"></sherpa-container-header>
+        <sherpa-barchart id="hist" data-label="Devices per storage band"
+          data-segment-field="storage" data-bands="0,20,40,60,80,100"></sherpa-barchart>
+      </sherpa-container>
 
-        <sherpa-container data-col-span="full" data-row-span="6">
-          <sherpa-container-header slot="header"
-            data-heading="Fullest devices"></sherpa-container-header>
-          <sherpa-data-grid id="fullest"></sherpa-data-grid>
-        </sherpa-container>
-      </div>
+      <sherpa-container data-col-span="full" data-row-span="6">
+        <sherpa-container-header slot="header"
+          data-heading="Fullest devices"></sherpa-container-header>
+        <sherpa-data-grid id="fullest"></sherpa-data-grid>
+      </sherpa-container>
     `,
     query: {
       v: 1,

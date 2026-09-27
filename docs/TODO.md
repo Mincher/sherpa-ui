@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**60 open.** Reassessed 2026-09-26: the bugs that lie first, then the
+**61 open.** Reassessed 2026-09-26: the bugs that lie first, then the
 FOUNDATION — the one compiled query, the view definition and when Apply runs —
 before the filter features that stand on it. Numbers are ids, not order; the
 table IS the order.
@@ -41,6 +41,7 @@ table IS the order.
 | 15 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
 | 15aa | 94 | A number (and range) filter menu needs Apply and Cancel buttons | bug |
 | 15ab | 95 | Firefox: a remote chip holding a draft is not marked pending | bug |
+| 15ac | 96 | A grid with few columns leaves an empty band on the right of its card | bug |
 | | | **D — Filters: Will's features, on the foundation** | |
 | 15c | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
 | 15d | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
@@ -278,6 +279,15 @@ fails in Firefox every time — after a tick in a remote chip's open menu, the
 chip has no `data-pending`. Chromium and WebKit pass. Not the provider work:
 the toolbar as committed before P3b fails the same way. Start at the menu's
 `dirty` and the bar's `#queuePending` (TODO 46, `T-a-pending-chip-has-no-fill`).
+
+### `[ ]` 96 — A grid with few columns leaves an empty band on the right of its card
+
+Seen 2026-09-27 in the Dashboard's Capacity planning View: five columns at the
+default 160px make an 800px table in a 1350px card. The grid is a FIXED table
+whose width is the sum of its `<col>`s (`inline-size: 0`,
+`T-col-width-not-inline-size`), so a column never grows to fill. Decide what
+fills the slack — the last column, or every column in proportion — without
+breaking a dragged width or the pinned edges.
 
 ### `[ ]` 70 — EXPLORE: a view definition bundles its filters; one JSON renders the page
 
