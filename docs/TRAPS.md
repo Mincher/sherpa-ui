@@ -13294,7 +13294,23 @@ pressed one to prove "nothing happens" now asserts the button is off.
 A field that only ARRANGES (group, sort) is left out of the snapshot; it acts
 at once and has nothing to apply.
 
+**Step 6 of the Query moves the rule into the data layer.** Apply is only for
+a REMOTE fetch (Will, 2026-09-26), and remote is a fact about the STORE
+(`store.remote`; `spoofRemote()` makes one for now). Over a remote store the
+source keeps a DRAFT Query beside the applied one: every write lands in the
+draft, the rows wait, and `commit(scope?)` sends it; `discard(scope?)` puts
+the applied answers back and draws them. `pending(field)` and `dirty(scope?)`
+are the difference, pushed to each bound control as `data-pending` (a field
+list) and `data-dirty`. Over a local store the draft IS the applied Query —
+one object — so nothing is ever pending. A scope that narrows one component
+(a legend) applies at once even on a remote store: its rows are already here.
+
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/spoof-remote.ts`
+- Site: `src/core/data/store.ts`
+- Site: `src/data.ts`
+- Site: `test/unit/query.test.mjs`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `test/e2e/reforged-panel-apply.spec.ts`
 

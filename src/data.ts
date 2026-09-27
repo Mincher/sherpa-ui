@@ -247,6 +247,10 @@ export {
   type Compiled,
 } from './core/data/query.js';
 
+/* A store that ACTS remote — slow, and failing when told to — until there is a
+   real one. TRAP T-apply-and-discard-wait-for-a-change */
+export { spoofRemote, type SpoofOptions } from './core/data/spoof-remote.js';
+
 /* ONE CHANNEL for "your assumption was wrong" — a host routes it, silences it
    or lets it warn. TRAP T-a-broken-assumption-reports */
 export { report, onReport, type Report, type Reporter } from './core/data/report.js';

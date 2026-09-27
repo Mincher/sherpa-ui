@@ -163,6 +163,9 @@ export interface Store extends EventTarget {
    * TRAP T-a-record-has-a-time-of-its-own
    */
   readonly time?: string | undefined;
+  /** Its loads reach OUTSIDE the data layer, so a filter change waits for Apply.
+   *  TRAP T-apply-and-discard-wait-for-a-change */
+  readonly remote?: boolean;
 }
 
 /** Fired after an insert, update or remove. A DataSource just RELOADS. */

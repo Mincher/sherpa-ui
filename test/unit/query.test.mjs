@@ -9,7 +9,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-const { compile, VIEW, DataSource, ArrayStore, filterRows } =
+const { compile, VIEW, DataSource, ArrayStore, filterRows, spoofRemote } =
   await import(new URL('../../dist/data.js', import.meta.url));
 
 const ROWS = [
@@ -258,4 +258,94 @@ test('an EMPTY condition row is no answer — a cleared menu keeps one', async (
   src.select('owner', [], { op: 'contains', text: '', conditions: [{ op: 'eq' }], suspended: true });
   assert.equal(src.reading(VIEW, 'owner'), undefined);
   assert.deepEqual(src.selectedFields, []);
+});
+
+/* ── Step 6: draft and applied, on a REMOTE source ─────────────────────
+   TRAP T-apply-and-discard-wait-for-a-change */
+
+const remote = async (fail = 0) => {
+  const src = new DataSource({ store: spoofRemote(new ArrayStore(ROWS, { key: 'id' }), { delay: 0, fail }) });
+  await src.load();
+  return src;
+};
+
+test('a LOCAL source applies at once — nothing is ever pending', async () => {
+  const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
+  src.select('status', ['trial']);
+  assert.deepEqual(ids(src.state.filter), [2]);
+  assert.equal(src.pending('status'), false);
+  assert.equal(src.dirty(), false);
+});
+
+test('a REMOTE source edits a draft: pending until commit, and the rows wait', async () => {
+  const src = await remote();
+  src.hold('grid', ['status']);
+  src.select('status', ['trial']);
+  // The reader sees the draft; the rows are still under the applied Query.
+  assert.deepEqual(src.selection('status').values.filter((v) => v.state === 'picked').map((v) => v.value), ['trial']);
+  assert.equal(src.state.filter, undefined);
+  assert.equal(src.pending('status'), true);
+  assert.equal(src.dirty('grid'), true);
+  assert.equal(src.dirty(VIEW), false);
+  src.commit('grid');
+  assert.deepEqual(ids(src.state.filter), [2]);
+  assert.equal(src.pending('status'), false);
+  assert.equal(src.dirty(), false);
+});
+
+test('Discard puts the applied answer back over the draft, and draws it', async () => {
+  const src = await remote();
+  const drawn = [];
+  const bar = Object.assign(new EventTarget(), {
+    setAttribute() {}, removeAttribute() {}, hasAttribute: () => false,
+    drawReading: (field, reading) => drawn.push([field, reading.picked]),
+  });
+  src.bind(bar, { steerOnly: true, scope: 'grid' });
+  src.hold('grid', ['status']);
+  src.select('status', ['active']);
+  src.commit();
+  src.select('status', ['trial']);
+  assert.equal(src.pending('status'), true);
+  drawn.length = 0;
+  src.discard('grid');
+  assert.equal(src.pending('status'), false);
+  assert.deepEqual(src.selection('status').values.filter((v) => v.state === 'picked').map((v) => v.value), ['active']);
+  assert.deepEqual(drawn, [['status', ['active']]]);
+});
+
+test('a bound control is TOLD what is pending and whether its scope is dirty', async () => {
+  const src = await remote();
+  const attrs = {};
+  const bar = Object.assign(new EventTarget(), {
+    setAttribute: (n, v) => { attrs[n] = v; }, removeAttribute: (n) => { delete attrs[n]; }, hasAttribute: () => false,
+  });
+  src.bind(bar, { steerOnly: true, scope: 'grid' });
+  src.hold('grid', ['status', 'owner']);
+  src.select('status', ['trial']);
+  assert.equal(attrs['data-pending'], 'status');
+  assert.equal(attrs['data-dirty'], '');
+  src.commit();
+  assert.equal(attrs['data-pending'], undefined);
+  assert.equal(attrs['data-dirty'], undefined);
+});
+
+test('a legend narrows its chart at once, even on a remote source — its rows are here already', async () => {
+  const src = await remote();
+  const chart = Object.assign(new EventTarget(), {
+    id: 'chart', setAttribute() {}, removeAttribute() {}, hasAttribute: () => false, populate() {},
+  });
+  src.bind(chart, { readonly: true, rows: 'all' });
+  src.write('legend', 'status', { picked: ['active'] }, { only: chart });
+  assert.equal(src.dirty(), false);
+  assert.deepEqual(Object.keys(src.debugState().only), ['chart']);
+});
+
+test('spoofRemote waits, fails when told, and marks the store remote', async () => {
+  const slow = spoofRemote(new ArrayStore(ROWS, { key: 'id' }), { delay: 30 });
+  assert.equal(slow.remote, true);
+  const t = Date.now();
+  assert.equal((await slow.load()).total, 5);
+  assert.ok(Date.now() - t >= 25);
+  const broken = spoofRemote(new ArrayStore(ROWS, { key: 'id' }), { delay: 0, fail: 1 });
+  await assert.rejects(() => broken.load(), /the fetch failed/);
 });
