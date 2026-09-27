@@ -54,7 +54,6 @@ function deriveValue(values?: number[], show?: 'last' | 'total'): number | null 
 export class SherpaMetric extends SherpaElement {
   static override css = new URL('./sherpa-metric.css', import.meta.url);
   static override html = new URL('./sherpa-metric.html', import.meta.url);
-  static override observed = ['data-label', 'data-value', 'data-delta'];
 
   /* DECLARED, not hand-synced. Both are written by the component itself from
      the data, and both are read only by CSS — `data-trend` by a `:host()` rule
@@ -67,17 +66,12 @@ export class SherpaMetric extends SherpaElement {
     ...SUMMARY_PROPS,
     /** The value's `Intl.NumberFormatOptions`, as JSON. TRAP T-a-format-is-the-platforms */
     'data-format': { type: 'string', kind: 'style' },
+    'data-label': { type: 'string', kind: 'content', to: '.label' },
+    'data-value': { type: 'string', kind: 'content', to: '.value' },
+    'data-delta': { type: 'string', kind: 'content', to: '.delta' },
     'data-trend': { type: 'enum', kind: 'style', values: ['up', 'down', 'flat'] },
     'data-status': { type: 'enum', kind: 'style', values: ['success', 'critical'] },
   } as const;
-
-  override onRender(): void {
-    this.#sync(); // attributes may have been set before the shadow DOM existed
-  }
-
-  override onChange(): void {
-    this.#sync();
-  }
 
   /** The data path. */
   protected override renderData(source: unknown): void {
@@ -118,8 +112,6 @@ export class SherpaMetric extends SherpaElement {
     if (Array.isArray(data.values) && data.values.length > 0) {
       this.#fillSparkline(data.values);
     }
-
-    this.#sync();
   }
 
   /* ── Private ─────────────────────────────────────────────────────────── */
@@ -141,17 +133,6 @@ export class SherpaMetric extends SherpaElement {
       });
       return formatValue(n);
     }
-  }
-
-  /** Mirror the data-* text into the shadow spans. */
-  #sync(): void {
-    const set = (sel: string, text: string): void => {
-      const el = this.$(sel);
-      if (el) el.textContent = text;
-    };
-    set('.label', this.dataset['label'] ?? '');
-    set('.value', this.dataset['value'] ?? '');
-    set('.delta', this.dataset['delta'] ?? '');
   }
 
   /** TRAP T-metric-status-follows-the-trend — "default" means NO attribute. */

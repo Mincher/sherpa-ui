@@ -67,8 +67,8 @@ props:
   - $type: prop
     name: data-delta
     type: string
-    observed: true
-    kind: style
+    observed: false
+    kind: content
     description: — the change text (e.g. "+12.5%")
   - $type: prop
     name: data-field
@@ -85,8 +85,8 @@ props:
   - $type: prop
     name: data-label
     type: string
-    observed: true
-    kind: style
+    observed: false
+    kind: content
     description: — the metric name (shown above the value)
   - $type: prop
     name: data-over-field
@@ -103,8 +103,8 @@ props:
   - $type: prop
     name: data-value
     type: string
-    observed: true
-    kind: style
+    observed: false
+    kind: content
     description: — the formatted value string (big number)
 states:
   - $type: state

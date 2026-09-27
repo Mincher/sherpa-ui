@@ -12,9 +12,11 @@ export class SherpaFileUpload extends SherpaElement {
   static override props = {
     /* An upload is in flight — the host sets it, CSS shows the bar. */
     'data-loading': { type: 'boolean', kind: 'style' },
+    'data-label': { type: 'string', kind: 'content', to: '.label' },
+    'data-helper': { type: 'string', kind: 'content', to: '.helper' },
   } as const;
 
-  static override observed = ['data-label', 'data-helper', 'data-max-size', 'data-accept', 'data-multiple', 'disabled'];
+  static override observed = ['data-max-size', 'data-accept', 'data-multiple', 'disabled'];
 
   /** The hidden native file input. */
   #input: HTMLInputElement | null = null;
@@ -43,16 +45,13 @@ export class SherpaFileUpload extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    if (name === 'data-label' || name === 'data-helper' || name === 'data-max-size' || name === 'data-accept') this.#syncText();
+    if (name === 'data-max-size' || name === 'data-accept') this.#syncText();
     if (name === 'data-accept' || name === 'data-multiple') this.#syncInput();
   }
 
-  /** CSS collapses the empty nodes, so an absent attribute needs no branch. */
+  /** The two TEXT TEMPLATES; the label and helper are declared props. CSS
+   *  collapses the empty nodes, so an absent attribute needs no branch. */
   #syncText(): void {
-    const label = this.$('.label');
-    if (label) label.textContent = this.dataset['label'] ?? '';
-    const helper = this.$('.helper');
-    if (helper) helper.textContent = this.dataset['helper'] ?? '';
     const maxSize = this.$('.max-size');
     if (maxSize) maxSize.textContent = this.dataset['maxSize'] ? `Maximum file size: ${this.dataset['maxSize']}` : '';
     const allowed = this.$('.allowed-types');

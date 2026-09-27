@@ -450,9 +450,13 @@ function parseTsJsProps(ts) {
     const [, type, name, desc] = m;
     props.set(name, { name, type: (type || '').trim() || 'string', description: desc.trim() });
   }
+  // `static config` names are read-write properties the BASE class defines.
+  // TRAP T-configuration-is-not-data
+  const config = ts.match(/static\s+(?:override\s+)?config\s*=\s*\{([^}]*)\}/)?.[1] ?? '';
+  const configured = [...config.matchAll(/([\w$]+)\s*:/g)].map((m) => m[1]);
   // getters/setters give the access level
-  const getters = new Set([...ts.matchAll(/\bget\s+([\w$]+)\s*\(/g)].map((m) => m[1]));
-  const setters = new Set([...ts.matchAll(/\bset\s+([\w$]+)\s*\(/g)].map((m) => m[1]));
+  const getters = new Set([...configured, ...[...ts.matchAll(/\bget\s+([\w$]+)\s*\(/g)].map((m) => m[1])]);
+  const setters = new Set([...configured, ...[...ts.matchAll(/\bset\s+([\w$]+)\s*\(/g)].map((m) => m[1])]);
   for (const name of new Set([...getters, ...setters])) {
     if (name.startsWith('#')) continue;
     if (!props.has(name)) props.set(name, { name, type: 'string' });

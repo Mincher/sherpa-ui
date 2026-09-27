@@ -132,14 +132,14 @@ props:
   - $type: prop
     name: data-helper
     type: string
-    observed: true
-    kind: style
+    observed: false
+    kind: content
     description: helper text under the list (hidden when empty)
   - $type: prop
     name: data-label
     type: string
-    observed: true
-    kind: style
+    observed: false
+    kind: content
     description: label above the drop zone (hidden when empty)
   - $type: prop
     name: data-loading

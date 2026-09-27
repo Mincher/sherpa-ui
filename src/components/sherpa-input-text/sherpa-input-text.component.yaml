@@ -197,15 +197,15 @@ props:
   - $type: prop
     name: data-description
     type: string
-    observed: true
-    kind: style
+    observed: false
+    kind: content
     default: style
     description: helper text under the label
   - $type: prop
     name: data-error
     type: string
-    observed: true
-    kind: style
+    observed: false
+    kind: content
     default: style
     description: validation message — shown as a filled critical bar
   - $type: prop
@@ -223,8 +223,8 @@ props:
   - $type: prop
     name: data-label
     type: string
-    observed: true
-    kind: style
+    observed: false
+    kind: content
     description: field label (hidden when empty)
   - $type: prop
     name: data-multiline

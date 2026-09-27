@@ -288,6 +288,9 @@ function fieldValue(item: unknown, expr: string): unknown {
   return undefined;
 }
 
+/** The classes whose `config` names are already properties. */
+const CONFIGURED = new WeakSet<typeof SherpaElement>();
+
 export abstract class SherpaElement extends HTMLElement {
 
   /** URL of this component's CSS, scoped-token block inlined at its top. */
@@ -327,6 +330,30 @@ export abstract class SherpaElement extends HTMLElement {
    * it, it waits to be populated by hand. TRAP T-a-component-asks-its-provider
    */
   static asks?: DataAsk;
+
+  /**
+   * CONFIGURATION a page sets once, as properties — a grid's columns, its key
+   * — each by name, with its default. Every setting made in one moment redraws
+   * ONCE, and data without them (a provider's rows) keeps them.
+   * TRAP T-configuration-is-not-data
+   */
+  static config?: Readonly<Record<string, unknown>>;
+
+  /** Put each `config` name on the class as a property, once per class. */
+  static #defineConfig(Ctor: typeof SherpaElement): void {
+    if (!Ctor.config || CONFIGURED.has(Ctor)) return;
+    CONFIGURED.add(Ctor);
+    for (const name of Object.keys(Ctor.config)) {
+      Object.defineProperty(Ctor.prototype, name, {
+        configurable: true,
+        get(this: SherpaElement): unknown { return this.#settings[name]; },
+        set(this: SherpaElement, value: unknown) {
+          this.#settings[name] = value;
+          this.#reconfigure();
+        },
+      });
+    }
+  }
 
   /** Declared props + `variantAttrs` + `observed`, deduped. */
   static get observedAttributes(): string[] {
@@ -373,6 +400,41 @@ export abstract class SherpaElement extends HTMLElement {
     super();
     this.root = this.attachShadow({ mode: 'open' });
     this.rendered = new Promise((res) => (this.#resolveRendered = res));
+    const Ctor = new.target as typeof SherpaElement;
+    SherpaElement.#defineConfig(Ctor);
+    this.#settings = { ...Ctor.config };
+  }
+
+  /** What the page configured, by `config` name. */
+  #settings: Record<string, unknown> = {};
+  /** The last DATA populated — what a new setting redraws beside. */
+  #data: Record<string, unknown> = {};
+  /** A redraw for new settings is queued. */
+  #reconfiguring = false;
+
+  /** Redraw ONCE for every setting made in one moment — three setters in a
+   *  row would each draw the config the one before had not drawn yet. */
+  #reconfigure(): void {
+    if (this.#reconfiguring) return;
+    this.#reconfiguring = true;
+    queueMicrotask(() => {
+      this.#reconfiguring = false;
+      void this.populate(this.#data);
+    });
+  }
+
+  /** Data over the configuration: a `config` name it carries is SET, and the
+   *  rest arrives beside what the page configured. */
+  #withSettings(data: unknown): unknown {
+    const config = (this.constructor as typeof SherpaElement).config;
+    if (!config || !data || typeof data !== 'object' || Array.isArray(data)) return data;
+    const rest: Record<string, unknown> = {};
+    for (const [name, value] of Object.entries(data)) {
+      if (name in config) this.#settings[name] = value;
+      else rest[name] = value;
+    }
+    this.#data = rest;
+    return { ...this.#settings, ...rest };
   }
 
   /* ── Native lifecycle — the platform calls these ─────────────────────── */
@@ -570,7 +632,7 @@ export abstract class SherpaElement extends HTMLElement {
    * TRAP T-populate-settles-after-render-data — await THIS, not `rendered`.
    */
   populate(data: unknown): Promise<void> {
-    return this.rendered.then(() => this.renderData(data));
+    return this.rendered.then(() => this.renderData(this.#withSettings(data)));
   }
 
   /** Did the event pass through an element matching `selector`? */

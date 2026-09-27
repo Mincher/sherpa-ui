@@ -13371,6 +13371,28 @@ never been bound.
 - Site: `src/core/data/query.ts`
 - Site: `test/unit/query.test.mjs`
 
+### T-configuration-is-not-data
+
+**What a page sets ONCE is configuration; what a provider pushes on every
+change is data. A component declares the first in `static config`, and the
+base class keeps them apart.** §9 item 9, 2026-09-27 — P1 had split them by
+hand in the grid (three setters, a merge, a coalescing flag), and every
+component that asks would have copied it.
+
+`static config = { columns: [], key: null, actions: [] }` makes each name a
+property. A setting redraws with the last DATA beside it; data that names a
+config key sets it; data that does not (a provider's rows) keeps what the page
+set. Three setters in one moment redraw ONCE — each would otherwise draw the
+config the one before had not drawn yet, which is the race P1 met.
+
+A `declare columns: GridColumn[]` line gives TypeScript the type and emits
+nothing: a real class field would shadow the base's accessor. The spec
+generator reads `static config` for the component's properties.
+
+- Site: `scripts/generate-component-spec.mjs`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/core/ui/sherpa-element.ts`
+
 ### T-a-component-declares-its-summary
 
 **A chart or tile says what it needs of the rows in its ATTRIBUTES, and its
@@ -13455,9 +13477,7 @@ Context that swaps its source swaps it for everything still asking.
 Three things to know. A request made before any source WAITS, and one from
 an element gone from the page is dropped, never bound. An element a page
 binds by hand is left alone, not bound twice. And a grid's columns, key and
-actions are CONFIGURATION (properties, set once); data with no `columns`
-keeps them — three setters in one moment redraw once, or each reads the
-config the one before had not drawn yet.
+actions are CONFIGURATION, not data (`T-configuration-is-not-data`).
 
 - Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`

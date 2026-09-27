@@ -153,6 +153,14 @@ export class SherpaDataGrid extends SherpaElement {
      TRAP T-a-component-asks-its-provider */
   static override asks: DataAsk = { shape: 'rows', own: ['filter-change'] };
 
+  /* CONFIGURATION a page sets once; rows and groups arrive as data beside it.
+     TRAP T-configuration-is-not-data */
+  static override config = { columns: [], key: null, actions: [] };
+  declare columns: GridColumn[];
+  /** The field that names a row — selection follows it. */
+  declare key: string | null;
+  declare actions: GridAction[];
+
   // data-selectable is observed though CSS owns its reveal: the pin offset is a
   // MEASURED width, so it must re-run #syncPinned().
   static override observed = [
@@ -251,64 +259,9 @@ export class SherpaDataGrid extends SherpaElement {
     if (this.#columns.length) this.#render();
   }
 
-  /** The columns: CONFIGURATION a page sets once. Rows arrive as data. */
-  get columns(): GridColumn[] {
-    return [...this.#columns];
-  }
-  set columns(next: GridColumn[]) {
-    this.#columns = Array.isArray(next) ? next : [];
-    this.#reconfigure();
-  }
-
-  /** The field that names a row — selection follows it. CONFIGURATION. */
-  get key(): string | null {
-    return this.#key;
-  }
-  set key(next: string | null) {
-    this.#key = typeof next === 'string' ? next : null;
-    this.#reconfigure();
-  }
-
-  /** The row actions, declared once. CONFIGURATION. */
-  get actions(): GridAction[] {
-    return [...this.#actions];
-  }
-  set actions(next: GridAction[]) {
-    this.#actions = Array.isArray(next) ? next : [];
-    this.#reconfigure();
-  }
-
-  /** Redraw ONCE for every setting made in one moment — three setters in a
-   *  row each read the config the one before had not yet drawn. */
-  #reconfigure(): void {
-    if (this.#reconfiguring) return;
-    this.#reconfiguring = true;
-    queueMicrotask(() => {
-      this.#reconfiguring = false;
-      void this.populate(this.#config());
-    });
-  }
-
-  /** A redraw for new settings is queued. */
-  #reconfiguring = false;
-
-  /** What the grid holds now, as one config. */
-  #config(): GridConfig {
-    return {
-      columns: this.#columns, rows: this.#rows, actions: this.#actions,
-      ...(this.#key ? { key: this.#key } : {}),
-      ...(this.#groups ? { groups: this.#groups } : {}),
-    };
-  }
-
-  /**
-   * populate({ columns, rows }) — the grid config. One naming its COLUMNS
-   * replaces it all; DATA alone — a provider's rows and groups — keeps the
-   * configuration the page set. TRAP T-a-component-asks-its-provider
-   */
+  /** populate({ columns, rows }) — the rows, over the configuration the page set. */
   protected override renderData(data: unknown): void {
-    const given = (data ?? {}) as Partial<GridConfig>;
-    const cfg: Partial<GridConfig> = 'columns' in given ? given : { ...this.#config(), ...given };
+    const cfg = (data ?? {}) as Partial<GridConfig>;
     this.#columns = Array.isArray(cfg.columns) ? cfg.columns : [];
     this.#rows = Array.isArray(cfg.rows) ? cfg.rows : [];
     this.#key = typeof cfg.key === 'string' ? cfg.key : null;

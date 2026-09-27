@@ -48,6 +48,9 @@ export class SherpaInputText extends SherpaElement {
     'data-type': { type: 'enum', kind: 'style', values: ['minimal', 'select'] },
     /* The VALIDATION state a host reports, styled by the token region. */
     'data-state': { type: 'enum', kind: 'style', values: ['error', 'success', 'warning'] },
+    'data-label': { type: 'string', kind: 'content', to: '.label' },
+    'data-description': { type: 'string', kind: 'content', to: '.description' },
+    'data-error': { type: 'string', kind: 'content', to: '.message' },
   } as const;
 
   /** A form cannot see an <input> through a shadow root. TRAP T-shadow-input-needs-element-internals */
@@ -56,9 +59,6 @@ export class SherpaInputText extends SherpaElement {
   // A host label names this. TRAP T-a-host-label-must-reach-its-control
   static override labelTarget = '.control';
   static override observed = [
-    'data-label',
-    'data-description',
-    'data-error',
     'data-icon-start',
     'data-icon-end',
     'data-rules',
@@ -134,7 +134,7 @@ export class SherpaInputText extends SherpaElement {
     // A re-stamp lost the <option>s; the kept list puts them back.
     this.#syncOptions();
     this.#syncIds();
-    this.#syncText();
+    this.#syncIcons();
     this.#syncAttrs();
     this.$('.clear')?.addEventListener('click', this.#onClear);
     this.#syncHasValue();
@@ -146,8 +146,8 @@ export class SherpaInputText extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    if (name.startsWith('data-')) this.#syncText();
-    else this.#syncAttrs();
+    if (!name.startsWith('data-')) this.#syncAttrs();
+    else if (name.startsWith('data-icon-')) this.#syncIcons();
   }
 
   /**
@@ -247,15 +247,8 @@ export class SherpaInputText extends SherpaElement {
     this.#syncValue();
   }
 
-  /** Text into the shadow; CSS collapses the empties. */
-  #syncText(): void {
-    const set = (sel: string, value: string | undefined): void => {
-      const el = this.$(sel);
-      if (el) el.textContent = value ?? '';
-    };
-    set('.label', this.dataset['label']);
-    set('.description', this.dataset['description']);
-    set('.message', this.dataset['error']);
+  /** The two icons; the label, description and error are declared props. */
+  #syncIcons(): void {
     this.#syncIcon('.icon-start', this.dataset['iconStart']);
     this.#syncIcon('.icon-end', this.dataset['iconEnd']);
   }
