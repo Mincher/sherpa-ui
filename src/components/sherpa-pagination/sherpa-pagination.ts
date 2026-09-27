@@ -7,6 +7,7 @@
  * @method goToPage(n) — navigate to a page (clamped), emitting page-change
  */
 import { DATA_PROPS, SherpaElement, clampNum } from '../../core/ui/sherpa-element.js';
+import type { DataAsk } from '../../core/ui/context.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-group/sherpa-group.js';
 
@@ -19,6 +20,9 @@ export class SherpaPagination extends SherpaElement {
   } as const;
 
   static override observed = ['data-page', 'data-total-pages', 'data-page-size', 'data-rows-options'];
+
+  /* No rows — the view state only, as attributes. TRAP T-a-component-asks-its-provider */
+  static override asks: DataAsk = { shape: 'state' };
 
   override onRender(): void {
     this.$('.controls')?.addEventListener('click', this.#onClick);

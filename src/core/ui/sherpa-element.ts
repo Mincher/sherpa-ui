@@ -18,6 +18,7 @@
  */
 
 import { hasIcon, renderIcon, upgradeIcons } from './render-icon.js';
+import { ContextRequestEvent, DATA_CONTEXT, type DataAsk } from './context.js';
 
 /** id → innerHTML. `null` when the file is a single flat template. */
 type TemplateMap = Map<string, string> | null;
@@ -303,6 +304,13 @@ export abstract class SherpaElement extends HTMLElement {
    */
   static labelTarget?: string;
 
+  /**
+   * What this component ASKS its provider for — the shape of its data. Asked
+   * on connect and answered by the nearest `sherpa-provider`; with none above
+   * it, it waits to be populated by hand. TRAP T-a-component-asks-its-provider
+   */
+  static asks?: DataAsk;
+
   /** Declared props + `variantAttrs` + `observed`, deduped. */
   static get observedAttributes(): string[] {
     const defs = Object.values(this.props);
@@ -363,6 +371,7 @@ export abstract class SherpaElement extends HTMLElement {
     } else if (!this.#connected) {
       this.#connected = true;
       this.onConnect();
+      this.#ask();
     }
   }
 
@@ -370,7 +379,24 @@ export abstract class SherpaElement extends HTMLElement {
     this.#connected = false;
     // BEFORE onDisconnect, so a component's teardown finds the listeners gone.
     this.#ac.abort();
+    // Out of the tree, out of its provider's reach: stop being told.
+    this.#leave?.();
+    this.#leave = undefined;
     this.onDisconnect();
+  }
+
+  /** How to stop hearing from the provider that answered, once one has. */
+  #leave: (() => void) | undefined;
+
+  /** ASK the nearest provider for this component's data, if it declares a need.
+   *  Its answer arrives through `populate()`, now and on every change. */
+  #ask(): void {
+    const asks = (this.constructor as typeof SherpaElement).asks;
+    if (!asks || this.#leave) return;
+    this.dispatchEvent(new ContextRequestEvent(DATA_CONTEXT, this, (data, unsubscribe) => {
+      if (unsubscribe) this.#leave = unsubscribe;
+      if (data !== undefined) void this.populate(data);
+    }, true));
   }
 
   attributeChangedCallback(name: string, oldVal: string | null, newVal: string | null): void {
@@ -668,6 +694,7 @@ export abstract class SherpaElement extends HTMLElement {
     if (!this.#connected && this.isConnected) {
       this.#connected = true;
       this.onConnect();
+      this.#ask();
     }
   }
 

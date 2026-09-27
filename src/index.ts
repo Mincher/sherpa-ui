@@ -60,6 +60,11 @@ export { SherpaElement } from './core/ui/sherpa-element.js';
 // a preset and an agent's MCP call all go through.
 // TRAP T-state-is-the-saved-view-half.
 export { applyState, type Populatable } from './core/ui/apply-state.js';
+// A component ASKS; the nearest provider ANSWERS. TRAP T-a-component-asks-its-provider
+export {
+  ContextRequestEvent, createContext, DATA_CONTEXT, SOURCE_CONTEXT,
+  type Context, type ContextCallback, type DataAsk,
+} from './core/ui/context.js';
 /* A `data-grouped` grid needs each child's position, which CSS cannot see.
    TRAP T-a-wrapping-span-hides-its-own-row */
 export { bindGroupedGrid, measureGroupedGrid } from './components/sherpa-layout-grid/grouped-grid.js';
@@ -184,3 +189,4 @@ export { SherpaQuickFilterToolbar, type QuickFilterDef } from './components/sher
 export { SherpaAppShell } from './components/sherpa-app-shell/sherpa-app-shell.js';
 export { SherpaLayoutGrid } from './components/sherpa-layout-grid/sherpa-layout-grid.js';
 export { SherpaGroup } from './components/sherpa-group/sherpa-group.js';
+export { SherpaProvider, type ProvideOptions } from './components/sherpa-provider/sherpa-provider.js';

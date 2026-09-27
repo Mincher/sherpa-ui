@@ -303,7 +303,7 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: >-
-      read/write JS properties (groups, selectedRecords, selectedKeys). See
+      read/write JS properties (columns, key, actions, groups, selectedRecords, selectedKeys). See
       $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
@@ -536,6 +536,15 @@ $extensions:
         column model, or scope the Figma component to match. Public API (data-sort-field/direction,
         grid-sort-change, row-click) is preserved on both sides.
     jsProps:
+      - name: columns
+        type: string
+        access: read-write
+      - name: key
+        type: string
+        access: read-write
+      - name: actions
+        type: string
+        access: read-write
       - name: groups
         type: string
         access: read

@@ -175,7 +175,20 @@ The size gate shows each step's deletions.
 
 ---
 
-## 8. Decisions for Will
+## 8. Decisions — Will, 2026-09-27
+
+| # | question | answer |
+|---|---|---|
+| 1 | the provider's name | **A** — `sherpa-provider` |
+| 2 | how a control's request travels back | **A** — as the events it fires today; the provider routes them |
+
+And a standing ask: *"Look for opportunities to refactor code to be simpler,
+and leaner, with this improvement. I suspect that a lot of sherpa-elements
+code, as well as bespoke scenario code in other components, can start to be
+centralised and standardised resulting in lighter weight components all
+around."* — §9.
+
+The questions as asked:
 
 **1. The provider's name.**
 - **A — `sherpa-provider`** — says its job, and nothing about data only, since

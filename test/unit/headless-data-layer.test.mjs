@@ -896,3 +896,21 @@ test('a sample never reorders or loses rows', async () => {
   assert.deepEqual(result.rows.map((r) => r.id).slice(0, 12), [0,1,2,3,4,5,6,7,8,9,10,11]);
   assert.equal(result.rows[199].id, 199);
 });
+
+/* A provider answers a component's request THROUGH ITS CALLBACK: `deliver`
+   takes the place of `populate()`, now and on every change.
+   TRAP T-a-component-asks-its-provider */
+test('deliver: a bind hands its data to a callback instead of populate()', async () => {
+  const source = new DataSource({ store: new ArrayStore([{ id: 1 }, { id: 2 }], { key: 'id' }), autoLoad: false });
+  const heard = [];
+  let populated = 0;
+  const el = Object.assign(new EventTarget(), {
+    setAttribute() {}, removeAttribute() {}, hasAttribute: () => false,
+    populate: () => { populated += 1; },
+  });
+  source.bind(el, { deliver: (rows) => heard.push(rows.map((r) => r.id)) });
+  await source.load();
+  assert.deepEqual(heard.at(-1), [1, 2]);
+  assert.equal(populated, 0);
+  assert.equal(source.loaded, true);
+});

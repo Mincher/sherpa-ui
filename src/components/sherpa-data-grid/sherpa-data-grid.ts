@@ -32,6 +32,7 @@ import {
   type FieldCondition, type FieldReading, type FieldType,
 } from '../../core/data/filter-state.js';
 import { spellConditions } from '../../core/data/filter-face.js';
+import type { DataAsk } from '../../core/ui/context.js';
 import { report } from '../../core/data/report.js';
 
 /** The `fx` glyph a CONDITION wears, wherever one is drawn. */
@@ -146,6 +147,12 @@ export class SherpaDataGrid extends SherpaElement {
     'data-filterable': { type: 'boolean', kind: 'style' },
     'data-locked': DATA_PROPS['data-locked'],
   } as const;
+
+  /* A PAGE of rows, with its groups. Its own header filter row it answers
+     itself, so its source never hears `filter-change`.
+     TRAP T-a-component-asks-its-provider */
+  static override asks: DataAsk = { shape: 'rows', own: ['filter-change'] };
+
   // data-selectable is observed though CSS owns its reveal: the pin offset is a
   // MEASURED width, so it must re-run #syncPinned().
   static override observed = [
@@ -244,9 +251,64 @@ export class SherpaDataGrid extends SherpaElement {
     if (this.#columns.length) this.#render();
   }
 
-  /** populate({ columns, rows }) — the grid config. */
+  /** The columns: CONFIGURATION a page sets once. Rows arrive as data. */
+  get columns(): GridColumn[] {
+    return [...this.#columns];
+  }
+  set columns(next: GridColumn[]) {
+    this.#columns = Array.isArray(next) ? next : [];
+    this.#reconfigure();
+  }
+
+  /** The field that names a row — selection follows it. CONFIGURATION. */
+  get key(): string | null {
+    return this.#key;
+  }
+  set key(next: string | null) {
+    this.#key = typeof next === 'string' ? next : null;
+    this.#reconfigure();
+  }
+
+  /** The row actions, declared once. CONFIGURATION. */
+  get actions(): GridAction[] {
+    return [...this.#actions];
+  }
+  set actions(next: GridAction[]) {
+    this.#actions = Array.isArray(next) ? next : [];
+    this.#reconfigure();
+  }
+
+  /** Redraw ONCE for every setting made in one moment — three setters in a
+   *  row each read the config the one before had not yet drawn. */
+  #reconfigure(): void {
+    if (this.#reconfiguring) return;
+    this.#reconfiguring = true;
+    queueMicrotask(() => {
+      this.#reconfiguring = false;
+      void this.populate(this.#config());
+    });
+  }
+
+  /** A redraw for new settings is queued. */
+  #reconfiguring = false;
+
+  /** What the grid holds now, as one config. */
+  #config(): GridConfig {
+    return {
+      columns: this.#columns, rows: this.#rows, actions: this.#actions,
+      ...(this.#key ? { key: this.#key } : {}),
+      ...(this.#groups ? { groups: this.#groups } : {}),
+    };
+  }
+
+  /**
+   * populate({ columns, rows }) — the grid config. One naming its COLUMNS
+   * replaces it all; DATA alone — a provider's rows and groups — keeps the
+   * configuration the page set. TRAP T-a-component-asks-its-provider
+   */
   protected override renderData(data: unknown): void {
-    const cfg = (data ?? {}) as Partial<GridConfig>;
+    const given = (data ?? {}) as Partial<GridConfig>;
+    const cfg: Partial<GridConfig> = 'columns' in given ? given : { ...this.#config(), ...given };
     this.#columns = Array.isArray(cfg.columns) ? cfg.columns : [];
     this.#rows = Array.isArray(cfg.rows) ? cfg.rows : [];
     this.#key = typeof cfg.key === 'string' ? cfg.key : null;

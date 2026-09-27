@@ -10,6 +10,9 @@
 
 </head>
 <body>
+  <!-- THE PROVIDER: every component in the app asks it for its data, and each
+       Context gives it that Context's source. docs/PROVIDER-DESIGN.md -->
+  <sherpa-provider>
   <!-- The app-shell + nav + header live ONCE. Only the content swaps. -->
   <sherpa-app-shell>
     <sherpa-nav slot="nav"></sherpa-nav>
@@ -66,6 +69,7 @@
       <div id="settings-root" style="block-size: 100%"></div>
     </sherpa-dialog>
   </sherpa-app-shell>
+  </sherpa-provider>
 
   <!-- Outside the app shell on purpose: the menu is a popover in the top layer,
        and every header slot is NAMED, so an unslotted child there gets no

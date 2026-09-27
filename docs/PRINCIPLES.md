@@ -21,7 +21,7 @@ Everything below serves one separation:
 | | |
 |---|---|
 | **Data layer** | `src/core/*.ts` minus the element. Getting, setting and transforming rows. Touches no DOM, so a server, a test or an MCP tool imports it |
-| **Presentation layer** | `SherpaElement` + the 62 components. Shows what it is given; asks for what it wants; decides nothing about the data |
+| **Presentation layer** | `SherpaElement` + the 63 components. Shows what it is given; asks for what it wants; decides nothing about the data |
 
 The join is `DataSource.bind(el, options)` and nothing else. A component never
 reaches past the source to a store, and two components never speak directly.

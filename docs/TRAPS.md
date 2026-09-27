@@ -9437,7 +9437,7 @@ fitted its visual page, carrying the source's count of 24.
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/unit/groups-are-a-data-concept.test.mjs`
-- Site: `examples/contexts/records.js`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/unit/parity-sweep.test.mjs`
 
 ### T-a-panel-builds-its-own-menus
@@ -13371,6 +13371,42 @@ never been bound.
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/query.ts`
 - Site: `test/unit/query.test.mjs`
+
+### T-a-component-asks-its-provider
+
+**A component ASKS; the nearest `sherpa-provider` above it ANSWERS.** Will,
+2026-09-27 (the Context Protocol, choice A; designed in FILTER-REVIEW §9–§12
+on 2026-09-25 and never built until P1). Before it, nothing could reach the
+data layer from a component — it is DOM-free, so it is not in the tree — and
+every page wired every component by hand with `source.bind(el, { as, … })`.
+
+A component that declares `static asks` (`{ shape: 'rows' | 'all' | 'state',
+own? }`) dispatches a `context-request` (bubbles, composed — it crosses shadow
+roots upward) when it connects, and stops on disconnect. The provider
+resolves the source its subtree offers (`data-source` names one only where
+it offers two; an unnamed ask of two, or a name not offered, is a loud
+report, never a guess), binds the component with `deliver` — the data comes
+through the callback it asked with — and answers again on `provide()`, so a
+Context that swaps its source swaps it for everything still asking.
+
+Three things to know. A request made before any source WAITS, and one from
+an element gone from the page is dropped, never bound. An element a page
+binds by hand is left alone, not bound twice. And a grid's columns, key and
+actions are CONFIGURATION (properties, set once); data with no `columns`
+keeps them — three setters in one moment redraw once, or each reads the
+config the one before had not drawn yet.
+
+- Site: `examples/contexts/records.js`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-pagination/sherpa-pagination.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.html`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/ui/context.ts`
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/index.ts`
+- Site: `test/e2e/reforged-provider.spec.ts`
+- Site: `test/unit/headless-data-layer.test.mjs`
 
 ### T-the-footer-owns-nothing-to-save
 

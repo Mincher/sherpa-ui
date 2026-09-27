@@ -22,6 +22,7 @@
  * - .pending — Has this field been changed and not yet applied?
  * - .dirty — Has anything in this scope — or any scope — been changed and not applied?
  * - .setState — Restore a whole view state — a saved view, a deep link, a reload.
+ * - .loaded — Has any load completed?
  * - .result — The whole of the last load's answer.
  * - .rows — the rows of the last load — one page when paged
  * - .total — Matching rows before paging.
@@ -133,6 +134,10 @@ export interface BindOptions {
   as?: (rows: Row[], source: DataSource) => unknown;
   /** The id a scope's `narrows` names this component by. Default: its own id. */
   id?: string;
+  /** Where its data GOES, instead of `populate()` — a provider answering a
+   *  component's request through the callback it asked with.
+   *  TRAP T-a-component-asks-its-provider */
+  deliver?: (payload: unknown) => void;
   /** The SCOPE this control is a view of: it is DRAWN each answer in it. A bar's
    *  report is its scope's whole answer, so a field raised out is not its to
    *  clear. A LIST is for a control that draws several — the filter panel. */
@@ -193,6 +198,8 @@ export class DataSource extends EventTarget {
       lastRows?: readonly Row[];
       /** See BindOptions.id. */
       id: string;
+      /** See BindOptions.deliver. */
+      deliver?: (payload: unknown) => void;
       /** The filter narrowing ONLY this component it was last pushed with — see `#push`. */
       lastOwn?: string;
       /** See BindOptions.scope. */
@@ -364,6 +371,11 @@ export class DataSource extends EventTarget {
     // The load below re-clamps against the new one.
     if (next.page != null) this.#state.page = Math.max(1, Math.trunc(next.page) || 1);
     this.#schedule();
+  }
+
+  /** Has any load completed? Before one, there is nothing to count or group. */
+  get loaded(): boolean {
+    return this.#loaded;
   }
 
   /** The whole of the last load's answer. TRAP T-result-is-the-hosts-half */
@@ -1326,6 +1338,7 @@ export class DataSource extends EventTarget {
       ...(options.as ? { as: options.as } : {}),
       ...(options.into ? { into: options.into } : {}),
       ...(options.scope ? { scope: options.scope } : {}),
+      ...(options.deliver ? { deliver: options.deliver } : {}),
     });
 
     // TRAP T-signal-not-a-teardown-list — drops the BINDING; `once` leaves nothing.
@@ -1520,12 +1533,10 @@ export class DataSource extends EventTarget {
     const adapt = entry?.as;
     const payload = adapt ? adapt(pushRows as Row[], this) : pushRows;
 
+    // Through the callback it ASKED with, when a provider bound it.
+    const give = entry?.deliver ?? ((p: unknown): void => { void el.populate?.(p); });
     // ONE NAMED PART, when the bind asked for one — see BindOptions.into.
-    if (entry?.into) {
-      el.populate?.(mergeInto(el, entry.into, payload));
-      return;
-    }
-    el.populate?.(payload);
+    give(entry?.into ? mergeInto(el, entry.into, payload) : payload);
   }
 }
 

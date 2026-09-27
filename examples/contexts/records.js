@@ -584,23 +584,18 @@ export async function init(root, { session, view, remote = false } = {}) {
     .map((c) => `${c.field}:${valuesOf(c.field).join('|')}`)
     .join('\n'));
 
-  source.bind(grid, {
-    /* The COLUMN says how it is answered. The grid never counts the values
-       itself — how many is too many is a question about the data.
-       TRAP T-a-wall-of-values-is-not-a-filter */
-    /* THE GROUPS COME FROM THE SOURCE, not from the rows the grid holds. It
-       pages screen lines when grouped, so its own count would be a page count.
-       TRAP T-a-group-is-a-data-layer-concept */
-    as: (rows, src) => ({
-      columns: gridColumns, rows, key: 'email', actions: ROW_ACTIONS,
-      groups: src.groups(),
-    }),
-    ignore: ['filter-change'],
-    // Its HEADINGS are drawn each answer in the `data` scope. TRAP T-one-query-one-owner
-    scope: 'data',
-    signal,
-  });
-  source.bind(pager, { signal });
+  /* THE GRID AND THE PAGER ASK — the app's `sherpa-provider` answers, with
+     this Context's source. The grid's columns, key and actions are its
+     CONFIGURATION; its rows and groups arrive as data, its headings are the
+     `data` scope (its `data-scope`). docs/PROVIDER-DESIGN.md.
+     TRAP T-a-component-asks-its-provider */
+  grid.columns = gridColumns;
+  grid.key = 'email';
+  grid.actions = ROW_ACTIONS;
+  const provider = document.querySelector('sherpa-provider');
+  provider?.provide({ sources: { records: source } });
+  // Gone with the Context, so the next one's components never reach this source.
+  signal.addEventListener('abort', () => provider?.provide({ sources: {} }), { once: true });
 
   /* ── Summaries ────────────────────────────────────────────────────────
      Every tile and chart is the SAME rows, counted a different way, so one

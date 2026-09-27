@@ -1,0 +1,24 @@
+<!--
+  sherpa-provider — the data layer, over a REGION of the page.
+
+  A component inside it ASKS — a `context-request` event, the Context Protocol —
+  and the nearest provider ANSWERS with what the component declared it needs:
+  its data now, and again on every change. It draws nothing.
+  docs/PROVIDER-DESIGN.md. TRAP T-a-component-asks-its-provider
+
+      <sherpa-provider>
+        <sherpa-data-grid data-scope="data"></sherpa-data-grid>
+      </sherpa-provider>
+      provider.provide({ sources: { records: source } });
+
+  Public API:
+    (none — `provide()` gives it its sources)
+
+  Slots:
+    (default)   the region — every component in it can ask
+
+  Fires: nothing
+-->
+<template id="default">
+  <slot data-accepts="any"></slot>
+</template>

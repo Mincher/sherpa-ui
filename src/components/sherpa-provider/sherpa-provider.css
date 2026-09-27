@@ -1,0 +1,6 @@
+/**
+ * sherpa-provider.css — a region, not a box: it draws nothing, and its
+ * children lay out as if it were not there.
+ */
+
+:host { display: contents; }

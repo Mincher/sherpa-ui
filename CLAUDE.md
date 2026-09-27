@@ -161,7 +161,7 @@ import { SherpaButton } from 'sherpa-ui';        // components — needs a DOM
 import { ArrayStore, DataSource } from 'sherpa-ui/data';  // the data layer — no DOM
 ```
 
-`sherpa-ui` exports all 62 components, and importing a component DEFINES a
+`sherpa-ui` exports all 63 components, and importing a component DEFINES a
 custom element — so it throws `HTMLElement is not defined` in Node.
 `sherpa-ui/data` (`src/data.ts`) is the same stores, query, validation, live
 connections and saved views with no components and no DOM, for a server, a test
