@@ -78,17 +78,42 @@ anatomy:
               class: y-value
 props:
   - $type: prop
+    name: data-aggregate
+    type: enum
+    observed: false
+    kind: style
+    values:
+      - count
+      - sum
+      - mean
+      - min
+      - max
+      - distinct
+    description: count  | sum | mean | min | max | distinct, per value
+  - $type: prop
     name: data-axis-label
     type: string
     observed: false
     kind: content
     description: y-axis caption (shown when set)
   - $type: prop
+    name: data-field
+    type: string
+    observed: false
+    kind: style
+    description: the number that aggregate reads
+  - $type: prop
     name: data-max
     type: string
     observed: true
     kind: style
     description: explicit y-max (else derived from the data)
+  - $type: prop
+    name: data-segment-field
+    type: string
+    observed: false
+    kind: style
+    description: "ASKED of its provider: one bar per value of this field"
   - $type: prop
     name: data-ticks
     type: string

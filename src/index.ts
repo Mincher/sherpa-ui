@@ -89,9 +89,13 @@ export {
   seriesBy,
   reduceRows,
   deltaPercent,
+  summarise,
   type Aggregate,
   type AggregateOptions,
+  type Bucket,
   type Series,
+  type Summary,
+  type SummarySpec,
 } from './core/data/aggregate.js';
 // The app-level state store: what an app knows about ITSELF — theme, selected
 // customer, open panel — addressed by JSON pointer so one value can have many

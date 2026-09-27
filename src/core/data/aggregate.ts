@@ -19,6 +19,10 @@
  * - deltaPercent — The change from the first point to the last, as a percentage.
  * - Series — One named line, as `sherpa-line-chart` takes it.
  * - seriesBy — One series: a value per point, in the caller's own point order.
+ * - Bucket — A date cut to one step — its ISO prefix, so the keys sort as they read.
+ * - SummarySpec — What a component asks to see of its rows: its attributes, as JSON.
+ * - Summary — What `summarise` hands a component, by the shape it asked for.
+ * - summarise — Rows into the shape a component declared — one door for every chart and tile.
  */
 import { readField, groupRows, valueKey, type Row } from './store.js';
 import type { ChartDatum } from './chart-datum.js';
@@ -26,7 +30,7 @@ import type { ChartDatum } from './chart-datum.js';
 /* ── Reducers ──────────────────────────────────────────────────────────── */
 
 /** How a set of rows becomes one number. */
-export type Aggregate = 'count' | 'sum' | 'mean' | 'min' | 'max';
+export type Aggregate = 'count' | 'sum' | 'mean' | 'min' | 'max' | 'distinct';
 
 /** Every finite number in `field`. Missing values are SKIPPED, never zero. */
 function numbers(rows: readonly Row[], field: string): number[] {
@@ -55,6 +59,10 @@ export function reduceRows(
 ): number {
   if (kind === 'count') return rows.length;
   if (!field) return 0;
+  if (kind === 'distinct') {
+    const keys = rows.map((r) => readField(r, field)).filter((v) => v != null && v !== '');
+    return new Set(keys.map(valueKey)).size;
+  }
   const nums = numbers(rows, field);
   if (!nums.length) return 0;
   switch (kind) {
@@ -211,3 +219,116 @@ export function seriesBy(
   if (colorIndex != null) series.colorIndex = colorIndex;
   return series;
 }
+
+/* ── Summaries ─────────────────────────────────────────────────────────── */
+
+/** A date cut to one step — its ISO prefix, so the keys sort as they read. */
+export type Bucket = 'day' | 'month' | 'year';
+
+/** What a component asks to see of its rows: its attributes, as JSON. */
+export interface SummarySpec {
+  /** `aggregate` — one number, or `{ value, values, deltaPercent }` over a
+   *  field; `segments` — one datum per value; `series` — lines over a field. */
+  shape: 'aggregate' | 'segments' | 'series';
+  aggregate?: Aggregate;
+  /** The number a sum, mean, min, max or distinct reads. */
+  field?: string;
+  /** One datum, or one line, per value of this field. */
+  segment?: string;
+  /** A series runs over this field's values. */
+  over?: string;
+  bucket?: Bucket;
+  /** Keep every declared category, at zero — a legend.
+   *  TRAP T-a-legend-row-goes-inactive-it-never-vanishes */
+  keepEmpty?: boolean;
+}
+
+/** What `summarise` hands a component, by the shape it asked for. */
+export type Summary =
+  | number
+  | ChartDatum[]
+  | { value: number; values: number[]; deltaPercent?: number }
+  | { labels: string[]; series: Series[] };
+
+const CUT: Record<Bucket, number> = { year: 4, month: 7, day: 10 };
+
+function cut(value: unknown, bucket: Bucket): string {
+  return (value instanceof Date ? value.toISOString() : String(value ?? '')).slice(0, CUT[bucket]);
+}
+
+/** The bucket after `key`. UTC, so no clock change moves a day. */
+function step(key: string, bucket: Bucket): string {
+  if (bucket === 'year') return String(Number(key) + 1);
+  if (bucket === 'month') {
+    const [y = NaN, m = NaN] = key.split('-').map(Number);
+    const next = y * 12 + m;
+    return `${Math.floor(next / 12)}-${String((next % 12) + 1).padStart(2, '0')}`;
+  }
+  return new Date(Date.parse(`${key}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
+}
+
+const ascending = (a: unknown, b: unknown): number =>
+  (a as string) < (b as string) ? -1 : (a as string) > (b as string) ? 1 : 0;
+
+/**
+ * The points a series runs over: the field's declared values, or else every
+ * bucket from the first to the last — a quiet month is zero, never missing.
+ * TRAP T-a-series-has-a-value-at-every-point
+ */
+function pointsOf(rows: readonly Row[], over: string, bucket: Bucket | undefined, declared: readonly unknown[]): unknown[] {
+  const keyOf = (v: unknown): unknown => (bucket ? cut(v, bucket) : v);
+  if (declared.length) return bucket ? [...new Set(declared.map(keyOf))].sort(ascending) : [...declared];
+  const seen = [...new Set(rows.map((r) => readField(r, over)).filter((v) => v != null && v !== '').map(keyOf))]
+    .sort(ascending);
+  if (!bucket || seen.length < 2) return seen;
+  const out: string[] = [];
+  const last = seen[seen.length - 1] as string;
+  // Capped: a key the step cannot parse would otherwise never reach `last`.
+  for (let k = seen[0] as string; k <= last && out.length < 10_000; k = step(k, bucket)) out.push(k);
+  return out;
+}
+
+/**
+ * Rows into the shape a component declared — one door for every chart and
+ * tile, so a page writes attributes instead of an `as` adapter. `domain` is a
+ * field's declared values: a category keeps its slot and colour, and a series
+ * its points. TRAP T-aggregation-is-data
+ */
+export function summarise(
+  rows: readonly Row[],
+  spec: SummarySpec,
+  domain: (field: string) => readonly unknown[] = () => [],
+): Summary {
+  const kind = spec.aggregate ?? 'count';
+  const opts = spec.field ? { kind, valueField: spec.field } : { kind };
+  if (spec.shape === 'segments') {
+    if (!spec.segment) return [];
+    const order = domain(spec.segment).map(valueKey);
+    return aggregateBy(rows, spec.segment, kind, spec.field,
+      order.length ? { order, includeEmpty: spec.keepEmpty ?? false } : {});
+  }
+  const value = reduceRows(rows, kind, spec.field);
+  if (!spec.over) return spec.shape === 'aggregate' ? value : { labels: [], series: [] };
+  // A bucketed field is grouped by its cut key, under a name no row carries.
+  const at = spec.bucket ? '\u0000bucket' : spec.over;
+  const bucket = spec.bucket;
+  const keyed = bucket ? rows.map((r) => ({ ...r, [at]: cut(readField(r, spec.over!), bucket) })) : rows;
+  const points = pointsOf(rows, spec.over, bucket, domain(spec.over)) as (string | number)[];
+  if (spec.shape === 'aggregate') {
+    const values = seriesBy(keyed, at, points, '', opts).values;
+    const delta = deltaPercent(values);
+    return delta == null ? { value, values } : { value, values, deltaPercent: delta };
+  }
+  const labels = points.map(String);
+  if (!spec.segment) return { labels, series: [seriesBy(keyed, at, points, spec.field ?? kind, opts)] };
+  const groups = new Map(groupRows(keyed, spec.segment).map((g) => [g.key, g.rows]));
+  const declared = domain(spec.segment).map(valueKey);
+  const order = declared.length ? declared : [...groups.keys()];
+  // A line with no rows is gone, not flat — a legend's pick removes it. Its colour stays.
+  return {
+    labels,
+    series: order.filter((name) => spec.keepEmpty || groups.has(name)).map((name) =>
+      seriesBy(groups.get(name) ?? [], at, points, name, { ...opts, colorIndex: order.indexOf(name) + 1 })),
+  };
+}
+

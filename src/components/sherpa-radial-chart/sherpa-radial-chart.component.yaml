@@ -59,6 +59,25 @@ anatomy:
               class: slice
 props:
   - $type: prop
+    name: data-aggregate
+    type: enum
+    observed: false
+    kind: style
+    values:
+      - count
+      - sum
+      - mean
+      - min
+      - max
+      - distinct
+    description: count  | sum | mean | min | max | distinct, per value
+  - $type: prop
+    name: data-field
+    type: string
+    observed: false
+    kind: style
+    description: the number that aggregate reads
+  - $type: prop
     name: data-inner
     type: string
     observed: true
@@ -72,6 +91,12 @@ props:
     observed: true
     kind: style
     description: centre big text
+  - $type: prop
+    name: data-segment-field
+    type: string
+    observed: false
+    kind: style
+    description: "ASKED of its provider: one slice per value of this field"
   - $type: prop
     name: data-sublabel
     type: string

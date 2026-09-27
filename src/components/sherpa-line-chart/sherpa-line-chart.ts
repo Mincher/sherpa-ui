@@ -2,7 +2,8 @@
  * sherpa-line-chart — a line or area chart for one or more sets of numbers.
  * CSS owns colour, fill and width.
  */
-import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import type { DataAsk } from '../../core/ui/context.js';
 import { chartScale, formatTick, seriesBorderVar, seriesVar, tickPercent, formatValue,
   type ChartScale } from '../../core/data/format-tick.js';
 import { DEFAULT_TICKS } from '../../core/ui/shared-constants.js';
@@ -22,7 +23,10 @@ interface LineData {
 export class SherpaLineChart extends SherpaElement {
   static override css = new URL('./sherpa-line-chart.css', import.meta.url);
   static override html = new URL('./sherpa-line-chart.html', import.meta.url);
+  static override asks: DataAsk = { shape: 'series' };
+
   static override props = {
+    ...SUMMARY_PROPS,
     'data-legend': SHARED_PROPS['data-legend'],
     'data-axis-label': { type: 'string', kind: 'content', to: '.axis-label-y' },
     'data-x-axis-label': { type: 'string', kind: 'content', to: '.axis-label-x' },

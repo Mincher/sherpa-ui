@@ -11,11 +11,14 @@
  * Map:
  * - ProvideOptions — What a provider is given: its sources, by name.
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SUMMARY_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import {
   DATA_CONTEXT, SOURCE_CONTEXT, type ContextRequestEvent, type DataAsk,
 } from '../../core/ui/context.js';
 import { report } from '../../core/data/report.js';
+import { summarise, type SummarySpec } from '../../core/data/aggregate.js';
+import { bindSelection, type Selector } from '../../core/data/bind-selection.js';
+import { valueKey } from '../../core/data/store.js';
 import type { DataSource } from '../../core/data/data-source.js';
 import type { Populatable } from '../../core/ui/apply-state.js';
 
@@ -23,6 +26,25 @@ import type { Populatable } from '../../core/ui/apply-state.js';
 export interface ProvideOptions {
   sources: Record<string, DataSource>;
 }
+
+/** The attribute a summary needs before it asks; without it a page populates it.
+ *  TRAP T-a-component-declares-its-summary */
+const DECLARED_BY: Partial<Record<DataAsk['shape'], string>> = {
+  aggregate: 'data-aggregate', segments: 'data-segment-field', series: 'data-over-field',
+};
+
+/** Each summary attribute, and the key it fills in a `SummarySpec`. */
+const SPEC_KEYS = [
+  ['aggregate', 'data-aggregate'], ['field', 'data-field'], ['segment', 'data-segment-field'],
+  ['over', 'data-over-field'], ['bucket', 'data-bucket'],
+] as const;
+
+/** A component that picks values, through its `picked` door. */
+type Picker = Element & { picked: string[] };
+
+/** The element above this one, across a shadow root. */
+const up = (el: Element): Element | null =>
+  el.parentElement ?? ((el.getRootNode() as ShadowRoot).host ?? null);
 
 /** One component that asked, and how to stop answering it. */
 interface Asked {
@@ -89,16 +111,21 @@ export class SherpaProvider extends SherpaElement {
     // Bound by hand already — the page's own bind stands, and is not doubled.
     if (source.boundElements.includes(el as Populatable)) return;
     const asks = (el.constructor as { asks?: DataAsk }).asks ?? { shape: 'rows' };
+    const spec = DECLARED_BY[asks.shape] ? this.#spec(el, asks) : undefined;
+    // A summary nobody declared is the page's to populate.
+    if (DECLARED_BY[asks.shape] && !spec) return;
     const leave = (): void => {
       asked.unbind?.();
       this.#asked.delete(el);
     };
-    const scope = el.getAttribute('data-scope');
-    asked.unbind = source.bind(el as Populatable, {
-      rows: asks.shape === 'all' ? 'all' : 'page',
+    const scope = this.#inherited(el, 'data-scope');
+    const unbind = source.bind(el as Populatable, {
+      rows: asks.shape === 'rows' || asks.shape === 'state' ? 'page' : 'all',
       steerOnly: asks.shape === 'state',
       ...(asks.own ? { ignore: asks.own } : {}),
       ...(scope ? { scope } : {}),
+      /* A summary SHOWS the data and never steers it. TRAP T-aggregation-is-data */
+      ...(spec ? { readonly: true, as: (rows, src) => summarise(rows, spec, (f) => src.valuesFor(f)) } : {}),
       // A page of rows arrives WITH its groups: a group is the data layer's.
       // TRAP T-a-group-is-a-data-layer-concept
       ...(asks.shape === 'rows'
@@ -106,8 +133,75 @@ export class SherpaProvider extends SherpaElement {
         : {}),
       deliver: (payload) => callback(payload, leave),
     });
+    const unpick = spec && asks.picks ? this.#picks(el as Picker, source, spec, asks.picks) : undefined;
+    asked.unbind = () => {
+      unpick?.();
+      unbind();
+    };
     // State only: no rows ever come, so it is handed its way out now.
     if (asks.shape === 'state') callback(undefined, leave);
+  }
+
+  /** An attribute from the asking element, or the nearest one above it — a
+   *  legend reads its chart's, a nested pager its grid's. Stops here. */
+  #inherited(el: Element, name: string): string | null {
+    for (let n: Element | null = el; n && n !== this; n = up(n)) {
+      const value = n.getAttribute(name);
+      if (value !== null) return value;
+    }
+    return null;
+  }
+
+  /** The summary a component declared, as JSON — or none, and it waits. */
+  #spec(el: Element, asks: DataAsk): SummarySpec | undefined {
+    if (!this.#inherited(el, DECLARED_BY[asks.shape]!)) return undefined;
+    const spec: Record<string, unknown> = { shape: asks.shape };
+    for (const [key, attr] of SPEC_KEYS) {
+      const value = this.#inherited(el, attr);
+      if (value) spec[key] = value;
+    }
+    const kinds: readonly string[] = SUMMARY_PROPS['data-aggregate'].values;
+    if (spec['aggregate'] && !kinds.includes(spec['aggregate'] as string)) {
+      report({
+        code: 'provider-unknown-aggregate',
+        message: 'sherpa-provider: data-aggregate names no aggregate, so nothing is summarised.',
+        at: { tag: el.localName, aggregate: String(spec['aggregate']), offers: kinds.join(',') },
+      });
+      return undefined;
+    }
+    if (asks.keepEmpty) spec['keepEmpty'] = true;
+    return spec as unknown as SummarySpec;
+  }
+
+  /**
+   * A component that PICKS values of its segment field — a legend. Its pick
+   * narrows its host (its chart) and nothing else: component reach.
+   * TRAP T-a-legend-toggle-is-a-filter
+   * TRAP T-a-component-part-narrows-one-component
+   */
+  #picks(el: Picker, source: DataSource, spec: SummarySpec, picks: NonNullable<DataAsk['picks']>): (() => void) | undefined {
+    const field = spec.segment ?? '';
+    const values = source.valuesFor(field).map(valueKey);
+    if (!values.length) {
+      report({
+        code: 'provider-picks-undeclared',
+        message: "sherpa-provider: a component that picks needs its field's values declared, so this one only shows.",
+        at: { tag: el.localName, field },
+      });
+      return undefined;
+    }
+    const only = picks.narrows === 'host' ? up(el) : el;
+    return bindSelection(el, source as unknown as Selector, {
+      field,
+      values,
+      read: (c) => c.picked,
+      draw: (c, picked) => { c.picked = [...picked]; },
+      event: picks.event,
+      reach: 'component',
+      ...(only ? { only } : {}),
+      // One part per component, or the second would replace the first.
+      key: `picks:${el.id || field}`,
+    }).destroy;
   }
 
   /**
@@ -117,7 +211,7 @@ export class SherpaProvider extends SherpaElement {
    */
   #resolve(el: Element): DataSource | null {
     const names = Object.keys(this.#sources);
-    const named = el.getAttribute('data-source');
+    const named = this.#inherited(el, 'data-source');
     if (named) {
       const source = this.#sources[named];
       if (!source && names.length) {

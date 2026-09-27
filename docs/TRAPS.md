@@ -7548,8 +7548,6 @@ exists to prevent.
 - Site: `src/core/data/bind-selection.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
-- Site: `examples/contexts/records.js`
-- Site: `examples/contexts/dashboard.js`
 
 ### T-one-filters-button
 
@@ -9924,6 +9922,7 @@ still returns rows.
 
 - Site: `src/core/data/aggregate.ts`
 - Site: `examples/contexts/dashboard.js`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
 
 ### T-one-scale-for-every-chart
 
@@ -10448,7 +10447,6 @@ Two related choices in the same module:
   `T-number-of-null-is-zero`.
 
 - Site: `src/core/data/aggregate.ts`
-- Site: `examples/contexts/dashboard.js`
 - Site: `examples/contexts/records.js`
 
 ### T-number-of-null-is-zero
@@ -10503,6 +10501,7 @@ category nothing matched is noise, unless the categories are a fixed scale
 - Site: `examples/contexts/dashboard-data.js`
 - Site: `examples/contexts/records.js`
 - Site: `src/core/data/aggregate.ts`
+- Site: `examples/contexts/dashboard.js`
 
 ### T-the-last-band-includes-its-top
 
@@ -11164,7 +11163,6 @@ See `T-a-legend-toggle-is-a-filter` for the other half — a legend click writes
 - Site: `src/core/data/aggregate.ts`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.css`
-- Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-chart-legend.spec.ts`
 - Site: `test/unit/filter-state.test.mjs`
 ### T-a-legend-toggle-is-a-filter
@@ -11216,6 +11214,8 @@ there is nothing to filter on and inventing a field would be a lie.
 
 - Site: `examples/contexts/dashboard.js`
 - Site: `examples/contexts/records.js`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 
 ### T-a-legend-remembers-its-off-set-by-label
 
@@ -11519,6 +11519,7 @@ that follows is what makes it read as unset.
 - Site: `test/unit/field-selection.test.mjs`
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `src/core/data/filter-state.ts`
+- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 ### T-a-breakdown-pick-is-a-legend-pick
 
 Unticking a folded category in the "Other" breakdown menu did NOTHING to the
@@ -12425,8 +12426,6 @@ arrived and the tile read `-0.6211180124223602%`. **Two decimals** (Will,
 
 - Site: `src/core/data/aggregate.ts`
 - Site: `src/components/sherpa-metric/sherpa-metric.ts`
-- Site: `examples/contexts/dashboard.js`
-- Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-metric.spec.ts`
 
 ### T-a-draft-dies-with-its-menu
@@ -13372,6 +13371,70 @@ never been bound.
 - Site: `src/core/data/query.ts`
 - Site: `test/unit/query.test.mjs`
 
+### T-a-component-declares-its-summary
+
+**A chart or tile says what it needs of the rows in its ATTRIBUTES, and its
+provider hands back that shape.** Provider P2, 2026-09-27. Before it, every
+Context wrote an `as` adapter per chart and tile — `countBy`, `seriesBy`,
+`tile()`, `money()`, `overMonths()` — about 110 lines in Records and most of
+the Dashboard.
+
+| shape (`static asks`) | declared by | hands back | who |
+|---|---|---|---|
+| `aggregate` | `data-aggregate` (+ `data-field`) | one number — or `{ value, values, deltaPercent }` with `data-over-field` | metric, gauge |
+| `segments` | `data-segment-field` | one datum per value | bar, donut, legend |
+| `series` | `data-over-field` (+ `data-segment-field`) | `{ labels, series }` — one line per value | line |
+
+`summarise()` in `aggregate.ts` is the one DOM-free door; the provider only
+reads the attributes into its JSON. Five things to know:
+
+- **Nothing declared, nothing asked.** A chart with no declaration is a page's
+  to populate by hand, as before — the escape hatch for a bespoke summary (the
+  Records gauge shows RISK, `100 − mean(health)`).
+- **A child reads the nearest declaration above it.** A legend in a chart's
+  `legend` slot uses its chart's field, a nested pager its grid's
+  `data-source`, like CSS inheritance. It stops at the provider.
+- **Order is the field's DECLARED values** (`declareValues`), so a category
+  keeps its slot and colour, and a series its points. Declare them BEFORE
+  `provide()`: a legend picks from them when it is answered, and one answered
+  with none reports `provider-picks-undeclared` and only shows. With no
+  declared points, a bucketed series fills every step from first to last.
+- **A legend's pick narrows its chart alone** — through its `picked` door,
+  wired by `bindSelection` with component reach.
+- **A component's OWN filter is not here yet.** A View pick replaces the whole
+  Query, so a default reading written by a component would vanish. The
+  Dashboard's Critical tile stays bound by hand until the Query holds a
+  component's defaults (provider P3).
+
+A new declaration asks again: the base class leaves and re-asks when a
+`SUMMARY_PROPS` attribute, `data-source` or `data-scope` changes.
+
+- Site: `examples/contexts/dashboard.js`
+- Site: `examples/contexts/records.js`
+- Site: `examples/templates/dashboard.html`
+- Site: `examples/templates/records.html`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `test/e2e/reforged-provider-summary.spec.ts`
+
+### T-a-format-is-the-platforms
+
+**A number's format is the platform's own `Intl.NumberFormatOptions`, as JSON
+— never a mini-language of ours.** Will, 2026-09-27: *"No need to reinvent
+foundational things that we already get for free."* `sherpa-metric` reads
+`data-format='{"style":"currency","currency":"USD","maximumFractionDigits":0}'`
+and hands it to `Intl.NumberFormat` in the reader's locale. Undeclared, it
+uses the library's one format (`formatValue`). JSON that does not parse, or
+options Intl refuses, report `metric-bad-format` and fall back — never a blank
+tile. The data layer never formats: it returns the number
+(`T-an-aggregate-returns-the-number`).
+
+**Exact strings differ by engine and locale** (`1.3M` in Node, `1.3m` in a
+browser), so a test compares against `Intl`'s own output in the same page,
+never a literal.
+
+- Site: `src/components/sherpa-metric/sherpa-metric.ts`
+
 ### T-a-component-asks-its-provider
 
 **A component ASKS; the nearest `sherpa-provider` above it ANSWERS.** Will,
@@ -13760,9 +13823,8 @@ applies them, which is why none of them caught it; the new test uses a real
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/query.ts`
 - Site: `src/core/data/bind-selection.ts`
-- Site: `examples/contexts/dashboard.js`
-- Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
 
 ### T-one-query-one-owner
 

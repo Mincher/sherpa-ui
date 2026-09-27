@@ -7,6 +7,11 @@
     data-axis-label  y-axis caption (shown when set)
     data-x-axis-label  x-axis caption (shown when set)
     data-ticks       number of y gridlines/values (default 4)
+    data-over-field     ASKED of its provider: the x axis runs over this field
+    data-bucket         a date over-field, cut to day | month | year
+    data-segment-field  one line per value of this field
+    data-aggregate      count (default) | sum | mean | min | max | distinct, per point
+    data-field          the number that aggregate reads
 
   Slots:
     title   — heading above the chart (data-accepts: text, inline)

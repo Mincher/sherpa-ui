@@ -3,8 +3,10 @@
  *
  * @method populate(data: MetricData) — the single data path
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SUMMARY_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import { formatValue } from '../../core/data/format-tick.js';
+import { report } from '../../core/data/report.js';
+import type { DataAsk } from '../../core/ui/context.js';
 import '../sherpa-sparkline/sherpa-sparkline.js';
 
 interface MetricData {
@@ -41,17 +43,12 @@ type Sparkline = HTMLElement & { populate?: (v: number[]) => void };
 
 /**
  * The number a tile shows when the caller gave none: the LAST reading, or the
- * sum. Grouped, because a total runs large. TRAP T-a-total-says-so-in-its-label
+ * sum. TRAP T-a-total-says-so-in-its-label
  */
-function deriveValue(values?: number[], show?: 'last' | 'total'): string | null {
-  if (!values?.length) return null;
-  const usable = values.filter((v) => Number.isFinite(v));
+function deriveValue(values?: number[], show?: 'last' | 'total'): number | null {
+  const usable = (values ?? []).filter((v) => Number.isFinite(v));
   if (!usable.length) return null;
-  const n = show === 'total'
-    ? usable.reduce((sum, v) => sum + v, 0)
-    : usable[usable.length - 1]!;
-  // ONE number format for the library. TRAP T-a-tooltip-is-not-an-axis
-  return formatValue(n);
+  return show === 'total' ? usable.reduce((sum, v) => sum + v, 0) : usable[usable.length - 1]!;
 }
 
 export class SherpaMetric extends SherpaElement {
@@ -64,7 +61,12 @@ export class SherpaMetric extends SherpaElement {
      and `data-status` by the `--_status-*` cascade, which has no selector to
      grep for. Undeclared, the second looked like a half-finished rename.
      TRAP T-metric-status-follows-the-trend */
+  static override asks: DataAsk = { shape: 'aggregate' };
+
   static override props = {
+    ...SUMMARY_PROPS,
+    /** The value's `Intl.NumberFormatOptions`, as JSON. TRAP T-a-format-is-the-platforms */
+    'data-format': { type: 'string', kind: 'style' },
     'data-trend': { type: 'enum', kind: 'style', values: ['up', 'down', 'flat'] },
     'data-status': { type: 'enum', kind: 'style', values: ['success', 'critical'] },
   } as const;
@@ -79,7 +81,8 @@ export class SherpaMetric extends SherpaElement {
 
   /** The data path. */
   protected override renderData(source: unknown): void {
-    const data = (source ?? {}) as MetricData;
+    // A provider's aggregate is a bare number when it runs over no field.
+    const data = (typeof source === 'number' ? { value: source } : source ?? {}) as MetricData;
 
     /* A TOTAL names itself. Two tiles reading "Alerts 1,284" and "Alerts 37"
        are indistinguishable without it. TRAP T-a-total-says-so-in-its-label */
@@ -93,7 +96,7 @@ export class SherpaMetric extends SherpaElement {
     /* An explicit `value` wins: deriving over the caller's own number would
        silently disagree with it. Otherwise the series answers. */
     const derived = data.value ?? deriveValue(data.values, data.show);
-    if (derived != null) this.dataset['value'] = String(derived);
+    if (derived != null) this.dataset['value'] = typeof derived === 'number' ? this.#format(derived) : derived;
 
     if (data.delta != null) {
       this.dataset['delta'] = data.delta;
@@ -120,6 +123,25 @@ export class SherpaMetric extends SherpaElement {
   }
 
   /* ── Private ─────────────────────────────────────────────────────────── */
+
+  /** A number, as `data-format` declares — the platform's own
+   *  `Intl.NumberFormatOptions`, as JSON. Undeclared, the library's one format.
+   *  TRAP T-a-format-is-the-platforms
+   *  TRAP T-a-tooltip-is-not-an-axis */
+  #format(n: number): string {
+    const declared = this.getAttribute('data-format');
+    if (!declared) return formatValue(n);
+    try {
+      return new Intl.NumberFormat(undefined, JSON.parse(declared) as Intl.NumberFormatOptions).format(n);
+    } catch {
+      report({
+        code: 'metric-bad-format',
+        message: 'sherpa-metric: data-format is not Intl.NumberFormatOptions as JSON, so the plain format is used.',
+        at: { format: declared },
+      });
+      return formatValue(n);
+    }
+  }
 
   /** Mirror the data-* text into the shadow spans. */
   #sync(): void {

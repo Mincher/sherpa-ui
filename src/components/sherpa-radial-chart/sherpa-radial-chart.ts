@@ -12,7 +12,8 @@
  * - RadialSlice — One slice — an alias of the shared `ChartDatum`.
  */
 import { datumTotal, type ChartDatum } from '../../core/data/chart-datum.js';
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SUMMARY_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import type { DataAsk } from '../../core/ui/context.js';
 import { radialArea, ringSegmentPath, seriesBorderVar, seriesVar, formatValue } from '../../core/data/format-tick.js';
 import { RADIAL_CENTRE as CENTRE, RADIAL_CORNER as CORNER,
   RADIAL_OUTLINE as OUTLINE, RADIAL_INNER_RATIO } from '../../core/ui/shared-constants.js';
@@ -25,6 +26,8 @@ const MIN_SHARE = 0.005;
 export class SherpaRadialChart extends SherpaElement {
   static override css = new URL('./sherpa-radial-chart.css', import.meta.url);
   static override html = new URL('./sherpa-radial-chart.html', import.meta.url);
+  static override asks: DataAsk = { shape: 'segments' };
+  static override props = { ...SUMMARY_PROPS } as const;
   static override observed = [
     'data-label', 'data-sublabel', 'data-type',
     // The arc. A gauge is this ring stopped short — 270° for 180°.

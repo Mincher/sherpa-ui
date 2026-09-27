@@ -164,8 +164,10 @@ of the Query folds into its P2. Target: `records.js` 853 → ~250 lines of code,
 `dashboard.js` 222 → ~50. Closes most of 37 and 38.
 
 **P1 built `ffc48935`** — the provider, the Context Protocol, the grid and
-pager ask. The centralisation audit is `PROVIDER-DESIGN.md` §9, for review.
-**Next: P2** — the `data` shapes and step 8.
+pager ask. **P2 built** — charts, tiles and legends DECLARE what they need
+(`aggregate`, `segments`, `series`); the pages lost their adapters. The
+centralisation audit is `PROVIDER-DESIGN.md` §9, for review. **Next:** §9
+items 9 and 13 (Will: "B then A"), then P3 — the `scope` and `query` keys.
 
 ### `[ ]` 86 — AUDIT: every component's functions and events — one request, one response, standardised in `SherpaElement`
 

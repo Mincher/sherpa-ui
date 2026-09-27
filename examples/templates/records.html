@@ -9,18 +9,22 @@
      TRAP T-a-content-grid-has-two-row-modes -->
 <sherpa-layout-grid data-rows="fit" data-row-count="5">
 
-  <!-- SUMMARIES OF THE SAME ROWS. Every one is bound to the Context's DataSource
-       with an `as` adapter, so a filter set anywhere re-computes all of them.
-       Nothing here is hardcoded and nothing recounts by hand.
-       records.js binds each one with `scope: 'all'`. -->
-  <sherpa-metric id="m-customers" data-col-span="xsmall"></sherpa-metric>
-  <sherpa-metric id="m-spend" data-col-span="xsmall"></sherpa-metric>
-  <sherpa-metric id="m-seats" data-col-span="xsmall"></sherpa-metric>
-  <sherpa-metric id="m-tickets" data-col-span="xsmall"></sherpa-metric>
+  <!-- SUMMARIES OF THE SAME ROWS. Each DECLARES what it needs, and its provider
+       answers, so a filter set anywhere re-computes all of them. Each sparkline
+       runs over the month a customer joined. TRAP T-a-component-declares-its-summary -->
+  <sherpa-metric id="m-customers" data-col-span="xsmall" data-label="Customers"
+                 data-aggregate="count" data-over-field="created" data-bucket="month"></sherpa-metric>
+  <sherpa-metric id="m-spend" data-col-span="xsmall" data-label="Total spend"
+                 data-aggregate="sum" data-field="spend" data-over-field="created" data-bucket="month"
+                 data-format='{"style":"currency","currency":"USD","maximumFractionDigits":0}'></sherpa-metric>
+  <sherpa-metric id="m-seats" data-col-span="xsmall" data-label="Seats"
+                 data-aggregate="sum" data-field="seats" data-over-field="created" data-bucket="month"></sherpa-metric>
+  <sherpa-metric id="m-tickets" data-col-span="xsmall" data-label="Open tickets"
+                 data-aggregate="sum" data-field="openTickets" data-over-field="created" data-bucket="month"></sherpa-metric>
 
   <sherpa-container data-col-span="medium" data-row-span="3">
     <sherpa-container-header slot="header" data-heading="By status"></sherpa-container-header>
-    <sherpa-barchart id="r-bar" data-legend="horizontal">
+    <sherpa-barchart id="r-bar" data-legend="horizontal" data-segment-field="status">
       <sherpa-chart-legend slot="legend" id="r-bar-legend"
                            data-orientation="horizontal"></sherpa-chart-legend>
     </sherpa-barchart>
@@ -30,7 +34,7 @@
     <sherpa-container-header slot="header" data-heading="By plan"></sherpa-container-header>
     <!-- No data-label: the centre TOTALS what the ring draws, so it follows
          every filter. TRAP T-the-centre-totals-what-the-ring-draws -->
-    <sherpa-radial-chart id="r-donut" data-sublabel="customers">
+    <sherpa-radial-chart id="r-donut" data-sublabel="customers" data-segment-field="plan">
       <sherpa-chart-legend slot="legend" id="r-donut-legend"
                            data-orientation="vertical"></sherpa-chart-legend>
     </sherpa-radial-chart>

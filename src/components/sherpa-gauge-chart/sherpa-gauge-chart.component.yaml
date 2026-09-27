@@ -92,11 +92,23 @@ anatomy:
               class: zone
 props:
   - $type: prop
+    name: data-aggregate
+    type: string
+    observed: false
+    kind: style
+    description: "ASKED of its provider: count | sum | mean | min | max | distinct"
+  - $type: prop
     name: data-caption
     type: string
     observed: true
     kind: style
     description: caption text shown below the arc (e.g. "30GB of 60GB used")
+  - $type: prop
+    name: data-field
+    type: string
+    observed: false
+    kind: style
+    description: the number that aggregate reads
   - $type: prop
     name: data-label
     type: string

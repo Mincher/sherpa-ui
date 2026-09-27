@@ -166,13 +166,19 @@ door for page code and tests, every component's events, the JSON Views.
 | step | builds | deletes | proves |
 |---|---|---|---|
 | P1 ✅ | `sherpa-provider`, `ContextRequestEvent`, the `source` key; a component that asks joins the source as `bind()` joins it. **Built `ffc48935`**: the grid asks for rows, the pager for state; Records drops their binds | — | `test/e2e/reforged-provider.spec.ts`, all three engines |
-| P2 | the `data` key and its five shapes; step 8 of the Query: aggregate and segment in a component scope, `Intl` formats | the charts' and tiles' `as` adapters, `money`, `overMonths`, their binds | the chart and metric tests, with no adapter |
+| P2 ✅ | the summary shapes — `aggregate`, `segments`, `series` — declared by attributes (`SUMMARY_PROPS`) and answered by `summarise()`; a child reads the nearest declaration above it; a legend picks for its chart; `data-format` is `Intl.NumberFormatOptions` | Records' and the Dashboard's tile, chart and legend adapters, `money`, `overMonths`, `bindLegend`, the line legend's hide — pages −168 lines | `reforged-provider-summary.spec.ts`; `aggregate.test.mjs` |
 | P3 | the `scope` and `query` keys: bars, panel, grid headings and legends ask | `syncScopes`, the header listener, panel fill and routing, `showChip`, raise/lower glue | the Records filter suite |
 | P4 | the `definition` key: the View chip asks; the provider applies, saves and keeps the session Query | `onViewPicked` wiring and session code in each Context | the view tests |
 | P5 | `export` / `import` — the Query and Views out and in, as JSON | — | a round trip through JSON gives the same rows |
 | later | `template` (with 68), WebMCP (76) | — | — |
 
 The size gate shows each step's deletions.
+
+**Left for P3 and P4, on purpose.** A component's OWN filter (the Dashboard's
+Critical tile) needs the Query to hold a component's defaults, or a View pick
+wipes it — P3. The Records gauge shows risk (`100 − mean(health)`), a bespoke
+summary a page binds by hand, which stays. A View's rendered content (the
+histogram, the fullest-devices grid) is bound by the page until P4.
 
 ---
 
@@ -183,6 +189,7 @@ The size gate shows each step's deletions.
 | 1 | the provider's name | **A** — `sherpa-provider` |
 | 2 | how a control's request travels back | **A** — as the events it fires today; the provider routes them |
 | 3 | the name for the part of the page a provider wraps | **subtree** — the element and everything under it. Never "region": that is a field in the example data |
+| 4 | a component inside another (a pager in a grid, a legend in a chart) | the provider reads `data-source`, `data-scope` and a summary declaration from the NEAREST element above it, like CSS inheritance. Recommended (A) and built in P2; Will may still pick B, the parent answering for its children |
 
 And a standing ask: *"Look for opportunities to refactor code to be simpler,
 and leaner, with this improvement. I suspect that a lot of sherpa-elements

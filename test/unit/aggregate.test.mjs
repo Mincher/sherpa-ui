@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 
 // The DATA tier — src/core is split by where a module can run.
 const core = new URL('../../dist/core/data/', import.meta.url);
-const { aggregateBy, countBy, bandBy, seriesBy, reduceRows } =
+const { aggregateBy, countBy, bandBy, seriesBy, reduceRows, summarise } =
   await import(new URL('aggregate.js', core));
 
 const ROWS = [
@@ -160,3 +160,49 @@ test('the module touches NO DOM', () => {
   // import, which no browser test would ever notice.
   assert.equal(typeof globalThis.document, 'undefined');
 });
+
+/* ── summarise: a component's declaration → its shape ─────────────────── */
+
+const SALES = [
+  { plan: 'Pro', spend: 10, created: '2024-01-05', region: 'EMEA' },
+  { plan: 'Free', spend: 0, created: '2024-01-20', region: 'EMEA' },
+  { plan: 'Pro', spend: 30, created: '2024-03-02', region: 'AMER' },
+];
+
+test('summarise: an aggregate is ONE number; over a field it is a tile — value, values, delta', () => {
+  assert.equal(summarise(SALES, { shape: 'aggregate', aggregate: 'sum', field: 'spend' }), 40);
+  assert.equal(summarise(SALES, { shape: 'aggregate', aggregate: 'distinct', field: 'region' }), 2);
+  // February has no rows and is still a point: a quiet month is zero, never missing.
+  assert.deepEqual(
+    summarise(SALES, { shape: 'aggregate', aggregate: 'sum', field: 'spend', over: 'created', bucket: 'month' }),
+    { value: 40, values: [10, 0, 30], deltaPercent: 200 },
+  );
+});
+
+test('summarise: segments keep the DECLARED order and colour, and a legend keeps an empty one', () => {
+  const domain = (f) => (f === 'plan' ? ['Free', 'Starter', 'Pro'] : []);
+  const chart = summarise(SALES, { shape: 'segments', segment: 'plan' }, domain);
+  assert.deepEqual(chart.map((d) => [d.label, d.value, d.colorIndex]), [['Free', 1, 1], ['Pro', 2, 3]]);
+  const legend = summarise(SALES, { shape: 'segments', segment: 'plan', keepEmpty: true }, domain);
+  assert.deepEqual(legend.map((d) => d.label), ['Free', 'Starter', 'Pro']);
+});
+
+test('summarise: a series draws one line per segment, over the declared points', () => {
+  // `info` has no rows: its line is gone, and `warning` keeps its colour.
+  const domain = (f) => ({ day: [1, 2, 3], sev: ['critical', 'info', 'warning'] })[f] ?? [];
+  const rows = [{ day: 1, sev: 'critical' }, { day: 3, sev: 'critical' }, { day: 3, sev: 'warning' }];
+  const out = summarise(rows, { shape: 'series', over: 'day', segment: 'sev' }, domain);
+  assert.deepEqual(out.labels, ['1', '2', '3']);
+  assert.deepEqual(out.series.map((s) => [s.name, s.values, s.colorIndex]),
+    [['critical', [1, 0, 1], 1], ['warning', [0, 0, 1], 3]]);
+});
+
+test('summarise: a declared date domain is cut to its bucket; a year steps across its end', () => {
+  const domain = (f) => (f === 'created' ? ['2023-12-31', '2024-02-01'] : []);
+  const out = summarise(SALES, { shape: 'aggregate', over: 'created', bucket: 'month' }, domain);
+  // Only the declared months — the domain is the axis, not the rows.
+  assert.deepEqual(out.values, [0, 0]);
+  const span = summarise([{ d: '2023-12-30' }, { d: '2024-01-02' }], { shape: 'series', over: 'd', bucket: 'day' });
+  assert.deepEqual(span.labels, ['2023-12-30', '2023-12-31', '2024-01-01', '2024-01-02']);
+});
+

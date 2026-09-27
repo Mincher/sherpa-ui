@@ -6,6 +6,11 @@
     data-value   — the formatted value string (big number)
     data-delta   — the change text (e.g. "+12.5%")
     data-trend   — up | down | flat  (colours the delta + shows the arrow)
+    data-aggregate  — ASKED of its provider: count | sum | mean | min | max | distinct
+    data-field      — the number that aggregate reads
+    data-over-field — the sparkline runs over this field
+    data-bucket     — a date over-field, cut to day | month | year
+    data-format     — the value's Intl.NumberFormatOptions, as JSON
 
   Slots: none — display only.
   Fires: nothing.

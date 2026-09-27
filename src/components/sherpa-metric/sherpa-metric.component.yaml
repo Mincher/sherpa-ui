@@ -53,17 +53,47 @@ anatomy:
             - el: sherpa-sparkline
 props:
   - $type: prop
+    name: data-aggregate
+    type: string
+    observed: false
+    kind: style
+    description: "— ASKED of its provider: count | sum | mean | min | max | distinct"
+  - $type: prop
+    name: data-bucket
+    type: string
+    observed: false
+    kind: style
+    description: — a date over-field, cut to day | month | year
+  - $type: prop
     name: data-delta
     type: string
     observed: true
     kind: style
     description: — the change text (e.g. "+12.5%")
   - $type: prop
+    name: data-field
+    type: string
+    observed: false
+    kind: style
+    description: — the number that aggregate reads
+  - $type: prop
+    name: data-format
+    type: string
+    observed: false
+    kind: style
+    description: — the value's Intl.NumberFormatOptions, as JSON
+  - $type: prop
     name: data-label
     type: string
     observed: true
     kind: style
     description: — the metric name (shown above the value)
+  - $type: prop
+    name: data-over-field
+    type: string
+    observed: false
+    kind: style
+    description: — the sparkline runs over this field
   - $type: prop
     name: data-trend
     type: string

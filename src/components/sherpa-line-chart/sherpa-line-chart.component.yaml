@@ -80,11 +80,36 @@ anatomy:
               class: y-value
 props:
   - $type: prop
+    name: data-aggregate
+    type: enum
+    observed: false
+    kind: style
+    values:
+      - count
+      - sum
+      - mean
+      - min
+      - max
+      - distinct
+    description: count  | sum | mean | min | max | distinct, per point
+  - $type: prop
     name: data-axis-label
     type: string
     observed: false
     kind: content
     description: y-axis caption (shown when set)
+  - $type: prop
+    name: data-bucket
+    type: string
+    observed: false
+    kind: style
+    description: a date over-field, cut to day | month | year
+  - $type: prop
+    name: data-field
+    type: string
+    observed: false
+    kind: style
+    description: the number that aggregate reads
   - $type: prop
     name: data-max
     type: string
@@ -97,6 +122,18 @@ props:
     observed: true
     kind: style
     description: y-scale bounds (else derived)
+  - $type: prop
+    name: data-over-field
+    type: string
+    observed: false
+    kind: style
+    description: "ASKED of its provider: the x axis runs over this field"
+  - $type: prop
+    name: data-segment-field
+    type: string
+    observed: false
+    kind: style
+    description: one line per value of this field
   - $type: prop
     name: data-ticks
     type: string

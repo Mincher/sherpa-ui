@@ -9,14 +9,14 @@ import {
   ArrayStore, DataSource, VIEW_SCOPE, viewOptions, onViewPicked,
   loadSavedViews, saveViewAs,
   // Aggregation lives in the data layer, not here. TRAP T-aggregation-is-data.
-  countBy, bandBy, seriesBy, reduceRows, deltaPercent, bindSelection,
+  bandBy, summarise,
 } from '../../dist/index.js';
 import { globalFilters } from './global-filters.js';
 import { namePrompt } from './ask-name.js';
 import { DASHBOARD_VIEWS } from './dashboard-views.js';
 import { customerStore, customersReady } from './records-data.js';
 import {
-  alerts, CATEGORY_ORDER, OS_ORDER, DAY_ORDER, STORAGE_EDGES, customerOrgs,
+  alerts, CATEGORY_ORDER, OS_ORDER, DAY_ORDER, SEVERITY_ORDER, STORAGE_EDGES, customerOrgs,
 } from './dashboard-data.js';
 
 export async function init(root) {
@@ -72,12 +72,17 @@ export async function init(root) {
   await header?.populate(headerConfig);
   header?.setAttribute('data-notifications', '4');
 
-  // ONE SOURCE, EIGHT BOUND COMPONENTS: a filter set once fans out to every
-  // visualisation. Each chart is a different summary of the same records,
-  // computed by its own `as` adapter. Every bind is readonly — a chart shows
-  // the data, only the header's toolbar steers it.
+  /* ONE SOURCE, and the PROVIDER answers the page: each chart and tile
+     DECLARES what it needs of the rows in dashboard.html and asks, so a filter
+     set once re-summarises every one. TRAP T-a-component-declares-its-summary */
   const source = new DataSource({ store: new ArrayStore(alerts(), { key: 'id' }) });
   source.declareField('storage', { type: 'number' });
+  // A category keeps its slot and colour; a quiet day keeps its point.
+  // TRAP T-a-category-keeps-its-colour
+  source.declareValues('category', CATEGORY_ORDER);
+  source.declareValues('os', OS_ORDER);
+  source.declareValues('day', DAY_ORDER);
+  source.declareValues('severity', SEVERITY_ORDER);
 
   // Two lifetimes, two AbortControllers. `page` lasts while this Context is
   // mounted; `content` is shorter, because a Context's own elements are replaced
@@ -85,14 +90,11 @@ export async function init(root) {
   const page = new AbortController();
   let content = new AbortController();
 
-  /* Every one of these is a SUMMARY, so `rows: 'all'`: the default bind hands
-     over the page, and this source declares no pageSize only by luck — one day
-     it will, and a chart counting a window looks perfectly reasonable.
-     TRAP T-a-summary-binds-to-all-the-rows */
-  const show = (sel, as) => {
-    const el = $(sel);
-    if (el) source.bind(el, { readonly: true, rows: 'all', as, signal: page.signal });
-  };
+  const provider = document.querySelector('sherpa-provider');
+  provider?.provide({ sources: { alerts: source } });
+  // Gone with the Context, so the next one's components never reach this source.
+  page.signal.addEventListener('abort', () => provider?.provide({ sources: {} }), { once: true });
+
   const bindContent = (el, as) => {
     if (el) source.bind(el, { readonly: true, as, signal: content.signal });
   };
@@ -101,67 +103,24 @@ export async function init(root) {
     content = new AbortController();
   };
 
-  // A chart and its legend share ONE array — a legend row is a chart datum.
-  // Sharing also keeps the source's skip-if-unchanged guard, which compares
-  // by identity.
-  const byCategory = (rows) => countBy(rows, 'category', { order: CATEGORY_ORDER });
-  const byOs = (rows) => countBy(rows, 'os', { order: OS_ORDER });
+  /* CRITICAL narrows its OWN rows, and a component's own filter is the Query's
+     to hold (provider P3). Until then it is bound by hand, through the same
+     summary a declaration gets. TRAP T-a-summary-binds-to-all-the-rows */
+  const critical = $('#m-alerts');
+  if (critical) {
+    source.bind(critical, {
+      readonly: true, rows: 'all', signal: page.signal,
+      as: (rows, src) => summarise(rows.filter((r) => r.severity === 'critical'),
+        { shape: 'aggregate', over: 'day' }, (f) => src.valuesFor(f)),
+    });
+  }
 
-  /* METRIC TILES, derived. They used to be a hardcoded table populated before
-     the source even existed, so a filter never touched them. Each is now the
-     same rows reduced a different way, and the sparkline is a real series over
-     the day field rather than a drawn squiggle. */
-  /* `deltaPercent` from the series the tile already draws. A tile handed only
-     a label and a value is GREY: it derives its trend from the delta and its
-     status from the trend, so without one there is nothing to colour.
-     TRAP T-a-delta-is-derived-not-declared */
-  const tile = (label, value, values) => ({
-    label, value, values, deltaPercent: deltaPercent(values) ?? undefined,
-  });
-
-  show('#m-endpoints', (rows) =>
-    tile('Alerts', rows.length, seriesBy(rows, 'day', DAY_ORDER, 'Alerts').values));
-  show('#m-alerts', (rows) => {
-    const critical = rows.filter((r) => r.severity === 'critical');
-    return tile('Critical', critical.length,
-      seriesBy(critical, 'day', DAY_ORDER, 'Critical').values);
-  });
-  show('#m-uptime', (rows) =>
-    tile('Mean storage', `${Math.round(reduceRows(rows, 'mean', 'storage'))}%`,
-      DAY_ORDER.map((d) =>
-        Math.round(reduceRows(rows.filter((r) => r.day === d), 'mean', 'storage')))));
-  show('#m-patch', (rows) =>
-    tile('Categories', countBy(rows, 'category').length,
-      countBy(rows, 'category', { order: CATEGORY_ORDER }).map((d) => d.value)));
-
-  show('#bar', byCategory);
-  show('#bar-legend', byCategory);
-  show('#donut', byOs);
-  show('#donut-legend', byOs);
-
-  // The gauge reads one number, unrounded — rounding is presentation.
-  // TRAP T-an-aggregate-returns-the-number.
-  show('#gauge', (rows) => reduceRows(rows, 'mean', 'storage'));
   // The gauge legend names THRESHOLD ZONES. No colour indices: a zone's colour
   // is a status, not a categorical series hue.
   $('#gauge-legend')?.populate([
     { label: 'Healthy (0–60%)', status: 'success' },
     { label: 'Warning (60–85%)', status: 'warning' },
     { label: 'Critical (85–100%)', status: 'critical' },
-  ]);
-  // Two series from the same rows, split on severity; both re-count on filter.
-  show('#line', (rows) => ({
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Mon'],
-    series: [
-      seriesBy(rows.filter((r) => r.severity !== 'critical'), 'day', DAY_ORDER,
-        'Sessions', { colorIndex: 1 }),
-      seriesBy(rows.filter((r) => r.severity === 'critical'), 'day', DAY_ORDER,
-        'Incidents', { colorIndex: 2 }),
-    ],
-  }));
-  show('#line-legend', () => [
-    { label: 'Sessions', colorIndex: 1 },
-    { label: 'Incidents', colorIndex: 2 },
   ]);
   // A second DataSource over the shared customer store — a different store to
   // the one the charts read, which is the point of the demonstration.
@@ -178,49 +137,9 @@ export async function init(root) {
     });
   }
 
-  /* ── Legends are FILTERS ─────────────────────────────────────────────
-     These used to call setBarHidden() / setSliceHidden(): the bar vanished
-     from that ONE chart and nothing else on the page knew, so the tiles and
-     the other charts kept counting rows the reader had just excluded.
-
-     Each legend writes the SELECTION of the field its labels are values of,
-     so every bound component re-reads together.
-     TRAP T-a-legend-toggle-is-a-filter */
-  /* `bindSelection` is the SAME loop a chip or a column heading uses — legend
-     filtering is just filtering, and a legend's visible state is its own. */
-  const bindLegend = (el, field, values) => el && bindSelection(el, source, {
-    field,
-    values,
-    // Read the LEGEND, not the event: a roll-up row stands for several values.
-    read: (l) => values.filter((v) => !l.off.includes(v)),
-    draw: (l, picked) => {
-      l.off = picked.length ? values.filter((v) => !picked.includes(v)) : [];
-    },
-    event: 'legend-item-click',
-    /* COMPONENT reach: a series switched off filters THIS chart and nothing
-       else — not the grid, not a sibling chart. It is still subject to the
-       View filter, which does cascade down.
-       TRAP T-a-filter-applies-down-its-scope */
-    reach: 'component',
-    /* …and ONLY ITS CHART. A part on the shared source narrows every bound
-       component — the grid, the metrics, the other chart — which is the View's
-       reach under another name. The legend sits in its chart's `legend` slot.
-       TRAP T-a-component-part-narrows-one-component */
-    only: el.parentElement ?? undefined,
-    // One part per legend, or the second would replace the first.
-    key: `legend:${el.id || field}`,
-    signal: page.signal,
-  });
-  bindLegend($('#bar-legend'), 'category', CATEGORY_ORDER);
-  bindLegend($('#donut-legend'), 'os', OS_ORDER);
-  /* The LINE legend names two SERIES, not values of one field — "Sessions" is
-     every non-critical row. So it stays a per-chart hide: there is no single
-     field whose values those labels are, and inventing one would be a lie.
-     TRAP T-a-legend-toggle-is-a-filter */
-  $('#line-legend')?.addEventListener('legend-item-click', (e) => {
-    for (const i of e.detail.indices) $('#line')?.setSeriesHidden(i, !e.detail.active);
-  });
-  // The gauge legend is a KEY, not a filter — a gauge shows one value.
+  /* Legends are FILTERS of their own chart: each reads its chart's field and
+     asks, and the provider wires the pick. TRAP T-a-legend-toggle-is-a-filter
+     The gauge legend is a KEY, not a filter — a gauge shows one value. */
 
   // A little interactivity so the demo is live.
   $('#bar')?.addEventListener('bar-click', (e) => {

@@ -4,7 +4,8 @@
  * TRAP T-gauge-band-is-a-closed-path — the constants below are path geometry,
  * not style.
  */
-import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import type { DataAsk } from '../../core/ui/context.js';
 import { formatTick, radialArea, ringSegmentPath } from '../../core/data/format-tick.js';
 import { RADIAL_CENTRE as CENTRE, RADIAL_CORNER as CORNER,
   RADIAL_OUTLINE as OUTLINE, RADIAL_INNER_RATIO } from '../../core/ui/shared-constants.js';
@@ -42,7 +43,10 @@ export class SherpaGaugeChart extends SherpaElement {
   static override html = new URL('./sherpa-gauge-chart.html', import.meta.url);
   // ONE LINE, deliberately: the spec generator reads only the first line.
   /* DECLARED, not hand-synced: CSS-only, so the base class writes nothing. */
+  static override asks: DataAsk = { shape: 'aggregate' };
+
   static override props = {
+    ...SUMMARY_PROPS,
     'data-has-caption': { type: 'boolean', kind: 'visibility' },
     'data-legend': SHARED_PROPS['data-legend'],
   } as const;

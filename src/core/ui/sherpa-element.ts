@@ -9,6 +9,7 @@
  * - PropDef — One declared attribute.
  * - PropMap — A component's whole declared attribute surface.
  * - DATA_PROPS — What `DataSource.#push` writes onto every component it binds, plus the guard.
+ * - SUMMARY_PROPS — What a chart or tile DECLARES it needs — its provider hands back that shape.
  * - SHARED_PROPS — Shared style attributes whose shape is identical wherever they appear.
  * - coerceNum — Coerce a raw attribute string to a number, or return `fallback`.
  * - markNeedle — Mark the first hit of `needle` in `el`, or write plain text when there is nothing to point at.
@@ -118,6 +119,22 @@ export const DATA_PROPS = {
   'data-page-size': { type: 'number', kind: 'style' },
   /** The host owns this component's state; report, never write. */
   'data-locked': { type: 'boolean', kind: 'style' },
+} as const satisfies PropMap;
+
+/**
+ * What a chart or tile DECLARES it needs — its provider reads these and hands
+ * back that shape. A child with none uses its host's: a legend its chart's.
+ * TRAP T-a-component-declares-its-summary
+ */
+export const SUMMARY_PROPS = {
+  'data-aggregate': { type: 'enum', kind: 'style', values: ['count', 'sum', 'mean', 'min', 'max', 'distinct'] },
+  /** The number a sum, mean, min, max or distinct reads. */
+  'data-field': { type: 'string', kind: 'style' },
+  'data-segment-field': { type: 'string', kind: 'style' },
+  /** A series runs over this field. */
+  'data-over-field': { type: 'string', kind: 'style' },
+  /** A date `data-over-field`, cut to this step. */
+  'data-bucket': { type: 'enum', kind: 'style', values: ['day', 'month', 'year'] },
 } as const satisfies PropMap;
 
 /**
@@ -388,6 +405,14 @@ export abstract class SherpaElement extends HTMLElement {
   /** How to stop hearing from the provider that answered, once one has. */
   #leave: (() => void) | undefined;
 
+  /** A new declaration is a new question: leave, and ask again. */
+  #reask(): void {
+    const leave = this.#leave;
+    this.#leave = undefined;
+    leave?.();
+    if (this.isConnected) this.#ask();
+  }
+
   /** ASK the nearest provider for this component's data, if it declares a need.
    *  Its answer arrives through `populate()`, now and on every change. */
   #ask(): void {
@@ -409,6 +434,7 @@ export abstract class SherpaElement extends HTMLElement {
       if (prop === name || def.fallbackAttr === name) this.#syncProp(prop, def);
     }
     if (name === 'aria-label') this.#syncLabel();
+    if (Ctor.asks && (name in SUMMARY_PROPS || name === 'data-source' || name === 'data-scope')) this.#reask();
     this.onChange(name, oldVal, newVal);
     // TRAP T-restamp-runs-after-on-change
     this.#restampIfVariantChanged();

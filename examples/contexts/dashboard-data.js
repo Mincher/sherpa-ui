@@ -1,8 +1,8 @@
 /**
- * The dashboard's records, and the aggregations each chart wants.
+ * The dashboard's records, and the orders its charts share.
  *
- * Records are the data; every total is DERIVED, so one filter reaches every
- * chart. Each aggregate is a plain rows→payload function used as a bind `as`.
+ * Records are the data; every total is DERIVED — each chart declares what it
+ * needs in dashboard.html — so one filter reaches every chart.
  *
  * Map:
  * - customerOrgs — The customers — organisations, not people.
@@ -10,6 +10,7 @@
  * - CATEGORY_ORDER — The orders the charts share.
  * - OS_ORDER — the OS categories in a fixed order, so each keeps its colour
  * - DAY_ORDER — The x-axis of the line chart — every day gets a point, quiet or not.
+ * - SEVERITY_ORDER — the severities in a fixed order, so each line keeps its colour
  * - STORAGE_EDGES — The storage histogram's band edges.
  */
 
@@ -36,6 +37,7 @@ export const customerOrgs = [
   'Litware', 'Proseware', 'Wingtip Toys',
 ];
 const SEVERITIES = ['critical', 'warning', 'info'];
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 /**
  * One alert per row — the grain the charts summarise. Deterministic, not
@@ -56,7 +58,8 @@ export function alerts(count = 1284) {
     severity: SEVERITIES[i % 3],
     // 0–100, for the gauge's "storage used".
     storage: (i * 37) % 101,
-    day: 1 + (i % 8),
+    // 7 days against 3 severities — coprime, so every day sees every one.
+    day: DAYS[i % 7],
   }));
 }
 
@@ -69,7 +72,10 @@ export const CATEGORY_ORDER = CATEGORIES;
 export const OS_ORDER = OSES;
 
 /** The x-axis of the line chart — every day gets a point, quiet or not. */
-export const DAY_ORDER = [1, 2, 3, 4, 5, 6, 7, 8];
+export const DAY_ORDER = DAYS;
+
+/** the severities in a fixed order, so each line keeps its colour */
+export const SEVERITY_ORDER = SEVERITIES;
 
 /**
  * The storage histogram's band edges. `bandBy` reads these as boundaries, and

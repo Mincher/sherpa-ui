@@ -9,7 +9,8 @@
  */
 import type { ChartDatum } from '../../core/data/chart-datum.js';
 import type { ChartScale } from '../../core/data/format-tick.js';
-import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import type { DataAsk } from '../../core/ui/context.js';
 import { chartScale, formatTick, seriesBorderVar, seriesVar, tickPercent, formatValue } from '../../core/data/format-tick.js';
 import { DEFAULT_TICKS } from '../../core/ui/shared-constants.js';
 
@@ -20,7 +21,10 @@ export type BarDatum = ChartDatum;
 export class SherpaBarchart extends SherpaElement {
   static override css = new URL('./sherpa-barchart.css', import.meta.url);
   static override html = new URL('./sherpa-barchart.html', import.meta.url);
+  static override asks: DataAsk = { shape: 'segments' };
+
   static override props = {
+    ...SUMMARY_PROPS,
     'data-legend': SHARED_PROPS['data-legend'],
     'data-axis-label': { type: 'string', kind: 'content', to: '.axis-label-y' },
   } as const;

@@ -13,7 +13,8 @@
  * - LegendItem — One legend row —
  */
 import { datumTotal, type LegendDatum } from '../../core/data/chart-datum.js';
-import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import type { DataAsk } from '../../core/ui/context.js';
 import { seriesBorderVar, seriesVar } from '../../core/data/format-tick.js';
 // The roll-up row composes a real button + menu; the page may not have imported them.
 import '../sherpa-button/sherpa-button.js';
@@ -34,7 +35,14 @@ export class SherpaChartLegend extends SherpaElement {
 
   /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
      rule is a public API and belongs in one place. */
+  /* A row goes inactive, never vanishes; a pick narrows its chart alone.
+     TRAP T-a-legend-toggle-is-a-filter */
+  static override asks: DataAsk = {
+    shape: 'segments', keepEmpty: true, picks: { event: 'legend-item-click', narrows: 'host' },
+  };
+
   static override props = {
+    ...SUMMARY_PROPS,
     'data-orientation': SHARED_PROPS['data-orientation'],
     /* Report clicks, never toggle a series — the host owns the selection. */
     'data-readonly': { type: 'boolean', kind: 'style' },
@@ -125,6 +133,17 @@ export class SherpaChartLegend extends SherpaElement {
     if (every.length && every.every((l) => want.has(l))) return;
     this.#off = want;
     this.#render();
+  }
+
+  /** The labels ON — the door a provider reads and draws a pick through.
+   *  Everything on is no pick. TRAP T-everything-on-is-no-filter */
+  get picked(): string[] {
+    const on = this.#everyLabel().filter((l) => !this.#off.has(l));
+    return this.#off.size ? on : [];
+  }
+
+  set picked(next: readonly string[]) {
+    this.off = next.length ? this.#everyLabel().filter((l) => !next.includes(l)) : [];
   }
 
   /** Cap at MAX_ITEMS, rolling the tail into one "Other" row. */

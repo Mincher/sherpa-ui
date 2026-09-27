@@ -9,8 +9,7 @@
  */
 import {
   DataSource, VIEW_SCOPE, SherpaToast, persistView, viewOptions, onViewPicked, spoofRemote,
-  countBy, reduceRows, bindSelection,
-  seriesBy, deltaPercent, saveFilterAs, loadSavedFilters, deleteSavedFilter, labelId,
+  reduceRows, saveFilterAs, loadSavedFilters, deleteSavedFilter, labelId,
 } from '../../dist/index.js';
 import { namePrompt } from './ask-name.js';
 import { customerStore, customersReady, customers, columns, plans, regions, customerOrgs, states }
@@ -155,7 +154,14 @@ export async function init(root, { session, view, remote = false } = {}) {
   /* Quick-filter chips. A chip with `options` opens a menu; one without is a
      plain on/off toggle. No `count` on the toggles — the badge means "how many
      VALUES are picked", which each menu chip sets itself. */
-  const valuesOf = (field) => [...new Set(customers.map((c) => c[field]))].sort();
+  /* In the data's own ORDER where it has one — a plan's tier, a status's
+     lifecycle — so a chart and its legend keep each category's colour.
+     TRAP T-a-category-keeps-its-colour */
+  const ORDER = { status: states, plan: plans };
+  const valuesOf = (field) => {
+    const have = [...new Set(customers.map((c) => c[field]))];
+    return ORDER[field] ? ORDER[field].filter((v) => have.includes(v)) : have.sort();
+  };
   /* THE VALUE THE ROW HOLDS, not a lower-cased copy. The query compares
      loosely either way, but a column heading's menu offers the raw value — so
      a lower-cased chip option meant two menus over one field held two
@@ -592,119 +598,33 @@ export async function init(root, { session, view, remote = false } = {}) {
   grid.columns = gridColumns;
   grid.key = 'email';
   grid.actions = ROW_ACTIONS;
+  /* ONE FIELD, ONE SELECTION. The SOURCE holds what is picked for a field, so
+     a chip, a column heading and a legend read the same answer instead of each
+     keeping a copy. Declaring the values is what lets them offer the same rows
+     — and the same STRINGS, which is what made two menus shareable at all.
+     BEFORE the provider: a legend picks from them when it is answered.
+     TRAP T-one-field-one-filter-menu */
+  const FIELD_CHIPS = new Set(['status', 'plan', 'tier', 'owner']);
+  for (const field of FIELD_CHIPS) source.declareValues(field, valuesOf(field));
   const provider = document.querySelector('sherpa-provider');
   provider?.provide({ sources: { records: source } });
   // Gone with the Context, so the next one's components never reach this source.
   signal.addEventListener('abort', () => provider?.provide({ sources: {} }), { once: true });
 
   /* ── Summaries ────────────────────────────────────────────────────────
-     Every tile and chart is the SAME rows, counted a different way, so one
-     filter re-draws all of them and nothing recounts by hand.
+     Every tile and chart DECLARES what it needs of the rows in records.html
+     and asks the provider, so one filter re-draws all of them and nothing
+     here recounts. A legend reads its chart's field, and its pick narrows that
+     chart alone. TRAP T-a-component-declares-its-summary
 
-     `rows: 'all'` is what makes them right: the default bind hands over the
-     PAGE, and a chart counting 25 of 100 looks perfectly reasonable.
-     TRAP T-a-summary-binds-to-all-the-rows */
-  const summary = (sel, as) => {
-    const el = root.querySelector(sel);
-    if (el) source.bind(el, { readonly: true, rows: 'all', as, signal });
-  };
-
-  const money = (n) => `$${Math.round(n).toLocaleString('en-GB')}`;
-
-  /* The twelve months of 2024, the range `created` is generated over. A series
-     needs its points declared, or a month nobody joined in would be missing
-     rather than zero and the line would lie about the gap. */
-  const MONTHS = Array.from({ length: 12 },
-    (_, i) => `2024-${String(i + 1).padStart(2, '0')}`);
-  const month = (rows) => rows.map((r) => ({ ...r, month: String(r.created).slice(0, 7) }));
-
-  /* A tile handed only a label and a value is GREY: it derives its trend from
-     the delta and its status from the trend, so without a series there is
-     nothing to colour and no sparkline to draw.
-     TRAP T-a-delta-is-derived-not-declared */
-  const tile = (label, value, values) => ({
-    label, value, values, deltaPercent: deltaPercent(values) ?? undefined,
-  });
-
-  /* Each tile is the same rows over the same months, reduced its own way. */
-  const overMonths = (rows, kind, field) =>
-    seriesBy(month(rows), 'month', MONTHS, 'series', { kind, valueField: field }).values;
-
-  summary('#m-customers', (rows) =>
-    tile('Customers', rows.length, overMonths(rows, 'count')));
-  summary('#m-spend', (rows) =>
-    tile('Total spend', money(reduceRows(rows, 'sum', 'spend')),
-      overMonths(rows, 'sum', 'spend')));
-  summary('#m-seats', (rows) =>
-    tile('Seats', reduceRows(rows, 'sum', 'seats').toLocaleString('en-GB'),
-      overMonths(rows, 'sum', 'seats')));
-  summary('#m-tickets', (rows) =>
-    tile('Open tickets', reduceRows(rows, 'sum', 'openTickets'),
-      overMonths(rows, 'sum', 'openTickets')));
-
-  /* A chart and its legend share ONE array — a legend row IS a chart datum.
-     Sharing also keeps the source's skip-if-unchanged guard, which compares by
-     identity. The declared `order` keeps a category's colour when a filter
-     removes the one above it. TRAP T-a-category-keeps-its-colour */
-  const byStatus = (rows) => countBy(rows, 'status', { order: states });
-  const byPlan = (rows) => countBy(rows, 'plan', { order: plans });
-
-  /* A LEGEND keeps every category, at zero when a filter empties it: a row
-     that VANISHES reads as a bug, and the reader loses the way back — the
-     legend is how they toggle that category on again.
-     TRAP T-a-legend-row-goes-inactive-it-never-vanishes */
-  const legendStatus = (rows) => countBy(rows, 'status', { order: states, includeEmpty: true });
-  const legendPlan = (rows) => countBy(rows, 'plan', { order: plans, includeEmpty: true });
-
-  summary('#r-bar', byStatus);
-  summary('#r-bar-legend', legendStatus);
-  summary('#r-donut', byPlan);
-  summary('#r-donut-legend', legendPlan);
-
-  /* TURNING A LEGEND ROW OFF IS A FILTER, not a drawing trick. The old wiring
-     called setBarHidden() and the bar vanished from that ONE chart; here the
-     click writes the FIELD's selection, so the other charts, the tiles, the
-     grid and its pager all narrow with it.
-
-     `bindSelection` is the SAME loop a chip or a column heading uses — there
-     is no legend-specific module, because legend filtering is just filtering.
-     A legend's `off` is the inverse of picked, and keeping at least one row on
-     is the component's own business.
-     TRAP T-a-legend-toggle-is-a-filter
-     TRAP T-one-field-one-filter-menu */
-  const bindLegend = (el, field, values) => el && bindSelection(el, source, {
-    field,
-    values,
-    // Read the LEGEND, not the event: a roll-up row stands for several values.
-    read: (l) => values.filter((v) => !l.off.includes(v)),
-    draw: (l, picked) => {
-      l.off = picked.length ? values.filter((v) => !picked.includes(v)) : [];
-    },
-    event: 'legend-item-click',
-    /* COMPONENT scope: a series switched off filters THIS chart and nothing
-       else — not the grid, not a sibling chart. It is still subject to the
-       View filter, which does cascade down, so a series the View has already
-       removed cannot be switched back on here.
-       TRAP T-a-filter-applies-down-its-scope */
-    reach: 'component',
-    /* …and ONLY ITS CHART. A part on the shared source narrows every bound
-       component — the grid, the metrics, the other chart — which is the View's
-       reach under another name. The legend sits in its chart's `legend` slot.
-       TRAP T-a-component-part-narrows-one-component */
-    only: el.parentElement ?? undefined,
-    // One part per legend, or the second would replace the first.
-    key: `legend:${el.id || field}`,
-    signal,
-  });
-  bindLegend(root.querySelector('#r-bar-legend'), 'status', states);
-  bindLegend(root.querySelector('#r-donut-legend'), 'plan', plans);
-
-  /* The gauge reads ONE number, unrounded — rounding is presentation.
+     The GAUGE alone is bound by hand: it shows RISK, not health, so low reads
+     green on the left as every other gauge does — the column inverted once
+     here rather than in the data. Every row, never a page, and the number
+     unrounded. TRAP T-a-summary-binds-to-all-the-rows
      TRAP T-an-aggregate-returns-the-number */
-  /* RISK, not health — so low reads green on the left, as every other gauge
-     does. Same column, inverted once here rather than in the data. */
-  summary('#r-gauge', (rows) => 100 - reduceRows(rows, 'mean', 'health'));
-  /* The gauge legend names THRESHOLD ZONES, not a series, so no colour
+  const gauge = root.querySelector('#r-gauge');
+  if (gauge) source.bind(gauge, { readonly: true, rows: 'all', signal, as: (rows) => 100 - reduceRows(rows, 'mean', 'health') });
+  /* The gauge legend names threshold ZONES, not a series, so no colour
      indices: a zone's colour is a status. Static, so it is populated once. */
   root.querySelector('#r-gauge-legend')?.populate([
     { label: 'Low (0–20)', status: 'success' },
@@ -718,13 +638,6 @@ export async function init(root, { session, view, remote = false } = {}) {
      chip and the grid's header arrow two views of one value. `ignore` on the
      FILTER event only, because translating chips is view knowledge; sort and
      group the source handles itself. */
-  /* ONE FIELD, ONE SELECTION. The SOURCE holds what is picked for a field, so
-     a chip, a column heading and a legend read the same answer instead of each
-     keeping a copy. Declaring the values is what lets them offer the same rows
-     — and the same STRINGS, which is what made two menus shareable at all.
-     TRAP T-one-field-one-filter-menu */
-  const FIELD_CHIPS = new Set(['status', 'plan', 'tier', 'owner']);
-  for (const field of FIELD_CHIPS) source.declareValues(field, valuesOf(field));
 
 
   /* NO `ignore` for `quick-filter-change`: the bound source asks the bar for

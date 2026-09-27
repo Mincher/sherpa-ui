@@ -201,9 +201,13 @@ export {
   seriesBy,
   reduceRows,
   deltaPercent,
+  summarise,
   type Aggregate,
   type AggregateOptions,
+  type Bucket,
   type Series,
+  type Summary,
+  type SummarySpec,
 } from './core/data/aggregate.js';
 
 /* ONE state per filtered field — what a chip, its menu, a column heading and
