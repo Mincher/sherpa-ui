@@ -146,8 +146,8 @@ session saves and restores it. Will's choice A: a heading filter wears its
 field's normal chip, so the `col:` and external chips are gone. Step 6 gave a
 remote store a draft, Apply only for a remote fetch, the pending chip and the
 footer's "nothing to save" (62, 46, 66). Step 7: a saved View is JSON — its
-Query onto a clean slate, its defaults on the chips (Records; the Dashboard is
-7b). **Next: 7b, then step 8** — segment and aggregate in a component scope.
+Query onto a clean slate, its defaults on the chips — Records and the
+Dashboard. **Next: step 8** — segment and aggregate in a component scope.
 
 ### `[ ]` 70 — EXPLORE: a view definition bundles its filters; one JSON renders the page
 
@@ -181,10 +181,10 @@ templates); and how much of it is 38's "a component DECLARES the data it
 needs". Design first — 15 builds on the answer.
 
 **Settled 2026-09-27: ONE JSON definition** (`T-a-view-is-json`). Built for
-Records in step 7 of 73: `{ label, query, ui }`, applied onto a clean slate
-with its defaults on the chips. Left: the Dashboard's views (7b), and a
-view's LAYOUT as JSON, which the Templater (68) turns into a template —
-`content` markup stays until then.
+Records and the Dashboard in step 7 of 73: `{ label, query, ui }`, applied
+onto a clean slate with its defaults on the chips; `saveViewAs` saves the same
+shape. Left: a view's LAYOUT as JSON, which the Templater (68) turns into a
+template — `content` markup stays until then — and Save a View (15).
 
 ### `[ ]` 74 — EXPLORE: the Query builds every group, sort and filter menu; a menu shows its sub-query
 
@@ -975,6 +975,8 @@ One line each. The detail is in git and in the trap named.
 - 62: Apply only for a REMOTE fetch — locally every pick applies at once; `?remote` spoofs a remote store; the panel's footer is gone, a remote field has its own Apply and Discard — 7c7cdf5c, 9294cfd6, c92adec0, `T-apply-and-discard-wait-for-a-change`, `T-commit-follows-select-mode`
 - 46: a pending chip wears the active edge and no fill — 6050eddf, `T-a-pending-chip-has-no-fill`
 - 66: the footer owns "nothing to save" — a committing menu's Apply and Cancel wait for a change — 23094c86, `T-the-footer-owns-nothing-to-save`
+- Step 7: saved Views are JSON, their defaults on the chips — Records c6166719, Dashboard 6001eb63, `T-a-view-is-json`
+- A number chip filters (a Seats range showed and narrowed nothing); the Dashboard's header chips filter; the Capacity view's charts draw — c6166719, 6001eb63
 
 **2026-09-26, Will's list**
 - The superseded-chip tip reads "Filter applied at higher scope" — c0f5e32f, `T-an-inactive-chip-says-where-its-filter-went`

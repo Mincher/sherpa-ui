@@ -314,7 +314,7 @@ the clause grammar, `bind()`, `select()` (a write into the view scope),
 A size gate lands with step 1 (`scripts/size-baseline.json`, a per-file line
 count that may only fall — 38's plan), so each step shows what it deleted.
 
-**Built (2026-09-27): steps 1 to 7**, in the order 1, 2, 4a–4e, 3, 5a–5c, 6a–6e, 7 —
+**Built (2026-09-27): steps 1 to 7**, in the order 1, 2, 4a–4e, 3, 5a–5c, 6a–6e, 7, 7b —
 a bar must be drawn FROM the Query before a restore can draw it.
 
 - 4a–4e: the header answers the View scope; a bound `scope` draws the bars,
@@ -329,8 +329,11 @@ a bar must be drawn FROM the Query before a restore can draw it.
 - 7 (Records): a saved View is JSON — `{ label, query, ui }` — and a View
   change is `setQuery(view.query, { holds: 'keep' })` onto a clean slate:
   its defaults show on the chips, and its sort and group set the source's.
-  The hidden `view` part is gone. The Dashboard's views still use the old
-  `snapshot` (7b); a view's LAYOUT as JSON waits for the Templater (68).
+  The hidden `view` part is gone.
+- 7b (Dashboard): its views are JSON too; its header answers the View scope
+  (a Region pick by hand now filters); its own axes sit in a `page` scope no
+  bar answers. `saveViewAs` saves JSON. A view's LAYOUT as JSON waits for the
+  Templater (68) — `content` markup until then.
 - 6: a remote store (`spoofRemote`, `?remote`) gives the source a DRAFT;
   `commit` / `discard` take a field, a scope or all; `pending` and `dirty`
   reach bound controls as `data-pending` / `data-dirty`. Apply is ONLY for a
@@ -342,8 +345,7 @@ a bar must be drawn FROM the Query before a restore can draw it.
 Left for later steps: the panel still refills its LIST of fields from the
 bars; the bars still own which chips they hold, and Records reports it
 (`syncScopes`); the grid keeps its own `ColumnFilter` shape internally, as a
-drawn copy of the reading. Next: 7b (the Dashboard's views as JSON), then
-step 8 (segment and aggregate).
+drawn copy of the reading. Next: step 8 (segment and aggregate).
 
 ---
 
