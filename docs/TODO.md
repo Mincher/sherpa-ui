@@ -27,7 +27,7 @@ table IS the order.
 | 2d | 92 | Navigating SETS UP the content — its definitions, data layer, filters and state — not only swaps the template | foundation |
 | 3 | 70 | EXPLORE — a view definition bundles its filters; one JSON renders the page | explore |
 | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
-| 5 | 75 | Filter modes are SIMPLE and COMPLEX, not Default and Conditional — every file | refactor |
+| 5 | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
 | 6 | 38 | One model, one builder, one owner — what is left | refactor |
 | 7 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | | | **C — Contained bugs** | |
@@ -244,8 +244,8 @@ A plain switch on every filter turns Simple into Advanced: condition input
 rows, several of them. The operators follow the field's TYPE — text, number
 and date each get their own list (21d is the date half). Switching back to
 Simple keeps what it can show and says what it cannot, never drops a
-condition silently. **The word:** Will says *Advanced* here; 75 says
-*Complex* — one of them, everywhere (75).
+condition silently. **The word is Advanced** — Will chose it over
+*Complex*, 2026-09-27 (75).
 
 ### `[ ]` 91 — The APP SHELL switches Filter toolbar and Filter panel modes, for any View in the content area
 
@@ -352,7 +352,7 @@ good."* The sub-query IS the field's slice of the Query — its `FieldReading`,
 condition rows and all — shown and saved as JSON, and restored by
 `setQuery`. No grammar, no parser, no second spelling of a condition.
 
-### `[ ]` 75 — Filter modes are SIMPLE and COMPLEX, not Default and Conditional — every file
+### `[ ]` 75 — Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file
 
 Will, 2026-09-27: *"We need to move away from using the terms Default and
 Conditional for filter modes. Instead we should use 'Simple' and 'Complex'."*
@@ -360,13 +360,16 @@ Conditional for filter modes. Instead we should use 'Simple' and 'Complex'."*
 | mode | is |
 |---|---|
 | **Simple** | ONE field, with one or more values to choose from |
-| **Complex** | ONE OR MORE fields, with one or more values to choose from, and conditional parameters in use |
+| **Advanced** | ONE OR MORE fields, with one or more values to choose from, and conditional parameters in use |
+
+**Advanced, not Complex** — Will, later the same day, choosing A of "Advanced" /
+"Complex" after writing "Advanced" in 90.
 
 The new ontology goes into EVERY file: code (`mode: 'default' | 'custom'`,
 `data-mode`, `condition: 'custom'`, `custom:` opt-ins), UI labels (the
 "Conditional" switch), tests, docs, TRAPS and the specs. Do it in one sweep,
 after step 6 of the Query, so the features in D (49, 50, 46) are built in
-the new words. Note: Complex allows SEVERAL fields — today a condition is
+the new words. Note: Advanced allows SEVERAL fields — today a condition is
 over one field, so the rename also opens that door.
 
 ### `[~]` 38 — One model, one builder, one owner: what is left
