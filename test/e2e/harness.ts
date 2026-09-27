@@ -93,9 +93,6 @@ export type Bar = SherpaEl & {
   supersede(ids: readonly string[]): void;
   setClause(id: string, clause: readonly [string, string, unknown] | null): void;
   allowFields(list: readonly string[] | null): void;
-  addExternalFilter(d: unknown): void;
-  /** The old name of `addExternalFilter`, still a door. */
-  addCustomFilter(d: unknown): void;
   active: string[];
   values: Record<string, string[]>;
   pickedValues: Record<string, string[]>;
@@ -105,7 +102,6 @@ export type Bar = SherpaEl & {
   held: Array<Record<string, unknown>>;
   heldIds: string[];
   offering: Array<Record<string, unknown>>;
-  externalFilters: Record<string, boolean>;
   superseded: string[];
   sortField: string | null;
   sortDirection: string;

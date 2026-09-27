@@ -1964,79 +1964,6 @@ test('the Filters button follows a folded chip on and off, and its badge never m
 });
 
 /**
- * An EXTERNAL chip — a filter applied somewhere else, shown by its phrase.
- *
- * The data grid's column-heading filters are what this exists for. A reader
- * sets "Name starts with Ad" in a column heading, and the bar has to show it
- * beside the chips they picked from the Add menu, or the view is narrowed by
- * something with no presence on the toolbar that says so.
- */
-test('addExternalFilter puts a typed-value chip on the bar, replaces it, and removes it', async ({ page }) => {
-  const r = await page.evaluate(async () => {
-    const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
-      rendered?: Promise<void>;
-      populate?: (d: unknown) => void;
-      addExternalFilter(spec: { id: string; label: string; value?: string | null }): void;
-    };
-    document.getElementById('root')!.replaceChildren(el);
-    await el.rendered;
-    el.populate?.([{ id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] }]);
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
-    await settle();
-
-    const sr = el.shadowRoot!;
-    const bar = () =>
-      Array.from(sr.querySelectorAll<HTMLElement>('.chip')).map((c) => ({
-        id: c.dataset['id'] ?? null,
-        label: c.getAttribute('data-label'),
-        value: c.shadowRoot?.querySelector('.caret-label')?.textContent ?? null,
-        on: c.hasAttribute('data-current'),
-        // No list to open, so no menu is slotted — the caret shows the value
-        // and opens nothing.
-        hasMenu: !!c.querySelector('sherpa-menu'),
-        // The phrase must read in FULL: "Starts with: Ad" truncated names a
-        // condition whose subject the reader cannot see.
-        full: c.hasAttribute('data-full-value'),
-      }));
-
-    el.addExternalFilter({ id: 'col:name', label: 'Name', value: 'Starts with: Ad' });
-    await settle();
-    const added = bar();
-
-    // Changing the condition is the SAME filter, not a second one.
-    el.addExternalFilter({ id: 'col:name', label: 'Name', value: 'Contains: bo' });
-    await settle();
-    const replaced = bar();
-
-    // A null value means the column's menu was cleared — the chip goes.
-    el.addExternalFilter({ id: 'col:name', label: 'Name', value: null });
-    await settle();
-    const removed = bar();
-
-    return { added, replaced, removed };
-  });
-
-  // It lands beside the picked chips, on, reading its phrase.
-  expect(r.added).toHaveLength(2);
-  expect(r.added[1]).toEqual({
-    id: 'col:name',
-    label: 'Name',
-    value: 'Starts with: Ad',
-    on: true,
-    hasMenu: false,
-    full: true,
-  });
-
-  // Same id, so it is REPLACED — one filter, not two.
-  expect(r.replaced).toHaveLength(2);
-  expect(r.replaced[1]!.value).toBe('Contains: bo');
-
-  // Cleared: the chip goes, and the picked chip is untouched.
-  expect(r.removed).toHaveLength(1);
-  expect(r.removed[0]!.id).toBe('plan');
-});
-
-/**
  * `data-group-field` is the GROUP chip's door — the twin of `data-sort-field`.
  *
  * `groupField` was readable and completely unwritable: no setter, no method, no
@@ -2482,57 +2409,6 @@ test('a CUSTOM field with no options gets a menu, not a toggle', async ({ page }
   expect(r.email.type).toBe('filter');
   // And a chip that names no field is still a plain toggle.
   expect(r.toggle.menu).toBe(false);
-});
-
-/**
- * A caret that opens nothing is drawn exactly like every caret that does.
- * `addExternalFilter` set `data-menu` so the phrase would read in the caret, and
- * never gave the chip a menu — so a conditional column filter could not be
- * opened or edited from the bar at all.
- *
- * TRAP T-an-external-chip-caret-must-open-its-condition
- */
-test('an external chip GIVEN its condition opens a menu on it', async ({ page }) => {
-  const r = await page.evaluate(async () => {
-    // WIDE, so nothing folds into More — a folded chip is not in `.chips`.
-    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'style': 'inline-size: 1200px' });
-    el.populate([{ id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }] }]);
-    /* SETTLE FIRST. `populate` defers to `renderData`, so an external filter added
-       before it lands is overwritten by the populate set. */
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
-
-    el.addExternalFilter({
-      id: 'col:name', label: 'Name', value: 'Contains: ana',
-      op: 'contains', text: 'ana',
-    });
-    // The same call WITHOUT a condition — the old shape, still supported.
-    el.addExternalFilter({ id: 'col:email', label: 'Email', value: 'Contains: z' });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
-
-    const look = (id: string) => {
-      const chip = el.shadowRoot!.querySelector<HTMLElement>(`.chip[data-id="${id}"]`);
-      if (!chip) return { missing: [...el.shadowRoot!.querySelectorAll<HTMLElement>('.chip')]
-        .map((c) => c.dataset['id']).join(',') };
-      const menu = chip.querySelector('sherpa-menu');
-      return {
-        // The caret still reads the phrase either way.
-        caret: chip.hasAttribute('data-menu'),
-        menu: !!menu,
-        custom: menu?.hasAttribute('data-custom') ?? false,
-        op: menu?.getAttribute('data-op') ?? null,
-        value: menu?.getAttribute('data-value') ?? null,
-      };
-    };
-    return { withCond: look('col:name'), bare: look('col:email') };
-  });
-
-  // It OPENS, in custom mode, holding what is applied.
-  expect(r.withCond).toEqual({
-    caret: true, menu: true, custom: true, op: 'contains', value: 'ana',
-  });
-  // And the phrase-only call is unchanged.
-  expect(r.bare.caret).toBe(true);
-  expect(r.bare.menu).toBe(false);
 });
 
 /**

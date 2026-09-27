@@ -234,15 +234,15 @@ capabilities:
     api: js-property-mirror
     description: >-
       read/write JS properties (active, values, superseded, pickedValues, clauses, readings, states,
-      savedReadings, presets, externalFilters, offering, heldIds, held, groupField, sortField,
-      sortDirection, sortSuspended). See $extensions.sherpa.jsProps.
+      savedReadings, presets, offering, heldIds, held, groupField, sortField, sortDirection,
+      sortSuspended). See $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
     description: >-
       callable from a view definition's state block (setChipValues, setChipActive, setChipReading,
       drawReading, supersede, unpackFilter, deleteFilter, packFilter, setClause, report, available,
-      addFilters, removeFilter, drawScope, allowFields, addExternalFilter, addCustomFilter,
-      clearAll, organise). See $extensions.sherpa.methods.
+      addFilters, removeFilter, drawScope, allowFields, clearAll, organise). See
+      $extensions.sherpa.methods.
 events:
   - $type: event
     name: quick-filter-change
@@ -251,7 +251,6 @@ events:
     detail:
       active: unknown
       clauses: unknown
-      external: unknown
       picked: unknown
       scope: string
       values: unknown
@@ -402,14 +401,6 @@ $extensions:
         args: "list: AllowList"
         description: allowFields([...]) — the ONLY fields this bar may offer, or `null` for all.
       - $type: method
-        name: addExternalFilter
-        args: "spec: ExternalFilterSpec"
-        description: "Put an EXTERNAL filter on the bar: one the host applies somewhere else."
-      - $type: method
-        name: addCustomFilter
-        args: "spec: ExternalFilterSpec"
-        description: The old name of `addExternalFilter()`, still a door.
-      - $type: method
         name: clearAll
         args: "options: { organise?: boolean } = {}"
         description: TRAP T-clear-all-resets-organise-too — organise chips included; three events
@@ -461,9 +452,6 @@ $extensions:
         type: string
         access: read
       - name: presets
-        type: string
-        access: read
-      - name: externalFilters
         type: string
         access: read
       - name: offering

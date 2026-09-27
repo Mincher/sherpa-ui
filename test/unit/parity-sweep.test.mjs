@@ -67,7 +67,6 @@ const KNOWN = {
   'sherpa-quick-filter.menu': 'ok: the slotted <… slot="menu"> element IS the write',
   'sherpa-quick-filter-toolbar.active': 'ok: populate() — a def carries `active: true`',
   'sherpa-quick-filter-toolbar.pickedValues': 'ok: the `values` setter',
-  'sherpa-quick-filter-toolbar.externalFilters': 'ok: addExternalFilter()',
   'sherpa-quick-filter-toolbar.savedReadings': 'ok: populate() — a def carries `readings`; `active: true` turns it on',
   'sherpa-quick-filter-toolbar.presets': 'ok: populate() — a def carries `readings`; setChipActive() turns it on or off',
   'sherpa-quick-filter-toolbar.sortField': 'ok: data-sort-field attribute',

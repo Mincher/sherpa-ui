@@ -5474,34 +5474,6 @@ silently bailed.**
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
-### T-external-chips-are-reported-separately
-
-An EXTERNAL chip shows a filter the host applies somewhere else — the data
-grid's column filters are the case. Its value was TYPED rather than picked, so
-it carries no rows to read back, and its id plus its on/off state are the whole
-of what it says. It was a "custom" chip until 2026-09-25, when "custom" came to
-mean a Custom Condition Filter. TRAP T-a-renamed-attribute-keeps-its-old-name
-
-It appears in NEITHER of the other two lists on `quick-filter-change`:
-
-- `active` skips anything with a menu, so the caret draws
-- `values` reads TICKED ROWS, which an external chip has none of
-
-Without the `external` entry a host had **no way to see one at all** — turning
-one OFF said nothing, and the column it came from stayed filtered and lit. A
-host that put one on the bar reads `externalFilters` to learn it has been
-switched off, and clears whatever set it.
-
-That is why `addExternalFilter` exists as its own door: a filter narrowing the view
-with no chip to say so is one nobody can undo. The label arrives WHOLE ("Contains:
-ana") because the value is not one of a list, so the chip carries NO menu. The
-same `id` REPLACES rather than adding a second, a null/empty `value` removes, and
-`filter-remove` carries the id back so the grid can clear that column's menu
-(`T-grid-clear-from-outside-is-silent`).
-
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `test/e2e/reforged-external-filter.spec.ts`
-
 ### T-favourite-star-swaps-its-glyph
 
 The favourite STAR's `data-favourite` attribute is the state and CSS paints from
@@ -8649,7 +8621,6 @@ row has and the view went to 0 rows. A `data-custom` chip is reported by
 `custom` — the host already applies its clause — so `readings` skips it.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 
@@ -8997,9 +8968,7 @@ purple, because nothing wrote the chip's condition — the success rule is
 from the same `state.condition`, so they cannot disagree.
 TRAP T-a-conditioned-chip-reads-as-success
 
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
-- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 
 ### T-a-condition-only-field-still-has-a-menu
@@ -11831,9 +11800,7 @@ no alias. TRAP T-external-chips-are-reported-separately
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/core/ui/filter-kind.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-custom-condition-words.spec.ts`
-- Site: `test/e2e/reforged-external-filter.spec.ts`
 - Site: `test/unit/the-def-speaks-the-new-words.test.mjs`
 
 ### T-a-saved-filter-is-its-readings

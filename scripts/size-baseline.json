@@ -44,7 +44,7 @@
   "src/components/sherpa-progress-bar/sherpa-progress-bar.ts": 79,
   "src/components/sherpa-progress-step-tracker/sherpa-progress-step-tracker.ts": 101,
   "src/components/sherpa-prompt-composer/sherpa-prompt-composer.ts": 115,
-  "src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts": 2091,
+  "src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts": 1985,
   "src/components/sherpa-quick-filter/sherpa-quick-filter.ts": 793,
   "src/components/sherpa-radial-chart/sherpa-radial-chart.ts": 227,
   "src/components/sherpa-section-header/sherpa-section-header.ts": 22,
