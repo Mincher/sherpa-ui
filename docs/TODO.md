@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**46 open.** Reassessed 2026-09-26: the bugs that lie first, then the
+**48 open.** Reassessed 2026-09-26: the bugs that lie first, then the
 FOUNDATION — the one compiled query, the view definition and when Apply runs —
 before the filter features that stand on it. Numbers are ids, not order; the
 table IS the order.
@@ -22,58 +22,60 @@ table IS the order.
 | | | **B — The foundation: design, then build** | |
 | 1 | 73 | EXPLORE — one compiled QUERY, built as the reader sets it up, run on Apply | explore |
 | 2 | 70 | EXPLORE — a view definition bundles its filters; one JSON renders the page | explore |
-| 3 | 62 | Apply and Discard only for a REMOTE fetch; a debug flag spoofs one | feature |
-| 4 | 66 | The footer owns "nothing to save": Save and Cancel wait for a change | feature |
-| 5 | 38 | One model, one builder, one owner — what is left | refactor |
-| 6 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
+| 3 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
+| 4 | 62 | Apply and Discard only for a REMOTE fetch; a debug flag spoofs one | feature |
+| 5 | 66 | The footer owns "nothing to save": Save and Cancel wait for a change | feature |
+| 6 | 75 | Filter modes are SIMPLE and COMPLEX, not Default and Conditional — every file | refactor |
+| 7 | 38 | One model, one builder, one owner — what is left | refactor |
+| 8 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | | | **C — Contained bugs** | |
-| 7 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
-| 8 | 61 | Add customer saves with required fields empty | bug |
-| 9 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
-| 10 | 45 | A picked date does not show in the chip | bug |
-| 11 | 16 | Favourite and Save apply to the Context, not the View | bug |
-| 12 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
+| 9 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
+| 10 | 61 | Add customer saves with required fields empty | bug |
+| 11 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
+| 12 | 45 | A picked date does not show in the chip | bug |
+| 13 | 16 | Favourite and Save apply to the Context, not the View | bug |
+| 14 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
 | | | **D — Filters: Will's features, on the foundation** | |
-| 13 | 46 | A PENDING state: changed, not yet applied | feature |
-| 14 | 60 | Once applied, a chip's badge shows the number of results | feature |
-| 15 | 49 | A preset conditional chip shows its conditions, read-only | feature |
-| 16 | 50 | A custom conditional chip shows its conditions, editable | feature |
-| 17 | 47 | More than 20 values: one chip, not a run | feature |
-| 18 | 48 | A child menu opens on hover or click of its row | feature |
-| 19 | 21c | A condition's matches must ALL highlight | feature |
-| 20 | 21f | "Send to view filters" | feature |
-| 21 | 21b | Which header chips carry over between views | feature |
-| 22 | 20b | The Date filter should be a view-scope date RANGE | feature |
-| 23 | 21d | EXPLORE — conditions for a DATE field | explore |
-| 24 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
+| 15 | 46 | A PENDING state: changed, not yet applied | feature |
+| 16 | 60 | Once applied, a chip's badge shows the number of results | feature |
+| 17 | 49 | A preset conditional chip shows its conditions, read-only | feature |
+| 18 | 50 | A custom conditional chip shows its conditions, editable | feature |
+| 19 | 47 | More than 20 values: one chip, not a run | feature |
+| 20 | 48 | A child menu opens on hover or click of its row | feature |
+| 21 | 21c | A condition's matches must ALL highlight | feature |
+| 22 | 21f | "Send to view filters" | feature |
+| 23 | 21b | Which header chips carry over between views | feature |
+| 24 | 20b | The Date filter should be a view-scope date RANGE | feature |
+| 25 | 21d | EXPLORE — conditions for a DATE field | explore |
+| 26 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
 | | | **E — Views and navigation** | |
-| 25 | 15 | Save a View, and the Save split-button menu | feature |
-| 26 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
-| 27 | 34 | Figma: use the Navigation terms | figma |
+| 27 | 15 | Save a View, and the Save split-button menu | feature |
+| 28 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
+| 29 | 34 | Figma: use the Navigation terms | figma |
 | | | **F — Data states and charts** | |
-| 28 | 58 | Loading, empty and error states in a container | feature |
-| 29 | 9b | A Data Viz header, for metrics and chart containers | component |
-| 30 | 14 | An example of real-time data | feature |
-| 31 | 59 | EXPLORE, later — Will's own loading pattern | explore |
+| 30 | 58 | Loading, empty and error states in a container | feature |
+| 31 | 9b | A Data Viz header, for metrics and chart containers | component |
+| 32 | 14 | An example of real-time data | feature |
+| 33 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | | | **G — Overlay panels** | |
-| 32 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
-| 33 | 23 | A focused grid row opens a details panel | feature |
+| 34 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
+| 35 | 23 | A focused grid row opens a details panel | feature |
 | | | **H — The accessibility gate** | |
-| 34 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
+| 36 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
 | | | **I — The big builds** | |
-| 35 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
-| 36 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
-| 37 | 27 | A consumer can supply their OWN templates and CSS | feature |
-| 38 | 25 | `sherpa-layout-canvas` + minimap | component |
-| 39 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
+| 37 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
+| 38 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
+| 39 | 27 | A consumer can supply their OWN templates and CSS | feature |
+| 40 | 25 | `sherpa-layout-canvas` + minimap | component |
+| 41 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
 | | | **J — Tidy-ups and renames** | |
-| 40 | 11 | `sherpa-group`: what is left | tidy |
-| 41 | 28 | A Figma component is NOT always a web component | tidy |
-| 42 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
-| 43 | 33 | Density as step offsets, and a breakpoint step | tokens |
-| 44 | 36 | CSS: compiled where it should inherit? | tidy |
-| 45 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
-| 46 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
+| 42 | 11 | `sherpa-group`: what is left | tidy |
+| 43 | 28 | A Figma component is NOT always a web component | tidy |
+| 44 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| 45 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| 46 | 36 | CSS: compiled where it should inherit? | tidy |
+| 47 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| 48 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 
 **Why this order** (reassessed 2026-09-26).
 
@@ -171,6 +173,19 @@ replacement; how it meets the templates (68's templater, 27's own
 templates); and how much of it is 38's "a component DECLARES the data it
 needs". Design first — 15 builds on the answer.
 
+### `[ ]` 74 — EXPLORE: the Query builds every group, sort and filter menu; a menu shows its sub-query
+
+Will, 2026-09-27: *"The query language, and single query object, can be used
+to construct group, sort, and filter menus both in their simple list
+presentation mode and the conditional mode. It also allows us to expose the
+sub-query, that defines the conditions, for any filter menu."*
+
+So a menu is DRAWN from its field's slice of the Query — its values, its
+picks, its rows — in either mode, and the bar, the panel and a heading stop
+building their own. And any filter menu can SHOW the sub-query behind it: the
+conditions it compiles to, readable, perhaps editable. Explore with 49 and 50
+(a conditional chip shows its conditions), which are this seen from a chip.
+
 ### `[ ]` 62 — Apply and Discard only for a REMOTE fetch; a debug flag spoofs one
 
 **Designed with 73 — see `docs/QUERY-DESIGN.md`.**
@@ -216,6 +231,23 @@ must be declared, not guessed from their labels.
 
 Do it with 62: 62 decides WHICH fields have Apply and Discard at all, this
 decides how any such pair behaves.
+
+### `[ ]` 75 — Filter modes are SIMPLE and COMPLEX, not Default and Conditional — every file
+
+Will, 2026-09-27: *"We need to move away from using the terms Default and
+Conditional for filter modes. Instead we should use 'Simple' and 'Complex'."*
+
+| mode | is |
+|---|---|
+| **Simple** | ONE field, with one or more values to choose from |
+| **Complex** | ONE OR MORE fields, with one or more values to choose from, and conditional parameters in use |
+
+The new ontology goes into EVERY file: code (`mode: 'default' | 'custom'`,
+`data-mode`, `condition: 'custom'`, `custom:` opt-ins), UI labels (the
+"Conditional" switch), tests, docs, TRAPS and the specs. Do it in one sweep,
+after step 6 of the Query, so the features in D (49, 50, 46) are built in
+the new words. Note: Complex allows SEVERAL fields — today a condition is
+over one field, so the rename also opens that door.
 
 ### `[~]` 38 — One model, one builder, one owner: what is left
 
