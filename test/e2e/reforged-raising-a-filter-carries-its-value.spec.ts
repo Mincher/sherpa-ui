@@ -43,7 +43,8 @@ test('raise, change and lower a filter — the value travels and comes back', as
     await page.waitForTimeout(300);
     if (untick) await menu.locator(`label:has(input[value="${untick}"])`).click();
     await menu.locator(`label:has(input[value="${value}"])`).click();
-    await menu.locator('.apply').click();
+    // LOCAL data: each tick applied as it was made. TRAP T-commit-follows-select-mode
+    await page.keyboard.press('Escape');
     await page.waitForTimeout(800);
   };
 

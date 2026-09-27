@@ -127,6 +127,14 @@
     /* A Context's FILTER ANSWERS, with the View they were made on. They survive
        a reload and a trip away and back, and die with the session.
        TRAP T-a-reload-replays-the-readers-answers */
+    /* DEBUG: `?remote` makes the Records store ACT remote — slow, so every
+       filter waits for Apply. `?remote=0` turns it off. Kept for the session.
+       TRAP T-apply-and-discard-wait-for-a-change */
+    session.persist('/debug/remote', { guard: (v) => typeof v === 'boolean' });
+    {
+      const flag = new URLSearchParams(location.search).get('remote');
+      if (flag !== null) session.set('/debug/remote', flag !== '0');
+    }
     session.persist('/filters/records', {
       guard: (v) => v === null || (!!v && typeof v === 'object' && typeof v.view === 'string'),
     });
@@ -319,7 +327,7 @@
          TRAP T-panel-mode-hides-what-the-panel-answers */
       /* …and the VIEW, so the Context opens on it itself — a pick after init
          would reset what the session kept. TRAP T-a-reload-replays-the-readers-answers */
-      cleanup = await mod.init(contextRoot, { session, view });
+      cleanup = await mod.init(contextRoot, { session, view, remote: session.get('/debug/remote') === true });
       if (token !== loadToken) return;
       if (view) pickView(header, name, view);
 

@@ -8,7 +8,7 @@
  * - init — bind this Context to its source and wire every control; returns nothing
  */
 import {
-  DataSource, VIEW_SCOPE, SherpaToast, persistView, viewOptions, onViewPicked, applyViewSnapshot,
+  DataSource, VIEW_SCOPE, SherpaToast, persistView, viewOptions, onViewPicked, applyViewSnapshot, spoofRemote,
   countBy, reduceRows, bindSelection,
   seriesBy, deltaPercent, saveFilterAs, loadSavedFilters, deleteSavedFilter, labelId,
 } from '../../dist/index.js';
@@ -19,10 +19,11 @@ import { RECORDS_VIEWS } from './records-views.js';
 import { globalFilters } from './global-filters.js';
 
 
-export async function init(root, { session, view } = {}) {
+export async function init(root, { session, view, remote = false } = {}) {
   /* The store is the APP's (records outlive a screen); the source is this
-     Context's (one query over them). */
-  const store = customerStore;
+     Context's (one query over them). `?remote` makes it ACT remote, so every
+     filter waits for Apply. TRAP T-apply-and-discard-wait-for-a-change */
+  const store = remote ? spoofRemote(customerStore, { delay: 800 }) : customerStore;
   /* SEED BEFORE FIRST LOAD. The store is IndexedDB, so a source that loaded
      first would draw an empty grid and never hear the seed arrive. */
   await customersReady;
@@ -170,9 +171,9 @@ export async function init(root, { session, view } = {}) {
   const typedColumn = (col) =>
     (col.type ?? 'text') === 'text' && valuesOf(col.field).length > PICKABLE_AT_MOST;
   /* `removable: true` — the DATA bar is the user's own to arrange, so each menu
-     chip offers "Remove filter". `commit: true` on Owner and Created only:
-     chips AUTO-APPLY by default, and committing is the opt-out for a field
-     whose query is expensive. Both behaviours are here side by side. */
+     chip offers "Remove filter". No `commit`: a pick applies at once, and
+     only a REMOTE source makes a menu wait for Apply (`?remote`).
+     TRAP T-commit-follows-select-mode */
   /* ONE LIST, read twice: the toolbar draws it as a row of chips and the
      PANEL draws it as a column. A second copy would drift the first time
      either changed. TRAP T-the-panel-is-the-toolbar-in-a-column */
@@ -204,13 +205,12 @@ export async function init(root, { session, view } = {}) {
     // one field would make the reader guess which is in force.
     { id: 'tier', label: 'Tier', type: 'data',
       select: 'multiple', removable: true, options: asOptions('tier') },
-    /* COMMITTING: rows are a draft behind Apply/Cancel. And the one chip here
-       that OPTS IN to custom conditions — an owner is a person's name, so "starts
+    /* The one chip here that OPTS IN to custom conditions — an owner is a person's name, so "starts
        with" is a question a reader really asks. Status, Plan and Tier are
        closed sets of three or four, and get a plain list.
        TRAP T-conditions-are-opt-in-per-field */
     { id: 'owner', label: 'Owner', type: 'data', custom: true,
-      select: 'multiple', removable: true, commit: true, options: asOptions('owner') },
+      select: 'multiple', removable: true, options: asOptions('owner') },
     /* No `created` chip here: the header's "Created date" already filters that
        field at VIEW scope, and one field lives in exactly ONE scope.
        TRAP T-component-extends-view-never-alters-it */
@@ -771,6 +771,8 @@ export async function init(root, { session, view } = {}) {
   grid.addEventListener('column-filter-change', (e) => {
     const { field, reading } = e.detail;
     source.select(field, reading?.picked ?? [], reading ?? {});
+    // A heading's Apply is an Apply — remote, it sends the draft.
+    source.commit();
     void showChip(field, reading);
   }, { signal });
   /** Put a field's NORMAL chip on the bar, drawn with its answer — silently,
@@ -890,8 +892,10 @@ export async function init(root, { session, view } = {}) {
       const field = headerField(id);
       if (field && values?.length) readings[field] = { picked: values };
     }
-    // The VIEW scope's whole answer, in the Query. TRAP T-one-query-one-owner
+    // The VIEW scope's whole answer, in the Query — and, remote, its Apply.
+    // TRAP T-one-query-one-owner
     source.answer(VIEW_SCOPE, readings);
+    source.commit();
   }, { signal });
 
   /* RAISING CARRIES THE ANSWER. A field the view takes from a component keeps

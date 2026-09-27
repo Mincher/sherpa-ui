@@ -31,6 +31,9 @@
                   and the Add menu once any field is on, offer "Save filter",
                   which fires filter-save. The host stores it and calls
                   packFilter(). TRAP T-save-packs-the-fields-into-one-chip
+    data-remote      its source fetches from outside the data layer: a
+                  multi-select or range menu waits for Apply. Without it,
+                  every pick applies at once. Set by a bound source.
 
   Slots:
     view     — leading view chip (view type)

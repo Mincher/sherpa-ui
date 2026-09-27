@@ -1248,11 +1248,15 @@ export class DataSource extends EventTarget {
        own state — that is what makes a standalone grid work.
        TRAP T-bind-locks-what-it-owns */
     if (!readonlyBind) el.setAttribute('data-locked', '');
+    /* A control over a scope of a REMOTE source is told so: its menus wait for
+       Apply. TRAP T-apply-and-discard-wait-for-a-change */
+    if (options.scope && this.#remote) el.setAttribute('data-remote', '');
 
     const off = (): void => {
       for (const [type, handler] of listeners) el.removeEventListener(type, handler);
       // UNLOCKED on the way out, or a component that outlives its source is mute.
       el.removeAttribute('data-locked');
+      el.removeAttribute('data-remote');
     };
     this.#bound.set(el, {
       id: options.id ?? (el.id || `bind-${++this.#binds}`),
@@ -1332,6 +1336,8 @@ export class DataSource extends EventTarget {
           for (const [id, p] of Object.entries(presets)) this.#presets.set(id, p.readings);
           this.answer(bind.scope, readings,
             Object.fromEntries(Object.entries(presets).map(([id, p]) => [id, p.on])));
+          /* A bar's report IS its Apply: its menus waited for it, remote. */
+          this.commit();
           return;
         }
         for (const field of bind?.answered ?? []) {

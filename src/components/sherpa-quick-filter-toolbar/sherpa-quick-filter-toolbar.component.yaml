@@ -166,6 +166,14 @@ props:
       a filter PANEL is answering for this bar: AI, Reset, the panel toggle and Filters are hidden,
       and a `data` bar goes entirely. TRAP T-panel-mode-hides-what-the-panel-answers
   - $type: prop
+    name: data-remote
+    type: string
+    observed: true
+    kind: style
+    description: >-
+      its source fetches from outside the data layer: a multi-select or range menu waits for Apply.
+      Without it, every pick applies at once. Set by a bound source.
+  - $type: prop
     name: data-saveable
     type: string
     observed: true

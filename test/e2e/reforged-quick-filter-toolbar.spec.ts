@@ -1306,13 +1306,16 @@ test('a DATE chip carries the Range switch as a full-width row above its calenda
 
 /**
  * A RANGE has two ends, so the pick is not finished on the first one — applying
- * there would filter to a span the user has not named yet. The Range switch
- * moves the menu between auto-apply and Apply/Cancel at runtime.
+ * there would filter to a span the user has not named yet. On a REMOTE source
+ * the Range switch moves the menu between auto-apply and Apply/Cancel at
+ * runtime; LOCALLY nothing waits for Apply (Will, 2026-09-27).
+ * TRAP T-commit-follows-select-mode
  */
-test('the Range switch brings Apply/Cancel, and leads its own label', async ({ page }) => {
+test('the Range switch brings Apply/Cancel on a remote source, and leads its own label', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const read = async (def: unknown, id: string): Promise<Record<string, unknown>> => {
-      const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
+    const read = async (def: unknown, id: string, remote = true): Promise<Record<string, unknown>> => {
+      const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined,
+        remote ? { 'data-remote': '' } : {});
       el.populate([def]);
       await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
@@ -1367,6 +1370,11 @@ test('the Range switch brings Apply/Cancel, and leads its own label', async ({ p
           commit: false, range: false, active: true },
         'pinned',
       ),
+      // LOCAL: a span applies as it is set — no Apply to wait for.
+      local: await read(
+        { id: 'local', label: 'Local', kind: 'number', min: 0, max: 100, range: false, active: true },
+        'local', false,
+      ),
     };
   });
 
@@ -1381,6 +1389,7 @@ test('the Range switch brings Apply/Cancel, and leads its own label', async ({ p
 
   expect(r.pinned.single).toEqual({ commits: false, apply: false, cancel: false });
   expect(r.pinned.ranged).toEqual({ commits: false, apply: false, cancel: false });
+  expect(r.local.ranged).toEqual({ commits: false, apply: false, cancel: false });
 });
 
 /**

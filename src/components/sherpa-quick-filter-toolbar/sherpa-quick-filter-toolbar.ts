@@ -158,6 +158,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-sort-field', 'data-sort-direction', 'data-group-field', 'data-favourite',
     // The host saves filters. TRAP T-save-packs-the-fields-into-one-chip
     'data-saveable',
+    // Its source fetches from outside: menus wait for Apply. TRAP T-commit-follows-select-mode
+    'data-remote',
   ];
 
   /** The filter defs this bar holds, in order. */
@@ -792,7 +794,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     /* ONE DEF, ONE MENU. The panel and a column heading build theirs the same
        way, so a field cannot open with a different control in each.
        TRAP T-one-field-one-filter-menu */
-    const { menu, items } = menuFor(def, { bounds: this.dataset['bounds'] });
+    const { menu, items } = menuFor(def, {
+      bounds: this.dataset['bounds'], remote: this.hasAttribute('data-remote'),
+    });
 
     // TRAP T-persistent-chip-is-a-selector — no pick at all falls back to the
     // FIRST option, or the chip paints as an empty warning.
@@ -1012,7 +1016,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#emitChange();
   };
 
-  override onChange(): void {
+  override onChange(name?: string): void {
+    // Local or remote decides which menus wait for Apply, so they are rebuilt.
+    if (name === 'data-remote' && this.#filters.length) this.#render();
     this.#syncArrangement('group');
     this.#syncArrangement('sort');
     this.#syncFavouriteFromAttr();

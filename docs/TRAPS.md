@@ -406,9 +406,21 @@ it is made. IN RANGE MODE it is not — a span has two ends, and applying on the
 first would filter to a range the user has not finished naming. So a range
 defers, and the Range switch moves the menu between the two modes at runtime.
 
+**All of that is now for a REMOTE source only.** Will, 2026-09-27 (TODO 62,
+choice A): Apply is only for a fetch that leaves the data layer. LOCALLY every
+pick applies at once — multi-select and ranges too — and the menu is built
+`data-commit-fixed`, so the Range switch cannot turn Apply on. A bound source
+over a remote store sets `data-remote` on the bar, and `menuFor(def,
+{ remote })` then applies the select-mode rule above. A bar with no source
+counts as local.
+
+- Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `test/e2e/reforged-raising-a-filter-carries-its-value.spec.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/core/ui/filter-menu.ts`
+- Site: `test/e2e/reforged-remote-source.spec.ts`
 
 (none — `T-custom-element-upgrade` already exists and already lists this file as a Site.)
 
@@ -13305,6 +13317,7 @@ list) and `data-dirty`. Over a local store the draft IS the applied Query —
 one object — so nothing is ever pending. A scope that narrows one component
 (a legend) applies at once even on a remote store: its rows are already here.
 
+- Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/spoof-remote.ts`
@@ -13313,6 +13326,7 @@ one object — so nothing is ever pending. A scope that narrows one component
 - Site: `test/unit/query.test.mjs`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `test/e2e/reforged-panel-apply.spec.ts`
+- Site: `test/e2e/reforged-remote-source.spec.ts`
 
 ### T-a-condition-tip-counts-its-rows
 

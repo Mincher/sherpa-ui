@@ -59,6 +59,9 @@ export interface FilterMenuOptions {
   bounds?: string | undefined;
   /** Draw it INLINE, in a panel body, rather than as a chip's card. */
   inline?: boolean | undefined;
+  /** Its source fetches from OUTSIDE the data layer. `false`: every pick applies
+   *  at once. Left out, the select mode decides, as before. */
+  remote?: boolean | undefined;
 }
 
 /**
@@ -81,11 +84,15 @@ export function menuFor(
   // A NUMBER opens as a RANGE; a def that says otherwise wins.
   // TRAP T-a-default-is-not-an-override
   const asRange = def.range ?? kind === 'number';
-  // TRAP T-commit-follows-select-mode
-  const defers = def.commit ?? (!one && !(hasOwnBody(kind) && !asRange));
+  /* APPLY IS FOR A REMOTE FETCH (Will, 2026-09-27). A LOCAL pick applies at
+     once — multi-select and ranges too — and the menu is FIXED, so the Range
+     switch cannot turn Apply on. Remote, the select mode decides.
+     TRAP T-commit-follows-select-mode */
+  const local = opts.remote === false;
+  const defers = def.commit ?? (!local && !one && !(hasOwnBody(kind) && !asRange));
   if (defers) menu.setAttribute('data-commit', '');
   // A def that NAMED `commit` outranks the Range switch's own rule.
-  if (def.commit != null) menu.setAttribute('data-commit-fixed', '');
+  if (def.commit != null || local) menu.setAttribute('data-commit-fixed', '');
   // TRAP T-every-chip-menu-gets-clear-and-search — a persistent chip gets no Clear.
   if (!def.persistent) menu.setAttribute('data-clearable', '');
   menu.setAttribute('data-search', '');
