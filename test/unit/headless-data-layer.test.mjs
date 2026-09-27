@@ -1042,3 +1042,34 @@ test('declareDefault: a component narrows itself alone, and a View pick keeps it
   source.declareDefault('own:tile', undefined);
   assert.equal(source.query.applied.scopes['own:tile'], undefined);
 });
+
+/* A PAGE GOES OUT AS JSON and comes back: a round trip gives the same rows and
+   the same question — its saved filters with it. TRAP T-a-page-goes-out-as-json */
+test('export and import: a round trip through JSON gives the same rows', async () => {
+  const rows = [
+    { id: 1, plan: 'Pro', seats: 5 }, { id: 2, plan: 'Free', seats: 50 },
+    { id: 3, plan: 'Pro', seats: 20 }, { id: 4, plan: 'Enterprise', seats: 80 },
+  ];
+  const make = () => {
+    const s = new DataSource({ store: new ArrayStore(rows, { key: 'id' }) });
+    s.declareField('seats', { type: 'number' });
+    return s;
+  };
+  const a = make();
+  a.declarePreset('big', { seats: { op: 'gt', text: '10' } }, { label: 'Big accounts' });
+  a.hold('view', ['plan']);
+  a.answer('view', { plan: { picked: ['Pro', 'Enterprise'] } });
+  a.answer('grid', {}, { big: true });
+  a.setSort('seats', 'desc');
+  await a.load();
+  const out = JSON.parse(JSON.stringify(a.export()));
+  assert.deepEqual(out.presets.big, { label: 'Big accounts', readings: { seats: { op: 'gt', text: '10' } } });
+
+  const b = make();
+  await b.import(out);
+  await b.load();
+  const ids = async (s) => (await s.load({ force: true })).rows.map((r) => r.id);
+  assert.deepEqual(await ids(b), await ids(a));
+  assert.deepEqual(await ids(b), [4, 3]);
+  assert.deepEqual(b.state.sort, a.state.sort);
+});

@@ -9,7 +9,8 @@
  * docs/PROVIDER-DESIGN.md. TRAP T-a-component-asks-its-provider
  *
  * Map:
- * - ProvideOptions — What a provider is given: its sources, by name.
+ * - ProvideOptions — What a provider is given: its sources by name, and its Views.
+ * - ProviderState — A subtree's whole state as JSON: each source's question, and the View on screen.
  */
 import { SUMMARY_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import {
@@ -20,7 +21,7 @@ import { summarise, type SummarySpec } from '../../core/data/aggregate.js';
 import { bindSelection, type Selector } from '../../core/data/bind-selection.js';
 import { valueKey } from '../../core/data/store.js';
 import { onViewPicked, type ViewLibrary } from '../../core/browser/persist-view.js';
-import type { DataSource } from '../../core/data/data-source.js';
+import type { DataSource, SourceState } from '../../core/data/data-source.js';
 import type { Query } from '../../core/data/query.js';
 import type { FieldReading } from '../../core/data/filter-state.js';
 import type { Populatable } from '../../core/ui/apply-state.js';
@@ -36,6 +37,14 @@ export interface ProvideOptions {
   /** Where the Query outlives a reload — for this View only — under `key`. */
   session?: { get(key: string): unknown; set(key: string, value: unknown): void };
   key?: string;
+}
+
+/** A subtree's whole state, as JSON — each source's question and the View on
+ *  screen — to send out and take back in. TRAP T-a-page-goes-out-as-json */
+export interface ProviderState {
+  v: 1;
+  view?: string;
+  sources: Record<string, SourceState>;
 }
 
 /** The attribute a summary needs before it asks; without it a page populates it.
@@ -93,6 +102,7 @@ export class SherpaProvider extends SherpaElement {
     for (const asked of this.#asked.values()) this.#answer(asked);
     this.#views?.abort();
     this.#views = null;
+    this.#hear = null;
     // The Views are over the ONE source; a subtree of several names none.
     const [source, ...more] = Object.values(this.#sources);
     if (!options.views || !source || more.length) return Promise.resolve();
@@ -108,6 +118,7 @@ export class SherpaProvider extends SherpaElement {
   override onDisconnect(): void {
     this.#views?.abort();
     this.#views = null;
+    this.#hear = null;
     for (const asked of this.#asked.values()) asked.unbind?.();
     this.#asked.clear();
   }
@@ -133,23 +144,8 @@ export class SherpaProvider extends SherpaElement {
     if (kept?.query && kept.view === this.#view) await source.setQuery(kept.query);
     else if (this.#view !== first && start?.query) await source.setQuery(start.query, { holds: 'keep' });
     if (signal.aborted) return;
-    // Whatever has an id in this subtree NOW — a View's content brings its own.
-    const byId = (): Record<string, HTMLElement> =>
-      Object.fromEntries([...this.querySelectorAll<HTMLElement>('[id]')].map((el) => [el.id, el]));
-    onViewPicked(this, library, {
-      source,
-      get elements() { return byId(); },
-    }, {
-      signal,
-      // The View on screen already — a first pick of it would wipe what was kept.
-      // TRAP T-a-persistent-chip-reports-on-every-change
-      applied: this.#view ?? null,
-      into: this.querySelector<HTMLElement>('[data-view-content]'),
-      after: ({ id, rendered }) => {
-        this.#view = id;
-        this.emit('view-change', { id, ...(rendered ? { elements: rendered.elements } : {}) });
-      },
-    });
+    this.#hear = () => this.#hearPicks(source, library, signal);
+    this.#hear();
     if (!key || !session) return;
     let frame = 0;
     const keep = (): void => {
@@ -159,6 +155,76 @@ export class SherpaProvider extends SherpaElement {
     for (const type of ['selection-change', 'scope-change']) source.addEventListener(type, keep, { signal });
     // A preset switched is a report, and no selection changes.
     this.addEventListener('quick-filter-change', keep, { signal });
+  }
+
+  /** Listen for View picks again, knowing the View on screen now. */
+  #hear: (() => void) | null = null;
+  /** Stops the current View-pick listener. */
+  #pickListener: AbortController | null = null;
+
+  /** A pick from the View chip, a nav row or a link puts that View's Query on. */
+  #hearPicks(source: DataSource, library: () => ViewLibrary, signal: AbortSignal): void {
+    this.#pickListener?.abort();
+    this.#pickListener = new AbortController();
+    const picks = this.#pickListener;
+    signal.addEventListener('abort', () => picks.abort(), { once: true });
+    // Whatever has an id in this subtree NOW — a View's content brings its own.
+    const byId = (): Record<string, HTMLElement> =>
+      Object.fromEntries([...this.querySelectorAll<HTMLElement>('[id]')].map((el) => [el.id, el]));
+    onViewPicked(this, library, {
+      source,
+      get elements() { return byId(); },
+    }, {
+      signal: picks.signal,
+      // The View on screen already — a first pick of it would wipe what was kept.
+      // TRAP T-a-persistent-chip-reports-on-every-change
+      applied: this.#view ?? null,
+      into: this.querySelector<HTMLElement>('[data-view-content]'),
+      after: ({ id, rendered }) => {
+        this.#view = id;
+        this.emit('view-change', { id, ...(rendered ? { elements: rendered.elements } : {}) });
+      },
+    });
+  }
+
+  /**
+   * This subtree's whole state as JSON — each source's question, and the View
+   * on screen — for a link, another service or an agent.
+   * TRAP T-a-page-goes-out-as-json
+   */
+  export(): ProviderState {
+    const sources: Record<string, SourceState> = {};
+    for (const [name, source] of Object.entries(this.#sources)) sources[name] = source.export();
+    return { v: 1, ...(this.#view ? { view: this.#view } : {}), sources };
+  }
+
+  /**
+   * Take a state back in, exactly: each named source's question, and its View
+   * — shown on the View chip, and known to the pick listener, so the next pick
+   * of the old View is heard. A source it does not name is left as it is.
+   */
+  async import(state: ProviderState): Promise<void> {
+    if (state?.v !== 1) {
+      report({ code: 'unknown-state', message: 'sherpa-provider: not a v1 state, so nothing was taken in.' });
+      return;
+    }
+    for (const [name, given] of Object.entries(state.sources ?? {})) await this.#sources[name]?.import(given);
+    if (!state.view || state.view === this.#view) return;
+    const was = this.#view;
+    this.#view = state.view;
+    this.#showView(was, state.view);
+    this.#hear?.();
+    this.emit('view-change', { id: state.view });
+  }
+
+  /** Put a View on the chip that shows the current one — silently: its Query is on. */
+  #showView(was: string | undefined, id: string): void {
+    for (const bar of this.querySelectorAll<HTMLElement & {
+      values?: Record<string, readonly string[]>; setChipValues?: (id: string, v: string[]) => void;
+    }>('sherpa-quick-filter-toolbar')) {
+      const chip = Object.keys(bar.values ?? {}).find((k) => bar.values?.[k]?.[0] === was);
+      if (chip) bar.setChipValues?.(chip, [id]);
+    }
   }
 
   /** A request from inside: the NEAREST provider answers, so it stops here. */

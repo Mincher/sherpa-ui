@@ -8,6 +8,7 @@
  * - ApplyAt — HOW FAR a control's reading reaches.
  * - FieldDeclaration — What a field IS, said once — its kind, its name, and how a control answers it.
  * - FieldFilter — A field's filter as any bar or panel draws it — its declaration and values.
+ * - SourceState — A source's whole question as JSON: its applied Query, arrangement and saved filters.
  * - HeldFilter — One filter a scope holds, as a control draws it.
  * - ScopeDescription — One scope as a control draws it whole, as JSON.
  * - ViewState — The view state a source owns.
@@ -20,6 +21,8 @@
  * - .timeField — The field holding each record's TIME, or undefined when the store has none.
  * - .state — The current view state.
  * - .query — The Query the rows are under. A copy.
+ * - .export — This source's whole question as JSON, to send out.
+ * - .import — Take a question back in, exactly: its saved filters, then its Query.
  * - .setQuery — Restore a whole Query — a reload, a trip away and back.
  * - .setState — Restore a whole view state — a saved view, a deep link, a reload.
  * - .loaded — Has any load completed?
@@ -126,6 +129,15 @@ export interface FieldFilter extends Omit<FieldDeclaration, 'type'> {
   /** A PRESET — a saved filter: its answer, field by field, and whether the reader may edit it. */
   readings?: Readonly<Record<string, FieldReading>>;
   editable?: boolean;
+}
+
+/** A source's whole question, as JSON — to send out and take back in: the
+ *  Query as applied, its arrangement in the View scope, and every saved filter
+ *  it names, so another service needs no library. TRAP T-a-page-goes-out-as-json */
+export interface SourceState {
+  v: 1;
+  query: Query;
+  presets: Record<string, { label?: string; editable?: boolean; readings: Record<string, FieldReading> }>;
 }
 
 /** One filter a scope holds, as a control draws it. */
@@ -395,6 +407,36 @@ export class DataSource extends EventTarget {
   /** The Query the rows are under. A copy. TRAP T-one-query-one-owner */
   get query(): { applied: Query; draft: Query } {
     return { applied: structuredClone(this.#applied), draft: structuredClone(this.#draft) };
+  }
+
+  /** This source's whole question as JSON — the Query as applied, how its rows
+   *  are arranged, and the saved filters it names. TRAP T-a-page-goes-out-as-json */
+  export(): SourceState {
+    const query = structuredClone(this.#applied);
+    const { sort, group, search } = this.#state;
+    query.scopes[VIEW] = {
+      ...(query.scopes[VIEW] ?? { holds: [], readings: {} }), sort: structuredClone(sort), group, search,
+    };
+    const presets: SourceState['presets'] = {};
+    for (const scope of Object.values(query.scopes)) {
+      for (const id of Object.keys(scope.presets ?? {})) {
+        const readings = this.#presets.get(id);
+        if (readings) presets[id] = { ...this.#presetFacts.get(id), readings: structuredClone(readings) as Record<string, FieldReading> };
+      }
+    }
+    return { v: 1, query, presets };
+  }
+
+  /** Take a question back in, exactly: its saved filters, then its Query. */
+  async import(state: SourceState): Promise<void> {
+    if (state?.v !== 1) {
+      report({ code: 'unknown-state', message: 'import: not a v1 source state, so nothing was taken in.' });
+      return;
+    }
+    for (const [id, { readings, ...facts }] of Object.entries(state.presets ?? {})) {
+      this.declarePreset(id, readings, facts);
+    }
+    await this.setQuery(state.query);
   }
 
   /**

@@ -169,7 +169,7 @@ door for page code and tests, every component's events, the JSON Views.
 | P2 ✅ | the summary shapes — `aggregate`, `segments`, `series` — declared by attributes (`SUMMARY_PROPS`) and answered by `summarise()`; a child reads the nearest declaration above it; a legend picks for its chart; `data-format` is `Intl.NumberFormatOptions` | Records' and the Dashboard's tile, chart and legend adapters, `money`, `overMonths`, `bindLegend`, the line legend's hide — pages −168 lines | `reforged-provider-summary.spec.ts`; `aggregate.test.mjs` |
 | P3 | the `scope` and `query` keys: bars, panel, grid headings and legends ask | `syncScopes`, the header listener, panel fill and routing, `showChip`, raise/lower glue | the Records filter suite |
 | P4 ✅ | `provide({ views, view, session, key })`: the provider restores the kept Query on its own View, hears a View pick, draws a View's content into `data-view-content`, and keeps the Query; a View's `ui` configures its content | `onViewPicked` wiring, Records' session keep and restore, the Dashboard's content binds — Records −37 lines, the Dashboard −55 | `reforged-provider.spec.ts`, the view tests |
-| P5 | `export` / `import` — the Query and Views out and in, as JSON | — | a round trip through JSON gives the same rows |
+| P5 ✅ | `export` / `import` — each source's question (its applied Query, arrangement and saved filters) and the View on screen, out and in as JSON; the source half is DOM-free | — | a round trip through JSON gives the same rows — `headless-data-layer.test.mjs`, `reforged-provider.spec.ts` |
 | later | `template` (with 68), WebMCP (76) | — | — |
 
 **P3, in five commits** — each deletes its glue from `records.js`, and the

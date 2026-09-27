@@ -163,3 +163,50 @@ test('a provider applies a View pick, keeps the Query, and restores it on its ow
   expect(r['other']).toBe(4);
   expect(r['reports']).toEqual([]);
 });
+
+/* THE PAGE GOES OUT AS JSON: one provider's state, taken in by another, gives
+   the same rows and the same View — and the View it left is still heard.
+   TRAP T-a-page-goes-out-as-json */
+test('a provider exports its state as JSON; another takes it in and draws the same rows', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const VIEWS = {
+      all: { label: 'All', query: { v: 1, scopes: { view: {} } } },
+      odd: { label: 'Odd', query: { v: 1, scopes: { view: { readings: { name: { picked: ['j1', 'j3'] } } } } } },
+    };
+    const make = () => {
+      const provider = document.createElement('sherpa-provider');
+      const g = grid();
+      provider.append(g);
+      root.append(provider);
+      return { provider, g };
+    };
+    const one = make();
+    const a = source(4, 'j');
+    await one.provider.provide({ sources: { s: a }, views: VIEWS });
+    await a.load();
+    one.g.dispatchEvent(new CustomEvent('quick-filter-change', {
+      bubbles: true, composed: true, detail: { scope: 'bar', values: { view: ['odd'] } },
+    }));
+    await settle();
+    const json = JSON.stringify(one.provider.export());
+
+    const two = make();
+    const b = source(4, 'j');
+    await two.provider.provide({ sources: { s: b }, views: VIEWS });
+    await b.load();
+    await two.provider.import(JSON.parse(json));
+    await settle();
+    const taken = { rows: drawn(two.g), view: two.provider.view };
+    // The View it LEFT is heard: a pick of it is not mistaken for the one on screen.
+    two.g.dispatchEvent(new CustomEvent('quick-filter-change', {
+      bubbles: true, composed: true, detail: { scope: 'bar', values: { view: ['all'] } },
+    }));
+    await settle();
+    return { json: JSON.parse(json).view, taken, back: { rows: drawn(two.g), view: two.provider.view }, reports };
+  })()`) as Record<string, unknown>;
+  expect(r['json']).toBe('odd');
+  expect(r['taken']).toEqual({ rows: 2, view: 'odd' });
+  expect(r['back']).toEqual({ rows: 4, view: 'all' });
+  expect(r['reports']).toEqual([]);
+});

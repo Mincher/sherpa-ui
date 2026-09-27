@@ -13372,6 +13372,28 @@ never been bound.
 - Site: `test/unit/query.test.mjs`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 
+### T-a-page-goes-out-as-json
+
+**A page's whole state goes out as JSON and comes back: `provider.export()` /
+`provider.import(state)`, over `source.export()` / `source.import(state)`.**
+Provider P5, 2026-09-27. A source's state is its Query as APPLIED, its sort,
+group and search in the View scope (the shape a View's JSON already uses),
+and every saved filter it names — readings and label — so a service that
+takes it in needs no library of ours. The provider's adds the View on screen.
+A round trip gives the same rows; that is the test.
+
+Three things to know. Import is EXACT: `setQuery`, not a View's keep — a
+restore, not a pick. The View it brings is shown on the chip that showed the
+old one, and the pick listener is told, or a later pick of the OLD View is
+mistaken for the one on screen and ignored. And the source half is DOM-free,
+so an MCP or WebMCP tool can read and write a page's question without a
+browser (TODO 76).
+
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `test/e2e/reforged-provider.spec.ts`
+- Site: `test/unit/headless-data-layer.test.mjs`
+
 ### T-a-provider-keeps-the-views
 
 **The provider keeps a page's Views: `provide({ sources, views, view,

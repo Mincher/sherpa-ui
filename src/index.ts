@@ -193,4 +193,4 @@ export { SherpaQuickFilterToolbar, type QuickFilterDef } from './components/sher
 export { SherpaAppShell } from './components/sherpa-app-shell/sherpa-app-shell.js';
 export { SherpaLayoutGrid } from './components/sherpa-layout-grid/sherpa-layout-grid.js';
 export { SherpaGroup } from './components/sherpa-group/sherpa-group.js';
-export { SherpaProvider, type ProvideOptions } from './components/sherpa-provider/sherpa-provider.js';
+export { SherpaProvider, type ProvideOptions, type ProviderState } from './components/sherpa-provider/sherpa-provider.js';

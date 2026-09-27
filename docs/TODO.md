@@ -183,8 +183,10 @@ filter is `data-readings`, and a View pick keeps it. **P4 built** — the
 provider keeps the Views and the session's Query; a View's content asks for
 its data. **P3 and P4 are done:
 `records.js` 1163 → 655 lines since P2 began, `dashboard.js` 331 → 170 (the
-size gate's count, comments in).** **Next: P5**
-— the Query and Views out and in as JSON (`export` / `import`); then 91 and 92.
+size gate's count, comments in).** **P5 built** —
+a page's state goes out and comes back as JSON. **The provider plan (P1–P5) is
+done.** **Next:** 91 (the shell owns panel mode) and 92 (navigating sets up
+the content), then the §9 items that P3 unlocked, and 86 (the full audit).
 
 ### `[ ]` 86 — AUDIT: every component's functions and events — one request, one response, standardised in `SherpaElement`
 

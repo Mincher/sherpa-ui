@@ -24,7 +24,9 @@ capabilities:
     description: read/write JS properties (view, elements). See $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
-    description: callable from a view definition's state block (provide). See $extensions.sherpa.methods.
+    description: >-
+      callable from a view definition's state block (provide, export, import). See
+      $extensions.sherpa.methods.
 events:
   - $type: event
     name: view-change
@@ -39,6 +41,14 @@ $extensions:
         name: provide
         args: "options: ProvideOptions"
         description: Give this subtree its sources — and its Views. Every component already
+      - $type: method
+        name: export
+        args: ""
+        description: This subtree's whole state as JSON — each source's question, and the View
+      - $type: method
+        name: import
+        args: "state: ProviderState"
+        description: "Take a state back in, exactly: each named source's question, and its View"
     jsProps:
       - name: view
         type: string

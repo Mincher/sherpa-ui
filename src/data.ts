@@ -102,6 +102,7 @@ export {
   type ViewState,
   type FieldDeclaration,
   type FieldFilter,
+  type SourceState,
 } from './core/data/data-source.js';
 // Keeping a view state across a reload — a HELPER, not part of DataSource, so
 // a host chooses whether and where its view state persists.
