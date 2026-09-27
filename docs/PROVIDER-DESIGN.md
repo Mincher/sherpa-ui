@@ -177,8 +177,8 @@ Records filter suite proves it:
 
 | step | the source learns | the page loses |
 |---|---|---|
-| P3a | each field's FILTER definition (`declareField` facts → `filterDef`), each scope's name, and what a scope may still add | `fieldDef`, `addable`, `SCOPE_LABELS` |
-| P3b | the bars ASK for their scope; a bar's report carries its holds; `drawScope` tells a bar what is held above it and what it may add | the header listener, `syncScopes`, `viewFields`, the raise and lower glue |
+| P3a ✅ | each field's FILTER definition (`declareField` facts → `filterDef`), each scope's name, and what a scope may still add | `fieldDef`, `addable`, `SCOPE_LABELS` |
+| P3b ✅ | the bars ASK for their scope (`data-scope` in markup); a bar's report and its add and remove carry its holds; a raised answer is drawn where it lives; a bar below is told what the View holds | the header listener, `syncScopes`, `viewFields`, `headerField`, the raise and lower glue — Records −135 lines, the Dashboard −13 |
 | P3c | the panel ASKS for its scopes and draws each from the Query; its requests are routed | `fillPanel`, `refill`, `barFor`, `asPanelField`, the panel's event routing (TODO 87 and 88 fall out) |
 | P3d | a heading's answer is a steering event; the grid is drawn what the View holds | `showChip`, `syncHeadings`, the heading listener |
 | P3e | a component's own default filter lives in the Query, so a View pick keeps it | the Dashboard's Critical tile bind |

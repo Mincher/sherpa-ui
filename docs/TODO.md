@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**61 open.** Reassessed 2026-09-26: the bugs that lie first, then the
+**62 open.** Reassessed 2026-09-26: the bugs that lie first, then the
 FOUNDATION — the one compiled query, the view definition and when Apply runs —
 before the filter features that stand on it. Numbers are ids, not order; the
 table IS the order.
@@ -41,6 +41,7 @@ table IS the order.
 | 15 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
 | 15a | 87 | Adding a filter to the View scope must not remove it from the component scope's Filters list | bug |
 | 15aa | 94 | A number (and range) filter menu needs Apply and Cancel buttons | bug |
+| 15ab | 95 | Firefox: a remote chip holding a draft is not marked pending | bug |
 | | | **D — Filters: Will's features, on the foundation** | |
 | 15b | 88 | A filter raised to the View scope: its component section keeps its heading, hides its options, and says where it went | feature |
 | 15c | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
@@ -174,7 +175,9 @@ of the Query folds into its P2. Target: `records.js` 853 → ~250 lines of code,
 pager ask. **P2 built** — charts, tiles and legends DECLARE what they need
 (`aggregate`, `segments`, `series`); the pages lost their adapters. The
 centralisation audit is `PROVIDER-DESIGN.md` §9, for review; its items 9
-and 13 are done. **Next: P3** — the `scope` and `query` keys.
+and 13 are done. **P3a and P3b built** — fields declared once on the
+source; the bars ask for their scope and report their holds. Also fixed on
+the way: 93, only the View trickles down. **Next: P3c** — the panel asks.
 
 ### `[ ]` 86 — AUDIT: every component's functions and events — one request, one response, standardised in `SherpaElement`
 
@@ -283,6 +286,14 @@ the way to "150". Locally a PICK applies at once (Will's ruling on 62, "No
 Apply locally"); a number body is the exception — it waits for Apply, and
 Cancel puts back what was applied. The calendar's footer is the pattern, and
 83 is its bug, so fix the two together.
+
+### `[ ]` 95 — Firefox: a remote chip holding a draft is not marked pending
+
+Found 2026-09-27 by the full Firefox run: `test/e2e/reforged-pending-chip.spec.ts:10`
+fails in Firefox every time — after a tick in a remote chip's open menu, the
+chip has no `data-pending`. Chromium and WebKit pass. Not the provider work:
+the toolbar as committed before P3b fails the same way. Start at the menu's
+`dirty` and the bar's `#queuePending` (TODO 46, `T-a-pending-chip-has-no-fill`).
 
 ### `[ ]` 70 — EXPLORE: a view definition bundles its filters; one JSON renders the page
 

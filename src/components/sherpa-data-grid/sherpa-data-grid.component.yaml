@@ -220,6 +220,12 @@ props:
       is one. Written by SherpaDataSource; the grid reports back the page count it arrives at and
       never writes data-page itself.
   - $type: prop
+    name: data-scope
+    type: string
+    observed: false
+    kind: style
+    description: "ASKED of its provider: the Query scope its headings answer"
+  - $type: prop
     name: data-select
     type: enum
     observed: true

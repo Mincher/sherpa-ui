@@ -30,6 +30,7 @@ import {
 } from '../../core/data/filter-state.js';
 import type { SavedFilter } from '../../core/browser/saved-filters.js';
 import type { ScopeQuery } from '../../core/data/query.js';
+import type { DataAsk } from '../../core/ui/context.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-button/sherpa-button.js';
@@ -54,8 +55,9 @@ export interface QuickFilterDef extends OffersCustom {
   id: string;
   label: string;
   /** The FIELD this chip answers, when its id is not that field — the header's
-   *  Date chip answers the record's time. A source draws the chip by it. */
-  field?: string;
+   *  Date chip answers the record's time. A source draws the chip by it.
+   *  `null`: it answers no field HERE, so it reports nothing. */
+  field?: string | null;
   type?: string;
   active?: boolean;
   icon?: string;
@@ -134,6 +136,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
      rule is a public API and belongs in one place. */
+  /* It ASKS for its `data-scope`: the source draws it and hears its reports.
+     TRAP T-a-component-asks-its-provider */
+  static override asks: DataAsk = { shape: 'scope' };
+
   static override props = {
     'data-bounds': SHARED_PROPS['data-bounds'],
     'data-no-actions': { type: 'boolean', kind: 'style' },
@@ -592,6 +598,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   drawReading(field: string, reading: FieldReading): void {
     const id = this.#idOf(field);
     if (this.superseded.includes(id)) return;
+    /* A chip just ADDED — a raised field's — stamps its menu a moment later,
+       and an answer drawn before that is lost. It waits for the SAME settle
+       the add's own report waits for, and is queued first — so that report
+       carries the answer instead of clearing it.
+       TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
+    const chip = this.#chips().find((c) => c.dataset['id'] === id);
+    const menu = chip?.querySelector('sherpa-menu');
+    if (chip && (!chip.shadowRoot?.childElementCount || (menu && !menu.shadowRoot?.childElementCount))) {
+      void this.#settled().then(() => { if (!this.superseded.includes(id)) this.setChipReading(id, reading); });
+      return;
+    }
     this.setChipReading(id, reading);
   }
 
@@ -614,7 +631,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * TRAP T-a-superseded-chip-suspends-it-is-never-removed
    */
   supersede(ids: readonly string[], appliedAt?: string): void {
-    const taken = new Set(ids);
+    // By field or by id: a chip named for its question answers its def's field.
+    const taken = new Set(ids.map((f) => this.#idOf(f)));
     for (const chip of this.#chips()) {
       const id = chip.dataset['id'];
       if (!id) continue;
@@ -737,7 +755,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const live = new Map<string, { on: boolean; picked: Set<string> }>();
     /* AND THE REST OF EACH ANSWER — op, typing, rows. A new menu starts from
        its def. TRAP T-a-rebuild-keeps-every-answer */
-    const kept = this.hasAttribute('data-reset-on-populate') ? {} : this.readings;
+    const kept = this.hasAttribute('data-reset-on-populate') ? {} : this.#answers();
     if (!this.hasAttribute('data-reset-on-populate')) {
       for (const chip of this.#chips()) {
         const id = chip.dataset['id'];
@@ -1295,9 +1313,23 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * This is what a host sends to the data layer (`source.apply(bar.readings)`),
    * which turns it into a query. A bar that builds a clause has to know a
    * field's TYPE, and that is how one filtering rule became three.
-   * TRAP T-the-field-type-decides-the-clause
+   *
+   * By FIELD — a chip named for its question (the header's Date chip) answers
+   * the field its def names. A PERSISTENT chip is a selector, never a filter.
+   * TRAP T-the-field-type-decides-the-clause · TRAP T-persistent-chip-is-a-selector
+   * TRAP T-the-header-chips-must-reach-the-query
    */
   get readings(): Record<string, FieldReading & { label: string; values: string[] }> {
+    const out: Record<string, FieldReading & { label: string; values: string[] }> = {};
+    for (const [id, reading] of Object.entries(this.#answers())) {
+      const def = this.#filters.find((f) => f.id === id);
+      if (!def?.persistent && def?.field !== null) out[def?.field ?? id] = reading;
+    }
+    return out;
+  }
+
+  /** Each chip's answer, by CHIP id — what this bar keeps across a rebuild. */
+  #answers(): Record<string, FieldReading & { label: string; values: string[] }> {
     const out: Record<string, FieldReading & { label: string; values: string[] }> = {};
     for (const chip of this.#chips()) {
       const field = chip.dataset['id'];
@@ -1375,7 +1407,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   get states(): Record<string, FilterState> {
     const out: Record<string, FilterState> = {};
-    for (const [field, { label, values, ...reading }] of Object.entries(this.readings)) {
+    for (const [field, { label, values, ...reading }] of Object.entries(this.#answers())) {
       out[field] = fieldState({ field, label, values }, reading);
     }
     return out;
@@ -1530,6 +1562,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     return this.#filters.map((f) => f.id);
   }
 
+  /** The FIELDS its chips hold — not a selector, a saved filter, or a chip that
+   *  answers no field here. What its scope holds. TRAP T-a-bar-reports-its-holds */
+  get heldFields(): string[] {
+    return this.#filters.filter((f) => !f.persistent && !f.readings && f.field !== null)
+      .map((f) => f.field ?? f.id);
+  }
+
   /**
    * drawScope(slice) — draw what a scope holds, SILENTLY: its chips, each
    * field's answer and each saved filter on or off. A reload, a trip away and
@@ -1541,8 +1580,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const presets = slice.presets ?? {};
     // The slice speaks FIELDS; a chip may be named for its question.
     const want = new Set([...slice.holds.map((f) => this.#idOf(f)), ...Object.keys(presets)]);
+    // A chip that answers no field here is no scope's to hold, so none takes it off.
     for (const def of [...this.#filters]) {
-      if (!want.has(def.id) && def.removable) this.#removeFilter(def.id, { silent: true });
+      if (!want.has(def.id) && def.removable && def.field !== null) this.#removeFilter(def.id, { silent: true });
     }
     const add = [...want].filter((id) => !this.heldIds.includes(id)
       && this.#available.some((f) => f.id === id));
@@ -1582,7 +1622,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * TRAP T-a-panel-builds-its-own-menus
    */
   get held(): QuickFilterDef[] {
-    const readings = this.readings;
+    const readings = this.#answers();
     // A chip with no field reading — a toggle, a saved filter — is on or off AS IT IS.
     const on = new Set(this.#chips().filter((c) => c.current).map((c) => c.dataset['id']));
     return this.#filters.map((def) => {

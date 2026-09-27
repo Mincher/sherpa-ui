@@ -80,6 +80,7 @@ const KNOWN = {
     'ok: the `values` setter / setClause(id, clause) — what a reader did to each field',
   'sherpa-quick-filter-toolbar.offering': 'ok: available(defs) — what is left to add',
   'sherpa-quick-filter-toolbar.heldIds': 'ok: populate() / addFilters() / removeFilter()',
+  'sherpa-quick-filter-toolbar.heldFields': 'ok: populate() / addFilters() / removeFilter() / drawScope()',
   // The DEFS, each with the reading in force — what a second view draws from.
   // TRAP T-a-panel-builds-its-own-menus
   'sherpa-quick-filter-toolbar.held':

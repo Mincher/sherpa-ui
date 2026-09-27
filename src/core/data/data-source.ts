@@ -200,6 +200,9 @@ const STEERING_EVENTS = [
   'sort-change',
   'group-change',
   'quick-filter-change',
+  // A scoped bar added or took off a chip: what its scope HOLDS changed.
+  'filter-add',
+  'filter-remove',
   'filter-change',
   'page-change',
   'page-size-change',
@@ -381,6 +384,8 @@ export class DataSource extends EventTarget {
       drawn.push(el.drawScope(structuredClone(this.#draft.scopes[scope] ?? { holds: [], readings: {} }), scope));
     }
     await Promise.all(drawn);
+    // Drawn, never reported: the Query is already the answer.
+    this.#syncSuperseded(false);
   }
 
   /** Restore a whole view state — a saved view, a deep link, a reload.
@@ -714,7 +719,8 @@ export class DataSource extends EventTarget {
    * TRAP T-group-and-sort-are-component-scope
    */
   addable(scope: string, taken: Iterable<string> = this.scope(scope)): FieldFilter[] {
-    const skip = new Set(taken);
+    // UP IS OPEN, DOWN IS CLOSED: below the View, what it holds is not offered.
+    const skip = new Set([...taken, ...(scope === VIEW ? [] : this.scope(VIEW))]);
     return this.fields(scope).filter((f) => !skip.has(f) && this.#fields.has(f)).map((f) => {
       const at = this.scopeOf(f);
       return at && at !== scope ? { ...this.filterDef(f), note: `in ${this.scopeLabel(at)}` } : this.filterDef(f);
@@ -885,6 +891,15 @@ export class DataSource extends EventTarget {
     this.#prune();
   }
 
+  /** Which scope each answered field's reading sits in. */
+  #homes(): Map<string, string> {
+    const out = new Map<string, string>();
+    for (const [id, scope] of Object.entries(this.#draft.scopes)) {
+      if (!scope.narrows) for (const field of Object.keys(scope.readings)) out.set(field, id);
+    }
+    return out;
+  }
+
   /** Forget a scope that holds nothing and answers nothing. */
   #prune(): void {
     for (const [id, scope] of Object.entries(this.#draft.scopes)) {
@@ -931,9 +946,32 @@ export class DataSource extends EventTarget {
     for (const field of before) {
       if (!next.includes(field) && !elsewhere(field) && this.#reading(field)) this.select(field, []);
     }
+    const was = this.#homes();
     this.#scope(name).holds = next;
     this.#rehome();
     this.dispatchEvent(new CustomEvent('scope-change', { detail: { scope: name } }));
+    /* RAISING CARRIES THE ANSWER, and lowering brings it back: an answer that
+       moved scope is drawn where it lives now. TRAP T-up-is-open-down-is-closed */
+    const now = this.#homes();
+    for (const [field, home] of now) if (was.get(field) !== home) this.#draw(field);
+    if (name === VIEW) this.#syncSuperseded(true);
+  }
+
+  /**
+   * Tell each bar below the View which of its fields the View holds now — it
+   * keeps the chip, suspended, and says where it went. One whose set changed
+   * reports again: without the field raised, or with its own kept answer back.
+   * TRAP T-a-superseded-chip-suspends-it-is-never-removed
+   * TRAP T-an-inactive-chip-says-where-its-filter-went
+   */
+  #syncSuperseded(report: boolean): void {
+    const above = this.scope(VIEW);
+    for (const [el, { scope }] of this.#bound) {
+      if (typeof scope !== 'string' || scope === VIEW || !el.supersede) continue;
+      const was = (el.superseded ?? []).join();
+      el.supersede(above, this.scopeLabel(VIEW));
+      if (report && (el.superseded ?? []).join() !== was) el.report?.();
+    }
   }
 
   /** Is this field held HERE? */
@@ -1496,6 +1534,9 @@ export class DataSource extends EventTarget {
         /* A SCOPED bar answers in the Query: its saved filters are presets, on
            or off, and their readings go to the library. TRAP T-one-query-one-owner */
         if (typeof bind?.scope === 'string') {
+          // What it holds, then what it answers. TRAP T-a-bar-reports-its-holds
+          const el = event.currentTarget as Populatable;
+          if (el.heldFields) this.hold(bind.scope, el.heldFields);
           const presets = bar?.presets ?? {};
           for (const [id, p] of Object.entries(presets)) this.#presets.set(id, p.readings);
           this.answer(bind.scope, readings,
@@ -1519,6 +1560,14 @@ export class DataSource extends EventTarget {
           this.apply(given, { reach: 'component', key: `saved:${id}` });
         }
         if (bind) bind.saved = parts;
+        return;
+      }
+      case 'filter-add':
+      case 'filter-remove': {
+        // A scoped bar's chips ARE its scope's holds. TRAP T-a-bar-reports-its-holds
+        const el = event.currentTarget as Populatable;
+        const scope = this.#bound.get(el)?.scope;
+        if (typeof scope === 'string' && el.heldFields) this.hold(scope, el.heldFields);
         return;
       }
       case 'filter-change': {

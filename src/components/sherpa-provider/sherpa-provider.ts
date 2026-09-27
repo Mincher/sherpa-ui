@@ -31,7 +31,11 @@ export interface ProvideOptions {
  *  TRAP T-a-component-declares-its-summary */
 const DECLARED_BY: Partial<Record<DataAsk['shape'], string>> = {
   aggregate: 'data-aggregate', segments: 'data-segment-field', series: 'data-over-field',
+  scope: 'data-scope',
 };
+
+/** The shapes a summary is answered in. */
+const SUMMARIES = new Set<DataAsk['shape']>(['aggregate', 'segments', 'series']);
 
 /** Each summary attribute, and the key it fills in a `SummarySpec`. */
 const SPEC_KEYS = [
@@ -111,17 +115,20 @@ export class SherpaProvider extends SherpaElement {
     // Bound by hand already — the page's own bind stands, and is not doubled.
     if (source.boundElements.includes(el as Populatable)) return;
     const asks = (el.constructor as { asks?: DataAsk }).asks ?? { shape: 'rows' };
-    const spec = DECLARED_BY[asks.shape] ? this.#spec(el, asks) : undefined;
-    // A summary nobody declared is the page's to populate.
-    if (DECLARED_BY[asks.shape] && !spec) return;
+    // Nothing declared: it is the page's to populate.
+    const needs = DECLARED_BY[asks.shape];
+    if (needs && !this.#inherited(el, needs)) return;
+    const spec = SUMMARIES.has(asks.shape) ? this.#spec(el, asks) : undefined;
+    if (SUMMARIES.has(asks.shape) && !spec) return;
     const leave = (): void => {
       asked.unbind?.();
       this.#asked.delete(el);
     };
     const scope = this.#inherited(el, 'data-scope');
     const unbind = source.bind(el as Populatable, {
-      rows: asks.shape === 'rows' || asks.shape === 'state' ? 'page' : 'all',
-      steerOnly: asks.shape === 'state',
+      rows: spec || asks.shape === 'all' ? 'all' : 'page',
+      // A pager and a filter bar steer; the rows are not theirs to draw.
+      steerOnly: asks.shape === 'state' || asks.shape === 'scope',
       ...(asks.own ? { ignore: asks.own } : {}),
       ...(scope ? { scope } : {}),
       /* A summary SHOWS the data and never steers it. TRAP T-aggregation-is-data */
@@ -138,8 +145,8 @@ export class SherpaProvider extends SherpaElement {
       unpick?.();
       unbind();
     };
-    // State only: no rows ever come, so it is handed its way out now.
-    if (asks.shape === 'state') callback(undefined, leave);
+    // No rows ever come, so it is handed its way out now.
+    if (asks.shape === 'state' || asks.shape === 'scope') callback(undefined, leave);
   }
 
   /** An attribute from the asking element, or the nearest one above it — a
@@ -154,7 +161,6 @@ export class SherpaProvider extends SherpaElement {
 
   /** The summary a component declared, as JSON — or none, and it waits. */
   #spec(el: Element, asks: DataAsk): SummarySpec | undefined {
-    if (!this.#inherited(el, DECLARED_BY[asks.shape]!)) return undefined;
     const spec: Record<string, unknown> = { shape: asks.shape };
     for (const [key, attr] of SPEC_KEYS) {
       const value = this.#inherited(el, attr);

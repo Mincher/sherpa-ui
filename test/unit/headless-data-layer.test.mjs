@@ -936,8 +936,9 @@ test('filterDef, declareScope and addable: one definition per field, and what a 
   source.offer('grid', ['plan', 'seats', 'email', 'undeclared']);
   source.hold('grid', ['plan']);
   source.hold('view', ['seats']);
-  // Held here is not offered; held above says where it lives; undeclared is never offered.
-  assert.deepEqual(source.addable('grid').map((d) => [d.id, d.note]),
-    [['seats', 'in App header'], ['email', undefined]]);
+  // Held here is not offered, nor below the View what the View holds; undeclared never.
+  assert.deepEqual(source.addable('grid').map((d) => [d.id, d.note]), [['email', undefined]]);
+  // UP IS OPEN: the View is offered a component's field, and told where it lives.
+  assert.deepEqual(source.addable('view').map((d) => [d.id, d.note]), [['plan', 'in grid'], ['email', undefined]]);
   assert.equal(source.scopeLabel('grid'), 'grid');
 });

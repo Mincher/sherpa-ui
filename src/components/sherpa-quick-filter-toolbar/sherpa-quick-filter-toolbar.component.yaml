@@ -191,6 +191,12 @@ props:
       on, offer "Save filter", which fires filter-save. The host stores it and calls packFilter().
       TRAP T-save-packs-the-fields-into-one-chip
   - $type: prop
+    name: data-scope
+    type: string
+    observed: false
+    kind: style
+    description: "ASKED of its provider: the Query scope it draws and answers"
+  - $type: prop
     name: data-sort-direction
     type: enum
     observed: true
@@ -250,8 +256,8 @@ capabilities:
     api: js-property-mirror
     description: >-
       read/write JS properties (active, values, superseded, pickedValues, clauses, readings, states,
-      savedReadings, presets, offering, heldIds, held, groupField, sortField, sortDirection,
-      sortSuspended). See $extensions.sherpa.jsProps.
+      savedReadings, presets, offering, heldIds, heldFields, held, groupField, sortField,
+      sortDirection, sortSuspended). See $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
     description: >-
@@ -474,6 +480,9 @@ $extensions:
         type: string
         access: read
       - name: heldIds
+        type: string
+        access: read
+      - name: heldFields
         type: string
         access: read
       - name: held

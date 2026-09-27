@@ -83,8 +83,10 @@ export function globalFilters(views, regions = REGIONS, customers = CUSTOMERS, d
          `created`; a view-scope filter must work over any dataset.
          TRAP T-a-record-has-a-time-of-its-own */
       label: 'Date',
-      // The field it answers, so a bound source can draw it.
-      ...(time ? { field: time } : {}),
+      /* The field it answers, so a bound source can draw it — or `null` when
+         the records have no time: it filters nothing here, and says so.
+         TRAP T-the-header-chips-must-reach-the-query */
+      field: time ?? null,
       icon: 'calendar',
       kind: 'date',
       /* SINGLE by default, like every other calendar. The reader flips the

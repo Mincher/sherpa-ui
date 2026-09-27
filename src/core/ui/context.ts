@@ -43,10 +43,11 @@ export class ContextRequestEvent<T> extends Event {
 /** What a component asks its provider for: the shape of its data, and the events it keeps. */
 export interface DataAsk {
   /** `rows` — one page, as a grid draws it; `all` — every matching row;
-   *  `state` — only the view state, as a pager needs. `aggregate`, `segments`
-   *  and `series` are SUMMARIES its attributes declare (`SUMMARY_PROPS`) — with
-   *  none declared, a page populates it by hand. */
-  shape: 'rows' | 'all' | 'state' | 'aggregate' | 'segments' | 'series';
+   *  `state` — only the view state, as a pager needs; `scope` — its
+   *  `data-scope`'s slice of the Query, drawn and reported, as a filter bar
+   *  needs. `aggregate`, `segments` and `series` are SUMMARIES its attributes
+   *  declare (`SUMMARY_PROPS`). With nothing declared, a page populates it. */
+  shape: 'rows' | 'all' | 'state' | 'scope' | 'aggregate' | 'segments' | 'series';
   /** Events this component answers ITSELF, so its source must not act on them. */
   own?: readonly string[];
   /** Keep every declared category, at zero — a legend. */

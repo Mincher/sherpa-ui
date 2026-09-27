@@ -1396,10 +1396,8 @@ view toolbar has. A change naming no view is IGNORED rather than treated as "no
 view", because you are always in some view and the other chips on that bar fire
 the same event.
 
-- Site: `examples/contexts/dashboard.js`
 - Site: `src/core/browser/persist-view.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `examples/contexts/records.js`
 
 ### T-content-first-original-once
 
@@ -5341,7 +5339,7 @@ Three parts make it work:
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
-- Site: `examples/contexts/records.js`
+- Site: `src/core/data/data-source.ts`
 
 ### T-unavailable-value-sorts-below-a-divider
 
@@ -7091,7 +7089,13 @@ is the `customer` field — not the record's own `name`, and not `owner`, which 
 the member of staff looking after the account. A chip the page does not map
 narrows nothing, rather than building a clause against a field no record has.
 
-- Site: `examples/contexts/records.js`
+**Since provider P3b the chip's DEFINITION says it** — `field` names the field
+it answers (the Date chip, the record's time), and `field: null` says it
+answers none here. The bar reports its answers BY FIELD and skips a persistent
+selector, so it reaches the Query with no page mapping at all.
+
+- Site: `examples/contexts/global-filters.js`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
 ### T-the-last-row-draws-no-rule
 
@@ -7884,7 +7888,7 @@ because neither touches the VALUES and nothing else re-syncs it.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter.spec.ts`
-- Site: `examples/contexts/records.js`
+- Site: `src/core/data/data-source.ts`
 
 ### T-a-restored-filter-still-needs-its-chip
 
@@ -13370,6 +13374,44 @@ never been bound.
 - Site: `src/core/data/query.ts`
 - Site: `test/unit/query.test.mjs`
 
+### T-a-bar-reports-its-holds
+
+**A filter bar that asks for its scope REPORTS what it holds, and the source
+keeps each scope's holds from those reports.** Provider P3b, 2026-09-27.
+Before it, Records kept them by hand: `syncScopes` read each bar's chips,
+called `hold()` twice, greyed the grid's raised chips and refreshed the header's
+Add list — and the header's chips reached the Query only through a page
+listener that mapped their ids to fields.
+
+A bar's `heldFields` is its chips' fields — not a persistent selector, not a
+saved filter, not a chip that answers no field here. The source holds them on
+the bar's report and on its `filter-add` / `filter-remove`. When the View's
+holds change, an answer that moved scope is drawn where it lives now
+(raising carries the answer), and each bar below is told what the View holds
+(`supersede`) — one whose set changed reports again, so it lets go of the
+raised field or brings its own kept answer back.
+
+Three things that bit on the way:
+
+- **A chip just added has not stamped its menu.** The raised answer is drawn
+  when the bar settles — queued BEFORE the add's own report, which otherwise
+  reported the new chip empty and cleared the answer it had carried.
+- **An Add list is what the BAR has no chip for**, not what the scope does not
+  hold. A restore holds the field first; an Add list built from the scope then
+  dropped its def, and the bar could not draw the chip.
+- **A chip that answers no field is no scope's** (`field: null`, the
+  Dashboard's Date): `drawScope` never takes it off, or the header bar's
+  rebuild reset its View chip.
+
+The initial holds are declared once in the page — the chips each bar starts
+with — because a bar that has not populated yet would report none, and an
+empty hold forgets its scope.
+
+- Site: `examples/contexts/dashboard.js`
+- Site: `examples/contexts/records.js`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/core/data/data-source.ts`
+
 ### T-only-the-view-trickles-down
 
 **Only the View scope's filters reach every component. A component scope —
@@ -13540,6 +13582,7 @@ actions are CONFIGURATION, not data (`T-configuration-is-not-data`).
 - Site: `src/index.ts`
 - Site: `test/e2e/reforged-provider.spec.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
 ### T-the-footer-owns-nothing-to-save
 

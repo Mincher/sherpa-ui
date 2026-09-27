@@ -23,6 +23,13 @@ export interface Populatable extends HTMLElement {
   drawReading?: (field: string, reading: FieldReading, scope: string) => void;
   /** A whole scope, drawn SILENTLY — its chips, answers and presets, on a restore. */
   drawScope?: (slice: ScopeQuery, scope: string) => void | Promise<void>;
+  /** The fields its chips hold — what a scoped bar's scope holds. */
+  heldFields?: string[];
+  /** Told which of its fields a scope ABOVE it holds now, and that scope's name. */
+  supersede?: (fields: readonly string[], appliedAt?: string) => void;
+  superseded?: string[];
+  /** Announce its whole answer again. */
+  report?: () => void;
 }
 
 /** A list of CALLS, not one argument list? TRAP T-state-value-may-be-a-call-list */

@@ -58,8 +58,6 @@ export async function init(root, { session, view, remote = false } = {}) {
   }
 
 
-  /** Already on the header bar, so never offered again. */
-  const HEADER_HELD = ['view', 'customer', 'region', 'dateRange'];
 
   /**
    * A toolbar filter def, as the PANEL takes it.
@@ -211,6 +209,7 @@ export async function init(root, { session, view, remote = false } = {}) {
   /* ONE LIST, read twice: the toolbar draws it as a row of chips and the
      PANEL draws it as a column. A second copy would drift the first time
      either changed. TRAP T-the-panel-is-the-toolbar-in-a-column */
+  const DATA_FIELDS = ['status', 'plan', 'tier', 'owner'];
   const DATA_FILTERS = [
     /* Three PRESETS — saved custom filters the app ships. Each carries its
        answer, field by field, and the bound source applies it: none is a
@@ -228,8 +227,7 @@ export async function init(root, { session, view, remote = false } = {}) {
     /* The data scope's own fields, each as it is DECLARED. Region is a GLOBAL
        filter in the header instead: two chips for one field make the reader
        guess which is in force. */
-    ...['status', 'plan', 'tier', 'owner']
-      .map((f) => ({ ...source.filterDef(f), type: 'data', removable: true })),
+    ...DATA_FIELDS.map((f) => ({ ...source.filterDef(f), type: 'data', removable: true })),
     /* No `created` chip here: the header's "Created date" already filters that
        field at VIEW scope, and one field lives in exactly ONE scope.
        TRAP T-component-extends-view-never-alters-it */
@@ -238,56 +236,39 @@ export async function init(root, { session, view, remote = false } = {}) {
      list, and `populate()` lands after the bar's first render. */
   const qftFilled = qft.populate(DATA_FILTERS);
 
-  /* What the ADD chip offers: EVERY COLUMN the grid draws, minus the ones a
-     scope already holds. Hand-listing four of fourteen meant most of the data
-     could not be filtered at all, and the four bounds drifted from the rows.
-
-     One field lives in exactly ONE scope, so a column the header already
-     filters is not offered again here.
-     TRAP T-component-extends-view-never-alters-it */
-  const heldSomewhere = new Set([
-    ...DATA_FILTERS.map((f) => f.id),
-    ...HEADER_HELD,
-    // The header's Date chip is the record's TIME under another name.
-    // TRAP T-a-record-has-a-time-of-its-own
-    source.timeField,
-  ].filter(Boolean));
-
-
-
-  /* THE FIELDS EACH SCOPE HAS. The grid's are its columns; the VIEW's are
-     every component's, because any field may be raised to narrow everything.
-     A component may hold only its own. TRAP T-up-is-open-down-is-closed */
+  /* THE FIELDS EACH SCOPE HAS, AND HOLDS. The grid's are its columns; the
+     VIEW's are every component's, because any field may be raised to narrow
+     everything. Each bar's chips at the start are what its scope holds; after
+     that, each bar reports its own. TRAP T-up-is-open-down-is-closed
+     TRAP T-a-bar-reports-its-holds */
   source.offer('data', columns.map((c) => c.field));
+  source.hold(VIEW_SCOPE, ['customer', 'region', source.timeField].filter(Boolean));
+  source.hold('data', DATA_FIELDS);
   const byField = new Map(columns.map((c) => [c.field, c]));
 
-
-  /** What a scope may still add, as a bar offers it: the reader's own, so removable. */
-  const addList = (scope, taken) => source.addable(scope, taken).map((d) => ({ ...d, removable: true }));
-  const DATA_AVAILABLE = addList('data', heldSomewhere).map((d) => ({ ...d, type: 'data' }));
+  /** What a bar may still add: what it has no chip for — so a restore can
+   *  draw a held field's chip from it — the reader's own, so removable. The
+   *  data bar is never offered what the header holds.
+   *  TRAP T-component-extends-view-never-alters-it */
+  const addList = (scope, bar) => source.addable(scope, bar?.heldFields ?? [])
+    .map((d) => ({ ...d, removable: true }));
   /* THE READER'S OWN saved filters, offered at the bottom of Add, under Custom.
      TRAP T-saved-filters-are-the-custom-section */
   const savedDefs = () => Object.entries(loadSavedFilters('customers')).map(([id, saved]) => ({
     id: `custom:${id}`, label: saved.label, readings: saved.readings, editable: true,
   }));
-  qft.available([...DATA_AVAILABLE, ...savedDefs()]);
+  /** Both Add lists — each noting where a field lives, which a raise changes. */
+  const headerBar = header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
+  const offerAdds = () => {
+    qft.available([...addList('data', qft).map((d) => ({ ...d, type: 'data' })), ...savedDefs()]);
+    header?.available(addList(VIEW_SCOPE, headerBar));
+  };
+  offerAdds();
   /* EVERY saved filter's readings, told to the source — a restored Query says
      only which are ON. TRAP T-a-saved-filter-is-its-readings */
   for (const f of [...DATA_FILTERS, ...savedDefs()]) {
     if (f.readings) source.declarePreset(f.id, f.readings);
   }
-
-  /* UP IS OPEN: the header offers every field any component has — including
-     one the grid's bar holds, because raising a filter is the point. What the
-     header ALREADY holds is left out. */
-  const viewHeld = () => new Set([
-    'customer', 'region', source.timeField,
-    /* A chip the reader added is named for its field; the Date chip is the
-       record's time. `view` is no field, and `addable` drops it. */
-    ...((header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]')?.heldIds ?? [])
-      .map((id) => (id === 'dateRange' ? source.timeField : id))),
-  ].filter(Boolean));
-  header?.available(addList(VIEW_SCOPE, viewHeld()));
 
   /* The WHITELIST still decides. `null` is "everything this bar offers", which
      is what this example wants; a list here would narrow it for a role, a
@@ -336,7 +317,7 @@ export async function init(root, { session, view, remote = false } = {}) {
           .filter((f) => !stays.includes(f.id))
           .map(asPanelField),
         // The SAME list the header's Add offers. TRAP T-up-is-open-down-is-closed
-        available: addList(VIEW_SCOPE, viewHeld()).map(asPanelField),
+        available: addList(VIEW_SCOPE, headerBar).map(asPanelField),
       },
       {
         scope: 'data',
@@ -462,7 +443,8 @@ export async function init(root, { session, view, remote = false } = {}) {
           bar?.report();
           continue;
         }
-        const field = scope === VIEW_SCOPE ? headerField(id) : id;
+        // The header's Date chip answers the record's time. TRAP T-a-record-has-a-time-of-its-own
+        const field = scope === VIEW_SCOPE && id === 'dateRange' ? source.timeField : id;
         if (field) source.select(field, reading.picked ?? [], reading);
       }
     }
@@ -594,25 +576,10 @@ export async function init(root, { session, view, remote = false } = {}) {
     { label: 'At risk (40–100)', status: 'critical' },
   ]);
 
-  /* STEER-ONLY: the toolbar's populate() means "here are your CHIPS", so a
-     plain bind() overwrites the bar with records. Its events still reach the
-     source and the state attributes still arrive — which is what keeps its Sort
-     chip and the grid's header arrow two views of one value. `ignore` on the
-     FILTER event only, because translating chips is view knowledge; sort and
-     group the source handles itself. */
-
-
-  /* NO `ignore` for `quick-filter-change`: the bound source asks the bar for
-     its `readings` — and its presets' `savedReadings` — and applies them
-     itself, which is the whole point of one query builder.
-     TRAP T-one-query-builder-in-the-data-layer */
-  /* Its report is the `data` scope's whole answer, so a field raised to the
-     View is no longer this bar's to clear. TRAP T-a-filter-report-is-the-whole-answer */
-  source.bind(qft, { steerOnly: true, scope: 'data', signal });
-  /* The HEADER bar is drawn the View scope. Read-only: this Context answers
-     for it below, because a header chip is named for its question, not its field. */
-  const viewBar = header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
-  if (viewBar) source.bind(viewBar, { readonly: true, steerOnly: true, scope: VIEW_SCOPE, signal });
+  /* THE BARS ASK for their scope — `data-scope` in the markup — and the
+     provider binds each steer-only: its report is its scope's whole answer and
+     its holds, turned into the query by the source's one builder.
+     TRAP T-one-query-builder-in-the-data-layer · TRAP T-a-filter-report-is-the-whole-answer */
   /* The open PANEL is drawn each answer in both scopes — it steers nothing
      through the source, so it is bound read-only. TRAP T-an-open-panel-follows-the-data-layer */
   if (panel) source.bind(panel, { readonly: true, steerOnly: true, scope: [VIEW_SCOPE, 'data'], signal });
@@ -634,7 +601,8 @@ export async function init(root, { session, view, remote = false } = {}) {
     if (!reading || qft.heldIds.includes(field)) return;
     if (!(qft.offering ?? []).some((f) => f.id === field)) return;
     await qft.drawScope({ holds: [...qft.heldIds, field], readings: { [field]: reading } });
-    syncScopes();
+    // Drawn silently, so its scope is told what it holds now.
+    source.hold('data', qft.heldFields);
   };
   /* SAVE PACKS: the bar asks, this page names the filter and keeps it over the
      CUSTOMER records — not over this page — and the bar shows it in place of
@@ -673,32 +641,6 @@ export async function init(root, { session, view, remote = false } = {}) {
      COMBINED filter is one no chip shows. TRAP T-a-reload-replays-the-readers-answers */
   }, { filter: false });
 
-  /* WHICH FIELD each header chip narrows, for THESE records. A header chip is
-     named for the business question and the answering field differs per page —
-     "Customer" is the `customer` organisation, not the record's own name, nor
-     `owner`, who is the member of staff. A chip that is not here narrows
-     nothing, rather than building a clause against a field no record has.
-     `view` is absent on purpose: it is the saved-view SELECTOR, handled by
-     `onViewPicked` below, and folding it in would filter by a view id.
-     TRAP T-the-header-chips-must-reach-the-query. */
-  /* The Date chip filters the RECORD'S TIME, whatever this dataset calls it.
-     TRAP T-a-record-has-a-time-of-its-own */
-  const HEADER_FIELDS = { customer: 'customer', region: 'region', dateRange: source.timeField };
-
-  /* A chip the reader ADDED is named for its own field, so the id IS the field.
-     `view` still narrows nothing — it is the saved-view selector. */
-  const ROW_FIELDS = new Set(Object.keys(customers[0] ?? {}));
-  const headerField = (id) => HEADER_FIELDS[id] ?? (ROW_FIELDS.has(id) ? id : '');
-
-  /* Which FIELDS the header bar holds — every chip ON IT, on or off. A chip
-     sitting off still owns its field, so this follows the chips PRESENT, not
-     `quick-filter-change`, which reports only the ON ones. */
-  const viewFields = () => {
-    // The bar's own read-back — never its shadow root. TRAP T-a-panel-builds-its-own-menus
-    const bar = header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
-    return (bar?.heldIds ?? []).map(headerField).filter(Boolean);
-  };
-
   /* THE GRID'S HEADINGS SHOW WHAT THE VIEW HOLDS: each field the View scope
      holds, with its answer, read-only in its heading — so a heading cannot
      contradict it. Read from the QUERY, on every change to it. Will, 2026-09-26.
@@ -715,78 +657,8 @@ export async function init(root, { session, view, remote = false } = {}) {
     source.addEventListener(type, syncHeadings, { signal });
   }
 
-  /* The component bar SUSPENDS any field the view took. It keeps the chip and
-     the reader's picks; both come back when the view lets the field go.
-     TRAP T-a-superseded-chip-suspends-it-is-never-removed */
-  const syncScopes = () => {
-    /* TELL THE REGISTRY what each scope holds, so `debugState()`, `scopeOf()`
-       and `move()` answer from the truth. A field the view took has LEFT the
-       grid's scope — the chip below only DRAWS that, greyed.
-       TRAP T-up-is-open-down-is-closed */
-    const raised = viewFields();
-    source.hold(VIEW_SCOPE, raised);
-    source.hold('data', (qft.heldIds ?? []).filter((id) => !raised.includes(id)));
-    /* The App Header owns these fields now, and the chips below say so rather
-       than going quietly grey. TRAP T-an-inactive-chip-says-where-its-filter-went */
-    qft.supersede(raised, source.scopeLabel(VIEW_SCOPE));
-    // The header's Add notes say where each field lives — which just changed.
-    header?.available(addList(VIEW_SCOPE, viewHeld()));
-  };
-
-  header?.addEventListener('quick-filter-change', (e) => {
-    /* `values` carries TWO shapes and `scope` says which — a bare string[] from
-       a chip, a Record<id, string[]> from the bar. The toolbar catches a chip's
-       in capture and re-emits the bar shape, so this only ever sees the record;
-       the guard makes that a rule rather than a coincidence.
-       TRAP T-values-carries-two-shapes */
-    if (e.detail?.scope !== 'bar') return;
-    const readings = {};
-    for (const [id, values] of Object.entries(e.detail.values ?? {})) {
-      const field = headerField(id);
-      if (field && values?.length) readings[field] = { picked: values };
-    }
-    // The VIEW scope's whole answer, in the Query — and, remote, its Apply.
-    // TRAP T-one-query-one-owner
-    source.answer(VIEW_SCOPE, readings);
-    source.commit();
-  }, { signal });
-
-  /* RAISING CARRIES THE ANSWER. A field the view takes from a component keeps
-     what the reader picked there. Without this the new header chip arrived
-     EMPTY and the grid's went grey, while the rows stayed filtered by a pick
-     no visible chip showed. TRAP T-up-is-open-down-is-closed */
-  const twoFrames = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-  header?.addEventListener('filter-add', async (e) => {
-    const headerBar = header.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
-    // READ FIRST — once superseded, the grid's readings skip the field.
-    const below = qft.readings ?? {};
-    const carried = [];
-    for (const id of e.detail?.ids ?? []) {
-      const field = headerField(id);
-      const from = field ? source.scopeOf(field) : null;
-      if (!from || from === VIEW_SCOPE) continue;
-      source.move(field, from, VIEW_SCOPE);
-      if (below[field]) carried.push([id, below[field]]);
-    }
-    syncScopes();
-    // The grid re-announces WITHOUT the raised field — whose answer moved with it.
-    qft.report();
-    if (!carried.length) return;
-    /* The new chip's menu stamps its rows a frame or two after it lands.
-       TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
-    await twoFrames();
-    for (const [id, reading] of carried) headerBar?.setChipReading(id, reading);
-    headerBar?.report();
-  }, { signal });
-  /* LOWERING lets the field go: the component's chip comes back with its OWN
-     kept picks. TRAP T-a-superseded-chip-suspends-it-is-never-removed */
-  header?.addEventListener('filter-remove', () => { syncScopes(); qft.report(); }, { signal });
-  for (const event of ['filter-add', 'filter-remove']) {
-    qft.addEventListener(event, syncScopes, { signal });
-  }
-  /* AFTER the grid bar has its list — at init it has none yet, and an empty
-     hold() FORGETS the scope. TRAP T-up-is-open-down-is-closed */
-  void qftFilled.then(syncScopes);
+  // Where each field lives just changed, and the Add notes say where.
+  source.addEventListener('scope-change', offerAdds, { signal });
 
   /* SAVED VIEWS — the header's View chip. A view is JSON: its Query goes onto
      a clean slate and every chip is drawn from it, so its defaults show where a
@@ -801,11 +673,7 @@ export async function init(root, { session, view, remote = false } = {}) {
        Customer pick of a session re-applies it and wipes the pick.
        TRAP T-a-persistent-chip-reports-on-every-change. */
     applied: startView,
-    // A view may have given the bar a chip; its layout is the scope's holds.
-    after: ({ id }) => {
-      currentView = id;
-      syncScopes();
-    },
+    after: ({ id }) => { currentView = id; },
   });
 
   /* FILTERS SURVIVE A RELOAD, and a trip away and back — for this SESSION, and
@@ -814,7 +682,6 @@ export async function init(root, { session, view, remote = false } = {}) {
      the rows are under. Will, 2026-09-24.
      TRAP T-a-reload-replays-the-readers-answers · TRAP T-one-query-one-owner */
   const FILTERS_KEY = '/filters/records';
-  const headerBar = header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
   let restoring = true;
   let keepFrame = 0;
   const keep = () => {
@@ -829,14 +696,12 @@ export async function init(root, { session, view, remote = false } = {}) {
   for (const bar of [headerBar, qft]) bar?.addEventListener('quick-filter-change', keep, { signal });
   const kept = session?.get?.(FILTERS_KEY);
   restored = (async () => {
-    // The bar's chips ARE the data scope's holds, before anything draws them.
+    // The bar has its chips before the source draws them.
     await qftFilled;
-    syncScopes();
     // Both bars are bound to their scope, so the source draws them.
     if (kept?.view === startView && kept.query) await source.setQuery(kept.query);
     // The URL's View, here, so the host's pick after init finds it on screen.
     else if (startView !== 'all') await source.setQuery(RECORDS_VIEWS[startView].query, { holds: 'keep' });
-    syncScopes();
     restoring = false;
   })();
   await restored;

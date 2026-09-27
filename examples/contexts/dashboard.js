@@ -146,24 +146,12 @@ export async function init(root) {
     console.log('bar-click', e.detail);
   });
 
-  /* THE HEADER'S CHIPS ARE THE VIEW SCOPE — the source draws them, and they
-     answer it. Region and Customer are fields every alert carries; the Date
-     chip names none, so it narrows nothing. TRAP T-one-query-one-owner */
+  /* THE HEADER'S CHIPS ARE THE VIEW SCOPE: its bar asks (`data-scope="view"`),
+     the source draws it and hears it. Region and Customer are fields every
+     alert carries; the Date chip names none here, so it narrows nothing.
+     TRAP T-one-query-one-owner · TRAP T-a-bar-reports-its-holds */
   const viewBar = header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
-  if (viewBar) source.bind(viewBar, { readonly: true, steerOnly: true, scope: VIEW_SCOPE, signal: page.signal });
-  // The chips it holds, so a view drawn onto it keeps them.
-  const holdHeader = () => source.hold(VIEW_SCOPE, (viewBar?.heldIds ?? []).filter((id) => id !== 'view'));
-  holdHeader();
-  const HEADER_FIELDS = new Set(['region', 'customer']);
-  header?.addEventListener('quick-filter-change', (e) => {
-    // TRAP T-values-carries-two-shapes — the BAR's event.
-    if (e.detail?.scope !== 'bar') return;
-    const readings = {};
-    for (const [id, values] of Object.entries(e.detail.values ?? {})) {
-      if (HEADER_FIELDS.has(id) && values?.length) readings[id] = { picked: values };
-    }
-    source.answer(VIEW_SCOPE, readings);
-  }, { signal: page.signal });
+  source.hold(VIEW_SCOPE, ['region', 'customer']);
 
   // ── The VIEW toolbar: picking a saved view ─────────────────────────────
   // `onViewPicked` reads the View chip's id and puts that view's JSON Query on;
@@ -226,7 +214,6 @@ export async function init(root) {
     void Promise.resolve(
       header.populate({ ...headerConfig, filters: globalFilters(viewOptions(views, id), undefined, customerOrgs) }),
     ).then(async () => {
-      holdHeader();
       // The saved view names ITSELF in the View chip.
       header.values = { view: [id] };
       await source.setQuery(kept);
