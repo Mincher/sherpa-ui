@@ -7913,7 +7913,6 @@ chip. `columnLabel(field)` closes that — `T-grid-read-without-write-is-half-an
 is the same shape of gap.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
-- Site: `examples/contexts/records.js`
 
 ### T-a-filter-menu-has-two-modes
 
@@ -13329,6 +13328,39 @@ one object — so nothing is ever pending. A scope that narrows one component
 - Site: `test/e2e/reforged-remote-source.spec.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 
+### T-a-view-is-json
+
+**A saved View is JSON — its Query, applied onto a clean slate, with its
+defaults SHOWN on the chips.** Will, 2026-09-26 (70: *"default filter fields,
+values, and states need to be bundled in a view definition"*) and 2026-09-27:
+*"JSON is the de facto universal standard for configuration data … we can
+much more readily send and receive content from other services."* So views,
+preset views and a filter's conditions are JSON; HTML templates stay for a
+component's own insides, and `sherpa-templater` (68) will build a view's
+layout from JSON. This reverses QUERY-DESIGN's decision 1A (markup + Query).
+
+A `SavedView` is `{ label, query, ui }`: `query` a `QueryDefaults` — each
+scope names only what it sets — and `ui` the element state that is not data.
+`setQuery(view.query, { holds: 'keep' })` puts it on: a scope the view gives
+no `holds` keeps its chips, a field the view ANSWERS is held (so its chip
+shows it — the At risk view's Open tickets arrives as a chip), every other
+answer is cleared, and its sort, group and search set the source's own and
+leave the Query. A restore (no `keep`) is exact.
+
+Two things this found. A NUMBER chip never reported — the bar's `readings`
+skipped every body menu, so a Seats range showed on its chip and filtered
+nothing; one number under an operator is TYPED text (`{ op: 'gt', text: '2'
+}`), because picks on a number with no list build no clause. And the old
+views hid their filters in a `view` part no chip showed; that part is gone.
+
+- Site: `examples/contexts/records-views.js`
+- Site: `examples/contexts/records.js`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/core/browser/persist-view.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/query.ts`
+- Site: `test/unit/query.test.mjs`
+
 ### T-the-footer-owns-nothing-to-save
 
 **A footer's commit and revert pair is OFF until something changed — and the
@@ -13485,7 +13517,6 @@ Which chips may SURVIVE a view change is a per-chip flag still to build —
 TODO 21b. This is its default.
 
 - Site: `src/core/browser/persist-view.ts`
-- Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-view-chips.spec.ts`
 
 ### T-a-reload-replays-the-readers-answers
@@ -13543,7 +13574,6 @@ chip-made `contains Da` on the heading after the chip was cleared. And when a fi
 again, a `col:` chip an earlier view put up is taken down, or its phrase
 stayed on the bar after going back to All.
 
-- Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-view-chips.spec.ts`
 
 ### T-a-heading-menu-opens-on-what-it-holds

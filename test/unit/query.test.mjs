@@ -363,3 +363,24 @@ test('ONE field can be applied or discarded alone — the panel\'s per-field App
   assert.equal(src.pending('owner'), false);
   assert.equal(src.selection('owner').fieldState, 'off');
 });
+
+/* ── Step 7: a saved View is JSON ──────────────────────────────────────
+   TRAP T-a-view-is-json */
+
+test('a View\'s JSON goes onto a clean slate: chips kept, answers shown, rows arranged', async () => {
+  const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
+  src.hold('grid', ['status', 'region']);
+  src.select('region', ['APAC']);
+  await src.setQuery({ v: 1, scopes: { grid: {
+    readings: { owner: { picked: ['Dana Whitlock'] } },
+    sort: [{ field: 'health', direction: 'desc' }],
+  } } }, { holds: 'keep' });
+  const { applied } = src.query;
+  // The old answer is gone; the chips the scope held stay, and Owner joins them.
+  assert.deepEqual(applied.scopes.grid.holds, ['status', 'region', 'owner']);
+  assert.deepEqual(Object.keys(applied.scopes.grid.readings), ['owner']);
+  assert.deepEqual(ids(src.state.filter), [1, 3]);
+  // The arrangement is the source's, and not kept in the Query.
+  assert.deepEqual(src.state.sort, [{ field: 'health', direction: 'desc' }]);
+  assert.equal(applied.scopes.grid.sort, undefined);
+});

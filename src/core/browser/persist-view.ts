@@ -23,6 +23,7 @@
  * - deleteSavedView — Forget one saved view.
  */
 import type { DataSource, ViewState } from '../data/data-source.js';
+import type { QueryDefaults } from '../data/query.js';
 import { applyState } from '../ui/apply-state.js';
 import { parseViewMarkup } from './view-markup.js';
 import {
@@ -156,9 +157,18 @@ export function applyViewSnapshot(
   if (!snapshot || snapshot.v !== 1) return report;
 
   if (snapshot.source && targets.source) targets.source.setState(snapshot.source);
+  applyElements(snapshot.elements ?? {}, targets.elements ?? {}, report);
+  return report;
+}
 
-  for (const [id, state] of Object.entries(snapshot.elements ?? {})) {
-    const el = targets.elements?.[id];
+/** Each element's state through its OWN public API, by id — a gone one reported. */
+function applyElements(
+  states: Record<string, Record<string, unknown>>,
+  elements: Record<string, HTMLElement>,
+  report: ApplyReport,
+): void {
+  for (const [id, state] of Object.entries(states)) {
+    const el = elements[id];
     if (!el) {
       report.missingElements.push(id);
       continue;
@@ -167,8 +177,6 @@ export function applyViewSnapshot(
     const skipped = applyState(el, state);
     if (skipped.length) report.skipped[id] = skipped;
   }
-
-  return report;
 }
 
 /**
@@ -222,8 +230,20 @@ export function clearViewState(name: string, options: PersistOptions = {}): void
 /** One saved view in a set: what it is called, and what it does. */
 export interface SavedView {
   label: string;
-  /** The query, and the state of whatever is on screen. */
-  snapshot: ViewSnapshot;
+  /**
+   * Its FILTERS and arrangement, as JSON in the reader's terms — what each
+   * scope holds, each field's default answer, the saved filters that are on,
+   * the sort and the group. Applied onto a clean slate, and shown on the chips.
+   * JSON because it is what other services send and receive. Will, 2026-09-27.
+   * TRAP T-a-view-is-json
+   */
+  query?: QueryDefaults;
+  /** Element state that is NOT data — a grid's selected rows — through each
+   *  element's public API, by id. */
+  ui?: Record<string, Record<string, unknown>>;
+  /** The OLD shape: the source's state and per-element calls. A view with a
+   *  `query` needs none; the Dashboard's still use it. */
+  snapshot?: ViewSnapshot;
   /**
    * This view's OWN CONTENT AND LAYOUT — MARKUP, the same HTML an authored view
    * uses, parsed through an allow-list. ONE FORM, not two: a `ViewDefinition`
@@ -279,7 +299,10 @@ export function onViewPicked(
   host: EventTarget | null | undefined,
   views: ViewLibrary | (() => ViewLibrary),
   targets: {
-    source?: { setState(next: Partial<ViewState>): void };
+    source?: {
+      setState(next: Partial<ViewState>): void;
+      setQuery?(query: QueryDefaults, options: { holds: 'keep' }): Promise<void>;
+    };
     elements?: Record<string, HTMLElement>;
   },
   options: {
@@ -357,6 +380,28 @@ export function onViewPicked(
       host.replaceChildren(...original);
     }
 
+    const done = (report: ApplyReport): void => {
+      const pick: ViewPick = { id, view, report };
+      options.after?.(pick);
+      if (report.missingElements.length || Object.keys(report.skipped).length) {
+        if (options.onIncomplete) options.onIncomplete(pick);
+        // TRAP T-apply-degrades-never-throws — said out loud, not swallowed.
+        else console.warn('view applied with gaps', report);
+      }
+    };
+
+    /* A JSON VIEW: its Query onto a clean slate — every chip drawn from it,
+       its defaults shown — then its UI. TRAP T-a-view-is-json */
+    if (view.query && targets.source?.setQuery) {
+      const report: ApplyReport = { missingElements: [], skipped: {} };
+      const elements = targets.elements ?? {};
+      void targets.source.setQuery(view.query, { holds: 'keep' }).then(() => {
+        applyElements(view.ui ?? {}, elements, report);
+        done(report);
+      });
+      return;
+    }
+
     /* THE OLD VIEW'S FILTERS DO NOT CARRY OVER. Will, 2026-09-24: a header
        chip resets on a view change unless the view itself sets it — so the
        bar that reported the pick is reset FIRST, and the view then sets what
@@ -364,17 +409,9 @@ export function onViewPicked(
        already dropped its part. The View chip is persistent and keeps its pick.
        TRAP T-a-view-change-resets-the-header-chips */
     (event.target as { clearAll?: () => void } | null)?.clearAll?.();
-
-    const report = applyViewSnapshot(view.snapshot, targets);
-    const pick: ViewPick = { id, view, report };
-
-    options.after?.(pick);
-
-    if (report.missingElements.length || Object.keys(report.skipped).length) {
-      if (options.onIncomplete) options.onIncomplete(pick);
-      // TRAP T-apply-degrades-never-throws — said out loud, not swallowed.
-      else console.warn('view applied with gaps', report);
-    }
+    const report = applyViewSnapshot(view.snapshot ?? { v: 1 }, targets);
+    applyElements(view.ui ?? {}, targets.elements ?? {}, report);
+    done(report);
   };
 
   // TRAP T-signal-not-a-teardown-list — straight to the platform.

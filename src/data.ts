@@ -242,6 +242,7 @@ export {
   compile,
   VIEW,
   type Query,
+  type QueryDefaults,
   type ScopeQuery,
   type CompileFacts,
   type Compiled,

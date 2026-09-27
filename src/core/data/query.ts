@@ -11,6 +11,7 @@
  * Map:
  * - Query — Every scope's setup, as plain data — what a page's data is under.
  * - ScopeQuery — One scope: the fields it holds, each one's reading, and how it arranges rows.
+ * - QueryDefaults — A Query as a DEFINITION states it — a saved View, in JSON.
  * - CompileFacts — What compiling needs to know that the Query does not say.
  * - Compiled — A Query as the source runs it: one shared filter, and each one-component filter.
  * - VIEW — The id of the page's own scope, which every component scope sits under.
@@ -44,6 +45,17 @@ export interface ScopeQuery {
   sort?: SortSpec[];
   group?: string | null;
   search?: string;
+}
+
+/**
+ * A Query as a DEFINITION states it — a saved View, in JSON. Each scope names
+ * only what it sets: a scope with no `holds` keeps what it holds now, and a
+ * field it answers is held there. Its `sort`, `group` and `search` arrange the
+ * rows. TRAP T-a-view-is-json
+ */
+export interface QueryDefaults {
+  v: 1;
+  scopes: Record<string, Partial<ScopeQuery>>;
 }
 
 /** What compiling needs to know that the Query does not say. */

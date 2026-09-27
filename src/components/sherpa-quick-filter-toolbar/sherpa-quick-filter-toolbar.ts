@@ -524,6 +524,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         (HTMLElement & { conditions?: readonly FieldCondition[] }) | null;
       if (!menu) return;
 
+      /* A NUMBER or DATE body takes its answer as it reports it: one value
+         under its operator, or two ends. TRAP T-a-menu-owns-its-own-bodies */
+      if (menu.dataset['body'] === 'number' || menu.dataset['body'] === 'date') {
+        if (reading.op) menu.dataset['op'] = reading.op;
+        const one = (reading.text ?? '').trim();
+        this.setChipValues(id, one ? [one] : (reading.picked ?? []).map(String));
+        return;
+      }
       /* A TYPED answer — a heading's "contains @a" — is one condition row.
          TRAP T-many-conditions-are-one-reading */
       const typed = (reading.text ?? '').trim();
@@ -1302,6 +1310,25 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const menu = (chip as ChipEl & { menu?: HTMLElement }).menu as (HTMLElement & {
         conditionValue?: string; conditions?: FieldCondition[]; mode?: string;
       }) | null;
+      /* A NUMBER or DATE menu answers with its own body: one value under its
+         operator, or two ends. Left out, a Seats range showed on its chip and
+         filtered nothing. TRAP T-a-menu-owns-its-own-bodies */
+      const body = menu?.dataset['body'];
+      if (menu && (body === 'number' || body === 'date')) {
+        const values = this.#chipPicks(chip);
+        const range = menu.hasAttribute('data-range');
+        // ONE number under an operator is typed text, as a condition is: "> 2".
+        const typed = body === 'number' && !range;
+        out[field] = {
+          label: chip.dataset['label'] ?? field,
+          values: [],
+          picked: typed ? [] : values,
+          op: (menu.dataset['op'] ?? DEFAULT_OP) as FilterOp,
+          ...(typed ? { text: values[0] ?? '' } : { range }),
+          suspended: !chip.hasAttribute('data-current'),
+        };
+        continue;
+      }
       if (menu?.getAttribute('data-type') !== 'filter') continue;
 
       const all = [...menu.querySelectorAll<HTMLInputElement>('input')]
@@ -1525,14 +1552,25 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
     const persistent = new Set(this.#chips()
       .filter((c) => c.hasAttribute('data-persistent')).map((c) => c.dataset['id']));
+    const answered = new Set<string>();
     for (const [field, reading] of Object.entries(slice.readings)) {
       const id = this.#idOf(field);
+      answered.add(id);
       if (persistent.has(id)) continue;
       this.setChipReading(id, reading);
       // OFF keeps the answer and applies none of it. TRAP T-grid-suspend-is-not-clear
       if (reading.suspended) this.setChipActive(id, false);
     }
-    for (const [id, on] of Object.entries(presets)) this.setChipActive(id, on);
+    /* THE WHOLE SCOPE: a chip it does not answer is EMPTY — a View is a clean
+       slate. A superseded chip keeps the reader's own picks. TRAP T-a-view-is-json */
+    for (const def of this.#filters) {
+      const chip = this.#chips().find((c) => c.dataset['id'] === def.id);
+      if (!chip || answered.has(def.id) || persistent.has(def.id) || def.readings) continue;
+      if (chip.hasAttribute('data-superseded')) continue;
+      if (this.#filterMenu(def.id)) this.#clearField(def.id);
+      else if (chip.hasAttribute('data-menu')) this.setChipValues(def.id, []);
+    }
+    for (const def of this.#filters) if (def.readings) this.setChipActive(def.id, !!presets[def.id]);
   }
 
   /**

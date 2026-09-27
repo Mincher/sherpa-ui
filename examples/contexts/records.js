@@ -8,7 +8,7 @@
  * - init — bind this Context to its source and wire every control; returns nothing
  */
 import {
-  DataSource, VIEW_SCOPE, SherpaToast, persistView, viewOptions, onViewPicked, applyViewSnapshot, spoofRemote,
+  DataSource, VIEW_SCOPE, SherpaToast, persistView, viewOptions, onViewPicked, spoofRemote,
   countBy, reduceRows, bindSelection,
   seriesBy, deltaPercent, saveFilterAs, loadSavedFilters, deleteSavedFilter, labelId,
 } from '../../dist/index.js';
@@ -918,34 +918,9 @@ export async function init(root, { session, view, remote = false } = {}) {
      hold() FORGETS the scope. TRAP T-up-is-open-down-is-closed */
   void qftFilled.then(syncScopes);
 
-  /* SAVED VIEWS — the header's View chip. Each option is a ViewSnapshot holding
-     the query AND every component's state, so picking one reconfigures the
-     screen. `onViewPicked` applies it; `after` is the half only this page knows,
-     because the query here is composed from named parts. */
-
-  /* The half of a view only this page knows: the query here is composed from
-     named parts. */
-  const afterView = (view) => {
-    /* AFTER the snapshot, not before: `setState` treats a restored filter as
-       the WHOLE query and clears the named parts with it, so the view's own
-       clause goes back under its own key. The order is the whole subtlety. */
-    source.contribute('view', view.snapshot.source?.filter);
-    /* THE VIEW'S HEADING FILTERS — its snapshot set them on the grid, silently.
-       READ FIRST: the bar's reset below draws every heading from the Query and
-       would empty them. Then each goes in as its field's reading, with its
-       normal chip. TRAP T-a-restored-filter-still-needs-its-chip
-       TRAP T-an-empty-selection-never-wipes-a-condition */
-    const headings = columns.map((c) => [c.field, grid.columnReading(c.field)]).filter(([, r]) => r);
-    /* THE GRID'S BAR RESETS TOO. `setState` cleared every field's answer, so a
-       chip left lit would show a filter the rows no longer obey. Group and
-       Sort stay: the view has just set its own.
-       TRAP T-a-view-change-resets-the-header-chips */
-    qft.clearAll({ organise: false });
-    for (const [field, reading] of headings) {
-      source.select(field, reading.picked ?? [], reading);
-      void showChip(field, reading);
-    }
-  };
+  /* SAVED VIEWS — the header's View chip. A view is JSON: its Query goes onto
+     a clean slate and every chip is drawn from it, so its defaults show where a
+     reader can change them. Will, 2026-09-27. TRAP T-a-view-is-json */
 
   /* The View on screen — what the session's kept answers belong to. */
   let currentView = startView;
@@ -956,16 +931,12 @@ export async function init(root, { session, view, remote = false } = {}) {
        Customer pick of a session re-applies it and wipes the pick.
        TRAP T-a-persistent-chip-reports-on-every-change. */
     applied: startView,
-    after: ({ id, view }) => {
+    // A view may have given the bar a chip; its layout is the scope's holds.
+    after: ({ id }) => {
       currentView = id;
-      afterView(view);
+      syncScopes();
     },
   });
-  // The URL's View, here, so the host's pick after init finds it on screen.
-  if (startView !== 'all') {
-    applyViewSnapshot(RECORDS_VIEWS[startView].snapshot, { source, elements: { grid } });
-    afterView(RECORDS_VIEWS[startView]);
-  }
 
   /* FILTERS SURVIVE A RELOAD, and a trip away and back — for this SESSION, and
      only on the View they were made on. The session keeps the QUERY; a restore
@@ -988,13 +959,14 @@ export async function init(root, { session, view, remote = false } = {}) {
   for (const bar of [headerBar, qft]) bar?.addEventListener('quick-filter-change', keep, { signal });
   const kept = session?.get?.(FILTERS_KEY);
   restored = (async () => {
-    // After the start View's own heading filters have reached the source.
-    await new Promise((r) => queueMicrotask(r));
-    if (kept?.view === startView && kept.query) {
-      // Both bars are bound to their scope, so the source draws them.
-      await source.setQuery(kept.query);
-      syncScopes();
-    }
+    // The bar's chips ARE the data scope's holds, before anything draws them.
+    await qftFilled;
+    syncScopes();
+    // Both bars are bound to their scope, so the source draws them.
+    if (kept?.view === startView && kept.query) await source.setQuery(kept.query);
+    // The URL's View, here, so the host's pick after init finds it on screen.
+    else if (startView !== 'all') await source.setQuery(RECORDS_VIEWS[startView].query, { holds: 'keep' });
+    syncScopes();
     restoring = false;
   })();
   await restored;

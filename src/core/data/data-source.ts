@@ -67,7 +67,7 @@
  */
 import { andFilter, filterFields, filterNeedles, filterRows, groupSummaries, valueKey } from './store.js';
 import { fieldState, stateClause } from './filter-state.js';
-import { compile, VIEW, type Query, type ScopeQuery } from './query.js';
+import { compile, VIEW, type Query, type QueryDefaults, type ScopeQuery } from './query.js';
 import { report } from './report.js';
 import type { Populatable } from '../ui/apply-state.js';
 import type { FieldFacts, FieldReading, FieldType, FilterState } from './filter-state.js';
@@ -302,19 +302,24 @@ export class DataSource extends EventTarget {
   }
 
   /**
-   * Restore a whole Query — a reload, a trip away and back. Each bound control
-   * over a scope is DRAWN its slice; nothing replays a control. The named parts
-   * are left alone. Resolves once every control has drawn.
-   * TRAP T-one-query-one-owner · TRAP T-a-reload-replays-the-readers-answers
+   * Restore a whole Query — a reload, a trip away and back, a View's own
+   * defaults. Each bound control over a scope is DRAWN its slice; nothing
+   * replays a control. The named parts are left alone. Resolves once every
+   * control has drawn.
+   *
+   * `holds: 'keep'` — a View: a scope the definition gives no `holds` keeps
+   * the chips it has, and every answer is a clean slate.
+   * TRAP T-one-query-one-owner · TRAP T-a-reload-replays-the-readers-answers · TRAP T-a-view-is-json
    */
-  async setQuery(query: Query): Promise<void> {
+  async setQuery(query: Query | QueryDefaults, options: { holds?: 'keep' } = {}): Promise<void> {
     if (query?.v !== 1 || typeof query.scopes !== 'object') {
       report({ code: 'unknown-query', message: 'setQuery: not a v1 Query, so nothing was restored.' });
       return;
     }
+    const next = this.#definition(query, options.holds === 'keep');
     const before = new Set(this.selectedFields);
-    this.#applied = structuredClone(query);
-    this.#draft = this.#remote ? structuredClone(query) : this.#applied;
+    this.#applied = next;
+    this.#draft = this.#remote ? structuredClone(next) : this.#applied;
     this.#rehome();
     this.#recompose();
     this.dispatchEvent(new CustomEvent('scope-change', { detail: { scopes: this.scopes } }));
@@ -995,6 +1000,48 @@ export class DataSource extends EventTarget {
   /** Do this source's loads reach outside the data layer? */
   get #remote(): boolean {
     return !!this.store.remote;
+  }
+
+  /**
+   * A definition as a whole Query. Its sort, group and search set the source's
+   * own — and leave the Query, which holds WHICH rows, not their order. A VIEW
+   * (`keep`) keeps the chips a scope it does not name holds, and a field it
+   * answers is held, so its chip shows it.
+   */
+  #definition(given: Query | QueryDefaults, keep: boolean): Query {
+    const next: Query = { v: 1, scopes: {} };
+    for (const [id, scope] of Object.entries(structuredClone(given.scopes))) {
+      const { sort, group, search, ...rest } = scope;
+      next.scopes[id] = { ...rest, holds: rest.holds ?? [], readings: rest.readings ?? {} };
+      if (sort || group !== undefined || search !== undefined) this.#arrange({ sort, group, search });
+    }
+    // A RESTORE is exact; only a View keeps chips and shows its answers on them.
+    if (!keep) return next;
+    for (const [id, scope] of Object.entries(this.#draft.scopes)) {
+      if (scope.narrows || given.scopes[id]?.holds) continue;
+      (next.scopes[id] ??= { holds: [], readings: {} }).holds = [...scope.holds];
+    }
+    for (const scope of Object.values(next.scopes)) {
+      if (scope.narrows) continue;
+      for (const field of Object.keys(scope.readings)) {
+        if (!scope.holds.includes(field)) scope.holds = [...scope.holds, field];
+      }
+    }
+    return next;
+  }
+
+  /** A definition's arrangement onto the source's own. */
+  #arrange(by: { sort?: SortSpec[] | undefined; group?: string | null | undefined; search?: string | undefined }): void {
+    if (by.sort) {
+      this.#state.sort = [...by.sort];
+      delete this.#state.sortSuspended;
+    }
+    if (by.group !== undefined) {
+      this.#state.group = by.group;
+      this.#viewPages = null;
+    }
+    if (by.search !== undefined) this.#state.search = by.search;
+    this.#state.page = 1;
   }
 
   /** SEND the draft — Apply, on a remote source. One field, one scope, or all. It loads. */
