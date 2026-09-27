@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**52 open.** Reassessed 2026-09-26: the bugs that lie first, then the
+**54 open.** Reassessed 2026-09-26: the bugs that lie first, then the
 FOUNDATION — the one compiled query, the view definition and when Apply runs —
 before the filter features that stand on it. Numbers are ids, not order; the
 table IS the order.
@@ -32,55 +32,57 @@ table IS the order.
 | 9 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
 | 10 | 45 | A picked date does not show in the chip | bug |
 | 11 | 82 | A number chip set by a View shows no value on its face | bug |
-| 12 | 16 | Favourite and Save apply to the Context, not the View | bug |
-| 13 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
+| 12 | 83 | Calendar menu: a picked date leaves Apply and Discard looking off — yet they work | bug |
+| 13 | 16 | Favourite and Save apply to the Context, not the View | bug |
+| 14 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
 | | | **D — Filters: Will's features, on the foundation** | |
-| 14 | 60 | Once applied, a chip's badge shows the number of results | feature |
-| 15 | 49 | A preset conditional chip shows its conditions, read-only | feature |
-| 16 | 50 | A custom conditional chip shows its conditions, editable | feature |
-| 17 | 47 | More than 20 values: one chip, not a run | feature |
-| 18 | 48 | A child menu opens on hover or click of its row | feature |
-| 19 | 21c | A condition's matches must ALL highlight | feature |
-| 20 | 21f | "Send to view filters" | feature |
-| 21 | 21b | Which header chips carry over between views | feature |
-| 22 | 20b | The Date filter should be a view-scope date RANGE | feature |
-| 23 | 21d | EXPLORE — conditions for a DATE field | explore |
-| 24 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
+| 15 | 60 | Once applied, a chip's badge shows the number of results | feature |
+| 16 | 49 | A preset conditional chip shows its conditions, read-only | feature |
+| 17 | 50 | A custom conditional chip shows its conditions, editable | feature |
+| 18 | 47 | More than 20 values: one chip, not a run | feature |
+| 19 | 48 | A child menu opens on hover or click of its row | feature |
+| 20 | 21c | A condition's matches must ALL highlight | feature |
+| 21 | 21f | "Send to view filters" | feature |
+| 22 | 21b | Which header chips carry over between views | feature |
+| 23 | 20b | The Date filter should be a view-scope date RANGE | feature |
+| 24 | 21d | EXPLORE — conditions for a DATE field | explore |
+| 25 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
 | | | **E — Views and navigation** | |
-| 25 | 15 | Save a View, and the Save split-button menu | feature |
-| 26 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
-| 27 | 34 | Figma: use the Navigation terms | figma |
-| 28 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
+| 26 | 15 | Save a View, and the Save split-button menu | feature |
+| 27 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
+| 28 | 34 | Figma: use the Navigation terms | figma |
+| 29 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
 | | | **F — Data states and charts** | |
-| 29 | 58 | Loading, empty and error states in a container | feature |
-| 30 | 9b | A Data Viz header, for metrics and chart containers | component |
-| 31 | 80 | Container and Data Viz headers: Figma's new button styling and grouping | component |
-| 32 | 14 | An example of real-time data | feature |
-| 33 | 59 | EXPLORE, later — Will's own loading pattern | explore |
+| 30 | 58 | Loading, empty and error states in a container | feature |
+| 31 | 9b | A Data Viz header, for metrics and chart containers | component |
+| 32 | 80 | Container and Data Viz headers: Figma's new button styling and grouping | component |
+| 33 | 14 | An example of real-time data | feature |
+| 34 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | | | **G — Overlay panels** | |
-| 34 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
-| 35 | 23 | A focused grid row opens a details panel | feature |
+| 35 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
+| 36 | 23 | A focused grid row opens a details panel | feature |
 | | | **H — The accessibility gate** | |
-| 36 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
+| 37 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
 | | | **I — The big builds** | |
-| 37 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
-| 38 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
-| 39 | 27 | A consumer can supply their OWN templates and CSS | feature |
-| 40 | 25 | `sherpa-layout-canvas` + minimap | component |
-| 41 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
+| 38 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
+| 39 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
+| 40 | 27 | A consumer can supply their OWN templates and CSS | feature |
+| 41 | 25 | `sherpa-layout-canvas` + minimap | component |
+| 42 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
 | | | **J — Tidy-ups and renames** | |
-| 42 | 11 | `sherpa-group`: what is left | tidy |
-| 43 | 28 | A Figma component is NOT always a web component | tidy |
-| 44 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
-| 45 | 33 | Density as step offsets, and a breakpoint step | tokens |
-| 46 | 36 | CSS: compiled where it should inherit? | tidy |
-| 47 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
-| 48 | 81 | Component contracts move from YAML to JSON | refactor |
-| 49 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
+| 43 | 11 | `sherpa-group`: what is left | tidy |
+| 44 | 28 | A Figma component is NOT always a web component | tidy |
+| 45 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| 46 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| 47 | 36 | CSS: compiled where it should inherit? | tidy |
+| 48 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| 49 | 84 | Use the platform: Intl for money, units and deltas; Temporal in the calendar | refactor |
+| 50 | 81 | Component contracts move from YAML to JSON | refactor |
+| 51 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 | | | **K — Agentic UI: much later** | |
-| 50 | 76 | WebMCP: agents do UI tasks through Sherpa's own contracts — a core system | explore |
-| 51 | 77 | CONTRACTED UX patterns, so a generated experience is consistent and useful | explore |
-| 52 | 78 | A node-based WORKFLOW creator: make, edit and view patterns and generated workflows | explore |
+| 52 | 76 | WebMCP: agents do UI tasks through Sherpa's own contracts — a core system | explore |
+| 53 | 77 | CONTRACTED UX patterns, so a generated experience is consistent and useful | explore |
+| 54 | 78 | A node-based WORKFLOW creator: make, edit and view patterns and generated workflows | explore |
 
 **Why this order** (reassessed 2026-09-26).
 
@@ -370,6 +372,21 @@ obey it (13), and a report keeps it — but the chip's face shows no value.
 The number body's value reaches the menu without the chip's label being
 re-derived for a number. Same family as 45 (a picked date showed nothing),
 fixed for dates by `#syncDateLabel`.
+
+### `[ ]` 83 — BUG: a calendar menu's picked date leaves Apply and Discard looking off
+
+Will, 2026-09-27: selecting a date does not remove the inactive styling from
+the calendar menu's Apply and Discard — yet they are still clickable and they
+work. TWO faults:
+
+- **From step 6e (23094c86).** `sherpa-menu` re-reads its draft for the footer
+  on `input` and `change` only; a calendar pick fires `datetime-change` and
+  `range-select`, so the footer is never told the draft changed and keeps its
+  pair `disabled`. Listen for those too (`T-the-footer-owns-nothing-to-save`).
+- **A disabled button still acts.** A `sherpa-button` with `disabled` looks
+  inactive but a click still reaches its handler — the look and the behaviour
+  disagree. The button must refuse the click while disabled, or the footer's
+  "off" is only paint.
 
 ### `[ ]` 16 — BUG: Favourite and Save apply to the Context, not the View
 
@@ -895,6 +912,24 @@ cardinality, a role. `data-empty` is a message string (list), a host boolean
 (grid), a per-pane boolean (transfer-list). Both are rulings, not bugs. The
 question: reserve `data-type` for TEMPLATE SELECTION, as four of its nine uses
 already do?
+
+### `[ ]` 84 — Use the platform: Intl for money, units and deltas; Temporal in the calendar
+
+Will, 2026-09-27: *"No need to reinvent foundational things that we already
+get for free."* Measured support is in `QUERY-DESIGN.md` §4. What the repo
+hand-rolls today:
+
+| site | today | the platform |
+|---|---|---|
+| `examples/contexts/records.js` `money()` | `` `$${Math.round(n).toLocaleString('en-GB')}` `` | `Intl.NumberFormat` currency |
+| `sherpa-file-upload.ts` | `` `${(bytes / 1048576).toFixed(1)} MB` `` | `Intl.NumberFormat` unit `megabyte` |
+| `sherpa-metric.ts` | the delta rounded with `toFixed(2)` | `Intl.NumberFormat` percent, `signDisplay` |
+| `global-filters.js`, `records.js` | ISO days and months built with `padStart` | `Temporal.PlainDate` / `PlainYearMonth` (examples run in a browser) |
+| `sherpa-calendar.ts` | ten `Date` sites of day maths | `Temporal` — a component only runs in a browser |
+
+The DOM-free data layer stays off `Temporal` and `Math.sumPrecise` until Node
+has them. Step 8 of the Query is where formats arrive as `Intl` options in
+JSON, so do the metric and money there.
 
 ### `[ ]` 81 — Component contracts move from YAML to JSON
 

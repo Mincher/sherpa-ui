@@ -170,6 +170,30 @@ interface Compiled {
 
 ---
 
+### Step 8 uses the platform — Will, 2026-09-27
+
+*"We should see if there are JavaScript APIs for currency, numerical formats
+etc. much like the Temporal API for dates and time. No need to reinvent
+foundational things that we already get for free."* Measured the same day in
+all three engines the tests run (Chromium 153, Firefox 155, WebKit 26.6) and
+in Node 24:
+
+| need | platform API | engines | Node |
+|---|---|---|---|
+| money, percent with a sign, compact (`1.3m`), units (`12 GB`), a range (`10–50`) | `Intl.NumberFormat` (+ `formatRange`) | ✓ | ✓ |
+| "3 conditions", "a, b and c", "yesterday", "2 hrs, 5 mins", a date span | `Intl.PluralRules`, `ListFormat`, `RelativeTimeFormat`, `DurationFormat`, `DateTimeFormat.formatRange` | ✓ | ✓ |
+| segment rows by a field | `Object.groupBy` / `Map.groupBy` | ✓ | ✓ |
+| an exact sum | `Math.sumPrecise` | ✓ | **no** |
+| dates, months, spans | `Temporal` | ✓ | **no** |
+
+So in step 8 a component scope says what it needs in JSON, and a FORMAT is
+the platform's own options object — `{ style: 'currency', currency: 'USD',
+maximumFractionDigits: 0 }` — never a mini-language of ours. The DOM-free data
+layer groups with `Map.groupBy` and stays off `Temporal` and `Math.sumPrecise`
+until Node has them; a component, which only ever runs in a browser, may use
+them. Exact strings differ by engine (Node `1.3M`, browsers `1.3m`), so tests
+never compare a formatted string across the two.
+
 ## 5. Draft and applied — when Apply runs (62)
 
 ```ts
