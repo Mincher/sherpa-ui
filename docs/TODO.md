@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**49 open.** Reassessed 2026-09-26: the bugs that lie first, then the
+**50 open.** Reassessed 2026-09-26: the bugs that lie first, then the
 FOUNDATION — the one compiled query, the view definition and when Apply runs —
 before the filter features that stand on it. Numbers are ids, not order; the
 table IS the order.
@@ -53,31 +53,32 @@ table IS the order.
 | | | **F — Data states and charts** | |
 | 28 | 58 | Loading, empty and error states in a container | feature |
 | 29 | 9b | A Data Viz header, for metrics and chart containers | component |
-| 30 | 14 | An example of real-time data | feature |
-| 31 | 59 | EXPLORE, later — Will's own loading pattern | explore |
+| 30 | 80 | Container and Data Viz headers: Figma's new button styling and grouping | component |
+| 31 | 14 | An example of real-time data | feature |
+| 32 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | | | **G — Overlay panels** | |
-| 32 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
-| 33 | 23 | A focused grid row opens a details panel | feature |
+| 33 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
+| 34 | 23 | A focused grid row opens a details panel | feature |
 | | | **H — The accessibility gate** | |
-| 34 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
+| 35 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
 | | | **I — The big builds** | |
-| 35 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
-| 36 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
-| 37 | 27 | A consumer can supply their OWN templates and CSS | feature |
-| 38 | 25 | `sherpa-layout-canvas` + minimap | component |
-| 39 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
+| 36 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
+| 37 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
+| 38 | 27 | A consumer can supply their OWN templates and CSS | feature |
+| 39 | 25 | `sherpa-layout-canvas` + minimap | component |
+| 40 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
 | | | **J — Tidy-ups and renames** | |
-| 40 | 11 | `sherpa-group`: what is left | tidy |
-| 41 | 28 | A Figma component is NOT always a web component | tidy |
-| 42 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
-| 43 | 33 | Density as step offsets, and a breakpoint step | tokens |
-| 44 | 36 | CSS: compiled where it should inherit? | tidy |
-| 45 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
-| 46 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
+| 41 | 11 | `sherpa-group`: what is left | tidy |
+| 42 | 28 | A Figma component is NOT always a web component | tidy |
+| 43 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| 44 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| 45 | 36 | CSS: compiled where it should inherit? | tidy |
+| 46 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| 47 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 | | | **K — Agentic UI: much later** | |
-| 47 | 76 | WebMCP: agents do UI tasks through Sherpa's own contracts — a core system | explore |
-| 48 | 77 | CONTRACTED UX patterns, so a generated experience is consistent and useful | explore |
-| 49 | 78 | A node-based WORKFLOW creator: make, edit and view patterns and generated workflows | explore |
+| 48 | 76 | WebMCP: agents do UI tasks through Sherpa's own contracts — a core system | explore |
+| 49 | 77 | CONTRACTED UX patterns, so a generated experience is consistent and useful | explore |
+| 50 | 78 | A node-based WORKFLOW creator: make, edit and view patterns and generated workflows | explore |
 
 **Why this order** (reassessed 2026-09-26).
 
@@ -626,6 +627,17 @@ The title is NOT the normal heading: `content/font/body`, `weight/light`,
 `size/small` (12px), `line-height/small` (16px), `content/body/+1`,
 **UPPERCASE**. The filter panel's field titles use the same look
 (`sherpa-text-small`, caps, light). Compose both Buttons from `sherpa-button`.
+
+### `[ ]` 80 — Container and Data Viz headers: Figma's new button styling and grouping
+
+Will, 2026-09-27: *"I've also tweaked the Container Headers and Data Viz
+Headers in Figma. Mainly adjusting button styling and grouping. We need to
+adjust the components in the codebase."* Read both from Figma live — the
+buttons' look, size and which ones are GROUPED (`.sherpa-group`, start/end by
+position) — and bring `sherpa-container-header` into line. The Data Viz
+header does not exist in code yet (9b), so it is BUILT from the new Figma,
+not the old notes above. Same kind of change as 79 (the nav header's Actions
+group): compose `sherpa-button`s, group them, keep them in a slot.
 
 ### `[ ]` 14 — An example of real-time data
 
