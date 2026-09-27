@@ -1,6 +1,7 @@
 # The provider — a component ASKS, the data layer ANSWERS
 
-For Will's review before anything is built. 2026-09-27.
+2026-09-27. Approved by Will (§8). **P1 is built** (`ffc48935`); §9 is the
+centralisation audit, for Will's review before any of it is done.
 
 Will: *"Why can't any component ask for data, a definition, a conditional
 query definition or a template from the data layer? … Is there a case for
@@ -164,7 +165,7 @@ door for page code and tests, every component's events, the JSON Views.
 
 | step | builds | deletes | proves |
 |---|---|---|---|
-| P1 | `sherpa-provider`, `ContextRequestEvent`, the `source` key; a component that asks joins the source as `bind()` joins it | — | a grid inside a provider fills with no bind; one outside draws its empty state; two sources unnamed is a loud error |
+| P1 ✅ | `sherpa-provider`, `ContextRequestEvent`, the `source` key; a component that asks joins the source as `bind()` joins it. **Built `ffc48935`**: the grid asks for rows, the pager for state; Records drops their binds | — | `test/e2e/reforged-provider.spec.ts`, all three engines |
 | P2 | the `data` key and its five shapes; step 8 of the Query: aggregate and segment in a component scope, `Intl` formats | the charts' and tiles' `as` adapters, `money`, `overMonths`, their binds | the chart and metric tests, with no adapter |
 | P3 | the `scope` and `query` keys: bars, panel, grid headings and legends ask | `syncScopes`, the header listener, panel fill and routing, `showChip`, raise/lower glue | the Records filter suite |
 | P4 | the `definition` key: the View chip asks; the provider applies, saves and keeps the session Query | `onViewPicked` wiring and session code in each Context | the view tests |
@@ -202,3 +203,54 @@ The questions as asked:
 - **B — a method on the answer** (`scope.select(field, reading)`) handed to
   the component. More direct, but every component gains a data-layer API and
   stops being agnostic (TODO 37).
+
+---
+
+## 9. What centralises — the audit, for review
+
+Measured at `9628b64b`, before P1. Nothing here is built. Will, 2026-09-27:
+*"Do the assessment first, for review, before executing these changes."* The
+full audit of every component's functions and events is TODO 86, after P5;
+this is its first pass.
+
+**Where the code is.** Component TS is 15,052 lines. The filter family —
+toolbar 2057, grid 2041, menu 1474, panel 1362, quick-filter 795 — is 7,729
+of them, 51%. Nearly all the savings are there.
+
+| # | duplicated or bespoke | ~lines out | moves to | needs |
+|---|---|---:|---|---|
+| 1 | Filter state read back and written in, three times — toolbar (`values`, `setChip*`, `drawReading`, `supersede`, `clauses`, `states`, `presets`, `held`…), grid (`supersedeColumns`, `columnClause`/`Reading`/`Label`, `setColumnFilter`), panel (`readings`, `setFieldReading`) | 450–550 | the Query, through the `scope` key: one `drawScope(slice)` each, intent out. "Superseded" is derived by the Query | P3; parity gate accepts "the Query is the door" |
+| 2 | The panel is a second field-row builder (393 lines against the toolbar's 281; TODO 38 step 4) | 300–600 (a guess) | the panel = scope sections, each a vertical toolbar that asks for its scope | P3 |
+| 3 | Workarounds for a menu that fills late: three pending-item queues, `#keepAnswer`, condition rechecks, ~9 double-rAF sites | ~250 | the menu ASKS for its field values when it connects, so nothing pushes into an element not yet upgraded | P2 (field-values shape). Goes against FILTER-REVIEW §11.5, written before a component could ask |
+| 4 | The grid builds its filter menu by hand (~15 attributes) instead of `menuFor()`, and computes its own values (`data-column-values`) | ~140 | `menuFor(colDef, {bounds})`; values from `source.selection(field)` | half now, half P2 |
+| 5 | The grid's `ColumnFilter` is a fourth spelling of `FieldReading`, with its own face | ~120 | hold a `FieldReading`; draw with `filterFace` | now — no provider needed |
+| 6 | Chart and tile adapters: `bindLegend` copied in both pages, `tile()`, `money`, `overMonths`, metric `deriveValue` | ~250 | the `data` key's aggregate, series and field-values shapes | P2 |
+| 7 | Filter events carry four shapes (`active`, `values`, `picked`, `clauses`), and the source ignores them and reads the bar back by duck typing | ~60 | the event carries `{readings, presets}` — a JSON delta of the Query | P3; P5 and WebMCP need it too |
+| 8 | The base class does jobs few components need: the templater (~157), item stamping (~173, 2–6 users), `markNeedle` (~42, 2 users), vocabularies (~56) | ~430 moved, ~10 deleted | `sherpa-templater` (TODO 68), a stamping module, a marking module | separation, NOT deletion — lighter base, same total |
+| 9 | Config and data split by hand: P1 gave the grid `columns`/`key`/`actions` setters and a `#config()` merge. Menu, toolbar, panel, list and charts will each need it | stops ~40 × N | `static config = {…}` in the base class; `populate` merges data over it | now, before it is copied |
+| 10 | The wrapped native control, four times: checkbox, radio, switch, input-text each mirror the control, `checked`/`value`, `checkValidity`, `focus`, the `change` re-emit. Only input-text uses `ElementInternals` — the other three submit nothing in a `<form>` | ~90, and form support | `static control = '.control'` in the base class | keep the radio untick (`T-radios-in-shadow-roots`) |
+| 11 | Hand-rolled formats (TODO 84): `formatTick` compact notation, toolbar `#syncDateLabel`, calendar's English `MONTHS`, metric `toFixed`, file-upload MB, `filterFace` plurals | ~100 | `Intl.NumberFormat`, `DateTimeFormat.formatRange`, `PluralRules`, `ListFormat` | P2; strings differ by engine — tests compare them |
+| 12 | Chart axes and hidden series: bar and line `#renderYAxis` near-identical; hidden series under three names, now used only by tests | ~50 | a shared `renderValueAxis()`; one `hidden` door | now |
+| 13 | Text synced by hand that could be declared: metric, input-text, file-upload, calendar-cell, notifications | ~35 | `static props`, `kind: 'content'` | now, low risk |
+| 14 | The app-header re-exposes the toolbar's API (`values`, `available`, forwarding) | ~55 | the slotted bar asks for its own scope | P3 |
+| 15 | Leftovers: 18 `Array.isArray` guards, 4 value normalisers, the panel's copy of `pathFind`, legacy shims | ~70 | base defaults; delete the shims | now |
+
+**Total: about 1,500 ± 500 lines out of `src/`** — on top of the ~770 §1
+counts in `records.js` and `dashboard.js`. Items 1, 2 and 3 are the biggest,
+and all three need P3.
+
+### Looks shared, but is NOT
+
+- **Keyboard and focus.** Arrow keys in tabs and nav only; the five `keydown`
+  listeners each do a different job.
+- **Event names.** `emit()` is already central, and each component's event
+  name is what the provider routes by (§8, decision 2). One generic event
+  would hide the intent.
+- **Popover placement.** Menu flips and caps height; tooltip centres above.
+  Sharing saves ~15 lines; CSS anchoring is blocked (`T-anchor-cross-root`).
+- **Selection models.** Grid keys, transfer-list staging, menu values and a
+  radio group mean different things.
+- **The grid's own sort and filter** (~40 lines) serve a grid with no source.
+  They go only if "no provider means empty" is ruled for the grid.
+- **`DATA_PROPS` attributes** stay attributes: CSS reads them.
+

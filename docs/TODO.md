@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**55 open.** Reassessed 2026-09-26: the bugs that lie first, then the
+**54 open.** Reassessed 2026-09-26: the bugs that lie first, then the
 FOUNDATION — the one compiled query, the view definition and when Apply runs —
 before the filter features that stand on it. Numbers are ids, not order; the
 table IS the order.
@@ -22,6 +22,7 @@ table IS the order.
 | | | **B — The foundation: design, then build** | |
 | 1 | 73 | EXPLORE — one compiled QUERY, built as the reader sets it up, run on Apply | explore |
 | 2 | 85 | `sherpa-provider`: a component ASKS for data, a scope, a query, a View or a template | foundation |
+| 2b | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | 3 | 70 | EXPLORE — a view definition bundles its filters; one JSON renders the page | explore |
 | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
 | 5 | 75 | Filter modes are SIMPLE and COMPLEX, not Default and Conditional — every file | refactor |
@@ -161,6 +162,28 @@ definition or a template from the data layer?"* — the Context Protocol
 designed in `FILTER-REVIEW.md` §9–§12 on 2026-09-25 and never built. Step 8
 of the Query folds into its P2. Target: `records.js` 853 → ~250 lines of code,
 `dashboard.js` 222 → ~50. Closes most of 37 and 38.
+
+**P1 built `ffc48935`** — the provider, the Context Protocol, the grid and
+pager ask. The centralisation audit is `PROVIDER-DESIGN.md` §9, for review.
+**Next: P2** — the `data` shapes and step 8.
+
+### `[ ]` 86 — AUDIT: every component's functions and events — one request, one response, standardised in `SherpaElement`
+
+Will, 2026-09-27: *"Once the provider approach is completed, it might be a
+good idea to take a look at all of the functions and events for all UI
+components to see where there is logical duplication but name, or
+implementation, divergence. If it can make generic requests, expects generic
+responses, and can be standardised in sherpa-element (communicating with
+sherpa-provider etc.) then we should make those optimisations. Take care to
+not only add code but rewrite, or refactor, existing code. We can also remove
+redundant code, too. Do the assessment first, for review, before executing
+these changes."*
+
+After P5. Assessment FIRST, for Will's review; nothing is changed before he
+rules. `PROVIDER-DESIGN.md` §9 is its first pass (the filter family, the
+base class, the wrapped controls, the charts). Still to cover: every public
+method and every event of all 63 components, side by side — same job,
+different name or different code.
 
 ### `[ ]` 70 — EXPLORE: a view definition bundles its filters; one JSON renders the page
 
