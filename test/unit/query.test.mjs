@@ -287,7 +287,7 @@ test('a REMOTE source edits a draft: pending until commit, and the rows wait', a
   assert.equal(src.pending('status'), true);
   assert.equal(src.dirty('grid'), true);
   assert.equal(src.dirty(VIEW), false);
-  src.commit('grid');
+  src.commit({ scope: 'grid' });
   assert.deepEqual(ids(src.state.filter), [2]);
   assert.equal(src.pending('status'), false);
   assert.equal(src.dirty(), false);
@@ -307,7 +307,7 @@ test('Discard puts the applied answer back over the draft, and draws it', async 
   src.select('status', ['trial']);
   assert.equal(src.pending('status'), true);
   drawn.length = 0;
-  src.discard('grid');
+  src.discard({ scope: 'grid' });
   assert.equal(src.pending('status'), false);
   assert.deepEqual(src.selection('status').values.filter((v) => v.state === 'picked').map((v) => v.value), ['active']);
   assert.deepEqual(drawn, [['status', ['active']]]);
@@ -348,4 +348,18 @@ test('spoofRemote waits, fails when told, and marks the store remote', async () 
   assert.ok(Date.now() - t >= 25);
   const broken = spoofRemote(new ArrayStore(ROWS, { key: 'id' }), { delay: 0, fail: 1 });
   await assert.rejects(() => broken.load(), /the fetch failed/);
+});
+
+test('ONE field can be applied or discarded alone — the panel\'s per-field Apply', async () => {
+  const src = await remote();
+  src.hold('grid', ['status', 'owner']);
+  src.select('status', ['trial']);
+  src.select('owner', ['Dana Whitlock']);
+  src.commit({ field: 'status' });
+  assert.deepEqual(ids(src.state.filter), [2]);
+  assert.equal(src.pending('status'), false);
+  assert.equal(src.pending('owner'), true);
+  src.discard({ field: 'owner' });
+  assert.equal(src.pending('owner'), false);
+  assert.equal(src.selection('owner').fieldState, 'off');
 });

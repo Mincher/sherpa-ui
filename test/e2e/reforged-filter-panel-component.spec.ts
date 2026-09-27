@@ -97,46 +97,28 @@ test('a scope draws its presets, its fields, and nothing it cannot', async ({ pa
   expect(r['emptyScopes']).toBe(1);
 });
 
-test('Apply reports EVERY field in one event; Discard reverts to it', async ({ page }) => {
+/**
+ * NO FOOTER: a change applies as it is made, and reports ITS field alone.
+ * Every field at once would switch a field that is off back on. Will,
+ * 2026-09-27 (TODO 62). TRAP T-the-panel-reports-its-own-reading
+ */
+test('a change reports its own field alone, as it is made — there is no footer', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     const heard = [];
-    el.addEventListener('quick-filter-change', (e) => heard.push(e.detail));
-
-    /* Tick two more. OWNER is single-select, so it is ONE chip carrying the
-       field's id — not a run of its values.
-       TRAP T-only-group-and-sort-stay-one-chip */
-    sr.querySelector('.field[data-field="status"] .value[data-value="churned"]')
-      .setAttribute('data-current', '');
-    sr.querySelector('.field[data-field="owner"] .value[data-value="Dana"]')
-      .setAttribute('data-current', '');
-    await new Promise((r) => setTimeout(r, 100));
-
-    press('.apply');
+    el.addEventListener('quick-filter-change', (e) => heard.push(e.detail.readings));
+    const chip = (field, value) => sr.querySelector('.field[data-field="' + field + '"] .value[data-value="' + value + '"]');
+    chip('status', 'churned').shadowRoot.querySelector('.body').click();
     await new Promise((r) => setTimeout(r, 150));
-
-    // Change again, then DISCARD.
-    sr.querySelector('.field[data-field="status"] .value[data-value="active"]')
-      .removeAttribute('data-current');
-    await new Promise((r) => setTimeout(r, 100));
-    const drafted = el.values.data.status;
-    press('.discard');
+    chip('owner', 'Dana').shadowRoot.querySelector('.body').click();
     await new Promise((r) => setTimeout(r, 150));
+    return { heard, footer: !!sr.querySelector('sherpa-container-footer, .apply, .discard') };
+  })()`) as { heard: Record<string, Record<string, { picked: string[] }>>[]; footer: boolean };
 
-    return { heard, drafted, after: el.values.data };
-  })()`) as { heard: { values: Record<string, Record<string, string[]>> }[];
-    drafted: string[]; after: Record<string, string[]> };
-
-  // ONE event, carrying every field — not one per field.
-  expect(r.heard).toHaveLength(1);
-  expect(r.heard[0]!.values['data']).toEqual({
-    presets: ['unassigned'], status: ['active', 'churned'], owner: ['Dana'],
-  });
-
-  // The draft really changed…
-  expect(r.drafted).toEqual(['churned']);
-  // …and DISCARD put back what Apply left, not nothing.
-  expect(r.after['status']).toEqual(['active', 'churned']);
+  expect(r.footer).toBe(false);
+  expect(r.heard.map((h) => Object.keys(h['data'] ?? {}))).toEqual([['status'], ['owner']]);
+  expect(r.heard[0]!['data']!['status']!.picked).toEqual(['active', 'churned']);
+  expect(r.heard[1]!['data']!['owner']!.picked).toEqual(['Dana']);
 });
 
 /**
@@ -421,13 +403,7 @@ test('group and sort lead the scope, report at once, and skip Apply',
       st.shadowRoot.querySelector('.body').click();
       await new Promise((r) => setTimeout(r, 200));
 
-      press('.apply');
-      await new Promise((r) => setTimeout(r, 150));
-
-      return {
-        order, shape, sortOn, heard,
-        applied: heard.find(([n]) => n === 'quick-filter-change')[1].values.data,
-      };
+      return { order, shape, sortOn, heard };
     })()`) as Record<string, unknown>;
 
     // FIRST, above the presets — a reader reaches for them before narrowing.
@@ -445,10 +421,9 @@ test('group and sort lead the scope, report at once, and skip Apply',
     expect(heard[0]).toEqual(
       ['sort-change', { scope: 'data', field: 'name', direction: 'desc' }]);
 
-    /* APPLY carries the FILTERS only. An arrangement is not part of which
-       rows are shown, so it has no business in a filter event. */
-    expect(Object.keys(r['applied'] as object).sort())
-      .toEqual(['owner', 'presets', 'status']);
+    /* A FILTER event never carries it. An arrangement is not part of which
+       rows are shown, so it has no business in one. */
+    expect(heard.filter(([n]) => n === 'quick-filter-change')).toEqual([]);
   });
 
 /**
@@ -626,53 +601,39 @@ test('opening and closing the panel leaves a chip\'s own menu alone', async ({ p
 });
 
 /**
- * APPLY AND DISCARD WAIT FOR A CHANGE. Will, 2026-09-26: "The Apply & Discard
- * buttons should be inactive unless there are changes to the filters to apply
- * or discard." A change is any field's whole answer — picks, rows or text —
- * against the last Apply. TRAP T-apply-and-discard-wait-for-a-change
+ * REMOTE: a CHANGED field shows its own Apply and Discard, and each reports
+ * the field — the source commits or discards it. Locally they never show.
+ * Will, 2026-09-27 (TODO 62). TRAP T-apply-and-discard-wait-for-a-change
  */
-test('Apply and Discard are off until a field changes, and off again after either', async ({ page }) => {
+test('remote: a changed field shows its own Apply and Discard; locally, never', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
-    const off = () => ({
-      apply: sr.querySelector('.apply').hasAttribute('disabled'),
-      discard: sr.querySelector('.discard').hasAttribute('disabled'),
-    });
-    const wait = () => new Promise((r) => setTimeout(r, 120));
-    const chip = (field, value) => sr.querySelector('.field[data-field="' + field + '"] .value[data-value="' + value + '"]');
-    const opened = off();
+    const heard = [];
+    for (const n of ['filter-apply', 'filter-discard']) el.addEventListener(n, (e) => heard.push([n, e.detail]));
+    const shown = (sel) => { const n = sr.querySelector(sel); return !!n && getComputedStyle(n).display !== 'none'; };
+    const f = '.field[data-field="status"]';
+    el.setAttribute('data-remote', '');
+    await new Promise((r) => setTimeout(r, 50));
+    const before = shown(f + ' .field-apply');
+    // The SOURCE says which fields wait, by field.
+    el.setAttribute('data-pending', 'status');
+    await new Promise((r) => setTimeout(r, 50));
+    const pending = { apply: shown(f + ' .field-apply'), discard: shown(f + ' .field-discard'),
+      other: shown('.field[data-field="owner"] .field-apply') };
+    press(f + ' .field-apply');
+    press(f + ' .field-discard');
+    el.removeAttribute('data-remote');
+    await new Promise((r) => setTimeout(r, 50));
+    return { before, pending, heard, local: shown(f + ' .field-apply') };
+  })()`) as Record<string, unknown>;
 
-    chip('status', 'churned').shadowRoot.querySelector('.body').click();
-    await wait();
-    const picked = off();
-    press('.discard');
-    await wait();
-    const discarded = { ...off(), churned: chip('status', 'churned').hasAttribute('data-current') };
-
-    // A CONDITION typed in a row is a change too.
-    flip('.field[data-field="owner"] .field-custom');
-    await wait();
-    const menu = sr.querySelector('.field[data-field="owner"] sherpa-menu');
-    const row = menu.shadowRoot.querySelector('.condition-row');
-    const cond = row.querySelector('.condition');
-    cond.value = 'contains';
-    cond.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
-    await wait();
-    const text = row.querySelector('.condition-value');
-    text.value = 'Da';
-    text.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-    await wait();
-    const typed = off();
-    press('.apply');
-    await wait();
-    return { opened, picked, discarded, typed, applied: off() };
-  })()`) as Record<string, Record<string, boolean>>;
-
-  expect(r['opened']).toEqual({ apply: true, discard: true });
-  expect(r['picked']).toEqual({ apply: false, discard: false });
-  expect(r['discarded']).toEqual({ apply: true, discard: true, churned: false });
-  expect(r['typed']).toEqual({ apply: false, discard: false });
-  expect(r['applied']).toEqual({ apply: true, discard: true });
+  expect(r['before']).toBe(false);
+  expect(r['pending']).toEqual({ apply: true, discard: true, other: false });
+  expect(r['heard']).toEqual([
+    ['filter-apply', { scope: 'data', id: 'status', field: 'status' }],
+    ['filter-discard', { scope: 'data', id: 'status', field: 'status' }],
+  ]);
+  expect(r['local']).toBe(false);
 });
 
 /**
@@ -701,9 +662,7 @@ test('a field populated with conditions opens in custom mode on its rows', async
       custom: box.hasAttribute('data-custom'),
       switchOn: box.querySelector('.field-custom sherpa-switch')?.hasAttribute('checked') ?? null,
       reading: el.readings['data']?.['owner']?.conditions,
-      applyOff: el.shadowRoot!.querySelector('.apply')!.hasAttribute('disabled'),
     };
   });
-  expect(r).toEqual({ custom: true, switchOn: true,
-    reading: [{ op: 'contains', text: 'Da' }], applyOff: true });
+  expect(r).toEqual({ custom: true, switchOn: true, reading: [{ op: 'contains', text: 'Da' }] });
 });

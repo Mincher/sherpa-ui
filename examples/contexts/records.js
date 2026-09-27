@@ -74,6 +74,8 @@ export async function init(root, { session, view, remote = false } = {}) {
 
   const asPanelField = (f) => ({
     id: f.id,
+    // The FIELD it answers — the header's Date chip names the record's time.
+    field: f.field,
     label: f.label,
     options: f.options,
     select: f.select,
@@ -468,49 +470,30 @@ export async function init(root, { session, view, remote = false } = {}) {
     })();
   }
 
-  /* APPLY. The panel reports every field in ONE event; each one goes to the
-     source exactly as its chip would send it. */
+  /* THE PANEL'S OWN ANSWER, one field as it changes — written into the Query,
+     which draws the bars. Presets are the bar's own on/off chips, so they go
+     through the bar. No footer: locally it applies at once; remote, it waits
+     for that field's Apply. Will, 2026-09-27 (TODO 62).
+     TRAP T-the-panel-reports-its-own-reading · TRAP T-one-query-one-owner */
   panel?.addEventListener('quick-filter-change', (e) => {
-    /* THE PANEL'S OWN WHOLE ANSWER — picked values AND conditions. It used to
-       report ticks only and then reach into the bar to fix that up; the bar is
-       told here instead, and neither component knows the other exists.
-       TRAP T-the-panel-reports-its-own-reading */
-    const byScope = e.detail.readings ?? {};
-    /* The bars steered here. Every steer is SILENT, so each one reports. */
-    const steered = new Set();
-    for (const [scope, fields] of Object.entries(byScope)) {
+    for (const [scope, fields] of Object.entries(e.detail.readings ?? {})) {
       const bar = barFor(scope);
-      if (!bar) continue;
       for (const [id, reading] of Object.entries(fields)) {
-        const picked = reading.picked ?? [];
-        /* PRESETS — saved filters too — are the bar's own on/off chips, each
-           STEERED. A click on a chip's host is not a press: the chip hears
-           only its body, so the old `chip.click()` changed nothing. */
         if (id === 'presets') {
-          for (const f of bar.held ?? []) {
-            if (isPreset(f)) bar.setChipActive(f.id, picked.includes(f.id));
+          for (const f of bar?.held ?? []) {
+            if (isPreset(f)) bar.setChipActive(f.id, (reading.picked ?? []).includes(f.id));
           }
-          steered.add(bar);
+          bar?.report();
           continue;
         }
-        /* THE FIELD'S OWN SLOT for a field the source owns; the BAR's chip
-           otherwise. `setChipReading` carries the conditions too, which
-           `setChipValues` could not — that is why the panel used to tick the
-           chip itself. */
-        if (FIELD_CHIPS.has(id)) source.select(id, picked, reading);
-        else {
-          bar.setChipReading(id, reading);
-          steered.add(bar);
-        }
+        const field = scope === VIEW_SCOPE ? headerField(id) : id;
+        if (field) source.select(field, reading.picked ?? [], reading);
       }
     }
-    /* …once its menus have stamped, or it reads its own new rows as empty.
-       TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
-    if (steered.size) {
-      void new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
-        .then(() => { for (const bar of steered) bar.report(); });
-    }
   }, { signal });
+  // REMOTE: a changed field's own Apply and Discard. TRAP T-apply-and-discard-wait-for-a-change
+  panel?.addEventListener('filter-apply', (e) => source.commit({ field: e.detail.field }), { signal });
+  panel?.addEventListener('filter-discard', (e) => source.discard({ field: e.detail.field }), { signal });
 
   /* ADD and REMOVE are REQUESTS: the BAR owns the list. */
   /* A BAR REBUILDS ASYNCHRONOUSLY: `items()` on a freshly cloned menu stamps

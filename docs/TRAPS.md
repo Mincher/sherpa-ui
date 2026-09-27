@@ -8321,8 +8321,9 @@ Group, Sort and Date are chips with popovers, so their footer Apply lands on
 the menu rather than on the panel's own footer — and a reader who pressed Apply
 expects the same thing to happen wherever they pressed it. The panel relays:
 the chip's on/off follows the pick, an organise chip also reports its own
-`group-change` or `sort-change`, and `#onApply()` runs as if the footer had
-been pressed.
+`group-change` or `sort-change`, and the field is REPORTED as any change is.
+Since 2026-09-27 the panel has no footer (TODO 62): every change reports its
+own field as it is made, so a chip menu's Apply is simply that field's change.
 
 ---
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
@@ -9160,6 +9161,8 @@ component names the other.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `examples/contexts/records.js`
 - Site: `test/unit/parity-sweep.test.mjs`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+- Site: `test/e2e/reforged-panel-apply.spec.ts`
 
 ### T-closest-stops-at-the-shadow-boundary
 
@@ -13292,16 +13295,14 @@ one nobody tests.
 
 ### T-apply-and-discard-wait-for-a-change
 
-**Apply and Discard are off until a field differs from the last Apply.** Will,
-2026-09-26. The panel keeps a snapshot of every field's reading — picks,
-condition rows, typed text — taken at open, at Apply, and when another control
-steers a field. Any edit compares each field's reading against it; one
-difference turns both buttons on, and Apply or Discard turns them off again.
-
-Two things this changed. Discard now puts back condition rows and typed text,
-not only picks — before, it restored picks and left a typed condition standing.
-And an Apply with nothing changed can no longer be pressed, so a test that
-pressed one to prove "nothing happens" now asserts the button is off.
+**Apply and Discard exist only for a field whose change waits — and only
+once it has changed.** Will, 2026-09-26 (off until a change) and 2026-09-27
+(TODO 62: only for a REMOTE fetch). The panel's footer, and the snapshot it
+kept of every field, are GONE: locally a change applies as it is made; over a
+remote source a changed field shows its OWN small Apply and Discard, beside
+Clear, from the source's `data-pending` field list. Its Apply commits that
+field alone (`commit({ field })`), its Discard puts back the applied answer
+— picks, rows and typed text (`discard({ field })`).
 
 A field that only ARRANGES (group, sort) is left out of the snapshot; it acts
 at once and has nothing to apply.
@@ -13325,8 +13326,8 @@ one object — so nothing is ever pending. A scope that narrows one component
 - Site: `src/data.ts`
 - Site: `test/unit/query.test.mjs`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
-- Site: `test/e2e/reforged-panel-apply.spec.ts`
 - Site: `test/e2e/reforged-remote-source.spec.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 
 ### T-a-condition-tip-counts-its-rows
 

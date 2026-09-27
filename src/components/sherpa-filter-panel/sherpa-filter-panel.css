@@ -104,7 +104,11 @@
 }
 .field-acts { display: flex; }
 /* CLEAR only appears once there is something to clear. Will, 2026-09-24. */
-.field:not([data-answered]) .field-acts { display: none; }
+.field:not([data-answered]) .field-clear { display: none; }
+.field:not([data-answered]):not([data-pending]) .field-acts { display: none; }
+/* APPLY and DISCARD: a REMOTE field, once changed. TRAP T-apply-and-discard-wait-for-a-change */
+.field-apply, .field-discard { display: none; }
+:host([data-remote]) .field[data-pending] :is(.field-apply, .field-discard) { display: inline-flex; }
 
 .field-custom {
   display: flex;

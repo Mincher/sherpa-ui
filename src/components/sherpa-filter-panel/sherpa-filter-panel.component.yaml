@@ -66,21 +66,6 @@ anatomy:
           class: scopes
           part: scopes
         - slot: ""
-        - el: sherpa-container-footer
-          class: foot
-          part: foot
-          attrs:
-            slot: footer
-            data-align: end
-          children:
-            - el: sherpa-button
-              class: discard
-              part: discard
-            - el: sherpa-button
-              class: apply
-              part: apply
-              attrs:
-                data-look: saturated
     - el: template
       class: scope-tpl
       children:
@@ -137,6 +122,22 @@ props:
       the panel is showing. A host writes it; the panel reports `filter-panel-close` and never hides
       itself, except below its breakpoint. TRAP T-the-panel-is-desktop-only
   - $type: prop
+    name: data-pending
+    type: string
+    observed: false
+    kind: style
+    description: >-
+      the FIELDS changed and not yet applied, space-separated. Set by a bound source; each shows
+      Apply and Discard.
+  - $type: prop
+    name: data-remote
+    type: string
+    observed: false
+    kind: style
+    description: >-
+      its source fetches from outside the data layer, so a change waits for its field's Apply. Set
+      by a bound source.
+  - $type: prop
     name: data-saveable
     type: string
     observed: true
@@ -149,6 +150,9 @@ states:
   - $type: state
     name: open
     selector: ":host([data-open])"
+  - $type: state
+    name: remote
+    selector: ":host([data-remote])"
 capabilities:
   - $type: capability
     api: js-property-mirror
@@ -168,6 +172,14 @@ events:
       readings: unknown
       scope: string
       values: unknown
+  - $type: event
+    name: filter-apply
+    bubbles: true
+    composed: true
+  - $type: event
+    name: filter-discard
+    bubbles: true
+    composed: true
   - $type: event
     name: filter-panel-close
     bubbles: true

@@ -6,9 +6,9 @@
   `quick-filter-change`. TRAP T-the-panel-is-the-toolbar-in-a-column
 
   One accordion per SCOPE. Inside each, a field is a section header with its
-  own actions above a wrapping run of boolean chips — one per value. ONE search
-  and ONE footer for the panel: Apply commits every field at once, and Discard
-  reverts to the last Apply.
+  own actions above a wrapping run of boolean chips — one per value. ONE search.
+  NO footer: a change applies as it is made. Over a REMOTE source a changed
+  field shows its own Apply and Discard. Will, 2026-09-27 (TODO 62).
 
       const panel = document.querySelector('sherpa-filter-panel');
       panel.populate([
@@ -29,12 +29,18 @@
                     offers "Save filter", and a reader's own saved preset
                     opens Edit filter and Delete filter — each asked for.
                     TRAP T-the-panel-saves-a-whole-scope
+    data-remote     its source fetches from outside the data layer, so a
+                    change waits for its field's Apply. Set by a bound source.
+    data-pending    the FIELDS changed and not yet applied, space-separated.
+                    Set by a bound source; each shows Apply and Discard.
 
   Slots:
     (default)   extra content under the scopes
 
   Fires:
-    quick-filter-change — Apply, or Reset all. detail: { scope, values, picked, clauses }
+    quick-filter-change — one field changed, or Reset all. detail: { scope, readings, values, picked }
+    filter-apply — a changed field's Apply, remote only. detail: { scope, id, field }
+    filter-discard — a changed field's Discard, remote only. detail: { scope, id, field }
     filter-panel-close — the header's close button. detail: {}
     filter-add-request — the Add button committed. detail: { scope, ids }
     filter-remove — a field's Remove. detail: { scope, id }
@@ -78,11 +84,6 @@
     <div class="scopes" part="scopes"></div>
     <slot></slot>
 
-    <sherpa-container-footer slot="footer" class="foot" part="foot" data-align="end">
-      <!-- DISCARD, not Cancel: it reverts to the last Apply, not to nothing. -->
-      <sherpa-button class="discard" part="discard">Discard</sherpa-button>
-      <sherpa-button class="apply" part="apply" data-look="saturated">Apply</sherpa-button>
-    </sherpa-container-footer>
   </sherpa-container>
 
   <!-- PROTOTYPES. Every element the panel will ever show exists here from the
@@ -115,6 +116,11 @@
         <span slot="actions" class="field-acts">
           <sherpa-button class="field-clear" data-type="icon" data-size="sm"
                          data-icon-start="arrow-rotate-left"></sherpa-button>
+          <!-- REMOTE only, once changed. DISCARD goes back to the last Apply. -->
+          <sherpa-button class="field-discard" data-type="icon" data-size="sm"
+                         data-icon-start="cross" aria-label="Discard"></sherpa-button>
+          <sherpa-button class="field-apply" data-type="icon" data-size="sm"
+                         data-icon-start="tick" aria-label="Apply"></sherpa-button>
         </span>
       </sherpa-section-header>
       <!-- BELOW the header, as the menu's Range switch is. -->

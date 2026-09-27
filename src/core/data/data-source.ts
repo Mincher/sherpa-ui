@@ -997,20 +997,22 @@ export class DataSource extends EventTarget {
     return !!this.store.remote;
   }
 
-  /** SEND the draft — Apply, on a remote source. One scope, or all. It loads. */
-  commit(scope?: string): void {
+  /** SEND the draft — Apply, on a remote source. One field, one scope, or all. It loads. */
+  commit(at: { scope?: string; field?: string } = {}): void {
     if (!this.#remote) return;
-    if (scope) this.#copyScope(this.#draft, this.#applied, scope);
+    if (at.field) this.#copyField(this.#draft, this.#applied, at.field);
+    else if (at.scope) this.#copyScope(this.#draft, this.#applied, at.scope);
     else this.#applied = structuredClone(this.#draft);
     this.#recompose();
   }
 
   /** Put the applied answers back over the draft — Discard, on a remote source.
-   *  One scope, or all. Every control over them is drawn the applied answer. */
-  discard(scope?: string): void {
+   *  One field, one scope, or all. Every control over them is drawn the applied answer. */
+  discard(at: { scope?: string; field?: string } = {}): void {
     if (!this.#remote) return;
     const before = new Set(this.selectedFields);
-    if (scope) this.#copyScope(this.#applied, this.#draft, scope);
+    if (at.field) this.#copyField(this.#applied, this.#draft, at.field);
+    else if (at.scope) this.#copyScope(this.#applied, this.#draft, at.scope);
     else this.#draft = structuredClone(this.#applied);
     for (const field of new Set([...before, ...this.selectedFields])) {
       this.dispatchEvent(new CustomEvent('selection-change', { detail: { field } }));
@@ -1035,6 +1037,16 @@ export class DataSource extends EventTarget {
       : [...new Set([...Object.keys(this.#applied.scopes), ...Object.keys(this.#draft.scopes)])];
     return ids.some((id) => JSON.stringify(answersOf(this.#applied.scopes[id]))
       !== JSON.stringify(answersOf(this.#draft.scopes[id])));
+  }
+
+  /** One field's answer, from one copy onto the other, in the scope that holds it. */
+  #copyField(from: Query, to: Query, field: string): void {
+    for (const scope of Object.values(to.scopes)) if (!scope.narrows) Reflect.deleteProperty(scope.readings, field);
+    for (const [id, scope] of Object.entries(from.scopes)) {
+      const held = scope.readings[field];
+      if (!held || scope.narrows) continue;
+      (to.scopes[id] ??= { holds: [...scope.holds], readings: {} }).readings[field] = structuredClone(held);
+    }
   }
 
   /** One scope's slice, from one copy onto the other. */

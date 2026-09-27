@@ -27,7 +27,6 @@ import {
 // TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-container/sherpa-container.js';
 import '../sherpa-container-header/sherpa-container-header.js';
-import '../sherpa-container-footer/sherpa-container-footer.js';
 import '../sherpa-accordion/sherpa-accordion.js';
 import '../sherpa-section-header/sherpa-section-header.js';
 import '../sherpa-stack/sherpa-stack.js';
@@ -50,6 +49,8 @@ export interface PanelValue {
 export interface PanelFilter extends OffersCustom {
   id: string;
   label: string;
+  /** The FIELD it answers, when its id is not that field — the header's Date. */
+  field?: string;
   options?: PanelValue[];
   select?: 'single' | 'multiple';
   /** The chip's leading glyph. Group and Sort carry the toolbar's own. */
@@ -155,6 +156,10 @@ export class SherpaFilterPanel extends SherpaElement {
     'data-open': { type: 'boolean', kind: 'style' },
     'data-locked': { type: 'boolean', kind: 'style' },
     'data-min-width': { type: 'string', kind: 'style' },
+    /* Set by a bound source: a change waits for its field's Apply, and which
+       FIELDS have one waiting. TRAP T-apply-and-discard-wait-for-a-change */
+    'data-remote': { type: 'boolean', kind: 'style' },
+    'data-pending': { type: 'string', kind: 'style' },
   } as const;
 
   static override observed = [
@@ -165,9 +170,9 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** Every drawn field, by `${scope}:${id}`. */
   #held = new Map<string, Held>();
-  /** What Apply last committed, per field — what Discard restores, and what
-   *  "nothing to apply" is measured against. */
-  #applied = new Map<string, FieldReading>();
+  /** What each field last said to — or was told by — the source, as JSON, so an
+   *  echo is not reported again. */
+  #said = new Map<string, string>();
   /** The scopes as last given. */
   #scopes: PanelScope[] = [];
   /** Each scope's Filters list: the removable fields it holds, then what it may add. */
@@ -183,8 +188,6 @@ export class SherpaFilterPanel extends SherpaElement {
     this.$('.to-toolbars')?.addEventListener('button-click', this.#onClose);
     this.$('.reset-all')?.addEventListener('button-click', this.#onResetAll);
     this.$('.search')?.addEventListener('input', this.#onSearch);
-    this.$('.apply')?.addEventListener('button-click', this.#onApply);
-    this.$('.discard')?.addEventListener('button-click', this.#onDiscard);
     // ONE listener for every drawn control — a field added later needs no wiring.
     this.$('.scopes')?.addEventListener('button-click', this.#onAction);
     this.$('.scopes')?.addEventListener('change', this.#onConditionalSwitch);
@@ -215,6 +218,7 @@ export class SherpaFilterPanel extends SherpaElement {
     if (name === 'data-heading') this.#syncHeading();
     else if (name === 'data-open') this.#enforceWidth();
     else if (name === 'data-saveable') this.#syncSaveable();
+    else if (name === 'data-pending' || name === 'data-remote') this.#syncPending();
   }
 
   override onConnect(): void {
@@ -269,7 +273,11 @@ export class SherpaFilterPanel extends SherpaElement {
     const reading: FieldReading = { picked: this.#picked(held) };
     if (conditions.length) reading.conditions = conditions;
     const typed = (menu?.conditionValue ?? '').trim();
-    if (typed) reading.text = typed;
+    if (typed) {
+      reading.text = typed;
+      // …with its OPERATOR, or "contains an" reads as "is an".
+      if (menu?.dataset['op']) reading.op = menu.dataset['op'] as NonNullable<FieldReading['op']>;
+    }
     return reading;
   }
 
@@ -297,7 +305,7 @@ export class SherpaFilterPanel extends SherpaElement {
           }
         }
       }
-      this.#applied.set(key, this.#readingOf(held));
+      this.#said.set(key, JSON.stringify(this.#readingOf(held)));
       this.#syncAnswered(held);
       return;
     }
@@ -460,8 +468,8 @@ export class SherpaFilterPanel extends SherpaElement {
        upgraded, so rows stamped before this are lost.
        TRAP T-custom-element-upgrade */
     this.#flushMenus();
-    this.#snapshot();
     this.#syncAllAnswered();
+    this.#syncPending();
   }
 
   /**
@@ -688,7 +696,8 @@ export class SherpaFilterPanel extends SherpaElement {
       .then(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))))
       .then(() => {
         this.#syncAllAnswered();
-        this.#snapshot();
+        // What the fields now say is what the source drew: no echo to report.
+        for (const [key, held] of this.#held) this.#said.set(key, JSON.stringify(this.#readingOf(held)));
       });
   }
 
@@ -919,8 +928,8 @@ export class SherpaFilterPanel extends SherpaElement {
       }
       this.#dropBuilt();
       this.#syncAnswered(built.held);
-      // Its Apply is the panel's. TRAP T-a-chip-menu-apply-is-the-panels-apply
-      this.#onApply();
+      // Its Apply is the field's change. TRAP T-a-chip-menu-apply-is-the-panels-apply
+      this.#report(built.held);
     } else {
       home?.dispatchEvent(new CustomEvent('menu-change', {
         bubbles: true, composed: true, detail: { values },
@@ -955,37 +964,33 @@ export class SherpaFilterPanel extends SherpaElement {
       .filter(Boolean);
   }
 
-  /** Remember every field's answer, so Discard can go back to it. */
-  #snapshot(): void {
-    this.#applied = new Map([...this.#held]
-      .filter(([, held]) => !arranges(kindOf(held.def)))
-      .map(([key, held]) => [key, this.#readingOf(held)]));
-    this.#syncDirty();
-  }
-
   /**
-   * Apply and Discard are OFF while no field differs from the last Apply.
-   * Will, 2026-09-26. Group and Sort apply as they are picked, so they never count.
-   * TRAP T-apply-and-discard-wait-for-a-change
+   * REMOTE: each changed field shows its own Apply and Discard. The source
+   * says which, by FIELD. TRAP T-apply-and-discard-wait-for-a-change
    */
-  #syncDirty(): void {
-    const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
-    const dirty = [...this.#applied].some(([key, applied]) => {
-      const held = this.#held.get(key);
-      return !!held && !same(this.#readingOf(held), applied);
-    });
-    this.$('.apply')?.toggleAttribute('disabled', !dirty);
-    this.$('.discard')?.toggleAttribute('disabled', !dirty);
+  #syncPending(): void {
+    const remote = this.hasAttribute('data-remote');
+    const pending = new Set((this.dataset['pending'] ?? '').split(' ').filter(Boolean));
+    for (const held of this.#held.values()) {
+      held.box.toggleAttribute('data-pending', remote && pending.has(held.def.field ?? held.def.id));
+    }
   }
 
-  /** A body or a condition row changed: re-read, once its rows have settled. */
-  #onEdited = (): void => {
+  /** A body or a condition row changed: report its field, once its rows have settled. */
+  #onEdited = (event: Event): void => {
+    const held = event.target instanceof HTMLElement ? this.#fieldOf(event.target) : undefined;
+    if (held) this.#edited.add(held);
     if (this.#editFrame != null) return;
     this.#editFrame = requestAnimationFrame(() => {
       this.#editFrame = null;
-      this.#syncDirty();
+      const done = [...this.#edited];
+      this.#edited.clear();
+      for (const one of done) this.#report(one);
     });
   };
+
+  /** The fields edited since the last frame. */
+  #edited = new Set<Held>();
 
   /** The pending re-read after an edit. */
   #editFrame: number | null = null;
@@ -1016,6 +1021,7 @@ export class SherpaFilterPanel extends SherpaElement {
        on WHAT THE CHIP IS, not on which container drew it.
        TRAP T-a-chip-knows-what-kind-it-is */
     this.#syncAnswered(held);
+    this.#report(held);
   };
 
   /** A Group or Sort chip reported. Add the scope, and pass it on. */
@@ -1048,6 +1054,13 @@ export class SherpaFilterPanel extends SherpaElement {
     if (save) return this.#requestSave(save);
     const clear = this.#pathFind(event, '.field-clear');
     if (clear) return this.#clearField(clear);
+    // REMOTE: one field's own Apply or Discard. TRAP T-apply-and-discard-wait-for-a-change
+    const apply = this.#pathFind(event, '.field-apply');
+    const discard = apply ? null : this.#pathFind(event, '.field-discard');
+    const held = (apply ?? discard) && this.#fieldOf((apply ?? discard)!);
+    if (!held) return;
+    const at = { scope: held.scope, id: held.def.id, field: held.def.field ?? held.def.id };
+    this.emit(apply ? 'filter-apply' : 'filter-discard', at);
   };
 
   /** The `Held` a CHIP belongs to.
@@ -1081,6 +1094,7 @@ export class SherpaFilterPanel extends SherpaElement {
     this.emit('filter-condition-change', {
       scope: held.scope, id: held.def.id, mode: on ? 'custom' : 'default',
     });
+    this.#report(held);
   }
 
   /** Put a field in custom mode, or take it out: its flag, its switch, its menu.
@@ -1117,7 +1131,6 @@ export class SherpaFilterPanel extends SherpaElement {
     held.box.toggleAttribute('data-answered', ticked || custom);
     this.#syncSaveable();
     this.#syncScopeFilters(held.scope);
-    this.#syncDirty();
   }
 
   /** Every field, after anything that could have changed an answer. */
@@ -1186,6 +1199,7 @@ export class SherpaFilterPanel extends SherpaElement {
       one.removeAttribute('data-current');
     }
     this.#syncAnswered(held);
+    this.#report(held);
   }
 
   /** The Add menu committed. The HOST owns the list; this is a request. */
@@ -1207,7 +1221,7 @@ export class SherpaFilterPanel extends SherpaElement {
             scope: held.scope, field: picked[0] ?? null,
           });
         }
-        this.#onApply();
+        this.#report(held);
       }
       return;
     }
@@ -1247,41 +1261,33 @@ export class SherpaFilterPanel extends SherpaElement {
     }
   };
 
-  /** APPLY commits every field at once — one event, not one per field. */
-  #onApply = (): void => {
-    this.#snapshot();
-    /* THE WHOLE ANSWER, including conditions — see `readings`. `values` rides
-       along for a host that only wants the ticks.
-       TRAP T-the-panel-reports-its-own-reading */
+  /**
+   * REPORT a change as it is made — ONE field, or every field on Reset all.
+   * No footer: locally it applies at once; over a remote source it is the
+   * draft, and the field's own Apply sends it. Will, 2026-09-27 (TODO 62).
+   * Only the CHANGED field: sending every field would switch one that is OFF
+   * back on. An echo of what the source just drew is not reported.
+   * TRAP T-the-panel-reports-its-own-reading
+   */
+  #report(held?: Held): void {
+    let readings = this.readings;
+    if (held) {
+      if (arranges(kindOf(held.def))) return;
+      const key = `${held.scope}:${held.def.id}`;
+      const reading = this.#readingOf(held);
+      const said = JSON.stringify(reading);
+      if (this.#said.get(key) === said) return;
+      this.#said.set(key, said);
+      readings = { [held.scope]: { [held.def.id]: reading } };
+    }
+    /* `values` rides along for a host that only wants the ticks. */
     this.emit('quick-filter-change', {
       scope: 'panel',
-      readings: this.readings,
+      readings,
       values: this.values,
       picked: this.values,
     });
-  };
-
-  /** DISCARD reverts to the last Apply — picks, rows and text — which is why it is not Cancel. */
-  #onDiscard = (): void => {
-    for (const [key, applied] of this.#applied) {
-      const held = this.#held.get(key);
-      if (!held) continue;
-      const want = new Set(applied.picked ?? []);
-      for (const one of held.values.querySelectorAll<HTMLElement>('.value')) {
-        if (this.#heldOfChip(one) === held) {
-          one.toggleAttribute('data-current', want.has(one.dataset['value'] ?? ''));
-        }
-      }
-      const menu = held.menu as (HTMLElement & {
-        conditions?: readonly FieldCondition[]; conditionValue?: string }) | undefined;
-      if (!menu) continue;
-      const rows = applied.conditions ?? [];
-      if (JSON.stringify(menu.conditions ?? []) !== JSON.stringify(rows)) menu.conditions = rows;
-      if ((menu.conditionValue ?? '').trim() !== (applied.text ?? '')) menu.conditionValue = applied.text ?? '';
-    }
-    this.#syncAllAnswered();
-    this.#onEdited();
-  };
+  }
 
   /** RESET ALL: every field in both scopes, Group and Sort too, then applied —
    *  as the toolbar's Reset is. Will, 2026-09-26. */
@@ -1304,7 +1310,7 @@ export class SherpaFilterPanel extends SherpaElement {
       }
     }
     this.#syncAllAnswered();
-    this.#onApply();
+    this.#report();
   };
 
   /** The header's switch back to the toolbars. */
