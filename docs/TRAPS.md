@@ -13511,6 +13511,14 @@ A field's answer goes to the scope that HOLDS it. One that no component scope
 holds lives at the View — and so reaches everything — which is right, and is
 why a test must `hold` the field in the grid's scope first.
 
+**A scope NO component answers is the page's, and trickles down with the
+View.** The Dashboard's "Critical only" View keeps `severity` in a `page`
+scope — no chip shows it, so no bar's report can clear it — and the first
+version of this fix made `page` a component scope nobody drew: the View
+filtered nothing. `compile()` now takes `components` (the scopes a bound
+component answers); only those stay apart. A bind or unbind that changes the
+set recompiles, when the scope answers anything.
+
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/query.ts`
 - Site: `test/e2e/reforged-provider-summary.spec.ts`

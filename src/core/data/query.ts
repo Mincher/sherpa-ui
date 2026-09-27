@@ -64,6 +64,10 @@ export interface CompileFacts {
   field?: (field: string) => Omit<FieldFacts, 'field'>;
   /** A saved filter's readings, by its id. */
   preset?: (id: string) => Readonly<Record<string, FieldReading>> | undefined;
+  /** The scopes a COMPONENT answers. One no component answers is the page's,
+   *  and trickles down with the View. Absent: every scope but the View is a
+   *  component's. TRAP T-only-the-view-trickles-down */
+  components?: ReadonlySet<string>;
 }
 
 /** A Query as the source runs it: one shared filter, and each one-component filter. */
@@ -134,7 +138,7 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
       for (const el of scope.narrows) (only[el] ??= []).push(...clauses);
     } else {
       shared.push(...clauses);
-      if (id === VIEW) view.push(...clauses);
+      if (id === VIEW || (facts.components && !facts.components.has(id))) view.push(...clauses);
       else {
         const own = andFilter(clauses);
         if (own) scoped[id] = own;

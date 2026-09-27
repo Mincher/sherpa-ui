@@ -110,6 +110,17 @@ test('a component scope compiles apart from the View: a page sees both, a summar
   assert.deepEqual(c.filter, ['and', ['region', 'eq', 'EMEA'], ['status', 'eq', 'active']]);
 });
 
+/* A scope NO component answers is the page's: a View's own axes with no chip
+   ("Critical only") reach every component. TRAP T-only-the-view-trickles-down */
+test('a scope no component answers trickles down with the View', () => {
+  const c = compile({ v: 1, scopes: {
+    page: { holds: [], readings: { severity: { picked: ['critical'] } } },
+    data: { holds: ['status'], readings: { status: { picked: ['active'] } } },
+  } }, { components: new Set(['data']) });
+  assert.deepEqual(c.view, ['severity', 'eq', 'critical']);
+  assert.deepEqual(Object.keys(c.scoped), ['data']);
+});
+
 /* ── Step 2: the source holds the Query ─────────────────────────────── */
 
 test('the source keeps each reading in the scope that holds its field, and compiles its filter from them', async () => {

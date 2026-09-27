@@ -1121,6 +1121,15 @@ export class DataSource extends EventTarget {
     }
   }
 
+  /** The scopes a bound component answers — every other one is the page's. */
+  #componentScopes(): Set<string> {
+    const out = new Set<string>();
+    for (const { scope } of this.#bound.values()) {
+      for (const s of Array.isArray(scope) ? scope : scope ? [scope] : []) if (s !== VIEW) out.add(s);
+    }
+    return out;
+  }
+
   /** Which scope each answered field's reading sits in. */
   #homes(): Map<string, string> {
     const out = new Map<string, string>();
@@ -1348,6 +1357,7 @@ export class DataSource extends EventTarget {
     const { filter, view, scoped, only } = compile(this.#applied, {
       field: (f) => this.#facts(f),
       preset: (id) => this.#presets.get(id),
+      components: this.#componentScopes(),
     });
     const parts = [...this.#parts.values()];
     const next = andFilter([...parts, ...(filter ? [filter] : [])]);
@@ -1697,6 +1707,7 @@ export class DataSource extends EventTarget {
       el.removeAttribute('data-locked');
       el.removeAttribute('data-remote');
     };
+    const had = this.#componentScopes();
     this.#bound.set(el, {
       id: options.id ?? (el.id || `bind-${++this.#binds}`),
       readonly: readonlyBind,
@@ -1709,6 +1720,7 @@ export class DataSource extends EventTarget {
       ...(options.deliver ? { deliver: options.deliver } : {}),
     });
 
+    this.#rescope(had);
     // TRAP T-signal-not-a-teardown-list — drops the BINDING; `once` leaves nothing.
     options.signal?.addEventListener('abort', () => this.unbind(el), { once: true });
 
@@ -1729,8 +1741,18 @@ export class DataSource extends EventTarget {
 
   /** Stop steering and stop populating this component. */
   unbind(el: Populatable): void {
+    const had = this.#componentScopes();
     this.#bound.get(el)?.off();
     this.#bound.delete(el);
+    this.#rescope(had);
+  }
+
+  /** A scope that gained or lost its last component changes who it reaches —
+   *  recompiled only when it answers something. TRAP T-only-the-view-trickles-down */
+  #rescope(had: ReadonlySet<string>): void {
+    const now = this.#componentScopes();
+    const moved = [...new Set([...had, ...now])].filter((s) => had.has(s) !== now.has(s));
+    if (moved.some((s) => s in this.#applied.scopes)) this.#recompose();
   }
 
   /** Every component currently bound. */
