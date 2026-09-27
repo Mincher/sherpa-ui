@@ -118,7 +118,7 @@
       /* TOOLBARS or PANEL. App chrome, like the nav pin: it survives a reload
          and a Context change, and dies with the session.
          TRAP T-panel-mode-hides-what-the-panel-answers */
-      filters: { mode: 'toolbars', records: null },
+      filters: { mode: 'toolbars', records: null, dashboard: null },
     });
     session.persist('/theme/mode');
     session.persist('/theme/density', { guard: (v) => ['compact', 'default', 'comfortable'].includes(v) });
@@ -144,9 +144,12 @@
       const flag = new URLSearchParams(location.search).get('remote');
       if (flag !== null) session.set('/debug/remote', flag !== '0');
     }
-    session.persist('/filters/records', {
-      guard: (v) => v === null || (!!v && typeof v === 'object' && typeof v.view === 'string'),
-    });
+    /* Each Context's kept Query, under its own name. TRAP T-navigating-sets-up-the-page */
+    for (const context of ['records', 'dashboard']) {
+      session.persist(`/filters/${context}`, {
+        guard: (v) => v === null || (!!v && typeof v === 'object' && typeof v.view === 'string'),
+      });
+    }
 
     /* Favourites and Recents are STORED ROWS, not Contexts, so a stored shape this
        release cannot read must be dropped rather than stamped into the rail. */

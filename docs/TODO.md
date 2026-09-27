@@ -251,6 +251,11 @@ so it sets up the data layer, answers every component, and restores the
 state. Provider P4 (definitions) and 70 (a view definition renders the page)
 are its halves. First: audit where it is done today, and list the gaps.
 
+**Audited 2026-09-27 — `PROVIDER-DESIGN.md` §10.** Two gaps fixed: a page with
+no data shut the panel (G1), and the Dashboard keeps its Query (G2). Open: Save
+view on Records (G3, TODO 15), and the Context DEFINITION that ends the
+repeated setup in every Context (G4) — the next design.
+
 ### `[ ]` 94 — A number (and range) filter menu needs Apply and Cancel buttons
 
 Will, 2026-09-27: *"Numerical (and range) filter menus need apply/cancel

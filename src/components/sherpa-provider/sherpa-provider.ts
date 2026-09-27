@@ -153,7 +153,9 @@ export class SherpaProvider extends SherpaElement {
   #onPanelClose = (event: Event): void => {
     this.#mode = 'toolbars';
     for (const bar of this.#bars()) this.#stepBack(bar);
-    if ((event as CustomEvent<{ reason?: string }>).detail?.reason === 'width' || this.#wanted === 'toolbars') return;
+    // A narrow window, or a page with no filters, is not a choice.
+    const reason = (event as CustomEvent<{ reason?: string }>).detail?.reason;
+    if (reason === 'width' || reason === 'page' || this.#wanted === 'toolbars') return;
     this.#wanted = 'toolbars';
     this.emit('filter-mode-change', { mode: 'toolbars' });
   };
@@ -176,6 +178,11 @@ export class SherpaProvider extends SherpaElement {
     this.#views?.abort();
     this.#views = null;
     this.#hear = null;
+    /* A page with NO data has no filters: the panel shuts — not the reader's
+       choice, so it opens again on the next page that has some. TRAP T-navigating-sets-up-the-page */
+    if (!Object.keys(this.#sources).length) {
+      for (const panel of this.#panels()) panel.close?.('page');
+    }
     // The Views are over the ONE source; a subtree of several names none.
     const [source, ...more] = Object.values(this.#sources);
     if (!options.views || !source || more.length) return Promise.resolve();

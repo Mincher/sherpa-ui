@@ -271,3 +271,34 @@ and all three need P3.
   They go only if "no provider means empty" is ruled for the grid.
 - **`DATA_PROPS` attributes** stay attributes: CSS reads them.
 
+---
+
+## 10. Navigating sets up the page — the audit (TODO 92)
+
+Will, 2026-09-27: *"When the app shell navigates to new content we shouldn't
+only be swapping the content area content/templates. We need to be getting and
+setting the definitions, data layer etc. to ensure all the correct filters are
+available, shown, and in the correct state."* Audited the same day.
+
+**Who sets up a page today:**
+
+| step | who |
+|---|---|
+| fetch the template, put it in the content area | the router (`index.html`) |
+| the header's title and icon | the router, from the nav row |
+| the header's chips and its View list | each Context — `header.populate(globalFilters(viewOptions(views), …))` |
+| the source; its fields, values, scope names, first holds, presets | each Context |
+| sources, Views, the kept Query, the start View | the provider — each Context calls `provide()` |
+| every component's data | the component asks |
+| toolbars or panel | the provider; the app keeps the choice (91) |
+| teardown | each Context's cleanup — `provide({ sources: {} })` |
+
+**The gaps, and what happened to each:**
+
+| gap | status |
+|---|---|
+| G1 — on a page with no data (Chat) the panel stayed open with the last page's filters | **fixed** — no sources shuts the panel with reason `page`, not the reader's choice; the next page with filters opens it again |
+| G2 — the Dashboard lost its filters on a trip away and back; it never passed the session, a key, or the URL's View to `provide()` | **fixed** — it does, under `/filters/dashboard` |
+| G3 — Save view works on the Dashboard only; Records' Save does nothing | open — TODO 15 |
+| G4 — every Context repeats the same setup: a source, its declarations, the header's chips, `provide()`, the teardown — and anything one forgets is a gap (G2 was one) | open — the **Context definition**: one JSON (its store, fields, scopes, Views, header chips, template) the router hands the provider, which sets up the page with no page code. With 70 (a view definition renders the page) and 68 (the Templater) |
+

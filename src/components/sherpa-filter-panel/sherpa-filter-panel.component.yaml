@@ -269,7 +269,7 @@ $extensions:
         description: Show the panel, unless the window is too narrow.
       - $type: method
         name: close
-        args: "reason: 'reader' | 'width' = 'reader'"
+        args: "reason: 'reader' | 'width' | 'page' = 'reader'"
         description: EVERY close reports, and says why. The width path called this directly
       - $type: method
         name: toggle

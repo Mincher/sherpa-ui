@@ -250,3 +250,34 @@ test('panel mode: Configure opens the panel and steps bars back; a later bar joi
   expect(r['heard']).toEqual(['panel', 'toolbars']);
   expect(r['reports']).toEqual([]);
 });
+
+/* A PAGE WITH NO DATA shuts the panel — not the reader's choice, so the next
+   page with filters opens it again. TRAP T-navigating-sets-up-the-page */
+test('a page with no data shuts the panel without changing the mode; the next page reopens it', async ({ page }) => {
+  await page.setViewportSize({ width: 1600, height: 900 });
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const provider = document.createElement('sherpa-provider');
+    const panel = document.createElement('sherpa-filter-panel');
+    panel.setAttribute('data-scope', 'view data');
+    provider.append(panel);
+    root.append(provider);
+    const heard = [];
+    provider.addEventListener('filter-mode-change', (e) => heard.push(e.detail.mode));
+    provider.filterMode = 'panel';
+    await provider.provide({ sources: { s: source(2, 'x') } });
+    await settle();
+    const first = panel.hasAttribute('data-open');
+    await provider.provide({ sources: {} });
+    await settle();
+    const empty = panel.hasAttribute('data-open');
+    await provider.provide({ sources: { s: source(3, 'y') } });
+    await settle();
+    return { first, empty, again: panel.hasAttribute('data-open'), heard, reports };
+  })()`) as Record<string, unknown>;
+  expect(r['first']).toBe(true);
+  expect(r['empty']).toBe(false);
+  expect(r['again']).toBe(true);
+  expect(r['heard']).toEqual([]);
+  expect(r['reports']).toEqual([]);
+});

@@ -341,7 +341,7 @@ export class SherpaFilterPanel extends SherpaElement {
    *  while only the header button emitted, so a narrow window left the panel
    *  gone and the host still in panel mode — no toolbars, no panel.
    *  TRAP T-every-close-reports-or-the-toolbars-stay-hidden */
-  close(reason: 'reader' | 'width' = 'reader'): void {
+  close(reason: 'reader' | 'width' | 'page' = 'reader'): void {
     if (!this.hasAttribute('data-open')) return;
     this.removeAttribute('data-open');
     this.#lastClose = reason;
@@ -1393,7 +1393,8 @@ export class SherpaFilterPanel extends SherpaElement {
     return this.#lastClose === 'width' && !this.hasAttribute('data-open');
   }
   /** How the panel last closed: by the reader, or for being too narrow. */
-  #lastClose: 'reader' | 'width' | null = null;
+  /** Why it last closed: the reader, a narrow window, or a page with no filters. */
+  #lastClose: 'reader' | 'width' | 'page' | null = null;
 
   /** The first match on an event's composed path. */
   #pathFind(event: Event, selector: string): HTMLElement | null {

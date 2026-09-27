@@ -41,7 +41,7 @@
     quick-filter-change — one field changed, or Reset all. detail: { scope, readings, values, picked }
     filter-apply — a changed field's Apply, remote only. detail: { scope, id, field }
     filter-discard — a changed field's Discard, remote only. detail: { scope, id, field }
-    filter-panel-close — the header's close button. detail: {}
+    filter-panel-close — it closed. detail: { reason: reader | width | page } — only a reader's is a choice
     filter-add-request — the Add button committed. detail: { scope, ids }
     filter-remove — a field's Remove. detail: { scope, id }
     group-change — a Group chip or Reset all, with its scope. detail: { field, scope }

@@ -17,7 +17,7 @@ import {
   alerts, CATEGORY_ORDER, OS_ORDER, DAY_ORDER, SEVERITY_ORDER, customerOrgs,
 } from './dashboard-data.js';
 
-export async function init(root) {
+export async function init(root, { session, view } = {}) {
   // Presets first, so a reader's saved views read as additions to them.
   let views = { ...DASHBOARD_VIEWS, ...loadSavedViews('dashboard') };
 
@@ -99,7 +99,11 @@ export async function init(root) {
      the library grows when a reader saves a view.
      TRAP T-a-provider-keeps-the-views */
   const provider = document.querySelector('sherpa-provider');
-  void provider?.provide({ sources: { alerts: source }, views: () => views });
+  /* …and keeps its Query for the session, on the View it was made on, as
+     Records does. TRAP T-navigating-sets-up-the-page */
+  const restored = provider?.provide({
+    sources: { alerts: source }, views: () => views, view, session, key: '/filters/dashboard',
+  });
   // Gone with the Context, so the next one's components never reach this source.
   page.signal.addEventListener('abort', () => provider?.provide({ sources: {} }), { once: true });
 
@@ -168,6 +172,7 @@ export async function init(root) {
   header?.addEventListener('view-favorite', (e) => console.log('view-favorite', e.detail));
   header?.addEventListener('data-refresh', () => console.log('data-refresh'));
 
+  await restored;
   await source.load();
 
   // The router calls whatever init() returns when it swaps away. ONE ABORT

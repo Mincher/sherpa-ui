@@ -13371,6 +13371,28 @@ never been bound.
 - Site: `test/unit/query.test.mjs`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 
+### T-navigating-sets-up-the-page
+
+**Moving to a page sets up its filters and data — not only its template.**
+TODO 92, audited 2026-09-27 (`PROVIDER-DESIGN.md` §10). Two things a page
+used to leave behind:
+
+- **A page with NO data shuts the panel** — `provide({ sources: {} })` closes
+  it with reason `page`, which is not the reader's choice: the mode is kept,
+  and the next page with filters opens the panel again. On Chat the panel had
+  stayed open, showing the last page's filters, which did nothing there.
+- **Every page with data keeps its Query**, under its own session key, on the
+  View it was made on. The Dashboard passed no session, key or View to
+  `provide()`, so its filters were lost on a trip away and back.
+
+Until a page is a DEFINITION the router hands over, each Context must pass
+`session`, a key and the URL's `view` to `provide()` itself — forgetting is
+the gap.
+
+- Site: `examples/contexts/dashboard.js`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `test/e2e/reforged-provider.spec.ts`
+
 ### T-the-provider-owns-the-panel-mode
 
 **TOOLBARS or PANEL is the provider's, for every page in its subtree.** TODO
