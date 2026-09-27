@@ -13329,6 +13329,31 @@ one object — so nothing is ever pending. A scope that narrows one component
 - Site: `test/e2e/reforged-remote-source.spec.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 
+### T-a-pending-chip-has-no-fill
+
+**A chip whose change is not applied yet is PENDING: the active purple EDGE,
+and NO fill.** Will, 2026-09-26 (TODO 46): a chip that goes straight to active
+before its change applies misleads the reader. A conditional chip is the same
+— it turns green only once applied.
+
+Only a change that WAITS can be pending, and after TODO 62 only a remote one
+waits: locally a pick applies at once and goes straight to active. So a chip
+is pending when its own OPEN menu holds a draft (`menu.dirty`, which is only
+ever true for a committing menu), or when its bound source lists its field in
+the bar's `data-pending` — a panel edit waiting for its Apply.
+
+The fill is a PIN (`'&[data-pending]': default` in state-pins.yaml, written
+three times so it outranks the on and the condition pins); the edge borrows
+`--sherpa-style-active-border-base-1`, as the AI chip's does. The BAR is the
+one writer of the chip's flag: two writers of one attribute each undo the
+other's answer.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
+- Site: `test/e2e/reforged-pending-chip.spec.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+
 ### T-a-condition-tip-counts-its-rows
 
 **A conditional chip's tooltip says how many conditions apply:** `1 condition

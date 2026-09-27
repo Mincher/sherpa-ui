@@ -160,6 +160,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-saveable',
     // Its source fetches from outside: menus wait for Apply. TRAP T-commit-follows-select-mode
     'data-remote',
+    // The FIELDS its source says are changed and not applied. TRAP T-a-pending-chip-has-no-fill
+    'data-pending',
   ];
 
   /** The filter defs this bar holds, in order. */
@@ -374,6 +376,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // `change` reaches here, being in the CHIP's light DOM.
     this.addEventListener('change', this.#onFoldedCountsChanged);
     this.addEventListener('menu-select', this.#onMenuSelect);
+    // A draft in an open menu, and its Apply or Cancel. TRAP T-a-pending-chip-has-no-fill
+    for (const type of ['input', 'change', 'condition-change', 'menu-open', 'menu-close', 'menu-change']) {
+      this.addEventListener(type, this.#queuePending);
+    }
     // A calendar commits through its own events — it has no Apply button.
     this.addEventListener('datetime-change', this.#onDatePicked);
     this.addEventListener('range-select', this.#onDatePicked);
@@ -547,6 +553,27 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       return;
     }
   }
+
+  /**
+   * PENDING: a chip whose change is not applied yet — a draft in its own open
+   * menu, or a field its source says waits (`data-pending`). THIS BAR is the
+   * one writer of the chip's flag. Locally a menu never waits, so nothing is
+   * ever pending there. Will, 2026-09-26 (TODO 46). TRAP T-a-pending-chip-has-no-fill
+   */
+  #syncPending(): void {
+    const waiting = new Set((this.dataset['pending'] ?? '').split(' ').filter(Boolean));
+    for (const chip of this.#chips()) {
+      const id = chip.dataset['id'] ?? '';
+      const field = this.#filters.find((f) => f.id === id)?.field ?? id;
+      const menu = chip.querySelector<HTMLElement & { dirty?: boolean }>('sherpa-menu');
+      chip.toggleAttribute('data-pending', !!menu?.dirty || waiting.has(field));
+    }
+  }
+
+  /** Re-read the pending flags once the event that moved a draft has landed. */
+  #queuePending = (): void => {
+    queueMicrotask(() => this.#syncPending());
+  };
 
   /**
    * drawReading(field, reading) — a bound source tells this bar one field's
@@ -765,6 +792,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
        deferred, so a host calling `available()` first had nothing to tick.
        TRAP T-the-add-menu-is-the-whole-list */
     this.#renderAvailable();
+    this.#syncPending();
     // "Save filter" follows what the rebuilt menus answer, once they have drawn.
     void this.#settled().then(() => { if (this.isConnected) this.#syncSaveable(); });
 
@@ -1019,6 +1047,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   override onChange(name?: string): void {
     // Local or remote decides which menus wait for Apply, so they are rebuilt.
     if (name === 'data-remote' && this.#filters.length) this.#render();
+    if (name === 'data-pending') this.#syncPending();
     this.#syncArrangement('group');
     this.#syncArrangement('sort');
     this.#syncFavouriteFromAttr();

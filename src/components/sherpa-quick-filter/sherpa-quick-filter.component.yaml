@@ -207,6 +207,14 @@ props:
       one field make a reader guess which is in force. Written by the host. TRAP
       T-the-view-chip-stays-on-the-header
   - $type: prop
+    name: data-pending
+    type: string
+    observed: false
+    kind: style
+    description: >-
+      changed, not yet applied: the active edge, no fill. Written by the bar. TRAP
+      T-a-pending-chip-has-no-fill
+  - $type: prop
     name: data-persistent
     type: string
     observed: false
@@ -248,6 +256,9 @@ states:
   - $type: state
     name: current
     selector: ":host([data-current])"
+  - $type: state
+    name: pending
+    selector: ":host([data-pending])"
   - $type: state
     name: ai
     selector: ":host([data-type=\"ai\"])"

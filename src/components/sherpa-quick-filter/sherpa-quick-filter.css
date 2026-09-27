@@ -104,6 +104,13 @@
   color: var(--sherpa-style-success-content-base, #00ad62);
 }
 
+/* PENDING: changed, not yet applied — the active EDGE, and no fill (its pin
+   keeps it default). TRAP T-a-pending-chip-has-no-fill */
+:host([data-pending]) :is(.body, .caret) {
+  border-width: var(--sherpa-border-width-sm, 1px);
+  border-color: var(--sherpa-style-active-border-base-1, #c046ff);
+}
+
 /* AI type carries the active mode's accent even when off. */
 :host([data-type="ai"]) :is(.body, .caret) {
   color: var(--sherpa-style-active-border-base-1, #c046ff);

@@ -57,6 +57,9 @@ export class SherpaQuickFilter extends SherpaElement {
     /* Written BY the chip: which condition it holds — `state.condition`.
        TRAP T-a-conditioned-chip-reads-as-success */
     'data-condition': { type: 'enum', kind: 'style', values: ['default', 'custom'] },
+    /* Changed, not yet applied: the active edge, no fill. Written by the BAR —
+       the one writer. TRAP T-a-pending-chip-has-no-fill */
+    'data-pending': { type: 'boolean', kind: 'style' },
     /* A filter PANEL is drawing this field instead, so the bar hides the chip.
        Written by the HOST. TRAP T-the-view-chip-stays-on-the-header */
     'data-panelled': { type: 'boolean', kind: 'style' },

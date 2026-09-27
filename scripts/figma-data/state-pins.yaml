@@ -24,6 +24,12 @@ sherpa-quick-filter:
   # success, never the plain on-tint. Will, 2026-09-26: info was not obvious enough.
   # TRAP T-a-conditioned-chip-reads-as-success
   '&[data-current][data-condition="custom"]': success
+  # PENDING: changed, not yet applied — NO fill, whatever it was. Its edge is the
+  # active one (the chip's CSS). It turns on, or green, only once applied.
+  # Will, 2026-09-26 (TODO 46). TRAP T-a-pending-chip-has-no-fill
+  '&[data-pending]': default
+  '&[data-current][data-pending]': default
+  '&[data-current][data-condition="custom"][data-pending]': default
 
   # The view took this field; reads as inactive, keeps its value.
   '&[data-superseded]': inactive

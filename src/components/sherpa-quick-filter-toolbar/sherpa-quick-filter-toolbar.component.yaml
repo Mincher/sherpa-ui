@@ -166,6 +166,14 @@ props:
       a filter PANEL is answering for this bar: AI, Reset, the panel toggle and Filters are hidden,
       and a `data` bar goes entirely. TRAP T-panel-mode-hides-what-the-panel-answers
   - $type: prop
+    name: data-pending
+    type: string
+    observed: true
+    kind: style
+    description: >-
+      the FIELDS changed and not yet applied, space-separated. Set by a bound source; each chip
+      wears the pending look, as one with a draft in its open menu does.
+  - $type: prop
     name: data-remote
     type: string
     observed: true
