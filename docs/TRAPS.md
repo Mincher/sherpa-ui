@@ -7059,8 +7059,7 @@ against what you last acted on, or read `picked` — which names only what
 changed — rather than `values`.
 
 - Site: `src/core/browser/persist-view.ts`
-- Site: `examples/contexts/records.js`
-- Site: `examples/contexts/dashboard.js`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
 
 ### T-the-header-chips-must-reach-the-query
 
@@ -9926,7 +9925,6 @@ of asking the question — `applyOptions` still owns the query, and `LoadResult`
 still returns rows.
 
 - Site: `src/core/data/aggregate.ts`
-- Site: `examples/contexts/dashboard.js`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 
 ### T-one-scale-for-every-chart
@@ -10526,7 +10524,6 @@ drops values outside the declared edges instead, because folding them into the
 end bands misreports both the count and the scale.
 
 - Site: `src/core/data/aggregate.ts`
-- Site: `examples/contexts/dashboard.js`
 
 ### T-a-series-has-a-value-at-every-point
 
@@ -13373,6 +13370,36 @@ never been bound.
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/query.ts`
 - Site: `test/unit/query.test.mjs`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+
+### T-a-provider-keeps-the-views
+
+**The provider keeps a page's Views: `provide({ sources, views, view,
+session, key })`.** Provider P4, 2026-09-27. It puts the session's Query back
+— only on the View it was made on — or else the URL's View (the FIRST View is
+the page as it loads, so it is not applied again); it hears a View pick from
+anything inside it, as the View chip reports one, and puts that View's Query
+on; it draws a View's own content into the element marked
+`data-view-content`, whose components ask like any other; and it keeps the
+Query in the session once per frame. `provide()` settles when the start Query
+is on, so a page awaits it before its first load.
+
+Before it, each Context wired `onViewPicked` itself with its own `applied`,
+`into` and `after`, and Records kept and restored the Query by hand; the
+Dashboard bound a View's content in an `after` hook. Now a View's JSON says it
+all: its Query, its content, and its `ui` — a content grid's columns and key
+are its CONFIGURATION (`T-configuration-is-not-data`), set through the View.
+
+Three things to know. `onViewPicked` sets the View chip through the element
+that REPORTED the pick — a host above it has no chips. The Views are over the
+subtree's ONE source; a subtree with several gets none. And the provider fires
+`view-change` with the View's id, and its content's elements by id, for a
+page that still wants them.
+
+- Site: `examples/contexts/dashboard.js`
+- Site: `examples/contexts/records.js`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `test/e2e/reforged-provider.spec.ts`
 
 ### T-a-component-default-outlives-a-view
 
@@ -13568,6 +13595,7 @@ generator reads `static config` for the component's properties.
 - Site: `scripts/generate-component-spec.mjs`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/core/ui/sherpa-element.ts`
+- Site: `examples/contexts/dashboard-views.js`
 
 ### T-a-component-declares-its-summary
 
@@ -13861,6 +13889,7 @@ lives in memory and dies with the page.
 - Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-records-persist.spec.ts`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
 
 ### T-an-empty-selection-never-wipes-a-condition
 

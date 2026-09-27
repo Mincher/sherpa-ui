@@ -20,12 +20,29 @@ anatomy:
       data-accepts: any
 capabilities:
   - $type: capability
+    api: js-property-mirror
+    description: read/write JS properties (view, elements). See $extensions.sherpa.jsProps.
+  - $type: capability
     api: js-methods
     description: callable from a view definition's state block (provide). See $extensions.sherpa.methods.
+events:
+  - $type: event
+    name: view-change
+    bubbles: true
+    composed: true
+    detail:
+      id: unknown
 $extensions:
   sherpa:
     methods:
       - $type: method
         name: provide
         args: "options: ProvideOptions"
-        description: Give this subtree its sources. Every component already asking is answered
+        description: Give this subtree its sources — and its Views. Every component already
+    jsProps:
+      - name: view
+        type: string
+        access: read
+      - name: elements
+        type: string
+        access: read

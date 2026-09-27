@@ -97,6 +97,12 @@ props:
     kind: content
     description: y-axis caption (shown when set)
   - $type: prop
+    name: data-bands
+    type: string
+    observed: false
+    kind: style
+    description: a number segment-field cut at these edges, "0,20,40" — a histogram
+  - $type: prop
     name: data-field
     type: string
     observed: false

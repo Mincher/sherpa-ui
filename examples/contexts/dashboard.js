@@ -6,17 +6,15 @@
  * - init — bind the dashboard Context — charts, tiles and legends — to one source
  */
 import {
-  ArrayStore, DataSource, VIEW_SCOPE, viewOptions, onViewPicked,
+  ArrayStore, DataSource, VIEW_SCOPE, viewOptions,
   loadSavedViews, saveViewAs,
-  // Aggregation lives in the data layer, not here. TRAP T-aggregation-is-data.
-  bandBy,
 } from '../../dist/index.js';
 import { globalFilters } from './global-filters.js';
 import { namePrompt } from './ask-name.js';
 import { DASHBOARD_VIEWS } from './dashboard-views.js';
 import { customerStore, customersReady } from './records-data.js';
 import {
-  alerts, CATEGORY_ORDER, OS_ORDER, DAY_ORDER, SEVERITY_ORDER, STORAGE_EDGES, customerOrgs,
+  alerts, CATEGORY_ORDER, OS_ORDER, DAY_ORDER, SEVERITY_ORDER, customerOrgs,
 } from './dashboard-data.js';
 
 export async function init(root) {
@@ -84,24 +82,18 @@ export async function init(root) {
   source.declareValues('day', DAY_ORDER);
   source.declareValues('severity', SEVERITY_ORDER);
 
-  // Two lifetimes, two AbortControllers. `page` lasts while this Context is
-  // mounted; `content` is shorter, because a Context's own elements are replaced
-  // and a source pushing into a detached element leaks.
+  // ONE lifetime: while this Context is mounted.
   const page = new AbortController();
-  let content = new AbortController();
 
+  /* THE PROVIDER has the source AND the Views: it hears a View pick, puts its
+     Query on, and draws a View's own content into `data-view-content` — whose
+     components ask for their data like the rest. A FUNCTION, not the object:
+     the library grows when a reader saves a view.
+     TRAP T-a-provider-keeps-the-views */
   const provider = document.querySelector('sherpa-provider');
-  provider?.provide({ sources: { alerts: source } });
+  void provider?.provide({ sources: { alerts: source }, views: () => views });
   // Gone with the Context, so the next one's components never reach this source.
   page.signal.addEventListener('abort', () => provider?.provide({ sources: {} }), { once: true });
-
-  const bindContent = (el, as) => {
-    if (el) source.bind(el, { readonly: true, as, signal: content.signal });
-  };
-  const dropContentBinds = () => {
-    content.abort();
-    content = new AbortController();
-  };
 
   // The gauge legend names THRESHOLD ZONES. No colour indices: a zone's colour
   // is a status, not a categorical series hue.
@@ -141,50 +133,6 @@ export async function init(root) {
   const viewBar = header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
   source.hold(VIEW_SCOPE, ['region', 'customer']);
 
-  // ── The VIEW toolbar: picking a saved view ─────────────────────────────
-  // `onViewPicked` reads the View chip's id and puts that view's JSON Query on;
-  // the records page makes the same call. One write re-summarises all eight
-  // components, and the header's chips are drawn from the SAME Query.
-  // A FUNCTION, not the object: the library grows when a reader saves a view.
-  // A view's own content goes into the region the template's charts occupy; a
-  // view WITHOUT content leaves them alone.
-  const contentRegion = root.querySelector('.sherpa-grid');
-
-  // A histogram, not a donut: storage is continuous. The last band owns its
-  // top edge. TRAP T-the-last-band-includes-its-top.
-  const byBand = (rows) => bandBy(rows, 'storage', STORAGE_EDGES);
-
-  onViewPicked(header, () => views, { source, elements: { header } }, {
-    into: contentRegion,
-    signal: page.signal,
-    // The view already on screen — without this the first header change of a
-    // session re-applies it and wipes the reader's pick.
-    // TRAP T-a-persistent-chip-reports-on-every-change.
-    applied: Object.keys(views)[0],
-    after: ({ rendered }) => {
-      // No content means the page's own charts and their binds stay.
-      if (!rendered) return;
-      dropContentBinds();
-
-      // Addressed by the ids the DEFINITION used — these elements did not
-      // exist when this page wired its binds. An unused id is simply absent.
-      bindContent(rendered.elements['hist'], byBand);
-      bindContent(rendered.elements['fullest'], (rows) => ({
-        key: 'id',
-        columns: [
-          { field: 'id', label: 'Device', type: 'number' },
-          { field: 'region', label: 'Region' },
-          { field: 'os', label: 'OS' },
-          { field: 'category', label: 'Category' },
-          { field: 'storage', label: 'Storage %', type: 'number' },
-        ],
-        // The source already filtered and sorted; re-sorting here would be a
-        // second opinion about the same query.
-        rows: rows.slice(0, 50),
-      }));
-    },
-  });
-
   // SAVE THIS VIEW — as JSON: the Query on screen and how its rows are arranged.
   // TRAP T-a-view-is-json
   const askViewName = namePrompt(root.querySelector('#save-view'), page.signal);
@@ -217,8 +165,5 @@ export async function init(root) {
   // The router calls whatever init() returns when it swaps away. ONE ABORT
   // covers every bind and the view-picker's listener; a list is a thing to
   // forget.
-  return () => {
-    page.abort();
-    content.abort();
-  };
+  return () => page.abort();
 }

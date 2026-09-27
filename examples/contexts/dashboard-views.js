@@ -54,8 +54,8 @@ export const DASHBOARD_VIEWS = {
         <sherpa-container data-col-span="full" data-row-span="4">
           <sherpa-container-header slot="header"
             data-heading="Storage used, by band"></sherpa-container-header>
-          <sherpa-barchart id="hist"
-            data-label="Devices per storage band"></sherpa-barchart>
+          <sherpa-barchart id="hist" data-label="Devices per storage band"
+            data-segment-field="storage" data-bands="0,20,40,60,80,100"></sherpa-barchart>
         </sherpa-container>
 
         <sherpa-container data-col-span="full" data-row-span="6">
@@ -70,6 +70,19 @@ export const DASHBOARD_VIEWS = {
       scopes: {
         page: { readings: { storage: { op: 'gt', text: '70' } } },
         view: { sort: [{ field: 'storage', direction: 'desc' }], group: null, search: '' },
+      },
+    },
+    // The grid's CONFIGURATION; its rows are asked for. TRAP T-configuration-is-not-data
+    ui: {
+      fullest: {
+        key: 'id',
+        columns: [
+          { field: 'id', header: 'Device', type: 'number' },
+          { field: 'region', header: 'Region' },
+          { field: 'os', header: 'OS' },
+          { field: 'category', header: 'Category' },
+          { field: 'storage', header: 'Storage %', type: 'number' },
+        ],
       },
     },
   },

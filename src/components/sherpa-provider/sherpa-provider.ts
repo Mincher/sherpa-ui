@@ -19,13 +19,23 @@ import { report } from '../../core/data/report.js';
 import { summarise, type SummarySpec } from '../../core/data/aggregate.js';
 import { bindSelection, type Selector } from '../../core/data/bind-selection.js';
 import { valueKey } from '../../core/data/store.js';
+import { onViewPicked, type ViewLibrary } from '../../core/browser/persist-view.js';
 import type { DataSource } from '../../core/data/data-source.js';
+import type { Query } from '../../core/data/query.js';
 import type { FieldReading } from '../../core/data/filter-state.js';
 import type { Populatable } from '../../core/ui/apply-state.js';
 
-/** What a provider is given: its sources, by name. */
+/** What a provider is given: its sources, by name — and, for a page with
+ *  Views, the Views over them, the one on screen, and where its Query is kept. */
 export interface ProvideOptions {
   sources: Record<string, DataSource>;
+  /** The Views, as JSON — or a function, for a library a reader adds to. */
+  views?: ViewLibrary | (() => ViewLibrary);
+  /** The View on screen at the start (the URL's). The FIRST View is the page as it loads. */
+  view?: string;
+  /** Where the Query outlives a reload — for this View only — under `key`. */
+  session?: { get(key: string): unknown; set(key: string, value: unknown): void };
+  key?: string;
 }
 
 /** The attribute a summary needs before it asks; without it a page populates it.
@@ -41,7 +51,7 @@ const SUMMARIES = new Set<DataAsk['shape']>(['aggregate', 'segments', 'series'])
 /** Each summary attribute, and the key it fills in a `SummarySpec`. */
 const SPEC_KEYS = [
   ['aggregate', 'data-aggregate'], ['field', 'data-field'], ['segment', 'data-segment-field'],
-  ['over', 'data-over-field'], ['bucket', 'data-bucket'],
+  ['over', 'data-over-field'], ['bucket', 'data-bucket'], ['bands', 'data-bands'],
 ] as const;
 
 /** A component that picks values, through its `picked` door. */
@@ -72,16 +82,83 @@ export class SherpaProvider extends SherpaElement {
     this.addEventListener('context-request', this.#onRequest);
   }
 
-  /** Give this subtree its sources. Every component already asking is answered
-   *  again — a Context that swaps its source swaps it for everything in it. */
-  provide(options: ProvideOptions): void {
+  /**
+   * Give this subtree its sources — and its Views. Every component already
+   * asking is answered again: a Context that swaps its source swaps it for
+   * everything in it. Settles once the kept Query, or the start View, is on.
+   * TRAP T-a-provider-keeps-the-views
+   */
+  provide(options: ProvideOptions): Promise<void> {
     this.#sources = { ...options.sources };
     for (const asked of this.#asked.values()) this.#answer(asked);
+    this.#views?.abort();
+    this.#views = null;
+    // The Views are over the ONE source; a subtree of several names none.
+    const [source, ...more] = Object.values(this.#sources);
+    if (!options.views || !source || more.length) return Promise.resolve();
+    this.#views = new AbortController();
+    return this.#openViews(source, options, this.#views.signal);
+  }
+
+  /** The View on screen. */
+  get view(): string | undefined {
+    return this.#view;
   }
 
   override onDisconnect(): void {
+    this.#views?.abort();
+    this.#views = null;
     for (const asked of this.#asked.values()) asked.unbind?.();
     this.#asked.clear();
+  }
+
+  /** Stops the Views' listeners when the sources change. */
+  #views: AbortController | null = null;
+  /** The View on screen. */
+  #view: string | undefined;
+
+  /**
+   * RESTORE, then HEAR and KEEP: the session's Query, only on the View it was
+   * made on — else the URL's View; a pick from the View chip, a nav row or a
+   * link puts its Query on; and the Query is kept once per frame.
+   * TRAP T-a-reload-replays-the-readers-answers · TRAP T-a-view-is-json
+   */
+  async #openViews(source: DataSource, options: ProvideOptions, signal: AbortSignal): Promise<void> {
+    const { views, session, key } = options;
+    const library = (): ViewLibrary => (typeof views === 'function' ? views() : views ?? {});
+    const first = Object.keys(library())[0];
+    this.#view = options.view ?? first;
+    const kept = key ? session?.get(key) as { view?: string; query?: Query } | undefined : undefined;
+    const start = this.#view ? library()[this.#view] : undefined;
+    if (kept?.query && kept.view === this.#view) await source.setQuery(kept.query);
+    else if (this.#view !== first && start?.query) await source.setQuery(start.query, { holds: 'keep' });
+    if (signal.aborted) return;
+    // Whatever has an id in this subtree NOW — a View's content brings its own.
+    const byId = (): Record<string, HTMLElement> =>
+      Object.fromEntries([...this.querySelectorAll<HTMLElement>('[id]')].map((el) => [el.id, el]));
+    onViewPicked(this, library, {
+      source,
+      get elements() { return byId(); },
+    }, {
+      signal,
+      // The View on screen already — a first pick of it would wipe what was kept.
+      // TRAP T-a-persistent-chip-reports-on-every-change
+      applied: this.#view ?? null,
+      into: this.querySelector<HTMLElement>('[data-view-content]'),
+      after: ({ id, rendered }) => {
+        this.#view = id;
+        this.emit('view-change', { id, ...(rendered ? { elements: rendered.elements } : {}) });
+      },
+    });
+    if (!key || !session) return;
+    let frame = 0;
+    const keep = (): void => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => session.set(key, { view: this.#view, query: source.query.applied }));
+    };
+    for (const type of ['selection-change', 'scope-change']) source.addEventListener(type, keep, { signal });
+    // A preset switched is a report, and no selection changes.
+    this.addEventListener('quick-filter-change', keep, { signal });
   }
 
   /** A request from inside: the NEAREST provider answers, so it stops here. */
@@ -216,6 +293,8 @@ export class SherpaProvider extends SherpaElement {
       });
       return undefined;
     }
+    // "0,20,40" — a histogram's edges, as numbers.
+    if (typeof spec['bands'] === 'string') spec['bands'] = spec['bands'].split(',').map(Number);
     if (asks.keepEmpty) spec['keepEmpty'] = true;
     return spec as unknown as SummarySpec;
   }

@@ -197,6 +197,12 @@ test('summarise: a series draws one line per segment, over the declared points',
     [['critical', [1, 0, 1], 1], ['warning', [0, 0, 1], 3]]);
 });
 
+test('summarise: a number segment cut at declared edges is a histogram', () => {
+  const rows = [{ s: 5 }, { s: 25 }, { s: 40 }, { s: 99 }];
+  const out = summarise(rows, { shape: 'segments', segment: 's', bands: [0, 20, 40, 100] });
+  assert.deepEqual(out.map((d) => d.value), [1, 1, 2]);
+});
+
 test('summarise: a declared date domain is cut to its bucket; a year steps across its end', () => {
   const domain = (f) => (f === 'created' ? ['2023-12-31', '2024-02-01'] : []);
   const out = summarise(SALES, { shape: 'aggregate', over: 'created', bucket: 'month' }, domain);

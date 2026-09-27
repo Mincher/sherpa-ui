@@ -400,7 +400,8 @@ export function onViewPicked(
       const report: ApplyReport = { missingElements: [], skipped: {} };
       const elements = targets.elements ?? {};
       // The View chip SHOWS it — a pick from a link or a nav row included.
-      const bar = event.currentTarget as { values?: Record<string, readonly string[]> } | null;
+      // The element that REPORTED the pick — a host above it has no chips.
+      const bar = (event.composedPath()[0] ?? event.currentTarget) as { values?: Record<string, readonly string[]> } | null;
       if (bar?.values && bar.values['view']?.[0] !== id) bar.values = { ...bar.values, view: [id] };
       void targets.source.setQuery(view.query, { holds: 'keep' }).then(() => {
         applyElements(view.ui ?? {}, elements, report);

@@ -11,7 +11,6 @@
  * - OS_ORDER — the OS categories in a fixed order, so each keeps its colour
  * - DAY_ORDER — The x-axis of the line chart — every day gets a point, quiet or not.
  * - SEVERITY_ORDER — the severities in a fixed order, so each line keeps its colour
- * - STORAGE_EDGES — The storage histogram's band edges.
  */
 
 const CATEGORIES = ['Disk', 'CPU', 'Memory', 'Network', 'Security', 'Services', 'Backup', 'Antivirus'];
@@ -76,9 +75,3 @@ export const DAY_ORDER = DAYS;
 
 /** the severities in a fixed order, so each line keeps its colour */
 export const SEVERITY_ORDER = SEVERITIES;
-
-/**
- * The storage histogram's band edges. `bandBy` reads these as boundaries, and
- * the LAST band owns its top edge — 100% lands in `81-100`.
- */
-export const STORAGE_EDGES = [0, 20, 40, 60, 80, 100];

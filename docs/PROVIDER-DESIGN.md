@@ -168,7 +168,7 @@ door for page code and tests, every component's events, the JSON Views.
 | P1 ✅ | `sherpa-provider`, `ContextRequestEvent`, the `source` key; a component that asks joins the source as `bind()` joins it. **Built `ffc48935`**: the grid asks for rows, the pager for state; Records drops their binds | — | `test/e2e/reforged-provider.spec.ts`, all three engines |
 | P2 ✅ | the summary shapes — `aggregate`, `segments`, `series` — declared by attributes (`SUMMARY_PROPS`) and answered by `summarise()`; a child reads the nearest declaration above it; a legend picks for its chart; `data-format` is `Intl.NumberFormatOptions` | Records' and the Dashboard's tile, chart and legend adapters, `money`, `overMonths`, `bindLegend`, the line legend's hide — pages −168 lines | `reforged-provider-summary.spec.ts`; `aggregate.test.mjs` |
 | P3 | the `scope` and `query` keys: bars, panel, grid headings and legends ask | `syncScopes`, the header listener, panel fill and routing, `showChip`, raise/lower glue | the Records filter suite |
-| P4 | the `definition` key: the View chip asks; the provider applies, saves and keeps the session Query | `onViewPicked` wiring and session code in each Context | the view tests |
+| P4 ✅ | `provide({ views, view, session, key })`: the provider restores the kept Query on its own View, hears a View pick, draws a View's content into `data-view-content`, and keeps the Query; a View's `ui` configures its content | `onViewPicked` wiring, Records' session keep and restore, the Dashboard's content binds — Records −37 lines, the Dashboard −55 | `reforged-provider.spec.ts`, the view tests |
 | P5 | `export` / `import` — the Query and Views out and in, as JSON | — | a round trip through JSON gives the same rows |
 | later | `template` (with 68), WebMCP (76) | — | — |
 
@@ -185,9 +185,9 @@ Records filter suite proves it:
 
 The size gate shows each step's deletions.
 
-**Left for P4, on purpose.** The Records gauge shows risk (`100 − mean(health)`), a bespoke
-summary a page binds by hand, which stays. A View's rendered content (the
-histogram, the fullest-devices grid) is bound by the page until P4.
+**Left on purpose.** The Records gauge shows risk (`100 − mean(health)`), a bespoke
+summary a page binds by hand, which stays. Saving a View still names it in the
+page's own dialog.
 
 ---
 

@@ -81,6 +81,7 @@ const KNOWN = {
   'sherpa-quick-filter-toolbar.offering': 'ok: available(defs) — what is left to add',
   'sherpa-quick-filter-toolbar.heldIds': 'ok: populate() / addFilters() / removeFilter()',
   'sherpa-quick-filter-toolbar.heldFields': 'ok: populate() / addFilters() / removeFilter() / drawScope()',
+  'sherpa-provider.view': 'ok: provide({ view }) / a View pick through the View chip',
   // The DEFS, each with the reading in force — what a second view draws from.
   // TRAP T-a-panel-builds-its-own-menus
   'sherpa-quick-filter-toolbar.held':

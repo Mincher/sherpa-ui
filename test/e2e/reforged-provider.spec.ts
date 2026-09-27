@@ -115,3 +115,51 @@ test('a component that leaves the page leaves its source; a new source reaches w
   expect(r['firstBound']).toBe(0);
   expect(r['secondBound']).toBe(1);
 });
+
+/* THE PROVIDER KEEPS THE VIEWS: it hears a View pick from inside, puts the
+   View's Query on, keeps the Query in the session, and puts it back — only on
+   the View it was made on. TRAP T-a-provider-keeps-the-views */
+test('a provider applies a View pick, keeps the Query, and restores it on its own View only', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const store = new Map();
+    const session = { get: (k) => store.get(k), set: (k, v) => store.set(k, v) };
+    const VIEWS = {
+      all: { label: 'All', query: { v: 1, scopes: { view: {} } } },
+      odd: { label: 'Odd', query: { v: 1, scopes: { view: { readings: { name: { picked: ['o1', 'o3'] } } } } } },
+    };
+    const provider = document.createElement('sherpa-provider');
+    const g = grid();
+    provider.append(g);
+    root.append(provider);
+    const src = source(4, 'o');
+    await provider.provide({ sources: { s: src }, views: VIEWS, session, key: '/q' });
+    await src.load();
+    await settle();
+    const before = drawn(g);
+    // A pick reported from inside, as the View chip reports it.
+    g.dispatchEvent(new CustomEvent('quick-filter-change', {
+      bubbles: true, composed: true, detail: { scope: 'bar', values: { view: ['odd'] } },
+    }));
+    await settle();
+    await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+    const picked = { rows: drawn(g), view: provider.view, kept: store.get('/q')?.view };
+    // A reload on the SAME View puts the kept Query back.
+    const again = source(4, 'o');
+    await provider.provide({ sources: { s: again }, views: VIEWS, view: 'odd', session, key: '/q' });
+    await again.load();
+    await settle();
+    const restored = drawn(g);
+    // On ANOTHER View the kept Query is not its own, so the View's is used.
+    const other = source(4, 'o');
+    await provider.provide({ sources: { s: other }, views: VIEWS, view: 'all', session, key: '/q' });
+    await other.load();
+    await settle();
+    return { before, picked, restored, other: drawn(g), reports };
+  })()`) as Record<string, unknown>;
+  expect(r['before']).toBe(4);
+  expect(r['picked']).toEqual({ rows: 2, view: 'odd', kept: 'odd' });
+  expect(r['restored']).toBe(2);
+  expect(r['other']).toBe(4);
+  expect(r['reports']).toEqual([]);
+});

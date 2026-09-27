@@ -8,7 +8,7 @@
  * - init — bind this Context to its source and wire every control; returns nothing
  */
 import {
-  DataSource, VIEW_SCOPE, SherpaToast, persistView, viewOptions, onViewPicked, spoofRemote,
+  DataSource, VIEW_SCOPE, SherpaToast, persistView, viewOptions, spoofRemote,
   reduceRows, saveFilterAs, loadSavedFilters, deleteSavedFilter, labelId,
 } from '../../dist/index.js';
 import { namePrompt } from './ask-name.js';
@@ -256,12 +256,9 @@ export async function init(root, { session, view, remote = false } = {}) {
      TRAP T-a-chip-filters-the-values-the-data-has */
   custField.populate(customerOrgs.map((v) => ({ value: v, label: v })));
 
-  /* Three components, ONE source: each READS (rows plus view state as data-*)
-     and WRITES (its noun-verb events steer the source). */
-
-  /* ONE AbortController for the whole Context — `bind`, `persistView` and
-     `onViewPicked` all take a `signal`. Without a teardown the source keeps
-     pushing rows into components the router has already removed. */
+  /* ONE AbortController for the whole Context — every bind and listener takes
+     its `signal`. Without a teardown the source keeps pushing rows into
+     components the router has already removed. */
   const page = new AbortController();
   const signal = page.signal;
 
@@ -377,7 +374,6 @@ export async function init(root, { session, view, remote = false } = {}) {
   grid.key = 'email';
   grid.actions = ROW_ACTIONS;
   const provider = document.querySelector('sherpa-provider');
-  provider?.provide({ sources: { records: source } });
   // Gone with the Context, so the next one's components never reach this source.
   signal.addEventListener('abort', () => provider?.provide({ sources: {} }), { once: true });
 
@@ -449,50 +445,17 @@ export async function init(root, { session, view, remote = false } = {}) {
   // Where each field lives just changed, and the Add notes say where.
   source.addEventListener('scope-change', offerAdds, { signal });
 
-  /* SAVED VIEWS — the header's View chip. A view is JSON: its Query goes onto
-     a clean slate and every chip is drawn from it, so its defaults show where a
-     reader can change them. Will, 2026-09-27. TRAP T-a-view-is-json */
-
-  /* The View on screen — what the session's kept answers belong to. */
-  let currentView = startView;
-
-  onViewPicked(header, RECORDS_VIEWS, { source, elements: { grid } }, {
-    signal,
-    /* The start view is on screen already. Without this the first Region or
-       Customer pick of a session re-applies it and wipes the pick.
-       TRAP T-a-persistent-chip-reports-on-every-change. */
-    applied: startView,
-    after: ({ id }) => { currentView = id; },
-  });
-
-  /* FILTERS SURVIVE A RELOAD, and a trip away and back — for this SESSION, and
-     only on the View they were made on. The session keeps the QUERY; a restore
-     puts it back and each bar is DRAWN from it, so the chips always show what
-     the rows are under. Will, 2026-09-24.
-     TRAP T-a-reload-replays-the-readers-answers · TRAP T-one-query-one-owner */
-  const FILTERS_KEY = '/filters/records';
-  let restoring = true;
-  let keepFrame = 0;
-  const keep = () => {
-    if (restoring) return;
-    // One write per frame, after every control has answered.
-    cancelAnimationFrame(keepFrame);
-    keepFrame = requestAnimationFrame(() => session?.set?.(FILTERS_KEY, {
-      view: currentView, query: source.query.applied,
-    }));
-  };
-  for (const type of ['selection-change', 'scope-change']) source.addEventListener(type, keep, { signal });
-  for (const bar of [headerBar, qft]) bar?.addEventListener('quick-filter-change', keep, { signal });
-  const kept = session?.get?.(FILTERS_KEY);
-  restored = (async () => {
-    // The bar has its chips before the source draws them.
-    await qftFilled;
-    // Both bars are bound to their scope, so the source draws them.
-    if (kept?.view === startView && kept.query) await source.setQuery(kept.query);
-    // The URL's View, here, so the host's pick after init finds it on screen.
-    else if (startView !== 'all') await source.setQuery(RECORDS_VIEWS[startView].query, { holds: 'keep' });
-    restoring = false;
-  })();
+  /* THE PROVIDER, given the source AND the Views: it binds every component
+     that asks, puts back the session's Query — only on the View it was made
+     on — or the URL's View, hears a View pick, and keeps the Query. AFTER the
+     bar has its chips, which the Query is drawn onto; and after `persistView`,
+     so a View's sort wins over a kept one. TRAP T-a-provider-keeps-the-views
+     TRAP T-a-reload-replays-the-readers-answers · TRAP T-a-view-is-json */
+  await qftFilled;
+  restored = provider?.provide({
+    sources: { records: source }, views: RECORDS_VIEWS, view: startView,
+    session, key: '/filters/records',
+  }) ?? Promise.resolve();
   await restored;
 
   await source.load();
