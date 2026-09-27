@@ -1396,6 +1396,7 @@ view toolbar has. A change naming no view is IGNORED rather than treated as "no
 view", because you are always in some view and the other chips on that bar fire
 the same event.
 
+- Site: `examples/contexts/dashboard.js`
 - Site: `src/core/browser/persist-view.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `examples/contexts/records.js`
@@ -13353,6 +13354,16 @@ nothing; one number under an operator is TYPED text (`{ op: 'gt', text: '2'
 }`), because picks on a number with no list build no clause. And the old
 views hid their filters in a `view` part no chip showed; that part is gone.
 
+
+7b, the Dashboard: its header answers the View scope, so a Region pick by hand
+filters the charts (it filtered nothing before — only a View could), and its
+own axes (severity, storage) sit in a `page` scope no bar answers. A host must
+`hold` its header's chips in the View scope, or a view drawn onto the bar
+removes them. `saveViewAs` saves JSON for a source with a Query, and a
+content view's `after` now gets `rendered` — the Capacity view's charts had
+never been bound.
+- Site: `examples/contexts/dashboard-views.js`
+- Site: `examples/contexts/dashboard.js`
 - Site: `examples/contexts/records-views.js`
 - Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
@@ -13759,6 +13770,7 @@ answer — removing a chip is a clear. The draw carries the WHOLE answer: an
 operator dropped reads "is not churned" as "churned", and a typed text
 dropped reads "contains an" as nothing.
 
+- Site: `examples/contexts/dashboard.js`
 - Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`

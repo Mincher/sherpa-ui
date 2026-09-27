@@ -23,7 +23,7 @@
  * - deleteSavedView — Forget one saved view.
  */
 import type { DataSource, ViewState } from '../data/data-source.js';
-import type { QueryDefaults } from '../data/query.js';
+import { VIEW, type Query, type QueryDefaults } from '../data/query.js';
 import { applyState } from '../ui/apply-state.js';
 import { parseViewMarkup } from './view-markup.js';
 import {
@@ -286,6 +286,8 @@ export interface ViewPick {
   view: SavedView;
   /** What could not be applied. Empty when everything landed. */
   report: ApplyReport;
+  /** The view's own content, once drawn — its elements by id, to bind. */
+  rendered?: { elements: Record<string, HTMLElement> };
 }
 
 /**
@@ -353,6 +355,7 @@ export function onViewPicked(
 
     /* TRAP T-content-first-original-once — content before snapshot. */
     const host = options.into;
+    let rendered: ViewPick['rendered'];
 
     if (typeof view.content === 'string') {
       /* PARSED, never assigned: this string came out of storage or off a
@@ -373,6 +376,7 @@ export function onViewPicked(
         const byId: Record<string, HTMLElement> = {};
         for (const el of host.querySelectorAll<HTMLElement>('[id]')) byId[el.id] = el;
         targets = { ...targets, elements: { ...targets.elements, ...byId } };
+        rendered = { elements: byId };
       }
     } else if (host && original) {
       /* No content of its own, so it wants the page's — RE-ATTACHED, not
@@ -381,7 +385,7 @@ export function onViewPicked(
     }
 
     const done = (report: ApplyReport): void => {
-      const pick: ViewPick = { id, view, report };
+      const pick: ViewPick = { id, view, report, ...(rendered ? { rendered } : {}) };
       options.after?.(pick);
       if (report.missingElements.length || Object.keys(report.skipped).length) {
         if (options.onIncomplete) options.onIncomplete(pick);
@@ -395,6 +399,9 @@ export function onViewPicked(
     if (view.query && targets.source?.setQuery) {
       const report: ApplyReport = { missingElements: [], skipped: {} };
       const elements = targets.elements ?? {};
+      // The View chip SHOWS it — a pick from a link or a nav row included.
+      const bar = event.currentTarget as { values?: Record<string, readonly string[]> } | null;
+      if (bar?.values && bar.values['view']?.[0] !== id) bar.values = { ...bar.values, view: [id] };
       void targets.source.setQuery(view.query, { holds: 'keep' }).then(() => {
         applyElements(view.ui ?? {}, elements, report);
         done(report);
@@ -453,7 +460,7 @@ export function saveViewAs(
   page: string,
   label: string,
   targets: {
-    source?: { state: ViewState };
+    source?: { state: ViewState; query?: { applied: Query } };
     elements?: Record<string, HTMLElement>;
   },
   reads: Record<string, readonly string[]> = {},
@@ -463,15 +470,30 @@ export function saveViewAs(
   if (!trimmed) return loadSavedViews(page, options);
 
   const views = loadSavedViews(page, options);
+  /* A source with a Query saves JSON — its Query and arrangement, plus the UI
+     the host names. One with none saves the old snapshot. TRAP T-a-view-is-json */
+  const { source } = targets;
+  const ui = captureView({ elements: targets.elements ?? {} }, reads).elements;
   views[labelId(trimmed)] = {
     label: trimmed,
-    snapshot: captureView(targets, reads),
+    ...(source?.query ? { query: viewQueryOf(source as { state: ViewState; query: { applied: Query } }) }
+      : { snapshot: captureView(targets, reads) }),
+    ...(source?.query && ui ? { ui } : {}),
     // TRAP T-view-content-is-a-view-definition — a built screen is remembered.
     ...(options.content ? { content: options.content } : {}),
   };
 
   writeSavedViews(page, views, options);
   return views;
+}
+
+/** What is on screen as a View's JSON: the applied Query, with the rows'
+ *  arrangement on the View scope. TRAP T-a-view-is-json */
+function viewQueryOf(source: { state: ViewState; query: { applied: Query } }): QueryDefaults {
+  const scopes: QueryDefaults['scopes'] = structuredClone(source.query.applied.scopes);
+  const { sort, group, search } = source.state;
+  scopes[VIEW] = { ...(scopes[VIEW] ?? { holds: [], readings: {} }), sort, group, search };
+  return { v: 1, scopes };
 }
 
 /** Forget one saved view. Returns what is left, for the same reason. */

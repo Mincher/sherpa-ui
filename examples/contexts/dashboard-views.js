@@ -1,54 +1,42 @@
 /**
- * The saved VIEWS the dashboard offers. Same `ViewSnapshot` shape as
- * `records-views.js`, so a link, a stored view and an MCP call all say it once.
+ * The saved VIEWS the dashboard offers — plain JSON, the same shape as
+ * `records-views.js`, so a link, a stored view and another service all say it
+ * once. TRAP T-a-view-is-json
  *
- * Each view sets BOTH `source.filter` (what the charts summarise) and the
- * header's chips (what the reader sees) — a filter nobody can see is a filter
- * nobody can undo.
+ * A view is its QUERY. The header's chips are the View scope, so a Region a
+ * view sets is ON its chip — a filter nobody can see is a filter nobody can
+ * undo. This page's own axes — severity, storage — have no chip, so they sit
+ * in a `page` scope that no bar answers, and no bar's report can clear them.
  *
  * Map:
  * - DASHBOARD_VIEWS — the dashboard's saved views, keyed by the id its View chip carries
  */
 
-/** @type {Record<string, { label: string, snapshot: import('../../dist/index.js').ViewSnapshot }>} */
+/** @type {import('../../dist/index.js').ViewLibrary} */
 export const DASHBOARD_VIEWS = {
   fleet: {
     label: 'Fleet overview',
-    // The BASELINE. Applying a view is a merge, so every field is stated — a
-    // view silent about the filter keeps the last view's one.
-    snapshot: {
-      v: 1,
-      source: { filter: undefined, sort: [], group: null, search: '', page: 1 },
-      elements: { header: { values: { view: ['fleet'] } } },
-    },
+    // The BASELINE: every answer clear, nothing arranged.
+    query: { v: 1, scopes: { view: { sort: [], group: null, search: '' } } },
   },
 
   critical: {
     label: 'Critical only',
-    snapshot: {
+    query: {
       v: 1,
-      source: {
-        filter: ['severity', 'eq', 'critical'],
-        sort: [], group: null, search: '', page: 1,
+      scopes: {
+        page: { readings: { severity: { picked: ['critical'] } } },
+        view: { sort: [], group: null, search: '' },
       },
-      // No chip for severity: it is this page's own axis, not a slice of the
-      // business.
-      elements: { header: { values: { view: ['critical'] } } },
     },
   },
 
   emea: {
     label: 'EMEA operations',
-    snapshot: {
+    // ON the Region chip, as the reader would pick it. TRAP T-a-chip-filters-the-values-the-data-has.
+    query: {
       v: 1,
-      source: {
-        filter: ['region', 'eq', 'EMEA'],
-        sort: [], group: null, search: '', page: 1,
-      },
-      // Chip and filter are one fact said twice — held together so the case
-      // cannot drift. `view` stays lowercase: it is a key into this object, not
-      // a record value. TRAP T-a-chip-filters-the-values-the-data-has.
-      elements: { header: { values: { view: ['emea'], region: ['EMEA'] } } },
+      scopes: { view: { readings: { region: { picked: ['EMEA'] } }, sort: [], group: null, search: '' } },
     },
   },
 
@@ -57,9 +45,9 @@ export const DASHBOARD_VIEWS = {
     /* The one view that is not the same eight charts over fewer rows: planning
        capacity names the devices that are nearly full, so it wants a table and
        a distribution. */
-    /* `content` is the view's own MARKUP — the same HTML an authored template
-       holds, parsed through the allow-list in core/view-markup.ts on the way
-       in. Its ids are what `snapshot.elements` addresses. */
+    /* `content` is the view's own MARKUP until the Templater (68) builds a view
+       from JSON — parsed through the allow-list in core/view-markup.ts on the
+       way in. Its ids are what this page binds. */
     content: `
       <div class="sherpa-grid">
         <!-- A histogram, not a donut: storage is continuous. -->
@@ -77,15 +65,12 @@ export const DASHBOARD_VIEWS = {
         </sherpa-container>
       </div>
     `,
-    snapshot: {
+    query: {
       v: 1,
-      source: {
-        filter: ['storage', 'gt', 70],
-        sort: [{ field: 'storage', direction: 'desc' }],
-        group: null, search: '', page: 1,
+      scopes: {
+        page: { readings: { storage: { op: 'gt', text: '70' } } },
+        view: { sort: [{ field: 'storage', direction: 'desc' }], group: null, search: '' },
       },
-      elements: { header: { values: { view: ['capacity'] } } },
     },
   },
 };
-

@@ -6,7 +6,7 @@
  * - init — bind the dashboard Context — charts, tiles and legends — to one source
  */
 import {
-  ArrayStore, DataSource, viewOptions, onViewPicked,
+  ArrayStore, DataSource, VIEW_SCOPE, viewOptions, onViewPicked,
   loadSavedViews, saveViewAs,
   // Aggregation lives in the data layer, not here. TRAP T-aggregation-is-data.
   countBy, bandBy, seriesBy, reduceRows, deltaPercent, bindSelection,
@@ -77,6 +77,7 @@ export async function init(root) {
   // computed by its own `as` adapter. Every bind is readonly — a chart shows
   // the data, only the header's toolbar steers it.
   const source = new DataSource({ store: new ArrayStore(alerts(), { key: 'id' }) });
+  source.declareField('storage', { type: 'number' });
 
   // Two lifetimes, two AbortControllers. `page` lasts while this Context is
   // mounted; `content` is shorter, because a Context's own elements are replaced
@@ -226,10 +227,29 @@ export async function init(root) {
     console.log('bar-click', e.detail);
   });
 
+  /* THE HEADER'S CHIPS ARE THE VIEW SCOPE — the source draws them, and they
+     answer it. Region and Customer are fields every alert carries; the Date
+     chip names none, so it narrows nothing. TRAP T-one-query-one-owner */
+  const viewBar = header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
+  if (viewBar) source.bind(viewBar, { readonly: true, steerOnly: true, scope: VIEW_SCOPE, signal: page.signal });
+  // The chips it holds, so a view drawn onto it keeps them.
+  const holdHeader = () => source.hold(VIEW_SCOPE, (viewBar?.heldIds ?? []).filter((id) => id !== 'view'));
+  holdHeader();
+  const HEADER_FIELDS = new Set(['region', 'customer']);
+  header?.addEventListener('quick-filter-change', (e) => {
+    // TRAP T-values-carries-two-shapes — the BAR's event.
+    if (e.detail?.scope !== 'bar') return;
+    const readings = {};
+    for (const [id, values] of Object.entries(e.detail.values ?? {})) {
+      if (HEADER_FIELDS.has(id) && values?.length) readings[id] = { picked: values };
+    }
+    source.answer(VIEW_SCOPE, readings);
+  }, { signal: page.signal });
+
   // ── The VIEW toolbar: picking a saved view ─────────────────────────────
-  // `onViewPicked` reads the View chip's id and applies that snapshot; the
-  // records page makes the same call. One write re-summarises all eight
-  // components, and the header's chips move from the SAME definition.
+  // `onViewPicked` reads the View chip's id and puts that view's JSON Query on;
+  // the records page makes the same call. One write re-summarises all eight
+  // components, and the header's chips are drawn from the SAME Query.
   // A FUNCTION, not the object: the library grows when a reader saves a view.
   // A view's own content goes into the region the template's charts occupy; a
   // view WITHOUT content leaves them alone.
@@ -270,33 +290,29 @@ export async function init(root) {
     },
   });
 
-  // SAVE THIS VIEW. `captureView` reads state back through the same API a
-  // definition writes it through. The `reads` map names which properties are
-  // view state — the header's chips are, a scroll position is not.
+  // SAVE THIS VIEW — as JSON: the Query on screen and how its rows are arranged.
+  // TRAP T-a-view-is-json
   const askViewName = namePrompt(root.querySelector('#save-view'), page.signal);
   header?.addEventListener('view-save', async () => {
     // The page's own dialog, never the browser's prompt(). Will, 2026-09-25.
     const label = await askViewName();
     if (!label) return;
     const id = label.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    // The saved view names ITSELF in the View chip, or picking it shows the one it was saved from.
-    const picked = { ...header.values, view: [id] };
-    views = {
-      ...views,
-      ...saveViewAs('dashboard', label, { source, elements: { header: { values: picked } } }, {
-        header: ['values'],
-      }),
-    };
-    // RE-POPULATE, THEN PUT THE CHIPS BACK: `populate` rebuilds the bar from
-    // the defs, wiping what the reader just picked. Read before, write after.
-    // Await populate(), NOT `rendered` — `rendered` resolved when the header
-    // first drew, so a restore hung off it runs before the rebuilt chips exist.
+    views = { ...views, ...saveViewAs('dashboard', label, { source }) };
+    /* RE-POPULATE, THEN DRAW THE QUERY BACK: `populate` rebuilds the bar from
+       the defs, wiping its chips. The Query is read BEFORE, because a rebuilt
+       bar's first report is empty. Await populate(), NOT `rendered` — that
+       resolved when the header first drew. */
+    const kept = source.query.applied;
     void Promise.resolve(
       header.populate({ ...headerConfig, filters: globalFilters(viewOptions(views, id), undefined, customerOrgs) }),
-    ).then(() => {
-      header.values = picked;
+    ).then(async () => {
+      holdHeader();
+      // The saved view names ITSELF in the View chip.
+      header.values = { view: [id] };
+      await source.setQuery(kept);
       // Reported, so the URL and the nav follow the view just saved.
-      header.querySelector('sherpa-quick-filter-toolbar')?.report();
+      viewBar?.report();
     });
   });
   header?.addEventListener('view-favorite', (e) => console.log('view-favorite', e.detail));
