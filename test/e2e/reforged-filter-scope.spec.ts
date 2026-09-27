@@ -272,7 +272,7 @@ test('a legend with `only` narrows its chart, never the grid beside it', async (
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     const got = new Map();
-    const bound = (name) => ({ populate: (rows) => got.set(name, rows.map((x) => x.os).sort().join('+')),
+    const bound = (name) => ({ id: name, populate: (rows) => got.set(name, rows.map((x) => x.os).sort().join('+')),
       addEventListener() {}, removeEventListener() {}, setAttribute() {}, removeAttribute() {},
       hasAttribute: () => false, getAttribute: () => null, dataset: {} });
     const chart = bound('chart');
@@ -293,11 +293,13 @@ test('a legend with `only` narrows its chart, never the grid beside it', async (
     await settle();
     const d = src.debugState();
     return { chart: got.get('chart'), grid: got.get('grid'), total: d.total,
-      shared: Object.keys(d.parts), own: Object.keys(d.ownParts) };
+      shared: Object.keys(d.parts), legend: d.query.scopes.legend, own: Object.keys(d.only) };
   })()`) as Record<string, unknown>;
   expect(r['chart']).toBe('linux+win');
   expect(r['grid']).toBe('linux+mac+mac+win');
   expect(r['total']).toBe(4);
   expect(r['shared']).toEqual([]);
-  expect(r['own']).toEqual(['legend']);
+  // A SCOPE in the Query, narrowing the chart alone. TRAP T-one-query-one-owner
+  expect(r['legend']).toEqual({ holds: ['os'], readings: { os: { picked: ['win', 'linux'] } }, narrows: ['chart'] });
+  expect(r['own']).toEqual(['chart']);
 });

@@ -28,6 +28,8 @@
  * - .setGroup — group by a field, or stop; a grid draws it, the source owns it
  * - .setFilter — Replace the WHOLE filter, clearing every contribution.
  * - .contribute — Own ONE NAMED PART — the COMPONENT scope.
+ * - .write — Write ONE scope's reading of ONE field — a component's own answer.
+ * - .reading — One scope's reading of one field, or undefined.
  * - .contributions — Every named part currently applied — the component-scope filters.
  * - .apply — Apply a whole control's READING of several fields, at one scope.
  * - .answer — ONE SCOPE'S WHOLE ANSWER — a bar's report.
@@ -125,6 +127,8 @@ export interface BindOptions {
   ignore?: readonly string[];
   /** Reshape the rows before they reach this component. TRAP T-adapter-lives-at-the-binding */
   as?: (rows: Row[], source: DataSource) => unknown;
+  /** The id a scope's `narrows` names this component by. Default: its own id. */
+  id?: string;
   /** The SCOPE this control is a view of: it is DRAWN each answer in it. A bar's
    *  report is its scope's whole answer, so a field raised out is not its to
    *  clear. A LIST is for a control that draws several — the filter panel. */
@@ -183,7 +187,9 @@ export class DataSource extends EventTarget {
       rows: 'page' | 'all';
       /** The rows array last handed to this component — see `#push`. */
       lastRows?: readonly Row[];
-      /** The ONLY-THIS-COMPONENT parts it was last pushed with — see `#push`. */
+      /** See BindOptions.id. */
+      id: string;
+      /** The filter narrowing ONLY this component it was last pushed with — see `#push`. */
       lastOwn?: string;
       /** See BindOptions.scope. */
       scope?: string | readonly string[];
@@ -427,34 +433,57 @@ export class DataSource extends EventTarget {
    *
    * TRAP T-contribute-beats-last-writer · TRAP T-a-filter-applies-down-its-scope
    */
-  contribute(key: string, filter: Filter | undefined, at: { only?: Populatable } = {}): void {
-    /* ONE COMPONENT ONLY: a legend's switched-off series narrows ITS chart, and
-       no other bound component. Kept out of the shared query and applied to
-       that component's rows as they are pushed. Its rows must be EVERY
-       matching row — filtering one page would be a lie about the total.
-       TRAP T-a-component-part-narrows-one-component */
-    if (at.only) {
-      const bind = this.#bound.get(at.only);
-      if (bind && bind.rows !== 'all') {
-        report({
-          code: 'component-part-on-a-page',
-          message: 'contribute: a one-component part needs a `rows: "all"` bind; it was not applied.',
-          at: { key },
-        });
-        return;
-      }
-      if (filter) this.#ownParts.set(key, { el: at.only, filter });
-      else this.#ownParts.delete(key);
-      this.#push(at.only);
-      return;
-    }
+  contribute(key: string, filter: Filter | undefined): void {
     if (filter) this.#parts.set(key, filter);
     else this.#parts.delete(key);
     this.#recompose();
   }
 
-  /** Parts that narrow ONE bound component, by key. TRAP T-a-component-part-narrows-one-component */
-  #ownParts = new Map<string, { el: Populatable; filter: Filter }>();
+  /**
+   * Write ONE scope's reading of ONE field — a component's own answer, which no
+   * other control shares. `only` makes the scope NARROW that one bound
+   * component: a legend's switched-off series filter ITS chart, and nothing
+   * else. Its rows must be EVERY matching row — one page would lie about the
+   * total. `undefined` removes the reading.
+   * TRAP T-a-component-part-narrows-one-component · TRAP T-one-query-one-owner
+   */
+  write(scope: string, field: string, reading: FieldReading | undefined, at: { only?: Populatable } = {}): void {
+    const bind = at.only ? this.#bound.get(at.only) : undefined;
+    if (reading && at.only && bind?.rows !== 'all') {
+      report({
+        code: 'component-part-on-a-page',
+        message: 'write: a scope that narrows one component needs a bound `rows: "all"` component.',
+        at: { scope, field },
+      });
+      return;
+    }
+    const entry = this.#scope(scope);
+    if (bind) entry.narrows = [bind.id];
+    if (reading && answers(reading)) {
+      entry.readings[field] = answerOf(reading);
+      if (!entry.holds.includes(field)) entry.holds = [...entry.holds, field];
+    } else {
+      delete entry.readings[field];
+      entry.holds = entry.holds.filter((f) => f !== field);
+    }
+    const narrows = entry.narrows ?? [];
+    this.#prune();
+    this.#recompose();
+    // The shared filter did not move, so no load will push it: push it here.
+    for (const [el, b] of this.#bound) if (narrows.includes(b.id)) this.#push(el);
+    this.dispatchEvent(new CustomEvent('selection-change', { detail: { field, scope } }));
+  }
+
+  /** One scope's reading of one field, or undefined. A copy. */
+  reading(scope: string, field: string): FieldReading | undefined {
+    const held = this.#applied.scopes[scope]?.readings[field];
+    return held ? structuredClone(held) : undefined;
+  }
+
+  /** What `compile` narrows each bound component by, alone — by bind id. */
+  #only: Record<string, Filter> = {};
+  /** Binds made, for an id when the element has none. */
+  #binds = 0;
 
   /** Every named part currently applied — the component-scope filters. */
   get contributions(): string[] {
@@ -606,10 +635,7 @@ export class DataSource extends EventTarget {
        an or-chain over two owners — has no picked values and no typed text, so
        this deleted the reading and the filter never applied.
        TRAP T-many-conditions-are-one-reading */
-    const answered = picked.length > 0
-      || (next.text ?? '').trim() !== ''
-      || (next.conditions ?? []).length > 0;
-    this.#setReading(field, answered ? next : undefined);
+    this.#setReading(field, answers(next) ? next : undefined);
     this.#recompose();
     // AFTER the requery, so a listener sees the state the rows were fetched for.
     this.dispatchEvent(new CustomEvent('selection-change', { detail: { field } }));
@@ -707,14 +733,14 @@ export class DataSource extends EventTarget {
 
   /** Write one field's reading at its home, or remove it. */
   #setReading(field: string, reading: FieldReading | undefined): void {
-    for (const scope of Object.values(this.#applied.scopes)) delete scope.readings[field];
+    for (const scope of Object.values(this.#applied.scopes)) if (!scope.narrows) delete scope.readings[field];
     if (reading) this.#scope(this.#home(field)).readings[field] = reading;
     this.#prune();
   }
 
   /** Forget every reading; the holds stay. */
   #clearReadings(): void {
-    for (const scope of Object.values(this.#applied.scopes)) scope.readings = {};
+    for (const scope of Object.values(this.#applied.scopes)) if (!scope.narrows) scope.readings = {};
     this.#prune();
   }
 
@@ -722,6 +748,7 @@ export class DataSource extends EventTarget {
    *  still applies once, so the filter does not change. */
   #rehome(): void {
     for (const [id, scope] of Object.entries(this.#applied.scopes)) {
+      if (scope.narrows) continue;
       for (const [field, reading] of Object.entries(scope.readings)) {
         const home = this.#home(field);
         if (home === id) continue;
@@ -786,8 +813,9 @@ export class DataSource extends EventTarget {
    */
   scopeOf(field: string): string | null {
     if (this.holds(VIEW, field)) return VIEW;
+    // A scope that narrows ONE component is that component's alone.
     for (const [name, scope] of Object.entries(this.#applied.scopes)) {
-      if (scope.holds.includes(field)) return name;
+      if (!scope.narrows && scope.holds.includes(field)) return name;
     }
     return null;
   }
@@ -891,8 +919,8 @@ export class DataSource extends EventTarget {
       presets: [...this.#presets.keys()],
       selections: Object.fromEntries(this.selectedFields.map((f) => [f, this.selection(f)])),
       parts: Object.fromEntries(this.#parts),
-      // …and the parts that narrow ONE component, by key.
-      ownParts: Object.fromEntries([...this.#ownParts].map(([k, p]) => [k, p.filter])),
+      // …and what narrows ONE component alone, by bind id.
+      only: this.#only,
       scopes: Object.fromEntries(this.scopes.map((id) => [id, this.scope(id)])),
       offers: Object.fromEntries(this.#offers),
       fields: Object.fromEntries(this.#fields),
@@ -900,7 +928,7 @@ export class DataSource extends EventTarget {
       // that narrows nothing. TRAP T-a-record-has-a-time-of-its-own
       time: this.store.time ?? null,
       bound: [...this.#bound.values()].map((e) => ({
-        rows: e.rows, readonly: e.readonly, steerOnly: e.steerOnly,
+        id: e.id, rows: e.rows, readonly: e.readonly, steerOnly: e.steerOnly,
       })),
       loaded: this.#loaded,
     };
@@ -909,10 +937,11 @@ export class DataSource extends EventTarget {
   /** Compile the Query under every named part, and load. The ONE place the
    *  filter is made. TRAP T-one-query-one-owner */
   #recompose(): void {
-    const { filter } = compile(this.#applied, {
+    const { filter, only } = compile(this.#applied, {
       field: (f) => this.#facts(f),
       preset: (id) => this.#presets.get(id),
     });
+    this.#only = only;
     this.#filter = andFilter([...this.#parts.values(), ...(filter ? [filter] : [])]);
     this.#requery();
   }
@@ -1108,6 +1137,7 @@ export class DataSource extends EventTarget {
       el.removeAttribute('data-locked');
     };
     this.#bound.set(el, {
+      id: options.id ?? (el.id || `bind-${++this.#binds}`),
       readonly: readonlyBind,
       steerOnly: options.steerOnly ?? false,
       off,
@@ -1137,8 +1167,6 @@ export class DataSource extends EventTarget {
   unbind(el: Populatable): void {
     this.#bound.get(el)?.off();
     this.#bound.delete(el);
-    // Its OWN parts go with it. TRAP T-a-component-part-narrows-one-component
-    for (const [key, part] of this.#ownParts) if (part.el === el) this.#ownParts.delete(key);
   }
 
   /** Every component currently bound. */
@@ -1293,16 +1321,16 @@ export class DataSource extends EventTarget {
     // TRAP T-no-op-load-guard
     // TRAP T-adapter-lives-at-the-binding — guard the ROWS ARRAY, not a payload.
     const base = entry?.rows === 'all' ? this.#allRows : this.#result.rows;
-    /* ITS OWN parts, on top of the shared query — this component's only.
+    /* What narrows THIS component alone, on top of the shared query.
        TRAP T-a-component-part-narrows-one-component */
-    const own = [...this.#ownParts.values()].filter((p) => p.el === el).map((p) => p.filter);
-    const ownKey = JSON.stringify(own);
+    const own = entry ? this.#only[entry.id] : undefined;
+    const ownKey = JSON.stringify(own ?? null);
     if (entry && entry.lastRows === base && entry.lastOwn === ownKey) return;
     if (entry) {
       entry.lastRows = base;
       entry.lastOwn = ownKey;
     }
-    const pushRows = own.length ? filterRows(base, andFilter(own)) : base;
+    const pushRows = own ? filterRows(base, own) : base;
 
     // populate() waits for the first render itself, so a component bound
     // before it upgraded still gets its rows.
@@ -1344,6 +1372,14 @@ function mergeInto(el: Populatable, path: string, value: unknown): unknown {
   }
   node[segments[segments.length - 1]!] = value;
   return host[DRAFT];
+}
+
+/** Does a reading answer anything? CONDITIONS count — a field answered only by
+ *  rows has no picks and no text. TRAP T-many-conditions-are-one-reading */
+function answers(reading: FieldReading): boolean {
+  return (reading.picked ?? []).length > 0
+    || (reading.text ?? '').trim() !== ''
+    || (reading.conditions ?? []).length > 0;
 }
 
 /** The ANSWER keys of a reading only — a bar's reading also carries its label

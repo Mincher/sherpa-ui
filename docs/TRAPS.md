@@ -13618,13 +13618,15 @@ filtering. They should only affect their chart."* `bindSelection(…, { reach:
 bound to that ONE source obeys every part, so switching a series off in the
 bar chart's legend narrowed the grid, the metrics and the donut too.
 
-So a part can name the ONE bound component it narrows:
-`source.contribute(key, filter, { only: el })`, and `bindSelection(…, { only })`
-passes it. Such a part is kept OUT of the shared query and applied to that
-component's rows as they are pushed (`#push`), and the push guard re-pushes
-when the component's own parts change. The component must be bound
-`rows: 'all'` — filtering one PAGE would lie about its total — so a part on a
-paged bind is refused and reported. A legend passes its chart, the element
+So a legend's answer is a SCOPE in the Query that `narrows` its one chart:
+`source.write(scope, field, reading, { only: el })`, which
+`bindSelection(…, { only })` calls. `compile()` keeps it out of the shared
+filter and returns it under `only[bindId]`; `#push` applies it to that
+component's rows, and the push guard re-pushes when it changes. A bind's id is
+`bind({ id })`, else the element's own id. The component must be bound
+`rows: 'all'` — filtering one PAGE would lie about its total — so a write for a
+paged bind is refused and reported. A narrowing scope is its component's
+alone: `scopeOf()` skips it, so a field-keyed `select()` never lands there. A legend passes its chart, the element
 whose `legend` slot it sits in. Measured on Records: the bar chart 4 → 3 bars,
 the grid stays at 100, the donut at 4 slices.
 
@@ -13671,10 +13673,13 @@ saved filters are `presets` in its scope, on or off; their readings sit in
 the source's library (`declarePreset`), never in the Query.
 Step 3: the session keeps the Query; `setQuery` restores it and draws each
 bound bar (`drawScope`) — see `T-a-reload-replays-the-readers-answers`.
+5a: a legend's answer is a scope that `narrows` its chart (`source.write`);
+`ownParts` is gone, and the legend now survives a reload with the rest.
 
 - Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/query.ts`
 - Site: `src/data.ts`
+- Site: `test/e2e/reforged-filter-scope.spec.ts`
 - Site: `test/unit/query.test.mjs`
