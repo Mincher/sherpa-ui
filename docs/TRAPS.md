@@ -50,6 +50,15 @@ around it with a deferred replay queue (`customLabels`), holding property writes
 until after the whole run is appended. `renderItems()` avoids it by construction:
 attributes only, written before append.
 
+**Since 2026-09-27 no host queues.** `SherpaElement.clone()` IMPORTS its copy
+into the page's document (`document.importNode`), so every component in it
+upgrades at once; the grid imports its heading cells the same way; and
+`menuFor()` makes a menu with `createElement`, already upgraded. A method a
+host calls before appending — a menu's `items()` — now just works, and the
+three `#pendingItems` queues are gone. A copy made with `cloneNode` from a
+template's content still lives in its inert document and does NOT upgrade —
+`customElements.upgrade()` cannot help it there.
+
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`

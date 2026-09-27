@@ -383,7 +383,9 @@ export class SherpaDataGrid extends SherpaElement {
     // Keep the fixed leading select-head <th>; rebuild only the dynamic cells.
     headRow.querySelectorAll('.head-cell').forEach((el) => el.remove());
     this.#shownColumns().forEach((col, i) => {
-      const th = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      /* IMPORTED, not cloned: a copy in the page's document upgrades now, so
+         its menu takes its items at once. TRAP T-custom-element-upgrade */
+      const th = document.importNode(tpl.content.firstElementChild!, true) as HTMLElement;
       this.upgradeClonedIcons(th);
       th.dataset['field'] = col.field;
       if (col.type) th.dataset['type'] = col.type;
@@ -427,8 +429,6 @@ export class SherpaDataGrid extends SherpaElement {
     const actionsHead = headRow.querySelector('.actions-head');
     if (actionsHead) headRow.appendChild(actionsHead);
 
-    // Every heading is in the table now, so its menu has upgraded.
-    this.#flushItems();
     this.#flushChains();
 
     this.#renderFilterRow();
@@ -647,32 +647,13 @@ export class SherpaDataGrid extends SherpaElement {
        its own `data-select`. Stamping rows here is what let a column heading
        and a filter chip end up with different markup over the same field.
        TRAP T-one-field-one-filter-menu */
-    this.#pendingItems.push([
-      menu,
-      values.map((value) => ({
-        value,
-        selected: on.has(value),
-        available: present.has(value),
-      })),
-    ]);
+    (menu as HTMLElement & { items?: (i: unknown[]) => void }).items?.(values.map((value) => ({
+      value,
+      selected: on.has(value),
+      available: present.has(value),
+    })));
   }
 
-  /** Menus whose items wait for their heading to enter the table. */
-  #pendingItems: Array<[HTMLElement, unknown[]]> = [];
-
-  /**
-   * Hand each waiting menu its items.
-   *
-   * A cloned `<sherpa-menu>` upgrades only on entering the page, so an
-   * `items()` call made while its heading was detached stamps nothing.
-   * TRAP T-custom-element-upgrade
-   */
-  #flushItems(): void {
-    for (const [menu, items] of this.#pendingItems) {
-      (menu as HTMLElement & { items?: (i: unknown[]) => void }).items?.(items);
-    }
-    this.#pendingItems = [];
-  }
 
   /** The WHOLE column's values, by field — see `data-column-values`. */
   #columnValues = new Map<string, string[]>();

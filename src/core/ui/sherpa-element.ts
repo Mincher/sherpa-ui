@@ -527,7 +527,10 @@ export abstract class SherpaElement extends HTMLElement {
     // `content` is absent on a non-<template>, so a wrong selector fails here.
     const first = tpl?.content?.firstElementChild;
     if (!first) return null;
-    const node = first.cloneNode(true) as T;
+    /* IMPORTED into the page's document, not cloned in the template's inert
+       one: every component in the copy upgrades NOW, so a host may call its
+       methods before it is appended. TRAP T-custom-element-upgrade */
+    const node = document.importNode(first, true) as unknown as T;
     this.upgradeClonedIcons(node);
     return node;
   }

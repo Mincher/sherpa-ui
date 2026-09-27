@@ -810,8 +810,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       }
     }
 
-    // The MENUS, now their chips are in the list.
-    this.#flushItems();
     for (const [id, reading] of Object.entries(kept)) this.#keepAnswer(id, reading);
 
     /* THE ADD MENU LISTS WHAT IS HELD, so it follows the run. `populate()` is
@@ -860,13 +858,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
     /* THE MENU draws its own items, from the DATA handed to it: it picks the
        control from `data-select` and sorts the unreachable below a divider.
-
-       `items()`, not `populate()`: this chip is a detached clone, so its menu
-       has not upgraded and an awaited populate would never settle.
-       TRAP T-custom-element-upgrade */
+       `menuFor` MADE it, so it has upgraded and takes them now; it stamps
+       them when it renders. TRAP T-custom-element-upgrade */
     if (items.length) {
-      this.#pendingItems.push([
-        menu,
+      (menu as HTMLElement & { items?: (i: unknown[]) => void }).items?.(
         items.map((item) => ({
           // A Filters row's own flags — a child menu, no box, a count — go too.
           ...item,
@@ -879,7 +874,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
           ...(item.note ? { note: item.note } : {}),
           ...(item.section ? { section: item.section } : {}),
         })),
-      ]);
+      );
     }
 
     this.#addRemove(chip, menu, def);
@@ -914,23 +909,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** The pending re-report after a condition row rebuilt. */
   #conditionFrame: number | null = null;
 
-  /** Menus whose items wait for their chip to enter the list. */
-  #pendingItems: Array<[HTMLElement, unknown[]]> = [];
-
-  /**
-   * Hand each waiting menu its items.
-   *
-   * A cloned `<sherpa-menu>` upgrades only on entering the page, so an
-   * `items()` call made while it was detached stamps nothing and is lost. Any
-   * caller of `#addMenu` calls this once its host is in the document.
-   * TRAP T-custom-element-upgrade
-   */
-  #flushItems(): void {
-    for (const [menu, items] of this.#pendingItems) {
-      (menu as HTMLElement & { items?: (i: unknown[]) => void }).items?.(items);
-    }
-    this.#pendingItems = [];
-  }
 
   /**
    * Carry one chip's op, typing and rows into its REBUILT menu. Until that menu
@@ -1707,8 +1685,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       commit: true,
       options: filtersMenuItems(added, offer),
     });
-    // Its host is already in the page, so the items can go now.
-    this.#flushItems();
     add.querySelector<HTMLElement>('sherpa-menu')?.toggleAttribute('data-search', true);
     this.#syncOverflowActive();
     this.#syncSaveable();
@@ -2009,8 +1985,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       zone.appendChild(this.#organiseChip('sort', 'Sort',
         SherpaQuickFilterToolbar.#icons.sortNone, cols(sort, on.sort), on.sort));
     }
-    // Both chips are in the zone now, so their menus have upgraded.
-    this.#flushItems();
   }
 
   /** One organise chip: a menu chip with single-select rows. */

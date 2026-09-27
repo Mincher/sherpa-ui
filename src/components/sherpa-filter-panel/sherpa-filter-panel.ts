@@ -368,7 +368,6 @@ export class SherpaFilterPanel extends SherpaElement {
   #draw(): void {
     const region = this.$('.scopes');
     if (!region) return;
-    this.#pending = [];
     this.#held.clear();
     region.replaceChildren();
 
@@ -478,7 +477,6 @@ export class SherpaFilterPanel extends SherpaElement {
     /* THE MENUS ARE IN THE PAGE NOW. A detached `<sherpa-menu>` has not
        upgraded, so rows stamped before this are lost.
        TRAP T-custom-element-upgrade */
-    this.#flushMenus();
     this.#syncAllAnswered();
     this.#syncPending();
   }
@@ -666,10 +664,9 @@ export class SherpaFilterPanel extends SherpaElement {
     /* A field ALREADY answered by conditions opens ON them — custom mode, its
        rows. Drawn as plain chips, the refill after an Add hid Owner's rows,
        and the next Apply reported it unanswered: adding Email reset Owner.
-       Not flushed here: the menus are not in the page yet, and the draw's own
-       flush hands over the rows. TRAP T-a-conditioned-field-opens-on-its-rows */
+       TRAP T-a-conditioned-field-opens-on-its-rows */
     if (box.hasAttribute('data-custom-ok') && (def.state?.conditions ?? []).length) {
-      this.#setCustom(held, true, false);
+      this.#setCustom(held, true);
     }
     return box;
   }
@@ -706,37 +703,39 @@ export class SherpaFilterPanel extends SherpaElement {
     }
     held.menu = menu;
     host.append(menu);
-    this.#pending.push([menu, items, def.state]);
+    this.#fill(menu, items, def.state);
   }
 
-  /** Menus whose rows wait for the panel to enter the page.
-   *  TRAP T-custom-element-upgrade */
-  #pending: Array<[HTMLElement, FilterMenuItem[], FieldReading | undefined]> = [];
+  /**
+   * A menu's rows NOW — `menuFor` made it, so it has upgraded, and it stamps
+   * them when it renders — and, once it has DRAWN, the answer in force: rows
+   * set into nothing were dropped, and Owner came back a blank `equals`.
+   * TRAP T-custom-element-upgrade · TRAP T-a-conditioned-field-opens-on-its-rows
+   */
+  #fill(menu: HTMLElement, items: FilterMenuItem[], state: FieldReading | undefined): void {
+    const api = menu as HTMLElement & {
+      items?: (i: readonly FilterMenuItem[]) => void;
+      conditions?: readonly FieldCondition[];
+      conditionValue?: string;
+      rendered?: Promise<void>;
+    };
+    if (items.length) api.items?.(items);
+    if (!state?.conditions?.length && !state?.text) return;
+    this.#answering.push(Promise.resolve(api.rendered).then(() => {
+      if (state.conditions?.length) api.conditions = state.conditions;
+      if (state.text) api.conditionValue = state.text;
+    }));
+    if (this.#answering.length === 1) queueMicrotask(() => this.#settleAnswers());
+  }
 
-  /** Hand each waiting menu its rows, and the answer already in force. */
-  #flushMenus(): void {
-    const answers: Promise<void>[] = [];
-    for (const [menu, items, state] of this.#pending) {
-      const api = menu as HTMLElement & {
-        items?: (i: readonly FilterMenuItem[]) => void;
-        conditions?: readonly FieldCondition[];
-        conditionValue?: string;
-        rendered?: Promise<void>;
-      };
-      if (items.length) api.items?.(items);
-      /* The ANSWER once the menu has DRAWN: its rows region is not there
-         before, and rows set into nothing were dropped — Owner came back as a
-         blank `equals`. TRAP T-a-conditioned-field-opens-on-its-rows */
-      if (!state?.conditions?.length && !state?.text) continue;
-      answers.push(Promise.resolve(api.rendered).then(() => {
-        if (state.conditions?.length) api.conditions = state.conditions;
-        if (state.text) api.conditionValue = state.text;
-      }));
-    }
-    this.#pending = [];
-    if (!answers.length) return;
-    /* …then what "applied" means is read AGAIN, once the rows have filled — a
-       rebuilt row reads empty for a tick. TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
+  /** Answers being put back into menus that have not drawn yet. */
+  #answering: Promise<void>[] = [];
+
+  /** …then what "applied" means is read AGAIN, once they have all filled — a
+   *  rebuilt row reads empty for a tick. TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
+  #settleAnswers(): void {
+    const answers = this.#answering;
+    this.#answering = [];
     void Promise.all(answers)
       .then(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))))
       .then(() => {
@@ -1142,9 +1141,8 @@ export class SherpaFilterPanel extends SherpaElement {
     this.#report(held);
   }
 
-  /** Put a field in custom mode, or take it out: its flag, its switch, its menu.
-   *  `flush: false` while the field is still being drawn, off the page. */
-  #setCustom(held: Held, on: boolean, flush = true): void {
+  /** Put a field in custom mode, or take it out: its flag, its switch, its menu. */
+  #setCustom(held: Held, on: boolean): void {
     held.box.toggleAttribute('data-custom', on);
     held.box.querySelector('.field-custom-switch')?.toggleAttribute('checked', on);
 
@@ -1155,7 +1153,6 @@ export class SherpaFilterPanel extends SherpaElement {
     const body = held.box.querySelector('.field-body');
     if (on && !held.menu && body) {
       this.#giveMenu(held, body as HTMLElement, true, true);
-      if (flush) this.#flushMenus();
     }
     if (held.menu) {
       /* The MENU refuses custom mode unless the field opted in, and a
