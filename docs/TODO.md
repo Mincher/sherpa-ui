@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**54 open.** Reassessed 2026-09-26: the bugs that lie first, then the
+**55 open.** Reassessed 2026-09-26: the bugs that lie first, then the
 FOUNDATION — the one compiled query, the view definition and when Apply runs —
 before the filter features that stand on it. Numbers are ids, not order; the
 table IS the order.
@@ -21,68 +21,69 @@ table IS the order.
 |---:|---:|---|---|
 | | | **B — The foundation: design, then build** | |
 | 1 | 73 | EXPLORE — one compiled QUERY, built as the reader sets it up, run on Apply | explore |
-| 2 | 70 | EXPLORE — a view definition bundles its filters; one JSON renders the page | explore |
-| 3 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
-| 4 | 75 | Filter modes are SIMPLE and COMPLEX, not Default and Conditional — every file | refactor |
-| 5 | 38 | One model, one builder, one owner — what is left | refactor |
-| 6 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
+| 2 | 85 | `sherpa-provider`: a component ASKS for data, a scope, a query, a View or a template | foundation |
+| 3 | 70 | EXPLORE — a view definition bundles its filters; one JSON renders the page | explore |
+| 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
+| 5 | 75 | Filter modes are SIMPLE and COMPLEX, not Default and Conditional — every file | refactor |
+| 6 | 38 | One model, one builder, one owner — what is left | refactor |
+| 7 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | | | **C — Contained bugs** | |
-| 7 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
-| 8 | 61 | Add customer saves with required fields empty | bug |
-| 9 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
-| 10 | 45 | A picked date does not show in the chip | bug |
-| 11 | 82 | A number chip set by a View shows no value on its face | bug |
-| 12 | 83 | Calendar menu: a picked date leaves Apply and Discard looking off — yet they work | bug |
-| 13 | 16 | Favourite and Save apply to the Context, not the View | bug |
-| 14 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
+| 8 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
+| 9 | 61 | Add customer saves with required fields empty | bug |
+| 10 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
+| 11 | 45 | A picked date does not show in the chip | bug |
+| 12 | 82 | A number chip set by a View shows no value on its face | bug |
+| 13 | 83 | Calendar menu: a picked date leaves Apply and Discard looking off — yet they work | bug |
+| 14 | 16 | Favourite and Save apply to the Context, not the View | bug |
+| 15 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
 | | | **D — Filters: Will's features, on the foundation** | |
-| 15 | 60 | Once applied, a chip's badge shows the number of results | feature |
-| 16 | 49 | A preset conditional chip shows its conditions, read-only | feature |
-| 17 | 50 | A custom conditional chip shows its conditions, editable | feature |
-| 18 | 47 | More than 20 values: one chip, not a run | feature |
-| 19 | 48 | A child menu opens on hover or click of its row | feature |
-| 20 | 21c | A condition's matches must ALL highlight | feature |
-| 21 | 21f | "Send to view filters" | feature |
-| 22 | 21b | Which header chips carry over between views | feature |
-| 23 | 20b | The Date filter should be a view-scope date RANGE | feature |
-| 24 | 21d | EXPLORE — conditions for a DATE field | explore |
-| 25 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
+| 16 | 60 | Once applied, a chip's badge shows the number of results | feature |
+| 17 | 49 | A preset conditional chip shows its conditions, read-only | feature |
+| 18 | 50 | A custom conditional chip shows its conditions, editable | feature |
+| 19 | 47 | More than 20 values: one chip, not a run | feature |
+| 20 | 48 | A child menu opens on hover or click of its row | feature |
+| 21 | 21c | A condition's matches must ALL highlight | feature |
+| 22 | 21f | "Send to view filters" | feature |
+| 23 | 21b | Which header chips carry over between views | feature |
+| 24 | 20b | The Date filter should be a view-scope date RANGE | feature |
+| 25 | 21d | EXPLORE — conditions for a DATE field | explore |
+| 26 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
 | | | **E — Views and navigation** | |
-| 26 | 15 | Save a View, and the Save split-button menu | feature |
-| 27 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
-| 28 | 34 | Figma: use the Navigation terms | figma |
-| 29 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
+| 27 | 15 | Save a View, and the Save split-button menu | feature |
+| 28 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
+| 29 | 34 | Figma: use the Navigation terms | figma |
+| 30 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
 | | | **F — Data states and charts** | |
-| 30 | 58 | Loading, empty and error states in a container | feature |
-| 31 | 9b | A Data Viz header, for metrics and chart containers | component |
-| 32 | 80 | Container and Data Viz headers: Figma's new button styling and grouping | component |
-| 33 | 14 | An example of real-time data | feature |
-| 34 | 59 | EXPLORE, later — Will's own loading pattern | explore |
+| 31 | 58 | Loading, empty and error states in a container | feature |
+| 32 | 9b | A Data Viz header, for metrics and chart containers | component |
+| 33 | 80 | Container and Data Viz headers: Figma's new button styling and grouping | component |
+| 34 | 14 | An example of real-time data | feature |
+| 35 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | | | **G — Overlay panels** | |
-| 35 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
-| 36 | 23 | A focused grid row opens a details panel | feature |
+| 36 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
+| 37 | 23 | A focused grid row opens a details panel | feature |
 | | | **H — The accessibility gate** | |
-| 37 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
+| 38 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
 | | | **I — The big builds** | |
-| 38 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
-| 39 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
-| 40 | 27 | A consumer can supply their OWN templates and CSS | feature |
-| 41 | 25 | `sherpa-layout-canvas` + minimap | component |
-| 42 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
+| 39 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
+| 40 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
+| 41 | 27 | A consumer can supply their OWN templates and CSS | feature |
+| 42 | 25 | `sherpa-layout-canvas` + minimap | component |
+| 43 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
 | | | **J — Tidy-ups and renames** | |
-| 43 | 11 | `sherpa-group`: what is left | tidy |
-| 44 | 28 | A Figma component is NOT always a web component | tidy |
-| 45 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
-| 46 | 33 | Density as step offsets, and a breakpoint step | tokens |
-| 47 | 36 | CSS: compiled where it should inherit? | tidy |
-| 48 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
-| 49 | 84 | Use the platform: Intl for money, units and deltas; Temporal in the calendar | refactor |
-| 50 | 81 | Component contracts move from YAML to JSON | refactor |
-| 51 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
+| 44 | 11 | `sherpa-group`: what is left | tidy |
+| 45 | 28 | A Figma component is NOT always a web component | tidy |
+| 46 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| 47 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| 48 | 36 | CSS: compiled where it should inherit? | tidy |
+| 49 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| 50 | 84 | Use the platform: Intl for money, units and deltas; Temporal in the calendar | refactor |
+| 51 | 81 | Component contracts move from YAML to JSON | refactor |
+| 52 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 | | | **K — Agentic UI: much later** | |
-| 52 | 76 | WebMCP: agents do UI tasks through Sherpa's own contracts — a core system | explore |
-| 53 | 77 | CONTRACTED UX patterns, so a generated experience is consistent and useful | explore |
-| 54 | 78 | A node-based WORKFLOW creator: make, edit and view patterns and generated workflows | explore |
+| 53 | 76 | WebMCP: agents do UI tasks through Sherpa's own contracts — a core system | explore |
+| 54 | 77 | CONTRACTED UX patterns, so a generated experience is consistent and useful | explore |
+| 55 | 78 | A node-based WORKFLOW creator: make, edit and view patterns and generated workflows | explore |
 
 **Why this order** (reassessed 2026-09-26).
 
@@ -150,6 +151,16 @@ remote store a draft, Apply only for a remote fetch, the pending chip and the
 footer's "nothing to save" (62, 46, 66). Step 7: a saved View is JSON — its
 Query onto a clean slate, its defaults on the chips — Records and the
 Dashboard. **Next: step 8** — segment and aggregate in a component scope.
+
+### `[ ]` 85 — `sherpa-provider`: a component ASKS for data, a scope, a query, a View or a template
+
+**Designed — `docs/PROVIDER-DESIGN.md`, for Will's review.** Will, 2026-09-27:
+*"Why can't any component ask for data, a definition, a conditional query
+definition or a template from the data layer?"* — the Context Protocol
+(choice A), a provider over a region, and each request can subscribe. It was
+designed in `FILTER-REVIEW.md` §9–§12 on 2026-09-25 and never built. Step 8
+of the Query folds into its P2. Target: `records.js` 853 → ~250 lines of code,
+`dashboard.js` 222 → ~50. Closes most of 37 and 38.
 
 ### `[ ]` 70 — EXPLORE: a view definition bundles its filters; one JSON renders the page
 
