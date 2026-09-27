@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**48 open.** Reassessed 2026-09-26: the bugs that lie first, then the
+**51 open.** Reassessed 2026-09-26: the bugs that lie first, then the
 FOUNDATION — the one compiled query, the view definition and when Apply runs —
 before the filter features that stand on it. Numbers are ids, not order; the
 table IS the order.
@@ -76,6 +76,10 @@ table IS the order.
 | 46 | 36 | CSS: compiled where it should inherit? | tidy |
 | 47 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
 | 48 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
+| | | **K — Agentic UI: much later** | |
+| 49 | 76 | WebMCP: agents do UI tasks through Sherpa's own contracts — a core system | explore |
+| 50 | 77 | CONTRACTED UX patterns, so a generated experience is consistent and useful | explore |
+| 51 | 78 | A node-based WORKFLOW creator: make, edit and view patterns and generated workflows | explore |
 
 **Why this order** (reassessed 2026-09-26).
 
@@ -909,6 +913,49 @@ it reads the entry by name. Keep `src/data.ts`. **Dead last** — cheapest when
 nothing else is in flight.
 
 ---
+
+## K — Agentic UI: much later
+
+Will, 2026-09-27: *"We built an MCP to help with the Sherpa development
+pipeline and it's been useful. However, I'd like to support WebMCP as part of
+the sherpa framework so that we can create agentic UI components and have them
+be able to use agents to perform UI tasks for the user."* Big pieces of work,
+all inside the Sherpa Product System's own standards. Each is a CORE, GENERIC
+system — like the data layer, or routing and template swapping — never a
+feature of one app.
+
+### `[ ]` 76 — WebMCP: agents do UI tasks through Sherpa's own contracts
+
+Agentic UI components: a component exposes what an agent may do with it, and
+an agent does it for the reader. Will's examples — *"generating data viz and
+adding it to a dashboard, creating filter queries based on user request,
+generating reports from data pulled back into the Sherpa data layer, and other
+cool stuff that I've not even thought of yet."*
+
+What is already there to build on: the MCP server (`mcp-server/`, its drive
+tier reaches a live element by name and method), the component specs
+(`*.component.yaml`, a component's callable surface), and the QUERY (step 1–6
+of 73) — a filter request an agent makes is a Query, validated and compiled
+like any other, never a clause it writes itself.
+
+### `[ ]` 77 — CONTRACTED UX patterns, so a generated experience is consistent
+
+*"We will also need well defined, contracted, UX patterns so that any
+generated experiences by agents are consistent and useful."* A pattern is
+data with a contract, as a component is: what it is for, which components it
+composes, which states it has, what an agent may change. An agent composes
+patterns; it never invents a layout. The CRUD flow, Settings pages as forms,
+and the filter scopes are the first ones this repo already has in prose.
+
+### `[ ]` 78 — A node-based WORKFLOW creator
+
+*"A node based workflow creator that can be used to create, edit, and view the
+core patterns, as well as any generated workflows in an app, so that we can
+merge agentic, generative, thinking with deterministic, contracted,
+experiences and outcomes."* It draws on the canvas — 25,
+`sherpa-layout-canvas`, which is why Will asked for one. Nodes are patterns
+and steps; edges are what flows between them; a generated workflow is shown
+and edited the same way as a designed one.
 
 ## Done
 
