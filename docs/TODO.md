@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**54 open.** Reassessed 2026-09-26: the bugs that lie first, then the
+**58 open.** Reassessed 2026-09-26: the bugs that lie first, then the
 FOUNDATION — the one compiled query, the view definition and when Apply runs —
 before the filter features that stand on it. Numbers are ids, not order; the
 table IS the order.
@@ -37,7 +37,11 @@ table IS the order.
 | 13 | 83 | Calendar menu: a picked date leaves Apply and Discard looking off — yet they work | bug |
 | 14 | 16 | Favourite and Save apply to the Context, not the View | bug |
 | 15 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
+| 15a | 87 | Adding a filter to the View scope must not remove it from the component scope's Filters list | bug |
 | | | **D — Filters: Will's features, on the foundation** | |
+| 15b | 88 | A filter raised to the View scope: its component section keeps its heading, hides its options, and says where it went | feature |
+| 15c | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
+| 15d | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
 | 16 | 60 | Once applied, a chip's badge shows the number of results | feature |
 | 17 | 49 | A preset conditional chip shows its conditions, read-only | feature |
 | 18 | 50 | A custom conditional chip shows its conditions, editable | feature |
@@ -186,6 +190,56 @@ rules. `PROVIDER-DESIGN.md` §9 is its first pass (the filter family, the
 base class, the wrapped controls, the charts). Still to cover: every public
 method and every event of all 63 components, side by side — same job,
 different name or different code.
+
+### `[ ]` 87 — Adding a filter to the View scope must not remove it from the component scope's Filters list
+
+Will, 2026-09-27: *"Adding a filter to the view scope shouldn't remove it
+from the component scope Filters list."* The field stays in the component
+scope's Filters (Add) list after it is raised; 88 is how its section then
+looks. Two views of one scope: the Query holds the field at the View scope,
+and the component scope still OFFERS it (`offer`), it does not hold it.
+
+### `[ ]` 88 — A filter raised to the View scope: its component section keeps its heading, hides its options, and says where it went
+
+Will, 2026-09-27: *"If a filter is added at component scope, in the filter
+panel, then added again to the view scope then the filter options should be
+hidden (in the component scope) but the section heading should remain and a
+description row added below stating that the filter is now at the view scope.
+Similar to the text in the toolbar chip tooltip."*
+
+In the panel's component scope: the field's section heading stays; its
+options hide; a description row under the heading says the filter is now at
+the View scope — the same words as the toolbar chip's tooltip, from ONE
+place, not a second copy. Lands with provider P3, where the panel asks for its
+scopes and draws each from the Query.
+
+### `[ ]` 89 — Every filter added to the panel starts SIMPLE
+
+Will, 2026-09-27: *"Let's start all filters added to the panel in 'Simple'
+mode."* Its content is one of three, by the field:
+
+| the field has | Simple draws |
+|---|---|
+| 16 values or fewer | each value as its own chip — exploded |
+| more than 16 values, or it is a date | ONE chip with a menu — a list, or a calendar menu for a date |
+| numbers | a number input, or range slider inputs |
+
+**16 replaces 47's 20** — one line for the bar and the panel, set once (the
+builder's explode-or-menu flag, 38). Mode words: TODO 75.
+
+### `[ ]` 90 — Any filter switches to ADVANCED: condition rows, with options per field type
+
+Will, 2026-09-27: *"Any filter should be able to be toggled to 'Advanced',
+using simple switch, to build a multi condition scenario using conditional
+input rows. We'll need different conditional options for numeric, and date,
+field types."*
+
+A plain switch on every filter turns Simple into Advanced: condition input
+rows, several of them. The operators follow the field's TYPE — text, number
+and date each get their own list (21d is the date half). Switching back to
+Simple keeps what it can show and says what it cannot, never drops a
+condition silently. **The word:** Will says *Advanced* here; 75 says
+*Complex* — one of them, everywhere (75).
 
 ### `[ ]` 70 — EXPLORE: a view definition bundles its filters; one JSON renders the page
 
@@ -490,7 +544,8 @@ Save. Needs 49, and 46's pending look for the draft.
 ### `[ ]` 47 — More than 20 values: one chip, not a run
 
 A panel field with more than 20 values draws the toolbar's single chip, with a
-dropdown of its values, not one chip per value. It is the flag 38's builder
+dropdown of its values, not one chip per value. **89 moves the line to 16**, for the bar
+and the panel alike. It is the flag 38's builder
 already needs: whether values EXPLODE into a run or stay behind a menu.
 
 ### `[ ]` 48 — A child menu opens on hover or click of its parent row
