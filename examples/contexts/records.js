@@ -156,7 +156,8 @@ export async function init(root, { session, view } = {}) {
        last-90-days, which no record in this set falls inside.
        TRAP T-a-record-has-a-time-of-its-own */
     filters: globalFilters(viewOptions(RECORDS_VIEWS, startView), regions, customerOrgs,
-      [...new Set(customers.map((c) => c[source.timeField]))].filter(Boolean).sort()),
+      [...new Set(customers.map((c) => c[source.timeField]))].filter(Boolean).sort(),
+      source.timeField),
     /* The header's ADD list is set once the columns are known — below, from
        the same builder the grid's bar uses. TRAP T-up-is-open-down-is-closed */
   });
@@ -793,6 +794,10 @@ export async function init(root, { session, view } = {}) {
   /* Its report is the `data` scope's whole answer, so a field raised to the
      View is no longer this bar's to clear. TRAP T-a-filter-report-is-the-whole-answer */
   source.bind(qft, { steerOnly: true, scope: 'data', signal });
+  /* The HEADER bar is drawn the View scope. Read-only: this Context answers
+     for it below, because a header chip is named for its question, not its field. */
+  const viewBar = header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
+  if (viewBar) source.bind(viewBar, { readonly: true, steerOnly: true, scope: VIEW_SCOPE, signal });
   /* The open PANEL is drawn each answer in both scopes — it steers nothing
      through the source, so it is bound read-only. TRAP T-an-open-panel-follows-the-data-layer */
   if (panel) source.bind(panel, { readonly: true, steerOnly: true, scope: [VIEW_SCOPE, 'data'], signal });
@@ -1138,9 +1143,6 @@ export async function init(root, { session, view } = {}) {
   };
   for (const type of ['selection-change', 'scope-change']) source.addEventListener(type, keep, { signal });
   for (const bar of [headerBar, qft]) bar?.addEventListener('quick-filter-change', keep, { signal });
-  /* The header's chips are named for the question, the Query for the field. */
-  const headerId = (field) =>
-    Object.keys(HEADER_FIELDS).find((id) => HEADER_FIELDS[id] === field) ?? field;
   const kept = session?.get?.(FILTERS_KEY);
   restored = (async () => {
     /* The grid's own column filters FIRST — the persisted snapshot put them on
@@ -1148,15 +1150,8 @@ export async function init(root, { session, view } = {}) {
     syncColumns();
     await new Promise((r) => queueMicrotask(r));
     if (kept?.view === startView && kept.query) {
-      // The grid's bar is bound to the `data` scope, so the source draws it.
+      // Both bars are bound to their scope, so the source draws them.
       await source.setQuery(kept.query);
-      const view = kept.query.scopes?.[VIEW_SCOPE];
-      if (view) {
-        await headerBar?.drawScope({
-          holds: view.holds.map(headerId),
-          readings: Object.fromEntries(Object.entries(view.readings).map(([f, r]) => [headerId(f), r])),
-        });
-      }
       syncScopes();
     }
     restoring = false;

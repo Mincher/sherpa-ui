@@ -793,6 +793,42 @@ export class SherpaMenu extends SherpaElement {
     const raw = field?.value.trim() ?? '';
     return raw === '' ? [] : [raw];
   }
+  /**
+   * A DATE or NUMBER body takes its values as it reports them — two are a
+   * range — or the getter reads what no caller could ever set. False for a list.
+   * TRAP T-a-menu-owns-its-own-bodies
+   */
+  #setBodyValues(next: readonly string[]): boolean {
+    const body = this.dataset['body'];
+    if (body !== 'date' && body !== 'number') return false;
+    const range = next.length > 1;
+    if (range !== this.hasAttribute('data-range')) {
+      this.toggleAttribute('data-range', range);
+      if (!this.hasAttribute('data-commit-fixed')) this.toggleAttribute('data-commit', range);
+    }
+    if (body === 'date') {
+      const cal = this.querySelector<HTMLElement>('sherpa-calendar');
+      if (!cal) return true;
+      for (const a of ['data-value', 'data-value-start', 'data-value-end']) cal.removeAttribute(a);
+      cal.setAttribute('data-type', range ? 'range' : 'single');
+      if (range) {
+        cal.setAttribute('data-value-start', next[0]!);
+        cal.setAttribute('data-value-end', next[1]!);
+      } else if (next[0]) cal.setAttribute('data-value', next[0]);
+    } else {
+      const field = this.$<HTMLInputElement>('.body-number-one');
+      const slider = this.$<HTMLElement>('.body-number-range');
+      if (field) field.value = range ? '' : (next[0] ?? '');
+      if (slider && range) {
+        slider.setAttribute('value-start', next[0]!);
+        slider.setAttribute('value-end', next[1]!);
+        slider.setAttribute('data-touched', '');
+      } else slider?.removeAttribute('data-touched');
+    }
+    this.#syncBody();
+    return true;
+  }
+
   /** A CALENDAR menu's value, or null when this is not one. */
   #calendarValues(): string[] | null {
     const cal = this.querySelector<HTMLElement>('sherpa-calendar');
@@ -806,6 +842,7 @@ export class SherpaMenu extends SherpaElement {
   }
 
   set values(next: string[]) {
+    if (this.#setBodyValues(next)) return;
     // The query's comparison — TRAP T-one-comparison-rule-for-query-and-ui.
     const wanted = valueSet(next);
     for (const input of this.#inputs()) input.checked = wanted.has(input.value);

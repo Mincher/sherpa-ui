@@ -64,6 +64,9 @@ export interface ExternalFilterSpec {
 export interface QuickFilterDef extends OffersCustom {
   id: string;
   label: string;
+  /** The FIELD this chip answers, when its id is not that field — the header's
+   *  Date chip answers the record's time. A source draws the chip by it. */
+  field?: string;
   type?: string;
   active?: boolean;
   icon?: string;
@@ -495,6 +498,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
          chip reading "3 Plan Enterprise…" while claiming to be off. */
       chip.values = picks;
       if (!picks.length) chip.current = false;
+      this.#syncDateLabel(chip);
       return;
     }
   }
@@ -555,8 +559,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * TRAP T-a-superseded-chip-suspends-it-is-never-removed
    */
   drawReading(field: string, reading: FieldReading): void {
-    if (this.superseded.includes(field)) return;
-    this.setChipReading(field, reading);
+    const id = this.#idOf(field);
+    if (this.superseded.includes(id)) return;
+    this.setChipReading(id, reading);
+  }
+
+  /** The chip that answers a field: its def's `field`, else its id. */
+  #idOf(field: string): string {
+    return [...this.#filters, ...this.#available].find((f) => (f.field ?? f.id) === field)?.id ?? field;
   }
 
   /**
@@ -1513,7 +1523,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   async drawScope(slice: ScopeQuery): Promise<void> {
     const presets = slice.presets ?? {};
-    const want = new Set([...slice.holds, ...Object.keys(presets)]);
+    // The slice speaks FIELDS; a chip may be named for its question.
+    const want = new Set([...slice.holds.map((f) => this.#idOf(f)), ...Object.keys(presets)]);
     for (const def of [...this.#filters]) {
       if (!want.has(def.id) && def.removable) this.#removeFilter(def.id, { silent: true });
     }
@@ -1525,7 +1536,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
     const persistent = new Set(this.#chips()
       .filter((c) => c.hasAttribute('data-persistent')).map((c) => c.dataset['id']));
-    for (const [id, reading] of Object.entries(slice.readings)) {
+    for (const [field, reading] of Object.entries(slice.readings)) {
+      const id = this.#idOf(field);
       if (persistent.has(id)) continue;
       this.setChipReading(id, reading);
       // OFF keeps the answer and applies none of it. TRAP T-grid-suspend-is-not-clear

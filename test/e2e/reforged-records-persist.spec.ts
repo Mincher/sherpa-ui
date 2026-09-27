@@ -215,3 +215,35 @@ test('filters survive a reload and a trip away, and the chips show them', async 
   });
   await expect.poll(read).toEqual({ total: 12, region: 'off:', status: 'off:', email: 'off:' });
 });
+
+/**
+ * THE HEADER'S DATE survives a reload too, and its chip SHOWS it. Its menu
+ * could report a date and never be told one, so a restored date filtered the
+ * rows behind an empty chip. TRAP T-a-menu-owns-its-own-bodies
+ */
+test('the header Date survives a reload, and its chip shows the range', async ({ page }) => {
+  const read = () => page.evaluate(() => {
+    const hb = document.querySelector('sherpa-app-shell > sherpa-app-header sherpa-quick-filter-toolbar[slot="filters"]');
+    const c = hb?.shadowRoot?.querySelector<HTMLElement & { valueLabel: string }>('.chip[data-id="dateRange"]');
+    return {
+      total: (window as unknown as { sherpa?: { source?: { debugState(): { total: number } } } })
+        .sherpa?.source?.debugState().total,
+      chip: c ? `${c.hasAttribute('data-current') ? 'on' : 'off'}:${c.valueLabel}` : 'none',
+    };
+  });
+  const ready = () => page.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
+  await page.goto('http://localhost:4200/?context=records');
+  await ready();
+  await page.evaluate(() => {
+    const hb = document.querySelector('sherpa-app-shell > sherpa-app-header sherpa-quick-filter-toolbar[slot="filters"]') as
+      HTMLElement & { setChipValues(id: string, v: string[]): void; report(): void };
+    hb.setChipValues('dateRange', ['2024-03-01', '2024-03-31']);
+    hb.report();
+  });
+  const want = { total: 14, chip: 'on:01 Mar - 31 Mar, 2024' };
+  await expect.poll(read).toEqual(want);
+  await page.reload();
+  await ready();
+  await expect.poll(read).toEqual(want);
+});

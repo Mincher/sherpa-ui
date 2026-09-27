@@ -229,9 +229,13 @@ export class SherpaQuickFilter extends SherpaElement {
        test here made a value set from elsewhere tick nothing.
        TRAP T-one-comparison-rule-for-query-and-ui */
     const want = valueSet(next);
-    for (const input of this.querySelectorAll<HTMLInputElement>('[slot="menu"] input')) {
-      // The "All" row is a control, not a value; it derives from the rest.
-      if (!input.closest(NON_VALUE_ROWS)) input.checked = want.has(input.value);
+    // A DATE or NUMBER menu sets its own body. TRAP T-a-menu-owns-its-own-bodies
+    if (menu.dataset['body']) (menu as HTMLElement & { values: readonly string[] }).values = next;
+    else {
+      for (const input of this.querySelectorAll<HTMLInputElement>('[slot="menu"] input')) {
+        // The "All" row is a control, not a value; it derives from the rest.
+        if (!input.closest(NON_VALUE_ROWS)) input.checked = want.has(input.value);
+      }
     }
     // Read BACK, never trust the ask: a value naming no row never landed.
     this.#applySelection((menu.values ?? []) as string[]);

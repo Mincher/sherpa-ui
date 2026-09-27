@@ -602,6 +602,7 @@ TRAP T-projected-slot-content-crosses-two-shadow-boundaries
 So the switch above a calendar is the menu's; the calendar below it is the
 host's. That reads like an inconsistency and is a platform limit.
 
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
@@ -612,6 +613,7 @@ host's. That reads like an inconsistency and is a platform limit.
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+- Site: `test/e2e/reforged-records-persist.spec.ts`
 
 ### T-projected-slot-content-crosses-two-shadow-boundaries
 
