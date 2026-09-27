@@ -3122,7 +3122,6 @@ picked values on the right, its unpicked on the left.
 - Site: `src/data.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `test/unit/filter-state.test.mjs`
-- Site: `test/unit/parity-sweep.test.mjs`
 - Site: `src/core/data/filter-state.ts`
 ### T-one-field-one-filter-menu
 
@@ -9052,6 +9051,7 @@ remove do. `test/unit/raw-data-is-untouched.test.mjs` holds that half.
 - Site: `test/unit/raw-data-is-untouched.test.mjs`
 - Site: `test/unit/one-query-builder.test.mjs`
 - Site: `examples/contexts/records.js`
+- Site: `test/reforged/harness.html`
 
 ### T-an-organise-chip-has-no-values
 
@@ -9484,7 +9484,6 @@ seeds its own menu from that.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
-- Site: `test/unit/parity-sweep.test.mjs`
 
 ### T-the-panel-is-the-toolbar-in-a-column
 

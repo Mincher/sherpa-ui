@@ -255,16 +255,15 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: >-
-      read/write JS properties (active, values, superseded, pickedValues, clauses, readings, states,
-      savedReadings, presets, offering, heldIds, heldFields, held, groupField, sortField,
-      sortDirection, sortSuspended). See $extensions.sherpa.jsProps.
+      read/write JS properties (active, values, superseded, readings, savedReadings, presets,
+      heldFields, groupField, sortField, sortDirection, sortSuspended). See
+      $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
     description: >-
-      callable from a view definition's state block (setChipValues, setChipActive, setChipReading,
-      drawReading, supersede, unpackFilter, deleteFilter, packFilter, setClause, report, available,
-      addFilters, removeFilter, drawScope, allowFields, clearAll, organise). See
-      $extensions.sherpa.methods.
+      callable from a view definition's state block (setChipValues, setChipReading, drawReading,
+      supersede, unpackFilter, deleteFilter, packFilter, report, available, addFilters,
+      removeFilter, drawScope, allowFields, clearAll, organise). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: quick-filter-change
@@ -272,8 +271,6 @@ events:
     composed: true
     detail:
       active: unknown
-      clauses: unknown
-      picked: unknown
       scope: string
       values: unknown
   - $type: event
@@ -367,10 +364,6 @@ $extensions:
         args: "id: string, picks: readonly string[] | undefined"
         description: Set ONE chip's picks, leaving every other chip alone.
       - $type: method
-        name: setChipActive
-        args: "id: string, on: boolean"
-        description: "setChipActive(id, on) — steer one ON/OFF chip: a preset, a saved filter."
-      - $type: method
         name: setChipReading
         args: "id: string, reading: FieldReading"
         description: setChipReading(id, reading) — steer ONE chip with a whole reading.
@@ -394,10 +387,6 @@ $extensions:
         name: packFilter
         args: "saved: SavedFilter & { id: string }"
         description: Show a SAVED filter in place of the fields it was made from — PACK. Its chip
-      - $type: method
-        name: setClause
-        args: "id: string, clause: readonly [string, FilterOp, unknown] | null"
-        description: setClause(id, clause) — set ONE condition chip from a ready FilterClause.
       - $type: method
         name: report
         args: ""
@@ -458,16 +447,7 @@ $extensions:
       - name: superseded
         type: string
         access: read
-      - name: pickedValues
-        type: string
-        access: read
-      - name: clauses
-        type: string
-        access: read
       - name: readings
-        type: string
-        access: read
-      - name: states
         type: string
         access: read
       - name: savedReadings
@@ -476,16 +456,7 @@ $extensions:
       - name: presets
         type: string
         access: read
-      - name: offering
-        type: string
-        access: read
-      - name: heldIds
-        type: string
-        access: read
       - name: heldFields
-        type: string
-        access: read
-      - name: held
         type: string
         access: read
       - name: groupField

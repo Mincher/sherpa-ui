@@ -175,7 +175,7 @@ test('the leading Group / Sort chips organise the grid, separate from filtering'
 test('a value-menu chip toggles OFF without clearing its picks', async ({ page }) => {
   // ON = filter this field by the picked values. OFF = ignore this field, but KEEP
   // the picks — the same "temporary disable" the Sort chip has. `values` reports
-  // what is APPLIED; `pickedValues` reports what is REMEMBERED.
+  // what is APPLIED; `readings` keeps what is REMEMBERED, as `picked`.
   const r = await page.evaluate(async () => {
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
     el.populate([
@@ -204,7 +204,7 @@ test('a value-menu chip toggles OFF without clearing its picks', async ({ page }
     const snap = () => ({
       on: chip.hasAttribute('data-current'),
       values: el.values,
-      picked: el.pickedValues,
+      picked: Object.fromEntries(Object.entries(el.readings).map(([f, r]) => [f, r.picked ?? []])),
       // `label:not(.qf-all)` again: with both values ticked the select-all row is
       // ticked too, and its box reports its own default "on" rather than a value.
       ticked: Array.from(
@@ -229,7 +229,7 @@ test('a value-menu chip toggles OFF without clearing its picks', async ({ page }
   expect(r.applied.on).toBe(true);
   expect(r.applied.values).toEqual({ plan: ['pro', 'free'] });
 
-  // OFF: nothing is applied, but the picks survive — in `pickedValues` AND as
+  // OFF: nothing is applied, but the picks survive — in `readings` AND as
   // still-ticked rows in the menu, so re-enabling needs no re-picking.
   expect(r.off.on).toBe(false);
   expect(r.off.values).toEqual({});
@@ -1196,7 +1196,11 @@ test('a NUMBER chip flips between a single field and a two-ended slider', async 
       ranged: menu.hasAttribute('data-range'),
       field: shown('.body-number-one'),
       slider: shown('.body-number-range'),
-      picks: el.pickedValues['spend'] ?? null,
+      // One number is TYPED text; a range is its two ends.
+      picks: ((r) => {
+        const v = r ? (r['text'] ? [r['text'] as string] : r.picked ?? []) : [];
+        return v.length ? v : null;
+      })(el.readings['spend']),
     });
 
     const opened = snap();
@@ -1490,7 +1494,7 @@ test('the Filters menu drills into a folded filter and back out', async ({ page 
     const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
       rendered?: Promise<void>;
       populate(d: unknown): void;
-      pickedValues: Record<string, string[]>;
+      readings: Record<string, { picked?: string[] }>;
     };
     const box = document.createElement('div');
     box.style.inlineSize = '560px';
@@ -1556,7 +1560,7 @@ test('the Filters menu drills into a folded filter and back out', async ({ page 
     box1.checked = true;
     box1.dispatchEvent(new Event('change', { bubbles: true }));
     await settle();
-    const ticked = el.pickedValues[target] ?? null;
+    const ticked = el.readings[target]?.picked ?? null;
 
     // BACK, through the arrow. It lives in the MENU's own shadow root, so its
     // click is re-emitted as a composed `menu-back` to reach the toolbar.
@@ -1568,7 +1572,7 @@ test('the Filters menu drills into a folded filter and back out', async ({ page 
     await settle();
     const out = snap();
 
-    return { list, drilled, ticked, target, out, kept: el.pickedValues[target] ?? null };
+    return { list, drilled, ticked, target, out, kept: el.readings[target]?.picked ?? null };
   });
 
   // The Filters list: a row with a caret for each folded filter.
@@ -1692,7 +1696,7 @@ test('data-reset-on-populate drops live picks; without it they survive', async (
       const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
         rendered?: Promise<void>;
         populate(d: unknown): void;
-        pickedValues: Record<string, string[]>;
+        readings: Record<string, { picked?: string[] }>;
       };
       if (reset) el.setAttribute('data-reset-on-populate', '');
       document.getElementById('root')!.replaceChildren(el);
@@ -1724,12 +1728,12 @@ test('data-reset-on-populate drops live picks; without it they survive', async (
       box.dispatchEvent(new Event('change', { bubbles: true }));
       (menu.shadowRoot.querySelector('.apply') as HTMLElement | null)?.click();
       await settle();
-      const before = el.pickedValues['region'] ?? [];
+      const before = el.readings['region']?.picked ?? [];
 
       // …and the caller populates again, as a view change does.
       el.populate(set('Region'));
       await settle();
-      return { before, after: el.pickedValues['region'] ?? [] };
+      return { before, after: el.readings['region']?.picked ?? [] };
     };
 
     return { resetting: await run(true), keeping: await run(false) };
@@ -2514,7 +2518,7 @@ test('the Add menu lists held AND offered, and an untick removes', async ({ page
     await settle();
     await new Promise((res) => setTimeout(res, 120));
 
-    return { before, after: rows(), held: el.heldIds };
+    return { before, after: rows(), held: el.heldFields };
   });
 
   // HELD is ticked, OFFERED is not, and a fixed chip is absent entirely.

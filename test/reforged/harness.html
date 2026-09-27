@@ -185,6 +185,23 @@
       }
       return el;
     };
+
+    /**
+     * A bar's answers as CLAUSES, built by the data layer's ONE builder — what
+     * a source would run. A bar builds no clause of its own.
+     * TRAP T-one-query-builder-in-the-data-layer
+     *
+     * Usage:  const clauses = await window.__clauses(bar);
+     */
+    window.__clauses = async function clauses(bar) {
+      const { fieldState, stateClause } = await import('/dist/data.js');
+      const out = {};
+      for (const [field, { label, values, ...reading }] of Object.entries(bar.readings ?? {})) {
+        const clause = stateClause(fieldState({ field, label, values }, reading));
+        if (clause) out[field] = clause;
+      }
+      return out;
+    };
   </script>
 </body>
 </html>

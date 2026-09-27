@@ -450,7 +450,7 @@ test('Edit unpacks the answer into its fields, in one event; Delete forgets the 
     await new Promise((res) => setTimeout(res, 150));
     await source.load();
     // What the bar HOLDS says the chip is off now — the panel draws from it.
-    const heldOn = bar.held.find((d) => d.id === 'custom:mine')?.['active'];
+    const heldOn = bar.presets['custom:mine']?.on;
     const fields = (bar as unknown as { readings: Record<string, { picked: unknown[]; conditions: unknown[] }> }).readings;
     const edited = {
       events,

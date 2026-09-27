@@ -18,11 +18,11 @@ const OWNER = {
 
 test('typed rows, then a press on the chip: the condition is applied', async ({ page }) => {
   const r = await page.evaluate(async (OWNER) => {
-    const bar = await window.__mount<Bar & { clauses: Record<string, unknown> }>(
+    const bar = await window.__mount<Bar>(
       'sherpa-quick-filter-toolbar', [OWNER], { style: 'inline-size: 900px' });
     await window.__settled();
     const heard: unknown[] = [];
-    bar.addEventListener('quick-filter-change', () => heard.push(bar.clauses));
+    bar.addEventListener('quick-filter-change', () => heard.push(true));
     const chip = bar.shadowRoot!.querySelector<HTMLElement>('.chip[data-id="owner"]')!;
     const menu = chip.querySelector('sherpa-menu') as HTMLElement & {
       show(t: HTMLElement): void; shadowRoot: ShadowRoot; conditions: unknown; open: boolean;
@@ -53,7 +53,7 @@ test('typed rows, then a press on the chip: the condition is applied', async ({ 
       condition: chip.getAttribute('data-condition'),
       rows: menu.conditions,
       open: menu.open,
-      clauses: bar.clauses,
+      clauses: await window.__clauses(bar),
     };
   }, OWNER);
 
@@ -67,7 +67,7 @@ test('typed rows, then a press on the chip: the condition is applied', async ({ 
 
 test('ticks, then a press on the chip: the ticks are applied', async ({ page }) => {
   const r = await page.evaluate(async (OWNER) => {
-    const bar = await window.__mount<Bar & { pickedValues: Record<string, string[]> }>(
+    const bar = await window.__mount<Bar>(
       'sherpa-quick-filter-toolbar', [OWNER], { style: 'inline-size: 900px' });
     await window.__settled();
     const chip = bar.shadowRoot!.querySelector<HTMLElement>('.chip[data-id="owner"]')!;
@@ -81,7 +81,7 @@ test('ticks, then a press on the chip: the ticks are applied', async ({ page }) 
     await wait();
     chip.shadowRoot!.querySelector<HTMLElement>('.body')!.click();
     await wait(300);
-    return { on: chip.hasAttribute('data-current'), picked: bar.pickedValues['owner'], open: menu.open };
+    return { on: chip.hasAttribute('data-current'), picked: bar.readings['owner']?.picked, open: menu.open };
   }, OWNER);
 
   expect(r).toEqual({ on: true, picked: ['Ravi'], open: false });

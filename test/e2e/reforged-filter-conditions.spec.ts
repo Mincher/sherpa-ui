@@ -512,7 +512,7 @@ test('a TYPED condition survives Apply, and its hits mark', async ({ page }) => 
        filtering. TRAP T-an-operator-decides-pick-or-type */
     menu.shadowRoot!.querySelector<HTMLElement>('.apply')!.click();
     await wait();
-    return { typed, applied: chip.hasAttribute('data-current'), clauses: el.clauses };
+    return { typed, applied: chip.hasAttribute('data-current'), clauses: await window.__clauses(el) };
   });
 
   // A DRAFT until Apply, exactly as ticked rows are.
@@ -752,7 +752,7 @@ test('a chip in DEFAULT mode reports picks AND a clause, and is not custom',
 
       return {
         values: JSON.stringify(el.values),
-        clauses: JSON.stringify(el.clauses),
+        clauses: JSON.stringify(await window.__clauses(el)),
         on: chip.hasAttribute('data-current'),
         // The flag a host reads to decide whether `select()` applies.
         condition: chip.getAttribute('data-condition'),

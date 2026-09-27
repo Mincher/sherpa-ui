@@ -80,6 +80,8 @@ declare global {
       attrs?: Record<string, string | boolean>,
     ): Promise<T>;
     __settled(): Promise<void>;
+    /** A bar's answers as clauses, built by the data layer. */
+    __clauses(bar: Element): Promise<Record<string, unknown>>;
   }
 }
 
@@ -91,17 +93,13 @@ export type Bar = SherpaEl & {
   addFilters(ids: readonly string[]): void;
   removeFilter(id: string): void;
   supersede(ids: readonly string[]): void;
-  setClause(id: string, clause: readonly [string, string, unknown] | null): void;
   allowFields(list: readonly string[] | null): void;
   active: string[];
   values: Record<string, string[]>;
-  pickedValues: Record<string, string[]>;
-  readings: Record<string, unknown>;
-  states: Record<string, unknown>;
-  clauses: Record<string, unknown>;
-  held: Array<Record<string, unknown>>;
-  heldIds: string[];
-  offering: Array<Record<string, unknown>>;
+  /** Each field's answer, ON or off — `picked` survives a chip switched off. */
+  readings: Record<string, { picked?: string[] } & Record<string, unknown>>;
+  presets: Record<string, { on: boolean; readings: Record<string, unknown> }>;
+  heldFields: string[];
   superseded: string[];
   sortField: string | null;
   sortDirection: string;

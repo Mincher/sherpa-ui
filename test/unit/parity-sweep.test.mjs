@@ -66,7 +66,6 @@ const KNOWN = {
   'sherpa-notifications.unreadCount': 'ok: populate() — derived from the items',
   'sherpa-quick-filter.menu': 'ok: the slotted <… slot="menu"> element IS the write',
   'sherpa-quick-filter-toolbar.active': 'ok: populate() — a def carries `active: true`',
-  'sherpa-quick-filter-toolbar.pickedValues': 'ok: the `values` setter',
   'sherpa-quick-filter-toolbar.savedReadings': 'ok: populate() — a def carries `readings`; `active: true` turns it on',
   'sherpa-quick-filter-toolbar.presets': 'ok: populate() — a def carries `readings`; setChipActive() turns it on or off',
   'sherpa-quick-filter-toolbar.sortField': 'ok: data-sort-field attribute',
@@ -78,21 +77,9 @@ const KNOWN = {
   'sherpa-quick-filter-toolbar.superseded': 'ok: supersede([...ids]) method',
   'sherpa-quick-filter-toolbar.readings':
     'ok: the `values` setter / setClause(id, clause) — what a reader did to each field',
-  'sherpa-quick-filter-toolbar.offering': 'ok: available(defs) — what is left to add',
-  'sherpa-quick-filter-toolbar.heldIds': 'ok: populate() / addFilters() / removeFilter()',
   'sherpa-quick-filter-toolbar.heldFields': 'ok: populate() / addFilters() / removeFilter() / drawScope()',
   'sherpa-provider.view': 'ok: provide({ view }) / a View pick through the View chip',
-  // The DEFS, each with the reading in force — what a second view draws from.
-  // TRAP T-a-panel-builds-its-own-menus
-  'sherpa-quick-filter-toolbar.held':
-    'ok: populate() / addFilters() / removeFilter() — the defs; the `values` setter answers them',
   'sherpa-filter-panel.values': 'ok: populate(scopes) — a filter carries its picked options',
-  // Every chip's FilterState, the one answer the bar and its readers share.
-  // Written per field by setClause(id, clause). TRAP T-one-state-per-filtered-field
-  'sherpa-quick-filter-toolbar.states': 'ok: setClause(id, clause) method',
-  // setClause(id, clause) takes the SAME shape `column-filter-change` reports,
-  // so a saved view — or a column heading — can restore a condition chip.
-  'sherpa-quick-filter-toolbar.clauses': 'ok: setClause(id, clause) method',
 };
 
 /** Public getters (two-space indent = class body) and their setters. */

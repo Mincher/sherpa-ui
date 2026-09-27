@@ -26,17 +26,15 @@ test('a bar reports an unknown filter on add, on remove, and on setClause',
       el.available([{ id: 'owner', label: 'Owner', options: [{ value: 'Dana', label: 'Dana' }] }]);
       await window.__settled();
 
-      // Three host mistakes, each naming something that is not there.
+      // Two host mistakes, each naming something that is not there.
       el.addFilters(['nothing-offers-this']);
       el.removeFilter('never-held');
-      el.setClause('plan', ['plan', 'contains', 'pro']);   // a chip with a menu — fine
-      el.setClause('not-a-chip', ['x', 'contains', 'y']);  // …and one without
 
       undo();
       return seen.map((s) => s.code);
     });
 
-    expect(r).toEqual(['unknown-filter', 'unknown-filter', 'no-filter-menu']);
+    expect(r).toEqual(['unknown-filter', 'unknown-filter']);
   });
 
 test('the panel reports a field it cannot draw, naming its scope', async ({ page }) => {

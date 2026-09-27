@@ -94,14 +94,12 @@ test('ONE button: "Filters", a plus; hidden chips first, then Added, Available, 
 test('the button is ON while a hidden chip is, and a drill inside it adds nothing', async ({ page }) => {
   await mount(page, 560);
   const r = await page.evaluate(async () => {
-    const el = document.querySelector('sherpa-quick-filter-toolbar') as unknown as Bar & {
-      pickedValues: Record<string, string[]>; heldIds: string[];
-    };
+    const el = document.querySelector('sherpa-quick-filter-toolbar') as unknown as Bar;
     const sr = el.shadowRoot!;
     const btn = sr.querySelector<HTMLElement>('.add-btn')!;
     const menu = btn.querySelector('sherpa-menu') as HTMLElement & { shadowRoot: ShadowRoot; show(t: HTMLElement): void };
     const settle = () => new Promise<void>((res) => requestAnimationFrame(() => requestAnimationFrame(() => res())));
-    const held = [...el.heldIds];
+    const held = [...el.heldFields];
 
     const wait = () => new Promise((res) => setTimeout(res, 200));
     const back = async () => {
@@ -133,7 +131,7 @@ test('the button is ON while a hidden chip is, and a drill inside it adds nothin
     box.dispatchEvent(new Event('change', { bubbles: true }));
     menu.dispatchEvent(new CustomEvent('menu-change', { bubbles: true, composed: true, detail: { values: ['a'] } }));
     await settle();
-    const ticked = el.pickedValues[target] ?? null;
+    const ticked = el.readings[target]?.picked ?? null;
 
     // BACK: the button's own menu again, with its own Apply.
     menu.shadowRoot.querySelector<HTMLElement>('.drill-back')!.click();
@@ -143,8 +141,8 @@ test('the button is ON while a hidden chip is, and a drill inside it adds nothin
       back: { heading: menu.getAttribute('data-heading'), commit: menu.hasAttribute('data-commit'),
         first: menu.firstElementChild?.classList.contains('menu-section') ?? false },
       // A pick inside a drill is that chip's, never an Add or a Remove.
-      held: el.heldIds.join(',') === held.join(','),
-      kept: el.pickedValues[target] ?? null,
+      held: el.heldFields.join(',') === held.join(','),
+      kept: el.readings[target]?.picked ?? null,
     };
   });
 

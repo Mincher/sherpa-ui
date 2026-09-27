@@ -22,10 +22,10 @@ import {
 import { report } from '../../core/data/report.js';
 import {
   DEFAULT_OP, OP_TAKES,
-  type Filter, type FilterOp,
+  type FilterOp,
 } from '../../core/data/store.js';
 import {
-  fieldState, savedReading, stateClause,
+  fieldState, savedReading,
   type FieldCondition, type FieldReading, type FilterState,
 } from '../../core/data/filter-state.js';
 import type { SavedFilter } from '../../core/browser/saved-filters.js';
@@ -508,7 +508,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * answered by its menu takes `setChipValues` or `setChipReading` instead.
    * TRAP T-a-silent-write-still-needs-a-way-to-report
    */
-  setChipActive(id: string, on: boolean): void {
+  #setChipActive(id: string, on: boolean): void {
     const chip = this.#chips().find((c) => c.dataset['id'] === id);
     if (chip) chip.current = on;
   }
@@ -653,19 +653,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       .filter((c) => c.hasAttribute('data-superseded'))
       .map((c) => c.dataset['id'] ?? '')
       .filter(Boolean);
-  }
-
-  /** Every menu chip's picks, on or OFF. The counterpart to `values`. */
-  get pickedValues(): Record<string, string[]> {
-    const out: Record<string, string[]> = {};
-    for (const chip of this.#chips()) {
-      if (!chip.hasAttribute('data-menu')) continue;
-      const id = chip.dataset['id'];
-      if (!id) continue;
-      const picked = this.#chipPicks(chip);
-      if (picked.length) out[id] = picked;
-    }
-    return out;
   }
 
   /** What one chip's menu holds — values ticked, or a date as one or two entries. */
@@ -1106,12 +1093,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // TRAP T-values-carries-two-shapes — `scope` says WHICH shape this is.
       scope: 'bar',
       active: this.active,
-      // APPLIED: only ON chips. REMEMBERED: including chips toggled off.
+      // APPLIED: only ON chips. A source reads `readings` and `presets` off the
+      // bar; `values` is for a host that wants the ticks — the View chip's.
       values: this.values,
-      picked: this.pickedValues,
-      // Ready for a DataSource, for the chips that carry a CONDITION. A view
-      // that offers no conditions never sees this and reads `values` as before.
-      clauses: this.clauses,
     });
     this.#syncSaveable();
   }
@@ -1124,7 +1108,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #syncSaveable(): void {
     const saves = this.hasAttribute('data-saveable');
     let any = false;
-    for (const [field, state] of Object.entries(this.states)) {
+    for (const [field, state] of Object.entries(this.#states)) {
       const on = state.fieldState === 'active';
       any ||= on;
       this.#filterMenu(field)?.toggleAttribute('data-saveable',
@@ -1140,7 +1124,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * TRAP T-save-packs-the-fields-into-one-chip
    */
   #requestSave(chip: HTMLElement | null, fromAdd: boolean): void {
-    const states = this.states;
+    const states = this.#states;
     const fields = fromAdd
       ? Object.keys(states).filter((f) => states[f]!.fieldState === 'active')
       : [chip?.dataset['id'] ?? ''].filter((f) => f in states);
@@ -1263,29 +1247,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
-   * Every condition chip as a ready FilterClause, by chip id.
-   *
-   * A chip WITHOUT `custom: true` is absent: its meaning is `values`, and
-   * a second shape for the same fact is a second answer. A chip on a typing
-   * condition with nothing typed is absent too — an empty value says nothing.
-   *
-   * This is the shape the column heading's filter menu already reports, so one
-   * field filtered from either place reaches the data layer identically.
-   * TRAP T-an-operator-decides-pick-or-type
-   */
-  get clauses(): Record<string, Filter> {
-    /* `Filter`, not `FilterClause`: a field the reader gave SEVERAL conditions
-       reports a GROUP — `['or', …]` — and a caller ANDs it in exactly as it
-       would one clause. TRAP T-many-conditions-are-one-reading */
-    const out: Record<string, Filter> = {};
-    for (const [field, state] of Object.entries(this.states)) {
-      const clause = stateClause(state);
-      if (clause) out[field] = clause;
-    }
-    return out;
-  }
-
-  /**
    * What a reader DID to each field — the parameters, not an answer.
    *
    * This is what a host sends to the data layer (`source.apply(bar.readings)`),
@@ -1383,61 +1344,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * `readings` to the data layer; this is for asking what a bar holds.
    * TRAP T-one-state-per-filtered-field
    */
-  get states(): Record<string, FilterState> {
+  get #states(): Record<string, FilterState> {
     const out: Record<string, FilterState> = {};
     for (const [field, { label, values, ...reading }] of Object.entries(this.#answers())) {
       out[field] = fieldState({ field, label, values }, reading);
     }
     return out;
-  }
-
-  /**
-   * setClause(id, clause) — set ONE condition chip from a ready FilterClause.
-   *
-   * The write path for `clauses`, and the door a COLUMN heading's filter menu
-   * comes through: `column-filter-change` reports exactly this shape, so one
-   * field filtered from the heading shows the same condition and value on its
-   * chip. `null` clears the chip back to no condition.
-   *
-   * SILENT — echoing a change back to whoever set it filters twice.
-   * TRAP T-an-operator-decides-pick-or-type
-   */
-  setClause(id: string, clause: readonly [string, FilterOp, unknown] | null): void {
-    const menu = this.#filterMenu(id);
-    if (!menu) {
-      /* A CONDITION needs a filter menu to live in. A chip that is a toggle,
-         a selector or a date has none, so the clause would vanish.
-         TRAP T-a-broken-assumption-reports */
-      report({
-        code: 'no-filter-menu',
-        message: 'setClause: that chip has no filter menu, so the clause was dropped.',
-        at: { id, held: this.#filters.map((f) => f.id).join(',') },
-      });
-      return;
-    }
-
-    if (!clause) {
-      menu.dataset['op'] = DEFAULT_OP;
-      menu.conditionValue = '';
-      this.setChipValues(id, []);
-      return;
-    }
-
-    const [, op, value] = clause;
-    /* `in`/`notin` are how SEVERAL picks read; the menu's own condition stays
-       `eq`/`ne`, because its dropdown offers no "is one of" — the ticked list
-       IS the "one of". TRAP T-an-operator-decides-pick-or-type */
-    const own = op === 'in' ? 'eq' : op === 'notin' ? 'ne' : op;
-    menu.dataset['op'] = own;
-
-    if ((OP_TAKES[own] ?? 'list') === 'text') {
-      menu.conditionValue = value == null ? '' : String(value);
-    } else {
-      const picks = (Array.isArray(value) ? value : [value])
-        .filter((v) => v != null)
-        .map((v) => String(v));
-      this.setChipValues(id, picks);
-    }
   }
 
   /**
@@ -1506,17 +1418,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
-   * What the Add button is OFFERING — the read-back half of `available()`.
-   *
-   * A host that set something needs to ask what the bar now holds: a filter
-   * panel draws its own Add control per scope and cannot see into this
-   * shadow root. TRAP T-a-panel-adds-through-the-bar-that-owns-the-list
-   */
-  get offering(): QuickFilterDef[] {
-    return allow(this.#available, this.#allowedFields);
-  }
-
-  /**
    * addFilters([...ids]) — put offered filters on this bar, as the Add button
    * does. The one door, so a panel's Add and the bar's own Add cannot drift.
    * TRAP T-a-panel-adds-through-the-bar-that-owns-the-list
@@ -1536,7 +1437,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /** The ids this bar is holding — the read-back `populate()` never had. */
-  get heldIds(): string[] {
+  get #heldIds(): string[] {
     return this.#filters.map((f) => f.id);
   }
 
@@ -1562,7 +1463,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     for (const def of [...this.#filters]) {
       if (!want.has(def.id) && def.removable && def.field !== null) this.#removeFilter(def.id, { silent: true });
     }
-    const add = [...want].filter((id) => !this.heldIds.includes(id)
+    const add = [...want].filter((id) => !this.#heldIds.includes(id)
       && this.#available.some((f) => f.id === id));
     if (add.length) this.#addFilters(add, { silent: true });
     // A rebuilt bar reads empty until its menus stamp. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp
@@ -1577,7 +1478,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if (persistent.has(id)) continue;
       this.setChipReading(id, reading);
       // OFF keeps the answer and applies none of it. TRAP T-grid-suspend-is-not-clear
-      if (reading.suspended) this.setChipActive(id, false);
+      if (reading.suspended) this.#setChipActive(id, false);
     }
     /* THE WHOLE SCOPE: a chip it does not answer is EMPTY — a View is a clean
        slate. A superseded chip keeps the reader's own picks. TRAP T-a-view-is-json */
@@ -1588,33 +1489,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if (this.#filterMenu(def.id)) this.#clearField(def.id);
       else if (chip.hasAttribute('data-menu')) this.setChipValues(def.id, []);
     }
-    for (const def of this.#filters) if (def.readings) this.setChipActive(def.id, !!presets[def.id]);
-  }
-
-  /**
-   * The DEFS this bar holds, each carrying what the reader has answered.
-   *
-   * A SECOND VIEW of the same fields — a filter panel — draws from this. It
-   * used to read them out of this shadow root instead, which meant scraping
-   * the value rows off a menu that might not be here at all.
-   * TRAP T-a-panel-builds-its-own-menus
-   */
-  get held(): QuickFilterDef[] {
-    const readings = this.#answers();
-    // A chip with no field reading — a toggle, a saved filter — is on or off AS IT IS.
-    const on = new Set(this.#chips().filter((c) => c.current).map((c) => c.dataset['id']));
-    return this.#filters.map((def) => {
-      const reading = readings[def.id];
-      if (!reading) return { ...def, active: on.has(def.id) };
-      const picked = new Set((reading.picked ?? []).map(String));
-      return {
-        ...def,
-        state: reading,
-        ...(def.options
-          ? { options: def.options.map((o) => ({ ...o, selected: picked.has(o.value) })) }
-          : {}),
-      };
-    });
+    for (const def of this.#filters) if (def.readings) this.#setChipActive(def.id, !!presets[def.id]);
   }
 
   /**
