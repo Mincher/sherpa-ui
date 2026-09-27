@@ -1015,3 +1015,30 @@ test('a grid heading answers through the source, and is told what the View holds
   source.answer('view', { region: { picked: ['EMEA'] } });
   assert.deepEqual(columns.at(-1), [{ region: { picked: ['EMEA'] } }, 'View filters']);
 });
+
+/* A COMPONENT'S OWN DEFAULT filter narrows it alone, and a View that does not
+   name its scope keeps it. TRAP T-a-component-default-outlives-a-view */
+test('declareDefault: a component narrows itself alone, and a View pick keeps it', async () => {
+  const rows = [{ id: 1, sev: 'critical' }, { id: 2, sev: 'info' }, { id: 3, sev: 'critical' }];
+  const source = new DataSource({ store: new ArrayStore(rows, { key: 'id' }) });
+  const seen = new Map();
+  const stub = (name) => Object.assign(new EventTarget(), {
+    id: name, setAttribute() {}, removeAttribute() {}, hasAttribute: () => false,
+    populate: (r) => seen.set(name, r.map((x) => x.id)),
+  });
+  const tile = stub('tile');
+  const other = stub('other');
+  source.bind(tile, { rows: 'all', readonly: true });
+  source.bind(other, { rows: 'all', readonly: true });
+  await source.load();
+  source.declareDefault('own:tile', { sev: { picked: ['critical'] } }, { only: tile });
+  await new Promise((r) => setTimeout(r, 0));
+  assert.deepEqual(seen.get('tile'), [1, 3]);
+  assert.deepEqual(seen.get('other'), [1, 2, 3]);
+  // A View that names nothing of the tile's: the default is put back.
+  await source.setQuery({ v: 1, scopes: { view: { holds: [], readings: {} } } }, { holds: 'keep' });
+  assert.deepEqual(source.query.applied.scopes['own:tile'].readings.sev.picked, ['critical']);
+  // Forgotten, it narrows nothing.
+  source.declareDefault('own:tile', undefined);
+  assert.equal(source.query.applied.scopes['own:tile'], undefined);
+});

@@ -9,7 +9,7 @@ import {
   ArrayStore, DataSource, VIEW_SCOPE, viewOptions, onViewPicked,
   loadSavedViews, saveViewAs,
   // Aggregation lives in the data layer, not here. TRAP T-aggregation-is-data.
-  bandBy, summarise,
+  bandBy,
 } from '../../dist/index.js';
 import { globalFilters } from './global-filters.js';
 import { namePrompt } from './ask-name.js';
@@ -102,18 +102,6 @@ export async function init(root) {
     content.abort();
     content = new AbortController();
   };
-
-  /* CRITICAL narrows its OWN rows, and a component's own filter is the Query's
-     to hold (provider P3). Until then it is bound by hand, through the same
-     summary a declaration gets. TRAP T-a-summary-binds-to-all-the-rows */
-  const critical = $('#m-alerts');
-  if (critical) {
-    source.bind(critical, {
-      readonly: true, rows: 'all', signal: page.signal,
-      as: (rows, src) => summarise(rows.filter((r) => r.severity === 'critical'),
-        { shape: 'aggregate', over: 'day' }, (f) => src.valuesFor(f)),
-    });
-  }
 
   // The gauge legend names THRESHOLD ZONES. No colour indices: a zone's colour
   // is a status, not a categorical series hue.

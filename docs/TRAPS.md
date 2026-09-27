@@ -11142,7 +11142,6 @@ out.
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/summary-scope.test.mjs`
 - Site: `examples/contexts/records.js`
-- Site: `examples/contexts/dashboard.js`
 
 ### T-a-legend-row-goes-inactive-it-never-vanishes
 
@@ -13375,6 +13374,32 @@ never been bound.
 - Site: `src/core/data/query.ts`
 - Site: `test/unit/query.test.mjs`
 
+### T-a-component-default-outlives-a-view
+
+**A component's OWN filter — `data-readings`, the Query's readings by field as
+JSON — narrows that component alone, and a View pick keeps it.** Provider
+P3e, 2026-09-27. The Dashboard's Critical tile counts critical alerts only;
+before this it was bound by hand, because a component filter written into the
+Query vanished at the first View pick: `setQuery` replaces the whole Query, and
+a View is a clean slate.
+
+The provider reads the attribute (the component's own, never inherited) and
+calls `source.declareDefault('own:<id>', readings, { only: el })`: a scope
+that narrows that one component, like a legend's. The source keeps it as a
+DEFAULT and puts it back under any Query that does not name that scope — a
+View, or a restore from before the component joined. A View's JSON may name
+the scope to change it. When the component leaves, its default goes with it.
+
+Narrowing one component needs a bound `rows: 'all'` component — a summary —
+or `write` reports `component-part-on-a-page`. Bad JSON reports
+`provider-bad-readings`, and the component filters nothing of its own.
+
+- Site: `examples/templates/dashboard.html`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `test/e2e/reforged-provider-summary.spec.ts`
+- Site: `test/unit/headless-data-layer.test.mjs`
+
 ### T-a-heading-asks-through-the-source
 
 **A grid's column heading answers through the source, and is told what the
@@ -13566,10 +13591,8 @@ reads the attributes into its JSON. Five things to know:
   declared points, a bucketed series fills every step from first to last.
 - **A legend's pick narrows its chart alone** — through its `picked` door,
   wired by `bindSelection` with component reach.
-- **A component's OWN filter is not here yet.** A View pick replaces the whole
-  Query, so a default reading written by a component would vanish. The
-  Dashboard's Critical tile stays bound by hand until the Query holds a
-  component's defaults (provider P3).
+- **A component's OWN filter is `data-readings`** — see
+  `T-a-component-default-outlives-a-view`.
 
 A new declaration asks again: the base class leaves and re-asks when a
 `SUMMARY_PROPS` attribute, `data-source` or `data-scope` changes.

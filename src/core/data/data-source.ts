@@ -34,6 +34,7 @@
  * - .setFilter — Replace the WHOLE filter, clearing every contribution.
  * - .contribute — Own ONE NAMED PART — the COMPONENT scope.
  * - .write — Write ONE scope's reading of ONE field — a component's own answer.
+ * - .declareDefault — A component's OWN default filter — readings that narrow `only` it — as its scope in the Query.
  * - .reading — One scope's reading of one field, or undefined.
  * - .contributions — Every named part currently applied — the component-scope filters.
  * - .apply — Apply a whole control's READING of several fields, at one scope.
@@ -346,6 +347,9 @@ export class DataSource extends EventTarget {
   #fields = new Map<string, FieldDeclaration>();
   /** Each preset's name, and whether the reader may edit it. */
   #presetFacts = new Map<string, { label?: string; editable?: boolean }>();
+  /** Each component's OWN default filter, by its scope — put back under any
+   *  Query that does not name that scope. TRAP T-a-component-default-outlives-a-view */
+  #defaults = new Map<string, ScopeQuery>();
   /** Each scope's name as a reader sees it. */
   #scopeLabels = new Map<string, string>();
 
@@ -599,6 +603,29 @@ export class DataSource extends EventTarget {
     // The shared filter did not move, so no load will push it: push it here.
     for (const [el, b] of this.#bound) if (narrows.includes(b.id)) this.#push(el);
     this.dispatchEvent(new CustomEvent('selection-change', { detail: { field, scope } }));
+  }
+
+  /**
+   * A component's OWN default filter — readings that narrow `only` it — as its
+   * scope in the Query. It is put back under any Query that does not name that
+   * scope, so a View pick keeps it; `undefined` forgets it and its scope.
+   * TRAP T-a-component-default-outlives-a-view
+   */
+  declareDefault(
+    scope: string,
+    readings: Readonly<Record<string, FieldReading>> | undefined,
+    at: { only?: Populatable } = {},
+  ): void {
+    const was = this.#draft.scopes[scope]?.readings ?? {};
+    if (!readings) {
+      this.#defaults.delete(scope);
+      for (const field of Object.keys(was)) this.write(scope, field, undefined);
+      return;
+    }
+    for (const field of Object.keys(was)) if (!(field in readings)) this.write(scope, field, undefined);
+    for (const [field, reading] of Object.entries(readings)) this.write(scope, field, reading, at);
+    const written = this.#draft.scopes[scope];
+    if (written) this.#defaults.set(scope, structuredClone(written));
   }
 
   /** One scope's reading of one field, or undefined. A copy. */
@@ -1358,6 +1385,10 @@ export class DataSource extends EventTarget {
       next.scopes[id] = { ...rest, holds: rest.holds ?? [], readings: rest.readings ?? {} };
       if (sort || group !== undefined || search !== undefined) this.#arrange({ sort, group, search });
     }
+    /* A component's OWN default filter outlives a View that does not name it,
+       and a restore from before it joined. A View may name it to change it.
+       TRAP T-a-component-default-outlives-a-view */
+    for (const [id, scope] of this.#defaults) next.scopes[id] ??= structuredClone(scope);
     // A RESTORE is exact; only a View keeps chips and shows its answers on them.
     if (!keep) return next;
     for (const [id, scope] of Object.entries(this.#draft.scopes)) {

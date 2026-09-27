@@ -135,6 +135,8 @@ export const SUMMARY_PROPS = {
   'data-over-field': { type: 'string', kind: 'style' },
   /** A date `data-over-field`, cut to this step. */
   'data-bucket': { type: 'enum', kind: 'style', values: ['day', 'month', 'year'] },
+  /** Its OWN default filter — readings by field, as JSON — narrowing it alone. */
+  'data-readings': { type: 'string', kind: 'style' },
 } as const satisfies PropMap;
 
 /**

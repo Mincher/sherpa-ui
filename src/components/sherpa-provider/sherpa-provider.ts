@@ -20,6 +20,7 @@ import { summarise, type SummarySpec } from '../../core/data/aggregate.js';
 import { bindSelection, type Selector } from '../../core/data/bind-selection.js';
 import { valueKey } from '../../core/data/store.js';
 import type { DataSource } from '../../core/data/data-source.js';
+import type { FieldReading } from '../../core/data/filter-state.js';
 import type { Populatable } from '../../core/ui/apply-state.js';
 
 /** What a provider is given: its sources, by name. */
@@ -143,13 +144,51 @@ export class SherpaProvider extends SherpaElement {
       deliver: (payload) => callback(payload, leave),
     });
     const unpick = spec && asks.picks ? this.#picks(el as Picker, source, spec, asks.picks) : undefined;
+    const unown = this.#own(el, source);
     asked.unbind = () => {
+      unown?.();
       unpick?.();
       unbind();
     };
     // No rows ever come, so it is handed its way out now.
     if (asks.shape === 'state' || asks.shape === 'scope') callback(undefined, leave);
   }
+
+  /**
+   * A component's OWN default filter — `data-readings`, the Query's readings
+   * by field, as JSON — narrowing it alone, and outliving a View pick.
+   * TRAP T-a-component-default-outlives-a-view
+   */
+  #own(el: Element, source: DataSource): (() => void) | undefined {
+    const raw = el.getAttribute('data-readings');
+    if (!raw) return undefined;
+    let readings: Record<string, FieldReading>;
+    try {
+      readings = JSON.parse(raw) as Record<string, FieldReading>;
+    } catch {
+      report({
+        code: 'provider-bad-readings',
+        message: 'sherpa-provider: data-readings is not readings by field as JSON, so this component filters nothing of its own.',
+        at: { tag: el.localName, readings: raw },
+      });
+      return undefined;
+    }
+    const scope = `own:${el.id || this.#ownId(el)}`;
+    source.declareDefault(scope, readings, { only: el as Populatable });
+    return () => source.declareDefault(scope, undefined);
+  }
+
+  /** A name for a component with no id, kept while it lives. */
+  #ownId(el: Element): string {
+    let id = this.#ownIds.get(el);
+    if (!id) this.#ownIds.set(el, (id = `${el.localName}-${++this.#owned}`));
+    return id;
+  }
+
+  /** Each unnamed component's name. */
+  #ownIds = new WeakMap<Element, string>();
+  /** How many unnamed components have declared a filter of their own. */
+  #owned = 0;
 
   /** An attribute from the asking element, or the nearest one above it — a
    *  legend reads its chart's, a nested pager its grid's. Stops here. */

@@ -159,3 +159,27 @@ test('a grid scope filter narrows the grid, never a tile; a View filter narrows 
   expect(r['viewed']).toEqual({ grid: 3, tile: '3' });
   expect(r['reports']).toEqual([]);
 });
+
+/* A TILE'S OWN FILTER narrows it alone, and a View pick keeps it.
+   TRAP T-a-component-default-outlives-a-view */
+test('data-readings narrows its own tile, never a sibling, and outlives a View', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    provider.innerHTML = \`
+      <sherpa-metric id="all" data-aggregate="count"></sherpa-metric>
+      <sherpa-metric id="pro" data-aggregate="count" data-readings='{"plan":{"picked":["Pro"]}}'></sherpa-metric>\`;
+    const source = make();
+    provider.provide({ sources: { sales: source } });
+    await source.load();
+    await settle();
+    const $ = (s) => provider.querySelector(s).dataset.value;
+    const before = { all: $('#all'), pro: $('#pro') };
+    await source.setQuery({ v: 1, scopes: { view: { holds: ['day'], readings: { day: { picked: ['Mon'] } } } } }, { holds: 'keep' });
+    await settle();
+    return { before, after: { all: $('#all'), pro: $('#pro') }, reports };
+  })()`) as Record<string, Record<string, unknown>>;
+  expect(r['before']).toEqual({ all: '4', pro: '2' });
+  // Monday: two rows, one of them Pro.
+  expect(r['after']).toEqual({ all: '2', pro: '1' });
+  expect(r['reports']).toEqual([]);
+});

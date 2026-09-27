@@ -177,8 +177,11 @@ and 13 are done. **P3a and P3b built** — fields declared once on the
 source; the bars ask for their scope and report their holds. **P3c built**
 — the panel asks for its scopes, drawn whole by `describe()`. Also fixed on
 the way: 93 (only the View trickles down), 87 and 88. **P3d built** — the
-grid headings answer through the source. **Next: P3e** — a component's own
-default filter lives in the Query.
+grid headings answer through the source. **P3e built** — a component's own
+filter is `data-readings`, and a View pick keeps it. **P3 is done:
+`records.js` 1163 → 692 lines since P2 began, `dashboard.js` 331 → 225 (the
+size gate's count, comments in).** **Next: P4**
+— the View chip asks; the provider keeps the Views and the session Query.
 
 ### `[ ]` 86 — AUDIT: every component's functions and events — one request, one response, standardised in `SherpaElement`
 

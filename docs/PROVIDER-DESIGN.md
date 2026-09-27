@@ -181,13 +181,11 @@ Records filter suite proves it:
 | P3b ✅ | the bars ASK for their scope (`data-scope` in markup); a bar's report and its add and remove carry its holds; a raised answer is drawn where it lives; a bar below is told what the View holds | the header listener, `syncScopes`, `viewFields`, `headerField`, the raise and lower glue — Records −135 lines, the Dashboard −13 |
 | P3c ✅ | the panel ASKS for its scopes (`data-scope="view data"`); `describe(scope)` draws each whole; the source hears its answers, Add, Remove, Apply and Discard, and draws that scope's bar; panel mode hides a bar's chips in CSS | `fillPanel`, `refill`, `asPanelField`, `syncPanelled`, the panel's event routing — Records −176 lines; TODO 87 and 88 done |
 | P3d ✅ | a heading's answer is a steering event, and a new field gets its normal chip; every grid below the View is told what it holds | `showChip`, `syncHeadings`, the heading listener — Records −35 lines |
-| P3e | a component's own default filter lives in the Query, so a View pick keeps it | the Dashboard's Critical tile bind |
+| P3e ✅ | a component's own filter is `data-readings` — a DEFAULT scope narrowing it alone, put back under any View that does not name it | the Dashboard's Critical tile bind |
 
 The size gate shows each step's deletions.
 
-**Left for P3 and P4, on purpose.** A component's OWN filter (the Dashboard's
-Critical tile) needs the Query to hold a component's defaults, or a View pick
-wipes it — P3. The Records gauge shows risk (`100 − mean(health)`), a bespoke
+**Left for P4, on purpose.** The Records gauge shows risk (`100 − mean(health)`), a bespoke
 summary a page binds by hand, which stays. A View's rendered content (the
 histogram, the fullest-devices grid) is bound by the page until P4.
 

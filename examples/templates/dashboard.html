@@ -11,8 +11,11 @@
        the rows, and its provider answers. TRAP T-a-component-declares-its-summary -->
   <sherpa-metric id="m-endpoints" data-col-span="xsmall" data-label="Alerts"
                  data-aggregate="count" data-over-field="day"></sherpa-metric>
-  <!-- Its own filter (critical only) is dashboard.js's until the Query holds it. -->
-  <sherpa-metric id="m-alerts" data-col-span="xsmall" data-label="Critical"></sherpa-metric>
+  <!-- Its OWN filter, critical only: it narrows this tile alone, and a View
+       pick keeps it. TRAP T-a-component-default-outlives-a-view -->
+  <sherpa-metric id="m-alerts" data-col-span="xsmall" data-label="Critical"
+                 data-aggregate="count" data-over-field="day"
+                 data-readings='{"severity":{"picked":["critical"]}}'></sherpa-metric>
   <sherpa-metric id="m-uptime" data-col-span="xsmall" data-label="Mean storage"
                  data-aggregate="mean" data-field="storage" data-over-field="day"
                  data-format='{"style":"unit","unit":"percent","maximumFractionDigits":0}'></sherpa-metric>

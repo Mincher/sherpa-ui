@@ -95,6 +95,12 @@ props:
     kind: style
     description: — the sparkline runs over this field
   - $type: prop
+    name: data-readings
+    type: string
+    observed: false
+    kind: style
+    description: — its OWN default filter, readings by field as JSON; narrows this tile alone
+  - $type: prop
     name: data-trend
     type: string
     observed: false
