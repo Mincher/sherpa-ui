@@ -16,7 +16,7 @@
   "src/components/sherpa-container-footer/sherpa-container-footer.ts": 22,
   "src/components/sherpa-container-header/sherpa-container-header.ts": 63,
   "src/components/sherpa-container/sherpa-container.ts": 30,
-  "src/components/sherpa-data-grid/sherpa-data-grid.ts": 2035,
+  "src/components/sherpa-data-grid/sherpa-data-grid.ts": 2042,
   "src/components/sherpa-dialog/sherpa-dialog.ts": 113,
   "src/components/sherpa-empty-state/sherpa-empty-state.ts": 24,
   "src/components/sherpa-file-upload/sherpa-file-upload.ts": 192,
@@ -228,6 +228,6 @@
   "examples/contexts/global-filters.js": 103,
   "examples/contexts/records-data.js": 198,
   "examples/contexts/records-views.js": 78,
-  "examples/contexts/records.js": 1214,
+  "examples/contexts/records.js": 1209,
   "examples/contexts/settings.js": 89
 }

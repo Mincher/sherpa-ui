@@ -949,6 +949,10 @@ export class SherpaDataGrid extends SherpaElement {
    * TRAP T-a-view-held-heading-shows-and-refuses
    */
   supersedeColumns(readings: Readonly<Record<string, FieldReading>>, appliedAt?: string): void {
+    // The same answer again rebuilds nothing — a host sends it on every change.
+    const key = JSON.stringify([readings, appliedAt ?? null]);
+    if (key === this.#supersededKey) return;
+    this.#supersededKey = key;
     this.#superseded = new Map(Object.entries(readings));
     this.#supersededAt = appliedAt;
     this.#renderHead();
@@ -960,6 +964,9 @@ export class SherpaDataGrid extends SherpaElement {
 
   /** Where they are held, for each chip's tip. */
   #supersededAt: string | undefined;
+
+  /** What `supersedeColumns` was last given, as one comparable string. */
+  #supersededKey = '';
 
   /** What a heading SHOWS: a higher scope's answer when it holds the field, else its own. */
   #shown(field: string): ColumnFilter | undefined {

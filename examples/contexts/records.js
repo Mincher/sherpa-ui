@@ -844,24 +844,21 @@ export async function init(root, { session, view } = {}) {
     return (bar?.heldIds ?? []).map(headerField).filter(Boolean);
   };
 
-  /* THE GRID'S HEADINGS SHOW WHAT THE VIEW HOLDS: each field the header bar
-     holds, with the header's answer, read-only in its heading — so a heading
-     cannot contradict it. Will, 2026-09-26.
-     TRAP T-a-view-held-heading-shows-and-refuses */
+  /* THE GRID'S HEADINGS SHOW WHAT THE VIEW HOLDS: each field the View scope
+     holds, with its answer, read-only in its heading — so a heading cannot
+     contradict it. Read from the QUERY, on every change to it. Will, 2026-09-26.
+     TRAP T-a-view-held-heading-shows-and-refuses · TRAP T-one-query-one-owner */
   const syncHeadings = () => {
-    const bar = header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
-    const readings = bar?.readings ?? {};
-    const held = {};
-    for (const id of bar?.heldIds ?? []) {
-      const field = headerField(id);
-      if (!field || !byField.has(field)) continue;
-      const r = readings[id];
-      held[field] = r && !r.suspended
-        ? { picked: r.picked, op: r.op, text: r.text, conditions: r.conditions }
-        : {};
-    }
+    const view = source.query.applied.scopes[VIEW_SCOPE] ?? { holds: [], readings: {} };
+    const held = Object.fromEntries(view.holds.filter((f) => byField.has(f)).map((f) => {
+      const r = view.readings[f];
+      return [f, r && !r.suspended ? r : {}];
+    }));
     grid.supersedeColumns?.(held, SCOPE_LABELS[VIEW_SCOPE]);
   };
+  for (const type of ['scope-change', 'selection-change']) {
+    source.addEventListener(type, syncHeadings, { signal });
+  }
 
   /* The component bar SUSPENDS any field the view took. It keeps the chip and
      the reader's picks; both come back when the view lets the field go.
@@ -877,7 +874,6 @@ export async function init(root, { session, view } = {}) {
     /* The App Header owns these fields now, and the chips below say so rather
        than going quietly grey. TRAP T-an-inactive-chip-says-where-its-filter-went */
     qft.supersede(raised, SCOPE_LABELS[VIEW_SCOPE]);
-    syncHeadings();
     // The header's Add notes say where each field lives — which just changed.
     header?.available(addable(VIEW_SCOPE, viewHeld()));
   };
@@ -896,7 +892,6 @@ export async function init(root, { session, view } = {}) {
     }
     // The VIEW scope's whole answer, in the Query. TRAP T-one-query-one-owner
     source.answer(VIEW_SCOPE, readings);
-    syncHeadings();
   }, { signal });
 
   /* RAISING CARRIES THE ANSWER. A field the view takes from a component keeps
