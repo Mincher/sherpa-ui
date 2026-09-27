@@ -5,6 +5,10 @@
     data-align  start | end (default) | between | stretch
                 At "stretch" ONE wide control fills the row (a chat composer,
                 a search field), rather than buttons clustered at one end.
+    data-dirty  true | false — the HOST says whether anything has changed.
+                False turns its pair off: the controls marked
+                data-footer="commit" and data-footer="revert". Absent, the
+                footer leaves them alone. TRAP T-the-footer-owns-nothing-to-save
 
   Slots:
     (default) — footer action controls (reflects data-has-content-slot)

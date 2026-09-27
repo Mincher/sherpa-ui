@@ -198,6 +198,12 @@ export class SherpaMenu extends SherpaElement {
     this.addEventListener('click', this.#onClick);
     this.$('.apply')?.addEventListener('click', this.#onApply);
     this.$('.cancel')?.addEventListener('click', this.#onCancel);
+    /* The FOOTER owns "nothing to apply"; this menu only reports whether its
+       draft changed. TRAP T-the-footer-owns-nothing-to-save */
+    for (const type of ['input', 'change']) {
+      this.addEventListener(type, this.#onDraft);
+      this.shadowRoot?.addEventListener(type, this.#onDraft);
+    }
     this.$('.clear')?.addEventListener('click', this.#onClear);
     this.$('.today')?.addEventListener('click', this.#onToday);
     this.$('.remove')?.addEventListener('click', this.#onRemove);
@@ -1178,6 +1184,7 @@ export class SherpaMenu extends SherpaElement {
     if (open) {
       this.#baseline = this.values;
       this.#conditionBaseline = this.conditions;
+      this.#syncDirty();
       /* These live while the menu is OPEN, which is shorter than the element's
          life — `while` is that shorter lifetime, and the base class ANDs it
          with its own disconnect signal.
@@ -1341,6 +1348,20 @@ export class SherpaMenu extends SherpaElement {
   get #commits(): boolean {
     return this.hasAttribute('data-commit');
   }
+
+  /** Tell the footer whether Apply has anything to take — a committing menu only. */
+  #syncDirty(): void {
+    const footer = this.$<HTMLElement>('.footer');
+    if (!footer) return;
+    if (this.#commits) footer.dataset['dirty'] = String(this.dirty);
+    else delete footer.dataset['dirty'];
+  }
+
+  /** A tick or a keystroke: the event carries the new state, so read it NOW —
+   *  an Apply pressed in the same moment must already be on. */
+  #onDraft = (): void => {
+    this.#syncDirty();
+  };
 
   /** True while Apply or Cancel is closing the card — they own the values. */
   #applying = false;

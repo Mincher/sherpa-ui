@@ -664,3 +664,48 @@ test('a menu opened with no trigger falls back to the nearest drawn box', async 
   expect(r.x).toBeGreaterThan(100);
   expect(r.y).toBeGreaterThanOrEqual(r.hostY);
 });
+
+/**
+ * THE FOOTER OWNS "NOTHING TO APPLY". Will, 2026-09-26 (TODO 66): a committing
+ * menu's Apply and Cancel are OFF until its draft differs from what it opened
+ * with. The menu only REPORTS `data-dirty` to its footer; the footer turns its
+ * declared pair (`data-footer="commit"` / `"revert"`) off and on.
+ * TRAP T-the-footer-owns-nothing-to-save
+ */
+test('a committing menu\'s Apply and Cancel wait for a change', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '';
+    const menu = document.createElement('sherpa-menu') as HTMLElement & {
+      rendered: Promise<void>; show(): void; hide(): void };
+    menu.setAttribute('data-commit', '');
+    for (const v of ['a', 'b']) {
+      const label = document.createElement('label');
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.value = v;
+      label.append(input, document.createTextNode(v));
+      menu.appendChild(label);
+    }
+    root.appendChild(menu);
+    await menu.rendered;
+    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const sr = menu.shadowRoot!;
+    const off = () => ({
+      apply: sr.querySelector('.apply')!.hasAttribute('disabled'),
+      cancel: sr.querySelector('.cancel')!.hasAttribute('disabled'),
+    });
+    menu.show();
+    await settle();
+    const opened = off();
+    menu.querySelector<HTMLInputElement>('input')!.click();
+    const ticked = off();
+    // Ticked back: nothing differs any more.
+    menu.querySelector<HTMLInputElement>('input')!.click();
+    const back = off();
+    return { opened, ticked, back };
+  });
+  expect(r.opened).toEqual({ apply: true, cancel: true });
+  expect(r.ticked).toEqual({ apply: false, cancel: false });
+  expect(r.back).toEqual({ apply: true, cancel: true });
+});

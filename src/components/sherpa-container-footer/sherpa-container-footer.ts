@@ -1,9 +1,9 @@
 /**
  * sherpa-container-footer — the footer strip inside a container.
  *
- * No JS: CSS owns the alignment and hides the footer when nothing is slotted.
- *
- * Fires: nothing — slotted controls emit their own events.
+ * CSS owns the alignment and hides the footer when nothing is slotted. Its one
+ * job in JS: a host that reports `data-dirty` gets its commit and revert pair
+ * turned off while nothing has changed. TRAP T-the-footer-owns-nothing-to-save
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 
@@ -15,7 +15,35 @@ export class SherpaContainerFooter extends SherpaElement {
      rule is a public API and belongs in one place. */
   static override props = {
     'data-align': { type: 'enum', kind: 'style', values: ['between', 'end', 'start', 'stretch'] },
+    /* The HOST reports whether anything changed. Absent, the pair is left alone. */
+    'data-dirty': { type: 'enum', kind: 'style', values: ['true', 'false'] },
   } as const;
+
+  override onRender(): void {
+    this.$('slot')?.addEventListener('slotchange', () => this.#syncPair());
+  }
+
+  override onChange(name: string): void {
+    if (name === 'data-dirty') this.#syncPair();
+  }
+
+  /** Turn the DECLARED pair — `data-footer="commit"` and `"revert"` — off while
+   *  the host says nothing changed. Never guessed from a label. Once the host
+   *  stops reporting, only what THIS footer turned off comes back on. */
+  #syncPair(): void {
+    const dirty = this.dataset['dirty'];
+    const slot = this.$<HTMLSlotElement>('slot');
+    for (const el of slot?.assignedElements({ flatten: true }) ?? []) {
+      if (!el.matches('[data-footer="commit"], [data-footer="revert"]')) continue;
+      const off = dirty === 'false';
+      if (off) this.#turnedOff.add(el);
+      else if (!this.#turnedOff.delete(el)) continue;
+      el.toggleAttribute('disabled', off);
+    }
+  }
+
+  /** The pair this footer turned off itself. */
+  #turnedOff = new Set<Element>();
 }
 
 customElements.define('sherpa-container-footer', SherpaContainerFooter);

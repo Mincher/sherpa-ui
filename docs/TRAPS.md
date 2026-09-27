@@ -13329,6 +13329,30 @@ one object — so nothing is ever pending. A scope that narrows one component
 - Site: `test/e2e/reforged-remote-source.spec.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 
+### T-the-footer-owns-nothing-to-save
+
+**A footer's commit and revert pair is OFF until something changed — and the
+FOOTER does it, not each host.** Will, 2026-09-26 (TODO 66): *"so that all
+menus etc can inherit this common behaviour."* The filter panel built its own
+(`#syncDirty`, gone with its footer in step 6c), and `sherpa-menu` had a
+`dirty` getter its footer never used.
+
+A host REPORTS `data-dirty="true|false"` on its `sherpa-container-footer`;
+the footer turns off the controls marked `data-footer="commit"` and
+`data-footer="revert"` — declared, never guessed from a label. Absent, the
+footer leaves them alone, so a footer whose host does not report is
+unchanged; and when a host stops reporting, only what the footer itself
+turned off comes back on.
+
+`sherpa-menu` reports for a COMMITTING menu, on open and on every tick or
+keystroke — at once, not a microtask later: an Apply pressed in the same
+moment as the tick must already be on.
+
+- Site: `src/components/sherpa-container-footer/sherpa-container-footer.html`
+- Site: `src/components/sherpa-container-footer/sherpa-container-footer.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `test/e2e/reforged-menu.spec.ts`
+
 ### T-a-pending-chip-has-no-fill
 
 **A chip whose change is not applied yet is PENDING: the active purple EDGE,
