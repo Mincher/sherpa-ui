@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**62 open.** Reassessed 2026-09-26: the bugs that lie first, then the
+**60 open.** Reassessed 2026-09-26: the bugs that lie first, then the
 FOUNDATION — the one compiled query, the view definition and when Apply runs —
 before the filter features that stand on it. Numbers are ids, not order; the
 table IS the order.
@@ -39,11 +39,9 @@ table IS the order.
 | 13 | 83 | Calendar menu: a picked date leaves Apply and Discard looking off — yet they work | bug |
 | 14 | 16 | Favourite and Save apply to the Context, not the View | bug |
 | 15 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
-| 15a | 87 | Adding a filter to the View scope must not remove it from the component scope's Filters list | bug |
 | 15aa | 94 | A number (and range) filter menu needs Apply and Cancel buttons | bug |
 | 15ab | 95 | Firefox: a remote chip holding a draft is not marked pending | bug |
 | | | **D — Filters: Will's features, on the foundation** | |
-| 15b | 88 | A filter raised to the View scope: its component section keeps its heading, hides its options, and says where it went | feature |
 | 15c | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
 | 15d | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
 | 16 | 60 | Once applied, a chip's badge shows the number of results | feature |
@@ -176,8 +174,10 @@ pager ask. **P2 built** — charts, tiles and legends DECLARE what they need
 (`aggregate`, `segments`, `series`); the pages lost their adapters. The
 centralisation audit is `PROVIDER-DESIGN.md` §9, for review; its items 9
 and 13 are done. **P3a and P3b built** — fields declared once on the
-source; the bars ask for their scope and report their holds. Also fixed on
-the way: 93, only the View trickles down. **Next: P3c** — the panel asks.
+source; the bars ask for their scope and report their holds. **P3c built**
+— the panel asks for its scopes, drawn whole by `describe()`. Also fixed on
+the way: 93 (only the View trickles down), 87 and 88. **Next: P3d** — the grid
+headings.
 
 ### `[ ]` 86 — AUDIT: every component's functions and events — one request, one response, standardised in `SherpaElement`
 
@@ -196,28 +196,6 @@ rules. `PROVIDER-DESIGN.md` §9 is its first pass (the filter family, the
 base class, the wrapped controls, the charts). Still to cover: every public
 method and every event of all 63 components, side by side — same job,
 different name or different code.
-
-### `[ ]` 87 — Adding a filter to the View scope must not remove it from the component scope's Filters list
-
-Will, 2026-09-27: *"Adding a filter to the view scope shouldn't remove it
-from the component scope Filters list."* The field stays in the component
-scope's Filters (Add) list after it is raised; 88 is how its section then
-looks. Two views of one scope: the Query holds the field at the View scope,
-and the component scope still OFFERS it (`offer`), it does not hold it.
-
-### `[ ]` 88 — A filter raised to the View scope: its component section keeps its heading, hides its options, and says where it went
-
-Will, 2026-09-27: *"If a filter is added at component scope, in the filter
-panel, then added again to the view scope then the filter options should be
-hidden (in the component scope) but the section heading should remain and a
-description row added below stating that the filter is now at the view scope.
-Similar to the text in the toolbar chip tooltip."*
-
-In the panel's component scope: the field's section heading stays; its
-options hide; a description row under the heading says the filter is now at
-the View scope — the same words as the toolbar chip's tooltip, from ONE
-place, not a second copy. Lands with provider P3, where the panel asks for its
-scopes and draws each from the Query.
 
 ### `[ ]` 89 — Every filter added to the panel starts SIMPLE
 
@@ -1153,6 +1131,7 @@ One line each. The detail is in git and in the trap named.
 
 **2026-09-27, the provider (85)**
 - 93: a grid-scope filter narrowed the charts and tiles too — only the View trickles down now; a summary is under the View alone — `T-only-the-view-trickles-down`
+- 87 and 88: a field raised to the View stays in its component scope's Filters list, its section keeps its heading and says "Filter applied at higher scope." — provider P3c, `T-a-panel-asks-for-its-scopes`
 
 **2026-09-27, the Query — steps 1 to 6 (73)**
 - Steps 1–5: one Query, held by the source, compiled on demand; bars, the open panel, the header, legends and headings are drawn from it; the session saves and restores it — 827cadd8 to b59363d4, `T-one-query-one-owner`

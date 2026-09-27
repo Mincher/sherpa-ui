@@ -942,3 +942,48 @@ test('filterDef, declareScope and addable: one definition per field, and what a 
   assert.deepEqual(source.addable('view').map((d) => [d.id, d.note]), [['plan', 'in grid'], ['email', undefined]]);
   assert.equal(source.scopeLabel('grid'), 'grid');
 });
+
+/* THE PANEL ASKS for its scopes: the source describes each WHOLE, and hears its
+   Add, its Remove and its answers. TRAP T-a-panel-asks-for-its-scopes */
+test('describe draws a scope whole; a panel over two scopes adds, raises and answers through the source', async () => {
+  const source = new DataSource({ store: new ArrayStore([{ id: 1, plan: 'Pro' }, { id: 2, plan: 'Free' }], { key: 'id' }) });
+  source.declareField('plan', { label: 'Plan', select: 'multiple' });
+  source.declareValues('plan', ['Free', 'Pro']);
+  source.declareScope('view', { label: 'View filters' });
+  source.declarePreset('pro-only', { plan: { picked: ['Pro'] } }, { label: 'Pro only', editable: true });
+  source.offer('grid', ['plan']);
+  const drawn = [];
+  const panel = Object.assign(new EventTarget(), {
+    setAttribute() {}, removeAttribute() {}, hasAttribute: () => false,
+    drawScopes: (scopes) => drawn.push(scopes),
+  });
+  source.bind(panel, { steerOnly: true, scope: ['view', 'grid'] });
+  const ask = (type, detail) => panel.dispatchEvent(new CustomEvent(type, { detail }));
+  const settle = () => new Promise((r) => setTimeout(r, 0));
+
+  ask('filter-add-request', { scope: 'grid', ids: ['plan', 'pro-only'] });
+  await settle();
+  const grid = drawn.at(-1).find((d) => d.scope === 'grid');
+  // A saved filter comes ON; the field is held, with its definition.
+  assert.deepEqual(grid.filters.map((f) => [f.id, f.active ?? null]), [['pro-only', true], ['plan', null]]);
+  assert.equal(grid.filters[0].label, 'Pro only');
+  assert.deepEqual(grid.group.map((c) => c.field), ['plan']);
+
+  // RAISED: the grid keeps it, and says where it went.
+  ask('filter-add-request', { scope: 'view', ids: ['plan'] });
+  await settle();
+  const after = drawn.at(-1);
+  assert.equal(after.find((d) => d.scope === 'grid').filters[1].appliedAt, 'View filters');
+  assert.deepEqual(after.find((d) => d.scope === 'view').filters.map((f) => f.id), ['plan']);
+
+  // Its answer — the changed field, in its scope — and a preset switched off.
+  ask('quick-filter-change', { readings: { view: { plan: { picked: ['Free'] } }, grid: { presets: { picked: [] } } } });
+  await settle();
+  assert.deepEqual(source.query.applied.scopes.view.readings.plan.picked, ['Free']);
+  assert.equal(source.query.applied.scopes.grid.presets['pro-only'], false);
+
+  // REMOVE lets it go.
+  ask('filter-remove', { scope: 'grid', id: 'pro-only' });
+  await settle();
+  assert.equal(source.query.applied.scopes.grid.presets?.['pro-only'], undefined);
+});

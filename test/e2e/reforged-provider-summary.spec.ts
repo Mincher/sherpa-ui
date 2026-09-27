@@ -32,7 +32,8 @@ const SETUP = `
     s.declareValues('day', ['Mon', 'Tue', 'Wed']);
     return s;
   };
-  const settle = () => new Promise((r) => setTimeout(r, 150));
+  // Every element rendered and painted — never a fixed wait.
+  const settle = () => window.__settled();
   const root = document.getElementById('root');
   root.innerHTML = '';
   const provider = document.createElement('sherpa-provider');

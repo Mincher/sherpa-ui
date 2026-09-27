@@ -38,6 +38,8 @@ export async function init(root, { session, view, remote = false } = {}) {
      after init is a no-op, and never resets what the session kept.
      TRAP T-a-reload-replays-the-readers-answers */
   const startView = view && RECORDS_VIEWS[view] ? view : 'all';
+  /** The days the records carry, read off their TIME. */
+  const days = [...new Set(customers.map((c) => c[source.timeField]))].filter(Boolean).sort();
 
   /* THE SOURCE, REACHABLE. `debugState()` answers every question a filter bug
      raises in one paste — rows, total, sort, group, filter, selections,
@@ -58,49 +60,6 @@ export async function init(root, { session, view, remote = false } = {}) {
   }
 
 
-
-  /**
-   * A toolbar filter def, as the PANEL takes it.
-   *
-   * FACTS ONLY. The panel builds its own menus from these, so nothing here
-   * reaches into a bar's shadow root to find a control.
-   * TRAP T-a-panel-builds-its-own-menus
-   */
-  /** A bar's filter with no values and no body: an on/off chip. */
-  const isPreset = (f) => !f.options?.length && !f.kind && !f.custom;
-
-  const asPanelField = (f) => ({
-    id: f.id,
-    // The FIELD it answers — the header's Date chip names the record's time.
-    field: f.field,
-    label: f.label,
-    options: f.options,
-    select: f.select,
-    removable: f.removable,
-    custom: f.custom,
-    kind: f.kind,
-    min: f.min,
-    max: f.max,
-    step: f.step,
-    range: f.range,
-    availableDates: f.availableDates,
-    op: f.op,
-    /* WHAT IS IN FORCE, from the bar's own read-back — so the panel opens on
-       the answer the rows are under. */
-    state: f.state,
-    // A SAVED filter carries its answer, and the reader's own can be edited.
-    readings: f.readings,
-    editable: f.editable,
-    /* ON OR OFF AS IT IS — a preset's whole state. Left out, every preset in
-       the panel read off, whatever the bar said. */
-    active: f.active,
-    /* A PRESET has no values AND no body of its own — one question, answered
-       yes or no. TRAP T-a-chip-with-no-field-is-a-preset */
-    preset: isPreset(f),
-    /* A DATE is ONE chip with its menu. Its menu IS a calendar, and a calendar
-       drawn inline is the whole panel. TRAP T-only-group-and-sort-stay-one-chip */
-    asChip: f.kind === 'date',
-  });
 
   const grid      = root.querySelector('#grid');
   const qft       = root.querySelector('#qft');
@@ -143,7 +102,7 @@ export async function init(root, { session, view, remote = false } = {}) {
        last-90-days, which no record in this set falls inside.
        TRAP T-a-record-has-a-time-of-its-own */
     filters: globalFilters(viewOptions(RECORDS_VIEWS, startView), regions, customerOrgs,
-      [...new Set(customers.map((c) => c[source.timeField]))].filter(Boolean).sort(),
+      days,
       source.timeField),
     /* The header's ADD list is set once the columns are known — below, from
        the same builder the grid's bar uses. TRAP T-up-is-open-down-is-closed */
@@ -185,7 +144,9 @@ export async function init(root, { session, view, remote = false } = {}) {
      chip, a heading and a legend offer the same STRINGS, so they share one
      selection. BEFORE the provider: a legend picks from them when answered.
      TRAP T-a-field-is-declared-once · TRAP T-one-field-one-filter-menu */
-  source.declareScope(VIEW_SCOPE, { label: 'App header' });
+  // A scope's ONE name — a panel section, an Add note, a raised chip.
+  // TRAP T-a-scope-is-named-for-its-content
+  source.declareScope(VIEW_SCOPE, { label: 'View filters' });
   source.declareScope('data', { label: 'Customer records' });
   /* Owner OPTS IN to conditions — a person's name, so "starts with" is a real
      question. TRAP T-conditions-are-opt-in-per-field */
@@ -202,6 +163,11 @@ export async function init(root, { session, view, remote = false } = {}) {
     });
     if (type === 'text' && !wall) source.declareValues(c.field, valuesOf(c.field));
   }
+  /* The record's TIME is the View's Date, over the days the records carry —
+     the header's Date chip, drawn one way everywhere.
+     TRAP T-a-record-has-a-time-of-its-own */
+  source.declareField(source.timeField, { label: 'Date' });
+  source.declareValues(source.timeField, days);
   /* `removable: true` — the DATA bar is the user's own to arrange, so each menu
      chip offers "Remove filter". No `commit`: a pick applies at once, and
      only a REMOTE source makes a menu wait for Apply (`?remote`).
@@ -244,6 +210,8 @@ export async function init(root, { session, view, remote = false } = {}) {
   source.offer('data', columns.map((c) => c.field));
   source.hold(VIEW_SCOPE, ['customer', 'region', source.timeField].filter(Boolean));
   source.hold('data', DATA_FIELDS);
+  // …and its presets, each off. TRAP T-a-saved-filter-is-its-readings
+  source.answer('data', {}, Object.fromEntries(DATA_FILTERS.filter((f) => f.readings).map((f) => [f.id, false])));
   const byField = new Map(columns.map((c) => [c.field, c]));
 
   /** What a bar may still add: what it has no chip for — so a restore can
@@ -267,7 +235,7 @@ export async function init(root, { session, view, remote = false } = {}) {
   /* EVERY saved filter's readings, told to the source — a restored Query says
      only which are ON. TRAP T-a-saved-filter-is-its-readings */
   for (const f of [...DATA_FILTERS, ...savedDefs()]) {
-    if (f.readings) source.declarePreset(f.id, f.readings);
+    if (f.readings) source.declarePreset(f.id, f.readings, { label: f.label, editable: !!f.editable });
   }
 
   /* The WHITELIST still decides. `null` is "everything this bar offers", which
@@ -298,48 +266,6 @@ export async function init(root, { session, view, remote = false } = {}) {
   const page = new AbortController();
   const signal = page.signal;
 
-  /* THE FILTER PANEL — the same filters, in a column. It reads the SAME
-     definitions the bars read; it never reaches into a toolbar.
-     TRAP T-the-panel-is-the-toolbar-in-a-column */
-  const fillPanel = () => {
-    const viewBar = header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
-    /* Every header filter moves INTO the panel while it is open — Customer,
-       Region and the date too. Only the View chip stays: it is not a filter.
-       TRAP T-the-view-chip-stays-on-the-header */
-    const stays = ['view'];
-    panel?.populate([
-      {
-        scope: 'view',
-        label: 'View filters',
-        /* The VIEW chip is not a filter, so it stays on the app header.
-           TRAP T-the-view-chip-stays-on-the-header */
-        filters: (viewBar?.held ?? [])
-          .filter((f) => !stays.includes(f.id))
-          .map(asPanelField),
-        // The SAME list the header's Add offers. TRAP T-up-is-open-down-is-closed
-        available: addList(VIEW_SCOPE, headerBar).map(asPanelField),
-      },
-      {
-        scope: 'data',
-        /* The CONTENT's own name, not "this context" — a reader with two grids
-           on one page has to know which one a section answers for.
-           TRAP T-a-scope-is-named-for-its-content */
-        label: source.scopeLabel('data'),
-        /* WHAT THE BAR HOLDS NOW, not the list it was born with. `DATA_FILTERS`
-           never learns about a removal or an add, so the panel kept drawing a
-           field the reader had taken off and never drew one they added.
-           TRAP T-a-panel-adds-through-the-bar-that-owns-the-list */
-        filters: (qft.held ?? []).map(asPanelField),
-        available: (qft.offering ?? []).map(asPanelField),
-        // HOW the grid arranges its rows, above the filters.
-        group: organiseCols,
-        sort: organiseCols,
-        sortField: grid.dataset['sortField'] ?? undefined,
-        groupField: grid.dataset['groupField'] ?? undefined,
-      },
-    ]);
-  };
-
   /* EITHER bar's Configure button toggles the panel, and the panel is filled
      the moment it opens — the bars may have changed since last time. */
   /** TOOLBARS or PANEL, remembered for the session.
@@ -349,38 +275,24 @@ export async function init(root, { session, view, remote = false } = {}) {
   const togglePanel = () => {
     if (!panel) return;
     if (panel.hasAttribute('data-open')) { panel.close(); return; }
-    fillPanel();
+    // The panel ASKED for its scopes, so it is drawn already.
     panel.open();
     setMode('panel');
-    /* A field the panel draws is HIDDEN on its bar: two controls over one
-       field make a reader guess which is in force.
-       TRAP T-the-view-chip-stays-on-the-header */
-    syncPanelled(true);
     setPanelMode(true);
   };
 
-  /** Both bars step back while the panel answers for them.
-   *  TRAP T-panel-mode-hides-what-the-panel-answers */
+  /** Both bars step back while the panel answers for them — the header keeps
+   *  only its View chip. TRAP T-panel-mode-hides-what-the-panel-answers
+   *  TRAP T-the-view-chip-stays-on-the-header */
   const setPanelMode = (on) => {
     qft.toggleAttribute('data-panel-mode', on);
     header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]')
       ?.toggleAttribute('data-panel-mode', on);
   };
 
-  /** Hide the HEADER chips the panel is drawing. The data bar goes entirely,
-   *  so it needs none of this. TRAP T-panel-mode-hides-what-the-panel-answers */
-  const syncPanelled = (on) => {
-    const viewBar = header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
-    for (const chip of viewBar?.shadowRoot?.querySelectorAll('.chips > .chip') ?? []) {
-      const id = chip.dataset['id'];
-      chip.toggleAttribute('data-panelled', on && id !== 'view');
-    }
-  };
-
   qft.addEventListener('filter-configure', togglePanel, { signal });
   header?.addEventListener('filter-configure', togglePanel, { signal });
   panel?.addEventListener('filter-panel-close', (e) => {
-    syncPanelled(false);
     setPanelMode(false);
     /* Only a READER's close is a choice worth remembering. A window too narrow
        to hold the panel is not — storing that would let the window size forget
@@ -393,12 +305,8 @@ export async function init(root, { session, view, remote = false } = {}) {
   panel?.addEventListener('filter-panel-reopen', () => {
     void (async () => {
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-      fillPanel();
       panel.open();
-      if (panel.hasAttribute('data-open')) {
-        syncPanelled(true);
-        setPanelMode(true);
-      }
+      if (panel.hasAttribute('data-open')) setPanelMode(true);
     })();
   }, { signal });
 
@@ -406,113 +314,32 @@ export async function init(root, { session, view, remote = false } = {}) {
   let restored = Promise.resolve();
 
   /* RESTORE. The panel opens itself if the reader left it open — after the
-     bars are populated, because it reads their chips. */
+     kept answers are back, so it opens on them. */
   if (session?.get?.('/filters/mode') === 'panel') {
-    /* TWO FRAMES, not a microtask: `bar.held` carries each field's READING,
-       and a cloned `<sherpa-menu>` stamps nothing until it upgrades — so a
-       read now reports every field unanswered and the panel opens with
-       nothing ticked.
-       TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
     void (async () => {
-      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-      // AFTER the kept answers are back, or it opens showing none of them.
       await restored;
-      fillPanel();
       panel?.open();
       // `open()` refuses below its breakpoint, so follow what it actually did.
-      if (panel?.hasAttribute('data-open')) {
-        syncPanelled(true);
-        setPanelMode(true);
-      }
+      if (panel?.hasAttribute('data-open')) setPanelMode(true);
     })();
   }
 
-  /* THE PANEL'S OWN ANSWER, one field as it changes — written into the Query,
-     which draws the bars. Presets are the bar's own on/off chips, so they go
-     through the bar. No footer: locally it applies at once; remote, it waits
-     for that field's Apply. Will, 2026-09-27 (TODO 62).
+  /* THE PANEL ASKS for its scopes (`data-scope="view data"`): the source draws
+     each whole and hears its answers, its Add and Remove, its Apply and
+     Discard, and its Group and Sort. TRAP T-a-panel-asks-for-its-scopes
      TRAP T-the-panel-reports-its-own-reading · TRAP T-one-query-one-owner */
-  panel?.addEventListener('quick-filter-change', (e) => {
-    for (const [scope, fields] of Object.entries(e.detail.readings ?? {})) {
-      const bar = barFor(scope);
-      for (const [id, reading] of Object.entries(fields)) {
-        if (id === 'presets') {
-          for (const f of bar?.held ?? []) {
-            if (isPreset(f)) bar.setChipActive(f.id, (reading.picked ?? []).includes(f.id));
-          }
-          bar?.report();
-          continue;
-        }
-        // The header's Date chip answers the record's time. TRAP T-a-record-has-a-time-of-its-own
-        const field = scope === VIEW_SCOPE && id === 'dateRange' ? source.timeField : id;
-        if (field) source.select(field, reading.picked ?? [], reading);
-      }
-    }
-  }, { signal });
-  // REMOTE: a changed field's own Apply and Discard. TRAP T-apply-and-discard-wait-for-a-change
-  panel?.addEventListener('filter-apply', (e) => source.commit({ field: e.detail.field }), { signal });
-  panel?.addEventListener('filter-discard', (e) => source.discard({ field: e.detail.field }), { signal });
 
-  /* ADD and REMOVE are REQUESTS: the BAR owns the list. */
-  /* A BAR REBUILDS ASYNCHRONOUSLY: `items()` on a freshly cloned menu stamps
-     nothing until the element upgrades, so `held` read straight after
-     `addFilters` or `removeFilter` reports every field unanswered.
-     TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
-  const refill = async () => {
-    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-    fillPanel();
-    syncPanelled(true);
-  };
-
-  /* THE SCOPE SAYS WHICH BAR. Remove used to skip this and always ask the data
-     bar, so unticking a VIEW filter reported correctly and changed nothing —
-     the bar it asked had never held it. */
-  const barFor = (scope) => (scope === 'view'
-    ? header?.querySelector('sherpa-quick-filter-toolbar[slot="filters"]')
-    : qft);
-
-  panel?.addEventListener('filter-add-request', (e) => {
-    barFor(e.detail.scope)?.addFilters?.(e.detail.ids);
-    void refill();
-  }, { signal });
-
-  panel?.addEventListener('filter-remove', (e) => {
-    barFor(e.detail.scope)?.removeFilter?.(e.detail.id);
-    void refill();
-  }, { signal });
+  /** The bar that holds a scope's saved filters. */
+  const barFor = (scope) => (scope === VIEW_SCOPE ? headerBar : qft);
 
   /* SAVED FILTERS FROM THE PANEL, which answers for the bar in panel mode.
      Each is a REQUEST, as Add and Remove are: the BAR owns the list.
      TRAP T-the-panel-saves-a-whole-scope */
   panel?.setAttribute('data-saveable', '');
   signal.addEventListener('abort', () => panel?.removeAttribute('data-saveable'), { once: true });
-  panel?.addEventListener('filter-save', async (e) => {
-    if (await saveAndPack(e.detail)) void refill();
-  }, { signal });
-  panel?.addEventListener('filter-edit', async (e) => {
-    await barFor(e.detail.scope)?.unpackFilter?.(e.detail.id);
-    void refill();
-  }, { signal });
-  panel?.addEventListener('filter-delete', (e) => {
-    barFor(e.detail.scope)?.deleteFilter?.(e.detail.id);
-    void refill();
-  }, { signal });
-
-  /* GROUP and SORT arrange the rows; they are not filters. THROUGH THE SOURCE,
-     not onto the grid: `bind()` writes `data-group-field` and `data-sort-field`
-     on every bound component from the source's own state, so an attribute
-     written straight onto the grid is overwritten by the next requery — and a
-     panel Group pick did nothing at all. */
-  panel?.addEventListener('group-change', (e) => {
-    source.setGroup(e.detail.field || null);
-  }, { signal });
-  panel?.addEventListener('sort-change', (e) => {
-    /* SUSPEND, never clear. `setSort(null)` moves the column to the source's
-       own memory so one more click resumes it; `clearSort()` would forget it,
-       and the tri-state cycle would have nothing to come back to.
-       TRAP T-grid-suspend-is-not-clear */
-    source.setSort(e.detail.field ?? null, e.detail.direction ?? 'asc');
-  }, { signal });
+  panel?.addEventListener('filter-save', (e) => void saveAndPack(e.detail), { signal });
+  panel?.addEventListener('filter-edit', (e) => void barFor(e.detail.scope)?.unpackFilter?.(e.detail.id), { signal });
+  panel?.addEventListener('filter-delete', (e) => barFor(e.detail.scope)?.deleteFilter?.(e.detail.id), { signal });
 
   /* ROW ACTIONS declared ONCE. The grid draws them in its pinned trailing
      column and the toolbar reads the same list back via `grid.actionsFor(n)`,
@@ -580,9 +407,6 @@ export async function init(root, { session, view, remote = false } = {}) {
      provider binds each steer-only: its report is its scope's whole answer and
      its holds, turned into the query by the source's one builder.
      TRAP T-one-query-builder-in-the-data-layer · TRAP T-a-filter-report-is-the-whole-answer */
-  /* The open PANEL is drawn each answer in both scopes — it steers nothing
-     through the source, so it is bound read-only. TRAP T-an-open-panel-follows-the-data-layer */
-  if (panel) source.bind(panel, { readonly: true, steerOnly: true, scope: [VIEW_SCOPE, 'data'], signal });
   /* COLUMN FILTERS — the funnel in each column heading. Its answer is the
      FIELD's, in the Query, so a heading and its chip are two views of one
      reading. A field with no chip yet gets its NORMAL chip — the one Add
@@ -615,7 +439,7 @@ export async function init(root, { session, view, remote = false } = {}) {
     const label = await askFilterName(was ?? '');
     if (!label) return false;
     saveFilterAs('customers', label, readings);
-    source.declarePreset(`custom:${labelId(label)}`, readings);
+    source.declarePreset(`custom:${labelId(label)}`, readings, { label, editable: true });
     qft.packFilter({ id: `custom:${labelId(label)}`, label, readings });
     return true;
   };

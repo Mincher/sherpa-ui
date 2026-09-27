@@ -66,8 +66,13 @@
 /* A DIVIDER needs a neighbour on BOTH sides. Will, 2026-09-26. `.bar:has()`,
    as `:host(:has())` fails in Chromium. TRAP T-a-divider-needs-a-neighbour-on-both-sides */
 :host(:not([data-has-organise]))
-  .bar:not(:has(.chips > .chip:not([data-folded-away], [data-panelled]))) .view-zone::after,
-.bar:not(:has(.chips > .chip:not([data-folded-away], [data-panelled]))) .organise-zone::after {
+  .bar:not(:has(.chips > .chip:not([data-folded-away]))) .view-zone::after,
+.bar:not(:has(.chips > .chip:not([data-folded-away]))) .organise-zone::after {
+  display: none;
+}
+/* …and in panel mode only a persistent chip is still shown. */
+:host([data-panel-mode]:not([data-has-organise]))
+  .bar:not(:has(.chips > .chip[data-persistent]:not([data-folded-away]))) .view-zone::after {
   display: none;
 }
 /* Panel mode takes every action before it. */
@@ -182,8 +187,8 @@
                              [data-act="configure"], .add-btn) { display: none; }
 :host([data-panel-mode]:not([data-type="view"])) { display: none; }
 
-/* A chip a FILTER PANEL is drawing instead. Plain `display: none`, unlike a
-   folded chip: the panel draws value chips, not the menu, so nothing here is
-   still in use. TRAP T-the-view-chip-stays-on-the-header */
-.chips > .chip[data-panelled] { display: none; }
+/* The PANEL draws every filter of this scope instead, so the bar keeps only
+   its selector — the View chip. Plain `display: none`, unlike a folded chip:
+   nothing here is still in use. TRAP T-the-view-chip-stays-on-the-header */
+:host([data-panel-mode]) .chips > .chip:not([data-persistent]) { display: none; }
 

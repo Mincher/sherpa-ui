@@ -7,6 +7,7 @@
  *
  * Map:
  * - ORGANISE_ICONS — The ORGANISE glyphs — grouping and the three sort states.
+ * - APPLIED_ABOVE — What a filter held by a higher scope says — a chip's tooltip, a panel's note.
  * - NON_VALUE_ROWS — Rows in a filter menu that are NOT values, as a selector.
  * - MIRRORED_CONTROL_ATTRS — Native attributes a select control mirrors onto its inner `<input>`.
  * - RADIAL_BOX — A radial chart's geometry, in viewBox units of a 100×100 box.
@@ -16,6 +17,10 @@
  * - RADIAL_INNER_RATIO — The hole, as a FRACTION of the outer radius.
  * - DEFAULT_TICKS — Gridlines a cartesian chart draws when `data-ticks` is absent.
  */
+
+/** What a filter held by a higher scope says — a chip's tooltip and a panel's
+ *  note, in the SAME words. TRAP T-an-inactive-chip-says-where-its-filter-went */
+export const APPLIED_ABOVE = 'Filter applied at higher scope.';
 
 /**
  * The ORGANISE glyphs — grouping and the three sort states.

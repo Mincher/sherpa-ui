@@ -161,7 +161,7 @@ capabilities:
     api: js-methods
     description: >-
       callable from a view definition's state block (setFieldReading, drawReading, open, close,
-      toggle). See $extensions.sherpa.methods.
+      toggle, drawScopes). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: quick-filter-change
@@ -274,6 +274,10 @@ $extensions:
       - $type: method
         name: toggle
         args: ""
+      - $type: method
+        name: drawScopes
+        args: "scopes: readonly ScopeDescription[]"
+        description: The source draws each scope WHOLE — what it holds and answers, what it may
     jsProps:
       - name: values
         type: string

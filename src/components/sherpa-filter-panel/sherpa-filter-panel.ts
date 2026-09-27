@@ -12,7 +12,9 @@
  * - PanelScope — One scope: a named group of fields, plus what its Add button offers.
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
-import { ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
+import { APPLIED_ABOVE, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
+import type { DataAsk } from '../../core/ui/context.js';
+import type { FieldFilter, HeldFilter, ScopeDescription } from '../../core/data/data-source.js';
 import {
   arranges, customOf, hasOwnBody, kindOf, picksOne, type FilterKind, type OffersCustom,
 } from '../../core/ui/filter-kind.js';
@@ -85,6 +87,9 @@ export interface PanelFilter extends OffersCustom {
   readings?: Readonly<Record<string, unknown>>;
   /** The reader's OWN saved filter. TRAP T-the-panel-saves-a-whole-scope */
   editable?: boolean;
+  /** A scope ABOVE holds it now: it keeps its place here — its heading, and
+   *  one line saying so — and draws no values. TRAP T-a-panel-asks-for-its-scopes */
+  appliedAt?: string;
 }
 
 /** A column Group or Sort may arrange by. */
@@ -146,6 +151,10 @@ type MenuApi = HTMLElement & {
 export class SherpaFilterPanel extends SherpaElement {
   static override css = new URL('./sherpa-filter-panel.css', import.meta.url);
   static override html = new URL('./sherpa-filter-panel.html', import.meta.url);
+
+  /* It ASKS for its scopes (`data-scope="view data"`), and the source draws
+     each whole. TRAP T-a-panel-asks-for-its-scopes */
+  static override asks: DataAsk = { shape: 'scope' };
 
   static override props = {
     /* NOT `kind: content`. The header is a COMPOSED component with its own
@@ -377,6 +386,8 @@ export class SherpaFilterPanel extends SherpaElement {
       if (this.#shut.has(scope.scope)) box.removeAttribute('open');
 
       const mine = (scope.filters ?? []).filter((f) => {
+        // One HELD ABOVE keeps its place here, and says so. TRAP T-a-panel-asks-for-its-scopes
+        if (f.appliedAt) return true;
         if (taken.has(f.id)) return false;
         taken.add(f.id);
         return true;
@@ -435,7 +446,7 @@ export class SherpaFilterPanel extends SherpaElement {
         }, scope.scope, true)!);
       }
       for (const def of fields) {
-        const drawn = this.#drawField(def, scope.scope, false);
+        const drawn = def.appliedAt ? this.#drawApplied(def) : this.#drawField(def, scope.scope, false);
         if (drawn) box.append(drawn);
       }
 
@@ -470,6 +481,40 @@ export class SherpaFilterPanel extends SherpaElement {
     this.#flushMenus();
     this.#syncAllAnswered();
     this.#syncPending();
+  }
+
+  /** A field a HIGHER scope holds: its heading, and the line a chip's tooltip
+   *  says — no values, nothing to answer here. TRAP T-an-inactive-chip-says-where-its-filter-went */
+  #drawApplied(def: PanelFilter): HTMLElement {
+    const { box } = this.#drawSection(def.id, def.label);
+    box.setAttribute('data-applied-at', def.appliedAt ?? '');
+    const note = this.clone('template.applied-tpl');
+    if (note) {
+      note.textContent = APPLIED_ABOVE;
+      box.querySelector('.field-head')?.append(note);
+    }
+    return box;
+  }
+
+  /**
+   * The source draws each scope WHOLE — what it holds and answers, what it may
+   * add, how its rows are arranged. A saved filter is one question answered
+   * yes or no; a date is one chip, its menu a calendar.
+   * TRAP T-a-panel-asks-for-its-scopes · TRAP T-a-chip-with-no-field-is-a-preset
+   */
+  drawScopes(scopes: readonly ScopeDescription[]): Promise<void> {
+    const asFilter = (f: FieldFilter | HeldFilter): PanelFilter => {
+      const picked = new Set(('state' in f ? f.state?.picked ?? [] : []).map(String));
+      return {
+        ...f,
+        ...(f.readings ? { preset: true } : {}),
+        ...(f.kind === 'date' ? { asChip: true } : {}),
+        ...(f.options ? { options: f.options.map((o) => ({ ...o, selected: picked.has(o.value) })) } : {}),
+      };
+    };
+    return this.populate(scopes.map((s) => ({
+      ...s, filters: s.filters.map(asFilter), available: s.available.map(asFilter),
+    })));
   }
 
   /**

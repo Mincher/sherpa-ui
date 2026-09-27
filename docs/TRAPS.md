@@ -1690,7 +1690,6 @@ This is the suspend ≠ clear rule as a COLUMN sees it; `T-sort-is-tri-state` an
 - Site: `src/core/data/filter-state.ts`
 - Site: `test/unit/field-selection.test.mjs`
 - Site: `test/unit/filter-state.test.mjs`
-- Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 ### T-grid-column-width-bounds
@@ -7709,8 +7708,8 @@ the swap itself keeps every answer both ways — the bar is steered on Apply,
 and the panel is refilled when it comes back. The panel open was the hole.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-panel-apply.spec.ts`
+- Site: `src/core/data/data-source.ts`
 
 ### T-a-shut-scope-folds-like-a-bar
 
@@ -7889,6 +7888,8 @@ because neither touches the VALUES and nothing else re-syncs it.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter.spec.ts`
 - Site: `src/core/data/data-source.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/core/ui/shared-constants.ts`
 
 ### T-a-restored-filter-still-needs-its-chip
 
@@ -8200,7 +8201,6 @@ own label is what a search matches, exactly as a value's is.
 ---
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
-- Site: `examples/contexts/records.js`
 
 ### T-a-scope-is-named-for-its-content
 
@@ -8239,10 +8239,13 @@ bar has no Region chip. View leads, because its filters set the population the
 Context bar narrows within.
 
 ---
+**Since provider P3c the panel adds through the SOURCE**, which holds the
+field in its scope and draws that scope's bar from the Query — the bar is still
+the one list on screen, and it is told, never asked.
+
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
-- Site: `examples/contexts/records.js`
 
 ### T-an-accordion-action-is-not-a-toggle
 
@@ -8499,7 +8502,6 @@ accordion section too, in its own `.field-body`, replacing the chips.
  Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `examples/contexts/records.js`
 
 ### T-the-shell-owns-the-panel-areas
 
@@ -9165,6 +9167,7 @@ component names the other.
 - Site: `test/unit/parity-sweep.test.mjs`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `test/e2e/reforged-panel-apply.spec.ts`
+- Site: `src/core/data/data-source.ts`
 
 ### T-closest-stops-at-the-shadow-boundary
 
@@ -9472,7 +9475,6 @@ seeds its own menu from that.
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `test/unit/parity-sweep.test.mjs`
 
@@ -9713,7 +9715,6 @@ await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
 After: `[["status",4,false],["plan",4,false],["tier",4,false],["owner",4,false]]`.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `examples/contexts/records.js`
 
 ---
 
@@ -13373,6 +13374,34 @@ never been bound.
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/query.ts`
 - Site: `test/unit/query.test.mjs`
+
+### T-a-panel-asks-for-its-scopes
+
+**The filter panel ASKS for its scopes (`data-scope="view data"`), and the
+source draws each WHOLE from the Query — `describe(scope)`: what it holds and
+answers, its presets by name, what it may add, how its rows are arranged. It
+hears the panel's answers, Add, Remove, Apply and Discard itself.** Provider
+P3c, 2026-09-27. Before it, Records built the panel from the BARS —
+`fillPanel` read `bar.held` and `bar.offering`, mapped each def with
+`asPanelField`, and routed every panel event back through `barFor(scope)`,
+refilling two frames later because a rebuilt bar reads empty.
+
+A field a scope ABOVE holds keeps its place in the scope below — its heading,
+and the line a raised chip's tooltip says (`APPLIED_ABOVE`), no values
+(Will, TODO 87 and 88). A request the panel makes of a scope is drawn onto
+that scope's bar from the Query (`drawScope`), so the bar and the panel are
+two views of one answer. The panel is redrawn once per moment, when what a
+scope holds or its presets change — never on an answer, which `drawReading`
+draws.
+
+Panel mode is CSS now: a bar in panel mode shows only its persistent chip
+(the View), so a field the panel adds is hidden on the header without a page
+reaching into the bar's shadow root.
+
+- Site: `examples/contexts/records.js`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `test/unit/headless-data-layer.test.mjs`
 
 ### T-a-bar-reports-its-holds
 

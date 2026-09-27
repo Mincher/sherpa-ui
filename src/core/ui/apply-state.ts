@@ -14,6 +14,7 @@
  */
 import type { FieldReading } from '../data/filter-state.js';
 import type { ScopeQuery } from '../data/query.js';
+import type { ScopeDescription } from '../data/data-source.js';
 
 /** An element that takes a data payload. TRAP T-populatable-declared-four-times */
 export interface Populatable extends HTMLElement {
@@ -23,6 +24,8 @@ export interface Populatable extends HTMLElement {
   drawReading?: (field: string, reading: FieldReading, scope: string) => void;
   /** A whole scope, drawn SILENTLY — its chips, answers and presets, on a restore. */
   drawScope?: (slice: ScopeQuery, scope: string) => void | Promise<void>;
+  /** A control over SEVERAL scopes — the panel — drawn each one whole. */
+  drawScopes?: (scopes: ScopeDescription[]) => void | Promise<void>;
   /** The fields its chips hold — what a scoped bar's scope holds. */
   heldFields?: string[];
   /** Told which of its fields a scope ABOVE it holds now, and that scope's name. */

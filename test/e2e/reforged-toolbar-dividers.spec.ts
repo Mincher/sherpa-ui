@@ -26,20 +26,16 @@ test('the View divider needs a chip after it; the action divider, an action befo
     el.populate(TIER);
     await window.__settled();
     const withChip = snap();
-    // The chip drawn by a PANEL instead: nothing after the View zone.
-    sr.querySelector<HTMLElement>('.chips > .chip')!.setAttribute('data-panelled', '');
-    await window.__settled();
-    const panelled = snap();
-    // PANEL MODE takes every action before the action divider.
+    /* PANEL MODE: the panel draws the chip instead, so nothing is after the
+       View zone — and it takes every action before the action divider. */
     el.setAttribute('data-panel-mode', '');
     await window.__settled();
-    return { alone, withChip, panelled, panelMode: snap() };
+    return { alone, withChip, panelMode: snap() };
   }, TIER);
 
   expect(r.alone).toEqual({ view: false, actions: true });
   expect(r.withChip).toEqual({ view: true, actions: true });
-  expect(r.panelled.view).toBe(false);
-  expect(r.panelMode.actions).toBe(false);
+  expect(r.panelMode).toEqual({ view: false, actions: false });
 });
 
 test('the Organise divider needs a chip after it', async ({ page }) => {

@@ -124,7 +124,9 @@ export class SherpaProvider extends SherpaElement {
       asked.unbind?.();
       this.#asked.delete(el);
     };
-    const scope = this.#inherited(el, 'data-scope');
+    // One scope, or several — the panel's `data-scope="view data"`.
+    const scopes = (this.#inherited(el, 'data-scope') ?? '').split(/\s+/).filter(Boolean);
+    const scope = scopes.length > 1 ? scopes : scopes[0];
     const unbind = source.bind(el as Populatable, {
       rows: spec || asks.shape === 'all' ? 'all' : 'page',
       // A pager and a filter bar steer; the rows are not theirs to draw.

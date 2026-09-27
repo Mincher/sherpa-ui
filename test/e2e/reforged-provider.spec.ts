@@ -23,7 +23,8 @@ const SETUP = `
   onReport((r) => reports.push(r.code));
   const rows = (n, tag) => Array.from({ length: n }, (_, i) => ({ id: i, name: tag + i }));
   const source = (n, tag) => new DataSource({ store: new ArrayStore(rows(n, tag), { key: 'id' }) });
-  const settle = () => new Promise((r) => setTimeout(r, 120));
+  // Every element rendered and painted — never a fixed wait.
+  const settle = () => window.__settled();
   const root = document.getElementById('root');
   root.innerHTML = '';
   const grid = (attrs = '') => {
