@@ -176,8 +176,9 @@ centralisation audit is `PROVIDER-DESIGN.md` §9, for review; its items 9
 and 13 are done. **P3a and P3b built** — fields declared once on the
 source; the bars ask for their scope and report their holds. **P3c built**
 — the panel asks for its scopes, drawn whole by `describe()`. Also fixed on
-the way: 93 (only the View trickles down), 87 and 88. **Next: P3d** — the grid
-headings.
+the way: 93 (only the View trickles down), 87 and 88. **P3d built** — the
+grid headings answer through the source. **Next: P3e** — a component's own
+default filter lives in the Query.
 
 ### `[ ]` 86 — AUDIT: every component's functions and events — one request, one response, standardised in `SherpaElement`
 

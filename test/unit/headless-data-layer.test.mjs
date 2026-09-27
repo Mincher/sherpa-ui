@@ -987,3 +987,31 @@ test('describe draws a scope whole; a panel over two scopes adds, raises and ans
   await settle();
   assert.equal(source.query.applied.scopes.grid.presets?.['pro-only'], undefined);
 });
+
+/* A HEADING asks through the source: its answer is its field's, in its grid's
+   scope; a field no scope holds is held there, and its bar drawn; a field the
+   View holds shows in the heading, read-only. TRAP T-a-heading-asks-through-the-source */
+test('a grid heading answers through the source, and is told what the View holds', async () => {
+  const source = new DataSource({ store: new ArrayStore([{ id: 1, plan: 'Pro', region: 'EMEA' }], { key: 'id' }) });
+  source.declareField('plan', { label: 'Plan' });
+  source.declareField('region', { label: 'Region' });
+  source.declareScope('view', { label: 'View filters' });
+  source.offer('data', ['plan', 'region']);
+  const stub = (extra) => Object.assign(new EventTarget(), {
+    setAttribute() {}, removeAttribute() {}, hasAttribute: () => false, ...extra });
+  const columns = [];
+  const barDrawn = [];
+  const grid = stub({ supersedeColumns: (held, at) => columns.push([held, at]) });
+  const bar = stub({ drawScope: (slice) => barDrawn.push(slice.holds) });
+  source.bind(grid, { scope: 'data' });
+  source.bind(bar, { steerOnly: true, scope: 'data' });
+
+  grid.dispatchEvent(new CustomEvent('column-filter-change', { detail: { field: 'plan', reading: { picked: ['Pro'] } } }));
+  assert.deepEqual(source.scope('data'), ['plan']);
+  assert.deepEqual(source.query.applied.scopes.data.readings.plan.picked, ['Pro']);
+  assert.deepEqual(barDrawn.at(-1), ['plan']);
+
+  source.hold('view', ['region']);
+  source.answer('view', { region: { picked: ['EMEA'] } });
+  assert.deepEqual(columns.at(-1), [{ region: { picked: ['EMEA'] } }, 'View filters']);
+});

@@ -30,6 +30,8 @@ export interface Populatable extends HTMLElement {
   heldFields?: string[];
   /** Told which of its fields a scope ABOVE it holds now, and that scope's name. */
   supersede?: (fields: readonly string[], appliedAt?: string) => void;
+  /** A grid: those fields WITH their answers there, shown read-only in its headings. */
+  supersedeColumns?: (readings: Readonly<Record<string, FieldReading>>, appliedAt?: string) => void;
   superseded?: string[];
   /** Announce its whole answer again. */
   report?: () => void;

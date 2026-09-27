@@ -236,6 +236,8 @@ const STEERING_EVENTS = [
   // A scoped bar added or took off a chip: what its scope HOLDS changed.
   'filter-add',
   'filter-remove',
+  // A heading's answer is its field's, in the grid's scope.
+  'column-filter-change',
   // The panel's requests: add to a scope, and one field's own Apply or Discard.
   'filter-add-request',
   'filter-apply',
@@ -962,6 +964,8 @@ export class DataSource extends EventTarget {
    */
   #draw(field: string): void {
     const home = this.#home(field);
+    // A View answer shows in every grid's heading too.
+    if (home === VIEW) this.#syncColumns();
     const state = this.selection(field);
     if (state.fieldState === 'suspended') return;
     const picked = state.values.filter((v) => v.state === 'picked').map((v) => v.value);
@@ -1074,6 +1078,22 @@ export class DataSource extends EventTarget {
     this.#prune();
   }
 
+  /**
+   * Each grid below the View is told the fields the View holds, each with its
+   * answer as APPLIED — shown in its heading, read-only, so a heading cannot
+   * contradict it. TRAP T-a-view-held-heading-shows-and-refuses
+   */
+  #syncColumns(): void {
+    const view = this.#applied.scopes[VIEW] ?? { holds: [], readings: {} };
+    const held = Object.fromEntries(view.holds.map((f) => {
+      const r = view.readings[f];
+      return [f, r && !r.suspended ? r : {}];
+    }));
+    for (const [el, { scope }] of this.#bound) {
+      if (typeof scope === 'string' && scope !== VIEW) el.supersedeColumns?.(held, this.scopeLabel(VIEW));
+    }
+  }
+
   /** Which scope each answered field's reading sits in. */
   #homes(): Map<string, string> {
     const out = new Map<string, string>();
@@ -1149,6 +1169,7 @@ export class DataSource extends EventTarget {
    * TRAP T-an-inactive-chip-says-where-its-filter-went
    */
   #syncSuperseded(report: boolean): void {
+    this.#syncColumns();
     const above = this.scope(VIEW);
     for (const [el, { scope }] of this.#bound) {
       if (typeof scope !== 'string' || scope === VIEW || !el.supersede) continue;
@@ -1373,6 +1394,8 @@ export class DataSource extends EventTarget {
     else if (at.scope) this.#copyScope(this.#draft, this.#applied, at.scope);
     else this.#applied = structuredClone(this.#draft);
     this.#recompose();
+    // The headings show what is APPLIED.
+    this.#syncColumns();
   }
 
   /** Put the applied answers back over the draft — Discard, on a remote source.
@@ -1661,6 +1684,7 @@ export class DataSource extends EventTarget {
     // Whatever is already loaded, so a component bound late is not blank.
     this.#push(el);
     if (Array.isArray(options.scope) && el.drawScopes) this.#drawScopesSoon();
+    if (typeof options.scope === 'string' && el.supersedeColumns) this.#syncColumns();
     /* A summary bound AFTER the first load would otherwise draw blank: the
        unpaged set is fetched by `load`, and nothing would ask for it again.
        TRAP T-a-summary-binds-to-all-the-rows */
@@ -1763,6 +1787,23 @@ export class DataSource extends EventTarget {
         else if (Array.isArray(scope) && typeof detail['scope'] === 'string' && typeof detail['id'] === 'string') {
           this.#release(detail['scope'], detail['id']);
         }
+        return;
+      }
+      case 'column-filter-change': {
+        /* A HEADING's answer is its field's, in its grid's scope — and a field
+           no scope holds yet gets its normal chip on that scope's bar.
+           TRAP T-one-query-one-owner · TRAP T-a-heading-asks-through-the-source */
+        const el = event.currentTarget as Populatable;
+        const scope = this.#bound.get(el)?.scope;
+        const field = detail['field'];
+        if (typeof scope !== 'string' || typeof field !== 'string') return;
+        const reading = (detail['reading'] ?? null) as FieldReading | null;
+        const fresh = !!reading && !this.scopeOf(field) && this.canHold(scope, field);
+        if (fresh) this.hold(scope, [...this.scope(scope), field]);
+        this.select(field, reading?.picked ?? [], reading ?? {});
+        // A heading's Apply is an Apply. TRAP T-apply-and-discard-wait-for-a-change
+        this.commit();
+        if (fresh) this.#drawBars(scope);
         return;
       }
       case 'filter-add-request': {

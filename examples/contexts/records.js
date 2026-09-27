@@ -212,7 +212,6 @@ export async function init(root, { session, view, remote = false } = {}) {
   source.hold('data', DATA_FIELDS);
   // …and its presets, each off. TRAP T-a-saved-filter-is-its-readings
   source.answer('data', {}, Object.fromEntries(DATA_FILTERS.filter((f) => f.readings).map((f) => [f.id, false])));
-  const byField = new Map(columns.map((c) => [c.field, c]));
 
   /** What a bar may still add: what it has no chip for — so a restore can
    *  draw a held field's chip from it — the reader's own, so removable. The
@@ -406,28 +405,10 @@ export async function init(root, { session, view, remote = false } = {}) {
   /* THE BARS ASK for their scope — `data-scope` in the markup — and the
      provider binds each steer-only: its report is its scope's whole answer and
      its holds, turned into the query by the source's one builder.
-     TRAP T-one-query-builder-in-the-data-layer · TRAP T-a-filter-report-is-the-whole-answer */
-  /* COLUMN FILTERS — the funnel in each column heading. Its answer is the
-     FIELD's, in the Query, so a heading and its chip are two views of one
-     reading. A field with no chip yet gets its NORMAL chip — the one Add
-     offers — so the bar says what the rows are under. Will, 2026-09-27.
-     TRAP T-one-query-one-owner */
-  grid.addEventListener('column-filter-change', (e) => {
-    const { field, reading } = e.detail;
-    source.select(field, reading?.picked ?? [], reading ?? {});
-    // A heading's Apply is an Apply — remote, it sends the draft.
-    source.commit();
-    void showChip(field, reading);
-  }, { signal });
-  /** Put a field's NORMAL chip on the bar, drawn with its answer — silently,
-   *  so the bar never reports it half-built. */
-  const showChip = async (field, reading) => {
-    if (!reading || qft.heldIds.includes(field)) return;
-    if (!(qft.offering ?? []).some((f) => f.id === field)) return;
-    await qft.drawScope({ holds: [...qft.heldIds, field], readings: { [field]: reading } });
-    // Drawn silently, so its scope is told what it holds now.
-    source.hold('data', qft.heldFields);
-  };
+     TRAP T-one-query-builder-in-the-data-layer · TRAP T-a-filter-report-is-the-whole-answer
+     The GRID's headings answer through the source too: a heading's answer is
+     its field's, a new one gets its normal chip, and a field the View holds
+     shows read-only. TRAP T-a-heading-asks-through-the-source */
   /* SAVE PACKS: the bar asks, this page names the filter and keeps it over the
      CUSTOMER records — not over this page — and the bar shows it in place of
      the fields it came from. TRAP T-save-packs-the-fields-into-one-chip
@@ -464,22 +445,6 @@ export async function init(root, { session, view, remote = false } = {}) {
   /* NOT the filter: the session keeps the Query (below), and a restored
      COMBINED filter is one no chip shows. TRAP T-a-reload-replays-the-readers-answers */
   }, { filter: false });
-
-  /* THE GRID'S HEADINGS SHOW WHAT THE VIEW HOLDS: each field the View scope
-     holds, with its answer, read-only in its heading — so a heading cannot
-     contradict it. Read from the QUERY, on every change to it. Will, 2026-09-26.
-     TRAP T-a-view-held-heading-shows-and-refuses · TRAP T-one-query-one-owner */
-  const syncHeadings = () => {
-    const view = source.query.applied.scopes[VIEW_SCOPE] ?? { holds: [], readings: {} };
-    const held = Object.fromEntries(view.holds.filter((f) => byField.has(f)).map((f) => {
-      const r = view.readings[f];
-      return [f, r && !r.suspended ? r : {}];
-    }));
-    grid.supersedeColumns?.(held, source.scopeLabel(VIEW_SCOPE));
-  };
-  for (const type of ['scope-change', 'selection-change']) {
-    source.addEventListener(type, syncHeadings, { signal });
-  }
 
   // Where each field lives just changed, and the Add notes say where.
   source.addEventListener('scope-change', offerAdds, { signal });

@@ -76,7 +76,7 @@
   "src/core/data/bind-selection.ts": 179,
   "src/core/data/chart-datum.ts": 61,
   "src/core/data/cycle.ts": 60,
-  "src/core/data/data-source.ts": 1978,
+  "src/core/data/data-source.ts": 2019,
   "src/core/data/filter-face.ts": 104,
   "src/core/data/filter-state.ts": 415,
   "src/core/data/format-tick.ts": 329,
@@ -88,7 +88,7 @@
   "src/core/data/store.ts": 505,
   "src/core/data/stores.ts": 452,
   "src/core/data/validate.ts": 294,
-  "src/core/ui/apply-state.ts": 82,
+  "src/core/ui/apply-state.ts": 84,
   "src/core/ui/context.ts": 65,
   "src/core/ui/filter-kind.ts": 96,
   "src/core/ui/filter-menu.ts": 165,
@@ -233,6 +233,6 @@
   "examples/contexts/global-filters.js": 105,
   "examples/contexts/records-data.js": 198,
   "examples/contexts/records-views.js": 70,
-  "examples/contexts/records.js": 727,
+  "examples/contexts/records.js": 692,
   "examples/contexts/settings.js": 89
 }

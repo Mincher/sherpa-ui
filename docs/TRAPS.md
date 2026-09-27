@@ -13375,6 +13375,28 @@ never been bound.
 - Site: `src/core/data/query.ts`
 - Site: `test/unit/query.test.mjs`
 
+### T-a-heading-asks-through-the-source
+
+**A grid's column heading answers through the source, and is told what the
+View holds.** Provider P3d, 2026-09-27. Before it, Records listened for
+`column-filter-change` itself, selected the field, committed, and drew the
+field's normal chip onto the bar by hand (`showChip`) — and a second listener
+(`syncHeadings`) read the Query on every change to tell the grid which
+headings the View held.
+
+`column-filter-change` is a steering event now, for a grid bound to a scope:
+the heading's reading is its field's, and a field no scope holds is held in
+the grid's scope first — so its bar is drawn the field's normal chip, from
+the Query. A field the View holds is sent to every grid below it with its
+APPLIED answer (`supersedeColumns`), shown read-only; the source sends it
+when the View's holds change, when a View answer is drawn, and on commit.
+
+Only a SCOPED grid: an unscoped one is a page's to wire, as before.
+
+- Site: `examples/contexts/records.js`
+- Site: `src/core/data/data-source.ts`
+- Site: `test/unit/headless-data-layer.test.mjs`
+
 ### T-a-panel-asks-for-its-scopes
 
 **The filter panel ASKS for its scopes (`data-scope="view data"`), and the
@@ -13934,7 +13956,7 @@ should be suspended, as a chip is.
 - Site: `src/core/data/query.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
-- Site: `examples/contexts/records.js`
+- Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 
 ### T-a-component-part-narrows-one-component
