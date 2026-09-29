@@ -7,11 +7,13 @@
  */
 import { DataSource } from '../../dist/index.js';
 import { namePrompt } from './ask-name.js';
-import { DASHBOARD_VIEWS } from '/examples/definitions/dashboard-views.js';
 import { customerStore, customersReady } from './records-data.js';
-import { alertStore } from './dashboard-data.js';
 
-export async function init(root, { session, view } = {}) {
+/* THE PAGE IS ITS DEFINITION: the router opened dashboard.json — the source
+   over the alerts, the header's chips and the kept Query. Each chart and tile
+   declares what it needs in dashboard.html and asks.
+   TRAP T-a-page-is-its-definition · TRAP T-a-component-declares-its-summary */
+export async function init(root, { source }) {
   // Summary read from the SAME store the Records page uses, so adding a
   // customer there moves these numbers.
   const customerSummary = (rows) => {
@@ -51,18 +53,7 @@ export async function init(root, { session, view } = {}) {
   // ONE lifetime: while this Context is mounted.
   const page = new AbortController();
 
-  /* THE PAGE IS ITS DEFINITION: the provider builds its source over the
-     alerts, draws the header's chips from the View scope, and keeps its Query
-     for the session. Each chart and tile declares what it needs in
-     dashboard.html and asks. TRAP T-a-page-is-its-definition
-     TRAP T-a-component-declares-its-summary */
   const provider = document.querySelector('sherpa-provider');
-  const definition = await (await fetch('/examples/definitions/dashboard.json')).json();
-  const source = await provider?.open(definition, {
-    stores: { alerts: alertStore }, views: DASHBOARD_VIEWS, view, session,
-  });
-  // Gone with the Context, so the next one's components never reach this source.
-  page.signal.addEventListener('abort', () => provider?.close(), { once: true });
 
   // The gauge legend names THRESHOLD ZONES. No colour indices: a zone's colour
   // is a status, not a categorical series hue.

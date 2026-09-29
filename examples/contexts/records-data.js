@@ -9,7 +9,6 @@
  * - regions — every region a record can have; the header's Region chip offers exactly these
  * - customerOrgs — Organisations, not people — a record is a PERSON in one.
  * - customers — The seed records.
- * - columns — the grid columns — what a record looks like, shared by any Context that shows one
  * - customerSchema — what a valid customer record is, checked at the STORE so every write passes it
  * - customerStore — the customer records: IndexedDB where it exists, in memory where not
  * - customersReady — resolves once the demo records are seeded; seeds again only when SEED moves
@@ -90,23 +89,6 @@ export const customers = Array.from({ length: 100 }, (_, i) => {
   };
 });
 
-/** Here, not in the Context: a COLUMN describes a record, and a second Context wants the same. */
-export const columns = [
-  { field: 'name',        header: 'Name',      sortable: true },
-  { field: 'email',       header: 'Email',     sortable: true },
-  { field: 'customer',    header: 'Customer',  sortable: true },
-  { field: 'status',      header: 'Status',    sortable: true },
-  { field: 'plan',        header: 'Plan',      sortable: true },
-  { field: 'tier',        header: 'Tier',      sortable: true },
-  { field: 'region',      header: 'Region',    sortable: true },
-  { field: 'owner',       header: 'Owner',     sortable: true },
-  { field: 'seats',       header: 'Seats',     sortable: true, type: 'number' },
-  { field: 'spend',       header: 'Spend',     sortable: true, type: 'number' },
-  { field: 'openTickets', header: 'Tickets',   sortable: true, type: 'number' },
-  { field: 'health',      header: 'Health',    sortable: true, type: 'number' },
-  { field: 'created',     header: 'Created',   sortable: true, type: 'date' },
-  { field: 'lastSeen',    header: 'Last seen', sortable: true, type: 'date' },
-];
 /**
  * On the STORE, not the form — a form is not the only way a record arrives. It
  * runs on READS too, so a malformed row is dropped and REPORTED

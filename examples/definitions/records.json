@@ -40,5 +40,29 @@
       "unassigned": { "label": "Unassigned", "readings": { "owner": { "op": "eq", "picked": ["Unassigned"] } } }
     }
   },
-  "views": "records-views"
+  "ui": {
+    "grid": {
+      "key": "email",
+      "columns": [
+        { "field": "name",        "header": "Name",      "sortable": true, "custom": "only", "op": "contains" },
+        { "field": "email",       "header": "Email",     "sortable": true, "custom": "only", "op": "contains" },
+        { "field": "customer",    "header": "Customer",  "sortable": true },
+        { "field": "status",      "header": "Status",    "sortable": true },
+        { "field": "plan",        "header": "Plan",      "sortable": true },
+        { "field": "tier",        "header": "Tier",      "sortable": true },
+        { "field": "region",      "header": "Region",    "sortable": true },
+        { "field": "owner",       "header": "Owner",     "sortable": true },
+        { "field": "seats",       "header": "Seats",     "sortable": true, "type": "number" },
+        { "field": "spend",       "header": "Spend",     "sortable": true, "type": "number" },
+        { "field": "openTickets", "header": "Tickets",   "sortable": true, "type": "number" },
+        { "field": "health",      "header": "Health",    "sortable": true, "type": "number" },
+        { "field": "created",     "header": "Created",   "sortable": true, "type": "date" },
+        { "field": "lastSeen",    "header": "Last seen", "sortable": true, "type": "date" }
+      ],
+      "actions": [
+        { "id": "edit", "label": "Edit", "icon": "pencil" },
+        { "id": "delete", "label": "Delete", "icon": "trash", "multi": true, "danger": true }
+      ]
+    }
+  }
 }

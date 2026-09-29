@@ -3987,6 +3987,7 @@ them with their parent and hide them in the 40px rail — which a flat list of
 hand-tiered rows cannot express.
 
 - Site: `src/components/sherpa-nav/sherpa-nav.ts`
+- Site: `examples/index.html`
 
 ### T-nav-state-writes-only-the-attribute
 
@@ -5542,6 +5543,7 @@ Unlocked, the bar still flips its own attribute, so a page with no favourites
 list keeps working exactly as before.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `examples/index.html`
 - See also: `T-session-list-is-a-view-not-a-copy` — where the list itself lives
 
 ### T-an-expandable-row-is-not-a-destination
@@ -7168,6 +7170,7 @@ does it, and nothing warns. The symptom is a patched or seeded module having no
 effect at all.
 
 - Site: `test/e2e/reforged-view-chips.spec.ts`
+- Site: `examples/index.html`
 
 ### T-the-records-store-persists-between-runs
 
@@ -8434,6 +8437,7 @@ selector is not a filter, and Customer and Region are global.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `test/e2e/reforged-filter-panel-mode.spec.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `examples/index.html`
 
 ### T-a-panel-flush-between-surfaces-draws-two-edges
 
@@ -8533,6 +8537,7 @@ nowhere.
 - Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.ts`
 - Site: `test/e2e/reforged-filter-panel-mode.spec.ts`
+- Site: `examples/index.html`
 
 ---
 
@@ -8931,7 +8936,6 @@ nothing behind it (Will, 2026-09-26). The switch is for `custom === true` only.
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/core/ui/filter-kind.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
-- Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `src/core/ui/filter-menu.ts`
@@ -10393,6 +10397,7 @@ BELOW the 120px sticky header, so it ran a header's height past the fold.
 
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
 - Site: `test/e2e/reforged-layout-grid.spec.ts`
+- Site: `examples/index.html`
 
 ### T-a-band-label-names-what-it-counts
 
@@ -10706,6 +10711,7 @@ belongs to whoever owns the surface, and the trigger has to be told.
 - Site: `src/components/sherpa-app-header/sherpa-app-header.ts`
 - Site: `src/components/sherpa-app-header/sherpa-app-header.html`
 - Site: `test/e2e/reforged-app-header.spec.ts`
+- Site: `examples/index.html`
 
 ### T-a-css-function-needs-its-longhand-first
 
@@ -13302,7 +13308,6 @@ list) and `data-dirty`. Over a local store the draft IS the applied Query —
 one object — so nothing is ever pending. A scope that narrows one component
 (a legend) applies at once even on a remote store: its rows are already here.
 
-- Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/spoof-remote.ts`
@@ -13312,6 +13317,7 @@ one object — so nothing is ever pending. A scope that narrows one component
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `test/e2e/reforged-remote-source.spec.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
+- Site: `examples/index.html`
 
 ### T-a-view-is-json
 
@@ -13370,12 +13376,12 @@ used to leave behind:
   View it was made on. The Dashboard passed no session, key or View to
   `provide()`, so its filters were lost on a trip away and back.
 
-Until a page is a DEFINITION the router hands over, each Context must pass
-`session`, a key and the URL's `view` to `provide()` itself — forgetting is
-the gap.
+Since 2026-09-29 a page is a DEFINITION the router hands the provider
+(`T-a-page-is-its-definition`), so no Context passes these by hand.
 
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/e2e/reforged-provider.spec.ts`
+- Site: `examples/index.html`
 
 ### T-the-provider-owns-the-panel-mode
 
@@ -13400,6 +13406,7 @@ its View filters alone.
 
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/e2e/reforged-provider.spec.ts`
+- Site: `examples/index.html`
 
 ### T-a-page-goes-out-as-json
 
@@ -13640,7 +13647,8 @@ generator reads `static config` for the component's properties.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `examples/definitions/dashboard-views.js`
-- Site: `examples/contexts/records.js`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/core/data/page-definition.ts`
 
 ### T-a-component-declares-its-summary
 
@@ -13933,6 +13941,7 @@ lives in memory and dies with the page.
 - Site: `test/e2e/reforged-records-persist.spec.ts`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `examples/index.html`
 
 ### T-an-empty-selection-never-wipes-a-condition
 
@@ -14186,6 +14195,9 @@ by the page's id, so `saveView(label)` needs nothing from the page.
   HAS, so a restore can draw a held field's chip.
 - **The bars are drawn BEFORE the Query**, so a kept one lands on its chips.
 - **A `provide()` without the opened source ends the page**: its listeners stop.
+- **The ROUTER opens it** (`examples/index.html`), after the markup is in and
+  the store is seeded, and hands the source to the Context's `init`. A
+  definition's `ui` configures its components by id BEFORE they are answered.
 
 - Site: `src/core/data/page-definition.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
@@ -14193,3 +14205,4 @@ by the page's id, so `saveView(label)` needs nothing from the page.
 - Site: `test/unit/page-definition.test.mjs`
 - Site: `src/data.ts`
 - Site: `examples/contexts/records.js`
+- Site: `examples/index.html`

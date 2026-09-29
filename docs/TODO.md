@@ -317,9 +317,9 @@ are its halves. First: audit where it is done today, and list the gaps.
 no data shut the panel (G1), and the Dashboard keeps its Query (G2). Open: Save
 view on Records (G3, TODO 15), and the Context DEFINITION that ends the
 repeated setup in every Context (G4) — **designed in `docs/PAGE-DEFINITION.md`,
-decided by Will 2026-09-29.** D1 and D2 are built: the Dashboard and
-Records open from `examples/definitions/*.json` through `provider.open()`.
-Next: D3 (the router hands the definition).
+decided by Will 2026-09-29.** D1, D2 and D3 are built: the router
+opens every page from `examples/definitions/<context>.json` through
+`provider.open()`, and a Context's `init` gets its source.
 
 ### `[ ]` 94 — A number (and range) filter menu needs Apply and Cancel buttons
 

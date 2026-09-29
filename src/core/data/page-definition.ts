@@ -46,8 +46,9 @@ export interface PageDefinition {
   id: string;
   template?: string;
   source?: SourceDefinition;
-  /** The name of its View library. */
-  views?: string;
+  /** Each component's CONFIGURATION, by id — set before it is answered.
+   *  TRAP T-configuration-is-not-data */
+  ui?: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
 }
 
 /** Build a page's source from its definition, over the app's store. */

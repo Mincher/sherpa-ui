@@ -87,9 +87,12 @@
                         data-dismissible></sherpa-overlay-panel>
 
   <script type="module">
-    import { ArrayStore, DataSource, SessionStore, loadSavedViews } from '../dist/index.js';
+    import { ArrayStore, DataSource, SessionStore, loadSavedViews, spoofRemote } from '../dist/index.js';
     import { DASHBOARD_VIEWS } from '/examples/definitions/dashboard-views.js';
     import { RECORDS_VIEWS } from '/examples/definitions/records-views.js';
+    // The SAME URLs the Contexts import, or each gets a store of its own. TRAP T-two-urls-are-two-modules
+    import { customerStore, customersReady } from './contexts/records-data.js';
+    import { alertStore } from './contexts/dashboard-data.js';
 
     // Font Awesome must be in the DOCUMENT too: sharedStyles carries the class
     // rules into shadow roots, but @font-face and light-DOM <i> need <head>.
@@ -101,6 +104,8 @@
        Terms: CLAUDE.md "Navigation terms". A Settings Context opens in an
        overlay ON TOP of the Context, so the URL can carry both. */
     const CONTEXTS = ['dashboard', 'records', 'chat'];
+    // The Contexts with a definition in examples/definitions/.
+    const DEFINED = new Set(['dashboard', 'records']);
     const SETTINGS_CONTEXTS = ['profile', 'accessibility', 'appearance', 'application'];
     const DEFAULT_CONTEXT = 'dashboard';
 
@@ -303,8 +308,9 @@
       // Read BEFORE init: populating the header reports its first View, and the URL follows.
       const view = param('view');
 
-      // Tear down the previous Context (e.g. chat's data-no-header).
+      // Tear down the previous Context (e.g. chat's data-no-header), and its page.
       if (typeof cleanup === 'function') { try { cleanup(); } catch { /* noop */ } cleanup = null; }
+      provider.close();
 
       /* Settings open on top owns the rail. Otherwise: found by href, so Home
          lights up for the dashboard; and through the rail's OWN setter, so the
@@ -334,12 +340,30 @@
       const mod = await import(`./contexts/${name}.js`);
       if (token !== loadToken) return;
 
+      /* THE PAGE IS ITS DEFINITION: its source over the app's store — every
+         field, scope and saved filter, the header's chips, the grid's
+         configuration and the kept Query — set up HERE, on every navigation, so
+         no Context can forget a step. TRAP T-a-page-is-its-definition
+         TRAP T-navigating-sets-up-the-page */
+      const remote = session.get('/debug/remote') === true;
+      const definition = DEFINED.has(name) ? await (await fetch(`/examples/definitions/${name}.json`)).json() : null;
+      // SEED FIRST: a source over an empty store has no values to offer.
+      await customersReady;
+      if (token !== loadToken) return;
+      const source = definition ? await provider.open(definition, {
+        /* `?remote` makes the records ACT remote, so every filter waits for
+           Apply. TRAP T-apply-and-discard-wait-for-a-change */
+        stores: { customers: remote ? spoofRemote(customerStore, { delay: 800 }) : customerStore, alerts: alertStore },
+        views: PRESET_VIEWS[name], view, session,
+      }) : undefined;
+      if (token !== loadToken) return;
+
       /* A Context gets the SESSION: filter-panel mode is app chrome and
          survives a Context change, like the nav pin.
          TRAP T-panel-mode-hides-what-the-panel-answers */
       /* …and the VIEW, so the Context opens on it itself — a pick after init
          would reset what the session kept. TRAP T-a-reload-replays-the-readers-answers */
-      cleanup = await mod.init(contextRoot, { session, view, remote: session.get('/debug/remote') === true });
+      cleanup = await mod.init(contextRoot, { session, view, source });
       if (token !== loadToken) return;
       if (view) pickView(header, name, view);
 

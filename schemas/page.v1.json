@@ -10,11 +10,15 @@
     "$schema": { "type": "string" },
     "v": { "const": 1 },
     "id": {
-      "description": "The page's id: its saved Views and its kept Query are filed under it.",
+      "description": "The page's id: its Views, its saved Views and its kept Query are filed under it.",
       "type": "string", "pattern": "^[a-z][a-z0-9-]*$"
     },
     "template": { "description": "The page's markup, by name.", "type": "string" },
-    "views": { "description": "The name of the page's View library.", "type": "string" },
+    "ui": {
+      "description": "Each component's configuration, by id, set through its own API before it is answered — as a View's ui is.",
+      "type": "object",
+      "additionalProperties": { "type": "object" }
+    },
     "source": { "$ref": "#/$defs/source" }
   },
   "$defs": {

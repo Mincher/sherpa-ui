@@ -1,28 +1,23 @@
 /**
  * records.js — the Records Context: a customer grid, its filters, and CRUD.
  *
- * Its data and filters open from `records.json`; this module keeps the
- * page's own work. The nav and the header are shared and live in index.html.
+ * The router opens its data and filters from `records.json`; this module keeps
+ * the page's own work. The nav and the header are shared and live in index.html.
  *
  * Map:
- * - init — open this Context from its definition, and wire add, edit, delete and save; returns its teardown
+ * - init — wire this Context's own work over the source it is handed — add, edit, delete, save; returns its teardown
  */
 import {
-  SherpaToast, persistView, spoofRemote, reduceRows, saveFilterAs, deleteSavedFilter, labelId,
+  SherpaToast, persistView, reduceRows, saveFilterAs, deleteSavedFilter, labelId,
 } from '../../dist/index.js';
 import { namePrompt } from './ask-name.js';
-import { customerStore, customersReady, columns, plans, customerOrgs } from './records-data.js';
-import { RECORDS_VIEWS } from '/examples/definitions/records-views.js';
+import { plans, customerOrgs } from './records-data.js';
 
-export async function init(root, { session, view, remote = false } = {}) {
-  /* The store is the APP's (records outlive a screen); the source is this
-     Context's (one query over them). `?remote` makes it ACT remote, so every
-     filter waits for Apply. TRAP T-apply-and-discard-wait-for-a-change */
-  const store = remote ? spoofRemote(customerStore, { delay: 800 }) : customerStore;
-  /* SEED BEFORE FIRST LOAD. The store is IndexedDB, so a source that loaded
-     first would draw an empty grid and never hear the seed arrive. */
-  await customersReady;
-
+/* THE PAGE IS ITS DEFINITION: the router opened records.json — every field,
+   scope, hold and saved filter, the grid's configuration, the header's chips
+   and the kept Query — and hands over the source. TRAP T-a-page-is-its-definition */
+export async function init(root, { source }) {
+  const store = source.store;
   const grid      = root.querySelector('#grid');
   const qft       = root.querySelector('#qft');
   const dialog    = root.querySelector('#dialog');
@@ -80,34 +75,6 @@ export async function init(root, { session, view, remote = false } = {}) {
   panel?.addEventListener('filter-edit', (e) => void barFor(e.detail.scope)?.unpackFilter?.(e.detail.id), { signal });
   panel?.addEventListener('filter-delete', (e) => barFor(e.detail.scope)?.deleteFilter?.(e.detail.id), { signal });
 
-  /* ROW ACTIONS declared ONCE. The grid draws them in its pinned trailing
-     column and the toolbar reads the same list back via `grid.actionsFor(n)`,
-     so the two cannot disagree. `multi` is what survives a multi-row
-     selection — deleting five is one action, editing five is not. */
-  const ROW_ACTIONS = [
-    { id: 'edit', label: 'Edit', icon: 'pencil' },
-    { id: 'delete', label: 'Delete', icon: 'trash', multi: true, danger: true },
-  ];
-
-  /* THE PAGE IS ITS DEFINITION: every field, scope, hold and saved filter —
-     and the header's chips, each bar's Add list and the kept Query — are set
-     up by the provider from records.json. TRAP T-a-page-is-its-definition */
-  const definition = await (await fetch('/examples/definitions/records.json')).json();
-  /* The grid's CONFIGURATION, before it is answered. A WALL of values is asked
-     a CONDITION, opening on "Contains". TRAP T-configuration-is-not-data
-     TRAP T-a-filter-answers-by-values-conditions-or-both */
-  const isWall = (field) => definition.source.fields[field]?.custom === 'only';
-  grid.columns = columns.map((c) => (isWall(c.field) ? { ...c, custom: 'only', op: 'contains' } : c));
-  grid.key = 'email';
-  grid.actions = ROW_ACTIONS;
-
-  const provider = document.querySelector('sherpa-provider');
-  const source = await provider.open(definition, {
-    stores: { customers: store }, views: RECORDS_VIEWS, view, session,
-  });
-  // Gone with the Context, so the next one's components never reach this source.
-  signal.addEventListener('abort', () => provider.close(), { once: true });
-
   /* THE SOURCE, REACHABLE — `debugState()` answers a filter bug in one paste.
      Example app only: a library never writes to `window`.
      TRAP T-a-bug-report-should-be-a-paste */
@@ -115,8 +82,8 @@ export async function init(root, { session, view, remote = false } = {}) {
 
   /* THE WHOLE COLUMN, not the drawn page: a heading's menu built from the rows
      on screen is a one-way door. TRAP T-unavailable-value-sorts-below-a-divider */
-  grid.setAttribute('data-column-values', columns
-    .filter((c) => (c.type ?? 'text') === 'text' && !isWall(c.field))
+  grid.setAttribute('data-column-values', grid.columns
+    .filter((c) => (c.type ?? 'text') === 'text' && c.custom !== 'only')
     .map((c) => `${c.field}:${source.valuesFor(c.field).join('|')}`)
     .join('\n'));
 

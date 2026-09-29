@@ -15,6 +15,5 @@
     "scopes": {
       "view": { "label": "View filters", "holds": ["customer", "region"] }
     }
-  },
-  "views": "dashboard-views"
+  }
 }

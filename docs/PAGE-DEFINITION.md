@@ -56,14 +56,19 @@ One JSON document per page. The same rule as a View: **a definition is data**
       "has-tickets": { "label": "Has open tickets", "readings": { "openTickets": { "op": "gt", "text": "0" } } }
     }
   },
-  "views": "records-views"
+  "ui": {
+    "grid": { "key": "email", "columns": ["…"], "actions": ["…"] }
+  }
 }
 ```
 
 - **`source`** — which store, how it pages and searches, every field as
   `declareField` takes it, each scope's name, what it holds at the start, and
   the saved filters the page ships. **No field lists its values** — see §3.
-- **`views`** — the View library, already JSON (`records-views.js`).
+- **`ui`** — each component's configuration, by id, set through its own API
+  before it is answered — as a View's `ui` is. The grid's columns live here.
+- **Its Views** are filed under its `id`: the ones it ships, and a reader's
+  saved ones.
 - **The header's chips are not listed.** They are the View scope's holds,
   each drawn from its field — one definition per field
   (`T-a-field-is-declared-once`). The View chip lists `views`.
@@ -101,7 +106,8 @@ range will be between the min and max values."*
 The ROUTER hands the definition to the PROVIDER on every navigation:
 
 ```js
-await provider.open(definition, { session, view });
+const source = await provider.open(definition, { stores, views, view, session });
+cleanup = await mod.init(contextRoot, { session, view, source });
 ```
 
 The provider builds the source from the app's registered store, declares
@@ -132,7 +138,7 @@ the panel as it does now (G1).
 |---|---|---|
 | D1 ✅ | `provider.open(definition)`, `saveView()`, `openSource()`, `schemas/page.v1.json`; a field's values from the schema or the rows (§3) | the Dashboard opens from `examples/definitions/dashboard.json`; `dashboard.js` 183 → 116 lines |
 | D2 ✅ | Records from `records.json`; the reader's saved filters and each bar's Group and Sort come from the provider; the customer schema lists its values | the Records filter suite; `records.js` 601 → 359 lines, `global-filters.js` deleted |
-| D3 | the router hands definitions and the app's store registry (a Context passes `stores` itself until then); a Context's `init` gets its source | a trip through every page keeps each one's filters |
+| D3 ✅ | the router opens each page from its definition, with the app's stores and the page's Views; a definition's `ui` configures its components by id; a Context's `init` gets its source | the full suite; `examples/index.html` is the one caller of `open()` |
 | later | the Templater builds `template` from JSON (68, 70) | — |
 
 ---

@@ -57,7 +57,9 @@ $extensions:
       - $type: method
         name: close
         args: ""
-        description: "Leave the page: its source goes, and nothing in the subtree reaches it."
+        description: >-
+          Leave the page, or one still opening: its source goes, and nothing in the subtree reaches
+          it.
       - $type: method
         name: saveView
         args: "label: string"

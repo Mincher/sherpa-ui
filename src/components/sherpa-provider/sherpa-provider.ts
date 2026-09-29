@@ -30,7 +30,7 @@ import { openSource, type PageDefinition } from '../../core/data/page-definition
 import type { DataSource, SourceState } from '../../core/data/data-source.js';
 import { VIEW, type Query } from '../../core/data/query.js';
 import type { FieldReading } from '../../core/data/filter-state.js';
-import type { Populatable } from '../../core/ui/apply-state.js';
+import { applyState, type Populatable } from '../../core/ui/apply-state.js';
 
 /** What a provider is given: its sources, by name — and, for a page with
  *  Views, the Views over them, the one on screen, and where its Query is kept. */
@@ -257,7 +257,7 @@ export class SherpaProvider extends SherpaElement {
     // A View this page does not have is the first.
     const view = options.view && library?.()[options.view] ? options.view : undefined;
     // BEFORE the Query: a kept one is drawn onto these chips.
-    await this.#drawBars(view);
+    await Promise.all([this.#drawBars(view), this.#configure(definition.ui ?? {})]);
     if (page.signal.aborted) return undefined;
     source.addEventListener('scope-change', () => this.#offer(), { signal: page.signal });
     await this.provide({
@@ -270,8 +270,10 @@ export class SherpaProvider extends SherpaElement {
     return page.signal.aborted ? undefined : source;
   }
 
-  /** Leave the page: its source goes, and nothing in the subtree reaches it. */
+  /** Leave the page, or one still opening: its source goes, and nothing in the subtree reaches it. */
   close(): void {
+    this.#page?.abort();
+    this.#page = null;
     void this.provide({ sources: {} });
   }
 
@@ -297,6 +299,20 @@ export class SherpaProvider extends SherpaElement {
   #opened: {
     id: string; store: string; source: DataSource; library: (() => ViewLibrary) | null;
   } | null = null;
+
+  /** Configure each component by id, through its own API, once it is defined.
+   *  TRAP T-configuration-is-not-data */
+  async #configure(ui: NonNullable<PageDefinition['ui']>): Promise<void> {
+    await Promise.all(Object.entries(ui).map(async ([id, state]) => {
+      const el = this.querySelector<HTMLElement>(`#${CSS.escape(id)}`);
+      if (!el) {
+        report({ code: 'provider-unknown-element', message: `sherpa-provider: no #${id} to configure.`, at: { id } });
+        return;
+      }
+      await customElements.whenDefined(el.localName);
+      applyState(el, { ...state });
+    }));
+  }
 
   /** Draw every bar from its scope, as the source describes it — the View
    *  chip first, its Group and Sort — then what it may add. */
