@@ -669,6 +669,17 @@ export class SherpaMenu extends SherpaElement {
   #mirrorBaseline = false;
   /** The mode the menu opened in. */
   #modeBaseline: ConditionType = 'simple';
+  /** The baseline is taken for this opening. */
+  #baselineHeld = false;
+
+  /** Remember what Cancel restores. TRAP T-the-baseline-is-taken-at-show */
+  #takeBaseline(): void {
+    this.#baseline = this.values;
+    this.#conditionBaseline = this.conditions;
+    this.#mirrorBaseline = this.#mirror;
+    this.#modeBaseline = this.mode;
+    this.#baselineHeld = true;
+  }
 
   /**
    * The condition, or what was typed under it, changed.
@@ -864,7 +875,13 @@ export class SherpaMenu extends SherpaElement {
     if (this.hasAttribute('data-inline')) return;
     // A closed popover measures 0, so show first. TRAP T-show-then-measure
     this.#syncSelectAll();
+    const wasOpen = this.open;
     this.#card()?.showPopover();
+    // Now, not in `toggle`: that fires a task later. TRAP T-the-baseline-is-taken-at-show
+    if (!wasOpen && this.open) {
+      this.#takeBaseline();
+      this.#syncDirty();
+    }
     this.#place();
   }
 
@@ -1326,10 +1343,8 @@ export class SherpaMenu extends SherpaElement {
     const open = (event as ToggleEvent).newState === 'open';
     this.toggleAttribute('open', open);
     if (open) {
-      this.#baseline = this.values;
-      this.#conditionBaseline = this.conditions;
-      this.#mirrorBaseline = this.#mirror;
-      this.#modeBaseline = this.mode;
+      // An open that did not come through show().
+      if (!this.#baselineHeld) this.#takeBaseline();
       this.#syncDirty();
       /* These live while the menu is OPEN, which is shorter than the element's
          life — `while` is that shorter lifetime, and the base class ANDs it
@@ -1377,6 +1392,7 @@ export class SherpaMenu extends SherpaElement {
         }
       }
       this.#settledByAction = false;
+      this.#baselineHeld = false;
       this.#openAc?.abort();
       this.#openAc = null;
       this.#cardResize?.disconnect();
@@ -1535,10 +1551,7 @@ export class SherpaMenu extends SherpaElement {
     // Apply rewrites the baseline Cancel would restore.
     this.#applying = true;
     this.#settledByAction = true;
-    this.#baseline = this.values;
-    this.#conditionBaseline = this.conditions;
-    this.#mirrorBaseline = this.#mirror;
-    this.#modeBaseline = this.mode;
+    this.#takeBaseline();
     this.emit('menu-apply', { values: this.values });
     /* The ROWS are part of what Apply applies. Without this a committing menu
        held its conditions for ever. TRAP T-a-condition-is-a-draft-too */

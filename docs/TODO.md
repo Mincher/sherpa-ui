@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**63 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**62 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -39,8 +39,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 10 | 94 | A number (and range) filter menu needs Apply and Cancel buttons | bug |
 | ✅ | 11 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
 | ✅ | 12 | 16 | Favourite and Save apply to the Context, not the View | bug |
-| ⬜ | 13 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
-| ⬜ | 14 | 95 | Firefox: a remote chip holding a draft is not marked pending | bug |
+| ❓ | 13 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
+| ✅ | 14 | 95 | Firefox: a remote chip holding a draft is not marked pending | bug |
 | ⬜ | 15 | 96 | A grid with few columns leaves an empty band on the right of its card | bug |
 | ⬜ | 16 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
 | ⬜ | 16a | 100 | The Assistant panel shows no heading | quick |
@@ -603,13 +603,29 @@ removed from this menu, and whether a multi-value row's tick keeps meaning
 held. Update `T-the-add-menu-is-the-whole-list` and the test "a folded BOOLEAN
 filter opens On".
 
-### `[ ]` 95 — Firefox: a remote chip holding a draft is not marked pending
+**❓ Will, 2026-09-29 — pick one.** A menu row has no remove button today
+(`sherpa-menu`'s item row is a tick and a label). If the tick means On, the
+row needs another way to take the filter off.
+
+- **A (my pick):** a one-value row — tick = On. It gets a small × at its end
+  that removes it. A multi-value row keeps tick = held (untick removes), as
+  its row is a FILTER, not a value. Least change; one new row part.
+- **B:** every Added row — tick = On (a multi-value row is ticked while it
+  holds a pick), and every row gets the ×. One meaning in the whole section;
+  more change, and the multi-value tick no longer removes.
+
+### `[x]` ✅ 95 — Firefox: a remote chip holding a draft is not marked pending
 
 Found 2026-09-27 by the full Firefox run: `test/e2e/reforged-pending-chip.spec.ts:10`
 fails in Firefox every time — after a tick in a remote chip's open menu, the
 chip has no `data-pending`. Chromium and WebKit pass. Not the provider work:
 the toolbar as committed before P3b fails the same way. Start at the menu's
 `dirty` and the bar's `#queuePending` (TODO 46, `T-a-pending-chip-has-no-fill`).
+
+**✅ Done 2026-09-29:** the menu took its baseline in `toggle`, which Firefox
+fires AFTER the tick — so the tick became the baseline, and was no draft. The
+baseline is taken in `show()` now. The test passes in all three browsers.
+`T-the-baseline-is-taken-at-show`
 
 ### `[ ]` 96 — A grid with few columns leaves an empty band on the right of its card
 
@@ -2109,6 +2125,8 @@ One line each. The detail is in git and in the trap named.
 
 **2026-09-29, the component API audit (86)**
 - 16: the ★ stars the View, not its whole Context — `T-a-favourite-is-a-view`
+- 95: a menu takes its Cancel baseline in `show()`, not in the late `toggle` — `T-the-baseline-is-taken-at-show`
+- 54: ❓ how a one-value row is removed once its tick means On — two options in the item
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

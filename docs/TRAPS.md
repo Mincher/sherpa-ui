@@ -591,6 +591,18 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-the-baseline-is-taken-at-show
+
+**A committing menu takes its baseline — what Cancel restores — in `show()`,
+the moment the card opens.** Not in `toggle`: the browser fires that as a TASK
+later, and a tick in the gap was taken INTO the baseline, so it was not a draft
+— `dirty` read false and a remote chip was never pending (TODO 95). Firefox
+runs the task later than Chromium, so only Firefox showed it. `toggle` still
+takes one for an open that did not come through `show()`; a close clears the
+flag.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+
 ### T-a-favourite-is-a-view
 
 **The ★ stars the View on screen, not its whole Context.** TODO 16: it was keyed
