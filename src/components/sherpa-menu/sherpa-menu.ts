@@ -66,6 +66,9 @@ const OLD_MODES: Readonly<Record<string, ConditionType>> = {
   select: 'simple', condition: 'advanced', default: 'simple', custom: 'advanced',
 };
 
+/** What does its own job with a click. Anything else in the card is a gap. */
+const CONTROL = 'a[href], button, input, select, textarea, label, summary, [contenteditable]';
+
 /** A mode in either spelling, as the one it means. */
 const modeOf = (raw: string | undefined): ConditionType =>
   (OLD_MODES[raw ?? ''] ?? raw) === 'advanced' ? 'advanced' : 'simple';
@@ -210,6 +213,7 @@ export class SherpaMenu extends SherpaElement {
     this.$('.body-op')?.addEventListener('change', this.#onBodyOp);
     this.$('.body-number')?.addEventListener('change', this.#onBodyChange);
     this.addEventListener('click', this.#onClick);
+    this.addEventListener('click', this.#onGapClick);
     this.$('.apply')?.addEventListener('click', this.#onApply);
     this.$('.cancel')?.addEventListener('click', this.#onCancel);
     /* The FOOTER owns "nothing to apply"; this menu only reports whether its
@@ -1644,6 +1648,17 @@ export class SherpaMenu extends SherpaElement {
     if (!button || button.disabled) return;
     this.emit('menu-select', { value: button.value, label: button.textContent?.trim() ?? '' });
     this.hide();
+  };
+
+  /** A click on no control is the menu's own: the card is drawn over the page,
+   *  but in the DOM it is inside its host. TRAP T-a-gap-click-is-the-menus-own */
+  #onGapClick = (event: Event): void => {
+    if (this.hasAttribute('data-inline')) return;
+    const path = event.composedPath();
+    const inside = path.slice(0, path.indexOf(this));
+    if (inside.some((n) => n instanceof Element && n.matches(CONTROL))) return;
+    event.preventDefault();
+    event.stopPropagation();
   };
 }
 

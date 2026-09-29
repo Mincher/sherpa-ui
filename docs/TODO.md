@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**60 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**59 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -44,7 +44,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ❓ | 15 | 96 | A grid with few columns leaves an empty band on the right of its card | bug |
 | ✅ | 16 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
 | ✅ | 16a | 100 | The Assistant panel shows no heading | quick |
-| ⬜ | 16b | 106 | A click between a menu's items reaches what is behind it — an accordion toggles | bug |
+| ✅ | 16b | 106 | A click between a menu's items reaches what is behind it — an accordion toggles | bug |
 | ⬜ | 16c | 108 | A Filters menu row's scope is a DESCRIPTION under its label, with no "in" | quick |
 | ⬜ | 16d | 114 | About 1 time in 20, a folded Advanced-only filter's row in the Filters menu opens nothing | bug |
 | | | | **D — Filters: Will's features, on the foundation** | |
@@ -541,7 +541,7 @@ Today the source writes ``note: `in ${scopeLabel}` `` (`data-source.ts`,
 row's description line — the same second line a menu row with a description
 already has, if one exists; check the Figma Menu set first — and drop "in".
 
-### `[ ]` 106 — BUG: a click between a menu's items reaches what is behind it
+### `[x]` ✅ 106 — BUG: a click between a menu's items reaches what is behind it
 
 Will, 2026-09-29: *"Clicking the space between menu items causes the
 accordion behind the menu to expand or collapse. The menu needs to block this
@@ -553,6 +553,14 @@ what is drawn. A popover menu is drawn in the top layer, but in the DOM it is
 still inside the accordion's header, so a click on the card's empty space
 reaches the header. A row click is handled; a gap click is not. Check every
 host that holds a menu, not only the accordion.
+
+**✅ Done 2026-09-29:** the cause was as guessed. The fix is in the MENU, so
+it holds for every host: a click in a popover menu that lands on no control
+is the menu's own — `preventDefault()` so no `<summary>` or link acts,
+`stopPropagation()` so no listener behind hears it. A row is a native
+control, so it still does its job. Test (real pointer, three browsers):
+padding and gap clicks toggle nothing and reach no host; a row still ticks.
+`T-a-gap-click-is-the-menus-own`
 
 ### `[x]` ✅ 94 — A number (and range) filter menu needs Apply and Cancel buttons
 
@@ -2149,6 +2157,7 @@ One line each. The detail is in git and in the trap named.
 - 96: ❓ what fills a narrow grid's slack — two options in the item
 - 64: a shut accordion fills with the Style +2 surface
 - 100: the Assistant panel shows its heading — `data-heading`, not `data-title`
+- 106: a click in a menu's gap is the menu's own; no accordion behind it toggles — `T-a-gap-click-is-the-menus-own`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

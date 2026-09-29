@@ -591,6 +591,20 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-a-gap-click-is-the-menus-own
+
+**A click in a popover menu that lands on no control is the menu's own.** The
+card is drawn in the top layer, but in the DOM the menu is still inside its
+host — so a click on the padding or between rows bubbled to an accordion's
+`<summary>` and toggled it (TODO 106), and would reach any click listener
+behind it. The menu calls `preventDefault()` (no `<summary>` or link acts) and
+`stopPropagation()` (no listener hears it). A row is a native control, so the
+control is the click's target and does its job; an inline menu is not drawn
+over anything, so it is left alone.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `test/e2e/reforged-menu-gap-click.spec.ts`
+
 ### T-the-baseline-is-taken-at-show
 
 **A committing menu takes its baseline — what Cancel restores — in `show()`,
