@@ -66,7 +66,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 28 | 21f | "Send to view filters" | feature |
 | ✅ | 29 | 21b | Which header chips carry over between views | feature |
 | ✅ | 30 | 20b | The Date filter should be a view-scope date RANGE | feature |
-| ⬜ | 31 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
+| ❓ | 31 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
 | ⬜ | 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
 | | | | **E — Views and navigation** | |
 | ⬜ | 32 | 15 | Save a View, and the Save split-button menu | feature |
@@ -1325,6 +1325,36 @@ A legend toggle IS a filter (42, done: `only` narrows one component), so a chart
 scope in the panel. It may want chips for its AXES or its AGGREGATION, the way
 the grid has Group and Sort. Larger; design first. After 42, and after 38
 step 3, which puts scopes in the data layer.
+
+**Design, 2026-09-29 — for Will's review** (42 and 38 step 3 are done).
+Found: most of it exists. A scope with `narrows: ["bar"]` already filters one
+component alone, and a legend's toggles already narrow their chart (42). A
+chart says what it summarises in attributes — `data-segment-field`,
+`data-aggregate` + `data-field`, `data-over-field` + `data-bucket` — which the
+provider reads into its summary.
+
+- **The scope:** a chart's own scope in the page JSON, `narrows` its id. The
+  panel draws it as a section with the chart icon (97; the glyph is 115).
+  Its filters narrow the chart alone; the legend's field is one of them.
+- **Its arranging chips**, as Group and Sort are a grid's: **Segment by** (a
+  field), **Measure** (Count, or Sum / Mean / Min / Max of a number field),
+  **Over** (a date field, by day, month or year) — each only where the chart
+  has that axis (a bar or donut segments, a line runs over).
+- **Who owns them:** the chart REPORTS; the provider writes its attributes.
+- **Build after** 99's drawing (a set can hold them, as Organise holds Group
+  and Sort) and ruling 4's per-scope arrangement.
+
+**❓ Will — two choices.**
+
+- **Where a chart's arrangement is kept:**
+  - **A (my pick): in the Query, per scope** — as sort and group are
+    (ruling 4). A saved View keeps "segmented by OS", and a reload too.
+  - **B: on the chart only** — the panel steers its attributes, and a View
+    does not remember them.
+- **Which chips first:**
+  - **A (my pick): all three** — Segment by, Measure, Over — each where the
+    chart has that axis.
+  - **B: Segment by only**, and the rest when asked.
 
 ---
 
