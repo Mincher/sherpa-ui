@@ -591,6 +591,30 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-both-answers-are-kept
+
+**A reading keeps BOTH answers, and `mode` says which one filters.** Will,
+2026-09-29 (TODO 102): *"Both simple and advanced mode conditions need to be
+tracked and stored to allow switching at any point."* The picks — and a typed
+`op` / `text` from a number body — are Simple's answer; the `conditions` rows
+are Advanced's. `fieldState()` compiles only the one in force, so a switch
+changes what filters and loses nothing.
+
+A reading with no `mode` was written before both were kept, and keeps the old
+rule: rows win where there are any. A saved View or filter from before still
+means what it meant.
+
+`mirror` says the rows are still a copy of the picks: the first switch carries
+X and Y over as `Equals X` OR `Equals Y`, and a change to the picks redraws
+them — until the reader edits a row.
+
+The data source copies a reading through `READING_KEYS`. A key left off that
+list is dropped with no error, so `mode` and `mirror` are on it.
+
+- Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `test/unit/both-answers-are-kept.test.mjs`
+
 ### T-one-number-is-a-pick-under-equals
 
 **One typed number is a PICK under `=`, and typed TEXT only under an op that

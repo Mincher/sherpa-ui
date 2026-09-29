@@ -86,6 +86,8 @@ export interface FilterState {
   conditions: readonly FieldCondition[];
   /** Its KIND. `text` unless declared. TRAP T-the-field-type-decides-the-clause */
   type: FieldType;
+  /** Which answer is in force — the reading's, or Advanced where only rows answer. */
+  mode: ConditionType;
   /** Its picks are the ENDS of a range. */
   range: boolean;
   /** EVERY value the field has — never only the reachable ones. */
@@ -145,15 +147,21 @@ export interface FieldReading {
   op?: FilterOp;
   text?: string;
   /**
-   * SEVERAL conditions on one field, chained. The first row has no `join`;
-   * every row after it carries `and` or `or`, which is how a reader reads it.
-   *
-   * `op`/`text` above remain the single-condition form and are what every
-   * existing caller writes. A reading may carry EITHER — never both, because
-   * two answers to "what is this field filtering by" is the bug this file
-   * exists to prevent. TRAP T-many-conditions-are-one-reading
+   * SEVERAL conditions on one field, chained — the Advanced answer. The first
+   * row has no `join`; every row after it carries `and` or `or`, which is how
+   * a reader reads it. TRAP T-many-conditions-are-one-reading
    */
   conditions?: readonly FieldCondition[];
+  /**
+   * Which answer is IN FORCE. Both are kept — the picks (and a typed `op` /
+   * `text`) are Simple's, the rows Advanced's — so a reader switches at any
+   * time and loses nothing. Left out, the rows win where there are any.
+   * TRAP T-both-answers-are-kept
+   */
+  mode?: ConditionType;
+  /** The rows still MIRROR the picks: carried over on the first switch, and
+   *  redrawn as the picks change, until the reader edits a row. */
+  mirror?: boolean;
   /**
    * Its picks are the ENDS of a range, not a list of values.
    *
@@ -248,11 +256,13 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
      row of its own. Whatever answered it, the compiler below sees rows.
      TRAP T-one-condition-system */
   const ends = values.filter((v) => v.state === 'picked').map((v) => v.raw);
-  const rows: FieldCondition[] = conditions.length ? [...conditions]
+  // Only the answer IN FORCE compiles; the other is kept. TRAP T-both-answers-are-kept
+  const mode: ConditionType = reading.mode ?? (conditions.length ? 'advanced' : 'simple');
+  const rows: FieldCondition[] = mode === 'advanced' ? [...conditions]
     : !answered ? []
       : takesText ? [{ op, text }]
         : [{ op: range && ends.length >= 2 ? 'between' : op, picked: ends }];
-  const advanced = conditions.length > 0 || op !== DEFAULT_OP;
+  const advanced = mode === 'advanced' || op !== DEFAULT_OP;
 
   return {
     field: facts.field,
@@ -262,6 +272,7 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
     text,
     conditions,
     type,
+    mode,
     range,
     values,
     condition: !rows.length ? null : advanced ? 'advanced' : 'simple',

@@ -2146,7 +2146,8 @@ function answerOf(reading: FieldReading): FieldReading {
   for (const key of READING_KEYS) if (reading[key] !== undefined) out[key] = reading[key];
   return out as FieldReading;
 }
-const READING_KEYS = ['picked', 'present', 'op', 'text', 'conditions', 'range', 'suspended'] as const;
+// A key left off this list is DROPPED, silently. TRAP T-both-answers-are-kept
+const READING_KEYS = ['picked', 'present', 'op', 'text', 'conditions', 'mode', 'mirror', 'range', 'suspended'] as const;
 
 /** Write or remove an attribute. `undefined` removes, so CSS stops matching. */
 function setAttr(el: HTMLElement, name: string, value: string | undefined): void {
