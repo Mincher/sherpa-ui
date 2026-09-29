@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**65 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**68 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -45,9 +45,11 @@ order.
 | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
 | 18a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
 | 19 | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
+| 19a | 110 | In Advanced rows, AND is serial and OR is parallel: an AND row offers only what the rows before it leave | feature |
 | 20 | 21d | EXPLORE — conditions for a DATE field | explore |
 | 21 | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
 | 21a | 105 | "Save filters" saves EVERY scope under one name; a "Saved" chip shows it, warns when edited, and undoes it | feature |
+| 21b | 109 | Reset has a label, and a menu button: "Reset to default" puts back the View's own filters | feature |
 | 22 | 97 | A filter panel section shows an icon for WHAT it filters: View, Chart, Grid, Form, List | quick |
 | 23 | 60 | Once applied, a chip's badge shows the number of results | feature |
 | 24 | 49 | A preset Advanced chip shows its conditions, read-only | feature |
@@ -90,6 +92,7 @@ order.
 | 54 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
 | 55 | 84 | Use the platform: Intl for money, units and deltas; Temporal in the calendar | refactor |
 | 56 | 81 | Component contracts move from YAML to JSON | refactor |
+| 56a | 111 | A spec types every JS property as `string` — `reading`, `conditions`, `open` | tidy |
 | 57 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 | | | **K — Agentic UI: much later** | |
 | 58 | 76 | WebMCP: agents do UI tasks through Sherpa's own contracts — a core system | explore |
@@ -514,6 +517,22 @@ their parameters maintained."*
   session's kept Query. Design it with 90, which builds Advanced on it, and
   with 75's rename (the mode is `simple` / `advanced`).
 
+### `[ ]` 110 — In Advanced rows, AND is serial and OR is parallel
+
+Will, 2026-09-29: *"Advanced filter conditions: AND is serial. OR is
+parallel. So AND row options should be restricted by preceding conditional row
+conditions."*
+
+A row joined by AND narrows what the rows before it left, so its value list
+offers only the values still present under them — the SERIAL idea of 99's
+filterset, inside one field's rows. A row joined by OR starts again: every
+value. AND binds tighter than OR (`T-many-conditions-are-one-reading`), so an
+AND row looks back only as far as the last OR.
+
+The data layer has the tool: `present` is the values a row still carries under
+the other filters. Build with 90 (options per field type) and 99 (serial /
+parallel for whole filters), so "serial" means one thing in both.
+
 ### `[ ]` 90 — Any filter switches to ADVANCED: condition rows, with options per field type
 
 Will, 2026-09-27: *"Any filter should be able to be toggled to 'Advanced',
@@ -601,6 +620,25 @@ Settle when it starts:
 - What becomes of the saved preset chips already stored: read them as
   one-scope definitions, or drop them.
 - Still kept per DATA (`T-a-saved-filter-lives-with-its-data`)?
+
+### `[ ]` 109 — Reset has a label, and a menu button: "Reset to default" puts back the View's own filters
+
+Will, 2026-09-29: *"The reset button in the filter panel and toolbar should
+have a label. It should also be in a button group with a secondary menu
+button. This menu button shows a 'Reset to default' option that restores to
+the Views initial defined filtering state. The current reset button just
+resets all added filters to their default state like it does currently."*
+
+| control | does |
+|---|---|
+| **Reset** (now with its label) | what it does today — every added filter back to its own default |
+| its menu button → **Reset to default** | the scopes go back to the View's DEFINED state: its definition's `ui` and `readings`, or a saved View's Query as it was saved |
+
+The same split button as Save view (15) and Save filters (105) — build the
+three together. A default is not an empty value
+(`T-a-default-is-not-an-empty-value`); the provider already holds the View's
+own Query (`provider.open`, `T-a-page-is-its-definition`). Settle: whether
+Reset to default also removes filters the reader ADDED since.
 
 ### `[ ]` 97 — A filter panel section shows an icon for WHAT it filters
 
@@ -1153,6 +1191,15 @@ hand-rolls today:
 The DOM-free data layer stays off `Temporal` and `Math.sumPrecise` until Node
 has them. The metric's VALUE takes `Intl` options as JSON since provider P2
 (`data-format`); its delta and the upload size do not yet.
+
+### `[ ]` 111 — A spec types every JS property as `string`
+
+Found in 102 step 2 (2026-09-29): `parseClassApi` (`scripts/lib/ts-facts.mjs`)
+gives every getter and setter `type: 'string'`, so `sherpa-menu`'s spec says
+`reading` and `conditions` are strings, and `open` and `dirty` too. A wrong
+type in a contract is worse than an honest gap: read the accessor's own
+annotation, and write `unknown` where there is none. Every spec's `jsProps`
+moves when it lands.
 
 ### `[ ]` 81 — Component contracts move from YAML to JSON
 
