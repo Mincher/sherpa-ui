@@ -3797,6 +3797,7 @@ position, is also how the gauge resolves its own zone colours — see
 `T-gauge-status-is-named`.
 
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
+- Site: `src/core/data/format-tick.ts`
 
 ### T-rollup-row-has-its-own-prototype
 

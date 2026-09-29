@@ -24,9 +24,9 @@ export class SherpaProgressBar extends SherpaElement {
     this.#sync();
   }
 
-  /** populate({ value }) sets the percentage — the single data path. */
+  /** populate(number | { value }) sets the percentage — the single data path. */
   protected override renderData(data: unknown): void {
-    const { value } = (data ?? {}) as ProgressData;
+    const value = typeof data === 'number' ? data : (data as ProgressData | null)?.value;
     if (value != null) this.value = value;
   }
 

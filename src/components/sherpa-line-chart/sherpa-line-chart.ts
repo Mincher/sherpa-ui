@@ -8,7 +8,6 @@ import { chartScale, tickPercent, type ChartScale } from '../../core/data/format
 import { fillTip, pairAnchor, paintSeries, renderValueAxis } from '../../core/ui/chart-parts.js';
 import { DEFAULT_TICKS } from '../../core/ui/shared-constants.js';
 
-const SVG_NS = 'http://www.w3.org/2000/svg';
 
 interface Series {
   name?: string;
@@ -90,13 +89,12 @@ export class SherpaLineChart extends SherpaElement {
     // TRAP T-gridlines-run-to-the-top-label
     grid.replaceChildren();
     const bands = this.#tickSteps() > 0 ? scale.bands : 0;
-    for (let i = 1; i <= bands; i++) {
-      const y = 100 - tickPercent(i, bands);
-      const line = document.createElementNS(SVG_NS, 'line');
-      line.setAttribute('x1', '0');
-      line.setAttribute('x2', '100');
-      line.setAttribute('y1', String(y));
-      line.setAttribute('y2', String(y));
+    const gridline = this.$<HTMLTemplateElement>('template.gridline-tpl')?.content.querySelector('line');
+    for (let i = 1; i <= bands && gridline; i++) {
+      const y = String(100 - tickPercent(i, bands));
+      const line = document.importNode(gridline, true);
+      line.setAttribute('y1', y);
+      line.setAttribute('y2', y);
       grid.appendChild(line);
     }
 
@@ -109,24 +107,19 @@ export class SherpaLineChart extends SherpaElement {
         return [x, y] as const;
       });
 
-      const g = document.createElementNS(SVG_NS, 'g');
-      g.setAttribute('class', 'series');
+      const proto = this.$<HTMLTemplateElement>('template.series-tpl')?.content.querySelector('.series');
+      if (!proto) return;
+      const g = document.importNode(proto, true) as SVGGElement;
       paintSeries(g, si, s.colorIndex);
 
-      const area = document.createElementNS(SVG_NS, 'path');
-      area.setAttribute('class', 'area');
+      const area = g.querySelector('.area')!;
       if (pts.length) {
         const d = `M ${pts[0]![0]} 100 ` + pts.map((p) => `L ${p[0]} ${p[1]}`).join(' ') +
           ` L ${pts[pts.length - 1]![0]} 100 Z`;
         area.setAttribute('d', d);
       }
 
-      const line = document.createElementNS(SVG_NS, 'polyline');
-      line.setAttribute('class', 'line');
-      line.setAttribute('fill', 'none');
-      line.setAttribute('points', pts.map((p) => `${p[0]},${p[1]}`).join(' '));
-
-      g.append(area, line);
+      g.querySelector('.line')!.setAttribute('points', pts.map((p) => `${p[0]},${p[1]}`).join(' '));
       layer.appendChild(g);
 
       if (hotspots && dotTpl) {

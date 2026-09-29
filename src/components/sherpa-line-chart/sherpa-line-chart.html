@@ -51,8 +51,15 @@
     <span class="y-tick sherpa-truncate"><span class="y-value"></span></span>
   </template>
 
-  <!-- Series <g>/<path>/<polyline> are built in the TS via createElementNS — SVG
-       cloned from an HTML template lands in the wrong namespace and paints nothing. -->
+  <!-- Inside an <svg>, so the parser makes SVG elements: a bare <path> in a
+       template lands in the HTML namespace and paints nothing. -->
+  <template class="series-tpl">
+    <svg><g class="series"><path class="area"></path><polyline class="line" fill="none"></polyline></g></svg>
+  </template>
+  <template class="gridline-tpl">
+    <svg><line x1="0" x2="100"></line></svg>
+  </template>
+
   <template class="xlabel-tpl">
     <span class="x-label sherpa-truncate"></span>
   </template>

@@ -5,6 +5,9 @@
  *
  * Map:
  * - ChartDatum — One category with its measurement — a bar, a slice, a legend row.
+ * - STATUSES — The statuses a band or a legend row may name — one list.
+ * - Status — One of `STATUSES`.
+ * - isStatus — Is this name a status?
  * - LegendDatum — `ChartDatum` plus the two things only a legend has.
  * - datumValue — One datum's value as a NUMBER, or 0.
  * - datumTotal — What a set of data ADDS UP TO — one answer, for the ring and for the label.
@@ -24,13 +27,24 @@ export interface ChartDatum {
   colorIndex?: number;
 }
 
+/** The statuses a band or a legend row may name — one list, in the gauge's order. */
+export const STATUSES = ['success', 'warning', 'urgent', 'critical', 'info'] as const;
+
+/** One of `STATUSES`. */
+export type Status = (typeof STATUSES)[number];
+
+/** Is this name a status? */
+export function isStatus(name: string): name is Status {
+  return (STATUSES as readonly string[]).includes(name);
+}
+
 /** `ChartDatum` plus the two things only a legend has. */
 export interface LegendDatum extends Omit<ChartDatum, 'value'> {
   /** Preformatted is allowed here — a legend prints, it does not plot. */
   value?: string | number;
   /** A STATUS swatch instead of a categorical one — a gauge's bands are
    *  thresholds, not a series. Set this OR colorIndex, not both. */
-  status?: 'success' | 'warning' | 'critical' | 'info' | 'urgent';
+  status?: Status;
 }
 
 /** One datum's value as a NUMBER, or 0. A legend widens `value` to a string. */

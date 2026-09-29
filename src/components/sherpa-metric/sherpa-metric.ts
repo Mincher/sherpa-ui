@@ -90,7 +90,8 @@ export class SherpaMetric extends SherpaElement {
     /* An explicit `value` wins: deriving over the caller's own number would
        silently disagree with it. Otherwise the series answers. */
     const derived = data.value ?? deriveValue(data.values, data.show);
-    if (derived != null) this.dataset['value'] = typeof derived === 'number' ? this.#format(derived) : derived;
+    if (typeof derived === 'number') this.value = derived;
+    else if (derived != null) this.dataset['value'] = derived;
 
     if (data.delta != null) {
       this.dataset['delta'] = data.delta;
@@ -113,6 +114,19 @@ export class SherpaMetric extends SherpaElement {
       this.#fillSparkline(data.values);
     }
   }
+
+  /** The value as a NUMBER, as every meter takes it; `data-value` is its formatted text. */
+  get value(): number | undefined {
+    return this.#value;
+  }
+  set value(n: number | undefined) {
+    this.#value = n;
+    if (n == null) this.removeAttribute('data-value');
+    else this.dataset['value'] = this.#format(n);
+  }
+
+  /** The last number given. */
+  #value: number | undefined;
 
   /* ── Private ─────────────────────────────────────────────────────────── */
 

@@ -13,6 +13,8 @@
  * - ringSegmentPath — The `d` for a CLOSED ring segment — a donut slice — with four rounded corners.
  * - seriesVar — The custom property a mark paints with.
  * - seriesBorderVar — the property a mark's OUTLINE paints with — the series' identity
+ * - statusVar — A status band's FILL.
+ * - statusBorderVar — A status band's SOLID colour, for its outline.
  */
 
 /**
@@ -311,6 +313,16 @@ export function seriesVar(index: number, colorIndex?: number): string {
 export function seriesBorderVar(index: number, colorIndex?: number): string {
   const n = seriesSlot(index, colorIndex);
   return `var(--sherpa-data-viz-series-border-${n}, var(--sherpa-data-viz-series-${n}))`;
+}
+
+/** A status band's FILL. TRAP T-legend-status-swatch-shares-the-band-tokens */
+export function statusVar(status: string): string {
+  return `var(--sherpa-status-${status}-fill)`;
+}
+
+/** A status band's SOLID colour, for its outline. */
+export function statusBorderVar(status: string): string {
+  return `var(--sherpa-status-${status})`;
 }
 
 /**

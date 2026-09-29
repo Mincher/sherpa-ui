@@ -16,6 +16,7 @@ import { datumTotal, type LegendDatum } from '../../core/data/chart-datum.js';
 import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import { paintSeries } from '../../core/ui/chart-parts.js';
+import { statusBorderVar, statusVar } from '../../core/data/format-tick.js';
 // The roll-up row composes a real button + menu; the page may not have imported them.
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-menu/sherpa-menu.js';
@@ -202,8 +203,8 @@ export class SherpaChartLegend extends SherpaElement {
       if (item.status) {
         // The band's own pair, never the `--_status-*` cascade.
         entry.dataset['status'] = item.status;
-        swatch.style.setProperty('--_hue', `var(--sherpa-status-${item.status}-fill)`);
-        swatch.style.setProperty('--_border', `var(--sherpa-status-${item.status})`);
+        swatch.style.setProperty('--_hue', statusVar(item.status));
+        swatch.style.setProperty('--_border', statusBorderVar(item.status));
       } else {
         paintSeries(swatch, i, item.colorIndex);
       }

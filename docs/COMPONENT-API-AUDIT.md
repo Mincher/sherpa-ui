@@ -246,7 +246,7 @@ going away: `<noun>-remove` (a request) and `dismiss()` + `<noun>-dismiss`
 | A3a ✅ | charts: the three hide doors and the repeated legend event are deleted | 85 |
 | A3b ✅ | charts: `static css` as a list; `sherpa-chart-axes.css` (16 rules the bar and line charts copied) and `sherpa-chart-segments.css` (the 4 frame rules the gauge copied). A spec lists only its OWN sheet's bindings | 56 |
 | A3c ✅ | charts: `src/core/ui/chart-parts.ts` — ONE value axis (bar and line), `paintSeries`, `pairAnchor`, `fillTip`, used by five charts and the legend. The lines moved rather than fell: one place for each rule | +4 |
-| A3d | charts: the line chart's SVG template; one status list; the meters take a number | ~40 |
+| A3d ✅ | charts: the line chart draws its series and gridlines from `<svg>` templates (no `createElementNS`); ONE status list (`STATUSES`, `statusVar`, `statusBorderVar`); every meter — gauge, progress bar, metric — takes `populate(number \| { value })` and a number `value`. Grows: the metric gains its `value` door | +39 |
 | A4 | open and close: `disclosure.ts`; the event names; the provider's call in the same commit | ~120 |
 | A5 | form controls: `SherpaFormControl`; then bug 61 on it | ~150 |
 | A6 | items: the CURRENT and TICKED contracts; chip and tag events aligned | ~100 |

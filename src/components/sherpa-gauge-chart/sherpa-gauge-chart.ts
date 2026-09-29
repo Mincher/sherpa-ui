@@ -6,7 +6,8 @@
  */
 import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
-import { formatTick, radialArea, ringSegmentPath } from '../../core/data/format-tick.js';
+import { formatTick, radialArea, ringSegmentPath, statusBorderVar, statusVar } from '../../core/data/format-tick.js';
+import { isStatus } from '../../core/data/chart-datum.js';
 import { fillTip, pairAnchor } from '../../core/ui/chart-parts.js';
 import { RADIAL_CENTRE as CENTRE, RADIAL_CORNER as CORNER,
   RADIAL_OUTLINE as OUTLINE, RADIAL_INNER_RATIO } from '../../core/ui/shared-constants.js';
@@ -27,7 +28,6 @@ interface Zone {
 }
 
 /** TRAP T-gauge-status-is-named — resolved BY NAME, never by position. */
-const STATUS_ORDER = ['success', 'warning', 'urgent', 'critical', 'info'] as const;
 
 
 /* Path geometry in viewBox units — an SVG `d` cannot read a custom property, so
@@ -65,9 +65,10 @@ export class SherpaGaugeChart extends SherpaElement {
     this.#sync();
   }
 
-  /** populate(number) — set the value. */
+  /** populate(number | { value }) — set the value. A provider's aggregate over time is the object. */
   protected override renderData(data: unknown): void {
-    if (typeof data === 'number') this.dataset['value'] = String(data);
+    const value = typeof data === 'number' ? data : (data as { value?: unknown } | null)?.value;
+    if (typeof value === 'number' && Number.isFinite(value)) this.value = value;
   }
 
   get value(): number {
@@ -190,8 +191,7 @@ export class SherpaGaugeChart extends SherpaElement {
       dot.style.setProperty('--_hue', zone.color);
       pairAnchor(`--gauge-zone-${i}`, dot, tip);
       // A raw CSS colour has no name worth showing — that row is the range alone.
-      const isStatus = (STATUS_ORDER as readonly string[]).includes(zone.name);
-      const label = isStatus ? this.#zoneLabel(zone.name) : '';
+      const label = isStatus(zone.name) ? this.#zoneLabel(zone.name) : '';
       fillTip(tip, label, `${zone.rawFrom}–${zone.rawTo}`);
       /* The accessible name goes on the ARC, and so does `tabindex` — without
          it the name was there and nothing could reach it. The CSS lights this
@@ -214,14 +214,12 @@ export class SherpaGaugeChart extends SherpaElement {
 
   /** A zone's colour name → its band's fill. Anything unknown passes through. */
   #zoneColour(name: string): string {
-    const known = (STATUS_ORDER as readonly string[]).includes(name);
-    return known ? `var(--sherpa-status-${name}-fill)` : name;
+    return isStatus(name) ? statusVar(name) : name;
   }
 
   /** A status's SOLID colour, for the band's outline. */
   #zoneBorder(name: string): string {
-    const known = (STATUS_ORDER as readonly string[]).includes(name);
-    return known ? `var(--sherpa-status-${name})` : name;
+    return isStatus(name) ? statusBorderVar(name) : name;
   }
 
   /**
