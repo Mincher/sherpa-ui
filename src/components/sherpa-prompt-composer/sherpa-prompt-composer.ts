@@ -21,6 +21,8 @@ export class SherpaPromptComposer extends SherpaElement {
 
   /** The text box. */
   #input: HTMLTextAreaElement | null = null;
+  /** A value set before the text box exists. TRAP T-a-value-before-the-first-render-is-held */
+  #early: string | null = null;
 
   override onRender(): void {
     this.#input = this.$<HTMLTextAreaElement>('.input');
@@ -32,6 +34,10 @@ export class SherpaPromptComposer extends SherpaElement {
     this.$('.send')?.addEventListener('button-click', this.#onSend);
     this.$('.attach')?.addEventListener('button-click', () => this.#onLeading('composer-attach'));
     this.$('.lab')?.addEventListener('button-click', () => this.#onLeading('composer-lab'));
+    if (this.#early != null) {
+      this.value = this.#early;
+      this.#early = null;
+    }
   }
 
   override onChange(name: string): void {
@@ -40,13 +46,15 @@ export class SherpaPromptComposer extends SherpaElement {
   }
 
   get value(): string {
-    return this.#input?.value ?? '';
+    return this.#input?.value ?? this.#early ?? '';
   }
   set value(v: string) {
-    if (this.#input) {
-      this.#input.value = v ?? '';
-      this.#autoresize();
+    if (!this.#input) {
+      this.#early = v ?? '';
+      return;
     }
+    this.#input.value = v ?? '';
+    this.#autoresize();
   }
 
   override focus(): void {

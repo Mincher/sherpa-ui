@@ -591,6 +591,20 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-a-value-before-the-first-render-is-held
+
+**A value set before a component's first render is HELD, and written in at
+the end of `onRender`.** `SherpaElement` fetches the template, so the elements
+a setter writes into do not exist for a while after the element does — a
+composer's `value` set then went nowhere, and read back as `""` (TODO 113).
+Where a native control owns the live value once drawn (a textarea), hold only
+the early one: the getter answers it until the control exists. Where the
+component's elements ARE its state, keep the state as data instead —
+`T-a-value-is-data-the-ticks-are-drawn`.
+
+- Site: `src/components/sherpa-prompt-composer/sherpa-prompt-composer.ts`
+- Site: `test/e2e/reforged-prompt-composer.spec.ts`
+
 ### T-a-value-is-data-the-ticks-are-drawn
 
 **`sherpa-select-group`'s value is its own DATA (`#picked`), and the child

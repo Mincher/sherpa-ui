@@ -108,3 +108,22 @@ test('an empty (whitespace-only) submit is a no-op', async ({ page }) => {
   });
   expect(count).toBe(0);
 });
+
+/**
+ * A VALUE SET BEFORE THE FIRST RENDER IS HELD — TODO 113. The text box did not
+ * exist yet, so the value went nowhere and read back as "".
+ * TRAP T-a-value-before-the-first-render-is-held
+ */
+test('a value set before the first render is held, read back, and drawn', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-prompt-composer') as HTMLElement & {
+      value: string; rendered?: Promise<void>;
+    };
+    document.getElementById('root')!.appendChild(el);
+    el.value = 'hello';
+    const early = el.value;
+    await el.rendered;
+    return { early, value: el.value, box: el.shadowRoot!.querySelector('textarea')!.value };
+  });
+  expect(r).toEqual({ early: 'hello', value: 'hello', box: 'hello' });
+});

@@ -385,6 +385,14 @@ does — not the `static config` widening: select-group's `populate()` takes an
 ARRAY, which `config` does not merge into. Widen `config` when three
 components want the same shape. `T-a-value-is-data-the-ticks-are-drawn`
 
+**✅ prompt-composer and input-text done 2026-09-29.** The composer HOLDS a
+value set before its first render and writes it in at the end of `onRender`
+— the textarea owns the live text once it exists
+(`T-a-value-before-the-first-render-is-held`). input-text already kept an
+early value (probed); nothing to do. **Left of 113:** the filter family —
+menu, toolbar, panel, chip — built with A7 and 89; and the skeleton, with 58
+and 59.
+
 ### `[~]` 37 — Components are AGNOSTIC of the data, and of the example app
 
 Will, 2026-09-25:
@@ -2197,6 +2205,7 @@ One line each. The detail is in git and in the trap named.
 - 114: a re-fold that moves nothing keeps the open Filters menu — `T-a-reflow-that-moves-nothing-keeps-its-menus`
 - 113 step 1: a saved View waits for a component that has not drawn — `T-apply-degrades-never-throws`
 - 113: select-group's value is data, and its ticks are drawn from it — `T-a-value-is-data-the-ticks-are-drawn`
+- 113: prompt-composer holds a value set before its first render — `T-a-value-before-the-first-render-is-held`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`
