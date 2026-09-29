@@ -591,6 +591,24 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-reset-to-default-is-the-views-own
+
+**Reset puts every filter back to ITS own default; Reset to default puts the
+page back as the View on screen DEFINES it** — Will, TODO 109. Only the
+provider knows that: the bar and the panel send `view-reset` (an intent) from
+the menu beside Reset, and `provider.resetView()` answers — the page's first
+Query (kept at `open()`, before any kept one), then the View's Query as a
+pick puts it on. So a filter the reader ADDED since goes, as it is not the
+View's. A page may call `resetView()` itself. Reset and its ▾ are one
+`.sherpa-group`, like Save and its ▾; folded, the ⋮ lists both.
+
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
+- Site: `test/e2e/reforged-reset-to-default.spec.ts`
+
 ### T-a-value-before-the-first-render-is-held
 
 **A value set before a component's first render is HELD, and written in at

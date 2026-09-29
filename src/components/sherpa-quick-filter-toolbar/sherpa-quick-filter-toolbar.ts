@@ -952,6 +952,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** A "Remove" row. `menu-select` is for ACTION rows; value rows commit via `menu-change`. */
   #onMenuSelect = (event: Event): void => {
     const value = (event as CustomEvent).detail?.value;
+    if (value === 'reset-default' && this.pathFind(event, '.reset-more')) {
+      event.stopImmediatePropagation();
+      this.#act(value);
+      return;
+    }
     if (value === 'save') {
       event.stopImmediatePropagation();
       const fromAdd = !!this.pathFind(event, '.add-btn');
@@ -1605,6 +1610,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         // RESETS, not announces: a host cannot reach chips it did not stamp.
         this.clearAll();
         break;
+      case 'reset-default':
+        // The View's OWN filters — only its provider knows them. TRAP T-reset-to-default-is-the-views-own
+        this.emit('view-reset');
+        break;
       case 'refresh':
         this.emit('data-refresh');
         break;
@@ -1644,7 +1653,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
     const first: HTMLElement[] = [];
     if (folded(act('ai'))) first.push(row('ai', 'Suggest filters'));
-    if (folded(act('clear'))) first.push(row('clear', 'Reset filters'));
+    if (folded(act('clear'))) first.push(row('clear', 'Reset filters'), row('reset-default', 'Reset to default'));
     // The PAGE's buttons in the `actions` slot — the panel switch is one.
     [...this.querySelectorAll<HTMLElement>(':scope > [slot="actions"]')].forEach((extra, i) => {
       if (folded(extra)) first.push(row(`extra:${i}`, extra.getAttribute('aria-label') ?? extra.textContent?.trim() ?? ''));

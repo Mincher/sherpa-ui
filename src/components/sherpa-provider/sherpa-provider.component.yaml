@@ -34,8 +34,8 @@ capabilities:
   - $type: capability
     api: js-methods
     description: >-
-      callable from a view definition's state block (provide, open, close, saveView, export,
-      import). See $extensions.sherpa.methods.
+      callable from a view definition's state block (provide, open, close, saveView, resetView,
+      export, import). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: filter-mode-change
@@ -76,6 +76,13 @@ $extensions:
         name: saveView
         args: "label: string"
         description: Save what is on screen as a new View of the open page, and put it on the View chip.
+      - $type: method
+        name: resetView
+        args: ""
+        description: >-
+          Put the filters back as the View on screen DEFINES them: the page's first Query, then the
+          View's, as a pick puts it on. A filter the reader added since goes. What "Reset to
+          default" does.
       - $type: method
         name: export
         args: ""

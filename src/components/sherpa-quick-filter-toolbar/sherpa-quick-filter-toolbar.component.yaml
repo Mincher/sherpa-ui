@@ -60,14 +60,37 @@ anatomy:
                 data-type: icon
                 data-icon-start: wand-magic-sparkles
                 aria-label: Suggest filters
-            - el: sherpa-button
-              class: act
-              attrs:
-                data-size: sm
-                data-act: clear
-                data-type: icon
-                data-icon-start: arrow-rotate-left
-                aria-label: Reset all filters
+            - el: span
+              class: reset-group sherpa-group
+              children:
+                - el: sherpa-button
+                  class: act
+                  attrs:
+                    data-size: sm
+                    data-act: clear
+                    data-group: start
+                    data-icon-start: arrow-rotate-left
+                    aria-label: Reset all filters
+                - el: sherpa-button
+                  class: act reset-more
+                  attrs:
+                    data-size: sm
+                    data-act: reset-more
+                    data-type: icon
+                    data-group: end
+                    data-icon-start: triangle-down
+                    aria-label: Reset options
+                    aria-haspopup: menu
+                  children:
+                    - el: sherpa-menu
+                      attrs:
+                        slot: menu
+                        data-align: end
+                      children:
+                        - el: button
+                          attrs:
+                            type: button
+                            value: reset-default
             - el: span
               class: act-divider
               attrs:
@@ -318,6 +341,10 @@ events:
       ids: unknown
   - $type: event
     name: filter-clear
+    bubbles: true
+    composed: true
+  - $type: event
+    name: view-reset
     bubbles: true
     composed: true
   - $type: event

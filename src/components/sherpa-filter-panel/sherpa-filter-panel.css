@@ -69,6 +69,15 @@
   block-size: var(--sherpa-theme-content-size-base-1, 16px);
 }
 
+/* Reset and its ▾, as one control. */
+.reset-group {
+  display: inline-flex;
+  align-items: center;
+}
+.reset-group > :not(:first-child) {
+  margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
+}
+
 .scope::part(header) {
   position: sticky;
   inset-block-start: 0;

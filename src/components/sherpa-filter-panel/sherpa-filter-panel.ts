@@ -195,6 +195,12 @@ export class SherpaFilterPanel extends SherpaElement {
 
   override onRender(): void {
     this.$('.reset-all')?.addEventListener('button-click', this.#onResetAll);
+    // Only the provider knows the View's own filters. TRAP T-reset-to-default-is-the-views-own
+    this.$('.reset-more')?.addEventListener('menu-select', (event) => {
+      if ((event as CustomEvent).detail?.value !== 'reset-default') return;
+      event.stopPropagation();
+      this.emit('view-reset');
+    });
     this.$('.search')?.addEventListener('input', this.#onSearch);
     // ONE listener for every drawn control — a field added later needs no wiring.
     this.$('.scopes')?.addEventListener('button-click', this.#onAction);

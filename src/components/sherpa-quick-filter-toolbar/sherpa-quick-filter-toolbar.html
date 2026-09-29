@@ -52,6 +52,7 @@
     filter-delete        — a saved filter's Delete: it is off the bar. detail: { id }
     filter-add           — the Add chip's body was clicked
     filter-clear         — the undo button: every chip reset
+    view-reset           — Reset to default: put back the View's own filters
     ai-filter-request    — the AI button
     data-refresh         — the refresh button
     view-save            — Save (view type)
@@ -101,9 +102,20 @@
       <sherpa-button class="act" data-size="sm" data-act="ai" data-type="icon"
                      data-icon-start="wand-magic-sparkles"
                      aria-label="Suggest filters"></sherpa-button>
-      <sherpa-button class="act" data-size="sm" data-act="clear" data-type="icon"
-                     data-icon-start="arrow-rotate-left"
-                     aria-label="Reset all filters"></sherpa-button>
+      <!-- RESET, and its menu: Reset to default. Will, TODO 109.
+           TRAP T-reset-to-default-is-the-views-own -->
+      <span class="reset-group sherpa-group">
+        <sherpa-button class="act" data-size="sm" data-act="clear" data-group="start"
+                       data-icon-start="arrow-rotate-left"
+                       aria-label="Reset all filters">Reset</sherpa-button>
+        <sherpa-button class="act reset-more" data-size="sm" data-act="reset-more" data-type="icon"
+                       data-group="end" data-icon-start="triangle-down"
+                       aria-label="Reset options" aria-haspopup="menu">
+          <sherpa-menu slot="menu" data-align="end">
+            <button type="button" value="reset-default">Reset to default</button>
+          </sherpa-menu>
+        </sherpa-button>
+      </span>
       <span class="act-divider" aria-hidden="true"></span>
 
       <!-- THE VIEW GROUP — Figma's "Frame 1": three controls snapped into one

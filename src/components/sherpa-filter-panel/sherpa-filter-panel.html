@@ -49,6 +49,7 @@
     filter-save — a scope's Save filter. detail: { scope, readings }
     filter-edit — a saved preset's Edit filter. detail: { scope, id }
     filter-delete — a saved preset's Delete filter. detail: { scope, id }
+    view-reset — Reset to default: put back the View's own filters
 -->
 <template id="default">
   <!-- A CONTAINER, not a sherpa-panel: a panel draws LEFT and RIGHT edges only
@@ -62,10 +63,19 @@
                              data-icon="filter">
       <!-- BOTH scopes at once, applied as the toolbar's Reset is. Both header
            buttons wear the DEFAULT look. Will, 2026-09-26. -->
-      <sherpa-button slot="actions" class="reset-all" part="reset-all"
-                     data-type="icon" data-size="sm"
-                     data-icon-start="arrow-rotate-left"
-                     aria-label="Reset all filters"></sherpa-button>
+      <!-- …and its menu: Reset to default. TRAP T-reset-to-default-is-the-views-own -->
+      <span slot="actions" class="reset-group sherpa-group">
+        <sherpa-button class="reset-all" part="reset-all" data-size="sm" data-group="start"
+                       data-icon-start="arrow-rotate-left"
+                       aria-label="Reset all filters">Reset</sherpa-button>
+        <sherpa-button class="reset-more" part="reset-more" data-type="icon" data-size="sm"
+                       data-group="end" data-icon-start="triangle-down"
+                       aria-label="Reset options" aria-haspopup="menu">
+          <sherpa-menu slot="menu" data-align="end">
+            <button type="button" value="reset-default">Reset to default</button>
+          </sherpa-menu>
+        </sherpa-button>
+      </span>
       <!-- The HOST's buttons — the page's switch back to the toolbars is one.
            TRAP T-the-mode-switch-is-the-pages-own -->
       <slot name="actions" slot="actions"></slot>

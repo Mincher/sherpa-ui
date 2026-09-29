@@ -299,13 +299,16 @@ export class SherpaProvider extends SherpaElement {
     }
     const shipped = options.views;
     const library = shipped ? (): ViewLibrary => ({ ...shipped, ...loadSavedViews(definition.id) }) : null;
-    this.#opened = { id: definition.id, store: def.store, source, library };
+    // The page as DEFINED, before a kept Query: what Reset to default starts from.
+    const initial = structuredClone(source.query.applied);
+    this.#opened = { id: definition.id, store: def.store, source, library, initial };
     // A View this page does not have is the first.
     const view = options.view && library?.()[options.view] ? options.view : undefined;
     // BEFORE the Query: a kept one is drawn onto these chips.
     await Promise.all([this.#drawBars(view), this.#configure(definition.ui ?? {})]);
     if (page.signal.aborted) return undefined;
     source.addEventListener('scope-change', () => this.#offer(), { signal: page.signal });
+    this.addEventListener('view-reset', () => void this.resetView(), { signal: page.signal });
     await this.provide({
       sources: { [definition.id]: source },
       ...(library ? {
@@ -339,11 +342,24 @@ export class SherpaProvider extends SherpaElement {
     (this.#bars() as Bar[]).find((bar) => this.#inherited(bar, 'data-scope') === VIEW)?.report?.();
   }
 
+  /**
+   * Put the filters back as the View on screen DEFINES them: the page's first
+   * Query, then the View's, as a pick puts it on. A filter the reader added
+   * since goes. What "Reset to default" does. TRAP T-reset-to-default-is-the-views-own
+   */
+  async resetView(): Promise<void> {
+    const opened = this.#opened;
+    if (!opened) return;
+    const view = this.#view ? opened.library?.()[this.#view] : undefined;
+    await opened.source.setQuery(structuredClone(opened.initial));
+    if (view?.query) await opened.source.setQuery(view.query, { holds: 'keep' });
+  }
+
   /** Stops the open page's listeners. */
   #page: AbortController | null = null;
   /** The page `open()` set up. */
   #opened: {
-    id: string; store: string; source: DataSource; library: (() => ViewLibrary) | null;
+    id: string; store: string; source: DataSource; library: (() => ViewLibrary) | null; initial: Query;
   } | null = null;
 
   /** Configure each component by id, through its own API, once it is defined.

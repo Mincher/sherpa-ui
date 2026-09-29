@@ -34,15 +34,39 @@ anatomy:
             slot: header
             data-icon: filter
           children:
-            - el: sherpa-button
-              class: reset-all
-              part: reset-all
+            - el: span
+              class: reset-group sherpa-group
               attrs:
                 slot: actions
-                data-type: icon
-                data-size: sm
-                data-icon-start: arrow-rotate-left
-                aria-label: Reset all filters
+              children:
+                - el: sherpa-button
+                  class: reset-all
+                  part: reset-all
+                  attrs:
+                    data-size: sm
+                    data-group: start
+                    data-icon-start: arrow-rotate-left
+                    aria-label: Reset all filters
+                - el: sherpa-button
+                  class: reset-more
+                  part: reset-more
+                  attrs:
+                    data-type: icon
+                    data-size: sm
+                    data-group: end
+                    data-icon-start: triangle-down
+                    aria-label: Reset options
+                    aria-haspopup: menu
+                  children:
+                    - el: sherpa-menu
+                      attrs:
+                        slot: menu
+                        data-align: end
+                      children:
+                        - el: button
+                          attrs:
+                            type: button
+                            value: reset-default
             - slot: actions
               attrs:
                 slot: actions
@@ -219,6 +243,10 @@ events:
     composed: true
   - $type: event
     name: filter-delete
+    bubbles: true
+    composed: true
+  - $type: event
+    name: view-reset
     bubbles: true
     composed: true
   - $type: event

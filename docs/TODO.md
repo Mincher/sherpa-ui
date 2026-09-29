@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**57 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**56 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -55,7 +55,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ❓ | 20 | 21d | EXPLORE — conditions for a DATE field | explore |
 | ⬜ | 21 | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
 | ❓ | 21a | 105 | "Save filters" saves EVERY scope under one name; a "Saved" chip shows it, warns when edited, and undoes it | feature |
-| ⬜ | 21b | 109 | Reset has a label, and a menu button: "Reset to default" puts back the View's own filters | feature |
+| ✅ | 21b | 109 | Reset has a label, and a menu button: "Reset to default" puts back the View's own filters | feature |
 | ⬜ | 22 | 97 | A filter panel section shows an icon for WHAT it filters: View, Chart, Grid, Form, List | quick |
 | ⬜ | 23 | 60 | Once applied, a chip's badge shows the number of results | feature |
 | ⬜ | 24 | 49 | A preset Advanced chip shows its conditions, read-only | feature |
@@ -1016,7 +1016,7 @@ the panel's sections; say if you meant nav Contexts).
     (`T-a-saved-filter-lives-with-its-data`) — every page over the same data
     sees it, but a scope another page lacks is dropped on apply.
 
-### `[ ]` 109 — Reset has a label, and a menu button: "Reset to default" puts back the View's own filters
+### `[x]` ✅ 109 — Reset has a label, and a menu button: "Reset to default" puts back the View's own filters
 
 Will, 2026-09-29: *"The reset button in the filter panel and toolbar should
 have a label. It should also be in a button group with a secondary menu
@@ -1034,6 +1034,16 @@ three together. A default is not an empty value
 (`T-a-default-is-not-an-empty-value`); the provider already holds the View's
 own Query (`provider.open`, `T-a-page-is-its-definition`). Settle: whether
 Reset to default also removes filters the reader ADDED since.
+
+**✅ Done 2026-09-29.** Reset reads "Reset", joined with a ▾ in one
+`.sherpa-group` (as Save and its ▾), in the bar and the panel header; the ▾'s
+menu has "Reset to default", and folded, the ⋮ lists both. It sends
+`view-reset`; `provider.resetView()` puts back the page's first Query (kept
+at `open()`), then the View's own, as a pick does. **Settled by your words**
+("the View's initial defined filtering state"): a filter the reader added
+since goes. On Records: At risk 13 rows → Reset 100 → Reset to default 13,
+the same Query, the added filter gone. 15 and 105 reuse the group.
+`T-reset-to-default-is-the-views-own`
 
 ### `[ ]` 97 — A filter panel section shows an icon for WHAT it filters
 
@@ -2322,6 +2332,7 @@ One line each. The detail is in git and in the trap named.
 - 113: prompt-composer holds a value set before its first render — `T-a-value-before-the-first-render-is-held`
 - 99, 21d: designed; each waits on two choices from Will
 - 105 step 1: the Filters menu's section is "Saved filters"; the rest waits on two choices
+- 109: Reset is labelled, with a ▾ menu — Reset to default puts back the View's own filters — `T-reset-to-default-is-the-views-own`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

@@ -118,8 +118,15 @@
   align-items: center;
   flex: 0 0 auto;
 }
-.view-group > :not(:first-child) {
+.view-group > :not(:first-child),
+.reset-group > :not(:first-child) {
   margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
+}
+/* Reset and its ▾, as one control. */
+.reset-group {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
 }
 
 /* Step 1 — the view group: widest, least used mid-filtering. BEFORE the steps
@@ -147,9 +154,10 @@
 /* Step 3 — all but Add (still needed when collapsed) and the ⋮ itself. */
 @container qf-bar (max-width: 620px) {
   .act-divider,
+  .reset-group,
   .act:not([data-act="add"], [data-act="overflow"]) { display: none; }
 }
-:host([data-collapse="3"]) :is(.act-divider, .act:not([data-act="add"], [data-act="overflow"])) {
+:host([data-collapse="3"]) :is(.act-divider, .reset-group, .act:not([data-act="add"], [data-act="overflow"])) {
   display: none;
 }
 
@@ -188,7 +196,7 @@
    scope's own action. Two of each is two answers
    to one question. A DATA bar has nothing left, so it goes entirely.
    TRAP T-panel-mode-hides-what-the-panel-answers */
-:host([data-panel-mode]) :is([data-act="ai"], [data-act="clear"],
+:host([data-panel-mode]) :is([data-act="ai"], .reset-group,
                              .add-btn) { display: none; }
 :host([data-panel-mode]:not([data-type="view"])) { display: none; }
 
