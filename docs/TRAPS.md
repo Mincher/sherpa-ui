@@ -591,6 +591,28 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-the-more-menu-holds-what-folded
+
+**The ⋮ button opens a menu of every action that has FOLDED away at this
+width, and a row does what its button does.** TODO 43: it opened nothing — it
+only sent `filter-overflow`, which nothing heard. The order is Will's: Suggest
+filters, Reset filters, the page's own buttons (the panel switch), a divider,
+then Favorite, Save view, Save view as, Refresh view.
+
+"Folded" is read from the page: a button whose computed `display` is `none`
+— the container queries and `data-collapse` both fold, and one test covers
+both. The menu is built on each open, like the grid's actions menu.
+
+Building it found a CSS bug: the view type's own `display: inline-flex` for
+★ · Save · ▾ came AFTER the fold steps with the same weight, so on a view bar
+the group NEVER folded. Its block sits before the steps now, and the width
+rule names the view type too.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+
 ### T-a-number-waits-for-apply
 
 **A number filter waits for Apply — single or range, local or remote — and

@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**65 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**64 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -37,7 +37,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 8 | 82 | A number chip set by a View shows no value on its face | bug |
 | ✅ | 9 | 83 | Calendar menu: a picked date leaves Apply and Discard looking off — yet they work | bug |
 | ✅ | 10 | 94 | A number (and range) filter menu needs Apply and Cancel buttons | bug |
-| ⬜ | 11 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
+| ✅ | 11 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
 | ⬜ | 12 | 16 | Favourite and Save apply to the Context, not the View | bug |
 | ⬜ | 13 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
 | ⬜ | 14 | 95 | Firefox: a remote chip holding a draft is not marked pending | bug |
@@ -411,7 +411,7 @@ background fill. (base / +1 / +2 are default / hover / down.) Bind the Style
 name, never a Theme colour: a state is the mode's own step. Open sections keep
 today's fill.
 
-### `[ ]` 43 — BUG: the toolbar ⋯ overflow menu shows nothing
+### `[x]` ✅ 43 — BUG: the toolbar ⋯ overflow menu shows nothing
 
 The ⋮ `overflow` button ("More actions") opens no items. With every action
 overflowed, the menu is, from the top:
@@ -424,6 +424,13 @@ overflowed, the menu is, from the top:
 - Save view
 - Save view as
 - Refresh view
+
+**✅ Done 2026-09-29:** the ⋮ opens a menu of every action folded away at this
+width, in that order, and a row does what its button does; the page's own
+buttons (the panel switch) are listed with the filter actions. `filter-overflow`
+is gone — nothing heard it. Found on the way: on a VIEW bar the ★ · Save · ▾
+group never folded (its display rule came after the fold steps).
+`T-the-more-menu-holds-what-folded`
 
 ### `[x]` ✅ 45 — BUG: a picked date does not show in the chip
 
@@ -2095,6 +2102,7 @@ source.
 One line each. The detail is in git and in the trap named.
 
 **2026-09-29, the component API audit (86)**
+- 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`
 - 82: a number chip set by a View shows its value (`2` for "> 2"); an old "is not X" no longer ticks X as Simple's answer — `T-both-answers-are-kept`

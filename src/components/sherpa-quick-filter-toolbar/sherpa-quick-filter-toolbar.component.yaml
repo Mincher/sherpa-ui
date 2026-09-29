@@ -119,11 +119,20 @@ anatomy:
                 data-icon-start: ellipses-vertical
                 aria-label: More actions
                 aria-haspopup: menu
+    - el: sherpa-menu
+      class: more-menu
+      attrs:
+        data-align: end
     - el: template
-      class: qf-tpl
+      class: more-item-tpl
       children:
-        - el: sherpa-quick-filter
-          class: chip
+        - el: button
+          class: more-item
+          attrs:
+            type: button
+          children:
+            - el: span
+              class: more-label
 props:
   - $type: prop
     name: data-favourite
@@ -243,6 +252,9 @@ states:
   - $type: state
     name: not-has-organise
     selector: ":host(:not([data-has-organise]))"
+  - $type: state
+    name: focus-visible
+    selector: .more-item:focus-visible
 capabilities:
   - $type: capability
     api: js-property-mirror
@@ -331,7 +343,7 @@ events:
     bubbles: true
     composed: true
   - $type: event
-    name: filter-overflow
+    name: button-click
     bubbles: true
     composed: true
 tokens:
@@ -343,6 +355,10 @@ tokens:
   act-divider.background: "{sherpa.theme-border-default-2}"
   chips.gap: "{sherpa.display-mode-space-xs}"
   actions-zone.gap: "{sherpa.display-mode-space-xs}"
+  more-item.padding: "{sherpa.display-mode-space-xs}"
+  more-item.color: "{sherpa.style-content-base}"
+  more-divider.margin: "{sherpa.display-mode-space-3xs}"
+  more-divider.border-block-start: "{sherpa.style-border-base}"
 $extensions:
   sherpa:
     figmaName: Filter Toolbar

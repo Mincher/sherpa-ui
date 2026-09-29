@@ -57,7 +57,6 @@
     view-save            — Save (view type)
     view-favorite        — the ★ toggled. detail: { favourite: boolean }
     view-menu-click      — the Save group's ▾ (view type)
-    filter-overflow      — the ⋮ button
 
   The trailing action cluster is BUILT IN (Figma "Filter Toolbar" 150:3688) and
   follows Figma's `Type` axis. Every control exists in the template from the
@@ -128,6 +127,14 @@
                      aria-label="More actions" aria-haspopup="menu"></sherpa-button>
     </div>
   </div>
+
+  <!-- THE ⋮ MENU: one menu, filled on each open with what has folded away.
+       TRAP T-the-more-menu-holds-what-folded -->
+  <sherpa-menu class="more-menu" data-align="end"></sherpa-menu>
+  <template class="more-item-tpl">
+    <button class="more-item" type="button"><span class="more-label"></span></button>
+  </template>
+  <template class="more-divider-tpl"><hr class="more-divider" /></template>
 
   <template class="qf-tpl">
     <sherpa-quick-filter class="chip"></sherpa-quick-filter>

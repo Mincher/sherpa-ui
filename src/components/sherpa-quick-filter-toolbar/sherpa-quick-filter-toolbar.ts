@@ -199,6 +199,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (!bar || !chips) return;
 
     this.#closeOverflow();
+    // What has folded is about to change.
+    this.$<HTMLElement & { hide?: () => void }>('.more-menu')?.hide?.();
 
     this.removeAttribute('data-collapse');
     this.removeAttribute('data-folded');
@@ -375,6 +377,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.addEventListener('quick-filter-click', this.#onChipClick);
     // Delegated: every control fires the same button-click; data-act says which.
     this.$('.actions-zone')?.addEventListener('button-click', this.#onAction);
+    this.$('.more-menu')?.addEventListener('menu-select', this.#onMore);
     // CAPTURE — see #onOrganiseChange.
     this.addEventListener('quick-filter-change', this.#onOrganiseChange, true);
     this.addEventListener('quick-filter-change', this.#onFoldedCountsChanged);
@@ -1581,8 +1584,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       (n): n is HTMLElement => n instanceof HTMLElement && !!n.dataset['act'],
     );
     if (!btn) return;
+    if (btn.dataset['act'] === 'overflow') this.#openMore(btn);
+    else this.#act(btn.dataset['act'] ?? '');
+  };
 
-    switch (btn.dataset['act']) {
+  /** One action, whichever button or row asked for it. */
+  #act(act: string): void {
+    switch (act) {
       case 'ai':
         this.emit('ai-filter-request');
         break;
@@ -1592,9 +1600,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         break;
       case 'refresh':
         this.emit('data-refresh');
-        break;
-      case 'overflow':
-        this.emit('filter-overflow');
         break;
       case 'save':
         this.emit('view-save');
@@ -1609,6 +1614,55 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         // sherpa-button opens its own slotted menu; nothing to do here.
         break;
     }
+  }
+
+  /**
+   * THE ⋮ MENU holds what has FOLDED away at this width, in Will's order: the
+   * filter actions, the page's own buttons, then the view's. A row does what
+   * its button does. TRAP T-the-more-menu-holds-what-folded
+   */
+  #openMore(trigger: HTMLElement): void {
+    const menu = this.$<HTMLElement & { show?: (t?: HTMLElement) => void }>('.more-menu');
+    const item = this.$<HTMLTemplateElement>('template.more-item-tpl');
+    const divider = this.$<HTMLTemplateElement>('template.more-divider-tpl');
+    if (!menu || !item || !divider) return;
+    const folded = (el: Element | null): boolean => !!el && getComputedStyle(el).display === 'none';
+    const act = (name: string): HTMLElement | null => this.$(`.act[data-act="${name}"]`);
+    const row = (value: string, label: string): HTMLElement => {
+      const one = item.content.firstElementChild!.cloneNode(true) as HTMLElement;
+      one.setAttribute('value', value);
+      one.querySelector('.more-label')!.textContent = label;
+      return one;
+    };
+
+    const first: HTMLElement[] = [];
+    if (folded(act('ai'))) first.push(row('ai', 'Suggest filters'));
+    if (folded(act('clear'))) first.push(row('clear', 'Reset filters'));
+    // The PAGE's buttons in the `actions` slot — the panel switch is one.
+    [...this.querySelectorAll<HTMLElement>(':scope > [slot="actions"]')].forEach((extra, i) => {
+      if (folded(extra)) first.push(row(`extra:${i}`, extra.getAttribute('aria-label') ?? extra.textContent?.trim() ?? ''));
+    });
+    const view: HTMLElement[] = [];
+    if (this.dataset['type'] === 'view' && folded(this.$('.view-group'))) {
+      view.push(row('favourite', this.hasAttribute('data-favourite') ? 'Remove from Favorites' : 'Favorite'));
+      view.push(row('save', 'Save view'), row('view-menu', 'Save view as'));
+    }
+    if (folded(act('refresh'))) view.push(row('refresh', 'Refresh view'));
+
+    const rows = first.length && view.length
+      ? [...first, divider.content.firstElementChild!.cloneNode(true) as HTMLElement, ...view]
+      : [...first, ...view];
+    menu.replaceChildren(...rows);
+    menu.show?.(trigger);
+  }
+
+  /** A ⋮ row was chosen: do what its folded button does. */
+  #onMore = (event: Event): void => {
+    const value = String((event as CustomEvent).detail?.value ?? '');
+    this.$<HTMLElement & { hide?: () => void }>('.more-menu')?.hide?.();
+    if (!value.startsWith('extra:')) return this.#act(value);
+    const extra = [...this.querySelectorAll<HTMLElement>(':scope > [slot="actions"]')][Number(value.slice(6))];
+    extra?.dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
   };
 
   /** The Add menu committed. `menu-change`: only a CHIP re-emits as quick-filter-change. */

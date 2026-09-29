@@ -109,9 +109,24 @@
  * FURTHER via `data-collapse`, as these breakpoints are guesses. Each step
  * subsumes the ones before it.
  */
-/* Step 1 — the view group: widest, least used mid-filtering. */
+/* ── The view-scope group ────────────────────────────────────────────
+ * ★ · Save · ▾ sit flush as one control. A margin, not `gap`, because the
+ * snapped token may go negative and `gap` cannot. Only the `view` type has it. */
+.view-group { display: none; }
+:host([data-type="view"]) .view-group {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+.view-group > :not(:first-child) {
+  margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
+}
+
+/* Step 1 — the view group: widest, least used mid-filtering. BEFORE the steps
+   and as specific as them, or the view type's own display wins and the group
+   never folds. TRAP T-the-more-menu-holds-what-folded */
 @container qf-bar (max-width: 900px) {
-  .view-group { display: none; }
+  :host([data-type="view"]) .view-group { display: none; }
 }
 :host([data-collapse="1"]) .view-group,
 :host([data-collapse="2"]) .view-group,
@@ -146,18 +161,6 @@
 :host([data-collapse]) .act[data-act="overflow"] { display: inline-flex; }
 :host([data-no-actions]) .actions-zone { display: none; }
 
-/* ── The view-scope group ────────────────────────────────────────────
- * ★ · Save · ▾ sit flush as one control. A margin, not `gap`, because the
- * snapped token may go negative and `gap` cannot. Only the `view` type has it. */
-.view-group { display: none; }
-:host([data-type="view"]) .view-group {
-  display: inline-flex;
-  align-items: center;
-  flex: 0 0 auto;
-}
-.view-group > :not(:first-child) {
-  margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
-}
 
 /* A folded chip. NOT `display: none`: its menu is still live as a submenu, and
    a menu in a display:none host measures 0x0 and lands in the viewport corner.
@@ -194,3 +197,29 @@
    nothing here is still in use. TRAP T-the-view-chip-stays-on-the-header */
 :host([data-panel-mode]) .chips > .chip:not([data-persistent]) { display: none; }
 
+/* The ⋮ menu's rows: real <button>s, so Enter, Space and focus come free.
+   TRAP T-the-more-menu-holds-what-folded */
+.more-item {
+  display: flex;
+  align-items: center;
+  inline-size: 100%;
+  padding: var(--sherpa-display-mode-space-xs, 8px);
+  border: none;
+  background: transparent;
+  color: var(--sherpa-style-content-base, #35353d);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.more-item:hover {
+  background: var(--sherpa-style-surface-base-1, #e8e8f64d);
+}
+.more-item:focus-visible {
+  outline: none;
+  box-shadow: var(--sherpa-focus-ring);
+}
+.more-divider {
+  margin: var(--sherpa-display-mode-space-3xs, 2px) 0;
+  border: none;
+  border-block-start: 1px solid var(--sherpa-style-border-base, #b3b3c3);
+}

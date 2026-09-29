@@ -299,7 +299,7 @@ test('every cluster button fires the event Figma names for it', async ({ page })
 
     const seen: string[] = [];
     for (const ev of [
-      'ai-filter-request', 'data-refresh', 'filter-overflow',
+      'ai-filter-request', 'data-refresh',
       'view-save', 'view-menu-click', 'filter-add',
     ]) el.addEventListener(ev, () => seen.push(ev));
 
@@ -308,7 +308,8 @@ test('every cluster button fires the event Figma names for it', async ({ page })
       (btn.shadowRoot!.querySelector('button') as HTMLElement).click();
       await (window as unknown as { __settled: () => Promise<void> }).__settled();
     };
-    for (const a of ['ai', 'refresh', 'overflow', 'save', 'view-menu']) await press(a);
+    // The ⋮ opens its own menu now. TRAP T-the-more-menu-holds-what-folded
+    for (const a of ['ai', 'refresh', 'save', 'view-menu']) await press(a);
 
     // ADD is deliberately absent from this list. It is a single button now, and
     // clicking it OPENS THE MENU rather than announcing anything — `filter-add`
@@ -319,13 +320,65 @@ test('every cluster button fires the event Figma names for it', async ({ page })
   });
 
   expect(r.seen).toEqual([
-    'ai-filter-request', 'data-refresh', 'filter-overflow',
+    'ai-filter-request', 'data-refresh',
     'view-save', 'view-menu-click',
   ]);
   // A plain button, announcing itself as a menu trigger.
   expect(r.addIsButton).toBe('sherpa-button');
   // Nothing has opened it, so the trigger has not yet said either way.
   expect(r.addExpanded).toBe(null);
+});
+
+/**
+ * THE ⋮ MENU HOLDS WHAT FOLDED — TODO 43. With every action folded, it lists
+ * them in Will's order: the filter actions, the page's own buttons, a
+ * divider, then the view's. A row does what its button does.
+ * TRAP T-the-more-menu-holds-what-folded
+ */
+test('the ⋮ menu lists every folded action in order, and a row does what its button does', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    // Eight chips at 620px: every action folds (the fold test's own setup).
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined,
+      { 'data-type': 'view', style: 'inline-size: 620px' });
+    const extra = document.createElement('sherpa-button');
+    extra.slot = 'actions';
+    extra.setAttribute('aria-label', 'View as filter panel');
+    el.append(extra);
+    el.populate(['Server', 'Region', 'Customer', 'Date', 'Preset', 'Owner', 'Tier', 'Plan'].map((label) => ({
+      id: label.toLowerCase(), label, options: [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }],
+    })));
+    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    await settle();
+    for (let i = 0; i < 20 && el.getAttribute('data-collapse') !== '3'; i++) await new Promise((res) => setTimeout(res, 50));
+    const sr = el.shadowRoot!;
+    const more = sr.querySelector('[data-act="overflow"]') as HTMLElement & { shadowRoot: ShadowRoot };
+    const open = async (): Promise<void> => {
+      more.shadowRoot.querySelector<HTMLElement>('button')!.click();
+      await settle();
+    };
+    await open();
+    const menu = sr.querySelector('.more-menu') as HTMLElement;
+    const rows = [...menu.children].map((n) => (n.tagName === 'HR' ? '---' : (n.textContent ?? '').trim()));
+    const heard: string[] = [];
+    for (const ev of ['data-refresh', 'view-save']) el.addEventListener(ev, () => heard.push(ev));
+    extra.addEventListener('button-click', () => heard.push('extra'));
+    const pick = async (label: string): Promise<void> => {
+      await open();
+      [...menu.querySelectorAll<HTMLButtonElement>('button')].find((b) => b.textContent?.trim() === label)!.click();
+      await settle();
+    };
+    await pick('Refresh view');
+    await pick('Save view');
+    await pick('View as filter panel');
+    return { collapse: el.getAttribute('data-collapse'), rows, heard };
+  });
+
+  expect(r.collapse).toBe('3');
+  expect(r.rows).toEqual([
+    'Suggest filters', 'Reset filters', 'View as filter panel', '---',
+    'Favorite', 'Save view', 'Save view as', 'Refresh view',
+  ]);
+  expect(r.heard).toEqual(['data-refresh', 'view-save', 'extra']);
 });
 
 test('a trigger button goes active while its menu is open, and back on a second click', async ({ page }) => {
