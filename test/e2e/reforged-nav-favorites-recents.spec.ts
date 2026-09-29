@@ -355,3 +355,42 @@ test('a parent that LOSES its last child becomes a plain row again', async ({ pa
       ?.hasAttribute('data-expandable'));
   expect(expandable).toBe(false);
 });
+
+/**
+ * THE ★ STARS THE VIEW, not its whole Context — TODO 16. Starring At risk
+ * leaves the first View unstarred, and its Favorites row opens At risk.
+ * TRAP T-a-favourite-is-a-view
+ */
+test('the ★ stars the View you are on; the first View stays unstarred', async ({ page }) => {
+  await goto(page, 'records');
+  const star = () => page.evaluate(() =>
+    document.querySelector('sherpa-quick-filter-toolbar[data-type="view"]')?.hasAttribute('data-favourite'));
+  const pick = (id: string | null) => page.evaluate((v) => {
+    const bar = document.querySelector('sherpa-quick-filter-toolbar[data-type="view"]') as HTMLElement & {
+      values: Record<string, string[]>; setChipValues(id: string, v: string[]): void; report(): void;
+    };
+    const target = v ?? (window as unknown as { __firstView?: string }).__firstView!;
+    bar.setChipValues('view', [target]);
+    bar.report();
+  }, id);
+  await page.evaluate(() => {
+    const bar = document.querySelector('sherpa-quick-filter-toolbar[data-type="view"]') as HTMLElement & {
+      values: Record<string, string[]>;
+    };
+    (window as unknown as { __firstView?: string }).__firstView = bar.values['view']?.[0];
+  });
+
+  await pick('risk');
+  await expect.poll(() => page.evaluate(() => new URL(location.href).searchParams.get('view'))).toBe('risk');
+  await clickStar(page);
+  await expect.poll(star).toBe(true);
+  await expect.poll(() => childLabels(page, 'favorites')).toEqual(['Records › At risk']);
+  const href = await page.evaluate(() =>
+    (document.querySelector('sherpa-nav')?.shadowRoot
+      ?.querySelector('.nav-row[data-parent="favorites"] sherpa-nav-item') as HTMLElement | null)?.dataset['href']);
+  expect(href).toContain('view=risk');
+
+  // The first View is another View: not starred.
+  await pick(null);
+  await expect.poll(star).toBe(false);
+});

@@ -163,9 +163,16 @@
     session.persist('/nav/favorites', { guard: isRowList });
     session.persist('/nav/recent', { guard: isRowList });
 
-    /* `by: context` is the identity: starring Records twice is one favourite, and
-       re-visiting a Context MOVES it up the Recents list instead of repeating it. */
-    const favorites = session.list('/nav/favorites', { by: 'context' });
+    /* A favourite is a VIEW (TODO 16): its `key` is `context:view`, and the FIRST
+       View's is the Context alone — as the URL leaves it out. A row stored before
+       had no key; it meant the Context, so it is its first View.
+       Re-visiting a Context MOVES it up Recents instead of repeating it.
+       TRAP T-a-favourite-is-a-view */
+    const storedFavorites = session.get('/nav/favorites');
+    if (Array.isArray(storedFavorites) && storedFavorites.some((r) => r && !r.key)) {
+      session.set('/nav/favorites', storedFavorites.map((r) => ({ ...r, key: r.key ?? r.context })));
+    }
+    const favorites = session.list('/nav/favorites', { by: 'key' });
     const recents = session.list('/nav/recent', { by: 'context', max: 5, front: true });
     // Home never belongs in Recents, so one an earlier release stored is dropped.
     recents.remove({ context: DEFAULT_CONTEXT });
@@ -237,6 +244,8 @@
     const PRESET_VIEWS = { dashboard: DASHBOARD_VIEWS, records: RECORDS_VIEWS };
     const viewsOf = (context) => ({ ...PRESET_VIEWS[context], ...loadSavedViews(context) });
     const firstView = (context) => Object.keys(viewsOf(context))[0] ?? null;
+    /** A View's favourite key: the Context alone for its first View. */
+    const favKey = (context, view) => (view && view !== firstView(context) ? `${context}:${view}` : context);
 
     /* Every configured row. Children are deliberately NOT walked: a Favorites
        copy of Records must not out-rank the real row. */
@@ -279,6 +288,14 @@
       context,
       label: rowForHref(context)?.label ?? HEADLESS_CONTEXTS[context]?.label ?? context,
     });
+
+    /** What a stored Favourite remembers: one VIEW of a Context, by its key. */
+    const rowForFavourite = (context, view) => {
+      const row = rowForContext(context);
+      const key = favKey(context, view);
+      if (key === context) return { ...row, key };
+      return { ...row, view, key, label: `${row.label} › ${viewsOf(context)[view]?.label ?? view}` };
+    };
 
     /* Write the Context's own row onto the header — from the config, not the
        rail's current row: with Settings open on top, that row is a Settings one. */
@@ -371,8 +388,8 @@
          list caps itself at 5 and moves a re-visit up. Home never enters it, nor
          does Settings, which opens in its overlay and never reaches here. */
       if (name !== DEFAULT_CONTEXT) recents.add(rowForContext(name));
-      // The star shows whether THIS Context is already a favourite.
-      syncFavouriteStar(name);
+      // The star shows whether THIS View is already a favourite.
+      syncFavouriteStar(name, view);
     }
 
     // Populate the shared nav once.
@@ -387,7 +404,7 @@
 
     /** A stored row → a nav child. No icon: TRAP T-nav-child-rows-carry-no-icon. */
     const toChild = (parent) => (row) =>
-      ({ id: childId(parent, row.context), label: row.label, href: `?context=${row.context}` });
+      ({ id: childId(parent, row.key ?? row.context), label: row.label, href: urlFor({ context: row.context, view: row.view }) });
 
     /** A Context's Views as its child rows. Each href names its View, so a
      *  middle-click opens that View. */
@@ -442,15 +459,15 @@
        the list's own subscriber. TRAP T-the-star-reports-it-does-not-decide */
     const viewToolbar = () => mainHeader()?.querySelector('sherpa-quick-filter-toolbar[data-type="view"]');
 
-    function syncFavouriteStar(context) {
-      viewToolbar()?.toggleAttribute('data-favourite', favorites.has({ context }));
+    function syncFavouriteStar(context, view = param('view')) {
+      viewToolbar()?.toggleAttribute('data-favourite', favorites.has({ key: favKey(context, view) }));
     }
 
-    // The ★ sits in the View group, but what it stars is the Context.
+    // The ★ stars the VIEW on screen, not its whole Context. TODO 16
     document.addEventListener('view-favorite', () => {
-      const context = contextFromURL();
-      favorites.toggle(rowForContext(context));
-      syncFavouriteStar(context);
+      const { context, view } = urlState();
+      favorites.toggle(rowForFavourite(context, view));
+      syncFavouriteStar(context, view);
     });
 
     /* ── Settings — an overlay on the Context ─────────────────────────────
@@ -530,6 +547,8 @@
       if (param('view') === view) return;
       history.replaceState(history.state, '', urlFor({ ...urlState(), view }));
       syncNavCurrent();
+      // Another View: the ★ says whether IT is a favourite.
+      syncFavouriteStar(context, view);
     });
 
     settingsHeader.addEventListener('back-click', () => goSettings(null));

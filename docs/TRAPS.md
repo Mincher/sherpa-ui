@@ -591,6 +591,19 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-a-favourite-is-a-view
+
+**The ★ stars the View on screen, not its whole Context.** TODO 16: it was keyed
+by Context, so starring one View starred them all. A favourite's `key` is
+`context:view` — and the FIRST View's is the Context alone, as the URL leaves
+the first View out. So a row stored before keys existed (it named only the
+Context) means that Context's first View: it is given `key: context` on load
+and stays what it was. The star re-syncs when the View chip picks another
+View, and a View favourite's rail row opens that View.
+
+- Site: `examples/index.html`
+- Site: `test/e2e/reforged-nav-favorites-recents.spec.ts`
+
 ### T-the-more-menu-holds-what-folded
 
 **The ⋮ button opens a menu of every action that has FOLDED away at this

@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**64 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**63 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -38,7 +38,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 9 | 83 | Calendar menu: a picked date leaves Apply and Discard looking off — yet they work | bug |
 | ✅ | 10 | 94 | A number (and range) filter menu needs Apply and Cancel buttons | bug |
 | ✅ | 11 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
-| ⬜ | 12 | 16 | Favourite and Save apply to the Context, not the View | bug |
+| ✅ | 12 | 16 | Favourite and Save apply to the Context, not the View | bug |
 | ⬜ | 13 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
 | ⬜ | 14 | 95 | Firefox: a remote chip holding a draft is not marked pending | bug |
 | ⬜ | 15 | 96 | A grid with few columns leaves an empty band on the right of its card | bug |
@@ -572,11 +572,17 @@ definition that names `commit` still wins). Built on 83's footer fix. On the
 Records page: typing 172 leaves 100 rows until Apply, then 1.
 `T-a-number-waits-for-apply`
 
-### `[ ]` 16 — BUG: Favourite and Save apply to the Context, not the View
+### `[x]` ✅ 16 — BUG: Favourite and Save apply to the Context, not the View
 
 The ★ stars the Context (`examples/index.html` ~396, the `view-favorite`
 listener), so it applies to every View in that Context. It must apply to the
 one View.
+
+**✅ Done 2026-09-29:** the ★ stars the View on screen — a favourite's key is
+`context:view`, the first View's the Context alone — and re-syncs when another
+View is picked; a View favourite reads `Records › At risk` in the rail and
+opens that View. Favourites stored before keep meaning the first View. Save
+is 15's. `T-a-favourite-is-a-view`
 
 ### `[ ]` 54 — BUG: a one-value filter's row in the Filters menu: its tick means On
 
@@ -2102,6 +2108,7 @@ source.
 One line each. The detail is in git and in the trap named.
 
 **2026-09-29, the component API audit (86)**
+- 16: the ★ stars the View, not its whole Context — `T-a-favourite-is-a-view`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`
