@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**61 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**60 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -43,7 +43,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 14 | 95 | Firefox: a remote chip holding a draft is not marked pending | bug |
 | ❓ | 15 | 96 | A grid with few columns leaves an empty band on the right of its card | bug |
 | ✅ | 16 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
-| ⬜ | 16a | 100 | The Assistant panel shows no heading | quick |
+| ✅ | 16a | 100 | The Assistant panel shows no heading | quick |
 | ⬜ | 16b | 106 | A click between a menu's items reaches what is behind it — an accordion toggles | bug |
 | ⬜ | 16c | 108 | A Filters menu row's scope is a DESCRIPTION under its label, with no "in" | quick |
 | ⬜ | 16d | 114 | About 1 time in 20, a folded Advanced-only filter's row in the Filters menu opens nothing | bug |
@@ -651,7 +651,7 @@ when the card is narrower, so nothing changes where it already scrolls.
 - **B:** the last unpinned column takes all the slack. Simplest; the other
   columns never move, but one column can grow very wide.
 
-### `[ ]` 100 — The Assistant panel shows no heading
+### `[x]` ✅ 100 — The Assistant panel shows no heading
 
 Found by the API audit (86), 2026-09-29, and confirmed in the browser: the
 Assistant `sherpa-overlay-panel` in `examples/index.html` sets
@@ -660,6 +660,10 @@ Assistant `sherpa-overlay-panel` in `examples/index.html` sets
 `data-heading` (CLAUDE.md, the tier rule). Rename the attribute in the page,
 and check no other page sets `data-title` on a container that reads
 `data-heading`.
+
+**✅ Done 2026-09-29:** the page sets `data-heading="Assistant"`; no other
+page or template sets `data-title`. An app test reads the heading, and fails
+on the old attribute.
 
 ---
 
@@ -2144,6 +2148,7 @@ One line each. The detail is in git and in the trap named.
 - 54: ❓ how a one-value row is removed once its tick means On — two options in the item
 - 96: ❓ what fills a narrow grid's slack — two options in the item
 - 64: a shut accordion fills with the Style +2 surface
+- 100: the Assistant panel shows its heading — `data-heading`, not `data-title`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`
