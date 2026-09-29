@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**52 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**51 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -64,7 +64,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 26 | 48 | A child menu opens on hover or click of its row | feature |
 | ✅ | 27 | 21c | A condition's matches must ALL highlight | feature |
 | ✅ | 28 | 21f | "Send to view filters" | feature |
-| ⬜ | 29 | 21b | Which header chips carry over between views | feature |
+| ✅ | 29 | 21b | Which header chips carry over between views | feature |
 | ⬜ | 30 | 20b | The Date filter should be a view-scope date RANGE | feature |
 | ⬜ | 31 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
 | ⬜ | 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
@@ -1199,7 +1199,7 @@ holding it in the View carries the answer and leaves the chip below
 suspended. On Records › At risk: Status goes up with "not churned", the rows
 stay 13, and the header has one Status chip. `T-send-to-view-filters`
 
-### `[ ]` 21b — Which header chips carry over between views
+### `[x]` ✅ 21b — Which header chips carry over between views
 
 Will, 2026-09-24:
 
@@ -1214,6 +1214,15 @@ default is built** (56, 2026-09-26): `onViewPicked` resets the reporting bar
 before a view applies (`T-a-view-change-resets-the-header-chips`). What is
 left is the flag: `clearAll()` skips a chip that SURVIVES, and its part stays
 applied through `setState`, which clears every part today.
+
+**✅ Done 2026-09-29.** The flag is `carryOver: true` on a field (its
+declaration, so the page JSON takes it — the schema knows it). A JSON View
+(`setQuery`, `holds: 'keep'`) keeps a carry-over field's answer unless it
+answers the field itself; an old snapshot View keeps it too (`clearAll({
+carry: true })`, and `setState` keeps its reading). Plain Reset and a restore
+still clear it. **Nothing on Records carries over yet** — say which fields
+(Customer and Region were your example), and it is one line each in
+`records.json`. `T-a-field-can-carry-over-views`
 
 ### `[ ]` 20b — The Date filter should be a view-scope date RANGE
 
@@ -2403,6 +2412,7 @@ One line each. The detail is in git and in the trap named.
 - 48: a child menu opens from the whole row, a resting pointer or ArrowRight — `T-a-row-opens-its-child-menu`
 - 21c: a chain of conditions marks every string it matched — `T-a-condition-marks-every-match`
 - 21f: a panel field can be sent up to the view filters — `T-send-to-view-filters`
+- 21b: a field can carry its answer over a View change (`carryOver`) — `T-a-field-can-carry-over-views`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

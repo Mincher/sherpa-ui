@@ -63,6 +63,10 @@
         "labels": {
           "description": "A value's name as a reader sees it, where it is not the value.",
           "type": "object", "additionalProperties": { "type": "string" }
+        },
+        "carryOver": {
+          "description": "Its answer survives a View change that does not answer it; without this, a View resets it.",
+          "type": "boolean"
         }
       }
     },

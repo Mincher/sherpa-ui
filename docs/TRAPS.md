@@ -591,6 +591,24 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-a-field-can-carry-over-views
+
+**A header chip resets on a View change unless the View sets it — or unless
+its field CARRIES OVER** (Will, TODO 21b: *"which chips carry over should be
+CONFIGURABLE"*). `carryOver: true` in a field's declaration (the page JSON
+takes it) keeps its answer through a View that does not answer it; a View
+that does answer it wins. Two paths honour it: a JSON View (`setQuery` with
+`holds: 'keep'`, in `#definition`) and an old snapshot View (`clearAll({
+carry: true })`, then `setState`, whose `#clearReadings` keeps it). A RESTORE
+is exact, and Reset still clears everything: only a View change carries.
+Nothing on Records carries over yet — the default is Will's.
+
+- Site: `src/core/data/data-source.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/core/browser/persist-view.ts`
+- Site: `test/unit/page-definition.test.mjs`
+- Site: `test/e2e/reforged-carry-over.spec.ts`
+
 ### T-send-to-view-filters
 
 **"Send to view filters" raises a component's field to the View** — Will, TODO

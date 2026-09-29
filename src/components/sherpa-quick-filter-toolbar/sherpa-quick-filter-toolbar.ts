@@ -55,6 +55,8 @@ export interface QuickFilterOption {
 export interface QuickFilterDef extends OffersAdvanced {
   id: string;
   label: string;
+  /** Its answer survives a View change. TRAP T-a-field-can-carry-over-views */
+  carryOver?: boolean;
   /** The FIELD this chip answers, when its id is not that field — the header's
    *  Date chip answers the record's time. A source draws the chip by it.
    *  `null`: it answers no field HERE, so it reports nothing. */
@@ -1759,15 +1761,18 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /**
    * TRAP T-clear-all-resets-organise-too — organise chips included; three events
    * afterwards. `{ organise: false }` keeps Group and Sort, which a VIEW sets
-   * itself. A field chip is EMPTIED — ticks, op, typing and rows — and redrawn,
+   * itself; `{ carry: true }` keeps a carry-over chip, as a View change does.
+   * A field chip is EMPTIED — ticks, op, typing and rows — and redrawn,
    * so an off chip never still names what it held.
    */
-  clearAll(options: { organise?: boolean } = {}): void {
+  clearAll(options: { organise?: boolean; carry?: boolean } = {}): void {
     const organise = options.organise ?? true;
     for (const chip of this.#chips()) {
       // TRAP T-persistent-chip-is-a-selector — survives a reset, PICK included.
       if (chip.hasAttribute('data-persistent')) continue;
       const id = chip.dataset['id'] ?? '';
+      // A View change leaves a carry-over chip; Reset does not. TRAP T-a-field-can-carry-over-views
+      if (options.carry && this.#filters.find((f) => f.id === id)?.carryOver) continue;
       if (this.#filterMenu(id)) {
         this.#clearField(id);
         continue;

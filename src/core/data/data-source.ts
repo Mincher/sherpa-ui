@@ -124,6 +124,9 @@ export interface FieldDeclaration {
   icon?: string;
   /** A value's name as a reader sees it, where it is not the value. */
   labels?: Record<string, string>;
+  /** Its answer SURVIVES a View change that does not answer it; else a View
+   *  resets it. TRAP T-a-field-can-carry-over-views */
+  carryOver?: boolean;
 }
 
 /** A field's filter as any bar or panel draws it — its declaration and values. */
@@ -1197,7 +1200,12 @@ export class DataSource extends EventTarget {
 
   /** Forget every reading; the holds stay. */
   #clearReadings(): void {
-    for (const scope of Object.values(this.#draft.scopes)) if (!scope.narrows) scope.readings = {};
+    for (const scope of Object.values(this.#draft.scopes)) {
+      if (scope.narrows) continue;
+      // A carry-over field keeps its answer. TRAP T-a-field-can-carry-over-views
+      scope.readings = Object.fromEntries(Object.entries(scope.readings)
+        .filter(([field]) => this.#fields.get(field)?.carryOver));
+    }
     this.#prune();
   }
 
@@ -1512,6 +1520,16 @@ export class DataSource extends EventTarget {
     for (const [id, scope] of this.#defaults) next.scopes[id] ??= structuredClone(scope);
     // A RESTORE is exact; only a View keeps chips and shows its answers on them.
     if (!keep) return next;
+    /* A carry-over field keeps its answer where the View gives none.
+       TRAP T-a-field-can-carry-over-views */
+    for (const [id, scope] of Object.entries(this.#draft.scopes)) {
+      if (scope.narrows) continue;
+      for (const [field, reading] of Object.entries(scope.readings)) {
+        if (!this.#fields.get(field)?.carryOver) continue;
+        if (Object.values(next.scopes).some((s) => field in s.readings)) continue;
+        (next.scopes[id] ??= { holds: [], readings: {} }).readings[field] = structuredClone(reading);
+      }
+    }
     for (const [id, scope] of Object.entries(this.#draft.scopes)) {
       if (scope.narrows || given.scopes[id]?.holds) continue;
       (next.scopes[id] ??= { holds: [], readings: {} }).holds = [...scope.holds];

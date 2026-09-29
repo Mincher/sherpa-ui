@@ -145,3 +145,31 @@ test('a chip counts the rows ITS OWN answer matches, within what its scope can s
   // A component's chip: its own answer, within the View's EMEA rows — not 3.
   assert.deepEqual(await source.results('data'), { status: 1 });
 });
+
+test('a carry-over field keeps its answer through a View change; any other resets', async () => {
+  // TRAP T-a-field-can-carry-over-views
+  const store = new ArrayStore([{ region: 'EMEA', customer: 'Contoso', status: 'open' }]);
+  const source = await openSource({
+    store: 'rows',
+    fields: {
+      customer: { label: 'Customer', carryOver: true },
+      region: { label: 'Region' },
+      status: { label: 'Status' },
+    },
+    scopes: { view: { label: 'View filters', holds: ['customer', 'region'] }, data: { label: 'Alerts', holds: ['status'] } },
+  }, store);
+  // What the reader has on, then a View that answers only Status.
+  await source.setQuery({ v: 1, scopes: {
+    view: { holds: ['customer', 'region'], readings: { customer: { picked: ['Contoso'] }, region: { picked: ['EMEA'] } } },
+  } });
+  await source.setQuery({ v: 1, scopes: { data: { readings: { status: { picked: ['open'] } } } } }, { holds: 'keep' });
+  const view = source.query.applied.scopes.view;
+  assert.deepEqual(view.readings.customer, { picked: ['Contoso'] }, 'Customer carries over');
+  assert.equal(view.readings.region, undefined, 'Region resets, as by default');
+  // A View that answers the field itself wins.
+  await source.setQuery({ v: 1, scopes: { view: { readings: { customer: { picked: ['Fabrikam'] } } } } }, { holds: 'keep' });
+  assert.deepEqual(source.query.applied.scopes.view.readings.customer, { picked: ['Fabrikam'] });
+  // A RESTORE is exact: nothing is carried into it.
+  await source.setQuery({ v: 1, scopes: { view: { holds: ['customer', 'region'], readings: {} } } });
+  assert.equal(source.query.applied.scopes.view.readings.customer, undefined);
+});

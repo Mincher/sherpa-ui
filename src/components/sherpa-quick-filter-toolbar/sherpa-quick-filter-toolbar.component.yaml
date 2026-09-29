@@ -470,11 +470,12 @@ $extensions:
         description: allowFields([...]) — the ONLY fields this bar may offer, or `null` for all.
       - $type: method
         name: clearAll
-        args: "options: { organise?: boolean } = {}"
+        args: "options: { organise?: boolean; carry?: boolean } = {}"
         description: >-
           — organise chips included; three events afterwards. `{ organise: false }` keeps Group and
-          Sort, which a VIEW sets itself. A field chip is EMPTIED — ticks, op, typing and rows — and
-          redrawn, so an off chip never still names what it held.
+          Sort, which a VIEW sets itself; `{ carry: true }` keeps a carry-over chip, as a View
+          change does. A field chip is EMPTIED — ticks, op, typing and rows — and redrawn, so an off
+          chip never still names what it held.
       - $type: method
         name: organise
         args: "def: OrganiseDef"

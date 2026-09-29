@@ -440,7 +440,8 @@ export function onViewPicked(
        it states. Left lit, a chip read as filtering while `setState` had
        already dropped its part. The View chip is persistent and keeps its pick.
        TRAP T-a-view-change-resets-the-header-chips */
-    (event.target as { clearAll?: () => void } | null)?.clearAll?.();
+    // A carry-over chip keeps its answer. TRAP T-a-field-can-carry-over-views
+    (event.target as { clearAll?: (o: { carry: boolean }) => void } | null)?.clearAll?.({ carry: true });
     const { report, waiting } = applySnapshot(view.snapshot ?? { v: 1 }, targets);
     const more = applyElements(view.ui ?? {}, targets.elements ?? {}, report);
     // Reported once every element has its state: a gap is only known then.
