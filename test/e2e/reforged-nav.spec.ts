@@ -901,3 +901,29 @@ test('the brand icon draws an SVG for a name, and text for a raw glyph', async (
   expect(r.glyph.paints).toBe(false);
   expect(r.glyph.text).toBe('★');
 });
+
+/**
+ * THE CLOSED RAIL FOLLOWS DENSITY — TODO 34. Figma's nav-layout/width in the
+ * collapsed mode is bound to size/3xl now, not pinned to 40, so the projected
+ * token is the density's own step: 36 compact, 40 default, 48 comfortable.
+ */
+test('the collapsed rail is the density\'s size/3xl: 36, 40 and 48', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const nav = document.createElement('sherpa-nav') as HTMLElement & { rendered?: Promise<void> };
+    document.getElementById('root')!.appendChild(nav);
+    await nav.rendered;
+    const widths: Record<string, number> = {};
+    for (const density of ['compact', 'default', 'comfortable']) {
+      if (density === 'default') document.documentElement.removeAttribute('data-density');
+      else document.documentElement.setAttribute('data-density', density);
+      // Past the width transition.
+      nav.getAnimations({ subtree: true }).forEach((a) => a.finish());
+      await new Promise((res) => setTimeout(res, 250));
+      widths[density] = Math.round(nav.getBoundingClientRect().width);
+    }
+    document.documentElement.removeAttribute('data-density');
+    return { state: nav.dataset['navState'], widths };
+  });
+  expect(r.state).toBe('collapsed');
+  expect(r.widths).toEqual({ compact: 36, default: 40, comfortable: 48 });
+});

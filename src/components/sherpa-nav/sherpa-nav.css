@@ -23,7 +23,7 @@
 
   :host([data-nav-state="collapsed"]) {
     --sherpa-navigation-nav-surface-default: var(--sherpa-style-surface-base);
-    --sherpa-navigation-nav-layout-width: 40px;
+    --sherpa-navigation-nav-layout-width: var(--sherpa-display-mode-size-3xl);
     --sherpa-navigation-nav-container-header-label: Product name;
     --sherpa-navigation-nav-container-setting-button: default;
     --sherpa-navigation-nav-container-pin-button: default;
@@ -133,11 +133,6 @@
   padding: var(--sherpa-display-mode-space-xs, 8px);
 }
 
-/* The CLOSED rail follows density, as the brand tile and the shell's inset do.
-   Figma still pins 40px: see `_divergence` in the spec. */
-:host([data-nav-state="collapsed"]) {
-  --sherpa-navigation-nav-layout-width: var(--sherpa-display-mode-size-3xl, 40px);
-}
 
 .rail {
   display: flex;

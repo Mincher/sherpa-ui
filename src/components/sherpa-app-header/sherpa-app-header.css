@@ -191,7 +191,7 @@
   .nav-menu { display: inline-flex; }
 }
 
-/* Figma "View title": content/body/+1, REGULAR weight (not bold). */
+/* Figma "Context title": content/body/+1, REGULAR weight (not bold). */
 .title {
   margin: 0;
   font-size: var(--sherpa-font-size-body-large, 16px);

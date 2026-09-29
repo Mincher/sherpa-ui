@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**49 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**48 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -72,7 +72,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
 | ✅ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
 | ❓ | 33a | 116 | `sherpa-nav` binds to a Store: its entries as data, drawn and redrawn | refactor |
-| ⬜ | 34 | 34 | Figma: use the Navigation terms | figma |
+| ✅ | 34 | 34 | Figma: use the Navigation terms | figma |
 | ⬜ | 35 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
 | | | | **F — Data states and charts** | |
 | ⬜ | 36 | 58 | Loading, empty and error states in a container | feature |
@@ -1459,7 +1459,7 @@ second data source just for the nav, fed from the two session lists.
   the app writing rows, `bind()` redrawing. More code, and the lists are
   already the data layer's (`SessionList`).
 
-### `[ ]` 34 — Figma: use the Navigation terms
+### `[x]` ✅ 34 — Figma: use the Navigation terms
 
 The code moved to Section / Area / Context / View on 2026-09-24 (CLAUDE.md
 "Navigation terms"). Figma still uses the old words. Rename there, then resync:
@@ -1477,6 +1477,18 @@ The code moved to Section / Area / Context / View on 2026-09-24 (CLAUDE.md
   override in `sherpa-nav.css`.
 
 Each code-only difference is also in that component's `_divergence` block.
+
+**✅ Done 2026-09-29, in Figma.** App Header (150:3690): `View Details` →
+`Context Details`, `view-icon` → `context-icon`, `View title` → `Context
+title` (layer names only — no property or variant changed, so nothing in the
+specs moved). The Navigation components hold no old word (`hasChildren` is a
+property), and the only "View" text on their page is the View chip, which
+keeps it. `nav-layout/width` in the collapsed mode is an ALIAS of `size/3xl`
+now (it was a raw 40); the export was patched to match
+(`{display-mode.size.3xl}`), re-projected, and the code's override and its
+`_divergence` note are gone — a test holds 36 / 40 / 48. **Left for you:**
+the `overlay` slot and `data-type="overlay"` dialog still have no Figma
+design (the shell's `_divergence` says so).
 
 ---
 
@@ -2516,6 +2528,8 @@ One line each. The detail is in git and in the trap named.
 - 52, 107: designed / explained; each waits on two choices from Will
 - 15: save, save as, save over and delete a View, on every page — `T-a-saved-view-is-the-readers-own`
 - 17b: on a phone the nav is a whole-screen menu — `T-the-nav-is-a-menu-on-a-phone`; the Store binding is 116
+- 116: ❓ the nav keeps its open Areas, or a full Store binding
+- 34: Figma speaks Context; the closed rail follows density from Figma, not an override
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`
