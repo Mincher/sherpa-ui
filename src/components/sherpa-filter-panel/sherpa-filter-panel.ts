@@ -14,7 +14,7 @@
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import { APPLIED_ABOVE, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
 import type { DataAsk } from '../../core/ui/context.js';
-import type { FieldFilter, HeldFilter, ScopeDescription } from '../../core/data/data-source.js';
+import type { FieldFilter, HeldFilter, ScopeDescription, ScopeShows } from '../../core/data/data-source.js';
 import {
   arranges, advancedOf, hasOwnBody, kindOf, picksOne, type FilterKind, type OffersAdvanced,
 } from '../../core/ui/filter-kind.js';
@@ -104,6 +104,8 @@ export interface PanelScope {
   scope: string;
   /** The CONTENT's own name. TRAP T-a-scope-is-named-for-its-content */
   label: string;
+  /** What it narrows — its header's icon. */
+  shows?: ScopeShows;
   filters?: PanelFilter[];
   /** Fields this scope may still add. */
   available?: PanelFilter[];
@@ -122,6 +124,12 @@ export interface PanelScope {
   sortField?: string;
   sortDirection?: 'asc' | 'desc';
 }
+
+/** A scope's icon, for what it narrows. No chart glyph exists in Figma yet (TODO 97).
+ *  TRAP T-a-scope-says-what-it-shows */
+const SHOWS_ICON: Partial<Record<ScopeShows, string>> = {
+  view: 'monitor', grid: 'table-columns', form: 'file-lines', list: 'list',
+};
 
 /** What one drawn field holds. */
 interface Held {
@@ -409,6 +417,8 @@ export class SherpaFilterPanel extends SherpaElement {
       if (!box) continue;
       box.setAttribute('data-heading', scope.label);
       box.setAttribute('data-scope', scope.scope);
+      const icon = scope.shows ? SHOWS_ICON[scope.shows] : undefined;
+      if (icon) box.setAttribute('data-icon', icon);
       if (this.#shut.has(scope.scope)) box.removeAttribute('open');
 
       const mine = (scope.filters ?? []).filter((f) => {

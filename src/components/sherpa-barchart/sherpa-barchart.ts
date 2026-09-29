@@ -25,7 +25,7 @@ export class SherpaBarchart extends SherpaElement {
     new URL('./sherpa-barchart.css', import.meta.url),
   ];
   static override html = new URL('./sherpa-barchart.html', import.meta.url);
-  static override asks: DataAsk = { shape: 'segments' };
+  static override asks: DataAsk = { shape: 'segments', shows: 'chart' };
 
   static override props = {
     ...SUMMARY_PROPS,

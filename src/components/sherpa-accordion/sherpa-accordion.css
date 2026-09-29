@@ -118,6 +118,17 @@
   transform: none;
 }
 
+/* ── Icon ── what the section holds, before its title. Centred in the
+   heading's row, as the chevron is. */
+.icon {
+  display: none;
+  align-self: center;
+  margin-block: calc(
+    (var(--sherpa-theme-content-line-height-base, 20px)
+     - var(--sherpa-theme-content-size-base, 14px)) / 2);
+}
+:host([data-icon]) .icon { display: inline-flex; }
+
 /* ── Body ────────────────────────────────────────────────────────────── */
 .body {
   padding: var(--_pad);

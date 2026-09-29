@@ -591,6 +591,23 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-a-scope-says-what-it-shows
+
+**A filter panel section's icon names WHAT its filters narrow** — the View
+(`monitor`), or the content one component shows: a grid (`table-columns`), a
+chart, a form (`file-lines`), a list (`list`). Will, TODO 97; in its header,
+caret, icon, label. The kind comes from the COMPONENT: its `asks.shows`, which
+the provider passes to `source.bind()`, and `describe(scope)` reports as
+`shows` — never a tag name, so a new grid-like component says what it is
+itself. Figma has no chart glyph yet, so a chart's section shows none; and
+`table-columns` stands in for a table glyph.
+
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/ui/context.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/unit/page-definition.test.mjs`
+- Site: `test/e2e/reforged-panel-scope-icon.spec.ts`
+
 ### T-reset-to-default-is-the-views-own
 
 **Reset puts every filter back to ITS own default; Reset to default puts the

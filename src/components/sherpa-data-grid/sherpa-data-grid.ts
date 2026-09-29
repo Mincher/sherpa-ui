@@ -138,7 +138,7 @@ export class SherpaDataGrid extends SherpaElement {
      itself, so its source never hears `filter-change`.
      TRAP T-a-component-asks-its-provider */
   static override asks: DataAsk = {
-    shape: 'rows', own: ['filter-change'],
+    shape: 'rows', own: ['filter-change'], shows: 'grid',
     // Its text headings' WHOLE value lists — an Advanced-only one lists none.
     values: (el) => ((el as unknown as { columns?: GridColumn[] }).columns ?? [])
       .filter((c) => (c.type ?? 'text') === 'text' && kindOf(c) !== 'advanced')

@@ -165,6 +165,7 @@
    right. Will, 2026-09-26. The chevron has no part, so the two parts after it
    are reordered instead. Centred: a scope has no description row. */
 .scope::part(header) { align-items: center; }
+.scope::part(icon),
 .scope::part(titles) { order: 1; }
 .scope::part(actions) { order: 2; }
 

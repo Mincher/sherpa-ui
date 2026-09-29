@@ -584,6 +584,7 @@ export class SherpaProvider extends SherpaElement {
       steerOnly: asks.shape === 'state' || asks.shape === 'scope',
       ...(asks.own ? { ignore: asks.own } : {}),
       ...(scope ? { scope } : {}),
+      ...(asks.shows ? { shows: asks.shows } : {}),
       /* A summary SHOWS the data and never steers it. TRAP T-aggregation-is-data */
       ...(spec ? { readonly: true, as: (rows, src) => summarise(rows, spec, (f) => src.valuesFor(f)) } : {}),
       // A page of rows arrives WITH its groups: a group is the data layer's.

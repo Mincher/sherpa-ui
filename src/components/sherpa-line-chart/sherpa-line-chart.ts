@@ -25,7 +25,7 @@ export class SherpaLineChart extends SherpaElement {
     new URL('./sherpa-line-chart.css', import.meta.url),
   ];
   static override html = new URL('./sherpa-line-chart.html', import.meta.url);
-  static override asks: DataAsk = { shape: 'series' };
+  static override asks: DataAsk = { shape: 'series', shows: 'chart' };
 
   static override props = {
     ...SUMMARY_PROPS,

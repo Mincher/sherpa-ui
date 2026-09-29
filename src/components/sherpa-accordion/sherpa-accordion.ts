@@ -14,6 +14,7 @@ export class SherpaAccordion extends SherpaElement {
   static override props = {
     'data-heading': { type: 'string', kind: 'content', to: '.heading-text' },
     'data-description': { type: 'string', kind: 'content', to: '.description-text' },
+    'data-icon': { type: 'string', kind: 'content', to: '.icon', as: 'icon' },
   } as const;
 
   static override observed = ['open'];

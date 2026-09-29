@@ -5,6 +5,7 @@
   Public API:
     data-heading      — the summary title (fallback to slotted [slot=heading])
     data-description  — optional secondary line under the title (fallback to slotted [slot=description])
+    data-icon         — a glyph before the title: what the section holds
     open              — native boolean (current disclosure state; drives [open] visuals)
     data-status       — status colour cascade (critical | warning | success | info | urgent)
 
@@ -23,6 +24,7 @@
 <template id="default">
   <details class="root" part="root">
     <summary class="header" part="header">
+      <i class="icon sherpa-icon-box" part="icon" aria-hidden="true"></i>
       <span class="titles" part="titles">
         <span class="heading" part="heading"><span class="heading-text"></span><slot name="heading"></slot></span>
         <span class="description" part="description"><span class="description-text"></span><slot name="description"></slot></span>

@@ -47,7 +47,7 @@ export class SherpaGaugeChart extends SherpaElement {
   static override html = new URL('./sherpa-gauge-chart.html', import.meta.url);
   // ONE LINE, deliberately: the spec generator reads only the first line.
   /* DECLARED, not hand-synced: CSS-only, so the base class writes nothing. */
-  static override asks: DataAsk = { shape: 'aggregate' };
+  static override asks: DataAsk = { shape: 'aggregate', shows: 'chart' };
 
   static override props = {
     ...SUMMARY_PROPS,

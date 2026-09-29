@@ -34,6 +34,11 @@ anatomy:
         class: header
         part: header
         children:
+          - el: i
+            class: icon sherpa-icon-box
+            part: icon
+            attrs:
+              aria-hidden: "true"
           - el: span
             class: titles
             part: titles
@@ -79,6 +84,12 @@ props:
     kind: content
     description: — the summary title (fallback to slotted [slot=heading])
   - $type: prop
+    name: data-icon
+    type: string
+    observed: false
+    kind: content
+    description: "— a glyph before the title: what the section holds"
+  - $type: prop
     name: data-status
     type: string
     observed: false
@@ -101,6 +112,9 @@ states:
   - $type: state
     name: has-description
     selector: ":host([data-has-description])"
+  - $type: state
+    name: icon
+    selector: ":host([data-icon])"
   - $type: state
     name: focus-visible
     selector: .header:focus-visible
@@ -133,6 +147,7 @@ tokens:
   description.font-size: "{sherpa.font-size-body-small}"
   description.line-height: "{sherpa.theme-content-line-height-small}"
   chevron.margin-block: "{sherpa.theme-content-line-height-base}"
+  icon.margin-block: "{sherpa.theme-content-line-height-base}"
 $extensions:
   sherpa:
     figmaName: Accordion

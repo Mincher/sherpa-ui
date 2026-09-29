@@ -10,6 +10,7 @@
  * - FieldFilter — A field's filter as any bar or panel draws it — its declaration and values.
  * - SourceState — A source's whole question as JSON: its applied Query, arrangement and saved filters.
  * - HeldFilter — One filter a scope holds, as a control draws it.
+ * - ScopeShows — What a scope's filters narrow: the View, or the content one component shows.
  * - ScopeDescription — One scope as a control draws it whole, as JSON.
  * - ViewState — The view state a source owns.
  * - DataSourceOptions — the store, and the view it opens on: sort, group, page size, search fields
@@ -46,7 +47,6 @@
  * - .describe — One scope, whole: its filters and answers, what it may add, how it is arranged.
  * - .declareValues — every value a field can take, so each control offers the same list
  * - .declareField — Declare a field's KIND and its reader-facing name.
- * - .declareFromRows — Each field its schema says nothing of takes its values, or a number its ends, from the rows.
  * - .declareFromRows — Each field here that its schema says nothing of takes it from the ROWS: a set, its unique values in order; a…
  * - .fieldFacts — What `declareField` was told.
  * - .filterDef — A field's filter, as every bar, panel and heading draws it.
@@ -161,11 +161,16 @@ export interface HeldFilter extends FieldFilter {
   appliedAt?: string;
 }
 
+/** What a scope's filters narrow: the View, or the content one component shows. */
+export type ScopeShows = 'view' | 'grid' | 'chart' | 'form' | 'list';
+
 /** One scope as a control draws it WHOLE — what it holds and answers, what it
  *  may add, and how its rows are arranged. JSON. TRAP T-a-panel-asks-for-its-scopes */
 export interface ScopeDescription {
   scope: string;
   label: string;
+  /** What it narrows, as its bound component says. TRAP T-a-scope-says-what-it-shows */
+  shows?: ScopeShows;
   filters: HeldFilter[];
   available: FieldFilter[];
   group?: { field: string; label: string }[];
@@ -231,6 +236,8 @@ export interface BindOptions {
    *  report is its scope's whole answer, so a field raised out is not its to
    *  clear. A LIST is for a control that draws several — the filter panel. */
   scope?: string | readonly string[];
+  /** What this component SHOWS, so a panel can name its scope. TRAP T-a-scope-says-what-it-shows */
+  shows?: Exclude<ScopeShows, 'view'>;
   /**
    * Which rows this component is given. `'page'` (the default) is the window a
    * grid draws; `'all'` is every row matching the filter, unpaged — what a
@@ -310,6 +317,8 @@ export class DataSource extends EventTarget {
       lastOwn?: string;
       /** See BindOptions.scope. */
       scope?: string | readonly string[];
+      /** See BindOptions.shows. */
+      shows?: BindOptions['shows'];
       /** The fields this component answered LAST time it reported.
        *  TRAP T-a-filter-report-is-the-whole-answer */
       answered?: Set<string>;
@@ -808,8 +817,10 @@ export class DataSource extends EventTarget {
       .filter((id) => !(id in (q.presets ?? {})))
       .map((id) => ({ id, label: this.#presetFacts.get(id)?.label ?? id,
         readings: this.#presets.get(id) ?? {}, ...(this.#presetFacts.get(id)?.editable ? { editable: true } : {}) }));
+    const shows = scope === VIEW ? 'view'
+      : [...this.#bound.values()].find((b) => b.scope === scope && b.shows)?.shows;
     const out: ScopeDescription = {
-      scope, label: this.scopeLabel(scope), filters: [...presets, ...fields],
+      scope, label: this.scopeLabel(scope), ...(shows ? { shows } : {}), filters: [...presets, ...fields],
       available: [...this.addable(scope), ...offered],
     };
     /* HOW its rows are arranged — a component's, never the View's.
@@ -1816,6 +1827,7 @@ export class DataSource extends EventTarget {
       ...(options.as ? { as: options.as } : {}),
       ...(options.into ? { into: options.into } : {}),
       ...(options.scope ? { scope: options.scope } : {}),
+      ...(options.shows ? { shows: options.shows } : {}),
       ...(options.deliver ? { deliver: options.deliver } : {}),
     });
 

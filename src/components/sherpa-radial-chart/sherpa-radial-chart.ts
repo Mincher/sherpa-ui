@@ -30,7 +30,7 @@ export class SherpaRadialChart extends SherpaElement {
     new URL('./sherpa-radial-chart.css', import.meta.url),
   ];
   static override html = new URL('./sherpa-radial-chart.html', import.meta.url);
-  static override asks: DataAsk = { shape: 'segments' };
+  static override asks: DataAsk = { shape: 'segments', shows: 'chart' };
   static override props = { ...SUMMARY_PROPS } as const;
   static override observed = [
     'data-label', 'data-sublabel', 'data-type',

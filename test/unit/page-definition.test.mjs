@@ -105,3 +105,22 @@ test('openSource builds the page\'s source: fields, labels, scopes, holds and pr
   const data = source.describe('data');
   assert.deepEqual(data.filters.map((f) => [f.id, f.active]), [['busy', false]]);
 });
+
+test('a scope says what it narrows: the View is the view, a bound component names its own', async () => {
+  // TRAP T-a-scope-says-what-it-shows
+  const store = new ArrayStore([{ region: 'EMEA', status: 'open' }]);
+  const source = await openSource({
+    store: 'rows',
+    fields: { region: { label: 'Region' }, status: { label: 'Status' } },
+    scopes: { view: { label: 'View filters', holds: ['region'] }, data: { label: 'Alerts', holds: ['status'] } },
+  }, store);
+  const grid = {
+    populate() {}, setAttribute() {}, removeAttribute() {}, addEventListener() {}, removeEventListener() {},
+  };
+  assert.equal(source.describe('view').shows, 'view');
+  assert.equal(source.describe('data').shows, undefined, 'nothing bound says what it shows');
+  const off = source.bind(grid, { scope: 'data', shows: 'grid' });
+  assert.equal(source.describe('data').shows, 'grid');
+  off();
+  assert.equal(source.describe('data').shows, undefined, 'unbound, it says nothing');
+});
