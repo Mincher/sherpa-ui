@@ -39,6 +39,7 @@
  * - groupRows — rows grouped by a field, in the order they arrive
  * - applyOptions — Apply search → filter → sort, then page.
  */
+import type { FieldDomain } from './validate.js';
 
 /** One record. Plain object — structuredClone cannot clone a class instance. */
 export type Row = Record<string, unknown>;
@@ -166,6 +167,9 @@ export interface Store extends EventTarget {
   /** Its loads reach OUTSIDE the data layer, so a filter change waits for Apply.
    *  TRAP T-apply-and-discard-wait-for-a-change */
   readonly remote?: boolean;
+  /** What each field MAY hold — a set in order, a number's ends — as the data's
+   *  own contract says it. TRAP T-the-data-says-what-a-field-may-hold */
+  readonly domains?: Readonly<Record<string, FieldDomain>>;
 }
 
 /** Fired after an insert, update or remove. A DataSource just RELOADS. */

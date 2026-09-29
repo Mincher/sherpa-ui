@@ -31,6 +31,8 @@ const SOURCES = [
   'scripts/lib/*.mjs',
   'scripts/lib/*/*.mjs',
   'examples/contexts/*.js',
+  // The app's page and View definitions.
+  'examples/definitions/*.js',
   // The example TEMPLATES too. A citation in the Add-customer dialog was
   // unchecked, which is how a missing form field went unnoticed.
   'examples/templates/*.html',

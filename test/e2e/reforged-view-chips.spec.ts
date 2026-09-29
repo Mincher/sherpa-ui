@@ -35,7 +35,8 @@ test.describe('view definitions set the filter bar', () => {
     await page.goto(APP);
     await page.waitForFunction(() => {
       const bar = document.querySelector('sherpa-quick-filter-toolbar[slot="filters"]');
-      return (bar?.shadowRoot?.querySelectorAll('.chips > .chip').length ?? 0) >= 4;
+      // View, Customer and Region: the alerts have no time, so no Date chip.
+      return (bar?.shadowRoot?.querySelectorAll('.chips > .chip').length ?? 0) >= 3;
     });
   });
 

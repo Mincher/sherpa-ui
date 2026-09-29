@@ -14,7 +14,7 @@ import {
 import { namePrompt } from './ask-name.js';
 import { customerStore, customersReady, customers, columns, plans, regions, customerOrgs, states }
   from './records-data.js';
-import { RECORDS_VIEWS } from './records-views.js';
+import { RECORDS_VIEWS } from '/examples/definitions/records-views.js';
 import { globalFilters } from './global-filters.js';
 
 

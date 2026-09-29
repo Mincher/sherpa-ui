@@ -8,7 +8,9 @@
  * - BaseStore — what every store shares: key, time, schema guard, change events
  */
 import type { LoadOptions, LoadResult, Row, Store, StoreChangeDetail } from './store.js';
-import { validate, ValidationError, type Issue, type StandardSchema } from './validate.js';
+import {
+  domainsOf, validate, ValidationError, type FieldDomain, type Issue, type StandardSchema,
+} from './validate.js';
 
 /** Options every store shares. */
 export interface StoreOptions {
@@ -40,6 +42,11 @@ export abstract class BaseStore extends EventTarget implements Store {
     this.time = options.time;
     this.schema = options.schema;
     this.sampleSize = options.sample ?? 0;
+  }
+
+  /** What each field MAY hold, as its schema says. TRAP T-the-data-says-what-a-field-may-hold */
+  get domains(): Readonly<Record<string, FieldDomain>> {
+    return domainsOf(this.schema);
   }
 
   abstract load(options?: LoadOptions): Promise<LoadResult>;

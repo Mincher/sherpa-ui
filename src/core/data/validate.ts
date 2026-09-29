@@ -14,6 +14,7 @@
  * - isSchema — Is this a Standard Schema?
  * - validate — Run a schema, always as a promise — so nothing branches on sync vs async.
  * - Rule — One check on one value: a message when WRONG, nothing when fine.
+ * - FieldDomain — What a field MAY hold, as its rules say it — JSON: a set in order, or a number's ends.
  * - required — There has to be something here — the only rule that objects to emptiness.
  * - number — A number, and a real one — NaN and Infinity are not values a field can hold.
  * - min — At least this much.
@@ -26,6 +27,7 @@
  * - FieldRules — A field's rules — one, or several run in order.
  * - RuleMap — A record's rules, keyed by field.
  * - rules — Turn rules into a Standard Schema, so built-in and third-party are one kind of thing to every caller.
+ * - domainsOf — Each field's domain, as a schema made by `rules` says it; `{}` for any other schema.
  * - validateField — Run one field's rules on its own, for a field validating as it is typed.
  * - issuesFor — Every issue for one field, path flattened, as a message list.
  * - ValidationError — A write the schema refused.
@@ -94,6 +96,24 @@ export async function validate<T>(
 /** One check on one value: a message when WRONG, nothing when fine. May be async. */
 export type Rule = (value: unknown) => string | undefined | Promise<string | undefined>;
 
+/** What a field MAY hold, as its rules say it — JSON: a set in order, or a
+ *  number's ends. TRAP T-the-data-says-what-a-field-may-hold */
+export interface FieldDomain {
+  type?: 'number';
+  values?: unknown[];
+  min?: number;
+  max?: number;
+}
+
+/** The rules that bound a field, and how. */
+const DOMAINS = new WeakMap<Rule, FieldDomain>();
+
+/** A rule that also says what it allows. */
+function bounding(rule: Rule, domain: FieldDomain): Rule {
+  DOMAINS.set(rule, domain);
+  return rule;
+}
+
 /**
  * Is this value absent? `''` counts, zero and `false` do not.
  *
@@ -125,28 +145,28 @@ function whenPresent(check: (value: unknown) => string | undefined): Rule {
 
 /** A number, and a real one — NaN and Infinity are not values a field can hold. */
 export function number(message = 'Must be a number'): Rule {
-  return whenPresent((value) => {
+  return bounding(whenPresent((value) => {
     const n = typeof value === 'number' ? value : Number(value);
     return Number.isFinite(n) ? undefined : message;
-  });
+  }), { type: 'number' });
 }
 
 /** At least this much. Numbers compare; strings and arrays measure their length. */
 export function min(limit: number, message?: string): Rule {
-  return whenPresent((value) => {
+  return bounding(whenPresent((value) => {
     const size = sizeOf(value);
     if (size == null) return undefined;
     return size < limit ? (message ?? defaultLimitMessage(value, 'at least', limit)) : undefined;
-  });
+  }), { min: limit });
 }
 
 /** At most this much. The mirror of `min`. */
 export function max(limit: number, message?: string): Rule {
-  return whenPresent((value) => {
+  return bounding(whenPresent((value) => {
     const size = sizeOf(value);
     if (size == null) return undefined;
     return size > limit ? (message ?? defaultLimitMessage(value, 'at most', limit)) : undefined;
-  });
+  }), { max: limit });
 }
 
 /**
@@ -191,9 +211,9 @@ export function url(message = 'Enter a valid URL'): Rule {
  */
 export function oneOf(allowed: readonly unknown[], message?: string): Rule {
   const set = new Set(allowed.map(valueKey));
-  return whenPresent((value) => (set.has(valueKey(value))
+  return bounding(whenPresent((value) => (set.has(valueKey(value))
     ? undefined
-    : (message ?? `Must be one of: ${allowed.map(valueKey).join(', ')}`)));
+    : (message ?? `Must be one of: ${allowed.map(valueKey).join(', ')}`))), { values: [...allowed] });
 }
 
 /** Anything else. The escape hatch, and why the rule set stays small. */
@@ -220,8 +240,20 @@ export type RuleMap = Readonly<Record<string, FieldRules>>;
  */
 export function rules<T extends Record<string, unknown> = Record<string, unknown>>(
   map: RuleMap,
-): StandardSchema<unknown, T> {
+): StandardSchema<unknown, T> & { readonly domains: Readonly<Record<string, FieldDomain>> } {
+  const domains: Record<string, FieldDomain> = {};
+  for (const [field, fieldRules] of Object.entries(map)) {
+    const list = Array.isArray(fieldRules) ? fieldRules : [fieldRules as Rule];
+    const domain: FieldDomain = Object.assign({}, ...list.map((rule) => DOMAINS.get(rule) ?? {}));
+    // Beside anything but `number()`, a min or max is a LENGTH, not an end.
+    if (domain.type !== 'number') {
+      delete domain.min;
+      delete domain.max;
+    }
+    if (Object.keys(domain).length) domains[field] = domain;
+  }
   return {
+    domains,
     '~standard': {
       version: 1,
       // Named so a caller debugging a mixed setup can tell whose schema spoke.
@@ -246,6 +278,11 @@ export function rules<T extends Record<string, unknown> = Record<string, unknown
       },
     },
   };
+}
+
+/** Each field's domain, as a schema made by `rules` says it; `{}` for any other schema. */
+export function domainsOf(schema: StandardSchema | undefined): Readonly<Record<string, FieldDomain>> {
+  return (schema as { domains?: Record<string, FieldDomain> } | undefined)?.domains ?? {};
 }
 
 /**

@@ -1,0 +1,20 @@
+{
+  "$schema": "../../schemas/page.v1.json",
+  "v": 1,
+  "id": "dashboard",
+  "template": "dashboard",
+  "source": {
+    "store": "alerts",
+    "fields": {
+      "customer": { "label": "Customer", "select": "multiple", "icon": "buildings" },
+      "region": {
+        "label": "Region", "select": "multiple", "icon": "globe",
+        "labels": { "AMER": "Americas", "LATAM": "Latin America" }
+      }
+    },
+    "scopes": {
+      "view": { "label": "View filters", "holds": ["customer", "region"] }
+    }
+  },
+  "views": "dashboard-views"
+}

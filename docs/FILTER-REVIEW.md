@@ -150,7 +150,7 @@ The asymmetries this has already produced:
 
 Reproduced on the running page. It is **two** things, and only one is a bug.
 
-**Last Seen is the `mine` VIEW's own sort.** `examples/contexts/records-views.js`
+**Last Seen is the `mine` VIEW's own sort.** `examples/definitions/records-views.js`
 line 33: `sort: [{ field: 'lastSeen', direction: 'desc' }]`. On
 `?context=records&view=mine` the Sort chip reads "Last seen" from a fresh load,
 before anyone touches it. Nothing is wrong — the view owns its arrangement —

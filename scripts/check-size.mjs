@@ -22,6 +22,7 @@ export const SOURCES = [
   'src/components/**/*.css',
   'src/components/**/*.html',
   'examples/contexts/*.js',
+  'examples/definitions/*.js',
 ];
 
 const BASELINE = 'scripts/size-baseline.json';

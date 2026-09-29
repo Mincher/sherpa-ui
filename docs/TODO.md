@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**60 open.** Reassessed 2026-09-26: the bugs that lie first, then the
+**64 open.** Reassessed 2026-09-26: the bugs that lie first, then the
 FOUNDATION — the one compiled query, the view definition and when Apply runs —
 before the filter features that stand on it. Numbers are ids, not order; the
 table IS the order.
@@ -44,6 +44,8 @@ table IS the order.
 | | | **D — Filters: Will's features, on the foundation** | |
 | 15c | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
 | 15d | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
+| 15e | 97 | A filter panel section shows an icon for WHAT it filters: View, Chart, Grid, Form, List | quick |
+| 15f | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
 | 16 | 60 | Once applied, a chip's badge shows the number of results | feature |
 | 17 | 49 | A preset conditional chip shows its conditions, read-only | feature |
 | 18 | 50 | A custom conditional chip shows its conditions, editable | feature |
@@ -233,6 +235,66 @@ Simple keeps what it can show and says what it cannot, never drops a
 condition silently. **The word is Advanced** — Will chose it over
 *Complex*, 2026-09-27 (75).
 
+### `[ ]` 97 — A filter panel section shows an icon for WHAT it filters
+
+Will, 2026-09-29: *"The accordion header for filter panel sections should have
+an icon before the heading label, and after caret, that indicates the type of
+content being filtered."*
+
+| section filters | icon |
+|---|---|
+| the View | `monitor` |
+| a chart | a chart icon |
+| a data grid | a grid or table icon |
+| a form | `file-lines` |
+| a list | `list` |
+
+The order in the header is caret, icon, label. `monitor`, `file-lines` and
+`list` are in `src/core/ui/icon-paths.ts`. **No chart icon and no table icon are
+there** (only `table-columns`), so get them from Figma first. The KIND comes
+from the component that the scope's fields belong to, so the source must
+report it with each scope (`describe(scope)`). The panel must not find it by
+tag name.
+
+### `[ ]` 98 — An ADVANCED filter has its own Apply and Discard; the panel gets Apply all and Discard all
+
+Will, 2026-09-29: *"If there is at least 1 advanced (conditional) filter in
+the filter panel then we should show Apply and Discard buttons in the same row
+as the Add condition button but on the right side. Clicking these will apply
+or discard changes to that specific filter only. We should also show a footer
+at the bottom of the panel to Apply All or Discard All changes. We can just
+tweak the labels (and any required logic) on the panel footer that we used to
+use for applying filters."*
+
+- **Per filter:** an Advanced filter shows Apply and Discard at the RIGHT of
+  its Add condition row. They apply or discard THAT filter only.
+- **Whole panel:** a footer with Apply all and Discard all, shown while at
+  least one Advanced filter is in the panel.
+- **The footer comes back**: it was removed in `c92adec0` (step 6c, "no
+  footer; a field applies as it changes"). Take its markup back from there and
+  change the labels. A Simple filter still applies as it changes.
+- Build on 90 (Advanced mode). The source already hears `filter-apply` and
+  `filter-discard`; a per-field one must name its field.
+
+**Update, Will 2026-09-29:** *"Let's also move the reset filter button from the
+section header to the last row alongside Apply/Discard… We can keep this as an
+icon only button for now. Increase its size to match the other buttons on the
+row. We can also add this row, with the updated remove button, to simple
+filter sections. That way we have 1 action row, per section, regardless of
+simple or advanced filter mode. With this change we can also get rid of the
+column that we had reserved in the filter panel for actions on the right side.
+This gives us some more horizontal space for content."*
+
+- **ONE action row per field section**, last in the section, in Simple AND
+  Advanced mode. It holds the Reset button (`.field-clear`,
+  `arrow-rotate-left`, icon only) and, where the field has them, Apply and
+  Discard at the right. In Advanced mode it is the Add condition row.
+- **Reset leaves the section header** and takes the row's button size, not
+  `data-size="sm"`. The remote Apply and Discard icons (`.field-apply`,
+  `.field-discard`) leave the header too.
+- **The actions column goes**: the panel's reserved right-hand column
+  (`.field-acts`, from `24c3a57c`) is deleted, and its width goes to the content.
+
 ### `[ ]` 92 — Navigating SETS UP the content — its definitions, data layer, filters and state — not only swaps the template
 
 Will, 2026-09-27: *"When the app shell navigates to new content we shouldn't
@@ -255,7 +317,9 @@ are its halves. First: audit where it is done today, and list the gaps.
 no data shut the panel (G1), and the Dashboard keeps its Query (G2). Open: Save
 view on Records (G3, TODO 15), and the Context DEFINITION that ends the
 repeated setup in every Context (G4) — **designed in `docs/PAGE-DEFINITION.md`,
-for Will's review** (two decisions in its §6).
+decided by Will 2026-09-29.** D1 is built: the Dashboard opens from
+`examples/definitions/dashboard.json` through `provider.open()`. Next: D2
+(Records) and D3 (the router hands the definition).
 
 ### `[ ]` 94 — A number (and range) filter menu needs Apply and Cancel buttons
 

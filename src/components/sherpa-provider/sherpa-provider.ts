@@ -10,6 +10,7 @@
  *
  * Map:
  * - ProvideOptions — What a provider is given: its sources by name, and its Views.
+ * - OpenOptions — What `open()` is given beside a page's definition: the app's stores, and the page's Views.
  * - ProviderState — A subtree's whole state as JSON: each source's question, and the View on screen.
  */
 import { SUMMARY_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
@@ -19,10 +20,14 @@ import {
 import { report } from '../../core/data/report.js';
 import { summarise, type SummarySpec } from '../../core/data/aggregate.js';
 import { bindSelection, type Selector } from '../../core/data/bind-selection.js';
-import { valueKey } from '../../core/data/store.js';
-import { onViewPicked, type ViewLibrary } from '../../core/browser/persist-view.js';
+import { valueKey, type Store } from '../../core/data/store.js';
+import {
+  loadSavedViews, onViewPicked, saveViewAs, viewOptions, type ViewLibrary,
+} from '../../core/browser/persist-view.js';
+import { labelId } from '../../core/browser/web-storage.js';
+import { openSource, type PageDefinition } from '../../core/data/page-definition.js';
 import type { DataSource, SourceState } from '../../core/data/data-source.js';
-import type { Query } from '../../core/data/query.js';
+import { VIEW, type Query } from '../../core/data/query.js';
 import type { FieldReading } from '../../core/data/filter-state.js';
 import type { Populatable } from '../../core/ui/apply-state.js';
 
@@ -38,6 +43,25 @@ export interface ProvideOptions {
   session?: { get(key: string): unknown; set(key: string, value: unknown): void };
   key?: string;
 }
+
+/** What `open()` is given beside a page's definition: the app's stores, by the
+ *  name a definition gives — and the Views the page ships, the one on screen,
+ *  and where its Query is kept. */
+export interface OpenOptions {
+  stores: Record<string, Store>;
+  /** The page's own Views; a reader's saved ones join them by the page's id. */
+  views?: ViewLibrary;
+  view?: string;
+  session?: ProvideOptions['session'];
+}
+
+/** A filter bar, as the provider draws it. */
+type Bar = HTMLElement & {
+  populate(defs: unknown[]): Promise<void> | void;
+  available?(defs: unknown[]): void;
+  heldFields?: string[];
+  report?(): void;
+};
 
 /** A subtree's whole state, as JSON — each source's question and the View on
  *  screen — to send out and take back in. TRAP T-a-page-goes-out-as-json */
@@ -173,6 +197,12 @@ export class SherpaProvider extends SherpaElement {
    * TRAP T-a-provider-keeps-the-views
    */
   provide(options: ProvideOptions): Promise<void> {
+    // The page `open()` set up has gone, with its source.
+    if (this.#opened && !Object.values(options.sources).includes(this.#opened.source)) {
+      this.#page?.abort();
+      this.#page = null;
+      this.#opened = null;
+    }
     this.#sources = { ...options.sources };
     for (const asked of this.#asked.values()) this.#answer(asked);
     this.#views?.abort();
@@ -190,12 +220,115 @@ export class SherpaProvider extends SherpaElement {
     return this.#openViews(source, options, this.#views.signal);
   }
 
+  /**
+   * Set up a page from its DEFINITION: its source over the app's store, every
+   * filter bar drawn from its scope — the View chip, the fields it holds, what
+   * it may add — and all of it provided. The source, or undefined for a page
+   * with no data. TRAP T-a-page-is-its-definition
+   */
+  async open(definition: PageDefinition, options: OpenOptions): Promise<DataSource | undefined> {
+    this.#page?.abort();
+    const page = (this.#page = new AbortController());
+    const def = definition.source;
+    const store = def ? options.stores[def.store] : undefined;
+    if (def && !store) {
+      report({
+        code: 'provider-unknown-store',
+        message: `sherpa-provider: page "${definition.id}" names a store the app has not given, "${def.store}".`,
+        at: { store: def.store },
+      });
+    }
+    const source = def && store ? await openSource(def, store) : undefined;
+    if (page.signal.aborted) return undefined;
+    if (!source) {
+      await this.provide({ sources: {} });
+      return undefined;
+    }
+    const shipped = options.views;
+    this.#opened = {
+      id: definition.id, source,
+      library: shipped ? () => ({ ...shipped, ...loadSavedViews(definition.id) }) : null,
+    };
+    // BEFORE the Query: a kept one is drawn onto these chips.
+    await this.#drawBars(options.view);
+    if (page.signal.aborted) return undefined;
+    source.addEventListener('scope-change', () => this.#offer(), { signal: page.signal });
+    await this.provide({
+      sources: { [definition.id]: source },
+      ...(this.#opened.library ? {
+        views: this.#opened.library, ...(options.view ? { view: options.view } : {}),
+        ...(options.session ? { session: options.session } : {}), key: `/filters/${definition.id}`,
+      } : {}),
+    });
+    return page.signal.aborted ? undefined : source;
+  }
+
+  /** Leave the page: its source goes, and nothing in the subtree reaches it. */
+  close(): void {
+    void this.provide({ sources: {} });
+  }
+
+  /**
+   * Save what is on screen as a new View of the open page, and put it on the
+   * View chip. TRAP T-a-view-is-json
+   */
+  async saveView(label: string): Promise<void> {
+    const opened = this.#opened;
+    if (!opened?.library || !label.trim()) return;
+    saveViewAs(opened.id, label, { source: opened.source });
+    // Read BEFORE the redraw: a rebuilt bar's first report is empty.
+    const kept = opened.source.query.applied;
+    await this.#drawBars(labelId(label.trim()));
+    await opened.source.setQuery(kept);
+    // Reported, so the URL and the nav follow the View just saved.
+    (this.#bars() as Bar[]).find((bar) => this.#inherited(bar, 'data-scope') === VIEW)?.report?.();
+  }
+
+  /** Stops the open page's listeners. */
+  #page: AbortController | null = null;
+  /** The page `open()` set up. */
+  #opened: { id: string; source: DataSource; library: (() => ViewLibrary) | null } | null = null;
+
+  /** Draw every bar from its scope, as the source describes it — the View
+   *  chip first — then what it may add. */
+  async #drawBars(view?: string): Promise<void> {
+    const opened = this.#opened;
+    if (!opened) return;
+    const { source, library } = opened;
+    await Promise.all((this.#bars() as Bar[]).map((bar) => {
+      const scope = this.#inherited(bar, 'data-scope');
+      if (!scope) return undefined;
+      const picker = scope === VIEW && library ? [{
+        id: 'view', label: 'View', persistent: true, active: true, select: 'single',
+        options: viewOptions(library(), view && view in library() ? view : undefined),
+      }] : [];
+      return bar.populate([...picker, ...source.describe(scope).filters]);
+    }));
+    this.#offer();
+  }
+
+  /** Each bar's Add list: what its scope may still add — by the chips it HAS,
+   *  so a restore can draw a held field's chip — each noting where it lives. */
+  #offer(): void {
+    const source = this.#opened?.source;
+    if (!source) return;
+    for (const bar of this.#bars() as Bar[]) {
+      const scope = this.#inherited(bar, 'data-scope');
+      if (!scope) continue;
+      const saved = source.describe(scope).available.filter((d) => 'readings' in d && d.readings);
+      bar.available?.([
+        ...source.addable(scope, bar.heldFields ?? []).map((d) => ({ ...d, removable: true })), ...saved,
+      ]);
+    }
+  }
+
   /** The View on screen. */
   get view(): string | undefined {
     return this.#view;
   }
 
   override onDisconnect(): void {
+    this.#page?.abort();
     this.#views?.abort();
     this.#views = null;
     this.#hear = null;

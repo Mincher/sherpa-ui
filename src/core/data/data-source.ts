@@ -46,6 +46,8 @@
  * - .describe — One scope, whole: its filters and answers, what it may add, how it is arranged.
  * - .declareValues — every value a field can take, so each control offers the same list
  * - .declareField — Declare a field's KIND and its reader-facing name.
+ * - .declareFromRows — Each field its schema says nothing of takes its values, or a number its ends, from the rows.
+ * - .declareFromRows — Each field here that its schema says nothing of takes it from the ROWS: a set, its unique values in order; a…
  * - .fieldFacts — What `declareField` was told.
  * - .filterDef — A field's filter, as every bar, panel and heading draws it.
  * - .declareScope — Name a scope as a reader sees it — a panel's section, an Add list's note.
@@ -79,7 +81,9 @@
  * - .unbind — Stop steering and stop populating this component.
  * - .boundElements — Every component currently bound.
  */
-import { andFilter, filterFields, filterNeedles, filterRows, groupSummaries, valueKey } from './store.js';
+import {
+  andFilter, compareValues, filterFields, filterNeedles, filterRows, groupSummaries, readField, valueKey,
+} from './store.js';
 import { fieldState, stateClause } from './filter-state.js';
 import { compile, VIEW, type Query, type QueryDefaults, type ScopeQuery } from './query.js';
 import { report } from './report.js';
@@ -113,6 +117,10 @@ export interface FieldDeclaration {
   min?: number;
   max?: number;
   step?: number;
+  /** Its chip's glyph. TRAP T-only-five-filter-chips-carry-an-icon */
+  icon?: string;
+  /** A value's name as a reader sees it, where it is not the value. */
+  labels?: Record<string, string>;
 }
 
 /** A field's filter as any bar or panel draws it — its declaration and values. */
@@ -264,6 +272,14 @@ const STEERING_EVENTS = [
   'grid-pages-change',
 ] as const;
 
+/** Steps a number slider may take. */
+const NICE_STEPS = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000];
+
+/** A step that gives a slider over this span about 200 stops. */
+function niceStep(span: number): number {
+  return span <= 1000 ? 1 : (NICE_STEPS.find((n) => n >= span / 200) ?? 1000);
+}
+
 export class DataSource extends EventTarget {
   readonly store: Store;
   /** The view this source owns: sort, group, search, page. The filter is compiled. */
@@ -386,6 +402,11 @@ export class DataSource extends EventTarget {
        Nothing downstream has to know the dataset calls it `created`.
        TRAP T-a-record-has-a-time-of-its-own */
     if (this.store.time) this.declareField(this.store.time, { type: 'date' });
+    // What each field MAY hold, as the data's own schema says. TRAP T-the-data-says-what-a-field-may-hold
+    for (const [field, { values, ...facts }] of Object.entries(this.store.domains ?? {})) {
+      if (values) this.declareValues(field, values);
+      if (Object.keys(facts).length) this.declareField(field, facts);
+    }
   }
 
   /**
@@ -935,6 +956,35 @@ export class DataSource extends EventTarget {
     this.#fields.set(field, { ...held, ...facts });
   }
 
+  /**
+   * Each field here that its schema says nothing of takes it from the ROWS: a
+   * set, its unique values in order; a number, its lowest and highest. One
+   * load, and only when a field needs it. TRAP T-the-data-says-what-a-field-may-hold
+   */
+  async declareFromRows(fields: readonly string[]): Promise<void> {
+    const open = fields.filter((f) => {
+      const facts = this.#fields.get(f) ?? {};
+      if (facts.type === 'number') return facts.min == null || facts.max == null;
+      return facts.custom !== 'only' && !this.#domains.has(f);
+    });
+    const rows = open.length ? (await this.store.load({})).rows : [];
+    for (const field of fields) {
+      const facts = this.#fields.get(field) ?? {};
+      const held = open.includes(field)
+        ? rows.map((r) => readField(r, field)).filter((v) => v != null && v !== '') : [];
+      if (facts.type !== 'number') {
+        const unique = [...new Map(held.map((v) => [valueKey(v), v])).values()];
+        if (unique.length) this.declareValues(field, unique.sort((a, b) => compareValues(valueKey(a), valueKey(b))));
+        continue;
+      }
+      const nums = held.map(Number).filter(Number.isFinite);
+      const min = facts.min ?? (nums.length ? Math.floor(nums.reduce((a, b) => Math.min(a, b))) : undefined);
+      const max = facts.max ?? (nums.length ? Math.ceil(nums.reduce((a, b) => Math.max(a, b))) : undefined);
+      if (min == null || max == null) continue;
+      this.declareField(field, { min, max, step: facts.step ?? niceStep(max - min) });
+    }
+  }
+
   /** What `declareField` was told. */
   fieldFacts(field: string): FieldDeclaration {
     return { ...(this.#fields.get(field) ?? {}) };
@@ -945,7 +995,7 @@ export class DataSource extends EventTarget {
    *  the rows HOLD, never a lower-cased copy a heading's menu would not share.
    *  TRAP T-a-field-is-declared-once · TRAP T-one-comparison-rule-for-query-and-ui */
   filterDef(field: string): FieldFilter {
-    const { type, label, ...rest } = this.#fields.get(field) ?? {};
+    const { type, label, labels, ...rest } = this.#fields.get(field) ?? {};
     const body = type === 'number' || type === 'date' ? type : undefined;
     const values = body || rest.custom === 'only' ? [] : this.valuesFor(field).map(valueKey);
     // A date's declared values are the days a calendar may pick.
@@ -953,7 +1003,7 @@ export class DataSource extends EventTarget {
     return {
       id: field, label: label ?? field, ...rest,
       ...(body ? { kind: body } : {}),
-      ...(values.length ? { options: values.map((v) => ({ value: v, label: v })) } : {}),
+      ...(values.length ? { options: values.map((v) => ({ value: v, label: labels?.[v] ?? v })) } : {}),
       ...(days.length ? { availableDates: days } : {}),
     };
   }

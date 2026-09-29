@@ -25,8 +25,8 @@ capabilities:
   - $type: capability
     api: js-methods
     description: >-
-      callable from a view definition's state block (provide, export, import). See
-      $extensions.sherpa.methods.
+      callable from a view definition's state block (populate, provide, open, close, saveView,
+      export, import). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: filter-mode-change
@@ -44,9 +44,24 @@ $extensions:
   sherpa:
     methods:
       - $type: method
+        name: populate
+        args: "defs: unknown[]"
+      - $type: method
         name: provide
         args: "options: ProvideOptions"
         description: Give this subtree its sources — and its Views. Every component already
+      - $type: method
+        name: open
+        args: "definition: PageDefinition, options: OpenOptions"
+        description: "Set up a page from its DEFINITION: its source over the app's store, every"
+      - $type: method
+        name: close
+        args: ""
+        description: "Leave the page: its source goes, and nothing in the subtree reaches it."
+      - $type: method
+        name: saveView
+        args: "label: string"
+        description: Save what is on screen as a new View of the open page, and put it on the
       - $type: method
         name: export
         args: ""

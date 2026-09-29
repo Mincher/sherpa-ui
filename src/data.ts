@@ -104,6 +104,13 @@ export {
   type FieldFilter,
   type SourceState,
 } from './core/data/data-source.js';
+/* A PAGE, set up from one JSON document. TRAP T-a-page-is-its-definition */
+export {
+  openSource,
+  type PageDefinition,
+  type ScopeDefinition,
+  type SourceDefinition,
+} from './core/data/page-definition.js';
 // Keeping a view state across a reload — a HELPER, not part of DataSource, so
 // a host chooses whether and where its view state persists.
 export {
@@ -131,6 +138,7 @@ export {
 } from './core/data/live-stores.js';
 export {
   custom,
+  domainsOf,
   email,
   issuesFor,
   isSchema,
@@ -145,6 +153,7 @@ export {
   url,
   validate,
   validateField,
+  type FieldDomain,
   type FieldRules,
   type Issue,
   type Result,

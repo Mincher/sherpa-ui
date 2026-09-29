@@ -7026,12 +7026,11 @@ any filter applied on top of it also showed zero and read as a broken filter.
 - Site: `examples/contexts/global-filters.js`
 - Site: `examples/contexts/records.js`
 - Site: `examples/contexts/records-data.js`
-- Site: `examples/contexts/records-views.js`
+- Site: `examples/definitions/records-views.js`
 - Site: `examples/templates/records.html`
 - Site: `test/e2e/reforged-view-chips.spec.ts`
-- Site: `examples/contexts/dashboard.js`
 - Site: `examples/contexts/dashboard-data.js`
-- Site: `examples/contexts/dashboard-views.js`
+- Site: `examples/definitions/dashboard-views.js`
 
 ### T-a-persistent-chip-reports-on-every-change
 
@@ -7809,6 +7808,7 @@ the view selector's glyph itself rather than taking it from the chip def. There
 is no `office`; `buildings` is the set's word for it.
 
 - Site: `examples/contexts/global-filters.js`
+- Site: `src/core/data/data-source.ts`
 
 ### T-a-native-select-keeps-its-own-shape
 
@@ -10511,7 +10511,6 @@ category nothing matched is noise, unless the categories are a fixed scale
 - Site: `examples/contexts/dashboard-data.js`
 - Site: `examples/contexts/records.js`
 - Site: `src/core/data/aggregate.ts`
-- Site: `examples/contexts/dashboard.js`
 
 ### T-the-last-band-includes-its-top
 
@@ -13368,9 +13367,9 @@ own axes (severity, storage) sit in a `page` scope no bar answers. A host must
 removes them. `saveViewAs` saves JSON for a source with a Query, and a
 content view's `after` now gets `rendered` — the Capacity view's charts had
 never been bound.
-- Site: `examples/contexts/dashboard-views.js`
+- Site: `examples/definitions/dashboard-views.js`
 - Site: `examples/contexts/dashboard.js`
-- Site: `examples/contexts/records-views.js`
+- Site: `examples/definitions/records-views.js`
 - Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/browser/persist-view.ts`
@@ -13397,7 +13396,6 @@ Until a page is a DEFINITION the router hands over, each Context must pass
 `session`, a key and the URL's `view` to `provide()` itself — forgetting is
 the gap.
 
-- Site: `examples/contexts/dashboard.js`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/e2e/reforged-provider.spec.ts`
 
@@ -13472,7 +13470,6 @@ subtree's ONE source; a subtree with several gets none. And the provider fires
 `view-change` with the View's id, and its content's elements by id, for a
 page that still wants them.
 
-- Site: `examples/contexts/dashboard.js`
 - Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/e2e/reforged-provider.spec.ts`
@@ -13586,7 +13583,6 @@ The initial holds are declared once in the page — the chips each bar starts
 with — because a bar that has not populated yet would report none, and an
 empty hold forgets its scope.
 
-- Site: `examples/contexts/dashboard.js`
 - Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/data/data-source.ts`
@@ -13649,7 +13645,6 @@ not a fact about the field.
 - Site: `examples/contexts/records.js`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
-- Site: `examples/contexts/dashboard.js`
 
 ### T-configuration-is-not-data
 
@@ -13672,7 +13667,7 @@ generator reads `static config` for the component's properties.
 - Site: `scripts/generate-component-spec.mjs`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/core/ui/sherpa-element.ts`
-- Site: `examples/contexts/dashboard-views.js`
+- Site: `examples/definitions/dashboard-views.js`
 
 ### T-a-component-declares-its-summary
 
@@ -14169,7 +14164,6 @@ answer — removing a chip is a clear. The draw carries the WHOLE answer: an
 operator dropped reads "is not churned" as "churned", and a typed text
 dropped reads "contains an" as nothing.
 
-- Site: `examples/contexts/dashboard.js`
 - Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
@@ -14179,3 +14173,51 @@ dropped reads "contains an" as nothing.
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
 - Site: `test/e2e/reforged-view-chips.spec.ts`
 - Site: `test/unit/query.test.mjs`
+
+### T-the-data-says-what-a-field-may-hold
+
+**A field's possible values come from the DATA, never from the page.** Will,
+2026-09-29 (`PAGE-DEFINITION.md` §3). A set — Status — is an ordered array; a
+range — Seats — is a number's two ends.
+
+- **The store's schema says it**, with the rules that already check each
+  record: `oneOf([...])` for a set, `number()` with `min()` and `max()` for a
+  range. A schema made by `rules()` carries them as `domains`, the store gives
+  them as `store.domains`, and a `DataSource` declares them when it is made.
+  One list checks a write, fills a filter, and keeps a category's colour.
+- **A min or max is an END only beside `number()`.** On text, the same rules
+  measure a LENGTH, so `rules()` drops them there.
+- **Nothing said: the rows say it.** `source.declareFromRows(fields)` gives a
+  set its unique values, sorted, and a number its lowest and highest — one load
+  of every row, and only when a field needs it.
+- **An array, not a set or an object**, because order carries meaning.
+
+- Site: `src/core/data/validate.ts`
+- Site: `src/core/data/base-store.ts`
+- Site: `src/core/data/store.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/page-definition.ts`
+- Site: `examples/contexts/dashboard-data.js`
+- Site: `test/unit/page-definition.test.mjs`
+
+### T-a-page-is-its-definition
+
+**A page is set up from ONE JSON document**, not from code in its Context.
+TODO 92, gap G4 (`PAGE-DEFINITION.md`). `provider.open(definition, { stores,
+views, view, session })` builds the source over the app's store (`openSource`,
+DOM-free), draws every filter bar from its scope as the source describes it —
+the View chip first — gives each bar its Add list, and provides it all with the
+Query kept under `/filters/<id>`. A reader's saved Views join the shipped ones
+by the page's id, so `saveView(label)` needs nothing from the page.
+
+- **Chips come from the scope, never a second list.** A bar's chips are
+  `source.describe(scope).filters`; its Add list is `addable()` by the chips it
+  HAS, so a restore can draw a held field's chip.
+- **The bars are drawn BEFORE the Query**, so a kept one lands on its chips.
+- **A `provide()` without the opened source ends the page**: its listeners stop.
+
+- Site: `src/core/data/page-definition.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `examples/contexts/dashboard.js`
+- Site: `test/unit/page-definition.test.mjs`
+- Site: `src/data.ts`

@@ -7,11 +7,9 @@
  * Map:
  * - customerOrgs — The customers — organisations, not people.
  * - alerts — One alert per row — the grain the charts summarise.
- * - CATEGORY_ORDER — The orders the charts share.
- * - OS_ORDER — the OS categories in a fixed order, so each keeps its colour
- * - DAY_ORDER — The x-axis of the line chart — every day gets a point, quiet or not.
- * - SEVERITY_ORDER — the severities in a fixed order, so each line keeps its colour
+ * - alertStore — the alerts, app-level — its schema says what each field may hold
  */
+import { ArrayStore, max, min, number, oneOf, rules } from '../../dist/index.js';
 
 const CATEGORIES = ['Disk', 'CPU', 'Memory', 'Network', 'Security', 'Services', 'Backup', 'Antivirus'];
 /* REAL operating systems, and no "Other" among them. A category literally
@@ -63,15 +61,20 @@ export function alerts(count = 1284) {
 }
 
 /**
- * The orders the charts share. Without a declared order a category falls out in
- * count order, so it changes colour when only its ranking moved.
- * TRAP T-a-category-keeps-its-colour.
+ * WHAT AN ALERT MAY HOLD, each set in the order its charts keep — so a category
+ * keeps its colour, and a quiet day keeps its point. The same lists check a
+ * write and fill a filter. TRAP T-a-category-keeps-its-colour
+ * TRAP T-the-data-says-what-a-field-may-hold
  */
-export const CATEGORY_ORDER = CATEGORIES;
-export const OS_ORDER = OSES;
+const alertSchema = rules({
+  category: oneOf(CATEGORIES),
+  os: oneOf(OSES),
+  region: oneOf(REGIONS),
+  customer: oneOf(customerOrgs),
+  severity: oneOf(SEVERITIES),
+  day: oneOf(DAYS),
+  storage: [number(), min(0), max(100)],
+});
 
-/** The x-axis of the line chart — every day gets a point, quiet or not. */
-export const DAY_ORDER = DAYS;
-
-/** the severities in a fixed order, so each line keeps its colour */
-export const SEVERITY_ORDER = SEVERITIES;
+/** The alerts — app-level, as long as the tab. */
+export const alertStore = new ArrayStore(alerts(), { key: 'id', schema: alertSchema });

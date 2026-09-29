@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sherpa-ui.dev/schema/page/v1.json",
+  "title": "Sherpa-UI page definition",
+  "description": "One page, as JSON: its template, its data source and its Views. The provider's open() reads it. docs/PAGE-DEFINITION.md",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["v", "id"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "v": { "const": 1 },
+    "id": {
+      "description": "The page's id: its saved Views and its kept Query are filed under it.",
+      "type": "string", "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "template": { "description": "The page's markup, by name.", "type": "string" },
+    "views": { "description": "The name of the page's View library.", "type": "string" },
+    "source": { "$ref": "#/$defs/source" }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["store"],
+      "properties": {
+        "store": { "description": "The name the app registered its store under.", "type": "string" },
+        "pageSize": { "type": "integer", "minimum": 1 },
+        "search": { "description": "The fields a free-text search looks at.", "type": "array", "items": { "type": "string" } },
+        "fields": {
+          "description": "Every field a filter may ask of. No field lists its values: the store's schema says them, or the rows do.",
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/field" }
+        },
+        "scopes": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/scope" }
+        },
+        "presets": {
+          "description": "The saved filters the page ships, by id.",
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/preset" }
+        }
+      }
+    },
+    "field": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": { "enum": ["text", "number", "date"] },
+        "label": { "type": "string" },
+        "select": { "enum": ["single", "multiple"] },
+        "custom": { "description": "Conditions beside its values (true), or instead of them (\"only\").", "enum": [true, false, "only"] },
+        "op": { "description": "The condition its filter opens on.", "type": "string" },
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "step": { "type": "number", "exclusiveMinimum": 0 },
+        "icon": { "type": "string" },
+        "labels": {
+          "description": "A value's name as a reader sees it, where it is not the value.",
+          "type": "object", "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string" },
+        "offers": {
+          "description": "Every field it may add, or \"all\" for every field the page declares.",
+          "oneOf": [{ "const": "all" }, { "type": "array", "items": { "type": "string" } }]
+        },
+        "holds": { "description": "The fields it holds at the start.", "type": "array", "items": { "type": "string" } },
+        "presets": { "description": "The saved filters its bar shows, each off.", "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "preset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["readings"],
+      "properties": {
+        "label": { "type": "string" },
+        "editable": { "type": "boolean" },
+        "readings": { "description": "Its answer, field by field.", "type": "object", "additionalProperties": { "type": "object" } }
+      }
+    }
+  }
+}
