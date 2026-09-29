@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**61 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**63 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -27,6 +27,7 @@ order.
 | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
 | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | | | **C — Contained bugs** | |
+| 5a | 101 | ADVANCED: a condition row will not add in a chip's menu; in the panel, changing a row's condition drops the row | bug |
 | 6 | 61 | Add customer saves with required fields empty | bug |
 | 7 | 45 | A picked date does not show in the chip | bug |
 | 8 | 82 | A number chip set by a View shows no value on its face | bug |
@@ -42,6 +43,7 @@ order.
 | | | **D — Filters: Will's features, on the foundation** | |
 | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
+| 18a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
 | 19 | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
 | 20 | 21d | EXPLORE — conditions for a DATE field | explore |
 | 21 | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
@@ -102,8 +104,9 @@ order.
   pairs where one fix serves both: 45 and 82 (a chip's face after a silent
   set), 83 and 94 (a menu's footer).
 - **D — Filters.** The panel is rebuilt ONCE: 99 designs how filters group
-  first, then 89 (Simple, with 38 step 4's one builder), 90 (Advanced) and
-  21d (its date half), then 98 (the action row, on 90). Then 60; 49 before
+  first, then 89 (Simple, with 38 step 4's one builder), 102 (both modes'
+  answers kept), 90 (Advanced) and 21d (its date half), then 98 (the action
+  row, on 90). Then 60; 49 before
   50; 20b before any date condition ships.
 - **E — Views and navigation.** 15's save is built (`provider.saveView`); what
   is left is Records' dialog and the split button.
@@ -249,6 +252,22 @@ Will, 2026-09-25:
 ---
 
 ## C — Contained bugs
+
+### `[ ]` 101 — ADVANCED: a condition row will not add in a chip's menu; in the panel, changing a row's condition drops the row
+
+Will, 2026-09-29: *"I can't add more conditions to an advanced filter. In the
+filter toolbar menu the row just doesn't add. In the filter panel, the row
+adds, but changing the condition type results in the row being removed."*
+
+Two faces, probably one cause. Start at `sherpa-menu`'s `#onAddCondition`
+(`#addRow()` then `#emitConditions()`): the report goes to the source, and the
+source draws the field's reading BACK onto the menu. A new row has no text
+yet, so it is likely not part of the reading, and the redraw drops it — in
+the chip at once, in the panel once its condition changes. An unanswered row
+is the reader's work in progress, never an answer to throw away — the same
+family as `T-a-rebuilt-bar-reads-empty-until-its-menus-stamp`.
+A test for each face: add a row in a chip's menu, and change a new row's
+condition in the panel.
 
 ### `[ ]` 64 — A collapsed accordion section fills with the down (+2) surface
 
@@ -458,6 +477,29 @@ mode."* Its content is one of three, by the field:
 **16 replaces 47's 20** — one line for the bar and the panel, set once (the
 builder's explode-or-menu flag, 38 step 4). 47 (more than 20 values, one chip)
 is merged here. Mode words: TODO 75.
+
+### `[ ]` 102 — Simple AND Advanced answers are both kept, so a filter switches mode at any time
+
+Will, 2026-09-29: *"Switching to an advanced filter, in the filter toolbar
+chip menu, prevents me from toggling back to a simple filter if a value has
+been input. Both simple and advanced mode conditions need to be tracked and
+stored to allow switching at any point. May require rework to the query
+building in the data layer as well as component fixes."*
+
+Today the menu's mode switch carries the picks INTO the condition rows
+(`#seedFromPicks`, `T-a-mode-switch-carries-the-answer-over`) and nothing
+keeps them going back — one answer, two views of it.
+
+- **The reading holds BOTH answers and which mode is in force.** A
+  `FieldReading` keeps its `picked` list and its condition rows side by side,
+  and a `mode`. The Query compiles only the mode in force; switching changes
+  the mode and loses nothing.
+- **The switch is never blocked**, whatever either mode holds. Switching back
+  shows Simple's own picks.
+- **Every writer and reader of a reading follows**: the menu, the bar, the
+  panel, a grid heading, a saved filter and a saved View (JSON), and the
+  session's kept Query. Design it with 90, which builds Advanced on it, and
+  with 75's rename (the mode is `simple` / `advanced`).
 
 ### `[ ]` 90 — Any filter switches to ADVANCED: condition rows, with options per field type
 
