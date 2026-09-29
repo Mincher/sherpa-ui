@@ -211,7 +211,7 @@ test('a provider exports its state as JSON; another takes it in and draws the sa
   expect(r['reports']).toEqual([]);
 });
 
-/* THE PROVIDER OWNS THE PANEL MODE, for every page in it: a bar's Configure
+/* THE PROVIDER OWNS THE PANEL MODE, for every page in it: a bar's mode button
    opens the panel and steps every bar back — one that joins later too — and a
    reader's close brings the bars back. TRAP T-the-provider-owns-the-panel-mode */
 test('panel mode: Configure opens the panel and steps bars back; a later bar joins it; a close restores', async ({ page }) => {
@@ -232,7 +232,8 @@ test('panel mode: Configure opens the panel and steps bars back; a later bar joi
     src.declareField('name', { label: 'Name' });
     await provider.provide({ sources: { s: src } });
     await settle();
-    bar.dispatchEvent(new CustomEvent('filter-configure', { bubbles: true, composed: true }));
+    // The page's own mode button, in the bar's actions slot. TRAP T-the-mode-switch-is-the-pages-own
+    bar.querySelector('[data-filter-mode]').dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
     await settle();
     const opened = { open: panel.hasAttribute('open'), bar: bar.hasAttribute('data-panel-mode'), mode: provider.filterMode };
     const late = document.createElement('sherpa-quick-filter-toolbar');
@@ -248,6 +249,45 @@ test('panel mode: Configure opens the panel and steps bars back; a later bar joi
   expect(r['joined']).toBe(true);
   expect(r['closed']).toEqual({ open: false, bar: false, late: false });
   expect(r['heard']).toEqual(['panel', 'toolbars']);
+  expect(r['reports']).toEqual([]);
+});
+
+/* THE MODE SWITCH IS THE PAGE'S. No bar or panel carries it: the provider puts
+   one in each bar's `actions` slot while a panel is on the page, takes it out
+   while the panel answers, and gives the panel its way back.
+   TRAP T-the-mode-switch-is-the-pages-own */
+test('the provider gives bars and the panel their mode buttons, only while a panel is on the page', async ({ page }) => {
+  await page.setViewportSize({ width: 1600, height: 900 });
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const provider = document.createElement('sherpa-provider');
+    const bar = document.createElement('sherpa-quick-filter-toolbar');
+    bar.setAttribute('data-scope', 'data');
+    provider.append(bar);
+    root.append(provider);
+    const src = source(2, 'p');
+    src.offer('data', ['name']);
+    src.declareField('name', { label: 'Name' });
+    await provider.provide({ sources: { s: src } });
+    await settle();
+    const toggle = (el) => el.querySelector('[data-filter-mode]');
+    const alone = !!toggle(bar);
+    const panel = document.createElement('sherpa-filter-panel');
+    panel.setAttribute('data-scope', 'view data');
+    provider.append(panel);
+    await settle();
+    const withPanel = { bar: toggle(bar)?.getAttribute('aria-label'), slot: toggle(bar)?.slot };
+    toggle(bar).dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
+    await settle();
+    const inPanel = { bar: !!toggle(bar), panel: toggle(panel)?.getAttribute('aria-label'), mode: provider.filterMode };
+    toggle(panel).dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
+    await settle();
+    return { alone, withPanel, inPanel, back: { bar: !!toggle(bar), mode: provider.filterMode }, reports };
+  })()`) as Record<string, unknown>;
+  expect(r['alone']).toBe(false);
+  expect(r['withPanel']).toEqual({ bar: 'View as filter panel', slot: 'actions' });
+  expect(r['inPanel']).toEqual({ bar: false, panel: 'Filter in the toolbars instead', mode: 'panel' });
+  expect(r['back']).toEqual({ bar: true, mode: 'toolbars' });
   expect(r['reports']).toEqual([]);
 });
 

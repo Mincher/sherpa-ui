@@ -21,4 +21,9 @@
 -->
 <template id="default">
   <slot data-accepts="any"></slot>
+  <!-- THE MODE'S OWN BUTTON, cloned into each bar's and panel's `actions`
+       slot — the page's switch, not a component's. TRAP T-the-mode-switch-is-the-pages-own -->
+  <template class="mode-toggle-tpl">
+    <sherpa-button slot="actions" data-type="icon" data-size="sm" data-filter-mode></sherpa-button>
+  </template>
 </template>

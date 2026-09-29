@@ -257,7 +257,7 @@ test('Reset all clears every scope, Group and Sort too, and applies', async ({ p
       picked: applied ? Object.values(applied[1].readings).flatMap((f) =>
         Object.values(f).flatMap((x) => x.picked ?? [])) : null,
       organise: heard.filter(([n]) => n !== 'quick-filter-change'),
-      looks: ['.reset-all', '.to-toolbars'].map((s) => sr.querySelector(s).getAttribute('data-look')),
+      looks: ['.reset-all'].map((s) => sr.querySelector(s).getAttribute('data-look')),
     };
   })()`) as { before: string[]; after: number; picked: string[] | null;
     organise: unknown[]; looks: (string | null)[] };
@@ -269,7 +269,7 @@ test('Reset all clears every scope, Group and Sort too, and applies', async ({ p
     ['group-change', { scope: 'data', field: null }],
     ['sort-change', { scope: 'data', field: null, direction: 'asc' }],
   ]);
-  expect(r.looks).toEqual([null, null]);
+  expect(r.looks).toEqual([null]);
 });
 
 /**

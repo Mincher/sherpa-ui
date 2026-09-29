@@ -116,7 +116,6 @@ export class SherpaProvider extends SherpaElement {
     // From the START: a child can ask before this has rendered.
     this.addEventListener('context-request', this.#onRequest);
     // Any bar's Configure, and the panel's own close and reopen.
-    this.addEventListener('filter-configure', this.#onConfigure);
     this.addEventListener('filter-panel-close', this.#onPanelClose);
     this.addEventListener('filter-panel-reopen', this.#onPanelReopen);
   }
@@ -150,6 +149,46 @@ export class SherpaProvider extends SherpaElement {
     // `open()` refuses below its breakpoint, so follow what it actually did.
     this.#mode = mode === 'panel' && panels.some((p) => p.hasAttribute('open')) ? 'panel' : 'toolbars';
     for (const bar of this.#bars()) this.#stepBack(bar);
+    this.#giveToggles();
+  }
+
+  /**
+   * THE MODE'S OWN BUTTONS — the page's, so no bar or panel carries a switch
+   * for a mode it knows nothing of (Will, TODO 37). A bar has "View as filter
+   * panel" in its `actions` slot while a panel is on the page — taken out
+   * while the panel answers; a panel has "Filter in the toolbars instead".
+   * TRAP T-the-mode-switch-is-the-pages-own
+   */
+  #giveToggles(): void {
+    const panels = this.#panels();
+    for (const bar of this.#bars()) {
+      let toggle = this.#toggles.get(bar);
+      if (!panels.length) {
+        toggle?.remove();
+        this.#toggles.delete(bar);
+        continue;
+      }
+      toggle ??= this.#toggle(bar, 'sidebar', 'View as filter panel');
+      if (this.#mode === 'panel') toggle.remove();
+      else if (!toggle.isConnected) bar.append(toggle);
+    }
+    for (const panel of panels) {
+      if (!this.#toggles.has(panel)) this.#toggle(panel, 'fullscreen-exit', 'Filter in the toolbars instead');
+    }
+  }
+
+  /** The mode buttons, by the bar or panel each sits in. */
+  #toggles = new Map<Element, HTMLElement>();
+
+  /** One mode button, from the template, into its host's `actions` slot. */
+  #toggle(host: Element, icon: string, label: string): HTMLElement {
+    const button = this.clone('template.mode-toggle-tpl') as HTMLElement;
+    button.dataset['iconStart'] = icon;
+    button.setAttribute('aria-label', label);
+    button.addEventListener('button-click', this.#onConfigure);
+    host.append(button);
+    this.#toggles.set(host, button);
+    return button;
   }
 
   /** A bar steps back while a panel answers for it. TRAP T-panel-mode-hides-what-the-panel-answers */
@@ -167,7 +206,7 @@ export class SherpaProvider extends SherpaElement {
     return [...this.#asked.keys()].filter((el) => 'drawScope' in el && !('drawScopes' in el));
   }
 
-  /** Any bar's Configure button: the reader switches the mode. */
+  /** A mode button: the reader switches the mode. */
   #onConfigure = (): void => {
     this.#wanted = this.#mode === 'panel' ? 'toolbars' : 'panel';
     this.#setMode(this.#wanted);
@@ -179,6 +218,7 @@ export class SherpaProvider extends SherpaElement {
   #onPanelClose = (event: Event): void => {
     this.#mode = 'toolbars';
     for (const bar of this.#bars()) this.#stepBack(bar);
+    this.#giveToggles();
     // A narrow window, or a page with no filters, is not a choice.
     const reason = (event as CustomEvent<{ reason?: string }>).detail?.reason;
     if (reason === 'width' || reason === 'page' || this.#wanted === 'toolbars') return;
@@ -544,6 +584,7 @@ export class SherpaProvider extends SherpaElement {
     if (asks.shape === 'scope') {
       if ('drawScopes' in el && this.#wanted === 'panel' && this.#mode !== 'panel') this.#setMode('panel');
       else if (!('drawScopes' in el)) this.#stepBack(el);
+      this.#giveToggles();
     }
   }
 

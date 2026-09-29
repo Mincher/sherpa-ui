@@ -68,14 +68,6 @@ anatomy:
                 data-type: icon
                 data-icon-start: arrow-rotate-left
                 aria-label: Reset all filters
-            - el: sherpa-button
-              class: act
-              attrs:
-                data-size: sm
-                data-act: configure
-                data-type: icon
-                data-icon-start: sidebar
-                aria-label: View as filter panel
             - el: span
               class: act-divider
               attrs:
@@ -318,10 +310,6 @@ events:
     composed: true
   - $type: event
     name: ai-filter-request
-    bubbles: true
-    composed: true
-  - $type: event
-    name: filter-configure
     bubbles: true
     composed: true
   - $type: event

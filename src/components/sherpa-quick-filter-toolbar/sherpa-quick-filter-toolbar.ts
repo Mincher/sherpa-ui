@@ -1619,9 +1619,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         // RESETS, not announces: a host cannot reach chips it did not stamp.
         this.clearAll();
         break;
-      case 'configure':
-        this.emit('filter-configure');
-        break;
       case 'refresh':
         this.emit('data-refresh');
         break;

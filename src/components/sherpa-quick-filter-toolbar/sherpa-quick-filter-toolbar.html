@@ -53,7 +53,6 @@
     filter-add           — the Add chip's body was clicked
     filter-clear         — the undo button: every chip reset
     ai-filter-request    — the AI button
-    filter-configure     — the sliders button
     data-refresh         — the refresh button
     view-save            — Save (view type)
     view-favorite        — the ★ toggled. detail: { favourite: boolean }
@@ -106,12 +105,6 @@
       <sherpa-button class="act" data-size="sm" data-act="clear" data-type="icon"
                      data-icon-start="arrow-rotate-left"
                      aria-label="Reset all filters"></sherpa-button>
-      <!-- The SIDEBAR glyph, the same one the panel's own switch wears — the
-           pair is one control seen from two sides. -->
-      <sherpa-button class="act" data-size="sm" data-act="configure" data-type="icon"
-                     data-icon-start="sidebar"
-                     aria-label="View as filter panel"></sherpa-button>
-
       <span class="act-divider" aria-hidden="true"></span>
 
       <!-- THE VIEW GROUP — Figma's "Frame 1": three controls snapped into one

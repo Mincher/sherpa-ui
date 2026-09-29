@@ -8518,8 +8518,9 @@ the menu.
 
 ### T-panel-mode-hides-what-the-panel-answers
 
-`sherpa-quick-filter-toolbar[data-panel-mode]` hides AI, Reset, the panel
-toggle and Add filter. A bar that is not `data-type="view"` goes entirely.
+`sherpa-quick-filter-toolbar[data-panel-mode]` hides AI, Reset and Add filter;
+the provider takes its own panel switch out of the bar. A bar that is not
+`data-type="view"` goes entirely.
 
 A filter PANEL carries all of them: Add filter is each scope's own action, and
 a component bar has nothing left once the panel draws its fields. Two of each
@@ -13471,6 +13472,28 @@ Since 2026-09-29 a page is a DEFINITION the router hands the provider
 - Site: `test/e2e/reforged-provider.spec.ts`
 - Site: `examples/index.html`
 
+### T-the-mode-switch-is-the-pages-own
+
+**No bar and no panel carries the switch between toolbars and panel — the
+page does.** Will, 2026-09-25 (TODO 37): *"toggling to the filter panel, from
+the filter toolbar, should be a custom button added to the actions slot."* A
+component that switches a mode it knows nothing of is not agnostic.
+
+The provider owns the mode, so it gives the buttons: "View as filter panel" in
+each bar's `actions` slot while a panel is on the page (a bar with no panel
+has none), taken OUT while the panel answers — the panel carries its own way
+back — and "Filter in the toolbars instead" in the panel's `actions` slot,
+which forwards into its header. Both come from the provider's template and
+answer to the provider alone; `filter-configure` is gone. A host's buttons in
+the bar's slot fold away at narrow widths, as the old switch did.
+
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.html`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
+- Site: `test/e2e/reforged-provider.spec.ts`
+- Site: `test/e2e/reforged-filter-panel-mode.spec.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+
 ### T-the-provider-owns-the-panel-mode
 
 **TOOLBARS or PANEL is the provider's, for every page in its subtree.** TODO
@@ -13480,8 +13503,8 @@ area."* Before it, Records wired it by hand — `togglePanel`, `setPanelMode`,
 the session key, and the close, reopen and restore listeners — and the
 Dashboard's Configure button did nothing.
 
-The provider hears any bar's `filter-configure` and the panel's
-`filter-panel-close` and `filter-panel-reopen`. It opens or shuts every panel
+The provider hears its OWN mode buttons (`T-the-mode-switch-is-the-pages-own`)
+and the panel's `filter-panel-close` and `filter-panel-reopen`. It opens or shuts every panel
 that asked, and steps every bar that asked back (`data-panel-mode`) — a bar
 on a page loaded later takes the mode when it asks. The APP keeps the choice:
 it sets `provider.filterMode` from its session, and saves each

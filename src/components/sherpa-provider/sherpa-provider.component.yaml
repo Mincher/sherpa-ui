@@ -14,10 +14,19 @@ $description: the data layer, over a SUBTREE of the page.
 templates:
   - default
 anatomy:
-  root:
-    slot: ""
-    attrs:
-      data-accepts: any
+  roots:
+    - slot: ""
+      attrs:
+        data-accepts: any
+    - el: template
+      class: mode-toggle-tpl
+      children:
+        - el: sherpa-button
+          attrs:
+            slot: actions
+            data-type: icon
+            data-size: sm
+            data-filter-mode: ""
 capabilities:
   - $type: capability
     api: js-property-mirror

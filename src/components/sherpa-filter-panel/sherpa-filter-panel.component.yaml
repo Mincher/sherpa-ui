@@ -43,15 +43,9 @@ anatomy:
                 data-size: sm
                 data-icon-start: arrow-rotate-left
                 aria-label: Reset all filters
-            - el: sherpa-button
-              class: to-toolbars
-              part: to-toolbars
+            - slot: actions
               attrs:
                 slot: actions
-                data-type: icon
-                data-size: sm
-                data-icon-start: fullscreen-exit
-                aria-label: Filter in the toolbars instead
             - el: sherpa-input-text
               class: search
               part: search

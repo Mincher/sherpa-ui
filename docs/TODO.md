@@ -29,7 +29,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 2a | 103 | Rows with no key get one from the data layer — Sherpa's own, never sent out | foundation |
 | 🚧 | 3 | 38 | One model, one builder, one owner — what is left | refactor |
 | ✅ | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
-| ⬜ | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
+| 🚧 | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | ⬜ | 5a | 113 | EXPLORE — state first, then render, in every component; a skeleton while the first render waits | explore |
 | | | | **C — Contained bugs** | |
 | ❓ | 6 | 112 | An Equals row in Advanced will not open its value list | bug |
@@ -334,7 +334,7 @@ say what `SherpaElement` gives every component (a state field and one draw).
 Keep each component standing alone — Will's rule, `docs/COMPONENT-API-AUDIT.md`
 §5: it extends `SherpaElement` and nothing else, no family base class.
 
-### `[ ]` 37 — Components are AGNOSTIC of the data, and of the example app
+### `[~]` 37 — Components are AGNOSTIC of the data, and of the example app
 
 Will, 2026-09-25:
 
@@ -346,10 +346,13 @@ Will, 2026-09-25:
 > it's own codebase and have it use the sherpa-ui framework library as a
 > dependency.
 
-1. **Find the bespoke logic.** Still true, measured 2026-09-26: both toggles
-   are built in — `data-act="configure"` in the toolbar (emits
-   `filter-configure`) and `.to-toolbars` in the panel. The toolbar's `actions`
-   slot is not used for it.
+1. ✅ **Find the bespoke logic — done 2026-09-29 for the mode toggles.** Both
+   were built in — `data-act="configure"` in the toolbar (emitting
+   `filter-configure`) and `.to-toolbars` in the panel. The provider, which
+   owns the mode, now puts its own button in each bar's `actions` slot while a
+   panel is on the page, and in the panel's new `actions` slot; both built-in
+   buttons and `filter-configure` are gone
+   (`T-the-mode-switch-is-the-pages-own`).
 2. **Components take PARAMETERS, never data shapes.** A component should not
    know a field is called `openTickets`. Measure what still does. The grid's
    heading values are set by the PAGE (`data-column-values`, in `records.js`)

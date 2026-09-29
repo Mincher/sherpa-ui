@@ -259,7 +259,8 @@ test('the action cluster is built in, and data-type=view adds the save group', a
         add: shown('.add-btn'),
         ai: shown('[data-act="ai"]'),
         clear: shown('[data-act="clear"]'),
-        configure: shown('[data-act="configure"]'),
+        // The panel switch is the PAGE's, never the bar's own. TRAP T-the-mode-switch-is-the-pages-own
+        configure: !!sr.querySelector('[data-act="configure"]'),
         refresh: shown('[data-act="refresh"]'),
         overflow: shown('[data-act="overflow"]'),
         favourite: shown('[data-act="favourite"]'),
@@ -270,12 +271,12 @@ test('the action cluster is built in, and data-type=view adds the save group', a
     return { data: await probe(), view: await probe('view') };
   });
 
-  // Both types carry the shared run: Add · AI · undo · configure · | · refresh.
+  // Both types carry the shared run: Add · AI · undo · | · refresh.
   for (const t of [r.data, r.view]) {
     expect(t.add).toBe(true);
     expect(t.ai).toBe(true);
     expect(t.clear).toBe(true);
-    expect(t.configure).toBe(true);
+    expect(t.configure).toBe(false);
     expect(t.refresh).toBe(true);
     // The ⋮ is NOT among them. It is where the cluster folds when the bar runs
     // out of room, and an empty one on a bar wide enough to show everything is a
@@ -298,7 +299,7 @@ test('every cluster button fires the event Figma names for it', async ({ page })
 
     const seen: string[] = [];
     for (const ev of [
-      'ai-filter-request', 'filter-configure', 'data-refresh', 'filter-overflow',
+      'ai-filter-request', 'data-refresh', 'filter-overflow',
       'view-save', 'view-menu-click', 'filter-add',
     ]) el.addEventListener(ev, () => seen.push(ev));
 
@@ -307,7 +308,7 @@ test('every cluster button fires the event Figma names for it', async ({ page })
       (btn.shadowRoot!.querySelector('button') as HTMLElement).click();
       await (window as unknown as { __settled: () => Promise<void> }).__settled();
     };
-    for (const a of ['ai', 'configure', 'refresh', 'overflow', 'save', 'view-menu']) await press(a);
+    for (const a of ['ai', 'refresh', 'overflow', 'save', 'view-menu']) await press(a);
 
     // ADD is deliberately absent from this list. It is a single button now, and
     // clicking it OPENS THE MENU rather than announcing anything — `filter-add`
@@ -318,7 +319,7 @@ test('every cluster button fires the event Figma names for it', async ({ page })
   });
 
   expect(r.seen).toEqual([
-    'ai-filter-request', 'filter-configure', 'data-refresh', 'filter-overflow',
+    'ai-filter-request', 'data-refresh', 'filter-overflow',
     'view-save', 'view-menu-click',
   ]);
   // A plain button, announcing itself as a menu trigger.
@@ -376,7 +377,8 @@ test('the bar\'s icon actions are named for what they do', async ({ page }) => {
     await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'view' });
     await window.__settled();
   });
-  for (const name of ['Suggest filters', 'Reset all filters', 'View as filter panel',
+  // "View as filter panel" is the PAGE's button now. TRAP T-the-mode-switch-is-the-pages-own
+  for (const name of ['Suggest filters', 'Reset all filters',
     'Add to Favorites', 'Save view options']) {
     await expect(page.getByRole('button', { name, exact: true })).toHaveCount(1);
   }
@@ -1455,7 +1457,8 @@ test('the bar folds its actions, then its chips, and never wraps', async ({ page
       };
     };
 
-    return { wide: await at(1400), mid: await at(900), narrow: await at(620) };
+    // 860, not 900: the bar lost its panel switch (the page's now), so it folds later.
+    return { wide: await at(1400), mid: await at(860), narrow: await at(620) };
   });
 
   // WIDE: nothing folded, and the ⋮ is absent — an empty overflow button is one

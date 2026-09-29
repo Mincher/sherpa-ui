@@ -25,8 +25,8 @@ test('panel mode survives a reload, in both directions', async ({ page }) => {
     !document.querySelector('#filter-panel')!.hasAttribute('open'));
 
   await page.evaluate(() => {
-    document.querySelector('#context-root sherpa-quick-filter-toolbar')!
-      .dispatchEvent(new CustomEvent('filter-configure', { bubbles: true, composed: true }));
+    document.querySelector('#context-root sherpa-quick-filter-toolbar [data-filter-mode]')!
+      .dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
   });
   await page.waitForTimeout(800);
   const opened = await page.evaluate(() => ({
@@ -51,13 +51,13 @@ test('panel mode survives a reload, in both directions', async ({ page }) => {
     };
   });
 
-  /* And CLOSING it is remembered too. The door is `.to-toolbars` — the sidebar
-     button in the panel's header, which reports `filter-panel-close`. The
-     header itself has no X: an X says "gone", and this switches back to the
-     toolbars. */
+  /* And CLOSING it is remembered too. The door is the page's own mode button
+     in the panel's header (the provider's). The header itself has no X: an X
+     says "gone", and this switches back to the toolbars.
+     TRAP T-the-mode-switch-is-the-pages-own */
   await page.evaluate(() => {
-    const p = document.querySelector('#filter-panel') as HTMLElement & { shadowRoot: ShadowRoot };
-    p.shadowRoot.querySelector('.to-toolbars')!
+    const p = document.querySelector('#filter-panel') as HTMLElement;
+    p.querySelector('[data-filter-mode]')!
       .dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
   });
   await page.waitForTimeout(400);
@@ -105,8 +105,8 @@ for (const width of [1280, 1600, 1920]) {
     const shut = await tile();
 
     await page.evaluate(() => {
-      document.querySelector('#context-root sherpa-quick-filter-toolbar')!
-        .dispatchEvent(new CustomEvent('filter-configure', { bubbles: true, composed: true }));
+      document.querySelector('#context-root sherpa-quick-filter-toolbar [data-filter-mode]')!
+        .dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
     });
     await expect.poll(() => page.evaluate(() =>
       document.querySelector('#filter-panel')!.hasAttribute('open'))).toBe(true);

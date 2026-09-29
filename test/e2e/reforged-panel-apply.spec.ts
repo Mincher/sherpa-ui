@@ -19,8 +19,8 @@ async function openPanel(page: Page, before?: () => Promise<void>): Promise<numb
   await expect.poll(() => total(page)).toBeGreaterThan(0);
   await before?.();
   const all = await total(page);
-  await page.evaluate(() => document.querySelector('#context-root sherpa-quick-filter-toolbar')!
-    .dispatchEvent(new CustomEvent('filter-configure', { bubbles: true, composed: true })));
+  await page.evaluate(() => document.querySelector('#context-root sherpa-quick-filter-toolbar [data-filter-mode]')!
+    .dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true })));
   await expect(page.locator('#filter-panel .field').first()).toBeVisible();
   return all;
 }
@@ -123,8 +123,8 @@ test('adding and applying a second Advanced filter keeps the first', async ({ pa
   await expect.poll(total).toBe(10);
 
   // And the PANEL, opened now, shows Owner on its rows.
-  await page.evaluate(() => document.querySelector('#context-root sherpa-quick-filter-toolbar')!
-    .dispatchEvent(new CustomEvent('filter-configure', { bubbles: true, composed: true })));
+  await page.evaluate(() => document.querySelector('#context-root sherpa-quick-filter-toolbar [data-filter-mode]')!
+    .dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true })));
   await expect.poll(() => page.evaluate(() => {
     const box = document.querySelector('#filter-panel')!.shadowRoot!.querySelector('.field[data-field="owner"]');
     return (box?.querySelector('sherpa-menu') as HTMLElement & { conditions?: unknown[] } | null)?.conditions ?? null;

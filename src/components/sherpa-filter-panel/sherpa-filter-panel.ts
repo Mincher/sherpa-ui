@@ -194,7 +194,6 @@ export class SherpaFilterPanel extends SherpaElement {
   #built: { menu: HTMLElement; held: Held; chip?: HTMLElement } | null = null;
 
   override onRender(): void {
-    this.$('.to-toolbars')?.addEventListener('button-click', this.#onClose);
     this.$('.reset-all')?.addEventListener('button-click', this.#onResetAll);
     this.$('.search')?.addEventListener('input', this.#onSearch);
     // ONE listener for every drawn control — a field added later needs no wiring.
@@ -1383,10 +1382,6 @@ export class SherpaFilterPanel extends SherpaElement {
   };
 
   /** The header's switch back to the toolbars. */
-  #onClose = (): void => {
-    this.hide('reader');
-  };
-
   /* ── The breakpoint ───────────────────────────────────────────────── */
 
   /** The width query the panel needs, or null without matchMedia. */

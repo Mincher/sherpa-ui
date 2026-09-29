@@ -117,13 +117,15 @@
 :host([data-collapse="2"]) .view-group,
 :host([data-collapse="3"]) .view-group { display: none; }
 
-/* Step 2 — refresh and configure. */
+/* Step 2 — refresh, and the host's own buttons. */
 @container qf-bar (max-width: 760px) {
   .act[data-act="refresh"],
-  .act[data-act="configure"] { display: none; }
+  slot[name="actions"]::slotted(*) { display: none; }
 }
-:host([data-collapse="2"]) :is(.act[data-act="refresh"], .act[data-act="configure"]),
-:host([data-collapse="3"]) :is(.act[data-act="refresh"], .act[data-act="configure"]) {
+:host([data-collapse="2"]) .act[data-act="refresh"],
+:host([data-collapse="3"]) .act[data-act="refresh"],
+:host([data-collapse="2"]) slot[name="actions"]::slotted(*),
+:host([data-collapse="3"]) slot[name="actions"]::slotted(*) {
   display: none;
 }
 
@@ -179,12 +181,12 @@
 }
 
 /* PANEL MODE. A filter PANEL is answering for this bar, so the controls it
-   also carries are hidden here: AI, Reset and the panel toggle itself, plus
-   Filters, which is now the scope's own action. Two of each is two answers
+   also carries are hidden here: AI, Reset, and Filters, which is now the
+   scope's own action. Two of each is two answers
    to one question. A DATA bar has nothing left, so it goes entirely.
    TRAP T-panel-mode-hides-what-the-panel-answers */
 :host([data-panel-mode]) :is([data-act="ai"], [data-act="clear"],
-                             [data-act="configure"], .add-btn) { display: none; }
+                             .add-btn) { display: none; }
 :host([data-panel-mode]:not([data-type="view"])) { display: none; }
 
 /* The PANEL draws every filter of this scope instead, so the bar keeps only

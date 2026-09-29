@@ -66,13 +66,9 @@
                      data-type="icon" data-size="sm"
                      data-icon-start="arrow-rotate-left"
                      aria-label="Reset all filters"></sherpa-button>
-      <!-- NOT the shared close: this button switches back to the TOOLBARS, and
-           an X says "gone". Fullscreen exit, for now: it goes back to the
-           toolbar, not to a sidebar. Will, 2026-09-26. -->
-      <sherpa-button slot="actions" class="to-toolbars" part="to-toolbars"
-                     data-type="icon" data-size="sm"
-                     data-icon-start="fullscreen-exit"
-                     aria-label="Filter in the toolbars instead"></sherpa-button>
+      <!-- The HOST's buttons — the page's switch back to the toolbars is one.
+           TRAP T-the-mode-switch-is-the-pages-own -->
+      <slot name="actions" slot="actions"></slot>
       <!-- ONE search, across every value in the panel. The metadata row is the
            header's own bottom row, so it spans the full width. -->
       <sherpa-input-text slot="metadata" class="search" part="search"

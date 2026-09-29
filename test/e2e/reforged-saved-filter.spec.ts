@@ -630,8 +630,8 @@ test('in panel mode the Records page saves a whole scope, and deletes it from th
     !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
   await page.evaluate(() => {
     localStorage.removeItem('sherpa:filters:customers');
-    document.querySelector('#context-root sherpa-quick-filter-toolbar')!
-      .dispatchEvent(new CustomEvent('filter-configure', { bubbles: true, composed: true }));
+    document.querySelector('#context-root sherpa-quick-filter-toolbar [data-filter-mode]')!
+      .dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
   });
   const inPanel = (sel: string) => page.evaluate((s) =>
     document.querySelector('#filter-panel')!.shadowRoot!.querySelector(s), sel).then((n) => !!n);
