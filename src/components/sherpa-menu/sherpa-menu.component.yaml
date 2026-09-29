@@ -10,7 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-menu
-$description: a floating list of choices or actions.
+$description: a floating list of choices or actions. Figma "Menu" SET (1156:29240), Type axis List | Calendar.
 element:
   $type: element
   tag: div
@@ -479,8 +479,8 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: >-
-      read/write JS properties (values, templateId, mode, conditions, op, conditionValue, open,
-      dirty). See $extensions.sherpa.jsProps.
+      read/write JS properties (values, mode, conditions, op, conditionValue, open, dirty). See
+      $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
     description: >-
@@ -606,7 +606,6 @@ $extensions:
       - $type: method
         name: close
         args: ""
-        description: TRAP T-one-verb-proxies-to-the-native-one
       - $type: method
         name: toggle
         args: "trigger?: HTMLElement"
@@ -649,9 +648,6 @@ $extensions:
         type: string[]
         description: the checked row values (read/write)
         access: read-write
-      - name: templateId
-        type: string
-        access: read
       - name: mode
         type: string
         access: read-write

@@ -10,7 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-radial-chart
-$description: a donut / pie for part-to-whole data.
+$description: a donut / pie / arc for part-to-whole data.
 element:
   $type: element
   tag: figure

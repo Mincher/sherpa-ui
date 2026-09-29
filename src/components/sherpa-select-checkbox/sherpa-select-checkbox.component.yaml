@@ -10,7 +10,9 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-select-checkbox
-$description: a labelled checkbox.
+$description: >-
+  a labelled checkbox. Native <input type="checkbox">; the visible box is drawn in CSS off :checked
+  / :indeterminate / :disabled.
 element:
   $type: element
   tag: div

@@ -10,7 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-prompt-composer
-$description: an AI prompt input.
+$description: an AI prompt input. Auto-growing textarea. Enter submits; Shift+Enter inserts a newline.
 element:
   $type: element
   tag: form

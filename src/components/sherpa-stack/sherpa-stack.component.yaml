@@ -10,7 +10,9 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-stack
-$description: a run of controls in one direction, with a token gap.
+$description: >-
+  a run of controls in one direction, with a token gap. A layout surface: no chrome, fill, border or
+  padding. Bordered box = sherpa-container; two-zone action strip = sherpa-toolbar.
 element:
   $type: element
   tag: div

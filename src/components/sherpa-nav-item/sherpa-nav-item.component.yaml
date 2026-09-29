@@ -10,7 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-nav-item
-$description: a single navigation row.
+$description: a single navigation row. Figma "Navigation Item" (32:43138).
 element:
   $type: element
   tag: button
@@ -254,7 +254,7 @@ states:
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (templateId, current, expanded). See $extensions.sherpa.jsProps.
+    description: read/write JS properties (current, expanded). See $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
     description: callable from a view definition's state block (highlight). See $extensions.sherpa.methods.
@@ -326,9 +326,6 @@ $extensions:
       - hasIndicator
       - isMaximised
     jsProps:
-      - name: templateId
-        type: string
-        access: read
       - name: current
         type: string
         access: read-write

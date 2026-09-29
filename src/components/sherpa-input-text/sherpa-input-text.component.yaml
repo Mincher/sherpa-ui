@@ -11,9 +11,8 @@ $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-input-text
 $description: >-
-  A text field. The default style is the full form-field molecule (label + description + control +
-  validation + helper); the minimal style is a bare inline field (optional label beside the control)
-  for dense placements like a grid column filter (data-borderless drops the border).
+  a labelled text field. Templates: default (label + description + control + message), multiline
+  (auto-growing <textarea>), minimal (bare inline field, no description/message).
 element:
   $type: element
   tag: label
@@ -345,7 +344,7 @@ states:
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (templateId, value). See $extensions.sherpa.jsProps.
+    description: read/write JS properties (value). See $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
     description: >-
@@ -410,7 +409,6 @@ $extensions:
       - $type: method
         name: formResetCallback
         args: ""
-        description: Write the message; CSS paints the state. */
       - $type: method
         name: formStateRestoreCallback
         args: "state: string"
@@ -498,9 +496,6 @@ $extensions:
               Input Field with the height restriction removed — field fills width & grows height,
               value top-aligned/wrapping
     jsProps:
-      - name: templateId
-        type: string
-        access: read
       - name: value
         type: string
         access: read-write

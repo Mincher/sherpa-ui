@@ -10,9 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-slider
-$description: >-
-  A single-value range control: a label over a row of [track][editable value input]. Type a value in
-  the field or drag the track; the two stay in sync.
+$description: a single-value range control wrapping a native <input type=range>.
 element:
   $type: element
   tag: div

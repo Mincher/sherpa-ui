@@ -11,8 +11,8 @@ $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-calendar
 $description: >-
-  A date picker with day / month / year views. The header label zooms out day→month→year; picking a
-  month/year zooms back in.
+  a date picker with day / month / year views. The header label zooms OUT (day → month → year);
+  picking one zooms back IN.
 element:
   $type: element
   tag: div
@@ -344,7 +344,9 @@ $extensions:
       - $type: method
         name: today
         args: ""
-        description: Jump to today and select it.
+        description: >-
+          Jump to today and select it. — an embedded calendar's Today button lives in the HOST's
+          footer, so it needs a public door.
     category: container
     variantAxes:
       - name: Type

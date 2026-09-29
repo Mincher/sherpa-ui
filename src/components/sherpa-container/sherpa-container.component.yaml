@@ -10,7 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-container
-$description: the base card surface.
+$description: "base surface card: header / content / footer slots, plus loading / empty / error states."
 element:
   $type: element
   tag: header

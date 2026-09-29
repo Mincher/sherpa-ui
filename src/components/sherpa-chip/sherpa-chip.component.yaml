@@ -78,10 +78,6 @@ states:
   - $type: state
     name: disabled
     selector: ":host([disabled])"
-capabilities:
-  - $type: capability
-    api: js-property-mirror
-    description: read/write JS properties (templateId). See $extensions.sherpa.jsProps.
 events:
   - $type: event
     name: chip-remove
@@ -105,7 +101,3 @@ $extensions:
   sherpa:
     figmaName: Chip
     category: control
-    jsProps:
-      - name: templateId
-        type: string
-        access: read

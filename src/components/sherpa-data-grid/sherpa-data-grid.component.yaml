@@ -10,11 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-data-grid
-$description: >-
-  A sortable, selectable data grid assembled from flat columns. A leading Selection column (pinned
-  left) and a trailing Actions column (pinned right) bracket the data columns; a toolbar and a
-  data-variant quick-filter toolbar sit above, pagination below. Rows are visual — each column is a
-  vertical stack of cells, so the grid stays flat.
+$description: a sortable, filterable, groupable data table.
 element:
   $type: element
   tag: div
@@ -478,15 +474,23 @@ $extensions:
       - $type: method
         name: setColumnFilter
         args: "field: string, clause: unknown[] | null"
-        description: Set one column's filter from OUTSIDE. TRAP
+        description: >-
+          Set one column's filter from OUTSIDE. — SILENT, and takes the clause
+          `column-filter-change` reports.
       - $type: method
         name: supersedeColumns
         args: "readings: Readonly<Record<string, FieldReading>>, appliedAt?: string"
-        description: supersedeColumns(readings, appliedAt) — the fields a HIGHER scope holds,
+        description: >-
+          supersedeColumns(readings, appliedAt) — the fields a HIGHER scope holds, each with the
+          answer it holds there. A named heading SHOWS that answer, read-only, with the superseded
+          look and tip, so no contradicting pick can be made in it; a heading not named is released.
+          Will, 2026-09-26.
       - $type: method
         name: columnClause
         args: "field: string"
-        description: One column's filter as a ready FilterClause, or null. TRAP
+        description: >-
+          One column's filter as a ready FilterClause, or null. — a SUSPENDED clause is returned
+          too.
       - $type: method
         name: columnReading
         args: "field: string"
@@ -494,7 +498,9 @@ $extensions:
       - $type: method
         name: drawReading
         args: "field: string, reading: FieldReading"
-        description: drawReading(field, reading) — a bound source tells this grid one column's
+        description: >-
+          drawReading(field, reading) — a bound source tells this grid one column's answer, whoever
+          set it: a chip, the panel, a restored Query. SILENT.
       - $type: method
         name: columnLabel
         args: "field: string"
@@ -502,23 +508,25 @@ $extensions:
       - $type: method
         name: suspendColumnFilter
         args: "field: string, suspended = true"
-        description: Suspend or resume, never lose. TRAP T-grid-suspend-is-not-clear.
+        description: Suspend or resume, never lose. .
       - $type: method
         name: openColumnFilter
         args: "field: string, anchor?: HTMLElement"
-        description: Open one column's filter menu, anchored where the caller says. TRAP
+        description: Open one column's filter menu, anchored where the caller says. — one menu serves both.
       - $type: method
         name: clearColumnFilter
         args: "field?: string"
-        description: Drop one column's heading filter from OUTSIDE; nothing drops them all.
+        description: Drop one column's heading filter from OUTSIDE; nothing drops them all. .
       - $type: method
         name: actionsFor
         args: "count: number"
-        description: "The actions for the CURRENT selection — one row: all; two or more: only"
+        description: "The actions for the CURRENT selection — one row: all; two or more: only `multi`. ."
       - $type: method
         name: select
         args: "keys: readonly string[]"
-        description: Select exactly these rows, by key. TRAP T-grid-select-remembers-wanted-keys
+        description: >-
+          Select exactly these rows, by key. — REPLACES, ignores unmatched keys, and is SILENT.
+          `select([])` clears.
       - $type: method
         name: clearSelection
         args: ""

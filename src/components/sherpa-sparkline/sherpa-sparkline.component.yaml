@@ -10,7 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-sparkline
-$description: a compact inline trend chart.
+$description: a compact inline trend chart (line area or bars).
 element:
   $type: element
   tag: div

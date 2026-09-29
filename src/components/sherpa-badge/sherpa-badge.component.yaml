@@ -10,7 +10,9 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-badge
-$description: A small count, Figma's Indicator (atom) at Type=count. The consumer pins its Style mode.
+$description: >-
+  a small count: Figma "Indicator (atom)/Type=count". The consumer pins its Style mode, as Figma
+  pins the instance.
 element:
   $type: element
   tag: span

@@ -10,7 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-calendar-cell
-$description: one day, month or year in a calendar's grid.
+$description: one day, month or year in a calendar's grid. Figma "Calendar Cell" (276:16589).
 element:
   $type: element
   tag: button

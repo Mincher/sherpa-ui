@@ -10,7 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-provider
-$description: the data layer, over a REGION of the page.
+$description: the data layer, over a SUBTREE of the page.
 templates:
   - default
 anatomy:
@@ -21,12 +21,12 @@ anatomy:
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (filterMode, view, elements). See $extensions.sherpa.jsProps.
+    description: read/write JS properties (filterMode, view). See $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
     description: >-
-      callable from a view definition's state block (populate, provide, open, close, saveView,
-      export, import). See $extensions.sherpa.methods.
+      callable from a view definition's state block (provide, open, close, saveView, export,
+      import). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: filter-mode-change
@@ -44,16 +44,19 @@ $extensions:
   sherpa:
     methods:
       - $type: method
-        name: populate
-        args: "defs: unknown[]"
-      - $type: method
         name: provide
         args: "options: ProvideOptions"
-        description: Give this subtree its sources — and its Views. Every component already
+        description: >-
+          Give this subtree its sources — and its Views. Every component already asking is answered
+          again: a Context that swaps its source swaps it for everything in it. Settles once the
+          kept Query, or the start View, is on.
       - $type: method
         name: open
         args: "definition: PageDefinition, options: OpenOptions"
-        description: "Set up a page from its DEFINITION: its source over the app's store, every"
+        description: >-
+          Set up a page from its DEFINITION: its source over the app's store, every filter bar drawn
+          from its scope — the View chip, the fields it holds, what it may add — and all of it
+          provided. The source, or undefined for a page with no data.
       - $type: method
         name: close
         args: ""
@@ -63,22 +66,24 @@ $extensions:
       - $type: method
         name: saveView
         args: "label: string"
-        description: Save what is on screen as a new View of the open page, and put it on the
+        description: Save what is on screen as a new View of the open page, and put it on the View chip.
       - $type: method
         name: export
         args: ""
-        description: This subtree's whole state as JSON — each source's question, and the View
+        description: >-
+          This subtree's whole state as JSON — each source's question, and the View on screen — for
+          a link, another service or an agent.
       - $type: method
         name: import
         args: "state: ProviderState"
-        description: "Take a state back in, exactly: each named source's question, and its View"
+        description: >-
+          Take a state back in, exactly: each named source's question, and its View — shown on the
+          View chip, and known to the pick listener, so the next pick of the old View is heard. A
+          source it does not name is left as it is.
     jsProps:
       - name: filterMode
         type: string
         access: read-write
       - name: view
-        type: string
-        access: read
-      - name: elements
         type: string
         access: read

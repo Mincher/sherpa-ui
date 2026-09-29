@@ -10,7 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-quick-filter
-$description: a toggleable filter chip for toolbars.
+$description: a filter chip used in toolbars. Figma "Filter Chip (atom)" (154:3904), State axis simple | menu.
 element:
   $type: element
   tag: div
@@ -362,11 +362,17 @@ $extensions:
       - $type: method
         name: toggleMenu
         args: "anchor?: HTMLElement"
-        description: Open or shut this chip's menu — what a HOST calls to drive the chip from
+        description: >-
+          Open or shut this chip's menu — what a HOST calls to drive the chip from outside. It
+          routes through the same light-dismiss-safe path a caret click takes, so an external opener
+          cannot get the stuck-open behaviour back.
       - $type: method
         name: refresh
         args: ""
-        description: refresh() — redraw the FACE (value, tip, badge, condition) off the menu,
+        description: >-
+          refresh() — redraw the FACE (value, tip, badge, condition) off the menu, once its rows
+          have filled. For a host that set the rows SILENTLY: a steer fires no menu event, so the
+          chip never heard it and kept a stale face. Never on or off — that stays the host's.
     category: control
     variantAxes:
       - name: State

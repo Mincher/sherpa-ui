@@ -10,7 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-pagination
-$description: page navigation.
+$description: results-size + page navigation control.
 element:
   $type: element
   tag: div

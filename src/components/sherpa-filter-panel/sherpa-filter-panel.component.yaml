@@ -258,11 +258,16 @@ $extensions:
       - $type: method
         name: setFieldReading
         args: "id: string, reading: FieldReading"
-        description: "setFieldReading(id, reading) — steer ONE field with a whole reading: what"
+        description: >-
+          setFieldReading(id, reading) — steer ONE field with a whole reading: what another control
+          set while the panel shows. SILENT, like every steer, and it is that field's last Apply
+          now, so Discard keeps it. A field drawn as one chip — Group, Sort, a date — is left alone.
       - $type: method
         name: drawReading
         args: "field: string, reading: FieldReading, scope: string"
-        description: drawReading(field, reading, scope) — a bound source tells the OPEN panel one
+        description: >-
+          drawReading(field, reading, scope) — a bound source tells the OPEN panel one field's
+          answer, in the scope that holds it. Shut, it draws nothing: it is refilled when it opens.
       - $type: method
         name: open
         args: ""
@@ -270,14 +275,20 @@ $extensions:
       - $type: method
         name: close
         args: "reason: 'reader' | 'width' | 'page' = 'reader'"
-        description: EVERY close reports, and says why. The width path called this directly
+        description: >-
+          EVERY close reports, and says why. The width path called this directly while only the
+          header button emitted, so a narrow window left the panel gone and the host still in panel
+          mode — no toolbars, no panel.
       - $type: method
         name: toggle
         args: ""
       - $type: method
         name: drawScopes
         args: "scopes: readonly ScopeDescription[]"
-        description: The source draws each scope WHOLE — what it holds and answers, what it may
+        description: >-
+          The source draws each scope WHOLE — what it holds and answers, what it may add, how its
+          rows are arranged. A saved filter is one question answered yes or no; a date is one chip,
+          its menu a calendar.
     jsProps:
       - name: values
         type: string

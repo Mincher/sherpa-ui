@@ -10,7 +10,9 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-overlay-panel
-$description: a NON-modal floating panel on native <dialog>.
+$description: >-
+  a NON-modal floating panel on native <dialog>. show(), not showModal(): no backdrop, no focus
+  trap, no ESC — the page behind stays interactive.
 element:
   $type: element
   tag: div
@@ -192,7 +194,9 @@ $extensions:
       - $type: method
         name: hide
         args: ""
-        description: Close it. `hide()` is Sherpa's verb across every component that opens;
+        description: >-
+          Close it. `hide()` is Sherpa's verb across every component that opens; `close()` is kept
+          as an alias because this wraps a native <dialog>, whose own method is close().
       - $type: method
         name: close
         args: ""

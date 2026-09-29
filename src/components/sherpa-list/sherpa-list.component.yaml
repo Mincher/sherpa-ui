@@ -10,7 +10,9 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-list
-$description: a vertical container for a homogeneous row list.
+$description: >-
+  a vertical row container. Slot sherpa-list-item children, or call populate() to stamp rows from
+  the .row-tpl prototype.
 element:
   $type: element
   tag: ul

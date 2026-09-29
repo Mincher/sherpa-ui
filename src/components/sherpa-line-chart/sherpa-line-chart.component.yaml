@@ -10,7 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-line-chart
-$description: a line/area chart over one or more numeric series.
+$description: a line/area chart over a numeric series.
 element:
   $type: element
   tag: figure
@@ -211,7 +211,7 @@ $extensions:
       - $type: method
         name: setSeriesHidden
         args: "index: number, hidden = true"
-        description: Show or hide one series. Hiding re-renders — the axis rescales to what is
+        description: Show or hide one series. Hiding re-renders — the axis rescales to what is left.
     category: chart
     variantAxes:
       - name: Orientation

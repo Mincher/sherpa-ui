@@ -11,10 +11,8 @@ $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-grid-cell
 $description: >-
-  The single atomic cell of the Data Grid. Type sets the role — body cell, column header, filter
-  (secondary-header), or group (row-spanning accordion). Content is a slot the designer/consumer
-  fills — alignment, emphasis, and numeric formatting are content choices, not variants. A leading
-  checkbox and header/filter actions are boolean toggles.
+  the single atomic cell of the Data Grid (Figma 926:34253). One anatomy for all roles; CSS shows
+  the parts each role uses.
 element:
   $type: element
   tag: div

@@ -10,7 +10,9 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-toast
-$description: a transient notification.
+$description: >-
+  a transient notification (Figma Toast 27:750). The card is NEUTRAL, not status-filled; only the
+  icon badge carries the hue.
 element:
   $type: element
   tag: div

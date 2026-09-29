@@ -11,8 +11,8 @@ $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-transfer-list
 $description: >-
-  A two-pane shuttle (available ↔ selected): each row is a composed sherpa-list-item with a leading
-  selection control; the shuttle controls are composed sherpa-button instances.
+  a two-pane shuttle (available ↔ selected). Pool comes from populate([{ value, label, selected?
+  }]); `selected` picks the pane.
 element:
   $type: element
   tag: div

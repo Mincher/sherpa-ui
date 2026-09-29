@@ -241,7 +241,7 @@ going away: `<noun>-remove` (a request) and `dismiss()` + `<noun>-dismiss`
 
 | step | builds | lines out |
 |---|---|---:|
-| A1 | the tools: the spec generator reads TypeScript, keeps whole summaries, refreshes `$description` | — (specs become true) |
+| A1 ✅ | the tools: the spec generator reads TypeScript, keeps whole summaries, refreshes `$description` — 47 specs corrected (`T-a-spec-reads-the-class-by-its-parser`) | — (specs become true) |
 | A2 | the base: `emit()` sends `{}`; `renderList` folds into `renderItems`; every clone through `clone()`; the `pathFind` copies go | ~60 |
 | A3 | charts: delete the hide doors and the repeated legend event; `chart-parts.ts`; the line chart's SVG template; `static css` as a list, with the axes sheet and the segments sheet | ~180 |
 | A4 | open and close: `disclosure.ts`; the event names; the provider's call in the same commit | ~120 |

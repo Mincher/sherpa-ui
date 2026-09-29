@@ -10,9 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-container-header
-$description: >-
-  The header bar for a container's `header` slot: an optional drag handle + icon, a title + optional
-  description, and a trailing actions region with an optional collapse toggle and dismiss button.
+$description: the header bar for a container's `header` slot.
 element:
   $type: element
   tag: header

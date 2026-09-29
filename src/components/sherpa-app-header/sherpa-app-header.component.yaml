@@ -10,10 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-app-header
-$description: >-
-  The top application header bar: two rows (a back button + breadcrumb trail with trailing app
-  actions, then a view icon + title with an embedded quick-filter toolbar) over a thin loading bar.
-  Sits in the view frame's header region.
+$description: the top application header bar.
 element:
   $type: element
   tag: header

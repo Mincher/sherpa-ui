@@ -10,7 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-tooltip
-$description: a hover/focus tooltip that wraps a trigger.
+$description: a hover/focus tooltip wrapping a trigger.
 element:
   $type: element
   tag: span

@@ -10,7 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-toolbar
-$description: a horizontal control strip.
+$description: "a horizontal control strip: leading zone hugs, trailing grows."
 element:
   $type: element
   tag: div

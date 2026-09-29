@@ -10,7 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-chart-legend
-$description: a legend for charts.
+$description: a legend for charts. Figma "Chart Legend" (1098:37846).
 element:
   $type: element
   tag: div

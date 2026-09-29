@@ -370,7 +370,10 @@ $extensions:
       - $type: method
         name: drawReading
         args: "field: string, reading: FieldReading"
-        description: drawReading(field, reading) — a bound source tells this bar one field's
+        description: >-
+          drawReading(field, reading) — a bound source tells this bar one field's answer, whoever
+          set it. SILENT, as every steer is. A SUPERSEDED chip keeps the reader's own picks for when
+          the view lets go.
       - $type: method
         name: supersede
         args: "ids: readonly string[], appliedAt?: string"
@@ -378,15 +381,22 @@ $extensions:
       - $type: method
         name: unpackFilter
         args: "id: string"
-        description: Put a saved filter's answer back into its fields — UNPACK. A field not on
+        description: >-
+          Put a saved filter's answer back into its fields — UNPACK. A field not on the bar comes
+          onto it from the Add list; each holds its part again, and the saved chip goes OFF. ONE
+          event, and the promise settles after it.
       - $type: method
         name: deleteFilter
         args: "id: string"
-        description: "Delete a saved filter: gone from the bar AND the Add list, and"
+        description: >-
+          Delete a saved filter: gone from the bar AND the Add list, and `filter-delete` tells the
+          host to forget it.
       - $type: method
         name: packFilter
         args: "saved: SavedFilter & { id: string }"
-        description: Show a SAVED filter in place of the fields it was made from — PACK. Its chip
+        description: >-
+          Show a SAVED filter in place of the fields it was made from — PACK. Its chip comes ON and
+          those fields clear, in ONE event. The host calls it once it has stored the filter.
       - $type: method
         name: report
         args: ""
@@ -398,15 +408,24 @@ $extensions:
       - $type: method
         name: addFilters
         args: "ids: readonly string[]"
-        description: addFilters([...ids]) — put offered filters on this bar, as the Add button
+        description: >-
+          addFilters([...ids]) — put offered filters on this bar, as the Add button does. The one
+          door, so a panel's Add and the bar's own Add cannot drift.
       - $type: method
         name: removeFilter
         args: "id: string"
-        description: removeFilter(id) — take one filter off this bar, as its menu's Remove
+        description: >-
+          removeFilter(id) — take one filter off this bar, as its menu's Remove does. The other half
+          of `addFilters`, for the same reason: a filter panel draws its own Remove and cannot reach
+          this shadow root.
       - $type: method
         name: drawScope
         args: "slice: ScopeQuery"
-        description: "drawScope(slice) — draw what a scope holds, SILENTLY: its chips, each"
+        description: >-
+          drawScope(slice) — draw what a scope holds, SILENTLY: its chips, each field's answer and
+          each saved filter on or off. A reload, a trip away and back. Nothing is reported — the
+          source already holds all of it. A PERSISTENT chip (the View) is the host's to set, so it
+          is left alone.
       - $type: method
         name: allowFields
         args: "list: AllowList"
@@ -414,7 +433,10 @@ $extensions:
       - $type: method
         name: clearAll
         args: "options: { organise?: boolean } = {}"
-        description: TRAP T-clear-all-resets-organise-too — organise chips included; three events
+        description: >-
+          — organise chips included; three events afterwards. `{ organise: false }` keeps Group and
+          Sort, which a VIEW sets itself. A field chip is EMPTIED — ticks, op, typing and rows — and
+          redrawn, so an off chip never still names what it held.
       - $type: method
         name: organise
         args: "def: OrganiseDef"

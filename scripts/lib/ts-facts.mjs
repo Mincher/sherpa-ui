@@ -13,7 +13,9 @@
  * - parseObserved — The `static override observed` list, as names.
  * - expandArrayConst — Read a module-level `const NAME = ['a', 'b'] as const;` back into its strings.
  * - parsePropKinds — The declared `kind` of each prop, from `static override props`.
+ * - parseClassApi — The component class's public methods and properties, read by TypeScript's own parser.
  */
+import ts from 'typescript';
 
 /**
  * The `static override observed` list, as names.
@@ -107,4 +109,79 @@ export function parsePropKinds(ts) {
     else if (/\bto\s*:/.test(fields)) out[name] = 'content';
   }
   return out;
+}
+
+
+/** The base class's contract with a subclass — never a component's own API. */
+const LIFECYCLE = new Set([
+  'onRender', 'onConnect', 'onDisconnect', 'onChange', 'renderData', 'constructor',
+  'connectedCallback', 'disconnectedCallback', 'attributeChangedCallback', 'adoptedCallback',
+]);
+
+/** A JSDoc's first paragraph, on one line, without its TRAP citations. */
+function summaryOf(node, sf) {
+  const doc = ts.getJSDocCommentsAndTags(node).filter(ts.isJSDoc).at(-1);
+  const text = doc ? ts.getTextOfJSDocComment(doc.comment) ?? '' : '';
+  return text.split(/\n\s*\n/)[0]
+    .replace(/TRAP\s+T-[\w-]+/g, '')
+    .replace(/\s+/g, ' ')
+    .replace(/[\s·—-]+$/, '')
+    .trim();
+}
+
+/** Is this member the class's own, and public? */
+function isPublic(member) {
+  if (!member.name || ts.isPrivateIdentifier(member.name)) return false;
+  const mods = ts.getCombinedModifierFlags(member);
+  return !(mods & (ts.ModifierFlags.Private | ts.ModifierFlags.Protected | ts.ModifierFlags.Static));
+}
+
+/**
+ * The component class's public methods and properties, read by TypeScript's
+ * own parser — so a member of a TYPE or an object literal in the same file is
+ * never mistaken for one of the class's, and a summary is its whole first
+ * paragraph. The class is the one `customElements.define()` registers.
+ * TRAP T-a-spec-reads-the-class-by-its-parser
+ *
+ * @returns {{ methods: object[], props: object[] }}
+ */
+export function parseClassApi(src) {
+  const sf = ts.createSourceFile('c.ts', src ?? '', ts.ScriptTarget.Latest, true);
+  const registered = /customElements\.define\(\s*['"][^'"]+['"]\s*,\s*([A-Za-z_$][\w$]*)/.exec(src ?? '')?.[1];
+  const classes = sf.statements.filter(ts.isClassDeclaration);
+  const cls = classes.find((c) => c.name?.text === registered) ?? classes[0];
+  const methods = [];
+  const props = new Map();
+  const prop = (name) => props.get(name) ?? props.set(name, { name, type: 'string', get: false, set: false }).get(name);
+  for (const member of cls?.members ?? []) {
+    const name = member.name && !ts.isPrivateIdentifier(member.name) ? member.name.getText(sf) : '';
+    // `static config` names are read-write properties the BASE class defines. TRAP T-configuration-is-not-data
+    if (ts.isPropertyDeclaration(member) && name === 'config' && member.initializer
+      && ts.isObjectLiteralExpression(member.initializer)) {
+      for (const p of member.initializer.properties) {
+        if (!p.name) continue;
+        const entry = prop(p.name.getText(sf));
+        entry.get = entry.set = true;
+      }
+      continue;
+    }
+    if (!isPublic(member)) continue;
+    if (ts.isMethodDeclaration(member) && !LIFECYCLE.has(name) && !methods.some((m) => m.name === name)) {
+      const description = summaryOf(member, sf);
+      methods.push({
+        $type: 'method',
+        name,
+        // as written, so a caller knows the argument ORDER
+        args: member.parameters.map((p) => p.getText(sf)).join(', ').replace(/\s+/g, ' ').trim(),
+        ...(description ? { description } : {}),
+      });
+    } else if (ts.isGetAccessorDeclaration(member)) prop(name).get = true;
+    else if (ts.isSetAccessorDeclaration(member)) prop(name).set = true;
+  }
+  return {
+    methods,
+    props: [...props.values()].map(({ get, set, ...p }) => ({
+      ...p, access: get && set ? 'read-write' : get ? 'read' : 'write',
+    })),
+  };
 }

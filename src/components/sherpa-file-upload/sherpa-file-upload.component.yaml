@@ -10,9 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-file-upload
-$description: >-
-  A drag-and-drop file selection zone: a drop area, a details block (max size + allowed types), a
-  file list (name + size + status + remove), and an actions row (clear-all + upload).
+$description: drag-and-drop file zone; "browse" triggers the hidden <input type="file">.
 element:
   $type: element
   tag: div

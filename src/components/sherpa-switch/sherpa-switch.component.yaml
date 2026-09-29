@@ -10,7 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-switch
-$description: an immediate binary toggle for settings and preferences.
+$description: an immediate binary toggle.
 element:
   $type: element
   tag: label

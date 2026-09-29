@@ -13643,7 +13643,7 @@ A `declare columns: GridColumn[]` line gives TypeScript the type and emits
 nothing: a real class field would shadow the base's accessor. The spec
 generator reads `static config` for the component's properties.
 
-- Site: `scripts/generate-component-spec.mjs`
+- Site: `scripts/lib/ts-facts.mjs`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `examples/definitions/dashboard-views.js`
@@ -14206,3 +14206,26 @@ by the page's id, so `saveView(label)` needs nothing from the page.
 - Site: `src/data.ts`
 - Site: `examples/contexts/records.js`
 - Site: `examples/index.html`
+
+### T-a-spec-reads-the-class-by-its-parser
+
+**A spec's methods and properties are read by TypeScript's own parser**, from
+the class `customElements.define()` registers — never by a pattern over the
+file. The API audit (TODO 86, 2026-09-29) found what the patterns did:
+
+- **False members.** A two-space `name(args):` line inside a `type` literal
+  read as a method, and any `get name()` in the file as a property — so the
+  provider's spec listed `populate` and `elements`, and the button's `show` and
+  `hide`. None of them exist, and the MCP's `component_api` advertised them.
+- **Cut summaries.** Only a comment's first line was kept: 32 of 67 method
+  descriptions stopped mid-sentence.
+- **A description that never refreshed.** `$description` was carried from the
+  last spec before the source's header was read, so the provider's still said
+  "region" after the rename to "subtree". The header's first paragraph now
+  wins.
+
+A `protected` member (`templateId`) is the base class's contract with a
+subclass, not public API, so it is left out.
+
+- Site: `scripts/lib/ts-facts.mjs`
+- Site: `test/unit/class-api.test.mjs`

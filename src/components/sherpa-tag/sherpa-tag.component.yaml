@@ -10,7 +10,9 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-tag
-$description: A compact labelled pill. Neutral by default; colour comes from the [data-status] cascade.
+$description: >-
+  a compact labelled pill. Colour comes from the [data-status] cascade on an ancestor, not from the
+  tag itself.
 element:
   $type: element
   tag: span
@@ -85,10 +87,6 @@ states:
   - $type: state
     name: not-icon
     selector: ":host(:not([data-icon]))"
-capabilities:
-  - $type: capability
-    api: js-property-mirror
-    description: read/write JS properties (templateId). See $extensions.sherpa.jsProps.
 events:
   - $type: event
     name: tag-remove
@@ -120,7 +118,3 @@ $extensions:
     booleanProps:
       - hasIcon
       - hasDismiss
-    jsProps:
-      - name: templateId
-        type: string
-        access: read

@@ -10,7 +10,9 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-accordion
-$description: a disclosure card built on native <details> / <summary>.
+$description: >-
+  a disclosure card built on native <details> / <summary>. State IS the native `open` attribute —
+  there is no data-expanded.
 element:
   $type: element
   tag: details

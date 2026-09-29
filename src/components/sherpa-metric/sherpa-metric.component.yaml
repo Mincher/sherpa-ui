@@ -10,7 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-metric
-$description: a KPI tile.
+$description: a KPI tile with an optional embedded sparkline.
 element:
   $type: element
   tag: p

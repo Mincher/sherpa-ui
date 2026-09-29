@@ -32,7 +32,7 @@ import { specToDef } from './lib/component-to-def.mjs';
 import { compileDef } from './lib/generation/compile-def.mjs';
 import { authoredCss, extractBindings, parseStates } from './lib/css-reader.mjs';
 import { parseTemplates, htmlDiff } from './lib/html-structure.mjs';
-import { parseObserved, parsePropKinds } from './lib/ts-facts.mjs';
+import { parseClassApi, parseObserved, parsePropKinds } from './lib/ts-facts.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const C = join(ROOT, 'src', 'components');
@@ -140,14 +140,14 @@ function htmlComment(html) {
   const m = /<!--([\s\S]*?)-->/.exec(html);
   return m ? m[1] : '';
 }
+/** The `sherpa-x — …` header's whole first paragraph, on one line. */
 function commentDescription(comment, name) {
-  // first non-empty line that isn't the `sherpa-x — …` header keeps the em-dash tail
-  const lines = comment.split('\n').map((l) => l.trim()).filter(Boolean);
-  for (const l of lines) {
-    const m = new RegExp(`^${name}\\s*[—-]\\s*(.+)$`).exec(l);
-    if (m) return m[1].trim();
-  }
-  return '';
+  const lines = comment.split('\n').map((l) => l.trim());
+  const at = lines.findIndex((l) => new RegExp(`^${name}\\s*[—-]\\s*\\S`).test(l));
+  if (at < 0) return '';
+  const end = lines.findIndex((l, i) => i > at && !l);
+  return lines.slice(at, end < 0 ? undefined : end).join(' ')
+    .replace(new RegExp(`^${name}\\s*[—-]\\s*`), '').replace(/\s+/g, ' ').trim();
 }
 
 /** Parse the `Public API:` block → attrName → { type, values?, default?, native? }. */
@@ -443,74 +443,20 @@ function findTokenPath(group, short, sherpaVar) {
   return null;
 }
 
-// ══ TS: getters/setters + JSDoc @prop → jsProps + capabilities ══════════════════
+// ══ TS: the class's own members, plus JSDoc @prop → jsProps + capabilities ═══════
 function parseTsJsProps(ts) {
   const props = new Map();
   for (const m of ts.matchAll(/@prop\s*(?:\{([^}]*)\})?\s*([\w$]+)\s*[—-]?\s*([^\n*]*)/g)) {
     const [, type, name, desc] = m;
     props.set(name, { name, type: (type || '').trim() || 'string', description: desc.trim() });
   }
-  // `static config` names are read-write properties the BASE class defines.
-  // TRAP T-configuration-is-not-data
-  const config = ts.match(/static\s+(?:override\s+)?config\s*=\s*\{([^}]*)\}/)?.[1] ?? '';
-  const configured = [...config.matchAll(/([\w$]+)\s*:/g)].map((m) => m[1]);
-  // getters/setters give the access level
-  const getters = new Set([...configured, ...[...ts.matchAll(/\bget\s+([\w$]+)\s*\(/g)].map((m) => m[1])]);
-  const setters = new Set([...configured, ...[...ts.matchAll(/\bset\s+([\w$]+)\s*\(/g)].map((m) => m[1])]);
-  for (const name of new Set([...getters, ...setters])) {
-    if (name.startsWith('#')) continue;
-    if (!props.has(name)) props.set(name, { name, type: 'string' });
-    const p = props.get(name);
-    p.access = getters.has(name) && setters.has(name) ? 'read-write' : getters.has(name) ? 'read' : 'write';
-  }
+  for (const p of parseClassApi(ts).props) props.set(p.name, { ...props.get(p.name), ...p, type: props.get(p.name)?.type ?? p.type });
   return [...props.values()];
 }
 
-/**
- * Public methods — the vocabulary a saved view, a preset or an agent may use on
- * this component. Excluded: `#private`, lifecycle (the base class's contract
- * with the subclass), get/set (already jsProps), and static.
- */
-const LIFECYCLE = new Set([
-  'onRender', 'onConnect', 'onDisconnect', 'onChange', 'renderData', 'constructor',
-  'connectedCallback', 'disconnectedCallback', 'attributeChangedCallback', 'adoptedCallback',
-]);
-
+/** Public methods — the vocabulary a saved view, a preset or an agent may use on this component. */
 function parseTsMethods(ts) {
-  const out = [];
-  // Two-space class-body indentation is the anchor — it keeps nested functions
-  // and object literals out.
-  const re = /\n {2}(?:override\s+)?(?:async\s+)?([a-z][\w$]*)\s*\(([^)]*)\)\s*:/g;
-  for (const m of ts.matchAll(re)) {
-    const [, name, args] = m;
-    if (LIFECYCLE.has(name)) continue;
-    if (out.some((x) => x.name === name)) continue;
-
-    // The JSDoc block immediately above — its first prose line is the summary.
-    // Check it really is ADJACENT, or every method inherits the file header.
-    const before = ts.slice(0, m.index + 1);
-    const lastClose = before.lastIndexOf('*/');
-    const doc = lastClose >= 0 && before.slice(lastClose + 2).trim() === ''
-      ? /\/\*\*([\s\S]*)$/.exec(before.slice(before.lastIndexOf('/**', lastClose), lastClose))
-      : null;
-    let description = '';
-    if (doc) {
-      const line = doc[1]
-        .split('\n')
-        .map((l) => l.replace(/^\s*\*ledge?/, '').replace(/^\s*\*\s?/, '').trim())
-        .find((l) => l && !l.startsWith('@'));
-      if (line) description = line;
-    }
-
-    out.push({
-      $type: 'method',
-      name,
-      // as written, so a caller knows the argument ORDER
-      args: args.replace(/\s+/g, ' ').trim(),
-      ...(description ? { description } : {}),
-    });
-  }
-  return out;
+  return parseClassApi(ts).methods;
 }
 
 
@@ -548,7 +494,8 @@ function generateSpec(name) {
 
   // ── $description ──────────────────────────────────────────────────────────────
   // The existing spec's curated value wins; preserving it keeps specs stable.
-  const description = existing.$description || commentDescription(comment, name) || `the ${name.replace('sherpa-', '')} component.`;
+  // The SOURCE's header wins, so a description cannot rot in the spec.
+  const description = commentDescription(comment, name) || existing.$description || `the ${name.replace('sherpa-', '')} component.`;
 
   // ── anatomy + templates ───────────────────────────────────────────────────────
   let anatomy = null;

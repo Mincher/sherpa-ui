@@ -125,7 +125,6 @@ $extensions:
       - $type: method
         name: close
         args: ""
-        description: TRAP T-one-verb-proxies-to-the-native-one
       - $type: method
         name: toggle
         args: "trigger?: HTMLElement"

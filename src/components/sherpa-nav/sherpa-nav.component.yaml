@@ -10,9 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-nav
-$description: >-
-  The primary application navigation rail: a fixed header (brand row + search + quick items) over a
-  scrolling area of grouped sections, plus a footer. Rows are composed sherpa-nav-item elements.
+$description: the primary application navigation rail.
 element:
   $type: element
   tag: nav

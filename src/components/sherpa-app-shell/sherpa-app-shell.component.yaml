@@ -10,7 +10,9 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-app-shell
-$description: the boilerplate frame for an app or a view.
+$description: >-
+  the frame for an app and its Contexts. Nav and header are PRE-COMPOSED; slotting your own replaces
+  the default.
 element:
   $type: element
   tag: div

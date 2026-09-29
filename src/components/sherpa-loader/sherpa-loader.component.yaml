@@ -10,7 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-loader
-$description: an animated loading indicator.
+$description: an animated loading indicator. CSS-only off data-* on the host.
 element:
   $type: element
   tag: div

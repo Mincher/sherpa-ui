@@ -10,9 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-list-item
-$description: >-
-  A single list row (atom of List / Menu / Nav): a leading region (drag handle, expand toggle,
-  selection control, icon), a title + description, and a trailing slot.
+$description: a single list row.
 element:
   $type: element
   tag: div

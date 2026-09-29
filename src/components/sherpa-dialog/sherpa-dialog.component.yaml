@@ -10,7 +10,9 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-dialog
-$description: a modal surface built on the native <dialog> element.
+$description: >-
+  a modal surface on the native <dialog>: modality, ::backdrop, focus trap, ESC and top-layer come
+  from showModal().
 element:
   $type: element
   tag: dialog
@@ -121,7 +123,9 @@ $extensions:
       - $type: method
         name: hide
         args: ""
-        description: Close it. `hide()` is Sherpa's verb across every component that opens;
+        description: >-
+          Close it. `hide()` is Sherpa's verb across every component that opens; `close()` is kept
+          as an alias because this wraps a native <dialog>, whose own method is close().
       - $type: method
         name: close
         args: ""

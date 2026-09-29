@@ -10,7 +10,9 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-button
-$description: the primary interactive trigger.
+$description: >-
+  the primary interactive trigger. Two templates, selected by data-type: default (icon(s) + label),
+  icon (square).
 element:
   $type: element
   tag: button
@@ -211,13 +213,6 @@ states:
   - $type: state
     name: focus-visible
     selector: .trigger:focus-visible
-capabilities:
-  - $type: capability
-    api: js-property-mirror
-    description: read/write JS properties (templateId). See $extensions.sherpa.jsProps.
-  - $type: capability
-    api: js-methods
-    description: callable from a view definition's state block (show, hide). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: button-click
@@ -237,13 +232,6 @@ tokens:
 $extensions:
   sherpa:
     figmaName: Button
-    methods:
-      - $type: method
-        name: show
-        args: "trigger?: HTMLElement"
-      - $type: method
-        name: hide
-        args: ""
     category: control
     variantAxes:
       - name: Type
@@ -264,7 +252,3 @@ $extensions:
         type="submit"> / <button type="submit">), use this Button styled Saturated-Default in
         appearance (the Saturated look-tier, default state). i.e. the submit action of a form is a
         Saturated-Default Button, not a separate component.
-    jsProps:
-      - name: templateId
-        type: string
-        access: read

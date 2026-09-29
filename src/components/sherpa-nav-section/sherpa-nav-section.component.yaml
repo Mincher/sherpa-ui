@@ -10,7 +10,7 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-nav-section
-$description: a labelled group of nav items in a settings-style panel.
+$description: a section label + rule that groups items in a nav rail.
 element:
   $type: element
   tag: span

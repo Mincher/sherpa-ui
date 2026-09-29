@@ -10,7 +10,10 @@
 $schema: ../../../schemas/component.v1.json
 $type: component
 $name: sherpa-gauge-chart
-$description: a half-circle gauge for a single 0–100 value.
+$description: >-
+  a half-circle gauge for a single value on a 0–100 scale. Each band is a closed SVG path, as
+  sherpa-radial-chart draws a slice, so the band itself is the hover target and the hollow centre is
+  not hittable.
 element:
   $type: element
   tag: figure
