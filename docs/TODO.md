@@ -59,7 +59,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 22 | 97 | A filter panel section shows an icon for WHAT it filters: View, Chart, Grid, Form, List | quick |
 | ❓ | 22a | 115 | Figma: a chart glyph and a table glyph for the panel's section icons | figma |
 | ✅ | 23 | 60 | Once applied, a chip's badge shows the number of results | feature |
-| ⬜ | 24 | 49 | A preset Advanced chip shows its conditions, read-only | feature |
+| ❓ | 24 | 49 | A preset Advanced chip shows its conditions, read-only | feature |
 | ⬜ | 25 | 50 | A reader's saved Advanced chip shows its conditions, editable | feature |
 | ⬜ | 26 | 48 | A child menu opens on hover or click of its row | feature |
 | ⬜ | 27 | 21c | A condition's matches must ALL highlight | feature |
@@ -1122,6 +1122,19 @@ Advanced switch (done 2026-09-26).
 **Later, with 50:** Success is the look of a WORKING condition. Warning and
 critical are free for a condition that cannot apply, or a filter that failed
 to — Will's note, not asked for yet.
+
+**❓ Will, 2026-09-29 — one choice.** A preset can span TWO fields (a test's
+"Risky and unowned": Health < 60 AND Owner = Unassigned), but a menu's
+condition rows belong to ONE field — they have no field column. The shipped
+presets on Records are one field each.
+
+- **A (my pick): one read-only menu, a heading per field** with its rows
+  under it (`HEALTH` · Less than 60; `OWNER` · Equals Unassigned). One click
+  shows the whole preset. The menu learns to stack a field's rows under a
+  heading — 50 then edits the same shape.
+- **B: the `fx` menu lists the preset's fields**, and a field's row drills
+  into that field's own rows (as the Filters menu drills into a chip). No new
+  menu shape; two clicks to read a two-field preset.
 
 ### `[ ]` 50 — A reader's saved Advanced chip shows its conditions, editable
 
