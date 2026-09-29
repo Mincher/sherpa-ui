@@ -196,8 +196,8 @@ test('the condition button flags the field and hides its chips', async ({ page }
   expect(r['on']).toEqual({ flag: true, pressed: 'true', chips: 'none' });
   expect(r['off']).toEqual({ flag: false, pressed: 'false', chips: 'flex' });
   expect(r['heard']).toEqual([
-    { scope: 'data', id: 'owner', mode: 'custom' },
-    { scope: 'data', id: 'owner', mode: 'default' },
+    { scope: 'data', id: 'owner', mode: 'advanced' },
+    { scope: 'data', id: 'owner', mode: 'simple' },
   ]);
 });
 

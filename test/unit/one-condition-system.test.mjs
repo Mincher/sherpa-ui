@@ -34,7 +34,7 @@ const shape = (facts, reading) => {
 
 test('one tick is a DEFAULT condition: EQUALS X', () => {
   assert.deepEqual(shape(PLANS, { picked: ['Pro'] }), {
-    condition: 'default',
+    condition: 'simple',
     rows: [{ op: 'eq', picked: ['Pro'] }],
     clause: ['plan', 'eq', 'Pro'],
     badge: '',
@@ -43,13 +43,13 @@ test('one tick is a DEFAULT condition: EQUALS X', () => {
 
 test('several ticks in ONE field are EQUALS X OR EQUALS Y — `in`, still default', () => {
   const s = shape(PLANS, { picked: ['Pro', 'Free'] });
-  assert.equal(s.condition, 'default');
+  assert.equal(s.condition, 'simple');
   assert.deepEqual(s.clause, ['plan', 'in', ['Free', 'Pro']]);
 });
 
 test('a dragged RANGE is the field\'s own body answering — default, and `between`', () => {
   const s = shape(SEATS, { picked: ['500', '9'] });
-  assert.equal(s.condition, 'default');
+  assert.equal(s.condition, 'simple');
   assert.deepEqual(s.rows, [{ op: 'between', picked: ['500', '9'] }]);
   assert.deepEqual(s.clause, ['seats', 'between', [9, 500]]);
 });
@@ -58,7 +58,7 @@ test('a dragged RANGE is the field\'s own body answering — default, and `betwe
 
 test('a TYPED condition is custom', () => {
   const s = shape(PLANS, { op: 'contains', text: 'ro' });
-  assert.equal(s.condition, 'custom');
+  assert.equal(s.condition, 'advanced');
   assert.deepEqual(s.rows, [{ op: 'contains', text: 'ro' }]);
   assert.deepEqual(s.clause, ['plan', 'contains', 'ro']);
   assert.equal(s.badge, 'fx');
@@ -66,7 +66,7 @@ test('a TYPED condition is custom', () => {
 
 test('a NAMED op over ticks is custom — DOES NOT EQUAL is not a default', () => {
   const s = shape(PLANS, { op: 'ne', picked: ['Free'] });
-  assert.equal(s.condition, 'custom');
+  assert.equal(s.condition, 'advanced');
   assert.deepEqual(s.clause, ['plan', 'ne', 'Free']);
 });
 
@@ -77,7 +77,7 @@ test('a chain of rows is custom, and compiles with AND binding tighter', () => {
       { join: 'or', op: 'contains', text: 'Ent' },
     ],
   });
-  assert.equal(s.condition, 'custom');
+  assert.equal(s.condition, 'advanced');
   assert.deepEqual(s.clause, ['or', ['plan', 'eq', 'Pro'], ['plan', 'contains', 'Ent']]);
 });
 
@@ -108,6 +108,6 @@ test('the fx badge and the type AGREE on every shape', () => {
   ];
   for (const reading of readings) {
     const s = fieldState(PLANS, reading);
-    assert.equal(filterFace(s).badge === 'fx', s.condition === 'custom', JSON.stringify(reading));
+    assert.equal(filterFace(s).badge === 'fx', s.condition === 'advanced', JSON.stringify(reading));
   }
 });

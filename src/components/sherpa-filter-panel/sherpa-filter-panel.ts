@@ -453,7 +453,7 @@ export class SherpaFilterPanel extends SherpaElement {
           id: 'presets', label: 'Presets', options: presets.map((p) => ({
             value: p.id, label: p.label, selected: !!p.active,
             // A preset that carries its answer wears fx. TRAP T-a-saved-filter-is-its-readings
-            ...(kindOf(p) === 'custom' ? { kind: 'custom' as const } : {}),
+            ...(kindOf(p) === 'advanced' ? { kind: 'advanced' as const } : {}),
             ...(p.editable ? { editable: true } : {}),
           })),
           select: 'multiple',
@@ -1151,7 +1151,7 @@ export class SherpaFilterPanel extends SherpaElement {
     this.#syncAnswered(held);
     // The menu's own words, so one reader hears both. TRAP T-one-condition-system
     this.emit('filter-condition-change', {
-      scope: held.scope, id: held.def.id, mode: on ? 'custom' : 'default',
+      scope: held.scope, id: held.def.id, mode: on ? 'advanced' : 'simple',
     });
     this.#report(held);
   }
@@ -1174,7 +1174,7 @@ export class SherpaFilterPanel extends SherpaElement {
          panel's own button IS that opt-in reaching it.
          TRAP T-conditions-are-opt-in-per-field */
       if (on) held.menu.setAttribute('data-custom', '');
-      held.menu.dataset['mode'] = on ? 'custom' : 'default';
+      held.menu.dataset['mode'] = on ? 'advanced' : 'simple';
     }
   }
 

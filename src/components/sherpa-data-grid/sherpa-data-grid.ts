@@ -535,9 +535,9 @@ export class SherpaDataGrid extends SherpaElement {
          TRAP T-a-filter-answers-by-values-conditions-or-both */
       /* WHAT IT IS, from the ONE derivation the chips read.
          TRAP T-a-chip-knows-what-kind-it-is */
-      if (kindOf(col) === 'custom') {
+      if (kindOf(col) === 'advanced') {
         menu.setAttribute('data-custom-only', '');
-        menu.setAttribute('data-mode', 'custom');
+        menu.setAttribute('data-mode', 'advanced');
       }
       menu.setAttribute('data-search', '');
       /* THE SAME MENU a filter chip opens for this field, so it carries the
@@ -561,13 +561,13 @@ export class SherpaDataGrid extends SherpaElement {
       /* A held CONDITION opens on its rows, not on an unticked list that hides
          it — the same test the heading's `fx` reads. Will, 2026-09-26.
          TRAP T-a-heading-menu-opens-on-what-it-holds */
-      if (held && fieldState({ field: col.field }, this.#columnReading(held)).condition === 'custom') {
-        menu.setAttribute('data-mode', 'custom');
+      if (held && fieldState({ field: col.field }, this.#columnReading(held)).condition === 'advanced') {
+        menu.setAttribute('data-mode', 'advanced');
       }
       /* NO WALL OF ROWS. A custom-only column has no list to tick, so
          stamping its 240 values is work nobody sees.
          TRAP T-a-wall-of-values-is-not-a-filter */
-      if (kindOf(col) !== 'custom') this.#addColumnValues(menu, col.field, held);
+      if (kindOf(col) !== 'advanced') this.#addColumnValues(menu, col.field, held);
     }
 
     // Restore the held clause — the header is rebuilt per sort and keystroke,
@@ -807,7 +807,7 @@ export class SherpaDataGrid extends SherpaElement {
       /* A CHAIN is read WHOLE: every answered row, not row one alone, which
          applied `A` of `A or B`. TRAP T-a-heading-holds-a-whole-reading */
       const custom = menu as HTMLElement & { mode?: string; conditions?: FieldCondition[] };
-      const rows = custom.mode === 'custom'
+      const rows = custom.mode === 'advanced'
         ? (custom.conditions ?? []).filter((r) => (r.text ?? '').trim() || (r.picked ?? []).length)
         : [];
       if (rows.length > 1) {
@@ -1080,7 +1080,7 @@ export class SherpaDataGrid extends SherpaElement {
     /* THE SAME ANSWER a toolbar chip reads — `state.condition`, from this
        column's reading. TRAP T-one-condition-system */
     const condition = held ? fieldState({ field }, this.#columnReading(held)).condition : null;
-    if (condition === 'custom') chip.setAttribute('data-icon-start', CONDITION_ICON);
+    if (condition === 'advanced') chip.setAttribute('data-icon-start', CONDITION_ICON);
     else chip.removeAttribute('data-icon-start');
     /* THE COLOUR SAYS IT TOO. The glyph alone left the chip in the plain active
        purple, so a column answered by a condition looked like one answered by

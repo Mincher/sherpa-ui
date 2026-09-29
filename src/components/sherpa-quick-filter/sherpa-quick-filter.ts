@@ -56,7 +56,7 @@ export class SherpaQuickFilter extends SherpaElement {
     'data-superseded': { type: 'boolean', kind: 'style' },
     /* Written BY the chip: which condition it holds — `state.condition`.
        TRAP T-a-conditioned-chip-reads-as-success */
-    'data-condition': { type: 'enum', kind: 'style', values: ['default', 'custom'] },
+    'data-condition': { type: 'enum', kind: 'style', values: ['simple', 'advanced'] },
     /* Changed, not yet applied: the active edge, no fill. Written by the BAR —
        the one writer. TRAP T-a-pending-chip-has-no-fill */
     'data-pending': { type: 'boolean', kind: 'style' },
@@ -413,7 +413,7 @@ export class SherpaQuickFilter extends SherpaElement {
     /* A CONDITIONED chip has no ticks and is NOT empty — its rows are its
        answer. Its body toggles, like any other answered chip.
        TRAP T-toggling-a-conditioned-chip-suspends-its-condition */
-    if (menu && this.values.length === 0 && this.dataset['condition'] !== 'custom') {
+    if (menu && this.values.length === 0 && this.dataset['condition'] !== 'advanced') {
       // Opening a menu is not a toggle — the bar must not see one.
       event.stopPropagation();
       this.#openMenu();
@@ -513,7 +513,7 @@ export class SherpaQuickFilter extends SherpaElement {
     }
     const menu = this.menu;
     const state = this.#state((menu?.values ?? []) as string[]);
-    const custom = this.#given() || state.condition === 'custom';
+    const custom = this.#given() || state.condition === 'advanced';
     this.#syncCondition(state);
     /* …and the BADGE from the same state, at the same moment. It was drawn only
        once a reader touched the chip, so one answered by a typed condition from
@@ -552,7 +552,7 @@ export class SherpaQuickFilter extends SherpaElement {
    */
   #syncCondition(state: FilterState): void {
     if (!this.#answersForItself()) return;
-    const condition = this.#given() ? 'custom' : state.condition;
+    const condition = this.#given() ? 'advanced' : state.condition;
     if (condition) this.dataset['condition'] = condition;
     else this.removeAttribute('data-condition');
   }
@@ -560,7 +560,9 @@ export class SherpaQuickFilter extends SherpaElement {
   /** A CUSTOM chip with no filter menu holds a GIVEN answer — a saved filter.
    *  TRAP T-a-saved-filter-is-its-readings */
   #given(): boolean {
-    return this.dataset['kind'] === 'custom' && this.menu?.getAttribute('data-type') !== 'filter';
+    // The old word still heard. TRAP T-a-renamed-attribute-keeps-its-old-name
+    const kind = this.dataset['kind'];
+    return (kind === 'advanced' || kind === 'custom') && this.menu?.getAttribute('data-type') !== 'filter';
   }
 
   /** Drop a warning the menu answers once it has stamped. Never raises one. */
@@ -572,7 +574,7 @@ export class SherpaQuickFilter extends SherpaElement {
         // A later check has already answered; this one is stale.
         if (token !== this.#emptyCheck || !this.isConnected) return;
         const answered = (menu.values?.length ?? 0) > 0
-          || menu.mode === 'custom'
+          || menu.mode === 'advanced'
           || this.#hasTypedAnswer();
         if (answered) this.removeAttribute('data-empty');
       });
@@ -664,7 +666,7 @@ export class SherpaQuickFilter extends SherpaElement {
    * TRAP T-a-rebuilt-row-reads-empty-for-a-tick
    */
   #recheckConditions(): void {
-    if (this.menu?.mode !== 'custom') return;
+    if (this.menu?.mode !== 'advanced') return;
     if (this.#recheck != null) return;
     this.#recheck = requestAnimationFrame(() => {
       this.#recheck = null;
@@ -698,7 +700,7 @@ export class SherpaQuickFilter extends SherpaElement {
     const isFilter = menu?.getAttribute('data-type') === 'filter';
     /* CUSTOM mode answers with ROWS, so the whole chain goes in. The badge
        and the tip both come back from it. TRAP T-a-condition-badge-says-that-not-which */
-    const rows = isFilter && menu?.mode === 'custom'
+    const rows = isFilter && menu?.mode === 'advanced'
       ? (menu.conditions ?? []) : [];
     const all = [...this.querySelectorAll<HTMLInputElement>('[slot="menu"] input')]
       .filter((i) => !i.closest(NON_VALUE_ROWS))
@@ -768,7 +770,7 @@ export class SherpaQuickFilter extends SherpaElement {
     /* CUSTOM mode answers with ROWS, and ANY answered row is an answer. A
        chip reading row one only stayed off while three rows filtered.
        TRAP T-a-filter-menu-has-two-modes */
-    if (menu.mode === 'custom') {
+    if (menu.mode === 'advanced') {
       return (menu.conditions ?? []).some((row) =>
         (OP_TAKES[row.op] ?? 'list') === 'text'
           ? (row.text ?? '').trim() !== ''

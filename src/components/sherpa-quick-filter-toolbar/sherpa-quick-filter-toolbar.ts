@@ -550,7 +550,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         /* The MENU refuses custom mode unless the field opted in, and a
            steer IS that opt-in reaching it. */
         menu.setAttribute('data-custom', '');
-        menu.dataset['mode'] = 'custom';
+        menu.dataset['mode'] = 'advanced';
         menu.conditions = rows;
         chip.current = true;
         // SILENT, so the chip is told. TRAP T-a-silent-steer-still-redraws-its-chip
@@ -931,7 +931,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if (conditions.length) {
         // The menu refuses custom mode unless the field opted in.
         menu.setAttribute('data-custom', '');
-        menu.dataset['mode'] = 'custom';
+        menu.dataset['mode'] = 'advanced';
         menu.conditions = conditions;
       }
       // The chip draws its face from the menu it holds now; on or off as it was.
@@ -1112,7 +1112,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const on = state.fieldState === 'active';
       any ||= on;
       this.#filterMenu(field)?.toggleAttribute('data-saveable',
-        saves && on && state.condition === 'custom');
+        saves && on && state.condition === 'advanced');
     }
     // A drill edits one chip; the whole bar's Save waits outside it.
     if (!this.#drill.home) this.$('.add-btn sherpa-menu')?.toggleAttribute('data-saveable', saves && any);
@@ -1242,7 +1242,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     menu.dataset['op'] = this.#filters.find((f) => f.id === id)?.op ?? DEFAULT_OP;
     menu.conditionValue = '';
     if ((menu.conditions ?? []).length) menu.conditions = [];
-    menu.mode = 'default';
+    menu.mode = 'simple';
     this.setChipValues(id, []);
   }
 
@@ -1326,7 +1326,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
            TRAP T-a-conditioned-chip-answers-with-its-clause */
         conditions: held ? [...held.conditions]
-          : menu.mode === 'custom' ? (menu.conditions ?? []) : [],
+          : menu.mode === 'advanced' ? (menu.conditions ?? []) : [],
         /* An OFF chip SUSPENDS: it keeps every row and applies none of them,
            exactly as it keeps its picks. Reporting none of them instead read
            as "no filter", and the chip could never switch itself back ON —

@@ -2700,9 +2700,9 @@ test('a column filtered by a CONDITION wears the fx mark AND the success edge', 
   });
 
   // Mark and colour come from the same answer, so they cannot disagree.
-  expect(r.on.name).toEqual({ current: true, condition: 'custom', icon: 'function' });
+  expect(r.on.name).toEqual({ current: true, condition: 'advanced', icon: 'function' });
   // A range is filtered but NOT custom — it keeps the plain active look.
-  expect(r.on.spend).toEqual({ current: true, condition: 'default', icon: null });
+  expect(r.on.spend).toEqual({ current: true, condition: 'simple', icon: null });
   // And clearing takes both off.
   expect(r.off).toEqual({ current: false, condition: null, icon: null });
 });
@@ -2781,7 +2781,7 @@ test('a custom-only column drops its list and opens on its own op', async ({ pag
 
   // CUSTOM ONLY: opens in custom mode, on its own op, no list, no switch.
   expect(r.before.email).toEqual({
-    only: true, mode: 'custom', op: 'contains', switchShown: false, rows: 0,
+    only: true, mode: 'advanced', op: 'contains', switchShown: false, rows: 0,
   });
   // BOTH, as every text column was: a list of values and a switch to conditions.
   expect(r.before.status.only).toBe(false);
@@ -2816,9 +2816,9 @@ test('a heading filtered by a condition opens its menu on the condition', async 
       status: { mode: menu('status').mode, values: menu('status').values },
     };
   });
-  expect(r.owner).toEqual({ mode: 'custom', conditions: [{ op: 'contains', text: 'Da' }] });
+  expect(r.owner).toEqual({ mode: 'advanced', conditions: [{ op: 'contains', text: 'Da' }] });
   // PICKS stay a ticked list.
-  expect(r.status).toEqual({ mode: 'default', values: ['active'] });
+  expect(r.status).toEqual({ mode: 'simple', values: ['active'] });
 });
 
 /**
@@ -2858,7 +2858,7 @@ test('a heading holds a chain: set from outside, or typed in, it shows and appli
   expect(r.held).toEqual({
     clause: ['or', ['owner', 'contains', 'Da'], ['owner', 'startswith', 'R']],
     label: 'Contains: Da or Starts with: R',
-    mode: 'custom',
+    mode: 'advanced',
     rows: [{ op: 'contains', text: 'Da' }, { op: 'startswith', text: 'R', join: 'or' }],
   });
   expect(r.typed).toEqual(['or', ['owner', 'contains', 'Na'], ['owner', 'startswith', 'D']]);

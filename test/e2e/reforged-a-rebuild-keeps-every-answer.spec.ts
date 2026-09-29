@@ -40,6 +40,6 @@ test('adding a filter keeps another chip\'s custom rows, and says so at once', a
   expect(r.atOnce).toEqual(rows);
   expect(r.heard).toEqual([rows]);
   expect(r.after).toEqual(rows);
-  expect(r.condition).toBe('custom');
+  expect(r.condition).toBe('advanced');
   expect(r.on).toBe(true);
 });

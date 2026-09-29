@@ -19,7 +19,7 @@ async function chip(page: import('@playwright/test').Page, def: Record<string, u
     const c = bar.shadowRoot!.querySelector<HTMLElement>('.chips > .chip')!;
     return {
       on: c.hasAttribute('data-current'),
-      green: c.getAttribute('data-condition') === 'custom',
+      green: c.getAttribute('data-condition') === 'advanced',
       edge: getComputedStyle(c.shadowRoot!.querySelector('.body')!).borderTopColor,
       // The badge is `data-count` — a number of picks, or the fx mark.
       badge: c.dataset['count'] ?? '',

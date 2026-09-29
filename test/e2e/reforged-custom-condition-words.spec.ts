@@ -32,7 +32,7 @@ test('a menu speaks the new words', async ({ page }) => {
     // CUSTOM ONLY opens in custom, hides the switch, and cannot leave.
     const only = await window.__mount<HTMLElement & { mode: string }>('sherpa-menu', undefined,
       { 'data-type': 'filter', 'data-custom-only': true });
-    only.mode = 'default';
+    only.mode = 'simple';
     await window.__settled();
     const onlyBtn = only.shadowRoot!.querySelector<HTMLElement>('.use-condition')!;
     return {
@@ -42,13 +42,13 @@ test('a menu speaks the new words', async ({ page }) => {
   });
 
   expect(r.shown).toBe(true);
-  expect(r.start).toBe('default');
+  expect(r.start).toBe('simple');
   // A SWITCH labelled Conditional, as Range is. Will, 2026-09-26.
   expect(r.label).toBe('Conditional');
-  expect(r.on).toEqual({ mode: 'custom', attr: 'custom', checked: true });
-  expect(r.off).toEqual({ mode: 'default', attr: 'default', checked: false });
-  expect(r.heard).toEqual([{ mode: 'custom' }, { mode: 'default' }]);
-  expect(r.only).toEqual({ mode: 'custom', attr: 'custom', btn: 'none' });
+  expect(r.on).toEqual({ mode: 'advanced', attr: 'advanced', checked: true });
+  expect(r.off).toEqual({ mode: 'simple', attr: 'simple', checked: false });
+  expect(r.heard).toEqual([{ mode: 'advanced' }, { mode: 'simple' }]);
+  expect(r.only).toEqual({ mode: 'advanced', attr: 'advanced', btn: 'none' });
 });
 
 test('a menu still hears the old words', async ({ page }) => {
@@ -77,9 +77,9 @@ test('a menu still hears the old words', async ({ page }) => {
   });
 
   expect(r.shown).toBe(true);
-  expect(r.written).toEqual({ mode: 'custom', attr: 'custom', rows: true });
-  expect(r.back).toEqual({ mode: 'default', attr: 'default' });
-  expect(r.only).toEqual({ mode: 'custom', btn: 'none' });
+  expect(r.written).toEqual({ mode: 'advanced', attr: 'advanced', rows: true });
+  expect(r.back).toEqual({ mode: 'simple', attr: 'simple' });
+  expect(r.only).toEqual({ mode: 'advanced', btn: 'none' });
 });
 
 /** `data-condition` is `state.condition`, written by the chip. */
@@ -100,11 +100,11 @@ test('a chip says which condition it holds: default, custom, or none', async ({ 
   expect(await chipCondition(page, {
     id: 'owner', label: 'Owner', select: 'multiple', active: true,
     options: [{ value: 'Dana', label: 'Dana', selected: true }, { value: 'Ravi', label: 'Ravi' }],
-  })).toBe('default');
+  })).toBe('simple');
   expect(await chipCondition(page, {
     id: 'owner', label: 'Owner', select: 'multiple', active: true, custom: true,
     op: 'contains', text: 'Da', options: OWNERS,
-  })).toBe('custom');
+  })).toBe('advanced');
   expect(await chipCondition(page, {
     id: 'owner', label: 'Owner', select: 'multiple', options: OWNERS,
   })).toBe(null);
@@ -152,11 +152,11 @@ test('a grid column set to Is not keeps its NOT, and reads as custom', async ({ 
     return { not, oneOf, typed, range, off: look('plan') };
   });
 
-  expect(r.not).toEqual({ clause: ['plan', 'notin', ['Pro', 'Free']], condition: 'custom', icon: 'function' });
-  expect(r.oneOf).toEqual({ clause: ['plan', 'in', ['Pro', 'Free']], condition: 'default', icon: null });
-  expect(r.typed).toEqual({ clause: ['plan', 'contains', 'ro'], condition: 'custom', icon: 'function' });
+  expect(r.not).toEqual({ clause: ['plan', 'notin', ['Pro', 'Free']], condition: 'advanced', icon: 'function' });
+  expect(r.oneOf).toEqual({ clause: ['plan', 'in', ['Pro', 'Free']], condition: 'simple', icon: null });
+  expect(r.typed).toEqual({ clause: ['plan', 'contains', 'ro'], condition: 'advanced', icon: 'function' });
   // A range is filtered, and it is a DEFAULT condition — as a toolbar chip reads it.
-  expect(r.range).toEqual({ clause: ['spend', 'between', [10, 20]], condition: 'default', icon: null });
+  expect(r.range).toEqual({ clause: ['spend', 'between', [10, 20]], condition: 'simple', icon: null });
   expect(r.off).toEqual({ condition: null, icon: null });
 });
 
@@ -184,11 +184,11 @@ test('the panel reports its mode in the menu\'s own words', async ({ page }) => 
     return { on, off: menu?.mode, heard };
   });
 
-  expect(r.on).toEqual({ box: true, mode: 'custom' });
-  expect(r.off).toBe('default');
+  expect(r.on).toEqual({ box: true, mode: 'advanced' });
+  expect(r.off).toBe('simple');
   expect(r.heard).toEqual([
-    { scope: 'data', id: 'owner', mode: 'custom' },
-    { scope: 'data', id: 'owner', mode: 'default' },
+    { scope: 'data', id: 'owner', mode: 'advanced' },
+    { scope: 'data', id: 'owner', mode: 'simple' },
   ]);
 });
 
@@ -247,9 +247,9 @@ test('a def says custom — and the old conditions key still works', async ({ pa
     return { chips, column, field, onlyField };
   });
 
-  expect(r.chips.owner).toEqual({ custom: true, only: false, mode: 'default' });
-  expect(r.chips.email).toEqual({ custom: true, only: true, mode: 'custom' });
-  expect(r.chips.old).toEqual({ custom: true, only: true, mode: 'custom' });
+  expect(r.chips.owner).toEqual({ custom: true, only: false, mode: 'simple' });
+  expect(r.chips.email).toEqual({ custom: true, only: true, mode: 'advanced' });
+  expect(r.chips.old).toEqual({ custom: true, only: true, mode: 'advanced' });
   expect(r.column).toEqual({ only: true, rows: 0 });
   expect(r.field).toBe(true);
   expect(r.onlyField).toEqual({ switch: false, rows: true });

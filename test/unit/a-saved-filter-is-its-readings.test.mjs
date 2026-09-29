@@ -36,7 +36,7 @@ const ROWS = [
 ];
 
 test('a def that carries its readings is a custom kind', () => {
-  assert.equal(kindOf({ id: 'at-risk', readings: { health: { op: 'lt', text: '60' } } }), 'custom');
+  assert.equal(kindOf({ id: 'at-risk', readings: { health: { op: 'lt', text: '60' } } }), 'advanced');
   // A NAMED kind is still believed first.
   assert.equal(kindOf({ id: 'x', kind: 'boolean', readings: {} }), 'boolean');
 });

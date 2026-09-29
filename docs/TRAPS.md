@@ -11798,6 +11798,7 @@ no alias. TRAP T-external-chips-are-reported-separately
 - Site: `src/core/ui/filter-kind.ts`
 - Site: `test/e2e/reforged-custom-condition-words.spec.ts`
 - Site: `test/unit/the-def-speaks-the-new-words.test.mjs`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 
 ### T-a-saved-filter-is-its-readings
 

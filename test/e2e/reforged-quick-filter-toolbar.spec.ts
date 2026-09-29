@@ -2473,7 +2473,7 @@ test('a FOLDED custom-only filter opens its own menu, not a blank drill', async 
   });
 
   expect(r.opened).toBe(true);
-  expect(r.mode).toBe('custom');
+  expect(r.mode).toBe('advanced');
   expect(r.hasConditionRow).toBe(true);
   expect(r.overflowStillListsFilters).toBe(true);
 });
@@ -2558,9 +2558,9 @@ test('a chip steered with conditions redraws its value and tip', async ({ page }
     };
     return { owner: face('owner'), email: face('email') };
   });
-  expect(r.owner).toEqual({ on: true, condition: 'custom',
+  expect(r.owner).toEqual({ on: true, condition: 'advanced',
     value: 'Contains: Da or Starts with: R', tip: '2 conditions applied' });
-  expect(r.email).toEqual({ on: true, condition: 'custom', value: 'zz', tip: '1 condition applied' });
+  expect(r.email).toEqual({ on: true, condition: 'advanced', value: 'zz', tip: '1 condition applied' });
 });
 
 /**

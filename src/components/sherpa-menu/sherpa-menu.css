@@ -163,20 +163,20 @@
 
 :host([data-type="filter"]) .search { grid-area: filter; }
 
-:host([data-mode="custom"]) .rows { display: none; }
-:host([data-mode="custom"]) .condition-rows {
+:host([data-mode="advanced"]) .rows { display: none; }
+:host([data-mode="advanced"]) .condition-rows {
   grid-area: filter;
   display: grid;
   row-gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 /* ADD CONDITION sits BELOW the last row, labelled, in the default look.
    Will, 2026-09-26. TRAP T-add-condition-sits-below-the-rows */
-:host([data-mode="custom"]) .add-condition {
+:host([data-mode="advanced"]) .add-condition {
   display: inline-flex;
   grid-area: add;
   justify-self: start;
 }
-:host([data-mode="custom"]) .header {
+:host([data-mode="advanced"]) .header {
   grid-template-areas:
     "heading  mode"
     "filter   filter"
@@ -304,7 +304,7 @@
 .search { display: none; }
 /* NOT in custom mode: the rows answer the field there, and a search box
    above them filters a list nothing is showing. */
-:host([data-search]:not([data-mode="custom"])) .search { display: block; }
+:host([data-search]:not([data-mode="advanced"])) .search { display: block; }
 
 /* ── Condition ── the FILTER type's own rows; no other menu stamps them.
  * Every part is a COMPOSED sherpa-input-text or sherpa-button, which own box,

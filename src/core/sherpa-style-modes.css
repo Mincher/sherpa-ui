@@ -751,7 +751,7 @@ sherpa-quick-filter[data-current][data-empty] {
   --_status-icon: var(--sherpa-style-warning-indicator-accent);
 }
 
-sherpa-quick-filter[data-current][data-condition="custom"] {
+sherpa-quick-filter[data-current][data-condition="advanced"] {
   --sherpa-style-border-base: var(--sherpa-style-success-border-base);
   --sherpa-style-border-base-1: var(--sherpa-style-success-border-base-1);
   --sherpa-style-border-width: var(--sherpa-style-success-border-width);
@@ -835,7 +835,7 @@ sherpa-quick-filter[data-current][data-pending] {
   --_status-icon: initial;
 }
 
-sherpa-quick-filter[data-current][data-condition="custom"][data-pending] {
+sherpa-quick-filter[data-current][data-condition="advanced"][data-pending] {
   --sherpa-style-border-base: var(--sherpa-style-default-border-base);
   --sherpa-style-border-base-1: var(--sherpa-style-default-border-base-1);
   --sherpa-style-border-width: var(--sherpa-style-default-border-width);

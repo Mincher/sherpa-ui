@@ -169,7 +169,16 @@ good."* The sub-query IS the field's slice of the Query — its `FieldReading`,
 condition rows and all — shown and saved as JSON, and restored by
 `setQuery`. No grammar, no parser, no second spelling of a condition.
 
-### `[ ]` 75 — Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file
+### `[~]` 75 — Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file
+
+**75a built 2026-09-29 — the mode VALUES:** `ConditionType` is `simple |
+advanced`; a menu's `data-mode`, a chip's `data-condition`, a filter's kind
+(`advanced`), the panel's and menu's mode events, and the Style pins
+(state-pins.yaml, re-projected). Old words are still HEARD — `default`,
+`custom`, `select`, `condition`, `conditional` — so a saved View or filter keeps
+working. **Left: 75b** — the opt-in key (`custom` → `advanced`, with
+`data-custom` / `data-custom-only`), the internal class names and the UI labels
+("Conditional", "Custom condition"); **75c** — docs, TRAPS and test titles.
 
 Will, 2026-09-27: *"We need to move away from using the terms Default and
 Conditional for filter modes. Instead we should use 'Simple' and 'Complex'."*

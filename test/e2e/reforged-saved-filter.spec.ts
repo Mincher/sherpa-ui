@@ -65,7 +65,7 @@ test('a chip that carries its readings is a Custom Condition Filter, and a bound
     return { before, one, two, off };
   });
 
-  const chip = { kind: 'custom', condition: 'custom', badge: 'fx' };
+  const chip = { kind: 'advanced', condition: 'advanced', badge: 'fx' };
   // A Custom Condition Filter from the start: fx and custom, but not on.
   expect(r.before).toEqual({ chip: { ...chip, on: false }, total: 3, parts: [] });
   // On: its readings narrow the rows, as ONE named part.
@@ -227,7 +227,7 @@ test('packFilter shows the saved chip ON and clears the fields it came from, in 
   expect(r.before).toBe(1);
   // ONE event, for the whole pack.
   expect(r.events).toBe(1);
-  expect(r.saved).toEqual({ on: true, condition: 'custom' });
+  expect(r.saved).toEqual({ on: true, condition: 'advanced' });
   // The fields it came from are EMPTY and off — their answer is the chip's now.
   expect(r.owner).toEqual({ on: false, text: '', rows: 0, picked: [] });
   expect(r.plan).toEqual({ on: false, picked: [] });
@@ -414,7 +414,7 @@ test('a reader\'s own saved chip opens Edit and Delete; a preset does not', asyn
 
   expect(r.preset).toEqual({ menu: false, actions: [] });
   // Still a Custom Condition Filter with a menu: the answer is given.
-  expect(r.own).toEqual({ menu: true, actions: ['edit', 'delete'], condition: 'custom' });
+  expect(r.own).toEqual({ menu: true, actions: ['edit', 'delete'], condition: 'advanced' });
 });
 
 test('Edit unpacks the answer into its fields, in one event; Delete forgets the chip', async ({ page }) => {
@@ -607,7 +607,7 @@ test('the panel: saved presets wear fx, and a scope asks to save, edit and delet
     return { presets, hidden, shown, asked };
   });
 
-  const fx = { condition: 'custom', badge: 'fx' };
+  const fx = { condition: 'advanced', badge: 'fx' };
   expect(r.presets).toEqual({ preset: { ...fx, actions: [] }, own: { ...fx, actions: ['edit', 'delete'] } });
   // Only when the host saves.
   expect(r.hidden).toBe(true);
@@ -671,7 +671,7 @@ test('in panel mode the Records page saves a whole scope, and deletes it from th
   await expect.poll(() => page.evaluate((s) => {
     const chip = document.querySelector('#filter-panel')!.shadowRoot!.querySelector<HTMLElement>(s);
     return chip && { on: chip.hasAttribute('data-current'), condition: chip.getAttribute('data-condition') };
-  }, preset)).toEqual({ on: true, condition: 'custom' });
+  }, preset)).toEqual({ on: true, condition: 'advanced' });
 
   // DELETE from the panel: gone from it, and forgotten.
   await page.evaluate((s) => document.querySelector('#filter-panel')!.shadowRoot!.querySelector(s)!

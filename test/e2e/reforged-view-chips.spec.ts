@@ -423,7 +423,7 @@ test('At risk keeps its own column condition on the Status chip, and All clears 
   });
 
   await pick('risk');
-  await expect.poll(read).toEqual({ total: 13, clause: ['status', 'ne', 'churned'], chip: 'on:custom' });
+  await expect.poll(read).toEqual({ total: 13, clause: ['status', 'ne', 'churned'], chip: 'on:advanced' });
   await pick('all');
   await expect.poll(read).toEqual({ total: 100, clause: null, chip: 'off:' });
 });
@@ -461,7 +461,7 @@ test('a heading filter adds its normal chip; a reload keeps both; Remove clears 
     grid.shadowRoot!.querySelector('.head-cell[data-field="email"] .head-filter')!
       .dispatchEvent(new CustomEvent('menu-apply', { bubbles: true, composed: true, detail: {} }));
   });
-  const on = { total: 18, heading: ['email', 'contains', 'an'], chip: 'on:custom' };
+  const on = { total: 18, heading: ['email', 'contains', 'an'], chip: 'on:advanced' };
   await expect.poll(read).toEqual(on);
   await page.reload();
   await loaded();

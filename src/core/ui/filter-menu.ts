@@ -152,7 +152,7 @@ export function menuFor(
          TRAP T-a-filter-answers-by-values-conditions-or-both */
       if (custom === 'only') {
         menu.setAttribute('data-custom-only', '');
-        menu.setAttribute('data-mode', 'custom');
+        menu.setAttribute('data-mode', 'advanced');
       }
       const ops = OPS_FOR_TYPE['text'] ?? [];
       if (ops.length) menu.setAttribute('data-conditions', ops.join(','));

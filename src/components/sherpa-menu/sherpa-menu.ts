@@ -51,13 +51,16 @@ export interface MenuItem {
   count?: number;
 }
 
-/** The mode's spellings before 2026-09-25, still heard.
+/** The mode's older spellings, still heard — select and condition before
+ *  2026-09-25, default and custom before 2026-09-29 (TODO 75).
  *  TRAP T-a-renamed-attribute-keeps-its-old-name */
-const OLD_MODES: Readonly<Record<string, ConditionType>> = { select: 'default', condition: 'custom' };
+const OLD_MODES: Readonly<Record<string, ConditionType>> = {
+  select: 'simple', condition: 'advanced', default: 'simple', custom: 'advanced',
+};
 
 /** A mode in either spelling, as the one it means. */
 const modeOf = (raw: string | undefined): ConditionType =>
-  (OLD_MODES[raw ?? ''] ?? raw) === 'custom' ? 'custom' : 'default';
+  (OLD_MODES[raw ?? ''] ?? raw) === 'advanced' ? 'advanced' : 'simple';
 
 /** A composed `sherpa-input-text`: it carries a value, and a select variant
  *  takes its options through `populate()`. */
@@ -78,7 +81,7 @@ export class SherpaMenu extends SherpaElement {
     'data-takes': { type: 'enum', kind: 'style', values: ['list', 'text'] },
     /* Which of the two modes is showing: a Default or a Custom Condition
        Filter. TRAP T-a-filter-menu-has-two-modes */
-    'data-mode': { type: 'enum', kind: 'style', values: ['default', 'custom'] },
+    'data-mode': { type: 'enum', kind: 'style', values: ['simple', 'advanced'] },
     /* Whether this field offers a Custom Condition Filter AT ALL.
        TRAP T-conditions-are-opt-in-per-field */
     'data-custom': { type: 'boolean', kind: 'style', fallbackAttr: 'data-conditional' },
@@ -222,13 +225,13 @@ export class SherpaMenu extends SherpaElement {
 
   /* ── The two modes ──────────────────────────────────────────────── */
 
-  /** default | custom — a Default or a Custom Condition Filter.
+  /** simple | advanced — values to pick, or condition rows (Will's words).
    *  TRAP T-a-filter-menu-has-two-modes */
   get mode(): ConditionType {
     return modeOf(this.dataset['mode']);
   }
 
-  /** A host writing `data-mode="custom"` on a field that did not opt in is
+  /** A host writing `data-mode="advanced"` on a field that did not opt in is
    *  refused, the same as a click. The attribute is not a second door.
    *  TRAP T-conditions-are-opt-in-per-field */
   #enforceMode(): void {
@@ -238,10 +241,10 @@ export class SherpaMenu extends SherpaElement {
     /* CUSTOM ONLY has no other mode to be in, so it opens in one and
        cannot leave. TRAP T-a-filter-answers-by-values-conditions-or-both */
     if (this.#customOnly()) {
-      if (this.dataset['mode'] !== 'custom') this.dataset['mode'] = 'custom';
+      if (this.dataset['mode'] !== 'advanced') this.dataset['mode'] = 'advanced';
       return;
     }
-    if (this.dataset['mode'] === 'custom' && !this.#offersCustom()) {
+    if (this.dataset['mode'] === 'advanced' && !this.#offersCustom()) {
       this.removeAttribute('data-mode');
     }
   }
@@ -258,19 +261,19 @@ export class SherpaMenu extends SherpaElement {
     return this.hasAttribute('data-custom-only') || this.hasAttribute('data-conditions-only');
   }
 
-  /** The Conditional switch is ON in custom mode. */
+  /** The Advanced switch is ON in advanced mode. */
   #syncModeButton(): void {
-    this.$('.use-condition-switch')?.toggleAttribute('checked', this.mode === 'custom');
+    this.$('.use-condition-switch')?.toggleAttribute('checked', this.mode === 'advanced');
   }
 
-  set mode(next: ConditionType | 'select' | 'condition') {
+  set mode(next: ConditionType | 'select' | 'condition' | 'default' | 'custom') {
     const to = modeOf(next);
     /* A field that did not opt in has no custom mode to be in — the button
        is hidden, and a host writing the attribute must not get one either.
        TRAP T-conditions-are-opt-in-per-field */
-    if (to === 'custom' && !this.#offersCustom()) return;
+    if (to === 'advanced' && !this.#offersCustom()) return;
     // There is nowhere else to go. TRAP T-a-filter-answers-by-values-conditions-or-both
-    if (to === 'default' && this.#customOnly()) return;
+    if (to === 'simple' && this.#customOnly()) return;
     this.dataset['mode'] = to;
     this.#syncModeButton();
   }
@@ -310,16 +313,16 @@ export class SherpaMenu extends SherpaElement {
     event.stopPropagation();
     if (!this.#offersCustom() || this.#customOnly()) return this.#syncModeButton();
     const on = !!(event.target as HTMLElement & { checked?: boolean }).checked;
-    const next: ConditionType = on ? 'custom' : 'default';
+    const next: ConditionType = on ? 'advanced' : 'simple';
     if (next === this.mode) return;
     this.mode = next;
     // A custom mode with no rows has nothing to answer with.
-    if (next === 'custom' && !this.#rowEls().length) this.#addRow();
+    if (next === 'advanced' && !this.#rowEls().length) this.#addRow();
     /* CARRY THE PICKS OVER. Ticking three values and pressing the mode button
        is a reader saying "now let me refine THAT" — opening on a blank
        `Equals <first option>` throws their answer away without saying so.
        TRAP T-a-mode-switch-carries-the-answer-over */
-    if (next === 'custom') this.#seedFromPicks();
+    if (next === 'advanced') this.#seedFromPicks();
     // Will's two words for the two modes of ONE system. TRAP T-one-condition-system
     this.emit('filter-mode-change', { mode: next });
     this.#emitConditions();
@@ -774,7 +777,7 @@ export class SherpaMenu extends SherpaElement {
     if (!this.#commits || !this.open) return false;
     const key = (values: readonly string[]): string => [...values].sort().join('\u0000');
     if (key(this.values) !== key(this.#baseline)) return true;
-    return this.mode === 'custom'
+    return this.mode === 'advanced'
       && JSON.stringify(this.conditions) !== JSON.stringify(this.#conditionBaseline);
   }
 
@@ -1230,7 +1233,7 @@ export class SherpaMenu extends SherpaElement {
            is filled asynchronously, so restoring identical rows still blanked
            the answer for a tick — long enough for the chip to read it as empty
            and switch itself off. TRAP T-a-condition-is-a-draft-too */
-        if (this.mode === 'custom'
+        if (this.mode === 'advanced'
           && JSON.stringify(this.conditions) !== JSON.stringify(this.#conditionBaseline)) {
           this.conditions = this.#conditionBaseline;
         }
@@ -1386,7 +1389,7 @@ export class SherpaMenu extends SherpaElement {
     this.emit('menu-apply', { values: this.values });
     /* The ROWS are part of what Apply applies. Without this a committing menu
        held its conditions for ever. TRAP T-a-condition-is-a-draft-too */
-    if (this.mode === 'custom') this.#emitConditions(true);
+    if (this.mode === 'advanced') this.#emitConditions(true);
     this.emit('menu-change', { values: this.values });
     this.hide();
     this.#applying = false;
@@ -1398,7 +1401,7 @@ export class SherpaMenu extends SherpaElement {
     this.#applying = true;
     this.#settledByAction = true;
     this.values = this.#baseline;
-    if (this.mode === 'custom') this.conditions = this.#conditionBaseline;
+    if (this.mode === 'advanced') this.conditions = this.#conditionBaseline;
     this.emit('menu-cancel');
     this.hide();
     this.#applying = false;
@@ -1432,7 +1435,7 @@ export class SherpaMenu extends SherpaElement {
        TRAP T-every-chip-menu-gets-clear-and-search */
     this.emit('menu-change', { values: this.values });
     // The rows went too, so whoever holds their clause must hear about it.
-    if (this.mode === 'custom') this.#emitConditions(true);
+    if (this.mode === 'advanced') this.#emitConditions(true);
   };
 
   /** Drive the slotted calendar to today; stays OPEN.

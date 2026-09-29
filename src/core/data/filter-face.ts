@@ -73,11 +73,11 @@ export function filterFace(state: FilterState): FilterFace {
     /* `fx` — the mark says a CUSTOM condition is applied, and the tip says
        how many. Read from the state's own type, which the chip's green reads
        too. TRAP T-a-condition-badge-says-that-not-which · TRAP T-one-condition-system */
-    badge: state.condition === 'custom' ? CONDITION_BADGE : '',
+    badge: state.condition === 'advanced' ? CONDITION_BADGE : '',
     condition: chained || condition,
     value: chained ? chained : value,
     count: picks.length,
-    tip: state.condition === 'custom' ? counted
+    tip: state.condition === 'advanced' ? counted
       : (condition && spelled ? `${condition}: ${spelled}` : (spelled || condition)),
   };
 }

@@ -18,7 +18,7 @@
  * - ValueState — What one value is doing inside its field.
  * - ValueEntry — One value, and what it is doing.
  * - FilterState — everything any control needs to draw one field — its answer as rows, and its type
- * - ConditionType — default or custom — which kind of answer a field has, decided once
+ * - ConditionType — simple or advanced — which kind of answer a field has, decided once
  * - FieldType — What KIND of field this is.
  * - isRanged — A field whose picks are ENDS, not a list to tick.
  * - FieldFacts — What a caller knows about a field before anything is chosen.
@@ -110,7 +110,7 @@ export interface FilterState {
  * Condition Filter is answered by a condition: a named op, a typed value, or
  * a chain of rows. TRAP T-one-condition-system
  */
-export type ConditionType = 'default' | 'custom';
+export type ConditionType = 'simple' | 'advanced';
 
 /** What KIND of field this is. The same three `OPS_FOR_TYPE` names. */
 export type FieldType = 'text' | 'number' | 'date';
@@ -265,7 +265,7 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
     type,
     range,
     values,
-    condition: !rows.length ? null : custom ? 'custom' : 'default',
+    condition: !rows.length ? null : custom ? 'advanced' : 'simple',
     rows,
   };
 }
@@ -300,7 +300,7 @@ export function readingClause(facts: FieldFacts, reading: FieldReading): Filter 
  */
 export function savedReading(state: FilterState): FieldReading | undefined {
   if (!state.rows.length) return undefined;
-  if (state.condition === 'custom') return { conditions: state.rows.map((row) => ({ ...row })) };
+  if (state.condition === 'advanced') return { conditions: state.rows.map((row) => ({ ...row })) };
   const picked = [...(state.rows[0]?.picked ?? [])];
   return state.range ? { picked, range: true } : { picked };
 }

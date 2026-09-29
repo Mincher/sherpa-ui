@@ -440,8 +440,8 @@ states:
     name: filter
     selector: ":host([data-type=\"filter\"])"
   - $type: state
-    name: custom
-    selector: ":host([data-mode=\"custom\"])"
+    name: advanced
+    selector: ":host([data-mode=\"advanced\"])"
   - $type: state
     name: drill
     selector: ":host([data-drill])"

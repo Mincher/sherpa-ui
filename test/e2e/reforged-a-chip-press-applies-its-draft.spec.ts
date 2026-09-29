@@ -59,7 +59,7 @@ test('typed rows, then a press on the chip: the condition is applied', async ({ 
 
   expect(r.before).toEqual({ on: false, heard: 0 });
   expect(r.on).toBe(true);
-  expect(r.condition).toBe('custom');
+  expect(r.condition).toBe('advanced');
   expect(r.rows).toEqual([{ op: 'contains', text: 'Da' }]);
   expect(r.open).toBe(false);
   expect(r.clauses).toEqual({ owner: ['owner', 'contains', 'Da'] });

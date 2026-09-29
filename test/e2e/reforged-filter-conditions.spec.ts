@@ -169,12 +169,12 @@ test('the two modes swap, and NEITHER loses what the other holds', async ({ page
   });
 
   expect(r.onDefault).toEqual({
-    mode: 'default', values: ['gold'],
+    mode: 'simple', values: ['gold'],
     search: 'block', rows: 'flex', conditionRows: 'none',
   });
 
   // CUSTOM mode: the rows answer the field, so the search over them goes.
-  expect(r.onCustom.mode).toBe('custom');
+  expect(r.onCustom.mode).toBe('advanced');
   expect(r.onCustom.search).toBe('none');
   expect(r.onCustom.rows).toBe('none');
   expect(r.onCustom.conditionRows).toBe('grid');
@@ -188,7 +188,7 @@ test('the two modes swap, and NEITHER loses what the other holds', async ({ page
   expect(r.typed.conditions).toEqual([{ op: 'contains', text: 'gol' }]);
 
   // THE POINT: both modes survive the round trip, because both are stamped.
-  expect(r.backToDefault.mode).toBe('default');
+  expect(r.backToDefault.mode).toBe('simple');
   expect(r.backToDefault.values).toEqual(['gold']);
   expect(r.backToDefault.search).toBe('block');
   expect(r.backToDefault.goldStillTicked).toBe(true);
@@ -350,7 +350,7 @@ test('a chip that did not opt in has NO custom mode at all', async ({ page }) =>
     const afterClick = { mode: menu.mode, rows: sr.querySelectorAll('.condition-row').length };
 
     // And a host WRITING the attribute gets no custom mode either.
-    menu.setAttribute('data-mode', 'custom');
+    menu.setAttribute('data-mode', 'advanced');
     await new Promise((res) => { setTimeout(res, 120); });
     const afterWrite = {
       mode: menu.mode,
@@ -361,10 +361,10 @@ test('a chip that did not opt in has NO custom mode at all', async ({ page }) =>
 
   expect(r.before.custom).toBe(false);
   expect(r.before.btn).toBe('none');
-  expect(r.afterClick).toEqual({ mode: 'default', rows: 0 });
+  expect(r.afterClick).toEqual({ mode: 'simple', rows: 0 });
   /* The ATTRIBUTE is not the door. A hidden button and a live mode would be a
      control a reader cannot reach but a script can. */
-  expect(r.afterWrite.mode).toBe('default');
+  expect(r.afterWrite.mode).toBe('simple');
   expect(r.afterWrite.search).toBe('block');
 });
 
@@ -765,7 +765,7 @@ test('a chip in DEFAULT mode reports picks AND a clause, and is not custom',
     expect(r.on).toBe(true);
     /* DEFAULT, not custom. Both shapes describe the same ticks, and a host uses
        `values`; only a chip in CUSTOM mode answers with its clause alone. */
-    expect(r.condition).toBe('default');
+    expect(r.condition).toBe('simple');
   });
 
 /**
@@ -817,7 +817,7 @@ test('a filter answers by values, by conditions, or by both', async ({ page }) =
     // And a custom-only menu must REFUSE to go back to a list.
     const email = el.shadowRoot!.querySelector('.chip[data-id="email"] sherpa-menu') as
       HTMLElement & { mode: string };
-    email.mode = 'default';
+    email.mode = 'simple';
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return {
@@ -838,8 +838,8 @@ test('a filter answers by values, by conditions, or by both', async ({ page }) =
   // ONLY — opens in custom mode, on its own op, with nowhere to switch to.
   expect(r.email).toEqual({
     menu: true, custom: true, only: true,
-    mode: 'custom', op: 'contains', switchShown: false,
+    mode: 'advanced', op: 'contains', switchShown: false,
   });
   // The attribute is not a second door back either.
-  expect(r.afterForcingDefault).toBe('custom');
+  expect(r.afterForcingDefault).toBe('advanced');
 });
