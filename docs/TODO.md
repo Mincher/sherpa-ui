@@ -48,7 +48,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16c | 108 | A Filters menu row's scope is a DESCRIPTION under its label, with no "in" | quick |
 | ✅ | 16d | 114 | About 1 time in 20, a folded Advanced-only filter's row in the Filters menu opens nothing | bug |
 | | | | **D — Filters: Will's features, on the foundation** | |
-| ⬜ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
+| ❓ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ⬜ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
 | ⬜ | 19 | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
 | ⬜ | 19a | 110 | In Advanced rows, AND is serial and OR is parallel: an AND row offers only what the rows before it leave | feature |
@@ -764,6 +764,62 @@ this to group filters/chips together, too."*
 5. **The bar and the panel draw a set as ONE group** — 38 step 4's one
    builder, and `.sherpa-group` for the joins. Do it before 89 redraws the
    panel, so the panel is rebuilt once.
+
+**Design, 2026-09-29 — for Will's review.** Found first: every filter is
+PARALLEL today. A field offers all its values (`filterDef()`), and the rows
+are the AND of every pick. `available: false` exists on an option, but
+nothing sets it. So SERIAL changes what a field OFFERS, never how rows
+match. 110 (an AND row offers only what the rows before it leave) is the same
+chain inside one field — build both on one helper.
+
+1. **The JSON** — a scope lists its sets; a set's order IS the chain:
+   ```json
+   "view": { "holds": ["customer", "region", "created"],
+             "sets": [{ "id": "account", "label": "Account", "mode": "serial",
+                        "fields": ["customer", "region"] }] }
+   ```
+   `mode` defaults to `parallel` — a set that only GROUPS chips. A set's
+   fields must be ones the scope holds; `openSource` reports one that is not.
+   Organise is a set too, in a component's scope:
+   `{ "label": "Organise", "organise": ["group", "sort"] }`.
+2. **The data layer** — `source.optionsFor(field)`: a field in a serial set
+   offers the values of the rows that the picks of the fields ABOVE it allow
+   (only those — a parallel filter outside the set does not narrow it). One
+   helper narrows rows by a list of readings; 110 reuses it for AND rows.
+   The source redraws a field's options when a field above it changes. Local
+   stores answer from their rows; a remote store needs one new call —
+   distinct values of a field under a filter — added to
+   `docs/DATA-SOURCE-RULES.md`. Narrowed-out values are REMOVED, not dimmed:
+   serial exists to offer less, and the way back out is the field above.
+3. **A pick no longer offered** — see ❓ below.
+4. **Sort and group keep their scope** — the source keeps an arrangement PER
+   scope, not one; a panel's `sort-change` reaches its own component
+   (ruling 4). Built with 38's scope rename.
+5. **Drawing** — see ❓ below. Either way the bar and the panel stamp a set
+   from the JSON; nobody writes one by hand, so the definition stays the one
+   list (`T-a-page-is-its-definition`).
+
+**Build order:** 1 the JSON and `openSource` checks; 2 the narrowing, with
+headless tests; 3 sort and group per scope; 4 the drawing, with 38 step 4 and
+before 89; 5 the example app — Customer then Region, serial; 6 110 on the
+same helper.
+
+**❓ Will — two choices.**
+
+- **Q3, a pick the chain no longer offers** (Region = APAC, then a Customer
+  with no APAC rows):
+  - **A (my pick): keep it, ticked and listed** — the DO NOT DROP rule
+    (`T-unavailable-value-sorts-below-a-divider`). The rows may go to zero;
+    the reader sees why, and unticks it. Nothing lost.
+  - **B: drop it, and say so** — a toast "Region APAC removed — no rows for
+    this Customer", with Undo.
+- **Q5, how a set is drawn:**
+  - **A (my pick): a `sherpa-filterset` component**, like `<fieldset>` —
+    your idea. Stamped by the bar and the panel from the JSON: a label, its
+    chips joined as one group, and a small chain mark when serial. One
+    component, so the bar and the panel cannot draw a set two ways.
+  - **B: no new component** — a `.sherpa-group` wrapper with a label, drawn
+    by each of the bar and the panel.
 
 ### `[ ]` 89 — Every filter added to the panel starts SIMPLE
 
