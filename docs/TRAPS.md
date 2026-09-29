@@ -1539,10 +1539,12 @@ if (report.missingElements.length) … // tell someone
 ```
 
 **ORDER MATTERS and is fixed here:** the SOURCE first, so the rows a component's
-state refers to are on their way, then each element. Within an element,
-`applyState` waits for `rendered` — a grid cannot filter a column it does not
-have yet. That deferral is also why the report can only name what it knows NOW:
-it cannot say what a not-yet-rendered element will skip.
+state refers to are on their way, then each element. An element that has not
+drawn yet (`hasRendered` false) gets its state once `rendered` settles — a grid
+cannot filter a column it does not have yet, and a composer wrote its value
+into a textarea that did not exist, so it was lost (TODO 113). A drawn element
+is applied at once. That deferral is also why the report can only name what it
+knows NOW: a not-yet-drawn element's skips are added to it when they land.
 
 The same rule governs `onViewPicked`, which reports gaps and never throws; the
 default is a `console.warn`, because a definition that could not be fully applied
@@ -1550,6 +1552,7 @@ is worth saying out loud rather than leaving a reader to wonder why half the
 screen moved.
 
 - Site: `src/core/browser/persist-view.ts`
+- Site: `test/e2e/reforged-view-definition.spec.ts`
 
 ### T-capture-reads-only-what-is-named
 

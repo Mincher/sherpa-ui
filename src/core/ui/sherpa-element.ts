@@ -386,6 +386,11 @@ export abstract class SherpaElement extends HTMLElement {
   /** Has `onRender` run — it fires exactly once. */
   #hasRendered = false;
 
+  /** Has the first render run? `rendered` is the promise; this is the answer now. */
+  get hasRendered(): boolean {
+    return this.#hasRendered;
+  }
+
   /** Is the element in a document right now. */
   #connected = false;
 

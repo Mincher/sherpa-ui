@@ -310,6 +310,26 @@ test('a PRESET reconfigures a whole screen: query, arrangement and components', 
   expect(r.renewals.statusClause).toBe(null);
 });
 
+/**
+ * A VIEW APPLIED BEFORE A COMPONENT HAS DRAWN WAITS FOR IT — TODO 113 step 1.
+ * The composer writes its value into its own textarea, which a component that
+ * has not drawn does not have yet — so the value was lost, and nothing said so.
+ * TRAP T-apply-degrades-never-throws
+ */
+test('a view applied to a component that has not drawn yet waits for it', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { applyViewSnapshot } = await import('/dist/index.js');
+    const el = document.createElement('sherpa-prompt-composer') as HTMLElement & { value: string; rendered?: Promise<void> };
+    document.getElementById('root')!.replaceChildren(el);
+    const report = applyViewSnapshot({ v: 1, elements: { composer: { value: 'hello' } } }, { elements: { composer: el } });
+    await el.rendered;
+    await window.__settled();
+    return { value: el.value, report };
+  });
+  expect(r.value).toBe('hello');
+  expect(r.report).toEqual({ missingElements: [], skipped: {} });
+});
+
 test('a definition DEGRADES: a gone element and a gone method are reported, not thrown', async ({ page }) => {
   // A saved view outlives the code that made it. One stale key must not stop
   // the rest being restored — the same reason a bad ROW is dropped and counted.
@@ -418,6 +438,9 @@ test('onViewPicked applies the picked view, and only on a view pick', async ({ p
     const afterUnknown = { states: states.length, afters: afters.length };
 
     fire({ values: { view: ['risk'] } });
+    // The chip has not drawn: `after` comes once it has its state.
+    await (el as HTMLElement & { rendered?: Promise<void> }).rendered;
+    await window.__settled();
     const afterPick = { states: [...states], afters: [...afters] };
 
     // UNSUBSCRIBES, like bind() — a view leaving the DOM stops listening.
@@ -468,6 +491,9 @@ test('onViewPicked REPORTS a stale definition instead of throwing', async ({ pag
     host.dispatchEvent(new CustomEvent('quick-filter-change', {
       detail: { values: { view: ['old'] } }, bubbles: true,
     }));
+    // The chip has not drawn: its state, and so its gap, come once it has.
+    await (el as HTMLElement & { rendered?: Promise<void> }).rendered;
+    await window.__settled();
     return gaps;
   });
 

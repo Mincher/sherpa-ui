@@ -150,30 +150,56 @@ export function applyViewSnapshot(
     elements?: Record<string, HTMLElement>;
   },
 ): ApplyReport {
-  const report: ApplyReport = { missingElements: [], skipped: {} };
-  if (!snapshot || snapshot.v !== 1) return report;
-
-  if (snapshot.source && targets.source) targets.source.setState(snapshot.source);
-  applyElements(snapshot.elements ?? {}, targets.elements ?? {}, report);
-  return report;
+  return applySnapshot(snapshot, targets).report;
 }
 
-/** Each element's state through its OWN public API, by id — a gone one reported. */
+/** The report, and — when an element had not drawn — when the last one took its state. */
+function applySnapshot(
+  snapshot: ViewSnapshot,
+  targets: Parameters<typeof applyViewSnapshot>[1],
+): { report: ApplyReport; waiting: Promise<void> | null } {
+  const report: ApplyReport = { missingElements: [], skipped: {} };
+  if (!snapshot || snapshot.v !== 1) return { report, waiting: null };
+
+  if (snapshot.source && targets.source) targets.source.setState(snapshot.source);
+  return { report, waiting: applyElements(snapshot.elements ?? {}, targets.elements ?? {}, report) };
+}
+
+/** Each element's state through its OWN public API, by id — a gone one reported.
+ *  Null when every element took it now; else when the last one has. */
 function applyElements(
   states: Record<string, Record<string, unknown>>,
   elements: Record<string, HTMLElement>,
   report: ApplyReport,
-): void {
+): Promise<void> | null {
+  const waiting: Promise<void>[] = [];
   for (const [id, state] of Object.entries(states)) {
     const el = elements[id];
     if (!el) {
       report.missingElements.push(id);
       continue;
     }
+    const apply = (): void => {
+      const skipped = applyState(el, state);
+      if (skipped.length) report.skipped[id] = skipped;
+    };
     // TRAP T-apply-degrades-never-throws — deferred to `rendered`.
-    const skipped = applyState(el, state);
-    if (skipped.length) report.skipped[id] = skipped;
+    const ready = whenDrawn(el);
+    if (ready) waiting.push(ready.then(apply));
+    else apply();
   }
+  return waiting.length ? Promise.all(waiting).then(() => undefined) : null;
+}
+
+/** Null when `el` can take its state now; else when it can. A component that has
+ *  not drawn loses what is written into it. TRAP T-apply-degrades-never-throws */
+function whenDrawn(el: HTMLElement): Promise<void> | null {
+  const self = el as { hasRendered?: boolean; rendered?: Promise<void> };
+  if (self.hasRendered) return null;
+  if (self.rendered) return self.rendered;
+  const tag = el.localName;
+  if (!tag.includes('-') || typeof customElements === 'undefined' || customElements.get(tag)) return null;
+  return customElements.whenDefined(tag).then(() => (el as { rendered?: Promise<void> }).rendered);
 }
 
 /**
@@ -401,8 +427,9 @@ export function onViewPicked(
       const bar = (event.composedPath()[0] ?? event.currentTarget) as { values?: Record<string, readonly string[]> } | null;
       if (bar?.values && bar.values['view']?.[0] !== id) bar.values = { ...bar.values, view: [id] };
       void targets.source.setQuery(view.query, { holds: 'keep' }).then(() => {
-        applyElements(view.ui ?? {}, elements, report);
-        done(report);
+        const waiting = applyElements(view.ui ?? {}, elements, report);
+        if (waiting) void waiting.then(() => done(report));
+        else done(report);
       });
       return;
     }
@@ -414,9 +441,11 @@ export function onViewPicked(
        already dropped its part. The View chip is persistent and keeps its pick.
        TRAP T-a-view-change-resets-the-header-chips */
     (event.target as { clearAll?: () => void } | null)?.clearAll?.();
-    const report = applyViewSnapshot(view.snapshot ?? { v: 1 }, targets);
-    applyElements(view.ui ?? {}, targets.elements ?? {}, report);
-    done(report);
+    const { report, waiting } = applySnapshot(view.snapshot ?? { v: 1 }, targets);
+    const more = applyElements(view.ui ?? {}, targets.elements ?? {}, report);
+    // Reported once every element has its state: a gap is only known then.
+    if (waiting || more) void Promise.all([waiting, more]).then(() => done(report));
+    else done(report);
   };
 
   // TRAP T-signal-not-a-teardown-list — straight to the platform.

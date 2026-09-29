@@ -30,7 +30,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | 🚧 | 3 | 38 | One model, one builder, one owner — what is left | refactor |
 | ✅ | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
 | 🚧 | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
-| ⬜ | 5a | 113 | EXPLORE — state first, then render, in every component; a skeleton while the first render waits | explore |
+| 🚧 | 5a | 113 | EXPLORE — state first, then render, in every component; a skeleton while the first render waits | explore |
 | | | | **C — Contained bugs** | |
 | ❓ | 6 | 112 | An Equals row in Advanced will not open its value list | bug |
 | ✅ | 7 | 45 | A picked date does not show in the chip | bug |
@@ -300,7 +300,7 @@ Rules for the work: MOVE code, never rewrite it; delete the replaced path in
 the same commit; no helper with one caller; state the budget up front and
 report the actual.
 
-### `[ ]` 113 — EXPLORE: state first, then render, in every component; a skeleton while the first render waits
+### `[~]` 113 — EXPLORE: state first, then render, in every component; a skeleton while the first render waits
 
 Will, 2026-09-29, asking why a menu dropped a reading set before it had drawn:
 *"Wouldn't it make sense for all components to load, set state and conditions
@@ -364,6 +364,18 @@ widened for every component (state in `#settings`, one draw), not a family
 base class.
 Keep each component standing alone — Will's rule, `docs/COMPONENT-API-AUDIT.md`
 §5: it extends `SherpaElement` and nothing else, no family base class.
+
+**✅ Step 1 done 2026-09-29 — `persist-view` waits.** A saved View applied to
+a component that has not drawn yet now waits for its `rendered` (and for its
+tag's definition); a drawn one is applied at once, so a report is still read
+straight away. `SherpaElement` gained `hasRendered`, the answer NOW beside the
+`rendered` promise. `onViewPicked` reports, and calls `after`, once every
+element has its state — so the provider's `view-change` comes after a View's
+content is configured. Proved on `sherpa-prompt-composer`, whose value was
+lost before. **Not fixed by it**, as the sweep said: the toolbar's `values`
+and select-group's `value` are still lost, because they write into elements
+a later step (menus stamping, `populate()`) replaces — that is the component
+work below, the filter family with A7.
 
 ### `[~]` 37 — Components are AGNOSTIC of the data, and of the example app
 
@@ -2175,6 +2187,7 @@ One line each. The detail is in git and in the trap named.
 - 106: a click in a menu's gap is the menu's own; no accordion behind it toggles — `T-a-gap-click-is-the-menus-own`
 - 108: a Filters menu row's scope is its description line, with no "in"
 - 114: a re-fold that moves nothing keeps the open Filters menu — `T-a-reflow-that-moves-nothing-keeps-its-menus`
+- 113 step 1: a saved View waits for a component that has not drawn — `T-apply-degrades-never-throws`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`
