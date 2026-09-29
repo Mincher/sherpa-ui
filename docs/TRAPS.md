@@ -641,6 +641,8 @@ one, or a def's typed condition came back on every rebuild.
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-panel-keeps-both-answers.spec.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/e2e/reforged-grid-keeps-both-answers.spec.ts`
 
 ### T-one-number-is-a-pick-under-equals
 
@@ -3320,7 +3322,6 @@ and would otherwise wipe it.
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/ui/filter-menu.ts`
 ### T-native-change-stops-at-the-host
@@ -14025,33 +14026,35 @@ contradicts the one in force. A column held a condition — `owner contains Da`,
 set from outside by the chip mirror — and its menu opened in list mode, on an
 unticked list of values, with the condition row hidden behind the mode.
 
-The heading already derives `condition === 'advanced'` to wear `fx`; the menu
-now reads the SAME test and opens in `data-mode="advanced"`. Picks stay a ticked
-list. Still open: a CHAIN (`A or B`) — the grid holds one condition per column
-(TODO 44b) — and an answer held at VIEW scope (TODO 44c).
+The heading hands its menu the whole reading it holds (`menu.reading`), and the
+menu opens in the mode the reading names — or, for a reading with no mode,
+Advanced where only rows answer (`T-both-answers-are-kept`). A chain and a
+View-held answer open the same way.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 
 ### T-a-heading-holds-a-whole-reading
 
-**A grid heading holds a whole reading, not one condition.** `ColumnFilter`
-held an op and a value or picks, so:
+**A grid heading holds a whole reading, not one condition.** The old
+`ColumnFilter` held an op and a value or picks, so:
 
 - a CHAIN set from outside (`['or', ['owner','contains','Da'], ['owner','startswith','R']]`,
   from the chip mirror) was read as `[field, op, value]` — an op of the first
   sub-clause and "picks" of the second: `["owner","in",["owner","startswith","R"]]`;
 - a chain typed INTO the heading applied only its first row.
 
-It now carries `conditions` for a chain; the clause and the label come from
-the data layer (`readingClause`, `spellConditions`), and `clauseConditions()`
-turns a chained clause back into its rows — the inverse of the chain, `A or
-(B and C)`. A shape the rows cannot say is reported, never guessed.
+Since TODO 102 it holds the menu's `FieldReading` itself — both answers, the
+mode and the mirror — and `ColumnFilter` is gone. The clause and the label
+come from the data layer (`readingClause`, `spellConditions`), and
+`clauseConditions()` turns a chained clause back into its rows — the inverse
+of the chain, `A or (B and C)`. A shape the rows cannot say is reported, never
+guessed. A redraw is held AS IT IS: through a clause, only the answer in force
+came back.
 
-The rows reach the menu only once it has DRAWN: a heading menu is a detached
-clone, not upgraded, so rows set before its rows region exists are replayed
-at connect into a setter that drops them. `#flushChains()` runs after
-`#renderHead` has put every menu in the table.
+The rows reach the menu only once it has DRAWN. The heading upgrades its menu
+and sets `menu.reading`, and the menu keeps a reading given before it drew
+and applies it at the end of its first render (`#flushChains()` is gone).
 
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/data.ts`

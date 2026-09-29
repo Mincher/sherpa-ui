@@ -401,14 +401,16 @@ export class SherpaMenu extends SherpaElement {
    */
   #bodyReading(): FieldReading {
     const values = this.values;
-    const range = this.hasAttribute('data-range');
-    const op = (this.dataset['op'] ?? DEFAULT_OP) as FilterOp;
-    if (this.dataset['body'] === 'number' && !range) {
+    // Two ENDS are the answer; the operator is the single side's, left behind.
+    if (this.hasAttribute('data-range')) return { picked: [...values], op: DEFAULT_OP, range: true };
+    // The number body's own select is the live operator. TRAP T-a-menu-owns-its-own-bodies
+    const op = this.op;
+    if (this.dataset['body'] === 'number') {
       const one = values[0] ?? '';
       if (OP_TAKES[op] === 'text') return { picked: [], op, text: one };
       return { picked: one ? [one] : [], op, range: false };
     }
-    return { picked: [...values], op, range };
+    return { picked: [...values], op, range: false };
   }
 
   set reading(next: FieldReading) {
@@ -715,6 +717,10 @@ export class SherpaMenu extends SherpaElement {
     if (this.dataset['value'] !== next) this.dataset['value'] = next;
     const box = this.#valueField();
     if (box) box.value = next;
+    /* ROW ONE, through the one-row door: a typed condition IS an Advanced
+       answer, so a caller who knows nothing of rows still gets one.
+       TRAP T-both-answers-are-kept */
+    if (next.trim() && this.#offersAdvanced() && this.mode !== 'advanced') this.mode = 'advanced';
   }
 
   /** ROW ONE's condition field. `menu.op` and `menu.conditionValue` are the

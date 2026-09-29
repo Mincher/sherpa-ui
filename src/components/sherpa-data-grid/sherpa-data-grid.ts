@@ -25,11 +25,11 @@ import {
   type Filter, type GroupSummary, type SortDirection, type SortSpec,
 } from '../../core/data/store.js';
 import {
-  DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, picksClause, type FilterOp,
+  DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, valueKey, type FilterOp,
 } from '../../core/data/store.js';
 import {
-  clauseConditions, fieldState, readingClause,
-  type FieldCondition, type FieldReading, type FieldType,
+  clauseConditions, fieldState, readingClause, readingRows,
+  type FieldReading, type FieldType, type FilterState,
 } from '../../core/data/filter-state.js';
 import { spellConditions } from '../../core/data/filter-face.js';
 import type { DataAsk } from '../../core/ui/context.js';
@@ -104,21 +104,6 @@ interface GridConfig {
  * One column heading's filter. TRAP T-grid-range-keeps-both-shapes — not a
  * tagged union, so a Range flip and back finds the other side's typing intact.
  */
-interface ColumnFilter {
-  op: string;
-  value: string;
-  range?: boolean;
-  from?: string;
-  to?: string;
-  /** TRAP T-grid-suspend-is-not-clear — kept, but the heading goes dark. */
-  suspended?: boolean;
-  /** SEVERAL ticked values, for an `in` / `notin` clause. */
-  picks?: string[];
-  /** A CHAIN of rows — `A or B` — when one condition cannot say it. The op and
-   *  value above are then row one. TRAP T-a-heading-holds-a-whole-reading */
-  conditions?: FieldCondition[];
-}
-
 /** Which body template each column type's filter menu holds — TEXT has none:
     it is the sherpa-menu FILTER variant. TRAP T-one-field-one-filter-menu */
 /* ONLY A DATE keeps a body of its own. A calendar projects its stepper into
@@ -200,7 +185,7 @@ export class SherpaDataGrid extends SherpaElement {
   #filters = new Map<string, string>();
 
   /** One clause per column, from the heading menus. Held, never applied. */
-  #columnFilters = new Map<string, ColumnFilter>();
+  #columnFilters = new Map<string, FieldReading>();
   /** Collapsed group values. Off the DOM, which a re-render replaces. */
   #collapsed = new Set<string>();
   /** `single` draws radios, holds one record, and shows no select-all. */
@@ -427,25 +412,7 @@ export class SherpaDataGrid extends SherpaElement {
     const actionsHead = headRow.querySelector('.actions-head');
     if (actionsHead) headRow.appendChild(actionsHead);
 
-    this.#flushChains();
-
     this.#renderFilterRow();
-  }
-
-  /**
-   * A CHAIN's rows into its heading menu, once the menu has DRAWN: a detached
-   * clone is not upgraded, and a row set before its rows region exists is lost.
-   * TRAP T-a-heading-holds-a-whole-reading
-   */
-  #flushChains(): void {
-    const fields = new Set([...this.#columnFilters.keys(), ...this.#superseded.keys()]);
-    for (const field of fields) {
-      const rows = this.#shown(field)?.conditions;
-      if (!rows?.length) continue;
-      const menu = this.$<HTMLElement & { rendered?: Promise<void>; conditions?: FieldCondition[] }>(
-        `.head-cell[data-field="${CSS.escape(field)}"] sherpa-menu`);
-      if (menu) void Promise.resolve(menu.rendered).then(() => { menu.conditions = rows; });
-    }
   }
 
   /** TRAP T-grid-untyped-column-gets-no-filter-button — text|number|date only. */
@@ -549,21 +516,8 @@ export class SherpaDataGrid extends SherpaElement {
       /* `in` / `notin` are how SEVERAL picks read; the menu's own condition
          stays `eq` / `ne`, because its dropdown offers no "is one of" — the
          ticked list IS the "one of". */
-      const op = held?.op ?? col.op ?? DEFAULT_OP;
-      menu.setAttribute('data-op', readingOp(op));
-      /* The header is rebuilt on every sort and keystroke, so what the reader
-         TYPED has to be written back or it is lost. A PROPERTY, replayed after
-         upgrade. TRAP T-custom-element-upgrade */
-      // An ATTRIBUTE, so the menu's own re-stamp cannot lose it.
-      if (held && (OP_TAKES[held.op as FilterOp] ?? 'list') === 'text') {
-        menu.setAttribute('data-value', held.value);
-      }
-      /* A held CONDITION opens on its rows, not on an unticked list that hides
-         it — the same test the heading's `fx` reads. Will, 2026-09-26.
-         TRAP T-a-heading-menu-opens-on-what-it-holds */
-      if (held && fieldState({ field: col.field }, this.#columnReading(held)).condition === 'advanced') {
-        menu.setAttribute('data-mode', 'advanced');
-      }
+      // The DEF's opening condition; a held answer is drawn over it below.
+      menu.setAttribute('data-op', readingOp(col.op ?? DEFAULT_OP));
       /* NO WALL OF ROWS. An advanced-only column has no list to tick, so
          stamping its 240 values is work nobody sees.
          TRAP T-a-wall-of-values-is-not-a-filter */
@@ -572,29 +526,17 @@ export class SherpaDataGrid extends SherpaElement {
 
     // Restore the held clause — the header is rebuilt per sort and keystroke,
     // so the menu would otherwise forget itself.
-    if (held) {
-      /* THE MENU HOLDS ITS OWN. A number body reads `data-op` and `data-value`;
-         only the calendar is still this heading's to fill.
-         TRAP T-a-menu-owns-its-own-bodies */
-      if (kind === 'number') {
-        menu.setAttribute('data-op', held.op);
-        if (!held.range) menu.setAttribute('data-value', held.value);
-        else {
-          menu.setAttribute('data-from', held.from ?? '');
-          menu.setAttribute('data-to', held.to ?? '');
-        }
+    // Only the CALENDAR is still this heading's to fill; the menu holds the rest.
+    const cal = body?.querySelector('.head-filter-calendar');
+    if (held && cal) {
+      const [from = '', to = ''] = (held.picked ?? []).map(String);
+      if (held.range) {
+        cal.setAttribute('data-type', 'range');
+        cal.setAttribute('data-value-start', from);
+        cal.setAttribute('data-value-end', to);
+      } else {
+        cal.setAttribute('data-value', from);
       }
-      const cal = body?.querySelector('.head-filter-calendar');
-      if (cal) {
-        if (held.range) {
-          cal.setAttribute('data-type', 'range');
-          cal.setAttribute('data-value-start', held.from ?? '');
-          cal.setAttribute('data-value-end', held.to ?? '');
-        } else {
-          cal.setAttribute('data-value', held.value);
-        }
-      }
-      chip.setAttribute('data-current', '');
     } else if (kind === 'date' && body) {
       // A fresh RANGE calendar still needs its two-click mode set.
       const cal = body.querySelector('.head-filter-calendar');
@@ -610,6 +552,16 @@ export class SherpaDataGrid extends SherpaElement {
     if (body) menu.appendChild(body);
     chip.appendChild(menu);
     chip.setAttribute('aria-label', `Filter ${label}`);
+    /* THE MENU HOLDS ITS OWN — both answers and the mode — and keeps a reading
+       given before it has drawn. Upgraded FIRST: a property set on a plain
+       element hides the setter for good. The header is rebuilt on every sort
+       and keystroke, so this is how a heading remembers, and opens on it.
+       TRAP T-custom-element-upgrade · TRAP T-both-answers-are-kept
+       TRAP T-a-heading-menu-opens-on-what-it-holds */
+    if (held && !cal) {
+      customElements.upgrade(menu);
+      (menu as HTMLElement & { reading: FieldReading }).reading = held;
+    }
   }
 
   /**
@@ -619,12 +571,9 @@ export class SherpaDataGrid extends SherpaElement {
    * is asked the same question whichever they open.
    * TRAP T-one-field-one-filter-menu
    */
-  #addColumnValues(menu: HTMLElement, field: string, held?: ColumnFilter): void {
-    const on = new Set(
-      held && (OP_TAKES[held.op as FilterOp] ?? 'list') === 'list'
-        ? (held.picks ?? (held.value ? [held.value] : []))
-        : [],
-    );
+  #addColumnValues(menu: HTMLElement, field: string, held?: FieldReading): void {
+    // Simple's answer — the ticks. TRAP T-both-answers-are-kept
+    const on = new Set((held?.picked ?? []).map(valueKey));
 
     // What the ROWS ON SCREEN carry — everything else is unreachable RIGHT NOW.
     const present = new Set(
@@ -719,11 +668,10 @@ export class SherpaDataGrid extends SherpaElement {
     if (!chip || !field) return;
 
     const cleared = event.type === 'menu-clear';
-    const held = cleared ? null : this.#readColumnFilter(chip, field);
+    const held = cleared ? null : this.#readColumnFilter(chip);
 
     if (held) {
       this.#columnFilters.set(field, held);
-      chip.setAttribute('data-current', '');
     } else {
       this.#columnFilters.delete(field);
       chip.removeAttribute('data-current');
@@ -754,132 +702,88 @@ export class SherpaDataGrid extends SherpaElement {
 
     const col = this.#columns.find((c) => c.field === field);
     const header = col?.header ?? field;
+    // TRAP T-grid-number-clause-must-coerce — the clause is the data layer's.
+    const clause = held ? this.#columnClause(field, held) : null;
+    const lead = held ? this.#inForce(field, held).rows[0] : undefined;
+    const single = !!clause && clause[0] !== 'and' && clause[0] !== 'or';
+    const ends = lead?.op === 'between' ? (lead.picked ?? []).map(String) : null;
+    const one = (lead?.picked ?? []).length === 1 ? String(lead!.picked![0]) : '';
+    const value = held && !ends ? (lead?.text ?? one) : null;
     this.emit('column-filter-change', {
       field,
       header,
-      op: held?.op ?? null,
-      value: held?.range ? null : (held?.value ?? null),
-      from: held?.from ?? null,
-      to: held?.to ?? null,
-      // Ready for a DataSource — the <option> values ARE store FilterOps.
-      // TRAP T-grid-number-clause-must-coerce.
-      clause: held ? this.#columnClause(field, held, col?.type) : null,
+      op: single ? String(clause![1]) : (lead?.op ?? null),
+      value,
+      from: ends?.[0] ?? null,
+      to: ends?.[1] ?? null,
+      clause,
       // …and as a READING, which the data layer keeps. TRAP T-one-query-one-owner
-      reading: held ? this.#columnReading(held) : null,
+      reading: held ? { ...held } : null,
       // What a toolbar chip shows: "Contains: ana". The field half is `header`.
-      label: held ? this.#columnFilterLabel(held) : null,
+      label: held ? this.#columnFilterLabel(field, held) : null,
     });
   };
 
   /**
-   * Read one column's menu into a clause. TRAP T-grid-empty-clause-is-null — an
-   * empty value says nothing, and a range needs both ends.
+   * Read one column's menu into what it holds — both answers and the mode.
+   * TRAP T-grid-empty-clause-is-null — nothing typed or ticked holds nothing,
+   * and a range needs both ends. TRAP T-both-answers-are-kept
    */
-  #readColumnFilter(chip: HTMLElement, field = ''): ColumnFilter | null {
-    const menu = chip.querySelector('sherpa-menu');
-    const range = menu?.hasAttribute('data-range') ?? false;
-    /* The condition lives in the MENU for a TEXT column — it is the shared
-       filter menu now — and in the cloned body for number and date. `menu.op`
-       answers `eq` for any menu, so only a FILTER menu may be asked.
-       TRAP T-one-field-one-filter-menu */
-    const isFilterMenu = menu?.getAttribute('data-type') === 'filter';
-    /* THE MENU ANSWERS FOR ITS OWN BODY. A number body carries the operator
-       select and the value; only the calendar is still slotted here.
-       TRAP T-a-menu-owns-its-own-bodies */
-    const own = menu as (HTMLElement & { op?: string; values?: string[] }) | null;
-    const op = own?.op ?? DEFAULT_OP;
+  #readColumnFilter(chip: HTMLElement): FieldReading | null {
+    const menu = chip.querySelector<HTMLElement & { reading: FieldReading }>('sherpa-menu');
+    if (!menu) return null;
+    // A DATE column's calendar is still this heading's own.
     const cal = chip.querySelector<HTMLElement>('.head-filter-calendar');
-
-    if (range) {
-      // A calendar reports its span in data-*; a number body reports both ends.
-      const both = cal
-        ? [cal.dataset['valueStart'] ?? '', cal.dataset['valueEnd'] ?? '']
-        : (own?.values ?? []);
-      const from = String(both[0] ?? '').trim();
-      const to = String(both[1] ?? '').trim();
-      if (!from || !to) return null;
-      return { op: 'between', value: '', range: true, from, to };
-    }
-
-    /* A LIST condition is answered by the TICKED ROWS, a typing one by the
-       menu's own box. TRAP T-an-operator-decides-pick-or-type */
-    if (!cal && isFilterMenu) {
-      /* A CHAIN is read WHOLE: every answered row, not row one alone, which
-         applied `A` of `A or B`. TRAP T-a-heading-holds-a-whole-reading */
-      const filter = menu as HTMLElement & { mode?: string; conditions?: FieldCondition[] };
-      const rows = filter.mode === 'advanced'
-        ? (filter.conditions ?? []).filter((r) => (r.text ?? '').trim() || (r.picked ?? []).length)
-        : [];
-      if (rows.length > 1) {
-        return { op: rows[0]!.op, value: (rows[0]!.text ?? '').trim(), conditions: rows };
+    if (cal) {
+      if (menu.hasAttribute('data-range')) {
+        const from = (cal.dataset['valueStart'] ?? '').trim();
+        const to = (cal.dataset['valueEnd'] ?? '').trim();
+        return from && to ? { picked: [from, to], range: true } : null;
       }
-      if ((OP_TAKES[op as FilterOp] ?? 'list') === 'text') {
-        const typed = (menu as HTMLElement & { conditionValue?: string })
-          .conditionValue ?? '';
-        return typed.trim() ? { op, value: typed.trim() } : null;
-      }
-      /* ASK THE MENU. It owns its rows, so reading them here would be a
-         second answer to "what is ticked". TRAP T-one-field-one-filter-menu */
-      const picks = [...((menu as HTMLElement & { values?: string[] }).values ?? [])];
-      /* ONE rule for picks → a clause: one is `eq`, several are `in`, because
-         `eq` against a list can never match. In store.ts, beside the grammar. */
-      const clause = picksClause(field, picks, op as FilterOp);
-      if (!clause) return null;
-      const [, clauseOp, value] = clause;
-      return Array.isArray(value)
-        ? { op: clauseOp, value: '', picks: value.map(String) }
-        : { op: clauseOp, value: String(value) };
+      const day = (cal.dataset['value'] ?? '').trim();
+      return day ? { picked: [day], range: false } : null;
     }
+    const reading = menu.reading;
+    return answersAnything(reading) ? reading : null;
+  }
 
-    // A DATE column has no condition picker, so the operator is equality.
-    const value = (cal ? cal.dataset['value'] : (own?.values ?? [])[0]) ?? '';
-    if (!value.trim()) return null;
-    return { op: cal ? 'eq' : op, value: value.trim() };
+  /** One column's answer IN FORCE, as the data layer reads it. */
+  #inForce(field: string, held: FieldReading): FilterState {
+    // What it WOULD filter by; whether it is suspended is asked on its own.
+    return fieldState(this.#facts(field), { ...held, suspended: false });
+  }
+
+  /** What the grid knows of a field: its name and its column type. */
+  #facts(field: string): { field: string; type?: FieldType } {
+    const type = this.#columns.find((c) => c.field === field)?.type;
+    return { field, ...(type ? { type: type as FieldType } : {}) };
   }
 
   /**
-   * One column filter as a store FilterClause. TRAP
-   * T-grid-number-clause-must-coerce — a blank end is left as typed.
+   * One column filter as a store FilterClause, or null. THE DATA LAYER BUILDS
+   * IT — the casting, the range and the picks-to-`in` rule live once.
+   * TRAP T-the-field-type-decides-the-clause
    */
-  #columnClause(field: string, held: ColumnFilter, type?: string): unknown[] {
-    /* THE DATA LAYER BUILDS IT. This column menu holds its own facts — it is
-       not the source's selection — so it hands over a READING and gets the
-       clause back. The casting, the range and the picks-to-`in` rule all live
-       once. TRAP T-the-field-type-decides-the-clause */
-    const facts = { field, ...(type ? { type: type as FieldType } : {}) };
-    const clause = readingClause(facts, this.#columnReading(held));
-    /* A column filter is SET, so it always says something — `stateClause`
-       returns nothing only for a reading nobody answered. */
-    return (clause as unknown[]) ?? [field, held.op, held.value];
-  }
-
-  /** One column's filter as a reading — what a reader gave, not a query. */
-  #columnReading(held: ColumnFilter): FieldReading {
-    if (held.conditions?.length) return { conditions: held.conditions };
-    const op = readingOp(held.op);
-    if (held.range) {
-      return { op, range: true, picked: [held.from ?? '', held.to ?? ''] };
-    }
-    if ((OP_TAKES[op] ?? 'list') === 'text') return { op, text: held.value };
-    // SEVERAL ticked values ride as a list, which is what `in` / `notin` take.
-    return { op, range: false, picked: held.picks ?? [held.value] };
+  #columnClause(field: string, held: FieldReading): unknown[] | null {
+    // A SUSPENDED clause is returned too. TRAP T-grid-suspend-is-not-clear
+    return (readingClause(this.#facts(field), { ...held, suspended: false }) as unknown[] | undefined) ?? null;
   }
 
   /** One column filter as a chip reads it — "Contains: ana", "Between: 10 - 20". */
-  #columnFilterLabel(held: ColumnFilter): string {
+  #columnFilterLabel(field: string, held: FieldReading): string {
+    const state = this.#inForce(field, held);
     // A chain says itself: `Contains: Da or Starts with: R`.
-    if (held.conditions?.length) {
-      return spellConditions(fieldState({ field: '' }, { conditions: held.conditions }));
-    }
-    const name = OP_LABELS[held.op as keyof typeof OP_LABELS] ?? held.op;
-    if (held.range) return `${name}: ${held.from} - ${held.to}`;
+    if (state.rows.length > 1) return spellConditions({ ...state, conditions: state.rows });
+    const row = state.rows[0];
+    if (!row) return '';
+    const picks = (row.picked ?? []).map(String);
+    // Several picks read as the clause does: "Is one of", "Is not one of".
+    const op = picks.length > 1 && row.op === 'eq' ? 'in' : picks.length > 1 && row.op === 'ne' ? 'notin' : row.op;
+    const name = OP_LABELS[op as keyof typeof OP_LABELS] ?? op;
+    if (row.op === 'between') return `${name}: ${picks[0]} - ${picks[1]}`;
+    if ((OP_TAKES[row.op] ?? 'list') === 'text') return `${name}: ${row.text ?? ''}`;
     // A COUNT, not a list: "Is one of: 4" beats a chip that runs off the bar.
-    if (held.picks) {
-      return held.picks.length === 1
-        ? `${name}: ${held.picks[0]}`
-        : `${name}: ${held.picks.length}`;
-    }
-    return `${name}: ${held.value}`;
+    return picks.length === 1 ? `${name}: ${picks[0]}` : `${name}: ${picks.length}`;
   }
 
   /**
@@ -888,7 +792,7 @@ export class SherpaDataGrid extends SherpaElement {
    * `column-filter-change` reports.
    */
   setColumnFilter(field: string, clause: unknown[] | null): void {
-    const held = clause ? this.#heldFromClause(field, clause) : null;
+    const held = clause ? this.#readingFromClause(field, clause) : null;
     if (!held) {
       this.clearColumnFilter(field);
       return;
@@ -901,9 +805,8 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   /** A clause as what a heading HOLDS, or null when it filters by nothing. */
-  #heldFromClause(field: string, clause: unknown[]): ColumnFilter | null {
-    /* A CHAIN — `['or', a, b]` from a chip's rows — held as its rows. Read as
-       `[field, op, value]` it became an op of `a` and picks of `b`.
+  #readingFromClause(field: string, clause: unknown[]): FieldReading | null {
+    /* A CHAIN — `['or', a, b]` from a chip's rows — held as its rows.
        TRAP T-a-heading-holds-a-whole-reading */
     if (clause[0] === 'and' || clause[0] === 'or') {
       const rows = clauseConditions(clause as Filter);
@@ -915,24 +818,19 @@ export class SherpaDataGrid extends SherpaElement {
         });
         return null;
       }
-      return { op: rows[0]!.op, value: rows[0]!.text ?? '', conditions: rows };
+      return { conditions: rows, mode: 'advanced' };
     }
-
-    const [, op, value] = clause as [string, string, unknown];
-    let held: ColumnFilter;
-    if (op === 'between' && Array.isArray(value)) {
-      held = { op, value: '', range: true, from: String(value[0] ?? ''), to: String(value[1] ?? '') };
-    } else if (Array.isArray(value)) {
-      // SEVERAL values: the ticked rows of a list condition.
-      held = { op, value: '', picks: value.map((v) => String(v)) };
-    } else {
-      held = { op, value: String(value ?? '') };
+    const [, clauseOp, value] = clause as [string, string, unknown];
+    if (clauseOp === 'between' && Array.isArray(value)) {
+      const [from, to] = value.map((v) => String(v ?? ''));
+      return from && to ? { picked: [from, to], range: true } : null;
     }
-    // Nothing to filter by is not a filter — as the menu's own commit says.
-    const empty = held.range
-      ? !held.from || !held.to
-      : held.picks ? !held.picks.length : !held.value;
-    return empty ? null : held;
+    const op = readingOp(clauseOp);
+    const picked = (Array.isArray(value) ? value : [value]).map((v) => String(v ?? '')).filter(Boolean);
+    if (!picked.length) return null;
+    if ((OP_TAKES[op] ?? 'list') === 'text') return { op, text: picked[0]!, range: false };
+    // `eq` is Simple's ticks; `ne` and the rest stay an op over the picks.
+    return op === DEFAULT_OP ? { picked, range: false } : { op, picked, range: false };
   }
 
   /**
@@ -963,11 +861,8 @@ export class SherpaDataGrid extends SherpaElement {
   #supersededKey = '';
 
   /** What a heading SHOWS: a higher scope's answer when it holds the field, else its own. */
-  #shown(field: string): ColumnFilter | undefined {
-    const view = this.#superseded.get(field);
-    if (!view) return this.#columnFilters.get(field);
-    const clause = readingClause({ field }, view);
-    return (clause && this.#heldFromClause(field, clause as unknown[])) || undefined;
+  #shown(field: string): FieldReading | undefined {
+    return this.#superseded.get(field) ?? this.#columnFilters.get(field);
   }
 
   /**
@@ -976,15 +871,13 @@ export class SherpaDataGrid extends SherpaElement {
    */
   columnClause(field: string): unknown[] | null {
     const held = this.#columnFilters.get(field);
-    if (!held) return null;
-    const col = this.#columns.find((c) => c.field === field);
-    return this.#columnClause(field, held, col?.type);
+    return held ? this.#columnClause(field, held) : null;
   }
 
   /** One column's filter as a READING, or null — what a saved view set on it. */
   columnReading(field: string): FieldReading | null {
     const held = this.#columnFilters.get(field);
-    return held ? this.#columnReading(held) : null;
+    return held ? { ...held } : null;
   }
 
   /**
@@ -993,10 +886,17 @@ export class SherpaDataGrid extends SherpaElement {
    * TRAP T-one-query-one-owner
    */
   drawReading(field: string, reading: FieldReading): void {
+    /* HELD AS IT IS — both answers and the mode. Through a clause only the
+       answer in force came back. TRAP T-both-answers-are-kept */
+    if (!answersAnything(reading)) {
+      this.clearColumnFilter(field);
+      return;
+    }
     // Kept even before the columns arrive — a restore draws first.
-    const col = this.#columns.find((c) => c.field === field);
-    const clause = readingClause({ field, ...(col?.type ? { type: col.type as FieldType } : {}) }, reading);
-    this.setColumnFilter(field, (clause as unknown[] | undefined) ?? null);
+    this.#columnFilters.set(field, { ...reading });
+    this.#renderHead();
+    this.#syncColumnFilterStatus();
+    this.#renderBody();
   }
 
   /**
@@ -1012,7 +912,7 @@ export class SherpaDataGrid extends SherpaElement {
    */
   columnLabel(field: string): string | null {
     const held = this.#columnFilters.get(field);
-    return held ? this.#columnFilterLabel(held) : null;
+    return held ? this.#columnFilterLabel(field, held) : null;
   }
 
   /** Suspend or resume, never lose. TRAP T-grid-suspend-is-not-clear. */
@@ -1079,7 +979,7 @@ export class SherpaDataGrid extends SherpaElement {
     const held = this.#shown(field);
     /* THE SAME ANSWER a toolbar chip reads — `state.condition`, from this
        column's reading. TRAP T-one-condition-system */
-    const condition = held ? fieldState({ field }, this.#columnReading(held)).condition : null;
+    const condition = held ? this.#inForce(field, held).condition : null;
     if (condition === 'advanced') chip.setAttribute('data-icon-start', CONDITION_ICON);
     else chip.removeAttribute('data-icon-start');
     /* THE COLOUR SAYS IT TOO. The glyph alone left the chip in the plain active
@@ -1222,8 +1122,9 @@ export class SherpaDataGrid extends SherpaElement {
       return;
     }
     const held = this.#columnFilters.get(col.field);
-    if (held && !held.range && !held.suspended) {
-      markNeedle(td, text, held.value, held.op);
+    const lead = held && !held.suspended ? this.#inForce(col.field, held).rows[0] : undefined;
+    if (lead?.text) {
+      markNeedle(td, text, lead.text, lead.op);
       return;
     }
     /* A toolbar chip's condition reaches here through `data-needles`, because
@@ -1981,7 +1882,7 @@ export class SherpaDataGrid extends SherpaElement {
   #isFiltered(field: string): boolean {
     if (this.#filters.has(field)) return true;
     const held = this.#columnFilters.get(field);
-    if (held && !held.suspended) return true;
+    if (held && !held.suspended && this.#inForce(field, held).rows.length) return true;
     const external = this.dataset['filterFields'];
     // TRAP T-grid-filter-fields-match-whole — `includes` lights `status` for `substatus`.
     return !!external && external.split(/\s+/).includes(field);
@@ -2042,3 +1943,9 @@ export class SherpaDataGrid extends SherpaElement {
 }
 
 customElements.define('sherpa-data-grid', SherpaDataGrid);
+
+/** Does a reading hold ANY answer — a tick, typed text or a row — in either mode? */
+function answersAnything(reading: FieldReading): boolean {
+  return (reading.picked ?? []).length > 0 || (reading.text ?? '').trim() !== ''
+    || readingRows(reading).length > 0;
+}

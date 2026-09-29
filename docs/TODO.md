@@ -575,9 +575,10 @@ Simple until a row is edited (c3b280b2). ✅ Step 3a: the bar and the chip read
 and write through `menu.reading` — Will's "can't switch back" bug is fixed, on
 the Records page too (22fbcb41). ✅ Step 3b: the panel — its chips are
 Simple's answer, its menu's rows Advanced's; its switch carries the chips over
-and they mirror until edited; a redraw keeps the reader's mode. **Left:** 3c the
-grid heading, then the rest of A7 (one event per act, the headings on
-`menuFor()`, the 18 members go).
+and they mirror until edited; a redraw keeps the reader's mode (75d23450). ✅
+Step 3c: the grid heading holds the menu's whole reading — `ColumnFilter` is
+gone — and a redraw is held as it is, not through a clause. **Left:** the rest
+of A7 (one event per act, the headings on `menuFor()`, the 18 members go).
 
 Will, 2026-09-29: *"Switching to an advanced filter, in the filter toolbar
 chip menu, prevents me from toggling back to a simple filter if a value has
