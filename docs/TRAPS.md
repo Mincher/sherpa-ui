@@ -614,6 +614,8 @@ list is dropped with no error, so `mode` and `mirror` are on it.
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/both-answers-are-kept.test.mjs`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `test/e2e/reforged-menu-keeps-both-answers.spec.ts`
 
 ### T-one-number-is-a-pick-under-equals
 

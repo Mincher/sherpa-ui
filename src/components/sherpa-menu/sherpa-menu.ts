@@ -17,9 +17,12 @@
  */
 import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import {
-  DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type FilterOp, valueSet,
+  DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type FilterOp, valueKey, valueSet,
 } from '../../core/data/store.js';
-import { rowAnswered, type ConditionType, type FieldCondition } from '../../core/data/filter-state.js';
+import {
+  rowAnswered, type ConditionType, type FieldCondition, type FieldReading,
+} from '../../core/data/filter-state.js';
+import { bodyReading } from '../../core/ui/filter-menu.js';
 import { NON_VALUE_ROWS } from '../../core/ui/shared-constants.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-breadcrumbs/sherpa-breadcrumbs.js';
@@ -346,21 +349,73 @@ export class SherpaMenu extends SherpaElement {
    * means. TRAP T-a-mode-switch-carries-the-answer-over
    */
   #seedFromPicks(): void {
-    const answered = this.conditions.some((row) =>
-      (row.text ?? '').trim() !== '' || (row.picked ?? []).length > 0);
-    if (answered) return;
-    const picks = this.values;
-    if (!picks.length) return;
-    this.conditions = picks.map((value, i) => (
+    // Rows the reader wrote are theirs. TRAP T-both-answers-are-kept
+    if (!this.#mirror && this.conditions.some(rowAnswered)) return;
+    this.conditions = this.values.map((value, i) => (
       i ? { op: DEFAULT_OP, join: 'or' as const, picked: [value] }
         : { op: DEFAULT_OP, picked: [value] }
     ));
+    this.#mirror = true;
+  }
+
+  /** The rows still copy the picks — until the reader edits a row.
+   *  TRAP T-both-answers-are-kept */
+  #mirror = false;
+
+  /** A pick moved: rows that still MIRROR the picks follow it. */
+  #followPicks(): void {
+    if (this.#mirror && this.#offersAdvanced()) this.#seedFromPicks();
+  }
+
+  /**
+   * The whole answer: Simple's picks and Advanced's rows, which one is in
+   * force, and whether the rows still mirror the picks. SET draws it, silent.
+   * TRAP T-both-answers-are-kept
+   */
+  get reading(): FieldReading {
+    const body = this.dataset['body'];
+    if (body === 'number' || body === 'date') return bodyReading(this);
+    const out: FieldReading = { picked: this.values };
+    if (!this.#offersAdvanced()) return out;
+    const rows = this.conditions.filter(rowAnswered);
+    if (rows.length) out.conditions = rows;
+    out.mode = this.mode;
+    out.mirror = this.#mirror;
+    return out;
+  }
+
+  set reading(next: FieldReading) {
+    const typed = (next.text ?? '').trim();
+    const body = this.dataset['body'];
+    if (body === 'number' || body === 'date') {
+      if (next.op) this.#setBodyOp(next.op);
+      this.values = typed ? [typed] : (next.picked ?? []).map(valueKey);
+      return;
+    }
+    this.values = (next.picked ?? []).map(valueKey);
+    if (!this.#offersAdvanced()) return;
+    // A reading from before rows were a list says one condition as op and text.
+    const rows = next.conditions?.length ? next.conditions
+      : typed && next.op ? [{ op: next.op, text: typed }] : [];
+    this.conditions = rows;
+    this.#mirror = next.mirror ?? false;
+    // No `mode` is a reading from before both were kept: its rows decide.
+    const mode = next.mode ?? (rows.some(rowAnswered) ? 'advanced' : undefined);
+    if (mode) this.mode = mode;
+  }
+
+  /** A number body's operator: its select, and the attribute that echoes it. */
+  #setBodyOp(op: FilterOp): void {
+    this.dataset['op'] = op;
+    const select = this.$<HTMLElement & { value?: string }>('.body-op');
+    if (select && select.value !== op) select.value = op;
   }
 
   /** Add a condition row, and report the chain. Focus goes to its condition
    *  field once that has drawn — it renders on its own clock.
    *  TRAP T-add-condition-sits-below-the-rows */
   #onAddCondition = (): void => {
+    this.#mirror = false;
     const row = this.#addRow();
     this.#emitConditions();
     const field = row?.querySelector<HTMLElement & { rendered?: Promise<void> }>('.condition');
@@ -372,6 +427,7 @@ export class SherpaMenu extends SherpaElement {
   #onDropCondition = (event: Event): void => {
     const hit = (event.target as HTMLElement | null)?.closest?.('.drop-condition');
     if (!hit || this.#rowEls().length <= 1) return;
+    this.#mirror = false;
     hit.closest('.condition-row')?.remove();
     this.#numberRows();
     this.#emitConditions();
@@ -556,6 +612,8 @@ export class SherpaMenu extends SherpaElement {
 
   /** What Cancel restores, captured on open beside `#baseline`. */
   #conditionBaseline: FieldCondition[] = [];
+  /** Whether the rows mirrored the picks when the menu opened. */
+  #mirrorBaseline = false;
 
   /**
    * The condition, or what was typed under it, changed.
@@ -569,6 +627,7 @@ export class SherpaMenu extends SherpaElement {
        rows can ask different questions at once. */
     const row = (event?.target as HTMLElement | null)?.closest?.('.condition-row');
     if (row instanceof HTMLElement) {
+      this.#mirror = false;
       const op = (row.querySelector<FieldEl>('.condition')?.value ?? DEFAULT_OP) as FilterOp;
       row.dataset['takes'] = OP_TAKES[op] ?? 'list';
       // The reader just answered, so THAT is what the row wants now.
@@ -1204,6 +1263,7 @@ export class SherpaMenu extends SherpaElement {
     if (open) {
       this.#baseline = this.values;
       this.#conditionBaseline = this.conditions;
+      this.#mirrorBaseline = this.#mirror;
       this.#syncDirty();
       /* These live while the menu is OPEN, which is shorter than the element's
          life — `while` is that shorter lifetime, and the base class ANDs it
@@ -1296,6 +1356,7 @@ export class SherpaMenu extends SherpaElement {
     for (const box of boxes) box.checked = on;
     input.indeterminate = false;
     this.#syncSelectAll();
+    this.#followPicks();
     if (!this.#commits) this.emit('menu-change', { values: this.values });
   }
 
@@ -1355,6 +1416,7 @@ export class SherpaMenu extends SherpaElement {
       return;
     }
     this.#syncSelectAll();
+    this.#followPicks();
     this.#report();
   };
 
@@ -1409,6 +1471,7 @@ export class SherpaMenu extends SherpaElement {
     this.#settledByAction = true;
     this.#baseline = this.values;
     this.#conditionBaseline = this.conditions;
+    this.#mirrorBaseline = this.#mirror;
     this.emit('menu-apply', { values: this.values });
     /* The ROWS are part of what Apply applies. Without this a committing menu
        held its conditions for ever. TRAP T-a-condition-is-a-draft-too */
@@ -1425,6 +1488,7 @@ export class SherpaMenu extends SherpaElement {
     this.#settledByAction = true;
     this.values = this.#baseline;
     if (this.mode === 'advanced') this.conditions = this.#conditionBaseline;
+    this.#mirror = this.#mirrorBaseline;
     this.emit('menu-cancel');
     this.hide();
     this.#applying = false;
