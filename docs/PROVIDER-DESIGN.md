@@ -299,6 +299,6 @@ available, shown, and in the correct state."* Audited the same day.
 |---|---|
 | G1 — on a page with no data (Chat) the panel stayed open with the last page's filters | **fixed** — no sources shuts the panel with reason `page`, not the reader's choice; the next page with filters opens it again |
 | G2 — the Dashboard lost its filters on a trip away and back; it never passed the session, a key, or the URL's View to `provide()` | **fixed** — it does, under `/filters/dashboard` |
-| G3 — Save view works on the Dashboard only; Records' Save does nothing | open — TODO 15 |
-| G4 (`PAGE-DEFINITION.md`; D1 built — the Dashboard) — every Context repeats the same setup: a source, its declarations, the header's chips, `provide()`, the teardown — and anything one forgets is a gap (G2 was one) | open — the **Context definition**: one JSON (its store, fields, scopes, Views, header chips, template) the router hands the provider, which sets up the page with no page code. With 70 (a view definition renders the page) and 68 (the Templater) |
+| G3 — Save view works on the Dashboard only; Records' Save does nothing | open — TODO 15; `provider.saveView()` is built, Records needs its dialog |
+| G4 (`PAGE-DEFINITION.md`) — every Context repeats the same setup: a source, its declarations, the header's chips, `provide()`, the teardown — and anything one forgets is a gap (G2 was one) | **fixed** — D1–D3: the router opens each page from its definition (`provider.open()`); the page's layout as JSON is still 68's |
 

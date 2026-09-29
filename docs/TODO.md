@@ -12,182 +12,108 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**64 open.** Reassessed 2026-09-26: the bugs that lie first, then the
-FOUNDATION — the one compiled query, the view definition and when Apply runs —
-before the filter features that stand on it. Numbers are ids, not order; the
-table IS the order.
+**60 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+and the page definition (92) were built: what is left of the foundation first
+— the audit, the rename, the one builder — then the bugs, then the filter
+features, which now stand on it. Numbers are ids, not order; the table IS the
+order.
 
 | Pri | # | Item | Kind |
 |---:|---:|---|---|
-| | | **B — The foundation: design, then build** | |
-| 1 | 73 | EXPLORE — one compiled QUERY, built as the reader sets it up, run on Apply | explore |
-| 2 | 85 | `sherpa-provider`: a component ASKS for data, a scope, a query, a View or a template | foundation |
-| 2b | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
-| 2d | 92 | Navigating SETS UP the content — its definitions, data layer, filters and state — not only swaps the template | foundation |
-| 3 | 70 | EXPLORE — a view definition bundles its filters; one JSON renders the page | explore |
+| | | **B — The foundation: what is left** | |
+| 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
+| 2 | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
+| 3 | 38 | One model, one builder, one owner — what is left | refactor |
 | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
-| 5 | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
-| 6 | 38 | One model, one builder, one owner — what is left | refactor |
-| 7 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
+| 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | | | **C — Contained bugs** | |
-| 8 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
-| 9 | 61 | Add customer saves with required fields empty | bug |
-| 10 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
-| 11 | 45 | A picked date does not show in the chip | bug |
-| 12 | 82 | A number chip set by a View shows no value on its face | bug |
-| 13 | 83 | Calendar menu: a picked date leaves Apply and Discard looking off — yet they work | bug |
-| 14 | 16 | Favourite and Save apply to the Context, not the View | bug |
-| 15 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
-| 15aa | 94 | A number (and range) filter menu needs Apply and Cancel buttons | bug |
-| 15ab | 95 | Firefox: a remote chip holding a draft is not marked pending | bug |
-| 15ac | 96 | A grid with few columns leaves an empty band on the right of its card | bug |
+| 6 | 61 | Add customer saves with required fields empty | bug |
+| 7 | 45 | A picked date does not show in the chip | bug |
+| 8 | 82 | A number chip set by a View shows no value on its face | bug |
+| 9 | 83 | Calendar menu: a picked date leaves Apply and Discard looking off — yet they work | bug |
+| 10 | 94 | A number (and range) filter menu needs Apply and Cancel buttons | bug |
+| 11 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
+| 12 | 16 | Favourite and Save apply to the Context, not the View | bug |
+| 13 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
+| 14 | 95 | Firefox: a remote chip holding a draft is not marked pending | bug |
+| 15 | 96 | A grid with few columns leaves an empty band on the right of its card | bug |
+| 16 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
 | | | **D — Filters: Will's features, on the foundation** | |
-| 15c | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
-| 15d | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
-| 15e | 97 | A filter panel section shows an icon for WHAT it filters: View, Chart, Grid, Form, List | quick |
-| 15f | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
-| 16 | 60 | Once applied, a chip's badge shows the number of results | feature |
-| 17 | 49 | A preset conditional chip shows its conditions, read-only | feature |
-| 18 | 50 | A custom conditional chip shows its conditions, editable | feature |
-| 19 | 47 | More than 20 values: one chip, not a run | feature |
-| 20 | 48 | A child menu opens on hover or click of its row | feature |
-| 21 | 21c | A condition's matches must ALL highlight | feature |
-| 22 | 21f | "Send to view filters" | feature |
-| 23 | 21b | Which header chips carry over between views | feature |
-| 24 | 20b | The Date filter should be a view-scope date RANGE | feature |
-| 25 | 21d | EXPLORE — conditions for a DATE field | explore |
-| 26 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
+| 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
+| 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
+| 19 | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
+| 20 | 21d | EXPLORE — conditions for a DATE field | explore |
+| 21 | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
+| 22 | 97 | A filter panel section shows an icon for WHAT it filters: View, Chart, Grid, Form, List | quick |
+| 23 | 60 | Once applied, a chip's badge shows the number of results | feature |
+| 24 | 49 | A preset conditional chip shows its conditions, read-only | feature |
+| 25 | 50 | A custom conditional chip shows its conditions, editable | feature |
+| 26 | 48 | A child menu opens on hover or click of its row | feature |
+| 27 | 21c | A condition's matches must ALL highlight | feature |
+| 28 | 21f | "Send to view filters" | feature |
+| 29 | 21b | Which header chips carry over between views | feature |
+| 30 | 20b | The Date filter should be a view-scope date RANGE | feature |
+| 31 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
 | | | **E — Views and navigation** | |
-| 27 | 15 | Save a View, and the Save split-button menu | feature |
-| 28 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
-| 29 | 34 | Figma: use the Navigation terms | figma |
-| 30 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
+| 32 | 15 | Save a View, and the Save split-button menu | feature |
+| 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
+| 34 | 34 | Figma: use the Navigation terms | figma |
+| 35 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
 | | | **F — Data states and charts** | |
-| 31 | 58 | Loading, empty and error states in a container | feature |
-| 32 | 9b | A Data Viz header, for metrics and chart containers | component |
-| 33 | 80 | Container and Data Viz headers: Figma's new button styling and grouping | component |
-| 34 | 14 | An example of real-time data | feature |
-| 35 | 59 | EXPLORE, later — Will's own loading pattern | explore |
+| 36 | 58 | Loading, empty and error states in a container | feature |
+| 37 | 9b | A Data Viz header, for metrics and chart containers | component |
+| 38 | 80 | Container and Data Viz headers: Figma's new button styling and grouping | component |
+| 39 | 14 | An example of real-time data | feature |
+| 40 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | | | **G — Overlay panels** | |
-| 36 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
-| 37 | 23 | A focused grid row opens a details panel | feature |
+| 41 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
+| 42 | 23 | A focused grid row opens a details panel | feature |
 | | | **H — The accessibility gate** | |
-| 38 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
+| 43 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
 | | | **I — The big builds** | |
-| 39 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
-| 40 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
-| 41 | 27 | A consumer can supply their OWN templates and CSS | feature |
-| 42 | 25 | `sherpa-layout-canvas` + minimap | component |
-| 43 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
+| 44 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
+| 45 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
+| 46 | 27 | A consumer can supply their OWN templates and CSS | feature |
+| 47 | 25 | `sherpa-layout-canvas` + minimap | component |
+| 48 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
 | | | **J — Tidy-ups and renames** | |
-| 44 | 11 | `sherpa-group`: what is left | tidy |
-| 45 | 28 | A Figma component is NOT always a web component | tidy |
-| 46 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
-| 47 | 33 | Density as step offsets, and a breakpoint step | tokens |
-| 48 | 36 | CSS: compiled where it should inherit? | tidy |
-| 49 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
-| 50 | 84 | Use the platform: Intl for money, units and deltas; Temporal in the calendar | refactor |
-| 51 | 81 | Component contracts move from YAML to JSON | refactor |
-| 52 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
+| 49 | 11 | `sherpa-group`: what is left | tidy |
+| 50 | 28 | A Figma component is NOT always a web component | tidy |
+| 51 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| 52 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| 53 | 36 | CSS: compiled where it should inherit? | tidy |
+| 54 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| 55 | 84 | Use the platform: Intl for money, units and deltas; Temporal in the calendar | refactor |
+| 56 | 81 | Component contracts move from YAML to JSON | refactor |
+| 57 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 | | | **K — Agentic UI: much later** | |
-| 53 | 76 | WebMCP: agents do UI tasks through Sherpa's own contracts — a core system | explore |
-| 54 | 77 | CONTRACTED UX patterns, so a generated experience is consistent and useful | explore |
-| 55 | 78 | A node-based WORKFLOW creator: make, edit and view patterns and generated workflows | explore |
+| 58 | 76 | WebMCP: agents do UI tasks through Sherpa's own contracts — a core system | explore |
+| 59 | 77 | CONTRACTED UX patterns, so a generated experience is consistent and useful | explore |
+| 60 | 78 | A node-based WORKFLOW creator: make, edit and view patterns and generated workflows | explore |
 
-**Why this order** (reassessed 2026-09-26).
+**Why this order** (reassessed 2026-09-29).
 
-- **A — the bugs that lie: all fixed 2026-09-26** (72, 44c, 42). A new one of these goes back to the top.
-- **B — The foundation: design, then build.** Most of this session's bugs were ONE cause — a filter held in several places that disagree. Design the one compiled query (73), the view definition that bundles its defaults (70) and when Apply runs (62) as ONE design; then build 38 on it, with 66's shared footer. The filter features below all stand on it.
-- **C — Contained bugs.** Each is fixable in its own component or page. 64 waits for the other session's accordion edits.
-- **D — Filters: Will's features, on the foundation.** In dependency order: pending (46) before result counts (60); the read-only `fx` menu (49) before the editable one (50); the date range (20b) before date conditions (21d).
-- **E — Views and navigation.** 15 writes 70's shape back.
-- **F — Data states and charts.** 58 uses 62's debug flag to show its states.
-- **H — The accessibility gate.** After the markup settles, before new components, so they must pass it.
-- **I — The big builds.** 68 and 27 are one door.
-- **J — Tidy-ups and renames.** 29 dead last: it touches every import.
+- **B — what is left of the foundation.** 86 first: an ASSESSMENT for Will to
+  rule on, so it costs no code while he reads it. 75 before any filter
+  feature, so 89, 90, 98 and 99 are built in the new words. 38's one builder
+  is built WITH 89 (see D).
+- **C — Contained bugs.** Each is fixable in its own component or page. In
+  pairs where one fix serves both: 45 and 82 (a chip's face after a silent
+  set), 83 and 94 (a menu's footer).
+- **D — Filters.** The panel is rebuilt ONCE: 99 designs how filters group
+  first, then 89 (Simple, with 38 step 4's one builder), 90 (Advanced) and
+  21d (its date half), then 98 (the action row, on 90). Then 60; 49 before
+  50; 20b before any date condition ships.
+- **E — Views and navigation.** 15's save is built (`provider.saveView`); what
+  is left is Records' dialog and the split button.
+- **F** uses the remote flag to show its states. **H** comes after the markup
+  settles, before new components, so they must pass it. **I**: 68 and 27 are
+  one door; 67 takes over the router's `open()`. **J**: 29 dead last — it
+  touches every import.
 
 ---
 
-## B — The foundation: design, then build
-
-### `[~]` 73 — EXPLORE: one compiled QUERY, built as the reader sets it up, run on Apply
-
-Will, 2026-09-26: *"A query language that is compiled as conditions
-(grouping, sorting, filtering, conditions, segmentation, aggregation etc.)
-are built up. The data layer compiles this query then executes it when
-triggered (e.g. user clicks apply). The aim here is to avoid reloads,
-refreshes, state changes etc. causing a loss of set up parameters. The data
-layer can probably also use this query to help inform other UI components
-alongside the component state tracking feature. We probably have a
-proto-version of this going already but it needs work if we do."*
-
-**The proto-version, as it stands:**
-
-| piece | where | what it is |
-|---|---|---|
-| `ViewState` | `data-source.ts` | filter, sort, group, search, page — one flat state |
-| named parts + field readings | `DataSource` (`contribute`, `select`) | the filter is COMPOSED from them, and `state.filter` is the composed result |
-| the clause grammar | `store.ts` (`Filter`, `andFilter`, `picksClause`) | the query's filter language |
-| `FieldReading` → clause | `filter-state.ts` (`fieldState`, `readingClause`, `clauseConditions`) | a reader's answer as data, compiled one way |
-| aggregation | `aggregate.ts` (`reduceRows`, `countBy`, `seriesBy`) | run by hand in the example's `as` closures |
-| `debugState()`, `ViewSnapshot` | source, `persist-view.ts` | the query read back, and saved |
-
-**What is missing:** the query is not ONE object. Filter parts, readings,
-sort and group live in the source; segmentation and aggregation live in each
-Context's code; and `state.filter` is the compiled OUTPUT, which is why a
-restored one showed rows no chip explained (21e). A single query — every
-parameter, in the reader's own terms, compiled on demand — could be the one
-thing that is saved (21e), shared (70's view definition), applied on a
-trigger (62's remote Apply), and read by every control to draw itself (38
-step 3). Design it with 70; 62's "only a remote fetch needs Apply" decides
-when it runs.
-
-**Will, 2026-09-26: DESIGN FIRST.** One short design covering 73, 70 and 62
-together — the query object, the view definition, and when Apply runs — as a
-page Will reviews before any of it is built.
-
-**The design is written: `docs/QUERY-DESIGN.md`** (2026-09-26). **Decided the
-same day:** a View is markup + a JSON Query; "remote" is on the STORE, spoofed
-by a wrapping store in the data layer; build steps 1–5 first (one owner), then
-6–8. Building now, one step per commit.
-
-**Steps 1 to 7 are built (2026-09-27)** — see `QUERY-DESIGN.md` §10 for what
-each did and what is left. The source holds the Query; the bars, the open
-panel, the header, the legends and the grid headings are drawn from it; the
-session saves and restores it. Will's choice A: a heading filter wears its
-field's normal chip, so the `col:` and external chips are gone. Step 6 gave a
-remote store a draft, Apply only for a remote fetch, the pending chip and the
-footer's "nothing to save" (62, 46, 66). Step 7: a saved View is JSON — its
-Query onto a clean slate, its defaults on the chips — Records and the
-Dashboard. **Next: step 8** — segment and aggregate in a component scope.
-
-### `[ ]` 85 — `sherpa-provider`: a component ASKS for data, a scope, a query, a View or a template
-
-**Designed — `docs/PROVIDER-DESIGN.md`, for Will's review.** Will, 2026-09-27:
-*"Why can't any component ask for data, a definition, a conditional query
-definition or a template from the data layer?"* — the Context Protocol
-(choice A), a provider over a subtree, and each request can subscribe. It was
-designed in `FILTER-REVIEW.md` §9–§12 on 2026-09-25 and never built. Step 8
-of the Query folds into its P2. Target: `records.js` 853 → ~250 lines of code,
-`dashboard.js` 222 → ~50. Closes most of 37 and 38.
-
-**P1 built `ffc48935`** — the provider, the Context Protocol, the grid and
-pager ask. **P2 built** — charts, tiles and legends DECLARE what they need
-(`aggregate`, `segments`, `series`); the pages lost their adapters. The
-centralisation audit is `PROVIDER-DESIGN.md` §9, for review; its items 9
-and 13 are done. **P3a and P3b built** — fields declared once on the
-source; the bars ask for their scope and report their holds. **P3c built**
-— the panel asks for its scopes, drawn whole by `describe()`. Also fixed on
-the way: 93 (only the View trickles down), 87 and 88. **P3d built** — the
-grid headings answer through the source. **P3e built** — a component's own
-filter is `data-readings`, and a View pick keeps it. **P4 built** — the
-provider keeps the Views and the session's Query; a View's content asks for
-its data. **P3 and P4 are done:
-`records.js` 1163 → 655 lines since P2 began, `dashboard.js` 331 → 170 (the
-size gate's count, comments in).** **P5 built** —
-a page's state goes out and comes back as JSON. **The provider plan (P1–P5) is
-done.** **Next:** 91 (the shell owns panel mode) and 92 (navigating sets up
-the content), then the §9 items that P3 unlocked, and 86 (the full audit).
+## B — The foundation: what is left
 
 ### `[ ]` 86 — AUDIT: every component's functions and events — one request, one response, standardised in `SherpaElement`
 
@@ -207,182 +133,12 @@ base class, the wrapped controls, the charts). Still to cover: every public
 method and every event of all 63 components, side by side — same job,
 different name or different code.
 
-### `[ ]` 89 — Every filter added to the panel starts SIMPLE
-
-Will, 2026-09-27: *"Let's start all filters added to the panel in 'Simple'
-mode."* Its content is one of three, by the field:
-
-| the field has | Simple draws |
-|---|---|
-| 16 values or fewer | each value as its own chip — exploded |
-| more than 16 values, or it is a date | ONE chip with a menu — a list, or a calendar menu for a date |
-| numbers | a number input, or range slider inputs |
-
-**16 replaces 47's 20** — one line for the bar and the panel, set once (the
-builder's explode-or-menu flag, 38). Mode words: TODO 75.
-
-### `[ ]` 90 — Any filter switches to ADVANCED: condition rows, with options per field type
-
-Will, 2026-09-27: *"Any filter should be able to be toggled to 'Advanced',
-using simple switch, to build a multi condition scenario using conditional
-input rows. We'll need different conditional options for numeric, and date,
-field types."*
-
-A plain switch on every filter turns Simple into Advanced: condition input
-rows, several of them. The operators follow the field's TYPE — text, number
-and date each get their own list (21d is the date half). Switching back to
-Simple keeps what it can show and says what it cannot, never drops a
-condition silently. **The word is Advanced** — Will chose it over
-*Complex*, 2026-09-27 (75).
-
-### `[ ]` 97 — A filter panel section shows an icon for WHAT it filters
-
-Will, 2026-09-29: *"The accordion header for filter panel sections should have
-an icon before the heading label, and after caret, that indicates the type of
-content being filtered."*
-
-| section filters | icon |
-|---|---|
-| the View | `monitor` |
-| a chart | a chart icon |
-| a data grid | a grid or table icon |
-| a form | `file-lines` |
-| a list | `list` |
-
-The order in the header is caret, icon, label. `monitor`, `file-lines` and
-`list` are in `src/core/ui/icon-paths.ts`. **No chart icon and no table icon are
-there** (only `table-columns`), so get them from Figma first. The KIND comes
-from the component that the scope's fields belong to, so the source must
-report it with each scope (`describe(scope)`). The panel must not find it by
-tag name.
-
-### `[ ]` 98 — An ADVANCED filter has its own Apply and Discard; the panel gets Apply all and Discard all
-
-Will, 2026-09-29: *"If there is at least 1 advanced (conditional) filter in
-the filter panel then we should show Apply and Discard buttons in the same row
-as the Add condition button but on the right side. Clicking these will apply
-or discard changes to that specific filter only. We should also show a footer
-at the bottom of the panel to Apply All or Discard All changes. We can just
-tweak the labels (and any required logic) on the panel footer that we used to
-use for applying filters."*
-
-- **Per filter:** an Advanced filter shows Apply and Discard at the RIGHT of
-  its Add condition row. They apply or discard THAT filter only.
-- **Whole panel:** a footer with Apply all and Discard all, shown while at
-  least one Advanced filter is in the panel.
-- **The footer comes back**: it was removed in `c92adec0` (step 6c, "no
-  footer; a field applies as it changes"). Take its markup back from there and
-  change the labels. A Simple filter still applies as it changes.
-- Build on 90 (Advanced mode). The source already hears `filter-apply` and
-  `filter-discard`; a per-field one must name its field.
-
-**Update, Will 2026-09-29:** *"Let's also move the reset filter button from the
-section header to the last row alongside Apply/Discard… We can keep this as an
-icon only button for now. Increase its size to match the other buttons on the
-row. We can also add this row, with the updated remove button, to simple
-filter sections. That way we have 1 action row, per section, regardless of
-simple or advanced filter mode. With this change we can also get rid of the
-column that we had reserved in the filter panel for actions on the right side.
-This gives us some more horizontal space for content."*
-
-- **ONE action row per field section**, last in the section, in Simple AND
-  Advanced mode. It holds the Reset button (`.field-clear`,
-  `arrow-rotate-left`, icon only) and, where the field has them, Apply and
-  Discard at the right. In Advanced mode it is the Add condition row.
-- **Reset leaves the section header** and takes the row's button size, not
-  `data-size="sm"`. The remote Apply and Discard icons (`.field-apply`,
-  `.field-discard`) leave the header too.
-- **The actions column goes**: the panel's reserved right-hand column
-  (`.field-acts`, from `24c3a57c`) is deleted, and its width goes to the content.
-
-### `[ ]` 92 — Navigating SETS UP the content — its definitions, data layer, filters and state — not only swaps the template
-
-Will, 2026-09-27: *"When the app shell navigates to new content we shouldn't
-only be swapping the content area content/templates. We need to be getting
-and setting the definitions, data layer etc. to ensure all the correct filters
-are available, shown, and in the correct state. Same goes for all other view
-content. We're probably already doing this somewhere but there are gaps. I
-assume the new provider comes into play here."*
-
-Today each Context's `init()` does it by hand — make a source, declare its
-fields, give the provider its source, restore the session's Query, draw the
-bars — and anything a Context forgets is a gap (the Dashboard gave the
-provider no source until P2). Yes, the provider: a Context DEFINITION (JSON —
-its sources, fields, scopes, Views and template) handed to it on navigation,
-so it sets up the data layer, answers every component, and restores the
-state. Provider P4 (definitions) and 70 (a view definition renders the page)
-are its halves. First: audit where it is done today, and list the gaps.
-
-**Audited 2026-09-27 — `PROVIDER-DESIGN.md` §10.** Two gaps fixed: a page with
-no data shut the panel (G1), and the Dashboard keeps its Query (G2). Open: Save
-view on Records (G3, TODO 15), and the Context DEFINITION that ends the
-repeated setup in every Context (G4) — **designed in `docs/PAGE-DEFINITION.md`,
-decided by Will 2026-09-29.** D1, D2 and D3 are built: the router
-opens every page from `examples/definitions/<context>.json` through
-`provider.open()`, and a Context's `init` gets its source.
-
-### `[ ]` 94 — A number (and range) filter menu needs Apply and Cancel buttons
-
-Will, 2026-09-27: *"Numerical (and range) filter menus need apply/cancel
-buttons."* A number is TYPED, so applying each keystroke filters on "1" on
-the way to "150". Locally a PICK applies at once (Will's ruling on 62, "No
-Apply locally"); a number body is the exception — it waits for Apply, and
-Cancel puts back what was applied. The calendar's footer is the pattern, and
-83 is its bug, so fix the two together.
-
-### `[ ]` 95 — Firefox: a remote chip holding a draft is not marked pending
-
-Found 2026-09-27 by the full Firefox run: `test/e2e/reforged-pending-chip.spec.ts:10`
-fails in Firefox every time — after a tick in a remote chip's open menu, the
-chip has no `data-pending`. Chromium and WebKit pass. Not the provider work:
-the toolbar as committed before P3b fails the same way. Start at the menu's
-`dirty` and the bar's `#queuePending` (TODO 46, `T-a-pending-chip-has-no-fill`).
-
-### `[ ]` 96 — A grid with few columns leaves an empty band on the right of its card
-
-Seen 2026-09-27 in the Dashboard's Capacity planning View: five columns at the
-default 160px make an 800px table in a 1350px card. The grid is a FIXED table
-whose width is the sum of its `<col>`s (`inline-size: 0`,
-`T-col-width-not-inline-size`), so a column never grows to fill. Decide what
-fills the slack — the last column, or every column in proportion — without
-breaking a dragged width or the pinned edges.
-
-### `[ ]` 70 — EXPLORE: a view definition bundles its filters; one JSON renders the page
-
-**Designed with 73 — see `docs/QUERY-DESIGN.md`.**
-
-Will, 2026-09-26, ruling on 21e: a View change is a clean slate (both bars
-empty their filter chips) — *"but default filter fields, values, and states
-need to be bundled in a view definition. I'm not sure how we'd do that with
-our templates. So perhaps we need a JSON definition that gets translated to a
-template and data layer requests for all components. Something to
-investigate."*
-
-**What a view definition holds today** (`SavedView`, `persist-view.ts`): a
-label; a `snapshot` — the source's state plus, per element, a map of public
-METHOD CALLS (`applyViewSnapshot`; the Dashboard's EMEA view sets Region this
-way); and optional `content` markup, parsed through an allow-list
-(`parseViewMarkup`). What it CANNOT say: which filter chips each bar HOLDS,
-nor their default values and on/off states — the Context's own code decides
-those (`DATA_FILTERS` and `globalFilters()` in the Records example).
-
-**The question:** one JSON definition per View that declares, for every
-component, what it is, where it sits, which fields it offers, and each
-field's default answer — and a translator that turns it into the template AND
-the data-layer requests (`declareValues`, `hold`, `select`, `contribute`).
-Then a View change applies the view's own defaults onto the clean slate, and
-Save (15) writes the same shape back.
-
-Settle before building: is the JSON a superset of `SavedView` or its
-replacement; how it meets the templates (68's templater, 27's own
-templates); and how much of it is 38's "a component DECLARES the data it
-needs". Design first — 15 builds on the answer.
-
-**Settled 2026-09-27: ONE JSON definition** (`T-a-view-is-json`). Built for
-Records and the Dashboard in step 7 of 73: `{ label, query, ui }`, applied
-onto a clean slate with its defaults on the chips; `saveViewAs` saves the same
-shape. Left: a view's LAYOUT as JSON, which the Templater (68) turns into a
-template — `content` markup stays until then — and Save a View (15).
+**Open from §9, and part of this:** 4 (the grid builds its filter menu by
+hand, and the page sets its `data-column-values` — read both from the
+source), 5 and 7 (ONE event shape, `{ readings, presets }`, which retires the
+grid's `ColumnFilter`), 10 (the wrapped native control, four times), 12
+(chart axes), 14 (the app-header re-exposes the bar) and 15 (leftovers). Item
+8 is 68; item 11 is 84.
 
 ### `[ ]` 74 — EXPLORE: the Query builds every group, sort and filter menu; a menu shows its sub-query
 
@@ -433,48 +189,29 @@ reused, where possible."* The full review is `docs/FILTER-REVIEW.md`.
 Will's taxonomy stands: **six KINDS** — group, sort, boolean, single, multi,
 conditional. "Organise" is a label, never a kind.
 
-**Done:** 1 the chip owns its kind · 2 one derivation of a kind
-(`core/ui/filter-kind.ts`) · 5 sort/group state collapsed (fe8eba65) · 5.5
-error reporting, `report()` / `onReport()` (7c1a36d3) · 6 `filter-state.ts`
-split into state, face and `bind-selection` (4f747cae).
+**Done:** steps 1, 2, 5, 5.5 and 6; step 3 — the data layer coordinates — is
+done by the provider (85): the panel asks for its scopes, every component finds
+its source by asking, and `records.js` carries nothing between the panel and
+the bars. A component declares the data it needs (P2). The size gate is
+built (`npm run check:size`).
 
-**Step 3 — the data layer coordinates — is PART done.** The scope registry
-(`scope`/`hold`/`holds`/`scopeOf`/`move`), `debugState()`, the panel no
-longer reaching into the bar (789fe50b), and menu borrowing gone
-(`menuFor()`). Left:
+**Left:**
 
-- The panel is bound to NO `DataSource`. `records.js` carries readings between
-  the panel and the bars by hand (~472-510), and still reads the header bar's
-  shadow root (~419). Both go when the panel binds.
-- Auto-registration does not exist: a component should find its source by a
-  request on connect that the nearest source answers (decided 2026-09-25).
-- "Scope" still means three things — query reach (`view`/`component`), which
-  rows a bind is pushed (`page`/`all`), and the app's surfaces (`view`/`data`).
-  Rename them apart.
+- **Step 4 — ONE field-row builder.** The panel keeps its own `#draw`,
+  `#drawSection` and `#drawField`. The bar and the panel differ by the layout
+  DIRECTION and whether values EXPLODE into a run — two flags (89's 16-value
+  line is the second), not two implementations. Do it WITH 89, which redraws
+  the panel's fields anyway, and 99, which groups them.
+- **"Scope" still means three things** — query reach (`view` / a component
+  scope), which rows a bind is pushed (`page` / `all`), and the app's surfaces
+  (`view` / `data`). Rename them apart.
+- **Left from 44c:** a heading that ALREADY held its own filter when the View
+  took its field keeps applying it — one field in one scope says it should be
+  suspended, as a chip is (`T-a-view-held-heading-shows-and-refuses`).
 
-**Step 4 — ONE field-row builder — is NOT done.** It was ticked at −21 lines
-(b67266f8), but that is one chip builder per container. The panel keeps its
-own `#draw`, `#drawSection` and `#drawField`. The two differ by the layout
-DIRECTION and whether values EXPLODE into a run — two flags (and 47's), not
-two implementations.
-
-**The size gate was never built.** `scripts/size-baseline.json`, a per-component
-line count that may only fall, as `lint:css` does for Theme reads. Since the
-plan: the panel 898 → 1288 lines, the toolbar 1857 → 1982. Rules for the work:
-MOVE code, never rewrite it; delete the replaced path in the same commit; no
-helper with one caller; state the budget up front and report the actual.
-
-**Left from 44c:** a heading that ALREADY held its own filter when the View
-took its field keeps applying it — one field in one scope says it should be
-suspended, as a chip is (`T-a-view-held-heading-shows-and-refuses`). **The
-pattern behind 44b and 44c** — two controls holding one field and disagreeing,
-in the glue `records.js` carries by hand. Fix it at its
-cause: MOVE the state into the source rather than patching the glue. The bug
-fix and this step are then the same commit.
-
-**Then its own item:** a component DECLARES the data it needs (`data-field`,
-`data-aggregate`, `data-series-by`) and the source composes it. The example
-hand-builds 9 components through `as` closures over ~569 lines.
+Rules for the work: MOVE code, never rewrite it; delete the replaced path in
+the same commit; no helper with one caller; state the budget up front and
+report the actual.
 
 ### `[ ]` 37 — Components are AGNOSTIC of the data, and of the example app
 
@@ -493,10 +230,14 @@ Will, 2026-09-25:
    `filter-configure`) and `.to-toolbars` in the panel. The toolbar's `actions`
    slot is not used for it.
 2. **Components take PARAMETERS, never data shapes.** A component should not
-   know a field is called `openTickets`. Measure what still does.
+   know a field is called `openTickets`. Measure what still does. The grid's
+   heading values are set by the PAGE (`data-column-values`, in `records.js`)
+   — the source has them (86, §9 item 4).
 3. **Extension, not forking** — item 27 is the mechanism.
 4. **Split the example app into its own repo**, LAST. Anything it cannot do
-   from outside the library is a boundary the library has not drawn.
+   from outside the library is a boundary the library has not drawn. Its
+   pages are JSON now (`examples/definitions/`, Will 2026-09-29), so the folder
+   moves with it.
 
 ---
 
@@ -508,8 +249,7 @@ Will, 2026-09-26: a COLLAPSED `sherpa-accordion` section takes the Style
 surface's DOWN step — `base +2`, `--sherpa-style-surface-base-2` — as its
 background fill. (base / +1 / +2 are default / hover / down.) Bind the Style
 name, never a Theme colour: a state is the mode's own step. Open sections keep
-today's fill. **Wait for the other session**: `sherpa-accordion.css` has its
-uncommitted edits in the working tree.
+today's fill.
 
 ### `[ ]` 61 — BUG: Add customer saves with required fields empty
 
@@ -587,6 +327,15 @@ work. TWO faults:
   disagree. The button must refuse the click while disabled, or the footer's
   "off" is only paint.
 
+### `[ ]` 94 — A number (and range) filter menu needs Apply and Cancel buttons
+
+Will, 2026-09-27: *"Numerical (and range) filter menus need apply/cancel
+buttons."* A number is TYPED, so applying each keystroke filters on "1" on
+the way to "150". Locally a PICK applies at once (Will's ruling on 62, "No
+Apply locally"); a number body is the exception — it waits for Apply, and
+Cancel puts back what was applied. The calendar's footer is the pattern, and
+83 is its bug, so fix the two together.
+
 ### `[ ]` 16 — BUG: Favourite and Save apply to the Context, not the View
 
 The ★ stars the Context (`examples/index.html` ~396, the `view-favorite`
@@ -612,9 +361,158 @@ removed from this menu, and whether a multi-value row's tick keeps meaning
 held. Update `T-the-add-menu-is-the-whole-list` and the test "a folded BOOLEAN
 filter opens On".
 
+### `[ ]` 95 — Firefox: a remote chip holding a draft is not marked pending
+
+Found 2026-09-27 by the full Firefox run: `test/e2e/reforged-pending-chip.spec.ts:10`
+fails in Firefox every time — after a tick in a remote chip's open menu, the
+chip has no `data-pending`. Chromium and WebKit pass. Not the provider work:
+the toolbar as committed before P3b fails the same way. Start at the menu's
+`dirty` and the bar's `#queuePending` (TODO 46, `T-a-pending-chip-has-no-fill`).
+
+### `[ ]` 96 — A grid with few columns leaves an empty band on the right of its card
+
+Seen 2026-09-27 in the Dashboard's Capacity planning View: five columns at the
+default 160px make an 800px table in a 1350px card. The grid is a FIXED table
+whose width is the sum of its `<col>`s (`inline-size: 0`,
+`T-col-width-not-inline-size`), so a column never grows to fill. Decide what
+fills the slack — the last column, or every column in proportion — without
+breaking a dragged width or the pinned edges.
+
 ---
 
 ## D — Filters: Will's features, on the foundation
+
+### `[ ]` 99 — EXPLORE: a FILTERSET — filters in SERIAL, in PARALLEL, or both; and a group of chips
+
+Will, 2026-09-29: *"Customers and Regions are closely related. 1 customer can
+operate in many regions. A region can only contain a customers data for that
+region. This isn't something that Sherpa logic needs to contend with
+literally. However, it would be good to have the option to configure filters
+to run in serial, parallel, or both modes."*
+
+| mode | a filter's options |
+|---|---|
+| **parallel** — the default, and today | every value, whatever the other filters pick |
+| **serial** | only the values the rows still have after the picks ABOVE it in the chain |
+| **both** | a serial group sits beside filters that run in parallel |
+
+*"A nice way to achieve serial groups is some sort of wrapper element like the
+native HTML fieldset… Perhaps a filterset element? Actually, we can also use
+this to group filters/chips together, too."*
+
+- **`filterset`** groups filters — and chips: it can also put Group and Sort
+  under "Organise".
+- **`data-filter-mode="serial"`** chains the filters in it;
+  **`data-filter-mode="parallel"`** runs them side by side. No filterset, or no
+  attribute, is parallel, as today.
+- **The example app:** Customer and Region in serial, everything else in
+  parallel. Sherpa never knows that a customer has many regions — the ROWS
+  answer it, through the chain.
+
+**Design first**, for Will's review:
+
+1. **The JSON.** A scope's sets in the page definition — for example
+   `"sets": [{ "mode": "serial", "fields": ["customer", "region"] }]` — so the
+   markup and the definition say one thing (`T-a-page-is-its-definition`).
+2. **The data layer.** A field in a serial set takes its options from the rows
+   the fields ABOVE it allow — `filterDef()` for that field, narrowed. Show an
+   unavailable value dimmed below a divider
+   (`T-unavailable-value-sorts-below-a-divider`), or remove it?
+3. **A pick that is no longer offered.** Region = APAC, then Customer = one
+   with no APAC rows: keep the pick, suspend it, or drop it? Suspend is not
+   clear — never lose a reader's answer silently.
+4. **The bar and the panel draw a set as ONE group** — 38 step 4's one
+   builder, and `.sherpa-group` for the joins. Do it before 89 redraws the
+   panel, so the panel is rebuilt once.
+
+### `[ ]` 89 — Every filter added to the panel starts SIMPLE
+
+Will, 2026-09-27: *"Let's start all filters added to the panel in 'Simple'
+mode."* Its content is one of three, by the field:
+
+| the field has | Simple draws |
+|---|---|
+| 16 values or fewer | each value as its own chip — exploded |
+| more than 16 values, or it is a date | ONE chip with a menu — a list, or a calendar menu for a date |
+| numbers | a number input, or range slider inputs |
+
+**16 replaces 47's 20** — one line for the bar and the panel, set once (the
+builder's explode-or-menu flag, 38 step 4). 47 (more than 20 values, one chip)
+is merged here. Mode words: TODO 75.
+
+### `[ ]` 90 — Any filter switches to ADVANCED: condition rows, with options per field type
+
+Will, 2026-09-27: *"Any filter should be able to be toggled to 'Advanced',
+using simple switch, to build a multi condition scenario using conditional
+input rows. We'll need different conditional options for numeric, and date,
+field types."*
+
+A plain switch on every filter turns Simple into Advanced: condition input
+rows, several of them. The operators follow the field's TYPE — text, number
+and date each get their own list (21d is the date half). Switching back to
+Simple keeps what it can show and says what it cannot, never drops a
+condition silently. **The word is Advanced** — Will chose it over
+*Complex*, 2026-09-27 (75).
+
+### `[ ]` 98 — One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes
+
+Will, 2026-09-29: *"If there is at least 1 advanced (conditional) filter in
+the filter panel then we should show Apply and Discard buttons in the same row
+as the Add condition button but on the right side. Clicking these will apply
+or discard changes to that specific filter only. We should also show a footer
+at the bottom of the panel to Apply All or Discard All changes. We can just
+tweak the labels (and any required logic) on the panel footer that we used to
+use for applying filters."*
+
+- **Per filter:** an Advanced filter shows Apply and Discard at the RIGHT of
+  its Add condition row. They apply or discard THAT filter only.
+- **Whole panel:** a footer with Apply all and Discard all, shown while at
+  least one Advanced filter is in the panel.
+- **The footer comes back**: it was removed in `c92adec0` (step 6c, "no
+  footer; a field applies as it changes"). Take its markup back from there and
+  change the labels. A Simple filter still applies as it changes.
+- Build on 90 (Advanced mode). The source already hears `filter-apply` and
+  `filter-discard`; a per-field one must name its field.
+
+**Update, Will 2026-09-29:** *"Let's also move the reset filter button from the
+section header to the last row alongside Apply/Discard… We can keep this as an
+icon only button for now. Increase its size to match the other buttons on the
+row. We can also add this row, with the updated remove button, to simple
+filter sections. That way we have 1 action row, per section, regardless of
+simple or advanced filter mode. With this change we can also get rid of the
+column that we had reserved in the filter panel for actions on the right side.
+This gives us some more horizontal space for content."*
+
+- **ONE action row per field section**, last in the section, in Simple AND
+  Advanced mode. It holds the Reset button (`.field-clear`,
+  `arrow-rotate-left`, icon only) and, where the field has them, Apply and
+  Discard at the right. In Advanced mode it is the Add condition row.
+- **Reset leaves the section header** and takes the row's button size, not
+  `data-size="sm"`. The remote Apply and Discard icons (`.field-apply`,
+  `.field-discard`) leave the header too.
+- **The actions column goes**: the panel's reserved right-hand column
+  (`.field-acts`, from `24c3a57c`) is deleted, and its width goes to the content.
+
+### `[ ]` 97 — A filter panel section shows an icon for WHAT it filters
+
+Will, 2026-09-29: *"The accordion header for filter panel sections should have
+an icon before the heading label, and after caret, that indicates the type of
+content being filtered."*
+
+| section filters | icon |
+|---|---|
+| the View | `monitor` |
+| a chart | a chart icon |
+| a data grid | a grid or table icon |
+| a form | `file-lines` |
+| a list | `list` |
+
+The order in the header is caret, icon, label. `monitor`, `file-lines` and
+`list` are in `src/core/ui/icon-paths.ts`. **No chart icon and no table icon are
+there** (only `table-columns`), so get them from Figma first. The KIND comes
+from the component that the scope's fields belong to, so the source must
+report it with each scope (`describe(scope)`). The panel must not find it by
+tag name.
 
 ### `[ ]` 60 — Once applied, a chip's badge shows the number of results
 
@@ -649,13 +547,6 @@ The same `fx` button, with rows that can be edited. On a SAVED custom filter
 that is applied, an edit is a temporary DRAFT; the saved filter does not
 change. When the draft differs, the menu and the panel section header offer
 Save. Needs 49, and 46's pending look for the draft.
-
-### `[ ]` 47 — More than 20 values: one chip, not a run
-
-A panel field with more than 20 values draws the toolbar's single chip, with a
-dropdown of its values, not one chip per value. **89 moves the line to 16**, for the bar
-and the panel alike. It is the flag 38's builder
-already needs: whether values EXPLODE into a run or stay behind a menu.
 
 ### `[ ]` 48 — A child menu opens on hover or click of its parent row
 
@@ -752,9 +643,11 @@ step 3, which puts scopes in the data layer.
 
 ### `[ ]` 15 — Save a View, and the Save split-button menu
 
-Not started, measured 2026-09-26: only Dashboard saves a view
-(`dashboard.js`, asks in a dialog since f8dfd128); Records has no `view-save`
-handler; `viewOptions` is a flat list.
+Measured 2026-09-29: `provider.saveView(label)` saves the current View of
+ANY page opened from a definition, and puts it on the View chip (D1). Only the
+Dashboard calls it (`dashboard.js`, after its name dialog); Records has no
+`view-save` handler and no name dialog (G3 in `PROVIDER-DESIGN.md` §10).
+`viewOptions` is a flat list.
 
 **Save** writes the current View — layout, content and its WHOLE filter
 configuration — to a view definition. **Load** from the View chip's menu, in a
@@ -940,7 +833,10 @@ handling navigation. It should use the Navigation API extensively."*
 **Where routing lives today: the example app.** `examples/index.html` does it
 by hand — `history.pushState` / `replaceState` at four sites, a `popstate`
 listener, `urlFor()`, `contextFromURL()`, `hrefParam()` and `loadContext()`,
-23 lines of the page touching the URL. Nothing in `src/` routes.
+23 lines of the page touching the URL. Nothing in `src/` routes. Since
+2026-09-29 `loadContext()` also OPENS each page from its definition
+(`provider.open()`) — so a router is the one place that takes a URL to a
+page: its definition, its View, its data.
 
 **The router owns the URL**, one owner for one value: which Context, which
 View, and whether Settings is open over them (`?context=records&view=risk&settings=profile`,
@@ -1121,15 +1017,13 @@ hand-rolls today:
 
 | site | today | the platform |
 |---|---|---|
-| `examples/contexts/records.js` `money()` | `` `$${Math.round(n).toLocaleString('en-GB')}` `` | `Intl.NumberFormat` currency |
 | `sherpa-file-upload.ts` | `` `${(bytes / 1048576).toFixed(1)} MB` `` | `Intl.NumberFormat` unit `megabyte` |
 | `sherpa-metric.ts` | the delta rounded with `toFixed(2)` | `Intl.NumberFormat` percent, `signDisplay` |
-| `records.js` | ISO days and months built with `padStart` | `Temporal.PlainDate` / `PlainYearMonth` (examples run in a browser) |
 | `sherpa-calendar.ts` | ten `Date` sites of day maths | `Temporal` — a component only runs in a browser |
 
 The DOM-free data layer stays off `Temporal` and `Math.sumPrecise` until Node
-has them. Step 8 of the Query is where formats arrive as `Intl` options in
-JSON, so do the metric and money there.
+has them. The metric's VALUE takes `Intl` options as JSON since provider P2
+(`data-format`); its delta and the upload size do not yet.
 
 ### `[ ]` 81 — Component contracts move from YAML to JSON
 
@@ -1202,6 +1096,14 @@ and edited the same way as a designed one.
 ## Done
 
 One line each. The detail is in git and in the trap named.
+
+**2026-09-29, the page definition (92)**
+- 92: navigating sets up the page — the router opens each Context from `examples/definitions/<name>.json` through `provider.open()`: its source, fields, scopes, saved filters, the header's chips, each bar's Add list, the grid's configuration and the kept Query. D1 `edec11a6`, D2 `ce3aaa4f`, D3 `eeb5e37a` — `T-a-page-is-its-definition`
+- A field's possible values come from the DATA: the store's schema (`oneOf`, `number()` with `min`/`max`), or else its rows (`declareFromRows`) — Will's decision — `T-the-data-says-what-a-field-may-hold`
+- 85: the provider, P1–P5 — a component ASKS and the nearest provider answers; `records.js` 1163 → 326 lines, `dashboard.js` 331 → 107 — `T-a-component-asks-its-provider`, `docs/PROVIDER-DESIGN.md`
+- 73: one Query, steps 1–8 — step 8 (segment and aggregate) became provider P2's declared summaries — `T-one-query-one-owner`, `docs/QUERY-DESIGN.md`
+- 70: a View is ONE JSON definition, `{ label, query, ui }`, applied onto a clean slate. Its layout as JSON is 68's; saving it is 15's — `T-a-view-is-json`
+- 47: more than 20 values, one chip — merged into 89, at 16
 
 **2026-09-27, the provider (85)**
 - 93: a grid-scope filter narrowed the charts and tiles too — only the View trickles down now; a summary is under the View alone — `T-only-the-view-trickles-down`
