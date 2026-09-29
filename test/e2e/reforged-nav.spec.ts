@@ -666,7 +666,7 @@ test('the collapsed rail hides every child row, tag and chevron', async ({ page 
   expect(r.chevronShown).toBe(false);
 });
 
-test('the collapsed rail centres its icons, and the header buttons use the Structure sm mode', async ({ page }) => {
+test('the collapsed rail centres its icons, and the header buttons are the Structure sm button', async ({ page }) => {
   const r = await page.evaluate(async (config) => {
     const nav = document.createElement('sherpa-nav') as HTMLElement & {
       rendered?: Promise<void>;
@@ -679,13 +679,15 @@ test('the collapsed rail centres its icons, and the header buttons use the Struc
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = nav.shadowRoot!;
-    // Figma pins the pin/settings Buttons to Structure=sm: height → space/xl 24,
-    // icon-size → content/size/small 12.
-    const pin = sr.querySelector<HTMLElement>('.pin')!;
+    // Figma pins the pin/settings Buttons to Structure=sm. They are COMPOSED
+    // sherpa-buttons now (TODO 79), so the button's own sm tokens size them.
+    const pin = sr.querySelector<HTMLElement>('.pin')! as HTMLElement & { rendered?: Promise<void> };
+    await pin.rendered;
     const pinBox = pin.getBoundingClientRect();
+    const glyph = pin.shadowRoot!.querySelector<HTMLElement>('.icon-start')!.getBoundingClientRect();
     const header = {
       box: `${Math.round(pinBox.width)}x${Math.round(pinBox.height)}`,
-      glyph: getComputedStyle(pin).fontSize,
+      glyph: `${Math.round(glyph.width)}x${Math.round(glyph.height)}`,
     };
 
     const item = (label: string): HTMLElement =>
@@ -731,9 +733,9 @@ test('the collapsed rail centres its icons, and the header buttons use the Struc
     };
   }, NESTED);
 
-  // Structure=sm, read from that mode's tokens rather than a look-alike constant.
+  // Structure=sm, as the button's projected tokens say: 24 tall, content/size/base 14.
   expect(r.header.box).toBe('24x24');
-  expect(r.header.glyph).toBe('12px');
+  expect(r.header.glyph).toBe('14x14');
 
   // Theme size/icon/xs → content/size/base → 14. Same box in both rails, and the
   // same 14px as the row's label — that pairing is the point of the unified scale.
@@ -926,4 +928,40 @@ test('the collapsed rail is the density\'s size/3xl: 36, 40 and 48', async ({ pa
   });
   expect(r.state).toBe('collapsed');
   expect(r.widths).toEqual({ compact: 36, default: 40, comfortable: 48 });
+});
+
+/**
+ * SETTINGS THEN PIN, ONE GROUP — TODO 79, from Figma's Navigation Header
+ * (1051:7815): two composed DEFAULT sherpa-buttons, 24 px each, flush in a
+ * 48 × 24 group — Settings the start, Pin the end — and the pressed state
+ * reaches the control a screen reader reads.
+ */
+test('the header\'s Settings and Pin are one default group of composed buttons', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const nav = document.createElement('sherpa-nav') as HTMLElement & { rendered?: Promise<void>; state: string };
+    nav.setAttribute('data-nav-state', 'pinned');
+    document.getElementById('root')!.appendChild(nav);
+    await nav.rendered;
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    nav.getAnimations({ subtree: true }).forEach((a) => a.finish());
+    const group = nav.shadowRoot!.querySelector<HTMLElement>('.actions')!;
+    const buttons = [...group.querySelectorAll<HTMLElement>('sherpa-button')];
+    await Promise.all(buttons.map((b) => (b as HTMLElement & { rendered?: Promise<void> }).rendered));
+    const g = group.getBoundingClientRect();
+    return {
+      order: buttons.map((b) => b.className),
+      look: buttons.map((b) => b.getAttribute('data-look')),
+      grouping: buttons.map((b) => b.dataset['group']),
+      sizes: buttons.map((b) => { const x = b.getBoundingClientRect(); return [Math.round(x.width), Math.round(x.height)]; }),
+      group: [Math.round(g.width), Math.round(g.height)],
+      pressed: buttons.map((b) => b.shadowRoot!.querySelector('button')!.getAttribute('aria-pressed')),
+    };
+  });
+  expect(r.order).toEqual(['settings', 'pin']);
+  expect(r.look).toEqual([null, null]);
+  expect(r.grouping).toEqual(['start', 'end']);
+  expect(r.sizes).toEqual([[24, 24], [24, 24]]);
+  expect(r.group).toEqual([48, 24]);
+  // Pinned: Pin's own control says so.
+  expect(r.pressed).toEqual(['false', 'true']);
 });

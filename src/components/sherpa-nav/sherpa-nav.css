@@ -124,7 +124,7 @@
   border: 0;
   visibility: visible;
 }
-:host([data-menu]) :is(.pin, .settings) { display: none; }
+:host([data-menu]) .actions { display: none; }
 .menu-foot { display: none; }
 :host([data-menu]) .menu-foot {
   display: flex;
@@ -196,44 +196,16 @@
   color: var(--sherpa-style-content-secondary, #35353d);
 }
 
-/* Pin + settings. Which one is active comes from the projected
-   nav-container-{pin,setting}-button switch, applied by JS as data-pin /
-   data-settings — a custom property cannot drive a selector.
-
-   Figma pins these to Structure=sm, but a mode pin is a SELECTOR and the
-   projected `[data-size="sm"]` block lives in the light DOM, so it cannot match
-   in here — reading `--sherpa-structure-*` bare gives the DEFAULT mode (32/14).
-   The two vars below re-point at the same primitives the sm block uses; keep
-   them in step with `[data-size="sm"]` in @layer structure of tokens.css. */
-.hdr-btn {
-  --_btn-box: var(--sherpa-display-mode-space-xl, 24px);
-  --_btn-glyph: var(--sherpa-theme-content-size-small, 12px);
-
+/* Settings then Pin: composed DEFAULT buttons in one group, flush, as Figma's
+   Navigation Header draws them in every state. TODO 79. */
+.actions {
   display: var(--_is-visible, inline-flex);
   align-items: center;
-  justify-content: center;
   flex-shrink: 0;
-  inline-size: var(--_btn-box);
-  block-size: var(--_btn-box);
-  padding: 0;
-  border-style: solid;
-  /* The Style names Figma binds; the look and pressed are PINS in
-     state-pins.yaml. TRAP T-a-state-colour-binds-the-style-mode */
-  border-color: var(--sherpa-style-border-base-1, transparent);
-  background: var(--sherpa-style-surface-base, transparent);
-  color: var(--sherpa-style-content-base, #35353d);
-  font-size: var(--_btn-glyph);
-  line-height: 1;
-  cursor: pointer;
-  transition: background-color 100ms ease, border-color 100ms ease, color 100ms ease;
-
-  /* Style base / +1 / +2 are default / hover / down, in whatever mode is pinned. */
-  &:hover { background: var(--sherpa-style-surface-base-1, #e8e8f64d); }
-  &:active { background: var(--sherpa-style-surface-base-2, #b3b3c34d); }
-  &:focus-visible {
-    outline: none;
-    box-shadow: var(--sherpa-focus-ring);
-  }
+}
+.actions > :not(:first-child),
+.actions ::slotted(*) {
+  margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
 }
 
 /* ── Quick zone ────────────────────────────────────────────────────────── */

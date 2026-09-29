@@ -50,32 +50,31 @@ anatomy:
                 - el: span
                   class: product sherpa-truncate
                   part: product
-                - el: button
-                  class: hdr-btn sherpa-border-edges sherpa-border-corners pin
-                  part: pin
-                  attrs:
-                    type: button
-                    aria-pressed: "false"
-                    aria-label: Pin navigation
+                - el: span
+                  class: actions
+                  part: actions
                   children:
-                    - el: i
-                      class: sherpa-icon-box
+                    - el: sherpa-button
+                      class: settings
+                      part: settings
                       attrs:
-                        data-icon: pin
-                        aria-hidden: "true"
-                - el: button
-                  class: hdr-btn sherpa-border-edges sherpa-border-corners settings
-                  part: settings
-                  attrs:
-                    type: button
-                    aria-pressed: "false"
-                    aria-label: Settings
-                  children:
-                    - el: i
-                      class: sherpa-icon-box
+                        data-type: icon
+                        data-size: sm
+                        data-group: start
+                        data-icon-start: gear
+                        aria-label: Settings
+                        aria-pressed: "false"
+                    - el: sherpa-button
+                      class: pin
+                      part: pin
                       attrs:
-                        data-icon: gear
-                        aria-hidden: "true"
+                        data-type: icon
+                        data-size: sm
+                        data-group: end
+                        data-icon-start: thumbtack-angle
+                        aria-label: Pin navigation
+                        aria-pressed: "false"
+                    - slot: actions
             - el: div
               class: quick-zone
               part: quick-zone
@@ -196,7 +195,7 @@ states:
     selector: ":host(:not([data-searching]))"
   - $type: state
     name: focus-visible
-    selector: .hdr-btn:focus-visible
+    selector: .search-clear:focus-visible
 capabilities:
   - $type: capability
     api: js-property-mirror
@@ -258,11 +257,6 @@ tokens:
   product.font-weight: "{sherpa.font-weight-medium}"
   product.line-height: "{sherpa.theme-content-line-height-large}"
   product.color: "{sherpa.style-content-secondary}"
-  hdr-btn.--_btn-box: "{sherpa.display-mode-space-xl}"
-  hdr-btn.--_btn-glyph: "{sherpa.theme-content-size-small}"
-  hdr-btn.border-color: "{sherpa.style-border-base-1}"
-  hdr-btn.background: "{sherpa.style-surface-base}"
-  hdr-btn.color: "{sherpa.style-content-base}"
   quick-zone.gap: "{sherpa.display-mode-space-xs}"
   quick-zone.padding: "{sherpa.display-mode-space-xs}"
   search.gap: "{sherpa.display-mode-space-xs}"

@@ -134,7 +134,6 @@ light, 264 of 264 in dark.
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
 - Site: `src/components/sherpa-nav-item/sherpa-nav-item.css`
-- Site: `src/components/sherpa-nav/sherpa-nav.css`
 - Site: `src/components/sherpa-button/sherpa-button.css`
 - Site: `src/components/sherpa-tabs/sherpa-tabs.css`
 - Site: `src/components/sherpa-list-item/sherpa-list-item.css`
@@ -14306,6 +14305,11 @@ there, follows every change, and removes it when the host's is removed. It
 only ever removes a label it wrote, so a component that names its own control
 keeps it. Five declare one: button (`.trigger`), input-text, select-checkbox,
 select-radio (`.control`) and switch (`.input`).
+
+**`aria-pressed` travels with it** (TODO 79): a toggle button's state is as
+dead on the host as its name. The nav's Pin and Settings, and the bar's ★,
+set it on a composed `sherpa-button`; the base class copies it to the same
+control, and removes it when the host's is removed.
 
 The test asks the accessibility tree (`getByRole(…, { name })`), not the
 attribute: an attribute check passes on exactly the bug.

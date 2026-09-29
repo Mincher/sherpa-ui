@@ -31,6 +31,7 @@
 
   Slots:
     brand-icon  the product mark inside the 40×40 branding tile
+    actions     more header buttons, after Settings and Pin
     footer      pinned footer content (account / user)
 
   Fires:
@@ -47,12 +48,17 @@
           <slot name="brand-icon"><i class="sherpa-icon-box" data-icon="group"></i></slot>
         </span>
         <span class="product sherpa-truncate" part="product"></span>
-        <button class="hdr-btn sherpa-border-edges sherpa-border-corners pin" part="pin" type="button" aria-pressed="false" aria-label="Pin navigation">
-          <i class="sherpa-icon-box" data-icon="pin" aria-hidden="true"></i>
-        </button>
-        <button class="hdr-btn sherpa-border-edges sherpa-border-corners settings" part="settings" type="button" aria-pressed="false" aria-label="Settings">
-          <i class="sherpa-icon-box" data-icon="gear" aria-hidden="true"></i>
-        </button>
+        <!-- ACTIONS: Settings then Pin, one DEFAULT group, as Figma's Navigation
+             Header (1051:7815); a slot, so more can join. Will, TODO 79. -->
+        <span class="actions" part="actions">
+          <sherpa-button class="settings" part="settings" data-type="icon" data-size="sm"
+                         data-group="start" data-icon-start="gear"
+                         aria-label="Settings" aria-pressed="false"></sherpa-button>
+          <sherpa-button class="pin" part="pin" data-type="icon" data-size="sm"
+                         data-group="end" data-icon-start="thumbtack-angle"
+                         aria-label="Pin navigation" aria-pressed="false"></sherpa-button>
+          <slot name="actions"></slot>
+        </span>
       </div>
 
       <div class="quick-zone" part="quick-zone">

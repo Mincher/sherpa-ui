@@ -99,12 +99,6 @@ sherpa-notifications:
   # No Figma component. The unread pip wears the active mode's border.
   '& .notification-pip': active
 
-sherpa-nav:
-  # The header buttons pin Transparent; a pressed one (pin, settings) pins
-  # Transparent=active, as the Navigation Header's State=Pinned variant does.
-  '& .hdr-btn': transparent
-  '& .hdr-btn[aria-pressed="true"]': transparent/active
-
 # A tip is its own surface: it pins Style=default, so a chart in a status tile
 # (a metric's sparkline) does not paint its tip in the status colour.
 sherpa-sparkline:

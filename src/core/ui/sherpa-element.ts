@@ -397,7 +397,7 @@ export abstract class SherpaElement extends HTMLElement {
         ...defs.map((d) => d.fallbackAttr).filter((a): a is string => a !== undefined),
         ...this.variantAttrs,
         ...this.observed,
-        ...(this.labelTarget ? ['aria-label'] : []),
+        ...(this.labelTarget ? ['aria-label', 'aria-pressed'] : []),
       ]),
     ];
   }
@@ -532,7 +532,7 @@ export abstract class SherpaElement extends HTMLElement {
       // The prop itself, and any prop that FALLS BACK to it.
       if (prop === name || def.fallbackAttr === name) this.#syncProp(prop, def);
     }
-    if (name === 'aria-label') this.#syncLabel();
+    if (name === 'aria-label' || name === 'aria-pressed') this.#syncLabel();
     if (Ctor.asks && (name in SUMMARY_PROPS || name === 'data-source' || name === 'data-scope')) this.#reask();
     this.onChange(name, oldVal, newVal);
     // TRAP T-restamp-runs-after-on-change
@@ -853,10 +853,16 @@ export abstract class SherpaElement extends HTMLElement {
   /** Did `#syncLabel` write the inner label — so only it ever removes one. */
   #labelled = false;
 
-  /** Copy the host's `aria-label` onto `labelTarget`. */
+  /** Copy the host's `aria-label`, and `aria-pressed`, onto `labelTarget` —
+   *  a toggle's state must reach the control that is read. */
   #syncLabel(): void {
     const target = (this.constructor as typeof SherpaElement).labelTarget;
     if (!target) return;
+    const pressed = this.getAttribute('aria-pressed');
+    for (const el of this.$$(target)) {
+      if (pressed != null) el.setAttribute('aria-pressed', pressed);
+      else el.removeAttribute('aria-pressed');
+    }
     const label = this.getAttribute('aria-label');
     if (!label && !this.#labelled) return;
     for (const el of this.$$(target)) {

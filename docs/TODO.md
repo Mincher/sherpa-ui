@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**48 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**47 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -73,7 +73,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
 | ❓ | 33a | 116 | `sherpa-nav` binds to a Store: its entries as data, drawn and redrawn | refactor |
 | ✅ | 34 | 34 | Figma: use the Navigation terms | figma |
-| ⬜ | 35 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
+| ✅ | 35 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
 | | | | **F — Data states and charts** | |
 | ⬜ | 36 | 58 | Loading, empty and error states in a container | feature |
 | ⬜ | 37 | 9b | A Data Viz header, for metrics and chart containers | component |
@@ -1492,7 +1492,7 @@ design (the shell's `_divergence` says so).
 
 ---
 
-### `[ ]` 79 — Nav header: Settings and Pin are one Button group in an Actions slot
+### `[x]` ✅ 79 — Nav header: Settings and Pin are one Button group in an Actions slot
 
 Will, 2026-09-27, from Figma: in the Navigation Panel's header the Settings
 and Pinning buttons are now GROUPED and use the DEFAULT button style. Settings
@@ -1505,6 +1505,18 @@ COMPOSE two `sherpa-button`s (never a re-drawn button), wrapped in
 `.sherpa-group` (start/end by position), inside a `<slot name="actions">` in
 the header — the default content being these two. Resync the nav's spec and
 check the pixels against Figma.
+
+**✅ Done 2026-09-29.** Read live from Figma's Navigation Header (1051:7815):
+an `Actions` frame, 48 × 24, two 24 px icon Buttons with no gap, Style
+default, Structure sm, Grouping start and end — the SAME in every state, so
+no pressed look — and the pin glyph is `thumbtack-angle`. The nav now
+composes two `sherpa-button`s (Settings `data-group="start"`, then Pin
+`end`) in `.actions`, with an `actions` slot after them so more can join;
+the raw `.hdr-btn`s, their CSS and their two state pins are gone. A host's
+`aria-pressed` now reaches the inner button, as `aria-label` does (the bar's
+★ gains it too). The old test that read a 12 px glyph off the host now
+measures the button's own sm icon: 14 px, as Figma's Structure collection
+projects it.
 
 ## F — Data states and charts
 
@@ -2530,6 +2542,7 @@ One line each. The detail is in git and in the trap named.
 - 17b: on a phone the nav is a whole-screen menu — `T-the-nav-is-a-menu-on-a-phone`; the Store binding is 116
 - 116: ❓ the nav keeps its open Areas, or a full Store binding
 - 34: Figma speaks Context; the closed rail follows density from Figma, not an override
+- 79: the nav header's Settings and Pin are one composed default group, as Figma draws it
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

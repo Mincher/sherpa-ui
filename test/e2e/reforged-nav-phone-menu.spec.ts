@@ -19,7 +19,7 @@ const look = (page: Page) => page.evaluate(() => {
     inset: getComputedStyle(frame).marginInlineStart,
     menu: nav.hasAttribute('data-menu'),
     fills: b.x === 0 && b.y === 0 && b.width === innerWidth && b.height === innerHeight,
-    pin: shown(nav.shadowRoot!.querySelector('.pin')),
+    pin: !!nav.shadowRoot!.querySelector<HTMLElement>('.pin')?.checkVisibility(),
     foot: shown(nav.shadowRoot!.querySelector('.menu-foot')),
     url: location.search,
   };

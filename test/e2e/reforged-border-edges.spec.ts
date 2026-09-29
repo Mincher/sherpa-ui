@@ -23,7 +23,6 @@ const CASES: [string, string, Record<string, string>][] = [
   ['sherpa-list', '.body', {}],
   ['sherpa-menu', '.menu', {}],
   ['sherpa-nav-item', '.promo', { 'data-type': 'promo' }],
-  ['sherpa-nav', '.hdr-btn', {}],
   // A COLLAPSED rail reduces the search to a bare glyph — border, padding and
   // input all go (see sherpa-nav.css). `data-nav-state` opens it.
   ['sherpa-nav', '.search', { 'data-searchable': '', 'data-nav-state': 'pinned' }],
