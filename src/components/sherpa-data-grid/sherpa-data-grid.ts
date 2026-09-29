@@ -34,6 +34,7 @@ import {
 import { spellConditions } from '../../core/data/filter-face.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import { report } from '../../core/data/report.js';
+import { isStaleKey, keyRow, rowKey } from '../../core/data/row-key.js';
 
 /** The `fx` glyph a CONDITION wears, wherever one is drawn. */
 const CONDITION_ICON = 'function';
@@ -1754,30 +1755,31 @@ export class SherpaDataGrid extends SherpaElement {
    * TRAP T-selection-lives-in-the-keys-not-the-objects.
    */
   #rememberSelection(): void {
-    if (!this.#key) return; // No key means no durable answer — say nothing.
-    const key = this.#key;
-    const onPage = new Set(
-      this.#rows.map((r) => r[key]).filter((v) => v != null).map(String),
-    );
-    const chosen = new Set(
-      this.selectedRecords.map((r) => r[key]).filter((v) => v != null).map(String),
-    );
+    const onPage = new Set(this.#rows.map((r) => this.#keyOf(r)).filter((k): k is string => !!k));
+    const chosen = new Set(this.selectedRecords.map((r) => this.#keyOf(r)).filter((k): k is string => !!k));
     // Anything the grid cannot currently see keeps whatever it had.
     for (const k of this.#wantedKeys ?? []) if (!onPage.has(k)) chosen.add(k);
     this.#wantedKeys = chosen.size ? [...chosen] : null;
   }
 
-  /** Emit the current selection as row indices (strings) in sorted-view order. */
+  /** Emit the current selection BY KEY — every row has one now.
+   *  TRAP T-a-made-up-key-never-leaves-the-data-layer */
   #emitSelection(): void {
     // BEFORE the event: a listener reading `selectedKeys` must see this choice.
     this.#rememberSelection();
-    const selected = this.#rowBoxes()
-      .filter((box) => box.checked)
-      .map((box) => box.closest<HTMLElement>('.row')?.dataset['index'] ?? '')
-      .filter((id) => id !== '');
-    // `records` is the durable answer: an index is a position in the VISIBLE
-    // list, and cannot name a record a filter hides.
-    this.emit('selection-change', { selected, records: this.selectedRecords });
+    this.emit('selection-change', { selected: this.selectedKeys, records: this.selectedRecords });
+  }
+
+  /**
+   * The key a row goes by: its `key` field when the grid was given one, else
+   * the data layer's — a store's, or one made up beside the row. Never a
+   * position, which a sort or a filter changes.
+   * TRAP T-a-made-up-key-never-leaves-the-data-layer
+   */
+  #keyOf(row: GridRow): string | undefined {
+    if (!this.#key) return rowKey(row) ?? keyRow(row);
+    const own = row[this.#key];
+    return own != null && own !== '' ? String(own) : undefined;
   }
 
   /** The selected RECORDS, filter-hidden ones included, in original row order. */
@@ -1790,7 +1792,6 @@ export class SherpaDataGrid extends SherpaElement {
    * T-grid-key-or-position-lies — EMPTY without a `key` in `populate()`.
    */
   get selectedKeys(): string[] {
-    if (!this.#key) return [];
     // `#wantedKeys` IS the answer: deriving from `selectedRecords` reports
     // EMPTY on a page none of them are on, while the selection is intact.
     // TRAP T-selection-lives-in-the-keys-not-the-objects.
@@ -1802,19 +1803,27 @@ export class SherpaDataGrid extends SherpaElement {
    * — REPLACES, ignores unmatched keys, and is SILENT. `select([])` clears.
    */
   select(keys: readonly string[]): void {
+    /* A made-up key from ANOTHER page load names no row now — it would pick
+       the wrong ones if its number were reused, so it is dropped and said.
+       TRAP T-a-made-up-key-never-leaves-the-data-layer */
+    const stale = keys.filter(isStaleKey);
+    if (stale.length) {
+      report({
+        code: 'stale-made-up-key',
+        message: 'select: a made-up row key from an earlier page load names no row; it was not kept.',
+        at: { keys: stale.slice(0, 5).join(', ') },
+      });
+    }
+    const fresh = keys.map(String).filter((k) => !isStaleKey(k));
     // REPLACES outright — unlike a user's tick, which merges.
-    this.#wantedKeys = keys.length ? keys.map(String) : null;
+    this.#wantedKeys = fresh.length ? fresh : null;
     this.#resolveSelection();
     // Drop UNMATCHED keys here, not via `#rememberSelection()`, which MERGES.
     // ONLY WHEN THERE WERE ROWS TO CHECK AGAINST: a saved view calls `select()`
     // before populate, so dropping against an empty grid throws the selection
     // away as it is restored. TRAP T-selection-lives-in-the-keys-not-the-objects.
-    const key = this.#key;
-    if (key && this.#rows.length) {
-      const resolved = [...this.#selected]
-        .map((r) => r[key])
-        .filter((v) => v != null)
-        .map(String);
+    if (this.#rows.length) {
+      const resolved = [...this.#selected].map((r) => this.#keyOf(r)).filter((k): k is string => !!k);
       this.#wantedKeys = resolved.length ? resolved : null;
     }
     // The boxes are stamped from #selected on every render, so a rebuild writes
@@ -1830,12 +1839,11 @@ export class SherpaDataGrid extends SherpaElement {
    */
   #resolveSelection(): void {
     this.#selected.clear();
-    if (!this.#key || !this.#wantedKeys) return;
-    const key = this.#key;
+    if (!this.#wantedKeys) return;
     const wanted = new Set(this.#wantedKeys);
     for (const row of this.#rows) {
-      const value = row[key];
-      if (value != null && wanted.has(String(value))) this.#selected.add(row);
+      const key = this.#keyOf(row);
+      if (key && wanted.has(key)) this.#selected.add(row);
     }
   }
 

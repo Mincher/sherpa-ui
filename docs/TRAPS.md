@@ -591,6 +591,38 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-a-made-up-key-never-leaves-the-data-layer
+
+**A row with no key field gets a key from the data layer, and the key is kept
+BESIDE the row, never on it.** Will, 2026-09-29 (TODO 103): *"Keys are only
+for Sherpa's capabilities so we need to make sure we don't pollute any data we
+are ever sending out of the data layer to external sources."*
+
+`row-key.ts` holds a `WeakMap` from each row object to its key: the row's own
+key field when it has one, else a MADE-UP key, `sherpa:<load>:<n>`. Nothing is
+written on the row, so the key cannot leak into JSON, a store write, an export
+or a saved View's rows.
+
+**A store keys its rows on the way OUT** (`BaseStore.checkRows` → `keyed()`),
+so every store gives every row a key. `ArrayStore` hands out a COPY on every
+load, so it keys its own rows once and carries each key to the copy —
+otherwise a keyless row got a new key per load and a selection vanished on a
+sort. A store that re-reads its rows (Local, Rest, Idb) can only make one up
+per load for a keyless row: stable while the rows are, as TODO 103 said.
+
+**A made-up key names a row for THIS page load only.** `<load>` is new each
+load, so an old saved key can never pick a new row that happens to reuse its
+number: `grid.select()` drops a stale one and reports `stale-made-up-key`,
+rather than restore the wrong rows. The grid selects by key always now, and
+`selection-change` sends keys, not positions.
+
+- Site: `src/core/data/row-key.ts`
+- Site: `src/core/data/base-store.ts`
+- Site: `src/data.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/unit/a-keyless-row-gets-a-key.test.mjs`
+- Site: `test/e2e/reforged-a-keyless-row-selects-by-key.spec.ts`
+
 ### T-both-answers-are-kept
 
 **A reading keeps BOTH answers, and `mode` says which one filters.** Will,

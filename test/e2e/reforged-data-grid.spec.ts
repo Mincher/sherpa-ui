@@ -2042,10 +2042,9 @@ test('setColumnFilter restores a column from outside — the round trip a saved 
 });
 
 test('selection has a programmatic door, and it is by KEY not position', async ({ page }) => {
-  // `selection-change` reports row INDICES, which is what a live handler wants.
-  // A saved view cannot use them: an index is a position in the currently
-  // visible list, so it means something else after any sort or filter, and it
-  // cannot name a selected row a filter is hiding.
+  // A saved view cannot use a POSITION: it means something else after any
+  // sort or filter, and it cannot name a selected row a filter is hiding. So
+  // the grid names rows by key — and `selection-change` sends keys too.
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-data-grid') as HTMLElement & {
       rendered?: Promise<void>;

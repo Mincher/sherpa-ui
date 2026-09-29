@@ -25,6 +25,7 @@ import {
 } from './store.js';
 // Its own module so IdbStore reaches it too.
 import { BaseStore, type StoreOptions } from './base-store.js';
+import { isMadeUpKey, rowKey } from './row-key.js';
 export { BaseStore, type StoreOptions };
 
 /**
@@ -45,7 +46,7 @@ export class ArrayStore extends BaseStore {
   constructor(rows: readonly Row[] = [], options: StoreOptions = {}) {
     super(options);
     this.#maxRows = options.maxRows && options.maxRows > 0 ? options.maxRows : 0;
-    this.#rows = this.#trim(rows.map((r) => ({ ...r })));
+    this.#rows = this.#trim(rows.map((r) => this.keyed({ ...r })));
   }
 
   /** Drop the oldest rows past the cap. TRAP T-max-rows-is-oldest-out-by-insertion */
@@ -56,44 +57,51 @@ export class ArrayStore extends BaseStore {
 
   /** Replace every record. Used by JsonStore once its fetch lands. */
   setRows(rows: readonly Row[]): void {
-    this.#rows = this.#trim(rows.map((r) => ({ ...r })));
+    this.#rows = this.#trim(rows.map((r) => this.keyed({ ...r })));
     this.announce({ type: 'update' });
   }
 
   load(options: LoadOptions = {}): Promise<LoadResult> {
     const result = applyOptions(this.#rows, options);
-    // TRAP T-array-store-copies-both-ways — copies out.
-    return this.checkRows({ ...result, rows: result.rows.map((r) => ({ ...r })) });
+    // TRAP T-array-store-copies-both-ways — copies out, each by its original's key.
+    return this.checkRows({ ...result, rows: result.rows.map((r) => this.keyed({ ...r }, r)) });
+  }
+
+  /** Where a row is, by its key field — or by the key made up for it. */
+  #at(key: unknown): number {
+    // TRAP T-numeric-keys-compare-as-strings — `'7' === 7` is false.
+    return this.#rows.findIndex((r) => sameKey(readField(r, this.key), key)
+      || (isMadeUpKey(key) && rowKey(r) === key));
   }
 
   byKey(key: unknown): Promise<Row | undefined> {
-    // TRAP T-numeric-keys-compare-as-strings — `'7' === 7` is false.
-    const row = this.#rows.find((r) => sameKey(readField(r, this.key), key));
-    return Promise.resolve(row ? { ...row } : undefined);
+    const row = this.#rows[this.#at(key)];
+    return Promise.resolve(row ? this.keyed({ ...row }, row) : undefined);
   }
 
   async insert(values: Row): Promise<Row> {
     // Checked FIRST, so a refused row is never pushed and never announced.
-    const row = { ...(await this.check(values)) };
+    const row = this.keyed({ ...(await this.check(values)) });
     this.#rows.push(row);
     // Cap held BEFORE the announce — TRAP T-max-rows-is-oldest-out-by-insertion.
     this.#rows = this.#trim(this.#rows);
-    this.announce({ type: 'insert', key: readField(row, this.key), row: { ...row } });
-    return { ...row };
+    this.announce({ type: 'insert', key: readField(row, this.key) ?? rowKey(row), row: this.keyed({ ...row }, row) });
+    return this.keyed({ ...row }, row);
   }
 
   async update(key: unknown, values: Row): Promise<Row> {
-    const i = this.#rows.findIndex((r) => sameKey(readField(r, this.key), key));
+    const i = this.#at(key);
     if (i < 0) throw new Error(`ArrayStore: no row with ${this.key} ${String(key)}`);
     // Merge, and the MERGED row is checked — TRAP T-array-store-copies-both-ways.
-    const row = await this.check({ ...this.#rows[i]!, ...values });
+    const old = this.#rows[i]!;
+    const row = this.keyed(await this.check({ ...old, ...values }), old);
     this.#rows[i] = row;
-    this.announce({ type: 'update', key, row: { ...row } });
-    return { ...row };
+    this.announce({ type: 'update', key, row: this.keyed({ ...row }, row) });
+    return this.keyed({ ...row }, row);
   }
 
   remove(key: unknown): Promise<void> {
-    const i = this.#rows.findIndex((r) => sameKey(readField(r, this.key), key));
+    const i = this.#at(key);
     if (i < 0) return Promise.reject(new Error(`ArrayStore: no row with ${this.key} ${String(key)}`));
     this.#rows.splice(i, 1);
     this.announce({ type: 'remove', key });

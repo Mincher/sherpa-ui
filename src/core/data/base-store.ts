@@ -7,7 +7,8 @@
  * - StoreOptions — Options every store shares.
  * - BaseStore — what every store shares: key, time, schema guard, change events
  */
-import type { LoadOptions, LoadResult, Row, Store, StoreChangeDetail } from './store.js';
+import { readField, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail } from './store.js';
+import { carryKey, keyRow } from './row-key.js';
 import {
   domainsOf, validate, ValidationError, type FieldDomain, type Issue, type StandardSchema,
 } from './validate.js';
@@ -76,6 +77,7 @@ export abstract class BaseStore extends EventTarget implements Store {
    * TRAP T-read-check-drops-where-a-write-throws
    */
   protected async checkRows(result: LoadResult): Promise<LoadResult> {
+    for (const row of result.rows) this.keyed(row);
     if (!this.schema) return result;
 
     // 0 checks everything: the guard is opt-OUT.
@@ -90,7 +92,7 @@ export abstract class BaseStore extends EventTarget implements Store {
       const row = result.rows[i]!;
       const checked = await validate(this.schema, row);
       if (checked.issues) issues.push(...checked.issues);
-      else rows.push((checked.value ?? row) as Row);
+      else rows.push(this.keyed((checked.value ?? row) as Row, row));
     }
     // The tail, UNCHECKED and unchanged. TRAP T-schema-sample-cost
     for (let i = limit; i < result.rows.length; i++) rows.push(result.rows[i]!);
@@ -106,6 +108,17 @@ export abstract class BaseStore extends EventTarget implements Store {
       dropped,
       issues: issues.slice(0, 5), // the first few only
     };
+  }
+
+  /**
+   * A row goes out KEYED — by its own key field, or by a key made up BESIDE it,
+   * carried from the row it was copied from. Never a field on the row.
+   * TRAP T-a-made-up-key-never-leaves-the-data-layer
+   */
+  protected keyed<T extends object>(row: T, from?: object): T {
+    if (from) carryKey(from, row);
+    keyRow(row, readField(row as Row, this.key));
+    return row;
   }
 
   /** Tell every listener the records changed. */

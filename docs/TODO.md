@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**69 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**68 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -26,7 +26,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | | | | **B — The foundation: what is left** | |
 | 🚧 | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
-| ⬜ | 2a | 103 | Rows with no key get one from the data layer — Sherpa's own, never sent out | foundation |
+| ✅ | 2a | 103 | Rows with no key get one from the data layer — Sherpa's own, never sent out | foundation |
 | 🚧 | 3 | 38 | One model, one builder, one owner — what is left | refactor |
 | ⬜ | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
 | ⬜ | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
@@ -213,7 +213,7 @@ good."* The sub-query IS the field's slice of the Query — its `FieldReading`,
 condition rows and all — shown and saved as JSON, and restored by
 `setQuery`. No grammar, no parser, no second spelling of a condition.
 
-### `[ ]` 103 — Rows with no key get one from the data layer — Sherpa's own, never sent out
+### `[x]` ✅ 103 — Rows with no key get one from the data layer — Sherpa's own, never sent out
 
 Will, 2026-09-29: *"If we get grid data without keys then the data layer
 should give it keys. Means selection always works with keys. Keys are only
@@ -235,6 +235,17 @@ audit's A6, `docs/COMPONENT-API-AUDIT.md`).
 - **Settle first:** how long a made-up key lives. A key the data never had is
   stable only while the rows are, so a saved View keeps a selection only over
   a real key — say so rather than restore the wrong rows.
+
+**✅ Done 2026-09-29:** every store keys the rows it hands out — by the row's
+own key field, or by a made-up `sherpa:<load>:<n>` held in a `WeakMap` BESIDE
+the row (`src/core/data/row-key.ts`), so nothing is ever written on a row and
+nothing leaks into JSON, a store write or an export. `ArrayStore` carries each
+key from its own row to the copy it hands out, so a key is the same on every
+load; a made-up key also finds, updates and removes its row. The grid selects
+by key always, and `selection-change` sends keys. A made-up key lives for one
+page load: a stale one from a saved View is dropped and reported
+(`stale-made-up-key`), never matched to the wrong row.
+`T-a-made-up-key-never-leaves-the-data-layer`
 
 ### `[~]` 38 — One model, one builder, one owner: what is left
 
@@ -1981,6 +1992,7 @@ source.
 One line each. The detail is in git and in the trap named.
 
 **2026-09-29, the component API audit (86)**
+- 103: a keyless row gets a key from the data layer, kept beside the row and never on it; the grid selects by key and `selection-change` sends keys — `T-a-made-up-key-never-leaves-the-data-layer`
 - 102: both answers kept — a filter switches between Simple and Advanced at any time and loses nothing; Advanced mirrors Simple until a row is edited; in the bar, the panel and a grid heading — `T-both-answers-are-kept`
 - 104: a number filter applied nothing that was typed or dragged — the body moved into the menu's shadow root and the menu listened only on its host; it now listens on its body, the panel reads a number through the bar's own `bodyReading()`, and one typed number is a pick under `=` — `T-native-change-stops-at-the-host`, `T-one-number-is-a-pick-under-equals`
 - 75: the filter modes are **Simple** and **Advanced** in every file — values (75a), the opt-in key `advanced`, the menu's `data-advanced` / `data-advanced-only` and the labels (75b), then docs, TRAPS and test titles (75c). Every old word is still HEARD, so a saved View or filter keeps working — `T-a-renamed-attribute-keeps-its-old-name`

@@ -73,6 +73,9 @@ export {
   type RestStoreOptions,
   type StoreOptions,
 } from './core/data/stores.js';
+// A row's key, kept beside it: its own, or one the data layer made up.
+// TRAP T-a-made-up-key-never-leaves-the-data-layer
+export { MADE_UP, carryKey, isMadeUpKey, isStaleKey, rowKey } from './core/data/row-key.js';
 // The REAL local store — IndexedDB. Browser-only in behaviour, headless-SAFE to
 // import: `IdbStore.available` is false in Node and every method rejects rather
 // than throwing at module scope.
