@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**68 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**67 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -33,7 +33,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 5a | 113 | EXPLORE — state first, then render, in every component; a skeleton while the first render waits | explore |
 | | | | **C — Contained bugs** | |
 | ❓ | 6 | 112 | An Equals row in Advanced will not open its value list | bug |
-| ⬜ | 7 | 45 | A picked date does not show in the chip | bug |
+| ✅ | 7 | 45 | A picked date does not show in the chip | bug |
 | ⬜ | 8 | 82 | A number chip set by a View shows no value on its face | bug |
 | ⬜ | 9 | 83 | Calendar menu: a picked date leaves Apply and Discard looking off — yet they work | bug |
 | ⬜ | 10 | 94 | A number (and range) filter menu needs Apply and Cancel buttons | bug |
@@ -394,7 +394,7 @@ overflowed, the menu is, from the top:
 - Save view as
 - Refresh view
 
-### `[ ]` 45 — BUG: a picked date does not show in the chip
+### `[x]` ✅ 45 — BUG: a picked date does not show in the chip
 
 After a pick in the calendar the chip's right half stays empty. The formats:
 
@@ -409,6 +409,12 @@ Build ONE shared formatter in the data layer, DOM-free, beside
 `format-tick.ts`, so every date label reads the same. More formats will join
 it later; this is the first. (The range chip reads `02 Jan - 11 Dec, 2024`
 today — a third spelling.)
+
+**✅ Done 2026-09-29:** a picked date already showed (`#syncDateLabel`, fixed
+before 82 was written). The format is now ONE DOM-free `formatDate()` in
+`src/core/data/format-date.ts`, exported from `sherpa-ui/data`: `03 Sep 2026`;
+`03 to 15 Sep 2026`; `03 Sep to 15 Oct 2026`; `18 Dec 2026 to 03 Jan 2027`.
+Read in UTC, day first whatever the locale. `T-a-date-reads-one-way`
 
 ### `[ ]` 82 — BUG: a number chip set by a View shows no value on its face
 
@@ -2019,6 +2025,7 @@ source.
 One line each. The detail is in git and in the trap named.
 
 **2026-09-29, the component API audit (86)**
+- 45: a date reads one way — `formatDate()`, DOM-free, `03 to 15 Sep 2026` — `T-a-date-reads-one-way`
 - 103: a keyless row gets a key from the data layer, kept beside the row and never on it; the grid selects by key and `selection-change` sends keys — `T-a-made-up-key-never-leaves-the-data-layer`
 - 102: both answers kept — a filter switches between Simple and Advanced at any time and loses nothing; Advanced mirrors Simple until a row is edited; in the bar, the panel and a grid heading — `T-both-answers-are-kept`
 - 104: a number filter applied nothing that was typed or dragged — the body moved into the menu's shadow root and the menu listened only on its host; it now listens on its body, the panel reads a number through the bar's own `bodyReading()`, and one typed number is a pick under `=` — `T-native-change-stops-at-the-host`, `T-one-number-is-a-pick-under-equals`

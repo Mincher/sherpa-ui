@@ -16,6 +16,7 @@ import { sortDirectionFrom } from '../../core/data/cycle.js';
 import { allow, type AllowList } from '../../core/data/allow.js';
 import { advancedOf, kindOf, type FilterKind, type OffersAdvanced } from '../../core/ui/filter-kind.js';
 import { menuFor } from '../../core/ui/filter-menu.js';
+import { formatDate } from '../../core/data/format-date.js';
 import {
   FILTERS_LABEL, MenuDrill, ON, filtersMenuItems, onOffMenu, type AddedFilter,
 } from '../../core/ui/filters-button.js';
@@ -676,38 +677,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if ('valueLabel' in target) target.valueLabel = '';
       return;
     }
-    // Parsed UTC, so FORMATTED UTC — else a browser west of Greenwich shows
-    // the previous day.
-    const at = (iso: string): Date | null => {
-      const d = new Date(`${iso}T00:00:00Z`);
-      return Number.isNaN(d.getTime()) ? null : d;
-    };
-    // formatToParts, because `toLocaleDateString` orders parts by locale and this
-    // must always read day then month.
-    const dayMonth = (d: Date): string => {
-      const parts = new Intl.DateTimeFormat(undefined, {
-        day: '2-digit',
-        month: 'short',
-        timeZone: 'UTC',
-      }).formatToParts(d);
-      const day = parts.find((x) => x.type === 'day')?.value ?? '';
-      const month = parts.find((x) => x.type === 'month')?.value ?? '';
-      return `${day} ${month}`;
-    };
-    const year = (d: Date): string =>
-      d.toLocaleDateString(undefined, { year: 'numeric', timeZone: 'UTC' });
-
-    const start = at(picked[0]!);
-    const end = picked.length > 1 ? at(picked[1]!) : null;
-
-    let label: string;
-    if (!start) label = picked[0]!;
-    else if (!end) label = `${dayMonth(start)}, ${year(start)}`;
-    else if (year(start) === year(end)) {
-      label = `${dayMonth(start)} - ${dayMonth(end)}, ${year(start)}`;
-    } else {
-      label = `${dayMonth(start)}, ${year(start)} - ${dayMonth(end)}, ${year(end)}`;
-    }
+    // ONE way a date reads. TRAP T-a-date-reads-one-way
+    const label = formatDate(picked[0]!, picked[1]);
     if ('valueLabel' in target) target.valueLabel = label;
 
     // No badge: the label says both days outright.

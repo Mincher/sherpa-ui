@@ -1603,7 +1603,7 @@ test('the Filters menu drills into a folded filter and back out', async ({ page 
 });
 
 /**
- * A DATE chip's value reads IN FULL — "03 Sep - 15 Sep, 2026".
+ * A DATE chip's value reads IN FULL — "03 to 15 Sep 2026". TRAP T-a-date-reads-one-way
  *
  * Every part of it carries meaning, and unlike a value list there is no count
  * that could stand in for a truncated end: "2" says nothing about which two
@@ -1663,15 +1663,15 @@ test('a DATE chip names its whole range, day first, without truncating', async (
   // DAY THEN MONTH, always. toLocaleDateString orders the parts by locale, so a
   // US reader got "Sep 03" and the shape the design asks for was lost — the
   // month NAME follows the locale, the ORDER does not.
-  expect(r.sameYear.text).toBe('03 Sep - 15 Sep, 2026');
+  // Each part is said ONCE: one month, so the month and year once.
+  expect(r.sameYear.text).toBe('03 to 15 Sep 2026');
 
-  // The YEAR is stated once when both ends share it. A range crossing new year
-  // states it on each end, because "18 Dec - 03 Jan, 2027" would put the wrong
-  // year on the first day.
-  expect(r.crossYear.text).toBe('18 Dec, 2026 - 03 Jan, 2027');
+  // A range crossing new year states the year on each end, because
+  // "18 Dec to 03 Jan 2027" would put the wrong year on the first day.
+  expect(r.crossYear.text).toBe('18 Dec 2026 to 03 Jan 2027');
 
   // One day is one date, with its year.
-  expect(r.single.text).toBe('15 Sep, 2026');
+  expect(r.single.text).toBe('15 Sep 2026');
 
   for (const step of [r.sameYear, r.crossYear, r.single]) {
     expect(step.truncated).toBe(false);

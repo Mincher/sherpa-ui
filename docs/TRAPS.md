@@ -591,6 +591,27 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-a-date-reads-one-way
+
+**A day, or a range of days, reads ONE way, from one DOM-free formatter.**
+Will, TODO 45: `DD Mmm YYYY`; a range says each part once — `03 to 15 Sep
+2026` within a month, `03 Sep to 15 Oct 2026` within a year, `18 Dec 2026 to
+03 Jan 2027` across years. `formatDate()` in `src/core/data/format-date.ts`;
+more formats join it there.
+
+Two things it must keep: the day is read and formatted in UTC — parsed as
+local time, a browser west of Greenwich showed the day before — and the parts
+come from `formatToParts`, not `toLocaleDateString`, whose order follows the
+locale ("Sep 03" in the US). The month NAME follows the locale; the order does
+not.
+
+- Site: `src/core/data/format-date.ts`
+- Site: `src/data.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/unit/format-date.test.mjs`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `test/e2e/reforged-records-persist.spec.ts`
+
 ### T-a-made-up-key-never-leaves-the-data-layer
 
 **A row with no key field gets a key from the data layer, and the key is kept

@@ -76,6 +76,8 @@ export {
 // A row's key, kept beside it: its own, or one the data layer made up.
 // TRAP T-a-made-up-key-never-leaves-the-data-layer
 export { MADE_UP, carryKey, isMadeUpKey, isStaleKey, rowKey } from './core/data/row-key.js';
+// How a day or a range of days reads, everywhere. TRAP T-a-date-reads-one-way
+export { formatDate } from './core/data/format-date.js';
 // The REAL local store — IndexedDB. Browser-only in behaviour, headless-SAFE to
 // import: `IdbStore.available` is false in Node and every method rejects rather
 // than throwing at module scope.

@@ -244,7 +244,8 @@ test('the header Date survives a reload, and its chip shows the range', async ({
     hb.setChipValues('created', ['2024-03-01', '2024-03-31']);
     hb.report();
   });
-  const want = { total: 14, chip: 'on:01 Mar - 31 Mar, 2024' };
+  // TRAP T-a-date-reads-one-way
+  const want = { total: 14, chip: 'on:01 to 31 Mar 2024' };
   await expect.poll(read).toEqual(want);
   await page.reload();
   await ready();
