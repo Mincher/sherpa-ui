@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**64 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**63 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -27,7 +27,6 @@ order.
 | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
 | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | | | **C — Contained bugs** | |
-| 6 | 104 | A number filter never applies what is typed or dragged | bug |
 | 7 | 45 | A picked date does not show in the chip | bug |
 | 8 | 82 | A number chip set by a View shows no value on its face | bug |
 | 9 | 83 | Calendar menu: a picked date leaves Apply and Discard looking off — yet they work | bug |
@@ -102,8 +101,7 @@ order.
   filter feature, so 89, 90, 98 and 99 are built in the new words. 38's one builder
   is built WITH 89 (see D).
 - **C — Contained bugs.** Each is fixable in its own component or page. In
-  pairs where one fix serves both: 104 first (nothing a number menu does
-  reaches the source), then 45 and 82 (a chip's face after a silent
+  pairs where one fix serves both: 45 and 82 (a chip's face after a silent
   set), 83 and 94 (a menu's footer).
 - **D — Filters.** The panel is rebuilt ONCE: 99 designs how filters group
   first, then 89 (Simple, with 38 step 4's one builder), 102 (both modes'
@@ -320,27 +318,6 @@ work. TWO faults:
   disagree. The button must refuse the click while disabled, or the footer's
   "off" is only paint.
 
-### `[ ]` 104 — BUG: a number filter never applies what is typed or dragged
-
-Will, 2026-09-29: *"Numerical range filters aren't applied on value changes
-via input fields or slider handles."*
-
-Proved in a probe: drag a slider handle, or type in the number field, and no
-`menu-change` and no `quick-filter-change` leaves the chip. The chip HOLDS the
-value — `readings` shows it — but nothing tells the source.
-
-Cause: 45b2f136 (2026-09-25) moved the number body INTO the menu's shadow root
-(`T-a-menu-owns-its-own-bodies`), and `#onChange` still listens on the HOST.
-The field's native `change` is not composed, so it stops at the shadow root.
-The slider's composed `change` arrives retargeted to the menu, so the
-`SHERPA-SLIDER` check never matches. `T-native-change-stops-at-the-host` still
-describes a SLOTTED body.
-
-The chip test "a NUMBER chip flips between a single field and a two-ended
-slider" stayed green because it reads `el.readings`, which ASKS the menu. The
-fix's test watches the event. The grid heading's menu and the panel use the
-same body — check both. Before 94, which changes the same path.
-
 ### `[ ]` 106 — BUG: a click between a menu's items reaches what is behind it
 
 Will, 2026-09-29: *"Clicking the space between menu items causes the
@@ -362,6 +339,12 @@ the way to "150". Locally a PICK applies at once (Will's ruling on 62, "No
 Apply locally"); a number body is the exception — it waits for Apply, and
 Cancel puts back what was applied. The calendar's footer is the pattern, and
 83 is its bug, so fix the two together.
+
+Will, 2026-09-29, after 104: *"Regarding the slider changes, and perhaps any
+filter selection/value changes, we might want to debounce the event to
+update."* Today a number applies on `change` — a handle let go, Enter, or
+leaving the field — so one act is one update, and there is nothing to debounce.
+A LIVE drag (on `input`) would need one. Settle with Will before this starts.
 
 ### `[ ]` 16 — BUG: Favourite and Save apply to the Context, not the View
 
@@ -1213,6 +1196,7 @@ and edited the same way as a designed one.
 One line each. The detail is in git and in the trap named.
 
 **2026-09-29, the component API audit (86)**
+- 104: a number filter applied nothing that was typed or dragged — the body moved into the menu's shadow root and the menu listened only on its host; it now listens on its body, the panel reads a number through the bar's own `bodyReading()`, and one typed number is a pick under `=` — `T-native-change-stops-at-the-host`, `T-one-number-is-a-pick-under-equals`
 - 75: the filter modes are **Simple** and **Advanced** in every file — values (75a), the opt-in key `advanced`, the menu's `data-advanced` / `data-advanced-only` and the labels (75b), then docs, TRAPS and test titles (75c). Every old word is still HEARD, so a saved View or filter keeps working — `T-a-renamed-attribute-keeps-its-old-name`
 - 101: an Advanced condition row would not add in a chip's menu, and in the panel a row's condition change dropped it — the source draws every field's answer back with its ANSWERED rows only, and the menu rebuilt from that; now an answer that matches the rows the reader has answered keeps every row — `T-an-unanswered-row-survives-a-redraw`
 - 61: Add customer saves with required fields empty — the dialog is a real `<form>`; the four form controls take part in it (`FormValue`), Save submits it, and the browser refuses an empty required field and points at it; nothing is filled in for the reader, and the toast says when the page's filters hide the new record — `T-a-form-value-follows-every-write`

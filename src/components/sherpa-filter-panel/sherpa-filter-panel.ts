@@ -18,7 +18,7 @@ import type { FieldFilter, HeldFilter, ScopeDescription } from '../../core/data/
 import {
   arranges, advancedOf, hasOwnBody, kindOf, picksOne, type FilterKind, type OffersAdvanced,
 } from '../../core/ui/filter-kind.js';
-import { menuFor, type FilterMenuDef, type FilterMenuItem } from '../../core/ui/filter-menu.js';
+import { bodyReading, menuFor, type FilterMenuDef, type FilterMenuItem } from '../../core/ui/filter-menu.js';
 import {
   FILTERS_LABEL, MenuDrill, ON, filtersMenuItems, onOffMenu, type AddedFilter,
 } from '../../core/ui/filters-button.js';
@@ -278,7 +278,9 @@ export class SherpaFilterPanel extends SherpaElement {
   /** One field's whole answer: its picks, its condition rows, its typed text. */
   #readingOf(held: Held): FieldReading {
     const menu = held.menu as (HTMLElement & {
-      conditions?: FieldCondition[]; conditionValue?: string }) | undefined;
+      conditions?: FieldCondition[]; conditionValue?: string; values: string[] }) | undefined;
+    // A NUMBER body answers for itself, as it does on a bar chip.
+    if (menu?.dataset['body'] === 'number') return bodyReading(menu);
     const conditions = menu?.conditions ?? [];
     const reading: FieldReading = { picked: this.#picked(held) };
     if (conditions.length) reading.conditions = conditions;
@@ -1037,6 +1039,8 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** A body or a condition row changed: report its field, once its rows have settled. */
   #onEdited = (event: Event): void => {
+    // A dragged handle reports once, when it is let go — as a bar chip does.
+    if (event.type === 'input' && (event.target as Element).matches?.('sherpa-menu[data-body]')) return;
     const held = event.target instanceof HTMLElement ? this.#fieldOf(event.target) : undefined;
     if (held) this.#edited.add(held);
     if (this.#editFrame != null) return;

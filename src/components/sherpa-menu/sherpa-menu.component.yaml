@@ -506,6 +506,10 @@ events:
     detail:
       values: unknown
   - $type: event
+    name: change
+    bubbles: true
+    composed: false
+  - $type: event
     name: menu-apply
     bubbles: true
     composed: true

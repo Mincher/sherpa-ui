@@ -591,6 +591,24 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-one-number-is-a-pick-under-equals
+
+**One typed number is a PICK under `=`, and typed TEXT only under an op that
+takes text** (`<`, `>`, `≤`, `≥`). `OP_TAKES.eq` is `list`, so `fieldState()`
+reads `{ op: 'eq', text: '100' }` as unanswered: the reading reached the source
+and filtered nothing. The bar sent a single number that way from the day its
+body moved into the menu — TODO 104 found it on the Records page, where 100
+rows stayed 100.
+
+`bodyReading()` in `src/core/ui/filter-menu.ts` decides it once, for the bar
+and the panel: `{ picked: ['100'], op: 'eq', range: false }` under `=`, and
+`{ op: 'gt', text: '100' }` under `>`. Restoring a chip reads `text` first,
+then `picked`, so both shapes round-trip. The test binds a real source and
+counts ROWS, because the event alone was not enough to prove it.
+
+- Site: `src/core/ui/filter-menu.ts`
+- Site: `test/e2e/reforged-number-filter-reports.spec.ts`
+
 ### T-a-menu-owns-its-own-bodies
 
 A menu's BODY — the Range switch, the number field and slider — lives in
@@ -3261,16 +3279,25 @@ host its rows are slotted into, and never reaches the toolbar that stamped
 them. So the menu re-emits it as `menu-change`, and every value shape has to be
 recognised HERE.
 
-A menu's content is not always a list of boxes. A NUMBER filter slots a plain
-`<input type="number">` and a `sherpa-slider`, and their native change is not
-composed either. Without recognising them, typing a value moved NOTHING
-downstream at all.
+A NUMBER body is not slotted: it lives in the menu's OWN shadow root
+(`T-a-menu-owns-its-own-bodies`), so a host listener hears none of it. The
+field's native change stops at the shadow root; the slider's composed change
+arrives retargeted to the menu itself. So the menu listens on `.body-number`,
+reports it as `menu-change`, and hands the field's change on to the host's
+tree, as a row's would. When the body moved inside on 2026-09-25 this broke
+silently (TODO 104): the chip HELD a typed or dragged value and sent nothing,
+and the test that read the value stayed green. A test of a report watches the
+EVENT.
+
+The panel reads a number body with `bodyReading()`, the bar's own reader, and
+takes a dragged handle once, when it is let go — as a bar chip does.
 
 The same non-composed `change` is why select-all is handled in the menu
 (`T-select-all-ticks-boxes-not-values`), and why `sherpa-switch` re-dispatches
 its own as composed (`T-range-switch-swaps-not-rebuilds`).
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `test/e2e/reforged-number-filter-reports.spec.ts`
 
 ### T-clear-empties-both-body-shapes
 

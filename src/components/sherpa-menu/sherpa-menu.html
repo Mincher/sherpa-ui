@@ -98,6 +98,8 @@
   Fires:
     menu-change — the selection was COMMITTED. detail: { values: string[] }
                   Without data-commit that is every row tick; with it, only Apply.
+    change — the number body's field or slider changed. NOT composed, as a
+                  row's native change is not.
     menu-apply  — Apply was clicked. detail: { values: string[] }
     menu-cancel — Cancel was clicked; the values are already restored. detail: {}
     menu-clear  — Clear was clicked; the selection is already empty. detail: {}

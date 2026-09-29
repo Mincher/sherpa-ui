@@ -352,6 +352,20 @@ function parseFires(comment) {
  * the `Fires:` comment is prose and scraping it invented events. Reads the
  * three ways a component dispatches: `emit()`, `CustomEvent`, `Event`.
  */
+/** Names only ever dispatched UN-composed — `new Event(name, { bubbles })` stops at
+ *  the shadow root, so the contract must not say it crosses one. */
+function uncomposedEvents(ts) {
+  const plain = new Set();
+  const crosses = new Set();
+  if (!ts) return plain;
+  for (const m of ts.matchAll(/new (?:Custom)?Event\(\s*['"`]([a-z][\w-]*)['"`]([^)]*)\)/g)) {
+    (/composed:\s*true/.test(m[2]) ? crosses : plain).add(m[1]);
+  }
+  for (const m of ts.matchAll(/\bemit\(\s*['"`]([a-z][\w-]*)['"`]/g)) crosses.add(m[1]);
+  for (const n of crosses) plain.delete(n);
+  return plain;
+}
+
 function emittedEvents(ts) {
   const out = new Set();
   if (!ts) return out;
@@ -645,9 +659,10 @@ function generateSpec(name) {
   // an emitted event the comment forgot is still part of the contract
   for (const n of emitted) eventNames.add(n);
   const details = emitDetails(ts);
+  const uncomposed = uncomposedEvents(ts);
   const events = [];
   for (const en of eventNames) {
-    const ev = { $type: 'event', name: en, bubbles: true, composed: true };
+    const ev = { $type: 'event', name: en, bubbles: true, composed: !uncomposed.has(en) };
     // the emit site gives a NAME reliably and a type only by inference
     const keys = details.get(en);
     if (keys?.size) {

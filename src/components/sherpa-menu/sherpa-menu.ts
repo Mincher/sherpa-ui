@@ -206,6 +206,7 @@ export class SherpaMenu extends SherpaElement {
        listened for separately. TRAP T-a-menu-owns-its-own-bodies */
     this.$('.body-range-switch')?.addEventListener('change', this.#onRangeSwitch);
     this.$('.body-op')?.addEventListener('change', this.#onBodyOp);
+    this.$('.body-number')?.addEventListener('change', this.#onBodyChange);
     this.addEventListener('click', this.#onClick);
     this.$('.apply')?.addEventListener('click', this.#onApply);
     this.$('.cancel')?.addEventListener('click', this.#onCancel);
@@ -1344,24 +1345,35 @@ export class SherpaMenu extends SherpaElement {
     this.emit('menu-back');
   };
 
-  /** A row or a body control changed: report it, or hold it for Apply. */
+  /** A row changed: report it, or hold it for Apply. */
   #onChange = (event: Event): void => {
     const input = event.target as HTMLInputElement | null;
-    if (!input) return;
-    // A NUMBER menu's field and slider are value shapes too.
-    // TRAP T-native-change-stops-at-the-host
-    const numeric = input.type === 'number' || input.tagName === 'SHERPA-SLIDER';
-    if (!numeric && input.type !== 'checkbox' && input.type !== 'radio') return;
+    if (!input || (input.type !== 'checkbox' && input.type !== 'radio')) return;
     // The SELECT-ALL row drives the others, so it reports for itself.
     if (input.closest('.qf-all')) {
       this.#onSelectAll(input);
       return;
     }
     this.#syncSelectAll();
-    // A COMMITTING menu holds the change as a DRAFT until Apply.
+    this.#report();
+  };
+
+  /** The number field or slider changed. It is in THIS shadow root, so the host
+   *  hears nothing unless the menu passes it on — as a row's change reaches it.
+   *  TRAP T-native-change-stops-at-the-host */
+  #onBodyChange = (event: Event): void => {
+    const from = event.target as Element;
+    if (!from.matches('.body-number-one, .body-number-range')) return;
+    // The slider's own change is composed and already crosses; the field's is not.
+    if (!event.composed) this.dispatchEvent(new Event('change', { bubbles: true }));
+    this.#report();
+  };
+
+  /** Report the values — or, in a COMMITTING menu, hold them as a DRAFT until Apply. */
+  #report(): void {
     if (this.#commits) return;
     this.emit('menu-change', { values: this.values });
-  };
+  }
 
   /** Whether changes wait for Apply. */
   get #commits(): boolean {

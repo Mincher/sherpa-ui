@@ -15,7 +15,7 @@ import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.j
 import { sortDirectionFrom } from '../../core/data/cycle.js';
 import { allow, type AllowList } from '../../core/data/allow.js';
 import { advancedOf, kindOf, type FilterKind, type OffersAdvanced } from '../../core/ui/filter-kind.js';
-import { menuFor } from '../../core/ui/filter-menu.js';
+import { bodyReading, menuFor } from '../../core/ui/filter-menu.js';
 import {
   FILTERS_LABEL, MenuDrill, ON, filtersMenuItems, onOffMenu, type AddedFilter,
 } from '../../core/ui/filters-button.js';
@@ -1286,16 +1286,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
          filtered nothing. TRAP T-a-menu-owns-its-own-bodies */
       const body = menu?.dataset['body'];
       if (menu && (body === 'number' || body === 'date')) {
-        const values = this.#chipPicks(chip);
-        const range = menu.hasAttribute('data-range');
-        // ONE number under an operator is typed text, as a condition is: "> 2".
-        const typed = body === 'number' && !range;
         out[field] = {
           label: chip.dataset['label'] ?? field,
           values: [],
-          picked: typed ? [] : values,
-          op: (menu.dataset['op'] ?? DEFAULT_OP) as FilterOp,
-          ...(typed ? { text: values[0] ?? '' } : { range }),
+          ...bodyReading(menu as HTMLElement & { values: string[] }, this.#chipPicks(chip)),
           suspended: !chip.hasAttribute('data-current'),
         };
         continue;
