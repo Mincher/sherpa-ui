@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**60 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**61 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -38,6 +38,7 @@ order.
 | 14 | 95 | Firefox: a remote chip holding a draft is not marked pending | bug |
 | 15 | 96 | A grid with few columns leaves an empty band on the right of its card | bug |
 | 16 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
+| 16a | 100 | The Assistant panel shows no heading | quick |
 | | | **D — Filters: Will's features, on the foundation** | |
 | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
@@ -115,7 +116,11 @@ order.
 
 ## B — The foundation: what is left
 
-### `[ ]` 86 — AUDIT: every component's functions and events — one request, one response, standardised in `SherpaElement`
+### `[~]` 86 — AUDIT: every component's functions and events — one request, one response, standardised in `SherpaElement`
+
+**Assessed 2026-09-29 — `docs/COMPONENT-API-AUDIT.md`, for Will's review.**
+About 1,300 copied lines in six families; seven build steps (A1–A7); five
+decisions for Will in its §6. Nothing is changed until he rules.
 
 Will, 2026-09-27: *"Once the provider approach is completed, it might be a
 good idea to take a look at all of the functions and events for all UI
@@ -377,6 +382,16 @@ whose width is the sum of its `<col>`s (`inline-size: 0`,
 `T-col-width-not-inline-size`), so a column never grows to fill. Decide what
 fills the slack — the last column, or every column in proportion — without
 breaking a dragged width or the pinned edges.
+
+### `[ ]` 100 — The Assistant panel shows no heading
+
+Found by the API audit (86), 2026-09-29, and confirmed in the browser: the
+Assistant `sherpa-overlay-panel` in `examples/index.html` sets
+`data-title="Assistant"`, but the overlay panel reads only `data-heading`
+(`sherpa-overlay-panel.ts`, its `observed` list). A CONTAINER takes
+`data-heading` (CLAUDE.md, the tier rule). Rename the attribute in the page,
+and check no other page sets `data-title` on a container that reads
+`data-heading`.
 
 ---
 
