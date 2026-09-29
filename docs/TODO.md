@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**63 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**64 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -57,6 +57,7 @@ order.
 | 29 | 21b | Which header chips carry over between views | feature |
 | 30 | 20b | The Date filter should be a view-scope date RANGE | feature |
 | 31 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
+| 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
 | | | **E — Views and navigation** | |
 | 32 | 15 | Save a View, and the Save split-button menu | feature |
 | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
@@ -344,7 +345,8 @@ Will, 2026-09-29, after 104: *"Regarding the slider changes, and perhaps any
 filter selection/value changes, we might want to debounce the event to
 update."* Today a number applies on `change` — a handle let go, Enter, or
 leaving the field — so one act is one update, and there is nothing to debounce.
-A LIVE drag (on `input`) would need one. Settle with Will before this starts.
+A LIVE drag (on `input`) would need one. **Will chose once per act**, with live
+as a configurable option for later — that is 107.
 
 ### `[ ]` 16 — BUG: Favourite and Save apply to the Context, not the View
 
@@ -724,6 +726,23 @@ ONE control per `OP_TAKES` answer (`list`, `text`, `range`); these want a
 calendar, a time (no control exists), two of each, or a number-and-unit. And
 `Includes` may be a second axis, not a condition. `OPS_FOR_TYPE['date']` is
 `[]` on purpose today; this item reopens that.
+
+### `[ ]` 107 — A filter can apply LIVE, debounced — an opt-in; the default stays once per act
+
+Will, 2026-09-29, choosing A of "once per act" / "live while dragging, with a
+debounce": *"A but save it as a configurable option to support later. Apps
+with large datasets in the data layer will probably thank us."*
+
+The default does not change: a filter applies once per act — a handle let go,
+Enter, leaving a field, a tick. The OPTION applies while the reader is still
+moving, and waits a set time after the last move before it asks the data
+again.
+
+A place to start: components stay reporters — they already send `input`
+while a value moves and `change` when it settles. The SOURCE owns the rule
+(`applyOn: 'change' | 'input'`, `debounce` in ms), so one app can choose per
+source, and a large or remote dataset keeps the default. Settle: per source,
+per field, or both; and whether a remote source may choose live at all.
 
 ### `[ ]` 52 — EXPLORE, later: a data viz scope in the filter panel
 
