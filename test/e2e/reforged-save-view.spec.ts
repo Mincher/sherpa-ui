@@ -76,3 +76,23 @@ test('save, save as, save over and delete a View on Records', async ({ page }) =
   expect(gone).toMatchObject({ view: first.view, custom: false, marked: false });
   expect(gone.rows.filter((r) => r.startsWith('Mine'))).toEqual(['Mine']);
 });
+
+/**
+ * WITH VIEWS AS NAV ROWS (Settings › Application), a saved View gets its row
+ * once it is SAVED — the dialog answers first — and a deleted one loses it.
+ */
+test('a saved View gets its nav row, and a deleted one loses it', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('sherpa:session:/nav/hierarchy', 'true'));
+  await page.goto('http://localhost:4200/?context=records');
+  await page.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
+  await page.waitForTimeout(500);
+  const rows = () => page.evaluate(() => [...document.querySelector('sherpa-nav')!.shadowRoot!
+    .querySelectorAll<HTMLElement>('.nav-row sherpa-nav-item')].map((i) => i.dataset['label']));
+  await press(page, 'save');
+  await answer(page, 'view-name', 'Mine');
+  await expect.poll(rows).toContain('Mine');
+  await pickMenu(page, 'delete');
+  await answer(page, 'view-confirm');
+  await expect.poll(rows).not.toContain('Mine');
+});

@@ -469,8 +469,6 @@
     favorites.subscribe(() => void refreshNav());
     recents.subscribe(() => void refreshNav());
     session.subscribe('/nav/hierarchy', () => { syncNavCurrent(); void refreshNav(); });
-    // A reader's new saved View gets its row. The page's own listener saved it first.
-    document.addEventListener('view-save', () => void refreshNav());
 
     /* ── The ★ ────────────────────────────────────────────────────────
        The toolbar is `data-locked`, so its star is a REQUEST. The app owns the
@@ -498,9 +496,10 @@
       const { context } = urlState();
       return viewsOf(context)[provider.view ?? firstView(context)]?.label ?? '';
     };
+    // Its row in the rail follows, once it is saved (Views as rows: Settings › Application).
     const saveViewAs = async () => {
       const name = await askViewName(viewLabel());
-      if (name) await provider.saveView(name);
+      if (name && await provider.saveView(name)) void refreshNav();
     };
     document.addEventListener('view-save', async () => {
       if (!provider.customView) return saveViewAs();
@@ -509,7 +508,7 @@
         heading: `Save over “${label}”?`, action: 'Save',
         words: `“${label}” will hold the filters on screen now.`,
       });
-      if (yes) await provider.saveView();
+      if (yes && await provider.saveView()) void refreshNav();
     });
     document.addEventListener('view-save-as', saveViewAs);
     document.addEventListener('view-delete', async () => {
@@ -518,7 +517,7 @@
         heading: `Delete “${label}”?`, action: 'Delete', critical: true,
         words: `“${label}” will be deleted. This cannot be undone.`,
       });
-      if (yes) await provider.deleteView();
+      if (yes && await provider.deleteView()) void refreshNav();
     });
 
     /* ── Settings — an overlay on the Context ─────────────────────────────
