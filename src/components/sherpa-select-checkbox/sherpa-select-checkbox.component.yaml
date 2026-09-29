@@ -128,11 +128,13 @@ states:
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (checked, indeterminate, value). See $extensions.sherpa.jsProps.
+    description: >-
+      read/write JS properties (checked, indeterminate, value, disabled). See
+      $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
     description: >-
-      callable from a view definition's state block (checkValidity, focus). See
+      callable from a view definition's state block (checkValidity, reportValidity, focus). See
       $extensions.sherpa.methods.
 events:
   - $type: event
@@ -173,6 +175,10 @@ $extensions:
         name: checkValidity
         args: ""
       - $type: method
+        name: reportValidity
+        args: ""
+        description: Check, and show the browser's message on the box.
+      - $type: method
         name: focus
         args: "options?: FocusOptions"
     category: control
@@ -194,5 +200,8 @@ $extensions:
         type: string
         access: read-write
       - name: value
+        type: string
+        access: read-write
+      - name: disabled
         type: string
         access: read-write

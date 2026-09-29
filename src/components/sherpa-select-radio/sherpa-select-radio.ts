@@ -58,8 +58,20 @@ export class SherpaSelectRadio extends SherpaElement {
     if (this.#control) this.#control.value = v;
   }
 
+  get disabled(): boolean {
+    return this.hasAttribute('disabled');
+  }
+  set disabled(value: boolean) {
+    this.toggleAttribute('disabled', value);
+  }
+
   checkValidity(): boolean {
     return this.#control?.checkValidity() ?? true;
+  }
+
+  /** Check, and show the browser's message on the radio. */
+  reportValidity(): boolean {
+    return this.#control?.reportValidity() ?? true;
   }
 
   override focus(options?: FocusOptions): void {

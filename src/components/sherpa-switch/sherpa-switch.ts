@@ -3,6 +3,7 @@
  *
  * @prop {boolean} checked  — whether the switch is on (delegates to the inner input)
  * @prop {boolean} disabled — disabled state (reflects host attr + inner input)
+ * @prop {string}  value    — what it stands for when on (default "on"), as a checkbox's
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 
@@ -15,6 +16,7 @@ export class SherpaSwitch extends SherpaElement {
   static override observed = [
     'checked',
     'disabled',
+    'value',
     // CSS-only; declared for the typed door.
     'data-type',
   ];
@@ -54,6 +56,26 @@ export class SherpaSwitch extends SherpaElement {
     if (input) input.disabled = value;
   }
 
+  get value(): string {
+    return this.getAttribute('value') ?? 'on';
+  }
+  set value(v: string) {
+    this.setAttribute('value', v);
+  }
+
+  checkValidity(): boolean {
+    return this.#input()?.checkValidity() ?? true;
+  }
+
+  /** Check, and show the browser's message on the switch. */
+  reportValidity(): boolean {
+    return this.#input()?.reportValidity() ?? true;
+  }
+
+  override focus(options?: FocusOptions): void {
+    this.#input()?.focus(options);
+  }
+
   /* ── Private ─────────────────────────────────────────────────────────── */
 
   /** Mirror checked + disabled host → inner control. */
@@ -62,13 +84,14 @@ export class SherpaSwitch extends SherpaElement {
     if (!input) return;
     input.checked = this.hasAttribute('checked');
     input.disabled = this.hasAttribute('disabled');
+    input.value = this.value;
   }
 
   /** Mirror the checkbox onto `checked` and report it. */
   #onChange = (): void => {
     const checked = this.#input()?.checked ?? false;
     this.toggleAttribute('checked', checked);
-    this.emit('change', { checked });
+    this.emit('change', { checked, value: this.value });
   };
 }
 

@@ -9,8 +9,9 @@
     data-type — default (rectangular, ON/OFF label, square thumb)
                | simple  (pill, no label, round thumb)
     disabled   — native boolean       (reflected onto the inner input)
+    value      — native string        (what it stands for when on; default "on")
 
-  Fires: change  (detail: { checked: boolean })
+  Fires: change  (detail: { checked: boolean, value: string })
 -->
 <template id="default">
   <label class="track sherpa-border-edges" part="track">

@@ -58,6 +58,12 @@ props:
     native: true
     default: false
     description: — native boolean       (reflected onto the inner input)
+  - $type: prop
+    name: value
+    type: string
+    observed: true
+    native: true
+    description: — native string        (what it stands for when on; default "on")
 states:
   - $type: state
     name: disabled
@@ -68,7 +74,12 @@ states:
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (checked, disabled). See $extensions.sherpa.jsProps.
+    description: read/write JS properties (checked, disabled, value). See $extensions.sherpa.jsProps.
+  - $type: capability
+    api: js-methods
+    description: >-
+      callable from a view definition's state block (checkValidity, reportValidity, focus). See
+      $extensions.sherpa.methods.
 events:
   - $type: event
     name: change
@@ -76,6 +87,7 @@ events:
     composed: true
     detail:
       checked: unknown
+      value: unknown
     trigger:
       "on": change
       node: .input
@@ -102,6 +114,17 @@ tokens:
 $extensions:
   sherpa:
     figmaName: Switch
+    methods:
+      - $type: method
+        name: checkValidity
+        args: ""
+      - $type: method
+        name: reportValidity
+        args: ""
+        description: Check, and show the browser's message on the switch.
+      - $type: method
+        name: focus
+        args: "options?: FocusOptions"
     category: control
     variantAxes:
       - name: Value
@@ -118,4 +141,8 @@ $extensions:
       - name: disabled
         type: boolean
         description: disabled state (reflects host attr + inner input)
+        access: read-write
+      - name: value
+        type: string
+        description: what it stands for when on (default "on"), as a checkbox's
         access: read-write

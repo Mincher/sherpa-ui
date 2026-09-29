@@ -294,12 +294,24 @@ export class SherpaInputText extends SherpaElement {
     this.#syncHasValue();
   }
 
+  get disabled(): boolean {
+    return this.hasAttribute('disabled');
+  }
+  set disabled(value: boolean) {
+    this.toggleAttribute('disabled', value);
+  }
+
   checkValidity(): boolean {
     return this.#control?.checkValidity() ?? true;
   }
 
-  override focus(): void {
-    this.#control?.focus();
+  /** Check, and show the browser's message on the field. */
+  reportValidity(): boolean {
+    return this.#control?.reportValidity() ?? true;
+  }
+
+  override focus(options?: FocusOptions): void {
+    this.#control?.focus(options);
   }
 
   #onInput = (): void => {

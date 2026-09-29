@@ -265,7 +265,8 @@ consolidate."*
 | A3d ✅ | charts: the line chart draws its series and gridlines from `<svg>` templates (no `createElementNS`); ONE status list (`STATUSES`, `statusVar`, `statusBorderVar`); every meter — gauge, progress bar, metric — takes `populate(number \| { value })` and a number `value`. Grows: the metric gains its `value` door | +39 |
 | A4a ✅ | open and close: `DialogSurface` in `disclosure.ts`, IMPORTED by the dialog and the overlay panel — the overlay gains the late-close guard it lacked. `close` becomes `dialog-close` and `panel-close` | +30 |
 | A4b ✅ | open and close: the NAMES — `accordion-open` / `-close` and `notifications-open` / `-close`; `notifications-click`, `menu-click` and `view-menu-click` for a request; the filter panel's `show()`, `hide(reason)` (with `close()` kept) and the `open` attribute and property, which the app shell and the provider now read. The trigger mirror stays copied | +20 |
-| A5 | form controls: the same NAMES on all four — `value`, `checked`, `name`, `disabled`, `required`, `focus()`, `checkValidity()`, `reportValidity()` — and form association where a control needs it; a helper it imports if one fits, **never a base class**. Then bug 61 | — |
+| A5a ✅ | form controls: the same NAMES on all four, each in its own code — `value`, `checked`, `disabled`, `focus(options)`, `checkValidity()`, `reportValidity()`. The switch gains `value` (and sends it in `change`); a test holds the four to one surface | +60 |
+| A5b | form controls: each takes part in a `<form>` (`ElementInternals`), a radio group's validity and its submitted name, the stale validity in the text field — then bug 61 on a plain `<form>`. **Never a base class** | — |
 | A6 | items: the CURRENT and TICKED contracts; chip and tag events aligned | ~100 |
 | A7 | filters: `menu.reading`, one event per act, the grid's headings on `menuFor()`, the 18 members go — with TODO 38 step 4 and 89, so the panel is rebuilt once | ~700 |
 
