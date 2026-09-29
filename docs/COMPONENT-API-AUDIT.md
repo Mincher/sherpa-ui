@@ -243,50 +243,27 @@ going away: `<noun>-remove` (a request) and `dismiss()` + `<noun>-dismiss`
 |---|---|---:|
 | A1 | the tools: the spec generator reads TypeScript, keeps whole summaries, refreshes `$description` | — (specs become true) |
 | A2 | the base: `emit()` sends `{}`; `renderList` folds into `renderItems`; every clone through `clone()`; the `pathFind` copies go | ~60 |
-| A3 | charts: delete the hide doors and the repeated legend event; `chart-parts.ts`; the line chart's SVG template | ~180 |
+| A3 | charts: delete the hide doors and the repeated legend event; `chart-parts.ts`; the line chart's SVG template; `static css` as a list, with the axes sheet and the segments sheet | ~180 |
 | A4 | open and close: `disclosure.ts`; the event names; the provider's call in the same commit | ~120 |
 | A5 | form controls: `SherpaFormControl`; then bug 61 on it | ~150 |
-| A6 | items: the CURRENT and TICKED contracts | ~100 |
+| A6 | items: the CURRENT and TICKED contracts; chip and tag events aligned | ~100 |
 | A7 | filters: `menu.reading`, one event per act, the grid's headings on `menuFor()`, the 18 members go — with TODO 38 step 4 and 89, so the panel is rebuilt once | ~700 |
 
-**About 1,300 copied lines out**, plus 241 if chip and tag merge. The net
+**About 1,300 copied lines out.** The net
 saving is not measured: each step states its budget and reports the actual,
 and the size gate holds it (`npm run check:size`).
 
 ---
 
-## 6. Decisions for Will
+## 6. Decided — Will, 2026-09-29
 
-**1. Chip and Tag — two components, nearly one code.**
-- **A — keep both for now**, align their events; merge after Figma merges
-  them. *(Recommended: the Figma resync breaks if the code merges first.)*
-- **B — merge now** into `sherpa-tag data-type="chip"`.
-
-**2. "select" means two things** — "picked one" (`nav-select`,
-`breadcrumb-select`) and "ticked" (`data-selected`, the list item's
-`item-select`).
-- **A — `<noun>-select` always means "picked one"**; a tick is
-  `selection-change`. *(Recommended: it matches `data-current` vs
-  `data-selected`.)*
-- **B — keep today's names**, align only the detail.
-
-**3. The meters' `value`** — the gauge scales `data-value` by min and max; the
-progress bar calls `data-value` legacy but every test uses it; the metric's
-`data-value` is display TEXT.
-- **A — every meter takes a NUMBER** through `populate()` and `value`; the
-  metric's text is its own formatted output. *(Recommended.)*
-- **B — leave them.**
-
-**4. Sort and group in the panel** carry their scope; the source drops it.
-- **A — the source keeps the scope**, so a panel's sort reaches its own
-  component (`T-group-and-sort-are-component-scope`). *(Recommended.)*
-- **B — drop `scope` from the panel's sort and group events.**
-
-**5. Shared chart CSS** — a component has one `static css`, and a shared sheet
-must not carry `:host` rules, so the 76 copied lines cannot move today.
-- **A — the base class takes `static css` as a LIST** of sheets.
-  *(Recommended: the charts share one layout sheet.)*
-- **B — keep the copies.**
+| # | question | ruling |
+|---|---|---|
+| 1 | Chip and Tag | **Two components, two purposes — always.** Never merged. Only their events align: `chip-remove` and `tag-remove` both send `{}`. |
+| 2 | "select" | **A** — `<noun>-select` always means "picked one"; a tick is `selection-change`. |
+| 3 | the meters' `value` | **A** — every meter takes a NUMBER through `populate()` and `value`. |
+| 4 | sort and group in the panel | **A** — the source keeps the scope. Will: *"This probably relates to other reworks around the single query, filtersets, and filter scopes."* So it is built with 99 (the filterset) and 38's scope rename, not alone. |
+| 5 | shared chart CSS | **Two sheets**: one for 2D charts with AXES (bar, line), one for SEGMENTED visuals (donut, pie, gauge, radar). A component's `static css` becomes a list, so a chart adopts its own sheet and its family's. |
 
 Unless Will says otherwise: `calendar-apply` and `calendar-cancel` (no
 listeners) are deleted, and the filter event keeps the name

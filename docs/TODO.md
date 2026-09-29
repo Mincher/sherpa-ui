@@ -118,9 +118,11 @@ order.
 
 ### `[~]` 86 — AUDIT: every component's functions and events — one request, one response, standardised in `SherpaElement`
 
-**Assessed 2026-09-29 — `docs/COMPONENT-API-AUDIT.md`, for Will's review.**
-About 1,300 copied lines in six families; seven build steps (A1–A7); five
-decisions for Will in its §6. Nothing is changed until he rules.
+**Assessed and decided 2026-09-29 — `docs/COMPONENT-API-AUDIT.md`.** About
+1,300 copied lines in six families; seven build steps (A1–A7), one commit
+each. Will's rulings are its §6: chip and tag stay two components; `-select`
+means picked one; meters take a number; sort and group keep their scope (with
+99); two shared chart sheets.
 
 Will, 2026-09-27: *"Once the provider approach is completed, it might be a
 good idea to take a look at all of the functions and events for all UI
@@ -436,7 +438,9 @@ this to group filters/chips together, too."*
 3. **A pick that is no longer offered.** Region = APAC, then Customer = one
    with no APAC rows: keep the pick, suspend it, or drop it? Suspend is not
    clear — never lose a reader's answer silently.
-4. **The bar and the panel draw a set as ONE group** — 38 step 4's one
+4. **Sort and group keep their scope** in the source (Will, 2026-09-29,
+   ruling 4 of the API audit) — design it here, with the filterset.
+5. **The bar and the panel draw a set as ONE group** — 38 step 4's one
    builder, and `.sherpa-group` for the joins. Do it before 89 redraws the
    panel, so the panel is rebuilt once.
 
