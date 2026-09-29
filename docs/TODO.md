@@ -18,99 +18,103 @@ and the page definition (92) were built: what is left of the foundation first
 features, which now stand on it. Numbers are ids, not order; the table IS the
 order.
 
-| Pri | # | Item | Kind |
-|---:|---:|---|---|
-| | | **B — The foundation: what is left** | |
-| 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
-| 2a | 103 | Rows with no key get one from the data layer — Sherpa's own, never sent out | foundation |
-| 3 | 38 | One model, one builder, one owner — what is left | refactor |
-| 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
-| 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
-| | | **C — Contained bugs** | |
-| 7 | 45 | A picked date does not show in the chip | bug |
-| 8 | 82 | A number chip set by a View shows no value on its face | bug |
-| 9 | 83 | Calendar menu: a picked date leaves Apply and Discard looking off — yet they work | bug |
-| 10 | 94 | A number (and range) filter menu needs Apply and Cancel buttons | bug |
-| 11 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
-| 12 | 16 | Favourite and Save apply to the Context, not the View | bug |
-| 13 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
-| 14 | 95 | Firefox: a remote chip holding a draft is not marked pending | bug |
-| 15 | 96 | A grid with few columns leaves an empty band on the right of its card | bug |
-| 16 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
-| 16a | 100 | The Assistant panel shows no heading | quick |
-| 16b | 106 | A click between a menu's items reaches what is behind it — an accordion toggles | bug |
-| 16c | 108 | A Filters menu row's scope is a DESCRIPTION under its label, with no "in" | quick |
-| | | **D — Filters: Will's features, on the foundation** | |
-| 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
-| 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
-| 18a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
-| 19 | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
-| 19a | 110 | In Advanced rows, AND is serial and OR is parallel: an AND row offers only what the rows before it leave | feature |
-| 20 | 21d | EXPLORE — conditions for a DATE field | explore |
-| 21 | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
-| 21a | 105 | "Save filters" saves EVERY scope under one name; a "Saved" chip shows it, warns when edited, and undoes it | feature |
-| 21b | 109 | Reset has a label, and a menu button: "Reset to default" puts back the View's own filters | feature |
-| 22 | 97 | A filter panel section shows an icon for WHAT it filters: View, Chart, Grid, Form, List | quick |
-| 23 | 60 | Once applied, a chip's badge shows the number of results | feature |
-| 24 | 49 | A preset Advanced chip shows its conditions, read-only | feature |
-| 25 | 50 | A reader's saved Advanced chip shows its conditions, editable | feature |
-| 26 | 48 | A child menu opens on hover or click of its row | feature |
-| 27 | 21c | A condition's matches must ALL highlight | feature |
-| 28 | 21f | "Send to view filters" | feature |
-| 29 | 21b | Which header chips carry over between views | feature |
-| 30 | 20b | The Date filter should be a view-scope date RANGE | feature |
-| 31 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
-| 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
-| | | **E — Views and navigation** | |
-| 32 | 15 | Save a View, and the Save split-button menu | feature |
-| 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
-| 34 | 34 | Figma: use the Navigation terms | figma |
-| 35 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
-| | | **F — Data states and charts** | |
-| 36 | 58 | Loading, empty and error states in a container | feature |
-| 37 | 9b | A Data Viz header, for metrics and chart containers | component |
-| 38 | 80 | Container and Data Viz headers: Figma's new button styling and grouping | component |
-| 39 | 14 | An example of real-time data | feature |
-| 40 | 59 | EXPLORE, later — Will's own loading pattern | explore |
-| | | **G — Overlay panels** | |
-| 41 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
-| 42 | 23 | A focused grid row opens a details panel | feature |
-| | | **H — The accessibility gate** | |
-| 43 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
-| | | **I — The big builds** | |
-| 44 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
-| 45 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
-| 46 | 27 | A consumer can supply their OWN templates and CSS | feature |
-| 47 | 25 | `sherpa-layout-canvas` + minimap | component |
-| 48 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
-| | | **J — Tidy-ups and renames** | |
-| 49 | 11 | `sherpa-group`: what is left | tidy |
-| 50 | 28 | A Figma component is NOT always a web component | tidy |
-| 51 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
-| 52 | 33 | Density as step offsets, and a breakpoint step | tokens |
-| 53 | 36 | CSS: compiled where it should inherit? | tidy |
-| 54 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
-| 55 | 84 | Use the platform: Intl for money, units and deltas; Temporal in the calendar | refactor |
-| 56 | 81 | Component contracts move from YAML to JSON | refactor |
-| 56a | 111 | A spec types every JS property as `string` — `reading`, `conditions`, `open` | tidy |
-| 57 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
-| | | **K — Agentic UI: much later** | |
-| 58 | 76 | WebMCP: agents do UI tasks through Sherpa's own contracts — a core system | explore |
-| 59 | 77 | CONTRACTED UX patterns, so a generated experience is consistent and useful | explore |
-| 60 | 78 | A node-based WORKFLOW creator: make, edit and view patterns and generated workflows | explore |
+**Status:** 🚧 in progress · ⬜ not started · ❓ waits on a ruling from Will.
+Done items leave the table for one line under **Done**.
+
+| | Pri | # | Item | Kind |
+|:-:|---:|---:|---|---|
+| | | | **B — The foundation: what is left** | |
+| 🚧 | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
+| 🚧 | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
+| ⬜ | 2a | 103 | Rows with no key get one from the data layer — Sherpa's own, never sent out | foundation |
+| 🚧 | 3 | 38 | One model, one builder, one owner — what is left | refactor |
+| ⬜ | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
+| ⬜ | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
+| | | | **C — Contained bugs** | |
+| ⬜ | 7 | 45 | A picked date does not show in the chip | bug |
+| ⬜ | 8 | 82 | A number chip set by a View shows no value on its face | bug |
+| ⬜ | 9 | 83 | Calendar menu: a picked date leaves Apply and Discard looking off — yet they work | bug |
+| ⬜ | 10 | 94 | A number (and range) filter menu needs Apply and Cancel buttons | bug |
+| ⬜ | 11 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
+| ⬜ | 12 | 16 | Favourite and Save apply to the Context, not the View | bug |
+| ⬜ | 13 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
+| ⬜ | 14 | 95 | Firefox: a remote chip holding a draft is not marked pending | bug |
+| ⬜ | 15 | 96 | A grid with few columns leaves an empty band on the right of its card | bug |
+| ⬜ | 16 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
+| ⬜ | 16a | 100 | The Assistant panel shows no heading | quick |
+| ⬜ | 16b | 106 | A click between a menu's items reaches what is behind it — an accordion toggles | bug |
+| ⬜ | 16c | 108 | A Filters menu row's scope is a DESCRIPTION under its label, with no "in" | quick |
+| | | | **D — Filters: Will's features, on the foundation** | |
+| ⬜ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
+| ⬜ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
+| ⬜ | 19 | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
+| ⬜ | 19a | 110 | In Advanced rows, AND is serial and OR is parallel: an AND row offers only what the rows before it leave | feature |
+| ⬜ | 20 | 21d | EXPLORE — conditions for a DATE field | explore |
+| ⬜ | 21 | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
+| ⬜ | 21a | 105 | "Save filters" saves EVERY scope under one name; a "Saved" chip shows it, warns when edited, and undoes it | feature |
+| ⬜ | 21b | 109 | Reset has a label, and a menu button: "Reset to default" puts back the View's own filters | feature |
+| ⬜ | 22 | 97 | A filter panel section shows an icon for WHAT it filters: View, Chart, Grid, Form, List | quick |
+| ⬜ | 23 | 60 | Once applied, a chip's badge shows the number of results | feature |
+| ⬜ | 24 | 49 | A preset Advanced chip shows its conditions, read-only | feature |
+| ⬜ | 25 | 50 | A reader's saved Advanced chip shows its conditions, editable | feature |
+| ⬜ | 26 | 48 | A child menu opens on hover or click of its row | feature |
+| ⬜ | 27 | 21c | A condition's matches must ALL highlight | feature |
+| ⬜ | 28 | 21f | "Send to view filters" | feature |
+| ⬜ | 29 | 21b | Which header chips carry over between views | feature |
+| ⬜ | 30 | 20b | The Date filter should be a view-scope date RANGE | feature |
+| ⬜ | 31 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
+| ⬜ | 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
+| | | | **E — Views and navigation** | |
+| ⬜ | 32 | 15 | Save a View, and the Save split-button menu | feature |
+| ⬜ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
+| ⬜ | 34 | 34 | Figma: use the Navigation terms | figma |
+| ⬜ | 35 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
+| | | | **F — Data states and charts** | |
+| ⬜ | 36 | 58 | Loading, empty and error states in a container | feature |
+| ⬜ | 37 | 9b | A Data Viz header, for metrics and chart containers | component |
+| ⬜ | 38 | 80 | Container and Data Viz headers: Figma's new button styling and grouping | component |
+| ⬜ | 39 | 14 | An example of real-time data | feature |
+| ⬜ | 40 | 59 | EXPLORE, later — Will's own loading pattern | explore |
+| | | | **G — Overlay panels** | |
+| ⬜ | 41 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
+| ⬜ | 42 | 23 | A focused grid row opens a details panel | feature |
+| | | | **H — The accessibility gate** | |
+| ⬜ | 43 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
+| | | | **I — The big builds** | |
+| ⬜ | 44 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
+| ⬜ | 45 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
+| ⬜ | 46 | 27 | A consumer can supply their OWN templates and CSS | feature |
+| ⬜ | 47 | 25 | `sherpa-layout-canvas` + minimap | component |
+| ⬜ | 48 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
+| | | | **J — Tidy-ups and renames** | |
+| ⬜ | 49 | 11 | `sherpa-group`: what is left | tidy |
+| ⬜ | 50 | 28 | A Figma component is NOT always a web component | tidy |
+| ⬜ | 51 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| ⬜ | 52 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| ⬜ | 53 | 36 | CSS: compiled where it should inherit? | tidy |
+| ⬜ | 54 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| ⬜ | 55 | 84 | Use the platform: Intl for money, units and deltas; Temporal in the calendar | refactor |
+| ⬜ | 56 | 81 | Component contracts move from YAML to JSON | refactor |
+| ⬜ | 56a | 111 | A spec types every JS property as `string` — `reading`, `conditions`, `open` | tidy |
+| ⬜ | 57 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
+| | | | **K — Agentic UI: much later** | |
+| ⬜ | 58 | 76 | WebMCP: agents do UI tasks through Sherpa's own contracts — a core system | explore |
+| ⬜ | 59 | 77 | CONTRACTED UX patterns, so a generated experience is consistent and useful | explore |
+| ⬜ | 60 | 78 | A node-based WORKFLOW creator: make, edit and view patterns and generated workflows | explore |
 
 **Why this order** (reassessed 2026-09-29).
 
 - **B — what is left of the foundation.** 86 first: an ASSESSMENT for Will to
-  rule on, so it costs no code while he reads it. 75 (done) came before any
-  filter feature, so 89, 90, 98 and 99 are built in the new words. 38's one builder
-  is built WITH 89 (see D).
+  rule on, so it costs no code while he reads it. Its last step, A7, is built
+  WITH 102 (agreed 2026-09-29): the menu owns the reading, so both answers are
+  kept in one place. 75 (done) came before any filter feature, so 89, 90, 98
+  and 99 are built in the new words. 38's one builder is built WITH 89 (see D).
 - **C — Contained bugs.** Each is fixable in its own component or page. In
   pairs where one fix serves both: 45 and 82 (a chip's face after a silent
   set), 83 and 94 (a menu's footer).
 - **D — Filters.** The panel is rebuilt ONCE: 99 designs how filters group
-  first, then 89 (Simple, with 38 step 4's one builder), 102 (both modes'
-  answers kept), 90 (Advanced) and 21d (its date half), then 98 (the action
+  first, then 89 (Simple, with 38 step 4's one builder), 90 (Advanced, on
+  102's two kept answers) and 21d (its date half), then 98 (the action
   row, on 90). Then 60; 49 before
   50; 20b before any date condition ships.
 - **E — Views and navigation.** 15's save is built (`provider.saveView`); what
@@ -479,7 +483,7 @@ mode."* Its content is one of three, by the field:
 builder's explode-or-menu flag, 38 step 4). 47 (more than 20 values, one chip)
 is merged here. Mode words: TODO 75.
 
-### `[ ]` 102 — Simple AND Advanced answers are both kept, so a filter switches mode at any time
+### `[~]` 102 — Simple AND Advanced answers are both kept, so a filter switches mode at any time
 
 Will, 2026-09-29: *"Switching to an advanced filter, in the filter toolbar
 chip menu, prevents me from toggling back to a simple filter if a value has
