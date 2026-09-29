@@ -38,7 +38,7 @@ const SETUP = `
   ];
   el.populate(SCOPES);
   await new Promise((r) => setTimeout(r, 250));
-  el.open();
+  el.show();
   await new Promise((r) => setTimeout(r, 150));
   const sr = el.shadowRoot;
   const settle = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));

@@ -22,7 +22,7 @@ test('panel mode survives a reload, in both directions', async ({ page }) => {
   await page.waitForTimeout(700);
 
   const before = await page.evaluate(() =>
-    !document.querySelector('#filter-panel')!.hasAttribute('data-open'));
+    !document.querySelector('#filter-panel')!.hasAttribute('open'));
 
   await page.evaluate(() => {
     document.querySelector('#context-root sherpa-quick-filter-toolbar')!
@@ -30,7 +30,7 @@ test('panel mode survives a reload, in both directions', async ({ page }) => {
   });
   await page.waitForTimeout(800);
   const opened = await page.evaluate(() => ({
-    open: document.querySelector('#filter-panel')!.hasAttribute('data-open'),
+    open: document.querySelector('#filter-panel')!.hasAttribute('open'),
     stored: Object.keys(sessionStorage).filter((k) => k.includes('filter')),
   }));
 
@@ -45,7 +45,7 @@ test('panel mode survives a reload, in both directions', async ({ page }) => {
     const p = document.querySelector('#filter-panel') as HTMLElement & { shadowRoot: ShadowRoot };
     const bar = document.querySelector('#context-root sherpa-quick-filter-toolbar') as HTMLElement;
     return {
-      open: p.hasAttribute('data-open'),
+      open: p.hasAttribute('open'),
       fields: p.shadowRoot.querySelectorAll('.field').length,
       barHidden: getComputedStyle(bar).display === 'none',
     };
@@ -67,7 +67,7 @@ test('panel mode survives a reload, in both directions', async ({ page }) => {
       ?.querySelector('.row, [role="row"]'));
   await page.waitForTimeout(1200);
   const closedAgain = await page.evaluate(() => ({
-    shut: !document.querySelector('#filter-panel')!.hasAttribute('data-open'),
+    shut: !document.querySelector('#filter-panel')!.hasAttribute('open'),
     barBack: getComputedStyle(
       document.querySelector('#context-root sherpa-quick-filter-toolbar') as HTMLElement,
     ).display !== 'none',
@@ -109,7 +109,7 @@ for (const width of [1280, 1600, 1920]) {
         .dispatchEvent(new CustomEvent('filter-configure', { bubbles: true, composed: true }));
     });
     await expect.poll(() => page.evaluate(() =>
-      document.querySelector('#filter-panel')!.hasAttribute('data-open'))).toBe(true);
+      document.querySelector('#filter-panel')!.hasAttribute('open'))).toBe(true);
     const r = await page.evaluate(() => ({
       card: Math.round(document.querySelector('#filter-panel')!.shadowRoot!
         .querySelector('.panel')!.getBoundingClientRect().width),

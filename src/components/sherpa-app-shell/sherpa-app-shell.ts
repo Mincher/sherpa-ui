@@ -11,7 +11,7 @@ export class SherpaAppShell extends SherpaElement {
   static override html = new URL('./sherpa-app-shell.html', import.meta.url);
   static override observed = ['data-nav-state', 'data-no-nav', 'data-no-header'];
 
-  /** The shell writes these itself, mirroring each panel's own `data-open`. */
+  /** The shell writes these itself, mirroring each panel's own `open`. */
   static override props = {
     'data-panel-start-open': { type: 'boolean', kind: 'visibility' },
     'data-panel-end-open': { type: 'boolean', kind: 'visibility' },
@@ -23,7 +23,7 @@ export class SherpaAppShell extends SherpaElement {
     // Deferred: the rail sets itself to `collapsed` on its own first render.
     queueMicrotask(() => this.#adoptRailState());
 
-    /* A panel area follows its panel's own `data-open`: slotted but SHUT, it
+    /* A panel area follows its panel's own `open`: slotted but SHUT, it
        must take no room, or the Context never gets the width back.
        `::slotted()` cannot go inside `:has()`, so the shell mirrors the flag.
        TRAP T-the-shell-owns-the-panel-areas */
@@ -34,18 +34,18 @@ export class SherpaAppShell extends SherpaElement {
     }
   }
 
-  /** Mirror one panel's `data-open` onto the host, and follow it. */
+  /** Mirror one panel's `open` onto the host, and follow it. */
   #watchPanel(side: 'start' | 'end'): void {
     const slot = this.$<HTMLSlotElement>(`slot[name="panel-${side}"]`);
     const panel = slot?.assignedElements()[0];
     const flag = `data-panel-${side}-open`;
     const sync = (): void => {
-      this.toggleAttribute(flag, !!panel?.hasAttribute('data-open'));
+      this.toggleAttribute(flag, !!panel?.hasAttribute('open'));
     };
     this.#panelWatch[side]?.disconnect();
     if (!panel) { this.removeAttribute(flag); return; }
     const observer = new MutationObserver(sync);
-    observer.observe(panel, { attributes: true, attributeFilter: ['data-open'] });
+    observer.observe(panel, { attributes: true, attributeFilter: ['open'] });
     this.#panelWatch[side] = observer;
     sync();
   }

@@ -39,7 +39,7 @@ const SETUP = `
     },
   ]);
   await new Promise((r) => setTimeout(r, 250));
-  el.open();
+  el.show();
   await new Promise((r) => setTimeout(r, 150));
   const sr = el.shadowRoot;
   const q = (s) => [...sr.querySelectorAll(s)];
@@ -347,7 +347,7 @@ test('a narrow window refuses the panel, and shuts an open one', async ({ page }
   await page.setViewportSize({ width: 1440, height: 900 });
   const wide = await page.evaluate(`(async () => {
     ${SETUP}
-    return el.hasAttribute('data-open');
+    return el.hasAttribute('open');
   })()`);
   expect(wide).toBe(true);
 
@@ -356,10 +356,10 @@ test('a narrow window refuses the panel, and shuts an open one', async ({ page }
 
   const narrow = await page.evaluate(`(async () => {
     const el = document.querySelector('sherpa-filter-panel');
-    const shut = el.hasAttribute('data-open');
-    el.open();
+    const shut = el.hasAttribute('open');
+    el.show();
     await new Promise((r) => setTimeout(r, 120));
-    return { shut, afterAsk: el.hasAttribute('data-open') };
+    return { shut, afterAsk: el.hasAttribute('open') };
   })()`) as { shut: boolean; afterAsk: boolean };
 
   // It closed ITSELF when the window narrowed…
@@ -451,7 +451,7 @@ test('a number field draws its own menu body, inline', async ({ page }) => {
       { id: 'seats', label: 'Seats', kind: 'number', min: 0, max: 100 },
     ] }]);
     await new Promise((r) => setTimeout(r, 300));
-    el.open();
+    el.show();
     await new Promise((r) => setTimeout(r, 250));
 
     const sr = el.shadowRoot;
@@ -574,7 +574,7 @@ test('opening and closing the panel leaves a chip\'s own menu alone', async ({ p
     const home = () => chip.contains(menu) && menu.getAttribute('slot') === 'menu'
       && !menu.hasAttribute('data-inline');
 
-    el.open();
+    el.show();
     await new Promise((r) => setTimeout(r, 250));
     const whileOpen = home();
     // The panel drew its OWN, and it is not this one.
@@ -585,7 +585,7 @@ test('opening and closing the panel leaves a chip\'s own menu alone', async ({ p
     await new Promise((r) => setTimeout(r, 200));
     const afterClose = home();
 
-    el.open();
+    el.show();
     await new Promise((r) => setTimeout(r, 300));
     const afterReopen = home()
       && !!el.shadowRoot.querySelector('.field[data-field="seats"] sherpa-menu');
@@ -644,7 +644,7 @@ test('remote: a changed field shows its own Apply and Discard; locally, never', 
 test('a field populated with conditions opens in custom mode on its rows', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-filter-panel') as HTMLElement & {
-      rendered: Promise<void>; populate(d: unknown): void; open(): void;
+      rendered: Promise<void>; populate(d: unknown): void; show(): void;
       readings: Record<string, Record<string, { conditions?: unknown[] }>> };
     el.setAttribute('data-min-width', '0');
     document.getElementById('root')!.replaceChildren(el);
@@ -654,7 +654,7 @@ test('a field populated with conditions opens in custom mode on its rows', async
         options: [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }],
         state: { picked: [], conditions: [{ op: 'contains', text: 'Da' }] } },
     ] }]);
-    el.open();
+    el.show();
     await window.__settled();
     for (let i = 0; i < 4; i++) await new Promise((res) => requestAnimationFrame(res));
     const box = el.shadowRoot!.querySelector('.field[data-field="owner"]')!;

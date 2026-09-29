@@ -234,7 +234,7 @@ test('panel mode: Configure opens the panel and steps bars back; a later bar joi
     await settle();
     bar.dispatchEvent(new CustomEvent('filter-configure', { bubbles: true, composed: true }));
     await settle();
-    const opened = { open: panel.hasAttribute('data-open'), bar: bar.hasAttribute('data-panel-mode'), mode: provider.filterMode };
+    const opened = { open: panel.hasAttribute('open'), bar: bar.hasAttribute('data-panel-mode'), mode: provider.filterMode };
     const late = document.createElement('sherpa-quick-filter-toolbar');
     late.setAttribute('data-scope', 'data');
     provider.append(late);
@@ -242,7 +242,7 @@ test('panel mode: Configure opens the panel and steps bars back; a later bar joi
     const joined = late.hasAttribute('data-panel-mode');
     panel.close();
     await settle();
-    return { opened, joined, closed: { open: panel.hasAttribute('data-open'), bar: bar.hasAttribute('data-panel-mode'), late: late.hasAttribute('data-panel-mode') }, heard, reports };
+    return { opened, joined, closed: { open: panel.hasAttribute('open'), bar: bar.hasAttribute('data-panel-mode'), late: late.hasAttribute('data-panel-mode') }, heard, reports };
   })()`) as Record<string, unknown>;
   expect(r['opened']).toEqual({ open: true, bar: true, mode: 'panel' });
   expect(r['joined']).toBe(true);
@@ -267,13 +267,13 @@ test('a page with no data shuts the panel without changing the mode; the next pa
     provider.filterMode = 'panel';
     await provider.provide({ sources: { s: source(2, 'x') } });
     await settle();
-    const first = panel.hasAttribute('data-open');
+    const first = panel.hasAttribute('open');
     await provider.provide({ sources: {} });
     await settle();
-    const empty = panel.hasAttribute('data-open');
+    const empty = panel.hasAttribute('open');
     await provider.provide({ sources: { s: source(3, 'y') } });
     await settle();
-    return { first, empty, again: panel.hasAttribute('data-open'), heard, reports };
+    return { first, empty, again: panel.hasAttribute('open'), heard, reports };
   })()`) as Record<string, unknown>;
   expect(r['first']).toBe(true);
   expect(r['empty']).toBe(false);

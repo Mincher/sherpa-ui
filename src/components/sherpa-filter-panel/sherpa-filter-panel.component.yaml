@@ -114,14 +114,6 @@ props:
       the width below which the panel refuses to show, in px . Filtering goes back to the toolbars
       there.
   - $type: prop
-    name: data-open
-    type: string
-    observed: true
-    kind: style
-    description: >-
-      the panel is showing. A host writes it; the panel reports `filter-panel-close` and never hides
-      itself, except below its breakpoint. TRAP T-the-panel-is-desktop-only
-  - $type: prop
     name: data-pending
     type: string
     observed: false
@@ -146,22 +138,27 @@ props:
       the host SAVES filters: a scope with an answered field offers "Save filter", and a reader's
       own saved preset opens Edit filter and Delete filter — each asked for. TRAP
       T-the-panel-saves-a-whole-scope
-states:
-  - $type: state
+  - $type: prop
     name: open
-    selector: ":host([data-open])"
+    type: string
+    observed: true
+    native: true
+    description: >-
+      the panel is showing. A host writes it; the panel reports `filter-panel-close` and never hides
+      itself, except below its breakpoint. TRAP T-the-panel-is-desktop-only
+states:
   - $type: state
     name: remote
     selector: ":host([data-remote])"
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (values, readings). See $extensions.sherpa.jsProps.
+    description: read/write JS properties (values, readings, open). See $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
     description: >-
-      callable from a view definition's state block (setFieldReading, drawReading, open, close,
-      toggle, drawScopes). See $extensions.sherpa.methods.
+      callable from a view definition's state block (setFieldReading, drawReading, show, hide,
+      close, toggle, drawScopes). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: quick-filter-change
@@ -269,16 +266,20 @@ $extensions:
           drawReading(field, reading, scope) — a bound source tells the OPEN panel one field's
           answer, in the scope that holds it. Shut, it draws nothing: it is refilled when it opens.
       - $type: method
-        name: open
+        name: show
         args: ""
         description: Show the panel, unless the window is too narrow.
       - $type: method
-        name: close
+        name: hide
         args: "reason: 'reader' | 'width' | 'page' = 'reader'"
         description: >-
           EVERY close reports, and says why. The width path called this directly while only the
           header button emitted, so a narrow window left the panel gone and the host still in panel
           mode — no toolbars, no panel.
+      - $type: method
+        name: close
+        args: "reason: 'reader' | 'width' | 'page' = 'reader'"
+        description: "`hide()`, in the spelling every surface keeps."
       - $type: method
         name: toggle
         args: ""
@@ -296,3 +297,6 @@ $extensions:
       - name: readings
         type: string
         access: read
+      - name: open
+        type: string
+        access: read-write

@@ -148,7 +148,7 @@
 /* A SLOTTED BUT CLOSED panel takes no room either. `data-has-panel-*` says
    something is slotted, which stays true while the panel is SHUT — so the area
    kept its 360px and the Context never got it back. The area follows the
-   panel's own `data-open`, read through `:has()` on the slotted element.
+   panel's own `open`, read through `:has()` on the slotted element.
    `::slotted()` cannot go inside `:has()`; a plain child selector reaches a
    slotted element from the shadow side here because the slot is the child.
    TRAP T-the-shell-owns-the-panel-areas */

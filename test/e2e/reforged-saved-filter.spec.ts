@@ -570,7 +570,7 @@ test('the Records page edits a saved filter under its own name, and deletes it',
 test('the panel: saved presets wear fx, and a scope asks to save, edit and delete', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const readings = { health: { op: 'lt', text: '60' } };
-    const panel = await window.__mount<HTMLElement & { open(): void; populate(d: unknown): unknown }>(
+    const panel = await window.__mount<HTMLElement & { show(): void; populate(d: unknown): unknown }>(
       'sherpa-filter-panel', undefined, { 'data-min-width': '0', style: 'inline-size: 400px' });
     await panel.populate([{
       scope: 'data', label: 'Data', filters: [
@@ -580,7 +580,7 @@ test('the panel: saved presets wear fx, and a scope asks to save, edit and delet
           options: [{ value: 'Dana', label: 'Dana', selected: true }, { value: 'Ravi', label: 'Ravi' }] },
       ],
     }]);
-    panel.open();
+    panel.show();
     await window.__settled();
     const sr = panel.shadowRoot!;
     const chip = (v: string) => sr.querySelector<HTMLElement>(`.field[data-field="presets"] .value[data-value="${v}"]`)!;

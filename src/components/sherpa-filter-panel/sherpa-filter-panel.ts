@@ -162,7 +162,6 @@ export class SherpaFilterPanel extends SherpaElement {
        replaces every one. `#syncHeading` passes the attribute along instead.
        TRAP T-a-composed-child-takes-an-attribute-not-text */
     'data-heading': { type: 'string', kind: 'style' },
-    'data-open': { type: 'boolean', kind: 'style' },
     'data-locked': { type: 'boolean', kind: 'style' },
     'data-min-width': { type: 'string', kind: 'style' },
     /* Set by a bound source: a change waits for its field's Apply, and which
@@ -172,7 +171,7 @@ export class SherpaFilterPanel extends SherpaElement {
   } as const;
 
   static override observed = [
-    'data-heading', 'data-open',
+    'data-heading', 'open',
     // The host saves filters. TRAP T-the-panel-saves-a-whole-scope
     'data-saveable',
   ];
@@ -227,7 +226,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
   override onChange(name: string): void {
     if (name === 'data-heading') this.#syncHeading();
-    else if (name === 'data-open') this.#enforceWidth();
+    else if (name === 'open') this.#enforceWidth();
     else if (name === 'data-saveable') this.#syncSaveable();
     else if (name === 'data-pending' || name === 'data-remote') this.#syncPending();
   }
@@ -328,24 +327,33 @@ export class SherpaFilterPanel extends SherpaElement {
    * refilled when it opens. TRAP T-an-open-panel-follows-the-data-layer
    */
   drawReading(field: string, reading: FieldReading, scope: string): void {
-    if (!this.hasAttribute('data-open')) return;
+    if (!this.hasAttribute('open')) return;
     if (this.#held.has(`${scope}:${field}`)) this.setFieldReading(field, reading);
+  }
+
+  /** Is it showing? The `open` attribute, as on every surface that opens. */
+  get open(): boolean {
+    return this.hasAttribute('open');
+  }
+  set open(value: boolean) {
+    if (value) this.show();
+    else this.hide();
   }
 
   /** Show the panel, unless the window is too narrow.
    *  TRAP T-the-panel-is-desktop-only */
-  open(): void {
+  show(): void {
     if (!this.#wideEnough()) return;
-    this.toggleAttribute('data-open', true);
+    this.toggleAttribute('open', true);
   }
 
   /** EVERY close reports, and says why. The width path called this directly
    *  while only the header button emitted, so a narrow window left the panel
    *  gone and the host still in panel mode — no toolbars, no panel.
    *  TRAP T-every-close-reports-or-the-toolbars-stay-hidden */
-  close(reason: 'reader' | 'width' | 'page' = 'reader'): void {
-    if (!this.hasAttribute('data-open')) return;
-    this.removeAttribute('data-open');
+  hide(reason: 'reader' | 'width' | 'page' = 'reader'): void {
+    if (!this.hasAttribute('open')) return;
+    this.removeAttribute('open');
     this.#lastClose = reason;
     this.emit('filter-panel-close', { reason });
   }
@@ -354,9 +362,14 @@ export class SherpaFilterPanel extends SherpaElement {
     this.#media()?.removeEventListener('change', this.#enforceWidth);
   }
 
+  /** `hide()`, in the spelling every surface keeps. */
+  close(reason: 'reader' | 'width' | 'page' = 'reader'): void {
+    this.hide(reason);
+  }
+
   toggle(): void {
-    if (this.hasAttribute('data-open')) this.close();
-    else this.open();
+    if (this.hasAttribute('open')) this.hide();
+    else this.show();
   }
 
   /* ── Drawing ──────────────────────────────────────────────────────── */
@@ -1359,7 +1372,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** The header's switch back to the toolbars. */
   #onClose = (): void => {
-    this.close('reader');
+    this.hide('reader');
   };
 
   /* ── The breakpoint ───────────────────────────────────────────────── */
@@ -1379,7 +1392,7 @@ export class SherpaFilterPanel extends SherpaElement {
    *  toolbars, which is what they are for. TRAP T-the-panel-is-desktop-only */
   #enforceWidth = (): void => {
     if (!this.#wideEnough()) {
-      this.close('width');
+      this.hide('width');
       return;
     }
     /* WIDE AGAIN, and the window was what took it away. Nothing else tells the
@@ -1389,7 +1402,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** Closed by the window, not by the reader — so a widen may give it back. */
   get #closedByWidth(): boolean {
-    return this.#lastClose === 'width' && !this.hasAttribute('data-open');
+    return this.#lastClose === 'width' && !this.hasAttribute('open');
   }
   /** Why it last closed: the reader, a narrow window, or a page with no filters. */
   #lastClose: 'reader' | 'width' | 'page' | null = null;

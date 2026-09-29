@@ -20,7 +20,7 @@
   "src/components/sherpa-dialog/sherpa-dialog.ts": 90,
   "src/components/sherpa-empty-state/sherpa-empty-state.ts": 24,
   "src/components/sherpa-file-upload/sherpa-file-upload.ts": 191,
-  "src/components/sherpa-filter-panel/sherpa-filter-panel.ts": 1399,
+  "src/components/sherpa-filter-panel/sherpa-filter-panel.ts": 1412,
   "src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts": 295,
   "src/components/sherpa-grid-cell/sherpa-grid-cell.ts": 66,
   "src/components/sherpa-group/sherpa-group.ts": 43,

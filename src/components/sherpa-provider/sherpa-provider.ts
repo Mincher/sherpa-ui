@@ -144,11 +144,11 @@ export class SherpaProvider extends SherpaElement {
   #setMode(mode: 'toolbars' | 'panel'): void {
     const panels = this.#panels();
     for (const panel of panels) {
-      if (mode === 'panel') panel.open?.();
-      else panel.close?.();
+      if (mode === 'panel') panel.show?.();
+      else panel.hide?.();
     }
     // `open()` refuses below its breakpoint, so follow what it actually did.
-    this.#mode = mode === 'panel' && panels.some((p) => p.hasAttribute('data-open')) ? 'panel' : 'toolbars';
+    this.#mode = mode === 'panel' && panels.some((p) => p.hasAttribute('open')) ? 'panel' : 'toolbars';
     for (const bar of this.#bars()) this.#stepBack(bar);
   }
 
@@ -158,7 +158,7 @@ export class SherpaProvider extends SherpaElement {
   }
 
   /** Every panel that asked — a control drawn over several scopes. */
-  #panels(): Array<HTMLElement & { open?: () => void; close?: (reason?: string) => void }> {
+  #panels(): Array<HTMLElement & { show?: () => void; hide?: (reason?: string) => void }> {
     return [...this.#asked.keys()].filter((el) => 'drawScopes' in el) as never;
   }
 
@@ -213,7 +213,7 @@ export class SherpaProvider extends SherpaElement {
     /* A page with NO data has no filters: the panel shuts — not the reader's
        choice, so it opens again on the next page that has some. TRAP T-navigating-sets-up-the-page */
     if (!Object.keys(this.#sources).length) {
-      for (const panel of this.#panels()) panel.close?.('page');
+      for (const panel of this.#panels()) panel.hide?.('page');
     }
     // The Views are over the ONE source; a subtree of several names none.
     const [source, ...more] = Object.values(this.#sources);

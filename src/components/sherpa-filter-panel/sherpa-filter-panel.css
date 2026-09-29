@@ -13,7 +13,7 @@
   min-block-size: 0;
 }
 
-:host([data-open]) { display: block; }
+:host([open]) { display: block; }
 :host([hidden]) { display: none; }
 
 .panel {

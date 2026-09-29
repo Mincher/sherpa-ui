@@ -162,13 +162,13 @@ test('a grid column set to Is not keeps its NOT, and reads as custom', async ({ 
 
 test('the panel reports its mode in the menu\'s own words', async ({ page }) => {
   const r = await page.evaluate(async () => {
-    const panel = await window.__mount<HTMLElement & { open(): void }>('sherpa-filter-panel', [{
+    const panel = await window.__mount<HTMLElement & { show(): void }>('sherpa-filter-panel', [{
       scope: 'data', label: 'Data', filters: [{
         id: 'owner', label: 'Owner', select: 'multiple', custom: true,
         options: [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }],
       }],
     }], { style: 'inline-size: 400px', 'data-min-width': '0' });
-    panel.open();
+    panel.show();
     await window.__settled();
     const heard: unknown[] = [];
     panel.addEventListener('filter-condition-change', (e) => heard.push((e as CustomEvent).detail));
@@ -232,7 +232,7 @@ test('a def says custom — and the old conditions key still works', async ({ pa
         { id: 'email', label: 'Email', custom: 'only', op: 'contains' },
       ],
     }], { 'data-min-width': '0' });
-    (panel as HTMLElement & { open(): void }).open();
+    (panel as HTMLElement & { show(): void }).show();
     await window.__settled();
     const psr = panel.shadowRoot!;
     const field = !!psr.querySelector('.field[data-field="owner"] .field-custom');
