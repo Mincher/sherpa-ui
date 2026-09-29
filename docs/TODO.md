@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**62 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**63 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -23,6 +23,7 @@ order.
 | | | **B — The foundation: what is left** | |
 | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | 2 | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
+| 2a | 103 | Rows with no key get one from the data layer — Sherpa's own, never sent out | foundation |
 | 3 | 38 | One model, one builder, one owner — what is left | refactor |
 | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
 | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
@@ -188,6 +189,29 @@ The new ontology goes into EVERY file: code (`mode: 'default' | 'custom'`,
 after step 6 of the Query, so the features in D (49, 50, 46) are built in
 the new words. Note: Advanced allows SEVERAL fields — today a condition is
 over one field, so the rename also opens that door.
+
+### `[ ]` 103 — Rows with no key get one from the data layer — Sherpa's own, never sent out
+
+Will, 2026-09-29: *"If we get grid data without keys then the data layer
+should give it keys. Means selection always works with keys. Keys are only
+for Sherpa's capabilities so we need to make sure we don't pollute any data
+we are ever sending out of the data layer to external sources (databases
+etc.)."*
+
+Today a grid with no `key` cannot name a row: `selectedKeys` is EMPTY, and
+`selection-change` sends row POSITIONS as `selected` (left open by the API
+audit's A6, `docs/COMPONENT-API-AUDIT.md`).
+
+- **The data layer gives a keyless row a key**, so selection — and anything
+  else that names a row — always works by key, and `selection-change` sends
+  keys.
+- **The key never leaves the data layer.** Not in a store's insert or update,
+  not in `export()`, not in a saved View's JSON, not in anything sent to an
+  external source. A field on the row would leak through every one of those,
+  so it is kept BESIDE the row (a symbol, or a map by row), never on it.
+- **Settle first:** how long a made-up key lives. A key the data never had is
+  stable only while the rows are, so a saved View keeps a selection only over
+  a real key — say so rather than restore the wrong rows.
 
 ### `[~]` 38 — One model, one builder, one owner: what is left
 
