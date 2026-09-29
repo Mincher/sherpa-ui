@@ -60,7 +60,7 @@ test('closing the panel fires a composed close event', async ({ page }) => {
     await el.rendered;
 
     let count = 0;
-    el.addEventListener('close', () => count++);
+    el.addEventListener('panel-close', () => count++);
     el.show!();
     el.close!();
     // The native <dialog> close event is dispatched on a task — let it flush.

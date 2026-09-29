@@ -534,7 +534,7 @@
 
     settingsHeader.addEventListener('back-click', () => goSettings(null));
     // ESC closes the dialog itself; the URL follows.
-    settingsDialog.addEventListener('close', (e) => { if (e.target === settingsDialog) goSettings(null); });
+    settingsDialog.addEventListener('dialog-close', (e) => { if (e.target === settingsDialog) goSettings(null); });
 
     /* The rail REPORTS its mode; the app owns whether the pin is remembered.
        Settings is a temporary detour, so only the two latching-vs-not modes

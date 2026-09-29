@@ -30,7 +30,7 @@ export function namePrompt(dialog, signal) {
   cancel?.addEventListener('button-click', () => dialog.close(), { signal });
   field?.addEventListener('keydown', (e) => { if (e.key === 'Enter') commit(); }, { signal });
   // Cancel, Escape or the backdrop: no name.
-  dialog.addEventListener('close', () => answer(null), { signal });
+  dialog.addEventListener('dialog-close', () => answer(null), { signal });
 
   return (value = '') => new Promise((resolve) => {
     answer(null);

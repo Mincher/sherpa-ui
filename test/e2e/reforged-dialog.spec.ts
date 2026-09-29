@@ -57,7 +57,7 @@ test('closing the dialog fires a composed close event', async ({ page }) => {
     await el.rendered;
 
     let count = 0;
-    el.addEventListener('close', () => count++);
+    el.addEventListener('dialog-close', () => count++);
     el.show!();
     el.close!();
     // The native <dialog> close event is dispatched on a task — let it flush.
@@ -80,7 +80,7 @@ test('a dialog shut and opened again at once stays open', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const heard: string[] = [];
-    el.addEventListener('close', () => heard.push('close'));
+    el.addEventListener('dialog-close', () => heard.push('close'));
     el.show!();
     el.close!();
     el.show!();
@@ -158,9 +158,9 @@ test('data-type="overlay" opens NON-modal, fills its box, takes focus, and ESC c
       focusWithin: el.matches(':focus-within'),
     };
     let closeEvents = 0;
-    el.addEventListener('close', () => { closeEvents += 1; });
+    el.addEventListener('dialog-close', () => { closeEvents += 1; });
     // The native `close` is QUEUED, so wait for it rather than a tick.
-    const closed = new Promise((res) => { el.addEventListener('close', res, { once: true }); setTimeout(res, 1000); });
+    const closed = new Promise((res) => { el.addEventListener('dialog-close', res, { once: true }); setTimeout(res, 1000); });
     dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, composed: true }));
     await closed;
     return { closedDisplay, opened, afterEsc: el.open, closeEvents };

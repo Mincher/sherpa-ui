@@ -7,6 +7,7 @@
  * @prop {boolean} open — whether the panel is open (delegates to <dialog>)
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { DialogSurface } from '../../core/ui/disclosure.js';
 // Defined before the template stamps them.
 import '../sherpa-container-header/sherpa-container-header.js';
 import '../sherpa-container-footer/sherpa-container-footer.js';
@@ -24,17 +25,16 @@ export class SherpaOverlayPanel extends SherpaElement {
   } as const;
   static override observed = ['data-heading', 'data-icon', 'data-collapsed', 'data-collapsible', 'data-dismissible', 'open'];
 
-  /** The native dialog the panel draws in. */
-  #dialog(): HTMLDialogElement | null {
-    return this.$<HTMLDialogElement>('.root');
-  }
+  /** The native dialog the panel draws in, NON-modal. */
+  #surface = new DialogSurface(this, () => this.$<HTMLDialogElement>('.root'), {
+    open: (dialog) => dialog.show(),
+    closed: () => this.emit('panel-close'),
+  });
 
   override onRender(): void {
-    const dialog = this.#dialog();
-    if (!dialog) return;
     this.#syncHeader();
-    if (this.hasAttribute('open')) dialog.show();
-    dialog.addEventListener('close', this.#onClose);
+    if (this.hasAttribute('open')) this.#surface.show();
+    this.#surface.listen();
     this.$('.header')?.addEventListener('header-collapse', this.#onCollapse);
     this.$('.header')?.addEventListener('header-dismiss', this.#onCloseClick);
     // `button-click`, not `click` — a disabled sherpa-button still gets raw clicks.
@@ -43,41 +43,29 @@ export class SherpaOverlayPanel extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    if (name !== 'open') this.#syncHeader();
-    if (name === 'open') {
-      if (this.hasAttribute('open')) this.show();
-      else this.close();
-    }
+    if (name === 'open') this.#surface.follow();
+    else this.#syncHeader();
   }
 
   get open(): boolean {
-    return this.#dialog()?.open ?? this.hasAttribute('open');
+    return this.#surface.open;
   }
   set open(value: boolean) {
     if (value) this.show();
-    else this.close();
+    else this.hide();
   }
 
   /** Open as a non-modal floating panel (no backdrop, no focus trap). */
   show(): void {
-    const dialog = this.#dialog();
-    if (dialog && !dialog.open) dialog.show();
-    this.toggleAttribute('open', true);
+    this.#surface.show();
   }
 
-  /**
-   * Close it. `hide()` is Sherpa's verb across every component that opens;
-   * `close()` is kept as an alias because this wraps a native <dialog>, whose
-   * own method is close().
-   * TRAP T-one-verb-proxies-to-the-native-one
-   */
+  /** Close it. */
   hide(): void {
-    const dialog = this.#dialog();
-    if (dialog?.open) dialog.close();
-    this.toggleAttribute('open', false);
+    this.#surface.hide();
   }
 
-  /** @see hide — the native <dialog> spelling. */
+  /** `hide()`, in the native <dialog>'s spelling. */
   close(): void {
     this.hide();
   }
@@ -92,12 +80,6 @@ export class SherpaOverlayPanel extends SherpaElement {
       else header.setAttribute(name, value);
     }
   }
-
-  /** The dialog closed, however it closed: say so. */
-  #onClose = (): void => {
-    this.toggleAttribute('open', false);
-    this.emit('close');
-  };
 
   /** The close button. */
   #onCloseClick = (): void => {

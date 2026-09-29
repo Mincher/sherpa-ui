@@ -1,11 +1,12 @@
 /**
  * sherpa-dialog — a modal surface backed by the native <dialog> element.
  *
- * The native `close` event does not cross the shadow boundary; it is re-dispatched composed.
+ * The native `close` event does not cross the shadow boundary; it is reported as `dialog-close`.
  *
  * @prop {boolean} open — whether the dialog is open (delegates to <dialog>)
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { DialogSurface } from '../../core/ui/disclosure.js';
 
 export class SherpaDialog extends SherpaElement {
   static override css = new URL('./sherpa-dialog.css', import.meta.url);
@@ -17,10 +18,11 @@ export class SherpaDialog extends SherpaElement {
 
   static override observed = ['open'];
 
-  /** The native dialog. */
-  #dialog(): HTMLDialogElement | null {
-    return this.$<HTMLDialogElement>('.root');
-  }
+  /** The native dialog behind `open`. */
+  #surface = new DialogSurface(this, () => this.$<HTMLDialogElement>('.root'), {
+    open: (dialog) => this.#showDialog(dialog),
+    closed: () => this.emit('dialog-close'),
+  });
 
   /** An overlay leaves the page beside it live, so it is never modal. */
   get #modal(): boolean {
@@ -28,10 +30,8 @@ export class SherpaDialog extends SherpaElement {
   }
 
   override onRender(): void {
-    const dialog = this.#dialog();
-    if (!dialog) return;
-    if (this.hasAttribute('open')) this.#showDialog(dialog);
-    dialog.addEventListener('close', this.#onClose);
+    if (this.hasAttribute('open')) this.#surface.show();
+    this.#surface.listen();
     // A non-modal <dialog> gets no ESC from the browser.
     this.addEventListener('keydown', this.#onKeydown);
   }
@@ -41,26 +41,20 @@ export class SherpaDialog extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    if (name === 'open') {
-      if (this.hasAttribute('open')) this.show();
-      else this.close();
-    }
+    if (name === 'open') this.#surface.follow();
   }
 
   get open(): boolean {
-    return this.#dialog()?.open ?? this.hasAttribute('open');
+    return this.#surface.open;
   }
   set open(value: boolean) {
     if (value) this.show();
-    else this.close();
+    else this.hide();
   }
 
   /** Open it: a modal goes to the top layer with a backdrop; an overlay stays in place. */
   show(): void {
-    // The attribute FIRST: a closed overlay host is display:none, and cannot take focus.
-    this.toggleAttribute('open', true);
-    const dialog = this.#dialog();
-    if (dialog && !dialog.open) this.#showDialog(dialog);
+    this.#surface.show();
   }
 
   /** Open it modal, or as a plain dialog. */
@@ -74,19 +68,12 @@ export class SherpaDialog extends SherpaElement {
     if (!this.matches(':focus-within')) dialog.focus();
   }
 
-  /**
-   * Close it. `hide()` is Sherpa's verb across every component that opens;
-   * `close()` is kept as an alias because this wraps a native <dialog>, whose
-   * own method is close().
-   * TRAP T-one-verb-proxies-to-the-native-one
-   */
+  /** Close it. */
   hide(): void {
-    const dialog = this.#dialog();
-    if (dialog?.open) dialog.close();
-    this.toggleAttribute('open', false);
+    this.#surface.hide();
   }
 
-  /** @see hide — the native <dialog> spelling. */
+  /** `hide()`, in the native <dialog>'s spelling. */
   close(): void {
     this.hide();
   }
@@ -96,16 +83,6 @@ export class SherpaDialog extends SherpaElement {
     if (event.key !== 'Escape' || this.#modal || !this.open) return;
     event.preventDefault();
     this.hide();
-  };
-
-  /** The dialog closed, however it closed: say so. */
-  #onClose = (): void => {
-    /* LATE. The native event is queued, so a dialog opened again in between
-       is open when it lands, and writing `open` off shut it again.
-       TRAP T-a-reopened-dialog-hears-a-late-close */
-    if (this.#dialog()?.open) return;
-    this.toggleAttribute('open', false);
-    this.emit('close');
   };
 }
 

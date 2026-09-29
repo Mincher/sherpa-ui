@@ -173,7 +173,7 @@ events:
     bubbles: true
     composed: true
   - $type: event
-    name: close
+    name: panel-close
     bubbles: true
     composed: true
 tokens:
@@ -194,12 +194,11 @@ $extensions:
       - $type: method
         name: hide
         args: ""
-        description: >-
-          Close it. `hide()` is Sherpa's verb across every component that opens; `close()` is kept
-          as an alias because this wraps a native <dialog>, whose own method is close().
+        description: Close it.
       - $type: method
         name: close
         args: ""
+        description: "`hide()`, in the native <dialog>'s spelling."
     category: container
     divergence:
       note: >-

@@ -7634,8 +7634,8 @@ undone before it landed is not reported: the dialog is not closed.
 Found by the Records page's Save filter dialog: Cancel, then Save filter again
 at once, and the dialog vanished — or stayed, with its question dropped.
 
-- Site: `src/components/sherpa-dialog/sherpa-dialog.ts`
 - Site: `test/e2e/reforged-dialog.spec.ts`
+- Site: `src/core/ui/disclosure.ts`
 
 ### T-a-row-opens-its-child-menu
 
@@ -10046,11 +10046,10 @@ platform primitive a component happens to wrap.
 from the DOM. Folding it into `hide()` would give a caller a method that
 sometimes hides and sometimes destroys.
 
-- Site: `src/components/sherpa-dialog/sherpa-dialog.ts`
-- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-notifications/sherpa-notifications.ts`
 - Site: `test/e2e/reforged-open-close-verbs.spec.ts`
+- Site: `src/core/ui/disclosure.ts`
 
 ### T-an-elevation-pin-cannot-reach-a-shadow-root
 

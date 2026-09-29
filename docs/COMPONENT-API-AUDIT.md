@@ -98,7 +98,9 @@ Four components wrap a native control and copy the same code; ONE is part of a
 `ElementInternals` exists once (input-text). A `disabled` JS property exists
 once (switch).
 
-**The standard:** `SherpaFormControl extends SherpaElement`, in
+**The standard** (as proposed — Will's rule in §5 overrides the base class: a
+component extends `SherpaElement` alone, so this becomes the same NAMES on
+each, and an imported helper where one fits): `SherpaFormControl extends SherpaElement`, in
 `src/core/ui/`. It owns form association, `value` / `checked`, `name`,
 `disabled`, `required`, one validity report after EVERY write,
 `checkValidity()` / `reportValidity()`, `focus(options)`, form reset and
@@ -239,6 +241,20 @@ going away: `<noun>-remove` (a request) and `dismiss()` + `<noun>-dismiss`
 
 ## 5. Building it — one commit each, safest first
 
+**Will's rule, 2026-09-29:** *"UI components need to function in isolation
+(they are web components) as extensions of only sherpa-element. So we need to
+be careful with our consolidation. There may be duplication but as long as
+naming is consistent for consumers of sherpa then we don't always have to
+consolidate."*
+
+- **A component extends `SherpaElement` and nothing else.** No family base
+  class: shared code is a helper it IMPORTS (`chart-parts.ts`,
+  `disclosure.ts`) or a sheet it ADOPTS, and it still works on its own.
+- **Consistent NAMES first.** The public surface — methods, properties,
+  events and their details — is what a consumer sees, and it must read one
+  way. Code shared behind it is optional: keep a copy where sharing would
+  couple two components.
+
 | step | builds | lines out |
 |---|---|---:|
 | A1 ✅ | the tools: the spec generator reads TypeScript, keeps whole summaries, refreshes `$description` — 47 specs corrected (`T-a-spec-reads-the-class-by-its-parser`) | — (specs become true) |
@@ -247,8 +263,9 @@ going away: `<noun>-remove` (a request) and `dismiss()` + `<noun>-dismiss`
 | A3b ✅ | charts: `static css` as a list; `sherpa-chart-axes.css` (16 rules the bar and line charts copied) and `sherpa-chart-segments.css` (the 4 frame rules the gauge copied). A spec lists only its OWN sheet's bindings | 56 |
 | A3c ✅ | charts: `src/core/ui/chart-parts.ts` — ONE value axis (bar and line), `paintSeries`, `pairAnchor`, `fillTip`, used by five charts and the legend. The lines moved rather than fell: one place for each rule | +4 |
 | A3d ✅ | charts: the line chart draws its series and gridlines from `<svg>` templates (no `createElementNS`); ONE status list (`STATUSES`, `statusVar`, `statusBorderVar`); every meter — gauge, progress bar, metric — takes `populate(number \| { value })` and a number `value`. Grows: the metric gains its `value` door | +39 |
-| A4 | open and close: `disclosure.ts`; the event names; the provider's call in the same commit | ~120 |
-| A5 | form controls: `SherpaFormControl`; then bug 61 on it | ~150 |
+| A4a ✅ | open and close: `DialogSurface` in `disclosure.ts`, IMPORTED by the dialog and the overlay panel — the overlay gains the late-close guard it lacked. `close` becomes `dialog-close` and `panel-close` | +30 |
+| A4b | open and close: the NAMES — `<noun>-open` / `<noun>-close` on the accordion and notifications, `<noun>-click` for a request, the filter panel's `show()` and `open` (with the provider's call). The trigger mirror stays copied | — |
+| A5 | form controls: the same NAMES on all four — `value`, `checked`, `name`, `disabled`, `required`, `focus()`, `checkValidity()`, `reportValidity()` — and form association where a control needs it; a helper it imports if one fits, **never a base class**. Then bug 61 | — |
 | A6 | items: the CURRENT and TICKED contracts; chip and tag events aligned | ~100 |
 | A7 | filters: `menu.reading`, one event per act, the grid's headings on `menuFor()`, the 18 members go — with TODO 38 step 4 and 89, so the panel is rebuilt once | ~700 |
 
