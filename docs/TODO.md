@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**67 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**68 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -46,6 +46,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 16a | 100 | The Assistant panel shows no heading | quick |
 | ⬜ | 16b | 106 | A click between a menu's items reaches what is behind it — an accordion toggles | bug |
 | ⬜ | 16c | 108 | A Filters menu row's scope is a DESCRIPTION under its label, with no "in" | quick |
+| ⬜ | 16d | 114 | About 1 time in 20, a folded Advanced-only filter's row in the Filters menu opens nothing | bug |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | ⬜ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ⬜ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
@@ -454,6 +455,21 @@ in the bar's Owner menu (Chromium) and in the panel's Owner field (Chromium and
 WebKit); the menu stays open and the select keeps focus. Firefox reports
 `:open` false — maybe only how Firefox reports it. **❓ Waits on Will:** which
 surface (bar, panel or grid heading), which browser, and the steps.
+
+### `[ ]` 114 — BUG: about 1 time in 20, a folded Advanced-only filter's row opens nothing
+
+Found 2026-09-29 while checking a flaky test: "a FOLDED advanced-only filter
+opens its own menu, not a blank drill" (`reforged-quick-filter-toolbar.spec.ts`)
+fails about 1 run in 15–20, on the code before 102 as well as after. Its fixed
+120 ms wait is now a poll for the menu's `open` — and in a failing run the
+chip's own menu is still shut after 60 frames. So it is not slow; it never
+opens.
+
+Pressing the row opens the chip's own menu while the Filters menu closes. Two
+`auto` popovers in one moment, so a guess: the Filters menu's light-dismiss or
+`hidePopover()` lands after the chip's menu opened and closes it too. Check
+the order in `#onMenuSelect` / the drill path, and try the same with a real
+pointer.
 
 ### `[ ]` 108 — A Filters menu row's scope is a DESCRIPTION under its label, with no "in"
 

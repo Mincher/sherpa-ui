@@ -2461,7 +2461,10 @@ test('a FOLDED advanced-only filter opens its own menu, not a blank drill', asyn
     await settle();
     row.querySelector<HTMLElement>('.menu-row-drill')!.click();
     await settle();
-    await new Promise((res) => setTimeout(res, 120));
+    // Wait for the menu to OPEN, not for a fixed time — a busy machine is slower.
+    for (let f = 0; f < 60 && !menu.hasAttribute('open'); f++) {
+      await new Promise((res) => requestAnimationFrame(res));
+    }
 
     const overflowMenu = overflow.querySelector('sherpa-menu')!;
     return {
