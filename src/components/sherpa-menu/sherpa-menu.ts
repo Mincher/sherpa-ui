@@ -66,6 +66,9 @@ const OLD_MODES: Readonly<Record<string, ConditionType>> = {
   select: 'simple', condition: 'advanced', default: 'simple', custom: 'advanced',
 };
 
+/** How long a pointer RESTS on a row before its child menu opens. */
+const HOVER_OPENS_AFTER = 500;
+
 /** What does its own job with a click. Anything else in the card is a gap. */
 const CONTROL = 'a[href], button, input, select, textarea, label, summary, [contenteditable]';
 
@@ -214,6 +217,10 @@ export class SherpaMenu extends SherpaElement {
     this.$('.body-number')?.addEventListener('change', this.#onBodyChange);
     this.addEventListener('click', this.#onClick);
     this.addEventListener('click', this.#onGapClick);
+    // A row with a child menu opens it on a rest, or ArrowRight. TRAP T-a-row-opens-its-child-menu
+    this.addEventListener('pointerover', this.#onRowHover);
+    this.addEventListener('pointerleave', this.#onRowHover);
+    this.addEventListener('keydown', this.#onRowKey);
     this.$('.apply')?.addEventListener('click', this.#onApply);
     this.$('.cancel')?.addEventListener('click', this.#onCancel);
     /* The FOOTER owns "nothing to apply"; this menu only reports whether its
@@ -1424,6 +1431,7 @@ export class SherpaMenu extends SherpaElement {
     // The viewport listeners carry their own signals; only the observer is manual.
     this.#openAc?.abort();
     this.#cardResize?.disconnect();
+    clearTimeout(this.#hoverTimer);
   }
 
   static readonly ALL_LABEL = 'Select all';
@@ -1490,6 +1498,42 @@ export class SherpaMenu extends SherpaElement {
   #onBack = (event: Event): void => {
     event.stopPropagation();
     this.emit('menu-back');
+  };
+
+  /** Ask the host to open a row's child menu. */
+  #drillInto(row: HTMLElement): void {
+    clearTimeout(this.#hoverTimer);
+    this.#hovered = null;
+    this.emit('menu-drill', { value: row.dataset['value'] ?? '' });
+  }
+
+  /** The row a pointer rests on. */
+  #hovered: HTMLElement | null = null;
+  /** Opens that row's child menu once the rest is long enough. */
+  #hoverTimer: ReturnType<typeof setTimeout> | undefined;
+
+  /** A pointer RESTING on a child menu's row opens it; one passing over does not —
+   *  a quick pass once drilled the list away. TRAP T-a-row-opens-its-child-menu */
+  #onRowHover = (event: PointerEvent): void => {
+    const row = event.type === 'pointerleave' || event.pointerType === 'touch' ? null
+      : (event.target as Element).closest<HTMLElement>('.menu-row[data-drill]');
+    if (row === this.#hovered) return;
+    clearTimeout(this.#hoverTimer);
+    this.#hovered = row;
+    if (!row) return;
+    this.#hoverTimer = setTimeout(() => {
+      if (this.#hovered === row && row.isConnected && this.open) this.#drillInto(row);
+    }, HOVER_OPENS_AFTER);
+  };
+
+  /** ArrowRight opens a row's child menu, and ArrowLeft goes back, as in an OS menu. */
+  #onRowKey = (event: KeyboardEvent): void => {
+    const row = (event.target as Element).closest<HTMLElement>('.menu-row[data-drill]');
+    if (event.key === 'ArrowRight' && row) this.#drillInto(row);
+    else if (event.key === 'ArrowLeft' && this.hasAttribute('data-drill')) this.emit('menu-back');
+    else return;
+    event.preventDefault();
+    event.stopPropagation();
   };
 
   /** A row changed: report it, or hold it for Apply. */
@@ -1632,15 +1676,15 @@ export class SherpaMenu extends SherpaElement {
 
   /** An ACTION row was clicked: report it and close; value rows stay open. */
   #onClick = (event: Event): void => {
-    /* A CHILD MENU's caret — or the whole of a row with no tick box — opens
-       it. preventDefault, or the label ticks its box as well.
+    /* A CHILD MENU's row opens it from anywhere but its tick box, which is a
+       different answer. preventDefault, or the label ticks its box as well.
        TRAP T-a-row-opens-its-child-menu */
     const target = event.target as HTMLElement;
     const row = target.closest<HTMLElement>('.menu-row[data-drill]');
-    if (row && (target.closest('.menu-row-drill') || row.classList.contains('menu-row-bare'))) {
+    if (row && !target.closest('input')) {
       event.preventDefault();
       event.stopPropagation();
-      this.emit('menu-drill', { value: row.dataset['value'] ?? '' });
+      this.#drillInto(row);
       return;
     }
     // Only plain ACTION rows close the menu; value rows stay open.

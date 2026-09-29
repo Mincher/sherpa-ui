@@ -7993,14 +7993,19 @@ Filters menu's Added filters *"show a child menu caret (and child menu of values
 of course) during reflow of the filter chips"* — one section, in place of a
 second "More filters" section for the folded.
 
-A `MenuItem` with `drill: true` gets the caret and a `count` badge; the caret
-reports `menu-drill { value }` and the HOST drills, as it knows where the child
-menu is. `pickable: false` gives a row with no box — a filter that cannot be
-taken off — and the whole of that row opens its child menu.
+A `MenuItem` with `drill: true` gets the caret and a `count` badge, and the
+menu reports `menu-drill { value }`; the HOST drills, as it knows where the
+child menu is. `pickable: false` gives a row with no box — a filter that
+cannot be taken off.
 
-**The caret never ticks the row's box.** It sits inside the row's `<label>`,
-and a click on a label ticks its box; the menu calls `preventDefault` on it.
-The box is a different answer — added or not — from what the child menu holds.
+**The whole row is the door** (TODO 48), as in an OS menu: a click anywhere
+on it but its box, a pointer that RESTS on it for 500 ms, or ArrowRight
+(ArrowLeft goes back). A pointer PASSING over opens nothing — the drill is in
+place, and a pass once drilled the list away. A touch never hovers.
+
+**Nothing but the box ticks the box.** The row is a `<label>`, and a click on
+a label ticks its box; the menu calls `preventDefault` on it. The box is a
+different answer — added or not — from what the child menu holds.
 
 **An on/off chip has no menu to open**, so its child menu is BUILT for the
 drill: one row, "On" (Will's pick). In the bar it applies at once, as the
