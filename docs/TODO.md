@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**68 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**69 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -31,6 +31,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
 | ⬜ | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | | | | **C — Contained bugs** | |
+| ❓ | 6 | 112 | An Equals row in Advanced will not open its value list | bug |
 | ⬜ | 7 | 45 | A picked date does not show in the chip | bug |
 | ⬜ | 8 | 82 | A number chip set by a View shows no value on its face | bug |
 | ⬜ | 9 | 83 | Calendar menu: a picked date leaves Apply and Discard looking off — yet they work | bug |
@@ -359,6 +360,21 @@ work. TWO faults:
   disagree. The button must refuse the click while disabled, or the footer's
   "off" is only paint.
 
+### `[ ]` 112 — BUG: an Equals row in Advanced will not open its value list
+
+Will, 2026-09-29: *"Equals conditions in advanced filters don't allow a
+selection from value. Dropdown doesn't show a menu on click."*
+
+The row's value field is a `sherpa-input-text data-type="select"` filled by
+`populate()` (`#fillRow`, `T-equals-answers-with-the-fields-own-values`).
+
+**Probed 2026-09-29 on the Records page, with a real mouse click:** the select
+is visible, on top at its centre, enabled, with 9 options. It OPENS (`:open`)
+in the bar's Owner menu (Chromium) and in the panel's Owner field (Chromium and
+WebKit); the menu stays open and the select keeps focus. Firefox reports
+`:open` false — maybe only how Firefox reports it. **❓ Waits on Will:** which
+surface (bar, panel or grid heading), which browser, and the steps.
+
 ### `[ ]` 108 — A Filters menu row's scope is a DESCRIPTION under its label, with no "in"
 
 Will, 2026-09-29: *"In filter menu items we have the scope of the filter on the
@@ -521,8 +537,11 @@ is merged here. Mode words: TODO 75.
 says which filters (a696700e). ✅ Step 2: `menu.reading`, and Advanced mirrors
 Simple until a row is edited (c3b280b2). ✅ Step 3a: the bar and the chip read
 and write through `menu.reading` — Will's "can't switch back" bug is fixed, on
-the Records page too. **Left:** 3b the panel, 3c the grid heading, then the rest
-of A7 (one event per act, the headings on `menuFor()`, the 18 members go).
+the Records page too (22fbcb41). ✅ Step 3b: the panel — its chips are
+Simple's answer, its menu's rows Advanced's; its switch carries the chips over
+and they mirror until edited; a redraw keeps the reader's mode. **Left:** 3c the
+grid heading, then the rest of A7 (one event per act, the headings on
+`menuFor()`, the 18 members go).
 
 Will, 2026-09-29: *"Switching to an advanced filter, in the filter toolbar
 chip menu, prevents me from toggling back to a simple filter if a value has
