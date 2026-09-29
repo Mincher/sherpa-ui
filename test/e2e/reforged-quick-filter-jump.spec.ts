@@ -34,6 +34,9 @@ test('a pick scrolls its section into view, clear of the edge, and reports it', 
     document.getElementById('root')!.append(chip, scroller);
     await chip.rendered;
     await menu.rendered;
+    // The scroll margin is the HEADER's CSS: read before it draws, it is 0.
+    await Promise.all([...scroller.querySelectorAll<HTMLElement & { rendered?: Promise<void> }>('sherpa-section-header')]
+      .map((h) => h.rendered));
 
     await chip.populate(['one', 'two', 'three'].map((id) => ({ value: `section-${id}`, label: id })));
     const rows = [...menu.querySelectorAll('button')].map((b) => `${b.value}:${b.textContent}`);
