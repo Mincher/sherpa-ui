@@ -359,7 +359,10 @@ Will, 2026-09-25:
    (`data-column-values`, in `records.js`). Now the grid's request names the
    text columns that need a whole value list (`DataAsk.values`) and the
    provider sends them with every page of rows; `records.js` does nothing.
-3. **Extension, not forking** — item 27 is the mechanism.
+   ✅ **Measured 2026-09-29: no component names an example field** —
+   `openTickets`, `spend`, `owner` and the rest appear in `src/components`
+   only as the `data-status` attribute or in comments.
+3. **Extension, not forking** — item 27 is the mechanism. **Waits on 27.**
 4. **Split the example app into its own repo**, LAST. Anything it cannot do
    from outside the library is a boundary the library has not drawn. Its
    pages are JSON now (`examples/definitions/`, Will 2026-09-29), so the folder
