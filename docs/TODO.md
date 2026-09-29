@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**62 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**63 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -46,6 +46,7 @@ order.
 | 19 | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
 | 20 | 21d | EXPLORE — conditions for a DATE field | explore |
 | 21 | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
+| 21a | 105 | "Save filters" saves EVERY scope under one name; a "Saved" chip shows it, warns when edited, and undoes it | feature |
 | 22 | 97 | A filter panel section shows an icon for WHAT it filters: View, Chart, Grid, Form, List | quick |
 | 23 | 60 | Once applied, a chip's badge shows the number of results | feature |
 | 24 | 49 | A preset Advanced chip shows its conditions, read-only | feature |
@@ -555,6 +556,41 @@ This gives us some more horizontal space for content."*
 - **The actions column goes**: the panel's reserved right-hand column
   (`.field-acts`, from `24c3a57c`) is deleted, and its width goes to the content.
 
+### `[ ]` 105 — "Save filters" saves EVERY scope under one name; a "Saved" chip shows it
+
+Will, 2026-09-29: *"'Save filter', in the filter panel and filter toolbar,
+creates a Preset advance filter chip to reuse later. However this button should
+be a 'Save filters' (plural) button that saves a definition of the current
+state of the filter scopes."* … *"We have definition saving mechanisms for
+Views already. Perhaps there's overlap and reusable functionality here."*
+
+Today "Save filter" packs ONE scope's fields into one preset Advanced chip
+(`filter-save`, `packFilter`; `T-save-packs-the-fields-into-one-chip`,
+`T-a-saved-filter-is-its-readings`).
+
+| | Will's rule |
+|---|---|
+| **Save filters** | Saves ONE definition: the state of ALL scopes, under the name the reader gives. One button, in the panel HEADER (its toolbar actions menu) — no Save per scope |
+| **Save as** | A grouped menu button right of Save, as for Views |
+| View labels | `Save view` and `Save view as` (see 15) |
+| Filters menu | The section is `Saved filters`, not `Custom filters` (`CUSTOM_SECTION`, `T-saved-filters-are-the-custom-section`) |
+| The chip | The applied definition is an ACTIVE chip in the panel header. Field label `Saved`, value its name |
+| Edited after applying | The chip turns WARNING and its value gets ` *`. Save again, or Save as, clears both until the next edit |
+| Overwrite | A dialog asks to confirm |
+| Dismiss | The chip's right button DISMISSES — it is not a menu. Dismiss takes the definition off the scopes and puts them back as they were BEFORE it was applied |
+
+Build with 15: one Save split button, one name dialog, one overwrite confirm,
+and one store shape — a saved filter set is the filter half of a View
+definition (JSON, `T-a-page-is-its-definition`). Dismiss needs the Query as it
+was at apply time; the provider already keeps it under `/filters/<id>`.
+
+Settle when it starts:
+- Will wrote "all contexts". Read as all filter SCOPES (the panel's sections),
+  not nav Contexts — confirm.
+- What becomes of the saved preset chips already stored: read them as
+  one-scope definitions, or drop them.
+- Still kept per DATA (`T-a-saved-filter-lives-with-its-data`)?
+
 ### `[ ]` 97 — A filter panel section shows an icon for WHAT it filters
 
 Will, 2026-09-29: *"The accordion header for filter panel sections should have
@@ -715,6 +751,9 @@ Dashboard calls it (`dashboard.js`, after its name dialog); Records has no
 configuration — to a view definition. **Load** from the View chip's menu, in a
 `Custom Views` section at the BOTTOM. **A name clash** in `Presets` or
 `Custom Views` appends ` - Copy-001`.
+
+**Labels** (Will, 2026-09-29): `Save view` and `Save view as`. Build with 105,
+which needs the same split button, name dialog and overwrite confirm.
 
 **The menu button, right of Save:**
 
