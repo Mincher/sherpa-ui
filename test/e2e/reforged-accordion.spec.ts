@@ -96,3 +96,30 @@ test('the chevron is the Figma icon at its drawn size, and turns on [open]', asy
   expect(r.closed.ink[0]).toBeLessThan(6);
   expect(r.closed.ink[1]).toBeGreaterThan(10);
 });
+
+// Shut, the section fills with the Style DOWN step (base +2); open keeps the card's fill. TODO 64.
+test('a shut section fills with the Style +2 surface; an open one keeps base', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-accordion') as AccordionEl;
+    el.setAttribute('data-heading', 'Details');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const root = el.shadowRoot!.querySelector<HTMLElement>('.root')!;
+    const probe = (name: string): string => {
+      const p = document.createElement('span');
+      p.style.background = `var(${name})`;
+      root.appendChild(p);
+      const bg = getComputedStyle(p).backgroundColor;
+      p.remove();
+      return bg;
+    };
+    const shut = getComputedStyle(root).backgroundColor;
+    el.open = true;
+    const opened = getComputedStyle(root).backgroundColor;
+    return { shut, opened, down: probe('--sherpa-style-surface-base-2'), host: getComputedStyle(el).backgroundColor };
+  });
+  expect(r.shut).toBe(r.down);
+  expect(r.shut).not.toBe(r.host);
+  // Open, the root paints nothing: the card's own fill shows.
+  expect(r.opened).toBe('rgba(0, 0, 0, 0)');
+});

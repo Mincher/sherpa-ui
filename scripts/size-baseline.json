@@ -105,7 +105,7 @@
   "src/core/ui/sherpa-element.ts": 1044,
   "src/data.ts": 300,
   "src/index.ts": 197,
-  "src/components/sherpa-accordion/sherpa-accordion.css": 120,
+  "src/components/sherpa-accordion/sherpa-accordion.css": 125,
   "src/components/sherpa-app-header/sherpa-app-header.css": 237,
   "src/components/sherpa-app-shell/sherpa-app-shell.css": 202,
   "src/components/sherpa-badge/sherpa-badge.css": 29,

@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**62 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**61 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -41,8 +41,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 12 | 16 | Favourite and Save apply to the Context, not the View | bug |
 | ❓ | 13 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
 | ✅ | 14 | 95 | Firefox: a remote chip holding a draft is not marked pending | bug |
-| ⬜ | 15 | 96 | A grid with few columns leaves an empty band on the right of its card | bug |
-| ⬜ | 16 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
+| ❓ | 15 | 96 | A grid with few columns leaves an empty band on the right of its card | bug |
+| ✅ | 16 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
 | ⬜ | 16a | 100 | The Assistant panel shows no heading | quick |
 | ⬜ | 16b | 106 | A click between a menu's items reaches what is behind it — an accordion toggles | bug |
 | ⬜ | 16c | 108 | A Filters menu row's scope is a DESCRIPTION under its label, with no "in" | quick |
@@ -403,13 +403,18 @@ Will, 2026-09-25:
 
 ## C — Contained bugs
 
-### `[ ]` 64 — A collapsed accordion section fills with the down (+2) surface
+### `[x]` ✅ 64 — A collapsed accordion section fills with the down (+2) surface
 
 Will, 2026-09-26: a COLLAPSED `sherpa-accordion` section takes the Style
 surface's DOWN step — `base +2`, `--sherpa-style-surface-base-2` — as its
 background fill. (base / +1 / +2 are default / hover / down.) Bind the Style
 name, never a Theme colour: a state is the mode's own step. Open sections keep
 today's fill.
+
+**✅ Done 2026-09-29:** `.root:not([open])` binds
+`--sherpa-style-surface-base-2` (`#b3b3c3` under the accordion's default pin);
+open, the root paints nothing and the card's base shows. The filter panel's
+shut scopes take it too. Test in `reforged-accordion.spec.ts`.
 
 ### `[x]` ✅ 43 — BUG: the toolbar ⋯ overflow menu shows nothing
 
@@ -635,6 +640,16 @@ whose width is the sum of its `<col>`s (`inline-size: 0`,
 `T-col-width-not-inline-size`), so a column never grows to fill. Decide what
 fills the slack — the last column, or every column in proportion — without
 breaking a dragged width or the pinned edges.
+
+**❓ Will, 2026-09-29 — pick one.** Both keep the table at its columns' sum
+when the card is narrower, so nothing changes where it already scrolls.
+
+- **A (my pick):** every column the reader has NOT dragged grows in
+  proportion to fill the card. A dragged column and the pinned edges keep
+  their width. Reads as one table; a drag re-divides the rest, as most grids
+  do.
+- **B:** the last unpinned column takes all the slack. Simplest; the other
+  columns never move, but one column can grow very wide.
 
 ### `[ ]` 100 — The Assistant panel shows no heading
 
@@ -2127,6 +2142,8 @@ One line each. The detail is in git and in the trap named.
 - 16: the ★ stars the View, not its whole Context — `T-a-favourite-is-a-view`
 - 95: a menu takes its Cancel baseline in `show()`, not in the late `toggle` — `T-the-baseline-is-taken-at-show`
 - 54: ❓ how a one-value row is removed once its tick means On — two options in the item
+- 96: ❓ what fills a narrow grid's slack — two options in the item
+- 64: a shut accordion fills with the Style +2 surface
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

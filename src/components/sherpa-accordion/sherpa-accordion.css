@@ -28,6 +28,11 @@
   border-radius: inherit;
 }
 
+/* Shut, the section fills with the Style surface's DOWN step. Will, TODO 64. */
+.root:not([open]) {
+  background: var(--sherpa-style-surface-base-2, #b3b3c3);
+}
+
 /* ── Summary: the toggle row ─────────────────────────────────────────── */
 .header {
   display: flex;
