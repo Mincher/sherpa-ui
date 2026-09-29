@@ -71,7 +71,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
 | ✅ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
-| ⬜ | 33a | 116 | `sherpa-nav` binds to a Store: its entries as data, drawn and redrawn | refactor |
+| ❓ | 33a | 116 | `sherpa-nav` binds to a Store: its entries as data, drawn and redrawn | refactor |
 | ⬜ | 34 | 34 | Figma: use the Navigation terms | figma |
 | ⬜ | 35 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
 | | | | **F — Data states and charts** | |
@@ -1445,6 +1445,19 @@ bound — the app re-`populate()`s it by hand when Favorites or Recent change.
 Bind it to a Store (its sections and entries as rows), so a change to the
 data redraws it, as every other data component. The phone menu is the same
 element (17b), so it follows for free.
+
+**❓ Will, 2026-09-29 — one choice.** Measured: the app redraws the nav from
+three places (Favorites, Recent, the Views-as-rows switch) through ONE
+`refreshNav()`, and its only real pain is that a redraw rebuilds every row,
+so the app must read back the reader's OPEN Areas first. A Store would mean a
+second data source just for the nav, fed from the two session lists.
+
+- **A (my pick): the nav keeps its own open Areas** across a redraw — state
+  it owns, as the grid keeps its scroll — and the app's read-back goes. Less
+  code, and the one real bug class closes.
+- **B: the full Store binding** as written: nav entries as rows in a Store,
+  the app writing rows, `bind()` redrawing. More code, and the lists are
+  already the data layer's (`SessionList`).
 
 ### `[ ]` 34 — Figma: use the Navigation terms
 
