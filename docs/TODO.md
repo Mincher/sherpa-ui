@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**62 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**63 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -28,6 +28,7 @@ order.
 | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
 | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | | | **C — Contained bugs** | |
+| 6 | 104 | A number filter never applies what is typed or dragged | bug |
 | 7 | 45 | A picked date does not show in the chip | bug |
 | 8 | 82 | A number chip set by a View shows no value on its face | bug |
 | 9 | 83 | Calendar menu: a picked date leaves Apply and Discard looking off — yet they work | bug |
@@ -100,7 +101,8 @@ order.
   feature, so 89, 90, 98 and 99 are built in the new words. 38's one builder
   is built WITH 89 (see D).
 - **C — Contained bugs.** Each is fixable in its own component or page. In
-  pairs where one fix serves both: 45 and 82 (a chip's face after a silent
+  pairs where one fix serves both: 104 first (nothing a number menu does
+  reaches the source), then 45 and 82 (a chip's face after a silent
   set), 83 and 94 (a menu's footer).
 - **D — Filters.** The panel is rebuilt ONCE: 99 designs how filters group
   first, then 89 (Simple, with 38 step 4's one builder), 102 (both modes'
@@ -347,6 +349,27 @@ work. TWO faults:
   inactive but a click still reaches its handler — the look and the behaviour
   disagree. The button must refuse the click while disabled, or the footer's
   "off" is only paint.
+
+### `[ ]` 104 — BUG: a number filter never applies what is typed or dragged
+
+Will, 2026-09-29: *"Numerical range filters aren't applied on value changes
+via input fields or slider handles."*
+
+Proved in a probe: drag a slider handle, or type in the number field, and no
+`menu-change` and no `quick-filter-change` leaves the chip. The chip HOLDS the
+value — `readings` shows it — but nothing tells the source.
+
+Cause: 45b2f136 (2026-09-25) moved the number body INTO the menu's shadow root
+(`T-a-menu-owns-its-own-bodies`), and `#onChange` still listens on the HOST.
+The field's native `change` is not composed, so it stops at the shadow root.
+The slider's composed `change` arrives retargeted to the menu, so the
+`SHERPA-SLIDER` check never matches. `T-native-change-stops-at-the-host` still
+describes a SLOTTED body.
+
+The chip test "a NUMBER chip flips between a single field and a two-ended
+slider" stayed green because it reads `el.readings`, which ASKS the menu. The
+fix's test watches the event. The grid heading's menu and the panel use the
+same body — check both. Before 94, which changes the same path.
 
 ### `[ ]` 94 — A number (and range) filter menu needs Apply and Cancel buttons
 
