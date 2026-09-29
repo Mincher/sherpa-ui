@@ -138,6 +138,8 @@ export interface FieldFilter extends Omit<FieldDeclaration, 'type'> {
   options?: { value: string; label: string }[];
   /** A date's days that have records — every other day draws inactive. */
   availableDates?: string[];
+  /** Its picks are ENDS from the start — the View's date. TRAP T-a-range-is-bounded-by-the-data */
+  range?: boolean;
   /** Where it lives now, when an Add list offers it from another scope. */
   note?: string;
   /** A PRESET — a saved filter: its answer, field by field, and whether the reader may edit it. */
@@ -812,6 +814,8 @@ export class DataSource extends EventTarget {
       const reading = this.#home(f) === scope ? this.#reading(f) : undefined;
       return {
         ...this.filterDef(f), removable: true,
+        // The View's date slices the whole view, so it is a RANGE. Will, TODO 20b.
+        ...(scope === VIEW && this.#fields.get(f)?.type === 'date' ? { range: true } : {}),
         ...(reading ? { state: structuredClone(reading) } : {}),
         ...(above.includes(f) ? { appliedAt: this.scopeLabel(VIEW) } : {}),
       };

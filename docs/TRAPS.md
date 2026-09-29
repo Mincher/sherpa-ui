@@ -591,6 +591,22 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-a-range-is-bounded-by-the-data
+
+**The View's date is a RANGE, and a range is BOUNDED by the data, not dotted
+by it** — Will, TODO 20b: a top-level date range slices the whole view.
+`describe(VIEW)` marks a date field `range: true`, so its menu opens with its
+Range on; a component's date stays one day, the common case there. A single
+day may only be one that has records (`data-available`); a RANGE spans days,
+so the calendar takes only its ENDS from that list — the first and last days
+with records — and any day between, records or not, can start or end it. An
+empty list is still "nothing has records".
+
+- Site: `src/components/sherpa-calendar/sherpa-calendar.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `test/unit/page-definition.test.mjs`
+- Site: `test/e2e/reforged-calendar.spec.ts`
+
 ### T-a-field-can-carry-over-views
 
 **A header chip resets on a View change unless the View sets it — or unless

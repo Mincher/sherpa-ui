@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**51 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**50 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -65,7 +65,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 27 | 21c | A condition's matches must ALL highlight | feature |
 | ✅ | 28 | 21f | "Send to view filters" | feature |
 | ✅ | 29 | 21b | Which header chips carry over between views | feature |
-| ⬜ | 30 | 20b | The Date filter should be a view-scope date RANGE | feature |
+| ✅ | 30 | 20b | The Date filter should be a view-scope date RANGE | feature |
 | ⬜ | 31 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
 | ⬜ | 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
 | | | | **E — Views and navigation** | |
@@ -1224,7 +1224,7 @@ still clear it. **Nothing on Records carries over yet** — say which fields
 (Customer and Region were your example), and it is one line each in
 `records.json`. `T-a-field-can-carry-over-views`
 
-### `[ ]` 20b — The Date filter should be a view-scope date RANGE
+### `[x]` ✅ 20b — The Date filter should be a view-scope date RANGE
 
 Will, 2026-09-23: a top-level date range that slices the records across the
 whole view. It is at view scope now — "Date", over `source.timeField`
@@ -1235,6 +1235,13 @@ A VIEW-scope date wants range by default; a component-scope one keeps single,
 where one day is the common case. Settle whether `kind: 'date'` gains a range
 variant or the chip takes the menu's `data-range`. A range wants bounds —
 `dates[0]` and `dates.at(-1)` — not a set of days.
+
+**✅ Done 2026-09-29.** Settled: the chip takes the menu's range — no new
+kind. `describe(VIEW)` marks a date field `range: true`, so the header's Date
+opens with its Range on; a component's date stays one day. In range mode the
+calendar takes only its BOUNDS from `data-available` (the first and last days
+with records), so an empty day between can be an end. On Records: a range
+over 2024-01-02 to 2024-12-11. `T-a-range-is-bounded-by-the-data`
 
 ### `[ ]` 21d — EXPLORE: conditions for a DATE field
 
@@ -2413,6 +2420,7 @@ One line each. The detail is in git and in the trap named.
 - 21c: a chain of conditions marks every string it matched — `T-a-condition-marks-every-match`
 - 21f: a panel field can be sent up to the view filters — `T-send-to-view-filters`
 - 21b: a field can carry its answer over a View change (`carryOver`) — `T-a-field-can-carry-over-views`
+- 20b: the View's Date is a range, bounded by the data — `T-a-range-is-bounded-by-the-data`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

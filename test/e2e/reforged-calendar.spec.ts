@@ -542,6 +542,35 @@ test('data-available disables every day the data does not carry', async ({ page 
 });
 
 /**
+ * A RANGE is BOUNDED by the data, not dotted by it — TODO 20b. A range spans
+ * days, so any day from the first with records to the last is an end; only the
+ * days outside that span are off. Nothing with records is still nothing.
+ * TRAP T-a-range-is-bounded-by-the-data
+ */
+test('in range mode, data-available bounds the span instead of dotting it', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const read = async (available: string): Promise<string[]> => {
+      const el = document.createElement('sherpa-calendar') as CalEl;
+      el.setAttribute('data-type', 'range');
+      el.setAttribute('data-value-start', '2026-09-03');
+      el.setAttribute('data-available', available);
+      document.getElementById('root')!.replaceChildren(el);
+      await el.rendered;
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      return ([...el.shadowRoot!.querySelectorAll('sherpa-calendar-cell')] as HTMLElement[])
+        .filter((c) => !c.hasAttribute('data-blank') && !c.hasAttribute('disabled'))
+        .map((c) => c.dataset['iso'] ?? '')
+        .filter((iso) => iso.startsWith('2026-09'));
+    };
+    return { set: await read('2026-09-03,2026-09-11,2026-09-20'), empty: await read('') };
+  });
+  // Every day from the 3rd to the 20th — the empty days between included.
+  expect(r.set).toHaveLength(18);
+  expect([r.set[0], r.set.at(-1)]).toEqual(['2026-09-03', '2026-09-20']);
+  expect(r.empty).toEqual([]);
+});
+
+/**
  * The current month and year wear the SAME today styling a current day does.
  *
  * They carried `data-today` only. `data-state` is the cell component's own API
@@ -720,4 +749,33 @@ test('picking a range start does not move the grid; a host-set value still does'
   // A host-set value jumps, and the stepper steps.
   expect(r.afterHostSet).not.toBe(r.before);
   expect(r.afterNext).not.toBe(r.afterHostSet);
+});
+
+/**
+ * ON RECORDS, the header's Date — the View's — opens as a RANGE, and a day with
+ * no records inside the span can still be an end. TODO 20b. Runs against the
+ * EXAMPLES server (:4200). TRAP T-a-range-is-bounded-by-the-data
+ */
+test('on Records, the View\'s Date opens as a range over the span of the data', async ({ page }) => {
+  await page.goto('http://localhost:4200/?context=records');
+  await page.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
+  await expect.poll(() => page.evaluate(() => !!document.querySelector('sherpa-quick-filter-toolbar[data-type="view"]')
+    ?.shadowRoot?.querySelector('.chip[data-id="created"] sherpa-calendar'))).toBe(true);
+  const r = await page.evaluate(async () => {
+    const chip = document.querySelector('sherpa-quick-filter-toolbar[data-type="view"]')!
+      .shadowRoot!.querySelector<HTMLElement>('.chip[data-id="created"]')!;
+    const menu = chip.querySelector('sherpa-menu') as HTMLElement & { show(t?: HTMLElement): void };
+    const cal = menu.querySelector('sherpa-calendar') as HTMLElement & { rendered: Promise<void> };
+    menu.show(chip);
+    await cal.rendered;
+    await new Promise((res) => setTimeout(res, 300));
+    const days = (cal.dataset['available'] ?? '').split(',').filter(Boolean);
+    const cells = [...cal.shadowRoot!.querySelectorAll<HTMLElement>('[data-iso]')];
+    return {
+      range: menu.hasAttribute('data-range') && cal.dataset['type'] === 'range',
+      emptyButPickable: cells.some((c) => !days.includes(c.dataset['iso']!) && !c.hasAttribute('disabled')),
+    };
+  });
+  expect(r).toEqual({ range: true, emptyButPickable: true });
 });

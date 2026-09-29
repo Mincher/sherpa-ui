@@ -210,9 +210,13 @@ export class SherpaCalendar extends SherpaElement {
     // Mon=0…Sun=6, so column 1 is Monday as in the Figma weekday header.
     const firstWeekday = (new Date(y, m, 1).getDay() + 6) % 7;
     const daysInMonth = new Date(y, m + 1, 0).getDate();
-    const min = this.dataset['min'] ?? '';
-    const max = this.dataset['max'] ?? '';
     const available = this.#availableDays();
+    /* A RANGE spans days, so only its BOUNDS come from the data — the first and
+       last days with records; a day between with none is still an end.
+       TRAP T-a-range-is-bounded-by-the-data */
+    const ends = this.#type === 'range' && available?.size ? [...available].sort() : null;
+    const min = this.dataset['min'] ?? ends?.[0] ?? '';
+    const max = this.dataset['max'] ?? ends?.at(-1) ?? '';
     const todayIso = toIso(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
 
     const single = this.#type === 'single' ? datePart(this.dataset['value']) : '';
@@ -252,7 +256,7 @@ export class SherpaCalendar extends SherpaElement {
         cell.setAttribute('aria-current', 'date');
       }
       const outOfSpan = (min && iso < min) || (max && iso > max);
-      const notInData = available != null && !available.has(iso);
+      const notInData = !ends && available != null && !available.has(iso);
       if (outOfSpan || notInData) cell.setAttribute('disabled', '');
 
       if (this.#type === 'single') {
