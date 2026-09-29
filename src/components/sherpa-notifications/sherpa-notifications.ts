@@ -181,7 +181,7 @@ export class SherpaNotifications extends SherpaElement {
     const id = row.dataset['id'];
     const notification = this.#items.find((n) => n.id === id);
     if (!notification) return;
-    this.emit('notification-click', { id, notification });
+    this.emit('notification-select', { id, notification });
   };
 }
 

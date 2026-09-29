@@ -31,7 +31,7 @@ export class SherpaList extends SherpaElement {
   #rows: ListRow[] = [];
 
   override onRender(): void {
-    this.addEventListener('item-click', this.#onItemClick);
+    this.addEventListener('item-select', this.#onItemClick);
     this.$('slot')?.addEventListener('slotchange', this.#syncEmpty);
     if (this.#rows.length) this.#render();
     this.#syncEmpty();

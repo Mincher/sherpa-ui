@@ -178,7 +178,9 @@ states:
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (state, pinned, activeEntry). See $extensions.sherpa.jsProps.
+    description: >-
+      read/write JS properties (state, pinned, activeEntry, currentId). See
+      $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
     description: callable from a view definition's state block (entry). See $extensions.sherpa.methods.
@@ -287,3 +289,6 @@ $extensions:
       - name: activeEntry
         type: string
         access: read
+      - name: currentId
+        type: string
+        access: read-write

@@ -88,7 +88,7 @@ test('clicking a tab switches the active id and fires tab-change', async ({ page
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     let fired: string | null = null;
-    el.addEventListener('tab-change', (e) => (fired = (e as CustomEvent).detail.id));
+    el.addEventListener('tab-select', (e) => (fired = (e as CustomEvent).detail.id));
 
     const beta = Array.from(el.shadowRoot!.querySelectorAll<HTMLElement>('.tab')).find(
       (t) => t.dataset['id'] === 'b',

@@ -4,7 +4,7 @@
  * Tabs come from populate([{ id, label }]); data-current-id says which is open.
  *
  * @prop {string} currentId — currently active tab id (read/write)
- * @method select(id) — activate a tab by id
+ * @method select(id) — activate a tab by id, SILENTLY (a reader's pick fires tab-select)
  *
  * Map:
  * - TabDef — one tab: its id and label
@@ -44,12 +44,20 @@ export class SherpaTabs extends SherpaElement {
     else this.removeAttribute('data-current-id');
   }
 
-  /** Activate a tab by id (no-op if already active or unknown). */
-  select(id: string): void {
-    if (!id || id === this.currentId) return;
-    if (this.#tabs.length && !this.#tabs.some((t) => t.id === id)) return;
+  /** Activate a tab by id, silently — a host that sets it needs no echo.
+   *  False when it is already active or unknown. */
+  select(id: string): boolean {
+    if (!id || id === this.currentId) return false;
+    if (this.#tabs.length && !this.#tabs.some((t) => t.id === id)) return false;
     this.setAttribute('data-current-id', id);
-    this.emit('tab-change', { id });
+    return true;
+  }
+
+  /** A READER picked a tab: activate it and say so. */
+  #pick(id: string): void {
+    if (!this.select(id)) return;
+    const index = this.#tabs.findIndex((t) => t.id === id);
+    this.emit('tab-select', { id, index, label: this.#tabs[index]?.label ?? '' });
   }
 
   protected override renderData(data: unknown): void {
@@ -115,7 +123,7 @@ export class SherpaTabs extends SherpaElement {
     // Our own shadow buttons — target is not retargeted, so closest() suffices.
     const btn = (event.target as HTMLElement).closest<HTMLElement>('.tab');
     const id = btn?.dataset['id'];
-    if (id) this.select(id);
+    if (id) this.#pick(id);
   };
 
   /** Arrow keys, Home and End move between tabs. */
@@ -147,7 +155,7 @@ export class SherpaTabs extends SherpaElement {
     const target = tabs[next];
     const id = target?.dataset['id'];
     if (id) {
-      this.select(id);
+      this.#pick(id);
       target!.focus();
     }
   };

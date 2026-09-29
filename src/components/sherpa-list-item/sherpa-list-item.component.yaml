@@ -222,14 +222,14 @@ capabilities:
     description: read/write JS properties (current, selected). See $extensions.sherpa.jsProps.
 events:
   - $type: event
-    name: item-click
+    name: item-select
     bubbles: true
     composed: true
     detail:
       label: unknown
     trigger:
       "on": click
-      node: .row
+      node: .control
   - $type: event
     name: item-expand
     bubbles: true
@@ -240,14 +240,11 @@ events:
       "on": click
       node: .expand
   - $type: event
-    name: item-select
+    name: selection-change
     bubbles: true
     composed: true
     detail:
       selected: unknown
-    trigger:
-      "on": click
-      node: .control
   - $type: event
     name: item-drag
     bubbles: true

@@ -84,7 +84,7 @@ export class SherpaListItem extends SherpaElement {
   #activate(): void {
     if (this.dataset['interactive'] === undefined || this.hasAttribute('disabled')) return;
     this.current = true;
-    this.emit('item-click', { label: this.#labelText() });
+    this.emit('item-select', { label: this.#labelText() });
   }
 
   /** A click on the row — unless it landed on its expand, select or drag control. */
@@ -111,7 +111,7 @@ export class SherpaListItem extends SherpaElement {
     if (this.hasAttribute('disabled')) return;
     const selected = (event.target as HTMLInputElement).checked;
     this.selected = selected;
-    this.emit('item-select', { selected });
+    this.emit('selection-change', { selected });
   };
 
   /** The drag handle was grabbed. */

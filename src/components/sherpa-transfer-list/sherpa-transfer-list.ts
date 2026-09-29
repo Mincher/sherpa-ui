@@ -35,7 +35,7 @@ export class SherpaTransferList extends SherpaElement {
 
   override onRender(): void {
     this.$('.moves')?.addEventListener('click', this.#onMoveClick);
-    this.$('.panes')?.addEventListener('item-select', this.#onRowSelect as EventListener);
+    this.$('.panes')?.addEventListener('selection-change', this.#onRowSelect as EventListener);
     this.#render();
   }
 
@@ -64,11 +64,6 @@ export class SherpaTransferList extends SherpaElement {
     for (const item of this.#items) item.selected = wanted.has(item.value);
     this.#staged.clear();
     this.#render();
-  }
-
-  /** @deprecated Read `selected` instead. */
-  getSelectedValues(): string[] {
-    return this.selected;
   }
 
   /** Draw both panes from `#items`. */

@@ -77,14 +77,13 @@ capabilities:
     description: callable from a view definition's state block (select). See $extensions.sherpa.methods.
 events:
   - $type: event
-    name: tab-change
+    name: tab-select
     bubbles: true
     composed: true
     detail:
       id: unknown
-    trigger:
-      "on": click
-      node: .tabs
+      index: unknown
+      label: string
 tokens:
   strip.border-block-end: "{sherpa.border-bottom}"
   detail.gap: "{sherpa.display-mode-space-sm}"
@@ -105,7 +104,9 @@ $extensions:
       - $type: method
         name: select
         args: "id: string"
-        description: Activate a tab by id (no-op if already active or unknown).
+        description: >-
+          Activate a tab by id, silently — a host that sets it needs no echo. False when it is
+          already active or unknown.
     category: container
     jsProps:
       - name: currentId

@@ -537,7 +537,7 @@ sherpa-menu[data-range] .head-filter-value { display: none; }
     linear-gradient(var(--_tint-hover) 0 100%),
     var(--sherpa-style-surface-base, #ffffff);
 }
-.row[data-focused] > .actions-cell {
+.row[data-current] > .actions-cell {
   background:
     linear-gradient(var(--_tint-focused) 0 100%),
     var(--sherpa-style-surface-base, #ffffff);
@@ -618,7 +618,7 @@ sherpa-menu[data-range] .head-filter-value { display: none; }
     linear-gradient(var(--_tint-hover) 0 100%),
     var(--sherpa-style-surface-base, #ffffff);
 }
-.row[data-focused] > [data-pinned] {
+.row[data-current] > [data-pinned] {
   background:
     linear-gradient(var(--_tint-focused) 0 100%),
     var(--sherpa-style-surface-base, #ffffff);
@@ -628,7 +628,7 @@ sherpa-menu[data-range] .head-filter-value { display: none; }
     linear-gradient(var(--_tint-selected) 0 100%),
     var(--sherpa-style-surface-base, #ffffff);
 }
-.row[data-focused]:has(.row-select:checked) > [data-pinned] {
+.row[data-current]:has(.row-select:checked) > [data-pinned] {
   background:
     linear-gradient(var(--_tint-focused) 0 100%),
     linear-gradient(var(--_tint-selected) 0 100%),
@@ -689,7 +689,7 @@ sherpa-menu[data-range] .head-filter-value { display: none; }
   }
 
   /* FOCUSED: the +2 step — +1 at 20% alpha was invisible against white. */
-  &[data-focused] {
+  &[data-current] {
     background: var(--_tint-focused);
   }
 
@@ -702,7 +702,7 @@ sherpa-menu[data-range] .head-filter-value { display: none; }
 /* SELECTED **AND** FOCUSED: both are true, so both show — the focus grey is
    LAYERED over the active tint. Picking a winner lost real information. */
 @supports (color: color-mix(in srgb, red, blue)) {
-  .row[data-focused]:has(.row-select:checked) {
+  .row[data-current]:has(.row-select:checked) {
     background: color-mix(
       in srgb,
       var(--_tint-focused),

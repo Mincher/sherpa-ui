@@ -260,7 +260,7 @@ capabilities:
     description: callable from a view definition's state block (highlight). See $extensions.sherpa.methods.
 events:
   - $type: event
-    name: item-click
+    name: item-select
     bubbles: true
     composed: true
     detail:

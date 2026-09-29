@@ -777,7 +777,7 @@ test('nav-select carries the row label and icon, and entry() reads them back', a
     const row = [...nav.shadowRoot!.querySelectorAll<HTMLElement>('.nav-row')]
       .find((x) => x.dataset['id'] === 'records')!;
     row.querySelector<HTMLElement>('sherpa-nav-item')!
-      .dispatchEvent(new CustomEvent('item-click', { bubbles: true, composed: true }));
+      .dispatchEvent(new CustomEvent('item-select', { bubbles: true, composed: true }));
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return { detail: detail[0], entry: nav.entry('records'), active: nav.activeEntry };
@@ -813,7 +813,7 @@ test('a row with NO icon reports none, so a mirror can clear its own', async ({ 
     const row = [...nav.shadowRoot!.querySelectorAll<HTMLElement>('.nav-row')]
       .find((x) => x.dataset['id'] === 'monthly')!;
     row.querySelector<HTMLElement>('sherpa-nav-item')!
-      .dispatchEvent(new CustomEvent('item-click', { bubbles: true, composed: true }));
+      .dispatchEvent(new CustomEvent('item-select', { bubbles: true, composed: true }));
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return { detail: detail[0], entry: nav.entry('monthly') };

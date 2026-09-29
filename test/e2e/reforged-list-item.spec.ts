@@ -99,7 +99,7 @@ test('interactive item is focusable and fires item-click on click', async ({ pag
     const button = el.shadowRoot!.querySelector<HTMLButtonElement>('.content-button')!;
 
     let detail: unknown = null;
-    el.addEventListener('item-click', (e) => (detail = (e as CustomEvent).detail));
+    el.addEventListener('item-select', (e) => (detail = (e as CustomEvent).detail));
     button.focus();
     const focused = el.shadowRoot!.activeElement === button; // native button → keyboard reachable
     button.click();
@@ -122,7 +122,7 @@ test('non-interactive item does not fire or become active on click', async ({ pa
     await el.rendered;
 
     let fired = false;
-    el.addEventListener('item-click', () => (fired = true));
+    el.addEventListener('item-select', () => (fired = true));
     el.click();
     return { fired, current: el.hasAttribute('data-current'), tabindex: el.getAttribute('tabindex') };
   });
@@ -141,7 +141,7 @@ test('disabled interactive item does not fire on click', async ({ page }) => {
     await el.rendered;
 
     let fired = false;
-    el.addEventListener('item-click', () => (fired = true));
+    el.addEventListener('item-select', () => (fired = true));
     el.click();
     return { fired, current: el.hasAttribute('data-current') };
   });
@@ -213,7 +213,7 @@ test('data-expandable toggle flips data-expanded and fires item-expand', async (
     let detail: unknown = null;
     let rowClicked = false;
     el.addEventListener('item-expand', (e) => (detail = (e as CustomEvent).detail));
-    el.addEventListener('item-click', () => (rowClicked = true));
+    el.addEventListener('item-select', () => (rowClicked = true));
     expand.click();
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return { expandedAfter: el.hasAttribute('data-expanded'), detail, rowClicked };
@@ -236,7 +236,7 @@ test('data-selectable control toggles selection and fires item-select', async ({
     // clicking it toggles checked and fires the native "change" that flips data-selected.
     const checkbox = el.shadowRoot!.querySelector('.checkbox') as HTMLInputElement;
     let detail: unknown = null;
-    el.addEventListener('item-select', (e) => (detail = (e as CustomEvent).detail));
+    el.addEventListener('selection-change', (e) => (detail = (e as CustomEvent).detail));
     checkbox.click();
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return { visible, selectedAfter: el.hasAttribute('data-selected'), detail };

@@ -1584,15 +1584,15 @@ export class SherpaDataGrid extends SherpaElement {
     // FOCUSED: the last row clicked, remembered so a re-render re-applies it.
     this.#focused = record ?? null;
     this.#syncFocused();
-    this.emit('row-click', { index, row: record });
+    this.emit('row-select', { index, row: record });
   };
 
-  /** Mark the focused row; CSS owns the tint. */
+  /** Mark the CURRENT row — one of many, the house word; CSS owns the tint. */
   #syncFocused(): void {
     const rows = this.#visibleRows();
     for (const tr of this.$$<HTMLElement>('.row')) {
       const i = coerceNum(tr.dataset['index'], -1, { int: true });
-      tr.toggleAttribute('data-focused', !!this.#focused && rows[i] === this.#focused);
+      tr.toggleAttribute('data-current', !!this.#focused && rows[i] === this.#focused);
     }
   }
 
@@ -1941,6 +1941,15 @@ export class SherpaDataGrid extends SherpaElement {
   /** Select nothing. The same as `select([])`, said plainly. */
   clearSelection(): void {
     this.select([]);
+  }
+
+  /** The ticked rows by KEY — the name every ticked set shares (a transfer
+   *  list's too). Setting it is `select()`: silent, and it replaces. */
+  get selected(): string[] {
+    return this.selectedKeys;
+  }
+  set selected(keys: readonly string[]) {
+    this.select(keys);
   }
 
   /* ── Column filters ─────────────────────────────────────────────── */

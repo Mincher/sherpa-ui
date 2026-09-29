@@ -93,7 +93,7 @@ export class SherpaProgressStepTracker extends SherpaElement {
     // -1 sentinel: a .step with no data-index must not emit `index: NaN`.
     const index = coerceNum(node.dataset['index'], -1, { int: true });
     if (index < 0 || index >= this.#steps.length) return;
-    this.emit('step-click', { index, label: this.#steps[index]?.label ?? '' });
+    this.emit('step-select', { index, label: this.#steps[index]?.label ?? '' });
   };
 }
 

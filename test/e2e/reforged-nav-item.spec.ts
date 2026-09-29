@@ -122,7 +122,7 @@ test('click fires item-click with the label and href', async ({ page }) => {
     await el.rendered;
 
     let detail: unknown = null;
-    el.addEventListener('item-click', (e) => (detail = (e as CustomEvent).detail));
+    el.addEventListener('item-select', (e) => (detail = (e as CustomEvent).detail));
     el.click();
     return { detail };
   });
@@ -138,7 +138,7 @@ test('disabled item does not fire on click', async ({ page }) => {
     await el.rendered;
 
     let fired = false;
-    el.addEventListener('item-click', () => (fired = true));
+    el.addEventListener('item-select', () => (fired = true));
     el.click();
     return { fired };
   });

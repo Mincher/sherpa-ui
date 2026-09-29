@@ -91,7 +91,7 @@ test('clicking a row fires row-click with the record', async ({ page }) => {
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     let row: Record<string, unknown> | null = null;
-    el.addEventListener('row-click', (e) => (row = (e as CustomEvent).detail.row));
+    el.addEventListener('row-select', (e) => (row = (e as CustomEvent).detail.row));
     el.shadowRoot!.querySelector<HTMLElement>('.body .row')!.click();
     return row;
   }, CONFIG);
@@ -535,7 +535,7 @@ test('row-click resolves against the FILTERED list, not the full one', async ({ 
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const clicks: unknown[] = [];
-    el.addEventListener('row-click', (e) => clicks.push((e as CustomEvent).detail));
+    el.addEventListener('row-select', (e) => clicks.push((e as CustomEvent).detail));
     // Click the FIRST visible row. Its data-index is 0, which in the UNFILTERED
     // list would be Marcus — the wrong record.
     (sr.querySelector('.body .row .cell') as HTMLElement).click();

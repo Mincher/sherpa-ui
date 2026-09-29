@@ -65,7 +65,7 @@ test('staging a row and clicking add moves it + fires transfer-change', async ({
       (row) => row.dataset['value'] === 'r',
     )!;
     readRow.querySelector('sherpa-list-item')!.dispatchEvent(
-      new CustomEvent('item-select', { bubbles: true, composed: true, detail: { selected: true } }),
+      new CustomEvent('selection-change', { bubbles: true, composed: true, detail: { selected: true } }),
     );
     (s.querySelector('sherpa-button[data-move="add"]') as HTMLElement).click();
     await (window as unknown as { __settled: () => Promise<void> }).__settled();

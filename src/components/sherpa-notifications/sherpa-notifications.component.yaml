@@ -88,7 +88,7 @@ capabilities:
       $extensions.sherpa.methods.
 events:
   - $type: event
-    name: notification-click
+    name: notification-select
     bubbles: true
     composed: true
     detail:

@@ -611,7 +611,7 @@
       syncBadge();
     });
 
-    notifications.addEventListener('notification-click', (e) => {
+    notifications.addEventListener('notification-select', (e) => {
       notificationFeed.update(e.detail.id, { unread: false }).then(syncBadge);
       notifications.hide();
     });

@@ -199,7 +199,7 @@ export class SherpaNavItem extends SherpaElement {
   /** Report a click on a destination row. */
   #activate(): void {
     if (this.hasAttribute('disabled')) return;
-    this.emit('item-click', {
+    this.emit('item-select', {
       label: this.dataset['label'] ?? '',
       href: this.dataset['href'] ?? null,
     });

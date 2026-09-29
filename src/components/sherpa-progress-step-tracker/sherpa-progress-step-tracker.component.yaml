@@ -73,15 +73,12 @@ capabilities:
     description: read/write JS properties (steps, currentStep). See $extensions.sherpa.jsProps.
 events:
   - $type: event
-    name: step-click
+    name: step-select
     bubbles: true
     composed: true
     detail:
       index: unknown
       label: string
-    trigger:
-      "on": click
-      node: .steps
 tokens:
   step.gap: "{sherpa.display-mode-space-2xs}"
   step.inline-size: "{sherpa.display-mode-size-3xl}"

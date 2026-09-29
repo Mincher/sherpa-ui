@@ -85,7 +85,7 @@ export class SherpaNav extends SherpaElement {
     if (!this.dataset['navState']) this.dataset['navState'] = 'collapsed';
 
     // Delegated — rows come and go, these listeners stay.
-    this.$('.rail')?.addEventListener('item-click', this.#onItemClick as EventListener);
+    this.$('.rail')?.addEventListener('item-select', this.#onItemClick as EventListener);
     this.$('.rail')?.addEventListener('item-expand', this.#onItemExpand as EventListener);
     this.$<HTMLInputElement>('.search-input')?.addEventListener('input', this.#onSearch);
     this.$('.search-clear')?.addEventListener('click', this.#onSearchClear);
@@ -362,6 +362,16 @@ export class SherpaNav extends SherpaElement {
   get activeEntry(): NavRowInfo | null {
     const id = this.dataset['currentId'];
     return id ? this.entry(id) : null;
+  }
+
+  /** The current row's id — the name every one-of-many host shares (the tabs'
+   *  too). Setting it is silent. */
+  get currentId(): string {
+    return this.dataset['currentId'] ?? '';
+  }
+  set currentId(id: string) {
+    if (id) this.setAttribute('data-current-id', id);
+    else this.removeAttribute('data-current-id');
   }
 
   /** A row was clicked: make it current and report it. */

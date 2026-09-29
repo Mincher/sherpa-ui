@@ -23,9 +23,9 @@
   :host([data-interactive]) — the <button> for interactive rows, the span otherwise.
 
   Fires:
-    item-click   — detail: { label }
+    item-select  — the row was picked. detail: { label }
     item-expand  — detail: { expanded }
-    item-select  — detail: { selected }
+    selection-change — the row's tick changed. detail: { selected }
     item-drag    — detail: {}
 -->
 <template id="default">

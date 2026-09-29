@@ -104,7 +104,7 @@ test('a re-stamped nav-item emits its click ONCE', async ({ page }) => {
     // Baseline: never re-stamped.
     const plain = await make();
     let plainClicks = 0;
-    plain.addEventListener('item-click', () => plainClicks++);
+    plain.addEventListener('item-select', () => plainClicks++);
     (plain.shadowRoot!.querySelector('.nav') as HTMLElement).click();
     await settle();
 
@@ -115,7 +115,7 @@ test('a re-stamped nav-item emits its click ONCE', async ({ page }) => {
     restamped.setAttribute('data-type', 'promo');
     await settle();
     let clicks = 0;
-    restamped.addEventListener('item-click', () => clicks++);
+    restamped.addEventListener('item-select', () => clicks++);
     (restamped.shadowRoot!.querySelector('.promo') as HTMLElement).click();
     await settle();
 
