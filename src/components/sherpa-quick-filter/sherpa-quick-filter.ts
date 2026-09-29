@@ -513,7 +513,7 @@ export class SherpaQuickFilter extends SherpaElement {
     }
     const menu = this.menu;
     const state = this.#state((menu?.values ?? []) as string[]);
-    const custom = this.#given() || state.condition === 'advanced';
+    const advanced = this.#given() || state.condition === 'advanced';
     this.#syncCondition(state);
     /* …and the BADGE from the same state, at the same moment. It was drawn only
        once a reader touched the chip, so one answered by a typed condition from
@@ -526,7 +526,7 @@ export class SherpaQuickFilter extends SherpaElement {
     /* A TYPED condition is an answer, so a chip holding one is not empty —
        "Contains Ravi" filters, and painting it as "filtering nothing" is a
        lie. TRAP T-an-operator-decides-pick-or-type */
-    const empty = !!menu && this.current && !custom
+    const empty = !!menu && this.current && !advanced
       && (menu.values?.length ?? 0) === 0 && !this.#hasTypedAnswer();
 
     this.toggleAttribute('data-empty', empty);
@@ -546,7 +546,7 @@ export class SherpaQuickFilter extends SherpaElement {
   }
 
   /**
-   * `data-condition` is `state.condition`. A CUSTOM Condition Filter reads as
+   * `data-condition` is `state.condition`. An ADVANCED filter reads as
    * success, never the plain on-tint — ASKED of the state, as the fx badge is.
    * TRAP T-a-conditioned-chip-reads-as-success · TRAP T-one-condition-system
    */
@@ -557,7 +557,7 @@ export class SherpaQuickFilter extends SherpaElement {
     else this.removeAttribute('data-condition');
   }
 
-  /** A CUSTOM chip with no filter menu holds a GIVEN answer — a saved filter.
+  /** An ADVANCED chip with no filter menu holds a GIVEN answer — a saved filter.
    *  TRAP T-a-saved-filter-is-its-readings */
   #given(): boolean {
     // The old word still heard. TRAP T-a-renamed-attribute-keeps-its-old-name
@@ -698,7 +698,7 @@ export class SherpaQuickFilter extends SherpaElement {
       conditionValue?: string; conditions?: FieldCondition[]; mode?: string;
     }) | null;
     const isFilter = menu?.getAttribute('data-type') === 'filter';
-    /* CUSTOM mode answers with ROWS, so the whole chain goes in. The badge
+    /* ADVANCED mode answers with ROWS, so the whole chain goes in. The badge
        and the tip both come back from it. TRAP T-a-condition-badge-says-that-not-which */
     const rows = isFilter && menu?.mode === 'advanced'
       ? (menu.conditions ?? []) : [];
@@ -767,7 +767,7 @@ export class SherpaQuickFilter extends SherpaElement {
     }) | null;
     if (menu?.getAttribute('data-type') !== 'filter') return false;
 
-    /* CUSTOM mode answers with ROWS, and ANY answered row is an answer. A
+    /* ADVANCED mode answers with ROWS, and ANY answered row is an answer. A
        chip reading row one only stayed off while three rows filtered.
        TRAP T-a-filter-menu-has-two-modes */
     if (menu.mode === 'advanced') {

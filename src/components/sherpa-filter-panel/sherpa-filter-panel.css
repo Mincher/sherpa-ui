@@ -123,7 +123,7 @@
    with nothing under them is harder to read than a shorter list. */
 .field[data-no-matches] { display: none; }
 
-/* CUSTOM MODE REPLACES the value chips — the rows are the answer now, and
+/* ADVANCED MODE REPLACES the value chips — the rows are the answer now, and
    two answers side by side is the thing this mode exists to avoid. */
 .field[data-advanced] .field-values { display: none; }
 

@@ -1,7 +1,7 @@
 import { test, expect, type Bar } from './harness';
 
 /**
- * A CHIP CARRIES ITS ANSWER — a saved custom filter.
+ * A CHIP CARRIES ITS ANSWER — a saved Advanced filter.
  *
  * Will, 2026-09-25: presets "are actually compound conditional filters that
  * (potentially) use more than 1 field". So a def can carry its READINGS, field
@@ -16,7 +16,7 @@ type Source = {
   debugState(): { total: number; parts: Record<string, unknown> };
 };
 
-test('a chip that carries its readings is a Custom Condition Filter, and a bound source applies it', async ({ page }) => {
+test('a chip that carries its readings is an Advanced filter, and a bound source applies it', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const { ArrayStore, DataSource } = await import('/dist/data.js') as unknown as {
       ArrayStore: new (rows: unknown[]) => unknown;
@@ -66,7 +66,7 @@ test('a chip that carries its readings is a Custom Condition Filter, and a bound
   });
 
   const chip = { kind: 'advanced', condition: 'advanced', badge: 'fx' };
-  // A Custom Condition Filter from the start: fx and custom, but not on.
+  // An Advanced filter from the start: fx and custom, but not on.
   expect(r.before).toEqual({ chip: { ...chip, on: false }, total: 3, parts: [] });
   // On: its readings narrow the rows, as ONE named part.
   expect(r.one).toEqual({ chip: { ...chip, on: true }, total: 2, parts: ['saved:at-risk'] });
@@ -123,7 +123,7 @@ test('saved filters live with their data: saved, read back, replaced by name, de
  * SAVE PACKS. Will, 2026-09-25: "Pack / unpack" — Save moves the answered
  * fields into ONE chip, which comes on, and the fields clear. The bar offers
  * "Save filter" only where there is something to save, and only when its host
- * saves: a chip holding a Custom Condition, and the Add menu for every answered
+ * saves: a chip holding an Advanced filter, and the Add menu for every answered
  * field. The bar ASKS (`filter-save`); the host names and stores it, and hands
  * it back with `packFilter`. TRAP T-save-packs-the-fields-into-one-chip
  */
@@ -163,7 +163,7 @@ test('"Save filter" shows where there is something to save, and asks with its re
 
   // No host that saves, no Save.
   expect(r.off).toEqual({ owner: false, plan: false, add: false });
-  // A Custom Condition is saveable on its own; a ticked value is not, but the
+  // An Advanced filter is saveable on its own; a ticked value is not, but the
   // whole bar is.
   expect(r.on).toEqual({ owner: true, plan: false, add: true });
   expect(r.asked).toEqual([
@@ -413,7 +413,7 @@ test('a reader\'s own saved chip opens Edit and Delete; a preset does not', asyn
   });
 
   expect(r.preset).toEqual({ menu: false, actions: [] });
-  // Still a Custom Condition Filter with a menu: the answer is given.
+  // Still an Advanced filter with a menu: the answer is given.
   expect(r.own).toEqual({ menu: true, actions: ['edit', 'delete'], condition: 'advanced' });
 });
 

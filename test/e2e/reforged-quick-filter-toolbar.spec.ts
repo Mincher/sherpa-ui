@@ -2395,7 +2395,7 @@ test('the Filters button is active only when a folded filter is', async ({ page 
  *
  * TRAP T-a-condition-only-field-still-has-a-menu
  */
-test('a CUSTOM field with no options gets a menu, not a toggle', async ({ page }) => {
+test('an ADVANCED field with no options gets a menu, not a toggle', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar');
     el.populate([
@@ -2432,7 +2432,7 @@ test('a CUSTOM field with no options gets a menu, not a toggle', async ({ page }
  *
  * TRAP T-a-conditions-only-menu-cannot-be-drilled
  */
-test('a FOLDED custom-only filter opens its own menu, not a blank drill', async ({ page }) => {
+test('a FOLDED advanced-only filter opens its own menu, not a blank drill', async ({ page }) => {
   const r = await page.evaluate(async () => {
     // NARROW, so the filters fold into the Filters menu.
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'style': 'max-inline-size: 260px' });
@@ -2462,7 +2462,7 @@ test('a FOLDED custom-only filter opens its own menu, not a blank drill', async 
 
     const overflowMenu = overflow.querySelector('sherpa-menu')!;
     return {
-      // Its OWN menu opened, in custom mode...
+      // Its OWN menu opened, in Advanced mode...
       opened: menu.hasAttribute('open'),
       mode: menu.getAttribute('data-mode'),
       // ...with a condition row a reader can actually type into.
@@ -2569,7 +2569,7 @@ test('a chip steered with conditions redraws its value and tip', async ({ page }
  * report in that gap said Owner had no answer, so adding Email reset Owner.
  * Will, 2026-09-26. TRAP T-a-rebuilt-row-reads-empty-for-a-tick
  */
-test('adding a second conditional filter keeps the first one\'s rows in every report', async ({ page }) => {
+test('adding a second Advanced filter keeps the first one\'s rows in every report', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [
       { id: 'owner', label: 'Owner', select: 'multiple', custom: true,

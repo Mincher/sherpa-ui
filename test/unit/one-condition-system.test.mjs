@@ -1,5 +1,5 @@
 /**
- * ONE CONDITION SYSTEM — Default and Custom Condition Filters.
+ * ONE CONDITION SYSTEM — Simple and Advanced filters (TODO 75).
  *
  * Will, 2026-09-25: "Default filter modes are also technically conditional
  * filters… So we can use the same engine regardless of filtering mode… We
@@ -30,9 +30,9 @@ const shape = (facts, reading) => {
   return { condition: s.condition, rows: s.rows, clause: stateClause(s), badge: filterFace(s).badge };
 };
 
-/* ── Default Condition Filters ──────────────────────────────────────── */
+/* ── Simple filters ─────────────────────────────────────────────── */
 
-test('one tick is a DEFAULT condition: EQUALS X', () => {
+test('one tick is a SIMPLE condition: EQUALS X', () => {
   assert.deepEqual(shape(PLANS, { picked: ['Pro'] }), {
     condition: 'simple',
     rows: [{ op: 'eq', picked: ['Pro'] }],
@@ -54,9 +54,9 @@ test('a dragged RANGE is the field\'s own body answering — default, and `betwe
   assert.deepEqual(s.clause, ['seats', 'between', [9, 500]]);
 });
 
-/* ── Custom Condition Filters ───────────────────────────────────────── */
+/* ── Advanced filters ───────────────────────────────────────── */
 
-test('a TYPED condition is custom', () => {
+test('a TYPED condition is Advanced', () => {
   const s = shape(PLANS, { op: 'contains', text: 'ro' });
   assert.equal(s.condition, 'advanced');
   assert.deepEqual(s.rows, [{ op: 'contains', text: 'ro' }]);
@@ -64,13 +64,13 @@ test('a TYPED condition is custom', () => {
   assert.equal(s.badge, 'fx');
 });
 
-test('a NAMED op over ticks is custom — DOES NOT EQUAL is not a default', () => {
+test('a NAMED op over ticks is Advanced — DOES NOT EQUAL is not Simple', () => {
   const s = shape(PLANS, { op: 'ne', picked: ['Free'] });
   assert.equal(s.condition, 'advanced');
   assert.deepEqual(s.clause, ['plan', 'ne', 'Free']);
 });
 
-test('a chain of rows is custom, and compiles with AND binding tighter', () => {
+test('a chain of rows is Advanced, and compiles with AND binding tighter', () => {
   const s = shape(PLANS, {
     conditions: [
       { op: 'eq', picked: ['Pro'] },
@@ -92,7 +92,7 @@ test('EVERYTHING ticked is no filter, so no condition either', () => {
   assert.equal(shape(PLANS, { picked: ['Free', 'Pro', 'Enterprise'] }).condition, null);
 });
 
-test('an UNANSWERED row is not a custom condition', () => {
+test('an UNANSWERED row is not an Advanced condition', () => {
   const s = shape(PLANS, { conditions: [{ op: 'contains', text: '  ' }] });
   assert.equal(s.condition, null);
   assert.equal(s.badge, '');

@@ -150,13 +150,13 @@
   font-size: var(--sherpa-theme-content-size-base, 14px);
 }
 
-/* NOWHERE TO SWITCH TO. A custom-only field has no list behind the button.
+/* NOWHERE TO SWITCH TO. An advanced-only field has no list behind the button.
    AFTER the rule that shows it, and as specific, so it wins.
    TRAP T-a-filter-answers-by-values-conditions-or-both */
 :host([data-type="filter"][data-advanced-only]) .use-condition,
 :host([data-type="filter"][data-conditions-only]) .use-condition { display: none; }
 
-/* DEFAULT mode shows the search; CUSTOM mode shows the condition rows.
+/* SIMPLE mode shows the search; ADVANCED mode shows the condition rows.
    One filter, two views of it. TRAP T-a-filter-menu-has-two-modes */
 .condition-rows,
 .add-condition { display: none; }
@@ -302,7 +302,7 @@
 /* ── Search ── a composed <sherpa-input-text> that owns its own box, ring,
    focus state and icon, so there is nothing to restyle here. */
 .search { display: none; }
-/* NOT in custom mode: the rows answer the field there, and a search box
+/* NOT in Advanced mode: the rows answer the field there, and a search box
    above them filters a list nothing is showing. */
 :host([data-search]:not([data-mode="advanced"])) .search { display: block; }
 
@@ -590,7 +590,7 @@
 :host([data-body="number"][data-range]) .body-op { display: none; }
 
 /* READ-ONLY: the answer is shown and nothing here changes it — no footer, no
-   Add condition, no Conditional switch. `!important`: each is a composed
+   Add condition, no Advanced switch. `!important`: each is a composed
    component whose own `:host` display wins otherwise.
    TRAP T-a-composed-child-hides-with-important
    TRAP T-a-view-held-heading-shows-and-refuses */

@@ -21,7 +21,7 @@
   Public API:
     data-commit     show the Apply / Cancel footer and DEFER changes until Apply
     data-readonly   SHOW an answer held elsewhere — rows and conditions inert, no
-                    footer, no Add condition, no Conditional switch
+                    footer, no Add condition, no Advanced switch
     data-heading  optional heading (rendered upper-case at 10/16)
     data-search   show a search input under the heading that filters the rows
     data-removable  show a "Remove" button in the footer (after Today);
@@ -108,7 +108,7 @@
     condition-change — the condition or its typed value changed.
                   detail: { op, value, conditions }
                   `conditions` is EVERY row, in order. TRAP T-many-conditions-are-one-reading
-    filter-mode-change — the mode button was pressed. detail: { mode } — default | custom
+    filter-mode-change — the mode button was pressed. detail: { mode } — simple | advanced
 -->
 <template id="default">
   <div class="menu sherpa-border-edges sherpa-border-corners" part="menu" popover="manual" role="menu">

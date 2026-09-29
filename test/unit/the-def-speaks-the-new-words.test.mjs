@@ -1,9 +1,9 @@
 /**
  * THE DEF SPEAKS THE NEW WORDS — and still hears the old ones.
  *
- * A filter def says `custom: true | 'only'`: a Custom Condition Filter beside
- * its values, or instead of them. It said `conditions`, and that kind was
- * `conditional`. Both old words are still read.
+ * A filter def says `advanced: true | 'only'`: Advanced conditions beside its
+ * values, or instead of them. It said `custom`, and before that `conditions`,
+ * whose kind was `conditional`. The old words are still read. TODO 75
  *
  *   node --test test/unit/the-def-speaks-the-new-words.test.mjs
  *
@@ -15,8 +15,8 @@ import assert from 'node:assert/strict';
 
 import { FILTER_KINDS, advancedOf, hasOwnBody, kindOf } from '../../dist/core/ui/filter-kind.js';
 
-test('a def says custom, and its kind is custom', () => {
-  assert.equal(kindOf({ id: 'email', custom: 'only' }), 'advanced');
+test('a def says advanced, and its kind is advanced', () => {
+  assert.equal(kindOf({ id: 'email', advanced: 'only' }), 'advanced');
   assert.equal(advancedOf({ advanced: true }), true);
   assert.equal(advancedOf({ advanced: 'only' }), 'only');
   // The name before 2026-09-29 (TODO 75), still read.
@@ -27,10 +27,11 @@ test('a def says custom, and its kind is custom', () => {
   assert.ok(!FILTER_KINDS.includes('conditional'));
   assert.equal(hasOwnBody('advanced'), true);
   // Beside a list of values, the kind is still what the list is.
-  assert.equal(kindOf({ id: 'owner', custom: true, select: 'single', options: [{}] }), 'single');
+  assert.equal(kindOf({ id: 'owner', advanced: true, select: 'single', options: [{}] }), 'single');
 });
 
-test('the old key and the old kind are still read', () => {
+test('the old keys and the old kinds are still read', () => {
+  assert.equal(kindOf({ id: 'email', custom: 'only' }), 'advanced');
   assert.equal(kindOf({ id: 'email', conditions: 'only' }), 'advanced');
   assert.equal(kindOf({ id: 'email', kind: 'conditional' }), 'advanced');
   // …and the word before this one. TODO 75
@@ -39,4 +40,5 @@ test('the old key and the old kind are still read', () => {
   assert.equal(advancedOf({ conditions: 'only' }), 'only');
   // The NEW key wins where a def names both.
   assert.equal(advancedOf({ custom: false, conditions: true }), false);
+  assert.equal(advancedOf({ advanced: false, custom: true }), false);
 });

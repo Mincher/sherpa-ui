@@ -70,7 +70,7 @@ export function filterFace(state: FilterState): FilterFace {
 
   return {
     current: state.fieldState === 'active',
-    /* `fx` — the mark says a CUSTOM condition is applied, and the tip says
+    /* `fx` — the mark says an ADVANCED condition is applied, and the tip says
        how many. Read from the state's own type, which the chip's green reads
        too. TRAP T-a-condition-badge-says-that-not-which · TRAP T-one-condition-system */
     badge: state.condition === 'advanced' ? CONDITION_BADGE : '',

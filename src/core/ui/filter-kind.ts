@@ -48,7 +48,7 @@ export interface KindSource extends OffersAdvanced {
   kind?: string;
   select?: 'single' | 'multiple';
   options?: readonly unknown[];
-  /** A SAVED custom filter's answer, given field by field. TRAP T-a-saved-filter-is-its-readings */
+  /** A SAVED Advanced filter's answer, given field by field. TRAP T-a-saved-filter-is-its-readings */
   readings?: Readonly<Record<string, unknown>>;
 }
 
@@ -73,7 +73,7 @@ export function kindOf(def: KindSource): FilterKind {
   if (named && KNOWN.has(named)) return named as FilterKind;
   // `group` and `sort` are named for their job; their id IS the kind.
   if (def.id === 'group' || def.id === 'sort') return def.id;
-  // Its answer is GIVEN, over any fields: a saved Custom Condition Filter.
+  // Its answer is GIVEN, over any fields: a saved Advanced filter.
   if (def.readings) return 'advanced';
   // No list to tick and no list behind the rows: the condition IS the answer.
   if (advancedOf(def) === 'only') return 'advanced';

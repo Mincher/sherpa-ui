@@ -93,7 +93,7 @@
   border-width: var(--sherpa-border-width-sm, 1px);
 }
 
-/* A CUSTOM chip keeps the active FILL — on must read as on — and takes
+/* An ADVANCED chip keeps the active FILL — on must read as on — and takes
    a SUCCESS edge and ink. The `fx` badge says the same thing in the other
    channel. TRAP T-a-conditioned-chip-reads-as-success */
 :host([data-condition="advanced"][data-current]) :is(.body, .caret) {

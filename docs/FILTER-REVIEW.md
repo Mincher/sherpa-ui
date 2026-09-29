@@ -3,6 +3,9 @@
 **Written for Will**, 2026-09-25. Everything here is measured, not estimated;
 every command used is given so you can re-run it.
 
+It uses the words of its day: the filter modes Default / Custom (and
+Conditional) are **Simple / Advanced** since TODO 75.
+
 ---
 
 ---

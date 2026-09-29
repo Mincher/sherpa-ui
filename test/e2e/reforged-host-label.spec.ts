@@ -11,7 +11,7 @@ test('a host aria-label names the inner control, and follows it', async ({ page 
     await window.__mount('sherpa-button', undefined,
       { 'data-type': 'icon', 'data-icon-start': 'gear', 'aria-label': 'Settings' });
     await window.__mount('sherpa-switch', undefined,
-      { 'data-type': 'simple', 'aria-label': 'Conditional', keep: true });
+      { 'data-type': 'simple', 'aria-label': 'Advanced', keep: true });
     await window.__mount('sherpa-input-text', undefined,
       { 'aria-label': 'Search every filter', keep: true });
     await window.__mount('sherpa-select-checkbox', undefined,
@@ -21,7 +21,7 @@ test('a host aria-label names the inner control, and follows it', async ({ page 
   });
 
   await expect(page.getByRole('button', { name: 'Settings', exact: true })).toHaveCount(1);
-  await expect(page.getByRole('switch', { name: 'Conditional', exact: true })).toHaveCount(1);
+  await expect(page.getByRole('switch', { name: 'Advanced', exact: true })).toHaveCount(1);
   await expect(page.getByRole('textbox', { name: 'Search every filter', exact: true })).toHaveCount(1);
   await expect(page.getByRole('checkbox', { name: 'Pick me', exact: true })).toHaveCount(1);
   await expect(page.getByRole('radio', { name: 'Choose me', exact: true })).toHaveCount(1);
@@ -32,5 +32,5 @@ test('a host aria-label names the inner control, and follows it', async ({ page 
     document.querySelector('sherpa-switch')!.removeAttribute('aria-label');
   });
   await expect(page.getByRole('button', { name: 'Close', exact: true })).toHaveCount(1);
-  await expect(page.getByRole('switch', { name: 'Conditional', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('switch', { name: 'Advanced', exact: true })).toHaveCount(0);
 });

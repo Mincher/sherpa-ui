@@ -27,7 +27,7 @@ async function chip(page: import('@playwright/test').Page, def: Record<string, u
   }, def);
 }
 
-test('a TYPED condition in list mode is custom: green AND fx', async ({ page }) => {
+test('a TYPED condition in list mode is Advanced: green AND fx', async ({ page }) => {
   const r = await chip(page, {
     id: 'owner', label: 'Owner', select: 'multiple', active: true, custom: true,
     op: 'contains', text: 'Da',
@@ -39,7 +39,7 @@ test('a TYPED condition in list mode is custom: green AND fx', async ({ page }) 
   expect(r.badge).toBe('fx');
 });
 
-test('a ticked value is default: neither green nor fx', async ({ page }) => {
+test('a ticked value is Simple: neither green nor fx', async ({ page }) => {
   const r = await chip(page, {
     id: 'plan', label: 'Plan', select: 'multiple', active: true,
     options: [{ value: 'Pro', label: 'Pro', selected: true }, { value: 'Free', label: 'Free' }],

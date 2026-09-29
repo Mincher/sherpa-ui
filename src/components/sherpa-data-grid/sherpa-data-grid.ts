@@ -564,7 +564,7 @@ export class SherpaDataGrid extends SherpaElement {
       if (held && fieldState({ field: col.field }, this.#columnReading(held)).condition === 'advanced') {
         menu.setAttribute('data-mode', 'advanced');
       }
-      /* NO WALL OF ROWS. A custom-only column has no list to tick, so
+      /* NO WALL OF ROWS. An advanced-only column has no list to tick, so
          stamping its 240 values is work nobody sees.
          TRAP T-a-wall-of-values-is-not-a-filter */
       if (kindOf(col) !== 'advanced') this.#addColumnValues(menu, col.field, held);
@@ -806,9 +806,9 @@ export class SherpaDataGrid extends SherpaElement {
     if (!cal && isFilterMenu) {
       /* A CHAIN is read WHOLE: every answered row, not row one alone, which
          applied `A` of `A or B`. TRAP T-a-heading-holds-a-whole-reading */
-      const custom = menu as HTMLElement & { mode?: string; conditions?: FieldCondition[] };
-      const rows = custom.mode === 'advanced'
-        ? (custom.conditions ?? []).filter((r) => (r.text ?? '').trim() || (r.picked ?? []).length)
+      const filter = menu as HTMLElement & { mode?: string; conditions?: FieldCondition[] };
+      const rows = filter.mode === 'advanced'
+        ? (filter.conditions ?? []).filter((r) => (r.text ?? '').trim() || (r.picked ?? []).length)
         : [];
       if (rows.length > 1) {
         return { op: rows[0]!.op, value: (rows[0]!.text ?? '').trim(), conditions: rows };

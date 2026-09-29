@@ -366,7 +366,7 @@ props:
     kind: style
     description: >-
       SHOW an answer held elsewhere — rows and conditions inert, no footer, no Add condition, no
-      Conditional switch
+      Advanced switch
   - $type: prop
     name: data-removable
     type: string

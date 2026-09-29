@@ -32,8 +32,8 @@
                     sherpa-tooltip look rather than a nested instance: the badge
                     lives in this shadow root, so a light-DOM wrapper component
                     cannot reach it. Reveal is pure CSS on .count-wrap:hover.
-    data-condition  written BY the chip: default | custom — which condition
-                    it holds, absent when it holds none. `custom` reads as
+    data-condition  written BY the chip: simple | advanced — which condition
+                    it holds, absent when it holds none. `advanced` reads as
                     `success`, not the plain on-tint.
                     TRAP T-a-conditioned-chip-reads-as-success
     data-pending    changed, not yet applied: the active edge, no fill.
@@ -59,8 +59,8 @@
                     themselves. "Organise" is not a kind; it is a heading a
                     panel may draw above the two.
                     TRAP T-a-chip-knows-what-kind-it-is
-                    `custom` with no filter menu is a SAVED filter: its answer
-                    is given, so the chip is a toggle that reads as custom.
+                    `advanced` with no filter menu is a SAVED filter: its answer
+                    is given, so the chip is a toggle that reads as Advanced.
                     TRAP T-a-saved-filter-is-its-readings
     data-column     which column a group or sort chip arranges by, for a host
                     that draws the choice without a menu. A menu, where there is

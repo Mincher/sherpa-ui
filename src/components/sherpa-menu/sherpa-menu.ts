@@ -51,15 +51,15 @@ export interface MenuItem {
   count?: number;
 }
 
-/** The mode's older spellings, still heard — select and condition before
- *  2026-09-25, default and custom before 2026-09-29 (TODO 75).
- *  TRAP T-a-renamed-attribute-keeps-its-old-name */
 /** The opt-ins' older names, still heard. TRAP T-a-renamed-attribute-keeps-its-old-name */
 const OLD_OPT_INS = [
   ['data-custom', 'data-advanced'], ['data-conditional', 'data-advanced'],
   ['data-custom-only', 'data-advanced-only'], ['data-conditions-only', 'data-advanced-only'],
 ] as const;
 
+/** The mode's older spellings, still heard — select and condition before
+ *  2026-09-25, default and custom before 2026-09-29 (TODO 75).
+ *  TRAP T-a-renamed-attribute-keeps-its-old-name */
 const OLD_MODES: Readonly<Record<string, ConditionType>> = {
   select: 'simple', condition: 'advanced', default: 'simple', custom: 'advanced',
 };
@@ -85,13 +85,13 @@ export class SherpaMenu extends SherpaElement {
        body answers it. TRAP T-an-operator-decides-pick-or-type */
     'data-conditions': { type: 'string', kind: 'style' },
     'data-takes': { type: 'enum', kind: 'style', values: ['list', 'text'] },
-    /* Which of the two modes is showing: a Default or a Custom Condition
-       Filter. TRAP T-a-filter-menu-has-two-modes */
+    /* Which of the two modes is showing: Simple or Advanced.
+       TRAP T-a-filter-menu-has-two-modes */
     'data-mode': { type: 'enum', kind: 'style', values: ['simple', 'advanced'] },
     /* Whether this field offers Advanced conditions AT ALL.
        TRAP T-conditions-are-opt-in-per-field */
     'data-advanced': { type: 'boolean', kind: 'style' },
-    /* CUSTOM AND NOTHING ELSE. A field whose values are a wall — an email
+    /* ADVANCED AND NOTHING ELSE. A field whose values are a wall — an email
        column of 240 — has no list worth ticking, so there is no second mode to
        switch to and the switch is hidden. It IMPLIES `data-advanced`.
        TRAP T-a-filter-answers-by-values-conditions-or-both */
@@ -250,7 +250,7 @@ export class SherpaMenu extends SherpaElement {
     // An OLD spelling is heard, and written back in the new words.
     const old = OLD_MODES[this.dataset['mode'] ?? ''];
     if (old) this.dataset['mode'] = old;
-    /* CUSTOM ONLY has no other mode to be in, so it opens in one and
+    /* ADVANCED ONLY has no other mode to be in, so it opens in one and
        cannot leave. TRAP T-a-filter-answers-by-values-conditions-or-both */
     if (this.#advancedOnly()) {
       if (this.dataset['mode'] !== 'advanced') this.dataset['mode'] = 'advanced';
@@ -261,13 +261,13 @@ export class SherpaMenu extends SherpaElement {
     }
   }
 
-  /** This field offers a Custom Condition Filter. `only` implies it.
+  /** This field offers Advanced conditions. `only` implies it.
    *  The old name still counts. TRAP T-a-renamed-attribute-keeps-its-old-name */
   #offersAdvanced(): boolean {
     return this.hasAttribute('data-advanced') || this.#advancedOnly();
   }
 
-  /** Answered by a Custom Condition Filter alone — no value list behind it. */
+  /** Answered by Advanced conditions alone — no value list behind it. */
   #advancedOnly(): boolean {
     return this.hasAttribute('data-advanced-only');
   }
@@ -279,7 +279,7 @@ export class SherpaMenu extends SherpaElement {
 
   set mode(next: ConditionType | 'select' | 'condition' | 'default' | 'custom') {
     const to = modeOf(next);
-    /* A field that did not opt in has no custom mode to be in — the button
+    /* A field that did not opt in has no Advanced mode to be in — the button
        is hidden, and a host writing the attribute must not get one either.
        TRAP T-conditions-are-opt-in-per-field */
     if (to === 'advanced' && !this.#offersAdvanced()) return;
@@ -327,7 +327,7 @@ export class SherpaMenu extends SherpaElement {
     const next: ConditionType = on ? 'advanced' : 'simple';
     if (next === this.mode) return;
     this.mode = next;
-    // A custom mode with no rows has nothing to answer with.
+    // An Advanced mode with no rows has nothing to answer with.
     if (next === 'advanced' && !this.#rowEls().length) this.#addRow();
     /* CARRY THE PICKS OVER. Ticking three values and pressing the mode button
        is a reader saying "now let me refine THAT" — opening on a blank

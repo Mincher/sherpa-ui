@@ -3,8 +3,8 @@ import { test, expect, type Bar } from './harness';
 /**
  * THE NEW WORDS, AND THE OLD ONES STILL HEARD.
  *
- * A filter is a Default Condition Filter or a Custom Condition Filter — Will,
- * 2026-09-25, and Simple / Advanced since 2026-09-29 (TODO 75). The menu's
+ * A filter is Simple or Advanced — Will, 2026-09-27 (TODO 75). It was a
+ * Default or a Custom Condition Filter, and before that Conditional. The menu's
  * attributes say so now: `data-advanced`, `data-advanced-only`, and
  * `data-mode="simple" | "advanced"`. A host that still
  * writes `data-conditional`, `data-conditions-only` or `select | condition`
@@ -30,7 +30,7 @@ test('a menu speaks the new words', async ({ page }) => {
     await window.__settled();
     const off = { mode: menu.mode, attr: menu.getAttribute('data-mode'), checked: sw.hasAttribute('checked') };
 
-    // CUSTOM ONLY opens in custom, hides the switch, and cannot leave.
+    // ADVANCED ONLY opens in Advanced, hides the switch, and cannot leave.
     const only = await window.__mount<HTMLElement & { mode: string }>('sherpa-menu', undefined,
       { 'data-type': 'filter', 'data-advanced-only': true });
     only.mode = 'simple';
@@ -97,13 +97,13 @@ async function chipCondition(page: import('@playwright/test').Page, def: Record<
 
 const OWNERS = [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }];
 
-test('a chip says which condition it holds: default, custom, or none', async ({ page }) => {
+test('a chip says which condition it holds: simple, advanced, or none', async ({ page }) => {
   expect(await chipCondition(page, {
     id: 'owner', label: 'Owner', select: 'multiple', active: true,
     options: [{ value: 'Dana', label: 'Dana', selected: true }, { value: 'Ravi', label: 'Ravi' }],
   })).toBe('simple');
   expect(await chipCondition(page, {
-    id: 'owner', label: 'Owner', select: 'multiple', active: true, custom: true,
+    id: 'owner', label: 'Owner', select: 'multiple', active: true, advanced: true,
     op: 'contains', text: 'Da', options: OWNERS,
   })).toBe('advanced');
   expect(await chipCondition(page, {
@@ -119,7 +119,7 @@ test('a chip says which condition it holds: default, custom, or none', async ({ 
  * Free" came back as `in` — the host filtered to exactly the rows the reader
  * excluded. TRAP T-a-held-clause-op-is-not-a-reading-op
  */
-test('a grid column set to Is not keeps its NOT, and reads as custom', async ({ page }) => {
+test('a grid column set to Is not keeps its NOT, and reads as Advanced', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = await window.__mount<HTMLElement & {
       setColumnFilter(f: string, c: unknown[] | null): void;
@@ -156,7 +156,7 @@ test('a grid column set to Is not keeps its NOT, and reads as custom', async ({ 
   expect(r.not).toEqual({ clause: ['plan', 'notin', ['Pro', 'Free']], condition: 'advanced', icon: 'function' });
   expect(r.oneOf).toEqual({ clause: ['plan', 'in', ['Pro', 'Free']], condition: 'simple', icon: null });
   expect(r.typed).toEqual({ clause: ['plan', 'contains', 'ro'], condition: 'advanced', icon: 'function' });
-  // A range is filtered, and it is a DEFAULT condition — as a toolbar chip reads it.
+  // A range is filtered, and it is a SIMPLE condition — as a toolbar chip reads it.
   expect(r.range).toEqual({ clause: ['spend', 'between', [10, 20]], condition: 'simple', icon: null });
   expect(r.off).toEqual({ condition: null, icon: null });
 });
@@ -165,7 +165,7 @@ test('the panel reports its mode in the menu\'s own words', async ({ page }) => 
   const r = await page.evaluate(async () => {
     const panel = await window.__mount<HTMLElement & { show(): void }>('sherpa-filter-panel', [{
       scope: 'data', label: 'Data', filters: [{
-        id: 'owner', label: 'Owner', select: 'multiple', custom: true,
+        id: 'owner', label: 'Owner', select: 'multiple', advanced: true,
         options: [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }],
       }],
     }], { style: 'inline-size: 400px', 'data-min-width': '0' });
@@ -194,43 +194,44 @@ test('the panel reports its mode in the menu\'s own words', async ({ page }) => 
 });
 
 /**
- * THE DEF SPEAKS THEM TOO. `custom: true | 'only'` on a chip, a column and a
- * panel field; the old `conditions` key still works.
+ * THE DEF SPEAKS THEM TOO. `advanced: true | 'only'` on a chip, a column and a
+ * panel field; the old `custom` and `conditions` keys still work.
  */
-test('a def says custom — and the old conditions key still works', async ({ page }) => {
+test('a def says advanced — and the old custom and conditions keys still work', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const opts = [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }];
     const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [
-      { id: 'owner', label: 'Owner', select: 'multiple', custom: true, options: opts },
-      { id: 'email', label: 'Email', custom: 'only', op: 'contains' },
+      { id: 'owner', label: 'Owner', select: 'multiple', advanced: true, options: opts },
+      { id: 'email', label: 'Email', advanced: 'only', op: 'contains' },
       { id: 'old', label: 'Old', conditions: 'only', op: 'contains' },
+      { id: 'was', label: 'Was', custom: 'only', op: 'contains' },
     ], { style: 'inline-size: 1200px' });
     await window.__settled();
     const menu = (id: string) => {
       const m = bar.shadowRoot!.querySelector(`.chip[data-id="${id}"] sherpa-menu`) as Menu | null;
       return m && {
-        custom: m.hasAttribute('data-advanced'),
+        advanced: m.hasAttribute('data-advanced'),
         only: m.hasAttribute('data-advanced-only'),
         mode: m.mode,
       };
     };
-    const chips = { owner: menu('owner'), email: menu('email'), old: menu('old') };
+    const chips = { owner: menu('owner'), email: menu('email'), old: menu('old'), was: menu('was') };
 
     const grid = await window.__mount<HTMLElement>('sherpa-data-grid', {
-      columns: [{ field: 'email', header: 'Email', custom: 'only', op: 'contains' }],
+      columns: [{ field: 'email', header: 'Email', advanced: 'only', op: 'contains' }],
       rows: [{ email: 'a@x.io' }, { email: 'b@x.io' }],
     }, { 'data-column-filters': true });
     const col = grid.shadowRoot!.querySelector('.head-cell[data-field="email"] sherpa-menu')!;
     const column = {
       only: col.hasAttribute('data-advanced-only'),
-      // NO WALL OF ROWS: a custom-only column stamps no values.
+      // NO WALL OF ROWS: an advanced-only column stamps no values.
       rows: [...col.children].length,
     };
 
     const panel = await window.__mount<HTMLElement>('sherpa-filter-panel', [{
       scope: 'data', label: 'Data', filters: [
-        { id: 'owner', label: 'Owner', custom: true, options: opts },
-        { id: 'email', label: 'Email', custom: 'only', op: 'contains' },
+        { id: 'owner', label: 'Owner', advanced: true, options: opts },
+        { id: 'email', label: 'Email', advanced: 'only', op: 'contains' },
       ],
     }], { 'data-min-width': '0' });
     (panel as HTMLElement & { show(): void }).show();
@@ -248,9 +249,10 @@ test('a def says custom — and the old conditions key still works', async ({ pa
     return { chips, column, field, onlyField };
   });
 
-  expect(r.chips.owner).toEqual({ custom: true, only: false, mode: 'simple' });
-  expect(r.chips.email).toEqual({ custom: true, only: true, mode: 'advanced' });
-  expect(r.chips.old).toEqual({ custom: true, only: true, mode: 'advanced' });
+  expect(r.chips.owner).toEqual({ advanced: true, only: false, mode: 'simple' });
+  expect(r.chips.email).toEqual({ advanced: true, only: true, mode: 'advanced' });
+  expect(r.chips.old).toEqual({ advanced: true, only: true, mode: 'advanced' });
+  expect(r.chips.was).toEqual({ advanced: true, only: true, mode: 'advanced' });
   expect(r.column).toEqual({ only: true, rows: 0 });
   expect(r.field).toBe(true);
   expect(r.onlyField).toEqual({ switch: false, rows: true });

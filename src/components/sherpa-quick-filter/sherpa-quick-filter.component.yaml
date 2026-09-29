@@ -112,8 +112,9 @@ props:
     observed: false
     kind: style
     description: >-
-      written BY the chip: default | custom — which condition it holds, absent when it holds none.
-      `custom` reads as `success`, not the plain on-tint. TRAP T-a-conditioned-chip-reads-as-success
+      written BY the chip: simple | advanced — which condition it holds, absent when it holds none.
+      `advanced` reads as `success`, not the plain on-tint. TRAP
+      T-a-conditioned-chip-reads-as-success
   - $type: prop
     name: data-count
     type: string
@@ -179,8 +180,8 @@ props:
       WHAT THIS CHIP IS: group | sort | advanced. Group and sort ARRANGE rows rather than choosing
       them, so they have no values to be empty of, and both own their gesture — group toggles, sort
       cycles asc / desc / off — and report it themselves. "Organise" is not a kind; it is a heading
-      a panel may draw above the two. TRAP T-a-chip-knows-what-kind-it-is `custom` with no filter
-      menu is a SAVED filter: its answer is given, so the chip is a toggle that reads as custom.
+      a panel may draw above the two. TRAP T-a-chip-knows-what-kind-it-is `advanced` with no filter
+      menu is a SAVED filter: its answer is given, so the chip is a toggle that reads as Advanced.
       TRAP T-a-saved-filter-is-its-readings
   - $type: prop
     name: data-label

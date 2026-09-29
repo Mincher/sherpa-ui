@@ -41,7 +41,7 @@ export interface PanelValue {
   value: string;
   label?: string;
   selected?: boolean;
-  /** What the value's own chip IS — a preset that carries its answer is `custom`. */
+  /** What the value's own chip IS — a preset that carries its answer is `advanced`. */
   kind?: FilterKind;
   /** A reader's OWN saved filter: its chip opens Edit filter and Delete filter. */
   editable?: boolean;
@@ -676,7 +676,7 @@ export class SherpaFilterPanel extends SherpaElement {
     }
 
     this.#held.set(key, held);
-    /* A field ALREADY answered by conditions opens ON them — custom mode, its
+    /* A field ALREADY answered by conditions opens ON them — Advanced mode, its
        rows. Drawn as plain chips, the refill after an Add hid Owner's rows,
        and the next Apply reported it unanswered: adding Email reset Owner.
        TRAP T-a-conditioned-field-opens-on-its-rows */
@@ -1142,7 +1142,7 @@ export class SherpaFilterPanel extends SherpaElement {
     return [...this.#held.values()].find((h) => h.box.contains(node));
   }
 
-  /** CUSTOM MODE replaces the value chips. The rows are the host's to draw:
+  /** ADVANCED MODE replaces the value chips. The rows are the host's to draw:
    *  the panel reports the intent and flags the field.
    *  TRAP T-conditions-are-opt-in-per-field */
   #flipCondition(held: Held): void {
@@ -1156,7 +1156,7 @@ export class SherpaFilterPanel extends SherpaElement {
     this.#report(held);
   }
 
-  /** Put a field in custom mode, or take it out: its flag, its switch, its menu. */
+  /** Put a field in Advanced mode, or take it out: its flag, its switch, its menu. */
   #setCustom(held: Held, on: boolean): void {
     held.box.toggleAttribute('data-advanced', on);
     held.box.querySelector('.field-advanced-switch')?.toggleAttribute('checked', on);
@@ -1170,7 +1170,7 @@ export class SherpaFilterPanel extends SherpaElement {
       this.#giveMenu(held, body as HTMLElement, true, true);
     }
     if (held.menu) {
-      /* The MENU refuses custom mode unless the field opted in, and a
+      /* The MENU refuses Advanced mode unless the field opted in, and a
          panel's own button IS that opt-in reaching it.
          TRAP T-conditions-are-opt-in-per-field */
       if (on) held.menu.setAttribute('data-advanced', '');
@@ -1183,9 +1183,9 @@ export class SherpaFilterPanel extends SherpaElement {
   #syncAnswered(held: Held): void {
     const ticked = held.values.querySelector('.value[data-current]') != null;
     const menu = held.menu as (HTMLElement & { conditions?: unknown[] }) | undefined;
-    const custom = held.box.hasAttribute('data-advanced')
+    const advanced = held.box.hasAttribute('data-advanced')
       && (menu?.conditions?.length ?? 0) > 0;
-    held.box.toggleAttribute('data-answered', ticked || custom);
+    held.box.toggleAttribute('data-answered', ticked || advanced);
     this.#syncSaveable();
     this.#syncScopeFilters(held.scope);
   }

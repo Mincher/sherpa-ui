@@ -221,7 +221,7 @@ test('a field header keeps one height with or without its buttons, and the switc
         gap: next ? Math.round(next.getBoundingClientRect().top - head.bottom) : null,
       };
     });
-    // The Conditional switch is its OWN row, under the header. Will, 2026-09-26.
+    // The Advanced switch is its OWN row, under the header. Will, 2026-09-26.
     const owner = sr.querySelector('.field[data-field="owner"]');
     const below = owner.querySelector('.field-advanced').getBoundingClientRect().top
       >= owner.querySelector('.field-head').getBoundingClientRect().bottom;
@@ -637,11 +637,11 @@ test('remote: a changed field shows its own Apply and Discard; locally, never', 
 });
 
 /**
- * A FIELD ALREADY ANSWERED BY CONDITIONS OPENS ON THEM — custom mode, its rows.
+ * A FIELD ALREADY ANSWERED BY CONDITIONS OPENS ON THEM — Advanced mode, its rows.
  * Drawn as plain value chips, a refill hid Owner's rows and the next Apply
  * reported it unanswered. TRAP T-a-conditioned-field-opens-on-its-rows
  */
-test('a field populated with conditions opens in custom mode on its rows', async ({ page }) => {
+test('a field populated with conditions opens in Advanced mode on its rows', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-filter-panel') as HTMLElement & {
       rendered: Promise<void>; populate(d: unknown): void; show(): void;

@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**63 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**62 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -22,7 +22,6 @@ order.
 |---:|---:|---|---|
 | | | **B — The foundation: what is left** | |
 | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
-| 2 | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
 | 2a | 103 | Rows with no key get one from the data layer — Sherpa's own, never sent out | foundation |
 | 3 | 38 | One model, one builder, one owner — what is left | refactor |
 | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
@@ -49,8 +48,8 @@ order.
 | 21 | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
 | 22 | 97 | A filter panel section shows an icon for WHAT it filters: View, Chart, Grid, Form, List | quick |
 | 23 | 60 | Once applied, a chip's badge shows the number of results | feature |
-| 24 | 49 | A preset conditional chip shows its conditions, read-only | feature |
-| 25 | 50 | A custom conditional chip shows its conditions, editable | feature |
+| 24 | 49 | A preset Advanced chip shows its conditions, read-only | feature |
+| 25 | 50 | A reader's saved Advanced chip shows its conditions, editable | feature |
 | 26 | 48 | A child menu opens on hover or click of its row | feature |
 | 27 | 21c | A condition's matches must ALL highlight | feature |
 | 28 | 21f | "Send to view filters" | feature |
@@ -97,8 +96,8 @@ order.
 **Why this order** (reassessed 2026-09-29).
 
 - **B — what is left of the foundation.** 86 first: an ASSESSMENT for Will to
-  rule on, so it costs no code while he reads it. 75 before any filter
-  feature, so 89, 90, 98 and 99 are built in the new words. 38's one builder
+  rule on, so it costs no code while he reads it. 75 (done) came before any
+  filter feature, so 89, 90, 98 and 99 are built in the new words. 38's one builder
   is built WITH 89 (see D).
 - **C — Contained bugs.** Each is fixable in its own component or page. In
   pairs where one fix serves both: 104 first (nothing a number menu does
@@ -162,7 +161,7 @@ So a menu is DRAWN from its field's slice of the Query — its values, its
 picks, its rows — in either mode, and the bar, the panel and a heading stop
 building their own. And any filter menu can SHOW the sub-query behind it: the
 conditions it compiles to, readable, perhaps editable. Explore with 49 and 50
-(a conditional chip shows its conditions), which are this seen from a chip.
+(an Advanced chip shows its conditions), which are this seen from a chip.
 
 **No query LANGUAGE — JSON.** Will, 2026-09-27: *"I don't think we should
 construct a query language for it. We're probably best served using JSON. As
@@ -170,37 +169,6 @@ long as the whole situation is captured and can be recreated then we're
 good."* The sub-query IS the field's slice of the Query — its `FieldReading`,
 condition rows and all — shown and saved as JSON, and restored by
 `setQuery`. No grammar, no parser, no second spelling of a condition.
-
-### `[~]` 75 — Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file
-
-**75a built 2026-09-29 — the mode VALUES:** `ConditionType` is `simple |
-advanced`; a menu's `data-mode`, a chip's `data-condition`, a filter's kind
-(`advanced`), the panel's and menu's mode events, and the Style pins
-(state-pins.yaml, re-projected). Old words are still HEARD — `default`,
-`custom`, `select`, `condition`, `conditional` — so a saved View or filter keeps
-working. **75b built the same day:** the opt-in key is `advanced` (`custom`
-and `conditions` still read), the menu's `data-advanced` / `data-advanced-only`
-(old names heard), the page schema and `records.json`, the internal class names,
-and the labels — the switch reads **Advanced**. **Left: 75c** — docs, TRAPS
-and test titles.
-
-Will, 2026-09-27: *"We need to move away from using the terms Default and
-Conditional for filter modes. Instead we should use 'Simple' and 'Complex'."*
-
-| mode | is |
-|---|---|
-| **Simple** | ONE field, with one or more values to choose from |
-| **Advanced** | ONE OR MORE fields, with one or more values to choose from, and conditional parameters in use |
-
-**Advanced, not Complex** — Will, later the same day, choosing A of "Advanced" /
-"Complex" after writing "Advanced" in 90.
-
-The new ontology goes into EVERY file: code (`mode: 'default' | 'custom'`,
-`data-mode`, `condition: 'custom'`, `custom:` opt-ins), UI labels (the
-"Conditional" switch), tests, docs, TRAPS and the specs. Do it in one sweep,
-after step 6 of the Query, so the features in D (49, 50, 46) are built in
-the new words. Note: Advanced allows SEVERAL fields — today a condition is
-over one field, so the rename also opens that door.
 
 ### `[ ]` 103 — Rows with no key get one from the data layer — Sherpa's own, never sent out
 
@@ -232,7 +200,7 @@ toolbar when the overlap is considerable so the code should be singular, and
 reused, where possible."* The full review is `docs/FILTER-REVIEW.md`.
 
 Will's taxonomy stands: **six KINDS** — group, sort, boolean, single, multi,
-conditional. "Organise" is a label, never a kind.
+advanced. "Organise" is a label, never a kind.
 
 **Done:** steps 1, 2, 5, 5.5 and 6; step 3 — the data layer coordinates — is
 done by the provider (85): the panel asks for its scopes, every component finds
@@ -623,21 +591,21 @@ rows the View already allows. A pending chip (46) has no results yet, so it
 shows no number until Apply. Read the count from the source
 (`debugState().total` is the measure; the pager reports pages only).
 
-### `[ ]` 49 — A preset conditional chip shows its conditions, read-only
+### `[ ]` 49 — A preset Advanced chip shows its conditions, read-only
 
-A PRESET conditional chip (a saved filter the app ships) gets the `fx` button
+A PRESET Advanced chip (a saved filter the app ships) gets the `fx` button
 in the Success look. It opens a menu of its condition rows, read-only. It sits
 on the chip in the toolbar, in the section header in the panel, and on a column
 heading — only those three. Everywhere else a filter changes mode with the
-Conditional switch (done 2026-09-26).
+Advanced switch (done 2026-09-26).
 
 **Later, with 50:** Success is the look of a WORKING condition. Warning and
 critical are free for a condition that cannot apply, or a filter that failed
 to — Will's note, not asked for yet.
 
-### `[ ]` 50 — A custom conditional chip shows its conditions, editable
+### `[ ]` 50 — A reader's saved Advanced chip shows its conditions, editable
 
-The same `fx` button, with rows that can be edited. On a SAVED custom filter
+The same `fx` button, with rows that can be edited. On a filter the reader SAVED
 that is applied, an edit is a temporary DRAFT; the saved filter does not
 change. When the draft differs, the menu and the panel section header offer
 Save. Needs 49, and 46's pending look for the draft.
@@ -1192,6 +1160,7 @@ and edited the same way as a designed one.
 One line each. The detail is in git and in the trap named.
 
 **2026-09-29, the component API audit (86)**
+- 75: the filter modes are **Simple** and **Advanced** in every file — values (75a), the opt-in key `advanced`, the menu's `data-advanced` / `data-advanced-only` and the labels (75b), then docs, TRAPS and test titles (75c). Every old word is still HEARD, so a saved View or filter keeps working — `T-a-renamed-attribute-keeps-its-old-name`
 - 101: an Advanced condition row would not add in a chip's menu, and in the panel a row's condition change dropped it — the source draws every field's answer back with its ANSWERED rows only, and the menu rebuilt from that; now an answer that matches the rows the reader has answered keeps every row — `T-an-unanswered-row-survives-a-redraw`
 - 61: Add customer saves with required fields empty — the dialog is a real `<form>`; the four form controls take part in it (`FormValue`), Save submits it, and the browser refuses an empty required field and points at it; nothing is filled in for the reader, and the toast says when the page's filters hide the new record — `T-a-form-value-follows-every-write`
 

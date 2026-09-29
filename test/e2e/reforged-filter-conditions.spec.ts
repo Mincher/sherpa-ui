@@ -113,7 +113,7 @@ test('the two modes swap, and NEITHER loses what the other holds', async ({ page
       return node ? getComputedStyle(node).display : '(missing)';
     };
 
-    // DEFAULT mode: a search over ticked rows, no condition rows.
+    // SIMPLE mode: a search over ticked rows, no condition rows.
     const gold = [...menu.querySelectorAll('input')].find((i) => i.value === 'gold')!;
     gold.checked = true;
     gold.dispatchEvent(new Event('change', { bubbles: true }));
@@ -124,14 +124,14 @@ test('the two modes swap, and NEITHER loses what the other holds', async ({ page
       conditionRows: shown('.condition-rows'),
     };
 
-    // The header button switches to CUSTOM mode.
+    // The header button switches to ADVANCED mode.
     sr.querySelector<HTMLElement>('.use-condition sherpa-switch')!.shadowRoot!.querySelector('input')!.click();
     await wait();
     const onCustom = {
       mode: menu.mode,
       search: shown('.search'), rows: shown('.rows'),
       conditionRows: shown('.condition-rows'),
-      // It opens with ONE row — an empty custom mode reads as broken.
+      // It opens with ONE row — an empty Advanced mode reads as broken.
       rowCount: sr.querySelectorAll('.condition-row').length,
       // The ticks are untouched: a mode is a VIEW of the filter, not a reset.
       goldStillTicked: gold.checked,
@@ -173,7 +173,7 @@ test('the two modes swap, and NEITHER loses what the other holds', async ({ page
     search: 'block', rows: 'flex', conditionRows: 'none',
   });
 
-  // CUSTOM mode: the rows answer the field, so the search over them goes.
+  // ADVANCED mode: the rows answer the field, so the search over them goes.
   expect(r.onCustom.mode).toBe('advanced');
   expect(r.onCustom.search).toBe('none');
   expect(r.onCustom.rows).toBe('none');
@@ -317,7 +317,7 @@ test('Add condition chains rows, and each row asks its own question', async ({ p
  * a plain list and no mode button. The reader never meets a control that
  * cannot help them. TRAP T-conditions-are-opt-in-per-field
  */
-test('a chip that did not opt in has NO custom mode at all', async ({ page }) => {
+test('a chip that did not opt in has NO Advanced mode at all', async ({ page }) => {
   await page.evaluate(async () => {
     const el = document.createElement('sherpa-quick-filter-toolbar') as HTMLElement & {
       rendered?: Promise<void>; populate(d: unknown): void;
@@ -349,7 +349,7 @@ test('a chip that did not opt in has NO custom mode at all', async ({ page }) =>
     await new Promise((res) => { setTimeout(res, 120); });
     const afterClick = { mode: menu.mode, rows: sr.querySelectorAll('.condition-row').length };
 
-    // And a host WRITING the attribute gets no custom mode either.
+    // And a host WRITING the attribute gets no Advanced mode either.
     menu.setAttribute('data-mode', 'advanced');
     await new Promise((res) => { setTimeout(res, 120); });
     const afterWrite = {
@@ -733,7 +733,7 @@ test('row ONE\'s value select is populated, not just later rows', async ({ page 
  *
  * TRAP T-a-conditioned-chip-answers-with-its-clause
  */
-test('a chip in DEFAULT mode reports picks AND a clause, and is not custom',
+test('a chip in SIMPLE mode reports picks AND a clause, and is not Advanced',
   async ({ page }) => {
     await bar(page);
     const r = await page.evaluate(async () => {
@@ -764,7 +764,7 @@ test('a chip in DEFAULT mode reports picks AND a clause, and is not custom',
     expect(JSON.parse(r.clauses).tier).toEqual(['tier', 'eq', 'gold']);
     expect(r.on).toBe(true);
     /* DEFAULT, not custom. Both shapes describe the same ticks, and a host uses
-       `values`; only a chip in CUSTOM mode answers with its clause alone. */
+       `values`; only a chip in ADVANCED mode answers with its clause alone. */
     expect(r.condition).toBe('simple');
   });
 
@@ -814,7 +814,7 @@ test('a filter answers by values, by conditions, or by both', async ({ page }) =
       };
     };
 
-    // And a custom-only menu must REFUSE to go back to a list.
+    // And an advanced-only menu must REFUSE to go back to a list.
     const email = el.shadowRoot!.querySelector('.chip[data-id="email"] sherpa-menu') as
       HTMLElement & { mode: string };
     email.mode = 'simple';
@@ -835,7 +835,7 @@ test('a filter answers by values, by conditions, or by both', async ({ page }) =
   expect(r.owner.only).toBe(false);
   expect(r.owner.switchShown).toBe(true);
 
-  // ONLY — opens in custom mode, on its own op, with nowhere to switch to.
+  // ONLY — opens in Advanced mode, on its own op, with nowhere to switch to.
   expect(r.email).toEqual({
     menu: true, custom: true, only: true,
     mode: 'advanced', op: 'contains', switchShown: false,

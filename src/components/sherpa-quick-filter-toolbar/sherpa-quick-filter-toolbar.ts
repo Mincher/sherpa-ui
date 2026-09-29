@@ -65,7 +65,7 @@ export interface QuickFilterDef extends OffersAdvanced {
   options?: QuickFilterOption[];
   select?: 'single' | 'multiple';
   /** WHAT THIS FILTER IS — see `core/ui/filter-kind.ts`. A def that leaves it
-   *  out has it worked out from `select`, `custom` and whether there are
+   *  out has it worked out from `select`, `advanced` and whether there are
    *  options, in ONE place rather than at fifteen.
    *  TRAP T-number-and-date-lead-with-a-range-switch
    *  TRAP T-a-chip-knows-what-kind-it-is */
@@ -96,7 +96,7 @@ export interface QuickFilterDef extends OffersAdvanced {
   /** What the ADD menu shows beside it — where it lives now, if somewhere else.
    *  The host's to say: this bar cannot see another scope. */
   note?: string;
-  /** A SAVED custom filter: its answer, given field by field. The chip is a
+  /** A SAVED Advanced filter: its answer, given field by field. The chip is a
    *  toggle, and a bound source applies it as one part.
    *  TRAP T-a-saved-filter-is-its-readings */
   readings?: Record<string, FieldReading>;
@@ -291,7 +291,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       from = menu;
     }
 
-    /* NOTHING TO DRILL. A custom-only menu answers with its condition
+    /* NOTHING TO DRILL. An advanced-only menu answers with its condition
        ROWS, which live in its own shadow DOM — moving its empty light DOM put
        a blank card on screen, so the filter could never be answered, never
        went active, and never filtered. Show the menu ITSELF, anchored to the
@@ -547,7 +547,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const rows = given.length ? given
         : typed ? [{ op: reading.op ?? DEFAULT_OP, text: typed }] : [];
       if (rows.length) {
-        /* The MENU refuses custom mode unless the field opted in, and a
+        /* The MENU refuses Advanced mode unless the field opted in, and a
            steer IS that opt-in reaching it. */
         menu.setAttribute('data-advanced', '');
         menu.dataset['mode'] = 'advanced';
@@ -779,7 +779,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         chip.setAttribute('data-current', '');
       }
       /* THE KIND DECIDES. A boolean has nothing to open; everything else does
-         — a date or number carries its own body, and so does a custom one,
+         — a date or number carries its own body, and so does an Advanced one,
          which can only be asked "contains" and never ticked from a list of 240.
          TRAP T-a-condition-only-field-still-has-a-menu
          TRAP T-a-chip-knows-what-kind-it-is */
@@ -929,7 +929,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       menu.dataset['op'] = op;
       menu.conditionValue = text;
       if (conditions.length) {
-        // The menu refuses custom mode unless the field opted in.
+        // The menu refuses Advanced mode unless the field opted in.
         menu.setAttribute('data-advanced', '');
         menu.dataset['mode'] = 'advanced';
         menu.conditions = conditions;
@@ -1102,7 +1102,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /**
    * "Save filter" where there is something to save, and only if the host saves:
-   * a chip holding a Custom Condition, and the Add menu once any field is on.
+   * a chip holding an Advanced filter, and the Add menu once any field is on.
    * TRAP T-save-packs-the-fields-into-one-chip
    */
   #syncSaveable(): void {

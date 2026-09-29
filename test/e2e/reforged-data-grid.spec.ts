@@ -2719,7 +2719,7 @@ test('a column filtered by a CONDITION wears the fx mark AND the success edge', 
  * TRAP T-a-wall-of-values-is-not-a-filter
  * TRAP T-a-filter-answers-by-values-conditions-or-both
  */
-test('a custom-only column drops its list and opens on its own op', async ({ page }) => {
+test('an advanced-only column drops its list and opens on its own op', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-data-grid') as HTMLElement & {
       rendered?: Promise<void>;
@@ -2779,7 +2779,7 @@ test('a custom-only column drops its list and opens on its own op', async ({ pag
     return { before, typed: !!inner, clause: el.columnClause('email') };
   });
 
-  // CUSTOM ONLY: opens in custom mode, on its own op, no list, no switch.
+  // ADVANCED ONLY: opens in Advanced mode, on its own op, no list, no switch.
   expect(r.before.email).toEqual({
     only: true, mode: 'advanced', op: 'contains', switchShown: false, rows: 0,
   });

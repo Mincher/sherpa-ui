@@ -187,7 +187,7 @@ props:
     observed: true
     kind: style
     description: >-
-      the host SAVES filters: a chip holding a Custom Condition, and the Add menu once any field is
+      the host SAVES filters: a chip holding an Advanced filter, and the Add menu once any field is
       on, offer "Save filter", which fires filter-save. The host stores it and calls packFilter().
       TRAP T-save-packs-the-fields-into-one-chip
   - $type: prop

@@ -106,7 +106,7 @@ test('a typed condition carries what was typed', () => {
 
 /* ── filterFace ─────────────────────────────────────────────────────── */
 
-test('the DEFAULT condition wears no badge', () => {
+test('the SIMPLE condition wears no badge', () => {
   const face = filterFace(fieldState(facts, { picked: ['Ravi Menon'] }));
   assert.equal(face.current, true);
   assert.equal(face.badge, '', '`eq` on every ordinary chip would be noise');

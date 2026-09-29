@@ -105,10 +105,9 @@ export interface FilterState {
 }
 
 /**
- * A DEFAULT Condition Filter is answered by the field's own body — values
- * ticked, a range dragged, a day picked — with the default op. A CUSTOM
- * Condition Filter is answered by a condition: a named op, a typed value, or
- * a chain of rows. TRAP T-one-condition-system
+ * A SIMPLE filter is answered by the field's own body — values ticked, a
+ * range dragged, a day picked — with the default op. An ADVANCED filter is
+ * answered by a condition: a named op, a typed value, or a chain of rows. TRAP T-one-condition-system
  */
 export type ConditionType = 'simple' | 'advanced';
 
@@ -253,7 +252,7 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
     : !answered ? []
       : takesText ? [{ op, text }]
         : [{ op: range && ends.length >= 2 ? 'between' : op, picked: ends }];
-  const custom = conditions.length > 0 || op !== DEFAULT_OP;
+  const advanced = conditions.length > 0 || op !== DEFAULT_OP;
 
   return {
     field: facts.field,
@@ -265,7 +264,7 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
     type,
     range,
     values,
-    condition: !rows.length ? null : custom ? 'advanced' : 'simple',
+    condition: !rows.length ? null : advanced ? 'advanced' : 'simple',
     rows,
   };
 }
@@ -295,7 +294,7 @@ export function readingClause(facts: FieldFacts, reading: FieldReading): Filter 
 
 /**
  * A field's answer as it can be SAVED, and put back as it was: its rows when it
- * is custom, its ticks or ends when it is default. Nothing when it has no answer.
+ * is Advanced, its ticks or ends when it is Simple. Nothing when it has no answer.
  * TRAP T-a-saved-filter-is-its-readings
  */
 export function savedReading(state: FilterState): FieldReading | undefined {

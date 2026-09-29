@@ -35,13 +35,13 @@ const ROWS = [
   { id: 3, health: 55, owner: 'Dana' },
 ];
 
-test('a def that carries its readings is a custom kind', () => {
+test('a def that carries its readings is an advanced kind', () => {
   assert.equal(kindOf({ id: 'at-risk', readings: { health: { op: 'lt', text: '60' } } }), 'advanced');
   // A NAMED kind is still believed first.
   assert.equal(kindOf({ id: 'x', kind: 'boolean', readings: {} }), 'boolean');
 });
 
-test('an answer is saved as it was: rows when custom, ticks or ends when default', () => {
+test('an answer is saved as it was: rows when Advanced, ticks or ends when Simple', () => {
   const plan = { field: 'plan', values: ['Free', 'Pro', 'Enterprise'] };
   // In the field's own order, as the state lists them.
   assert.deepEqual(savedReading(fieldState(plan, { picked: ['Pro', 'Free'] })), { picked: ['Free', 'Pro'] });

@@ -143,14 +143,14 @@ export function menuFor(
     menu.setAttribute('data-type', 'filter');
     if (def.op) menu.setAttribute('data-op', def.op);
 
-    /* CUSTOM IS OPT-IN. TRAP T-conditions-are-opt-in-per-field */
-    const custom = advancedOf(def);
-    if (custom) {
+    /* ADVANCED IS OPT-IN. TRAP T-conditions-are-opt-in-per-field */
+    const advanced = advancedOf(def);
+    if (advanced) {
       menu.setAttribute('data-advanced', '');
-      /* VALUES, CONDITIONS, OR BOTH. `only` opens in custom mode and hides
+      /* VALUES, CONDITIONS, OR BOTH. `only` opens in Advanced mode and hides
          the switch — there is no list behind it.
          TRAP T-a-filter-answers-by-values-conditions-or-both */
-      if (custom === 'only') {
+      if (advanced === 'only') {
         menu.setAttribute('data-advanced-only', '');
         menu.setAttribute('data-mode', 'advanced');
       }

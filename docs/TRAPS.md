@@ -7912,18 +7912,18 @@ is the same shape of gap.
 
 A filter menu asks ONE question two ways, and they are not two menus.
 
-**DEFAULT** is a search over ticked rows. **CUSTOM** is the And/Or rows. A
-switch labelled **Conditional** in the header moves between them, as the Range
+**SIMPLE** is a search over ticked rows. **ADVANCED** is the And/Or rows. A
+switch labelled **Advanced** in the header moves between them, as the Range
 switch does — in the menu and in a panel field's header alike. Will,
 2026-09-26: the icon-only `fx` button it replaced is kept for the CHIPS (the
 toolbar, a panel section, a column heading), to open their conditions.
 
 Both stay STAMPED. Flipping a mode is a change of VIEW, not a reset: the ticks
-survive a trip through custom mode, and the typed rows survive a trip back.
+survive a trip through Advanced mode, and the typed rows survive a trip back.
 A mode that cleared the other would make the switch a destructive control
 wearing no warning.
 
-`data-mode` = `default` | `custom` (the old `select` | `condition` are read). The rows live in `.condition-rows`, and
+`data-mode` = `simple` | `advanced` (the old `select` | `condition` and `default` | `custom` are read). The rows live in `.condition-rows`, and
 each row is `[And|Or] [condition] [value]`.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
@@ -7940,11 +7940,11 @@ three — Region, Customer, Status — gets a plain list and no mode button.
 
 `Contains` over four regions all visible on screen is a control that cannot
 help the reader, and offering it says the list might be incomplete when it is
-not. A field opts in with `custom: true` on its def; the toolbar writes
-`data-custom` and the menu shows the button.
+not. A field opts in with `advanced: true` on its def; the toolbar writes
+`data-advanced` and the menu shows the button.
 
 Two doors, both shut: the CLICK is refused, and so is a host writing
-`data-mode="custom"` — `#enforceMode()` strips it in `#sync`. A hidden
+`data-mode="advanced"` — `#enforceMode()` strips it in `#sync`. A hidden
 button with a live mode is a control a reader cannot reach but a script can.
 
 A TEXT GRID COLUMN is the exception and always opts in. A column of free text
@@ -8062,8 +8062,8 @@ attribute, so an empty `Select…` first option is both the prompt and the proof
 the row is unanswered. Will, 2026-09-24: "Conditional equal dropdowns, if not
 populated from carry over, should default to a placeholder 'Select…' label."
 
-`data-condition="custom"` follows the same rule — it means ANSWERED rows, not
-merely present ones, because a menu in custom mode always holds one row.
+`data-condition="advanced"` follows the same rule — it means ANSWERED rows, not
+merely present ones, because a menu in Advanced mode always holds one row.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/core/data/filter-state.ts`
@@ -8482,7 +8482,7 @@ values are what the reader came for, however many they may pick. Group and Sort
 answer HOW the rows are arranged — not a filter at all — and read as the two
 controls a toolbar already shows.
 
-So the split is by JOB, not by `select`. A conditional field's rows go in the
+So the split is by JOB, not by `select`. An Advanced field's rows go in the
 accordion section too, in its own `.field-body`, replacing the chips.
 
 ---
@@ -8612,7 +8612,7 @@ Measured on the running page — the search itself works, 101 rows down to 2 on
 in the email column filter doesn't work."* It worked; it just did not do what a
 reader typing an address expects.
 
-Such a column is answered by TYPING — `custom: 'only'`, opening on
+Such a column is answered by TYPING — `advanced: 'only'`, opening on
 `contains`. See TRAP T-a-filter-answers-by-values-conditions-or-both for the
 three states and how they are configured.
 
@@ -8620,11 +8620,6 @@ three states and how they are configured.
 about the data. `examples/contexts/records.js` has one rule, `PICKABLE_AT_MOST`,
 read by the bar's Add menu AND by the grid's headings, so the same column can
 never be a list in one place and a box in the other.
-
-**And a custom chip's id is not a field.** Giving that column a real menu put
-`col:email` into the toolbar's `readings`, so `apply()` selected on a field no
-row has and the view went to 0 rows. A `data-custom` chip is reported by
-`custom` — the host already applies its clause — so `readings` skips it.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
@@ -8866,8 +8861,8 @@ still names the column it would resume on.
 The Filters menu drills into a folded filter by MOVING that filter's light-DOM
 rows into itself: `into.replaceChildren(...from.childNodes)`.
 
-A custom-only menu has no light-DOM children. Its answer is the condition
-ROWS, which live in its own shadow DOM and are driven by `data-custom-only`
+An advanced-only menu has no light-DOM children. Its answer is the condition
+ROWS, which live in its own shadow DOM and are driven by `data-advanced-only`
 and `data-mode` — attributes the Filters menu does not have. So drilling put a
 blank card on screen.
 
@@ -8891,7 +8886,7 @@ rows are not the answer, so moving them is the wrong gesture.
 
 A filter is answered three ways, and the field says which:
 
-| `custom` | the menu offers | for |
+| `advanced` | the menu offers | for |
 |---|---|---|
 | absent / `false` | a list of values to tick | a closed set — Status, Plan |
 | `true` | BOTH, with a switch between them | Owner: a short list, and "starts with" |
@@ -8903,8 +8898,8 @@ conditional filter, only, that defaults to 'Contains'."*
 
 ONE field, widened from a boolean, so nothing that already said `true` moved.
 `op` says which condition it opens on. `sherpa-menu` takes it as
-`data-custom-only`, which IMPLIES `data-custom`, forces
-`data-mode="custom"`, refuses to leave it, and hides the mode switch —
+`data-advanced-only`, which IMPLIES `data-advanced`, forces
+`data-mode="advanced"`, refuses to leave it, and hides the mode switch —
 there is no list behind it. Its CSS rule must come AFTER the one that shows the
 switch and be as specific, or the later rule wins and the button comes back.
 
@@ -8913,9 +8908,9 @@ hour earlier. Two mechanisms for "this column is typed, not ticked" is one too
 many, and the condition rows already do it better — an operator, and an
 or-chain.
 
-**The PANEL asks the same question.** It drew its Conditional switch for any
-truthy `customOf()`, and `'only'` is truthy — so Email showed a switch with
-nothing behind it (Will, 2026-09-26). The switch is for `custom === true` only.
+**The PANEL asks the same question.** It drew its Advanced switch for any
+truthy `advancedOf()`, and `'only'` is truthy — so Email showed a switch with
+nothing behind it (Will, 2026-09-26). The switch is for `advanced === true` only.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
@@ -8963,12 +8958,12 @@ the filter toolbar for that conditional filter."* Measured on the running page:
 `data-menu` cannot simply come off — the caret is where `valueLabel` writes the
 phrase, so hiding it hides the filter. The caller names the CONDITION instead
 (`op`, `text`), and the chip gets a real filter menu that opens on it. The
-machinery was already there: `data-custom`, `data-op`, `data-value`.
+machinery was already there: `data-advanced`, `data-op`, `data-value`.
 
 **And the colour half.** `sherpa-data-grid.#lightFilterChip` gave a
 condition-answered column the `fx` glyph and left it in the plain active
 purple, because nothing wrote the chip's condition — the success rule is
-`:host([data-condition="custom"][data-current])`. Glyph and colour now come
+`:host([data-condition="advanced"][data-current])`. Glyph and colour now come
 from the same `state.condition`, so they cannot disagree.
 TRAP T-a-conditioned-chip-reads-as-success
 
@@ -8980,14 +8975,14 @@ TRAP T-a-conditioned-chip-reads-as-success
 A chip with no `options` is a TOGGLE — that is the rule, and it is right for
 "At risk" or "Unassigned", which name no field.
 
-But a chip with `custom: true` names a field and answers it by TYPING. It
+But a chip with `advanced: true` names a field and answers it by TYPING. It
 carries no options because nobody ticks 240 distinct emails; it still needs a
 menu, and it was falling through to the toggle branch and getting none. So a
 high-cardinality text column could not be filtered at all — it silently became
 a switch that did nothing.
 
 `kind: 'date'` and `kind: 'number'` were already exempt for the same reason:
-their content is not a list of values either. `custom` joins them.
+their content is not a list of values either. `advanced` joins them.
 
 This is what stopped `examples/contexts/records.js` offering every column. It
 had hand-listed four of fourteen, with hand-written slider bounds that drifted
@@ -9589,8 +9584,8 @@ points at `surface-default-base`, as `info` did. An early try that pinned
 | | fill | edge | badge |
 |---|---|---|---|
 | off | default white | grey | — |
-| active — a Default Condition Filter | active purple | active purple | count |
-| conditioned — a Custom Condition Filter | white | **success green** | `fx` |
+| active — a Simple filter | active purple | active purple | count |
+| conditioned — an Advanced filter | white | **success green** | `fx` |
 
 **Which one a chip is, is the STATE's to say** — `state.condition`, see
 `T-one-condition-system`. The chip used to work it out from its menu's MODE
@@ -9601,7 +9596,7 @@ The same green runs through to the cells: a `mark.match` in the grid is
 `--sherpa-style-success-border-base-1`, so a reader follows ONE colour from
 the chip that found the match to the text it matched. 
 
-`data-condition` is written by the chip in `#syncCondition`, and a custom
+`data-condition` is written by the chip in `#syncCondition`, and an Advanced
 chip is never `data-empty` — a condition is an answer, so the amber "on but
 filtering by nothing" warning would be a lie.
 
@@ -9614,8 +9609,8 @@ filtering by nothing" warning would be a lie.
 
 ---|---|---|---|
 | off | default white | grey | — |
-| active — a Default Condition Filter | active purple | active purple | count |
-| conditioned — a Custom Condition Filter | active purple | **info blue** | `fx` |
+| active — a Simple filter | active purple | active purple | count |
+| conditioned — an Advanced filter | active purple | **info blue** | `fx` |
 
 **Which one a chip is, is the STATE's to say** — `state.condition`, see
 `T-one-condition-system`. The chip used to work it out from its menu's MODE
@@ -9626,7 +9621,7 @@ The same blue runs through to the cells: a `mark.match` in the grid is
 `--sherpa-style-info-border-base-1`, not the brand purple, so a reader follows
 ONE colour from the chip that found the match to the text it matched.
 
-`data-condition` is written by the chip in `#syncCondition`, and a custom
+`data-condition` is written by the chip in `#syncCondition`, and an Advanced
 chip is never `data-empty` — a condition is an answer, so the amber "on but
 filtering by nothing" warning would be a lie.
 
@@ -11684,7 +11679,7 @@ type's line describing the one below it. Every line gets a human pass.
 ### T-one-condition-system
 
 **Every answer a filter can have is condition rows, compiled by one function,
-and its TYPE — Default or Custom — is decided once.**
+and its TYPE — Simple or Advanced — is decided once.**
 
 Will, 2026-09-25: *"Default filter modes are also technically conditional
 filters… So we can use the same engine regardless of filtering mode… We should
@@ -11711,9 +11706,9 @@ had to guess which counted.
 `stateClause` compiles `rows` and nothing else, through one `rowClause`. The
 three branches are gone.
 
-**`state.condition`** is `'default'`, `'custom'` or `null`. Default is the
+**`state.condition`** is `'simple'`, `'advanced'` or `null`. Simple is the
 field's own body answering with the default op — ticks, a slider, a day.
-Custom is anything else: a named op, typed text, or rows. **Both** the chip's
+Advanced is anything else: a named op, typed text, or rows. **Both** the chip's
 info-blue and its `fx` badge read it. They used to decide it two ways — the
 blue from the MENU's mode, the badge from the state — so a typed condition in
 list mode wore `fx` and no blue. Fixing that exposed the opposite: a chip
@@ -11725,14 +11720,14 @@ on a chip without one `data-count` is the host's to set.
 Proved first: all 247 existing unit tests passed on the single compiler before
 anything read the new fields.
 
-**The chip says it too**, as `data-condition="default" | "custom"` — absent
+**The chip says it too**, as `data-condition="simple" | "advanced"` — absent
 when it holds none. It is written again when the menu STAMPS its rows
 (`menu-items`): a ticked answer cannot be read before that, so a chip ticked
 by its def said nothing at all.
 
 **And so does the grid.** `#lightFilterChip` asks `fieldState()` for its
 column's condition, so a heading's `fx` and green follow the same rule as a
-toolbar chip — "Is not" is custom there too.
+toolbar chip — "Is not" is Advanced there too.
 TRAP T-a-held-clause-op-is-not-a-reading-op
 
 The public attributes speak these words since 2026-09-25, and still hear the old
@@ -11750,27 +11745,29 @@ ones. TRAP T-a-renamed-attribute-keeps-its-old-name
 
 ### T-a-renamed-attribute-keeps-its-old-name
 
-**A public attribute that is renamed still hears its old name.** Will,
-2026-09-25, renaming the filter modes to Default and Custom Condition Filter:
+**A public attribute that is renamed still hears its old name.** The filter
+modes were renamed twice: to Default and Custom Condition Filter (Will,
+2026-09-25), then to Simple and Advanced (Will, 2026-09-27, TODO 75).
 
-| old | new, on `sherpa-menu` |
-|---|---|
-| `data-conditional` | `data-custom` |
-| `data-conditions-only` | `data-custom-only` |
-| `data-mode="select"` | `data-mode="default"` |
-| `data-mode="condition"` | `data-mode="custom"` |
+| first | 2026-09-25 | now, on `sherpa-menu` |
+|---|---|---|
+| `data-conditional` | `data-custom` | `data-advanced` |
+| `data-conditions-only` | `data-custom-only` | `data-advanced-only` |
+| `data-mode="select"` | `data-mode="default"` | `data-mode="simple"` |
+| `data-mode="condition"` | `data-mode="custom"` | `data-mode="advanced"` |
 
 Two kinds of alias, and they take two different doors:
 
-- **A NAME is read, never rewritten.** `#offersCustom()` and `#customOnly()`
-  and the CSS read both names, so a host that set `data-conditional` still
-  reads it back. `fallbackAttr` declares the old name: it is observed, and
-  `check:props` counts it.
-- **A VALUE is rewritten.** `#enforceMode()` turns `select` / `condition` into
-  `default` / `custom`, and the `mode` setter takes either. The menu already
-  rewrote `data-mode` — custom-only forces it, an un-offered custom is
-  removed — and ONE spelling in the DOM gives the CSS and every reader one
-  value to match.
+- **An old NAME is kept, and the new one written beside it.** `#enforceMode()`
+  adds `data-advanced` beside any old opt-in (`OLD_OPT_INS`), so
+  `#offersAdvanced()`, `#advancedOnly()` and the CSS read one name, and a host
+  that set `data-conditional` still reads it back. The old names are
+  `observed`, so a late write is heard too.
+- **A VALUE is rewritten.** `#enforceMode()` turns any old mode into `simple`
+  / `advanced` (`OLD_MODES`), and the `mode` setter takes any of them. The
+  menu already rewrote `data-mode` — advanced-only forces it, an un-offered
+  Advanced is removed — and ONE spelling in the DOM gives the CSS and every
+  reader one value to match.
 
 **No alias for what a component WRITES.** An alias protects a host's writes.
 The chip's `data-condition` (it was a boolean, `data-conditioned`), the
@@ -11778,31 +11775,25 @@ The chip's `data-condition` (it was a boolean, `data-conditioned`), the
 (`mode`, was `conditional: boolean`) are reports, and their readers follow the
 new words.
 
-**And the def.** A filter def says `custom: true | 'only'`, the same word as
-the menu, and that kind is `'custom'`. Both are a host's writes, so both keep
-their old spelling: `customOf()` reads `custom`, then `conditions`, and
-`kindOf()` believes `kind: 'conditional'`. The new key wins where a def names
-both. `OffersCustom` declares the key ONCE — four def types each declared
-`conditions` for themselves.
-
-**And the external filter.** The toolbar's host-added chip was a "custom"
-filter, so "custom" meant two things. It is an EXTERNAL filter now:
-`addExternalFilter()` — the old `addCustomFilter()` forwards — and a def's
-`externalValue`, with `customValue` still read. The `externalFilters` getter
-and the `external` entry on `quick-filter-change` are reports, so they have
-no alias. TRAP T-external-chips-are-reported-separately
+**And the def.** A filter def says `advanced: true | 'only'`, the same word as
+the menu, and that kind is `'advanced'`. Both are a host's writes, so both keep
+their old spellings: `advancedOf()` reads `advanced`, then `custom`, then
+`conditions`, and `kindOf()` believes `kind: 'custom'` and `'conditional'`
+(`OLD_KINDS`). A chip's `data-kind="custom"` is still a saved filter. The new
+key wins where a def names both. `OffersAdvanced` declares the key ONCE — four
+def types each declared `conditions` for themselves.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/core/ui/filter-kind.ts`
-- Site: `test/e2e/reforged-custom-condition-words.spec.ts`
+- Site: `test/e2e/reforged-advanced-condition-words.spec.ts`
 - Site: `test/unit/the-def-speaks-the-new-words.test.mjs`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 
 ### T-a-saved-filter-is-its-readings
 
-**A saved custom filter is a name and its READINGS, field by field — never a
+**A saved filter is a name and its READINGS, field by field — never a
 clause.** Will, 2026-09-25: presets *"are actually compound conditional filters
 that (potentially) use more than 1 field and those fields values"*, and a
 reader must be able to save and edit their own.
@@ -11813,13 +11804,13 @@ those fields (§16.6, pack / unpack); a clause cannot be re-opened in any UI. So
 data layer compiles it, with the field's type, as it compiles every reading.
 
 **It applies as ONE named part.** A def with `readings` is a toggle of kind
-`custom`. The bar reports every ON one in `savedReadings`, by chip id, and a
+`advanced`. The bar reports every ON one in `savedReadings`, by chip id, and a
 bound source applies each with `apply(readings, { reach: 'component', key:
 'saved:<id>' })` — so two saved filters AND, one over two fields is one part,
 and one switched off takes its part with it (`bind.saved`).
 
-**The chip draws it.** A `custom` chip with no FILTER menu holds a given answer
-(`#given()`), so it reads as `data-condition="custom"` and wears `fx` from
+**The chip draws it.** An `advanced` chip with no FILTER menu holds a given answer
+(`#given()`), so it reads as `data-condition="advanced"` and wears `fx` from
 the start, and the info-blue when on. It has no field menu to derive either from.
 
 Before this the page held a `TOGGLES` map of id → clause and contributed the
@@ -11845,7 +11836,7 @@ twice, and no second editor is needed: Edit puts the answer back (unpack).
 
 **The bar ASKS; the host keeps.** A host that saves filters sets
 `data-saveable` on the bar. "Save filter" then shows only where there is
-something to save — in the menu of a chip holding a Custom Condition, and in
+something to save — in the menu of a chip holding an Advanced filter, and in
 the Add menu once any field is on — and fires `filter-save { readings }`, each
 field as `savedReading()` gives it. The host names it, stores it
 (`saveFilterAs`), and hands it back with `packFilter({ id, label, readings })`.
@@ -11882,7 +11873,7 @@ scope."*
   scope, readings }`: every answered field, as `savedReading()` gives it —
   never the Presets, which are saved filters already, and never Group or Sort.
 - **A saved preset wears `fx`.** A preset carrying `readings` is drawn with
-  kind `custom`, and a chip with no filter menu then reads as custom by itself
+  kind `advanced`, and a chip with no filter menu then reads as Advanced by itself
   (`T-a-saved-filter-is-its-readings`).
 - **A reader's own preset opens Edit filter and Delete filter**, and the panel
   ASKS for each — `filter-edit`, `filter-delete` — as it asks for Add and
@@ -12005,14 +11996,14 @@ menu has drawn they go into it, and the chip is set on or off as it was, which
 re-draws its face. A later rebuild takes over from an earlier one.
 
 This was found building pack (`§16.6`), which rebuilds the bar — it would have
-taken every OTHER chip's custom condition with it.
+taken every OTHER chip's Advanced condition with it.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-a-rebuild-keeps-every-answer.spec.ts`
 
 ### T-a-saved-filter-lives-with-its-data
 
-**A saved custom filter is kept per DATA, not per page.** Will, 2026-09-25:
+**A saved filter is kept per DATA, not per page.** Will, 2026-09-25:
 *"These saved custom filter configurations won't be able to transcend data
 sources/stores."* Its readings name fields, and other records may not have them.
 
@@ -12055,11 +12046,11 @@ mapping (`in` → `eq`, `notin` → `ne`), so the menu read right; only the
 clause the HOST got was wrong.
 
 `readingOp()` is that mapping, once, for both. It also makes the column's
-`state.condition` honest: `between` is a clause op, not a custom one, so a
-range reads Default, as it does on a toolbar chip.
+`state.condition` honest: `between` is a clause op, not an Advanced one, so a
+range reads Simple, as it does on a toolbar chip.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
-- Site: `test/e2e/reforged-custom-condition-words.spec.ts`
+- Site: `test/e2e/reforged-advanced-condition-words.spec.ts`
 
 ### T-up-is-open-down-is-closed
 
@@ -12553,7 +12544,7 @@ NARROW. The old status set ORed instead, because four values of one field
 cannot all be true at once — which is another sign they were a menu wearing
 toggles.
 
-Since 2026-09-25 each is a saved custom filter that carries its own answer, and
+Since 2026-09-25 each is a saved filter that carries its own answer, and
 the page holds no clause for it. TRAP T-a-saved-filter-is-its-readings
 
 - Site: `src/core/data/page-definition.ts`
@@ -13598,9 +13589,9 @@ each field's def three ways: `DATA_FILTERS` for the bar's own chips,
 `fieldDef` for the Add lists, and the panel copied both through
 `asPanelField`. Owner offered conditions in one and not the other.
 
-`declareField(field, { label, type, select, custom, op, min, max, step })`
+`declareField(field, { label, type, select, advanced, op, min, max, step })`
 says it; `declareValues` gives its options, as the rows hold them. A number
-or a date gets `kind`, and a control of its own; a field that is `custom:
+or a date gets `kind`, and a control of its own; a field that is `advanced:
 'only'` offers no list. `declareScope(scope, { label })` names a scope as a
 reader sees it, and `addable(scope)` is what it may still add — each noting
 where it lives now, because adding it MOVES it.
@@ -13759,7 +13750,7 @@ moment as the tick must already be on.
 
 **A chip whose change is not applied yet is PENDING: the active purple EDGE,
 and NO fill.** Will, 2026-09-26 (TODO 46): a chip that goes straight to active
-before its change applies misleads the reader. A conditional chip is the same
+before its change applies misleads the reader. An Advanced chip is the same
 — it turns green only once applied.
 
 Only a change that WAITS can be pending, and after TODO 62 only a remote one
@@ -13782,7 +13773,7 @@ other's answer.
 
 ### T-a-condition-tip-counts-its-rows
 
-**A conditional chip's tooltip says how many conditions apply:** `1 condition
+**An Advanced chip's tooltip says how many conditions apply:** `1 condition
 applied`, `3 conditions applied`. Will, 2026-09-26. It used to spell the chain,
 which the chip's own value already does; the `fx` button is where a reader
 reads the rows themselves.
@@ -13853,7 +13844,7 @@ and a top-layer popover inherits the same way.
 
 **A steer is silent, so the chip must be TOLD to redraw.** Measured
 2026-09-26: after the filter panel's Apply, the rows were filtered and every
-bar chip was `data-current` and `data-condition="custom"` — but Owner showed no
+bar chip was `data-current` and `data-condition="advanced"` — but Owner showed no
 value and no tip, and Email's tip read only `Contains`. The chip draws its face
 when its menu fires an event, and `setChipReading` / a rebuild's
 `#keepAnswer` set `menu.conditions` from code, which fires none — on purpose,
@@ -13893,7 +13884,7 @@ TODO 21b. This is its default.
 
 **Filters survive a reload by restoring the reader's QUERY — their answers,
 in their own terms — never a compiled filter.** Will, 2026-09-24: filters and
-conditional filters survive a refresh and a trip away and back, for the
+Advanced filters survive a refresh and a trip away and back, for the
 session. Measured 2026-09-26 before the fix: `persistView` kept the source's
 COMBINED filter — Region = EMEA + Status = active came back as 4 rows with
 every chip empty. A filter no one could see or clear.
@@ -13956,8 +13947,8 @@ contradicts the one in force. A column held a condition — `owner contains Da`,
 set from outside by the chip mirror — and its menu opened in list mode, on an
 unticked list of values, with the condition row hidden behind the mode.
 
-The heading already derives `condition === 'custom'` to wear `fx`; the menu
-now reads the SAME test and opens in `data-mode="custom"`. Picks stay a ticked
+The heading already derives `condition === 'advanced'` to wear `fx`; the menu
+now reads the SAME test and opens in `data-mode="advanced"`. Picks stay a ticked
 list. Still open: a CHAIN (`A or B`) — the grid holds one condition per column
 (TODO 44b) — and an answer held at VIEW scope (TODO 44c).
 
@@ -14010,17 +14001,17 @@ test reads the popover's BOX.
 
 **A field already answered by conditions is DRAWN on them, and every rebuild
 keeps them.** Will, 2026-09-26: with Owner answered by `contains Da`, adding a
-second conditional filter — Email — and applying it reset Owner. Three gaps,
+second Advanced filter — Email — and applying it reset Owner. Three gaps,
 one per surface, and each looked like the other two:
 
 | surface | the gap |
 |---|---|
 | the toolbar | adding a field REBUILDS the bar; `#keepAnswer` let go of Owner's kept rows as its menu drew, one frame before the rebuilt rows FILLED, and the report in that gap said "unanswered" — the source dropped Owner and the mirror switched the chip off |
-| the panel's draw | a field with options is drawn as value chips and gets a menu only when Conditional is flipped — so a refill drew Owner as plain chips, rows gone, and its Apply reported it unanswered |
+| the panel's draw | a field with options is drawn as value chips and gets a menu only when Advanced is flipped — so a refill drew Owner as plain chips, rows gone, and its Apply reported it unanswered |
 | the panel's flush | rows written into a menu before it has DRAWN go nowhere — Owner came back a blank `equals` |
 
 So: a rebuilt chip's answer is held two frames past its menu's draw; a field
-whose state has conditions opens in custom mode as it is drawn; and the
+whose state has conditions opens in Advanced mode as it is drawn; and the
 panel writes rows and typed text only once each menu has drawn, then takes
 its snapshot again so Apply and Discard still read "unchanged".
 
@@ -14041,7 +14032,7 @@ each with its answer. Such a heading draws that answer — through the same
 clause path its own filter takes (`readingClause` → `#heldFromClause`) — with
 the chip's superseded look and tip ("Filter applied at higher scope. This chip
 holds EMEA."), and its menu `data-readonly`: rows and conditions `inert`, no
-footer, no Add condition, no Conditional switch. The heading's own filter is
+footer, no Add condition, no Advanced switch. The heading's own filter is
 never set by it (`columnClause` stays null), so nothing applies twice. A field
 not named is released.
 

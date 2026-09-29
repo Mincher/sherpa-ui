@@ -93,11 +93,11 @@ test('the open panel follows a field another control changes, and keeps the read
 });
 
 /**
- * WILL'S STEPS: Owner by a condition, then a SECOND conditional filter — Email
+ * WILL'S STEPS: Owner by a condition, then a SECOND Advanced filter — Email
  * — added and applied. Owner was reset: 10 rows went back to 100.
  * TRAP T-a-conditioned-field-opens-on-its-rows
  */
-test('adding and applying a second conditional filter keeps the first', async ({ page }) => {
+test('adding and applying a second Advanced filter keeps the first', async ({ page }) => {
   await page.goto('http://localhost:4200/?context=records');
   await page.waitForFunction(() =>
     !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
