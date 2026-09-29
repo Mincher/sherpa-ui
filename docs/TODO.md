@@ -473,6 +473,21 @@ keeps them going back — one answer, two views of it.
   the mode and loses nothing.
 - **The switch is never blocked**, whatever either mode holds. Switching back
   shows Simple's own picks.
+
+**Will, 2026-09-29, later:** *"The initial switch from simple filter to
+advanced should carry over the conditions. e.g. X and Y are selected becomes
+Equals X OR Equals Y. As soon as the advanced conditions deviate from the
+simple conditions then that mirroring should be disabled. Users should still
+be free to toggle between simple and advanced modes at any point and have
+their parameters maintained."*
+
+- **Advanced MIRRORS Simple until the reader changes it.** The first switch
+  turns picks X and Y into `Equals X` OR `Equals Y` (today's
+  `#seedFromPicks`). While the rows are still that mirror, a change to the
+  picks re-draws them.
+- **The first edit to a row ends the mirror**, for good: from then on each
+  mode keeps its own answer, and switching shows it. The reading records
+  whether the rows still mirror the picks.
 - **Every writer and reader of a reading follows**: the menu, the bar, the
   panel, a grid heading, a saved filter and a saved View (JSON), and the
   session's kept Query. Design it with 90, which builds Advanced on it, and
