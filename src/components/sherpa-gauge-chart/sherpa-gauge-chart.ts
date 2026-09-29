@@ -7,6 +7,7 @@
 import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import { formatTick, radialArea, ringSegmentPath } from '../../core/data/format-tick.js';
+import { fillTip, pairAnchor } from '../../core/ui/chart-parts.js';
 import { RADIAL_CENTRE as CENTRE, RADIAL_CORNER as CORNER,
   RADIAL_OUTLINE as OUTLINE, RADIAL_INNER_RATIO } from '../../core/ui/shared-constants.js';
 
@@ -187,13 +188,11 @@ export class SherpaGaugeChart extends SherpaElement {
       dot.style.setProperty('--_dot-angle', `${angle}deg`);
       tip.style.setProperty('--_area', radialArea(angle));
       dot.style.setProperty('--_hue', zone.color);
-      dot.style.setProperty('--_anchor', `--gauge-zone-${i}`);
-      tip.style.setProperty('--_anchor', `--gauge-zone-${i}`);
+      pairAnchor(`--gauge-zone-${i}`, dot, tip);
       // A raw CSS colour has no name worth showing — that row is the range alone.
       const isStatus = (STATUS_ORDER as readonly string[]).includes(zone.name);
       const label = isStatus ? this.#zoneLabel(zone.name) : '';
-      tip.querySelector('.chart-tip-label')!.textContent = label;
-      tip.querySelector('.chart-tip-value')!.textContent = `${zone.rawFrom}–${zone.rawTo}`;
+      fillTip(tip, label, `${zone.rawFrom}–${zone.rawTo}`);
       /* The accessible name goes on the ARC, and so does `tabindex` — without
          it the name was there and nothing could reach it. The CSS lights this
          zone's tip on :focus-visible as well as :hover.

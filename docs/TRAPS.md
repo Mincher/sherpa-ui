@@ -6405,10 +6405,8 @@ Per chart:
   bridge the line uses and are paired with their tips by index, so JS writes only
   the tip TEXT.
 
-- Site: `src/components/sherpa-line-chart/sherpa-line-chart.ts`
-- Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
-- Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.ts`
 - Site: `src/components/sherpa-sparkline/sherpa-sparkline.ts`
+- Site: `src/core/ui/chart-parts.ts`
 
 ### T-y-axis-width-is-fixed-not-measured
 
@@ -6440,8 +6438,7 @@ where the lines actually sit. Both charts stamp DESCENDING, because the axis is
 inverted relative to the DOM's flow — the highest value is at the TOP of the plot
 but the FIRST child in the column.
 
-- Site: `src/components/sherpa-line-chart/sherpa-line-chart.ts`
-- Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
+- Site: `src/core/ui/chart-parts.ts`
 
 ### T-chart-datum-aliases-are-not-copies
 
@@ -9962,10 +9959,9 @@ dashboard bar    0 125 250 375 500   ->   0 100 200 300 400 500
 dashboard line   0  50 100 150 200   ->   0  20  40  60  80 100 120
 ```
 
-- Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
-- Site: `src/components/sherpa-line-chart/sherpa-line-chart.ts`
 - Site: `src/core/data/format-tick.ts`
 - Site: `test/unit/chart-scale.test.mjs`
+- Site: `src/core/ui/chart-parts.ts`
 
 ### T-a-bar-hangs-from-the-zero-line
 
@@ -10481,6 +10477,7 @@ category nothing matched is noise, unless the categories are a fixed scale
 
 - Site: `examples/contexts/dashboard-data.js`
 - Site: `src/core/data/aggregate.ts`
+- Site: `src/core/ui/chart-parts.ts`
 
 ### T-the-last-band-includes-its-top
 
@@ -12370,14 +12367,13 @@ caller has already made.
 The axis still compacts. Both are correct for their own job; sharing one
 function was the mistake.
 
-- Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
 - Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.ts`
-- Site: `src/components/sherpa-line-chart/sherpa-line-chart.ts`
 - Site: `src/components/sherpa-metric/sherpa-metric.ts`
 - Site: `src/components/sherpa-sparkline/sherpa-sparkline.ts`
 - Site: `src/core/data/format-tick.ts`
 - Site: `test/e2e/reforged-barchart.spec.ts`
 - Site: `test/unit/format-tick.test.mjs`
+- Site: `src/core/ui/chart-parts.ts`
 ### T-a-delta-is-derived-not-declared
 
 `sherpa-metric` derives its TREND from `deltaPercent` and its STATUS from the

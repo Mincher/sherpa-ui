@@ -4,8 +4,8 @@
  */
 import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
-import { chartScale, formatTick, seriesBorderVar, seriesVar, tickPercent, formatValue,
-  type ChartScale } from '../../core/data/format-tick.js';
+import { chartScale, tickPercent, type ChartScale } from '../../core/data/format-tick.js';
+import { fillTip, pairAnchor, paintSeries, renderValueAxis } from '../../core/ui/chart-parts.js';
 import { DEFAULT_TICKS } from '../../core/ui/shared-constants.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -103,7 +103,6 @@ export class SherpaLineChart extends SherpaElement {
     layer.replaceChildren();
     hotspots?.replaceChildren();
     this.#series.forEach((s, si) => {
-      const hue = seriesVar(si, s.colorIndex);
       const pts = s.values.map((v, i) => {
         const x = s.values.length > 1 ? (i / (s.values.length - 1)) * 100 : 50;
         const y = 100 - ((v - min) / span) * 100;
@@ -112,8 +111,7 @@ export class SherpaLineChart extends SherpaElement {
 
       const g = document.createElementNS(SVG_NS, 'g');
       g.setAttribute('class', 'series');
-      g.style.setProperty('--_hue', hue);
-      g.style.setProperty('--_border', seriesBorderVar(si, s.colorIndex));
+      paintSeries(g, si, s.colorIndex);
 
       const area = document.createElementNS(SVG_NS, 'path');
       area.setAttribute('class', 'area');
@@ -140,17 +138,11 @@ export class SherpaLineChart extends SherpaElement {
           dot.dataset['index'] = String(i);
           dot.style.setProperty('--_x', `${x}%`);
           dot.style.setProperty('--_y', `${y}%`);
-          dot.style.setProperty('--_hue', hue);
-          // A dot inherits nothing from the <g>; the anchor name goes on both.
-          // TRAP T-chart-tip-is-a-sibling-of-its-dot
-          dot.style.setProperty('--_border', seriesBorderVar(si, s.colorIndex));
-          dot.style.setProperty('--_anchor', `--line-${si}-${i}`);
-          tip.style.setProperty('--_anchor', `--line-${si}-${i}`);
-          const at = this.#labels[i];
-          const label = [s.name, at].filter(Boolean).join(' · ');
-          tip.querySelector('.chart-tip-label')!.textContent = label;
-          // TRAP T-a-tooltip-is-not-an-axis.
-          tip.querySelector('.chart-tip-value')!.textContent = formatValue(s.values[i]!);
+          // A dot inherits nothing from the <g>.
+          paintSeries(dot, si, s.colorIndex);
+          pairAnchor(`--line-${si}-${i}`, dot, tip);
+          const label = [s.name, this.#labels[i]].filter(Boolean).join(' · ');
+          fillTip(tip, label, s.values[i]!);
           dot.setAttribute('aria-label', `${label} ${s.values[i]}`.trim());
           hotspots.append(dot, tip);
         });
@@ -173,26 +165,10 @@ export class SherpaLineChart extends SherpaElement {
 
   /** The value ticks, placed on the same scale as the gridlines. */
   #renderYAxis(scale: ChartScale): void {
-    const axis = this.$('.y-axis');
-    const tpl = this.$<HTMLTemplateElement>('template.ytick-tpl');
-    if (!axis || !tpl) return;
-
-    const steps = this.#tickSteps() > 0 ? scale.bands : 0;
-    axis.replaceChildren();
-    // Written, never inferred by measuring.
-    // TRAP T-y-axis-width-is-fixed-not-measured
-    this.toggleAttribute('data-has-y-axis', steps > 0 && this.#series.length > 0);
-    if (steps <= 0 || !this.#series.length) return;
-
-    for (let i = 0; i <= steps; i++) {
-      const tick = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-      tick.style.setProperty('--_at', `${tickPercent(i, steps)}%`);
-      /* The SCALE decided where its lines fall.
-         TRAP T-the-top-gridline-rounds-to-its-magnitude */
-      tick.querySelector('.y-value')!.textContent =
-        formatTick(scale.min + scale.step * i);
-      axis.appendChild(tick);
-    }
+    const steps = this.#tickSteps() > 0 && this.#series.length ? scale.bands : 0;
+    this.toggleAttribute('data-has-y-axis', renderValueAxis(
+      this.$('.y-axis'), this.$<HTMLTemplateElement>('template.ytick-tpl'), scale, steps,
+    ));
   }
 }
 

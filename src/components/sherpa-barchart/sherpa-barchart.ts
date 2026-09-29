@@ -11,7 +11,8 @@ import type { ChartDatum } from '../../core/data/chart-datum.js';
 import type { ChartScale } from '../../core/data/format-tick.js';
 import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
-import { chartScale, formatTick, seriesBorderVar, seriesVar, tickPercent, formatValue } from '../../core/data/format-tick.js';
+import { chartScale } from '../../core/data/format-tick.js';
+import { fillTip, pairAnchor, paintSeries, renderValueAxis } from '../../core/ui/chart-parts.js';
 import { DEFAULT_TICKS } from '../../core/ui/shared-constants.js';
 
 
@@ -90,7 +91,6 @@ export class SherpaBarchart extends SherpaElement {
       const col = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       // TRAP T-hiding-a-series-rescales-the-axis — the ORIGINAL index.
       col.dataset['index'] = String(i);
-      const hue = seriesVar(i, d.colorIndex);
       const bar = col.querySelector<HTMLElement>('.bar')!;
       /* A bar is the distance from ZERO to its value, and it grows away from
          the line in whichever direction the value points.
@@ -99,14 +99,9 @@ export class SherpaBarchart extends SherpaElement {
       col.dataset['sign'] = d.value < 0 ? '-' : '+';
       bar.style.setProperty('--_h', `${Math.abs(at - zero)}%`);
       bar.style.setProperty('--_base', `${zero}%`);
-      bar.style.setProperty('--_hue', hue);
-      bar.style.setProperty('--_border', seriesBorderVar(i, d.colorIndex));
-
-      // TRAP T-chart-tip-is-a-sibling-of-its-dot — JS names the anchor; CSS places it.
-      col.style.setProperty('--_anchor', `--bar-mark-${i}`);
-      col.querySelector('.chart-tip-label')!.textContent = d.label;
-      // The exact number, not the axis's compacting — TRAP T-a-tooltip-is-not-an-axis.
-      col.querySelector('.chart-tip-value')!.textContent = formatValue(d.value);
+      paintSeries(bar, i, d.colorIndex);
+      pairAnchor(`--bar-mark-${i}`, col);
+      fillTip(col, d.label, d.value);
       bars.appendChild(col);
 
       // A SIBLING of the plot, so it lands below the baseline.
@@ -118,29 +113,13 @@ export class SherpaBarchart extends SherpaElement {
     }
   }
 
-  /** Stamp the y-axis values, top (max) to bottom (min). */
+  /** The value axis, and the gridline bands the CSS draws from it. */
   #renderYAxis(scale: ChartScale, shownCount: number): void {
-    const axis = this.$('.y-axis');
-    const tpl = this.$<HTMLTemplateElement>('template.ytick-tpl');
-    if (!axis || !tpl) return;
-
-    const steps = this.num('data-ticks', DEFAULT_TICKS, { min: 0, int: true }) > 0
-      ? scale.bands
-      : 0;
-    // TRAP T-y-axis-width-is-fixed-not-measured — clear BEFORE the early return.
-    axis.replaceChildren();
-    this.toggleAttribute('data-has-y-axis', steps > 0 && shownCount > 0);
+    const steps = this.num('data-ticks', DEFAULT_TICKS, { min: 0, int: true }) > 0 ? scale.bands : 0;
     this.style.setProperty('--_bands', String(steps));
-    if (steps <= 0 || shownCount <= 0) return;
-
-    const boundaries = Array.from({ length: steps + 1 }, (_, i) => i);
-    this.renderItems('.y-axis', 'template.ytick-tpl', boundaries, { after: (tick, i) => {
-      tick.style.setProperty('--_at', `${tickPercent(i, steps)}%`);
-      /* `min + step * i`, never `max * i / steps` — the SCALE decided where
-         its lines fall. TRAP T-the-top-gridline-rounds-to-its-magnitude */
-      tick.querySelector('.y-value')!.textContent =
-        formatTick(scale.min + scale.step * i);
-    } });
+    this.toggleAttribute('data-has-y-axis', renderValueAxis(
+      this.$('.y-axis'), this.$<HTMLTemplateElement>('template.ytick-tpl'), scale, shownCount > 0 ? steps : 0,
+    ));
   }
 
   /** A bar was clicked: report which. */

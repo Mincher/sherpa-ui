@@ -15,7 +15,7 @@
 import { datumTotal, type LegendDatum } from '../../core/data/chart-datum.js';
 import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
-import { seriesBorderVar, seriesVar } from '../../core/data/format-tick.js';
+import { paintSeries } from '../../core/ui/chart-parts.js';
 // The roll-up row composes a real button + menu; the page may not have imported them.
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-menu/sherpa-menu.js';
@@ -205,8 +205,7 @@ export class SherpaChartLegend extends SherpaElement {
         swatch.style.setProperty('--_hue', `var(--sherpa-status-${item.status}-fill)`);
         swatch.style.setProperty('--_border', `var(--sherpa-status-${item.status})`);
       } else {
-        swatch.style.setProperty('--_hue', seriesVar(i, item.colorIndex));
-        swatch.style.setProperty('--_border', seriesBorderVar(i, item.colorIndex));
+        paintSeries(swatch, i, item.colorIndex);
       }
       entry.querySelector('.label')!.textContent = item.label;
       /* Remembered across a re-populate, so a source push does not clear it.

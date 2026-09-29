@@ -14,7 +14,8 @@
 import { datumTotal, type ChartDatum } from '../../core/data/chart-datum.js';
 import { SUMMARY_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
-import { radialArea, ringSegmentPath, seriesBorderVar, seriesVar, formatValue } from '../../core/data/format-tick.js';
+import { formatValue, radialArea, ringSegmentPath } from '../../core/data/format-tick.js';
+import { fillTip, pairAnchor, paintSeries } from '../../core/ui/chart-parts.js';
 import { RADIAL_CENTRE as CENTRE, RADIAL_CORNER as CORNER,
   RADIAL_OUTLINE as OUTLINE, RADIAL_INNER_RATIO } from '../../core/ui/shared-constants.js';
 
@@ -117,9 +118,7 @@ export class SherpaRadialChart extends SherpaElement {
         }),
       );
       arc.setAttribute('stroke-width', String(OUTLINE));
-      arc.style.setProperty('--_hue', seriesVar(i, slice.colorIndex));
-      // The border is fixed — it does not move along the ramp with the fill.
-      arc.style.setProperty('--_border', seriesBorderVar(i, slice.colorIndex));
+      paintSeries(arc, i, slice.colorIndex);
       /* KEYBOARD-REACHABLE. An SVG <path> takes focus from `tabindex`, and the
          CSS below lights its tip on :focus-visible as well as :hover — so a
          reader with no pointer can read every slice. `role="img"` because the
@@ -130,8 +129,6 @@ export class SherpaRadialChart extends SherpaElement {
       arc.setAttribute('aria-label', `${slice.label}: ${slice.value}`);
       group.appendChild(arc);
 
-      // TRAP T-chart-tip-is-a-sibling-of-its-dot — the anchor name goes on BOTH
-      // dot and tip, or the browser parks the tip wherever it likes.
       if (hotspots && hotTpl) {
         const frag = hotTpl.content.cloneNode(true) as DocumentFragment;
         const dot = frag.querySelector<HTMLElement>('.hotspot')!;
@@ -141,11 +138,8 @@ export class SherpaRadialChart extends SherpaElement {
         const mid = sweepStart + (acc + share / 2) * sweep;
         dot.style.setProperty('--_angle', `${mid}deg`);
         tip.style.setProperty('--_area', radialArea(mid));
-        dot.style.setProperty('--_anchor', `--radial-slice-${i}`);
-        tip.style.setProperty('--_anchor', `--radial-slice-${i}`);
-        tip.querySelector('.chart-tip-label')!.textContent = slice.label;
-        // TRAP T-a-tooltip-is-not-an-axis.
-        tip.querySelector('.chart-tip-value')!.textContent = formatValue(slice.value);
+        pairAnchor(`--radial-slice-${i}`, dot, tip);
+        fillTip(tip, slice.label, slice.value);
         hotspots.append(dot, tip);
       }
 
@@ -192,8 +186,7 @@ export class SherpaRadialChart extends SherpaElement {
     /* NOT clamped: −5 is what the data says, and a printed total that quietly
        drops it disagrees with the rows behind it.
        TRAP T-one-total-for-the-ring-and-the-label */
-    // `formatValue`, which this file already imports — it guards non-finite
-    // too. TRAP T-a-tooltip-is-not-an-axis
+    // `formatValue` guards non-finite too. TRAP T-a-tooltip-is-not-an-axis
     return formatValue(datumTotal(shown, { clamp: false }));
   }
 
