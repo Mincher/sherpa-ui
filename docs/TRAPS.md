@@ -591,6 +591,21 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-a-reflow-that-moves-nothing-keeps-its-menus
+
+**A bar's re-fold that folds the same chips at the same step leaves its open
+menus alone.** It shut the Filters menu and built a new one on EVERY resize —
+a late frame, a scrollbar, a font — so a menu opened just before one was
+thrown away under the reader, and a row held from it named nothing. WebKit
+runs the bar's last settling re-fold a frame later than Chromium, so there
+it happened every time (TODO 114). The fold is still measured from scratch
+(`T-reflow-resets-before-measuring`); only the close and the rebuild wait
+for a real change. The chips are compared by ELEMENT, so a re-render, which
+makes new ones, still rebuilds.
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+
 ### T-a-gap-click-is-the-menus-own
 
 **A click in a popover menu that lands on no control is the menu's own.** The

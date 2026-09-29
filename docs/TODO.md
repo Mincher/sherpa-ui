@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**58 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**57 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -46,7 +46,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16a | 100 | The Assistant panel shows no heading | quick |
 | ✅ | 16b | 106 | A click between a menu's items reaches what is behind it — an accordion toggles | bug |
 | ✅ | 16c | 108 | A Filters menu row's scope is a DESCRIPTION under its label, with no "in" | quick |
-| ⬜ | 16d | 114 | About 1 time in 20, a folded Advanced-only filter's row in the Filters menu opens nothing | bug |
+| ✅ | 16d | 114 | About 1 time in 20, a folded Advanced-only filter's row in the Filters menu opens nothing | bug |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | ⬜ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ⬜ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
@@ -515,7 +515,7 @@ WebKit); the menu stays open and the select keeps focus. Firefox reports
 `:open` false — maybe only how Firefox reports it. **❓ Waits on Will:** which
 surface (bar, panel or grid heading), which browser, and the steps.
 
-### `[ ]` 114 — BUG: about 1 time in 20, a folded Advanced-only filter's row opens nothing
+### `[x]` ✅ 114 — BUG: about 1 time in 20, a folded Advanced-only filter's row opens nothing
 
 Found 2026-09-29 while checking a flaky test: "a FOLDED advanced-only filter
 opens its own menu, not a blank drill" (`reforged-quick-filter-toolbar.spec.ts`)
@@ -529,6 +529,15 @@ Pressing the row opens the chip's own menu while the Filters menu closes. Two
 `hidePopover()` lands after the chip's menu opened and closes it too. Check
 the order in `#onMenuSelect` / the drill path, and try the same with a real
 pointer.
+
+**✅ Done 2026-09-29:** not the drill. EVERY re-fold of the bar shut the
+Filters menu and built a new one, even when it folded the same chips — so a
+late re-fold threw away a menu opened just before it, and the test's row
+named nothing. WebKit runs the bar's last settling re-fold a frame later, so
+there it failed EVERY time (60 of 60); Chromium only under load. A re-fold
+that moves nothing now leaves the open menus alone. WebKit 30/30, a new test
+(fails on the old bar), Chromium 856/856.
+`T-a-reflow-that-moves-nothing-keeps-its-menus`
 
 ### `[x]` ✅ 108 — A Filters menu row's scope is a DESCRIPTION under its label, with no "in"
 
@@ -2165,6 +2174,7 @@ One line each. The detail is in git and in the trap named.
 - 100: the Assistant panel shows its heading — `data-heading`, not `data-title`
 - 106: a click in a menu's gap is the menu's own; no accordion behind it toggles — `T-a-gap-click-is-the-menus-own`
 - 108: a Filters menu row's scope is its description line, with no "in"
+- 114: a re-fold that moves nothing keeps the open Filters menu — `T-a-reflow-that-moves-nothing-keeps-its-menus`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

@@ -197,18 +197,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const bar = this.$('.bar');
     const chips = this.$('.chips');
     if (!bar || !chips) return;
-
-    this.#closeOverflow();
-    // What has folded is about to change.
-    this.$<HTMLElement & { hide?: () => void }>('.more-menu')?.hide?.();
+    const was = { collapse: this.#collapse, folded: this.#folded };
 
     this.removeAttribute('data-collapse');
+    this.#collapse = 0;
     this.removeAttribute('data-folded');
     this.#showAllChips();
 
     for (let step = 1; step <= SherpaQuickFilterToolbar.COLLAPSE_STEPS; step++) {
       if (!this.#overflowing()) break;
       this.setAttribute('data-collapse', String(step));
+      this.#collapse = step;
     }
 
     const folded: HTMLElement[] = [];
@@ -224,6 +223,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         if (!this.#overflowing()) break;
       }
     }
+    // Nothing moved: the open menus stay. TRAP T-a-reflow-that-moves-nothing-keeps-its-menus
+    if (this.#collapse === was.collapse
+      && folded.length === was.folded.length && folded.every((c, i) => c === was.folded[i])) return;
+    this.#closeOverflow();
+    // What has folded changed.
+    this.$<HTMLElement & { hide?: () => void }>('.more-menu')?.hide?.();
     // The ONE Filters menu lists them. TRAP T-one-filters-button
     this.#folded = folded;
     this.#renderAvailable();
@@ -231,6 +236,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** The chips the last fold took off the run, in bar order. */
   #folded: HTMLElement[] = [];
+  /** The step the last fold collapsed the actions to. */
+  #collapse = 0;
 
   /** Re-read every folded chip's pick count on its row. Separate from stamping, which rebuilds the open list. */
   #syncFoldedBadges(): void {

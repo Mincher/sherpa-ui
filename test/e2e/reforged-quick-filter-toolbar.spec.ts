@@ -2550,6 +2550,43 @@ test('a FOLDED advanced-only filter opens its own menu, not a blank drill', asyn
 });
 
 /**
+ * A RE-FOLD THAT MOVES NOTHING KEEPS THE OPEN MENU — TODO 114. Every resize
+ * shut the Filters menu and built a new one, so a menu opened just before a
+ * late re-fold was thrown away. A real change still rebuilds it.
+ * TRAP T-a-reflow-that-moves-nothing-keeps-its-menus
+ */
+test('a resize that folds nothing new keeps the open Filters menu; a real unfold rebuilds it', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'style': 'max-inline-size: 260px' });
+    el.populate([
+      { id: 'status', label: 'Status', select: 'multiple', options: [{ value: 'a', label: 'a' }] },
+      { id: 'email', label: 'Email', custom: 'only', op: 'contains' },
+    ]);
+    await window.__settled();
+    for (let i = 0; i < 20 && !el.getAttribute('data-folded'); i++) await new Promise((res) => setTimeout(res, 80));
+    const frames = async (n: number): Promise<void> => {
+      for (let f = 0; f < n; f++) await new Promise((res) => requestAnimationFrame(res));
+    };
+    await frames(6);
+    const add = el.shadowRoot!.querySelector<HTMLElement>('.add-btn')!;
+    const menu = add.querySelector('sherpa-menu') as HTMLElement & { open: boolean; show(t: HTMLElement): void };
+    menu.show(add);
+    await window.__settled();
+    const folded = el.getAttribute('data-folded');
+    // One pixel wider: the bar resizes, the fold does not change.
+    el.style.maxInlineSize = '261px';
+    await frames(6);
+    const kept = { same: add.querySelector('sherpa-menu') === menu, open: menu.open, folded: el.getAttribute('data-folded') };
+    el.style.maxInlineSize = '1000px';
+    await frames(6);
+    return { folded, kept, unfolded: { same: add.querySelector('sherpa-menu') === menu, folded: el.getAttribute('data-folded') } };
+  });
+  expect(r.folded).toBe('1');
+  expect(r.kept).toEqual({ same: true, open: true, folded: '1' });
+  expect(r.unfolded).toEqual({ same: false, folded: null });
+});
+
+/**
  * THE ADD MENU IS THE WHOLE LIST — on the bar, as it already was in the panel.
  *
  * It listed only what was LEFT to add, so a tick added a chip and nothing took
