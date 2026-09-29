@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**68 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**67 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -34,7 +34,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | | | | **C — Contained bugs** | |
 | ❓ | 6 | 112 | An Equals row in Advanced will not open its value list | bug |
 | ✅ | 7 | 45 | A picked date does not show in the chip | bug |
-| ⬜ | 8 | 82 | A number chip set by a View shows no value on its face | bug |
+| ✅ | 8 | 82 | A number chip set by a View shows no value on its face | bug |
 | ⬜ | 9 | 83 | Calendar menu: a picked date leaves Apply and Discard looking off — yet they work | bug |
 | ⬜ | 10 | 94 | A number (and range) filter menu needs Apply and Cancel buttons | bug |
 | ⬜ | 11 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
@@ -417,7 +417,7 @@ before 82 was written). The format is now ONE DOM-free `formatDate()` in
 `03 to 15 Sep 2026`; `03 Sep to 15 Oct 2026`; `18 Dec 2026 to 03 Jan 2027`.
 Read in UTC, day first whatever the locale. `T-a-date-reads-one-way`
 
-### `[ ]` 82 — BUG: a number chip set by a View shows no value on its face
+### `[x]` ✅ 82 — BUG: a number chip set by a View shows no value on its face
 
 Found in step 7 (2026-09-27). The At risk view gives the bar an Open tickets
 chip with `> 2`: the chip holds it (its menu reads `2`, op `gt`), the rows
@@ -425,6 +425,14 @@ obey it (13), and a report keeps it — but the chip's face shows no value.
 The number body's value reaches the menu without the chip's label being
 re-derived for a number. Same family as 45 (a picked date showed nothing),
 fixed for dates by `#syncDateLabel`.
+
+**✅ Done 2026-09-29:** the chip built its face from its menu's parts, and
+only for a `filter` menu — a number chip's menu is not one, so "> 2" read as
+"equals nothing ticked". A number body's face now comes from `menu.reading`,
+whatever the menu's type: At risk's Tickets chip reads `2`. Found on the way,
+same View: the old "Status is not churned" reading also ticked "churned" as
+Simple's answer — the opposite filter; an op's picks are no longer Simple's.
+`T-both-answers-are-kept`
 
 ### `[ ]` 83 — BUG: a calendar menu's picked date leaves Apply and Discard looking off
 
@@ -2041,6 +2049,7 @@ source.
 One line each. The detail is in git and in the trap named.
 
 **2026-09-29, the component API audit (86)**
+- 82: a number chip set by a View shows its value (`2` for "> 2"); an old "is not X" no longer ticks X as Simple's answer — `T-both-answers-are-kept`
 - 45: a date reads one way — `formatDate()`, DOM-free, `03 to 15 Sep 2026` — `T-a-date-reads-one-way`
 - 103: a keyless row gets a key from the data layer, kept beside the row and never on it; the grid selects by key and `selection-change` sends keys — `T-a-made-up-key-never-leaves-the-data-layer`
 - 102: both answers kept — a filter switches between Simple and Advanced at any time and loses nothing; Advanced mirrors Simple until a row is edited; in the bar, the panel and a grid heading — `T-both-answers-are-kept`

@@ -680,7 +680,10 @@ the reading's mode.
 
 An old reading still means what it meant: `readingRows()` turns its one typed
 condition, or its non-default op over picks ("is not A and is not B"), into
-rows. And on a rebuild the READER'S kept answer wins over the def's opening
+rows — and those picks are the op's, so they are NOT also ticked as Simple's
+answer: "is not churned" ticking churned would filter for the opposite. A
+number chip reads its body's reading whatever its menu's type, or "> 2"
+filtered and its face stayed blank (TODO 82). And on a rebuild the READER'S kept answer wins over the def's opening
 one, or a def's typed condition came back on every rebuild.
 
 - Site: `src/core/data/filter-state.ts`
@@ -696,6 +699,7 @@ one, or a def's typed condition came back on every rebuild.
 - Site: `test/e2e/reforged-panel-keeps-both-answers.spec.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-grid-keeps-both-answers.spec.ts`
+- Site: `test/e2e/reforged-a-view-draws-its-chips.spec.ts`
 
 ### T-one-number-is-a-pick-under-equals
 

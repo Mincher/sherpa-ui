@@ -698,10 +698,12 @@ export class SherpaQuickFilter extends SherpaElement {
       conditionValue?: string; reading?: FieldReading;
     }) | null;
     const isFilter = menu?.getAttribute('data-type') === 'filter';
-    /* A LIST menu's whole answer — both modes, and which is in force — so the
-       badge and the tip read the answer that filters.
+    /* The menu's whole answer — both modes, and which is in force — so the
+       badge and the tip read the answer that filters. A number's "> 2" is
+       typed text there, not a tick. A date draws its own label.
        TRAP T-a-condition-badge-says-that-not-which · TRAP T-both-answers-are-kept */
-    const list = isFilter && !menu?.dataset['body'] ? menu?.reading : undefined;
+    const body = menu?.dataset['body'];
+    const list = body === 'number' || (isFilter && body !== 'date') ? menu?.reading : undefined;
     const all = [...this.querySelectorAll<HTMLInputElement>('[slot="menu"] input')]
       .filter((i) => !i.closest(NON_VALUE_ROWS))
       .map((i) => i.value);

@@ -62,6 +62,34 @@ test('a paged grid in a provider lists the WHOLE column in its heading menu', as
   expect(r['reports']).toEqual([]);
 });
 
+/* A provider used BEFORE it has drawn its template still gives its mode
+   buttons — once it has. Making one from a template that is not there yet
+   threw. TRAP T-the-mode-switch-is-the-pages-own */
+test('mode buttons wait for the provider to draw; nothing throws', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.setViewportSize({ width: 1600, height: 900 });
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const provider = document.createElement('sherpa-provider');
+    const bar = document.createElement('sherpa-quick-filter-toolbar');
+    bar.setAttribute('data-scope', 'data');
+    const panel = document.createElement('sherpa-filter-panel');
+    panel.setAttribute('data-scope', 'view data');
+    provider.append(bar, panel);
+    root.append(provider);
+    // At once: nothing has drawn yet.
+    provider.filterMode = 'toolbars';
+    const src = source(2, 'p');
+    src.offer('data', ['name']);
+    await provider.provide({ sources: { s: src } });
+    await settle();
+    return { bar: !!bar.querySelector('[data-filter-mode]'), panel: !!panel.querySelector('[data-filter-mode]'), reports };
+  })()`) as Record<string, unknown>;
+  expect(r).toEqual({ bar: true, panel: true, reports: [] });
+  expect(errors).toEqual([]);
+});
+
 test('a grid inside a provider fills with no bind; one outside waits', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}

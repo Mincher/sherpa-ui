@@ -426,7 +426,11 @@ export class SherpaMenu extends SherpaElement {
       this.values = typed ? [typed] : (next.picked ?? []).map(valueKey);
       return;
     }
-    this.values = (next.picked ?? []).map(valueKey);
+    /* An old reading's picks under a non-default op ("is not churned") are THAT
+       op's, not Simple's ticks — ticking them would filter for the opposite. */
+    const opOverPicks = !(next.conditions ?? []).some(rowAnswered) && (next.op ?? DEFAULT_OP) !== DEFAULT_OP
+      && (OP_TAKES[next.op ?? DEFAULT_OP] ?? 'list') === 'list';
+    this.values = opOverPicks && this.#offersAdvanced() ? [] : (next.picked ?? []).map(valueKey);
     if (!this.#offersAdvanced()) return;
     const rows = readingRows(next);
     this.#mirror = next.mirror ?? false;

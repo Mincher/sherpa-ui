@@ -169,6 +169,7 @@ export class SherpaProvider extends SherpaElement {
         continue;
       }
       toggle ??= this.#toggle(bar, 'sidebar', 'View as filter panel');
+      if (!toggle) continue;
       if (this.#mode === 'panel') toggle.remove();
       else if (!toggle.isConnected) bar.append(toggle);
     }
@@ -180,9 +181,14 @@ export class SherpaProvider extends SherpaElement {
   /** The mode buttons, by the bar or panel each sits in. */
   #toggles = new Map<Element, HTMLElement>();
 
-  /** One mode button, from the template, into its host's `actions` slot. */
-  #toggle(host: Element, icon: string, label: string): HTMLElement {
-    const button = this.clone('template.mode-toggle-tpl') as HTMLElement;
+  /** One mode button, from the template, into its host's `actions` slot — or,
+   *  before this provider has drawn its template, once it has. */
+  #toggle(host: Element, icon: string, label: string): HTMLElement | undefined {
+    const button = this.clone('template.mode-toggle-tpl') as HTMLElement | null;
+    if (!button) {
+      void this.rendered.then(() => this.#giveToggles());
+      return undefined;
+    }
     button.dataset['iconStart'] = icon;
     button.setAttribute('aria-label', label);
     button.addEventListener('button-click', this.#onConfigure);
