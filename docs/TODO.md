@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**63 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**62 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -28,7 +28,6 @@ order.
 | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
 | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | | | **C — Contained bugs** | |
-| 5a | 101 | ADVANCED: a condition row will not add in a chip's menu; in the panel, changing a row's condition drops the row | bug |
 | 7 | 45 | A picked date does not show in the chip | bug |
 | 8 | 82 | A number chip set by a View shows no value on its face | bug |
 | 9 | 83 | Calendar menu: a picked date leaves Apply and Discard looking off — yet they work | bug |
@@ -275,22 +274,6 @@ Will, 2026-09-25:
 ---
 
 ## C — Contained bugs
-
-### `[ ]` 101 — ADVANCED: a condition row will not add in a chip's menu; in the panel, changing a row's condition drops the row
-
-Will, 2026-09-29: *"I can't add more conditions to an advanced filter. In the
-filter toolbar menu the row just doesn't add. In the filter panel, the row
-adds, but changing the condition type results in the row being removed."*
-
-Two faces, probably one cause. Start at `sherpa-menu`'s `#onAddCondition`
-(`#addRow()` then `#emitConditions()`): the report goes to the source, and the
-source draws the field's reading BACK onto the menu. A new row has no text
-yet, so it is likely not part of the reading, and the redraw drops it — in
-the chip at once, in the panel once its condition changes. An unanswered row
-is the reader's work in progress, never an answer to throw away — the same
-family as `T-a-rebuilt-bar-reads-empty-until-its-menus-stamp`.
-A test for each face: add a row in a chip's menu, and change a new row's
-condition in the panel.
 
 ### `[ ]` 64 — A collapsed accordion section fills with the down (+2) surface
 
@@ -1175,6 +1158,7 @@ and edited the same way as a designed one.
 One line each. The detail is in git and in the trap named.
 
 **2026-09-29, the component API audit (86)**
+- 101: an Advanced condition row would not add in a chip's menu, and in the panel a row's condition change dropped it — the source draws every field's answer back with its ANSWERED rows only, and the menu rebuilt from that; now an answer that matches the rows the reader has answered keeps every row — `T-an-unanswered-row-survives-a-redraw`
 - 61: Add customer saves with required fields empty — the dialog is a real `<form>`; the four form controls take part in it (`FormValue`), Save submits it, and the browser refuses an empty required field and points at it; nothing is filled in for the reader, and the toast says when the page's filters hide the new record — `T-a-form-value-follows-every-write`
 
 **2026-09-29, the page definition (92)**

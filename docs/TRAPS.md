@@ -14238,3 +14238,22 @@ group's (`T-radios-in-shadow-roots-are-not-one-group`).
 - Site: `test/e2e/reforged-add-customer-form.spec.ts`
 - Site: `test/e2e/reforged-form-controls.spec.ts`
 - Site: `examples/contexts/records.js`
+
+### T-an-unanswered-row-survives-a-redraw
+
+**A condition row the reader has not answered yet is their work in progress,
+and a redraw keeps it.** TODO 101, 2026-09-29. Every report goes to the source,
+and the source draws the field's answer back onto EVERY bar over its scope —
+the one that reported too — with its ANSWERED rows only (`rowAnswered`, an
+empty row is none). The menu's `conditions` setter rebuilt its rows whenever
+they differed from what it was given, so a new blank row vanished: at once in
+a chip's menu (Add condition did nothing), and in the panel once the row's
+condition changed.
+
+The setter now compares ANSWERED rows only: an answer that matches the rows
+the reader has answered keeps every row, blank ones too, and row one's
+`data-op` follows the row shown. An answer that differs — a View, a saved
+filter, a Clear from outside — still rebuilds.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `test/e2e/reforged-condition-rows-stay.spec.ts`

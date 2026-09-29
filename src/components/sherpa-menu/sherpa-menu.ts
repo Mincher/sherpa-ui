@@ -19,7 +19,7 @@ import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import {
   DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type FilterOp, valueSet,
 } from '../../core/data/store.js';
-import type { ConditionType, FieldCondition } from '../../core/data/filter-state.js';
+import { rowAnswered, type ConditionType, type FieldCondition } from '../../core/data/filter-state.js';
 import { NON_VALUE_ROWS } from '../../core/ui/shared-constants.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-breadcrumbs/sherpa-breadcrumbs.js';
@@ -499,16 +499,21 @@ export class SherpaMenu extends SherpaElement {
   set conditions(rows: readonly FieldCondition[]) {
     const region = this.$('.condition-rows');
     if (!region) return;
-    /* NOTHING TO DO is not a rebuild. Between `replaceChildren()` and the
-       async fill of each new row's value select, this menu reports NO
-       conditions — and anything reading it in that gap is told the filter is
-       gone. TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
-    if (JSON.stringify(this.conditions) !== JSON.stringify(rows)) {
+    /* NOTHING NEW is not a rebuild. Between `replaceChildren()` and the async
+       fill of each new row's value select, this menu reports NO conditions.
+       TRAP T-a-rebuilt-row-reads-empty-for-a-tick
+       And a row the reader has not answered yet is their WORK IN PROGRESS: an
+       answer drawn back that matches the rows they HAVE answered keeps every
+       row, blank ones too. TRAP T-an-unanswered-row-survives-a-redraw */
+    const answered = (list: readonly FieldCondition[]): string => JSON.stringify(list.filter(rowAnswered));
+    const keep = answered(this.conditions) === answered(rows);
+    if (!keep) {
       region.replaceChildren();
       for (const row of rows.length ? rows : [{ op: DEFAULT_OP } as FieldCondition]) this.#addRow(row);
     }
-    // Every sync rebuilds row one from these two. TRAP T-row-one-is-data-op
-    const first = rows[0];
+    // Every sync rebuilds row one from these two — from the row SHOWN, when the
+    // rows were kept. TRAP T-row-one-is-data-op
+    const first = keep ? this.conditions[0] : rows[0];
     if (!first) return;
     if (this.dataset['op'] !== first.op) this.dataset['op'] = first.op;
     const text = (OP_TAKES[first.op] ?? 'list') === 'text' ? (first.text ?? '') : '';

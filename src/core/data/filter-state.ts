@@ -24,6 +24,7 @@
  * - FieldFacts — What a caller knows about a field before anything is chosen.
  * - FieldReading — What is true right now, which decides the STATES.
  * - FieldCondition — One row of a multi-condition filter.
+ * - rowAnswered — Does this condition row have what its op needs to narrow anything?
  * - fieldState — work out one field's whole state — the only place that decides it
  * - stateClause — One field's state as a ready `FilterClause`, or `undefined`.
  * - readingClause — a reading as a clause, for a control holding its own field facts
@@ -180,7 +181,7 @@ export interface FieldCondition {
 
 /** Does this condition row have what its op needs to narrow anything? An
  *  untouched row is not an answer. TRAP T-an-untouched-select-is-not-an-answer */
-function rowAnswered(row: FieldCondition): boolean {
+export function rowAnswered(row: FieldCondition): boolean {
   return (OP_TAKES[row.op] ?? 'list') === 'text'
     ? (row.text ?? '').trim() !== ''
     : (row.picked ?? []).length > 0;
