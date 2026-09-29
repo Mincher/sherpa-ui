@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**69 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**70 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -30,6 +30,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | 🚧 | 3 | 38 | One model, one builder, one owner — what is left | refactor |
 | ⬜ | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
 | ⬜ | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
+| ⬜ | 5a | 113 | EXPLORE — state first, then render, in every component; a skeleton while the first render waits | explore |
 | | | | **C — Contained bugs** | |
 | ❓ | 6 | 112 | An Equals row in Advanced will not open its value list | bug |
 | ⬜ | 7 | 45 | A picked date does not show in the chip | bug |
@@ -267,6 +268,41 @@ built (`npm run check:size`).
 Rules for the work: MOVE code, never rewrite it; delete the replaced path in
 the same commit; no helper with one caller; state the budget up front and
 report the actual.
+
+### `[ ]` 113 — EXPLORE: state first, then render, in every component; a skeleton while the first render waits
+
+Will, 2026-09-29, asking why a menu dropped a reading set before it had drawn:
+*"Wouldn't it make sense for all components to load, set state and conditions
+etc, then render? Isn't this covered by the web component life cycle already?"*
+Asked A "state first, in every component" / B "remove the wait (templates in
+the built JS)", he chose **A**, and added: *"It would also be good if we could
+display skeleton loading of content in case there are any delays in the
+initial, state based, content rendering."*
+
+**Why it is needed.** The platform's hooks run at once. Sherpa adds its own wait:
+`SherpaElement` fetches each component's HTML and CSS, so the first render
+comes later. And many components keep their state IN their elements — a ticked
+box IS the pick, a row element IS the condition — so a value written before
+those elements exist is lost. One cause behind a family of traps:
+`T-custom-element-upgrade`, `T-a-rebuilt-row-reads-empty-for-a-tick`, the
+"a composed field fills async" rule, and `menu.reading`'s early-reading hold
+(102 step 3b).
+
+**The model.** A component keeps its state as plain DATA and draws its elements
+from it. A setter stores the data and asks for a draw; the first render draws
+whatever is there, so nothing set early is lost, and a read never has to wait
+for the page. A composed child is handed its data the same way.
+
+**The skeleton.** While the first render waits, the component shows a skeleton
+of its content, not an empty box. Design it with 58 (loading, empty and error
+states) and 59 (Will's own loading pattern), so a component and a container
+say "loading" one way.
+
+Explore first: measure which components keep state in their elements, pick the
+order (the menu first — A7 already moves its answer into `menu.reading`), and
+say what `SherpaElement` gives every component (a state field and one draw).
+Keep each component standing alone — Will's rule, `docs/COMPONENT-API-AUDIT.md`
+§5: it extends `SherpaElement` and nothing else, no family base class.
 
 ### `[ ]` 37 — Components are AGNOSTIC of the data, and of the example app
 
