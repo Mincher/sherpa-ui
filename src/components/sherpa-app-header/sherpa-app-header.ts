@@ -30,6 +30,8 @@ const ACTIONS: ReadonlyArray<readonly [string, string]> = [
   ['.account', 'account-click'],
   ['.help', 'help-click'],
   ['.menu', 'menu-click'],
+  // A phone's nav menu — the SHELL opens it. TRAP T-the-nav-is-a-menu-on-a-phone
+  ['.nav-menu', 'nav-menu-request'],
 ];
 
 export class SherpaAppHeader extends SherpaElement {

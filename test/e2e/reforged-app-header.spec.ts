@@ -278,7 +278,9 @@ test('every action icon actually renders (an unknown name draws NOTHING)', async
     await el.rendered;
     // Every action is a composed sherpa-button, so the drawing is inside ITS
     // shadow root — the host only carries the icon name as an attribute.
-    const hosts = [...el.shadowRoot!.querySelectorAll('sherpa-button[data-icon-start]')];
+    // The ones ON SCREEN: the phone's nav menu is not, at this width (TODO 17b).
+    const hosts = [...el.shadowRoot!.querySelectorAll('sherpa-button[data-icon-start]')]
+      .filter((b) => (b as HTMLElement).checkVisibility());
     await Promise.all(hosts.map((b) => (b as HTMLElement & { rendered?: Promise<void> }).rendered));
     return hosts.map((b) => {
       const box = (b as HTMLElement & { shadowRoot: ShadowRoot })

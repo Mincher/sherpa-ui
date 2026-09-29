@@ -121,6 +121,17 @@ anatomy:
           class: footer
           part: footer
           slot: footer
+        - el: div
+          class: menu-foot
+          part: menu-foot
+          children:
+            - el: sherpa-nav-item
+              class: menu-settings
+              attrs:
+                data-label: Settings
+                data-icon: gear
+            - el: sherpa-button
+              class: menu-cancel
     - el: template
       class: section-tpl
       children:
@@ -142,6 +153,14 @@ props:
     kind: style
     description: id of the current Context
   - $type: prop
+    name: data-menu
+    type: string
+    observed: false
+    kind: visibility
+    description: >-
+      the PHONE's menu: the whole screen, no Pin, Settings at the bottom, and Cancel — openMenu() /
+      closeMenu()
+  - $type: prop
     name: data-nav-state
     type: enum
     observed: true
@@ -160,6 +179,9 @@ props:
     kind: style
     description: show the search field (auto-set when a product is given)
 states:
+  - $type: state
+    name: menu
+    selector: ":host([data-menu])"
   - $type: state
     name: collapsed
     selector: ":host([data-nav-state=\"collapsed\"])"
@@ -183,7 +205,9 @@ capabilities:
       $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
-    description: callable from a view definition's state block (entry). See $extensions.sherpa.methods.
+    description: >-
+      callable from a view definition's state block (openMenu, closeMenu, entry). See
+      $extensions.sherpa.methods.
 events:
   - $type: event
     name: nav-select
@@ -209,6 +233,12 @@ events:
     composed: true
     detail:
       state: unknown
+  - $type: event
+    name: nav-menu-change
+    bubbles: true
+    composed: true
+    detail:
+      open: boolean
 tokens:
   rail.background: "{sherpa.navigation-nav-surface-default}"
   rail.color: "{sherpa.style-content-base}"
@@ -267,6 +297,16 @@ $extensions:
   sherpa:
     figmaName: Primary Navigation
     methods:
+      - $type: method
+        name: openMenu
+        args: ""
+        description: >-
+          openMenu() — the PHONE's menu: the nav over the whole screen, open, with no Pin; Settings
+          at the bottom and Cancel. A Context row closes it as it goes.
+      - $type: method
+        name: closeMenu
+        args: ""
+        description: closeMenu() — back to the rail, going nowhere. Settings stays open.
       - $type: method
         name: entry
         args: "id: string"

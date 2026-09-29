@@ -591,6 +591,44 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-the-nav-is-a-menu-on-a-phone
+
+**On a phone the nav is a MENU, and it is the SAME `sherpa-nav`** — TODO 17b.
+At 480 px (the header's phone width, where its filters go) the shell hides
+the rail with `visibility`, not `display` — a top-layer element under a
+`display: none` ancestor is not drawn — and drops its inset; the header shows
+a menu button right of the Context title, which asks (`nav-menu-request`) and
+the SHELL opens the rail's `openMenu()`. The nav then goes into the TOP LAYER
+(`showPopover()` on its own host, so no containment or stacking clips it),
+over the whole screen, open, with no Pin; Settings at the bottom and a Cancel
+that goes nowhere. An Area only opens; a Context row closes it as it goes;
+Escape closes it. One element in two presentations, so the rail and the menu
+cannot disagree about the current row or an open Area.
+
+- Site: `src/components/sherpa-nav/sherpa-nav.ts`
+- Site: `src/components/sherpa-nav/sherpa-nav.html`
+- Site: `src/components/sherpa-nav/sherpa-nav.css`
+- Site: `src/components/sherpa-app-shell/sherpa-app-shell.ts`
+- Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
+- Site: `src/components/sherpa-app-header/sherpa-app-header.ts`
+- Site: `src/components/sherpa-app-header/sherpa-app-header.html`
+- Site: `src/components/sherpa-app-header/sherpa-app-header.css`
+- Site: `test/e2e/reforged-nav-phone-menu.spec.ts`
+
+### T-a-second-container-type-drops-the-first
+
+**`container-type: inline-size scroll-state` is ONE declaration, and an engine
+that does not know `scroll-state` drops all of it** — the element is then no
+container, and every size query on it is dead. The app header's did exactly
+that in Firefox and WebKit: its 480 px rule (the filters go) never ran there,
+found building the phone menu (TODO 17b). Write the plain type FIRST and the
+pair SECOND, as a CSS function takes its longhand first
+(`T-a-css-function-needs-its-longhand-first`): an engine keeps the last line
+it understands. The shell and the grid use `scroll-state` alone, so they have
+no size queries to lose.
+
+- Site: `src/components/sherpa-app-header/sherpa-app-header.css`
+
 ### T-a-saved-view-is-the-readers-own
 
 **A reader saves, saves over and deletes only their OWN Views; a preset is

@@ -35,6 +35,7 @@
     account-click — detail: {}
     help-click — detail: {}
     menu-click — detail: {}
+    nav-menu-request — detail: {}  the phone's nav menu, right of the title
     (breadcrumb-select comes from the slotted sherpa-breadcrumbs and already
      bubbles composed, so the header does not re-emit it.)
 -->
@@ -104,6 +105,10 @@
           <span class="context-icon sherpa-icon-box" part="context-icon" aria-hidden="true"></span>
           <h1 class="title sherpa-truncate" part="title"></h1>
           <slot name="title"></slot>
+          <!-- On a PHONE only, where the rail is gone. TRAP T-the-nav-is-a-menu-on-a-phone -->
+          <sherpa-button class="nav-menu" part="nav-menu" data-type="icon" data-size="sm"
+                         data-look="transparent" data-icon-start="menu"
+                         aria-label="Menu" aria-haspopup="dialog"></sherpa-button>
           <!-- No favourite star: the filter toolbar below already fires
                view-favorite. -->
         </div>

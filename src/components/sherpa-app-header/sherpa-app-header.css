@@ -9,8 +9,12 @@
      tightening any inner gap shrank the whole header. */
   block-size: 120px;
   /* Two container types on one element: `inline-size` for the layout queries
-     below, `scroll-state` for the stuck check. One alone cannot do both. */
+     below, `scroll-state` for the stuck check. One alone cannot do both.
+     `inline-size` FIRST: an engine without `scroll-state` drops the whole
+     second line, and was left no container at all.
+     TRAP T-a-second-container-type-drops-the-first */
   container-name: sherpa-app-header;
+  container-type: inline-size;
   container-type: inline-size scroll-state;
 
   /* Sticky: the header has no border — the separation is its elevation, which
@@ -179,6 +183,13 @@
   color: var(--sherpa-style-content-base, #0c0b11);
 }
 :host([data-icon]) .context-icon { display: inline-flex; }
+
+/* The phone's nav menu: at the width where the filters go and the rail goes.
+   TRAP T-the-nav-is-a-menu-on-a-phone */
+.nav-menu { display: none; }
+@container sherpa-app-header (max-width: 480px) {
+  .nav-menu { display: inline-flex; }
+}
 
 /* Figma "View title": content/body/+1, REGULAR weight (not bold). */
 .title {

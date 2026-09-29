@@ -11,6 +11,7 @@
 
   display: block;
   position: relative; /* the positioning context for the rail overlay */
+  container: sherpa-app-shell / inline-size;
   block-size: 100%;
   min-block-size: 100vh;
   background: var(--sherpa-theme-surface-default-base, #ffffff); /* theme-direct */
@@ -198,4 +199,12 @@
 
 :host([data-no-header]) .header {
   display: none;
+}
+
+/* A PHONE: the rail goes, and its inset with it; the header's menu button opens
+   the nav as a menu, in the top layer, where `visibility` lets it back.
+   480px, the header's own phone width. TRAP T-the-nav-is-a-menu-on-a-phone */
+@container sherpa-app-shell (max-width: 480px) {
+  .nav { visibility: hidden; }
+  .frame { margin-inline-start: 0; }
 }

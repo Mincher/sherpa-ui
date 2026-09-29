@@ -14,6 +14,8 @@
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import { hasIcon, renderIcon } from '../../core/ui/render-icon.js';
+import '../sherpa-nav-item/sherpa-nav-item.js';
+import '../sherpa-button/sherpa-button.js';
 
 /** What a stamped row shows. `icon` is undefined on a child row. */
 export interface NavRowInfo {
@@ -75,6 +77,10 @@ export class SherpaNav extends SherpaElement {
   static override css = new URL('./sherpa-nav.css', import.meta.url);
   static override html = new URL('./sherpa-nav.html', import.meta.url);
   static override observed = ['data-current-id', 'data-nav-state'];
+  static override props = {
+    /* The PHONE's menu — written by openMenu() / closeMenu(). TRAP T-the-nav-is-a-menu-on-a-phone */
+    'data-menu': { type: 'boolean', kind: 'visibility' },
+  } as const;
 
   /** The nav as data, normalised. */
   #config: NavConfig = {};
@@ -91,6 +97,9 @@ export class SherpaNav extends SherpaElement {
     this.$('.search-clear')?.addEventListener('click', this.#onSearchClear);
     this.$('.pin')?.addEventListener('click', this.#onPin);
     this.$('.settings')?.addEventListener('click', this.#onSettings);
+    this.$('.menu-settings')?.addEventListener('item-select', this.#onSettings);
+    this.$('.menu-cancel')?.addEventListener('button-click', () => this.closeMenu());
+    this.addEventListener('keydown', (event) => { if (event.key === 'Escape') this.closeMenu(); });
 
     this.addEventListener('pointerenter', this.#onEnter);
     this.addEventListener('pointerleave', this.#onLeave);
@@ -131,6 +140,31 @@ export class SherpaNav extends SherpaElement {
   }
   set state(value: NavState) {
     this.#setState(value);
+  }
+
+  /**
+   * openMenu() — the PHONE's menu: the nav over the whole screen, open, with no
+   * Pin; Settings at the bottom and Cancel. A Context row closes it as it goes.
+   * TRAP T-the-nav-is-a-menu-on-a-phone
+   */
+  openMenu(): void {
+    if (this.hasAttribute('data-menu')) return;
+    this.toggleAttribute('data-menu', true);
+    // The top layer: over the shell and its overlay, whatever contains them.
+    this.popover = 'manual';
+    this.showPopover();
+    if (!OPEN.has(this.state) || this.state === 'hover') this.#setState('default');
+    this.emit('nav-menu-change', { open: true });
+  }
+
+  /** closeMenu() — back to the rail, going nowhere. Settings stays open. */
+  closeMenu(): void {
+    if (!this.hasAttribute('data-menu')) return;
+    if (this.matches(':popover-open')) this.hidePopover();
+    this.removeAttribute('popover');
+    this.removeAttribute('data-menu');
+    if (this.state !== 'settings') this.#setState('collapsed');
+    this.emit('nav-menu-change', { open: false });
   }
 
   get pinned(): boolean {
@@ -178,9 +212,9 @@ export class SherpaNav extends SherpaElement {
     if (!LATCHED.has(this.state)) this.#setState('hover');
   };
 
-  /** The pointer left: collapse, unless pinned or in Settings. */
+  /** The pointer left: collapse, unless pinned, in Settings, or a menu. */
   #onLeave = (): void => {
-    if (!LATCHED.has(this.state)) this.#setState('collapsed');
+    if (!LATCHED.has(this.state) && !this.hasAttribute('data-menu')) this.#setState('collapsed');
   };
 
   /** Focus left the nav: collapse as if the pointer did. */
@@ -381,6 +415,8 @@ export class SherpaNav extends SherpaElement {
     if (!id) return;
     this.setAttribute('data-current-id', id);
     this.emit('nav-select', { id, ...this.entry(id) });
+    // A CONTEXT row goes, so the menu goes; an Area only opens. TRAP T-the-nav-is-a-menu-on-a-phone
+    if (row?.querySelector('sherpa-nav-item')?.hasAttribute('data-href')) this.closeMenu();
   };
 
   /** An Area opened or closed: show or hide its children. */

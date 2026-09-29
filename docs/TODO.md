@@ -70,7 +70,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ❓ | 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
-| ⬜ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
+| ✅ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
+| ⬜ | 33a | 116 | `sherpa-nav` binds to a Store: its entries as data, drawn and redrawn | refactor |
 | ⬜ | 34 | 34 | Figma: use the Navigation terms | figma |
 | ⬜ | 35 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
 | | | | **F — Data states and charts** | |
@@ -1409,7 +1410,7 @@ first View; the bar is marked `data-custom-view`. The View chip lists
 `Presets`, then `Custom views` at the bottom. 105 reuses the dialogs.
 `T-a-saved-view-is-the-readers-own`
 
-### `[ ]` 17b — At the mobile breakpoint the nav becomes a menu
+### `[x]` ✅ 17b — At the mobile breakpoint the nav becomes a menu
 
 Not started. At mobile width the rail is GONE and a menu takes its place.
 
@@ -1422,6 +1423,28 @@ Not started. At mobile width the rail is GONE and a menu takes its place.
 **Put the nav on the data layer while you are here.** `sherpa-nav` has
 `renderData()` but never calls `bind()` — a one-shot draw. Bind it to a Store,
 so the rail and the menu are two renderings of one nav model.
+
+**✅ Done 2026-09-29.** At 480 px — the header's own phone width, where its
+filters go — the shell hides the rail (by `visibility`, so the menu can come
+back) and drops its inset; the header shows a `menu` button right of the
+Context title. The menu is the SAME `sherpa-nav`, `openMenu()`ed into the top
+layer: the whole screen, open, no Pin, Settings at the bottom, Cancel that
+goes nowhere; an Area only opens, a Context row closes it as it goes; Escape
+closes it. One element in two presentations, so they cannot disagree — which
+meets "one nav model" without a second copy; binding the nav to a Store is
+now its own item, 116. **Found on the way:** the header's
+`container-type: inline-size scroll-state` was dropped whole by Firefox and
+WebKit, so its 480 px rule never ran there — fixed
+(`T-a-second-container-type-drops-the-first`). No Figma design exists for
+the phone; the look follows the rail's. `T-the-nav-is-a-menu-on-a-phone`
+
+### `[ ]` 116 — `sherpa-nav` binds to a Store: its entries as data, drawn and redrawn
+
+Split from 17b, 2026-09-29. `sherpa-nav` has `renderData()` but is never
+bound — the app re-`populate()`s it by hand when Favorites or Recent change.
+Bind it to a Store (its sections and entries as rows), so a change to the
+data redraws it, as every other data component. The phone menu is the same
+element (17b), so it follows for free.
 
 ### `[ ]` 34 — Figma: use the Navigation terms
 
@@ -2479,6 +2502,7 @@ One line each. The detail is in git and in the trap named.
 - 20b: the View's Date is a range, bounded by the data — `T-a-range-is-bounded-by-the-data`
 - 52, 107: designed / explained; each waits on two choices from Will
 - 15: save, save as, save over and delete a View, on every page — `T-a-saved-view-is-the-readers-own`
+- 17b: on a phone the nav is a whole-screen menu — `T-the-nav-is-a-menu-on-a-phone`; the Store binding is 116
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

@@ -20,6 +20,10 @@ export class SherpaAppShell extends SherpaElement {
   override onRender(): void {
     // The event is composed, so one listener covers the default rail and a slotted one.
     this.addEventListener('nav-state-change', this.#onNavState as EventListener);
+    // The header's phone menu button: the rail opens as a menu. TRAP T-the-nav-is-a-menu-on-a-phone
+    this.addEventListener('nav-menu-request', () => {
+      (this.#rail() as (HTMLElement & { openMenu?: () => void }) | null)?.openMenu?.();
+    });
     // Deferred: the rail sets itself to `collapsed` on its own first render.
     queueMicrotask(() => this.#adoptRailState());
 
@@ -65,15 +69,17 @@ export class SherpaAppShell extends SherpaElement {
     if (state) this.dataset['navState'] = state;
   };
 
+  /** The rail: slotted, the default, or inside a consumer's wrapper. */
+  #rail(): HTMLElement | null {
+    const slotted = this.querySelector<HTMLElement>('[slot="nav"]');
+    return (slotted?.localName === 'sherpa-nav' ? slotted : slotted?.querySelector<HTMLElement>('sherpa-nav'))
+      ?? this.$<HTMLElement>('sherpa-nav') ?? this.querySelector<HTMLElement>('sherpa-nav');
+  }
+
   /** Read the rail's current mode once, at startup. */
   #adoptRailState(): void {
     if (this.hasAttribute('data-no-nav')) return;
-    const rail =
-      this.querySelector<HTMLElement>('[slot="nav"]') ??
-      this.$<HTMLElement>('sherpa-nav') ??
-      // A slotted rail may sit inside a consumer's wrapper.
-      this.querySelector<HTMLElement>('sherpa-nav');
-    const state = rail?.dataset['navState'];
+    const state = this.#rail()?.dataset['navState'];
     if (state) this.dataset['navState'] = state;
   }
 }

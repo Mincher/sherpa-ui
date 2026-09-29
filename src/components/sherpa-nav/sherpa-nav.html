@@ -26,6 +26,8 @@
     data-nav-state  collapsed (default) | hover | default | pinned | settings
     data-current-id  id of the current Context
     data-searchable show the search field (auto-set when a product is given)
+    data-menu       the PHONE's menu: the whole screen, no Pin, Settings at the
+                    bottom, and Cancel — openMenu() / closeMenu()
 
   Slots:
     brand-icon  the product mark inside the 40×40 branding tile
@@ -35,6 +37,7 @@
     nav-select      — detail: { id, label, icon } (icon absent on a child row)
     nav-search      — detail: { query }
     nav-state-change — detail: { state }  (collapsed → hover → pinned → settings)
+    nav-menu-change — detail: { open }  the phone's menu opened or closed
 -->
 <template id="default">
   <nav class="rail" part="rail" aria-label="Main">
@@ -73,6 +76,13 @@
 
     <div class="footer" part="footer">
       <slot name="footer"></slot>
+    </div>
+
+    <!-- The PHONE's menu only: Settings at the bottom, then Cancel, which goes
+         nowhere. TRAP T-the-nav-is-a-menu-on-a-phone -->
+    <div class="menu-foot" part="menu-foot">
+      <sherpa-nav-item class="menu-settings" data-label="Settings" data-icon="gear"></sherpa-nav-item>
+      <sherpa-button class="menu-cancel">Cancel</sherpa-button>
     </div>
   </nav>
 

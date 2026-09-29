@@ -111,6 +111,28 @@
   transition: inline-size 160ms ease;
 }
 
+/* THE PHONE's MENU: the nav in the top layer, over the whole screen, open.
+   The popover's own UA box is undone. TRAP T-the-nav-is-a-menu-on-a-phone */
+:host([data-menu]) {
+  inset: 0;
+  inline-size: auto;
+  block-size: auto;
+  max-inline-size: none;
+  max-block-size: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  visibility: visible;
+}
+:host([data-menu]) :is(.pin, .settings) { display: none; }
+.menu-foot { display: none; }
+:host([data-menu]) .menu-foot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+  padding: var(--sherpa-display-mode-space-xs, 8px);
+}
+
 /* The CLOSED rail follows density, as the brand tile and the shell's inset do.
    Figma still pins 40px: see `_divergence` in the spec. */
 :host([data-nav-state="collapsed"]) {
