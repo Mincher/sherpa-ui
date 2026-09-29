@@ -14142,18 +14142,19 @@ ticked — so a reader could pick a contradicting value there. His ruling:
 shown, but held higher.
 
 `supersedeColumns(readings, appliedAt)` names the fields a higher scope holds,
-each with its answer. Such a heading draws that answer — through the same
-clause path its own filter takes (`readingClause` → `#heldFromClause`) — with
-the chip's superseded look and tip ("Filter applied at higher scope. This chip
+each with its answer. Such a heading draws that answer — handed to its menu as
+a reading, as its own is — with the chip's superseded look and tip ("Filter applied at higher scope. This chip
 holds EMEA."), and its menu `data-readonly`: rows and conditions `inert`, no
 footer, no Add condition, no Advanced switch. The heading's own filter is
 never set by it (`columnClause` stays null), so nothing applies twice. A field
 not named is released.
 
 The host calls it whenever the header's answers change (Records'
-`syncHeadings`). Still open: a heading that ALREADY held its own filter when
-the view took the field keeps it applied — one field in one scope says it
-should be suspended, as a chip is.
+`syncHeadings`). A heading that ALREADY held its own filter when the View took
+the field applies none of it: the Query answers a View-held field in the View
+alone (`compile`, "one field, one scope"), and the grid marks the View's
+matches, not the heading's own. The heading keeps its answer for when the View
+lets the field go.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/core/data/query.ts`

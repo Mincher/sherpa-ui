@@ -850,6 +850,8 @@ export class SherpaDataGrid extends SherpaElement {
     this.#supersededAt = appliedAt;
     this.#renderHead();
     this.#syncColumnFilterStatus();
+    // The MARKS follow the answer that filters.
+    this.#renderBody();
   }
 
   /** The fields a higher scope holds, and its answer for each. */
@@ -1122,7 +1124,9 @@ export class SherpaDataGrid extends SherpaElement {
       td.textContent = text;
       return;
     }
-    const held = this.#columnFilters.get(col.field);
+    // What FILTERS here: the View's answer while it holds the field, else the heading's own.
+    // TRAP T-a-view-held-heading-shows-and-refuses
+    const held = this.#shown(col.field);
     const lead = held && !held.suspended ? this.#inForce(col.field, held).rows[0] : undefined;
     if (lead?.text) {
       markNeedle(td, text, lead.text, lead.op);

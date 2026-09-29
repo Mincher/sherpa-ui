@@ -272,9 +272,11 @@ built (`npm run check:size`).
 - **"Scope" still means three things** — query reach (`view` / a component
   scope), which rows a bind is pushed (`page` / `all`), and the app's surfaces
   (`view` / `data`). Rename them apart.
-- **Left from 44c:** a heading that ALREADY held its own filter when the View
-  took its field keeps applying it — one field in one scope says it should be
-  suspended, as a chip is (`T-a-view-held-heading-shows-and-refuses`).
+- ✅ **Left from 44c — done 2026-09-29:** a heading that ALREADY held its own
+  filter when the View took its field applies none of it — the Query answers a
+  View-held field in the View alone (`compile`) — and the grid now marks the
+  View's matches, not the heading's old ones; the heading keeps its answer for
+  when the View lets go (`T-a-view-held-heading-shows-and-refuses`).
 
 Rules for the work: MOVE code, never rewrite it; delete the replaced path in
 the same commit; no helper with one caller; state the budget up front and

@@ -2901,3 +2901,37 @@ test('a view-held heading shows the view\'s answer, read-only, and is released a
     tip: 'Filter applied at higher scope. This chip holds EMEA.', own: null });
   expect(r.released).toMatchObject({ superseded: false, readonly: false, inert: false, ticked: [], own: null });
 });
+
+/**
+ * A heading that ALREADY held its own filter when the View took its field:
+ * the View's answer is what filters, so the View's matches are marked — and
+ * the heading's own comes back when the View lets go (TODO 38, from 44c).
+ * TRAP T-a-view-held-heading-shows-and-refuses
+ */
+test('a View-held heading marks the View\'s matches, not its own old answer', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const grid = await window.__mount<HTMLElement & {
+      setColumnFilter(f: string, c: unknown[] | null): void;
+      supersedeColumns(r: Record<string, unknown>, at?: string): void;
+    }>('sherpa-data-grid', {
+      columns: [{ field: 'owner', header: 'Owner' }],
+      rows: [{ owner: 'Dana' }, { owner: 'Ravi' }],
+    }, { 'data-column-filters': true });
+    await window.__settled();
+    const marks = (): string[] => [...grid.shadowRoot!.querySelectorAll('.cell mark.match')]
+      .map((m) => m.textContent ?? '');
+    grid.setColumnFilter('owner', ['owner', 'contains', 'Da']);
+    await window.__settled();
+    const own = marks();
+    grid.supersedeColumns({ owner: { op: 'contains', text: 'Ra' } }, 'App header');
+    await window.__settled();
+    const held = marks();
+    grid.supersedeColumns({});
+    await window.__settled();
+    return { own, held, released: marks() };
+  });
+
+  expect(r.own).toEqual(['Da']);
+  expect(r.held).toEqual(['Ra']);
+  expect(r.released).toEqual(['Da']);
+});
