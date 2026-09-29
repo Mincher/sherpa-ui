@@ -591,6 +591,21 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-send-to-view-filters
+
+**"Send to view filters" raises a component's field to the View** — Will, TODO
+21f: beside Clear in a component scope's field header in the panel (the View's
+own fields have none). It is the panel's ordinary `filter-add-request`, with
+the View's scope: the View HOLDS the field, its answer goes with it
+(`#rehome`), and the chip below keeps its place, suspended, saying where its
+filter went (`T-up-is-open-down-is-closed`). So the rows do not move, and the
+header gets ONE chip — the View's Add list stops offering it. The trip back
+down is not asked for.
+
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
+- Site: `test/e2e/reforged-send-to-view-filters.spec.ts`
+
 ### T-a-condition-marks-every-match
 
 **A field answered by a chain of conditions marks EVERY string in it** — Will,

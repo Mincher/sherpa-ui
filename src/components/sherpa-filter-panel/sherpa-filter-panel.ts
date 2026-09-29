@@ -27,6 +27,7 @@ import {
   fieldState, readingRows, savedReading, type FieldCondition, type FieldReading,
 } from '../../core/data/filter-state.js';
 import { valueKey } from '../../core/data/store.js';
+import { VIEW } from '../../core/data/query.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-container/sherpa-container.js';
 import '../sherpa-container-header/sherpa-container-header.js';
@@ -652,6 +653,8 @@ export class SherpaFilterPanel extends SherpaElement {
     box.toggleAttribute('data-single', single && !isPresets);
     box.toggleAttribute('data-chip', organise || !!def.asChip);
     box.toggleAttribute('data-clearable', !isPresets && !organise);
+    // Below the View, a field can be sent up to it. TRAP T-send-to-view-filters
+    box.toggleAttribute('data-raisable', !isPresets && !organise && scope !== VIEW);
     box.toggleAttribute('data-removable', !isPresets && !organise && !!def.removable);
     /* A switch only where there is somewhere to switch TO: a conditions-only
        field has no list behind it, as its menu says too. Will, 2026-09-26.
@@ -661,12 +664,14 @@ export class SherpaFilterPanel extends SherpaElement {
     // What this field does not offer is not drawn.
     if (!box.hasAttribute('data-advanced-ok')) box.querySelector('.field-advanced')?.remove();
     if (!box.hasAttribute('data-clearable')) box.querySelector('.field-clear')?.remove();
+    if (!box.hasAttribute('data-raisable')) box.querySelector('.field-raise')?.remove();
 
     const head = box.querySelector('.field-head');
     const title = box.querySelector('.field-title');
     if (title) title.textContent = def.label;
     const name = def.label;
     head?.querySelector('.field-clear')?.setAttribute('aria-label', `Clear ${name}`);
+    head?.querySelector('.field-raise')?.setAttribute('aria-label', `Send ${name} to view filters`);
     box.querySelector('.field-advanced-switch')
       ?.setAttribute('aria-label', `Advanced ${name}`);
 
@@ -1132,6 +1137,14 @@ export class SherpaFilterPanel extends SherpaElement {
     if (save) return this.#requestSave(save);
     const clear = this.pathFind(event, '.field-clear');
     if (clear) return this.#clearField(clear);
+    /* SENT UP: the View holds it, and its answer goes with it; the chip below
+       keeps its place, suspended. TRAP T-send-to-view-filters */
+    const raise = this.pathFind(event, '.field-raise');
+    if (raise) {
+      const up = this.#fieldOf(raise);
+      if (up) this.emit('filter-add-request', { scope: VIEW, ids: [up.def.field ?? up.def.id] });
+      return;
+    }
     // REMOTE: one field's own Apply or Discard. TRAP T-apply-and-discard-wait-for-a-change
     const apply = this.pathFind(event, '.field-apply');
     const discard = apply ? null : this.pathFind(event, '.field-discard');

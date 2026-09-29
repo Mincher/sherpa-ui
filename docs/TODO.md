@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**53 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**52 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -63,7 +63,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 25 | 50 | A reader's saved Advanced chip shows its conditions, editable | feature |
 | ✅ | 26 | 48 | A child menu opens on hover or click of its row | feature |
 | ✅ | 27 | 21c | A condition's matches must ALL highlight | feature |
-| ⬜ | 28 | 21f | "Send to view filters" | feature |
+| ✅ | 28 | 21f | "Send to view filters" | feature |
 | ⬜ | 29 | 21b | Which header chips carry over between views | feature |
 | ⬜ | 30 | 20b | The Date filter should be a view-scope date RANGE | feature |
 | ⬜ | 31 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
@@ -1174,7 +1174,7 @@ each — a `contains` every time, a `startswith` at the start and an `endswith`
 at the end — joining hits that overlap or touch; the grid passes all of a
 field's rows, not the first. `T-a-condition-marks-every-match`
 
-### `[ ]` 21f — "Send to view filters"
+### `[x]` ✅ 21f — "Send to view filters"
 
 Will, 2026-09-24:
 
@@ -1190,6 +1190,14 @@ filtering by `active` keeps that. Promoting Status must not give the header
 TWO Status chips: the move consumes the header's available entry.
 
 The reverse trip is not asked for. Leave it until it is.
+
+**✅ Done 2026-09-29.** An `arrow-up` button, "Send Status to view filters",
+beside Clear on a component scope's field (Remove is gone from the panel
+since; the View's own fields have none). It sends the panel's ordinary
+`filter-add-request` with the View's scope — `source.move()` is not needed:
+holding it in the View carries the answer and leaves the chip below
+suspended. On Records › At risk: Status goes up with "not churned", the rows
+stay 13, and the header has one Status chip. `T-send-to-view-filters`
 
 ### `[ ]` 21b — Which header chips carry over between views
 
@@ -2394,6 +2402,7 @@ One line each. The detail is in git and in the trap named.
 - 49: ❓ how the fx menu shows a preset over two fields; 50 waits on it
 - 48: a child menu opens from the whole row, a resting pointer or ArrowRight — `T-a-row-opens-its-child-menu`
 - 21c: a chain of conditions marks every string it matched — `T-a-condition-marks-every-match`
+- 21f: a panel field can be sent up to the view filters — `T-send-to-view-filters`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`
