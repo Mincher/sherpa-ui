@@ -224,7 +224,7 @@ test('filters survive a reload and a trip away, and the chips show them', async 
 test('the header Date survives a reload, and its chip shows the range', async ({ page }) => {
   const read = () => page.evaluate(() => {
     const hb = document.querySelector('sherpa-app-shell > sherpa-app-header sherpa-quick-filter-toolbar[slot="filters"]');
-    const c = hb?.shadowRoot?.querySelector<HTMLElement & { valueLabel: string }>('.chip[data-id="dateRange"]');
+    const c = hb?.shadowRoot?.querySelector<HTMLElement & { valueLabel: string }>('.chip[data-id="created"]');
     return {
       total: (window as unknown as { sherpa?: { source?: { debugState(): { total: number } } } })
         .sherpa?.source?.debugState().total,
@@ -238,7 +238,7 @@ test('the header Date survives a reload, and its chip shows the range', async ({
   await page.evaluate(() => {
     const hb = document.querySelector('sherpa-app-shell > sherpa-app-header sherpa-quick-filter-toolbar[slot="filters"]') as
       HTMLElement & { setChipValues(id: string, v: string[]): void; report(): void };
-    hb.setChipValues('dateRange', ['2024-03-01', '2024-03-31']);
+    hb.setChipValues('created', ['2024-03-01', '2024-03-31']);
     hb.report();
   });
   const want = { total: 14, chip: 'on:01 Mar - 31 Mar, 2024' };

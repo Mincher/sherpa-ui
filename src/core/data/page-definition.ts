@@ -34,6 +34,7 @@ export interface SourceDefinition {
   search?: readonly string[];
   fields?: Readonly<Record<string, FieldDeclaration>>;
   scopes?: Readonly<Record<string, ScopeDefinition>>;
+  /** Saved filters, each a whole clause flipped on or off. TRAP T-a-toggle-is-a-clause-not-a-value */
   presets?: Readonly<Record<string, {
     label?: string; editable?: boolean; readings: Readonly<Record<string, FieldReading>>;
   }>>;

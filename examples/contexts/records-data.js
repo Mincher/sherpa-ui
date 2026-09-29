@@ -14,7 +14,7 @@
  * - customerStore — the customer records: IndexedDB where it exists, in memory where not
  * - customersReady — resolves once the demo records are seeded; seeds again only when SEED moves
  */
-import { IdbStore, ArrayStore, rules, required, number, email } from '../../dist/index.js';
+import { IdbStore, ArrayStore, rules, required, number, email, oneOf } from '../../dist/index.js';
 
 /* ── Data: 100 customers ──────────────────────────────────────────── */
 const first = ['Jane','Marcus','Aisha','Diego','Nina','Omar','Priya','Liam','Sofia','Ethan',
@@ -121,7 +121,14 @@ export const customerSchema = rules({
      records with none, and the Customer chip could never find them: a chip
      offers only the values the data carries.
      TRAP T-a-chip-filters-the-values-the-data-has */
-  customer: required(),
+  customer: [required(), oneOf(customerOrgs)],
+  /* WHAT EACH MAY HOLD, in its own order — a lifecycle, a tier — so every
+     filter offers the same list and a category keeps its colour.
+     TRAP T-the-data-says-what-a-field-may-hold */
+  status: oneOf(states),
+  plan: oneOf(plans),
+  tier: oneOf(tiers),
+  region: oneOf(regions),
   seats: number(),
   health: number(),
 });

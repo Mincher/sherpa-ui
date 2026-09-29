@@ -25,6 +25,7 @@ import {
   loadSavedViews, onViewPicked, saveViewAs, viewOptions, type ViewLibrary,
 } from '../../core/browser/persist-view.js';
 import { labelId } from '../../core/browser/web-storage.js';
+import { loadSavedFilters } from '../../core/browser/saved-filters.js';
 import { openSource, type PageDefinition } from '../../core/data/page-definition.js';
 import type { DataSource, SourceState } from '../../core/data/data-source.js';
 import { VIEW, type Query } from '../../core/data/query.js';
@@ -59,6 +60,7 @@ export interface OpenOptions {
 type Bar = HTMLElement & {
   populate(defs: unknown[]): Promise<void> | void;
   available?(defs: unknown[]): void;
+  organise?(def: { group?: unknown[]; sort?: unknown[] }): void;
   heldFields?: string[];
   report?(): void;
 };
@@ -240,23 +242,28 @@ export class SherpaProvider extends SherpaElement {
     }
     const source = def && store ? await openSource(def, store) : undefined;
     if (page.signal.aborted) return undefined;
-    if (!source) {
+    if (!source || !def) {
       await this.provide({ sources: {} });
       return undefined;
     }
+    /* A reader's own saved filters are kept with the DATA, not the page, and
+       offered in each bar's Add list. TRAP T-a-saved-filter-lives-with-its-data */
+    for (const [id, saved] of Object.entries(loadSavedFilters(def.store))) {
+      source.declarePreset(`custom:${id}`, saved.readings, { label: saved.label, editable: true });
+    }
     const shipped = options.views;
-    this.#opened = {
-      id: definition.id, source,
-      library: shipped ? () => ({ ...shipped, ...loadSavedViews(definition.id) }) : null,
-    };
+    const library = shipped ? (): ViewLibrary => ({ ...shipped, ...loadSavedViews(definition.id) }) : null;
+    this.#opened = { id: definition.id, store: def.store, source, library };
+    // A View this page does not have is the first.
+    const view = options.view && library?.()[options.view] ? options.view : undefined;
     // BEFORE the Query: a kept one is drawn onto these chips.
-    await this.#drawBars(options.view);
+    await this.#drawBars(view);
     if (page.signal.aborted) return undefined;
     source.addEventListener('scope-change', () => this.#offer(), { signal: page.signal });
     await this.provide({
       sources: { [definition.id]: source },
-      ...(this.#opened.library ? {
-        views: this.#opened.library, ...(options.view ? { view: options.view } : {}),
+      ...(library ? {
+        views: library, ...(view ? { view } : {}),
         ...(options.session ? { session: options.session } : {}), key: `/filters/${definition.id}`,
       } : {}),
     });
@@ -287,37 +294,46 @@ export class SherpaProvider extends SherpaElement {
   /** Stops the open page's listeners. */
   #page: AbortController | null = null;
   /** The page `open()` set up. */
-  #opened: { id: string; source: DataSource; library: (() => ViewLibrary) | null } | null = null;
+  #opened: {
+    id: string; store: string; source: DataSource; library: (() => ViewLibrary) | null;
+  } | null = null;
 
   /** Draw every bar from its scope, as the source describes it — the View
-   *  chip first — then what it may add. */
+   *  chip first, its Group and Sort — then what it may add. */
   async #drawBars(view?: string): Promise<void> {
     const opened = this.#opened;
     if (!opened) return;
     const { source, library } = opened;
-    await Promise.all((this.#bars() as Bar[]).map((bar) => {
+    await Promise.all((this.#bars() as Bar[]).map(async (bar) => {
       const scope = this.#inherited(bar, 'data-scope');
-      if (!scope) return undefined;
+      if (!scope) return;
+      const described = source.describe(scope);
       const picker = scope === VIEW && library ? [{
         id: 'view', label: 'View', persistent: true, active: true, select: 'single',
-        options: viewOptions(library(), view && view in library() ? view : undefined),
+        options: viewOptions(library(), view),
       }] : [];
-      return bar.populate([...picker, ...source.describe(scope).filters]);
+      await bar.populate([...picker, ...described.filters]);
+      if (described.group) bar.organise?.({ group: described.group, sort: described.sort ?? [] });
     }));
     this.#offer();
   }
 
   /** Each bar's Add list: what its scope may still add — by the chips it HAS,
-   *  so a restore can draw a held field's chip — each noting where it lives. */
+   *  so a restore can draw a held field's chip — each noting where it lives.
+   *  Below the View, EVERY saved filter of the reader's, held or not, so a
+   *  restore can draw one. TRAP T-saved-filters-are-the-custom-section */
   #offer(): void {
-    const source = this.#opened?.source;
-    if (!source) return;
+    const opened = this.#opened;
+    if (!opened) return;
+    const saved = Object.entries(loadSavedFilters(opened.store)).map(([id, { label, readings }]) => ({
+      id: `custom:${id}`, label, readings, editable: true,
+    }));
     for (const bar of this.#bars() as Bar[]) {
       const scope = this.#inherited(bar, 'data-scope');
       if (!scope) continue;
-      const saved = source.describe(scope).available.filter((d) => 'readings' in d && d.readings);
       bar.available?.([
-        ...source.addable(scope, bar.heldFields ?? []).map((d) => ({ ...d, removable: true })), ...saved,
+        ...opened.source.addable(scope, bar.heldFields ?? []).map((d) => ({ ...d, removable: true })),
+        ...(scope === VIEW ? [] : saved),
       ]);
     }
   }

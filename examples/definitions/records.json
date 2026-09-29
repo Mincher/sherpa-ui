@@ -1,0 +1,44 @@
+{
+  "$schema": "../../schemas/page.v1.json",
+  "v": 1,
+  "id": "records",
+  "template": "records",
+  "source": {
+    "store": "customers",
+    "pageSize": 25,
+    "search": ["name", "email", "owner"],
+    "fields": {
+      "name": { "label": "Name", "custom": "only", "op": "contains" },
+      "email": { "label": "Email", "custom": "only", "op": "contains" },
+      "customer": { "label": "Customer", "select": "multiple", "icon": "buildings" },
+      "status": { "label": "Status", "select": "multiple" },
+      "plan": { "label": "Plan", "select": "multiple" },
+      "tier": { "label": "Tier", "select": "multiple" },
+      "region": {
+        "label": "Region", "select": "multiple", "icon": "globe",
+        "labels": { "AMER": "Americas", "LATAM": "Latin America" }
+      },
+      "owner": { "label": "Owner", "select": "multiple", "custom": true },
+      "seats": { "label": "Seats", "type": "number" },
+      "spend": { "label": "Spend", "type": "number" },
+      "openTickets": { "label": "Tickets", "type": "number" },
+      "health": { "label": "Health", "type": "number" },
+      "created": { "label": "Date", "type": "date", "icon": "calendar" },
+      "lastSeen": { "label": "Last seen", "type": "date" }
+    },
+    "scopes": {
+      "view": { "label": "View filters", "holds": ["customer", "region", "created"] },
+      "data": {
+        "label": "Customer records", "offers": "all",
+        "holds": ["status", "plan", "tier", "owner"],
+        "presets": ["has-tickets", "at-risk", "unassigned"]
+      }
+    },
+    "presets": {
+      "has-tickets": { "label": "Has open tickets", "readings": { "openTickets": { "op": "gt", "text": "0" } } },
+      "at-risk": { "label": "At risk", "readings": { "health": { "op": "lt", "text": "60" } } },
+      "unassigned": { "label": "Unassigned", "readings": { "owner": { "op": "eq", "picked": ["Unassigned"] } } }
+    }
+  },
+  "views": "records-views"
+}

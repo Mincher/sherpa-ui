@@ -131,8 +131,8 @@ the panel as it does now (G1).
 | step | builds | proves |
 |---|---|---|
 | D1 ✅ | `provider.open(definition)`, `saveView()`, `openSource()`, `schemas/page.v1.json`; a field's values from the schema or the rows (§3) | the Dashboard opens from `examples/definitions/dashboard.json`; `dashboard.js` 183 → 116 lines |
-| D2 | Records from a definition; the store registry | the Records filter suite |
-| D3 | the router hands definitions; a Context's `init` gets its source | a trip through every page keeps each one's filters |
+| D2 ✅ | Records from `records.json`; the reader's saved filters and each bar's Group and Sort come from the provider; the customer schema lists its values | the Records filter suite; `records.js` 601 → 359 lines, `global-filters.js` deleted |
+| D3 | the router hands definitions and the app's store registry (a Context passes `stores` itself until then); a Context's `init` gets its source | a trip through every page keeps each one's filters |
 | later | the Templater builds `template` from JSON (68, 70) | — |
 
 ---

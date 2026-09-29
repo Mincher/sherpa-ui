@@ -423,7 +423,6 @@ over a remote store sets `data-remote` on the bar, and `menuFor(def,
 { remote })` then applies the select-mode rule above. A bar with no source
 counts as local.
 
-- Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `test/e2e/reforged-raising-a-filter-carries-its-value.spec.ts`
@@ -952,7 +951,6 @@ returns early — so a view that owns an event owns it outright, with no chance 
 the source having already acted by the time the view's own handler runs.
 
 - Site: `src/core/data/data-source.ts`
-- Site: `examples/contexts/records.js`
 
 ### T-adapter-lives-at-the-binding
 
@@ -3184,7 +3182,6 @@ binding went from 194 lines to 152.
 - Site: `test/e2e/reforged-view-definition.spec.ts`
 - Site: `test/unit/bind-selection.test.mjs`
 - Site: `test/unit/field-selection.test.mjs`
-- Site: `examples/contexts/records.js`
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
@@ -7023,7 +7020,6 @@ Raman']` — "Priya" is a customer FIRST NAME in `records-data.js`, and no
 `owner` field has ever held it. The view matched zero rows on every load, so
 any filter applied on top of it also showed zero and read as a broken filter.
 
-- Site: `examples/contexts/global-filters.js`
 - Site: `examples/contexts/records.js`
 - Site: `examples/contexts/records-data.js`
 - Site: `examples/definitions/records-views.js`
@@ -7099,7 +7095,6 @@ it answers (the Date chip, the record's time), and `field: null` says it
 answers none here. The bar reports its answers BY FIELD and skips a persistent
 selector, so it reaches the Query with no page mapping at all.
 
-- Site: `examples/contexts/global-filters.js`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
 ### T-the-last-row-draws-no-rule
@@ -7516,7 +7511,6 @@ holds it.
 - Site: `test/unit/allow-list.test.mjs`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
-- Site: `examples/contexts/records.js`
 
 ### T-a-filter-applies-down-its-scope
 
@@ -7807,7 +7801,6 @@ byte-identical files — the same drawing exported twice — and the toolbar fix
 the view selector's glyph itself rather than taking it from the chip def. There
 is no `office`; `buildings` is the set's word for it.
 
-- Site: `examples/contexts/global-filters.js`
 - Site: `src/core/data/data-source.ts`
 
 ### T-a-native-select-keeps-its-own-shape
@@ -7967,8 +7960,6 @@ button with a live mode is a control a reader cannot reach but a script can.
 A TEXT GRID COLUMN is the exception and always opts in. A column of free text
 is exactly what a reader asks "starts with" of.
 
-- Site: `examples/contexts/global-filters.js`
-- Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
@@ -8221,7 +8212,6 @@ for, and "this context" answers for neither. The caller passes the name
 The VIEW scope keeps its own name, because there is exactly one of it.
 
 ---
-- Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
@@ -8645,7 +8635,6 @@ row has and the view went to 0 rows. A `data-custom` chip is reported by
 `custom` — the host already applies its clause — so `readings` skips it.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
-- Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 
 ### T-a-scope-is-a-place-not-a-reach
@@ -9016,7 +9005,6 @@ already holds, with a value list where the set is small enough to read and a
 condition where it is not. The `allowFields()` whitelist still decides on top.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 
 ### T-one-query-builder-in-the-data-layer
@@ -9050,7 +9038,6 @@ remove do. `test/unit/raw-data-is-untouched.test.mjs` holds that half.
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/raw-data-is-untouched.test.mjs`
 - Site: `test/unit/one-query-builder.test.mjs`
-- Site: `examples/contexts/records.js`
 - Site: `test/reforged/harness.html`
 
 ### T-an-organise-chip-has-no-values
@@ -9144,7 +9131,6 @@ a field's type to filter it, the type is in the wrong place.
 - Site: `test/unit/field-type.test.mjs`
 - Site: `src/data.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
 ### T-the-panel-reports-its-own-reading
@@ -9171,7 +9157,6 @@ nothing left to fix up. All four reaching methods are deleted, and neither
 component names the other.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `examples/contexts/records.js`
 - Site: `test/unit/parity-sweep.test.mjs`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `test/e2e/reforged-panel-apply.spec.ts`
@@ -9409,7 +9394,6 @@ that scope's whole answer instead: it clears the readings that LIVE in its
 scope. So a field raised to the View — whose answer moves with it — is no
 longer the grid bar's to clear, and the bar's next report cannot wipe it.
 
-- Site: `examples/contexts/records.js`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-data-source.spec.ts`
 
@@ -9515,7 +9499,6 @@ child cannot know a sibling column is beside it — the records card sat straigh
 under the panel. Narrowing the GRID's own box is what makes `full` mean full.
 
 ---
-- Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
@@ -10509,7 +10492,6 @@ category nothing matched is noise, unless the categories are a fixed scale
 (severity levels, storage bands) where a missing one is itself the finding.
 
 - Site: `examples/contexts/dashboard-data.js`
-- Site: `examples/contexts/records.js`
 - Site: `src/core/data/aggregate.ts`
 
 ### T-the-last-band-includes-its-top
@@ -11855,7 +11837,6 @@ ON ones itself, so a preset was a chip in one file and a query in another.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 - Site: `src/core/data/data-source.ts`
-- Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/browser/saved-filters.ts`
 - Site: `src/core/data/filter-state.ts`
@@ -11983,9 +11964,9 @@ heads.
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 - Site: `src/core/ui/filters-button.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
 
 ### T-row-one-is-data-op
 
@@ -12060,6 +12041,7 @@ answer.
 - Site: `src/core/browser/saved-filters.ts`
 - Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
 
 ### T-a-held-clause-op-is-not-a-reading-op
 
@@ -12147,7 +12129,6 @@ the one part of a slotted row the menu's sheet can reach, and read out through
 - Site: `src/core/data/data-source.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/up-is-open-down-is-closed.test.mjs`
-- Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-raising-a-filter-carries-its-value.spec.ts`
 - Site: `test/e2e/reforged-menu-row-note.spec.ts`
 
@@ -12191,8 +12172,6 @@ values is. `FILTER-REVIEW.md` §7 step 4c and §19 carry the rest.
 - Site: `src/core/data/base-store.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `examples/contexts/records-data.js`
-- Site: `examples/contexts/records.js`
-- Site: `examples/contexts/global-filters.js`
 - Site: `test/unit/a-record-has-a-time-of-its-own.test.mjs`
 
 ### T-a-date-chip-names-its-field
@@ -12232,7 +12211,7 @@ next reader does not chase them again:
   `#chipPicks` reads. Setting `chip.values` on one looks like it worked and
   reports nothing.
 
-- Site: `examples/contexts/global-filters.js`
+- Site: `src/core/data/data-source.ts`
 
 ### T-any-component-can-be-bound
 
@@ -12585,7 +12564,7 @@ toggles.
 Since 2026-09-25 each is a saved custom filter that carries its own answer, and
 the page holds no clause for it. TRAP T-a-saved-filter-is-its-readings
 
-- Site: `examples/contexts/records.js`
+- Site: `src/core/data/page-definition.ts`
 
 ### T-component-extends-view-never-alters-it
 
@@ -12609,7 +12588,7 @@ saying only "Go". Nothing caught it, because nothing ran it.
 See `T-a-superseded-chip-suspends-it-is-never-removed`, which IS implemented,
 on the half a component owns.
 
-- Site: `examples/contexts/records.js`
+- Site: `src/core/data/data-source.ts`
 
 ### T-a-constructed-event-is-not-a-dispatched-one
 
@@ -13370,7 +13349,6 @@ never been bound.
 - Site: `examples/definitions/dashboard-views.js`
 - Site: `examples/contexts/dashboard.js`
 - Site: `examples/definitions/records-views.js`
-- Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/browser/persist-view.ts`
 - Site: `src/core/data/data-source.ts`
@@ -13420,7 +13398,6 @@ A panel asks for `view data` on every page; a scope a page does not have —
 nothing held, nothing to offer — is not drawn, so the Dashboard's panel shows
 its View filters alone.
 
-- Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/e2e/reforged-provider.spec.ts`
 
@@ -13470,7 +13447,6 @@ subtree's ONE source; a subtree with several gets none. And the provider fires
 `view-change` with the View's id, and its content's elements by id, for a
 page that still wants them.
 
-- Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/e2e/reforged-provider.spec.ts`
 
@@ -13518,7 +13494,6 @@ when the View's holds change, when a View answer is drawn, and on commit.
 
 Only a SCOPED grid: an unscoped one is a page's to wire, as before.
 
-- Site: `examples/contexts/records.js`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
 
@@ -13545,7 +13520,6 @@ Panel mode is CSS now: a bar in panel mode shows only its persistent chip
 (the View), so a field the panel adds is hidden on the header without a page
 reaching into the bar's shadow root.
 
-- Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
@@ -13583,7 +13557,6 @@ The initial holds are declared once in the page — the chips each bar starts
 with — because a bar that has not populated yet would report none, and an
 empty hold forgets its scope.
 
-- Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/data/data-source.ts`
 
@@ -13642,7 +13615,6 @@ where it lives now, because adding it MOVES it.
 Removable is NOT here: whether a chip may be taken off is the bar's policy,
 not a fact about the field.
 
-- Site: `examples/contexts/records.js`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
 
@@ -13668,6 +13640,7 @@ generator reads `static config` for the component's properties.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `examples/definitions/dashboard-views.js`
+- Site: `examples/contexts/records.js`
 
 ### T-a-component-declares-its-summary
 
@@ -13706,7 +13679,6 @@ A new declaration asks again: the base class leaves and re-asks when a
 `SUMMARY_PROPS` attribute, `data-source` or `data-scope` changes.
 
 - Site: `examples/contexts/dashboard.js`
-- Site: `examples/contexts/records.js`
 - Site: `examples/templates/dashboard.html`
 - Site: `examples/templates/records.html`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
@@ -13753,7 +13725,6 @@ an element gone from the page is dropped, never bound. An element a page
 binds by hand is left alone, not bound twice. And a grid's columns, key and
 actions are CONFIGURATION, not data (`T-configuration-is-not-data`).
 
-- Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-pagination/sherpa-pagination.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.html`
@@ -14164,7 +14135,6 @@ answer — removing a chip is a clear. The draw carries the WHOLE answer: an
 operator dropped reads "is not churned" as "churned", and a typed text
 dropped reads "contains an" as nothing.
 
-- Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/core/data/data-source.ts`
@@ -14199,6 +14169,7 @@ range — Seats — is a number's two ends.
 - Site: `src/core/data/page-definition.ts`
 - Site: `examples/contexts/dashboard-data.js`
 - Site: `test/unit/page-definition.test.mjs`
+- Site: `examples/contexts/records-data.js`
 
 ### T-a-page-is-its-definition
 
@@ -14221,3 +14192,4 @@ by the page's id, so `saveView(label)` needs nothing from the page.
 - Site: `examples/contexts/dashboard.js`
 - Site: `test/unit/page-definition.test.mjs`
 - Site: `src/data.ts`
+- Site: `examples/contexts/records.js`

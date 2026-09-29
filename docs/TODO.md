@@ -317,9 +317,9 @@ are its halves. First: audit where it is done today, and list the gaps.
 no data shut the panel (G1), and the Dashboard keeps its Query (G2). Open: Save
 view on Records (G3, TODO 15), and the Context DEFINITION that ends the
 repeated setup in every Context (G4) — **designed in `docs/PAGE-DEFINITION.md`,
-decided by Will 2026-09-29.** D1 is built: the Dashboard opens from
-`examples/definitions/dashboard.json` through `provider.open()`. Next: D2
-(Records) and D3 (the router hands the definition).
+decided by Will 2026-09-29.** D1 and D2 are built: the Dashboard and
+Records open from `examples/definitions/*.json` through `provider.open()`.
+Next: D3 (the router hands the definition).
 
 ### `[ ]` 94 — A number (and range) filter menu needs Apply and Cancel buttons
 
@@ -713,7 +713,7 @@ applied through `setState`, which clears every part today.
 Will, 2026-09-23: a top-level date range that slices the records across the
 whole view. It is at view scope now — "Date", over `source.timeField`
 (cae7e964) — but still `kind: 'date'`, single by default with a Range switch,
-over a list of `availableDates` (`examples/contexts/global-filters.js`).
+over a list of `availableDates` — the days the records carry (`declareFromRows`).
 
 A VIEW-scope date wants range by default; a component-scope one keeps single,
 where one day is the common case. Settle whether `kind: 'date'` gains a range
@@ -1124,7 +1124,7 @@ hand-rolls today:
 | `examples/contexts/records.js` `money()` | `` `$${Math.round(n).toLocaleString('en-GB')}` `` | `Intl.NumberFormat` currency |
 | `sherpa-file-upload.ts` | `` `${(bytes / 1048576).toFixed(1)} MB` `` | `Intl.NumberFormat` unit `megabyte` |
 | `sherpa-metric.ts` | the delta rounded with `toFixed(2)` | `Intl.NumberFormat` percent, `signDisplay` |
-| `global-filters.js`, `records.js` | ISO days and months built with `padStart` | `Temporal.PlainDate` / `PlainYearMonth` (examples run in a browser) |
+| `records.js` | ISO days and months built with `padStart` | `Temporal.PlainDate` / `PlainYearMonth` (examples run in a browser) |
 | `sherpa-calendar.ts` | ten `Date` sites of day maths | `Temporal` — a component only runs in a browser |
 
 The DOM-free data layer stays off `Temporal` and `Math.sumPrecise` until Node

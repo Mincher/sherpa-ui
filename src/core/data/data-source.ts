@@ -998,7 +998,7 @@ export class DataSource extends EventTarget {
     const { type, label, labels, ...rest } = this.#fields.get(field) ?? {};
     const body = type === 'number' || type === 'date' ? type : undefined;
     const values = body || rest.custom === 'only' ? [] : this.valuesFor(field).map(valueKey);
-    // A date's declared values are the days a calendar may pick.
+    // A date's declared values are the days a calendar may pick. TRAP T-a-date-chip-names-its-field
     const days = type === 'date' ? this.valuesFor(field).map(String) : [];
     return {
       id: field, label: label ?? field, ...rest,
@@ -1028,6 +1028,7 @@ export class DataSource extends EventTarget {
    */
   addable(scope: string, taken: Iterable<string> = this.scope(scope)): FieldFilter[] {
     // UP IS OPEN, DOWN IS CLOSED: below the View, what it holds is not offered.
+    // TRAP T-component-extends-view-never-alters-it
     const skip = new Set([...taken, ...(scope === VIEW ? [] : this.scope(VIEW))]);
     return this.fields(scope).filter((f) => !skip.has(f) && this.#fields.has(f)).map((f) => {
       const at = this.scopeOf(f);
