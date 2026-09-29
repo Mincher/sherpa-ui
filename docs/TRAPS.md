@@ -619,6 +619,12 @@ back to Advanced and dropped the second row. That was Will's bug. The chip's
 face reads the same reading, and `filterFace()` speaks for the answer in force:
 Advanced for its first ROW, Simple for its picks.
 
+In the PANEL, Simple's answer is the field's value CHIPS and Advanced's is its
+menu's rows. The panel's own switch carries the chips over, and while the rows
+still mirror them a chip click redraws them. The panel forced a field with rows
+into Advanced on every redraw too — the same bug as the bar's — and now follows
+the reading's mode.
+
 An old reading still means what it meant: `readingRows()` turns its one typed
 condition, or its non-default op over picks ("is not A and is not B"), into
 rows. And on a rebuild the READER'S kept answer wins over the def's opening
@@ -633,6 +639,8 @@ one, or a def's typed condition came back on every rebuild.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/filter-face.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-panel-keeps-both-answers.spec.ts`
 
 ### T-one-number-is-a-pick-under-equals
 
@@ -643,13 +651,13 @@ and filtered nothing. The bar sent a single number that way from the day its
 body moved into the menu — TODO 104 found it on the Records page, where 100
 rows stayed 100.
 
-`bodyReading()` in `src/core/ui/filter-menu.ts` decides it once, for the bar
+The menu decides it once, in its own `reading` (`#bodyReading()`), for the bar
 and the panel: `{ picked: ['100'], op: 'eq', range: false }` under `=`, and
 `{ op: 'gt', text: '100' }` under `>`. Restoring a chip reads `text` first,
 then `picked`, so both shapes round-trip. The test binds a real source and
 counts ROWS, because the event alone was not enough to prove it.
 
-- Site: `src/core/ui/filter-menu.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-number-filter-reports.spec.ts`
 
 ### T-a-menu-owns-its-own-bodies
@@ -3332,8 +3340,8 @@ silently (TODO 104): the chip HELD a typed or dragged value and sent nothing,
 and the test that read the value stayed green. A test of a report watches the
 EVENT.
 
-The panel reads a number body with `bodyReading()`, the bar's own reader, and
-takes a dragged handle once, when it is let go — as a bar chip does.
+The bar and the panel read a number body as `menu.reading`, and the panel takes
+a dragged handle once, when it is let go — as a bar chip does.
 
 The same non-composed `change` is why select-all is handled in the menu
 (`T-select-all-ticks-boxes-not-values`), and why `sherpa-switch` re-dispatches

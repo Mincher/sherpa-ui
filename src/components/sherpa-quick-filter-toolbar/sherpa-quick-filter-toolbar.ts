@@ -15,7 +15,7 @@ import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.j
 import { sortDirectionFrom } from '../../core/data/cycle.js';
 import { allow, type AllowList } from '../../core/data/allow.js';
 import { advancedOf, kindOf, type FilterKind, type OffersAdvanced } from '../../core/ui/filter-kind.js';
-import { bodyReading, menuFor } from '../../core/ui/filter-menu.js';
+import { menuFor } from '../../core/ui/filter-menu.js';
 import {
   FILTERS_LABEL, MenuDrill, ON, filtersMenuItems, onOffMenu, type AddedFilter,
 } from '../../core/ui/filters-button.js';
@@ -1276,7 +1276,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         out[field] = {
           label: chip.dataset['label'] ?? field,
           values: [],
-          ...bodyReading(menu as HTMLElement & { values: string[] }, this.#chipPicks(chip)),
+          ...(menu as HTMLElement & { reading: FieldReading }).reading,
           suspended: !chip.hasAttribute('data-current'),
         };
         continue;

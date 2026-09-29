@@ -18,14 +18,15 @@ import type { FieldFilter, HeldFilter, ScopeDescription } from '../../core/data/
 import {
   arranges, advancedOf, hasOwnBody, kindOf, picksOne, type FilterKind, type OffersAdvanced,
 } from '../../core/ui/filter-kind.js';
-import { bodyReading, menuFor, type FilterMenuDef, type FilterMenuItem } from '../../core/ui/filter-menu.js';
+import { menuFor, type FilterMenuDef, type FilterMenuItem } from '../../core/ui/filter-menu.js';
 import {
   FILTERS_LABEL, MenuDrill, ON, filtersMenuItems, onOffMenu, type AddedFilter,
 } from '../../core/ui/filters-button.js';
 import { report } from '../../core/data/report.js';
 import {
-  fieldState, savedReading, type FieldCondition, type FieldReading,
+  fieldState, readingRows, savedReading, type FieldCondition, type FieldReading,
 } from '../../core/data/filter-state.js';
+import { valueKey } from '../../core/data/store.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-container/sherpa-container.js';
 import '../sherpa-container-header/sherpa-container-header.js';
@@ -275,22 +276,22 @@ export class SherpaFilterPanel extends SherpaElement {
     return out;
   }
 
-  /** One field's whole answer: its picks, its condition rows, its typed text. */
+  /** One field's whole answer: the chips are Simple's, the menu's rows are
+   *  Advanced's, and the menu says which is in force. TRAP T-both-answers-are-kept */
   #readingOf(held: Held): FieldReading {
-    const menu = held.menu as (HTMLElement & {
-      conditions?: FieldCondition[]; conditionValue?: string; values: string[] }) | undefined;
+    const menu = held.menu as (HTMLElement & { reading: FieldReading }) | undefined;
     // A NUMBER body answers for itself, as it does on a bar chip.
-    if (menu?.dataset['body'] === 'number') return bodyReading(menu);
-    const conditions = menu?.conditions ?? [];
-    const reading: FieldReading = { picked: this.#picked(held) };
-    if (conditions.length) reading.conditions = conditions;
-    const typed = (menu?.conditionValue ?? '').trim();
-    if (typed) {
-      reading.text = typed;
-      // …with its OPERATOR, or "contains an" reads as "is an".
-      if (menu?.dataset['op']) reading.op = menu.dataset['op'] as NonNullable<FieldReading['op']>;
-    }
-    return reading;
+    if (menu?.dataset['body'] === 'number') return menu.reading;
+    const picked = this.#picked(held);
+    return menu ? { ...menu.reading, picked } : { picked };
+  }
+
+  /** Rows that still MIRROR the chips follow them. TRAP T-both-answers-are-kept */
+  #followPicks(held: Held): void {
+    const menu = held.menu as (HTMLElement & { reading: FieldReading }) | undefined;
+    if (!menu || menu.dataset['body']) return;
+    const now = menu.reading;
+    if (now.mirror) menu.reading = { ...now, picked: this.#picked(held) };
   }
 
   /**
@@ -303,19 +304,23 @@ export class SherpaFilterPanel extends SherpaElement {
   setFieldReading(id: string, reading: FieldReading): void {
     for (const [key, held] of this.#held) {
       if (held.def.id !== id || this.#oneChip(held)) continue;
-      const rows = reading.conditions ?? [];
-      if (rows.length) {
-        this.#setCustom(held, true);
-        const menu = held.menu as (HTMLElement & { conditions?: readonly FieldCondition[] }) | undefined;
-        if (menu) menu.conditions = rows;
+      const menu = held.menu as (HTMLElement & { reading: FieldReading }) | undefined;
+      if (menu?.dataset['body'] === 'number') {
+        menu.reading = reading;
       } else {
-        // NO ROWS: the picks, and the mode left as the reader set it.
-        const want = new Set((reading.picked ?? []).map(String));
+        // BOTH answers: the chips, then the rows — and the mode only where the
+        // reading names one or only rows answer. TRAP T-both-answers-are-kept
+        const want = new Set((reading.picked ?? []).map(valueKey));
         for (const one of held.values.querySelectorAll<HTMLElement>('.value')) {
           if (this.#heldOfChip(one) === held) {
             one.toggleAttribute('data-current', want.has(one.dataset['value'] ?? ''));
           }
         }
+        const rows = readingRows(reading);
+        const mode = reading.mode ?? (rows.length ? 'advanced' : undefined);
+        if (mode) this.#setCustom(held, mode === 'advanced');
+        const given = held.menu as (HTMLElement & { reading: FieldReading }) | undefined;
+        if (given) given.reading = { ...reading, picked: [...want] };
       }
       this.#said.set(key, JSON.stringify(this.#readingOf(held)));
       this.#syncAnswered(held);
@@ -682,9 +687,8 @@ export class SherpaFilterPanel extends SherpaElement {
        rows. Drawn as plain chips, the refill after an Add hid Owner's rows,
        and the next Apply reported it unanswered: adding Email reset Owner.
        TRAP T-a-conditioned-field-opens-on-its-rows */
-    if (box.hasAttribute('data-advanced-ok') && (def.state?.conditions ?? []).length) {
-      this.#setCustom(held, true);
-    }
+    const opens = def.state?.mode ?? (readingRows(def.state ?? {}).length ? 'advanced' : 'simple');
+    if (box.hasAttribute('data-advanced-ok') && opens === 'advanced') this.#setCustom(held, true);
     return box;
   }
 
@@ -732,16 +736,12 @@ export class SherpaFilterPanel extends SherpaElement {
   #fill(menu: HTMLElement, items: FilterMenuItem[], state: FieldReading | undefined): void {
     const api = menu as HTMLElement & {
       items?: (i: readonly FilterMenuItem[]) => void;
-      conditions?: readonly FieldCondition[];
-      conditionValue?: string;
+      reading: FieldReading;
       rendered?: Promise<void>;
     };
     if (items.length) api.items?.(items);
-    if (!state?.conditions?.length && !state?.text) return;
-    this.#answering.push(Promise.resolve(api.rendered).then(() => {
-      if (state.conditions?.length) api.conditions = state.conditions;
-      if (state.text) api.conditionValue = state.text;
-    }));
+    if (!state || (!readingRows(state).length && !state.mode && !state.mirror)) return;
+    this.#answering.push(Promise.resolve(api.rendered).then(() => { api.reading = state; }));
     if (this.#answering.length === 1) queueMicrotask(() => this.#settleAnswers());
   }
 
@@ -1152,6 +1152,13 @@ export class SherpaFilterPanel extends SherpaElement {
   #flipCondition(held: Held): void {
     const on = !held.box.hasAttribute('data-advanced');
     this.#setCustom(held, on);
+    /* CARRY THE CHIPS OVER on the first switch, and while the rows still mirror
+       them: X and Y become Equals X OR Equals Y. TRAP T-both-answers-are-kept */
+    const menu = held.menu as (HTMLElement & { reading: FieldReading }) | undefined;
+    const now = menu?.reading;
+    if (on && menu && now && (now.mirror || !(now.conditions ?? []).length)) {
+      menu.reading = { ...now, picked: this.#picked(held), mode: 'advanced', mirror: true };
+    }
     this.#syncAnswered(held);
     // The menu's own words, so one reader hears both. TRAP T-one-condition-system
     this.emit('filter-condition-change', {
@@ -1331,6 +1338,7 @@ export class SherpaFilterPanel extends SherpaElement {
    * TRAP T-the-panel-reports-its-own-reading
    */
   #report(held?: Held): void {
+    if (held) this.#followPicks(held);
     let readings = this.readings;
     if (held) {
       if (arranges(kindOf(held.def))) return;

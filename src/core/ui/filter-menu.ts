@@ -12,11 +12,9 @@
  * - FilterMenuDef — Enough of a filter definition to draw its menu.
  * - FilterMenuOptions — where the card stays inside, and whether it draws inline
  * - menuFor — Build a field's menu.
- * - bodyReading — A number or date body's answer, as a reading.
  */
 
-import { DEFAULT_OP, OPS_FOR_TYPE, OP_TAKES, type FilterOp } from '../data/store.js';
-import type { FieldReading } from '../data/filter-state.js';
+import { OPS_FOR_TYPE, type FilterOp } from '../data/store.js';
 import {
   advancedOf, hasOwnBody, kindOf, picksOne, type FilterKind, type KindSource,
 } from './filter-kind.js';
@@ -168,24 +166,4 @@ export function menuFor(
   }
 
   return { menu, kind, items: [...(def.options ?? [])] };
-}
-
-/**
- * A number or date body's answer, as a reading. Two ends are a range; ONE
- * number is a pick under `=`, and typed text only under an op that takes text
- * ("> 2"). The bar and the panel both read it here.
- * TRAP T-a-menu-owns-its-own-bodies · TRAP T-one-number-is-a-pick-under-equals
- */
-export function bodyReading(
-  menu: HTMLElement & { values: string[] },
-  values: readonly string[] = menu.values,
-): Pick<FieldReading, 'picked' | 'op' | 'text' | 'range'> {
-  const range = menu.hasAttribute('data-range');
-  const op = (menu.dataset['op'] ?? DEFAULT_OP) as FilterOp;
-  if (menu.dataset['body'] === 'number' && !range) {
-    const one = values[0] ?? '';
-    if (OP_TAKES[op] === 'text') return { picked: [], op, text: one };
-    return { picked: one ? [one] : [], op, range: false };
-  }
-  return { picked: [...values], op, range };
 }

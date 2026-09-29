@@ -22,7 +22,6 @@ import {
 import {
   readingRows, rowAnswered, type ConditionType, type FieldCondition, type FieldReading,
 } from '../../core/data/filter-state.js';
-import { bodyReading } from '../../core/ui/filter-menu.js';
 import { NON_VALUE_ROWS } from '../../core/ui/shared-constants.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-breadcrumbs/sherpa-breadcrumbs.js';
@@ -233,7 +232,14 @@ export class SherpaMenu extends SherpaElement {
     this.$('.use-advanced-switch')?.addEventListener('change', this.#onModeSwitch);
     this.$('.add-condition')?.addEventListener('click', this.#onAddCondition);
     region?.addEventListener('click', this.#onDropCondition);
+    // A reading set before this menu drew has rows and ticks to hold it now.
+    const early = this.#early;
+    this.#early = undefined;
+    if (early) this.reading = early;
   }
+
+  /** A reading set before this menu drew. TRAP T-custom-element-upgrade */
+  #early: FieldReading | undefined;
 
   /* ── The two modes ──────────────────────────────────────────────── */
 
@@ -373,8 +379,9 @@ export class SherpaMenu extends SherpaElement {
    * TRAP T-both-answers-are-kept
    */
   get reading(): FieldReading {
+    if (this.#early) return { ...this.#early };
     const body = this.dataset['body'];
-    if (body === 'number' || body === 'date') return bodyReading(this);
+    if (body === 'number' || body === 'date') return this.#bodyReading();
     const out: FieldReading = { picked: this.values };
     if (!this.#offersAdvanced()) return out;
     /* Not drawn yet: row one is still its attributes, as #syncConditions will
@@ -387,7 +394,29 @@ export class SherpaMenu extends SherpaElement {
     return out;
   }
 
+  /**
+   * A number or date body's answer. Two ends are a range; ONE number is a pick
+   * under `=`, and typed text only under an op that takes text ("> 2").
+   * TRAP T-a-menu-owns-its-own-bodies · TRAP T-one-number-is-a-pick-under-equals
+   */
+  #bodyReading(): FieldReading {
+    const values = this.values;
+    const range = this.hasAttribute('data-range');
+    const op = (this.dataset['op'] ?? DEFAULT_OP) as FilterOp;
+    if (this.dataset['body'] === 'number' && !range) {
+      const one = values[0] ?? '';
+      if (OP_TAKES[op] === 'text') return { picked: [], op, text: one };
+      return { picked: one ? [one] : [], op, range: false };
+    }
+    return { picked: [...values], op, range };
+  }
+
   set reading(next: FieldReading) {
+    // Nothing drawn yet to hold it: it waits for the first render.
+    if (!this.#card()) {
+      this.#early = { ...next };
+      return;
+    }
     const typed = (next.text ?? '').trim();
     const body = this.dataset['body'];
     if (body === 'number' || body === 'date') {
@@ -398,8 +427,10 @@ export class SherpaMenu extends SherpaElement {
     this.values = (next.picked ?? []).map(valueKey);
     if (!this.#offersAdvanced()) return;
     const rows = readingRows(next);
-    this.conditions = rows;
     this.#mirror = next.mirror ?? false;
+    // A MIRROR is the picks, so its rows are drawn from them.
+    if (this.#mirror) this.#seedFromPicks();
+    else this.conditions = rows;
     // No `mode` is a reading from before both were kept: its rows decide.
     const mode = next.mode ?? (rows.some(rowAnswered) ? 'advanced' : undefined);
     if (mode) this.mode = mode;
