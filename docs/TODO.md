@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**70 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**69 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -25,7 +25,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 |:-:|---:|---:|---|---|
 | | | | **B — The foundation: what is left** | |
 | 🚧 | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
-| 🚧 | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
+| ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
 | ⬜ | 2a | 103 | Rows with no key get one from the data layer — Sherpa's own, never sent out | foundation |
 | 🚧 | 3 | 38 | One model, one builder, one owner — what is left | refactor |
 | ⬜ | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
@@ -567,7 +567,7 @@ mode."* Its content is one of three, by the field:
 builder's explode-or-menu flag, 38 step 4). 47 (more than 20 values, one chip)
 is merged here. Mode words: TODO 75.
 
-### `[~]` 102 — Simple AND Advanced answers are both kept, so a filter switches mode at any time
+### `[x]` ✅ 102 — Simple AND Advanced answers are both kept, so a filter switches mode at any time
 
 **Progress, 2026-09-29.** ✅ Step 1: a reading keeps both answers, and `mode`
 says which filters (a696700e). ✅ Step 2: `menu.reading`, and Advanced mirrors
@@ -578,7 +578,16 @@ Simple's answer, its menu's rows Advanced's; its switch carries the chips over
 and they mirror until edited; a redraw keeps the reader's mode (75d23450). ✅
 Step 3c: the grid heading holds the menu's whole reading — `ColumnFilter` is
 gone — and a redraw is held as it is, not through a clause. **Left:** the rest
-of A7 (one event per act, the headings on `menuFor()`, the 18 members go).
+of A7 (one event per act, the headings on `menuFor()`, the 18 members go),
+which is 86's.
+
+**✅ Done 2026-09-29:** a filter keeps its Simple picks AND its Advanced rows,
+and `mode` says which filters; the first switch to Advanced copies the picks
+(X and Y become Equals X OR Equals Y) and keeps copying until a row is edited;
+the switch works both ways in the bar, the panel and a grid heading, and a
+redraw keeps the reader's mode. A saved View and the session's kept Query carry
+both answers (`READING_KEYS`); a saved FILTER still saves the answer in force —
+105 reworks saving. `T-both-answers-are-kept`
 
 Will, 2026-09-29: *"Switching to an advanced filter, in the filter toolbar
 chip menu, prevents me from toggling back to a simple filter if a value has
@@ -1972,6 +1981,7 @@ source.
 One line each. The detail is in git and in the trap named.
 
 **2026-09-29, the component API audit (86)**
+- 102: both answers kept — a filter switches between Simple and Advanced at any time and loses nothing; Advanced mirrors Simple until a row is edited; in the bar, the panel and a grid heading — `T-both-answers-are-kept`
 - 104: a number filter applied nothing that was typed or dragged — the body moved into the menu's shadow root and the menu listened only on its host; it now listens on its body, the panel reads a number through the bar's own `bodyReading()`, and one typed number is a pick under `=` — `T-native-change-stops-at-the-host`, `T-one-number-is-a-pick-under-equals`
 - 75: the filter modes are **Simple** and **Advanced** in every file — values (75a), the opt-in key `advanced`, the menu's `data-advanced` / `data-advanced-only` and the labels (75b), then docs, TRAPS and test titles (75c). Every old word is still HEARD, so a saved View or filter keeps working — `T-a-renamed-attribute-keeps-its-old-name`
 - 101: an Advanced condition row would not add in a chip's menu, and in the panel a row's condition change dropped it — the source draws every field's answer back with its ANSWERED rows only, and the menu rebuilt from that; now an answer that matches the rows the reader has answered keeps every row — `T-an-unanswered-row-survives-a-redraw`
