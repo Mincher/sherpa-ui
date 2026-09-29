@@ -377,6 +377,14 @@ and select-group's `value` are still lost, because they write into elements
 a later step (menus stamping, `populate()`) replaces — that is the component
 work below, the filter family with A7.
 
+**✅ select-group done 2026-09-29.** Its value is DATA (`#picked`) and the
+ticks are drawn from it: a value set before `populate()` waits for the
+options, a reader's tick survives new options, and a read before anything
+drew answers what was set. Done by hand with a private field, as the grid
+does — not the `static config` widening: select-group's `populate()` takes an
+ARRAY, which `config` does not merge into. Widen `config` when three
+components want the same shape. `T-a-value-is-data-the-ticks-are-drawn`
+
 ### `[~]` 37 — Components are AGNOSTIC of the data, and of the example app
 
 Will, 2026-09-25:
@@ -2188,6 +2196,7 @@ One line each. The detail is in git and in the trap named.
 - 108: a Filters menu row's scope is its description line, with no "in"
 - 114: a re-fold that moves nothing keeps the open Filters menu — `T-a-reflow-that-moves-nothing-keeps-its-menus`
 - 113 step 1: a saved View waits for a component that has not drawn — `T-apply-degrades-never-throws`
+- 113: select-group's value is data, and its ticks are drawn from it — `T-a-value-is-data-the-ticks-are-drawn`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

@@ -45,6 +45,9 @@ export class SherpaSelectGroup extends SherpaElement {
   #stamped: HTMLElement[] = [];
   /** The name its radios share when the group has none — they untick by name. */
   #name = `sherpa-select-group-${++gid}`;
+  /** The picks, as DATA — the ticks are drawn from it. Null until something sets
+   *  it; a slotted child's own tick answers then. TRAP T-a-value-is-data-the-ticks-are-drawn */
+  #picked: string[] | null = null;
 
   /** What each child submits under: the group's own `name` (Will, 2026-09-29),
    *  else the radios' private one; a nameless checkbox submits nothing. */
@@ -83,20 +86,28 @@ export class SherpaSelectGroup extends SherpaElement {
 
   /** Selected value(s): string[] when multiple, else the single value or null. */
   get value(): string[] | string | null {
-    const selected = this.#children()
-      .filter((c) => c.checked)
-      .map((c) => c.value);
-    return this.#multiple ? selected : (selected[0] ?? null);
+    const picked = this.#picked ?? this.#ticked();
+    return this.#multiple ? [...picked] : (picked[0] ?? null);
   }
 
   set value(v: string[] | string | null) {
-    const wanted = new Set(
-      Array.isArray(v) ? v.map(String) : v == null ? [] : [String(v)],
-    );
-    for (const child of this.#children()) child.checked = wanted.has(child.value);
+    this.#picked = Array.isArray(v) ? v.map(String) : v == null ? [] : [String(v)];
+    this.#drawPicks();
   }
 
   /* ── Rendering ─────────────────────────────────────────────────────── */
+
+  /** What the child boxes have ticked. */
+  #ticked(): string[] {
+    return this.#children().filter((c) => c.checked).map((c) => c.value);
+  }
+
+  /** Tick the children from the picks. One, for radios. */
+  #drawPicks(): void {
+    if (!this.#picked) return;
+    const wanted = new Set(this.#multiple ? this.#picked : this.#picked.slice(0, 1));
+    for (const child of this.#children()) child.checked = wanted.has(child.value);
+  }
 
   /** Light DOM either way, so query the host, not the shadow root. */
   #children(): SelectChild[] {
@@ -127,6 +138,7 @@ export class SherpaSelectGroup extends SherpaElement {
       this.appendChild(child);
       this.#stamped.push(child);
     }
+    this.#drawPicks();
   }
 
   /** Carry the name down to every option. */
@@ -149,6 +161,7 @@ export class SherpaSelectGroup extends SherpaElement {
     const child = this.pathFind<SelectChild>(event, this.#childTag());
     if (!child) return;
     event.stopPropagation();
+    this.#picked = this.#ticked();
     this.emit('change', { value: this.value });
   };
 }

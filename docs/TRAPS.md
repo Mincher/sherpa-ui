@@ -591,6 +591,19 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-a-value-is-data-the-ticks-are-drawn
+
+**`sherpa-select-group`'s value is its own DATA (`#picked`), and the child
+boxes' ticks are drawn from it** — Will's "state first, then render" (TODO
+113). It lived IN the boxes: a value set before `populate()` had no box to
+tick, and every re-draw made new, unticked boxes, so both were lost with
+nothing said. The setter stores and draws; `#render` draws again; a reader's
+tick writes back. Until anything sets it, `#picked` is null and a SLOTTED
+child's own tick is the answer, as before.
+
+- Site: `src/components/sherpa-select-group/sherpa-select-group.ts`
+- Site: `test/e2e/reforged-select-group.spec.ts`
+
 ### T-a-reflow-that-moves-nothing-keeps-its-menus
 
 **A bar's re-fold that folds the same chips at the same step leaves its open

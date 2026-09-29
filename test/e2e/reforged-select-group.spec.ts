@@ -109,3 +109,47 @@ test('toggling a child fires change with the aggregate value (composedPath)', as
   }, OPTIONS);
   expect(r.detail).toEqual(['a']); // aggregate value carried up from the child
 });
+
+/**
+ * STATE FIRST — TODO 113. The value is the group's own DATA, and the ticks are
+ * drawn from it: set before the options arrive, it waited for them; a reader's
+ * tick survives new options. It lived in the child boxes, so both were lost.
+ * TRAP T-a-value-is-data-the-ticks-are-drawn
+ */
+test('a value set before the options arrive, and a tick, both survive populate()', async ({ page }) => {
+  const r = await page.evaluate(async (options) => {
+    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const one = document.createElement('sherpa-select-group') as unknown as GroupEl;
+    one.setAttribute('data-multiple', '');
+    document.getElementById('root')!.appendChild(one);
+    one.value = ['b', 'c'];
+    const early = one.value;
+    await one.rendered;
+    one.populate!(options);
+    await settle();
+    const ticked = [...one.querySelectorAll<HTMLElement & { checked: boolean; value: string }>('sherpa-select-checkbox')]
+      .filter((c) => c.checked).map((c) => c.value);
+    const drawn = one.value;
+
+    // A reader's tick, then the options again: the tick is kept.
+    const radio = document.createElement('sherpa-select-group') as unknown as GroupEl;
+    document.getElementById('root')!.appendChild(radio);
+    await radio.rendered;
+    radio.populate!(options);
+    await settle();
+    const child = radio.querySelectorAll<HTMLElement & { rendered?: Promise<void> }>('sherpa-select-radio')[2]!;
+    await child.rendered;
+    child.shadowRoot!.querySelector<HTMLInputElement>('.control')!.click();
+    await settle();
+    const picked = radio.value;
+    radio.populate!(options);
+    await settle();
+    return { early, ticked, drawn, picked, kept: radio.value };
+  }, OPTIONS);
+  // Read before anything drew: the value held, not an empty list.
+  expect(r.early).toEqual(['b', 'c']);
+  expect(r.ticked).toEqual(['b', 'c']);
+  expect(r.drawn).toEqual(['b', 'c']);
+  expect(r.picked).toBe('c');
+  expect(r.kept).toBe('c');
+});
