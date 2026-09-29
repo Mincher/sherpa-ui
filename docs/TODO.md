@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**64 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**65 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -39,6 +39,7 @@ order.
 | 16 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
 | 16a | 100 | The Assistant panel shows no heading | quick |
 | 16b | 106 | A click between a menu's items reaches what is behind it — an accordion toggles | bug |
+| 16c | 108 | A Filters menu row's scope is a DESCRIPTION under its label, with no "in" | quick |
 | | | **D — Filters: Will's features, on the foundation** | |
 | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
@@ -318,6 +319,17 @@ work. TWO faults:
   inactive but a click still reaches its handler — the look and the behaviour
   disagree. The button must refuse the click while disabled, or the footer's
   "off" is only paint.
+
+### `[ ]` 108 — A Filters menu row's scope is a DESCRIPTION under its label, with no "in"
+
+Will, 2026-09-29: *"In filter menu items we have the scope of the filter on the
+right side. This should be the description label on the row below the menu
+item's main label. We can also remove the 'in' prefix from this label."*
+
+Today the source writes ``note: `in ${scopeLabel}` `` (`data-source.ts`,
+`addable`), and the menu draws `data-note` at the row's right. Make it the
+row's description line — the same second line a menu row with a description
+already has, if one exists; check the Figma Menu set first — and drop "in".
 
 ### `[ ]` 106 — BUG: a click between a menu's items reaches what is behind it
 
