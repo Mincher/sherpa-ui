@@ -7843,10 +7843,10 @@ Its menu, top to bottom:
 |---|---|---|
 | Added filters | every filter it holds a reader can take off, ticked — and every chip folded away, with a caret | the tick removes, on Apply; the caret opens its child menu |
 | Available filters | what it may add | adds, on Apply |
-| Custom filters | the saved filters it may add | adds, on Apply |
+| Saved filters | the saved filters it may add | adds, on Apply |
 
 **A filter is in ONE of them.** Will, 2026-09-25: *"If it's in Added Filters
-then it shouldn't be in Available or Custom filters."* A folded chip is an ADDED
+then it shouldn't be in Available or Custom filters."* (Custom is "Saved filters" since TODO 105.) A folded chip is an ADDED
 filter, so it is a row there, not in a section of its own — there was a "More
 filters" section above, and Will folded it in the same day
 (`T-a-row-opens-its-child-menu`). A folded chip that cannot be taken off has no
@@ -12213,9 +12213,9 @@ tells the host to forget it.
 
 ### T-saved-filters-are-the-custom-section
 
-**Saved filters are offered LAST in the Filters menu, under "Custom filters".**
+**Saved filters are offered LAST in the Filters menu, under "Saved filters".**
 Will, 2026-09-25: *"add them to the add filters menu under a 'Custom' section
-at the bottom"*. Only the ones not added: a held saved filter is under Added
+at the bottom"*; renamed "Saved filters" on 2026-09-29 (TODO 105). Only the ones not added: a held saved filter is under Added
 filters, with every other filter the bar holds (`T-one-filters-button`).
 
 A def with `readings` IS a saved filter, so the bar needs no second list: the
@@ -12225,7 +12225,7 @@ taken off the bar goes back there by itself (`#removeFilter`).
 **The heading is the MENU's**, not the bar's: `MenuItem.section` names the
 section an item is in, and the menu draws a heading row where it changes. Its
 search hides a heading when nothing under it matches — a heading is never
-matched on its own name, so "Custom filters" over no rows cannot happen.
+matched on its own name, so "Saved filters" over no rows cannot happen.
 
 **One added from there comes ON.** A new field chip comes off, because on with
 no answer is the amber warning (`T-a-new-chip-opens-in-default-not-warning`);

@@ -326,7 +326,7 @@ test('the Records page saves a condition as a filter, and nothing filters twice'
     const at = kids.findIndex((n) => n.querySelector('input[value="custom:dana-accounts"]'));
     const head = kids.slice(0, at).reverse().find((n) => n.classList.contains('menu-section'));
     return { head: head?.textContent ?? null, row: at >= 0 };
-  })).toEqual({ head: 'Custom filters', row: true });
+  })).toEqual({ head: 'Saved filters', row: true });
   await page.evaluate(() => localStorage.removeItem('sherpa:filters:customers'));
   await fresh.context().close();
 });
@@ -379,10 +379,10 @@ test('the Add menu offers saved filters at the bottom, under Custom', async ({ p
   expect(r.all).toEqual([
     '§Added filters', 'owner*', 'custom:held*',
     '§Available filters', 'tier',
-    '§Custom filters', 'custom:mine', 'custom:big',
+    '§Saved filters', 'custom:mine', 'custom:big',
   ]);
   // The heading goes with the rows under it.
-  expect(r.big).toEqual(['§Custom filters', 'custom:big']);
+  expect(r.big).toEqual(['§Saved filters', 'custom:big']);
   expect(r.own).toEqual(['§Added filters', 'owner*']);
   expect(r.added).toBe(true);
 });

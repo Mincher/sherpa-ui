@@ -73,7 +73,7 @@ test('ONE button: "Filters", a plus; hidden chips first, then Added, Available, 
   expect(wide.selectAll).toBe(false);
   // Nothing hidden: no badge, no section of hidden chips.
   expect(wide.badge).toBeNull();
-  expect(wide.rows).toEqual(['§Available filters', 'tier', '§Custom filters', 'custom:mine']);
+  expect(wide.rows).toEqual(['§Available filters', 'tier', '§Saved filters', 'custom:mine']);
 
   /* HIDDEN chips are ADDED filters — ONE section, not a second one — and each
      row has a caret into its child menu. None here can be taken off, so none
@@ -88,7 +88,7 @@ test('ONE button: "Filters", a plus; hidden chips first, then Added, Available, 
   expect(hidden.at(-1)).toBe('›at-risk');
   expect(hidden.every((r) => r.startsWith('›'))).toBe(true);
   expect(narrow.rows.slice(narrow.rows.indexOf('§Available filters'))).toEqual(
-    ['§Available filters', 'tier', '§Custom filters', 'custom:mine']);
+    ['§Available filters', 'tier', '§Saved filters', 'custom:mine']);
 });
 
 test('the button is ON while a hidden chip is, and a drill inside it adds nothing', async ({ page }) => {

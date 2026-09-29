@@ -54,7 +54,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 19a | 110 | In Advanced rows, AND is serial and OR is parallel: an AND row offers only what the rows before it leave | feature |
 | ❓ | 20 | 21d | EXPLORE — conditions for a DATE field | explore |
 | ⬜ | 21 | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
-| ⬜ | 21a | 105 | "Save filters" saves EVERY scope under one name; a "Saved" chip shows it, warns when edited, and undoes it | feature |
+| ❓ | 21a | 105 | "Save filters" saves EVERY scope under one name; a "Saved" chip shows it, warns when edited, and undoes it | feature |
 | ⬜ | 21b | 109 | Reset has a label, and a menu button: "Reset to default" puts back the View's own filters | feature |
 | ⬜ | 22 | 97 | A filter panel section shows an icon for WHAT it filters: View, Chart, Grid, Form, List | quick |
 | ⬜ | 23 | 60 | Once applied, a chip's badge shows the number of results | feature |
@@ -997,6 +997,24 @@ Settle when it starts:
 - What becomes of the saved preset chips already stored: read them as
   one-scope definitions, or drop them.
 - Still kept per DATA (`T-a-saved-filter-lives-with-its-data`)?
+
+**✅ Step 1 done 2026-09-29:** the Filters menu's section is `Saved filters`
+(`SAVED_SECTION`). The rest is built with 15 and waits on the choices below.
+
+**❓ Will — two choices** (and I read "all contexts" as all filter SCOPES —
+the panel's sections; say if you meant nav Contexts).
+
+- **The saved preset chips already stored:**
+  - **A (my pick): read each as a one-scope definition** — nothing a reader
+    saved is lost; it applies to its one scope.
+  - **B: drop them.**
+- **Where a saved filter set is kept:**
+  - **A (my pick): per PAGE, beside its Views** — it saves every scope, and
+    the scopes are the page's, so it is the filter half of a View
+    definition, stored the same way.
+  - **B: per DATA, as saved filters are today**
+    (`T-a-saved-filter-lives-with-its-data`) — every page over the same data
+    sees it, but a scope another page lacks is dropped on apply.
 
 ### `[ ]` 109 — Reset has a label, and a menu button: "Reset to default" puts back the View's own filters
 
@@ -2302,6 +2320,8 @@ One line each. The detail is in git and in the trap named.
 - 113 step 1: a saved View waits for a component that has not drawn — `T-apply-degrades-never-throws`
 - 113: select-group's value is data, and its ticks are drawn from it — `T-a-value-is-data-the-ticks-are-drawn`
 - 113: prompt-composer holds a value set before its first render — `T-a-value-before-the-first-render-is-held`
+- 99, 21d: designed; each waits on two choices from Will
+- 105 step 1: the Filters menu's section is "Saved filters"; the rest waits on two choices
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

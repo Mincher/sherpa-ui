@@ -9,7 +9,7 @@
  * - FILTERS_LABEL — The button's name, and its menu's heading.
  * - ADDED_SECTION — The heading over the filters the view holds.
  * - AVAILABLE_SECTION — The heading over the filters it may add.
- * - CUSTOM_SECTION — The heading over the saved filters it may add, at the bottom.
+ * - SAVED_SECTION — The heading over the saved filters it may add, at the bottom.
  * - ON — The one value an on/off filter's child menu offers.
  * - DRILL_FLAGS — Menu attributes owned by the FILTER, not by the Filters menu.
  * - ListedFilter — One filter the menu lists.
@@ -27,7 +27,7 @@ import { menuFor, type FilterMenuItem } from './filter-menu.js';
 export const FILTERS_LABEL = 'Filters';
 export const ADDED_SECTION = 'Added filters';
 export const AVAILABLE_SECTION = 'Available filters';
-export const CUSTOM_SECTION = 'Custom filters';
+export const SAVED_SECTION = 'Saved filters';
 export const ON = 'on';
 
 /** TRAP T-drill-flags-travel-and-replace — never merged. */
@@ -74,7 +74,7 @@ export function filtersMenuItems(
       value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}), section: AVAILABLE_SECTION,
     })),
     ...offer.filter((f) => f.readings)
-      .map((f) => ({ value: f.id, label: f.label, section: CUSTOM_SECTION })),
+      .map((f) => ({ value: f.id, label: f.label, section: SAVED_SECTION })),
   ];
 }
 

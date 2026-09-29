@@ -99,7 +99,7 @@ test('open, it is the whole list; shut, it leads with what the scope hides', asy
 
   // OPEN: nothing is hidden, so no section of hidden filters and no badge.
   expect(r['open']).toEqual({
-    rows: ['§Added filters', 'status+', '§Available filters', 'plan', '§Custom filters', 'custom:mine'],
+    rows: ['§Added filters', 'status+', '§Available filters', 'plan', '§Saved filters', 'custom:mine'],
     badge: null, on: null,
   });
   /* SHUT: every filter it draws, in its order, IN Added filters — one section,
@@ -107,7 +107,7 @@ test('open, it is the whole list; shut, it leads with what the scope hides', asy
      so only Status has a box. TRAP T-a-row-opens-its-child-menu */
   expect(r['shut']!.rows).toEqual([
     '§Added filters', '›sort', '›at-risk', '›unassigned', 'status+›', '›seats',
-    '§Available filters', 'plan', '§Custom filters', 'custom:mine',
+    '§Available filters', 'plan', '§Saved filters', 'custom:mine',
   ]);
   expect(r['shut']!.badge).toBe('5');
   // ON: Status is answered, and it is hidden.
