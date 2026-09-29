@@ -276,13 +276,8 @@ export class SherpaChartLegend extends SherpaElement {
         else this.#off.add(item.label);
       }
 
-      this.emit('legend-breakdown-change', {
-        active: [...on].sort((a, b) => a - b),
-        hidden: this.#rolled.map((r) => r.index).filter((i) => !on.has(i)),
-      });
-      /* …and SAY SO in the language every other control speaks, so a caller
-         binds one event rather than two. `indices` is what a roll-up row
-         always reports. */
+      /* SAY SO in the language every other control speaks: one event, not
+         two. `indices` is what a roll-up row always reports. */
       this.emit('legend-item-click', {
         index: this.#items.length - 1,
         label: this.#items.at(-1)?.label ?? 'Other',

@@ -6293,55 +6293,33 @@ document-level registry.
 
 ### T-hiding-a-series-rescales-the-axis
 
-Hiding a series from a chart legend is a **RE-RENDER**, never a `display: none`
-on the drawn `<g>` / bar / slice.
+**A category left out is a chart drawn from FEWER rows**, never a `display:
+none` on the drawn `<g>` / bar / slice. Since 2026-09-29 (the API audit, A3)
+the charts have no hide doors at all — `setBarHidden`, `setSeriesHidden`,
+`setSliceHidden` and their getters are gone, and every provider push cleared
+them anyway. A legend's pick narrows ITS chart through the provider, which
+hands the chart the rows that are left.
 
-The scale is derived from the VISIBLE values, so a hidden series left in the
-extent keeps the axis stretched to data nobody can see and squashes every
-remaining mark against the bottom of the canvas. The three charts each say it in
+The scale is derived from the rows it is GIVEN, so the three charts say it in
 their own terms:
 
-- **line chart** — the y-extent covers only the visible series, so hiding one
+- **line chart** — the y-extent covers the series drawn, so leaving one out
   re-scales the axis.
-- **barchart** — the y-max comes from the bars that are LEFT, so the rest use the
-  full height. The axis flag is counted from the SHOWN bars too: hiding every
-  category must take the axis with them, not leave a scale labelling nothing.
-- **donut** — the total covers only the visible slices, so the ring always
-  CLOSES. A donut reads as parts OF A WHOLE, so a hole where a slice used to be
-  would misreport the remaining proportions.
+- **barchart** — the y-max comes from the bars it is given, so the rest use the
+  full height; with no bars, no axis.
+- **donut** — the total covers the slices it is given, so the ring always
+  CLOSES. A donut reads as parts OF A WHOLE; a hole where a slice used to be
+  would misreport the rest.
 
-In all three the mark's COLOUR INDEX is still derived from its ORIGINAL position,
-and the skip happens AFTER indexing — so unhiding a mark brings back the same
-hue rather than shifting every colour along the ramp. The barchart carries the
-original index onto the node as well, so `bar-click` still names the datum the
-caller gave it even when earlier categories are hidden.
-
-Fresh data CLEARS the hidden set in every one of them: the old indices point at
-different marks, so a stale hide would silently drop the wrong category.
+A mark's COLOUR comes from its `colorIndex` — the category's slot in the
+declared order — never its position, so leaving one out never shifts another's
+hue (`T-a-category-keeps-its-colour`).
 
 - Site: `src/components/sherpa-line-chart/sherpa-line-chart.ts`
 - Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
 - Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.ts`
-
-### T-hidden-set-is-view-state-and-replaces
-
-`hiddenSeries` / `hiddenBars` are read **AND** write, and that is the whole point.
-
-Clicking a legend swatch to hide a series is real VIEW STATE: it is what this
-reader wants to look at, and it belongs in a saved view beside the filter and the
-sort. Both were a GETTER ONLY, so that choice could be read and never put back —
-half an API. Same shape as `T-grid-read-without-write-is-half-an-api`.
-
-The setter **REPLACES** rather than adds, like every other restore in this
-library: a saved view says "this is what is hidden", not "also hide these". An
-empty array shows everything.
-
-Out-of-range indices are **KEPT** rather than filtered — the data may not have
-arrived yet, and an index that matches nothing hides nothing. Only non-integers
-and negatives are dropped.
-
-- Site: `src/components/sherpa-line-chart/sherpa-line-chart.ts`
-- Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
+- Site: `test/e2e/reforged-line-chart.spec.ts`
+- Site: `test/e2e/reforged-radial-chart.spec.ts`
 
 ### T-nan-is-the-not-given-sentinel
 

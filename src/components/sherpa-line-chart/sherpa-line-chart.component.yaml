@@ -175,15 +175,6 @@ states:
   - $type: state
     name: focus-visible
     selector: .hotspot:focus-visible
-capabilities:
-  - $type: capability
-    api: js-property-mirror
-    description: read/write JS properties (hiddenSeries). See $extensions.sherpa.jsProps.
-  - $type: capability
-    api: js-methods
-    description: >-
-      callable from a view definition's state block (setSeriesHidden). See
-      $extensions.sherpa.methods.
 tokens:
   title.font-size: "{sherpa.font-size-body-base}"
   title.font-weight: "{sherpa.font-weight-semibold}"
@@ -207,18 +198,9 @@ tokens:
 $extensions:
   sherpa:
     figmaName: Data Field
-    methods:
-      - $type: method
-        name: setSeriesHidden
-        args: "index: number, hidden = true"
-        description: Show or hide one series. Hiding re-renders — the axis rescales to what is left.
     category: chart
     variantAxes:
       - name: Orientation
         values:
           - vertical
           - horizontal
-    jsProps:
-      - name: hiddenSeries
-        type: string
-        access: read-write

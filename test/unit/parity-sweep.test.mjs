@@ -14,7 +14,7 @@
  * that runs once catches one bug; this runs every time.
  *
  * A SETTER IS NOT THE ONLY DOOR. `selectedKeys` is written by `select()`,
- * `hiddenSlices` by `setSliceHidden()`, `code` by its `data-code` attribute.
+ * `code` by its `data-code` attribute.
  * All are fine. Requiring a literal setter would cry wolf on every one, and a
  * check nobody believes is a check nobody keeps. So each getter is listed below
  * with HOW it is written, and the test fails on a getter that is listed nowhere
@@ -57,7 +57,6 @@ const KNOWN = {
   'sherpa-quick-filter.column': 'ok: data-column attribute, or its menu pick',
   'sherpa-quick-filter.direction': 'ok: data-direction attribute',
   'sherpa-radial-chart.slices': 'ok: populate()',
-  'sherpa-radial-chart.hiddenSlices': 'ok: setSliceHidden(index, hidden)',
   'sherpa-file-upload.files':
     'platform: a File list can only come from a real picker or drop; ' +
     'script cannot forge one, so there is nothing to call',

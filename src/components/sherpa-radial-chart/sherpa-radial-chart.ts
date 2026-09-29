@@ -36,8 +36,6 @@ export class SherpaRadialChart extends SherpaElement {
 
   /** The slices, as populated. */
   #slices: RadialSlice[] = [];
-  /** Which slices a legend has switched off, by index. */
-  #hidden = new Set<number>();
 
   override onRender(): void {
     this.#syncCentre();
@@ -54,8 +52,6 @@ export class SherpaRadialChart extends SherpaElement {
   /** populate([{ label, value, colorIndex? }]) — the slices. */
   protected override renderData(data: unknown): void {
     this.#slices = Array.isArray(data) ? (data as RadialSlice[]) : [];
-    // Stale indices would hide the wrong slice.
-    this.#hidden.clear();
     this.#renderRing();
     // The total moved, so the centre did too.
     this.#syncCentre();
@@ -63,19 +59,6 @@ export class SherpaRadialChart extends SherpaElement {
 
   get slices(): RadialSlice[] {
     return [...this.#slices];
-  }
-
-  /** Show or hide one slice by index — the hook a chart legend toggles. */
-  setSliceHidden(index: number, hidden = true): void {
-    if (hidden) this.#hidden.add(index);
-    else this.#hidden.delete(index);
-    this.#renderRing();
-    this.#syncCentre();
-  }
-
-  /** The indices currently hidden. */
-  get hiddenSlices(): number[] {
-    return [...this.#hidden].sort((a, b) => a - b);
   }
 
   /* ── Render ─────────────────────────────────────────────────────── */
@@ -99,16 +82,13 @@ export class SherpaRadialChart extends SherpaElement {
     const sweepStart = this.num('data-sweep-start', 0);
     const sweep = this.num('data-sweep', 360);
 
-    // Only the visible slices share the circle, so the ring always closes.
-    const visible = this.#slices.filter((_, i) => !this.#hidden.has(i));
+    // The slices it is given share the circle, so the ring always closes.
     // CLAMPED: a negative arc is not a shape. TRAP T-one-total-for-the-ring-and-the-label
-    const total = datumTotal(visible, { clamp: true });
+    const total = datumTotal(this.#slices, { clamp: true });
     if (total <= 0) return;
 
     let acc = 0;
     this.#slices.forEach((slice, i) => {
-      // Skip AFTER indexing, so an index still names the same slice.
-      if (this.#hidden.has(i)) return;
       const value = Math.max(0, slice.value);
       const share = Math.max(value / total, MIN_SHARE);
 
@@ -192,8 +172,7 @@ export class SherpaRadialChart extends SherpaElement {
    *
    * A hardcoded centre goes stale the moment a filter moves: the dashboard's
    * said "1,284" while the ring beneath it drew 881. Deriving it means the
-   * number and the ring can never disagree — and a hidden slice leaves the
-   * total, because the ring no longer counts it either.
+   * number and the ring can never disagree.
    * TRAP T-the-centre-totals-what-the-ring-draws
    */
   #syncCentre(): void {
@@ -203,9 +182,9 @@ export class SherpaRadialChart extends SherpaElement {
     if (sub) sub.textContent = this.dataset['sublabel'] ?? '';
   }
 
-  /** The visible slices, summed and grouped. Empty when there is nothing drawn. */
+  /** The slices, summed and grouped. Empty when there is nothing drawn. */
   #total(): string {
-    const shown = this.#slices.filter((_, i) => !this.#hidden.has(i));
+    const shown = this.#slices;
     if (!shown.length) return '';
     /* NOT clamped: −5 is what the data says, and a printed total that quietly
        drops it disagrees with the rows behind it.

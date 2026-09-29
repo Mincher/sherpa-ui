@@ -53,54 +53,6 @@ test('transfer-list: what was moved across can be put back', async ({ page }) =>
   expect(r.cleared).toEqual([]);
 });
 
-test('charts: a hidden series can be restored, not just read', async ({ page }) => {
-  // Clicking a legend swatch to hide a series is real view state — what this
-  // reader wants to look at — and belongs in a saved view beside the filter.
-  const r = await page.evaluate(async () => {
-    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
-    const mk = async (tag: string) => {
-      const el = document.createElement(tag) as HTMLElement & {
-        rendered?: Promise<void>;
-        populate(d: unknown): void;
-        hiddenBars?: number[];
-        hiddenSeries?: number[];
-      };
-      document.getElementById('root')!.replaceChildren(el);
-      await el.rendered;
-      return el;
-    };
-
-    const bar = await mk('sherpa-barchart');
-    bar.populate([{ label: 'a', value: 1 }, { label: 'b', value: 2 }, { label: 'c', value: 3 }]);
-    await settle();
-    bar.hiddenBars = [0, 2];
-    await settle();
-    const bars = {
-      read: bar.hiddenBars,
-      // …and it actually took effect, not merely recorded.
-      visible: Array.from(bar.shadowRoot!.querySelectorAll('.bar'))
-        .filter((x) => getComputedStyle(x).display !== 'none').length,
-    };
-
-    const line = await mk('sherpa-line-chart');
-    line.populate({ labels: ['x', 'y'], series: [[1, 2], [3, 4], [5, 6]] });
-    await settle();
-    line.hiddenSeries = [1];
-    await settle();
-
-    // An empty array shows everything again.
-    bar.hiddenBars = [];
-    await settle();
-
-    return { bars, lineRead: line.hiddenSeries, barCleared: bar.hiddenBars };
-  });
-
-  expect(r.bars.read).toEqual([0, 2]);
-  expect(r.bars.visible).toBe(1);
-  expect(r.lineRead).toEqual([1]);
-  expect(r.barCleared).toEqual([]);
-});
-
 test('one chart datum: the SAME array feeds a chart and its legend', async ({ page }) => {
   // BarDatum, RadialSlice and LegendItem were three names for the same three
   // fields, so crossing between them cost a `.map()` that copied a shape to
@@ -164,8 +116,6 @@ test('every stateful component exposes BOTH halves of its state', async ({ page 
       ['sherpa-nav', 'pinned'],
       ['sherpa-select-group', 'value'],
       ['sherpa-transfer-list', 'selected'],
-      ['sherpa-barchart', 'hiddenBars'],
-      ['sherpa-line-chart', 'hiddenSeries'],
       ['sherpa-input-text', 'value'],
     ];
 

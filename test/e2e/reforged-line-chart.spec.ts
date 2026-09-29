@@ -65,30 +65,23 @@ test('area variant reveals the fill; line variant hides it', async ({ page }) =>
   expect(r.area).not.toBe('none');
 });
 
-test('setSeriesHidden removes a series and re-scales the axis to what is left', async ({ page }) => {
+/* A series LEFT OUT — a legend's pick, answered by the provider — re-scales the
+   axis to the series drawn, and keeps its colour by its colorIndex.
+   TRAP T-hiding-a-series-rescales-the-axis */
+test('a series left out re-scales the axis, and the rest keep their colour', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-line-chart') as HTMLElement & {
       rendered?: Promise<void>;
       populate(d: unknown): void;
-      setSeriesHidden(i: number, hidden?: boolean): void;
-      hiddenSeries: number[];
     };
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
-    // One series peaks at 1000, the other stays under 10. With both visible the
-    // small one is squashed flat; hiding the big one must re-scale for it.
-    el.populate({
-      labels: ['a', 'b', 'c'],
-      series: [
-        { name: 'big', values: [900, 1000, 950] },
-        { name: 'small', values: [2, 8, 5] },
-      ],
-    });
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
-
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const big = { name: 'big', values: [900, 1000, 950], colorIndex: 1 };
+    const small = { name: 'small', values: [2, 8, 5], colorIndex: 2 };
     const sr = el.shadowRoot!;
     const count = (): number => sr.querySelectorAll('g.series').length;
-    /** The small series' y range — a squashed line has almost no spread. */
+    /** The last series' y range — a squashed line has almost no spread. */
     const spread = (): number => {
       const line = sr.querySelectorAll('polyline.line');
       const last = line[line.length - 1];
@@ -101,32 +94,23 @@ test('setSeriesHidden removes a series and re-scales the axis to what is left', 
       Array.from(sr.querySelectorAll<HTMLElement>('g.series')).map((g) =>
         g.style.getPropertyValue('--_hue'),
       );
-
+    // One series peaks at 1000, the other stays under 10.
+    el.populate({ labels: ['a', 'b', 'c'], series: [big, small] });
+    await settle();
     const both = { count: count(), spread: spread(), hues: hues() };
-    el.setSeriesHidden(0);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
-    const alone = { count: count(), spread: spread(), hues: hues(), list: el.hiddenSeries };
-    el.setSeriesHidden(0, false);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
-    const restored = { count: count(), hues: hues(), list: el.hiddenSeries };
-    return { both, alone, restored };
+    el.populate({ labels: ['a', 'b', 'c'], series: [small] });
+    await settle();
+    return { both, alone: { count: count(), spread: spread(), hues: hues() } };
   });
 
   expect(r.both.count).toBe(2);
   expect(r.alone.count).toBe(1);
-  expect(r.alone.list).toEqual([0]);
-
-  // The point of re-rendering rather than hiding the drawn <g>: the y-scale comes
-  // from the VISIBLE values, so the small series stops being a flat line at the
-  // bottom of the canvas once the 1000-peak series is out of the extent.
+  // The y-scale comes from the series DRAWN, so the small one stops being a
+  // flat line at the bottom once the 1000-peak series is out.
   expect(r.both.spread).toBeLessThan(3);
   expect(r.alone.spread).toBeGreaterThan(50);
-
-  // Unhiding restores BOTH series and their original hues — the colour comes from
-  // the series index, so hiding one must not shift the other's colour.
-  expect(r.restored.count).toBe(2);
-  expect(r.restored.hues).toEqual(r.both.hues);
-  expect(r.restored.list).toEqual([]);
+  // Its colour is its colorIndex, never its position.
+  expect(r.alone.hues).toEqual([r.both.hues[1]]);
 });
 
 test('the y axis spans the data extent, not zero to max', async ({ page }) => {

@@ -105,8 +105,7 @@ test('clicking an entry fires legend-item-click and toggles aria-pressed', async
   expect(r.off.colour).toBe('rgb(179, 179, 195)');
   expect(r.off.swatchBg).toBe('rgba(0, 0, 0, 0)');
 
-  // The event carries the index AND the new state, which is what the page needs
-  // to call the chart's setSeriesHidden / setSliceHidden.
+  // The event carries the index AND the new state.
   //
   // `indices` joined it when the legend gained its six-row cap: past six entries
   // the tail rolls into one "Other" row, so a single row can stand for SEVERAL
@@ -301,8 +300,8 @@ test('the Other row carries a breakdown menu that commits on Apply', async ({ pa
     }
     const stillOpen = menu.shadowRoot!.querySelector('.menu')!.matches(':popover-open');
 
-    let detail: { active: number[]; hidden: number[] } | null = null;
-    el.addEventListener('legend-breakdown-change', (e) => {
+    let detail: { active: boolean; indices: number[] } | null = null;
+    el.addEventListener('legend-item-click', (e) => {
       detail = (e as CustomEvent).detail;
     });
     (menu.shadowRoot!.querySelector('.apply') as HTMLElement).click();
@@ -333,9 +332,9 @@ test('the Other row carries a breakdown menu that commits on Apply', async ({ pa
   // Ticking does NOT close it — that is what data-commit buys.
   expect(r.stillOpen).toBe(true);
 
-  // Apply reports BOTH lists, so a chart applies the edit in one pass.
-  expect(r.detail?.active).toEqual([6, 8]);
-  expect(r.detail?.hidden).toEqual([5, 7]);
+  // Apply reports the categories still on, in ONE event.
+  expect(r.detail?.active).toBe(true);
+  expect(r.detail?.indices).toEqual([6, 8]);
 });
 
 test('label and value carry two inks, and BOTH grey when the entry is off', async ({ page }) => {

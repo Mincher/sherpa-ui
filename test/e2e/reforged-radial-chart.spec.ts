@@ -215,60 +215,39 @@ test('the ring scales uniformly to whichever axis runs out first', async ({ page
   expect(r.short['w']).toBeLessThanOrEqual(140);
 });
 
-test('setSliceHidden drops a slice and re-shares the whole circle', async ({ page }) => {
+/* A slice LEFT OUT — a legend's pick, answered by the provider — leaves the
+   rest to share the WHOLE circle, each keeping its colour by its colorIndex.
+   TRAP T-hiding-a-series-rescales-the-axis */
+test('slices left out re-share the whole circle, and keep their colour', async ({ page }) => {
   const r = await page.evaluate(async (shareSrc) => {
     const share = eval(shareSrc) as (el: SVGPathElement) => number;
     const el = document.createElement('sherpa-radial-chart') as HTMLElement & {
       rendered?: Promise<void>;
       populate(d: unknown): void;
-      setSliceHidden(i: number, hidden?: boolean): void;
-      hiddenSlices: number[];
     };
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
-    el.populate([
-      { label: 'A', value: 50 },
-      { label: 'B', value: 30 },
-      { label: 'C', value: 20 },
-    ]);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
-
+    const settle = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const A = { label: 'A', value: 50, colorIndex: 1 };
+    const B = { label: 'B', value: 30, colorIndex: 2 };
+    const C = { label: 'C', value: 20, colorIndex: 3 };
     const sr = el.shadowRoot!;
-    const arcs = (): SVGPathElement[] =>
-      Array.from(sr.querySelectorAll<SVGPathElement>('.slice'));
-    /** Each slice's share of the circle, read back off its drawn path. */
+    const arcs = (): SVGPathElement[] => Array.from(sr.querySelectorAll<SVGPathElement>('.slice'));
     const shares = (): number[] => arcs().map(share);
     const hues = (): string[] =>
       arcs().map((a) => (a as unknown as HTMLElement).style.getPropertyValue('--_hue'));
-    const indices = (): (string | undefined)[] => arcs().map((a) => a.dataset['index']);
-
-    const before = { shares: shares(), hues: hues(), indices: indices() };
-    el.setSliceHidden(0);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
-    const hidden = { shares: shares(), hues: hues(), indices: indices(), list: el.hiddenSlices };
-    el.setSliceHidden(0, false);
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
-    const restored = { shares: shares(), hues: hues(), list: el.hiddenSlices };
-    return { before, hidden, restored };
+    el.populate([A, B, C]);
+    await settle();
+    const before = { shares: shares(), hues: hues() };
+    el.populate([B, C]);
+    await settle();
+    return { before, after: { shares: shares(), hues: hues() } };
   }, SHARE_FN);
 
   expect(r.before.shares).toEqual([50, 30, 20]);
-
-  // One fewer arc, and the shares RE-SPREAD to fill the whole circle: a donut
-  // shows parts of a whole, so hiding a slice must not leave a gap where it was.
-  // 30 and 20 of the remaining 50 become 60 and 40.
-  expect(r.hidden.shares).toEqual([60, 40]);
-  expect(r.hidden.shares.reduce((a, b) => a + b, 0)).toBe(100);
-  expect(r.hidden.list).toEqual([0]);
-  // The surviving arcs keep their ORIGINAL data indices, so a click still reports
-  // the right record and the hue does not shift along the ramp.
-  expect(r.hidden.indices).toEqual(['1', '2']);
-  expect(r.hidden.hues).toEqual([r.before.hues[1], r.before.hues[2]]);
-
-  // Unhiding restores the original geometry and colour order exactly.
-  expect(r.restored.shares).toEqual([50, 30, 20]);
-  expect(r.restored.hues).toEqual(r.before.hues);
-  expect(r.restored.list).toEqual([]);
+  // A donut shows parts of a whole: 30 and 20 of the remaining 50 become 60 and 40.
+  expect(r.after.shares).toEqual([60, 40]);
+  expect(r.after.hues).toEqual([r.before.hues[1], r.before.hues[2]]);
 });
 
 /**
@@ -280,13 +259,12 @@ test('setSliceHidden drops a slice and re-shares the whole circle', async ({ pag
  *
  * TRAP T-the-centre-totals-what-the-ring-draws
  */
-test('the centre derives the total, follows a hidden slice, and yields to data-label', async ({ page }) => {
+test('the centre derives the total, follows what is drawn, and yields to data-label', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const mk = async (label?: string) => {
       const el = document.createElement('sherpa-radial-chart') as HTMLElement & {
         rendered?: Promise<void>;
         populate?: (d: unknown) => void;
-        setSliceHidden?: (i: number, h?: boolean) => void;
       };
       if (label != null) el.setAttribute('data-label', label);
       document.getElementById('root')!.appendChild(el);
@@ -308,8 +286,8 @@ test('the centre derives the total, follows a hidden slice, and yields to data-l
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const total = centre(derived);
 
-    // A hidden slice leaves the total, because the RING no longer counts it.
-    derived.setSliceHidden!(0, true);
+    // A slice left out leaves the total, because the RING no longer counts it.
+    derived.populate!(data.slice(1));
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const afterHide = centre(derived);
 

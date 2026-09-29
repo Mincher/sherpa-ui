@@ -38,40 +38,12 @@ export class SherpaLineChart extends SherpaElement {
   #labels: string[] = [];
   /** The lines, as populated. */
   #series: Series[] = [];
-  /** Which series a legend has switched off, by index. */
-  #hidden = new Set<number>();
 
   override onRender(): void {
     if (this.#series.length) this.#render();
   }
 
   override onChange(): void {
-    this.#render();
-  }
-
-  /* ── Public API ──────────────────────────────────────────────────── */
-
-  /**
-   * Show or hide one series. Hiding re-renders — the axis rescales to what is
-   * left. TRAP T-hiding-a-series-rescales-the-axis
-   */
-  setSeriesHidden(index: number, hidden = true): void {
-    if (hidden) this.#hidden.add(index);
-    else this.#hidden.delete(index);
-    this.#render();
-  }
-
-  /** The indices currently hidden. */
-  get hiddenSeries(): number[] {
-    return [...this.#hidden].sort((a, b) => a - b);
-  }
-
-  /**
-   * Hide exactly these series — REPLACES, and keeps an out-of-range index.
-   * TRAP T-hidden-set-is-view-state-and-replaces
-   */
-  set hiddenSeries(indices: readonly number[]) {
-    this.#hidden = new Set(indices.filter((i) => Number.isInteger(i) && i >= 0));
     this.#render();
   }
 
@@ -82,8 +54,6 @@ export class SherpaLineChart extends SherpaElement {
     this.#series = (Array.isArray(d.series) ? d.series : []).map((s) =>
       Array.isArray(s) ? { values: s } : s,
     );
-    // Stale indices would hide the wrong series.
-    this.#hidden.clear();
     this.#render();
   }
 
@@ -97,10 +67,8 @@ export class SherpaLineChart extends SherpaElement {
     const dotTpl = this.$<HTMLTemplateElement>('template.hotspot-tpl');
     if (!layer || !grid || !xAxis || !xtpl) return;
 
-    // Bounds come from the VISIBLE series only.
-    const all = this.#series
-      .filter((_, i) => !this.#hidden.has(i))
-      .flatMap((s) => s.values);
+    // Bounds come from the series it is given. TRAP T-hiding-a-series-rescales-the-axis
+    const all = this.#series.flatMap((s) => s.values);
     /* ONE scale rule for every chart. NaN is the not-given sentinel; Number('')
        would be 0. TRAP T-nan-is-the-not-given-sentinel
        TRAP T-one-scale-for-every-chart */
@@ -132,9 +100,6 @@ export class SherpaLineChart extends SherpaElement {
     layer.replaceChildren();
     hotspots?.replaceChildren();
     this.#series.forEach((s, si) => {
-      // Hue stays keyed to `si`, so a visible series keeps its colour when a
-      // neighbour is hidden.
-      if (this.#hidden.has(si)) return;
       const hue = seriesVar(si, s.colorIndex);
       const pts = s.values.map((v, i) => {
         const x = s.values.length > 1 ? (i / (s.values.length - 1)) * 100 : 50;

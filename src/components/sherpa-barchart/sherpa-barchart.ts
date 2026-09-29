@@ -2,7 +2,7 @@
  * sherpa-barchart — a vertical bar chart. JS hands CSS a height percent and a
  * colour per bar; CSS grows each bar from the baseline.
  *
- * TRAP T-hiding-a-series-rescales-the-axis — the y-max comes from what is left.
+ * TRAP T-hiding-a-series-rescales-the-axis — the y-max comes from the bars it is given.
  *
  * Map:
  * - BarDatum — one bar: its label and value
@@ -33,8 +33,6 @@ export class SherpaBarchart extends SherpaElement {
 
   /** The bars, as populated. */
   #data: BarDatum[] = [];
-  /** Bars a chart legend has switched off. */
-  #hidden = new Set<number>();
 
   override onRender(): void {
     this.$('.bars')?.addEventListener('click', this.#onClick);
@@ -48,26 +46,6 @@ export class SherpaBarchart extends SherpaElement {
   /** populate([{ label, value, colorIndex? }]) — the bars. */
   protected override renderData(data: unknown): void {
     this.#data = Array.isArray(data) ? (data as BarDatum[]) : [];
-    // A stale hide would drop the wrong bar.
-    this.#hidden.clear();
-    this.#render();
-  }
-
-  /** Hide or show one bar, so a chart legend can toggle it. */
-  setBarHidden(index: number, hidden = true): void {
-    if (hidden) this.#hidden.add(index);
-    else this.#hidden.delete(index);
-    this.#render();
-  }
-
-  /** The indices currently hidden, ascending. */
-  get hiddenBars(): number[] {
-    return [...this.#hidden].sort((a, b) => a - b);
-  }
-
-  /** Hide exactly these bars. TRAP T-hidden-set-is-view-state-and-replaces — it REPLACES. */
-  set hiddenBars(indices: readonly number[]) {
-    this.#hidden = new Set(indices.filter((i) => Number.isInteger(i) && i >= 0));
     this.#render();
   }
 
@@ -79,9 +57,7 @@ export class SherpaBarchart extends SherpaElement {
     const xTpl = this.$<HTMLTemplateElement>('template.xlabel-tpl');
     if (!bars || !tpl) return;
 
-    const shown = this.#data
-      .map((d, i) => ({ d, i }))
-      .filter(({ i }) => !this.#hidden.has(i));
+    const shown = this.#data.map((d, i) => ({ d, i }));
 
     /* ONE scale rule for every chart. TRAP T-nan-is-the-not-given-sentinel: an
        absent max is derived. TRAP T-one-scale-for-every-chart */
