@@ -55,6 +55,9 @@ export interface DataAsk {
   /** It PICKS values of its segment field, through its `picked` property: the
    *  event it fires, and what a pick narrows — its `host` (a legend's chart). */
   picks?: { event: string; narrows: 'host' | 'self' };
+  /** The fields whose WHOLE list of values it needs — a heading menu built from
+   *  one page is a one-way door. TRAP T-unavailable-value-sorts-below-a-divider */
+  values?: (el: Element) => readonly string[];
 }
 
 /** A component's data, in the shape it declared — pushed on every change. */

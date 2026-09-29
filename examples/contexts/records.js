@@ -80,13 +80,6 @@ export async function init(root, { source }) {
      TRAP T-a-bug-report-should-be-a-paste */
   window.sherpa = { ...(window.sherpa ?? {}), source, store };
 
-  /* THE WHOLE COLUMN, not the drawn page: a heading's menu built from the rows
-     on screen is a one-way door. TRAP T-unavailable-value-sorts-below-a-divider */
-  grid.setAttribute('data-column-values', grid.columns
-    .filter((c) => (c.type ?? 'text') === 'text' && (c.advanced ?? c.custom) !== 'only')
-    .map((c) => `${c.field}:${source.valuesFor(c.field).join('|')}`)
-    .join('\n'));
-
   /* The GAUGE alone is bound by hand: it shows RISK, not health, so low reads
      green on the left as every other gauge does. Every row, never a page.
      TRAP T-a-summary-binds-to-all-the-rows · TRAP T-an-aggregate-returns-the-number */

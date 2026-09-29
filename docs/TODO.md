@@ -354,9 +354,11 @@ Will, 2026-09-25:
    buttons and `filter-configure` are gone
    (`T-the-mode-switch-is-the-pages-own`).
 2. **Components take PARAMETERS, never data shapes.** A component should not
-   know a field is called `openTickets`. Measure what still does. The grid's
-   heading values are set by the PAGE (`data-column-values`, in `records.js`)
-   — the source has them (86, §9 item 4).
+   know a field is called `openTickets`. Measure what still does.
+   ✅ **The grid's heading values — done 2026-09-29.** The PAGE set them
+   (`data-column-values`, in `records.js`). Now the grid's request names the
+   text columns that need a whole value list (`DataAsk.values`) and the
+   provider sends them with every page of rows; `records.js` does nothing.
 3. **Extension, not forking** — item 27 is the mechanism.
 4. **Split the example app into its own repo**, LAST. Anything it cannot do
    from outside the library is a boundary the library has not drawn. Its

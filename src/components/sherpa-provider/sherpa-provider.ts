@@ -567,7 +567,13 @@ export class SherpaProvider extends SherpaElement {
       // A page of rows arrives WITH its groups: a group is the data layer's.
       // TRAP T-a-group-is-a-data-layer-concept
       ...(asks.shape === 'rows'
-        ? { as: (rows, src) => ({ rows, groups: src.state.group && src.loaded ? src.groups() : null }) }
+        ? { as: (rows, src) => ({
+          rows,
+          groups: src.state.group && src.loaded ? src.groups() : null,
+          // The WHOLE column, which one page cannot say. TRAP T-unavailable-value-sorts-below-a-divider
+          ...(asks.values ? { values: Object.fromEntries(asks.values(el)
+            .map((f) => [f, src.valuesFor(f).map(valueKey)])) } : {}),
+        }) }
         : {}),
       deliver: (payload) => callback(payload, leave),
     });

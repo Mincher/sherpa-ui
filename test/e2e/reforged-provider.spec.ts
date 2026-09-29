@@ -37,6 +37,31 @@ const SETUP = `
   const drawn = (g) => g.shadowRoot.querySelectorAll('.body .row, tbody tr').length;
 `;
 
+/* THE WHOLE COLUMN comes from the data layer. A heading menu built from one
+   page of rows lists only that page; the grid ASKS for its text columns' whole
+   lists, and the provider sends them with the rows (TODO 37).
+   TRAP T-unavailable-value-sorts-below-a-divider */
+test('a paged grid in a provider lists the WHOLE column in its heading menu', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const provider = document.createElement('sherpa-provider');
+    const g = grid({ 'data-column-filters': '' });
+    provider.append(g);
+    root.append(provider);
+    const src = new DataSource({ store: new ArrayStore(rows(6, 'n'), { key: 'id' }), pageSize: 2 });
+    // A page declares what its fields may hold, as openSource does.
+    await src.declareFromRows(['name']);
+    await provider.provide({ sources: { s: src } });
+    await settle();
+    const menu = g.shadowRoot.querySelector('.head-cell[data-field="name"] sherpa-menu');
+    const listed = [...menu.querySelectorAll('input')].map((i) => i.value).filter((v) => v && v !== 'on');
+    return { drawn: drawn(g), listed, reports };
+  })()`) as Record<string, unknown>;
+  expect(r['drawn']).toBe(2);
+  expect(r['listed']).toEqual(['n0', 'n1', 'n2', 'n3', 'n4', 'n5']);
+  expect(r['reports']).toEqual([]);
+});
+
 test('a grid inside a provider fills with no bind; one outside waits', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}

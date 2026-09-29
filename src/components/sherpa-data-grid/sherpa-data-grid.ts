@@ -87,7 +87,8 @@ export interface GridAction {
 interface GridConfig {
   columns: GridColumn[];
   rows: GridRow[];
-  /** TRAP T-grid-key-or-position-lies — no key means selection by POSITION. */
+  /** The field that names a row. Without it, the data layer's key does —
+   *  never a position. TRAP T-a-made-up-key-never-leaves-the-data-layer */
   key?: string;
   /** Per-row actions. Reveals the pinned trailing column. */
   actions?: GridAction[];
@@ -99,12 +100,11 @@ interface GridConfig {
    * TRAP T-a-group-is-a-data-layer-concept
    */
   groups?: GroupSummary[];
+  /** Each text column's WHOLE list of values, by field — from the data layer,
+   *  for the heading menus. TRAP T-unavailable-value-sorts-below-a-divider */
+  values?: Readonly<Record<string, readonly string[]>>;
 }
 
-/**
- * One column heading's filter. TRAP T-grid-range-keeps-both-shapes — not a
- * tagged union, so a Range flip and back finds the other side's typing intact.
- */
 /** Which body template each column type's filter menu holds — TEXT has none:
     it is the sherpa-menu FILTER variant. TRAP T-one-field-one-filter-menu */
 /* ONLY A DATE keeps a body of its own. A calendar projects its stepper into
@@ -137,7 +137,13 @@ export class SherpaDataGrid extends SherpaElement {
   /* A PAGE of rows, with its groups. Its own header filter row it answers
      itself, so its source never hears `filter-change`.
      TRAP T-a-component-asks-its-provider */
-  static override asks: DataAsk = { shape: 'rows', own: ['filter-change'] };
+  static override asks: DataAsk = {
+    shape: 'rows', own: ['filter-change'],
+    // Its text headings' WHOLE value lists — an Advanced-only one lists none.
+    values: (el) => ((el as unknown as { columns?: GridColumn[] }).columns ?? [])
+      .filter((c) => (c.type ?? 'text') === 'text' && kindOf(c) !== 'advanced')
+      .map((c) => c.field),
+  };
 
   /* CONFIGURATION a page sets once; rows and groups arrive as data beside it.
      TRAP T-configuration-is-not-data */
@@ -251,6 +257,7 @@ export class SherpaDataGrid extends SherpaElement {
     this.#columns = Array.isArray(cfg.columns) ? cfg.columns : [];
     this.#rows = Array.isArray(cfg.rows) ? cfg.rows : [];
     this.#key = typeof cfg.key === 'string' ? cfg.key : null;
+    this.#givenValues = cfg.values ?? {};
     this.#syncNeedles();
     this.#syncColumnValues();
     this.#actions = Array.isArray(cfg.actions) ? cfg.actions : [];
@@ -603,8 +610,11 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
 
-  /** The WHOLE column's values, by field — see `data-column-values`. */
+  /** The WHOLE column's values, by field — `data-column-values`, then the data layer's. */
   #columnValues = new Map<string, string[]>();
+
+  /** The data layer's whole-column values, as the last populate gave them. */
+  #givenValues: Readonly<Record<string, readonly string[]>> = {};
 
   /**
    * Parse `data-column-values`: `field:a|b|c` per entry, newline separated.
@@ -620,10 +630,13 @@ export class SherpaDataGrid extends SherpaElement {
       const values = entry.slice(at + 1).split('|').filter(Boolean);
       if (values.length) this.#columnValues.set(entry.slice(0, at), values);
     }
+    for (const [field, values] of Object.entries(this.#givenValues)) {
+      if (values.length) this.#columnValues.set(field, [...values]);
+    }
   }
 
   /**
-   * The Range switch. TRAP T-range-switch-swaps-not-rebuilds — an attribute
+   * The Range switch. TRAP T-range-switch-swaps-not-rebuilds · TRAP T-grid-range-keeps-both-shapes — an attribute
    * write, never a rebuild, so the other side's typing survives a flip back.
    */
   #onColumnRangeToggle = (event: Event): void => {

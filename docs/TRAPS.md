@@ -5491,11 +5491,18 @@ built its list from `this.#rows`, which is the PAGE the grid was handed. Filter
 on another field and three of four owners vanished from the Owner menu. Only
 the host knows the whole column, so it hands it over in `data-column-values`.
 
+The WHOLE column comes from the data layer: the grid's request names the
+text columns that need a whole list (`DataAsk.values`), and the provider sends
+them with every page of rows. `data-column-values` stays for a host with no
+provider. (Records set it by hand until TODO 37.)
+
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `examples/contexts/records.js`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/core/ui/context.ts`
+- Site: `test/e2e/reforged-provider.spec.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `src/core/data/filter-state.ts`
