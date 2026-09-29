@@ -41,7 +41,7 @@ test('defaults closed; the body is hidden until [open]', async ({ page }) => {
   expect(r.heading).toBe('Details');
 });
 
-test('toggling the summary fires a composed toggle with { open }', async ({ page }) => {
+test('toggling the summary fires accordion-open, then accordion-close', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-accordion') as AccordionEl;
     el.innerHTML = '<p>body</p>';
@@ -49,7 +49,8 @@ test('toggling the summary fires a composed toggle with { open }', async ({ page
     await el.rendered;
 
     const events: boolean[] = [];
-    el.addEventListener('toggle', (e) => events.push((e as CustomEvent).detail.open));
+    el.addEventListener('accordion-open', () => events.push(true));
+    el.addEventListener('accordion-close', () => events.push(false));
 
     const summary = el.shadowRoot!.querySelector<HTMLElement>('.header')!;
     // The native <details> toggle event fires on a queued task and COALESCES

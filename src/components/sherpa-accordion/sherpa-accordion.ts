@@ -2,7 +2,7 @@
  * sherpa-accordion — a disclosure card over native <details> / <summary>.
  *
  * The native `toggle` is not composed, so app code cannot see it — this
- * re-dispatches it as a composed component event.
+ * reports it as `accordion-open` or `accordion-close`.
  *
  * @prop {boolean} open — whether the disclosure is expanded (delegates to <details>)
  */
@@ -71,7 +71,7 @@ export class SherpaAccordion extends SherpaElement {
   #onToggle = (): void => {
     const open = this.#details()?.open ?? false;
     this.toggleAttribute('open', open);
-    this.emit('toggle', { open });
+    this.emit(open ? 'accordion-open' : 'accordion-close');
   };
 }
 

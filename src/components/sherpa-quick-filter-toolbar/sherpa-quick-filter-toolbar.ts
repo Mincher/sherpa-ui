@@ -1656,7 +1656,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         this.emit('view-save');
         break;
       case 'view-menu':
-        this.emit('view-menu-open');
+        this.emit('view-menu-click');
         break;
       case 'favourite':
         this.#toggleFavourite();

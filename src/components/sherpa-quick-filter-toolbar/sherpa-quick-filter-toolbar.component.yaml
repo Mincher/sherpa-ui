@@ -339,7 +339,7 @@ events:
     detail:
       favourite: unknown
   - $type: event
-    name: view-menu-open
+    name: view-menu-click
     bubbles: true
     composed: true
   - $type: event

@@ -100,6 +100,14 @@ events:
     composed: true
     detail:
       ids: unknown
+  - $type: event
+    name: notifications-open
+    bubbles: true
+    composed: true
+  - $type: event
+    name: notifications-close
+    bubbles: true
+    composed: true
 tokens:
   notification-icon.font-size: "{sherpa.theme-size-icon-xs}"
   notification-icon.color: "{sherpa.style-content-secondary}"

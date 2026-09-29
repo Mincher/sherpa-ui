@@ -111,9 +111,10 @@ export class SherpaNotifications extends SherpaElement {
   /** Whether the card is open, as the last menu event reported it. */
   #open = false;
 
-  /** Track whether the menu is open. */
+  /** Track whether the menu is open, and say so in this component's own words. */
   #onMenuToggle = (event: Event): void => {
     this.#open = event.type === 'menu-open';
+    this.emit(this.#open ? 'notifications-open' : 'notifications-close');
   };
 
   /* ── Private ─────────────────────────────────────────────────────── */

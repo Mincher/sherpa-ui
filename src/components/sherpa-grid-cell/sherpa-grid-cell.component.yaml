@@ -150,7 +150,7 @@ events:
       direction: unknown
       field: string
   - $type: event
-    name: menu-open
+    name: menu-click
     bubbles: true
     composed: true
   - $type: event

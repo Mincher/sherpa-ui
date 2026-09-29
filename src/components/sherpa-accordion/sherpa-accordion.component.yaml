@@ -110,11 +110,13 @@ capabilities:
     description: read/write JS properties (open). See $extensions.sherpa.jsProps.
 events:
   - $type: event
-    name: toggle
+    name: accordion-open
     bubbles: true
     composed: true
-    detail:
-      open: unknown
+  - $type: event
+    name: accordion-close
+    bubbles: true
+    composed: true
 tokens:
   header.gap: "{sherpa.theme-gap-sm}"
   header.padding-block: "{sherpa.theme-padding-lg}"

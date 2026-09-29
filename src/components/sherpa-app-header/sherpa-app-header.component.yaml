@@ -310,7 +310,7 @@ events:
     bubbles: true
     composed: true
   - $type: event
-    name: notifications-open
+    name: notifications-click
     bubbles: true
     composed: true
   - $type: event

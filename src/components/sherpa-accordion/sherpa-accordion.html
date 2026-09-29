@@ -16,7 +16,9 @@
                   TRAP T-an-accordion-action-is-not-a-toggle
     (default)   — the disclosure body
 
-  Fires: toggle (detail: { open: boolean })
+  Fires:
+    accordion-open  (detail: {})
+    accordion-close (detail: {})
 -->
 <template id="default">
   <details class="root" part="root">

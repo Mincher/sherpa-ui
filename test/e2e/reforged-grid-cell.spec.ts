@@ -88,7 +88,7 @@ test('menu button fires menu-open', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     let fired = false;
-    el.addEventListener('menu-open', () => (fired = true));
+    el.addEventListener('menu-click', () => (fired = true));
     el.shadowRoot!.querySelector<HTMLButtonElement>('.menu')!.click();
     return { fired };
   });

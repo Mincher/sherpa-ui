@@ -299,7 +299,7 @@ test('every cluster button fires the event Figma names for it', async ({ page })
     const seen: string[] = [];
     for (const ev of [
       'ai-filter-request', 'filter-configure', 'data-refresh', 'filter-overflow',
-      'view-save', 'view-menu-open', 'filter-add',
+      'view-save', 'view-menu-click', 'filter-add',
     ]) el.addEventListener(ev, () => seen.push(ev));
 
     const press = async (act: string) => {
@@ -319,7 +319,7 @@ test('every cluster button fires the event Figma names for it', async ({ page })
 
   expect(r.seen).toEqual([
     'ai-filter-request', 'filter-configure', 'data-refresh', 'filter-overflow',
-    'view-save', 'view-menu-open',
+    'view-save', 'view-menu-click',
   ]);
   // A plain button, announcing itself as a menu trigger.
   expect(r.addIsButton).toBe('sherpa-button');

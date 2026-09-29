@@ -208,7 +208,9 @@ export class SherpaFilterPanel extends SherpaElement {
       this.$('.scopes')?.addEventListener(type, this.#onEdited);
     }
     // A SHUT scope's Filters menu leads with what it hides. TRAP T-a-shut-scope-folds-like-a-bar
-    this.$('.scopes')?.addEventListener('toggle', this.#onScopeToggle);
+    for (const type of ['accordion-open', 'accordion-close']) {
+      this.$('.scopes')?.addEventListener(type, this.#onScopeToggle);
+    }
     // CLICK, not hover: a passing pointer would drill the list out from under it.
     this.$('.scopes')?.addEventListener('menu-drill', this.#onMenuDrill);
     this.$('.scopes')?.addEventListener('menu-back', this.#onDrillBack);

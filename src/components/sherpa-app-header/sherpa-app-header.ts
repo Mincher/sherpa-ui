@@ -26,7 +26,7 @@ const ACTIONS: ReadonlyArray<readonly [string, string]> = [
   ['.ai', 'ai-click'],
   ['.labs', 'labs-click'],
   ['.theme-toggle', 'theme-toggle'],
-  ['.notif-btn', 'notifications-open'],
+  ['.notif-btn', 'notifications-click'],
   ['.account', 'account-click'],
   ['.help', 'help-click'],
   ['.menu', 'menu-click'],
