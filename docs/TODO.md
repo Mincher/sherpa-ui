@@ -332,6 +332,36 @@ say "loading" one way.
 Explore first: measure which components keep state in their elements, pick the
 order (the menu first — A7 already moves its answer into `menu.reading`), and
 say what `SherpaElement` gives every component (a state field and one draw).
+
+**Measured 2026-09-29** (a read-only sweep of all 63 components):
+
+- **36 have public state; 12 of them keep it in their elements, or partly** —
+  in elements: app-header, filter-panel, menu, prompt-composer,
+  quick-filter-toolbar, select-group; mixed: file-upload, input-text, nav,
+  nav-item, notifications, quick-filter. The other 24 keep it in attributes
+  or fields and are safe.
+- **Riskiest five:** the toolbar (about 9 setters that write elements before
+  they exist, 10 getters that read state out of them; every restore goes
+  through it), the menu (`values`, `conditions`, `setCount`, `open`), the
+  panel (`readings` read chips; `setFieldReading` writes an empty `#held`),
+  the chip (`values`, `valueLabel`, `column`), and select-group (`value` is
+  lost before populate and on every re-render).
+- **Where early writes come from:** `applyState()` sets accessors at once;
+  the provider's `#configure` awaits only `whenDefined`; `persist-view.ts`
+  says "deferred to `rendered`" but `applyElements` does not await it (a bug
+  to fix first); the source's `#draw` calls `drawReading` directly.
+- **What the base class already has:** the `rendered` promise (always
+  settles; `populate()` chains on it); `static config` with `#settings` —
+  accessors that STORE and redraw after render, used only by the grid, the
+  nearest thing to "state first"; attribute replay. No queue for method calls.
+- **Models to copy:** the grid (state in fields, `#wantedKeys`), the menu's
+  `#early` reading, progress-step-tracker's `rendered.then` setter.
+
+**Proposed order:** fix `persist-view`'s missing await; then the menu, the
+toolbar, the panel and the chip — the filter family, built with A7 — then
+select-group, input-text and prompt-composer. The mechanism: `static config`
+widened for every component (state in `#settings`, one draw), not a family
+base class.
 Keep each component standing alone — Will's rule, `docs/COMPONENT-API-AUDIT.md`
 §5: it extends `SherpaElement` and nothing else, no family base class.
 
