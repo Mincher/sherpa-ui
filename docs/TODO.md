@@ -28,7 +28,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
 | ✅ | 2a | 103 | Rows with no key get one from the data layer — Sherpa's own, never sent out | foundation |
 | 🚧 | 3 | 38 | One model, one builder, one owner — what is left | refactor |
-| ⬜ | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
+| ✅ | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
 | ⬜ | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | ⬜ | 5a | 113 | EXPLORE — state first, then render, in every component; a skeleton while the first render waits | explore |
 | | | | **C — Contained bugs** | |
@@ -193,7 +193,7 @@ grid's `ColumnFilter`), 10 (the wrapped native control, four times), 12
 (chart axes), 14 (the app-header re-exposes the bar) and 15 (leftovers). Item
 8 is 68; item 11 is 84.
 
-### `[ ]` 74 — EXPLORE: the Query builds every group, sort and filter menu; a menu shows its sub-query
+### `[x]` ✅ 74 — EXPLORE: the Query builds every group, sort and filter menu; a menu shows its sub-query
 
 Will, 2026-09-27: *"The query language, and single query object, can be used
 to construct group, sort, and filter menus both in their simple list
@@ -212,6 +212,23 @@ long as the whole situation is captured and can be recreated then we're
 good."* The sub-query IS the field's slice of the Query — its `FieldReading`,
 condition rows and all — shown and saved as JSON, and restored by
 `setQuery`. No grammar, no parser, no second spelling of a condition.
+
+**✅ Explored 2026-09-29 — the answer, as built in 102 and 103:**
+
+- **A menu is drawn from its field's slice of the Query.** That slice is a
+  `FieldReading` — both answers, the mode, the mirror — and it is the menu's
+  own `menu.reading` (get and set). The source draws it (`drawReading`) into
+  the bar, the panel and a grid heading, and each reads its menu the same way;
+  the grid's own fourth spelling (`ColumnFilter`) is gone. No host builds an
+  answer out of a menu's parts any more.
+- **A group and sort menu** already draws from the Query's arrangement
+  (`ScopeQuery.group` / `sort`); nothing new is needed there.
+- **The sub-query is shown as the reading**, in the reader's words: the rows
+  a chip or a heading holds (`spellConditions`) and, for a machine, its JSON.
+  Showing and editing it on a chip is 49 (read-only, a preset) and 50
+  (editable, the reader's own) — feature work in D, on this.
+- **Left for A7 (86):** the grid's headings built by `menuFor()`, so every menu
+  is made one way as well as read one way.
 
 ### `[x]` ✅ 103 — Rows with no key get one from the data layer — Sherpa's own, never sent out
 
