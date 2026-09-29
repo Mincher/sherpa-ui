@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**59 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**58 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -45,7 +45,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
 | ✅ | 16a | 100 | The Assistant panel shows no heading | quick |
 | ✅ | 16b | 106 | A click between a menu's items reaches what is behind it — an accordion toggles | bug |
-| ⬜ | 16c | 108 | A Filters menu row's scope is a DESCRIPTION under its label, with no "in" | quick |
+| ✅ | 16c | 108 | A Filters menu row's scope is a DESCRIPTION under its label, with no "in" | quick |
 | ⬜ | 16d | 114 | About 1 time in 20, a folded Advanced-only filter's row in the Filters menu opens nothing | bug |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | ⬜ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
@@ -530,7 +530,7 @@ Pressing the row opens the chip's own menu while the Filters menu closes. Two
 the order in `#onMenuSelect` / the drill path, and try the same with a real
 pointer.
 
-### `[ ]` 108 — A Filters menu row's scope is a DESCRIPTION under its label, with no "in"
+### `[x]` ✅ 108 — A Filters menu row's scope is a DESCRIPTION under its label, with no "in"
 
 Will, 2026-09-29: *"In filter menu items we have the scope of the filter on the
 right side. This should be the description label on the row below the menu
@@ -540,6 +540,12 @@ Today the source writes ``note: `in ${scopeLabel}` `` (`data-source.ts`,
 `addable`), and the menu draws `data-note` at the row's right. Make it the
 row's description line — the same second line a menu row with a description
 already has, if one exists; check the Figma Menu set first — and drop "in".
+
+**✅ Done 2026-09-29:** Figma's Menu List Item has it: a `description` line,
+12/16, 2px under the 14/20 label. A noted row is a two-row grid now, and its
+`::after` note is the second row, in the label's column. The source writes
+the scope's name alone. The colour stays Style `content-secondary` — the same
+`rgb(53, 53, 61)` as Figma's Theme `content/body/+1`, with no new Theme read.
 
 ### `[x]` ✅ 106 — BUG: a click between a menu's items reaches what is behind it
 
@@ -2158,6 +2164,7 @@ One line each. The detail is in git and in the trap named.
 - 64: a shut accordion fills with the Style +2 surface
 - 100: the Assistant panel shows its heading — `data-heading`, not `data-title`
 - 106: a click in a menu's gap is the menu's own; no accordion behind it toggles — `T-a-gap-click-is-the-menus-own`
+- 108: a Filters menu row's scope is its description line, with no "in"
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

@@ -1034,7 +1034,7 @@ export class DataSource extends EventTarget {
     const skip = new Set([...taken, ...(scope === VIEW ? [] : this.scope(VIEW))]);
     return this.fields(scope).filter((f) => !skip.has(f) && this.#fields.has(f)).map((f) => {
       const at = this.scopeOf(f);
-      return at && at !== scope ? { ...this.filterDef(f), note: `in ${this.scopeLabel(at)}` } : this.filterDef(f);
+      return at && at !== scope ? { ...this.filterDef(f), note: this.scopeLabel(at) } : this.filterDef(f);
     });
   }
 

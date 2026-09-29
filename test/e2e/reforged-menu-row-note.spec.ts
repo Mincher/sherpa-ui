@@ -5,19 +5,21 @@ import { test, expect } from './harness';
  *
  * The view's Add menu offers every field any component has, and adding one
  * that a component holds MOVES it. The row says so before the reader ticks:
- * "Status  in Customer records". The row is LIGHT DOM, so the note is a
+ * "Status", and under it "Customer records" (TODO 108). The row is LIGHT DOM, so the note is a
  * `data-note` drawn by `::slotted(...)::after` — the one part of a slotted row
  * the menu's sheet can reach — and read out through `aria-description`,
  * because generated content is not reliably.
  * TRAP T-up-is-open-down-is-closed
  */
-test('a row with a note draws it muted, and says it to assistive tech', async ({ page }) => {
+test('a row with a note draws it muted under its label, and says it to assistive tech', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const menu = await window.__mount('sherpa-menu', undefined, { 'data-select': 'multiple' });
     (menu as unknown as { items(i: unknown[]): void }).items([
-      { value: 'status', label: 'Status', note: 'in Customer records' },
+      { value: 'status', label: 'Status', note: 'Customer records' },
       { value: 'plan', label: 'Plan' },
     ]);
+    // Open: a shut popover draws nothing to measure.
+    (menu as unknown as { show(): void }).show();
     await window.__settled();
     const rows = [...menu.querySelectorAll('.menu-row:not(.qf-all)')] as HTMLElement[];
     const after = (el: HTMLElement) => getComputedStyle(el, '::after');
@@ -27,13 +29,20 @@ test('a row with a note draws it muted, and says it to assistive tech', async ({
       colour: after(row).color,
       size: after(row).fontSize,
       aria: row.querySelector('input')?.getAttribute('aria-description') ?? null,
+      height: row.getBoundingClientRect().height,
+      labelX: row.querySelector('.menu-row-label')!.getBoundingClientRect().x,
+      labelW: row.querySelector('.menu-row-label')!.getBoundingClientRect().width,
     }));
   });
-  expect(r[0]!.content).toBe('"in Customer records"');
+  expect(r[0]!.content).toBe('"Customer records"');
   // Style's SECONDARY content, at the small body size — muted, not a label.
   expect(r[0]!.colour).toBe('rgb(53, 53, 61)');
   expect(r[0]!.size).toBe('12px');
-  expect(r[0]!.aria).toBe('in Customer records');
+  expect(r[0]!.aria).toBe('Customer records');
+  // UNDER the label, Figma's second line (16px, 2px below): the row grows by
+  // it, and the label starts where a plain row's does, the note not beside it.
+  expect(r[0]!.height - r[1]!.height).toBe(18);
+  expect(r[0]!.labelX).toBe(r[1]!.labelX);
   // A row with NO note draws nothing extra.
   expect(r[1]!.note).toBeNull();
   expect(r[1]!.content).toBe('none');
