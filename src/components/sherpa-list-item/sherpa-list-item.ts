@@ -115,7 +115,7 @@ export class SherpaListItem extends SherpaElement {
   };
 
   /** The drag handle was grabbed. */
-  #onDrag = (): void => { this.emit('item-drag', {}); };
+  #onDrag = (): void => { this.emit('item-drag'); };
 }
 
 customElements.define('sherpa-list-item', SherpaListItem);

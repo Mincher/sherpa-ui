@@ -46,7 +46,7 @@ export class SherpaContainerHeader extends SherpaElement {
   }
 
   /** The dismiss button. */
-  #onDismiss = (): void => { this.emit('header-dismiss', {}); };
+  #onDismiss = (): void => { this.emit('header-dismiss'); };
 
   /** Collapse or expand, and report it. */
   #onToggle = (): void => {
@@ -56,7 +56,7 @@ export class SherpaContainerHeader extends SherpaElement {
   };
 
   /** The drag handle was grabbed. */
-  #onDrag = (): void => { this.emit('header-drag', {}); };
+  #onDrag = (): void => { this.emit('header-drag'); };
 }
 
 customElements.define('sherpa-container-header', SherpaContainerHeader);

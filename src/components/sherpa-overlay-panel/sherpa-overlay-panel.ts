@@ -96,7 +96,7 @@ export class SherpaOverlayPanel extends SherpaElement {
   /** The dialog closed, however it closed: say so. */
   #onClose = (): void => {
     this.toggleAttribute('open', false);
-    this.emit('close', {});
+    this.emit('close');
   };
 
   /** The close button. */
@@ -113,12 +113,12 @@ export class SherpaOverlayPanel extends SherpaElement {
 
   /** The expand button — full screen is the host's to do. */
   #onExpand = (): void => {
-    this.emit('panel-expand', {});
+    this.emit('panel-expand');
   };
 
   /** The open-elsewhere button — the host decides where. */
   #onExternal = (): void => {
-    this.emit('panel-external', {});
+    this.emit('panel-external');
   };
 }
 

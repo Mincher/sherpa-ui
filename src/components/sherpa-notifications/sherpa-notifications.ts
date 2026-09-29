@@ -162,11 +162,9 @@ export class SherpaNotifications extends SherpaElement {
 
   /** Mark all read, or open one notification. */
   #onClick = (event: Event): void => {
-    const path = event.composedPath();
-
     // MARK ALL READ, before the row check — the button is inside the menu the
     // rows are in.
-    if (path.some((n) => n instanceof HTMLElement && n.classList.contains('read-all'))) {
+    if (this.pathFind(event, '.read-all')) {
       const ids = this.#items.filter((n) => n.unread).map((n) => n.id);
       // Marked LOCALLY as well as reported. A host that persists this will push
       // the same change back, and a list that waited for that round trip would
@@ -177,12 +175,7 @@ export class SherpaNotifications extends SherpaElement {
       return;
     }
 
-    // composedPath, because the click starts on the list item's own inner
-    // <button> — inside ITS shadow root — so `target` is the host and `closest`
-    // from there would miss the row.
-    const row = path.find(
-      (n): n is HTMLElement => n instanceof HTMLElement && n.classList.contains('notification'),
-    );
+    const row = this.pathFind(event, '.notification');
     if (!row) return;
     const id = row.dataset['id'];
     const notification = this.#items.find((n) => n.id === id);

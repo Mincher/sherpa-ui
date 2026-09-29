@@ -156,7 +156,7 @@ export class SherpaFileUpload extends SherpaElement {
     if (this.hasAttribute('disabled') || !this.#files.length) return;
     this.#files = [];
     this.#render();
-    this.emit('file-clear', {});
+    this.emit('file-clear');
     this.emit('files-change', { files: this.#files });
   };
 

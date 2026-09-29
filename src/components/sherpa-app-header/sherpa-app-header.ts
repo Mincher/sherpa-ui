@@ -63,7 +63,7 @@ export class SherpaAppHeader extends SherpaElement {
     this.#sync();
     for (const [sel, event] of ACTIONS) {
       // `button-click`, not the native `click`.
-      this.$(sel)?.addEventListener('button-click', () => this.emit(event, {}));
+      this.$(sel)?.addEventListener('button-click', () => this.emit(event));
     }
   }
 

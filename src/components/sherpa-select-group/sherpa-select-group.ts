@@ -126,15 +126,9 @@ export class SherpaSelectGroup extends SherpaElement {
     for (const child of this.#children()) child.toggleAttribute('disabled', disabled);
   }
 
-  /** `target` retargets to the host, so read the child off composedPath(). */
+  /** A child's change, read off the composed path. */
   #onChange = (event: Event): void => {
-    const tag = this.#childTag();
-    const child = event
-      .composedPath()
-      .find(
-        (n): n is SelectChild =>
-          n instanceof HTMLElement && n.localName === tag,
-      );
+    const child = this.pathFind<SelectChild>(event, this.#childTag());
     if (!child) return;
     event.stopPropagation();
     this.emit('change', { value: this.value });

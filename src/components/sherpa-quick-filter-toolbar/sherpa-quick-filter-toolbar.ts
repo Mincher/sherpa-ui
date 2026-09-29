@@ -1637,26 +1637,26 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
     switch (btn.dataset['act']) {
       case 'ai':
-        this.emit('ai-filter-request', {});
+        this.emit('ai-filter-request');
         break;
       case 'clear':
         // RESETS, not announces: a host cannot reach chips it did not stamp.
         this.clearAll();
         break;
       case 'configure':
-        this.emit('filter-configure', {});
+        this.emit('filter-configure');
         break;
       case 'refresh':
-        this.emit('data-refresh', {});
+        this.emit('data-refresh');
         break;
       case 'overflow':
-        this.emit('filter-overflow', {});
+        this.emit('filter-overflow');
         break;
       case 'save':
-        this.emit('view-save', {});
+        this.emit('view-save');
         break;
       case 'view-menu':
-        this.emit('view-menu-open', {});
+        this.emit('view-menu-open');
         break;
       case 'favourite':
         this.#toggleFavourite();
@@ -1750,7 +1750,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       for (const input of chip.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
     }
     if (organise) this.#clearOrganise();
-    this.emit('filter-clear', {});
+    this.emit('filter-clear');
     this.#emitChange();
     if (!organise) return;
     this.emit('group-change', { field: null });

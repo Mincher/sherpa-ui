@@ -84,7 +84,7 @@ export class SherpaPromptComposer extends SherpaElement {
   /** Emit a leading-button event unless disabled. */
   #onLeading(name: 'composer-attach' | 'composer-lab'): void {
     if (this.hasAttribute('disabled')) return;
-    this.emit(name, {});
+    this.emit(name);
   }
 
   /** The form's own submit, so Enter in any field sends. */

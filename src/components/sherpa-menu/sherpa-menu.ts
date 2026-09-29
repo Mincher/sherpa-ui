@@ -1236,7 +1236,7 @@ export class SherpaMenu extends SherpaElement {
       this.#cardResize?.disconnect();
       this.#trigger = null;
     }
-    this.emit(open ? 'menu-open' : 'menu-close', {});
+    this.emit(open ? 'menu-open' : 'menu-close');
   };
 
   /** Watches the card's box, so a body that grows re-places. */
@@ -1322,7 +1322,7 @@ export class SherpaMenu extends SherpaElement {
    * TRAP T-menu-back-is-a-report */
   #onBack = (event: Event): void => {
     event.stopPropagation();
-    this.emit('menu-back', {});
+    this.emit('menu-back');
   };
 
   /** A row or a body control changed: report it, or hold it for Apply. */
@@ -1394,7 +1394,7 @@ export class SherpaMenu extends SherpaElement {
     this.#settledByAction = true;
     this.values = this.#baseline;
     if (this.mode === 'custom') this.conditions = this.#conditionBaseline;
-    this.emit('menu-cancel', {});
+    this.emit('menu-cancel');
     this.hide();
     this.#applying = false;
   };
@@ -1419,7 +1419,7 @@ export class SherpaMenu extends SherpaElement {
       s.range = [Number(s.getAttribute('min') ?? 0), Number(s.getAttribute('max') ?? 100)];
       s.removeAttribute('data-touched');
     }
-    this.emit('menu-clear', {});
+    this.emit('menu-clear');
     /* ALWAYS, even on a COMMITTING menu. Clear is an action ON THE FILTER, not
        an edit to a draft: without this the menu emptied itself and the query
        kept every value, so the card and the rows disagreed until the reader

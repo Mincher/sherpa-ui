@@ -105,7 +105,7 @@ export class SherpaDialog extends SherpaElement {
        TRAP T-a-reopened-dialog-hears-a-late-close */
     if (this.#dialog()?.open) return;
     this.toggleAttribute('open', false);
-    this.emit('close', {});
+    this.emit('close');
   };
 }
 

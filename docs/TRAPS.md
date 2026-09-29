@@ -2670,10 +2670,15 @@ nothing to assert.
 
 ### T-render-list-keeps-fill-in-the-caller
 
-`renderList` does the four steps every data-driven list repeats: clear the
+**`renderList` is folded into `renderItems`** (2026-09-29, the API audit's
+A2): its `fill` is now `renderItems`' `after`. The rule stands.
+
+`renderItems` does the four steps every data-driven list repeats: clear the
 container, clone the prototype per item, fill, append. What each row then
-BECOMES is the caller's business and stays in `fill` — a roving tabindex, an
-`aria-current`, a per-column type. Only the plumbing is shared.
+BECOMES is the caller's business and stays in `after` — a roving tabindex, an
+`aria-current`, a per-column type. Only the plumbing is shared. Its clone is
+IMPORTED, as `clone()`'s is, so a component in an item upgrades at once and
+its icons draw.
 
 The template is looked up ONCE and reused for the whole run, so a long list
 costs one shadow query rather than one per row.
@@ -2683,9 +2688,9 @@ emptying the container. `sherpa-list` needs it: its rows sit beside a `<slot>`,
 and `replaceChildren()` would take the slot with them. `renderItems` takes the
 same option for the same reason.
 
-The index passed to `fill` is the LOOP position. A component stamping a
+The index passed to `after` is the LOOP position. A component stamping a
 DIFFERENT index — `sherpa-barchart` writes each datum's original position while
-iterating a filtered list — writes it inside `fill` from its own data.
+iterating a filtered list — writes it inside `after` from its own data.
 
 - Site: `src/core/ui/sherpa-element.ts`
 

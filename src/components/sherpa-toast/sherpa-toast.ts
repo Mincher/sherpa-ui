@@ -50,7 +50,7 @@ export class SherpaToast extends SherpaElement {
 
   override onRender(): void {
     this.$('.close')?.addEventListener('button-click', () => this.dismiss());
-    this.$('.action')?.addEventListener('click', () => this.emit('toast-action', {}));
+    this.$('.action')?.addEventListener('click', () => this.emit('toast-action'));
   }
 
   override onConnect(): void {

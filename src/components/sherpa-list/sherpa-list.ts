@@ -82,12 +82,7 @@ export class SherpaList extends SherpaElement {
 
   /** Clear every row but the one just clicked. */
   #onItemClick = (event: Event): void => {
-    // A composed event retargets event.target to the host, so read the path.
-    const clicked = event
-      .composedPath()
-      .find(
-        (n): n is ListItemEl => n instanceof HTMLElement && n.localName === 'sherpa-list-item'
-      );
+    const clicked = this.pathFind<ListItemEl>(event, 'sherpa-list-item');
     if (!clicked) return;
     const rows = [
       ...this.querySelectorAll<ListItemEl>(':scope > sherpa-list-item'),

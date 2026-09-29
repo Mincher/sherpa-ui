@@ -155,13 +155,13 @@ export class SherpaBarchart extends SherpaElement {
     if (steps <= 0 || shownCount <= 0) return;
 
     const boundaries = Array.from({ length: steps + 1 }, (_, i) => i);
-    this.renderList('.y-axis', 'template.ytick-tpl', boundaries, (tick, i) => {
+    this.renderItems('.y-axis', 'template.ytick-tpl', boundaries, { after: (tick, i) => {
       tick.style.setProperty('--_at', `${tickPercent(i, steps)}%`);
       /* `min + step * i`, never `max * i / steps` — the SCALE decided where
          its lines fall. TRAP T-the-top-gridline-rounds-to-its-magnitude */
       tick.querySelector('.y-value')!.textContent =
         formatTick(scale.min + scale.step * i);
-    });
+    } });
   }
 
   /** A bar was clicked: report which. */

@@ -577,9 +577,9 @@ export abstract class SherpaElement extends HTMLElement {
 
   /* ── Events ──────────────────────────────────────────────────────────── */
 
-  /** Dispatch a bubbling, composed CustomEvent. */
+  /** Dispatch a bubbling, composed CustomEvent — its detail `{}` when none is given, never null. */
   protected emit<T = unknown>(name: string, detail?: T): void {
-    this.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent(name, { detail: detail ?? {}, bubbles: true, composed: true }));
   }
 
   /**
@@ -642,7 +642,6 @@ export abstract class SherpaElement extends HTMLElement {
     return this.rendered.then(() => this.renderData(this.#withSettings(data)));
   }
 
-  /** Did the event pass through an element matching `selector`? */
   /**
    * Render an icon value — an icon NAME becomes a Figma SVG, any other value
    * is a raw character and stays text.
@@ -674,42 +673,13 @@ export abstract class SherpaElement extends HTMLElement {
   }
 
   /**
-   * Stamp a list: clear the container, clone the prototype per item, fill, append.
-   * `clear: 'own-children'` is for items that sit beside a `<slot>`.
-   * TRAP T-render-list-keeps-fill-in-the-caller
-   */
-  protected renderList<T>(
-    containerSel: string,
-    tplSel: string,
-    items: readonly T[],
-    fill: (node: HTMLElement, item: T, index: number) => void,
-    opts?: { clear?: 'replace' | 'own-children'; ownSel?: string },
-  ): void {
-    const container = this.$(containerSel);
-    const tpl = this.$<HTMLTemplateElement>(tplSel);
-    const proto = tpl?.content?.firstElementChild;
-    if (!container || !proto) return;
-
-    if (opts?.clear === 'own-children') {
-      for (const node of this.$$(opts.ownSel ?? `${containerSel} > *`)) node.remove();
-    } else {
-      container.replaceChildren();
-    }
-
-    items.forEach((item, i) => {
-      const node = proto.cloneNode(true) as HTMLElement;
-      fill(node, item, i);
-      container.appendChild(node);
-    });
-  }
-
-  /**
    * Stamp a list DECLARATIVELY — the prototype's attributes say what fills what,
    * so there is no `fill` callback. An ITEM is whatever the component repeats:
    * a bar, a tab, a crumb, a swatch, a row.
    * TRAP T-item-template-cannot-compute
    * TRAP T-custom-element-upgrade — writes are ATTRIBUTES, never properties.
-   * TRAP T-row-fragment-cloned-whole — `after` is the escape hatch.
+   * TRAP T-row-fragment-cloned-whole — `after` is the escape hatch, and
+   * TRAP T-render-list-keeps-fill-in-the-caller — it is where a caller fills what a template cannot.
    */
   protected renderItems<T>(
     containerSel: string,
@@ -732,11 +702,13 @@ export abstract class SherpaElement extends HTMLElement {
     }
 
     // The whole FRAGMENT: a <dt>+<dd> pair is two roots, and the first alone
-    // drops half of every item.
+    // drops half of every item. IMPORTED, as `clone()` does, so a component in
+    // it upgrades now and its icons draw. TRAP T-custom-element-upgrade
     items.forEach((item, index) => {
-      const frag = tpl.content.cloneNode(true) as DocumentFragment;
+      const frag = document.importNode(tpl.content, true);
       for (const root of [...frag.children]) {
         this.#fillItem(root as HTMLElement, item, index);
+        this.upgradeClonedIcons(root);
       }
       // `after` gets the first root — every case that needs it is single-root.
       const first = frag.firstElementChild as HTMLElement | null;

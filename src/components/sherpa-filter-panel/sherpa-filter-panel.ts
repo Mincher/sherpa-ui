@@ -859,8 +859,8 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** A hidden filter's row asked for its child menu. TRAP T-a-row-opens-its-child-menu */
   #onMenuDrill = (event: Event): void => {
-    const box = this.#pathFind(event, '.scope');
-    const menu = this.#pathFind(event, '.scope-add')?.querySelector<HTMLElement>('sherpa-menu');
+    const box = this.pathFind(event, '.scope');
+    const menu = this.pathFind(event, '.scope-add')?.querySelector<HTMLElement>('sherpa-menu');
     const id = String((event as CustomEvent).detail?.value ?? '');
     if (!box || !menu || !id) return;
     event.stopPropagation();
@@ -1043,7 +1043,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** A single-select field unticks its siblings. */
   #onValueClick = (event: Event): void => {
-    const one = this.#pathFind(event, '.value');
+    const one = this.pathFind(event, '.value');
     if (!one) return;
     const held = this.#heldOfChip(one);
     if (!held) return;
@@ -1070,7 +1070,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** A Group or Sort chip reported. Add the scope, and pass it on. */
   #onArrange = (event: Event): void => {
-    const chip = this.#pathFind(event, '.value');
+    const chip = this.pathFind(event, '.value');
     const held = chip ? this.#heldOfChip(chip) : undefined;
     if (!held) return;
     event.stopImmediatePropagation();
@@ -1085,7 +1085,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** A field's Conditional switch. */
   #onConditionalSwitch = (event: Event): void => {
-    const sw = this.#pathFind(event, '.field-custom-switch');
+    const sw = this.pathFind(event, '.field-custom-switch');
     const held = sw && this.#fieldOf(sw);
     if (!held) return;
     const on = !!(sw as HTMLElement & { checked?: boolean }).checked;
@@ -1094,13 +1094,13 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** A field's Save or Clear button. */
   #onAction = (event: Event): void => {
-    const save = this.#pathFind(event, '.scope-save');
+    const save = this.pathFind(event, '.scope-save');
     if (save) return this.#requestSave(save);
-    const clear = this.#pathFind(event, '.field-clear');
+    const clear = this.pathFind(event, '.field-clear');
     if (clear) return this.#clearField(clear);
     // REMOTE: one field's own Apply or Discard. TRAP T-apply-and-discard-wait-for-a-change
-    const apply = this.#pathFind(event, '.field-apply');
-    const discard = apply ? null : this.#pathFind(event, '.field-discard');
+    const apply = this.pathFind(event, '.field-apply');
+    const discard = apply ? null : this.pathFind(event, '.field-discard');
     const held = (apply ?? discard) && this.#fieldOf((apply ?? discard)!);
     if (!held) return;
     const at = { scope: held.scope, id: held.def.id, field: held.def.field ?? held.def.id };
@@ -1225,7 +1225,7 @@ export class SherpaFilterPanel extends SherpaElement {
   #onSavedAction = (event: Event): void => {
     const value = (event as CustomEvent).detail?.value;
     if (value !== 'edit' && value !== 'delete') return;
-    const chip = this.#pathFind(event, '.value');
+    const chip = this.pathFind(event, '.value');
     const id = chip?.dataset['value'];
     const scope = chip?.closest<HTMLElement>('.field')?.dataset['scope'];
     if (!id || !scope) return;
@@ -1251,7 +1251,7 @@ export class SherpaFilterPanel extends SherpaElement {
        panel's footer — and a reader who pressed Apply expects the same thing
        to happen wherever they pressed it.
        TRAP T-a-chip-menu-apply-is-the-panels-apply */
-    const chip = this.#pathFind(event, '.value');
+    const chip = this.pathFind(event, '.value');
     if (chip) {
       const held = this.#heldOfChip(chip);
       if (held) {
@@ -1268,7 +1268,7 @@ export class SherpaFilterPanel extends SherpaElement {
       return;
     }
 
-    const btn = this.#pathFind(event, '.scope-add');
+    const btn = this.pathFind(event, '.scope-add');
     if (!btn) return;
     // A DRILLED filter's pick is that filter's — never an Add or a Remove.
     if (this.#drill.home) return this.#onDrilled(event);
@@ -1382,24 +1382,15 @@ export class SherpaFilterPanel extends SherpaElement {
     }
     /* WIDE AGAIN, and the window was what took it away. Nothing else tells the
        host the panel is back. TRAP T-every-close-reports-or-the-toolbars-stay-hidden */
-    if (this.#closedByWidth) this.emit('filter-panel-reopen', {});
+    if (this.#closedByWidth) this.emit('filter-panel-reopen');
   };
 
   /** Closed by the window, not by the reader — so a widen may give it back. */
   get #closedByWidth(): boolean {
     return this.#lastClose === 'width' && !this.hasAttribute('data-open');
   }
-  /** How the panel last closed: by the reader, or for being too narrow. */
   /** Why it last closed: the reader, a narrow window, or a page with no filters. */
   #lastClose: 'reader' | 'width' | 'page' | null = null;
-
-  /** The first match on an event's composed path. */
-  #pathFind(event: Event, selector: string): HTMLElement | null {
-    for (const node of event.composedPath()) {
-      if (node instanceof HTMLElement && node.matches(selector)) return node;
-    }
-    return null;
-  }
 }
 
 customElements.define('sherpa-filter-panel', SherpaFilterPanel);

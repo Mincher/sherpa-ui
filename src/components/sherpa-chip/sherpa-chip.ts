@@ -35,7 +35,7 @@ export class SherpaChip extends SherpaElement {
   /** The remove button: say so, without clicking the chip. */
   #onRemove = (event: Event): void => {
     event.stopPropagation();
-    this.emit('chip-remove', {});
+    this.emit('chip-remove');
   };
 }
 

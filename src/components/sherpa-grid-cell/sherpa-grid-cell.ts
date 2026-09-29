@@ -47,7 +47,7 @@ export class SherpaGridCell extends SherpaElement {
   /** The cell's menu button — it must not sort or select the row. */
   #onMenu = (event: Event): void => {
     event.stopPropagation();
-    this.emit('menu-open', {});
+    this.emit('menu-open');
   };
 
   /* `collapsed`, NOT `expanded`: sherpa-data-grid emits the same event name with

@@ -353,18 +353,16 @@ export class SherpaDataGrid extends SherpaElement {
   /** Stamp one <col> per column. Must run BEFORE the header cells are rebuilt. */
   #renderCols(): void {
     // `own-children`, not `replace`: the fixed `.select-col` must survive.
-    this.renderList(
-      '.cols',
-      'template.col-tpl',
-      this.#shownColumns(),
-      (node, col) => {
+    this.renderItems('.cols', 'template.col-tpl', this.#shownColumns(), {
+      clear: 'own-children',
+      ownSel: '.cols > .col',
+      after: (node, col) => {
         const el = node as HTMLElement;
         el.dataset['field'] = col.field;
         // TRAP T-col-width-not-inline-size — `width`, never `inline-size`.
         el.style.width = `${this.#widthFor(col)}px`;
       },
-      { clear: 'own-children', ownSel: '.cols > .col' },
-    );
+    });
     // The static ACTIONS <col> sits BEFORE the stamped ones, so it moves to the
     // end — a <col> list out of step gives every width to the wrong column.
     const actionsCol = this.$('.cols > .actions-col');

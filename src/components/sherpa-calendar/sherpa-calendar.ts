@@ -486,7 +486,7 @@ export class SherpaCalendar extends SherpaElement {
 
   /** Carries no value; the host tears down or reverts. */
   #onCancel = (): void => {
-    this.emit('calendar-cancel', {});
+    this.emit('calendar-cancel');
   };
 
   /** Apply: report the value. */
