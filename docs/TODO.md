@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**63 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**64 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -39,6 +39,7 @@ order.
 | 15 | 96 | A grid with few columns leaves an empty band on the right of its card | bug |
 | 16 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
 | 16a | 100 | The Assistant panel shows no heading | quick |
+| 16b | 106 | A click between a menu's items reaches what is behind it — an accordion toggles | bug |
 | | | **D — Filters: Will's features, on the foundation** | |
 | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
@@ -339,6 +340,19 @@ The chip test "a NUMBER chip flips between a single field and a two-ended
 slider" stayed green because it reads `el.readings`, which ASKS the menu. The
 fix's test watches the event. The grid heading's menu and the panel use the
 same body — check both. Before 94, which changes the same path.
+
+### `[ ]` 106 — BUG: a click between a menu's items reaches what is behind it
+
+Will, 2026-09-29: *"Clicking the space between menu items causes the
+accordion behind the menu to expand or collapse. The menu needs to block this
+from happening. I suspect it could allow clicking of any element behind a menu
+and not just accordions."*
+
+Likely cause, not yet proved: a click BUBBLES through the DOM, not through
+what is drawn. A popover menu is drawn in the top layer, but in the DOM it is
+still inside the accordion's header, so a click on the card's empty space
+reaches the header. A row click is handled; a gap click is not. Check every
+host that holds a menu, not only the accordion.
 
 ### `[ ]` 94 — A number (and range) filter menu needs Apply and Cancel buttons
 
