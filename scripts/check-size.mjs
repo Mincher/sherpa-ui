@@ -20,6 +20,14 @@ import { readFileSync, writeFileSync, globSync, existsSync } from 'node:fs';
 export const SOURCES = [
   'src/**/*.ts',
   'src/components/**/*.css',
+  // The HAND-WRITTEN shared and family sheets — a rule moved there still counts.
+  // (typography, group-positions and style-modes are generated.)
+  'src/core/sherpa-base.css',
+  'src/core/sherpa-anchor.css',
+  'src/core/sherpa-grouping.css',
+  'src/core/sherpa-icon.css',
+  'src/core/sherpa-motion.css',
+  'src/core/sherpa-chart-*.css',
   'src/components/**/*.html',
   'examples/contexts/*.js',
   'examples/definitions/*.js',

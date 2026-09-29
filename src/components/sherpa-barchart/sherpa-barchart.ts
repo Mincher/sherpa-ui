@@ -19,7 +19,10 @@ import { DEFAULT_TICKS } from '../../core/ui/shared-constants.js';
 export type BarDatum = ChartDatum;
 
 export class SherpaBarchart extends SherpaElement {
-  static override css = new URL('./sherpa-barchart.css', import.meta.url);
+  static override css = [
+    new URL('../../core/sherpa-chart-axes.css', import.meta.url),
+    new URL('./sherpa-barchart.css', import.meta.url),
+  ];
   static override html = new URL('./sherpa-barchart.html', import.meta.url);
   static override asks: DataAsk = { shape: 'segments' };
 

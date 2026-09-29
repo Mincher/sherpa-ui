@@ -7,64 +7,13 @@
    only reads it back — and a component sheet is ADOPTED, where @property does
    not register at all. TRAP T-at-property-needs-the-document. */
 
-:host {
-  /* `flex`, not `inline-flex`: an inline box cannot shrink, so the y-axis column
-     pushed the plot past the panel edge. */
-  display: flex;
-  flex-direction: column;
-  gap: var(--sherpa-display-mode-space-sm, 12px);
-  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-  /* The plot's NATURAL height, not a floor — see .chart-body. */
-  --_plot-height: 180px;
-  /* Fill a sized parent; keep natural height in an unsized one. */
-  min-block-size: 0;
-}
-
-/* Figure semantics without a layout box — children stay flex items of the host. */
-.chart-figure {
-  display: contents;
-  margin: 0;
-}
-
 /* ── The legend ────────────────────────────────────────────────────────── */
-/* `minmax(0, Nfr)`, not a bare `fr`: a bare fr floors at min-content, so a long
-   label would break the ratio instead of truncating. */
-::slotted([slot="legend"]) {
-  flex: 0 0 auto;
-  min-inline-size: 0;
-}
 
-/* The chart reads the split from its OWN `data-legend`, not the legend's
-   `data-orientation`: `:host(:has(…))` does not parse and is dropped silently,
-   and chained `:host:has(…)` matches every host. */
-:host([data-legend="vertical"]) {
-  display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
-  grid-template-rows: auto minmax(0, 1fr);
-  align-items: center;
-}
-/* `display: contents` on .chart-figure makes these the grid's real items. */
-:host([data-legend="vertical"]) .chart-header {
-  grid-column: 1 / -1;
-  grid-row: 1;
-}
 /* A grid item has no flex basis, so beside a vertical legend the floor is a track. */
 :host([data-legend="vertical"]) .chart-body {
   grid-column: 1;
   grid-row: 2;
   grid-template-rows: minmax(var(--_plot-height), 1fr) auto;
-}
-:host([data-legend="vertical"]) ::slotted([slot="legend"]) {
-  grid-column: 2;
-  grid-row: 2;
-}
-
-.title {
-  font-size: var(--sherpa-font-size-body-base, 14px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
-
-  &:empty { display: none; }
 }
 
 .plot {
@@ -212,13 +161,7 @@
   column-gap: 0;
   min-inline-size: 0;
 }
-/* …except the rotated caption, which needs clearing from the numbers. */
-.axis-label-y {
-  grid-area: 1 / 1;
-  margin-inline-end: var(--sherpa-display-mode-space-2xs, 4px);
-}
-.y-axis { grid-area: 1 / 2; }
-.plot { grid-area: 1 / 3; }
+
 .x-axis-row { grid-area: 2 / 3; }
 
 /* Gridlines — one gradient rather than N elements, so lines cannot fall out of
@@ -270,38 +213,4 @@
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
   color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 }
-/* Written by JS: an absent data-ticks means "default 4" and data-ticks="0"
-   means none, which no selector can tell apart. */
-:host([data-has-y-axis]) .y-axis { display: block; }
 
-/* Each label sits at its own --_at percentage, centred on that line. Pinned at
-   both ends and right-aligned so "0" still ends flush against the rule. */
-.y-tick {
-  position: absolute;
-  inset-inline: 0 0;
-  inset-block-end: var(--_at, 0%);
-  translate: 0 50%;
-  text-align: end;
-  /* Truncates rather than widens (.sherpa-truncate in the template): a fixed
-     axis width keeps the plot still. */
-}
-
-.y-value {
-  font-variant-numeric: tabular-nums;
-}
-
-/* The caption, rotated to run up the axis. */
-.axis-label {
-  display: none;
-  align-self: center;
-  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
-  font-size: var(--sherpa-font-size-body-base, 14px);
-  font-weight: var(--sherpa-font-weight-regular, 400);
-  line-height: var(--sherpa-theme-content-line-height-base, 20px);
-  white-space: nowrap;
-}
-.axis-label-y {
-  writing-mode: vertical-rl;
-  rotate: 180deg;
-}
-:host([data-axis-label]) .axis-label-y { display: block; }

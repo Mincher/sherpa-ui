@@ -4,62 +4,9 @@
  * the JS; each series carries a --_hue. non-scaling-stroke keeps weights honest.
  */
 
-:host {
-  /* `flex`, not `inline-flex`: an inline box cannot shrink, so the fixed y-axis
-     column pushed the plot past the panel edge. */
-  display: flex;
-  flex-direction: column;
-  gap: var(--sherpa-display-mode-space-sm, 12px);
-  font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
-  /* MINIMUM plot height, not fixed — see .chart-body. */
-  --_plot-height: 180px;
-  /* Fill a sized parent; keep natural height in an unsized one. */
-  min-block-size: 0;
-}
-
-/* Figure semantics without a layout box: children stay direct flex items. */
-.chart-figure {
-  display: contents;
-  margin: 0;
-}
-
-/* ── The legend ────────────────────────────────────────────────────────── */
-::slotted([slot="legend"]) {
-  flex: 0 0 auto;
-  min-inline-size: 0;
-}
-
-/* Legend BESIDE — two columns, driven by the chart's own `data-legend`, not the
-   legend's `data-orientation`: `:host(:has(…))` does not parse and the chained
-   `:host:has(…)` matches every host. `minmax(0, Nfr)`, not a bare `fr`, or a long
-   label floors its track and breaks the 70/30 ratio. */
-:host([data-legend="vertical"]) {
-  display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
-  grid-template-rows: auto minmax(0, 1fr);
-  align-items: center;
-}
-/* `display: contents` on .chart-figure makes these the grid's real items. */
-:host([data-legend="vertical"]) .chart-header {
-  grid-column: 1 / -1;
-  grid-row: 1;
-}
 :host([data-legend="vertical"]) .chart-body {
   grid-column: 1;
   grid-row: 2;
-}
-:host([data-legend="vertical"]) ::slotted([slot="legend"]) {
-  grid-column: 2;
-  grid-row: 2;
-}
-
-
-.title {
-  font-size: var(--sherpa-font-size-body-base, 14px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
-
-  &:empty { display: none; }
 }
 
 .plot {
@@ -147,13 +94,6 @@
   column-gap: 0;
   min-inline-size: 0;
 }
-/* …except the rotated caption, which needs clearing from the numbers. */
-.axis-label-y {
-  grid-area: 1 / 1;
-  margin-inline-end: var(--sherpa-display-mode-space-2xs, 4px);
-}
-.y-axis { grid-area: 1 / 2; }
-.plot { grid-area: 1 / 3; }
 
 .y-axis {
   display: none;
@@ -172,42 +112,6 @@
   /* Type is shared with .x-axis above. */
   font-weight: var(--sherpa-font-weight-regular, 400);
 }
-/* Written by the JS once it has stamped values — an absent data-ticks means
-   "default 4" and data-ticks="0" means none, which no selector can tell apart. */
-:host([data-has-y-axis]) .y-axis { display: block; }
-
-/* Each label sits at its own --_at percentage, centred on that line — the same
-   percentage its gridline is drawn at. Pinned both edges and right-aligned so a
-   short label still ends flush against the rule. */
-.y-tick {
-  position: absolute;
-  inset-inline: 0 0;
-  inset-block-end: var(--_at, 0%);
-  translate: 0 50%;
-  text-align: end;
-  /* Truncates rather than widens (.sherpa-truncate in the template): a fixed
-     axis width keeps the plot still. */
-}
-
-.y-value {
-  font-variant-numeric: tabular-nums;
-}
-
-/* The caption, rotated to run up the axis. */
-.axis-label {
-  display: none;
-  align-self: center;
-  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
-  font-size: var(--sherpa-font-size-body-base, 14px);
-  font-weight: var(--sherpa-font-weight-regular, 400);
-  line-height: var(--sherpa-theme-content-line-height-base, 20px);
-  white-space: nowrap;
-}
-.axis-label-y {
-  writing-mode: vertical-rl;
-  rotate: 180deg;
-}
-:host([data-axis-label]) .axis-label-y { display: block; }
 
 /* The x caption sits under the x labels, centred across the plot. */
 .axis-label-x {

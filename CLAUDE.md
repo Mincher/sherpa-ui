@@ -438,6 +438,13 @@ every one is adopted into every shadow root:
 | `sherpa-anchor.css` | `.chart-tip`, `.sherpa-tip`, `.chart-mark` |
 | `sherpa-motion.css` | durations, shared keyframes |
 
+**A FAMILY sheet is the fourth kind.** A component's `static css` may be a
+LIST — its family's sheet first, its own last, so its own wins. Two exist, by
+Will's ruling (2026-09-29): `src/core/sherpa-chart-axes.css` for 2D charts with
+axes (bar, line) and `src/core/sherpa-chart-segments.css` for segmented charts
+(gauge, radial). A family sheet MAY carry `:host` rules — only its family
+adopts it — and `lint:css` reads it as it reads a component.
+
 Reach for a shared sheet when the same rule appears in a THIRD component —
 `.chart-tip` (the five charts) got into `sherpa-anchor.css` that way. Pick the
 sheet by job: `base` is what every component needs, the rest are opt-in by

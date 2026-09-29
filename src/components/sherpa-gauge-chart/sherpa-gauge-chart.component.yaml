@@ -183,9 +183,6 @@ capabilities:
     description: read/write JS properties (value). See $extensions.sherpa.jsProps.
 tokens:
   chart-body.gap: "{sherpa.theme-gap-sm}"
-  title.font-size: "{sherpa.font-size-body-base}"
-  title.font-weight: "{sherpa.font-weight-semibold}"
-  title.color: "{sherpa.theme-content-body-base}"
   needle.inline-size: "{sherpa.display-mode-border-width-base}"
   needle.background: "{sherpa.theme-content-body-2}"
   hub-cap.background: "{sherpa.style-content-base}"

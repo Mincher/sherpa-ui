@@ -21,7 +21,10 @@ interface LineData {
 }
 
 export class SherpaLineChart extends SherpaElement {
-  static override css = new URL('./sherpa-line-chart.css', import.meta.url);
+  static override css = [
+    new URL('../../core/sherpa-chart-axes.css', import.meta.url),
+    new URL('./sherpa-line-chart.css', import.meta.url),
+  ];
   static override html = new URL('./sherpa-line-chart.html', import.meta.url);
   static override asks: DataAsk = { shape: 'series' };
 

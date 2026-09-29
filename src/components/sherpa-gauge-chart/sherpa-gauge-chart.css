@@ -25,12 +25,6 @@
   --_angle: -90deg;
 }
 
-/* display:contents — children stay flex items of the host. */
-.chart-figure {
-  display: contents;
-  margin: 0;
-}
-
 /* Ring + scale + caption as ONE column, so a vertical legend sits beside the
    whole gauge, not just the ring. */
 .chart-body {
@@ -65,28 +59,13 @@
   align-items: center;
   justify-items: center;
 }
-:host([data-legend="vertical"]) .chart-header {
-  grid-column: 1 / -1;
-  grid-row: 1;
-}
+
 :host([data-legend="vertical"]) .chart-body {
   grid-column: 1;
   grid-row: 2;
   /* A CELL, not a flex item: filling it sizes the ring against the card. */
   inline-size: 100%;
   block-size: 100%;
-}
-:host([data-legend="vertical"]) ::slotted([slot="legend"]) {
-  grid-column: 2;
-  grid-row: 2;
-}
-
-.title {
-  font-size: var(--sherpa-font-size-body-base, 14px);
-  font-weight: var(--sherpa-font-weight-semibold, 600);
-  color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
-
-  &:empty { display: none; }
 }
 
 /* ── Gauge ─────────────────────────────────────────────────────────────

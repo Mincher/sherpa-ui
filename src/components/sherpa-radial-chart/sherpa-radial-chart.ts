@@ -24,7 +24,10 @@ export type RadialSlice = ChartDatum;
 const MIN_SHARE = 0.005;
 
 export class SherpaRadialChart extends SherpaElement {
-  static override css = new URL('./sherpa-radial-chart.css', import.meta.url);
+  static override css = [
+    new URL('../../core/sherpa-chart-segments.css', import.meta.url),
+    new URL('./sherpa-radial-chart.css', import.meta.url),
+  ];
   static override html = new URL('./sherpa-radial-chart.html', import.meta.url);
   static override asks: DataAsk = { shape: 'segments' };
   static override props = { ...SUMMARY_PROPS } as const;

@@ -135,12 +135,6 @@ states:
     name: below-zero
     selector: ":host([data-below-zero])"
   - $type: state
-    name: has-y-axis
-    selector: ":host([data-has-y-axis])"
-  - $type: state
-    name: axis-label
-    selector: ":host([data-axis-label])"
-  - $type: state
     name: not-has-y-axis
     selector: ":host(:not([data-has-y-axis]))"
   - $type: state
@@ -159,9 +153,6 @@ events:
       "on": click
       node: .bars
 tokens:
-  title.font-size: "{sherpa.font-size-body-base}"
-  title.font-weight: "{sherpa.font-weight-semibold}"
-  title.color: "{sherpa.theme-content-body-base}"
   bars.gap: "{sherpa.display-mode-space-xs}"
   bars.border-block-end: "{sherpa.display-mode-border-width-base}"
   x-axis-row.gap: "{sherpa.display-mode-space-xs}"
@@ -175,7 +166,6 @@ tokens:
   bar-label.line-height: "{sherpa.theme-content-line-height-small}"
   bar-label.color: "{sherpa.theme-content-body-1}"
   chart-body.flex: "{sherpa.display-mode-space-2xs}"
-  axis-label-y.margin-inline-end: "{sherpa.display-mode-space-2xs}"
   gridlines.background-image: "{sherpa.style-border-base}"
   gridlines.border-block-start: "{sherpa.border-top}"
   y-axis.inline-size: "{sherpa.display-mode-size-lg}"
@@ -186,10 +176,6 @@ tokens:
   y-axis.font-weight: "{sherpa.font-weight-regular}"
   y-axis.line-height: "{sherpa.theme-content-line-height-small}"
   y-axis.color: "{sherpa.theme-content-body-1}"
-  axis-label.color: "{sherpa.theme-content-body-1}"
-  axis-label.font-size: "{sherpa.font-size-body-base}"
-  axis-label.font-weight: "{sherpa.font-weight-regular}"
-  axis-label.line-height: "{sherpa.theme-content-line-height-base}"
 $extensions:
   sherpa:
     figmaName: Data Field

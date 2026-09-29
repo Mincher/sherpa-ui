@@ -39,7 +39,10 @@ const START_DEG = 270;
 const SPAN_DEG = 180;
 
 export class SherpaGaugeChart extends SherpaElement {
-  static override css = new URL('./sherpa-gauge-chart.css', import.meta.url);
+  static override css = [
+    new URL('../../core/sherpa-chart-segments.css', import.meta.url),
+    new URL('./sherpa-gauge-chart.css', import.meta.url),
+  ];
   static override html = new URL('./sherpa-gauge-chart.html', import.meta.url);
   // ONE LINE, deliberately: the spec generator reads only the first line.
   /* DECLARED, not hand-synced: CSS-only, so the base class writes nothing. */

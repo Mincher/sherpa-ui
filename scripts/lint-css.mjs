@@ -196,7 +196,8 @@ function lintFile(file, cssRaw) {
       + `--sherpa-style-<look>-active-*), or add /* theme-direct */ where Figma binds Theme too.`);
   });
 
-  const comp = file.split('/').at(-2);
+  // A component's folder, or a family sheet's own name (src/core/sherpa-chart-axes.css).
+  const comp = file.startsWith('src/components/') ? file.split('/').at(-2) : file.split('/').at(-1).replace(/\.css$/, '');
   themeReads[comp] = 0;
   root.walkDecls((decl) => {
     if (!THEME_COLOUR.test(decl.value)) return;
@@ -222,6 +223,11 @@ for (const d of dirs) {
   if (!existsSync(p)) continue;
   fileCount++;
   lintFile(`src/components/${d.name}/${d.name}.css`, readFileSync(p, 'utf8'));
+}
+// The FAMILY sheets a component adopts before its own — linted as a component is.
+for (const name of readdirSync(join(ROOT, 'src', 'core')).filter((f) => /^sherpa-chart-.+\.css$/.test(f))) {
+  fileCount++;
+  lintFile(`src/core/${name}`, readFileSync(join(ROOT, 'src', 'core', name), 'utf8'));
 }
 
 const baseline = existsSync(BASELINE) ? JSON.parse(readFileSync(BASELINE, 'utf8')) : {};

@@ -244,7 +244,8 @@ going away: `<noun>-remove` (a request) and `dismiss()` + `<noun>-dismiss`
 | A1 ✅ | the tools: the spec generator reads TypeScript, keeps whole summaries, refreshes `$description` — 47 specs corrected (`T-a-spec-reads-the-class-by-its-parser`) | — (specs become true) |
 | A2 ✅ | the base: `emit()` sends `{}` (26 empty details gone); `renderList` folds into `renderItems`, whose clone is imported as `clone()`'s is; the four `pathFind` copies go. The 20 hand-written clone sites move with their family (A3, A7) | 58 |
 | A3a ✅ | charts: the three hide doors and the repeated legend event are deleted | 85 |
-| A3b | charts: `chart-parts.ts`; the line chart's SVG template; `static css` as a list, with the axes sheet and the segments sheet; the meters take a number | ~110 |
+| A3b ✅ | charts: `static css` as a list; `sherpa-chart-axes.css` (16 rules the bar and line charts copied) and `sherpa-chart-segments.css` (the 4 frame rules the gauge copied). A spec lists only its OWN sheet's bindings | 56 |
+| A3c | charts: `chart-parts.ts` (the value axis, tips, anchors, hues); the line chart's SVG template; the meters take a number | ~50 |
 | A4 | open and close: `disclosure.ts`; the event names; the provider's call in the same commit | ~120 |
 | A5 | form controls: `SherpaFormControl`; then bug 61 on it | ~150 |
 | A6 | items: the CURRENT and TICKED contracts; chip and tag events aligned | ~100 |

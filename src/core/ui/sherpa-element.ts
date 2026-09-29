@@ -297,8 +297,9 @@ const CONFIGURED = new WeakSet<typeof SherpaElement>();
 
 export abstract class SherpaElement extends HTMLElement {
 
-  /** URL of this component's CSS, scoped-token block inlined at its top. */
-  static css?: URL;
+  /** URL of this component's CSS, scoped-token block inlined at its top — or a
+   *  LIST: a family's shared sheet first, its own last, so its own wins. */
+  static css?: URL | readonly URL[];
 
   /** URL of this component's HTML template. Subclasses override. */
   static html?: URL;
@@ -770,7 +771,7 @@ export abstract class SherpaElement extends HTMLElement {
     // TRAP T-shared-sheets-settle-independently
     await Promise.resolve();
     const urls = [...Ctor.sharedStyles.map((u) => u.href)];
-    if (Ctor.css) urls.push(Ctor.css.href);
+    for (const url of [Ctor.css ?? []].flat()) urls.push(url.href);
     // TRAP T-shared-sheets-settle-independently — settle each, keep what loaded.
     const results = await Promise.allSettled(urls.map(loadSheet));
     const sheets = results

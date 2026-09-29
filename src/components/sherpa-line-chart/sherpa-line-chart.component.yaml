@@ -161,12 +161,6 @@ states:
     name: vertical
     selector: ":host([data-legend=\"vertical\"])"
   - $type: state
-    name: has-y-axis
-    selector: ":host([data-has-y-axis])"
-  - $type: state
-    name: axis-label
-    selector: ":host([data-axis-label])"
-  - $type: state
     name: x-axis-label
     selector: ":host([data-x-axis-label])"
   - $type: state
@@ -176,22 +170,14 @@ states:
     name: focus-visible
     selector: .hotspot:focus-visible
 tokens:
-  title.font-size: "{sherpa.font-size-body-base}"
-  title.font-weight: "{sherpa.font-weight-semibold}"
-  title.color: "{sherpa.theme-content-body-base}"
   plot.border-block-end: "{sherpa.display-mode-border-width-base}"
   line.stroke: "{sherpa.data-viz-series-1}"
   area.fill: "{sherpa.data-viz-series-1}"
   x-axis.margin-block-start: "{sherpa.display-mode-space-2xs}"
-  axis-label-y.margin-inline-end: "{sherpa.display-mode-space-2xs}"
   y-axis.inline-size: "{sherpa.display-mode-size-lg}"
   y-axis.padding-inline-end: "{sherpa.display-mode-space-sm}"
   y-axis.border-inline-end: "{sherpa.border-right}"
   y-axis.font-weight: "{sherpa.font-weight-regular}"
-  axis-label.color: "{sherpa.theme-content-body-1}"
-  axis-label.font-size: "{sherpa.font-size-body-base}"
-  axis-label.font-weight: "{sherpa.font-weight-regular}"
-  axis-label.line-height: "{sherpa.theme-content-line-height-base}"
   axis-label-x.margin-block-start: "{sherpa.display-mode-space-2xs}"
   hotspot.inline-size: "{sherpa.display-mode-size-sm}"
   hotspot.block-size: "{sherpa.display-mode-size-sm}"
