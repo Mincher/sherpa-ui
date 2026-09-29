@@ -165,6 +165,9 @@ test('a record added on one Context changes the summary on another', async ({ pa
     await new Promise((r) => setTimeout(r, 200));
     const name = root.querySelector('#f-name') as HTMLElement & { value?: string };
     if (name) name.value = 'Probe Person';
+    // Every required field, as a reader must: nothing is filled in for them. TODO 61
+    const email = root.querySelector('#f-email') as HTMLElement & { value?: string };
+    if (email) email.value = `probe.${Date.now()}@example.com`;
     (root.querySelector('#save-btn') as HTMLElement)?.dispatchEvent(
       new CustomEvent('button-click', { bubbles: true, composed: true }));
     await new Promise((r) => setTimeout(r, 400));

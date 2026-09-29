@@ -266,7 +266,7 @@ consolidate."*
 | A4a ✅ | open and close: `DialogSurface` in `disclosure.ts`, IMPORTED by the dialog and the overlay panel — the overlay gains the late-close guard it lacked. `close` becomes `dialog-close` and `panel-close` | +30 |
 | A4b ✅ | open and close: the NAMES — `accordion-open` / `-close` and `notifications-open` / `-close`; `notifications-click`, `menu-click` and `view-menu-click` for a request; the filter panel's `show()`, `hide(reason)` (with `close()` kept) and the `open` attribute and property, which the app shell and the provider now read. The trigger mirror stays copied | +20 |
 | A5a ✅ | form controls: the same NAMES on all four, each in its own code — `value`, `checked`, `disabled`, `focus(options)`, `checkValidity()`, `reportValidity()`. The switch gains `value` (and sends it in `change`); a test holds the four to one surface | +60 |
-| A5b | form controls: each takes part in a `<form>` (`ElementInternals`), a radio group's validity and its submitted name, the stale validity in the text field — then bug 61 on a plain `<form>`. **Never a base class** | — |
+| A5b ✅ | form controls: all four take part in a `<form>` through `FormValue` (`src/core/ui/form-value.ts`), which each IMPORTS; a radio submits under its shared `name` and REQUIRED is its group's (Will: A); a select group gives its `name` to its radios; the text field tells its form after every write. Bug 61 closed on a plain `<form>`. Grows: form support is new | +163 |
 | A6 | items: the CURRENT and TICKED contracts; chip and tag events aligned | ~100 |
 | A7 | filters: `menu.reading`, one event per act, the grid's headings on `menuFor()`, the 18 members go — with TODO 38 step 4 and 89, so the panel is rebuilt once | ~700 |
 

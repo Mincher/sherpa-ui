@@ -3,6 +3,7 @@
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import { MIRRORED_CONTROL_ATTRS as MIRRORED } from '../../core/ui/shared-constants.js';
+import { FormValue } from '../../core/ui/form-value.js';
 
 export class SherpaSelectRadio extends SherpaElement {
   static override css = new URL('./sherpa-select-radio.css', import.meta.url);
@@ -16,8 +17,13 @@ export class SherpaSelectRadio extends SherpaElement {
   static override labelTarget = '.control';
   static override observed = ['checked', ...MIRRORED];
 
+  /** A form cannot see an <input> through a shadow root. TRAP T-shadow-input-needs-element-internals */
+  static readonly formAssociated = true;
+
   /** The native radio. */
   #control: HTMLInputElement | null = null;
+  /** Its link to its form. */
+  #form = new FormValue(this);
 
   override onRender(): void {
     this.#control = this.$<HTMLInputElement>('.control');
@@ -38,6 +44,31 @@ export class SherpaSelectRadio extends SherpaElement {
     this.mirrorAttrs(c, MIRRORED);
     c.value = this.getAttribute('value') ?? '';
     c.checked = this.hasAttribute('checked');
+    this.#syncForm();
+  }
+
+  /**
+   * Ticked, it submits its value under the shared `name`; unticked, nothing —
+   * as native radios do (Will, 2026-09-29). REQUIRED is the GROUP's: each
+   * inner radio is alone in its shadow root, so its own check would fail every
+   * unticked radio while another is ticked.
+   * TRAP T-radios-in-shadow-roots-are-not-one-group
+   */
+  #syncForm(): void {
+    const c = this.#control;
+    if (!c) return;
+    this.#form.value(c.checked ? c.value : null);
+    const missing = this.hasAttribute('required') && !this.#group().some((r) => r.checked);
+    if (missing) this.#form.validity({ valueMissing: true }, c.validationMessage || 'Select one.', c);
+    else this.#form.validity();
+  }
+
+  /** The radios sharing this `name` in its form — or its root, outside one. */
+  #group(): SherpaSelectRadio[] {
+    const name = this.getAttribute('name');
+    if (!name) return [this];
+    const root = (this.#form.form ?? this.getRootNode()) as ParentNode;
+    return [...root.querySelectorAll<SherpaSelectRadio>(`sherpa-select-radio[name="${CSS.escape(name)}"]`)];
   }
 
   /* ── Public API ────────────────────────────────────────────────────── */
@@ -48,6 +79,8 @@ export class SherpaSelectRadio extends SherpaElement {
   set checked(v: boolean) {
     this.toggleAttribute('checked', v);
     if (this.#control) this.#control.checked = v;
+    // The group's answer moved, so each member's validity did.
+    for (const radio of this.#group()) radio.#syncForm();
   }
 
   get value(): string {
@@ -56,6 +89,7 @@ export class SherpaSelectRadio extends SherpaElement {
   set value(v: string) {
     this.setAttribute('value', v);
     if (this.#control) this.#control.value = v;
+    this.#syncForm();
   }
 
   get disabled(): boolean {
@@ -66,12 +100,14 @@ export class SherpaSelectRadio extends SherpaElement {
   }
 
   checkValidity(): boolean {
-    return this.#control?.checkValidity() ?? true;
+    this.#syncForm();
+    return this.#form.checkValidity();
   }
 
   /** Check, and show the browser's message on the radio. */
   reportValidity(): boolean {
-    return this.#control?.reportValidity() ?? true;
+    this.#syncForm();
+    return this.#form.reportValidity();
   }
 
   override focus(options?: FocusOptions): void {
@@ -84,17 +120,13 @@ export class SherpaSelectRadio extends SherpaElement {
     if (!c) return;
     this.toggleAttribute('checked', c.checked);
     if (c.checked) this.#deselectGroup();
+    for (const radio of this.#group()) radio.#syncForm();
     this.emit('change', { checked: c.checked, value: this.value });
   };
 
-  /** Uncheck sibling radios sharing this `name`, document-wide. */
+  /** Uncheck the other radios in its group — in its form, not the whole page. */
   #deselectGroup(): void {
-    const name = this.getAttribute('name');
-    if (!name) return;
-    const group = document.querySelectorAll<SherpaSelectRadio>(
-      `sherpa-select-radio[name="${CSS.escape(name)}"]`
-    );
-    for (const radio of group) {
+    for (const radio of this.#group()) {
       if (radio !== this) radio.checked = false;
     }
   }

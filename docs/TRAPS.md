@@ -3887,6 +3887,10 @@ ours it defers to the control's OWN native validity, which is already doing
 `required`, `pattern`, `minlength` and the rest for free.
 
 - Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
+- Site: `src/components/sherpa-switch/sherpa-switch.ts`
+- Site: `src/components/sherpa-select-radio/sherpa-select-radio.ts`
+- Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.ts`
+- Site: `src/core/ui/form-value.ts`
 
 ### T-describedby-must-not-be-a-live-region
 
@@ -6949,6 +6953,8 @@ in the code said so. Replacing the input with a component silently removed the
 behaviour that comment described.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-select-radio/sherpa-select-radio.ts`
+- Site: `test/e2e/reforged-form-controls.spec.ts`
 
 ### T-the-tick-needs-the-fixed-ramp
 
@@ -14208,3 +14214,27 @@ subclass, not public API, so it is left out.
 
 - Site: `scripts/lib/ts-facts.mjs`
 - Site: `test/unit/class-api.test.mjs`
+
+### T-a-form-value-follows-every-write
+
+**A form control tells its form what it holds after EVERY write** — a
+keystroke, a `value` set from code, an attribute (`required`, `pattern`), a
+select's options filled late — or the form reads a stale answer. Found by the
+API audit (TODO 86): `sherpa-input-text` told its form only on `input` and
+`change`, so the Add customer dialog's Customer select, filled after it
+rendered, read EMPTY to a form, and an Edit's name and email, set from code,
+read empty too. `form.reportValidity()` would have refused every save.
+
+The four form controls (`sherpa-input-text`, `-select-checkbox`,
+`-select-radio`, `sherpa-switch`) each import `FormValue`
+(`src/core/ui/form-value.ts`) — a helper, never a base class — and call it
+from every path that moves their value. A checkbox, a switch or a radio
+submits its value when ticked and nothing when not; a radio's REQUIRED is its
+group's (`T-radios-in-shadow-roots-are-not-one-group`).
+
+- Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
+- Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.ts`
+- Site: `src/components/sherpa-switch/sherpa-switch.ts`
+- Site: `test/e2e/reforged-add-customer-form.spec.ts`
+- Site: `test/e2e/reforged-form-controls.spec.ts`
+- Site: `examples/contexts/records.js`

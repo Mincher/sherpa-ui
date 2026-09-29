@@ -9,11 +9,14 @@
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import { renderIcon, hasIcon } from '../../core/ui/render-icon.js';
 import { validateField, type FieldRules } from '../../core/data/validate.js';
+import { FormValue } from '../../core/ui/form-value.js';
 
 /** Mirrored verbatim from the host onto the inner control. */
 const MIRRORED = [
   'placeholder',
   'name',
+  // `email`, `url`, `number`: the platform's own check. A select or textarea ignores it.
+  'type',
   'value',
   'required',
   'disabled',
@@ -66,12 +69,8 @@ export class SherpaInputText extends SherpaElement {
   ];
 
   #control: Control | null = null;
-  #internals: ElementInternals;
-
-  constructor() {
-    super();
-    this.#internals = this.attachInternals();
-  }
+  /** Its link to its form. */
+  #form = new FormValue(this);
 
   /** Both pick the tree, so a change to either must re-stamp. */
   static override variantAttrs = ['data-type', 'data-multiline'];
@@ -94,6 +93,8 @@ export class SherpaInputText extends SherpaElement {
   protected override renderData(data: unknown): void {
     this.#options = Array.isArray(data) ? (data as InputOption[]) : [];
     this.#syncOptions();
+    // A select filled LATE has a value now. TRAP T-a-form-value-follows-every-write
+    this.#syncValue();
   }
 
   #options: InputOption[] = [];
@@ -146,8 +147,11 @@ export class SherpaInputText extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    if (!name.startsWith('data-')) this.#syncAttrs();
-    else if (name.startsWith('data-icon-')) this.#syncIcons();
+    if (!name.startsWith('data-')) {
+      this.#syncAttrs();
+      // `required`, `value`, a pattern: each moves what the form sees.
+      this.#syncValue();
+    } else if (name.startsWith('data-icon-')) this.#syncIcons();
   }
 
   /**
@@ -169,23 +173,17 @@ export class SherpaInputText extends SherpaElement {
 
   static #uid = 0;
 
-  /** Tell the form what this field holds and whether it is acceptable. */
+  /** Tell the form what this field holds and whether it is acceptable — after
+   *  EVERY write, or the form reads a stale answer.
+   *  TRAP T-a-form-value-follows-every-write */
   #syncValue(): void {
     const control = this.#control;
     if (!control) return;
-    this.#internals.setFormValue(control.value);
-
+    this.#form.value(control.value);
     const message = this.dataset['error'] ?? '';
-    if (message) {
-      this.#internals.setValidity({ customError: true }, message, control);
-      return;
-    }
-    // No message of ours — defer to the control's own native validity.
-    if (!control.validity.valid) {
-      this.#internals.setValidity(control.validity, control.validationMessage, control);
-      return;
-    }
-    this.#internals.setValidity({});
+    // Our message wins; without one, the control's own validity.
+    if (message) this.#form.validity({ customError: true }, message, control);
+    else this.#form.follow(control);
   }
 
   /** Check this field and show the result. True means acceptable. */
@@ -290,8 +288,9 @@ export class SherpaInputText extends SherpaElement {
   set value(v: string) {
     if (this.#control) this.#control.value = v;
     else this.setAttribute('value', v);
-    // A JS write fires no `input`, so the Clear flag is set here too.
+    // A JS write fires no `input`, so the Clear flag and the form are told here.
     this.#syncHasValue();
+    this.#syncValue();
   }
 
   get disabled(): boolean {
@@ -301,13 +300,16 @@ export class SherpaInputText extends SherpaElement {
     this.toggleAttribute('disabled', value);
   }
 
+  /** Acceptable, as its form sees it — its own message included. */
   checkValidity(): boolean {
-    return this.#control?.checkValidity() ?? true;
+    this.#syncValue();
+    return this.#form.checkValidity();
   }
 
   /** Check, and show the browser's message on the field. */
   reportValidity(): boolean {
-    return this.#control?.reportValidity() ?? true;
+    this.#syncValue();
+    return this.#form.reportValidity();
   }
 
   override focus(options?: FocusOptions): void {

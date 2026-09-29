@@ -92,6 +92,12 @@ props:
     default: false
     description: disable every option
   - $type: prop
+    name: name
+    type: string
+    observed: true
+    native: true
+    description: what every option submits under, in a form — the platform's way
+  - $type: prop
     name: value
     type: string
     observed: false

@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**63 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**62 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -28,7 +28,6 @@ order.
 | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | | | **C — Contained bugs** | |
 | 5a | 101 | ADVANCED: a condition row will not add in a chip's menu; in the panel, changing a row's condition drops the row | bug |
-| 6 | 61 | Add customer saves with required fields empty | bug |
 | 7 | 45 | A picked date does not show in the chip | bug |
 | 8 | 82 | A number chip set by a View shows no value on its face | bug |
 | 9 | 83 | Calendar menu: a picked date leaves Apply and Discard looking off — yet they work | bug |
@@ -276,28 +275,6 @@ surface's DOWN step — `base +2`, `--sherpa-style-surface-base-2` — as its
 background fill. (base / +1 / +2 are default / hover / down.) Bind the Style
 name, never a Theme colour: a state is the mode's own step. Open sections keep
 today's fill.
-
-### `[ ]` 61 — BUG: Add customer saves with required fields empty
-
-Will, 2026-09-26: the Add customer dialog let him save with Name and Email
-empty. `#f-name` and `#f-email` carry `required`
-(`examples/templates/records.html`), and `sherpa-input-text` has `validate()`,
-`checkValidity()` and `data-error` — but the Save handler
-(`examples/contexts/records.js`, `#save-btn`) asks none of them. Worse, it
-FILLS the blanks: a blank name becomes `New customer`, a blank email a made-up
-`new.customer@example.com`.
-
-**Use and handle required-field logic, once, for every form.** Save checks
-every field, shows each one's error, focuses the first invalid one, and saves
-nothing until all pass. Prefer the platform: a native `<form>` and
-`reportValidity()` reach a shadow-DOM input only if it is form-associated
-(`ElementInternals`) — check `sherpa-input-text` first. The fallbacks go.
-
-**And did it save at all?** Will could not tell. `store.insert` runs, but the
-new row is created TODAY with status `trial`: the header's Date chip (2024
-data), the current view, the sort or the page can each hide it. Measure with
-`source.debugState().total` before and after. Then make the result visible —
-the toast says where the row went, or the grid shows it.
 
 ### `[ ]` 43 — BUG: the toolbar ⋯ overflow menu shows nothing
 
@@ -1157,6 +1134,9 @@ and edited the same way as a designed one.
 ## Done
 
 One line each. The detail is in git and in the trap named.
+
+**2026-09-29, the component API audit (86)**
+- 61: Add customer saves with required fields empty — the dialog is a real `<form>`; the four form controls take part in it (`FormValue`), Save submits it, and the browser refuses an empty required field and points at it; nothing is filled in for the reader, and the toast says when the page's filters hide the new record — `T-a-form-value-follows-every-write`
 
 **2026-09-29, the page definition (92)**
 - 92: navigating sets up the page — the router opens each Context from `examples/definitions/<name>.json` through `provider.open()`: its source, fields, scopes, saved filters, the header's chips, each bar's Add list, the grid's configuration and the kept Query. D1 `edec11a6`, D2 `ce3aaa4f`, D3 `eeb5e37a` — `T-a-page-is-its-definition`

@@ -417,6 +417,7 @@ $extensions:
       - $type: method
         name: checkValidity
         args: ""
+        description: Acceptable, as its form sees it — its own message included.
       - $type: method
         name: reportValidity
         args: ""

@@ -104,17 +104,20 @@
   </sherpa-container>
 </sherpa-layout-grid>
 
-<!-- Add / edit customer dialog. -->
+<!-- Add / edit customer dialog, in a real FORM: the browser refuses a save
+     with a required field empty and points at it. The form wraps the dialog,
+     because `slot="footer"` slots only a direct child. TODO 61 -->
+<form id="customer-form">
 <sherpa-dialog id="dialog" data-heading="Add customer">
   <sherpa-stack>
-    <sherpa-input-text id="f-name" data-label="Name" placeholder="Jane Doe" required></sherpa-input-text>
-    <sherpa-input-text id="f-email" data-label="Email" type="email" placeholder="jane@acme.com" required></sherpa-input-text>
+    <sherpa-input-text id="f-name" name="name" data-label="Name" placeholder="Jane Doe" required></sherpa-input-text>
+    <sherpa-input-text id="f-email" name="email" data-label="Email" type="email" placeholder="jane@acme.com" required></sherpa-input-text>
     <!-- EVERY record belongs to a customer organisation. Without this the
          record was saved with no `customer` and the Customer filter — which
          only sees values the data carries — could never find it.
          TRAP T-a-chip-filters-the-values-the-data-has -->
-    <sherpa-input-text id="f-customer" data-label="Customer" data-type="select" required></sherpa-input-text>
-    <sherpa-select-group id="f-plan" data-label="Plan"></sherpa-select-group>
+    <sherpa-input-text id="f-customer" name="customer" data-label="Customer" data-type="select" required></sherpa-input-text>
+    <sherpa-select-group id="f-plan" name="plan" data-label="Plan"></sherpa-select-group>
   </sherpa-stack>
 
   <!-- Container Footer brings its own padding, divider and end alignment; the
@@ -124,6 +127,7 @@
     <sherpa-button id="save-btn" data-look="saturated">Save</sherpa-button>
   </sherpa-container-footer>
 </sherpa-dialog>
+</form>
 
 <!-- A SECOND dialog, not the add/edit one re-labelled — re-use means every open
      has to undo what the last one set. data-status="critical" re-points the card

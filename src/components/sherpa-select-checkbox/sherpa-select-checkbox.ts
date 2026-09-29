@@ -4,6 +4,7 @@
  * JS mirrors attributes onto a real checkbox and re-fires change; CSS owns the look.
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { FormValue } from '../../core/ui/form-value.js';
 import { MIRRORED_CONTROL_ATTRS as MIRRORED } from '../../core/ui/shared-constants.js';
 // The template stamps these even when `data-advanced` is off — T-every-element-in-the-template.
 import '../sherpa-button/sherpa-button.js';
@@ -27,8 +28,13 @@ export class SherpaSelectCheckbox extends SherpaElement {
     ...MIRRORED,
   ];
 
+  /** A form cannot see an <input> through a shadow root. TRAP T-shadow-input-needs-element-internals */
+  static readonly formAssociated = true;
+
   /** The native checkbox. */
   #control: HTMLInputElement | null = null;
+  /** Its link to its form. */
+  #form = new FormValue(this);
 
   override onRender(): void {
     this.#control = this.$<HTMLInputElement>('.control');
@@ -53,6 +59,16 @@ export class SherpaSelectCheckbox extends SherpaElement {
     c.value = this.getAttribute('value') ?? 'on';
     c.checked = this.hasAttribute('checked');
     c.indeterminate = this.hasAttribute('indeterminate'); // property only — no CSS attr selector
+    this.#syncForm();
+  }
+
+  /** Ticked, it submits its value; unticked, nothing — as a native checkbox.
+   *  TRAP T-a-form-value-follows-every-write */
+  #syncForm(): void {
+    const c = this.#control;
+    if (!c) return;
+    this.#form.value(c.checked ? c.value : null);
+    this.#form.follow(c);
   }
 
   /* ── Public API ────────────────────────────────────────────────────── */
@@ -63,6 +79,7 @@ export class SherpaSelectCheckbox extends SherpaElement {
   set checked(v: boolean) {
     this.toggleAttribute('checked', v);
     if (this.#control) this.#control.checked = v;
+    this.#syncForm();
   }
 
   get indeterminate(): boolean {
@@ -79,6 +96,7 @@ export class SherpaSelectCheckbox extends SherpaElement {
   set value(v: string) {
     this.setAttribute('value', v);
     if (this.#control) this.#control.value = v;
+    this.#syncForm();
   }
 
   get disabled(): boolean {
@@ -89,12 +107,12 @@ export class SherpaSelectCheckbox extends SherpaElement {
   }
 
   checkValidity(): boolean {
-    return this.#control?.checkValidity() ?? true;
+    return this.#form.checkValidity();
   }
 
   /** Check, and show the browser's message on the box. */
   reportValidity(): boolean {
-    return this.#control?.reportValidity() ?? true;
+    return this.#form.reportValidity();
   }
 
   override focus(options?: FocusOptions): void {
@@ -139,6 +157,7 @@ export class SherpaSelectCheckbox extends SherpaElement {
     // the PROPERTY — CSS selects `:indeterminate`. TRAP T-a-click-does-not-clear-indeterminate.
     c.indeterminate = false;
     this.removeAttribute('indeterminate');
+    this.#syncForm();
     this.emit('change', {
       checked: c.checked,
       value: this.value,

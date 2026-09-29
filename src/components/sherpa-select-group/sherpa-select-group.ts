@@ -36,14 +36,21 @@ export class SherpaSelectGroup extends SherpaElement {
   static override observed = [
     'data-multiple',
     'disabled',
+    'name',
   ];
 
   /** The options, as populated. */
   #options: SelectGroupOption[] = [];
   /** Only what populate() stamped, so a re-render spares slotted children. */
   #stamped: HTMLElement[] = [];
-  /** Stable name shared by radios so native single-selection groups them. */
+  /** The name its radios share when the group has none — they untick by name. */
   #name = `sherpa-select-group-${++gid}`;
+
+  /** What each child submits under: the group's own `name` (Will, 2026-09-29),
+   *  else the radios' private one; a nameless checkbox submits nothing. */
+  get #childName(): string | null {
+    return this.getAttribute('name') ?? (this.#multiple ? null : this.#name);
+  }
 
   get #multiple(): boolean {
     return this.hasAttribute('data-multiple');
@@ -63,6 +70,7 @@ export class SherpaSelectGroup extends SherpaElement {
   override onChange(name: string): void {
     if (name === 'data-multiple') this.#render();
     else if (name === 'disabled') this.#syncDisabled();
+    else if (name === 'name') this.#syncNames();
   }
 
   /** populate() takes SelectGroupOption[]. */
@@ -114,9 +122,19 @@ export class SherpaSelectGroup extends SherpaElement {
         child.setAttribute('data-description', String(opt.description));
       }
       if (opt.disabled || disabled) child.setAttribute('disabled', '');
-      if (!this.#multiple) child.setAttribute('name', this.#name);
+      const childName = this.#childName;
+      if (childName) child.setAttribute('name', childName);
       this.appendChild(child);
       this.#stamped.push(child);
+    }
+  }
+
+  /** Carry the name down to every option. */
+  #syncNames(): void {
+    const name = this.#childName;
+    for (const child of this.#children()) {
+      if (name) child.setAttribute('name', name);
+      else child.removeAttribute('name');
     }
   }
 

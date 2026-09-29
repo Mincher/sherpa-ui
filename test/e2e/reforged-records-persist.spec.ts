@@ -39,6 +39,9 @@ async function addCustomer(page: import('@playwright/test').Page, name: string):
     await new Promise((r) => setTimeout(r, 200));
     const field = root.querySelector('#f-name') as HTMLElement & { value?: string };
     if (field) field.value = who;
+    // Every required field, as a reader must: nothing is filled in for them. TODO 61
+    const email = root.querySelector('#f-email') as HTMLElement & { value?: string };
+    if (email) email.value = `${who.toLowerCase().replace(/\s+/g, '.')}.${Date.now()}@example.com`;
     (root.querySelector('#save-btn') as HTMLElement)?.dispatchEvent(
       new CustomEvent('button-click', { bubbles: true, composed: true }));
     await new Promise((r) => setTimeout(r, 400));

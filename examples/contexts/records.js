@@ -8,7 +8,7 @@
  * - init — wire this Context's own work over the source it is handed — add, edit, delete, save; returns its teardown
  */
 import {
-  SherpaToast, persistView, reduceRows, saveFilterAs, deleteSavedFilter, labelId,
+  SherpaToast, persistView, reduceRows, saveFilterAs, deleteSavedFilter, labelId, matchesFilter,
 } from '../../dist/index.js';
 import { namePrompt } from './ask-name.js';
 import { plans, customerOrgs } from './records-data.js';
@@ -138,9 +138,12 @@ export async function init(root, { source }) {
   let editing = null;
 
   /** Open the dialog for one record, or for a new one when given nothing. */
+  const form = root.querySelector('#customer-form');
   const openDialog = (record) => {
     editing = record ? record.email : null;
     dialog.dataset.heading = record ? 'Edit customer' : 'Add customer';
+    // A clean form: the last save's values and errors go.
+    form.reset();
     root.querySelector('#f-name').value = record?.name ?? '';
     root.querySelector('#f-email').value = record?.email ?? '';
     // Always written, so a second open never inherits the last record's org.
@@ -268,22 +271,24 @@ export async function init(root, { source }) {
   root.querySelector('#add-btn').addEventListener('button-click', () => openDialog(null));
   root.querySelector('#cancel-btn').addEventListener('button-click', () => dialog.close());
 
-  root.querySelector('#save-btn').addEventListener('button-click', async () => {
-    const name = root.querySelector('#f-name').value || 'New customer';
-    const email = root.querySelector('#f-email').value;
-    const plan = root.querySelector('#f-plan').value;
-    // Never blank: a record with no `customer` is invisible to the Customer
-    // filter, which offers only the values the data carries.
-    const customer = custField.value || customerOrgs[0];
+  /* SAVE SUBMITS THE FORM: the browser checks every required field, shows
+     its message and focuses the first one wrong — and fires `submit` only
+     when all pass. No field is filled in for the reader. TODO 61
+     TRAP T-a-form-value-follows-every-write */
+  root.querySelector('#save-btn').addEventListener('button-click', () => form.requestSubmit(), { signal });
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const data = new FormData(form);
+    const name = String(data.get('name'));
+    const email = String(data.get('email'));
+    const customer = String(data.get('customer'));
+    const plan = String(data.get('plan') ?? '');
 
-    /* The store is the whole fix: writing announces a change, the source
-       reloads, every bound component re-populates. Where the new row lands
-       against the active sort, whether a filter hides it and what the page
-       totals become are the source's existing work. */
-    /* EDIT or ADD through one button. `editing` holds the key from the row's
-       Edit action; update MERGES, so the rest of the record survives. */
+    /* EDIT or ADD through one form. `editing` holds the key from the row's
+       Edit action; update MERGES, so the rest of the record survives. The store
+       announces the change, and every bound view reloads. */
     if (editing) {
-      const saved = await store.update(editing, { name, email: email || editing, customer });
+      const saved = await store.update(editing, { name, email, customer });
       editing = null;
       dialog.close();
       SherpaToast.success(`${saved.name} updated`, { value: 'The record was saved.' });
@@ -291,10 +296,9 @@ export async function init(root, { source }) {
     }
 
     const created = new Date().toISOString().slice(0, 10);
-    await store.insert({
+    const record = await store.insert({
       name,
-      // The key is the email, so a blank one would collide with the next blank.
-      email: email || `${name.toLowerCase().replace(/\s+/g, '.')}@example.com`,
+      email,
       customer,
       status: 'trial',
       plan: plan ? plan[0].toUpperCase() + plan.slice(1) : 'Free',
@@ -310,12 +314,14 @@ export async function init(root, { source }) {
     });
 
     dialog.close();
-    // The FACTORY, not a hand-built element: it owns the shared top-right stack,
-    // the auto-dismiss timer and the removal.
+    // SAY WHERE IT WENT: a new record the page's filters hide reads as a save
+    // that did nothing. TODO 61
     SherpaToast.success(`${name} saved`, {
-      value: 'The customer record was created.',
+      value: matchesFilter(record, source.state.filter)
+        ? 'The customer record was created.'
+        : 'The customer record was created. The filters on this page hide it.',
     });
-  });
+  }, { signal });
 
   /* The teardown the router calls when it swaps away. ONE abort ends every
      binding, the persister and the view picker. */

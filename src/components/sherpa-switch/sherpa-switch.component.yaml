@@ -59,6 +59,13 @@ props:
     default: false
     description: — native boolean       (reflected onto the inner input)
   - $type: prop
+    name: required
+    type: boolean
+    observed: true
+    native: true
+    default: false
+    description: — native boolean       (a form refuses it while off)
+  - $type: prop
     name: value
     type: string
     observed: true

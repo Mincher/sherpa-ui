@@ -74,6 +74,13 @@ props:
     native: true
     description: native attributes, mirrored to the inner control
   - $type: prop
+    name: required
+    type: boolean
+    observed: false
+    native: true
+    default: false
+    description: native attributes, mirrored to the inner control
+  - $type: prop
     name: value
     type: string
     observed: false

@@ -6,6 +6,7 @@
  * @prop {string}  value    — what it stands for when on (default "on"), as a checkbox's
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { FormValue } from '../../core/ui/form-value.js';
 
 export class SherpaSwitch extends SherpaElement {
   static override css = new URL('./sherpa-switch.css', import.meta.url);
@@ -13,9 +14,12 @@ export class SherpaSwitch extends SherpaElement {
 
   // A host label names this. TRAP T-a-host-label-must-reach-its-control
   static override labelTarget = '.input';
+  /** A form cannot see an <input> through a shadow root. TRAP T-shadow-input-needs-element-internals */
+  static readonly formAssociated = true;
   static override observed = [
     'checked',
     'disabled',
+    'required',
     'value',
     // CSS-only; declared for the typed door.
     'data-type',
@@ -24,6 +28,18 @@ export class SherpaSwitch extends SherpaElement {
   /** The native checkbox the switch wraps. */
   #input(): HTMLInputElement | null {
     return this.$<HTMLInputElement>('.input');
+  }
+
+  /** Its link to its form. */
+  #form = new FormValue(this);
+
+  /** On, it submits its value; off, nothing — as a native checkbox.
+   *  TRAP T-a-form-value-follows-every-write */
+  #syncForm(): void {
+    const input = this.#input();
+    if (!input) return;
+    this.#form.value(input.checked ? input.value : null);
+    this.#form.follow(input);
   }
 
   override onRender(): void {
@@ -45,6 +61,7 @@ export class SherpaSwitch extends SherpaElement {
     const input = this.#input();
     if (input) input.checked = value;
     this.toggleAttribute('checked', value);
+    this.#syncForm();
   }
 
   get disabled(): boolean {
@@ -64,12 +81,12 @@ export class SherpaSwitch extends SherpaElement {
   }
 
   checkValidity(): boolean {
-    return this.#input()?.checkValidity() ?? true;
+    return this.#form.checkValidity();
   }
 
   /** Check, and show the browser's message on the switch. */
   reportValidity(): boolean {
-    return this.#input()?.reportValidity() ?? true;
+    return this.#form.reportValidity();
   }
 
   override focus(options?: FocusOptions): void {
@@ -84,13 +101,16 @@ export class SherpaSwitch extends SherpaElement {
     if (!input) return;
     input.checked = this.hasAttribute('checked');
     input.disabled = this.hasAttribute('disabled');
+    input.required = this.hasAttribute('required');
     input.value = this.value;
+    this.#syncForm();
   }
 
   /** Mirror the checkbox onto `checked` and report it. */
   #onChange = (): void => {
     const checked = this.#input()?.checked ?? false;
     this.toggleAttribute('checked', checked);
+    this.#syncForm();
     this.emit('change', { checked, value: this.value });
   };
 }
