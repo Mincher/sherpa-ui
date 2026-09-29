@@ -58,6 +58,8 @@ export class SherpaButton extends SherpaElement {
     this.$('.label slot')?.addEventListener('slotchange', this.#syncTip);
 
     this.$('.trigger')?.addEventListener('click', this.#onClick);
+    // FIRST, on the host: a disabled button acts on nothing, whoever listens.
+    this.addEventListener('click', this.#refuse, { capture: true });
     // The menu is a LIGHT DOM child, so its events reach the host.
     this.addEventListener('menu-open', this.#onMenuToggle);
     this.addEventListener('menu-close', this.#onMenuToggle);
@@ -117,6 +119,17 @@ export class SherpaButton extends SherpaElement {
     this.$<HTMLButtonElement>('.trigger')?.toggleAttribute('disabled', disabled);
     this.toggleAttribute('aria-disabled', disabled);
   }
+
+  /**
+   * A DISABLED button refuses the click, as a native one does: it reaches no
+   * listener on this host and bubbles to no ancestor. It only LOOKED off —
+   * a footer's Apply still applied. TRAP T-a-disabled-button-acts-on-nothing
+   */
+  #refuse = (event: Event): void => {
+    if (!this.hasAttribute('disabled')) return;
+    event.stopImmediatePropagation();
+    event.preventDefault();
+  };
 
   /** The slotted menu, if this button is a trigger for one. */
   get #menu(): MenuLike | null {

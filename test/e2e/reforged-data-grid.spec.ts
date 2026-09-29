@@ -1312,8 +1312,10 @@ test('applying a column filter flags the column and reports a ready clause', asy
          typed value are the MENU's, not a body cloned into the chip.
          TRAP T-one-field-one-filter-menu */
       const menu = chip().querySelector('sherpa-menu') as HTMLElement & {
-        op: string; conditionValue: string;
+        op: string; conditionValue: string; show(t: Element): void;
       };
+      // OPEN, as a reader must: a shut menu's Apply is off. TRAP T-a-disabled-button-acts-on-nothing
+      if (!menu.hasAttribute('open')) menu.show(chip());
       menu.op = op;
       menu.conditionValue = value;
     };
@@ -1703,15 +1705,19 @@ test('a TEXT column filter MARKS its matches; number and date cells stay plain',
       sr.querySelector(`.head-cell[data-field="${field}"] .head-filter`) as HTMLElement;
     const apply = async (field: string, op: string, value: string): Promise<void> => {
       const m = chip(field).querySelector('sherpa-menu') as HTMLElement & {
-        op: string; conditionValue: string;
+        op: string; conditionValue: string; show(t: Element): void;
       };
+      // OPEN, as a reader must: a shut menu's Apply is off. TRAP T-a-disabled-button-acts-on-nothing
+      if (!m.hasAttribute('open')) m.show(chip(field));
       // A NUMBER column keeps its own body; a TEXT one is the filter menu.
       if (m.getAttribute('data-type') === 'filter') {
         m.op = op;
         m.conditionValue = value;
       } else {
         chip(field).querySelector('sherpa-menu')!.shadowRoot!.querySelector<HTMLElement & { value: string }>('.body-op')!.value = op;
-        chip(field).querySelector('sherpa-menu')!.shadowRoot!.querySelector<HTMLInputElement>('.body-number-one')!.value = value;
+        const box = chip(field).querySelector('sherpa-menu')!.shadowRoot!.querySelector<HTMLInputElement>('.body-number-one')!;
+        box.value = value;
+        box.dispatchEvent(new Event('change', { bubbles: true }));
       }
       chip(field).querySelector('sherpa-menu')!.shadowRoot!
         .querySelector<HTMLElement>('.apply')!.click();
@@ -1794,8 +1800,10 @@ test('REMOVE FILTER ends a column filter outright; the menu never inherits a col
 
     {
       const m = chip().querySelector('sherpa-menu') as HTMLElement & {
-        op: string; conditionValue: string;
+        op: string; conditionValue: string; show(t: Element): void;
       };
+      // OPEN, as a reader must. TRAP T-a-disabled-button-acts-on-nothing
+      m.show(chip());
       m.op = 'contains';
       m.conditionValue = 'Ad';
     }
@@ -1902,8 +1910,10 @@ test('a column filter can be SUSPENDED and resumed without losing it', async ({ 
 
     {
       const m = chip().querySelector('sherpa-menu') as HTMLElement & {
-        op: string; conditionValue: string;
+        op: string; conditionValue: string; show(t: Element): void;
       };
+      // OPEN, as a reader must. TRAP T-a-disabled-button-acts-on-nothing
+      m.show(chip());
       m.op = 'contains';
       m.conditionValue = 'ar';
     }

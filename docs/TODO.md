@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**67 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**66 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -35,7 +35,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ❓ | 6 | 112 | An Equals row in Advanced will not open its value list | bug |
 | ✅ | 7 | 45 | A picked date does not show in the chip | bug |
 | ✅ | 8 | 82 | A number chip set by a View shows no value on its face | bug |
-| ⬜ | 9 | 83 | Calendar menu: a picked date leaves Apply and Discard looking off — yet they work | bug |
+| ✅ | 9 | 83 | Calendar menu: a picked date leaves Apply and Discard looking off — yet they work | bug |
 | ⬜ | 10 | 94 | A number (and range) filter menu needs Apply and Cancel buttons | bug |
 | ⬜ | 11 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
 | ⬜ | 12 | 16 | Favourite and Save apply to the Context, not the View | bug |
@@ -464,7 +464,7 @@ same View: the old "Status is not churned" reading also ticked "churned" as
 Simple's answer — the opposite filter; an op's picks are no longer Simple's.
 `T-both-answers-are-kept`
 
-### `[ ]` 83 — BUG: a calendar menu's picked date leaves Apply and Discard looking off
+### `[x]` ✅ 83 — BUG: a calendar menu's picked date leaves Apply and Discard looking off
 
 Will, 2026-09-27: selecting a date does not remove the inactive styling from
 the calendar menu's Apply and Discard — yet they are still clickable and they
@@ -478,6 +478,15 @@ work. TWO faults:
   inactive but a click still reaches its handler — the look and the behaviour
   disagree. The button must refuse the click while disabled, or the footer's
   "off" is only paint.
+
+**✅ Done 2026-09-29:** the menu re-reads its draft on `datetime-change` and
+`range-select` too, so a picked day turns Apply and Discard on. A disabled
+`sherpa-button` refuses the click on its host — no listener, no ancestor —
+as a native button does (`T-a-disabled-button-acts-on-nothing`). That showed
+two more gaps, now closed: a draft set from code (`values`, `conditions`,
+`mode`, typed text) did not tell the footer, and a switch between Simple and
+Advanced was not a change to the draft. Eight tests pressed Apply on a menu
+they never opened; they open it first, as a reader must.
 
 ### `[ ]` 112 — BUG: an Equals row in Advanced will not open its value list
 
@@ -2079,6 +2088,7 @@ source.
 One line each. The detail is in git and in the trap named.
 
 **2026-09-29, the component API audit (86)**
+- 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`
 - 82: a number chip set by a View shows its value (`2` for "> 2"); an old "is not X" no longer ticks X as Simple's answer — `T-both-answers-are-kept`
 - 45: a date reads one way — `formatDate()`, DOM-free, `03 to 15 Sep 2026` — `T-a-date-reads-one-way`
 - 103: a keyless row gets a key from the data layer, kept beside the row and never on it; the grid selects by key and `selection-change` sends keys — `T-a-made-up-key-never-leaves-the-data-layer`

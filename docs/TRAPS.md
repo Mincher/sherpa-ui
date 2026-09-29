@@ -591,6 +591,31 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-a-disabled-button-acts-on-nothing
+
+**A disabled `sherpa-button` refuses the click, as a native button does.** It
+toggled `disabled` on its inner `<button>`, so a click on the inner control
+did nothing — but a click on the HOST still reached every listener bound
+there, and a menu's footer binds its Apply as `click` on the host. So Will's
+calendar footer "looked inactive, yet they are still clickable and they work"
+(TODO 83): paint, not behaviour.
+
+A capture listener on the host stops the click while `disabled` — no host
+listener, no ancestor, no `button-click`. Capture, because at the target a
+capturing listener runs before every other, whoever bound it first.
+
+A test that pressed Apply on a menu it never OPENED only passed because of
+this: a shut committing menu's footer is off (`dirty` needs `open`). Five tests
+open their menu first now, as a reader must — and a draft set from code
+(`values`, `conditions`, `mode`, typed text) tells the footer too.
+
+- Site: `src/components/sherpa-button/sherpa-button.ts`
+- Site: `test/e2e/reforged-a-calendar-pick-wakes-the-footer.spec.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `test/e2e/reforged-filter-conditions.spec.ts`
+- Site: `test/e2e/reforged-grid-keeps-both-answers.spec.ts`
+- Site: `test/e2e/reforged-data-grid.spec.ts`
+
 ### T-a-date-reads-one-way
 
 **A day, or a range of days, reads ONE way, from one DOM-free formatter.**
@@ -13907,10 +13932,15 @@ turned off comes back on.
 keystroke — at once, not a microtask later: an Apply pressed in the same
 moment as the tick must already be on.
 
+A calendar's pick is neither `input` nor `change` — it is `datetime-change`
+or `range-select` — so the menu re-reads its draft on those too, or a picked
+day left the footer's pair off (TODO 83).
+
 - Site: `src/components/sherpa-container-footer/sherpa-container-footer.html`
 - Site: `src/components/sherpa-container-footer/sherpa-container-footer.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-menu.spec.ts`
+- Site: `test/e2e/reforged-a-calendar-pick-wakes-the-footer.spec.ts`
 
 ### T-a-pending-chip-has-no-fill
 

@@ -486,6 +486,9 @@ test('a TYPED condition survives Apply, and its hits mark', async ({ page }) => 
     const chip = el.shadowRoot!.querySelector('sherpa-quick-filter[data-id="owner"]')!;
     const menu = chip.querySelector('sherpa-menu') as HTMLElement & { conditionValue: string };
     const wait = (): Promise<void> => new Promise((res) => { setTimeout(res, 120); });
+    // OPEN, as a reader must: a shut menu's Apply is off. TRAP T-a-disabled-button-acts-on-nothing
+    (menu as unknown as { show(t: Element): void }).show(chip);
+    await wait();
 
     // Into CONDITION mode; the rows live there.
     menu.shadowRoot!.querySelector<HTMLElement>('.use-condition sherpa-switch')!.shadowRoot!.querySelector('input')!.click();

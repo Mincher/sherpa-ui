@@ -48,10 +48,18 @@ test('a heading switches both ways, each mode filters by its own answer, and a r
       await wait();
     };
 
+    // OPEN, as a reader must: a shut menu's Apply is off. TRAP T-a-disabled-button-acts-on-nothing
+    const open = async (): Promise<void> => {
+      const m = menu() as HTMLElement & { show(t: Element): void; hasAttribute(n: string): boolean };
+      if (!m.hasAttribute('open')) m.show(sr.querySelector('.head-cell[data-field="owner"] .head-filter')!);
+      await wait();
+    };
+    await open();
     tick('Dana', true);
     tick('Mo', true);
     await apply();
     const simple = grid.columnClause('owner');
+    await open();
     await flip();
     const row = menu().shadowRoot.querySelector('.condition-row')!;
     const cond = row.querySelector('.condition') as HTMLElement & { value: string };
@@ -63,6 +71,7 @@ test('a heading switches both ways, each mode filters by its own answer, and a r
     await wait();
     await apply();
     const advanced = { clause: grid.columnClause('owner'), mode: grid.columnReading('owner')?.mode };
+    await open();
     await flip();
     await apply();
     const back = { clause: grid.columnClause('owner'), reading: grid.columnReading('owner') };

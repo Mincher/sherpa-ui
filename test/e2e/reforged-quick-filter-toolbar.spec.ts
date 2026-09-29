@@ -755,6 +755,10 @@ test('the Add button puts an available filter on the bar and drops it from its m
 
     const before = { chips: chips(), offered: offered() };
 
+    // OPEN, as a reader must: a shut menu's Apply is off, and an off button
+    // acts on nothing. TRAP T-a-disabled-button-acts-on-nothing
+    (add.querySelector('sherpa-menu') as HTMLElement & { show(t: HTMLElement): void }).show(add);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     // MULTI-select: pick one and commit it, exactly as the caret's menu does.
     ([...add.querySelectorAll('input')] as HTMLInputElement[]).find((i) => i.value === 'health')!.click();
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
@@ -826,7 +830,10 @@ test('the Add menu is multi-select and searchable; a chip can be removed', async
       chipSearch: (sr.querySelector('.chip[data-id="plan"] sherpa-menu') as HTMLElement).hasAttribute('data-search'),
     };
 
-    // Add TWO in one visit — the point of multi-select.
+    // Add TWO in one visit — the point of multi-select. OPEN first, as a
+    // reader must. TRAP T-a-disabled-button-acts-on-nothing
+    (addMenu as HTMLElement & { show(t: HTMLElement): void }).show(add);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     for (const v of ['health', 'seats']) {
       ([...add.querySelectorAll('input')] as HTMLInputElement[]).find((i) => i.value === v)!.click();
     }

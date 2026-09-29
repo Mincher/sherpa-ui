@@ -213,8 +213,9 @@ export class SherpaMenu extends SherpaElement {
     this.$('.apply')?.addEventListener('click', this.#onApply);
     this.$('.cancel')?.addEventListener('click', this.#onCancel);
     /* The FOOTER owns "nothing to apply"; this menu only reports whether its
-       draft changed. TRAP T-the-footer-owns-nothing-to-save */
-    for (const type of ['input', 'change']) {
+       draft changed — a calendar's pick included, which is neither `input` nor
+       `change`. TRAP T-the-footer-owns-nothing-to-save */
+    for (const type of ['input', 'change', 'datetime-change', 'range-select']) {
       this.addEventListener(type, this.#onDraft);
       this.shadowRoot?.addEventListener(type, this.#onDraft);
     }
@@ -297,6 +298,7 @@ export class SherpaMenu extends SherpaElement {
     if (to === 'simple' && this.#advancedOnly()) return;
     this.dataset['mode'] = to;
     this.#syncModeButton();
+    this.#syncDirty();
   }
 
   /** Drawn once — a re-populate would lose what the reader picked. */
@@ -347,6 +349,8 @@ export class SherpaMenu extends SherpaElement {
     // Will's two words for the two modes of ONE system. TRAP T-one-condition-system
     this.emit('filter-mode-change', { mode: next });
     this.#emitConditions();
+    // Its own `change` stops here, so the footer is told directly.
+    this.#syncDirty();
   };
 
   /**
@@ -606,6 +610,13 @@ export class SherpaMenu extends SherpaElement {
 
   /** Replace every row from data — a host restoring a saved filter. */
   set conditions(rows: readonly FieldCondition[]) {
+    this.#setRows(rows);
+    // A set is a change to the DRAFT too. TRAP T-the-footer-owns-nothing-to-save
+    this.#syncDirty();
+  }
+
+  /** Replace the rows — the setter's body, so every return still tells the footer. */
+  #setRows(rows: readonly FieldCondition[]): void {
     const region = this.$('.condition-rows');
     if (!region) return;
     /* NOTHING NEW is not a rebuild. Between `replaceChildren()` and the async
@@ -656,6 +667,8 @@ export class SherpaMenu extends SherpaElement {
   #conditionBaseline: FieldCondition[] = [];
   /** Whether the rows mirrored the picks when the menu opened. */
   #mirrorBaseline = false;
+  /** The mode the menu opened in. */
+  #modeBaseline: ConditionType = 'simple';
 
   /**
    * The condition, or what was typed under it, changed.
@@ -725,6 +738,7 @@ export class SherpaMenu extends SherpaElement {
        answer, so a caller who knows nothing of rows still gets one.
        TRAP T-both-answers-are-kept */
     if (next.trim() && this.#offersAdvanced() && this.mode !== 'advanced') this.mode = 'advanced';
+    this.#syncDirty();
   }
 
   /** ROW ONE's condition field. `menu.op` and `menu.conditionValue` are the
@@ -894,6 +908,8 @@ export class SherpaMenu extends SherpaElement {
     if (!this.#commits || !this.open) return false;
     const key = (values: readonly string[]): string => [...values].sort().join('\u0000');
     if (key(this.values) !== key(this.#baseline)) return true;
+    // A switch between Simple and Advanced changes what filters. TRAP T-both-answers-are-kept
+    if (this.mode !== this.#modeBaseline) return true;
     return this.mode === 'advanced'
       && JSON.stringify(this.conditions) !== JSON.stringify(this.#conditionBaseline);
   }
@@ -973,10 +989,13 @@ export class SherpaMenu extends SherpaElement {
   }
 
   set values(next: string[]) {
-    if (this.#setBodyValues(next)) return;
-    // The query's comparison — TRAP T-one-comparison-rule-for-query-and-ui.
-    const wanted = valueSet(next);
-    for (const input of this.#inputs()) input.checked = wanted.has(input.value);
+    if (!this.#setBodyValues(next)) {
+      // The query's comparison — TRAP T-one-comparison-rule-for-query-and-ui.
+      const wanted = valueSet(next);
+      for (const input of this.#inputs()) input.checked = wanted.has(input.value);
+    }
+    // A set is a change to the DRAFT too. TRAP T-the-footer-owns-nothing-to-save
+    this.#syncDirty();
   }
 
   /**
@@ -1310,6 +1329,7 @@ export class SherpaMenu extends SherpaElement {
       this.#baseline = this.values;
       this.#conditionBaseline = this.conditions;
       this.#mirrorBaseline = this.#mirror;
+      this.#modeBaseline = this.mode;
       this.#syncDirty();
       /* These live while the menu is OPEN, which is shorter than the element's
          life — `while` is that shorter lifetime, and the base class ANDs it
@@ -1518,6 +1538,7 @@ export class SherpaMenu extends SherpaElement {
     this.#baseline = this.values;
     this.#conditionBaseline = this.conditions;
     this.#mirrorBaseline = this.#mirror;
+    this.#modeBaseline = this.mode;
     this.emit('menu-apply', { values: this.values });
     /* The ROWS are part of what Apply applies. Without this a committing menu
        held its conditions for ever. TRAP T-a-condition-is-a-draft-too */
@@ -1533,6 +1554,7 @@ export class SherpaMenu extends SherpaElement {
     this.#applying = true;
     this.#settledByAction = true;
     this.values = this.#baseline;
+    this.mode = this.#modeBaseline;
     if (this.mode === 'advanced') this.conditions = this.#conditionBaseline;
     this.#mirror = this.#mirrorBaseline;
     this.emit('menu-cancel');
