@@ -124,3 +124,24 @@ test('a scope says what it narrows: the View is the view, a bound component name
   off();
   assert.equal(source.describe('data').shows, undefined, 'unbound, it says nothing');
 });
+
+test('a chip counts the rows ITS OWN answer matches, within what its scope can see', async () => {
+  // TRAP T-a-chip-counts-its-own-results
+  const store = new ArrayStore([
+    { region: 'EMEA', status: 'open' }, { region: 'EMEA', status: 'shut' },
+    { region: 'AMER', status: 'open' }, { region: 'AMER', status: 'open' },
+  ]);
+  const source = await openSource({
+    store: 'rows',
+    fields: { region: { label: 'Region' }, status: { label: 'Status' } },
+    scopes: { view: { label: 'View filters', holds: ['region'] }, data: { label: 'Alerts', holds: ['status'] } },
+  }, store);
+  await source.setQuery({ v: 1, scopes: {
+    view: { holds: ['region'], readings: { region: { picked: ['EMEA'] } } },
+    data: { holds: ['status'], readings: { status: { picked: ['open'] } } },
+  } });
+  // The View's chip: its own answer over everything.
+  assert.deepEqual(await source.results('view'), { region: 2 });
+  // A component's chip: its own answer, within the View's EMEA rows — not 3.
+  assert.deepEqual(await source.results('data'), { status: 1 });
+});

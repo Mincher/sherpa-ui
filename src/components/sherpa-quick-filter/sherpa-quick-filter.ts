@@ -11,12 +11,15 @@ import {
 import {
   fieldState, type FieldReading, type FilterState,
 } from '../../core/data/filter-state.js';
-import { CONDITION_BADGE, filterFace, type FilterFace } from '../../core/data/filter-face.js';
+import { filterFace } from '../../core/data/filter-face.js';
 import { APPLIED_ABOVE, NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
 import { arranges, FILTER_KINDS, type FilterKind } from '../../core/ui/filter-kind.js';
 import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
 // Floating, so the count tooltip escapes the toolbar's clipping chip run.
 import '../sherpa-tooltip/sherpa-tooltip.js';
+
+/** A results count as the reader's locale writes it. */
+const RESULTS = new Intl.NumberFormat();
 
 /** One place a jump chip can scroll to — `value` is the target element's id. */
 interface JumpItem {
@@ -167,6 +170,7 @@ export class SherpaQuickFilter extends SherpaElement {
        while Sort remembered: one of the two blanked the caret.
        TRAP T-off-is-not-forgotten */
     if (this.#arranges()) this.#drawArrangement();
+    if (name === 'data-current' || name === 'data-pending') this.#syncBadge();
     if (name === 'data-current') this.#syncEmpty();
     /* The tooltip says WHY a chip is off, so it must follow the two attributes
        that decide that — neither touches the values, so nothing else re-syncs
@@ -248,12 +252,9 @@ export class SherpaQuickFilter extends SherpaElement {
   #applySelection(values: string[]): void {
     // A TYPING condition answers with text, so the chip is on without a tick.
     this.current = values.length > 0 || this.#hasTypedAnswer();
-    // The badge is written by #syncLabelForSelection, which knows the condition.
     this.#syncLabelForSelection(values);
-    // BEFORE the badge: this writes the count's own aria-label and would wipe
-    // the condition's. TRAP T-an-operator-decides-pick-or-type
     this.#syncCountTip(values);
-    this.#syncBadge(filterFace(this.#state(values)));
+    this.#syncBadge();
     this.#syncEmpty();
     this.#syncText();
   }
@@ -515,13 +516,7 @@ export class SherpaQuickFilter extends SherpaElement {
     const state = this.#state((menu?.values ?? []) as string[]);
     const advanced = this.#given() || state.condition === 'advanced';
     this.#syncCondition(state);
-    /* …and the BADGE from the same state, at the same moment. It was drawn only
-       once a reader touched the chip, so one answered by a typed condition from
-       the start wore its blue and not its fx. ONLY with a menu to read: on a
-       chip without one, `data-count` is the host's to set. */
-    if (this.#given()) {
-      this.#syncBadge({ ...filterFace(state), badge: CONDITION_BADGE, condition: 'Advanced condition', count: 0 });
-    } else if (menu) this.#syncBadge(filterFace(state));
+    this.#syncBadge();
 
     /* A TYPED condition is an answer, so a chip holding one is not empty —
        "Contains Ravi" filters, and painting it as "filtering nothing" is a
@@ -583,22 +578,18 @@ export class SherpaQuickFilter extends SherpaElement {
   /** The pending check for "on, but filtering nothing". */
   #emptyCheck = 0;
 
-  /** The tooltip: the values or the condition, in words. */
+  /** The tooltip: the values or the condition, in words — and the same words on
+   *  the button for a screen reader, as the tooltip describes only itself.
+   *  TRAP T-one-state-per-filtered-field */
   #syncCountTip(values: string[]): void {
-    /* The CONDITION in words: the badge only says THAT one applies.
-       TRAP T-one-state-per-filtered-field */
     const face = filterFace(this.#state(values));
-
+    const text = this.#tipText(face.tip);
     // `data-text` is sherpa-tooltip's own API — the component writes the bubble.
     const tip = this.$<HTMLElement>('.count-wrap');
-    if (tip) tip.dataset['text'] = this.#tipText(face.tip);
-    const badge = this.$('.count');
-    if (!badge) return;
-    if (face.count > 1) {
-      const labels = values.map((v) => this.#valueLabel(v));
-      const count = `${face.count} selected: ${labels.join(', ')}`;
-      badge.setAttribute('aria-label', face.condition ? `${face.condition}, ${count}` : count);
-    } else badge.removeAttribute('aria-label');
+    if (tip) tip.dataset['text'] = text;
+    const body = this.$('.body');
+    if (text) body?.setAttribute('aria-description', text);
+    else body?.removeAttribute('aria-description');
   }
 
   /**
@@ -647,7 +638,7 @@ export class SherpaQuickFilter extends SherpaElement {
     this.#syncLabelForSelection(values);
     this.#syncCountTip(values);
     const state = this.#state(values);
-    this.#syncBadge(filterFace(state));
+    this.#syncBadge();
     this.#syncCondition(state);
   }
 
@@ -735,29 +726,38 @@ export class SherpaQuickFilter extends SherpaElement {
 
     const face = filterFace(this.#state(values));
     this.valueLabel = face.value;
-    this.#syncBadge(face);
+    this.#syncBadge();
   }
 
+  /** The rows this chip's own answer matches, as its source counted them.
+   *  Null: no number. TRAP T-a-chip-counts-its-own-results */
+  get results(): number | null {
+    return this.#results ?? null;
+  }
+  set results(n: number | null) {
+    this.#results = n;
+    this.#syncBadge();
+  }
+  /** Undefined: never told — a chip with no menu then leaves `data-count` to its host. */
+  #results: number | null | undefined;
+
   /**
-   * The badge says how many, or WHICH CONDITION when there is only one value.
-   *
-   * A count and a condition cannot both fit, and the count is the one a reader
-   * can get elsewhere — the caret already shows the value, and the menu shows
-   * the ticks. So several picks keep the number.
+   * The badge is the chip's RESULTS while it is on and applied — not a count of
+   * picks, nor `fx`: the tip says those. Will, TODO 60.
+   * TRAP T-a-chip-counts-its-own-results
    */
-  #syncBadge(face: FilterFace): void {
-    if (face.count > 1) {
-      this.dataset['count'] = String(face.count);
+  #syncBadge(): void {
+    if (this.#results === undefined && !this.menu) return;
+    const n = this.current && !this.hasAttribute('data-pending') ? this.#results ?? null : null;
+    const badge = this.$('.count');
+    if (n == null) {
+      badge?.removeAttribute('aria-label');
+      delete this.dataset['count'];
       return;
     }
-    if (face.badge) {
-      this.dataset['count'] = face.badge;
-      // A sign announces as nothing; the word is what a reader needs.
-      this.$('.count')?.setAttribute('aria-label', face.condition);
-      return;
-    }
-    this.$('.count')?.removeAttribute('aria-label');
-    delete this.dataset['count'];
+    const said = RESULTS.format(n);
+    this.dataset['count'] = said;
+    badge?.setAttribute('aria-label', `${said} ${n === 1 ? 'result' : 'results'}`);
   }
 
   /** Is this chip's menu on a typing condition with something typed? */

@@ -5,7 +5,7 @@ import { test, expect, type Bar } from './harness';
  *
  * Will, 2026-09-25: presets "are actually compound conditional filters that
  * (potentially) use more than 1 field". So a def can carry its READINGS, field
- * by field. The chip is a toggle; it wears fx, and the info-blue when on; and a
+ * by field. The chip is a toggle; it reads Advanced, and the info-blue when on; and a
  * bound source applies it as ONE named part.
  * TRAP T-a-saved-filter-is-its-readings
  */
@@ -65,8 +65,9 @@ test('a chip that carries its readings is an Advanced filter, and a bound source
     return { before, one, two, off };
   });
 
-  const chip = { kind: 'advanced', condition: 'advanced', badge: 'fx' };
-  // An Advanced filter from the start: fx and custom, but not on.
+  // No badge: it is RESULTS since TODO 60, and this bar is bound with no scope.
+  const chip = { kind: 'advanced', condition: 'advanced', badge: '' };
+  // An Advanced filter from the start, but not on.
   expect(r.before).toEqual({ chip: { ...chip, on: false }, total: 3, parts: [] });
   // On: its readings narrow the rows, as ONE named part.
   expect(r.one).toEqual({ chip: { ...chip, on: true }, total: 2, parts: ['saved:at-risk'] });
@@ -562,12 +563,12 @@ test('the Records page edits a saved filter under its own name, and deletes it',
 
 /**
  * THE PANEL, which answers for the bar in panel mode — the bar is hidden then,
- * so the panel needs every door the bar has. A saved filter in its Presets wears
- * fx; a reader's own opens Edit and Delete, which the panel ASKS for, as it asks
+ * so the panel needs every door the bar has. A saved filter in its Presets is
+ * Advanced; a reader's own opens Edit and Delete, which the panel ASKS for, as it asks
  * for Add and Remove; and a whole SCOPE saves as one chip.
  * TRAP T-the-panel-saves-a-whole-scope
  */
-test('the panel: saved presets wear fx, and a scope asks to save, edit and delete', async ({ page }) => {
+test('the panel: saved presets are Advanced, and a scope asks to save, edit and delete', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const readings = { health: { op: 'lt', text: '60' } };
     const panel = await window.__mount<HTMLElement & { show(): void; populate(d: unknown): unknown }>(
@@ -607,7 +608,8 @@ test('the panel: saved presets wear fx, and a scope asks to save, edit and delet
     return { presets, hidden, shown, asked };
   });
 
-  const fx = { condition: 'advanced', badge: 'fx' };
+  // Advanced, and no badge: it is RESULTS since TODO 60, and a panel draws none.
+  const fx = { condition: 'advanced', badge: '' };
   expect(r.presets).toEqual({ preset: { ...fx, actions: [] }, own: { ...fx, actions: ['edit', 'delete'] } });
   // Only when the host saves.
   expect(r.hidden).toBe(true);

@@ -369,14 +369,13 @@ test('a chip that did not opt in has NO Advanced mode at all', async ({ page }) 
 });
 
 /**
- * ONE MARK, NOT A SIGN PER OPERATOR.
- *
- * A per-op sign cannot say anything true about a field holding three chained
- * rows. So the badge says only THAT conditions are
- * applied — `fx`, like a spreadsheet's formula mark — and the TOOLTIP spells
- * out which. TRAP T-a-condition-badge-says-that-not-which
+ * NO MARK FOR A CONDITION. A per-op sign cannot say anything true about a field
+ * holding three chained rows, and since TODO 60 the badge is the chip's RESULTS
+ * — so it never names a condition, not even `fx`. The TOOLTIP spells out which,
+ * and says it to a screen reader through the button's description.
+ * TRAP T-a-condition-badge-says-that-not-which
  */
-test('the BADGE says THAT conditions apply, never WHICH', async ({ page }) => {
+test('the BADGE never names a condition; the tip says which', async ({ page }) => {
   await bar(page);
   const r = await page.evaluate(async () => {
     const el = document.querySelector('sherpa-quick-filter-toolbar')!;
@@ -385,8 +384,8 @@ test('the BADGE says THAT conditions apply, never WHICH', async ({ page }) => {
     const wait = (): Promise<void> => new Promise((res) => { setTimeout(res, 120); });
     const badge = (): Record<string, unknown> => ({
       sign: chip.dataset['count'] ?? null,
-      // A sign announces as nothing, so the WORD is the accessible name.
-      spoken: chip.shadowRoot!.querySelector('.count')?.getAttribute('aria-label') ?? null,
+      // The WORD reaches a screen reader through the button's description.
+      said: chip.shadowRoot!.querySelector('.body')?.getAttribute('aria-description') ?? null,
       caret: chip.shadowRoot!.querySelector('.caret-label')?.textContent ?? '',
     });
     /* A condition lives in a ROW now, so setting one means being IN condition
@@ -454,16 +453,12 @@ test('the BADGE says THAT conditions apply, never WHICH', async ({ page }) => {
     'Equals', 'Does not equal', 'Contains',
     'Does not contain', 'Starts with', 'Ends with',
   ]);
-  // The DEFAULT names no condition, so it wears no mark at all.
-  expect(r.onEq).toEqual({ sign: null, spoken: null, caret: 'Gold' });
-  // ONE mark, whatever the condition is. The word is still the accessible name.
-  expect(r.onNe.sign).toBe('fx');
-  /* The WORD, not the value: `condition` is the accessible name, and the
-     tooltip carries the whole phrase. */
-  expect(r.onNe.spoken).toBe('Does not equal');
-  // A typing condition answers with what was TYPED, and the caret keeps it all.
-  expect(r.onTyped.sign).toBe('fx');
-  expect(r.onTyped.spoken).toBe('Starts with');
+  // No mark, whatever the condition is: the badge is results, and no source
+  // counted any here. The tip says the picks, or how many conditions apply —
+  // the chip's own name spells which (`T-a-condition-tip-counts-its-rows`).
+  expect(r.onEq).toEqual({ sign: null, said: 'Gold', caret: 'Gold' });
+  expect(r.onNe).toEqual({ sign: null, said: '1 condition applied', caret: 'Gold' });
+  expect(r.onTyped).toEqual({ sign: null, said: '1 condition applied', caret: 'Go' });
 });
 
 test('a TYPED condition survives Apply, and its hits mark', async ({ page }) => {
@@ -603,14 +598,12 @@ test('the badge is legible, and the tooltip COUNTS the conditions', async ({ pag
 
   // The DEFAULT names no condition — there is nothing to explain.
   expect(r.onEq).toEqual({ badge: null, weight: '600', tip: 'Gold' });
-  /* The badge says only THAT a condition applies, so the TOOLTIP is the only
-     place the reader can find out which. The VALUE is what was TYPED:
-     a typing condition is answered by its box, not by ticks left over from the
-     list condition — the ticks survive the flip, but they are not the answer
-     while `notcontains` is what the field holds.
+  /* The badge is RESULTS (TODO 60) — none here, with no source — so the TOOLTIP
+     says a condition applies. The VALUE is what was TYPED: a typing condition
+     is answered by its box, not by ticks left over from the list condition.
      TRAP T-one-state-per-filtered-field */
   expect(r.onCondition).toEqual({
-    badge: 'fx', weight: '600', tip: '1 condition applied',
+    badge: null, weight: '600', tip: '1 condition applied',
   });
 });
 

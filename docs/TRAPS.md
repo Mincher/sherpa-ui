@@ -591,6 +591,26 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-a-chip-counts-its-own-results
+
+**A chip's badge is the number of rows ITS OWN answer matches** — Will, TODO
+60, decided 2026-09-26: not the whole filter's total (one number on every
+chip), and no longer a count of picks or `fx` (the tip says those, and the
+button's `aria-description` says it to a screen reader). Counted within what
+the chip's scope can see: a component chip within the rows the View allows.
+`source.results(scope)` counts from the APPLIED Query — `store.totalCount()`
+per answered field or saved filter — after every load, and draws them onto
+each scope-bound bar (`drawResults`); a later load's count wins. A chip shows
+its number only while it is on and not pending (46): a draft has no results
+yet. A chip never told its results, and with no menu, leaves `data-count` to
+its host, as before.
+
+- Site: `src/core/data/data-source.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/unit/page-definition.test.mjs`
+- Site: `test/e2e/reforged-chip-results.spec.ts`
+
 ### T-a-scope-says-what-it-shows
 
 **A filter panel section's icon names WHAT its filters narrow** — the View
@@ -8291,8 +8311,10 @@ A per-operator sign can say which operator ONE row holds. A field holding
 `Contains "ab" or Equals churned` has no single operator, so any one sign over
 it is wrong, and the reader believes it.
 
-So the badge is ONE mark — `fx`, the spreadsheet's formula sign — and it says
-only THAT conditions apply. The tooltip says HOW MANY
+So no mark ever names an operator. A grid HEADING wears ONE glyph — `fx`, the
+spreadsheet's formula sign — which says only THAT conditions apply. A CHIP's
+badge is its RESULTS since TODO 60 (`T-a-chip-counts-its-own-results`), so it
+wears no condition mark at all. The tooltip says HOW MANY
 (`T-a-condition-tip-counts-its-rows`); the chip's value and accessible name
 spell the chain, `Contains: ab or Equals: churned`, from `spellConditions()`.
 

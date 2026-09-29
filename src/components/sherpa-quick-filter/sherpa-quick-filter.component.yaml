@@ -297,7 +297,7 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: >-
-      read/write JS properties (current, valueLabel, menu, values, column, direction). See
+      read/write JS properties (current, valueLabel, menu, values, column, direction, results). See
       $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
@@ -403,3 +403,6 @@ $extensions:
       - name: direction
         type: string
         access: read
+      - name: results
+        type: string
+        access: read-write

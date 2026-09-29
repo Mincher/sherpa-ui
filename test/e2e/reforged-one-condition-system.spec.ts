@@ -27,7 +27,7 @@ async function chip(page: import('@playwright/test').Page, def: Record<string, u
   }, def);
 }
 
-test('a TYPED condition in list mode is Advanced: green AND fx', async ({ page }) => {
+test('a TYPED condition in list mode is Advanced: green, and no fx', async ({ page }) => {
   const r = await chip(page, {
     id: 'owner', label: 'Owner', select: 'multiple', active: true, custom: true,
     op: 'contains', text: 'Da',
@@ -36,7 +36,8 @@ test('a TYPED condition in list mode is Advanced: green AND fx', async ({ page }
   expect(r.green).toBe(true);
   // SUCCESS green, light mode. TRAP T-a-conditioned-chip-reads-as-success
   expect(r.edge).toBe('rgb(0, 173, 98)');
-  expect(r.badge).toBe('fx');
+  // The badge is RESULTS since TODO 60 — never a condition's mark.
+  expect(r.badge).toBe('');
 });
 
 test('a ticked value is Simple: neither green nor fx', async ({ page }) => {

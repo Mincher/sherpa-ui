@@ -288,8 +288,8 @@ capabilities:
   - $type: capability
     api: js-methods
     description: >-
-      callable from a view definition's state block (setChipValues, setChipReading, drawReading,
-      supersede, unpackFilter, deleteFilter, packFilter, report, available, addFilters,
+      callable from a view definition's state block (setChipValues, setChipReading, drawResults,
+      drawReading, supersede, unpackFilter, deleteFilter, packFilter, report, available, addFilters,
       removeFilter, drawScope, allowFields, clearAll, organise). See $extensions.sherpa.methods.
 events:
   - $type: event
@@ -398,6 +398,13 @@ $extensions:
         name: setChipReading
         args: "id: string, reading: FieldReading"
         description: setChipReading(id, reading) — steer ONE chip with a whole reading.
+      - $type: method
+        name: drawResults
+        args: "results: Readonly<Record<string, number>>"
+        description: >-
+          drawResults(results) — each answered chip's results, from its source: the rows its own
+          answer matches, by field or saved-filter id. SILENT. A chip with none shows no number.
+          Will, TODO 60.
       - $type: method
         name: drawReading
         args: "field: string, reading: FieldReading"

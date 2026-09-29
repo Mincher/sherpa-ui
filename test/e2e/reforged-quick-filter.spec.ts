@@ -207,8 +207,9 @@ test('the chip keeps the FIELD name; the caret button carries the picked VALUE',
 
   // One pick: the caret names the value, so the badge stays away.
   expect(r.one).toEqual({ chip: 'Region', caret: 'EMEA', count: undefined });
-  // Two or more: the caret shows the FIRST plus an ellipsis, the badge the number.
-  expect(r.two).toEqual({ chip: 'Region', caret: 'EMEA…', count: '2' });
+  // Two or more: the caret shows the FIRST plus an ellipsis. The badge is the
+  // chip's RESULTS, which only a source counts — none here. TODO 60.
+  expect(r.two).toEqual({ chip: 'Region', caret: 'EMEA…', count: undefined });
   expect(r.backToOne).toEqual({ chip: 'Region', caret: 'APAC', count: undefined });
   // Nothing picked: an EMPTY caret label, which CSS collapses to a bare caret.
   expect(r.none).toEqual({ chip: 'Region', caret: '', count: undefined });
@@ -296,8 +297,10 @@ test('hovering the chip reveals a bubble ABOVE it listing the chosen values', as
 
   // The bubble carries the value TEXT, not the raw values.
   await expect(tip).toHaveText('EMEA, Americas');
-  // ...and the same list reaches AT through the badge's own label.
-  await expect(badge).toHaveAttribute('aria-label', '2 selected: EMEA, Americas');
+  // ...and the same list reaches AT through the button's description; the badge
+  // is the chip's RESULTS, which only a source counts. TODO 60.
+  await expect(page.locator('#qf').locator('.body')).toHaveAttribute('aria-description', 'EMEA, Americas');
+  await expect(badge).not.toHaveAttribute('aria-label');
 
   // Hidden until hovered.
   await expect(tip).toBeHidden();

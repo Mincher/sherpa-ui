@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**56 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**55 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -58,7 +58,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 21b | 109 | Reset has a label, and a menu button: "Reset to default" puts back the View's own filters | feature |
 | ✅ | 22 | 97 | A filter panel section shows an icon for WHAT it filters: View, Chart, Grid, Form, List | quick |
 | ❓ | 22a | 115 | Figma: a chart glyph and a table glyph for the panel's section icons | figma |
-| ⬜ | 23 | 60 | Once applied, a chip's badge shows the number of results | feature |
+| ✅ | 23 | 60 | Once applied, a chip's badge shows the number of results | feature |
 | ⬜ | 24 | 49 | A preset Advanced chip shows its conditions, read-only | feature |
 | ⬜ | 25 | 50 | A reader's saved Advanced chip shows its conditions, editable | feature |
 | ⬜ | 26 | 48 | A child menu opens on hover or click of its row | feature |
@@ -1084,7 +1084,7 @@ table glyph, if `table-columns` is not the one you want for a grid — then
 `npm run icons`, and one line each in `SHOWS_ICON`
 (`sherpa-filter-panel.ts`).
 
-### `[ ]` 60 — Once applied, a chip's badge shows the number of results
+### `[x]` ✅ 60 — Once applied, a chip's badge shows the number of results
 
 Will, 2026-09-26: when a filter change is APPLIED and its results are fetched,
 the chip's badge shows the NUMBER OF RESULTS. It replaces what the badge says
@@ -1098,6 +1098,18 @@ out of what the chip's scope can see: a component chip counts within the
 rows the View already allows. A pending chip (46) has no results yet, so it
 shows no number until Apply. Read the count from the source
 (`debugState().total` is the measure; the pager reports pages only).
+
+**✅ Done 2026-09-29.** `source.results(scope)` counts, from the APPLIED
+Query, the rows each answered field or saved filter matches — within the
+View's rows for a component scope — with `store.totalCount()`; after every
+load it draws them onto each scope-bound bar (`drawResults`), and the bar
+hands each chip its `results`. The badge shows it only while the chip is on
+and not pending, in the reader's digits (`1,234`); the picks count and `fx`
+are gone from the chip (a grid heading keeps its `fx` glyph). The picks stay
+in the tip, and now also reach a screen reader as the button's
+`aria-description`. On Records › At risk (13 rows): At risk 27, Status 75,
+Tickets 75. Not drawn: a bar bound with no scope, and the panel's values.
+`T-a-chip-counts-its-own-results`
 
 ### `[ ]` 49 — A preset Advanced chip shows its conditions, read-only
 
@@ -2352,6 +2364,7 @@ One line each. The detail is in git and in the trap named.
 - 105 step 1: the Filters menu's section is "Saved filters"; the rest waits on two choices
 - 109: Reset is labelled, with a ▾ menu — Reset to default puts back the View's own filters — `T-reset-to-default-is-the-views-own`
 - 97: a panel section shows an icon for what it filters — `T-a-scope-says-what-it-shows`; the chart glyph is 115, for Will in Figma
+- 60: a chip's badge is the rows its own answer matches — `T-a-chip-counts-its-own-results`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

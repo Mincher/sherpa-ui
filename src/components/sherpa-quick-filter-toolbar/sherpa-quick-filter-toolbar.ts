@@ -113,6 +113,8 @@ interface ChipEl extends HTMLElement {
   /** Redraw the face after a silent steer. A property type, so the spec does
    *  not read it as one of the TOOLBAR's methods. */
   readonly refresh: () => void;
+  /** The rows its own answer matches. TRAP T-a-chip-counts-its-own-results */
+  results: number | null;
 }
 
 /** One column the grid can be grouped or sorted by. */
@@ -589,6 +591,19 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   };
 
   /**
+   * drawResults(results) — each answered chip's results, from its source: the
+   * rows its own answer matches, by field or saved-filter id. SILENT. A chip
+   * with none shows no number. Will, TODO 60. TRAP T-a-chip-counts-its-own-results
+   */
+  drawResults(results: Readonly<Record<string, number>>): void {
+    for (const chip of this.#chips()) {
+      const id = chip.dataset['id'] ?? '';
+      const field = this.#filters.find((f) => f.id === id)?.field ?? id;
+      chip.results = results[field] ?? results[id] ?? null;
+    }
+  }
+
+  /**
    * drawReading(field, reading) — a bound source tells this bar one field's
    * answer, whoever set it. SILENT, as every steer is. A SUPERSEDED chip keeps
    * the reader's own picks for when the view lets go.
@@ -690,9 +705,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // ONE way a date reads. TRAP T-a-date-reads-one-way
     const label = formatDate(picked[0]!, picked[1]);
     if ('valueLabel' in target) target.valueLabel = label;
-
-    // No badge: the label says both days outright.
-    delete chip.dataset['count'];
   }
 
   /** The filter chips in the run — not Group, Sort or More. */

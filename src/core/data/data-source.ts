@@ -77,6 +77,7 @@
  * - .setPage — which page to show
  * - .setPageSize — rows per page, or null for all
  * - .load — Re-read and push to every bound component.
+ * - .results — Each answered chip's results in a scope: the rows its own answer matches.
  * - .bind — Point a component at this source.
  * - .unbind — Stop steering and stop populating this component.
  * - .boundElements — Every component currently bound.
@@ -84,7 +85,7 @@
 import {
   andFilter, compareValues, filterFields, filterNeedles, filterRows, groupSummaries, readField, valueKey,
 } from './store.js';
-import { fieldState, stateClause } from './filter-state.js';
+import { fieldState, readingClause, stateClause } from './filter-state.js';
 import { compile, VIEW, type Query, type QueryDefaults, type ScopeQuery } from './query.js';
 import { report } from './report.js';
 import type { Populatable } from '../ui/apply-state.js';
@@ -1756,6 +1757,7 @@ export class DataSource extends EventTarget {
           detail: { ...result, state: this.state },
         }),
       );
+      void this.#drawResults();
       return result;
     } catch (error) {
       // TRAP T-error-is-a-state-not-a-throw — a stale failure raises nothing.
@@ -1770,6 +1772,57 @@ export class DataSource extends EventTarget {
       }
     }
   }
+
+  /**
+   * Each answered chip's RESULTS in a scope: the rows its OWN answer matches,
+   * within what the scope can see — a component scope's, within the View's. By
+   * field, or saved-filter id; from the APPLIED Query, so a draft has none.
+   * Will, TODO 60. TRAP T-a-chip-counts-its-own-results
+   */
+  async results(scope: string): Promise<Record<string, number>> {
+    const q = this.#applied.scopes[scope];
+    if (!q) return {};
+    const field = (f: string): Omit<FieldFacts, 'field'> => this.#facts(f);
+    const { view } = compile(this.#applied, {
+      field, preset: (id) => this.#presets.get(id), components: this.#componentScopes(),
+    });
+    const base = scope === VIEW || !view ? [] : [view];
+    // One field, one scope: a field the View holds is the View's.
+    const above = new Set(scope === VIEW ? [] : this.#applied.scopes[VIEW]?.holds ?? []);
+    const own: Array<[string, Filter | undefined]> = [
+      ...Object.entries(q.readings)
+        .filter(([f, reading]) => !reading.suspended && !above.has(f))
+        .map(([f, reading]): [string, Filter | undefined] => [f, readingClause({ field: f, ...field(f) }, reading)]),
+      ...Object.entries(q.presets ?? {}).filter(([, on]) => on)
+        .map(([id]): [string, Filter | undefined] => [id, andFilter(Object.entries(this.#presets.get(id) ?? {})
+          .map(([f, reading]) => readingClause({ field: f, ...field(f) }, reading))
+          .filter((c): c is NonNullable<typeof c> => !!c))]),
+    ];
+    const out: Record<string, number> = {};
+    await Promise.all(own.map(async ([id, clause]) => {
+      const filter = clause && andFilter([...base, clause]);
+      if (filter) out[id] = await this.store.totalCount({ filter });
+    }));
+    return out;
+  }
+
+  /** Each bound bar is drawn its chips' results, off the load that just landed;
+   *  a later load's count wins. TRAP T-a-chip-counts-its-own-results */
+  async #drawResults(): Promise<void> {
+    const bars = [...this.#bound].filter(([el, b]) => el.drawResults && typeof b.scope === 'string');
+    if (!bars.length) return;
+    const ticket = (this.#counting = Symbol('count'));
+    const byScope = new Map<string, Record<string, number>>();
+    for (const [, { scope }] of bars) {
+      if (byScope.has(scope as string)) continue;
+      byScope.set(scope as string, await this.results(scope as string));
+      if (this.#counting !== ticket) return;
+    }
+    for (const [el, { scope }] of bars) el.drawResults?.(byScope.get(scope as string) ?? {});
+  }
+
+  /** The latest results count; an older one lands on nothing. */
+  #counting: symbol | null = null;
 
   /** The ViewState as one comparable string. Key order is stable by construction. */
   #stateKey(): string {
