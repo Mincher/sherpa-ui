@@ -67,7 +67,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 29 | 21b | Which header chips carry over between views | feature |
 | ✅ | 30 | 20b | The Date filter should be a view-scope date RANGE | feature |
 | ❓ | 31 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
-| ⬜ | 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
+| ❓ | 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
 | | | | **E — Views and navigation** | |
 | ⬜ | 32 | 15 | Save a View, and the Save split-button menu | feature |
 | ⬜ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
@@ -1318,6 +1318,21 @@ while a value moves and `change` when it settles. The SOURCE owns the rule
 (`applyOn: 'change' | 'input'`, `debounce` in ms), so one app can choose per
 source, and a large or remote dataset keeps the default. Settle: per source,
 per field, or both; and whether a remote source may choose live at all.
+
+**❓ Will, 2026-09-29 — two choices** (it is an option "to support later", so
+it waits on these rather than guess). How it would work: the source sets
+`data-apply-on="input"` on what it binds, as it sets `data-remote`; a menu
+then reports while a value moves, and the source waits `debounce` ms after
+the last report before it loads.
+
+- **Chosen for:**
+  - **A (my pick): per source** — one line in the page JSON,
+    `"source": { "applyOn": "input", "debounce": 300 }`.
+  - **B: per source AND per field** — a slow field can stay on Apply.
+- **A remote source:**
+  - **A (my pick): stays on Apply** — live would send a request per pause,
+    and remote already waits for Apply by design.
+  - **B: may choose live too**, with the debounce.
 
 ### `[ ]` 52 — EXPLORE, later: a data viz scope in the filter panel
 
