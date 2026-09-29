@@ -18,8 +18,8 @@ and the page definition (92) were built: what is left of the foundation first
 features, which now stand on it. Numbers are ids, not order; the table IS the
 order.
 
-**Status:** 🚧 in progress · ⬜ not started · ❓ waits on a ruling from Will.
-Done items leave the table for one line under **Done**.
+**Status:** ✅ done · 🚧 in progress · ⬜ not started · ❓ waits on a ruling from Will.
+A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 
 | | Pri | # | Item | Kind |
 |:-:|---:|---:|---|---|
@@ -101,6 +101,38 @@ Done items leave the table for one line under **Done**.
 | ⬜ | 58 | 76 | WebMCP: agents do UI tasks through Sherpa's own contracts — a core system | explore |
 | ⬜ | 59 | 77 | CONTRACTED UX patterns, so a generated experience is consistent and useful | explore |
 | ⬜ | 60 | 78 | A node-based WORKFLOW creator: make, edit and view patterns and generated workflows | explore |
+| | | | **✅ Done — newest first** | |
+| ✅ | – | 104 | A number filter never applies what is typed or dragged | bug |
+| ✅ | – | 75 | Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file | refactor |
+| ✅ | – | 101 | ADVANCED: a condition row will not add in a chip's menu; in the panel, changing a row's condition drops the row | bug |
+| ✅ | – | 61 | Add customer saves with required fields empty | bug |
+| ✅ | – | 92 | Navigating SETS UP the content — its definitions, data layer, filters and state — not only swaps the template | foundation |
+| ✅ | – | 85 | `sherpa-provider`: a component ASKS for data, a scope, a query, a View or a template | foundation |
+| ✅ | – | 73 | EXPLORE — one compiled QUERY, built as the reader sets it up, run on Apply | explore |
+| ✅ | – | 70 | EXPLORE — a view definition bundles its filters; one JSON renders the page | explore |
+| ✅ | – | 47 | More than 20 values: one chip, not a run | feature |
+| ✅ | – | 93 | A grid-scope filter narrows the charts and tiles too | bug |
+| ✅ | – | 91 | The APP SHELL switches Filter toolbar and Filter panel modes, for any View in the content area | foundation |
+| ✅ | – | 62 | Apply and Discard only for a REMOTE fetch; a debug flag spoofs one | feature |
+| ✅ | – | 46 | A PENDING state: changed, not yet applied | feature |
+| ✅ | – | 66 | The footer owns "nothing to save": Save and Cancel wait for a change | feature |
+| ✅ | – | 39 | The panel header gets Reset all filters | quick |
+| ✅ | – | 53 | A conditional chip's tip says "X conditions applied" | quick |
+| ✅ | – | 40 | A switch has no accessible name | quick |
+| ✅ | – | 17 | Breadcrumbs are for workflow, not for the nav | quick |
+| ✅ | – | 57 | The filter panel's width is a hard-coded 400px | quick |
+| ✅ | – | 65 | A horizontal legend has a max width, and is centred | quick |
+| ✅ | – | 41 | A conditional filter applies for Owner only | bug |
+| ✅ | – | 63 | A conditions-only field shows the Conditional switch | bug |
+| ✅ | – | 69 | The main header has a back button | bug |
+| ✅ | – | 56 | A view change leaves a lit chip that filters nothing | bug |
+| ✅ | – | 21e | A reload keeps a filter nothing on screen shows | bug |
+| ✅ | – | 55 | The At risk view's own column filter never applies | bug |
+| ✅ | – | 44b | A heading holds a whole reading, so a CHAIN shows and applies | bug |
+| ✅ | – | 71 | The chart legend's Other menu does not open; check it filters the chart | bug |
+| ✅ | – | 72 | Adding a second conditional filter resets the first | bug |
+| ✅ | – | 44c | A heading shows an answer held at VIEW scope | bug |
+| ✅ | – | 42 | A legend toggle filters the whole view | bug |
 
 **Why this order** (reassessed 2026-09-29).
 
@@ -1273,7 +1305,606 @@ experiences and outcomes."* It draws on the canvas — 25,
 and steps; edges are what flows between them; a generated workflow is shown
 and edited the same way as a designed one.
 
-## Done
+## ✅ Done — the full record
+
+Every finished item keeps its section: what was asked, then what was done.
+Newest first. The ledger lists them too, with ✅.
+
+### `[x]` ✅ 104 — BUG: a number filter never applies what is typed or dragged
+
+Will, 2026-09-29: *"Numerical range filters aren't applied on value changes
+via input fields or slider handles."*
+
+Proved in a probe: drag a slider handle, or type in the number field, and no
+`menu-change` and no `quick-filter-change` leaves the chip. The chip HOLDS the
+value — `readings` shows it — but nothing tells the source.
+
+Cause: 45b2f136 (2026-09-25) moved the number body INTO the menu's shadow root
+(`T-a-menu-owns-its-own-bodies`), and `#onChange` still listens on the HOST.
+The field's native `change` is not composed, so it stops at the shadow root.
+The slider's composed `change` arrives retargeted to the menu, so the
+`SHERPA-SLIDER` check never matches. `T-native-change-stops-at-the-host` still
+describes a SLOTTED body.
+
+The chip test "a NUMBER chip flips between a single field and a two-ended
+slider" stayed green because it reads `el.readings`, which ASKS the menu. The
+fix's test watches the event. The grid heading's menu and the panel use the
+same body — check both. Before 94, which changes the same path.
+
+**✅ Done 2026-09-29:** a number filter applied nothing that was typed or dragged — the body moved into the menu's shadow root and the menu listened only on its host; it now listens on its body, the panel reads a number through the bar's own `bodyReading()`, and one typed number is a pick under `=` — `T-native-change-stops-at-the-host`, `T-one-number-is-a-pick-under-equals`
+
+### `[x]` ✅ 75 — Filter modes are SIMPLE and ADVANCED, not Default and Conditional — every file
+
+**75a built 2026-09-29 — the mode VALUES:** `ConditionType` is `simple |
+advanced`; a menu's `data-mode`, a chip's `data-condition`, a filter's kind
+(`advanced`), the panel's and menu's mode events, and the Style pins
+(state-pins.yaml, re-projected). Old words are still HEARD — `default`,
+`custom`, `select`, `condition`, `conditional` — so a saved View or filter keeps
+working. **75b built the same day:** the opt-in key is `advanced` (`custom`
+and `conditions` still read), the menu's `data-advanced` / `data-advanced-only`
+(old names heard), the page schema and `records.json`, the internal class names,
+and the labels — the switch reads **Advanced**. **Left: 75c** — docs, TRAPS
+and test titles.
+
+Will, 2026-09-27: *"We need to move away from using the terms Default and
+Conditional for filter modes. Instead we should use 'Simple' and 'Complex'."*
+
+| mode | is |
+|---|---|
+| **Simple** | ONE field, with one or more values to choose from |
+| **Advanced** | ONE OR MORE fields, with one or more values to choose from, and conditional parameters in use |
+
+**Advanced, not Complex** — Will, later the same day, choosing A of "Advanced" /
+"Complex" after writing "Advanced" in 90.
+
+The new ontology goes into EVERY file: code (`mode: 'default' | 'custom'`,
+`data-mode`, `condition: 'custom'`, `custom:` opt-ins), UI labels (the
+"Conditional" switch), tests, docs, TRAPS and the specs. Do it in one sweep,
+after step 6 of the Query, so the features in D (49, 50, 46) are built in
+the new words. Note: Advanced allows SEVERAL fields — today a condition is
+over one field, so the rename also opens that door.
+
+**✅ Done 2026-09-29:** the filter modes are **Simple** and **Advanced** in every file — values (75a), the opt-in key `advanced`, the menu's `data-advanced` / `data-advanced-only` and the labels (75b), then docs, TRAPS and test titles (75c). Every old word is still HEARD, so a saved View or filter keeps working — `T-a-renamed-attribute-keeps-its-old-name`
+
+### `[x]` ✅ 101 — ADVANCED: a condition row will not add in a chip's menu; in the panel, changing a row's condition drops the row
+
+Will, 2026-09-29: *"I can't add more conditions to an advanced filter. In the
+filter toolbar menu the row just doesn't add. In the filter panel, the row
+adds, but changing the condition type results in the row being removed."*
+
+Two faces, probably one cause. Start at `sherpa-menu`'s `#onAddCondition`
+(`#addRow()` then `#emitConditions()`): the report goes to the source, and the
+source draws the field's reading BACK onto the menu. A new row has no text
+yet, so it is likely not part of the reading, and the redraw drops it — in
+the chip at once, in the panel once its condition changes. An unanswered row
+is the reader's work in progress, never an answer to throw away — the same
+family as `T-a-rebuilt-bar-reads-empty-until-its-menus-stamp`.
+A test for each face: add a row in a chip's menu, and change a new row's
+condition in the panel.
+
+**✅ Done 2026-09-29:** an Advanced condition row would not add in a chip's menu, and in the panel a row's condition change dropped it — the source draws every field's answer back with its ANSWERED rows only, and the menu rebuilt from that; now an answer that matches the rows the reader has answered keeps every row — `T-an-unanswered-row-survives-a-redraw`
+
+### `[x]` ✅ 61 — BUG: Add customer saves with required fields empty
+
+Will, 2026-09-26: the Add customer dialog let him save with Name and Email
+empty. `#f-name` and `#f-email` carry `required`
+(`examples/templates/records.html`), and `sherpa-input-text` has `validate()`,
+`checkValidity()` and `data-error` — but the Save handler
+(`examples/contexts/records.js`, `#save-btn`) asks none of them. Worse, it
+FILLS the blanks: a blank name becomes `New customer`, a blank email a made-up
+`new.customer@example.com`.
+
+**Use and handle required-field logic, once, for every form.** Save checks
+every field, shows each one's error, focuses the first invalid one, and saves
+nothing until all pass. Prefer the platform: a native `<form>` and
+`reportValidity()` reach a shadow-DOM input only if it is form-associated
+(`ElementInternals`) — check `sherpa-input-text` first. The fallbacks go.
+
+**And did it save at all?** Will could not tell. `store.insert` runs, but the
+new row is created TODAY with status `trial`: the header's Date chip (2024
+data), the current view, the sort or the page can each hide it. Measure with
+`source.debugState().total` before and after. Then make the result visible —
+the toast says where the row went, or the grid shows it.
+
+**✅ Done 2026-09-29:** Add customer saves with required fields empty — the dialog is a real `<form>`; the four form controls take part in it (`FormValue`), Save submits it, and the browser refuses an empty required field and points at it; nothing is filled in for the reader, and the toast says when the page's filters hide the new record — `T-a-form-value-follows-every-write`
+
+### `[x]` ✅ 92 — Navigating SETS UP the content — its definitions, data layer, filters and state — not only swaps the template
+
+Will, 2026-09-27: *"When the app shell navigates to new content we shouldn't
+only be swapping the content area content/templates. We need to be getting
+and setting the definitions, data layer etc. to ensure all the correct filters
+are available, shown, and in the correct state. Same goes for all other view
+content. We're probably already doing this somewhere but there are gaps. I
+assume the new provider comes into play here."*
+
+Today each Context's `init()` does it by hand — make a source, declare its
+fields, give the provider its source, restore the session's Query, draw the
+bars — and anything a Context forgets is a gap (the Dashboard gave the
+provider no source until P2). Yes, the provider: a Context DEFINITION (JSON —
+its sources, fields, scopes, Views and template) handed to it on navigation,
+so it sets up the data layer, answers every component, and restores the
+state. Provider P4 (definitions) and 70 (a view definition renders the page)
+are its halves. First: audit where it is done today, and list the gaps.
+
+**Audited 2026-09-27 — `PROVIDER-DESIGN.md` §10.** Two gaps fixed: a page with
+no data shut the panel (G1), and the Dashboard keeps its Query (G2). Open: Save
+view on Records (G3, TODO 15), and the Context DEFINITION that ends the
+repeated setup in every Context (G4) — **designed in `docs/PAGE-DEFINITION.md`,
+decided by Will 2026-09-29.** D1, D2 and D3 are built: the router
+opens every page from `examples/definitions/<context>.json` through
+`provider.open()`, and a Context's `init` gets its source.
+
+**✅ Done 2026-09-29:** navigating sets up the page — the router opens each Context from `examples/definitions/<name>.json` through `provider.open()`: its source, fields, scopes, saved filters, the header's chips, each bar's Add list, the grid's configuration and the kept Query. D1 `edec11a6`, D2 `ce3aaa4f`, D3 `eeb5e37a` — `T-a-page-is-its-definition`
+
+### `[x]` ✅ 85 — `sherpa-provider`: a component ASKS for data, a scope, a query, a View or a template
+
+**Designed — `docs/PROVIDER-DESIGN.md`, for Will's review.** Will, 2026-09-27:
+*"Why can't any component ask for data, a definition, a conditional query
+definition or a template from the data layer?"* — the Context Protocol
+(choice A), a provider over a subtree, and each request can subscribe. It was
+designed in `FILTER-REVIEW.md` §9–§12 on 2026-09-25 and never built. Step 8
+of the Query folds into its P2. Target: `records.js` 853 → ~250 lines of code,
+`dashboard.js` 222 → ~50. Closes most of 37 and 38.
+
+**P1 built `ffc48935`** — the provider, the Context Protocol, the grid and
+pager ask. **P2 built** — charts, tiles and legends DECLARE what they need
+(`aggregate`, `segments`, `series`); the pages lost their adapters. The
+centralisation audit is `PROVIDER-DESIGN.md` §9, for review; its items 9
+and 13 are done. **P3a and P3b built** — fields declared once on the
+source; the bars ask for their scope and report their holds. **P3c built**
+— the panel asks for its scopes, drawn whole by `describe()`. Also fixed on
+the way: 93 (only the View trickles down), 87 and 88. **P3d built** — the
+grid headings answer through the source. **P3e built** — a component's own
+filter is `data-readings`, and a View pick keeps it. **P4 built** — the
+provider keeps the Views and the session's Query; a View's content asks for
+its data. **P3 and P4 are done:
+`records.js` 1163 → 655 lines since P2 began, `dashboard.js` 331 → 170 (the
+size gate's count, comments in).** **P5 built** —
+a page's state goes out and comes back as JSON. **The provider plan (P1–P5) is
+done.** **Next:** 91 (the shell owns panel mode) and 92 (navigating sets up
+the content), then the §9 items that P3 unlocked, and 86 (the full audit).
+
+**✅ Done 2026-09-29:** the provider, P1–P5 — a component ASKS and the nearest provider answers; `records.js` 1163 → 326 lines, `dashboard.js` 331 → 107 — `T-a-component-asks-its-provider`, `docs/PROVIDER-DESIGN.md`
+
+### `[x]` ✅ 73 — EXPLORE: one compiled QUERY, built as the reader sets it up, run on Apply
+
+Will, 2026-09-26: *"A query language that is compiled as conditions
+(grouping, sorting, filtering, conditions, segmentation, aggregation etc.)
+are built up. The data layer compiles this query then executes it when
+triggered (e.g. user clicks apply). The aim here is to avoid reloads,
+refreshes, state changes etc. causing a loss of set up parameters. The data
+layer can probably also use this query to help inform other UI components
+alongside the component state tracking feature. We probably have a
+proto-version of this going already but it needs work if we do."*
+
+**The proto-version, as it stands:**
+
+| piece | where | what it is |
+|---|---|---|
+| `ViewState` | `data-source.ts` | filter, sort, group, search, page — one flat state |
+| named parts + field readings | `DataSource` (`contribute`, `select`) | the filter is COMPOSED from them, and `state.filter` is the composed result |
+| the clause grammar | `store.ts` (`Filter`, `andFilter`, `picksClause`) | the query's filter language |
+| `FieldReading` → clause | `filter-state.ts` (`fieldState`, `readingClause`, `clauseConditions`) | a reader's answer as data, compiled one way |
+| aggregation | `aggregate.ts` (`reduceRows`, `countBy`, `seriesBy`) | run by hand in the example's `as` closures |
+| `debugState()`, `ViewSnapshot` | source, `persist-view.ts` | the query read back, and saved |
+
+**What is missing:** the query is not ONE object. Filter parts, readings,
+sort and group live in the source; segmentation and aggregation live in each
+Context's code; and `state.filter` is the compiled OUTPUT, which is why a
+restored one showed rows no chip explained (21e). A single query — every
+parameter, in the reader's own terms, compiled on demand — could be the one
+thing that is saved (21e), shared (70's view definition), applied on a
+trigger (62's remote Apply), and read by every control to draw itself (38
+step 3). Design it with 70; 62's "only a remote fetch needs Apply" decides
+when it runs.
+
+**Will, 2026-09-26: DESIGN FIRST.** One short design covering 73, 70 and 62
+together — the query object, the view definition, and when Apply runs — as a
+page Will reviews before any of it is built.
+
+**The design is written: `docs/QUERY-DESIGN.md`** (2026-09-26). **Decided the
+same day:** a View is markup + a JSON Query; "remote" is on the STORE, spoofed
+by a wrapping store in the data layer; build steps 1–5 first (one owner), then
+6–8. Building now, one step per commit.
+
+**Steps 1 to 7 are built (2026-09-27)** — see `QUERY-DESIGN.md` §10 for what
+each did and what is left. The source holds the Query; the bars, the open
+panel, the header, the legends and the grid headings are drawn from it; the
+session saves and restores it. Will's choice A: a heading filter wears its
+field's normal chip, so the `col:` and external chips are gone. Step 6 gave a
+remote store a draft, Apply only for a remote fetch, the pending chip and the
+footer's "nothing to save" (62, 46, 66). Step 7: a saved View is JSON — its
+Query onto a clean slate, its defaults on the chips — Records and the
+Dashboard. **Next: step 8** — segment and aggregate in a component scope.
+
+**✅ Done 2026-09-29:** one Query, steps 1–8 — step 8 (segment and aggregate) became provider P2's declared summaries — `T-one-query-one-owner`, `docs/QUERY-DESIGN.md`
+
+### `[x]` ✅ 70 — EXPLORE: a view definition bundles its filters; one JSON renders the page
+
+**Designed with 73 — see `docs/QUERY-DESIGN.md`.**
+
+Will, 2026-09-26, ruling on 21e: a View change is a clean slate (both bars
+empty their filter chips) — *"but default filter fields, values, and states
+need to be bundled in a view definition. I'm not sure how we'd do that with
+our templates. So perhaps we need a JSON definition that gets translated to a
+template and data layer requests for all components. Something to
+investigate."*
+
+**What a view definition holds today** (`SavedView`, `persist-view.ts`): a
+label; a `snapshot` — the source's state plus, per element, a map of public
+METHOD CALLS (`applyViewSnapshot`; the Dashboard's EMEA view sets Region this
+way); and optional `content` markup, parsed through an allow-list
+(`parseViewMarkup`). What it CANNOT say: which filter chips each bar HOLDS,
+nor their default values and on/off states — the Context's own code decides
+those (`DATA_FILTERS` and `globalFilters()` in the Records example).
+
+**The question:** one JSON definition per View that declares, for every
+component, what it is, where it sits, which fields it offers, and each
+field's default answer — and a translator that turns it into the template AND
+the data-layer requests (`declareValues`, `hold`, `select`, `contribute`).
+Then a View change applies the view's own defaults onto the clean slate, and
+Save (15) writes the same shape back.
+
+Settle before building: is the JSON a superset of `SavedView` or its
+replacement; how it meets the templates (68's templater, 27's own
+templates); and how much of it is 38's "a component DECLARES the data it
+needs". Design first — 15 builds on the answer.
+
+**Settled 2026-09-27: ONE JSON definition** (`T-a-view-is-json`). Built for
+Records and the Dashboard in step 7 of 73: `{ label, query, ui }`, applied
+onto a clean slate with its defaults on the chips; `saveViewAs` saves the same
+shape. Left: a view's LAYOUT as JSON, which the Templater (68) turns into a
+template — `content` markup stays until then — and Save a View (15).
+
+**✅ Done 2026-09-29:** a View is ONE JSON definition, `{ label, query, ui }`, applied onto a clean slate. Its layout as JSON is 68's; saving it is 15's — `T-a-view-is-json`
+
+### `[x]` ✅ 47 — More than 20 values: one chip, not a run
+
+A panel field with more than 20 values draws the toolbar's single chip, with a
+dropdown of its values, not one chip per value. **89 moves the line to 16**, for the bar
+and the panel alike. It is the flag 38's builder
+already needs: whether values EXPLODE into a run or stay behind a menu.
+
+**✅ Done 2026-09-29:** more than 20 values, one chip — merged into 89, at 16
+
+### `[x]` ✅ 93 — A grid-scope filter narrows the charts and tiles too
+
+Found while building the provider (85), 2026-09-27, and fixed at once — it had
+no section of its own. A filter set at GRID scope narrowed every summary on
+the page, not only the grid. Only the View's filters should reach everything.
+Commit 6bcc4f23.
+
+**✅ Done 2026-09-27:** a grid-scope filter narrowed the charts and tiles too — only the View trickles down now; a summary is under the View alone — `T-only-the-view-trickles-down`
+
+### `[x]` ✅ 91 — The APP SHELL switches Filter toolbar and Filter panel modes, for any View in the content area
+
+Will, 2026-09-27: *"The app shell should be able to toggle between Filter
+Toolbar and Filter Panel modes for any View that is showing in the content
+area."*
+
+Today Records wires it by hand: `togglePanel`, `setPanelMode`,
+`syncPanelled`, the reopen and restore code, and the session's
+`/filters/mode`. The shell already owns WHERE the panel sits
+(`T-the-shell-owns-the-panel-areas`), so it owns the MODE too — for whatever
+content it shows, with no page code. With provider P3c the panel asks for its
+own scopes, so the shell needs only to open it.
+
+**✅ Done 2026-09-27:** the provider owns TOOLBARS or PANEL for every page — Configure opens the panel on the Dashboard too; the app keeps the choice — `T-the-provider-owns-the-panel-mode`
+
+### `[x]` ✅ 62 — Apply and Discard only for a REMOTE fetch; a debug flag spoofs one
+
+**Designed with 73 — see `docs/QUERY-DESIGN.md`.**
+
+Will, 2026-09-26: *"Apply and Discard are actions that are only needed if
+there is a data fetch that reaches outside the Data Layer. If the change is
+just shaping data that's already in the data layer then there's no need."*
+
+- **The panel footer goes.** A field whose change needs a remote fetch shows a
+  small, ICON-ONLY Apply and Discard at the right of its section header row,
+  beside Clear. Every other field applies as it is changed.
+- **The same rule reaches a chip's menu.** Its Apply/Cancel (`commit: true`,
+  `data-commit` — Owner and Region today) is only for a remote field too.
+- **"Remote" is a fact about the FILTER**, so it is on the filter def and
+  asked of the data layer — never guessed by a component.
+
+**There is no remote source, so spoof one.** A DEBUG attribute/property on a
+filter pretends that its change fetches from a remote source — a delay, and
+optionally a failure. Sprinkle it into the example filters so both paths are
+always on screen. 58 (loading, empty and error states) reuses the same flag to
+drive its loading and failure states.
+
+Before 46: a pending state only exists on a field that has an Apply, and this
+item decides which fields those are. `T-apply-and-discard-wait-for-a-change`
+changes with it.
+
+**✅ Done 2026-09-27:** Apply only for a REMOTE fetch — locally every pick applies at once; `?remote` spoofs a remote store; the panel's footer is gone, a remote field has its own Apply and Discard — 7c7cdf5c, 9294cfd6, c92adec0, `T-apply-and-discard-wait-for-a-change`, `T-commit-follows-select-mode`
+
+### `[x]` ✅ 46 — A PENDING state: changed, not yet applied
+
+A chip that goes straight to active before its change is applied misleads the
+reader. Between the change and Apply, a chip is PENDING: an active purple
+BORDER, no fill. A conditional chip is the same — it turns green only once
+applied. Only a committing (Apply) field has a pending state — after 62, that is a
+REMOTE one; a field that applies at once goes straight to active.
+
+A state is a pin, as data (`scripts/figma-data/state-pins.yaml`), not a
+colour rule in the chip. Check what the pin's surface resolves to first.
+
+**✅ Done 2026-09-27:** a pending chip wears the active edge and no fill — 6050eddf, `T-a-pending-chip-has-no-fill`
+
+### `[x]` ✅ 66 — The footer owns "nothing to save": Save and Cancel wait for a change
+
+Will, 2026-09-26: wire the inactive Save & Cancel (or Apply & Discard, or any
+equivalent pair) into `sherpa-container-footer`, *"so that all menus etc can
+inherit this common behaviour."* Today each host does it by hand, or not at
+all: the filter panel built its own (`#syncDirty`,
+`T-apply-and-discard-wait-for-a-change`), and `sherpa-menu` has a `dirty`
+getter its footer does not use.
+
+The FOOTER turns its commit and revert controls off while the host says
+nothing has changed, and on when it has. The host only REPORTS dirty — one
+attribute or property, e.g. `data-dirty` on the footer, or a `dirty` it asks
+of its host — and never touches the buttons. Nine templates compose the
+footer (calendar, dialog, container, filter panel, menu, nav, overlay-panel,
+panel, select-card); each then drops its own copy. Which buttons are the pair
+must be declared, not guessed from their labels.
+
+Do it with 62: 62 decides WHICH fields have Apply and Discard at all, this
+decides how any such pair behaves.
+
+**✅ Done 2026-09-27:** the footer owns "nothing to save" — a committing menu's Apply and Cancel wait for a change — 23094c86, `T-the-footer-owns-nothing-to-save`
+
+### `[x]` ✅ 39 — The panel header gets Reset all filters
+
+A button in the filter panel's header that resets BOTH scopes, View and
+component, in one press. It and the toggle-to-toolbar button (`.to-toolbars`)
+take the DEFAULT button look, not transparent.
+
+**✅ Done 2026-09-26:** the panel header's Reset all clears both scopes, and both header buttons wear the default look
+
+### `[x]` ✅ 53 — A conditional chip's tip says "X conditions applied"
+
+Will, 2026-09-26. The tooltip of a conditional chip reads `3 conditions
+applied` (`1 condition applied` for one). Count ANSWERED rows only — an empty
+row is not a condition. Today the tip spells the chain (`Contains: ab or
+Equals: churned`, `spellConditions()`); the `fx` button (49, 50) is where the
+rows themselves are read now. The badge is NOT a condition count — Will
+changed that ask for 60.
+
+**✅ Done 2026-09-26:** a conditional chip's tooltip says "X conditions applied" — `T-a-condition-tip-counts-its-rows`
+
+### `[x]` ✅ 40 — A switch has no accessible name
+
+`sherpa-switch` does not pass an `aria-label` to its inner `role="switch"`
+input, and its visible text is a sibling span. So the Range and Conditional
+switches are unnamed to a screen reader. Mirror `aria-label` onto the input,
+or label the input by the text beside it.
+
+**✅ Done 2026-09-26:** a host's `aria-label` names its inner control — button, input, checkbox, radio, switch; 59 template sites + 18 in code were unnamed — `T-a-host-label-must-reach-its-control`
+
+### `[x]` ✅ 17 — Breadcrumbs are for workflow, not for the nav
+
+Breadcrumbs must not show movement between Contexts — the nav does that. They
+are for a workflow redirect or a drilldown, e.g. a link in a grid cell opens a
+details Context.
+
+**Still wrong, measured 2026-09-26, and small.** Records and Assistant set a
+`Home › Records` / `Home › Assistant` trail (`examples/contexts/records.js`,
+`chat.js`) — Home is the Dashboard Context, so the trail IS nav movement.
+Drop both; Dashboard already sets `[]`. The first real trail comes with a
+drilldown (23).
+
+**✅ Done 2026-09-26:** no breadcrumb trail on Records or Assistant — moving between Contexts is the nav's to show
+
+### `[x]` ✅ 57 — The filter panel's width is a hard-coded 400px
+
+Found by the 2026-09-26 audit. The shell's panel areas read
+`--sherpa-panel-area-width`, which is defined NOWHERE
+(`sherpa-app-shell.css:130`), so it is always its 400px fallback. The comment
+there says 4 columns.
+
+**Will, 2026-09-26: 3 columns — and KEEP the shell's panel areas.** *"We need
+to consider the other containers in the view and their responsiveness. The
+left/right panel areas that we have might be the better solution (it works
+well right now, tbh)."* So the panel stays in the app shell's left area,
+OUTSIDE the content's layout grid, and the grid's containers keep their own
+breakpoints. The change is the width: define the token as 3 of the layout
+grid's columns plus their gutters, per breakpoint. Then check, with the panel
+open, that every container in Records and Dashboard still re-flows as it does
+with the panel shut — the grid is narrower, not re-counted. Fix the comment
+to say 3.
+
+**✅ Done 2026-09-26:** a shell panel area is exactly three grid columns wide, worked out in CSS; the shell's panel areas stay — `T-the-shell-owns-the-panel-areas`
+
+### `[x]` ✅ 65 — A horizontal legend has a max width, and is centred
+
+Will, 2026-09-26: a horizontal `sherpa-chart-legend` spreads its entries across
+a whole 12-column container — far too wide to read as one key. Give it a
+max width and centre it horizontally in its container. A token for the width,
+never a hand-typed px; check it in the Dashboard's wide charts.
+
+**✅ Done 2026-09-26:** a horizontal legend is capped at 40rem and centred; narrow, it fills — `T-a-horizontal-legend-is-three-by-two`
+
+### `[x]` ✅ 41 — BUG: a conditional filter applies for Owner only
+
+Will: *"Conditional filters don't apply or go active at all for any field other
+than Owner."* Owner is the only chip def with `custom: true`
+(`examples/contexts/records.js`); every other conditioned field arrives through
+the Filters (Add) menu or a column heading. Look first at how an ADDED field,
+or a heading's condition, reaches the source.
+
+Reproduce on the running page and read the TOTAL
+(`source.debugState().total`), never the drawn page. Try the same field as a
+toolbar chip, a panel field and a column heading. Fix 63 in the same pass.
+
+**A lead, measured 2026-09-26.** The panel's Apply (`records.js`) sends the
+four `FIELD_CHIPS` — Status, Plan, Tier, OWNER — through `source.select()`,
+and every other field through `bar.setChipReading()`. That sets
+`menu.conditions` SILENTLY: the chip's value and tooltip are not redrawn
+(a probe read an empty tip and value after it). Owner working and the rest not
+is exactly that split.
+
+**✅ Done 2026-09-26:** conditions DID filter — Owner, Name and Email, in the toolbar and the panel (Owner Contains Da: 100 → 10). What failed was the chip's FACE after a panel Apply: no value, a stale tip. A silent steer now calls the chip's `refresh()` — `T-a-silent-steer-still-redraws-its-chip`
+
+### `[x]` ✅ 63 — BUG: a conditions-only field shows the Conditional switch
+
+Will, 2026-09-26: the panel's Email field shows the Conditional switch, but
+Email is CONDITIONS-ONLY — there is no list to switch to. The menu already
+hides its own switch for `data-custom-only`
+(`T-a-filter-answers-by-values-conditions-or-both`); the panel does not. Its
+`data-custom-ok` is `!!customOf(def)` (`sherpa-filter-panel.ts`), and
+`customOf()` answers `'only'` for Email, which is truthy. So: no switch for
+`'only'`, and the field opens in custom mode with its rows showing.
+
+**Fix it with 41**, as Will suggests — both are how a conditioned field is
+drawn and answered, and a test that walks every conditioned field's panel,
+chip and heading covers both.
+
+**✅ Done 2026-09-26:** a conditions-only field (Email) has no Conditional switch in the panel; its rows show from the start
+
+### `[x]` ✅ 69 — The main header has a back button
+
+From Will's list, 2026-09-26, and fixed at once — it had no section of its
+own. The back button on the main header went back between Contexts, which is
+the nav's job. Commit 5453f571.
+
+**✅ Done 2026-09-26:** no back button on the main header — it went back between Contexts, which is the nav's job, as with the breadcrumbs; Settings keeps its own
+
+### `[x]` ✅ 56 — BUG: a view change leaves a lit chip that filters nothing
+
+Found by the 2026-09-26 audit. Region = EMEA (27 rows), then the My accounts
+view: the Region chip stays `data-current`, but its `global` part is dropped.
+12 rows — all of Ravi's; EMEA would be 5. A lit chip must filter, or go off.
+21b decides whether the chip SHOULD survive; this is that it must not lie.
+
+**✅ Done 2026-09-26:** a view change resets the header chips the new view does not set — Region no longer stays lit over My accounts; this is 21b's default — `T-a-view-change-resets-the-header-chips`
+
+### `[x]` ✅ 21e — BUG: a reload keeps a filter nothing on screen shows
+
+Will, 2026-09-24:
+
+> Filters & conditional filters need to survive page refreshes and navigating
+> away and coming back. So they need to be compiled and stored in the data
+> layer. They don't need to survive the session.
+
+**Half-built, and wrong.** Measured 2026-09-26: `persistView` stores the whole
+filter as ONE flat query. Region = EMEA + Status = active (4 rows), reload:
+still 4 rows, but parts `{}`, selections `{}`, and no chip lit. Navigating
+away and back is the same. The rows obey a filter the reader cannot see or
+clear.
+
+**What to store is the COMPILED form, per field** — each field's picks,
+conditions and suspended flag, plus the named `contribute()` parts. That is
+what a reload must give back to the chips, and what `ViewSnapshot` will want.
+
+| | |
+|---|---|
+| WRITE | on every `quick-filter-change` / `condition-change`, keyed by Context |
+| READ | at Context load, BEFORE `bind()` — a bar painted then re-filtered flashes |
+
+SessionStore, not IdbStore: a reload keeps it, closing the tab does not. The
+panel-or-toolbar mode already persists this way (`session '/filters/mode'`,
+24c3a57c) — done.
+
+**✅ Done 2026-09-26:** filters survive a reload and a trip away, for the session, on the View they were made on — each bar keeps its `answers` and replays them with `restoreAnswers()`; the combined query is never restored; a View change empties both bars' filter chips — `T-a-reload-replays-the-readers-answers`
+
+### `[x]` ✅ 55 — BUG: the At risk view's own column filter never applies
+
+Found by the 2026-09-26 audit. At risk sets
+`grid.setColumnFilter(status, ne churned)`, and 9ms later the selection
+handler (`examples/contexts/records.js` ~783) calls
+`setColumnFilter(status, null)`. So At risk shows 20 rows where it should show
+13. And a `col:status` chip stays on the bar, `data-current` with no value,
+still lit after going back to All customers.
+
+(The old bug — All → At risk → All left 1 page of 4 — is fixed.)
+
+**✅ Done 2026-09-26:** At risk keeps its own `status ne churned` (13 rows, was 20); going back to All drops the old `col:status` chip — `T-an-empty-selection-never-wipes-a-condition`
+
+### `[x]` ✅ 44b — BUG: a heading holds a whole reading, so a CHAIN shows and applies
+
+The single-condition half of 44 is done (a held condition opens its menu on
+the condition, `T-a-heading-menu-opens-on-what-it-holds`). What is left: the
+grid's `ColumnFilter` holds ONE condition — an op and a value or picks. So:
+
+- a chain set from outside (`owner contains Da or starts with R`, from the
+  chip mirror) is GARBLED — `setColumnFilter` reads `['or', a, b]` as an op
+  and a list of picks;
+- a chain a reader types INTO the heading applies only its first row
+  (`#readColumnFilter` reads `op` and `conditionValue`).
+
+The fix is the model: a column holds a whole `FieldReading` (picks, op, text,
+conditions, range, suspended), as a chip does, and the clause comes from the
+data layer's own `readingClause`. The grid then stops being a second filter
+model.
+
+**✅ Done 2026-09-26:** a heading holds a whole reading — a chain set from outside or typed in shows and applies whole; `clauseConditions()` turns a chained clause back into rows — `T-a-heading-holds-a-whole-reading`
+
+### `[x]` ✅ 71 — BUG: the chart legend's Other menu does not open
+
+Will, 2026-09-26: the Other row's breakdown menu no longer displays. Check,
+too, that changing its selections shows and hides those segments in the chart
+(`T-the-breakdown-button-shares-the-other-row`,
+`T-legend-toggle-is-a-filter`). Suspect first: every `sherpa-button`'s
+`.trigger` now carries `anchor-name` for its tip (2cbc6c6d) — check it does
+not take the anchor a slotted menu positions against.
+
+**✅ Done 2026-09-26:** the legend's Other menu draws again — an icon button had no menu slot since ad7f91be; unticking a folded category and Apply takes the bar chart 16 → 14 bars — `T-an-icon-button-still-slots-its-menu`
+
+### `[x]` ✅ 72 — BUG: adding a second conditional filter resets the first
+
+Will, 2026-09-26: with Owner already answered by a condition, he added a
+second conditional filter — Email — and on Apply the Owner condition was
+reset completely. Adding a field REBUILDS the bar (`#addFilters` → `#render`),
+and a rebuilt menu reads empty until it stamps
+(`T-a-rebuilt-bar-reads-empty-until-its-menus-stamp`); `#keepAnswer` carries
+a chip's rows across a rebuild.
+
+**Reproduced 2026-09-26, toolbar, through the real menus:** Owner Contains Da
+→ 10 rows, chip on. Add Email → the rebuilt Owner chip comes back OFF — its
+rows kept (`mode: custom`, `contains Da`), so it reads as SUSPENDED. Email
+Contains `example` → the bar reports, the suspended Owner applies nothing:
+100 rows. So the rebuild keeps the answer and loses the ON. Suspect the
+rebuilt row reading empty for a tick (`T-a-rebuilt-row-reads-empty-for-a-tick`)
+switching the chip off in `#applySelection`, with nothing turning it back on.
+Check the panel too.
+
+**✅ Done 2026-09-26:** adding a second conditional filter keeps the first — the toolbar holds a rebuilt chip's answer until its rows fill; the panel draws a conditioned field on its rows and writes them once each menu has drawn — `T-a-conditioned-field-opens-on-its-rows`
+
+### `[x]` ✅ 44c — BUG: a heading shows an answer held at VIEW scope
+
+Region = EMEA in the header lights the grid's Region heading — `#isFiltered`
+counts the query's `data-filter-fields` — but its menu shows nothing ticked,
+so a reader can pick a contradicting value there. The heading must show the
+View's answer.
+
+**Will's ruling, 2026-09-26: shown, but held higher.** As a component chip
+whose field the View took (`T-a-superseded-chip-suspends-it-is-never-removed`):
+the heading's menu shows EMEA ticked, greyed, with the tip "Filter applied at
+higher scope", and it cannot be changed there — the reader changes it in the
+header. One owner for one value. Build on 44b: the heading then just holds
+the View's reading, read-only.
+
+**✅ Done 2026-09-26:** a heading whose field the View holds shows the View's answer — ticked, greyed, read-only (`sherpa-menu data-readonly`) — via `grid.supersedeColumns()` — `T-a-view-held-heading-shows-and-refuses`
+
+### `[x]` ✅ 42 — BUG: a legend toggle filters the whole view
+
+Will: *"Chart legend toggling is behaving like View scope filtering. They
+should only affect their chart."* This was fixed on 2026-09-24
+(`bindSelection` `scope: 'component'`, `T-a-filter-applies-down-its-scope`),
+so something has undone it. Find what, and add the test that would have
+caught it.
+
+**Likely cause, read 2026-09-26:** `reach: 'component'` CONTRIBUTES a named
+part (`legend:<id>`) to the SOURCE — and every component bound to that one
+source obeys every part. So "component" scope narrows the whole view, not
+the chart. A per-component filter needs the part to reach only the component
+that owns it (a part keyed to a bind, applied at that bind's push), or its own
+source.
+
+**✅ Done 2026-09-26:** a legend narrows ITS chart only — a part can name the one component it narrows (`contribute(key, filter, { only })`), kept out of the shared query; Records' bar chart 4 → 3 bars, the grid stays at 100 — `T-a-component-part-narrows-one-component`
+
+## Done — the one-line log
 
 One line each. The detail is in git and in the trap named.
 
