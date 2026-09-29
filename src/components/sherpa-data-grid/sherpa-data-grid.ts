@@ -15,7 +15,7 @@
  */
 import { kindOf, type OffersAdvanced } from '../../core/ui/filter-kind.js';
 import {
-  DATA_PROPS, SHARED_PROPS, SherpaElement, coerceNum, clampNum, markNeedle,
+  DATA_PROPS, SHARED_PROPS, SherpaElement, coerceNum, clampNum, markNeedles,
 } from '../../core/ui/sherpa-element.js';
 import { ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
 import { nextSort, sortDirectionAttr, sortDirectionFrom } from '../../core/data/cycle.js';
@@ -1139,25 +1139,18 @@ export class SherpaDataGrid extends SherpaElement {
     // What FILTERS here: the View's answer while it holds the field, else the heading's own.
     // TRAP T-a-view-held-heading-shows-and-refuses
     const held = this.#shown(col.field);
-    const lead = held && !held.suspended ? this.#inForce(col.field, held).rows[0] : undefined;
-    if (lead?.text) {
-      markNeedle(td, text, lead.text, lead.op);
-      return;
-    }
+    // EVERY row's string, not the first. TRAP T-a-condition-marks-every-match
+    const own = (held && !held.suspended ? this.#inForce(col.field, held).rows : [])
+      .flatMap((row) => (row.text ? [{ op: row.op, text: row.text }] : []));
     /* A toolbar chip's condition reaches here through `data-needles`, because
        the grid cannot see the bar that holds it. Without this a chip filtering
        "Contains Ravi" narrowed the rows and marked nothing.
        TRAP T-a-needle-comes-from-either-direction */
-    const outside = this.#needles.get(col.field);
-    if (outside) {
-      markNeedle(td, text, outside.value, outside.op);
-      return;
-    }
-    td.textContent = text;
+    markNeedles(td, text, own.length ? own : this.#needles.get(col.field) ?? []);
   }
 
   /** Needles from OUTSIDE, by field — see `data-needles`. */
-  #needles = new Map<string, { op: string; value: string }>();
+  #needles = new Map<string, { op: string; text: string }[]>();
 
   /**
    * Parse `data-needles`: `field:op:value` per entry, newline separated.
@@ -1173,9 +1166,8 @@ export class SherpaDataGrid extends SherpaElement {
       const rest = entry.slice(at + 1);
       const opAt = rest.indexOf(':');
       if (opAt < 1) continue;
-      this.#needles.set(entry.slice(0, at), {
-        op: rest.slice(0, opAt), value: rest.slice(opAt + 1),
-      });
+      const field = entry.slice(0, at);
+      this.#needles.set(field, [...this.#needles.get(field) ?? [], { op: rest.slice(0, opAt), text: rest.slice(opAt + 1) }]);
     }
   }
 

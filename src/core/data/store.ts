@@ -271,13 +271,14 @@ export function filterNeedles(filter: Filter | undefined): string {
       return;
     }
     const [field, op, value] = f as FilterClause;
-    if (typeof field !== 'string' || seen.has(field)) return;
-    if (!MARKABLE.has(op) || value == null) return;
+    if (typeof field !== 'string' || !MARKABLE.has(op) || value == null) return;
     const text = String(value);
-    if (!text) return;
-    seen.add(field);
     // A newline in the value itself would split one entry into two.
-    out.push(`${field}:${op}:${text.replace(/\n/g, ' ')}`);
+    const entry = `${field}:${op}:${text.replace(/\n/g, ' ')}`;
+    // EVERY string a field is matched by. TRAP T-a-condition-marks-every-match
+    if (!text || seen.has(entry)) return;
+    seen.add(entry);
+    out.push(entry);
   };
   walk(filter);
   return out.join('\n');

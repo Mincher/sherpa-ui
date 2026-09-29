@@ -12,7 +12,7 @@
  * - SUMMARY_PROPS — What a chart or tile DECLARES it needs — its provider hands back that shape.
  * - SHARED_PROPS — Shared style attributes whose shape is identical wherever they appear.
  * - coerceNum — Coerce a raw attribute string to a number, or return `fallback`.
- * - markNeedle — Mark the first hit of `needle` in `el`, or write plain text when there is nothing to point at.
+ * - markNeedles — Mark every hit of every needle in `el`, or write plain text when there is nothing to point at.
  * - markMatch — Rebuild `el` as before + `<mark class="match">` + after, around one hit.
  * - clampNum — Apply the min/max bounds from `opts`, if any.
  * - SherpaElement — the base every component extends: template, props, slots, emit
@@ -235,23 +235,52 @@ export function coerceNum(raw: string | null | undefined, fallback: number, opts
 }
 
 /**
- * Mark the first hit of `needle` in `el`, or write plain text when there is
- * nothing to point at. ONE decision, so every caller highlights alike.
+ * Mark every hit of every needle in `el`, or write plain text when there is
+ * nothing to point at. A condition chain holds several strings, so each marks;
+ * overlapping hits join into one mark. ONE decision, so every caller alike.
  *
  * The CELL's casing wins: "ana" against "Ana" leaves "Ana".
- * TRAP T-mark-match-is-one-shape
+ * TRAP T-mark-match-is-one-shape · TRAP T-a-condition-marks-every-match
  */
-export function markNeedle(el: Element, text: string, needle: string, op: string): void {
-  if (!needle || !MARKABLE_OPS.has(op)) {
-    el.textContent = text;
-    return;
+export function markNeedles(el: Element, text: string, needles: readonly { op: string; text: string }[]): void {
+  const lower = text.toLowerCase();
+  const hits: Array<[number, number]> = [];
+  for (const { op, text: raw } of needles) {
+    const needle = raw.toLowerCase();
+    if (!needle || !MARKABLE_OPS.has(op)) continue;
+    if (op === 'startswith') {
+      if (lower.startsWith(needle)) hits.push([0, needle.length]);
+    } else if (op === 'endswith') {
+      if (lower.endsWith(needle)) hits.push([text.length - needle.length, text.length]);
+    } else {
+      for (let at = lower.indexOf(needle); at >= 0; at = lower.indexOf(needle, at + needle.length)) {
+        hits.push([at, at + needle.length]);
+      }
+    }
   }
-  const at = text.toLowerCase().indexOf(needle.toLowerCase());
-  if (at < 0) {
-    el.textContent = text;
-    return;
+  const spans: Array<[number, number]> = [];
+  for (const [start, end] of hits.sort((a, b) => a[0] - b[0])) {
+    const last = spans.at(-1);
+    if (last && start <= last[1]) last[1] = Math.max(last[1], end);
+    else spans.push([start, end]);
   }
-  markMatch(el, text, at, needle.length);
+  const nodes: Node[] = [];
+  let from = 0;
+  for (const [start, end] of spans) {
+    if (start > from) nodes.push(document.createTextNode(text.slice(from, start)));
+    nodes.push(matchMark(text.slice(start, end)));
+    from = end;
+  }
+  if (from < text.length) nodes.push(document.createTextNode(text.slice(from)));
+  el.replaceChildren(...nodes);
+}
+
+/** One `<mark class="match">` — text, never markup. */
+function matchMark(text: string): HTMLElement {
+  const mark = document.createElement('mark');
+  mark.className = 'match';
+  mark.textContent = text;
+  return mark;
 }
 
 /**
@@ -259,9 +288,7 @@ export function markNeedle(el: Element, text: string, needle: string, op: string
  * TRAP T-mark-match-is-one-shape
  */
 export function markMatch(el: Element, text: string, at: number, length: number): HTMLElement {
-  const mark = document.createElement('mark');
-  mark.className = 'match';
-  mark.textContent = text.slice(at, at + length);
+  const mark = matchMark(text.slice(at, at + length));
   el.replaceChildren(
     document.createTextNode(text.slice(0, at)),
     mark,

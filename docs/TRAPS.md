@@ -591,6 +591,23 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-a-condition-marks-every-match
+
+**A field answered by a chain of conditions marks EVERY string in it** — Will,
+TODO 21c: *"there will be multiple strings to match and highlight. Not just
+one."* `filterNeedles` kept one needle per field and the grid marked the first
+row's first hit, so `Contains "ab" or Starts with "R"` marked only "ab".
+Now every substring clause becomes a needle (an identical one once), and
+`markNeedles` marks each hit of each: a `contains` every time it appears, a
+`startswith` at the start and an `endswith` at the END (it used to mark the
+first hit wherever that was). Overlapping or touching hits JOIN into one
+`<mark>`, so two marks never split one span.
+
+- Site: `src/core/data/store.ts`
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `test/e2e/reforged-filter-conditions.spec.ts`
+
 ### T-a-chip-counts-its-own-results
 
 **A chip's badge is the number of rows ITS OWN answer matches** — Will, TODO

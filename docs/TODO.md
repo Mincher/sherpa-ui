@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**54 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**53 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -62,7 +62,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ❓ | 24 | 49 | A preset Advanced chip shows its conditions, read-only | feature |
 | ⬜ | 25 | 50 | A reader's saved Advanced chip shows its conditions, editable | feature |
 | ✅ | 26 | 48 | A child menu opens on hover or click of its row | feature |
-| ⬜ | 27 | 21c | A condition's matches must ALL highlight | feature |
+| ✅ | 27 | 21c | A condition's matches must ALL highlight | feature |
 | ⬜ | 28 | 21f | "Send to view filters" | feature |
 | ⬜ | 29 | 21b | Which header chips carry over between views | feature |
 | ⬜ | 30 | 20b | The Date filter should be a view-scope date RANGE | feature |
@@ -1156,7 +1156,7 @@ over opens nothing, and a touch never hovers; the box still ticks and opens
 nothing. The caret stays, as the mark and a focus target.
 `T-a-row-opens-its-child-menu`
 
-### `[ ]` 21c — A condition's matches must ALL highlight
+### `[x]` ✅ 21c — A condition's matches must ALL highlight
 
 Will, 2026-09-24: *"there will be multiple strings to match and highlight. Not
 just one."*
@@ -1167,6 +1167,12 @@ field (`store.ts:255`, `seen.has(field)`), and the grid marks one hit
 `Contains "ab" or Starts with "R"` has two strings; a three-row chain has
 three. The mark is already Success green, matching the chip
 (`T-a-conditioned-chip-reads-as-success`), so only the FINDING changes.
+
+**✅ Done 2026-09-29.** `filterNeedles` keeps every substring clause (an
+identical one once); `markNeedles` (replacing `markNeedle`) marks each hit of
+each — a `contains` every time, a `startswith` at the start and an `endswith`
+at the end — joining hits that overlap or touch; the grid passes all of a
+field's rows, not the first. `T-a-condition-marks-every-match`
 
 ### `[ ]` 21f — "Send to view filters"
 
@@ -2387,6 +2393,7 @@ One line each. The detail is in git and in the trap named.
 - 60: a chip's badge is the rows its own answer matches — `T-a-chip-counts-its-own-results`
 - 49: ❓ how the fx menu shows a preset over two fields; 50 waits on it
 - 48: a child menu opens from the whole row, a resting pointer or ArrowRight — `T-a-row-opens-its-child-menu`
+- 21c: a chain of conditions marks every string it matched — `T-a-condition-marks-every-match`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

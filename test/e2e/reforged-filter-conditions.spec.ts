@@ -558,6 +558,46 @@ test('the grid marks what a filter matched, from EITHER direction', async ({ pag
   expect(r.exact).toBe(0);
 });
 
+/**
+ * EVERY STRING MARKS — TODO 21c. Will: "there will be multiple strings to
+ * match and highlight. Not just one." A field's chain marks each of its
+ * strings, each hit of one, and a start or end match where it really is;
+ * overlapping hits join into one mark.
+ * TRAP T-a-condition-marks-every-match
+ */
+test('a chain of conditions marks every string it matched, every time', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { filterNeedles } = await import('/dist/core/data/store.js') as unknown as { filterNeedles: (f: unknown) => string };
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>; populate(d: unknown): void;
+    };
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    el.populate({
+      columns: [{ field: 'owner', header: 'Owner' }],
+      rows: [{ owner: 'Ravi Menon' }, { owner: 'Dana Whitlock' }],
+    });
+    const needles = filterNeedles(['or',
+      ['owner', 'contains', 'a'], ['owner', 'startswith', 'Ra'], ['owner', 'endswith', 'ck']]);
+    el.setAttribute('data-needles', needles);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const cells = [...el.shadowRoot!.querySelectorAll('td')]
+      .filter((td) => ['Ravi Menon', 'Dana Whitlock'].includes(td.textContent ?? ''));
+    return {
+      needles: needles.split('\n'),
+      marks: cells.map((td) => [...td.querySelectorAll('mark.match')].map((m) => m.textContent)),
+      text: cells.map((td) => td.textContent),
+    };
+  });
+  // All three strings reach the grid, not the first.
+  expect(r.needles).toEqual(['owner:contains:a', 'owner:startswith:Ra', 'owner:endswith:ck']);
+  // "Ra" and the "a" inside it are one mark; "Dana" marks both its a's, and
+  // "Whitlock" its END.
+  expect(r.marks).toEqual([['Ra'], ['a', 'a', 'ck']]);
+  // Marking never changes the words.
+  expect(r.text).toEqual(['Ravi Menon', 'Dana Whitlock']);
+});
+
 test('the badge is legible, and the tooltip COUNTS the conditions', async ({ page }) => {
   await bar(page);
   const r = await page.evaluate(async () => {
