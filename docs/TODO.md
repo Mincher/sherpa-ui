@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**66 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**65 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -36,7 +36,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 7 | 45 | A picked date does not show in the chip | bug |
 | ✅ | 8 | 82 | A number chip set by a View shows no value on its face | bug |
 | ✅ | 9 | 83 | Calendar menu: a picked date leaves Apply and Discard looking off — yet they work | bug |
-| ⬜ | 10 | 94 | A number (and range) filter menu needs Apply and Cancel buttons | bug |
+| ✅ | 10 | 94 | A number (and range) filter menu needs Apply and Cancel buttons | bug |
 | ⬜ | 11 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
 | ⬜ | 12 | 16 | Favourite and Save apply to the Context, not the View | bug |
 | ⬜ | 13 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
@@ -542,7 +542,7 @@ still inside the accordion's header, so a click on the card's empty space
 reaches the header. A row click is handled; a gap click is not. Check every
 host that holds a menu, not only the accordion.
 
-### `[ ]` 94 — A number (and range) filter menu needs Apply and Cancel buttons
+### `[x]` ✅ 94 — A number (and range) filter menu needs Apply and Cancel buttons
 
 Will, 2026-09-27: *"Numerical (and range) filter menus need apply/cancel
 buttons."* A number is TYPED, so applying each keystroke filters on "1" on
@@ -557,6 +557,13 @@ update."* Today a number applies on `change` — a handle let go, Enter, or
 leaving the field — so one act is one update, and there is nothing to debounce.
 A LIVE drag (on `input`) would need one. **Will chose once per act**, with live
 as a configurable option for later — that is 107.
+
+**✅ Done 2026-09-29:** every number menu waits for Apply — single or range,
+local or remote — and Cancel puts back what was applied (`menuFor()`:
+`data-commit` + `data-commit-fixed`, so the Range switch cannot turn it off; a
+definition that names `commit` still wins). Built on 83's footer fix. On the
+Records page: typing 172 leaves 100 rows until Apply, then 1.
+`T-a-number-waits-for-apply`
 
 ### `[ ]` 16 — BUG: Favourite and Save apply to the Context, not the View
 
@@ -2088,6 +2095,7 @@ source.
 One line each. The detail is in git and in the trap named.
 
 **2026-09-29, the component API audit (86)**
+- 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`
 - 82: a number chip set by a View shows its value (`2` for "> 2"); an old "is not X" no longer ticks X as Simple's answer — `T-both-answers-are-kept`
 - 45: a date reads one way — `formatDate()`, DOM-free, `03 to 15 Sep 2026` — `T-a-date-reads-one-way`

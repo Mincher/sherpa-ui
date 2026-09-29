@@ -1320,9 +1320,10 @@ test('a DATE chip carries the Range switch as a full-width row above its calenda
 /**
  * A RANGE has two ends, so the pick is not finished on the first one — applying
  * there would filter to a span the user has not named yet. On a REMOTE source
- * the Range switch moves the menu between auto-apply and Apply/Cancel at
- * runtime; LOCALLY nothing waits for Apply (Will, 2026-09-27).
- * TRAP T-commit-follows-select-mode
+ * the Range switch moves a DATE menu between auto-apply and Apply/Cancel at
+ * runtime; LOCALLY nothing waits for Apply (Will, 2026-09-27). A NUMBER is the
+ * exception: it is typed, so it always waits for Apply (Will, TODO 94).
+ * TRAP T-commit-follows-select-mode · TRAP T-a-number-waits-for-apply
  */
 test('the Range switch brings Apply/Cancel on a remote source, and leads its own label', async ({ page }) => {
   const r = await page.evaluate(async () => {
@@ -1393,16 +1394,20 @@ test('the Range switch brings Apply/Cancel on a remote source, and leads its own
 
   for (const kind of ['number', 'date'] as const) {
     expect(r[kind].leads, `${kind}: switch leads its label`).toBe(true);
-    // SINGLE applies on the tick: one value is the whole answer.
-    expect(r[kind].single, `${kind} single`).toEqual({ commits: false, apply: false, cancel: false });
-    // RANGE defers: a span is not named until both ends are.
-    expect(r[kind].ranged, `${kind} ranged`).toEqual({ commits: true, apply: true, cancel: true });
-    expect(r[kind].back, `${kind} back`).toEqual({ commits: false, apply: false });
   }
+  // A DATE: one day is the whole answer, a span defers.
+  expect(r.date.single).toEqual({ commits: false, apply: false, cancel: false });
+  expect(r.date.ranged).toEqual({ commits: true, apply: true, cancel: true });
+  expect(r.date.back).toEqual({ commits: false, apply: false });
+  // A NUMBER waits for Apply on both sides, remote or local.
+  for (const one of [r.number.single, r.number.ranged, r.local.single, r.local.ranged]) {
+    expect(one).toEqual({ commits: true, apply: true, cancel: true });
+  }
+  expect(r.number.back).toEqual({ commits: true, apply: true });
 
+  // A definition that NAMED `commit: false` keeps it.
   expect(r.pinned.single).toEqual({ commits: false, apply: false, cancel: false });
   expect(r.pinned.ranged).toEqual({ commits: false, apply: false, cancel: false });
-  expect(r.local.ranged).toEqual({ commits: false, apply: false, cancel: false });
 });
 
 /**

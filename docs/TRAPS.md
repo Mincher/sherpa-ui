@@ -591,6 +591,20 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-a-number-waits-for-apply
+
+**A number filter waits for Apply — single or range, local or remote — and
+Cancel puts back what was applied.** Will, TODO 94: *"Numerical (and range)
+filter menus need apply/cancel buttons."* A number is TYPED, so there is no
+moment its answer is obviously finished. A pick applies at once locally (62);
+a number is the one exception. `menuFor()` gives every number menu
+`data-commit` and `data-commit-fixed`, so the Range switch cannot turn Apply
+off. A definition that NAMES `commit` still wins.
+
+- Site: `src/core/ui/filter-menu.ts`
+- Site: `test/e2e/reforged-number-filter-reports.spec.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+
 ### T-a-disabled-button-acts-on-nothing
 
 **A disabled `sherpa-button` refuses the click, as a native button does.** It

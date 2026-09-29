@@ -96,7 +96,7 @@
   "src/core/ui/context.ts": 68,
   "src/core/ui/disclosure.ts": 80,
   "src/core/ui/filter-kind.ts": 99,
-  "src/core/ui/filter-menu.ts": 170,
+  "src/core/ui/filter-menu.ts": 173,
   "src/core/ui/filters-button.ts": 155,
   "src/core/ui/form-value.ts": 64,
   "src/core/ui/icon-paths.ts": 240,

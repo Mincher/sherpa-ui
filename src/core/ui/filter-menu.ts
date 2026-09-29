@@ -89,10 +89,13 @@ export function menuFor(
      switch cannot turn Apply on. Remote, the select mode decides.
      TRAP T-commit-follows-select-mode */
   const local = opts.remote === false;
-  const defers = def.commit ?? (!local && !one && !(hasOwnBody(kind) && !asRange));
+  /* A NUMBER is TYPED, so it waits for Apply wherever it is, and Cancel puts
+     back what was applied — Will, TODO 94. TRAP T-a-number-waits-for-apply */
+  const typed = kind === 'number';
+  const defers = def.commit ?? (typed || (!local && !one && !(hasOwnBody(kind) && !asRange)));
   if (defers) menu.setAttribute('data-commit', '');
-  // A def that NAMED `commit` outranks the Range switch's own rule.
-  if (def.commit != null || local) menu.setAttribute('data-commit-fixed', '');
+  // A def that NAMED `commit` outranks the Range switch's own rule; so does a number.
+  if (def.commit != null || local || typed) menu.setAttribute('data-commit-fixed', '');
   // TRAP T-every-chip-menu-gets-clear-and-search — a persistent chip gets no Clear.
   if (!def.persistent) menu.setAttribute('data-clearable', '');
   menu.setAttribute('data-search', '');
