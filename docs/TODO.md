@@ -52,7 +52,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
 | ⬜ | 19 | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
 | ⬜ | 19a | 110 | In Advanced rows, AND is serial and OR is parallel: an AND row offers only what the rows before it leave | feature |
-| ⬜ | 20 | 21d | EXPLORE — conditions for a DATE field | explore |
+| ❓ | 20 | 21d | EXPLORE — conditions for a DATE field | explore |
 | ⬜ | 21 | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
 | ⬜ | 21a | 105 | "Save filters" saves EVERY scope under one name; a "Saved" chip shows it, warns when edited, and undoes it | feature |
 | ⬜ | 21b | 109 | Reset has a label, and a menu button: "Reset to default" puts back the View's own filters | feature |
@@ -1153,6 +1153,46 @@ ONE control per `OP_TAKES` answer (`list`, `text`, `range`); these want a
 calendar, a time (no control exists), two of each, or a number-and-unit. And
 `Includes` may be a second axis, not a condition. `OPS_FOR_TYPE['date']` is
 `[]` on purpose today; this item reopens that.
+
+**Design, 2026-09-29 — for Will's review.** Found first: a clause is data,
+`[field, op, value]`, and most date conditions are ops the store already
+answers. Only Last and Next are new — they must stay RELATIVE in a saved
+View, or "last 7 days" freezes on the day it was saved. And no time control
+is needed: `sherpa-input-text` passes `type` to its `<input>`, so
+`type="date"` and `type="time"` are the platform's own pickers.
+
+| condition | in the query | the row shows | saved as |
+|---|---|---|---|
+| On | `between` the day's start and end | a date | `"2026-09-03"` |
+| Before | `lt` | a date, and a time | `"2026-09-03"` or `"2026-09-03T14:00"` |
+| After | `gt` | a date, and a time | as Before |
+| Between | `between` | two dates, two times | `["…", "…"]` |
+| In the last N | `within`, turned into `between` when the Query is built | a number and a unit (days, weeks, months) | `{ "last": 7, "unit": "day" }` |
+| In the next N | as Last, forward | as Last | `{ "next": 3, "unit": "month" }` |
+
+- **Simple stays the calendar** (a day, or a range) — only Advanced gains
+  these rows, on 102's two kept answers.
+- **`OP_TAKES` gains `date`, `dates` and `duration`** beside `list`, `text`
+  and `range`: each a `<template>` in the menu's condition row, composed from
+  `sherpa-input-text` and `sherpa-select`.
+- **Days are UTC**, as `formatDate` reads them (`T-a-date-reads-one-way`); a
+  relative date is worked out once per load, with `Temporal` where the
+  browser has it.
+- **The chip's face** reads `Created: last 7 days`, `Created: before 03 Sep
+  2026`, through `formatDate`.
+- **Build after 20b** (the ledger's rule) and with 90.
+
+**❓ Will — two choices.**
+
+- **Includes (a weekday):**
+  - **A (my pick): not now.** It is a second axis — the weekday OF a date —
+    so it is a derived field a set filter answers, its own later item.
+  - **B: a condition** with seven day toggles in the row.
+- **The time input:**
+  - **A (my pick): only where the field holds a time** —
+    `declareField(f, { type: 'date', time: true })`. Records' `created` holds
+    days (`2024-07-01`), so it shows none.
+  - **B: always**, and a blank time means the day's start or end.
 
 ### `[ ]` 107 — A filter can apply LIVE, debounced — an opt-in; the default stays once per act
 
