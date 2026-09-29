@@ -25,6 +25,7 @@
  * - FieldReading — What is true right now, which decides the STATES.
  * - FieldCondition — One row of a multi-condition filter.
  * - rowAnswered — Does this condition row have what its op needs to narrow anything?
+ * - readingRows — a reading's Advanced answer as rows, old single-condition forms included
  * - fieldState — work out one field's whole state — the only place that decides it
  * - stateClause — One field's state as a ready `FilterClause`, or `undefined`.
  * - readingClause — a reading as a clause, for a control holding its own field facts
@@ -192,6 +193,24 @@ export function rowAnswered(row: FieldCondition): boolean {
   return (OP_TAKES[row.op] ?? 'list') === 'text'
     ? (row.text ?? '').trim() !== ''
     : (row.picked ?? []).length > 0;
+}
+
+/**
+ * A reading's ADVANCED answer, as rows: its own answered rows — or, from a
+ * reading written before rows were a list, its one typed condition, or its
+ * non-default op over its picks ("is not A and is not B").
+ * TRAP T-both-answers-are-kept
+ */
+export function readingRows(reading: FieldReading): FieldCondition[] {
+  const given = (reading.conditions ?? []).filter(rowAnswered);
+  if (given.length) return [...given];
+  const op = reading.op ?? DEFAULT_OP;
+  const text = (reading.text ?? '').trim();
+  if ((OP_TAKES[op] ?? 'list') === 'text') return text ? [{ op, text }] : [];
+  if (op === DEFAULT_OP || (OP_TAKES[op] ?? 'list') !== 'list') return [];
+  // Several picks under a NEGATIVE op all have to hold; any other op, any one.
+  const join = op === 'ne' ? 'and' : 'or';
+  return (reading.picked ?? []).map((value, i) => (i ? { op, join, picked: [value] } : { op, picked: [value] }));
 }
 
 /**

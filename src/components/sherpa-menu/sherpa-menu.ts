@@ -20,7 +20,7 @@ import {
   DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type FilterOp, valueKey, valueSet,
 } from '../../core/data/store.js';
 import {
-  rowAnswered, type ConditionType, type FieldCondition, type FieldReading,
+  readingRows, rowAnswered, type ConditionType, type FieldCondition, type FieldReading,
 } from '../../core/data/filter-state.js';
 import { bodyReading } from '../../core/ui/filter-menu.js';
 import { NON_VALUE_ROWS } from '../../core/ui/shared-constants.js';
@@ -377,7 +377,10 @@ export class SherpaMenu extends SherpaElement {
     if (body === 'number' || body === 'date') return bodyReading(this);
     const out: FieldReading = { picked: this.values };
     if (!this.#offersAdvanced()) return out;
-    const rows = this.conditions.filter(rowAnswered);
+    /* Not drawn yet: row one is still its attributes, as #syncConditions will
+       draw it. A chip asks before then. TRAP T-restamp-does-not-abort */
+    const rows = this.#rowEls().length ? this.conditions.filter(rowAnswered)
+      : readingRows({ op: this.op, text: this.dataset['value'] ?? '' });
     if (rows.length) out.conditions = rows;
     out.mode = this.mode;
     out.mirror = this.#mirror;
@@ -394,9 +397,7 @@ export class SherpaMenu extends SherpaElement {
     }
     this.values = (next.picked ?? []).map(valueKey);
     if (!this.#offersAdvanced()) return;
-    // A reading from before rows were a list says one condition as op and text.
-    const rows = next.conditions?.length ? next.conditions
-      : typed && next.op ? [{ op: next.op, text: typed }] : [];
+    const rows = readingRows(next);
     this.conditions = rows;
     this.#mirror = next.mirror ?? false;
     // No `mode` is a reading from before both were kept: its rows decide.
@@ -585,7 +586,11 @@ export class SherpaMenu extends SherpaElement {
     // Every sync rebuilds row one from these two — from the row SHOWN, when the
     // rows were kept. TRAP T-row-one-is-data-op
     const first = keep ? this.conditions[0] : rows[0];
-    if (!first) return;
+    if (!first) {
+      // No rows, so nothing typed — or a re-stamp puts the old text back.
+      if (!keep && this.dataset['value']) this.conditionValue = '';
+      return;
+    }
     if (this.dataset['op'] !== first.op) this.dataset['op'] = first.op;
     const text = (OP_TAKES[first.op] ?? 'list') === 'text' ? (first.text ?? '') : '';
     /* `data-value` TOO. A rebuilt row already holds the text, so comparing the

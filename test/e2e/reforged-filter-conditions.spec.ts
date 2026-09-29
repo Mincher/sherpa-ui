@@ -581,6 +581,11 @@ test('the badge is legible, and the tooltip COUNTS the conditions', async ({ pag
     await wait();
     const onEq = read();
 
+    // The rows are ADVANCED's answer: a reader switches to them first.
+    // TRAP T-both-answers-are-kept
+    menu.shadowRoot!.querySelector<HTMLElement>('.use-condition sherpa-switch')!
+      .shadowRoot!.querySelector('input')!.click();
+    await wait();
     const field = menu.shadowRoot!.querySelector('.condition') as HTMLElement & { value: string };
     field.value = 'notcontains';
     field.shadowRoot!.querySelector('.control')!

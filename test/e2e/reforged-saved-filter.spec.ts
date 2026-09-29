@@ -214,8 +214,8 @@ test('packFilter shows the saved chip ON and clears the fields it came from, in 
       before, events,
       saved: { on: chip('custom:mine').hasAttribute('data-current'),
         condition: chip('custom:mine').getAttribute('data-condition') },
-      owner: { on: chip('owner').hasAttribute('data-current'), text: fields.owner.text,
-        rows: fields.owner.conditions.length, picked: fields.owner.picked },
+      owner: { on: chip('owner').hasAttribute('data-current'),
+        rows: (fields.owner.conditions ?? []).length, picked: fields.owner.picked },
       plan: { on: chip('plan').hasAttribute('data-current'), picked: fields.plan.picked },
       savedReadings: bar.savedReadings,
       total: source.debugState().total,
@@ -229,7 +229,7 @@ test('packFilter shows the saved chip ON and clears the fields it came from, in 
   expect(r.events).toBe(1);
   expect(r.saved).toEqual({ on: true, condition: 'advanced' });
   // The fields it came from are EMPTY and off — their answer is the chip's now.
-  expect(r.owner).toEqual({ on: false, text: '', rows: 0, picked: [] });
+  expect(r.owner).toEqual({ on: false, rows: 0, picked: [] });
   expect(r.plan).toEqual({ on: false, picked: [] });
   expect(r.savedReadings).toEqual({ 'custom:mine': {
     owner: { conditions: [{ op: 'contains', text: 'Da' }] }, plan: { picked: ['Pro'] },

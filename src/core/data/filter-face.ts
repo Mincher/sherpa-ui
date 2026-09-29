@@ -15,7 +15,7 @@
  * - CONDITION_BADGE — The ONE mark a control wears when conditions are applied.
  * - spellConditions — Chained rows, in words: `Contains "ab" or Equals cd`.
  */
-import { DEFAULT_OP, OP_LABELS, OP_TAKES } from './store.js';
+import { DEFAULT_OP, OP_LABELS, OP_TAKES, valueKey } from './store.js';
 import type { FieldCondition, FilterState } from './filter-state.js';
 
 /**
@@ -50,17 +50,21 @@ export interface FilterFace {
  * TRAP T-one-state-per-filtered-field
  */
 export function filterFace(state: FilterState): FilterFace {
-  const named = state.op !== DEFAULT_OP;
-  const condition = named ? OP_LABELS[state.op] : '';
-  const picks = state.values.filter((v) => v.state === 'picked');
+  /* The answer IN FORCE: Advanced speaks for its first row, Simple for its
+     picks — the two can differ now both are kept. TRAP T-both-answers-are-kept */
+  const lead = state.mode === 'advanced' ? state.rows[0] : undefined;
+  const op = lead?.op ?? state.op;
+  const text = lead ? (lead.text ?? '') : state.text;
+  const labelOf = new Map(state.values.map((v) => [v.value, v.label]));
+  const picks = lead
+    ? (lead.picked ?? []).map((v) => labelOf.get(valueKey(v)) ?? String(v))
+    : state.values.filter((v) => v.state === 'picked').map((v) => v.label);
+  const named = op !== DEFAULT_OP;
+  const condition = named ? OP_LABELS[op] : '';
+  const typed = (OP_TAKES[op] ?? 'list') === 'text';
 
-  const value = (OP_TAKES[state.op] ?? 'list') === 'text'
-    ? state.text
-    : picks.length > 1 ? `${picks[0]!.label}…` : (picks[0]?.label ?? '');
-
-  const spelled = (OP_TAKES[state.op] ?? 'list') === 'text'
-    ? state.text
-    : picks.map((p) => p.label).join(', ');
+  const value = typed ? text : picks.length > 1 ? `${picks[0]}…` : (picks[0] ?? '');
+  const spelled = typed ? text : picks.join(', ');
 
   /* Many rows say their own story; one row falls back to the old wording. */
   const chained = state.conditions.length > 1 ? spellConditions(state) : '';

@@ -158,7 +158,12 @@ export function menuFor(
       }
       const ops = OPS_FOR_TYPE['text'] ?? [];
       if (ops.length) menu.setAttribute('data-conditions', ops.join(','));
-      if (def.text) menu.setAttribute('data-value', def.text);
+      // A TYPED condition is an Advanced answer, so the menu opens on it.
+      // TRAP T-a-conditioned-field-opens-on-its-rows
+      if (def.text) {
+        menu.setAttribute('data-value', def.text);
+        menu.setAttribute('data-mode', 'advanced');
+      }
     }
   }
 

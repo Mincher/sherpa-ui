@@ -611,11 +611,28 @@ them — until the reader edits a row.
 The data source copies a reading through `READING_KEYS`. A key left off that
 list is dropped with no error, so `mode` and `mirror` are on it.
 
+**A host reads and writes the menu's answer as `menu.reading`, never its
+parts.** The bar read `data-op` and the typed box — row one's echo — even in
+Simple mode, so a reader who typed "D" in a row and switched back sent
+"starts with D" as Simple's answer; the source's redraw then forced the chip
+back to Advanced and dropped the second row. That was Will's bug. The chip's
+face reads the same reading, and `filterFace()` speaks for the answer in force:
+Advanced for its first ROW, Simple for its picks.
+
+An old reading still means what it meant: `readingRows()` turns its one typed
+condition, or its non-default op over picks ("is not A and is not B"), into
+rows. And on a rebuild the READER'S kept answer wins over the def's opening
+one, or a def's typed condition came back on every rebuild.
+
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/both-answers-are-kept.test.mjs`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-menu-keeps-both-answers.spec.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/core/data/filter-face.ts`
+- Site: `test/e2e/reforged-filter-conditions.spec.ts`
 
 ### T-one-number-is-a-pick-under-equals
 
@@ -14071,6 +14088,7 @@ its snapshot again so Apply and Discard still read "unchanged".
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `test/e2e/reforged-panel-apply.spec.ts`
+- Site: `src/core/ui/filter-menu.ts`
 
 ### T-a-view-held-heading-shows-and-refuses
 

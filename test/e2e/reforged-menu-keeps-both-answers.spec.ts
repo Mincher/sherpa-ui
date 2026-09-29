@@ -124,3 +124,67 @@ test('a reading drawn into the menu shows both answers; one with no mode lets it
   expect(r.advanced).toBe('advanced');
   expect(r.legacy).toBe('advanced');
 });
+
+/**
+ * WILL'S BUG, on the Records page: "Switching to an advanced filter, in the
+ * filter toolbar chip menu, prevents me from toggling back to a simple filter
+ * if a value has been input." The bar sent row one's condition in Simple mode,
+ * so the source's redraw forced the chip back to Advanced — and dropped the
+ * second row on the way. Runs against the EXAMPLES server (:4200): the round
+ * trip is the app's.
+ */
+test('a Records chip switches back to Simple after a typed row, and each mode filters by its own answer', async ({ page }) => {
+  await page.goto('http://localhost:4200/?context=records');
+  await page.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
+  const r = await page.evaluate(async () => {
+    const wait = (ms: number): Promise<void> => new Promise((res) => setTimeout(res, ms));
+    const chip = document.querySelector('#qft')!.shadowRoot!.querySelector('.chip[data-id="owner"]') as HTMLElement & {
+      shadowRoot: ShadowRoot;
+    };
+    const menu = chip.querySelector('sherpa-menu') as Menu;
+    const source = (window as unknown as { sherpa: { source: { debugState(): { total: number } } } }).sherpa.source;
+    chip.shadowRoot.querySelector<HTMLElement>('.body')!.click();
+    await wait(300);
+    const owners = [...menu.querySelectorAll('input')].map((i) => i.value).filter((v) => v && v !== 'on');
+    const tick = async (value: string): Promise<void> => {
+      const box = [...menu.querySelectorAll('input')].find((i) => i.value === value)!;
+      box.checked = true;
+      box.dispatchEvent(new Event('change', { bubbles: true }));
+      await wait(500);
+    };
+    const flip = async (): Promise<void> => {
+      const sw = menu.shadowRoot.querySelector('.use-advanced-switch') as HTMLElement & { shadowRoot: ShadowRoot };
+      sw.shadowRoot.querySelector<HTMLElement>('.input')!.click();
+      await wait(600);
+    };
+    const snap = () => ({
+      mode: menu.mode,
+      rows: (menu.reading.conditions ?? []).length,
+      total: source.debugState().total,
+    });
+    await tick(owners[0]!);
+    await tick(owners[1]!);
+    const picked = source.debugState().total;
+    await flip();
+    const row = menu.shadowRoot.querySelector('.condition-row')!;
+    const cond = row.querySelector('.condition') as HTMLElement & { value: string };
+    cond.value = 'startswith';
+    cond.dispatchEvent(new Event('change', { bubbles: true }));
+    await wait(400);
+    const box = row.querySelector('.condition-value') as HTMLElement & { value: string };
+    box.value = owners[0]!.slice(0, 1);
+    box.dispatchEvent(new Event('input', { bubbles: true }));
+    await wait(700);
+    const typed = snap();
+    await flip();
+    const simple = snap();
+    await flip();
+    return { picked, typed, simple, advanced: snap() };
+  });
+
+  expect(r.typed).toMatchObject({ mode: 'advanced', rows: 2 });
+  // Back to Simple: it goes, the rows are kept, and the picks filter again.
+  expect(r.simple).toEqual({ mode: 'simple', rows: 2, total: r.picked });
+  expect(r.advanced).toEqual({ ...r.typed });
+});

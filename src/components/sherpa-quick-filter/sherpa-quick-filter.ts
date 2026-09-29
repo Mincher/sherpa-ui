@@ -9,7 +9,7 @@ import {
   DEFAULT_OP, OP_TAKES, type FilterOp, type SortDirection, valueSet,
 } from '../../core/data/store.js';
 import {
-  fieldState, type FieldCondition, type FilterState,
+  fieldState, type FieldReading, type FilterState,
 } from '../../core/data/filter-state.js';
 import { CONDITION_BADGE, filterFace, type FilterFace } from '../../core/data/filter-face.js';
 import { APPLIED_ABOVE, NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
@@ -695,13 +695,13 @@ export class SherpaQuickFilter extends SherpaElement {
    */
   #state(values: string[]): FilterState {
     const menu = this.menu as (HTMLElement & {
-      conditionValue?: string; conditions?: FieldCondition[]; mode?: string;
+      conditionValue?: string; reading?: FieldReading;
     }) | null;
     const isFilter = menu?.getAttribute('data-type') === 'filter';
-    /* ADVANCED mode answers with ROWS, so the whole chain goes in. The badge
-       and the tip both come back from it. TRAP T-a-condition-badge-says-that-not-which */
-    const rows = isFilter && menu?.mode === 'advanced'
-      ? (menu.conditions ?? []) : [];
+    /* A LIST menu's whole answer — both modes, and which is in force — so the
+       badge and the tip read the answer that filters.
+       TRAP T-a-condition-badge-says-that-not-which · TRAP T-both-answers-are-kept */
+    const list = isFilter && !menu?.dataset['body'] ? menu?.reading : undefined;
     const all = [...this.querySelectorAll<HTMLInputElement>('[slot="menu"] input')]
       .filter((i) => !i.closest(NON_VALUE_ROWS))
       .map((i) => i.value);
@@ -712,11 +712,10 @@ export class SherpaQuickFilter extends SherpaElement {
         values: all,
         labels: Object.fromEntries(all.map((v) => [v, this.#valueLabel(v)])),
       },
-      {
+      list ? { ...list, picked: values } : {
         picked: values,
         op: isFilter ? ((menu?.dataset['op'] ?? DEFAULT_OP) as FilterOp) : DEFAULT_OP,
         text: isFilter ? (menu?.conditionValue ?? '') : '',
-        conditions: rows,
       },
     );
   }
@@ -777,6 +776,8 @@ export class SherpaQuickFilter extends SherpaElement {
           : (row.picked ?? []).length > 0);
     }
 
+    // A LIST in Simple mode answers by its picks; row one's text is Advanced's.
+    if (!menu.dataset?.['body']) return false;
     const op = (menu.dataset?.['op'] ?? DEFAULT_OP) as FilterOp;
     if ((OP_TAKES[op] ?? 'list') !== 'text') return false;
     return (menu.conditionValue ?? '').trim() !== '';

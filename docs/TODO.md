@@ -517,6 +517,13 @@ is merged here. Mode words: TODO 75.
 
 ### `[~]` 102 — Simple AND Advanced answers are both kept, so a filter switches mode at any time
 
+**Progress, 2026-09-29.** ✅ Step 1: a reading keeps both answers, and `mode`
+says which filters (a696700e). ✅ Step 2: `menu.reading`, and Advanced mirrors
+Simple until a row is edited (c3b280b2). ✅ Step 3a: the bar and the chip read
+and write through `menu.reading` — Will's "can't switch back" bug is fixed, on
+the Records page too. **Left:** 3b the panel, 3c the grid heading, then the rest
+of A7 (one event per act, the headings on `menuFor()`, the 18 members go).
+
 Will, 2026-09-29: *"Switching to an advanced filter, in the filter toolbar
 chip menu, prevents me from toggling back to a simple filter if a value has
 been input. Both simple and advanced mode conditions need to be tracked and

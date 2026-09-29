@@ -25,7 +25,7 @@ import {
   type FilterOp,
 } from '../../core/data/store.js';
 import {
-  fieldState, savedReading,
+  fieldState, readingRows, savedReading,
   type FieldCondition, type FieldReading, type FilterState,
 } from '../../core/data/filter-state.js';
 import type { SavedFilter } from '../../core/browser/saved-filters.js';
@@ -538,31 +538,19 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         this.setChipValues(id, one ? [one] : (reading.picked ?? []).map(String));
         return;
       }
-      /* A TYPED answer — a heading's "contains @a" — is one condition row.
-         TRAP T-many-conditions-are-one-reading */
-      const typed = (reading.text ?? '').trim();
-      // An EMPTY row is no answer — a cleared menu keeps one.
-      const given = (reading.conditions ?? [])
-        .filter((r) => (r.text ?? '').trim() !== '' || (r.picked ?? []).length > 0);
-      const rows = given.length ? given
-        : typed ? [{ op: reading.op ?? DEFAULT_OP, text: typed }] : [];
-      if (rows.length) {
-        /* The MENU refuses Advanced mode unless the field opted in, and a
-           steer IS that opt-in reaching it. */
-        menu.setAttribute('data-advanced', '');
-        menu.dataset['mode'] = 'advanced';
-        menu.conditions = rows;
-        chip.current = true;
+      /* BOTH ANSWERS, and the mode the reading names; a reading with no
+         mode lets its rows decide, and leaves a menu with none alone. A steer
+         carrying rows IS the opt-in reaching the menu.
+         TRAP T-both-answers-are-kept · TRAP T-many-conditions-are-one-reading */
+      const rows = readingRows(reading);
+      if (rows.length) menu.setAttribute('data-advanced', '');
+      (menu as HTMLElement & { reading: FieldReading }).reading = reading;
+      if ((menu as HTMLElement & { mode?: string }).mode === 'advanced') {
+        chip.current = rows.length > 0;
         // SILENT, so the chip is told. TRAP T-a-silent-steer-still-redraws-its-chip
         chip.refresh();
         return;
       }
-      /* NO ROWS: set the picks and LEAVE THE MODE ALONE. Which mode a menu is
-         in is the reader's choice, and a steer that flipped it back to the
-         list emptied the reading the bar reports one tick later — the
-         condition then read as gone and the filter cleared itself. */
-      // The OPERATOR goes with the picks, or "is not" reports back as "is".
-      if (reading.op) menu.dataset['op'] = reading.op;
       this.setChipValues(id, (reading.picked ?? []).map(String));
       return;
     }
@@ -905,16 +893,20 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   #keepAnswer(id: string, reading: FieldReading): void {
     const menu = this.#filterMenu(id) as (HTMLElement & {
-      conditionValue: string; conditions?: readonly FieldCondition[]; rendered?: Promise<void>;
+      reading: FieldReading; rendered?: Promise<void>;
     }) | null;
     if (!menu) return;
-    const op = reading.op ?? DEFAULT_OP;
-    const text = reading.text ?? '';
-    const conditions = reading.conditions ?? [];
-    // Nothing its def does not already give it.
-    if (!conditions.length && op === (menu.dataset['op'] ?? DEFAULT_OP)
-      && text === (menu.dataset['value'] ?? '')) return;
-    const held = { op, text, conditions };
+    const rows = readingRows(reading);
+    /* The READER'S answer wins over the def's opening one — a def's typed
+       condition must not come back on every rebuild. Picks go in as the menu
+       is made, so only the rows, the mode and the mirror are compared.
+       TRAP T-a-rebuild-keeps-every-answer */
+    const gist = (r: FieldReading): string => {
+      const own = readingRows(r);
+      return JSON.stringify([own, r.mode ?? (own.length ? 'advanced' : 'simple'), !!r.mirror]);
+    };
+    if (gist(menu.reading) === gist(reading)) return;
+    const held: FieldReading = { ...reading };
     this.#pendingAnswers.set(id, held);
     void Promise.resolve(menu.rendered).then(() => {
       // A later rebuild has taken over.
@@ -926,14 +918,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       requestAnimationFrame(() => requestAnimationFrame(() => {
         if (this.#pendingAnswers.get(id) === held) this.#pendingAnswers.delete(id);
       }));
-      menu.dataset['op'] = op;
-      menu.conditionValue = text;
-      if (conditions.length) {
-        // The menu refuses Advanced mode unless the field opted in.
-        menu.setAttribute('data-advanced', '');
-        menu.dataset['mode'] = 'advanced';
-        menu.conditions = conditions;
-      }
+      // The menu refuses Advanced mode unless the field opted in.
+      if (rows.length) menu.setAttribute('data-advanced', '');
+      menu.reading = held;
       // The chip draws its face from the menu it holds now; on or off as it was.
       const chip = menu.closest<ChipEl>('sherpa-quick-filter');
       if (chip) chip.current = !reading.suspended;
@@ -943,7 +930,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /** Answers a rebuilt menu has not drawn yet, by chip id. TRAP T-a-rebuild-keeps-every-answer */
-  #pendingAnswers = new Map<string, { op: FilterOp; text: string; conditions: readonly FieldCondition[] }>();
+  #pendingAnswers = new Map<string, FieldReading>();
 
   /**
    * Settle after a REBUILD: every menu has stamped its rows.
@@ -1306,21 +1293,16 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
          TRAP T-grid-suspend-is-not-clear */
       const picked = this.#chipPicks(chip);
 
-      // A menu a rebuild has not drawn yet answers from what the rebuild kept.
+      /* THE MENU'S WHOLE ANSWER — both modes, and which is in force. Reading
+         row one's condition in Simple mode forced the chip back to Advanced.
+         A menu a rebuild has not drawn yet answers from what the rebuild kept.
+         TRAP T-both-answers-are-kept · TRAP T-a-conditioned-chip-answers-with-its-clause */
       const held = this.#pendingAnswers.get(field);
       out[field] = {
         label: chip.dataset['label'] ?? field,
         values: all,
+        ...(held ?? (menu as HTMLElement & { reading: FieldReading }).reading),
         picked,
-        op: held?.op ?? (menu.dataset['op'] ?? DEFAULT_OP) as FilterOp,
-        text: held?.text ?? menu.conditionValue ?? '',
-        /* THE ROWS. Without these `stateClause` saw no conditions and gave
-           nothing back, so a chip full of answered rows read as on, wore its
-           `fx` badge, and filtered NOTHING.
-
-           TRAP T-a-conditioned-chip-answers-with-its-clause */
-        conditions: held ? [...held.conditions]
-          : menu.mode === 'advanced' ? (menu.conditions ?? []) : [],
         /* An OFF chip SUSPENDS: it keeps every row and applies none of them,
            exactly as it keeps its picks. Reporting none of them instead read
            as "no filter", and the chip could never switch itself back ON —
