@@ -77,6 +77,24 @@
        of one set. -->
   <sherpa-notifications id="notifications"></sherpa-notifications>
 
+  <!-- SAVE VIEW, for every page: a name, and a confirm to save over or delete
+       the reader's own View. TODO 15. TRAP T-a-saved-view-is-the-readers-own -->
+  <sherpa-dialog id="view-name" data-heading="Save view as">
+    <sherpa-input-text data-label="Name" placeholder="My view" autocomplete="off" required></sherpa-input-text>
+    <sherpa-container-footer slot="footer">
+      <sherpa-button>Cancel</sherpa-button>
+      <sherpa-button data-look="saturated">Save</sherpa-button>
+    </sherpa-container-footer>
+  </sherpa-dialog>
+  <sherpa-dialog id="view-confirm">
+    <!-- Margin zeroed inline: the dialog body brings its own padding. -->
+    <p style="margin: 0"></p>
+    <sherpa-container-footer slot="footer">
+      <sherpa-button>Cancel</sherpa-button>
+      <sherpa-button data-look="saturated"></sherpa-button>
+    </sherpa-container-footer>
+  </sherpa-dialog>
+
   <!-- The assistant: sherpa-overlay-panel is a <dialog> opened with show(), not
        showModal(), so the page behind stays live. Outside the app-shell so a
        Context swap cannot take it, and its content is the same chat template the
@@ -92,6 +110,7 @@
     import { RECORDS_VIEWS } from '/examples/definitions/records-views.js';
     // The SAME URLs the Contexts import, or each gets a store of its own. TRAP T-two-urls-are-two-modules
     import { customerStore, customersReady } from './contexts/records-data.js';
+    import { confirmPrompt, namePrompt } from './contexts/ask-name.js';
     import { alertStore } from './contexts/dashboard-data.js';
 
     // Font Awesome must be in the DOCUMENT too: sharedStyles carries the class
@@ -468,6 +487,38 @@
       const { context, view } = urlState();
       favorites.toggle(rowForFavourite(context, view));
       syncFavouriteStar(context, view);
+    });
+
+    /* ── Save view, Save view as, Delete view — one flow, every page ─────
+       The bar's buttons are REQUESTS; the provider saves. A preset is never
+       saved over or deleted. TODO 15. TRAP T-a-saved-view-is-the-readers-own */
+    const askViewName = namePrompt(document.querySelector('#view-name'));
+    const confirmView = confirmPrompt(document.querySelector('#view-confirm'));
+    const viewLabel = () => {
+      const { context } = urlState();
+      return viewsOf(context)[provider.view ?? firstView(context)]?.label ?? '';
+    };
+    const saveViewAs = async () => {
+      const name = await askViewName(viewLabel());
+      if (name) await provider.saveView(name);
+    };
+    document.addEventListener('view-save', async () => {
+      if (!provider.customView) return saveViewAs();
+      const label = viewLabel();
+      const yes = await confirmView({
+        heading: `Save over “${label}”?`, action: 'Save',
+        words: `“${label}” will hold the filters on screen now.`,
+      });
+      if (yes) await provider.saveView();
+    });
+    document.addEventListener('view-save-as', saveViewAs);
+    document.addEventListener('view-delete', async () => {
+      const label = viewLabel();
+      const yes = await confirmView({
+        heading: `Delete “${label}”?`, action: 'Delete', critical: true,
+        words: `“${label}” will be deleted. This cannot be undone.`,
+      });
+      if (yes) await provider.deleteView();
     });
 
     /* ── Settings — an overlay on the Context ─────────────────────────────

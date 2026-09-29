@@ -160,6 +160,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     'data-locked': DATA_PROPS['data-locked'],
     /* Clear the chips when a new field set arrives, rather than keeping them. */
     'data-reset-on-populate': { type: 'boolean', kind: 'style' },
+    /* The View on screen is the READER's own, so it can be deleted. Written by
+       the provider. TRAP T-a-saved-view-is-the-readers-own */
+    'data-custom-view': { type: 'boolean', kind: 'visibility' },
   } as const;
 
   /** Sort and group written from outside — unobserved, a grid header click says nothing here. */
@@ -966,6 +969,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** A "Remove" row. `menu-select` is for ACTION rows; value rows commit via `menu-change`. */
   #onMenuSelect = (event: Event): void => {
     const value = (event as CustomEvent).detail?.value;
+    if ((value === 'save-as' || value === 'delete') && this.pathFind(event, '.view-more')) {
+      event.stopImmediatePropagation();
+      this.#act(value === 'delete' ? 'delete-view' : value);
+      return;
+    }
     if (value === 'reset-default' && this.pathFind(event, '.reset-more')) {
       event.stopImmediatePropagation();
       this.#act(value);
@@ -1634,8 +1642,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       case 'save':
         this.emit('view-save');
         break;
-      case 'view-menu':
-        this.emit('view-menu-click');
+      case 'save-as':
+        this.emit('view-save-as');
+        break;
+      case 'delete-view':
+        this.emit('view-delete');
         break;
       case 'favourite':
         this.#toggleFavourite();
@@ -1675,7 +1686,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const view: HTMLElement[] = [];
     if (this.dataset['type'] === 'view' && folded(this.$('.view-group'))) {
       view.push(row('favourite', this.hasAttribute('data-favourite') ? 'Remove from Favorites' : 'Favorite'));
-      view.push(row('save', 'Save view'), row('view-menu', 'Save view as'));
+      view.push(row('save', 'Save view'), row('save-as', 'Save view as'));
+      if (this.hasAttribute('data-custom-view')) view.push(row('delete-view', 'Delete view'));
     }
     if (folded(act('refresh'))) view.push(row('refresh', 'Refresh view'));
 

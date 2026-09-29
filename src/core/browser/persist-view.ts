@@ -15,6 +15,7 @@
  * - ViewLibrary — A page's saved views, keyed by the id its chip option carries.
  * - ViewOption — A quick-filter option, as `populate()` takes it.
  * - viewOptions — The View chip's options, DERIVED from the views themselves.
+ * - uniqueViewLabel — A name no View has yet: a clash gets ` - Copy-001`, then `-002`.
  * - ViewPick — What `onViewPicked` hands back, so a host can do its own work after.
  * - onViewPicked — Wire a View chip to a library: pick one, and the screen reconfigures.
  * - SavedViewStore — The user's own saved views for one page, keyed by id like a preset set.
@@ -285,20 +286,37 @@ export interface ViewOption {
   value: string;
   label: string;
   selected?: boolean;
+  /** `Presets` or `Custom views` — the reader's own, at the bottom. */
+  section?: string;
 }
 
 /**
  * The View chip's options, DERIVED from the views themselves.
  * TRAP T-view-library-is-one-vocabulary — `currentId` defaults to the FIRST view.
  */
-export function viewOptions(views: ViewLibrary, currentId?: string): ViewOption[] {
+export function viewOptions(views: ViewLibrary, currentId?: string, custom?: ReadonlySet<string>): ViewOption[] {
   const ids = Object.keys(views);
   const current = currentId ?? ids[0];
-  return ids.map((value) => ({
+  const option = (value: string): ViewOption => ({
     value,
     label: views[value]!.label,
     selected: value === current,
-  }));
+    // The reader's own Views sit in their own section, at the BOTTOM. TODO 15.
+    ...(custom ? { section: custom.has(value) ? 'Custom views' : 'Presets' } : {}),
+  });
+  if (!custom) return ids.map(option);
+  return [...ids.filter((id) => !custom.has(id)), ...ids.filter((id) => custom.has(id))].map(option);
+}
+
+/** A name no View has yet: a clash, in any case, gets ` - Copy-001`, then
+ *  `-002` and on. Will, TODO 15. TRAP T-a-saved-view-is-the-readers-own */
+export function uniqueViewLabel(label: string, taken: Iterable<string>): string {
+  const used = new Set([...taken].map((l) => l.trim().toLowerCase()));
+  if (!used.has(label.trim().toLowerCase())) return label.trim();
+  for (let n = 1; ; n++) {
+    const next = `${label.trim()} - Copy-${String(n).padStart(3, '0')}`;
+    if (!used.has(next.toLowerCase())) return next;
+  }
 }
 
 /** What `onViewPicked` hands back, so a host can do its own work after. */

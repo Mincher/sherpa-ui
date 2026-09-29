@@ -118,6 +118,11 @@
   align-items: center;
   flex: 0 0 auto;
 }
+/* Delete view: CRITICAL, and only on the reader's own View. The status pin
+   re-points the Style ink. TRAP T-a-saved-view-is-the-readers-own */
+.view-delete { color: var(--sherpa-style-content-base, #35353d); }
+:host(:not([data-custom-view])) .view-delete { display: none; }
+
 .view-group > :not(:first-child),
 .reset-group > :not(:first-child) {
   margin-inline-start: var(--sherpa-structure-space-snapped, 0px);

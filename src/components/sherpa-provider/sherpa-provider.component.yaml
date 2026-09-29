@@ -30,12 +30,12 @@ anatomy:
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (filterMode, view). See $extensions.sherpa.jsProps.
+    description: read/write JS properties (filterMode, customView, view). See $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
     description: >-
-      callable from a view definition's state block (provide, open, close, saveView, resetView,
-      export, import). See $extensions.sherpa.methods.
+      callable from a view definition's state block (provide, open, close, saveView, deleteView,
+      resetView, export, import). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: filter-mode-change
@@ -74,8 +74,18 @@ $extensions:
           it.
       - $type: method
         name: saveView
-        args: "label: string"
-        description: Save what is on screen as a new View of the open page, and put it on the View chip.
+        args: "label?: string"
+        description: >-
+          Save what is on screen as a View of the open page, and put it on the View chip. With a
+          name, a NEW View — a name any View has already gets ` - Copy-001`. With none, over the
+          reader's own View on screen; a preset is never overwritten, so that answers undefined. The
+          saved View's id, else undefined.
+      - $type: method
+        name: deleteView
+        args: id = this.#view
+        description: >-
+          Delete the reader's own View — the one on screen unless named — and go to the first. A
+          preset is never deleted.
       - $type: method
         name: resetView
         args: ""
@@ -100,6 +110,9 @@ $extensions:
       - name: filterMode
         type: string
         access: read-write
+      - name: customView
+        type: string
+        access: read
       - name: view
         type: string
         access: read

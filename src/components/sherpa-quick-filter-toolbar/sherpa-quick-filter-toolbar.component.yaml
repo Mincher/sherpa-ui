@@ -116,7 +116,7 @@ anatomy:
                     data-group: mid
                     data-icon-start: upload
                 - el: sherpa-button
-                  class: act
+                  class: act view-more
                   attrs:
                     data-size: sm
                     data-act: view-menu
@@ -125,6 +125,23 @@ anatomy:
                     data-icon-start: triangle-down
                     aria-label: Save view options
                     aria-haspopup: menu
+                  children:
+                    - el: sherpa-menu
+                      class: view-menu
+                      attrs:
+                        slot: menu
+                        data-align: end
+                      children:
+                        - el: button
+                          attrs:
+                            type: button
+                            value: save-as
+                        - el: button
+                          class: view-delete
+                          attrs:
+                            type: button
+                            value: delete
+                            data-status: critical
             - el: sherpa-button
               class: act
               attrs:
@@ -276,6 +293,9 @@ states:
     name: not-has-organise
     selector: ":host(:not([data-has-organise]))"
   - $type: state
+    name: not-custom-view
+    selector: ":host(:not([data-custom-view]))"
+  - $type: state
     name: focus-visible
     selector: .more-item:focus-visible
 capabilities:
@@ -366,7 +386,11 @@ events:
     detail:
       favourite: unknown
   - $type: event
-    name: view-menu-click
+    name: view-save-as
+    bubbles: true
+    composed: true
+  - $type: event
+    name: view-delete
     bubbles: true
     composed: true
   - $type: event
@@ -382,6 +406,7 @@ tokens:
   act-divider.background: "{sherpa.theme-border-default-2}"
   chips.gap: "{sherpa.display-mode-space-xs}"
   actions-zone.gap: "{sherpa.display-mode-space-xs}"
+  view-delete.color: "{sherpa.style-content-base}"
   more-item.padding: "{sherpa.display-mode-space-xs}"
   more-item.color: "{sherpa.style-content-base}"
   more-divider.margin: "{sherpa.display-mode-space-3xs}"

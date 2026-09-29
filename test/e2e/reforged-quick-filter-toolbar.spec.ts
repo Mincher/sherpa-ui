@@ -300,7 +300,7 @@ test('every cluster button fires the event Figma names for it', async ({ page })
     const seen: string[] = [];
     for (const ev of [
       'ai-filter-request', 'data-refresh',
-      'view-save', 'view-menu-click', 'filter-add',
+      'view-save', 'view-save-as', 'filter-add',
     ]) el.addEventListener(ev, () => seen.push(ev));
 
     const press = async (act: string) => {
@@ -309,7 +309,11 @@ test('every cluster button fires the event Figma names for it', async ({ page })
       await (window as unknown as { __settled: () => Promise<void> }).__settled();
     };
     // The ⋮ opens its own menu now. TRAP T-the-more-menu-holds-what-folded
-    for (const a of ['ai', 'refresh', 'save', 'view-menu']) await press(a);
+    for (const a of ['ai', 'refresh', 'save']) await press(a);
+    // The Save group's ▾ opens its menu; Save view as asks for a name. TODO 15.
+    await press('view-menu');
+    el.shadowRoot!.querySelector<HTMLElement>('.view-menu button[value="save-as"]')!.click();
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     // ADD is deliberately absent from this list. It is a single button now, and
     // clicking it OPENS THE MENU rather than announcing anything — `filter-add`
@@ -321,7 +325,7 @@ test('every cluster button fires the event Figma names for it', async ({ page })
 
   expect(r.seen).toEqual([
     'ai-filter-request', 'data-refresh',
-    'view-save', 'view-menu-click',
+    'view-save', 'view-save-as',
   ]);
   // A plain button, announcing itself as a menu trigger.
   expect(r.addIsButton).toBe('sherpa-button');

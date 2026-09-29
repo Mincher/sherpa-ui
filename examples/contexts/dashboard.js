@@ -6,7 +6,6 @@
  * - init — bind the dashboard Context — charts, tiles and legends — to one source
  */
 import { DataSource } from '../../dist/index.js';
-import { namePrompt } from './ask-name.js';
 import { customerStore, customersReady } from './records-data.js';
 
 /* THE PAGE IS ITS DEFINITION: the router opened dashboard.json — the source
@@ -86,14 +85,7 @@ export async function init(root, { source }) {
     console.log('bar-click', e.detail);
   });
 
-  // SAVE THIS VIEW — as JSON: the Query on screen and how its rows are arranged.
-  // TRAP T-a-view-is-json
-  const askViewName = namePrompt(root.querySelector('#save-view'), page.signal);
-  header?.addEventListener('view-save', async () => {
-    // The page's own dialog, never the browser's prompt(). Will, 2026-09-25.
-    const label = await askViewName();
-    if (label) await provider?.saveView(label);
-  }, { signal: page.signal });
+  // Save view, Save view as and Delete view are the SHELL's, for every page (TODO 15).
   header?.addEventListener('view-favorite', (e) => console.log('view-favorite', e.detail), { signal: page.signal });
   header?.addEventListener('data-refresh', () => console.log('data-refresh'), { signal: page.signal });
 

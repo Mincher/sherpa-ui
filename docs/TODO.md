@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**50 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**49 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -69,7 +69,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ❓ | 31 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
 | ❓ | 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
 | | | | **E — Views and navigation** | |
-| ⬜ | 32 | 15 | Save a View, and the Save split-button menu | feature |
+| ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
 | ⬜ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
 | ⬜ | 34 | 34 | Figma: use the Navigation terms | figma |
 | ⬜ | 35 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
@@ -1375,7 +1375,7 @@ provider reads into its summary.
 
 ## E — Views and navigation
 
-### `[ ]` 15 — Save a View, and the Save split-button menu
+### `[x]` ✅ 15 — Save a View, and the Save split-button menu
 
 Measured 2026-09-29: `provider.saveView(label)` saves the current View of
 ANY page opened from a definition, and puts it on the View chip (D1). Only the
@@ -1397,6 +1397,17 @@ which needs the same split button, name dialog and overwrite confirm.
 |---|---|
 | `Save As` | A dialog. The user edits the View name, then saves or cancels. |
 | `Delete View` | Critical style. A dialog asks to confirm. ONLY a custom View. |
+
+**✅ Done 2026-09-29, on every page.** The Save ▾ opens "Save view as" and —
+on the reader's own View only, critical — "Delete view". The SHELL answers
+the three requests with one name dialog and one confirm (`ask-name.js`:
+`namePrompt`, `confirmPrompt`); the Dashboard's own handler and dialog are
+gone. The provider: `saveView(name)` saves a new View, a clashing name
+getting ` - Copy-001`; `saveView()` saves over the reader's View on screen —
+Save on a preset asks for a name; `deleteView()` deletes and goes to the
+first View; the bar is marked `data-custom-view`. The View chip lists
+`Presets`, then `Custom views` at the bottom. 105 reuses the dialogs.
+`T-a-saved-view-is-the-readers-own`
 
 ### `[ ]` 17b — At the mobile breakpoint the nav becomes a menu
 
@@ -2466,6 +2477,8 @@ One line each. The detail is in git and in the trap named.
 - 21f: a panel field can be sent up to the view filters — `T-send-to-view-filters`
 - 21b: a field can carry its answer over a View change (`carryOver`) — `T-a-field-can-carry-over-views`
 - 20b: the View's Date is a range, bounded by the data — `T-a-range-is-bounded-by-the-data`
+- 52, 107: designed / explained; each waits on two choices from Will
+- 15: save, save as, save over and delete a View, on every page — `T-a-saved-view-is-the-readers-own`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

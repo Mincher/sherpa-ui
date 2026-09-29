@@ -120,7 +120,7 @@ export {
 // a host chooses whether and where its view state persists.
 export {
   persistView, persistViewState, clearViewState, applyViewSnapshot, captureView,
-  viewOptions, onViewPicked,
+  viewOptions, uniqueViewLabel, onViewPicked,
   loadSavedViews, saveViewAs, deleteSavedView,
   type PersistOptions, type ViewSnapshot, type ApplyReport,
   type SavedView, type ViewLibrary, type ViewOption, type ViewPick,

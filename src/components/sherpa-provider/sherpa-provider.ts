@@ -22,7 +22,7 @@ import { summarise, type SummarySpec } from '../../core/data/aggregate.js';
 import { bindSelection, type Selector } from '../../core/data/bind-selection.js';
 import { valueKey, type Store } from '../../core/data/store.js';
 import {
-  loadSavedViews, onViewPicked, saveViewAs, viewOptions, type ViewLibrary,
+  deleteSavedView, loadSavedViews, onViewPicked, saveViewAs, uniqueViewLabel, viewOptions, type ViewLibrary,
 } from '../../core/browser/persist-view.js';
 import { labelId } from '../../core/browser/web-storage.js';
 import { loadSavedFilters } from '../../core/browser/saved-filters.js';
@@ -327,19 +327,58 @@ export class SherpaProvider extends SherpaElement {
   }
 
   /**
-   * Save what is on screen as a new View of the open page, and put it on the
-   * View chip. TRAP T-a-view-is-json
+   * Save what is on screen as a View of the open page, and put it on the View
+   * chip. With a name, a NEW View — a name any View has already gets ` -
+   * Copy-001`. With none, over the reader's own View on screen; a preset is
+   * never overwritten, so that answers undefined. The saved View's id, else
+   * undefined. TRAP T-a-view-is-json · TRAP T-a-saved-view-is-the-readers-own
    */
-  async saveView(label: string): Promise<void> {
+  async saveView(label?: string): Promise<string | undefined> {
     const opened = this.#opened;
-    if (!opened?.library || !label.trim()) return;
-    saveViewAs(opened.id, label, { source: opened.source });
+    if (!opened?.library) return undefined;
+    const own = this.#view ? loadSavedViews(opened.id)[this.#view] : undefined;
+    const name = label == null ? own?.label
+      : label.trim() && uniqueViewLabel(label, Object.values(opened.library()).map((v) => v.label));
+    if (!name) return undefined;
+    saveViewAs(opened.id, name, { source: opened.source });
     // Read BEFORE the redraw: a rebuilt bar's first report is empty.
     const kept = opened.source.query.applied;
-    await this.#drawBars(labelId(label.trim()));
+    const id = labelId(name);
+    await this.#drawBars(id);
     await opened.source.setQuery(kept);
     // Reported, so the URL and the nav follow the View just saved.
-    (this.#bars() as Bar[]).find((bar) => this.#inherited(bar, 'data-scope') === VIEW)?.report?.();
+    this.#viewBar()?.report?.();
+    return id;
+  }
+
+  /** Delete the reader's own View — the one on screen unless named — and go to
+   *  the first. A preset is never deleted. TRAP T-a-saved-view-is-the-readers-own */
+  async deleteView(id = this.#view): Promise<boolean> {
+    const opened = this.#opened;
+    if (!opened?.library || !id || !loadSavedViews(opened.id)[id]) return false;
+    deleteSavedView(opened.id, id);
+    if (id !== this.#view) {
+      await this.#drawBars(this.#view);
+      return true;
+    }
+    const first = Object.keys(opened.library())[0];
+    this.#view = first;
+    await this.#drawBars(first);
+    await this.resetView();
+    this.#viewBar()?.report?.();
+    this.emit('view-change', { id: first });
+    return true;
+  }
+
+  /** Is the View on screen the reader's own — saved, so it can be saved over or deleted? */
+  get customView(): boolean {
+    const opened = this.#opened;
+    return !!(opened && this.#view && loadSavedViews(opened.id)[this.#view]);
+  }
+
+  /** The bar over the View's own scope. */
+  #viewBar(): Bar | undefined {
+    return (this.#bars() as Bar[]).find((bar) => this.#inherited(bar, 'data-scope') === VIEW);
   }
 
   /**
@@ -386,10 +425,13 @@ export class SherpaProvider extends SherpaElement {
       const scope = this.#inherited(bar, 'data-scope');
       if (!scope) return;
       const described = source.describe(scope);
+      const custom = new Set(Object.keys(loadSavedViews(opened.id)));
       const picker = scope === VIEW && library ? [{
         id: 'view', label: 'View', persistent: true, active: true, select: 'single',
-        options: viewOptions(library(), view),
+        options: viewOptions(library(), view, custom),
       }] : [];
+      // The bar offers Delete only on the reader's own View. TRAP T-a-saved-view-is-the-readers-own
+      if (scope === VIEW) bar.toggleAttribute('data-custom-view', !!view && custom.has(view));
       await bar.populate([...picker, ...described.filters]);
       if (described.group) bar.organise?.({ group: described.group, sort: described.sort ?? [] });
     }));
@@ -489,6 +531,7 @@ export class SherpaProvider extends SherpaElement {
       into: this.querySelector<HTMLElement>('[data-view-content]'),
       after: ({ id, rendered }) => {
         this.#view = id;
+        this.#viewBar()?.toggleAttribute('data-custom-view', this.customView);
         this.emit('view-change', { id, ...(rendered ? { elements: rendered.elements } : {}) });
       },
     });

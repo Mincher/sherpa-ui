@@ -57,7 +57,8 @@
     data-refresh         — the refresh button
     view-save            — Save (view type)
     view-favorite        — the ★ toggled. detail: { favourite: boolean }
-    view-menu-click      — the Save group's ▾ (view type)
+    view-save-as         — Save view as, from the Save group's ▾ (view type)
+    view-delete          — Delete view, the reader's own View (view type)
 
   The trailing action cluster is BUILT IN (Figma "Filter Toolbar" 150:3688) and
   follows Figma's `Type` axis. Every control exists in the template from the
@@ -126,9 +127,15 @@
                        aria-label="Add to Favorites" aria-pressed="false"></sherpa-button>
         <sherpa-button class="act" data-size="sm" data-act="save"
                        data-group="mid" data-icon-start="upload">Save</sherpa-button>
-        <sherpa-button class="act" data-size="sm" data-act="view-menu" data-type="icon"
+        <sherpa-button class="act view-more" data-size="sm" data-act="view-menu" data-type="icon"
                        data-group="end" data-icon-start="triangle-down"
-                       aria-label="Save view options" aria-haspopup="menu"></sherpa-button>
+                       aria-label="Save view options" aria-haspopup="menu">
+          <!-- Delete only on the reader's own View. TRAP T-a-saved-view-is-the-readers-own -->
+          <sherpa-menu slot="menu" class="view-menu" data-align="end">
+            <button type="button" value="save-as">Save view as</button>
+            <button type="button" value="delete" class="view-delete" data-status="critical">Delete view</button>
+          </sherpa-menu>
+        </sherpa-button>
       </span>
 
       <sherpa-button class="act" data-size="sm" data-act="refresh" data-type="icon"

@@ -591,6 +591,31 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-a-saved-view-is-the-readers-own
+
+**A reader saves, saves over and deletes only their OWN Views; a preset is
+never touched** — TODO 15. The View bar's Save and its ▾ ("Save view as",
+"Delete view") are REQUESTS (`view-save`, `view-save-as`, `view-delete`); the
+SHELL answers them for every page with one name dialog and one confirm, and
+the provider does the work: `saveView(name)` saves a NEW View — a name any
+View has gets ` - Copy-001`, then `-002` (`uniqueViewLabel`); `saveView()`
+with no name saves over the reader's View on screen and answers nothing on a
+preset, so Save on a preset asks for a name instead; `deleteView()` deletes
+the reader's View and goes to the first. The provider marks the View bar
+`data-custom-view` while one of the reader's is on screen — "Delete view"
+shows only then, critical — and the View chip lists the reader's under
+"Custom views", at the bottom. The Dashboard's own save handler is gone.
+
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/core/browser/persist-view.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
+- Site: `examples/index.html`
+- Site: `test/e2e/reforged-save-view.spec.ts`
+- Site: `test/e2e/reforged-save-view-dialog.spec.ts`
+- Site: `test/unit/parity-sweep.test.mjs`
+
 ### T-a-range-is-bounded-by-the-data
 
 **The View's date is a RANGE, and a range is BOUNDED by the data, not dotted
@@ -13747,7 +13772,6 @@ removes them. `saveViewAs` saves JSON for a source with a Query, and a
 content view's `after` now gets `rendered` — the Capacity view's charts had
 never been bound.
 - Site: `examples/definitions/dashboard-views.js`
-- Site: `examples/contexts/dashboard.js`
 - Site: `examples/definitions/records-views.js`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/browser/persist-view.ts`

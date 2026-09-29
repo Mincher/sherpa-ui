@@ -78,6 +78,9 @@ const KNOWN = {
     'ok: the `values` setter / setClause(id, clause) — what a reader did to each field',
   'sherpa-quick-filter-toolbar.heldFields': 'ok: populate() / addFilters() / removeFilter() / drawScope()',
   'sherpa-provider.view': 'ok: provide({ view }) / a View pick through the View chip',
+  // Whether the View on screen is the reader's own: DERIVED from the view and
+  // the saved set. TRAP T-a-saved-view-is-the-readers-own
+  'sherpa-provider.customView': 'ok: saveView(name) / deleteView() / a View pick — derived',
   'sherpa-filter-panel.values': 'ok: populate(scopes) — a filter carries its picked options',
 };
 
