@@ -110,7 +110,7 @@
 .field-apply, .field-discard { display: none; }
 :host([data-remote]) .field[data-pending] :is(.field-apply, .field-discard) { display: inline-flex; }
 
-.field-custom {
+.field-advanced {
   display: flex;
   align-items: center;
   gap: var(--sherpa-display-mode-space-xs, 8px);
@@ -125,7 +125,7 @@
 
 /* CUSTOM MODE REPLACES the value chips — the rows are the answer now, and
    two answers side by side is the thing this mode exists to avoid. */
-.field[data-custom] .field-values { display: none; }
+.field[data-advanced] .field-values { display: none; }
 
 /* A NUMBER body's two shapes. The rows are the TOOLBAR's clones, and its sheet
    does not reach this shadow root — so both showed at once and the bare input
@@ -148,7 +148,7 @@
    body instead of a run of chips. TRAP T-an-inline-menu-is-the-same-menu */
 .field-body { display: none; }
 
-.field[data-custom] .field-body,
+.field[data-advanced] .field-body,
 .field[data-body] .field-body { display: block; }
 .field[data-body] .field-values { display: none; }
 

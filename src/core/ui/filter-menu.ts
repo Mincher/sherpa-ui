@@ -16,7 +16,7 @@
 
 import { OPS_FOR_TYPE, type FilterOp } from '../data/store.js';
 import {
-  customOf, hasOwnBody, kindOf, picksOne, type FilterKind, type KindSource,
+  advancedOf, hasOwnBody, kindOf, picksOne, type FilterKind, type KindSource,
 } from './filter-kind.js';
 
 /** One row a menu offers. */
@@ -144,14 +144,14 @@ export function menuFor(
     if (def.op) menu.setAttribute('data-op', def.op);
 
     /* CUSTOM IS OPT-IN. TRAP T-conditions-are-opt-in-per-field */
-    const custom = customOf(def);
+    const custom = advancedOf(def);
     if (custom) {
-      menu.setAttribute('data-custom', '');
+      menu.setAttribute('data-advanced', '');
       /* VALUES, CONDITIONS, OR BOTH. `only` opens in custom mode and hides
          the switch — there is no list behind it.
          TRAP T-a-filter-answers-by-values-conditions-or-both */
       if (custom === 'only') {
-        menu.setAttribute('data-custom-only', '');
+        menu.setAttribute('data-advanced-only', '');
         menu.setAttribute('data-mode', 'advanced');
       }
       const ops = OPS_FOR_TYPE['text'] ?? [];

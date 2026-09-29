@@ -54,6 +54,12 @@ export interface MenuItem {
 /** The mode's older spellings, still heard — select and condition before
  *  2026-09-25, default and custom before 2026-09-29 (TODO 75).
  *  TRAP T-a-renamed-attribute-keeps-its-old-name */
+/** The opt-ins' older names, still heard. TRAP T-a-renamed-attribute-keeps-its-old-name */
+const OLD_OPT_INS = [
+  ['data-custom', 'data-advanced'], ['data-conditional', 'data-advanced'],
+  ['data-custom-only', 'data-advanced-only'], ['data-conditions-only', 'data-advanced-only'],
+] as const;
+
 const OLD_MODES: Readonly<Record<string, ConditionType>> = {
   select: 'simple', condition: 'advanced', default: 'simple', custom: 'advanced',
 };
@@ -82,14 +88,14 @@ export class SherpaMenu extends SherpaElement {
     /* Which of the two modes is showing: a Default or a Custom Condition
        Filter. TRAP T-a-filter-menu-has-two-modes */
     'data-mode': { type: 'enum', kind: 'style', values: ['simple', 'advanced'] },
-    /* Whether this field offers a Custom Condition Filter AT ALL.
+    /* Whether this field offers Advanced conditions AT ALL.
        TRAP T-conditions-are-opt-in-per-field */
-    'data-custom': { type: 'boolean', kind: 'style', fallbackAttr: 'data-conditional' },
+    'data-advanced': { type: 'boolean', kind: 'style' },
     /* CUSTOM AND NOTHING ELSE. A field whose values are a wall — an email
        column of 240 — has no list worth ticking, so there is no second mode to
-       switch to and the switch is hidden. It IMPLIES `data-custom`.
+       switch to and the switch is hidden. It IMPLIES `data-advanced`.
        TRAP T-a-filter-answers-by-values-conditions-or-both */
-    'data-custom-only': { type: 'boolean', kind: 'style', fallbackAttr: 'data-conditions-only' },
+    'data-advanced-only': { type: 'boolean', kind: 'style' },
     /* WHICH BODY this menu draws. A body lives in THIS component's shadow root,
        so one spelling and one set of rules serve every host.
        TRAP T-a-menu-owns-its-own-bodies */
@@ -134,6 +140,8 @@ export class SherpaMenu extends SherpaElement {
     'data-drill-from',
     // Which condition is picked — a host may set it, and #sync follows.
     'data-op',
+    // The opt-ins' old names, heard and written in the new words.
+    'data-custom', 'data-custom-only', 'data-conditional', 'data-conditions-only',
     'data-mode',
     'data-inline',
     // What was typed under it. An ATTRIBUTE, so a re-stamp cannot lose it.
@@ -218,7 +226,7 @@ export class SherpaMenu extends SherpaElement {
     const region = this.$('.condition-rows');
     region?.addEventListener('change', this.#onCondition);
     region?.addEventListener('input', this.#onCondition);
-    this.$('.use-condition-switch')?.addEventListener('change', this.#onModeSwitch);
+    this.$('.use-advanced-switch')?.addEventListener('change', this.#onModeSwitch);
     this.$('.add-condition')?.addEventListener('click', this.#onAddCondition);
     region?.addEventListener('click', this.#onDropCondition);
   }
@@ -235,35 +243,38 @@ export class SherpaMenu extends SherpaElement {
    *  refused, the same as a click. The attribute is not a second door.
    *  TRAP T-conditions-are-opt-in-per-field */
   #enforceMode(): void {
+    // An OLD opt-in is heard, and written in the new words beside it.
+    for (const [was, now] of OLD_OPT_INS) {
+      if (this.hasAttribute(was) && !this.hasAttribute(now)) this.toggleAttribute(now, true);
+    }
     // An OLD spelling is heard, and written back in the new words.
     const old = OLD_MODES[this.dataset['mode'] ?? ''];
     if (old) this.dataset['mode'] = old;
     /* CUSTOM ONLY has no other mode to be in, so it opens in one and
        cannot leave. TRAP T-a-filter-answers-by-values-conditions-or-both */
-    if (this.#customOnly()) {
+    if (this.#advancedOnly()) {
       if (this.dataset['mode'] !== 'advanced') this.dataset['mode'] = 'advanced';
       return;
     }
-    if (this.dataset['mode'] === 'advanced' && !this.#offersCustom()) {
+    if (this.dataset['mode'] === 'advanced' && !this.#offersAdvanced()) {
       this.removeAttribute('data-mode');
     }
   }
 
   /** This field offers a Custom Condition Filter. `only` implies it.
    *  The old name still counts. TRAP T-a-renamed-attribute-keeps-its-old-name */
-  #offersCustom(): boolean {
-    return this.hasAttribute('data-custom') || this.hasAttribute('data-conditional')
-      || this.#customOnly();
+  #offersAdvanced(): boolean {
+    return this.hasAttribute('data-advanced') || this.#advancedOnly();
   }
 
   /** Answered by a Custom Condition Filter alone — no value list behind it. */
-  #customOnly(): boolean {
-    return this.hasAttribute('data-custom-only') || this.hasAttribute('data-conditions-only');
+  #advancedOnly(): boolean {
+    return this.hasAttribute('data-advanced-only');
   }
 
   /** The Advanced switch is ON in advanced mode. */
   #syncModeButton(): void {
-    this.$('.use-condition-switch')?.toggleAttribute('checked', this.mode === 'advanced');
+    this.$('.use-advanced-switch')?.toggleAttribute('checked', this.mode === 'advanced');
   }
 
   set mode(next: ConditionType | 'select' | 'condition' | 'default' | 'custom') {
@@ -271,9 +282,9 @@ export class SherpaMenu extends SherpaElement {
     /* A field that did not opt in has no custom mode to be in — the button
        is hidden, and a host writing the attribute must not get one either.
        TRAP T-conditions-are-opt-in-per-field */
-    if (to === 'advanced' && !this.#offersCustom()) return;
+    if (to === 'advanced' && !this.#offersAdvanced()) return;
     // There is nowhere else to go. TRAP T-a-filter-answers-by-values-conditions-or-both
-    if (to === 'simple' && this.#customOnly()) return;
+    if (to === 'simple' && this.#advancedOnly()) return;
     this.dataset['mode'] = to;
     this.#syncModeButton();
   }
@@ -311,7 +322,7 @@ export class SherpaMenu extends SherpaElement {
   #onModeSwitch = (event: Event): void => {
     // The menu's own control, not a value change. As Range.
     event.stopPropagation();
-    if (!this.#offersCustom() || this.#customOnly()) return this.#syncModeButton();
+    if (!this.#offersAdvanced() || this.#advancedOnly()) return this.#syncModeButton();
     const on = !!(event.target as HTMLElement & { checked?: boolean }).checked;
     const next: ConditionType = on ? 'advanced' : 'simple';
     if (next === this.mode) return;
@@ -633,7 +644,7 @@ export class SherpaMenu extends SherpaElement {
     /* A field that did not opt in has no rows at all — not a hidden one. A
        control nothing can reach should not exist.
        TRAP T-conditions-are-opt-in-per-field */
-    if (!this.$('.condition-rows') || !this.#offersCustom()) return;
+    if (!this.$('.condition-rows') || !this.#offersAdvanced()) return;
     if (!this.#rowEls().length) this.#addRow();
 
     const ops = this.#opList();

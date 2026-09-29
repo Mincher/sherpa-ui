@@ -57,14 +57,14 @@ test('a scope draws its presets, its fields, and nothing it cannot', async ({ pa
       presets: q('.field[data-field="presets"] .value').map((c) => c.dataset.value),
       presetOn: q('.field[data-field="presets"] .value[data-current]').map((c) => c.dataset.value),
       // The field actions are OPT-IN, per field; one not offered is not drawn.
-      ownerActions: ['custom', 'clear', 'remove']
+      ownerActions: ['advanced', 'clear', 'remove']
         .filter((a) => !!sr.querySelector('.field[data-field="owner"] .field-' + a)),
-      statusActions: ['custom', 'clear', 'remove']
+      statusActions: ['advanced', 'clear', 'remove']
         .filter((a) => !!sr.querySelector('.field[data-field="status"] .field-' + a)),
-      presetActions: ['custom', 'clear', 'remove']
+      presetActions: ['advanced', 'clear', 'remove']
         .filter((a) => !!sr.querySelector('.field[data-field="presets"] .field-' + a)),
       // Group and Sort ARRANGE; a condition means nothing to them.
-      organiseActions: ['custom', 'clear', 'remove']
+      organiseActions: ['advanced', 'clear', 'remove']
         .filter((a) => !!sr.querySelector('.field[data-field="organise"] .field-' + a)),
       canAdd: q('.scope[data-can-add]').map((s) => s.getAttribute('data-scope')),
       emptyScopes: q('.scope-empty').length,
@@ -86,7 +86,7 @@ test('a scope draws its presets, its fields, and nothing it cannot', async ({ pa
   /* Owner asked for conditions. NEITHER has a Remove: the scope's Add menu is
      the whole list and unticking a row removes it.
      TRAP T-the-add-menu-is-the-whole-list */
-  expect(r['ownerActions']).toEqual(['custom', 'clear']);
+  expect(r['ownerActions']).toEqual(['advanced', 'clear']);
   expect(r['statusActions']).toEqual(['clear']);
   // A PRESETS section has no field to clear or remove.
   expect(r['presetActions']).toEqual([]);
@@ -175,18 +175,18 @@ test('the condition button flags the field and hides its chips', async ({ page }
     const heard = [];
     el.addEventListener('filter-condition-change', (e) => heard.push(e.detail));
     const read = () => ({
-      flag: sr.querySelector('.field[data-field="owner"]').hasAttribute('data-custom'),
-      pressed: String(sr.querySelector('.field[data-field="owner"] .field-custom sherpa-switch')
+      flag: sr.querySelector('.field[data-field="owner"]').hasAttribute('data-advanced'),
+      pressed: String(sr.querySelector('.field[data-field="owner"] .field-advanced sherpa-switch')
         .hasAttribute('checked')),
       chips: getComputedStyle(
         sr.querySelector('.field[data-field="owner"] .field-values')).display,
     });
 
     const before = read();
-    flip('.field[data-field="owner"] .field-custom');
+    flip('.field[data-field="owner"] .field-advanced');
     await new Promise((r) => setTimeout(r, 120));
     const on = read();
-    flip('.field[data-field="owner"] .field-custom');
+    flip('.field[data-field="owner"] .field-advanced');
     await new Promise((r) => setTimeout(r, 120));
     return { before, on, off: read(), heard };
   })()`) as Record<string, unknown>;
@@ -223,7 +223,7 @@ test('a field header keeps one height with or without its buttons, and the switc
     });
     // The Conditional switch is its OWN row, under the header. Will, 2026-09-26.
     const owner = sr.querySelector('.field[data-field="owner"]');
-    const below = owner.querySelector('.field-custom').getBoundingClientRect().top
+    const below = owner.querySelector('.field-advanced').getBoundingClientRect().top
       >= owner.querySelector('.field-head').getBoundingClientRect().bottom;
     return { fields: read(), below };
   })()`) as { below: boolean; fields: { field: string; acts: boolean; height: number; gap: number | null }[] };
@@ -659,8 +659,8 @@ test('a field populated with conditions opens in custom mode on its rows', async
     for (let i = 0; i < 4; i++) await new Promise((res) => requestAnimationFrame(res));
     const box = el.shadowRoot!.querySelector('.field[data-field="owner"]')!;
     return {
-      custom: box.hasAttribute('data-custom'),
-      switchOn: box.querySelector('.field-custom sherpa-switch')?.hasAttribute('checked') ?? null,
+      custom: box.hasAttribute('data-advanced'),
+      switchOn: box.querySelector('.field-advanced sherpa-switch')?.hasAttribute('checked') ?? null,
       reading: el.readings['data']?.['owner']?.conditions,
     };
   });

@@ -153,12 +153,12 @@ anatomy:
                 part: use-condition
                 children:
                   - el: sherpa-switch
-                    class: use-condition-switch
+                    class: use-advanced-switch
                     attrs:
                       data-type: simple
-                      aria-label: Conditional
+                      aria-label: Advanced
                   - el: span
-                    class: use-condition-label
+                    class: use-advanced-label
               - el: sherpa-input-text
                 class: search
                 part: search
@@ -173,7 +173,7 @@ anatomy:
                 part: condition-rows
                 attrs:
                   role: group
-                  aria-label: Custom conditions
+                  aria-label: Advanced conditions
               - el: sherpa-button
                 class: add-condition
                 part: add-condition
@@ -224,6 +224,25 @@ anatomy:
                       aria-label: Remove condition
 props:
   - $type: prop
+    name: data-advanced
+    type: string
+    observed: false
+    kind: style
+    description: >-
+      FILTER type only: this field offers Advanced conditions, so the mode switch shows. OPT-IN:
+      most fields are answered by ticking values, and a `Contains` box over a closed set of three is
+      noise. TRAP T-conditions-are-opt-in-per-field
+  - $type: prop
+    name: data-advanced-only
+    type: string
+    observed: false
+    kind: style
+    description: >-
+      FILTER type only: Advanced conditions and NOTHING else. Implies data-advanced, opens in
+      advanced mode and cannot leave it, and hides the switch — there is no list behind it. For a
+      field whose values are a wall nobody ticks: 240 emails. TRAP
+      T-a-filter-answers-by-values-conditions-or-both
+  - $type: prop
     name: data-align
     type: enum
     observed: true
@@ -249,9 +268,9 @@ props:
   - $type: prop
     name: data-conditional
     type: string
-    observed: false
+    observed: true
     kind: style
-    description: the old name of data-custom, still read. TRAP T-a-renamed-attribute-keeps-its-old-name
+    description: the name before that, still read.
   - $type: prop
     name: data-conditions
     type: string
@@ -263,28 +282,21 @@ props:
   - $type: prop
     name: data-conditions-only
     type: string
-    observed: false
+    observed: true
     kind: style
-    description: the old name of data-custom-only, still read.
+    description: the name before that, still read.
   - $type: prop
     name: data-custom
     type: string
-    observed: false
+    observed: true
     kind: style
-    description: >-
-      FILTER type only: this field offers a Custom Condition Filter, so the mode button shows.
-      OPT-IN: most fields are answered by ticking values, and a `Contains` box over a closed set of
-      three is noise. TRAP T-conditions-are-opt-in-per-field
+    description: the old name of data-advanced, still read. TRAP T-a-renamed-attribute-keeps-its-old-name
   - $type: prop
     name: data-custom-only
     type: string
-    observed: false
+    observed: true
     kind: style
-    description: >-
-      FILTER type only: a Custom Condition Filter and NOTHING else. Implies data-custom, opens in
-      custom mode and cannot leave it, and hides the switch — there is no list behind it. For a
-      field whose values are a wall nobody ticks: 240 emails. TRAP
-      T-a-filter-answers-by-values-conditions-or-both
+    description: the old name of data-advanced-only, still read.
   - $type: prop
     name: data-drill
     type: string
@@ -327,10 +339,10 @@ props:
     observed: true
     kind: style
     description: >-
-      FILTER type only: default | custom. `default` is a Default Condition Filter, a ticked list
-      with a search; `custom` is a Custom Condition Filter, the And/Or rows. A Conditional switch in
-      the header moves between them. The old values select | condition are read, and rewritten to
-      the new ones. TRAP T-a-filter-menu-has-two-modes
+      FILTER type only: simple | advanced (Will's words). `simple` is a ticked list with a search;
+      `advanced` is the And/Or condition rows. An Advanced switch in the header moves between them.
+      The old values default | custom | select | condition are read, and rewritten to the new ones.
+      TRAP T-a-filter-menu-has-two-modes
   - $type: prop
     name: data-no-select-all
     type: string
@@ -567,8 +579,8 @@ tokens:
   menu.color: "{sherpa.theme-content-body-base}"
   menu.font-family: "{sherpa.font-family-body}"
   menu.box-shadow: "{sherpa.shadow-md}"
-  use-condition-label.color: "{sherpa.style-content-base}"
-  use-condition-label.font-size: "{sherpa.theme-content-size-base}"
+  use-advanced-label.color: "{sherpa.style-content-base}"
+  use-advanced-label.font-size: "{sherpa.theme-content-size-base}"
   heading.padding-inline: "{sherpa.theme-padding-none}"
   heading.color: "{sherpa.theme-content-body-1}"
   heading.font-size: "{sherpa.theme-content-size-small}"

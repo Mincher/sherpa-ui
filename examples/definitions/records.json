@@ -8,8 +8,8 @@
     "pageSize": 25,
     "search": ["name", "email", "owner"],
     "fields": {
-      "name": { "label": "Name", "custom": "only", "op": "contains" },
-      "email": { "label": "Email", "custom": "only", "op": "contains" },
+      "name": { "label": "Name", "advanced": "only", "op": "contains" },
+      "email": { "label": "Email", "advanced": "only", "op": "contains" },
       "customer": { "label": "Customer", "select": "multiple", "icon": "buildings" },
       "status": { "label": "Status", "select": "multiple" },
       "plan": { "label": "Plan", "select": "multiple" },
@@ -18,7 +18,7 @@
         "label": "Region", "select": "multiple", "icon": "globe",
         "labels": { "AMER": "Americas", "LATAM": "Latin America" }
       },
-      "owner": { "label": "Owner", "select": "multiple", "custom": true },
+      "owner": { "label": "Owner", "select": "multiple", "advanced": true },
       "seats": { "label": "Seats", "type": "number" },
       "spend": { "label": "Spend", "type": "number" },
       "openTickets": { "label": "Tickets", "type": "number" },
@@ -44,8 +44,8 @@
     "grid": {
       "key": "email",
       "columns": [
-        { "field": "name",        "header": "Name",      "sortable": true, "custom": "only", "op": "contains" },
-        { "field": "email",       "header": "Email",     "sortable": true, "custom": "only", "op": "contains" },
+        { "field": "name",        "header": "Name",      "sortable": true, "advanced": "only", "op": "contains" },
+        { "field": "email",       "header": "Email",     "sortable": true, "advanced": "only", "op": "contains" },
         { "field": "customer",    "header": "Customer",  "sortable": true },
         { "field": "status",      "header": "Status",    "sortable": true },
         { "field": "plan",        "header": "Plan",      "sortable": true },

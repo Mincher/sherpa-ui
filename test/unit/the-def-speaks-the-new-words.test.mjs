@@ -13,13 +13,16 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { FILTER_KINDS, customOf, hasOwnBody, kindOf } from '../../dist/core/ui/filter-kind.js';
+import { FILTER_KINDS, advancedOf, hasOwnBody, kindOf } from '../../dist/core/ui/filter-kind.js';
 
 test('a def says custom, and its kind is custom', () => {
   assert.equal(kindOf({ id: 'email', custom: 'only' }), 'advanced');
-  assert.equal(customOf({ custom: true }), true);
-  assert.equal(customOf({ custom: 'only' }), 'only');
-  assert.equal(customOf({}), false);
+  assert.equal(advancedOf({ advanced: true }), true);
+  assert.equal(advancedOf({ advanced: 'only' }), 'only');
+  // The name before 2026-09-29 (TODO 75), still read.
+  assert.equal(advancedOf({ custom: true }), true);
+  assert.equal(advancedOf({ custom: 'only' }), 'only');
+  assert.equal(advancedOf({}), false);
   assert.ok(FILTER_KINDS.includes('advanced'));
   assert.ok(!FILTER_KINDS.includes('conditional'));
   assert.equal(hasOwnBody('advanced'), true);
@@ -32,8 +35,8 @@ test('the old key and the old kind are still read', () => {
   assert.equal(kindOf({ id: 'email', kind: 'conditional' }), 'advanced');
   // …and the word before this one. TODO 75
   assert.equal(kindOf({ id: 'email', kind: 'custom' }), 'advanced');
-  assert.equal(customOf({ conditions: true }), true);
-  assert.equal(customOf({ conditions: 'only' }), 'only');
+  assert.equal(advancedOf({ conditions: true }), true);
+  assert.equal(advancedOf({ conditions: 'only' }), 'only');
   // The NEW key wins where a def names both.
-  assert.equal(customOf({ custom: false, conditions: true }), false);
+  assert.equal(advancedOf({ custom: false, conditions: true }), false);
 });

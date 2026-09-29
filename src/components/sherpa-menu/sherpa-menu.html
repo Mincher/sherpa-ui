@@ -54,24 +54,26 @@
                   dropped, so Escape and outside-click no longer apply, and
                   show()/hide() become no-ops.
                   TRAP T-an-inline-menu-is-the-same-menu
-    data-custom   FILTER type only: this field offers a Custom Condition
-                  Filter, so the mode button shows. OPT-IN: most fields are
-                  answered by ticking values, and a `Contains` box over a
-                  closed set of three is noise. TRAP T-conditions-are-opt-in-per-field
-    data-custom-only  FILTER type only: a Custom Condition Filter and NOTHING
-                  else. Implies data-custom, opens in custom mode and cannot
+    data-advanced FILTER type only: this field offers Advanced conditions,
+                  so the mode switch shows. OPT-IN: most fields are answered by
+                  ticking values, and a `Contains` box over a closed set of three
+                  is noise. TRAP T-conditions-are-opt-in-per-field
+    data-advanced-only  FILTER type only: Advanced conditions and NOTHING
+                  else. Implies data-advanced, opens in advanced mode and cannot
                   leave it, and hides the switch — there is no list behind it.
                   For a field whose values are a wall nobody ticks: 240 emails.
                   TRAP T-a-filter-answers-by-values-conditions-or-both
-    data-mode     FILTER type only: default | custom. `default` is a Default
-                  Condition Filter, a ticked list with a search; `custom` is a
-                  Custom Condition Filter, the And/Or rows. A Conditional
-                  switch in the header moves between them. The old values select |
-                  condition are read, and rewritten to the new ones.
+    data-mode     FILTER type only: simple | advanced (Will's words). `simple`
+                  is a ticked list with a search; `advanced` is the And/Or
+                  condition rows. An Advanced switch in the header moves between
+                  them. The old values default | custom | select | condition are
+                  read, and rewritten to the new ones.
                   TRAP T-a-filter-menu-has-two-modes
-    data-conditional  the old name of data-custom, still read.
+    data-custom   the old name of data-advanced, still read.
                   TRAP T-a-renamed-attribute-keeps-its-old-name
-    data-conditions-only  the old name of data-custom-only, still read.
+    data-custom-only  the old name of data-advanced-only, still read.
+    data-conditional  the name before that, still read.
+    data-conditions-only  the name before that, still read.
     data-op       FILTER type only: which condition is picked. Defaults to `eq`.
                   The FIRST row's op — a menu in condition mode holds many.
     data-conditions  FILTER type only: a comma-separated op list ('eq,ne,contains')
@@ -261,9 +263,9 @@
            filter seen two ways, not two menus. A switch, as Range is.
            TRAP T-a-filter-menu-has-two-modes -->
       <div class="use-condition" part="use-condition">
-        <sherpa-switch class="use-condition-switch" data-type="simple"
-                       aria-label="Conditional"></sherpa-switch>
-        <span class="use-condition-label">Conditional</span>
+        <sherpa-switch class="use-advanced-switch" data-type="simple"
+                       aria-label="Advanced"></sherpa-switch>
+        <span class="use-advanced-label">Advanced</span>
       </div>
 
       <!-- SELECT MODE — the search leads the ticked rows beneath it. -->
@@ -275,7 +277,7 @@
       <!-- CONDITION MODE — one or more rows, stamped from the prototype.
            Row one has no join select; every later row starts with one. -->
       <div class="condition-rows" part="condition-rows" role="group"
-           aria-label="Custom conditions"></div>
+           aria-label="Advanced conditions"></div>
       <sherpa-button class="add-condition" part="add-condition"
                      data-icon-start="plus">Add condition</sherpa-button>
     </div>

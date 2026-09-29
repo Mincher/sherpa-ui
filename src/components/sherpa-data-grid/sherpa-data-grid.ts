@@ -13,7 +13,7 @@
  * - GridColumn — one column: its field, heading, type, and whether it sorts or filters
  * - GridAction — One action a row offers.
  */
-import { kindOf, type OffersCustom } from '../../core/ui/filter-kind.js';
+import { kindOf, type OffersAdvanced } from '../../core/ui/filter-kind.js';
 import {
   DATA_PROPS, SHARED_PROPS, SherpaElement, coerceNum, clampNum, markNeedle,
 } from '../../core/ui/sherpa-element.js';
@@ -53,7 +53,7 @@ import '../sherpa-switch/sherpa-switch.js';
 import '../sherpa-calendar/sherpa-calendar.js';
 import '../sherpa-slider/sherpa-slider.js';
 
-export interface GridColumn extends OffersCustom {
+export interface GridColumn extends OffersAdvanced {
   field: string;
   header?: string;
   /** number → right-aligned mono cells; anything else → default text. */
@@ -529,14 +529,14 @@ export class SherpaDataGrid extends SherpaElement {
          never noise: a column of free text is exactly what a reader asks
          "starts with" of. A chip over a closed set opts in instead.
          TRAP T-conditions-are-opt-in-per-field */
-      menu.setAttribute('data-custom', '');
+      menu.setAttribute('data-advanced', '');
       /* VALUES, CONDITIONS, OR BOTH — the column says which, because how many
          values is too many is a question about the data.
          TRAP T-a-filter-answers-by-values-conditions-or-both */
       /* WHAT IT IS, from the ONE derivation the chips read.
          TRAP T-a-chip-knows-what-kind-it-is */
       if (kindOf(col) === 'advanced') {
-        menu.setAttribute('data-custom-only', '');
+        menu.setAttribute('data-advanced-only', '');
         menu.setAttribute('data-mode', 'advanced');
       }
       menu.setAttribute('data-search', '');

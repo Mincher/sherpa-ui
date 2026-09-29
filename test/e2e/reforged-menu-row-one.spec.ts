@@ -12,7 +12,7 @@ import { test, expect } from './harness';
 test('rows set from outside survive the next sync of the menu', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const menu = await window.__mount<HTMLElement & { conditions: unknown[] }>('sherpa-menu', undefined,
-      { 'data-type': 'filter', 'data-custom': true, 'data-mode': 'custom' });
+      { 'data-type': 'filter', 'data-advanced': true, 'data-mode': 'advanced' });
     await window.__settled();
     menu.conditions = [{ op: 'contains', text: 'Da' }, { join: 'or', op: 'contains', text: 'Ra' }];
     const set = menu.conditions;

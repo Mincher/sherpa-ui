@@ -12,9 +12,9 @@
  * Map:
  * - FILTER_KINDS — Every way a filter can be answered.
  * - FilterKind — boolean, single, multi, advanced, number, date, group or sort
- * - OffersCustom — whether a field offers a Custom Condition Filter: beside its values, or instead
+ * - OffersAdvanced — whether a field offers Advanced conditions: beside its values, or instead
  * - KindSource — Enough of a filter definition to say what it is.
- * - customOf — a field's Custom Condition Filter offer — the new key wins, the old one still counts
+ * - advancedOf — a field's Advanced offer — the new key wins, the old ones still count
  * - kindOf — what a filter IS, from its def — worked out here and nowhere else
  * - hasOwnBody — Its menu holds a CONTROL of its own, not a list of values to tick.
  * - arranges — It ARRANGES rows rather than choosing them.
@@ -29,19 +29,21 @@ export const FILTER_KINDS = [
 
 export type FilterKind = (typeof FILTER_KINDS)[number];
 
-/** Whether a field offers a Custom Condition Filter. OPT-IN: a closed set is
+/** Whether a field offers Advanced conditions. OPT-IN: a closed set is
  *  answered by ticking, and a Contains box over it is noise.
  *  TRAP T-conditions-are-opt-in-per-field
  *  TRAP T-a-filter-answers-by-values-conditions-or-both */
-export interface OffersCustom {
+export interface OffersAdvanced {
   /** Beside its values (`true`), or instead of them (`'only'`) — pair it with `op`. */
+  advanced?: boolean | 'only';
+  /** @deprecated The name before 2026-09-29 (TODO 75), still read. */
   custom?: boolean | 'only';
-  /** @deprecated The old name of `custom`, still read. */
+  /** @deprecated The name before that, still read. */
   conditions?: boolean | 'only';
 }
 
 /** Enough of a filter definition to say what it is. */
-export interface KindSource extends OffersCustom {
+export interface KindSource extends OffersAdvanced {
   id?: string;
   kind?: string;
   select?: 'single' | 'multiple';
@@ -56,9 +58,10 @@ const KNOWN = new Set<string>(FILTER_KINDS);
  *  TRAP T-a-renamed-attribute-keeps-its-old-name */
 const OLD_KINDS: Readonly<Record<string, FilterKind>> = { conditional: 'advanced', custom: 'advanced' };
 
-/** A field's Custom Condition Filter offer — the new key wins, the old one still counts. */
-export function customOf(def: OffersCustom): boolean | 'only' {
-  return def.custom ?? def.conditions ?? false;
+/** A field's Advanced offer — the new key wins, the old ones still count.
+ *  TRAP T-a-renamed-attribute-keeps-its-old-name */
+export function advancedOf(def: OffersAdvanced): boolean | 'only' {
+  return def.advanced ?? def.custom ?? def.conditions ?? false;
 }
 
 /**
@@ -73,7 +76,7 @@ export function kindOf(def: KindSource): FilterKind {
   // Its answer is GIVEN, over any fields: a saved Custom Condition Filter.
   if (def.readings) return 'advanced';
   // No list to tick and no list behind the rows: the condition IS the answer.
-  if (customOf(def) === 'only') return 'advanced';
+  if (advancedOf(def) === 'only') return 'advanced';
   // Nothing to pick from is a question with a yes/no answer.
   if (!def.options?.length) return 'boolean';
   return def.select === 'single' ? 'single' : 'multi';

@@ -4,8 +4,9 @@ import { test, expect, type Bar } from './harness';
  * THE NEW WORDS, AND THE OLD ONES STILL HEARD.
  *
  * A filter is a Default Condition Filter or a Custom Condition Filter — Will,
- * 2026-09-25. The menu's attributes say so now: `data-custom`,
- * `data-custom-only`, and `data-mode="default" | "custom"`. A host that still
+ * 2026-09-25, and Simple / Advanced since 2026-09-29 (TODO 75). The menu's
+ * attributes say so now: `data-advanced`, `data-advanced-only`, and
+ * `data-mode="simple" | "advanced"`. A host that still
  * writes `data-conditional`, `data-conditions-only` or `select | condition`
  * gets the same menu. TRAP T-a-renamed-attribute-keeps-its-old-name
  */
@@ -14,7 +15,7 @@ type Menu = HTMLElement & { mode: string };
 test('a menu speaks the new words', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const menu = await window.__mount<HTMLElement & { mode: string }>('sherpa-menu', undefined,
-      { 'data-type': 'filter', 'data-custom': true });
+      { 'data-type': 'filter', 'data-advanced': true });
     const btn = menu.shadowRoot!.querySelector<HTMLElement>('.use-condition')!;
     const flip = () => btn.querySelector('sherpa-switch')!.shadowRoot!.querySelector('input')!.click();
     const heard: unknown[] = [];
@@ -31,7 +32,7 @@ test('a menu speaks the new words', async ({ page }) => {
 
     // CUSTOM ONLY opens in custom, hides the switch, and cannot leave.
     const only = await window.__mount<HTMLElement & { mode: string }>('sherpa-menu', undefined,
-      { 'data-type': 'filter', 'data-custom-only': true });
+      { 'data-type': 'filter', 'data-advanced-only': true });
     only.mode = 'simple';
     await window.__settled();
     const onlyBtn = only.shadowRoot!.querySelector<HTMLElement>('.use-condition')!;
@@ -43,8 +44,8 @@ test('a menu speaks the new words', async ({ page }) => {
 
   expect(r.shown).toBe(true);
   expect(r.start).toBe('simple');
-  // A SWITCH labelled Conditional, as Range is. Will, 2026-09-26.
-  expect(r.label).toBe('Conditional');
+  // A SWITCH labelled Advanced, as Range is — Will's word (TODO 75).
+  expect(r.label).toBe('Advanced');
   expect(r.on).toEqual({ mode: 'advanced', attr: 'advanced', checked: true });
   expect(r.off).toEqual({ mode: 'simple', attr: 'simple', checked: false });
   expect(r.heard).toEqual([{ mode: 'advanced' }, { mode: 'simple' }]);
@@ -173,12 +174,12 @@ test('the panel reports its mode in the menu\'s own words', async ({ page }) => 
     const heard: unknown[] = [];
     panel.addEventListener('filter-condition-change', (e) => heard.push((e as CustomEvent).detail));
     const sr = panel.shadowRoot!;
-    const press = () => sr.querySelector('.field[data-field="owner"] .field-custom sherpa-switch')!
+    const press = () => sr.querySelector('.field[data-field="owner"] .field-advanced sherpa-switch')!
       .shadowRoot!.querySelector('input')!.click();
     press();
     await window.__settled();
     const menu = sr.querySelector('.field[data-field="owner"] sherpa-menu') as Menu | null;
-    const on = { box: sr.querySelector('.field[data-field="owner"]')!.hasAttribute('data-custom'), mode: menu?.mode };
+    const on = { box: sr.querySelector('.field[data-field="owner"]')!.hasAttribute('data-advanced'), mode: menu?.mode };
     press();
     await window.__settled();
     return { on, off: menu?.mode, heard };
@@ -208,8 +209,8 @@ test('a def says custom — and the old conditions key still works', async ({ pa
     const menu = (id: string) => {
       const m = bar.shadowRoot!.querySelector(`.chip[data-id="${id}"] sherpa-menu`) as Menu | null;
       return m && {
-        custom: m.hasAttribute('data-custom'),
-        only: m.hasAttribute('data-custom-only'),
+        custom: m.hasAttribute('data-advanced'),
+        only: m.hasAttribute('data-advanced-only'),
         mode: m.mode,
       };
     };
@@ -221,7 +222,7 @@ test('a def says custom — and the old conditions key still works', async ({ pa
     }, { 'data-column-filters': true });
     const col = grid.shadowRoot!.querySelector('.head-cell[data-field="email"] sherpa-menu')!;
     const column = {
-      only: col.hasAttribute('data-custom-only'),
+      only: col.hasAttribute('data-advanced-only'),
       // NO WALL OF ROWS: a custom-only column stamps no values.
       rows: [...col.children].length,
     };
@@ -235,13 +236,13 @@ test('a def says custom — and the old conditions key still works', async ({ pa
     (panel as HTMLElement & { show(): void }).show();
     await window.__settled();
     const psr = panel.shadowRoot!;
-    const field = !!psr.querySelector('.field[data-field="owner"] .field-custom');
+    const field = !!psr.querySelector('.field[data-field="owner"] .field-advanced');
     /* CONDITIONS ONLY: nowhere to switch to, so no switch — and its rows show
        from the start. Will, 2026-09-26. */
     const emailRows = psr.querySelector('.field[data-field="email"] sherpa-menu')
       ?.shadowRoot?.querySelector('.condition-row');
     const onlyField = {
-      switch: !!psr.querySelector('.field[data-field="email"] .field-custom'),
+      switch: !!psr.querySelector('.field[data-field="email"] .field-advanced'),
       rows: !!emailRows && emailRows.getClientRects().length > 0,
     };
     return { chips, column, field, onlyField };

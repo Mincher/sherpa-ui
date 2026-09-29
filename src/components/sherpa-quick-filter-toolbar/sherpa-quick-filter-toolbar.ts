@@ -14,7 +14,7 @@ import { DATA_PROPS, SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-el
 import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
 import { sortDirectionFrom } from '../../core/data/cycle.js';
 import { allow, type AllowList } from '../../core/data/allow.js';
-import { customOf, kindOf, type FilterKind, type OffersCustom } from '../../core/ui/filter-kind.js';
+import { advancedOf, kindOf, type FilterKind, type OffersAdvanced } from '../../core/ui/filter-kind.js';
 import { menuFor } from '../../core/ui/filter-menu.js';
 import {
   FILTERS_LABEL, MenuDrill, ON, filtersMenuItems, onOffMenu, type AddedFilter,
@@ -51,7 +51,7 @@ export interface QuickFilterOption {
   section?: string;
 }
 
-export interface QuickFilterDef extends OffersCustom {
+export interface QuickFilterDef extends OffersAdvanced {
   id: string;
   label: string;
   /** The FIELD this chip answers, when its id is not that field — the header's
@@ -549,7 +549,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if (rows.length) {
         /* The MENU refuses custom mode unless the field opted in, and a
            steer IS that opt-in reaching it. */
-        menu.setAttribute('data-custom', '');
+        menu.setAttribute('data-advanced', '');
         menu.dataset['mode'] = 'advanced';
         menu.conditions = rows;
         chip.current = true;
@@ -789,7 +789,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if (f.readings) {
         chip.dataset['kind'] = kind;
         if (f.editable) this.#addSavedMenu(chip, f);
-      } else if (kind !== 'boolean' || customOf(f)) this.#addMenu(chip, f, prior?.picked);
+      } else if (kind !== 'boolean' || advancedOf(f)) this.#addMenu(chip, f, prior?.picked);
       list.appendChild(chip);
       if (kind === 'date') {
         chip.setAttribute('data-full-value', '');
@@ -930,7 +930,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       menu.conditionValue = text;
       if (conditions.length) {
         // The menu refuses custom mode unless the field opted in.
-        menu.setAttribute('data-custom', '');
+        menu.setAttribute('data-advanced', '');
         menu.dataset['mode'] = 'advanced';
         menu.conditions = conditions;
       }

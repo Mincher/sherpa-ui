@@ -83,7 +83,7 @@ export async function init(root, { source }) {
   /* THE WHOLE COLUMN, not the drawn page: a heading's menu built from the rows
      on screen is a one-way door. TRAP T-unavailable-value-sorts-below-a-divider */
   grid.setAttribute('data-column-values', grid.columns
-    .filter((c) => (c.type ?? 'text') === 'text' && c.custom !== 'only')
+    .filter((c) => (c.type ?? 'text') === 'text' && (c.advanced ?? c.custom) !== 'only')
     .map((c) => `${c.field}:${source.valuesFor(c.field).join('|')}`)
     .join('\n'));
 

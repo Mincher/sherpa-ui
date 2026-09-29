@@ -109,7 +109,9 @@ export interface FieldDeclaration {
   type?: FieldType;
   label?: string;
   select?: 'single' | 'multiple';
-  /** Conditions beside its values (`true`), or instead of them (`'only'`). */
+  /** Advanced conditions beside its values (`true`), or instead of them (`'only'`). */
+  advanced?: boolean | 'only';
+  /** @deprecated The name before 2026-09-29 (TODO 75), still read. */
   custom?: boolean | 'only';
   /** The condition its filter opens on. */
   op?: FilterOp;
@@ -965,7 +967,7 @@ export class DataSource extends EventTarget {
     const open = fields.filter((f) => {
       const facts = this.#fields.get(f) ?? {};
       if (facts.type === 'number') return facts.min == null || facts.max == null;
-      return facts.custom !== 'only' && !this.#domains.has(f);
+      return (facts.advanced ?? facts.custom) !== 'only' && !this.#domains.has(f);
     });
     const rows = open.length ? (await this.store.load({})).rows : [];
     for (const field of fields) {
@@ -997,7 +999,7 @@ export class DataSource extends EventTarget {
   filterDef(field: string): FieldFilter {
     const { type, label, labels, ...rest } = this.#fields.get(field) ?? {};
     const body = type === 'number' || type === 'date' ? type : undefined;
-    const values = body || rest.custom === 'only' ? [] : this.valuesFor(field).map(valueKey);
+    const values = body || (rest.advanced ?? rest.custom) === 'only' ? [] : this.valuesFor(field).map(valueKey);
     // A date's declared values are the days a calendar may pick. TRAP T-a-date-chip-names-its-field
     const days = type === 'date' ? this.valuesFor(field).map(String) : [];
     return {

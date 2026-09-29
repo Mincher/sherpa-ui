@@ -16,7 +16,7 @@ import { APPLIED_ABOVE, ORGANISE_ICONS } from '../../core/ui/shared-constants.js
 import type { DataAsk } from '../../core/ui/context.js';
 import type { FieldFilter, HeldFilter, ScopeDescription } from '../../core/data/data-source.js';
 import {
-  arranges, customOf, hasOwnBody, kindOf, picksOne, type FilterKind, type OffersCustom,
+  arranges, advancedOf, hasOwnBody, kindOf, picksOne, type FilterKind, type OffersAdvanced,
 } from '../../core/ui/filter-kind.js';
 import { menuFor, type FilterMenuDef, type FilterMenuItem } from '../../core/ui/filter-menu.js';
 import {
@@ -48,7 +48,7 @@ export interface PanelValue {
 }
 
 /** One field the panel draws. The shape a quick-filter toolbar takes. */
-export interface PanelFilter extends OffersCustom {
+export interface PanelFilter extends OffersAdvanced {
   id: string;
   label: string;
   /** The FIELD it answers, when its id is not that field — the header's Date. */
@@ -198,7 +198,7 @@ export class SherpaFilterPanel extends SherpaElement {
     this.$('.search')?.addEventListener('input', this.#onSearch);
     // ONE listener for every drawn control — a field added later needs no wiring.
     this.$('.scopes')?.addEventListener('button-click', this.#onAction);
-    this.$('.scopes')?.addEventListener('change', this.#onConditionalSwitch);
+    this.$('.scopes')?.addEventListener('change', this.#onAdvancedSwitch);
     this.$('.scopes')?.addEventListener('quick-filter-click', this.#onValueClick);
     this.$('.scopes')?.addEventListener('menu-change', this.#onAddCommit);
     this.$('.scopes')?.addEventListener('menu-select', this.#onSavedAction);
@@ -542,7 +542,7 @@ export class SherpaFilterPanel extends SherpaElement {
     /* A section is not a field: nothing here to clear, remove or condition.
        Group and Sort ARRANGE rows; they never filter. Will, 2026-09-26. */
     box.querySelector('.field-acts')?.remove();
-    box.querySelector('.field-custom')?.remove();
+    box.querySelector('.field-advanced')?.remove();
     return { box, values: box.querySelector('.field-values') as HTMLElement };
   }
 
@@ -634,10 +634,10 @@ export class SherpaFilterPanel extends SherpaElement {
     /* A switch only where there is somewhere to switch TO: a conditions-only
        field has no list behind it, as its menu says too. Will, 2026-09-26.
        TRAP T-a-filter-answers-by-values-conditions-or-both */
-    box.toggleAttribute('data-custom-ok', !isPresets && !organise && customOf(def) === true);
+    box.toggleAttribute('data-advanced-ok', !isPresets && !organise && advancedOf(def) === true);
 
     // What this field does not offer is not drawn.
-    if (!box.hasAttribute('data-custom-ok')) box.querySelector('.field-custom')?.remove();
+    if (!box.hasAttribute('data-advanced-ok')) box.querySelector('.field-advanced')?.remove();
     if (!box.hasAttribute('data-clearable')) box.querySelector('.field-clear')?.remove();
 
     const head = box.querySelector('.field-head');
@@ -645,8 +645,8 @@ export class SherpaFilterPanel extends SherpaElement {
     if (title) title.textContent = def.label;
     const name = def.label;
     head?.querySelector('.field-clear')?.setAttribute('aria-label', `Clear ${name}`);
-    box.querySelector('.field-custom-switch')
-      ?.setAttribute('aria-label', `Conditional ${name}`);
+    box.querySelector('.field-advanced-switch')
+      ?.setAttribute('aria-label', `Advanced ${name}`);
 
     const values = box.querySelector('.field-values') as HTMLElement | null;
 
@@ -680,7 +680,7 @@ export class SherpaFilterPanel extends SherpaElement {
        rows. Drawn as plain chips, the refill after an Add hid Owner's rows,
        and the next Apply reported it unanswered: adding Email reset Owner.
        TRAP T-a-conditioned-field-opens-on-its-rows */
-    if (box.hasAttribute('data-custom-ok') && (def.state?.conditions ?? []).length) {
+    if (box.hasAttribute('data-advanced-ok') && (def.state?.conditions ?? []).length) {
       this.#setCustom(held, true);
     }
     return box;
@@ -917,7 +917,7 @@ export class SherpaFilterPanel extends SherpaElement {
   async #openDoor(held: Held, box: HTMLElement, menu: HTMLElement, label: string): Promise<void> {
     this.#drillOut();
     const chip = !!this.#oneChip(held);
-    const run = !chip && !held.box.hasAttribute('data-custom') && !held.box.hasAttribute('data-body')
+    const run = !chip && !held.box.hasAttribute('data-advanced') && !held.box.hasAttribute('data-body')
       && (held.def.options?.length ?? 0) > 0;
     const home = chip ? held.menu ?? null : run ? await this.#buildDrillMenu(held) : null;
     // A second door, opened while these rows were built, has the drill now.
@@ -1098,13 +1098,13 @@ export class SherpaFilterPanel extends SherpaElement {
     this.#syncAnswered(held);
   };
 
-  /** A field's Conditional switch. */
-  #onConditionalSwitch = (event: Event): void => {
-    const sw = this.pathFind(event, '.field-custom-switch');
+  /** A field's Advanced switch. */
+  #onAdvancedSwitch = (event: Event): void => {
+    const sw = this.pathFind(event, '.field-advanced-switch');
     const held = sw && this.#fieldOf(sw);
     if (!held) return;
     const on = !!(sw as HTMLElement & { checked?: boolean }).checked;
-    if (on !== held.box.hasAttribute('data-custom')) this.#flipCondition(held);
+    if (on !== held.box.hasAttribute('data-advanced')) this.#flipCondition(held);
   };
 
   /** A field's Save or Clear button. */
@@ -1146,7 +1146,7 @@ export class SherpaFilterPanel extends SherpaElement {
    *  the panel reports the intent and flags the field.
    *  TRAP T-conditions-are-opt-in-per-field */
   #flipCondition(held: Held): void {
-    const on = !held.box.hasAttribute('data-custom');
+    const on = !held.box.hasAttribute('data-advanced');
     this.#setCustom(held, on);
     this.#syncAnswered(held);
     // The menu's own words, so one reader hears both. TRAP T-one-condition-system
@@ -1158,12 +1158,12 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** Put a field in custom mode, or take it out: its flag, its switch, its menu. */
   #setCustom(held: Held, on: boolean): void {
-    held.box.toggleAttribute('data-custom', on);
-    held.box.querySelector('.field-custom-switch')?.toggleAttribute('checked', on);
+    held.box.toggleAttribute('data-advanced', on);
+    held.box.querySelector('.field-advanced-switch')?.toggleAttribute('checked', on);
 
     /* THE ROWS ARE THE MENU'S, and this field may not have needed one until
        now — a run of chips answers it otherwise. CSS shows the body off
-       `[data-custom]`, so OFF needs nothing but the mode back.
+       `[data-advanced]`, so OFF needs nothing but the mode back.
        TRAP T-a-panel-builds-its-own-menus */
     const body = held.box.querySelector('.field-body');
     if (on && !held.menu && body) {
@@ -1173,7 +1173,7 @@ export class SherpaFilterPanel extends SherpaElement {
       /* The MENU refuses custom mode unless the field opted in, and a
          panel's own button IS that opt-in reaching it.
          TRAP T-conditions-are-opt-in-per-field */
-      if (on) held.menu.setAttribute('data-custom', '');
+      if (on) held.menu.setAttribute('data-advanced', '');
       held.menu.dataset['mode'] = on ? 'advanced' : 'simple';
     }
   }
@@ -1183,7 +1183,7 @@ export class SherpaFilterPanel extends SherpaElement {
   #syncAnswered(held: Held): void {
     const ticked = held.values.querySelector('.value[data-current]') != null;
     const menu = held.menu as (HTMLElement & { conditions?: unknown[] }) | undefined;
-    const custom = held.box.hasAttribute('data-custom')
+    const custom = held.box.hasAttribute('data-advanced')
       && (menu?.conditions?.length ?? 0) > 0;
     held.box.toggleAttribute('data-answered', ticked || custom);
     this.#syncSaveable();

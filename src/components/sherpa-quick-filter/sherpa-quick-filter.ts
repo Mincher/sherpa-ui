@@ -520,7 +520,7 @@ export class SherpaQuickFilter extends SherpaElement {
        the start wore its blue and not its fx. ONLY with a menu to read: on a
        chip without one, `data-count` is the host's to set. */
     if (this.#given()) {
-      this.#syncBadge({ ...filterFace(state), badge: CONDITION_BADGE, condition: 'Custom condition', count: 0 });
+      this.#syncBadge({ ...filterFace(state), badge: CONDITION_BADGE, condition: 'Advanced condition', count: 0 });
     } else if (menu) this.#syncBadge(filterFace(state));
 
     /* A TYPED condition is an answer, so a chip holding one is not empty —

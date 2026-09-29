@@ -2755,7 +2755,7 @@ test('a custom-only column drops its list and opens on its own op', async ({ pag
       return sw ? getComputedStyle(sw).display !== 'none' : null;
     };
     const shape = (m: HTMLElement & { shadowRoot: ShadowRoot }) => ({
-      only: m.hasAttribute('data-custom-only'),
+      only: m.hasAttribute('data-advanced-only'),
       mode: m.getAttribute('data-mode'),
       op: m.getAttribute('data-op'),
       // NOTHING to switch to, so no button — and no wall of rows stamped.

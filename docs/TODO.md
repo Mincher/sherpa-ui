@@ -176,9 +176,11 @@ advanced`; a menu's `data-mode`, a chip's `data-condition`, a filter's kind
 (`advanced`), the panel's and menu's mode events, and the Style pins
 (state-pins.yaml, re-projected). Old words are still HEARD — `default`,
 `custom`, `select`, `condition`, `conditional` — so a saved View or filter keeps
-working. **Left: 75b** — the opt-in key (`custom` → `advanced`, with
-`data-custom` / `data-custom-only`), the internal class names and the UI labels
-("Conditional", "Custom condition"); **75c** — docs, TRAPS and test titles.
+working. **75b built the same day:** the opt-in key is `advanced` (`custom`
+and `conditions` still read), the menu's `data-advanced` / `data-advanced-only`
+(old names heard), the page schema and `records.json`, the internal class names,
+and the labels — the switch reads **Advanced**. **Left: 75c** — docs, TRAPS
+and test titles.
 
 Will, 2026-09-27: *"We need to move away from using the terms Default and
 Conditional for filter modes. Instead we should use 'Simple' and 'Complex'."*

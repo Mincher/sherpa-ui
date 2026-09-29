@@ -342,7 +342,7 @@ test('a chip that did not opt in has NO custom mode at all', async ({ page }) =>
       };
     const sr = menu.shadowRoot!;
     const btn = sr.querySelector<HTMLElement>('.use-condition')!;
-    const before = { custom: menu.hasAttribute('data-custom'), btn: getComputedStyle(btn).display };
+    const before = { custom: menu.hasAttribute('data-advanced'), btn: getComputedStyle(btn).display };
 
     // Press it anyway. Nothing happens — the mode does not exist for this field.
     btn.querySelector('sherpa-switch')!.shadowRoot!.querySelector('input')!.click();
@@ -806,8 +806,8 @@ test('a filter answers by values, by conditions, or by both', async ({ page }) =
       const sw = menu.shadowRoot.querySelector('.use-condition');
       return {
         menu: true,
-        custom: menu.hasAttribute('data-custom'),
-        only: menu.hasAttribute('data-custom-only'),
+        custom: menu.hasAttribute('data-advanced'),
+        only: menu.hasAttribute('data-advanced-only'),
         mode: menu.getAttribute('data-mode'),
         op: menu.getAttribute('data-op'),
         switchShown: sw ? getComputedStyle(sw).display !== 'none' : null,
