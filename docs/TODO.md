@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**64 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**63 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -55,7 +55,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16i | 132 | Back from a changed Range, a number filter has lost the Simple value typed before | bug |
 | ✅ | 16j | 137 | A number RANGE filter's values do not match between the filter panel and the filter toolbar | bug |
 | ✅ | 16k | 147 | A chip switched off under the pointer leaves an EMPTY tooltip: the whole tooltip hides | bug |
-| ⬜ | 16l | 148 | After a Reset, a date chip's value label reads `Unassigned` | bug |
+| ✅ | 16l | 148 | After a Reset, a date chip's value label reads `Unassigned` | bug |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | ❓ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ⬜ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
@@ -943,10 +943,16 @@ again for its new width. And every chip agrees now — OFF says nothing. A
 number or a date chip kept its answer in the tip while off, where a list chip
 did not. The tip comes back the next time the pointer enters the chip.
 
-### `[ ]` 148 — BUG: after a Reset, a date chip's value label reads `Unassigned`
+### `[x]` ✅ 148 — BUG: after a Reset, a date chip's value label reads `Unassigned`
 
 Will, 2026-09-30, a minor bug for later: *"When filters are reset, a date
 chip shows 'Unassigned' in it's value label. Not needed."*
+
+**✅ Done 2026-09-30.** The word on the chip was `undefined`, not Unassigned:
+the header bar's Reset emptied the Date chip's RANGE calendar, and the menu
+wrote "no first day" into it as a day. A kept range with no ends holds none
+now. It came in with 137 (an emptied date keeps its range shape). If you did
+see the word `Unassigned` on a date chip, say where — I could not make it.
 
 ### `[x]` ✅ 142 — The shell's panel areas stay put while the page scrolls
 
@@ -3280,6 +3286,7 @@ One line each. The detail is in git and in the trap named.
 - 52: ruled — a data viz scope is one Simple filter, a chip per legend item
 - 52: each chart's own scope is in the filter panel — one filter, a swatch chip per legend item; it narrows its chart alone, and ↑ sends it to the View — `T-a-chart-scope-is-its-legend-field`
 - 149: queued — the legend's items become swatch chips
+- 148: an emptied date range holds no ends — the chip read `undefined` after a Reset
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

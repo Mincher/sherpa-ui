@@ -1043,10 +1043,11 @@ export class SherpaMenu extends SherpaElement {
       if (!cal) return true;
       for (const a of ['data-value', 'data-value-start', 'data-value-end']) cal.removeAttribute(a);
       cal.setAttribute('data-type', range ? 'range' : 'single');
-      if (range) {
+      // A range kept with NO ends holds none: `undefined` was written as a day.
+      if (range && next.length > 1) {
         cal.setAttribute('data-value-start', next[0]!);
         cal.setAttribute('data-value-end', next[1]!);
-      } else if (next[0]) cal.setAttribute('data-value', next[0]);
+      } else if (!range && next[0]) cal.setAttribute('data-value', next[0]);
     }
     this.#syncBody();
     return true;

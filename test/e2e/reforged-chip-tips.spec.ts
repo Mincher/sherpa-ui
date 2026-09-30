@@ -148,3 +148,35 @@ test('a chip switched OFF under the pointer shuts its whole tooltip, not only it
   await body.click();
   await expect.poll(open).toBe(false);
 });
+
+test('a RESET leaves a date chip with no value — a kept range holds no ends, never `undefined`', async ({ page }) => {
+  const r = await page.evaluate(async (wait) => {
+    const bar = await window.__mount<Bar & { setChipReading(id: string, reading: unknown): void; setChipValues(id: string, v: string[]): void }>('sherpa-quick-filter-toolbar', [
+      { id: 'created', label: 'Date', kind: 'date', range: true, active: true },
+    ], { style: 'inline-size: 1200px' });
+    await window.__settled();
+    const chip = bar.shadowRoot!.querySelector<Chip>('.chip[data-id="created"]')!;
+    const menu = chip.querySelector('sherpa-menu') as HTMLElement & { values: string[] };
+    const face = (): { label: string; values: string[]; start: string | null } => ({
+      label: chip.shadowRoot!.querySelector('.caret-label')!.textContent ?? '',
+      values: menu.values,
+      start: menu.querySelector('sherpa-calendar')!.getAttribute('data-value-start'),
+    });
+    const settle = async (): Promise<void> => { await window.__settled(); await eval(wait); };
+    // Nothing set, then emptied: the reader's Reset on a fresh page.
+    bar.setChipValues('created', []);
+    await settle();
+    const fresh = face();
+    bar.setChipReading('created', { picked: ['2024-01-05', '2024-02-06'], range: true });
+    await settle();
+    const set = face().values;
+    bar.setChipValues('created', []);
+    await settle();
+    return { fresh, set, emptied: face(), range: menu.hasAttribute('data-range') };
+  }, frames);
+  expect(r.fresh).toEqual({ label: '', values: [], start: null });
+  expect(r.set).toEqual(['2024-01-05', '2024-02-06']);
+  expect(r.emptied).toEqual({ label: '', values: [], start: null });
+  // The shape is kept: it is still a range.
+  expect(r.range).toBe(true);
+});
