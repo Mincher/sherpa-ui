@@ -9929,7 +9929,7 @@ condition-answered column the `fx` glyph and left it in the plain active
 purple, because nothing wrote the chip's condition — the success rule is
 `:host([data-condition="advanced"][data-current])`. Glyph and colour now come
 from the same `state.condition`, so they cannot disagree.
-TRAP T-a-conditioned-chip-reads-as-success
+TRAP T-a-conditioned-chip-reads-as-info
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
@@ -10534,31 +10534,35 @@ menu is right, and the grid does not move.
 ---
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 
-### T-a-conditioned-chip-reads-as-success
+### T-a-conditioned-chip-reads-as-info
 
-A chip answering with CONDITIONS wears the SUCCESS mode: a green edge and ink.
-Will, 2026-09-26: the info blue it wore before was not obvious enough. Success
-leaves room for warning and critical later, when a condition has a problem.
+A chip answering with CONDITIONS wears the INFO mode: a blue edge and ink.
+It was info first, then success (Will, 2026-09-26: "not obvious enough"), and
+info again — Will, 2026-09-30, TODO 138.
 
-**The fill is WHITE, and that is the mode, not a bug.** `success-surface-base`
-points at `surface-default-base`, as `info` did. An early try that pinned
-`info` read as OFF for that reason; the edge and ink carry "on" now, with the
-`fx` badge in the other channel.
+**The fill is WHITE, and that is the mode, not a bug.** `info-surface-base`
+points at `surface-default-base`. The edge and ink carry "on", with the `fx`
+badge in the other channel.
 
 | | fill | edge | badge |
 |---|---|---|---|
 | off | default white | grey | — |
 | active — a Simple filter | active purple | active purple | count |
-| conditioned — an Advanced filter | white | **success green** | `fx` |
+| conditioned — an Advanced filter | white | **info blue** | `fx` |
+
+**A status pin is not a look.** Before reaching for one, check what its surface
+actually resolves to; `info`, `neutral` and `default` all resolve to the plain
+surface, which is invisible on something whose job is to stand out.
 
 **Which one a chip is, is the STATE's to say** — `state.condition`, see
 `T-one-condition-system`. The chip used to work it out from its menu's MODE
 while the badge read the state, so a typed condition in list mode wore `fx`
 and no colour.
 
-The same green runs through to the cells: a `mark.match` in the grid is
-`--sherpa-style-success-border-base-1`, so a reader follows ONE colour from
-the chip that found the match to the text it matched. 
+The same blue runs through to the cells: a `mark.match` in the grid is
+`--sherpa-style-info-border-base-1`, so a reader follows ONE colour from the
+chip that found the match to the text it matched. Change one, change the
+other.
 
 `data-condition` is written by the chip in `#syncCondition`, and an Advanced
 chip is never `data-empty` — a condition is an answer, so the amber "on but
@@ -10570,34 +10574,6 @@ filtering by nothing" warning would be a lie.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-one-condition-system.spec.ts`
-
----|---|---|---|
-| off | default white | grey | — |
-| active — a Simple filter | active purple | active purple | count |
-| conditioned — an Advanced filter | active purple | **info blue** | `fx` |
-
-**Which one a chip is, is the STATE's to say** — `state.condition`, see
-`T-one-condition-system`. The chip used to work it out from its menu's MODE
-while the badge read the state, so a typed condition in list mode wore `fx`
-and no blue.
-
-The same blue runs through to the cells: a `mark.match` in the grid is
-`--sherpa-style-info-border-base-1`, not the brand purple, so a reader follows
-ONE colour from the chip that found the match to the text it matched.
-
-`data-condition` is written by the chip in `#syncCondition`, and an Advanced
-chip is never `data-empty` — a condition is an answer, so the amber "on but
-filtering by nothing" warning would be a lie.
-
-**A status pin is not a look.** Before reaching for one, check what its surface
-actually resolves to; `info`, `neutral` and `default` all resolve to the plain
-surface, which is invisible on something whose job is to stand out.
-
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
 ---
 

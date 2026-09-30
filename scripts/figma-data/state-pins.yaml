@@ -21,9 +21,9 @@ sherpa-quick-filter:
   # On but holding no values — the contradiction reads as a warning.
   '&[data-current][data-empty]': warning
   # A CONDITION is an answer of a different kind, so it reads differently:
-  # success, never the plain on-tint. Will, 2026-09-26: info was not obvious enough.
-  # TRAP T-a-conditioned-chip-reads-as-success
-  '&[data-current][data-condition="advanced"]': success
+  # info, never the plain on-tint. Will, 2026-09-30 (TODO 138): back from success.
+  # TRAP T-a-conditioned-chip-reads-as-info
+  '&[data-current][data-condition="advanced"]': info
   # PENDING: changed, not yet applied — NO fill, whatever it was. Its edge is the
   # active one (the chip's CSS). It turns on, or green, only once applied.
   # Will, 2026-09-26 (TODO 46). TRAP T-a-pending-chip-has-no-fill

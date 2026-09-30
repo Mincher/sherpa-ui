@@ -61,7 +61,7 @@ export class SherpaQuickFilter extends SherpaElement {
        TRAP T-a-superseded-chip-suspends-it-is-never-removed */
     'data-superseded': { type: 'boolean', kind: 'style' },
     /* Written BY the chip: which condition it holds — `state.condition`.
-       TRAP T-a-conditioned-chip-reads-as-success */
+       TRAP T-a-conditioned-chip-reads-as-info */
     'data-condition': { type: 'enum', kind: 'style', values: ['simple', 'advanced'] },
     /* Changed, not yet applied: the active edge, no fill. Written by the BAR —
        the one writer. TRAP T-a-pending-chip-has-no-fill */
@@ -597,8 +597,8 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /**
    * `data-condition` is `state.condition`. An ADVANCED filter reads as
-   * success, never the plain on-tint — ASKED of the state, as the fx badge is.
-   * TRAP T-a-conditioned-chip-reads-as-success · TRAP T-one-condition-system
+   * info, never the plain on-tint — ASKED of the state, as the fx badge is.
+   * TRAP T-a-conditioned-chip-reads-as-info · TRAP T-one-condition-system
    */
   #syncCondition(state: FilterState): void {
     if (!this.#answersForItself()) return;

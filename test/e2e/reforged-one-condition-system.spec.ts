@@ -3,7 +3,7 @@ import { test, expect, type Bar } from './harness';
 /**
  * THE GREEN AND THE BADGE READ ONE ANSWER.
  *
- * A chip decided its success green from its MENU's mode — condition mode, and
+ * A chip decided its condition colour from its MENU's mode — condition mode, and
  * answered — while its fx badge came from the STATE: a named op or any rows.
  * So a chip answered by a typed condition in LIST mode wore the fx badge and
  * NOT the green: the same filter read as custom and as default at once. Both
@@ -34,8 +34,8 @@ test('a TYPED condition in list mode is Advanced: green, and no fx', async ({ pa
     options: [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }],
   });
   expect(r.green).toBe(true);
-  // SUCCESS green, light mode. TRAP T-a-conditioned-chip-reads-as-success
-  expect(r.edge).toBe('rgb(0, 173, 98)');
+  // INFO blue, light mode. TRAP T-a-conditioned-chip-reads-as-info
+  expect(r.edge).toBe('rgb(0, 139, 186)');
   // The badge is RESULTS since TODO 60 — never a condition's mark.
   expect(r.badge).toBe('');
 });

@@ -2738,13 +2738,13 @@ test('a number column with BLANKS bounds its slider on the real values', async (
  * A column answered by a CONDITION reads as SUCCESS, not the plain active purple.
  *
  * The glyph already said so — `fx` in place of the funnel — but nothing wrote
- * `data-condition`, and the success rule is `:host([data-condition="custom"][data-current])`.
+ * `data-condition`, and the colour rule is `:host([data-condition="custom"][data-current])`.
  * So the mark and the colour disagreed. Will: "The Column filter button doesn't
  * become an Info blue Condition style button when a conditional filter is applied."
  *
  * TRAP T-an-external-chip-caret-must-open-its-condition
  */
-test('a column filtered by a CONDITION wears the fx mark AND the success edge', async ({ page }) => {
+test('a column filtered by a CONDITION wears the fx mark AND the info edge', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-data-grid') as HTMLElement & {
       rendered?: Promise<void>;

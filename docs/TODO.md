@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**60 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**59 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -89,7 +89,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 31j | 133 | The results count badge shows at the right of a filter panel SECTION header, where it fits | feature |
 | ⬜ | 31k | 134 | A number filter menu has Reset, not Clear: its field and slider handles go back to their original values | feature |
 | ⬜ | 31l | 135 | A calendar with limited dates: a Month or Year with no date to pick is inactive too | feature |
-| ⬜ | 31m | 138 | Advanced filters go back to the INFO status styling, from success | quick |
+| ✅ | 31m | 138 | Advanced filters go back to the INFO status styling, from success | quick |
 | ⬜ | 31n | 139 | An Advanced toolbar chip's value half shows its VALUES, truncated — not the condition labels | quick |
 | ⬜ | 31o | 140 | Every Sherpa input a reader types into shows the Clear button — not a number stepper, not a text area | feature |
 | ⬜ | 31p | 141 | Advanced is an icon button again — f(x), at the right of the section or menu header, active when on | quick |
@@ -1418,7 +1418,7 @@ field (`store.ts:255`, `seen.has(field)`), and the grid marks one hit
 (`sherpa-data-grid.ts` `markNeedle`). A field answered by
 `Contains "ab" or Starts with "R"` has two strings; a three-row chain has
 three. The mark is already Success green, matching the chip
-(`T-a-conditioned-chip-reads-as-success`), so only the FINDING changes.
+(`T-a-conditioned-chip-reads-as-info`), so only the FINDING changes.
 
 **✅ Done 2026-09-29.** `filterNeedles` keeps every substring clause (an
 identical one once); `markNeedles` (replacing `markNeedle`) marks each hit of
@@ -1810,10 +1810,17 @@ viable selectable dates to inactive, too."*
 The day view already does this, from `data-available`, `data-min` and
 `data-max`.
 
-### `[ ]` 138 — Advanced filters use the info status styling again
+### `[x]` ✅ 138 — Advanced filters use the info status styling again
 
 Will, 2026-09-30, a future small one: *"Move advanced filters back to using
 the info status styling rather than the success status styling."*
+
+**✅ Done 2026-09-30.** An Advanced chip's edge, ink and `fx` badge are info
+blue, on a bar, in the panel and on a grid heading. The text a condition
+matched in a grid cell is marked in the same blue, so a reader still follows
+one colour from the chip to the cell. One pin changed
+(`scripts/figma-data/state-pins.yaml`), and the trap is renamed to match.
+`T-a-conditioned-chip-reads-as-info`
 
 ### `[ ]` 139 — An Advanced chip's value half shows its values, not the condition labels
 
@@ -3314,6 +3321,7 @@ One line each. The detail is in git and in the trap named.
 - 149: queued — the legend's items become swatch chips
 - 148: an emptied date range holds no ends — the chip read `undefined` after a Reset
 - 121: a panel field's Clear and Send to are one button group
+- 138: an Advanced chip, and the text it matched, are info blue again — `T-a-conditioned-chip-reads-as-info`
 - 120: a View field is sent DOWN to the one scope that has it, with its answer — `T-send-to-view-filters`
 - 126: a filter another scope holds says `Filter moved to View scope.` — `T-an-inactive-chip-says-where-its-filter-went`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
@@ -3360,7 +3368,7 @@ One line each. The detail is in git and in the trap named.
 - A scope's chevron leads its heading; its buttons ride that row — 8e60cf78
 - A field's label is caps and light, its buttons in its header — a161e054
 - Apply and Discard wait for a change; a field header keeps one height — 3c1d306e, `T-apply-and-discard-wait-for-a-change`
-- A conditioned chip reads as Success, not info — a24d020a, `T-a-conditioned-chip-reads-as-success`
+- A conditioned chip reads as Success, not info — a24d020a, `T-a-conditioned-chip-reads-as-info`
 - A Conditional switch moves a filter between its modes — 91fd57be, `T-a-filter-menu-has-two-modes`
 - The Conditional switch is its own row, under the field header — 7c6bb862
 - Organise and Presets carry no Conditional switch — 8623c084
