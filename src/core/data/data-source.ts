@@ -1001,6 +1001,15 @@ export class DataSource extends EventTarget {
     const answer = this.reading(VIEW, field);
     const part = this.#narrowing.get(to);
     if (!part && !this.canHold(to, field)) return;
+    /* ONE SCOPE AT A TIME. A scope the field came up from still holds its
+       place; left so, the field showed there AGAIN as it landed in another —
+       and its answer could land in either. Each lets go first, while the View
+       still holds the answer. Will, TODO 168. TRAP T-send-to-view-filters */
+    for (const [id, scope] of Object.entries(this.#draft.scopes)) {
+      if (id === VIEW || id === to || scope.narrows || !scope.holds.includes(field)) continue;
+      this.hold(id, scope.holds.filter((f) => f !== field));
+      this.#drawBars(id);
+    }
     // Held BELOW first, so the answer moves there and is not cleared.
     if (!part && !this.holds(to, field)) this.hold(to, [...this.scope(to), field]);
     this.hold(VIEW, this.scope(VIEW).filter((f) => f !== field));

@@ -57,7 +57,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16k | 147 | A chip switched off under the pointer leaves an EMPTY tooltip: the whole tooltip hides | bug |
 | ✅ | 16l | 148 | After a Reset, a date chip's value label reads `Unassigned` | bug |
 | ✅ | 16m | 151 | A filter moved across scopes does not keep its Simple or Advanced mode | bug |
-| ⬜ | 16w | 168 | A filter sent from scope A to the View, then down to scope B, shows in A again: a filter is in ONE scope at any time | bug |
+| ✅ | 16w | 168 | A filter sent from scope A to the View, then down to scope B, shows in A again: a filter is in ONE scope at any time | bug |
 | ⬜ | 16x | 169 | "Reset to default", and a View pick, take the saved filter chips off the bar | bug |
 | ✅ | 16v | 167 | A Reset in a component scope clears a chip's "moved to the View" state and its inactive look | bug |
 | ✅ | 16u | 166 | A saved filter's badge shows its count only while it is ON — the count is not always known before | bug |
@@ -144,6 +144,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 46 | 27 | A consumer can supply their OWN templates and CSS | feature |
 | ⬜ | 47 | 25 | `sherpa-layout-canvas` + minimap | component |
 | ⬜ | 48 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
+| ⬜ | 48a | 170 | MAJOR, LAST, and only when Will says — the data layer runs on the client, the server, or both, whole or in parts | explore |
 | | | | **J — Tidy-ups and renames** | |
 | ⬜ | 49 | 11 | `sherpa-group`: what is left | tidy |
 | ⬜ | 50 | 28 | A Figma component is NOT always a web component | tidy |
@@ -1018,11 +1019,29 @@ Clear still comes once there is something to clear, and joins it as one
 group. Before that, Send to stands alone with all its corners. I had tied
 the pair to the answer in 121; only Clear belongs to it.
 
-### `[ ]` 168 — BUG: a filter moved A → View → B shows in A again
+### `[x]` ✅ 168 — BUG: a filter moved A → View → B shows in A again
 
 Will, 2026-09-30: *"If I send a filter from component scope A to View scope
 then back to component scope B then the filter shows again in component scope
 A. A filter should only ever be in 1 scope at any time."*
+
+**✅ Done 2026-09-30, for a grid's scope.** When a filter went up from scope
+A, A kept its place for it ("Filter moved to View scope"). Sent down to B, the
+View let go — and A's kept place came back to life beside B's. Now, as a
+filter lands in B, every other scope below lets go of it first. It is in B
+alone: in the Query, in the panel, and on A's own bar. A reader can add it to
+A again from A's Filters menu.
+
+❓ **One case is not the same: a CHART.** A chart's section is only its
+legend's filter. Send that filter up, then down to the grid, and the chart's
+section shows its legend's chips again — not answered.
+
+- **A (as built, my pick):** leave it. That is the chart's OWN filter, a
+  different one from the filter that moved; it is there on a new page too,
+  beside the grid's.
+- **B:** the chart's section says "Filter moved to Customer records scope"
+  until the filter is sent back to the chart.
+`T-send-to-view-filters`
 
 ### `[ ]` 169 — BUG: "Reset to default" and a View pick take the saved filter chips off the bar
 
@@ -2850,6 +2869,26 @@ spread over `data-rows`, `data-row-count`, a named `data-col-span` and a
 most of it. Find what it cannot do — spans re-scale per breakpoint; the fit
 grid's last row takes the rest — before building either.
 
+### `[ ]` 170 — MAJOR, later: the data layer on the client, the server, or both
+
+**Do not start this until Will says.** Everything else comes first.
+
+Will, 2026-09-30: *"Consumers of sherpa should be able to choose to run the
+whole, or parts of, the data layer on the client and/or server side.*
+
+*For example Sources and Stores could live on the server, while Filter/Query
+components could be client side.*
+
+*Or a filter/query component could run on both sides. Client side handling
+immediate front end changes. Server side handling the shaping of data before
+sending responses.*
+
+*Everything else can come before this exploration. Note it but don't start it
+until I say."*
+
+What is there to start from, when he does: `sherpa-ui/data` already has no
+DOM (the lint boundary and a node test hold it), and the Query is plain JSON.
+
 ---
 
 ## J — Tidy-ups and renames
@@ -3694,6 +3733,8 @@ One line each. The detail is in git and in the trap named.
 - 149: queued — the legend's items become swatch chips
 - 148: an emptied date range holds no ends — the chip read `undefined` after a Reset
 - 121: a panel field's Clear and Send to are one button group
+- 168: a filter that lands in one scope is let go by every other — it is in ONE scope at a time — `T-send-to-view-filters`
+- 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on
 - 160: a local store checks its rows BEFORE it cuts a page — a refused row left its page short — `T-a-refused-row-never-shortens-a-page`

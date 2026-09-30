@@ -1152,7 +1152,10 @@ header gets ONE chip — the View's Add list stops offering it.
 with a down arrow, in the same button group. It is the same request the
 other way — `{ scope: <the scope>, ids, from: 'view' }` — and the View LETS
 GO: the field is held below first, so its answer moves there and is not
-cleared. Then the answer is written AGAIN, whole: the bar below is freed as
+cleared. EVERY OTHER scope below lets go of it before that (168): a scope the
+field came up from kept its place, so the field showed there again as it
+landed elsewhere, and the answer could re-home to either. A filter is in ONE
+scope at a time. Then the answer is written AGAIN, whole: the bar below is freed as
 the View lets go, and reports the answer it kept from before the field went
 up — an old one, which put a filter sent down in Advanced back to Simple.
 

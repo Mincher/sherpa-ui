@@ -96,3 +96,29 @@ test('a field goes back down to where it CAME UP from â€” a chart\'s own scope â
   assert.deepEqual(seen.get('bar'), [1, 3]);
   assert.deepEqual(seen.get('grid'), [1, 2, 3, 4]);
 });
+
+/* Will, TODO 168: "If I send a filter from component scope A to View scope
+   then back to component scope B then the filter shows again in component
+   scope A. A filter should only ever be in 1 scope at any time." */
+test('A to the View to B: the field is in B alone, and A does not get it back', async () => {
+  const { source, seen, send } = await setup();
+  source.declareScope('other', { label: 'Other records' });
+  source.offer('other', ['plan', 'region']);
+  // A holds Plan, answered; it goes UP, and A keeps its place for it.
+  source.hold('data', ['plan']);
+  source.answer('data', { plan: { picked: ['Pro'] } });
+  send('view', 'plan', 'data');
+  await tick();
+  assert.deepEqual(source.scope('view'), ['region', 'plan']);
+  assert.deepEqual(source.scope('data'), ['plan']);
+
+  // DOWN to B: every other scope lets go, and the answer lands in B.
+  send('other', 'plan', 'view');
+  await tick();
+  assert.deepEqual(source.scope('view'), ['region']);
+  assert.deepEqual(source.scope('data'), []);
+  assert.deepEqual(source.scope('other'), ['plan']);
+  assert.deepEqual(source.query.applied.scopes.other.readings.plan.picked, ['Pro']);
+  assert.equal(source.query.applied.scopes.data, undefined);
+  assert.deepEqual(seen.get('grid'), [1, 3]);
+});
