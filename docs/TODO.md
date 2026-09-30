@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**56 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**55 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -89,7 +89,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 31i | 129 | "Reset all to default", with a confirm dialog and a "Save filters before reset" switch | feature |
 | ⬜ | 31j | 133 | The results count badge shows at the right of a filter panel SECTION header, where it fits | feature |
 | ✅ | 31k | 134 | A number filter menu has Reset, not Clear: its field and slider handles go back to their original values | feature |
-| ⬜ | 31l | 135 | A calendar with limited dates: a Month or Year with no date to pick is inactive too | feature |
+| ✅ | 31l | 135 | A calendar with limited dates: a Month or Year with no date to pick is inactive too | feature |
 | ✅ | 31m | 138 | Advanced filters go back to the INFO status styling, from success | quick |
 | ✅ | 31n | 139 | An Advanced toolbar chip's value half shows its VALUES, truncated — not the condition labels | quick |
 | ⬜ | 31o | 140 | Every Sherpa input a reader types into shows the Clear button — not a number stepper, not a text area | feature |
@@ -1855,7 +1855,7 @@ values" is where they started — empty, and the handles on the bounds. Cancel
 is still the way back to what was last applied.
 `T-a-number-is-reset-not-cleared`
 
-### `[ ]` 135 — A calendar's Month and Year views mark what has no date to pick
+### `[x]` ✅ 135 — A calendar's Month and Year views mark what has no date to pick
 
 Will, 2026-09-30: *"In calendars, where the viable selectable dates are
 limited, the Month and Year modes should set Months and Year buttons with no
@@ -1863,6 +1863,13 @@ viable selectable dates to inactive, too."*
 
 The day view already does this, from `data-available`, `data-min` and
 `data-max`.
+
+**✅ Done 2026-09-30.** A month or a year with no day to pick is drawn
+inactive, and a press on it does nothing. One rule answers a day, a month and
+a year, so the three views cannot disagree. A RANGE calendar is bounded by the
+data, not dotted by it: every month from the first day with records to the
+last stays active. With no limit set, every month and year is active, as
+before.
 
 ### `[x]` ✅ 138 — Advanced filters use the info status styling again
 
@@ -3423,6 +3430,7 @@ One line each. The detail is in git and in the trap named.
 - 149: queued — the legend's items become swatch chips
 - 148: an emptied date range holds no ends — the chip read `undefined` after a Reset
 - 121: a panel field's Clear and Send to are one button group
+- 135: a calendar's Month and Year views disable what holds no day to pick
 - 134: a number menu has Reset — the field empties and the handles go back, both shapes; Clear had done nothing to a number — `T-a-number-is-reset-not-cleared`
 - 151: a filter moved across scopes keeps its mode — the View's answer wins on the way down, and a menu built at a flip takes the answer as it stands — `T-a-late-built-menu-takes-the-answer-as-it-stands`
 - 150: queued — the gauge's risk score, and thresholds in the central Query

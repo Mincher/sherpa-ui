@@ -212,6 +212,34 @@ export class SherpaCalendar extends SherpaElement {
   }
 
   /**
+   * What may be picked: a span, a set of days, or both — ONE rule, asked of a
+   * day, a month and a year. A RANGE spans days, so only its BOUNDS come from
+   * the data — the first and last days with records; a day between with none
+   * is still an end. TRAP T-a-range-is-bounded-by-the-data
+   */
+  #limits(): { min: string; max: string; days: Set<string> | null } {
+    const available = this.#availableDays();
+    const ends = this.#type === 'range' && available?.size ? [...available].sort() : null;
+    return {
+      min: this.dataset['min'] ?? ends?.[0] ?? '',
+      max: this.dataset['max'] ?? ends?.at(-1) ?? '',
+      days: ends ? null : available,
+    };
+  }
+
+  /** Is there a day to pick from `from` to `to`? A month or a year with none
+   *  is inactive, as such a day is. Will, TODO 135. */
+  #hasPick(from: string, to: string): boolean {
+    const { min, max, days } = this.#limits();
+    if ((max && from > max) || (min && to < min)) return false;
+    if (!days) return true;
+    const lo = min && min > from ? min : from;
+    const hi = max && max < to ? max : to;
+    for (const day of days) if (day >= lo && day <= hi) return true;
+    return false;
+  }
+
+  /**
    * Stamp one month's cells, starting at `column` (1 or 9 in the shared
    * 15-track grid) — so every cell must state its own column and row.
    */
@@ -219,13 +247,7 @@ export class SherpaCalendar extends SherpaElement {
     // Mon=0…Sun=6, so column 1 is Monday as in the Figma weekday header.
     const firstWeekday = (new Date(y, m, 1).getDay() + 6) % 7;
     const daysInMonth = new Date(y, m + 1, 0).getDate();
-    const available = this.#availableDays();
-    /* A RANGE spans days, so only its BOUNDS come from the data — the first and
-       last days with records; a day between with none is still an end.
-       TRAP T-a-range-is-bounded-by-the-data */
-    const ends = this.#type === 'range' && available?.size ? [...available].sort() : null;
-    const min = this.dataset['min'] ?? ends?.[0] ?? '';
-    const max = this.dataset['max'] ?? ends?.at(-1) ?? '';
+    const { min, max, days } = this.#limits();
     const todayIso = toIso(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
 
     const single = this.#type === 'single' ? datePart(this.dataset['value']) : '';
@@ -268,8 +290,7 @@ export class SherpaCalendar extends SherpaElement {
         cell.setAttribute('aria-current', 'date');
       }
       const outOfSpan = (min && iso < min) || (max && iso > max);
-      const notInData = !ends && available != null && !available.has(iso);
-      if (outOfSpan || notInData) cell.setAttribute('disabled', '');
+      if (outOfSpan || (days && !days.has(iso))) cell.setAttribute('disabled', '');
 
       if (this.#type === 'single') {
         if (iso === single) {
@@ -310,6 +331,8 @@ export class SherpaCalendar extends SherpaElement {
       const cell = this.#cell();
       cell.textContent = name;
       cell.dataset['month'] = String(i);
+      const last = new Date(this.#viewYear, i + 1, 0).getDate();
+      if (!this.#hasPick(toIso(this.#viewYear, i, 1), toIso(this.#viewYear, i, last))) cell.setAttribute('disabled', '');
       // Selected is written second, so it wins.
       if (now.getFullYear() === this.#viewYear && now.getMonth() === i) {
         cell.setAttribute('data-today', '');
@@ -338,6 +361,7 @@ export class SherpaCalendar extends SherpaElement {
       const cell = this.#cell();
       cell.textContent = String(year);
       cell.dataset['year'] = String(year);
+      if (!this.#hasPick(toIso(year, 0, 1), toIso(year, 11, 31))) cell.setAttribute('disabled', '');
       // Selected is written second, so it wins.
       if (year === nowY) {
         cell.setAttribute('data-today', '');
@@ -398,7 +422,7 @@ export class SherpaCalendar extends SherpaElement {
   #onMonthClick = (event: Event): void => {
     const cell = (event.target as HTMLElement).closest<HTMLElement>('.cal-cell');
     const m = cell?.dataset['month'];
-    if (m == null) return;
+    if (m == null || cell?.hasAttribute('disabled')) return;
     this.#viewMonth = Number(m);
     this.dataset['view'] = 'day';
     this.#render();
@@ -408,7 +432,7 @@ export class SherpaCalendar extends SherpaElement {
   #onYearClick = (event: Event): void => {
     const cell = (event.target as HTMLElement).closest<HTMLElement>('.cal-cell');
     const y = cell?.dataset['year'];
-    if (y == null) return;
+    if (y == null || cell?.hasAttribute('disabled')) return;
     this.#viewYear = Number(y);
     this.dataset['view'] = 'month';
     this.#render();

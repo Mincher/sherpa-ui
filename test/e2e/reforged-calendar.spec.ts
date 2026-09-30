@@ -779,3 +779,67 @@ test('on Records, the View\'s Date opens as a range over the span of the data', 
   });
   expect(r).toEqual({ range: true, emptyButPickable: true });
 });
+
+/**
+ * A MONTH OR A YEAR WITH NO DAY TO PICK IS INACTIVE TOO — TODO 135. Will,
+ * 2026-09-30: "where the viable selectable dates are limited, the Month and
+ * Year modes should set Months and Year buttons with no viable selectable
+ * dates to inactive, too." ONE rule (`#limits`) answers a day, a month, a year.
+ */
+test('the Month and Year views disable what holds no day to pick, and a press on one does nothing', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const settle = (): Promise<void> => (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const read = async (attrs: Record<string, string>, view: 'month' | 'year'): Promise<{ on: string[]; off: number }> => {
+      const el = document.createElement('sherpa-calendar') as CalEl;
+      el.setAttribute('data-value', '2024-03-05');
+      for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+      el.setAttribute('data-view', view);
+      document.getElementById('root')!.replaceChildren(el);
+      await el.rendered;
+      await settle();
+      const cells = [...el.shadowRoot!.querySelectorAll<HTMLElement>(`.cal-${view}s sherpa-calendar-cell`)];
+      return {
+        on: cells.filter((c) => !c.hasAttribute('disabled')).map((c) => c.textContent ?? ''),
+        off: cells.filter((c) => c.hasAttribute('disabled')).length,
+      };
+    };
+    const days = '2024-03-05,2024-03-20,2024-11-02,2026-01-10';
+    const out = {
+      free: await read({}, 'month'),
+      months: await read({ 'data-available': days }, 'month'),
+      years: await read({ 'data-available': days }, 'year'),
+      span: await read({ 'data-min': '2024-02-10', 'data-max': '2024-04-01' }, 'month'),
+      // A RANGE is bounded by the data, not dotted by it: every month between is an end.
+      range: await read({ 'data-type': 'range', 'data-value-start': '2024-03-05', 'data-available': '2024-03-05,2024-06-20' }, 'month'),
+      none: await read({ 'data-available': '' }, 'month'),
+    };
+
+    // A press on an inactive month stays in the month view.
+    const el = document.createElement('sherpa-calendar') as CalEl;
+    el.setAttribute('data-value', '2024-03-05');
+    el.setAttribute('data-available', days);
+    el.setAttribute('data-view', 'month');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    await settle();
+    const month = (name: string): HTMLElement => [...el.shadowRoot!.querySelectorAll<HTMLElement>('.cal-months sherpa-calendar-cell')]
+      .find((c) => c.textContent === name)!;
+    month('Jan').click();
+    await settle();
+    const refused = el.getAttribute('data-view');
+    month('Nov').click();
+    await settle();
+    return { ...out, refused, taken: el.getAttribute('data-view') };
+  });
+
+  // Nothing limited: every month may be picked, as before.
+  expect(r.free).toEqual({ on: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], off: 0 });
+  expect(r.months).toEqual({ on: ['Mar', 'Nov'], off: 10 });
+  expect(r.years).toEqual({ on: ['2024', '2026'], off: 10 });
+  expect(r.span).toEqual({ on: ['Feb', 'Mar', 'Apr'], off: 9 });
+  expect(r.range).toEqual({ on: ['Mar', 'Apr', 'May', 'Jun'], off: 8 });
+  // "Nothing has records" is an answer here too.
+  expect(r.none).toEqual({ on: [], off: 12 });
+  expect(r.refused).toBe('month');
+  expect(r.taken).toBe('day');
+});
