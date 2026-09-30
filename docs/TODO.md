@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**45 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**44 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -81,7 +81,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 39 | 14 | An example of real-time data | feature |
 | ⬜ | 40 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | | | | **G — Overlay panels** | |
-| ⬜ | 41 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
+| ✅ | 41 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
 | ⬜ | 42 | 23 | A focused grid row opens a details panel | feature |
 | | | | **H — The accessibility gate** | |
 | ⬜ | 43 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
@@ -1629,10 +1629,17 @@ the same three states.
 
 ## G — Overlay panels
 
-### `[ ]` 22 — The `Ask N-zo` panel is too narrow, and cannot be resized
+### `[x]` ✅ 22 — The `Ask N-zo` panel is too narrow, and cannot be resized
 
 - Make it wider, with a sensible minimum.
 - The user can drag the LEFT edge to resize any overlay panel.
+
+**✅ Done 2026-09-30.** Every overlay panel, the Ask N-zo one included, is
+40rem (640 px) by default — it was 30rem — never under 20rem nor past 92vw.
+Its left edge is a `role="separator"` handle: drag it, or ArrowLeft /
+ArrowRight by 16 px; each resize reports `panel-resize { width }`. Figma was
+closed, so the widths are my pick — say if Figma has its own.
+`T-an-overlay-panel-resizes-from-its-left-edge`
 
 ### `[ ]` 23 — A focused grid row opens a details panel on the right
 
@@ -2577,6 +2584,7 @@ One line each. The detail is in git and in the trap named.
 - 58: a card shows its data's state — loading, no data, no matches, an error — driven by the provider — `T-a-container-shows-its-datas-state`
 - 9b 🚧: `sherpa-data-viz-header`, from Figma's newer design, on the Dashboard's chart cards; the metric is left
 - 14: live alerts over Server-Sent Events move the Dashboard's tiles — `T-a-live-feed-goes-into-the-store`
+- 22: an overlay panel is wider, and resizes from its left edge — `T-an-overlay-panel-resizes-from-its-left-edge`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

@@ -130,3 +130,52 @@ test('the Assistant panel in the example app shows its heading', async ({ page }
   });
   expect(heading).toBe('Assistant');
 });
+
+/**
+ * WIDER, AND RESIZABLE FROM ITS LEFT EDGE — TODO 22. 40rem by default, never
+ * under 20rem nor past 92vw; the edge drags, and ArrowLeft / ArrowRight move
+ * it 16 px. Each resize is reported.
+ * TRAP T-an-overlay-panel-resizes-from-its-left-edge
+ */
+test('the panel opens 640 wide, drags from its left edge within its bounds, and steps by key', async ({ page }) => {
+  await page.setViewportSize({ width: 1200, height: 800 });
+  const edge = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-overlay-panel') as HTMLElement & { rendered?: Promise<void> };
+    el.setAttribute('data-heading', 'Ask');
+    el.setAttribute('open', '');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const heard: number[] = [];
+    (window as unknown as { __heard: number[] }).__heard = heard;
+    el.addEventListener('panel-resize', (e) => heard.push((e as CustomEvent).detail.width));
+    const b = el.shadowRoot!.querySelector('.resize')!.getBoundingClientRect();
+    return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+  });
+  const width = () => page.evaluate(() => Math.round(document.querySelector('sherpa-overlay-panel')!
+    .shadowRoot!.querySelector('.root')!.getBoundingClientRect().width));
+  const opened = await width();
+  await page.mouse.move(edge.x, edge.y);
+  await page.mouse.down();
+  await page.mouse.move(edge.x - 100, edge.y, { steps: 5 });
+  await page.mouse.up();
+  const dragged = await width();
+  // Far to the right: the 20rem floor holds.
+  await page.mouse.move(edge.x - 100, edge.y);
+  await page.mouse.down();
+  await page.mouse.move(1150, edge.y, { steps: 5 });
+  await page.mouse.up();
+  const floor = await width();
+  await page.evaluate(() => {
+    const handle = document.querySelector('sherpa-overlay-panel')!.shadowRoot!.querySelector<HTMLElement>('.resize')!;
+    handle.focus();
+    handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+  });
+  const keyed = await width();
+  const heard = await page.evaluate(() => (window as unknown as { __heard: number[] }).__heard);
+  expect(opened).toBe(640);
+  expect(dragged).toBe(740);
+  expect(floor).toBe(320);
+  expect(keyed).toBe(336);
+  expect(heard).toEqual([740, 320, 336]);
+});

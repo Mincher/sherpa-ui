@@ -590,6 +590,25 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-an-overlay-panel-resizes-from-its-left-edge
+
+**An overlay panel is 40rem wide by default, never under 20rem nor past 92vw,
+and its LEFT edge resizes it** — Will, TODO 22 (it was 30rem, too narrow for
+the Ask N-zo chat). The edge is a thin `role="separator"` strip over the
+border: a drag makes the panel as wide as the pointer is from its right edge;
+ArrowLeft widens and ArrowRight narrows by 16 px (the edge moves the way the
+key points), so a keyboard can do what a pointer does. The width lives in
+`--_width` on the host, and the CSS `clamp()` is the truth: after each move
+the panel writes back the width it DREW, so a key steps from there and a
+drag past the floor does not store a width it cannot show. Each resize ends
+in `panel-resize { width }`. No Figma design for the handle; it shows only
+under the pointer or focus.
+
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.html`
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
+- Site: `test/e2e/reforged-overlay-panel.spec.ts`
+
 ### T-a-live-feed-goes-into-the-store
 
 **Real-time data comes in through the data layer, INTO the store the page

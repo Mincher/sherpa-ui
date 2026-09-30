@@ -26,12 +26,17 @@
     panel-expand     (detail: { })
     panel-external   (detail: { })
     panel-close      (detail: { })
+    panel-resize     (detail: { width })  its left edge was dragged, or moved by the keys
 -->
 <template id="default">
   <!-- A non-modal <dialog> gets no ::backdrop, so the tint is a real element.
        Pointer-transparent by design: the page behind stays clickable. -->
   <div class="scrim" part="scrim" aria-hidden="true"></div>
   <dialog class="root sherpa-border-edges sherpa-border-corners" part="root">
+    <!-- The LEFT edge resizes it: drag it, or ArrowLeft / ArrowRight on it.
+         TRAP T-an-overlay-panel-resizes-from-its-left-edge -->
+    <div class="resize" part="resize" role="separator" aria-orientation="vertical"
+         aria-label="Resize panel" tabindex="0"></div>
     <!-- DEFAULT variant, not data-type="panel" — that inks the title link-blue.
          The header's own collapse/dismiss events are re-emitted as the panel's. -->
     <sherpa-container-header class="header" part="header">

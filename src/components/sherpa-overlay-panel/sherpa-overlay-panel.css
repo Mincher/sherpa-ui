@@ -29,8 +29,10 @@
      open layout scoped to [open]. */
   display: none;
   flex-direction: column;
+  /* Wide enough to read, never narrower than 20rem nor past 92vw; the left
+     edge sets `--_width`. TRAP T-an-overlay-panel-resizes-from-its-left-edge */
   min-inline-size: 0;
-  inline-size: min(92vw, 30rem);
+  inline-size: clamp(min(20rem, 92vw), var(--_width, 40rem), 92vw);
   padding: 0;
   overflow: auto;
 
@@ -112,3 +114,19 @@
 /* Collapsed → only the header shows. */
 :host([data-collapsed]) .body,
 :host([data-collapsed][data-has-footer]) .footer { display: none; }
+
+/* The left edge's handle: a strip over the border, drawn only when it is used. */
+.resize {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  z-index: 1;
+  inline-size: var(--sherpa-display-mode-space-xs, 8px);
+  cursor: ew-resize;
+  touch-action: none;
+}
+.resize:hover,
+.resize:focus-visible {
+  outline: none;
+  box-shadow: inset 2px 0 0 var(--sherpa-style-indicator-accent, #3b4ccd);
+}
