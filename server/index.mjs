@@ -23,6 +23,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { componentUsage } from './component-usage.mjs';
+import { alertRow } from '../examples/contexts/dashboard-data.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const app = express();
@@ -38,6 +39,20 @@ app.use('/dist', express.static(join(ROOT, 'dist')));           // built compone
 app.use('/server', express.static(join(ROOT, 'server')));       // shared parser (browser sandbox imports it too)
 app.use('/examples', express.static(join(ROOT, 'examples')));   // example page CSS/JS assets if any
 app.use('/contexts', express.static(join(ROOT, 'examples', 'contexts'))); // SPA Context modules (index.html imports ./contexts/<c>.js)
+
+// ── LIVE ALERTS: Server-Sent Events, a new alert every 2 s (or `?every=ms`), as
+//    a real feed would push them. The Dashboard connects with `?live`. TODO 14.
+//    TRAP T-a-live-feed-goes-into-the-store
+app.get('/live/alerts', (req, res) => {
+  res.set({ 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' });
+  res.flushHeaders();
+  const every = Math.max(100, Number(req.query.every) || 2000);
+  let next = 1284;
+  const tick = setInterval(() => {
+    res.write(`data: ${JSON.stringify({ type: 'insert', row: alertRow(next++) })}\n\n`);
+  }, every);
+  req.on('close', () => clearInterval(tick));
+});
 
 // ── template source #1: derived default component usage ───────────────────────
 app.get('/template/component/:name', async (req, res) => {

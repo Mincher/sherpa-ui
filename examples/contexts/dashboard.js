@@ -5,14 +5,15 @@
  * Map:
  * - init — bind the dashboard Context — charts, tiles and legends — to one source
  */
-import { DataSource } from '../../dist/index.js';
+import { DataSource, EventStore } from '../../dist/index.js';
 import { customerStore, customersReady } from './records-data.js';
+import { alertStore } from './dashboard-data.js';
 
 /* THE PAGE IS ITS DEFINITION: the router opened dashboard.json — the source
    over the alerts, the header's chips and the kept Query. Each chart and tile
    declares what it needs in dashboard.html and asks.
    TRAP T-a-page-is-its-definition · TRAP T-a-component-declares-its-summary */
-export async function init(root, { source }) {
+export async function init(root, { source, session }) {
   // Summary read from the SAME store the Records page uses, so adding a
   // customer there moves these numbers.
   const customerSummary = (rows) => {
@@ -87,7 +88,16 @@ export async function init(root, { source }) {
 
   // Save view, Save view as and Delete view are the SHELL's, for every page (TODO 15).
   header?.addEventListener('view-favorite', (e) => console.log('view-favorite', e.detail), { signal: page.signal });
-  header?.addEventListener('data-refresh', () => console.log('data-refresh'), { signal: page.signal });
+
+  /* LIVE: `?live` feeds the alerts from the server as they happen — through the
+     data layer, INTO the same store, so every tile and chart follows. TODO 14.
+     TRAP T-a-live-feed-goes-into-the-store */
+  if (session?.get('/debug/live') === true) {
+    const every = new URLSearchParams(location.search).get('every');
+    const live = new EventStore({ url: `/live/alerts${every ? `?every=${every}` : ''}`, into: alertStore });
+    live.connect();
+    page.signal.addEventListener('abort', () => live.disconnect(), { once: true });
+  }
 
   await source?.load();
 

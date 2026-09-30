@@ -166,12 +166,16 @@
     session.persist('/debug/remote', { guard: (v) => typeof v === 'boolean' });
     // `?fail` makes every Records load FAIL, to show a card's error. TODO 58.
     session.persist('/debug/fail', { guard: (v) => typeof v === 'boolean' });
+    // `?live` feeds the Dashboard's alerts from the server as they happen. TODO 14.
+    session.persist('/debug/live', { guard: (v) => typeof v === 'boolean' });
     {
       const params = new URLSearchParams(location.search);
       const flag = params.get('remote');
       if (flag !== null) session.set('/debug/remote', flag !== '0');
       const fail = params.get('fail');
       if (fail !== null) session.set('/debug/fail', fail !== '0');
+      const live = params.get('live');
+      if (live !== null) session.set('/debug/live', live !== '0');
     }
     /* Each Context's kept Query, under its own name. TRAP T-navigating-sets-up-the-page */
     for (const context of ['records', 'dashboard']) {

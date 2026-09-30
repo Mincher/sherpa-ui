@@ -72,5 +72,13 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       timeout: 60_000,
     },
+    /* A SECOND examples server, from this checkout's code: a test of a new
+       server route runs here, never waiting on a restart of the one on :4200. */
+    {
+      command: 'PORT=4201 node server/index.mjs',
+      url: 'http://localhost:4201/',
+      reuseExistingServer: !process.env.CI,
+      timeout: 60_000,
+    },
   ],
 });

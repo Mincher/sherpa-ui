@@ -590,6 +590,24 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-a-live-feed-goes-into-the-store
+
+**Real-time data comes in through the data layer, INTO the store the page
+already reads** — TODO 14. The examples server pushes a new alert every 2 s
+over Server-Sent Events (`/live/alerts`, `?every=ms` for tests); the
+Dashboard, under `?live`, opens an `EventStore({ url, into: alertStore })`.
+The pushes land in the SAME store, so the page's source hears one `change`
+and every tile and chart follows — a tile's value and its sparkline together,
+which is what 13 fixed. Nothing on the page knows the rows are live, and the
+store closes with the page. The server makes each alert with the Dashboard's
+own `alertRow()`, so a pushed row passes the same schema. Its test runs on a
+second examples server (:4201) that Playwright starts from this checkout: a
+new route never waits on a restart of the one on :4200.
+
+- Site: `examples/contexts/dashboard.js`
+- Site: `examples/contexts/dashboard-data.js`
+- Site: `test/e2e/reforged-live-alerts.spec.ts`
+
 ### T-a-container-shows-its-datas-state
 
 **A container shows what its DATA is doing, in place of its body** — Will,

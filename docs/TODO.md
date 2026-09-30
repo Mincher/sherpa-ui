@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**46 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**45 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -78,7 +78,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 36 | 58 | Loading, empty and error states in a container | feature |
 | 🚧 | 37 | 9b | A Data Viz header, for metrics and chart containers | component |
 | ⬜ | 38 | 80 | Container and Data Viz headers: Figma's new button styling and grouping | component |
-| ⬜ | 39 | 14 | An example of real-time data | feature |
+| ✅ | 39 | 14 | An example of real-time data | feature |
 | ⬜ | 40 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | | | | **G — Overlay panels** | |
 | ⬜ | 41 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
@@ -1598,10 +1598,18 @@ header does not exist in code yet (9b), so it is BUILT from the new Figma,
 not the old notes above. Same kind of change as 79 (the nav header's Actions
 group): compose `sherpa-button`s, group them, keep them in a slot.
 
-### `[ ]` 14 — An example of real-time data
+### `[x]` ✅ 14 — An example of real-time data
 
 Data that changes in real time — WebSocket, or like it — coming through the
 data layer into a piece of content. Last of D: it proves 13 is really fixed.
+
+**✅ Done 2026-09-30.** The examples server pushes a new alert every 2 s over
+Server-Sent Events (`/live/alerts`); the Dashboard, under `?live`, feeds them
+through an `EventStore` INTO its alert store, so every tile and chart
+follows — a tile's value and its sparkline together (13). **To see it on
+:4200, restart the examples server** once: the route is new. The test runs
+on a second server Playwright starts on :4201, so it does not wait for that.
+`T-a-live-feed-goes-into-the-store`
 
 ### `[ ]` 59 — EXPLORE, later: Will's own loading pattern
 
@@ -2568,6 +2576,7 @@ One line each. The detail is in git and in the trap named.
 - 79: the nav header's Settings and Pin are one composed default group, as Figma draws it
 - 58: a card shows its data's state — loading, no data, no matches, an error — driven by the provider — `T-a-container-shows-its-datas-state`
 - 9b 🚧: `sherpa-data-viz-header`, from Figma's newer design, on the Dashboard's chart cards; the metric is left
+- 14: live alerts over Server-Sent Events move the Dashboard's tiles — `T-a-live-feed-goes-into-the-store`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

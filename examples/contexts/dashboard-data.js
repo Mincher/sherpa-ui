@@ -6,10 +6,12 @@
  *
  * Map:
  * - customerOrgs — The customers — organisations, not people.
+ * - alertRow — The alert at one index — the server's live feed makes more the same way.
  * - alerts — One alert per row — the grain the charts summarise.
  * - alertStore — the alerts, app-level — its schema says what each field may hold
  */
-import { ArrayStore, max, min, number, oneOf, rules } from '../../dist/index.js';
+// The DOM-FREE entry, so the examples server can make live alerts from it too.
+import { ArrayStore, max, min, number, oneOf, rules } from '../../dist/data.js';
 
 const CATEGORIES = ['Disk', 'CPU', 'Memory', 'Network', 'Security', 'Services', 'Backup', 'Antivirus'];
 /* REAL operating systems, and no "Other" among them. A category literally
@@ -36,12 +38,16 @@ export const customerOrgs = [
 const SEVERITIES = ['critical', 'warning', 'info'];
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-/**
- * One alert per row — the grain the charts summarise. Deterministic, not
- * random, so the numbers can be compared against a screenshot.
- */
+/** One alert per row — the grain the charts summarise. Deterministic, not
+ *  random, so the numbers can be compared against a screenshot. */
 export function alerts(count = 1284) {
-  return Array.from({ length: count }, (_, i) => ({
+  return Array.from({ length: count }, (_, i) => alertRow(i));
+}
+
+/** The alert at one index — the server's live feed makes more the same way.
+ *  TRAP T-a-live-feed-goes-into-the-store */
+export function alertRow(i) {
+  return {
     id: i,
     // Squared index crowds the early categories, so the bar chart has a shape.
     category: CATEGORIES[Math.floor(((i * i) % 64) / 8)],
@@ -57,7 +63,7 @@ export function alerts(count = 1284) {
     storage: (i * 37) % 101,
     // 7 days against 3 severities — coprime, so every day sees every one.
     day: DAYS[i % 7],
-  }));
+  };
 }
 
 /**
