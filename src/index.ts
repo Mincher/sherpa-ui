@@ -195,3 +195,5 @@ export { SherpaAppShell } from './components/sherpa-app-shell/sherpa-app-shell.j
 export { SherpaLayoutGrid } from './components/sherpa-layout-grid/sherpa-layout-grid.js';
 export { SherpaGroup } from './components/sherpa-group/sherpa-group.js';
 export { SherpaProvider, type ProvideOptions, type ProviderState } from './components/sherpa-provider/sherpa-provider.js';
+export { SherpaRouter, type RouteChange } from './components/sherpa-router/sherpa-router.js';
+export type { Route } from './core/browser/route.js';

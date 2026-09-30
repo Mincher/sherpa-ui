@@ -254,7 +254,8 @@ test('a Favorites child OPENS its Context, and the real row stays the active one
     await page.evaluate(() => {
       const row = document.querySelector('sherpa-nav')?.shadowRoot
         ?.querySelector('.nav-row[data-id="favorites:records"] sherpa-nav-item');
-      (row?.shadowRoot?.querySelector('a, button') as HTMLElement)?.click();
+      // The LINK, as a reader presses it: the router hears a real link only.
+      (row?.shadowRoot?.querySelector('a[href]') as HTMLElement)?.click();
     });
 
     await page.waitForFunction(() =>

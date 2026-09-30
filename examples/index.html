@@ -12,6 +12,11 @@
 <body>
   <!-- THE PROVIDER: every component in the app asks it for its data, and each
        Context gives it that Context's source. docs/PROVIDER-DESIGN.md -->
+  <!-- THE URL HAS ONE OWNER. A nav row, a crumb, the View chip and Back all
+       REQUEST a navigation; this intercepts it and reports what changed.
+       Settings opens OVER a Context, so a Settings link keeps the Context.
+       TRAP T-the-router-owns-the-url -->
+  <sherpa-router data-params="context=dashboard view" data-overlay="settings"></sherpa-router>
   <sherpa-provider>
   <!-- The app-shell + nav + header live ONCE. Only the content swaps. -->
   <sherpa-app-shell>
@@ -143,6 +148,7 @@
 
     const contextRoot = document.getElementById('context-root');
     const nav = document.querySelector('sherpa-app-shell sherpa-nav');
+    const router = document.querySelector('sherpa-router');
 
     /* App state that outlives a Context swap. Declared here because the Context
        loader reads /nav/pinned before the theme block further down runs. */
@@ -250,32 +256,35 @@
 
     /* Which nav row maps to which Context — read from the HREF, not from a
        `context-` id prefix, so a row named anything else (Home) still routes. */
+    const hrefParam = (href, name) => (href ? new URL(href, location.href).searchParams.get(name) : null);
     const contextForHref = (href) => {
-      if (!href?.startsWith('?context=')) return null;
-      const c = new URLSearchParams(href.slice(1)).get('context');
+      const c = hrefParam(href, 'context');
       return CONTEXTS.includes(c) ? c : null;
     };
     const idForContext = (c) => `context-${c}`;
 
     /* ?context=records&settings=profile — the Settings Context rides on top. */
-    const hrefParam = (href, name) => href?.startsWith('?') ? new URLSearchParams(href.slice(1)).get(name) : null;
     const settingsForHref = (href) => {
       const s = hrefParam(href, 'settings');
       return SETTINGS_CONTEXTS.includes(s) ? s : null;
     };
-    const settingsFromURL = () => settingsForHref(location.search);
-    const param = (name) => hrefParam(location.search, name);
 
-    /* ?context=records&view=mine&settings=application — the Context carries its
-       View; a FIRST View is left out. A Settings Context is one page, no Views. */
-    const urlFor = ({ context, view, settings }) => {
-      const url = new URLSearchParams();
-      if (context) url.set('context', context);
-      if (context && view) url.set('view', view);
-      if (settings) url.set('settings', settings);
-      return `?${url}`;
+    /* THE ROUTE, as the router reads the URL — with a name the app does not
+       know read as none. ?context=records&view=mine&settings=application: the
+       Context carries its View, and a FIRST View is left out. */
+    const urlState = () => {
+      const { context, view, settings } = router.route;
+      return {
+        context: CONTEXTS.includes(context) ? context : DEFAULT_CONTEXT,
+        view,
+        settings: SETTINGS_CONTEXTS.includes(settings) ? settings : null,
+      };
     };
-    const urlState = () => ({ context: contextFromURL(), view: param('view'), settings: settingsFromURL() });
+    const contextFromURL = () => urlState().context;
+    const settingsFromURL = () => urlState().settings;
+    const viewFromURL = () => urlState().view;
+    /** A row's href: a whole route, so a middle-click opens the same place. */
+    const urlFor = ({ context, view = null, settings = null }) => new URL(router.href({ context, view, settings })).search;
 
     /* A Context's Views: its presets, then the reader's saved ones — the set its
        View chip offers, so the nav and the chip name the same Views. */
@@ -301,7 +310,7 @@
       const name = settings ?? contextFromURL();
       const row = settings ? settingsRow(settings) : rowForHref(name);
       const id = row?.id ?? idForContext(name);
-      const view = settings ? null : param('view') ?? firstView(name);
+      const view = settings ? null : viewFromURL() ?? firstView(name);
       nav.dataset.currentId = row && view && session.get('/nav/hierarchy') ? `${id}:${view}` : id;
     }
 
@@ -346,12 +355,6 @@
       else header.removeAttribute('data-icon');
     };
 
-    // Read the current Context from the URL (?context=<c>), defaulting to dashboard.
-    const contextFromURL = () => {
-      const c = new URL(location.href).searchParams.get('context');
-      return CONTEXTS.includes(c) ? c : DEFAULT_CONTEXT;
-    };
-
     // Guard against races: only the newest load may commit.
     let loadToken = 0;
     let cleanup = null;   // teardown returned by the current Context's init()
@@ -361,7 +364,7 @@
       const token = ++loadToken;
       loadedContext = name;
       // Read BEFORE init: populating the header reports its first View, and the URL follows.
-      const view = param('view');
+      const view = viewFromURL();
 
       // Tear down the previous Context (e.g. chat's data-no-header), and its page.
       if (typeof cleanup === 'function') { try { cleanup(); } catch { /* noop */ } cleanup = null; }
@@ -499,7 +502,7 @@
        the list's own subscriber. TRAP T-the-star-reports-it-does-not-decide */
     const viewToolbar = () => mainHeader()?.querySelector('sherpa-quick-filter-toolbar[data-type="view"]');
 
-    function syncFavouriteStar(context, view = param('view')) {
+    function syncFavouriteStar(context, view = viewFromURL()) {
       viewToolbar()?.toggleAttribute('data-favourite', favorites.has({ key: favKey(context, view) }));
     }
 
@@ -603,12 +606,8 @@
       else if (!name && openSettingsName) closeSettings();
     }
 
-    /** An intent: write the URL, then follow it. */
-    function goSettings(name) {
-      if (name === settingsFromURL()) return;
-      history.pushState({}, '', urlFor({ ...urlState(), settings: name }));
-      syncSettings();
-    }
+    /** An intent: ask the router. The screen follows its `route-change`. */
+    const goSettings = (name) => void router.go({ settings: name });
 
     /* The View chip is the owner of the View; the URL and the lit row follow it. */
     mainHeader().addEventListener('quick-filter-change', (e) => {
@@ -616,12 +615,8 @@
       const context = contextFromURL();
       const id = e.detail?.values?.view?.[0];
       if (!viewsOf(context)[id]) return;
-      const view = id === firstView(context) ? null : id;
-      if (param('view') === view) return;
-      history.replaceState(history.state, '', urlFor({ ...urlState(), view }));
-      syncNavCurrent();
-      // Another View: the ★ says whether IT is a favourite.
-      syncFavouriteStar(context, view);
+      // REPLACE: a View pick is not a step Back should undo one by one.
+      void router.go({ view: id === firstView(context) ? null : id }, { replace: true });
     });
 
     settingsHeader.addEventListener('back-click', () => goSettings(null));
@@ -645,6 +640,9 @@
     nav.addEventListener('nav-select', (e) => {
       const header = mainHeader();
       if (!header || nav.state === 'settings') return;
+      // A row that opens a Context names the CONTEXT — a View row's label is its View's.
+      const context = contextForHref(e.detail.href);
+      if (context) { syncHeaderToNav(header, context); return; }
       header.setAttribute('data-heading', e.detail.label ?? '');
       if (e.detail.icon) header.setAttribute('data-icon', e.detail.icon);
       else header.removeAttribute('data-icon');
@@ -710,54 +708,22 @@
 
     notificationSource.load().then(syncBadge);
 
-    // Context rows render as real <a href="?context=…"> links. Intercept the click to
-    // swap in-page — preventDefault must happen on the real click, not on the
-    // synthetic nav-select. A modified click (new tab / middle) is left alone.
-    nav.addEventListener('click', (e) => {
-      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-      const row = e.composedPath().find((n) => n.dataset && n.dataset.href);
-      if (!row) return;
-      const href = row.dataset.href;
-      const settings = settingsForHref(href);
-      if (settings) {
-        e.preventDefault();
-        goSettings(settings);
-        return;
+    /* EVERY NAVIGATION ENDS HERE — a nav row, a crumb, the View chip, the
+       settings button, Back. Each is a real link or a `router.go()`; the router
+       has already changed the URL, and this makes the screen match it. Only
+       what CHANGED is touched, so leaving Settings never reloads the Context.
+       TRAP T-the-router-owns-the-url */
+    router.addEventListener('route-change', () => {
+      const { context, view } = urlState();
+      if (context !== loadedContext) loadContext(context);
+      else {
+        syncHeaderToNav(mainHeader(), context);
+        pickView(mainHeader(), context, view ?? firstView(context));
       }
-      const context = contextForHref(href);
-      if (!context) return;
-      e.preventDefault();
-      const view = hrefParam(href, 'view');
-      // nav-select has just written the ROW's label; the header is the Context's.
-      syncHeaderToNav(mainHeader(), context);
-      if (context === contextFromURL() && contextRoot.children.length) {
-        if (view) pickView(mainHeader(), context, view);
-        return;
-      }
-      history.pushState({ context }, '', urlFor({ context, view }));
-      loadContext(context);
       syncSettings();
-    });
-
-    // A crumb is a real <a href="?…">: stop the reload on the real click, as the
-    // nav does. breadcrumb-select below does the swap.
-    document.addEventListener('click', (e) => {
-      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-      const link = e.composedPath().find((n) => n.localName === 'a' && n.classList?.contains('link'));
-      if (link?.getRootNode().host?.localName === 'sherpa-breadcrumbs' && link.getAttribute('href')?.startsWith('?')) e.preventDefault();
-    });
-
-    // A BREADCRUMB click swaps in-page too — sherpa-breadcrumbs fires this and
-    // it bubbles composed through the header, with the crumb's href. A crumb
-    // with no href is the current page.
-    document.addEventListener('breadcrumb-select', (e) => {
-      const href = e.detail?.href;
-      const context = contextForHref(href);
-      if (!context) return;
-      if (context === contextFromURL() && contextRoot.children.length) return;
-      history.pushState({ context }, '', urlFor({ context }));
-      loadContext(context);
-      syncSettings();
+      syncNavCurrent();
+      // Another View: the ★ says whether IT is a favourite.
+      syncFavouriteStar(context, view);
     });
 
     /* The moon button flips light ↔ dark. The whole switch is one attribute on
@@ -831,16 +797,6 @@
 
     document.addEventListener('theme-toggle', () => {
       session.set('/theme/mode', session.get('/theme/mode') === 'dark' ? 'light' : 'dark');
-    });
-
-    // Back/forward: reload the Context only if IT changed, so closing Settings
-    // with Back keeps the page — and its View — as it was.
-    window.addEventListener('popstate', () => {
-      const context = contextFromURL();
-      if (context !== loadedContext) loadContext(context);
-      else pickView(mainHeader(), context, param('view') ?? firstView(context));
-      syncSettings();
-      syncNavCurrent();
     });
 
     /* First paint, AFTER the rail has stamped its rows: without this await the

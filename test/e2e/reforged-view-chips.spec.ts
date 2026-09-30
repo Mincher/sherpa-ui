@@ -125,11 +125,11 @@ test.describe('view definitions set the filter bar', () => {
  */
 test('a record added on one Context changes the summary on another', async ({ page }) => {
   const nav = async (context: string) => {
-    // The ROUTER'S path — pushState, no reload. Setting window.location is a
-    // full reload and would wipe the store by design, proving nothing.
+    // The ROUTER'S path — the row's own link, no reload. Setting window.location
+    // is a full reload and would wipe the store by design, proving nothing.
     await page.evaluate((v) => {
       const n = document.querySelector('sherpa-nav')!;
-      (n.shadowRoot!.querySelector(`[data-href="?context=${v}"]`) as HTMLElement)?.click();
+      (n.shadowRoot!.querySelector(`[data-href="?context=${v}"]`)!.shadowRoot!.querySelector('a[href]') as HTMLElement).click();
     }, context);
     await page.waitForTimeout(1200);
   };

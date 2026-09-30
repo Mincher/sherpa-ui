@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**44 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**53 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -47,6 +47,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16b | 106 | A click between a menu's items reaches what is behind it — an accordion toggles | bug |
 | ✅ | 16c | 108 | A Filters menu row's scope is a DESCRIPTION under its label, with no "in" | quick |
 | ✅ | 16d | 114 | About 1 time in 20, a folded Advanced-only filter's row in the Filters menu opens nothing | bug |
+| ⬜ | 16e | 119 | The panel header's Reset menu button wears the grouping `end` style; it takes none | bug |
+| ⬜ | 16f | 127 | A number input: `Enter a value`, right-aligned, Sherpa's own steppers — it came back native | bug |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | ❓ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ⬜ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
@@ -68,6 +70,13 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 30 | 20b | The Date filter should be a view-scope date RANGE | feature |
 | ❓ | 31 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
 | ❓ | 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
+| ⬜ | 31b | 124 | The Filters button and menu move to the filter panel HEADER: one menu for every scope | feature |
+| ⬜ | 31c | 122 | Email starts SIMPLE, with a switch to Advanced; over 20 values it is one chip with a multi-select menu | feature |
+| ⬜ | 31d | 120 | A view-scope filter gets "Send to `<scope name>`", the counterpart of "Send to view filters" | feature |
+| ⬜ | 31e | 121 | Clear and Send to are ONE button group, with the grouping classes | quick |
+| ⬜ | 31f | 123 | An inactive chip KEEPS its match count badge; it goes only when every value and condition is removed | feature |
+| ⬜ | 31g | 125 | The sort tooltip names the direction as well as the field | quick |
+| ⬜ | 31h | 126 | "Filter applied at higher scope" becomes "Filter moved to `<scope name>` scope" | quick |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
 | ✅ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
@@ -79,6 +88,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | 🚧 | 37 | 9b | A Data Viz header, for metrics and chart containers | component |
 | ⬜ | 38 | 80 | Container and Data Viz headers: Figma's new button styling and grouping | component |
 | ✅ | 39 | 14 | An example of real-time data | feature |
+| ⬜ | 39a | 128 | A gauge's tooltip names the segment as the legend does | quick |
 | ⬜ | 40 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | | | | **G — Overlay panels** | |
 | ✅ | 41 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
@@ -88,7 +98,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ❓ | 43a | 117 | Clear the accessibility baseline — 11 of 12 done; the accordion's actions wait on a choice | bug |
 | ❓ | 43b | 118 | Four texts fail colour contrast — the success green, and a field's description | figma |
 | | | | **I — The big builds** | |
-| ⬜ | 44 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
+| ✅ | 44 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
 | ⬜ | 45 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
 | ⬜ | 46 | 27 | A consumer can supply their OWN templates and CSS | feature |
 | ⬜ | 47 | 25 | `sherpa-layout-canvas` + minimap | component |
@@ -719,6 +729,24 @@ and check no other page sets `data-title` on a container that reads
 **✅ Done 2026-09-29:** the page sets `data-heading="Assistant"`; no other
 page or template sets `data-title`. An app test reads the heading, and fails
 on the old attribute.
+
+### `[ ]` 119 — BUG: the panel header's Reset menu button wears the grouping `end` style
+
+Will, 2026-09-30: *"The 'reset' filters menu, in the filter panel header, has
+the grouping 'end' styling applied. It should have no grouping applied at
+all."*
+
+### `[ ]` 127 — BUG: a number input is native again — placeholder, alignment and steppers
+
+Will, 2026-09-30: *"Numerical inputs should have a placeholder of 'Enter a
+value'. Their input text should be right aligned. They should also be
+sherpa-inputs that use the sherpa style up and down stepper buttons rather
+than the native appearance. We've already fixed this before but seem to
+reintroduce the mistake."*
+
+It came back once, so the fix is not done until a test holds it: every number
+input a filter draws is a `sherpa-input-text`, right-aligned, with the
+placeholder and Sherpa's own steppers.
 
 ---
 
@@ -1374,6 +1402,56 @@ provider reads into its summary.
     chart has that axis.
   - **B: Segment by only**, and the rest when asked.
 
+### `[ ]` 124 — The Filters button and menu move to the filter panel HEADER
+
+Will, 2026-09-30: *"Let's move the 'Filters' button, and menu, to the filter
+panel header. This will consolidate the filter menu for all scopes into 1
+menu. We already show the scope for filters in the menu item description so
+we can leverage that for all filter menu items. We can still separate Added
+and Available filters. Filters will get added to their default scope. It's
+then up to the user to move their scope. Filter toolbars still maintain their
+own filter buttons and menus."*
+
+### `[ ]` 122 — Email starts SIMPLE; over 20 values it is one chip with a multi-select menu
+
+Will, 2026-09-30: *"The 'Email' filter should be a simple filter, initially,
+with the option to switch to advanced. When in simple mode, as it over 20
+unique values, then it should show as a filter chip with a multi-select
+menu."*
+
+Part of 89 (every panel filter starts Simple) and 90 (any filter switches to
+Advanced). Today `email` is declared `"advanced": "only"` in `records.json`.
+
+### `[ ]` 120 — A view-scope filter gets "Send to `<scope name>`"
+
+Will, 2026-09-30: *"'Send filter to View' should have a counterpart button in
+the view context to 'Send to &componentScopeName' with a down arrow icon."*
+
+The other way of 21f. The name is the scope the field came from.
+
+### `[ ]` 121 — Clear and Send to are ONE button group
+
+Will, 2026-09-30: *"The 'clear' and 'send to' buttons should be in a button
+group with grouping style classes applied."*
+
+### `[ ]` 123 — An inactive chip KEEPS its match count badge
+
+Will, 2026-09-30: *"Don't hide the match count badge when a filter chip is
+set to inactive. Only remove the badge when all values/conditions are removed
+from the filter."*
+
+Changes 60, which shows the badge only while the chip is on.
+
+### `[ ]` 125 — The sort tooltip names the direction as well as the field
+
+Will, 2026-09-30: *"Sort tooltip should show direction (e.g ascending) as well
+as the field name."*
+
+### `[ ]` 126 — "Filter applied at higher scope" becomes "Filter moved to `<scope name>` scope"
+
+Will, 2026-09-30: *"Change the 'Filter applied at higher scope' to 'Filter
+moved to $scopeName scope'."*
+
 ---
 
 ## E — Views and navigation
@@ -1627,6 +1705,11 @@ Will, 2026-09-26, an alternative to 58 for later. Content is never replaced:
 Build 58 so its states are data, not markup, and this is a second rendering of
 the same three states.
 
+### `[ ]` 128 — A gauge's tooltip names the segment as the legend does
+
+Will, 2026-09-30: *"Gauge tooltips should match the segment name as shown in
+the legend."*
+
 ---
 
 ## G — Overlay panels
@@ -1742,7 +1825,7 @@ Both are Figma values, so they are yours to change.
 
 ## I — The big builds
 
-### `[ ]` 67 — A UTILITY layer: `sherpa-router`, on the Navigation API
+### `[x]` ✅ 67 — A UTILITY layer: `sherpa-router`, on the Navigation API
 
 Will, 2026-09-26: *"We have a presentation layer and data layer that are
 working great together. We need to further enhance sherpa with a utility
@@ -1772,6 +1855,19 @@ run (check Chromium, Firefox and WebKit on the day), so decide the fallback —
 utility lives: a component in `sherpa-ui`, or a third entry point beside
 `sherpa-ui/data` — it needs a DOM, so not the DOM-free one. This is also most
 of 37's step 4: an example app that routes through the library can leave it.
+
+**✅ Done 2026-09-30.** `sherpa-router` is component 65, exported from
+`sherpa-ui`. It owns the URL's `data-params`, keeps every other parameter, and
+reports `route-change` with what changed. `data-overlay="settings"` makes a
+Settings link open OVER the Context it was pressed on. `route`, `href(route)`
+and `go(changes, { replace })` are its JS API; its arithmetic is
+`src/core/browser/route.ts`, pure. The two things to settle: **the Navigation
+API is required** — all three engines have it, probed today — and **it is a
+component in `sherpa-ui`**, beside the provider. The example app routes
+through it: its four `history` sites, its `popstate` listener and its two
+link-click listeners are gone, for one `route-change` listener. One behaviour
+changed: a Context row pressed while on a later View goes to the first View.
+`T-the-router-owns-the-url`
 
 ### `[ ]` 68 — `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement`
 
@@ -2661,6 +2757,8 @@ One line each. The detail is in git and in the trap named.
 - 23: a grid row opens its details in an overlay panel; the chevrons step it; the trail names it — `T-a-current-row-opens-its-details`
 - 24: the accessibility gate — axe-core over a fixture of every component, a report each, a baseline that may only fall — `T-the-a11y-gate-reads-shadow-roots`; 117 and 118 are what it found
 - 117: 11 of the 12 structural accessibility failures are fixed; the accordion's actions slot waits on Will — `T-a-menu-is-a-dialog-of-native-controls`
+- 67: `sherpa-router` owns the URL, on the Navigation API; the example app routes through it — `T-the-router-owns-the-url`
+- 119–128: ten items from Will, queued
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

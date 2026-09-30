@@ -1,0 +1,29 @@
+<!--
+  sherpa-router — the ONE owner of the URL, on the Navigation API. It draws nothing.
+
+  A link, `go()` and the browser's Back all REQUEST a navigation; the router
+  intercepts it, so the page never reloads, and reports what changed.
+  TRAP T-the-router-owns-the-url
+
+      <sherpa-router data-params="context=dashboard view" data-overlay="settings"></sherpa-router>
+
+  Public API:
+    data-params   the URL search parameters it owns, space separated: `name`, or
+                  `name=default` for the value a URL that leaves it out means
+    data-overlay  owned parameters that open OVER the page. A link that names
+                  only these keeps the rest of the route as it is
+
+  JS API:
+    route          what the URL says now: each owned parameter, or null
+    href(route)    the URL for a route — for a real <a href>
+    go(changes, { replace })  navigate: the changes over the route now
+
+  Slots:
+    (default)   whatever it is wrapped round, drawn as if it were not there
+
+  Fires:
+    route-change — detail: { route, previous, changed, type, waitUntil }
+-->
+<template id="default">
+  <slot data-accepts="any"></slot>
+</template>

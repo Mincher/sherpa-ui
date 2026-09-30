@@ -198,6 +198,7 @@ export const FIXTURES = {
     html: '<sherpa-container><sherpa-data-viz-header slot="header" data-heading="Customers by plan"></sherpa-data-viz-header><sherpa-radial-chart data-sublabel="customers"></sherpa-radial-chart></sherpa-container>',
     fill: [{ at: 'sherpa-radial-chart', data: SLICES }],
   },
+  'sherpa-router': { html: '<sherpa-router data-params="context=home view" data-overlay="settings"></sherpa-router><a href="?context=records">Records</a>' },
   'sherpa-section-header': { html: '<sherpa-section-header data-heading="Details"><span slot="description">How you appear to your team.</span></sherpa-section-header>' },
   'sherpa-select-card': {
     html: '<sherpa-select-card data-label="Pro" data-description="For growing teams" name="plan" value="pro" data-selected>12 seats</sherpa-select-card>'

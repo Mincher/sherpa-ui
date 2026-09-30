@@ -609,6 +609,54 @@ under the pointer or focus.
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
 - Site: `test/e2e/reforged-overlay-panel.spec.ts`
 
+### T-the-router-owns-the-url
+
+**`sherpa-router` is the ONE owner of the URL, on the Navigation API** — TODO
+67, the first part of the utility layer. A link, `router.go()` and the
+browser's Back all REQUEST a navigation. The router hears every one in the
+`navigate` event, intercepts it so the page never reloads, and reports
+`route-change { route, previous, changed, type, waitUntil }`. Nothing else
+touches `history`. The example app had four `pushState` / `replaceState`
+sites, a `popstate` listener, and two click listeners that stopped a link's
+reload by hand; all are gone, and one `route-change` listener makes the screen
+match the URL.
+
+**A route is the search parameters the router OWNS** — `data-params`, each a
+`name` or a `name=default`. Any other parameter (`?live`) is kept as it is. The
+arithmetic is `src/core/browser/route.ts`, pure, proved in Node.
+
+**An OVERLAY parameter opens over the page** — `data-overlay="settings"`. A
+link that names only overlay parameters (`?settings=profile`) means less than
+it says: on its own it would drop the Context under it. The router keeps the
+base it left out, and goes to the WHOLE URL instead, so the address bar, a
+reload and Back all say the same thing. A link that names a base parameter is
+the whole base: its View is its first, and the overlay shuts. Back and forward
+are never settled again — that URL was settled when it was made.
+
+**`changed` is what a listener acts on.** Settings opening is `['settings']`,
+so the Context under it is not reloaded.
+
+**The Navigation API is REQUIRED; there is no `history` fallback.** Probed
+2026-09-30: Chromium 153, Firefox 155 and WebKit 26.6 all have it, with
+`intercept()`.
+
+Four things that look wrong and are not. Listening starts in
+`connectedCallback`, not after the first render — a press before the template
+arrives would reload the page. Focus and scroll are `manual`: a View pick is a
+navigation, and must move neither. A navigation to the URL it is on changes
+nothing and reports nothing. And only a REAL link navigates: a nav row's
+hidden `<button>` no longer does, which three tests were pressing.
+
+One behaviour changed: a Context row pressed while on one of its later Views
+goes to its first View, because that is what its href says.
+
+- Site: `src/components/sherpa-router/sherpa-router.ts`
+- Site: `src/components/sherpa-router/sherpa-router.html`
+- Site: `src/core/browser/route.ts`
+- Site: `examples/index.html`
+- Site: `test/unit/route.test.mjs`
+- Site: `test/e2e/reforged-router.spec.ts`
+
 ### T-a-menu-is-a-dialog-of-native-controls
 
 **`sherpa-menu`'s card is `role="dialog"`, not `role="menu"`** — TODO 117. An
@@ -632,7 +680,7 @@ row a `listitem`. A calendar's cells sit in `role="row"` boxes that are
 
 **The accessibility gate is axe-core over ONE FIXTURE per component, WCAG 2.1
 level AA** — TODO 24. `test/a11y/fixtures.mjs` holds a realistic instance of
-all 64, written as a page writes it; `test/e2e/a11y.spec.ts` draws each in the
+every one, written as a page writes it; `test/e2e/a11y.spec.ts` draws each in the
 harness and runs axe on it. Three things make a green result mean something.
 **It is proved to read a shadow root**: a test puts an unnamed `<button>`
 inside one and expects axe to report it, with a target that crosses the

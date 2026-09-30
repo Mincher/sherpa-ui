@@ -21,10 +21,14 @@ Everything below serves one separation:
 | | |
 |---|---|
 | **Data layer** | `src/core/*.ts` minus the element. Getting, setting and transforming rows. Touches no DOM, so a server, a test or an MCP tool imports it |
-| **Presentation layer** | `SherpaElement` + the 64 components. Shows what it is given; asks for what it wants; decides nothing about the data |
+| **Presentation layer** | `SherpaElement` + the 65 components. Shows what it is given; asks for what it wants; decides nothing about the data |
 
 The join is `DataSource.bind(el, options)` and nothing else. A component never
 reaches past the source to a store, and two components never speak directly.
+
+**A utility layer sits beside them.** App plumbing that holds no rows and draws
+nothing. `sherpa-router` is its first part: it owns the URL, on the Navigation
+API. `T-the-router-owns-the-url`
 
 **Where does new code go?**
 

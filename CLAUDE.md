@@ -167,7 +167,7 @@ import { SherpaButton } from 'sherpa-ui';        // components — needs a DOM
 import { ArrayStore, DataSource } from 'sherpa-ui/data';  // the data layer — no DOM
 ```
 
-`sherpa-ui` exports all 64 components, and importing a component DEFINES a
+`sherpa-ui` exports all 65 components, and importing a component DEFINES a
 custom element — so it throws `HTMLElement is not defined` in Node.
 `sherpa-ui/data` (`src/data.ts`) is the same stores, query, validation, live
 connections and saved views with no components and no DOM, for a server, a test
@@ -309,6 +309,16 @@ So a page is a **Context**, not a view: `examples/contexts/`, `loadContext`,
 `/template/context/:context`. "View" is kept for saved views — `ViewSnapshot`,
 `onViewPicked`, the `data-type="view"` toolbar and its `view-*` events. Figma
 still uses the old words; that rename is queued in `docs/TODO.md`.
+
+### The router owns the URL
+
+`<sherpa-router data-params="context=dashboard view" data-overlay="settings">`
+is the first part of the UTILITY layer. It uses the Navigation API: a link,
+`router.go(changes)` and Back are all requests, and it reports `route-change`
+with what `changed`. **Nothing else calls `history.pushState`.** Write a real
+`<a href>` (`router.href(route)` builds one) or call `go()`. An OVERLAY
+parameter opens over the page, so a link that names only `settings` keeps the
+Context. TRAP `T-the-router-owns-the-url`.
 
 ### CSS owns all visibility
 

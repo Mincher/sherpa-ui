@@ -29,7 +29,8 @@ const openMenu = (page: Page) => page.evaluate(() => document.querySelector('she
 const clickRow = (page: Page, id: string) => page.evaluate((i) => {
   const item = document.querySelector('sherpa-nav')!.shadowRoot!
     .querySelector<HTMLElement>(`.nav-row[data-id="${i}"] sherpa-nav-item`)!;
-  (item.shadowRoot!.querySelector('a, button, [part="row"]') as HTMLElement).click();
+  // What a reader presses: the LINK where the row has one. The router hears a real link only.
+  ((item.shadowRoot!.querySelector('a[href]') ?? item.shadowRoot!.querySelector('button')) as HTMLElement).click();
 }, id);
 
 test('on a phone the nav opens as a whole-screen menu; Cancel goes nowhere, a Context goes', async ({ page }) => {
