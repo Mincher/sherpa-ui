@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**55 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**56 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -57,6 +57,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16k | 147 | A chip switched off under the pointer leaves an EMPTY tooltip: the whole tooltip hides | bug |
 | ✅ | 16l | 148 | After a Reset, a date chip's value label reads `Unassigned` | bug |
 | ✅ | 16m | 151 | A filter moved across scopes does not keep its Simple or Advanced mode | bug |
+| 🚧 | 16n | 152 | Data grid pages do not keep to the row count set in the pagination: the count varies from page to page | bug |
+| ⬜ | 16o | 153 | In a fixed-row layout grid, the data grid and its container change height with the row count; the container must keep its height and the grid fill it | bug |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | ❓ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ⬜ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
@@ -87,7 +89,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31g | 125 | The sort tooltip names the direction as well as the field | quick |
 | ✅ | 31h | 126 | "Filter applied at higher scope" becomes "Filter moved to `<scope name>` scope" | quick |
 | ⬜ | 31i | 129 | "Reset all to default", with a confirm dialog and a "Save filters before reset" switch | feature |
-| ⬜ | 31j | 133 | The results count badge shows at the right of a filter panel SECTION header, where it fits | feature |
+| ✅ | 31j | 133 | The results count badge shows at the right of a filter panel SECTION header, where it fits | feature |
 | ✅ | 31k | 134 | A number filter menu has Reset, not Clear: its field and slider handles go back to their original values | feature |
 | ✅ | 31l | 135 | A calendar with limited dates: a Month or Year with no date to pick is inactive too | feature |
 | ✅ | 31m | 138 | Advanced filters go back to the INFO status styling, from success | quick |
@@ -101,6 +103,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ❓ | 33a | 116 | `sherpa-nav` binds to a Store: its entries as data, drawn and redrawn | refactor |
 | ✅ | 34 | 34 | Figma: use the Navigation terms | figma |
 | ✅ | 35 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
+| ⬜ | 35a | 146 | The app shell's FIXED panel areas resize by dragging their inner edge; the content reflows; two levels of container query | feature |
 | | | | **F — Data states and charts** | |
 | ✅ | 36 | 58 | Loading, empty and error states in a container | feature |
 | 🚧 | 37 | 9b | A Data Viz header, for metrics and chart containers | component |
@@ -114,7 +117,6 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 41 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
 | ✅ | 42 | 23 | A focused grid row opens a details panel | feature |
 | ✅ | 42a | 145 | The details panel, tidied: Figma's Panel header, no scrim, a selected row paints the active base | quick |
-| ⬜ | 42b | 146 | The app shell's panel AREAS resize by dragging their inner edge; the content reflows; two levels of container query | feature |
 | | | | **H — The accessibility gate** | |
 | ✅ | 43 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
 | 🚧 | 43a | 117 | Clear the accessibility baseline — 11 of 12 done; the accordion is ruled, and waits on 124 | bug |
@@ -835,8 +837,9 @@ date's label (it was the toolbar's, so a panel date chip showed no days), the
 Group and Sort steer (`arrangeBy` — the panel had none, so its Group and Sort
 never followed the toolbar or a grid heading), and the wording of a range.
 
-**Not done: a panel VALUE chip.** It is one value of a run, and has no count
-of its own. It needs a count per value from the data layer — with 133.
+**A panel VALUE chip** is one value of a run, and has no count of its own.
+The field's header carries the field's count instead (133). A count per
+value is not asked for.
 
 **The audit — what else belongs on the chip.** Still written twice, in the
 toolbar and in the panel, each asking "a list, a number or a date?":
@@ -955,6 +958,18 @@ the header bar's Reset emptied the Date chip's RANGE calendar, and the menu
 wrote "no first day" into it as a day. A kept range with no ends holds none
 now. It came in with 137 (an emptied date keeps its range shape). If you did
 see the word `Unassigned` on a date chip, say where — I could not make it.
+
+### `[~]` 152 — BUG: data grid pages do not keep to the pagination's row count
+
+Will, 2026-09-30: *"Data grid pages don't respect the row count value set in
+the pagination. When i change pages I see varying row counts."*
+
+### `[ ]` 153 — BUG: the grid and its container change height with the row count
+
+Will, 2026-09-30: *"The data grid, and it's container, in a fixed row count
+layout grid also changes height to fit the row count. This isn't desirable.
+The container should stay the same height and the grid should fill the
+available height."*
 
 ### `[x]` ✅ 151 — BUG: a filter moved across scopes does not keep its mode
 
@@ -1829,13 +1844,24 @@ the provided name, before all filters are reset."*
 Builds on 109 (the Reset menu). The save is 105's "every scope under one
 name", which still waits on a ruling.
 
-### `[ ]` 133 — The results count badge, at the right of a filter panel section header
+### `[x]` ✅ 133 — The results count badge, at the right of a filter panel section header
 
 Will, 2026-09-30: *"The results count badge should show to the right of the
 filter panel section header where appropriate."*
 
 The chip's badge from 60, for a field drawn in the panel with no chip to
 carry it.
+
+**✅ Done 2026-09-30.** A panel field drawn as a run of chips, a number body
+or Advanced rows shows its results in a badge right of its title: `REGION
+27`. It shows once the field has an applied answer — on or off, as 123 — and
+goes when the field is emptied or a change waits for Apply. A chart's own
+field has one too. A field drawn as ONE chip (a date, Group, Sort) and a
+saved filter keep the number on the chip.
+
+Also fixed on the way: a panel redraw (a field added, a filter sent up) lost
+every results number until the next load. The panel keeps the last ones now.
+`T-a-chip-counts-its-own-results`
 
 ### `[x]` ✅ 134 — A number filter menu has Reset, not Clear
 
@@ -2087,6 +2113,44 @@ the raw `.hdr-btn`s, their CSS and their two state pins are gone. A host's
 measures the button's own sm icon: 14 px, as Figma's Structure collection
 projects it.
 
+### `[ ]` 146 — The app shell's FIXED panel areas resize by dragging their edge
+
+Will, 2026-09-30, a future todo: *"Allow the side of the panel areas, in the
+app shell to be dragged to resize like we can do with the overlay panel.*
+
+*Left panel's width, in the current examples, is a good min width. 33% of the
+area between the nav and viewport edge (not sure of wrapper name) is probably
+a good max width.*
+
+*Obviously only the right side of the left panel area is draggable. The
+inverse for the right panel area.*
+
+*The drag indicator should show on the edge of the panel area (not panel) on
+hover & drag.*
+
+*The content area's content should respond and reflow following the
+breakpoint rules, and container queries, that we built previously.*
+
+*We will need to rework the container query that hides panel areas at lower
+breakpoints to use the viewport width (I think?). Perhaps it's not the
+viewport but a different wrapper element.*
+
+*Either way I think that there's 2 levels of container query and scopes of
+breakpoint responsiveness needed."*
+
+**These are FIXED panels, not overlay panels** — Will, 2026-09-30: *"the
+panels referred to in this request are Fixed Panels in the app shell's panel
+areas wrapper elements."* The filter panel sits in one (`panel-start`); the
+right one is not used yet. An overlay panel (G) floats over the content; a
+fixed panel takes its own column, and the content reflows beside it.
+
+So, to find when it is built: which wrapper is "the area between the nav and
+the viewport edge" (the max is 33% of it, and it may be the container the
+hide-the-panels query reads); and the two levels — one for the shell, which
+shows or hides a panel area, and one for the content area, which reflows as a
+panel area grows. The handle can follow the overlay panel's (22): a `role="separator"`, drag
+or arrow keys — but it is on the AREA's edge, in `sherpa-app-shell`.
+
 ## F — Data states and charts
 
 ### `[x]` ✅ 58 — Loading, empty and error states in a container
@@ -2323,38 +2387,6 @@ functionality while still working in the primary content space."*
 ❓ **One ruling left — the title's ink.** Figma's Panel variant inks it
 link-blue. Will's call of 2026-09-15 was the DEFAULT ink: blue "reads as
 something you can click when it isn't". Kept as ruled; say if Figma wins now.
-
-### `[ ]` 146 — The app shell's panel areas resize by dragging their edge
-
-Will, 2026-09-30, a future todo: *"Allow the side of the panel areas, in the
-app shell to be dragged to resize like we can do with the overlay panel.*
-
-*Left panel's width, in the current examples, is a good min width. 33% of the
-area between the nav and viewport edge (not sure of wrapper name) is probably
-a good max width.*
-
-*Obviously only the right side of the left panel area is draggable. The
-inverse for the right panel area.*
-
-*The drag indicator should show on the edge of the panel area (not panel) on
-hover & drag.*
-
-*The content area's content should respond and reflow following the
-breakpoint rules, and container queries, that we built previously.*
-
-*We will need to rework the container query that hides panel areas at lower
-breakpoints to use the viewport width (I think?). Perhaps it's not the
-viewport but a different wrapper element.*
-
-*Either way I think that there's 2 levels of container query and scopes of
-breakpoint responsiveness needed."*
-
-So, to find when it is built: which wrapper is "the area between the nav and
-the viewport edge" (the max is 33% of it, and it may be the container the
-hide-the-panels query reads); and the two levels — one for the shell, which
-shows or hides a panel area, and one for the content area, which reflows as a
-panel area grows. The handle follows 22's: a `role="separator"`, drag or
-arrow keys.
 
 ---
 
@@ -3424,12 +3456,13 @@ One line each. The detail is in git and in the trap named.
 - 130, first half: a chip says its own answer — number, date, sort and its matches, on a bar, in the panel and on a heading — `T-a-chip-says-its-own-answer`
 - 125: a sort's tip names which way
 - 147: a tooltip whose text goes shuts whole; an off chip says nothing
-- 146, 148: queued — the shell's panel areas resize by their edge; a reset date chip reads `Unassigned`
+- 146, 148: queued — the shell's FIXED panel areas resize by their edge; a reset date chip reads `Unassigned`
 - 52: ruled — a data viz scope is one Simple filter, a chip per legend item
 - 52: each chart's own scope is in the filter panel — one filter, a swatch chip per legend item; it narrows its chart alone, and ↑ sends it to the View — `T-a-chart-scope-is-its-legend-field`
 - 149: queued — the legend's items become swatch chips
 - 148: an emptied date range holds no ends — the chip read `undefined` after a Reset
 - 121: a panel field's Clear and Send to are one button group
+- 133: a panel field's header wears its results badge, right of the title; a chart's own field too — `T-a-chip-counts-its-own-results`
 - 135: a calendar's Month and Year views disable what holds no day to pick
 - 134: a number menu has Reset — the field empties and the handles go back, both shapes; Clear had done nothing to a number — `T-a-number-is-reset-not-cleared`
 - 151: a filter moved across scopes keeps its mode — the View's answer wins on the way down, and a menu built at a flip takes the answer as it stands — `T-a-late-built-menu-takes-the-answer-as-it-stands`

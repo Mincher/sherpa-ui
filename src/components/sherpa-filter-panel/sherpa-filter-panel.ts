@@ -37,6 +37,10 @@ import '../sherpa-stack/sherpa-stack.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-input-text/sherpa-input-text.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
+import '../sherpa-badge/sherpa-badge.js';
+
+/** A count, in the reader's own digits — as a chip's badge writes it. */
+const RESULTS = new Intl.NumberFormat();
 
 /** One value a field offers. */
 export interface PanelValue {
@@ -398,10 +402,13 @@ export class SherpaFilterPanel extends SherpaElement {
   /**
    * drawResults(results, scope) — a bound source tells the panel the rows each
    * answer in a scope matches, by field or saved-filter id. A field drawn as
-   * ONE chip, and a saved filter's chip, show it in their tip. SILENT.
+   * ONE chip, and a saved filter's chip, wear it; a field drawn as a run or a
+   * body has no one chip, so its HEADER wears it. SILENT.
    * TRAP T-a-chip-counts-its-own-results
    */
   drawResults(results: Readonly<Record<string, number>>, scope?: string): void {
+    // Kept: a redraw builds new chips and headers, and no load follows it.
+    if (scope != null) this.#counted.set(scope, results);
     for (const held of this.#held.values()) {
       if (held.scope !== scope) continue;
       type Counted = HTMLElement & { results?: number | null };
@@ -411,8 +418,26 @@ export class SherpaFilterPanel extends SherpaElement {
         for (const chip of held.values.querySelectorAll<Counted>('.value')) {
           chip.results = results[chip.dataset['value'] ?? ''] ?? null;
         }
-      }
+      } else this.#headResults(held, results[held.def.field ?? held.def.id] ?? null);
     }
+  }
+
+  /** Each scope's results as last drawn. */
+  #counted = new Map<string, Readonly<Record<string, number>>>();
+
+  /** A field's results, on its header's badge — or none. Will, TODO 133. */
+  #headResults(held: Held, n: number | null): void {
+    const badge = held.box.querySelector('.field-results');
+    if (!badge) return;
+    if (n == null) {
+      delete held.box.dataset['results'];
+      badge.removeAttribute('aria-label');
+      return;
+    }
+    const said = RESULTS.format(n);
+    held.box.dataset['results'] = said;
+    badge.textContent = said;
+    badge.setAttribute('aria-label', `${said} ${n === 1 ? 'result' : 'results'}`);
   }
 
   /** Is it showing? The `open` attribute, as on every surface that opens. */
@@ -583,6 +608,7 @@ export class SherpaFilterPanel extends SherpaElement {
        TRAP T-custom-element-upgrade */
     this.#syncAllAnswered();
     this.#syncPending();
+    for (const [scope, results] of this.#counted) this.drawResults(results, scope);
   }
 
   /** A field a HIGHER scope holds: its heading, and the line a chip's tooltip

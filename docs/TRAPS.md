@@ -1207,8 +1207,14 @@ nothing.
 
 **An off answer that changes moves no rows, so no load follows** — and the
 count was only ever drawn after a load. Emptied, the chip kept its old
-number. `#recompose` draws the results itself when the filter stood still
-and the applied Query did not.
+number. `#recompose` draws the results itself when the SHARED filter stood
+still and the applied Query did not — a chart's own answer is the same case.
+
+**In the panel, a field's HEADER wears it** — Will, TODO 133: a field drawn
+as a run of chips, or as a body, has no one chip to carry the number, so its
+badge sits right of the title. A chart's own scope is counted too. The panel
+KEEPS each scope's last results and draws them again after a redraw: a redraw
+builds new headers and chips, and no load follows it.
 
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
@@ -1216,6 +1222,7 @@ and the applied Query did not.
 - Site: `test/unit/page-definition.test.mjs`
 - Site: `test/e2e/reforged-chip-results.spec.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 
 ### T-a-scope-says-what-it-shows
 

@@ -105,6 +105,17 @@
   align-items: flex-end;
   min-block-size: var(--sherpa-display-mode-space-xl, 24px);
 }
+/* The title and its results badge, on one line. */
+.field-lead {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+}
+/* RESULTS: only a field the source counted has a number; a draft has none.
+   TRAP T-a-chip-counts-its-own-results */
+.field-results { display: none; }
+.field[data-results]:not([data-pending]) .field-results { display: inline-flex; }
+
 /* The type scale's small class sets the size; caps and light, as a metric's title. */
 .field-title {
   margin: 0;

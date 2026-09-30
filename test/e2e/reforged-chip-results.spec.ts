@@ -102,3 +102,62 @@ test('on Records, a chip switched OFF keeps its number, and an emptied one loses
   await page.evaluate(() => (document.querySelector('#qft') as HTMLElement & { report(): void }).report());
   await expect.poll(async () => (await chip()).count).toBeNull();
 });
+
+/**
+ * IN THE PANEL, A FIELD'S HEADER WEARS THE BADGE — Will, TODO 133: "The
+ * results count badge should show to the right of the filter panel section
+ * header where appropriate." A field drawn as a run of chips has no one chip
+ * to carry it. A chart's own field has one too.
+ */
+test('on Records, an answered panel field shows its results beside its title, and an emptied one shows none', async ({ page }) => {
+  await page.setViewportSize({ width: 1700, height: 1200 });
+  await page.goto('http://localhost:4200/?context=records');
+  await page.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
+  await page.evaluate(() => {
+    (document.querySelector('sherpa-provider') as HTMLElement & { filterMode: string }).filterMode = 'panel';
+  });
+  const field = (scope: string, id: string) =>
+    page.locator(`#filter-panel .scope[data-scope="${scope}"] .field[data-field="${id}"]`);
+  type Source = { results(s: string): Promise<Record<string, number>> };
+  /** One field's badge: its text, whether it shows, and where it sits. */
+  const badge = (scope: string, id: string): Promise<{ text: string; shown: boolean; afterTitle: boolean; said: string | null }> =>
+    page.evaluate(([s, f]) => {
+      const box = (document.querySelector('#filter-panel') as HTMLElement).shadowRoot!
+        .querySelector<HTMLElement>(`.scope[data-scope="${s}"] .field[data-field="${f}"]`)!;
+      const b = box.querySelector<HTMLElement>('.field-results')!;
+      const title = box.querySelector('.field-title')!.getBoundingClientRect();
+      const at = b.getBoundingClientRect();
+      const shown = b.getClientRects().length > 0;
+      return { text: b.textContent ?? '', shown, said: b.getAttribute('aria-label'),
+        // Right of the title, on its line.
+        afterTitle: shown && at.left >= title.right && at.top < title.bottom && at.bottom > title.top };
+    }, [scope, id]);
+  const counted = (scope: string): Promise<Record<string, number>> => page.evaluate((s) =>
+    (window as unknown as { sherpa: { source: Source } }).sherpa.source.results(s), scope);
+
+  await expect.poll(() => field('data', 'plan').locator('.value').count()).toBeGreaterThan(0);
+  expect((await badge('data', 'plan')).shown).toBe(false);
+
+  // A grid field, a View field, and a chart's own.
+  await field('data', 'plan').locator('.value').nth(1).locator('.body').click();
+  await field('view', 'region').locator('.value').first().locator('.body').click();
+  await field('picks:r-bar-legend', 'status').locator('.value').first().locator('.body').click();
+  await expect.poll(async () => (await badge('picks:r-bar-legend', 'status')).shown).toBe(true);
+  await expect.poll(async () => (await badge('data', 'plan')).shown).toBe(true);
+
+  for (const [scope, id] of [['data', 'plan'], ['view', 'region'], ['picks:r-bar-legend', 'status']] as const) {
+    const n = (await counted(scope))[id]!;
+    await expect.poll(() => badge(scope, id), `${scope} ${id}`).toEqual({
+      text: String(n), shown: true, afterTitle: true, said: `${n} ${n === 1 ? 'result' : 'results'}`,
+    });
+  }
+  // The grid's own `status` is not answered: a chart's answer is the chart's.
+  expect((await badge('data', 'status')).shown).toBe(false);
+
+  // Emptied, the badge goes — the chart's too, which moves no rows.
+  await field('data', 'plan').locator('.field-clear button').click();
+  await field('picks:r-bar-legend', 'status').locator('.field-clear button').click();
+  await expect.poll(async () => (await badge('data', 'plan')).shown).toBe(false);
+  await expect.poll(async () => (await badge('picks:r-bar-legend', 'status')).shown).toBe(false);
+});

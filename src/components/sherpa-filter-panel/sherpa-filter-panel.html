@@ -120,8 +120,14 @@
          its chips or its body. Will, 2026-09-26. -->
     <div class="field">
       <sherpa-section-header class="field-head" data-size="sm" data-divider="none">
-        <!-- The TYPE SCALE's small class, in caps and light, as a metric's title. -->
-        <h3 slot="heading" class="field-title sherpa-text-small"></h3>
+        <!-- The title, then the rows its answer matches — the chip's badge,
+             for a field no single chip stands for. Will, TODO 133. -->
+        <span slot="heading" class="field-lead">
+          <!-- The TYPE SCALE's small class, in caps and light, as a metric's title. -->
+          <h3 class="field-title sherpa-text-small"></h3>
+          <!-- role=img so its aria-label is said, as the chip's count is. -->
+          <sherpa-badge class="field-results" role="img"></sherpa-badge>
+        </span>
         <!-- DEFAULT look. No Remove: the scope's Add menu is the whole list. -->
         <span slot="actions" class="field-acts">
           <!-- Clear and Send to, as ONE control. Will, TODO 121. -->

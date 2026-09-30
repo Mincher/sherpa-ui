@@ -1603,9 +1603,9 @@ export class DataSource extends EventTarget {
     const viewed = andFilter([...parts, ...(view ? [view] : [])]);
     /* A DRAFT edit on a remote source changes nothing applied: no load, and
        the page stays where it is. It only changes what is pending. */
-    const still = JSON.stringify(next) === JSON.stringify(this.#filter)
-      && JSON.stringify(only) === JSON.stringify(this.#only);
-    const same = this.#remote && still;
+    // The SHARED filter stood still: no load follows, whatever one component's own did.
+    const still = JSON.stringify(next) === JSON.stringify(this.#filter);
+    const same = this.#remote && still && JSON.stringify(only) === JSON.stringify(this.#only);
     this.#only = only;
     this.#filter = next;
     this.#viewFilter = viewed;
@@ -1613,7 +1613,8 @@ export class DataSource extends EventTarget {
     this.#syncPending();
     if (!same) this.#requery();
     /* The rows did not move, so no load will count again — yet an answer that
-       is OFF changed, and its chip still wears a number. TRAP T-a-chip-counts-its-own-results */
+       is OFF, or one chart's own, changed, and its badge wears a number.
+       TRAP T-a-chip-counts-its-own-results */
     if (still && this.#loaded && this.#countedFor !== JSON.stringify(this.#applied)) void this.#drawResults();
   }
 
@@ -1955,8 +1956,9 @@ export class DataSource extends EventTarget {
    *  results, off the load that just landed; a later load's count wins.
    *  TRAP T-a-chip-counts-its-own-results */
   async #drawResults(): Promise<void> {
+    // A control over several scopes — the panel — draws each chart's own too.
     const drawn = [...this.#bound].flatMap(([el, b]) => (el.drawResults && b.scope
-      ? [{ el, scopes: typeof b.scope === 'string' ? [b.scope] : b.scope }] : []));
+      ? [{ el, scopes: typeof b.scope === 'string' ? [b.scope] : [...b.scope, ...this.#narrowing.keys()] }] : []));
     if (!drawn.length) return;
     this.#countedFor = JSON.stringify(this.#applied);
     const ticket = (this.#counting = Symbol('count'));
