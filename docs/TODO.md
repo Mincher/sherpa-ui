@@ -2390,12 +2390,13 @@ before.
 Will, 2026-09-30, a minor one: *"Increase the min width of panel areas, in
 the app shel to 150% of their current min width."*
 
-**✅ Done 2026-09-30.** A panel area is 1.5 times its old width, at every
-desktop width: the panel card is 449 / 569 / 689 at 1280 / 1600 / 1920, where
-it was 294 / 374 / 454. It is no longer a whole count of grid columns — 4
-columns (133%) or 5 (167%) would be, if that matters more than the number.
-At 1280 the Context is left 775px, and its charts crop their legends: 162 is
-the fix for that.
+**✅ Done 2026-09-30, second try.** The first build made the WIDTH 1.5 times
+bigger at every size. Will: *"You made the width of the panel area 150%
+bigger and not the min-width."* Now the width is three grid columns again,
+and the area has a MIN width of 464px. That is 150% of the 310px it is at
+1280, which is its narrowest (on the 4px grid). So the panel card is 448px
+at 1280 and at 1600, and from about 1900 the three columns are wider and
+take over (454 at 1920).
 
 ### `[ ]` 146 — The app shell's FIXED panel areas resize by dragging their edge
 
@@ -3785,7 +3786,7 @@ One line each. The detail is in git and in the trap named.
 - 165: a group's badge counts the rows shown, under the grid's scope and its filter row — `T-a-group-is-a-data-layer-concept`
 - 164: mobile starts below 768px; the shell hides the rail and tells the header to show its menu button — `T-the-nav-is-a-menu-on-a-phone`
 - 161: the app header's scroll shadow fades, 100ms — the timeline flips a property, a transition follows it — `T-only-the-context-scrolls`
-- 163: a panel area is 1.5 times three grid columns — `T-the-shell-owns-the-panel-areas`
+- 163: a panel area is three grid columns, and never under 464px (150% of its width at 1280) — `T-the-shell-owns-the-panel-areas`
 - 162: a narrow chart puts its legend below, and a legend strip becomes a list — `T-a-narrow-chart-stacks-its-legend`
 - 130: the chip reads, draws and empties its own answer — `reading`, `clear()`, `answered`; the toolbar and the panel's date use it — `T-a-chip-says-its-own-answer`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both

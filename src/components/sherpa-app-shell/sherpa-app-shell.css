@@ -114,14 +114,18 @@
 .panel-end {
   display: none;
   /* The AREA owns the width — a panel inside it fills it, so a Context does
-     not size the app's own chrome. ONE AND A HALF times three columns of the
-     layout grid the body row would hold, with their gutters and the area's
-     own inset. Will, TODO 163. TRAP T-the-shell-owns-the-panel-areas */
+     not size the app's own chrome. THREE columns of the layout grid the body
+     row would hold, plus two gutters and the area's own inset — so the panel
+     card is exactly a 3-column card. Will, 2026-09-26.
+     TRAP T-the-shell-owns-the-panel-areas */
   --_cols: var(--sherpa-layout-grid-columns, 12);
   --_gap: var(--sherpa-layout-grid-gap-horizontal, 16px);
   --_pad: var(--sherpa-layout-grid-padding, 16px);
   --_col: calc((100% - var(--_pad) - (var(--_cols) - 1) * var(--_gap)) / var(--_cols));
-  flex: 0 0 var(--sherpa-panel-area-width, calc(1.5 * (3 * var(--_col) + 2 * var(--_gap) + var(--_pad))));
+  flex: 0 0 var(--sherpa-panel-area-width, calc(3 * var(--_col) + 2 * var(--_gap) + var(--_pad)));
+  /* …and never narrower than this: 150% of the 310px it is at 1280, where a
+     panel first shows. Will, TODO 163. */
+  min-inline-size: var(--sherpa-panel-area-min-width, 464px);
   min-block-size: 0;
   /* The layout grid's own inset, which the panel does not otherwise carry —
      without it a panel's top and bottom overshoot the cards beside it by 16
