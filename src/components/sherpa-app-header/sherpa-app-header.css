@@ -186,12 +186,9 @@
 }
 :host([data-icon]) .context-icon { display: inline-flex; }
 
-/* The phone's nav menu: at the width where the filters go and the rail goes.
-   TRAP T-the-nav-is-a-menu-on-a-phone */
-.nav-menu { display: none; }
-@container sherpa-app-header (max-width: 480px) {
-  .nav-menu { display: inline-flex; }
-}
+/* The mobile nav menu. The SHELL says when, as it hides its rail: the header's
+   own width is the wrong ruler. TRAP T-the-nav-is-a-menu-on-a-phone */
+.nav-menu { display: var(--sherpa-app-header-nav-menu, none); }
 
 /* Figma "Context title": content/body/+1, REGULAR weight (not bold). */
 .title {

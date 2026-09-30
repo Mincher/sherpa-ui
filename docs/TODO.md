@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**59 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**58 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -115,7 +115,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ❓ | 33a | 116 | `sherpa-nav` binds to a Store: its entries as data, drawn and redrawn | refactor |
 | ✅ | 34 | 34 | Figma: use the Navigation terms | figma |
 | ✅ | 35 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
-| ⬜ | 35d | 164 | At the mobile breakpoint the app header shows no nav hamburger: it does not get narrow enough to trigger it | bug |
+| ✅ | 35d | 164 | At the mobile breakpoint the app header shows no nav hamburger: it does not get narrow enough to trigger it | bug |
 | ⬜ | 35b | 161 | The app header's shadow FADES in, very quickly, as the Context scrolls under it | quick |
 | ⬜ | 35c | 163 | The app shell's panel areas are 150% of their width today, at the least | quick |
 | ⬜ | 35a | 146 | The app shell's FIXED panel areas resize by dragging their inner edge; the content reflows; two levels of container query | feature |
@@ -2348,7 +2348,7 @@ the raw `.hdr-btn`s, their CSS and their two state pins are gone. A host's
 measures the button's own sm icon: 14 px, as Figma's Structure collection
 projects it.
 
-### `[ ]` 164 — BUG: at the mobile breakpoint the app header shows no nav hamburger
+### `[x]` ✅ 164 — BUG: at the mobile breakpoint the app header shows no nav hamburger
 
 Will, 2026-09-30: *"The breakpoint for mobile mode isn't wide enough. Also at
 the mobile breakpoint the nav hamburger menu appears but the collapsed nav
@@ -2358,6 +2358,12 @@ it doesn't get narrow enough to trigger it."*
 
 So the second message is the bug: the shell goes to mobile, and the header's
 own rule for the hamburger reads the HEADER's width, which is still too wide.
+
+**✅ Done 2026-09-30.** Mobile now starts below 768px, where the layout grid
+goes to mobile. The shell hides the rail there and tells the header to show
+the menu button, so the two turn together. Before, each read its own width at
+480px: a desktop window cannot go that narrow, and from 481 to 520 the button
+showed beside the rail. The header's filters still go at its own 480px.
 
 ### `[ ]` 161 — The app header's shadow fades in as the Context scrolls under it
 
@@ -3748,6 +3754,7 @@ One line each. The detail is in git and in the trap named.
 - 169: a View pick keeps a scope's saved filter chips, off unless the View turns one on — `T-a-view-keeps-the-saved-filter-chips`
 - 168: a filter that lands in one scope is let go by every other — it is in ONE scope at a time — `T-send-to-view-filters`
 - 165: a group's badge counts the rows shown, under the grid's scope and its filter row — `T-a-group-is-a-data-layer-concept`
+- 164: mobile starts below 768px; the shell hides the rail and tells the header to show its menu button — `T-the-nav-is-a-menu-on-a-phone`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

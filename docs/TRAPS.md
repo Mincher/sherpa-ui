@@ -1044,11 +1044,20 @@ answer at `openSource()` no longer stops the page: `declareFromRows` reports
 ### T-the-nav-is-a-menu-on-a-phone
 
 **On a phone the nav is a MENU, and it is the SAME `sherpa-nav`** — TODO 17b.
-At 480 px (the header's phone width, where its filters go) the shell hides
+Below 768 px — the layout grid's own mobile mode — the shell hides
 the rail with `visibility`, not `display` — a top-layer element under a
 `display: none` ancestor is not drawn — and drops its inset; the header shows
 a menu button right of the Context title, which asks (`nav-menu-request`) and
-the SHELL opens the rail's `openMenu()`. The nav then goes into the TOP LAYER
+the SHELL opens the rail's `openMenu()`.
+
+**The shell decides, and TELLS the header** (TODO 164). Each once read its own
+width at 480 px, and the header is narrower than the shell by the rail: from
+481 to 520 the button showed beside a rail that was still there, and a
+desktop window, which stops near 500, never got the menu at all. Now the
+shell's one query sets `--sherpa-app-header-nav-menu` on its header area, and
+the button's `display` is that property — inherited, because a container
+query cannot name a container across a shadow root with any certainty, and
+an attribute would need JS. The header's FILTERS still go at its own 480. The nav then goes into the TOP LAYER
 (`showPopover()` on its own host, so no containment or stacking clips it),
 over the whole screen, open, with no Pin; Settings at the bottom and a Cancel
 that goes nowhere. An Area only opens; a Context row closes it as it goes;

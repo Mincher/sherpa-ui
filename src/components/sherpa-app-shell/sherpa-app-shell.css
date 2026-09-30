@@ -215,10 +215,14 @@
   display: none;
 }
 
-/* A PHONE: the rail goes, and its inset with it; the header's menu button opens
+/* MOBILE: the rail goes, and its inset with it; the header's menu button opens
    the nav as a menu, in the top layer, where `visibility` lets it back.
-   480px, the header's own phone width. TRAP T-the-nav-is-a-menu-on-a-phone */
-@container sherpa-app-shell (max-width: 480px) {
+   Below 768px, the layout grid's own mobile mode. The shell TELLS the header,
+   so the rail and the button turn together. TRAP T-the-nav-is-a-menu-on-a-phone */
+@container sherpa-app-shell (max-width: 767px) {
   .nav { visibility: hidden; }
   .frame { margin-inline-start: 0; }
+  .header { --sherpa-app-header-nav-menu: inline-flex; }
 }
+/* No rail, so no menu to open. */
+:host([data-no-nav]) .header { --sherpa-app-header-nav-menu: none; }

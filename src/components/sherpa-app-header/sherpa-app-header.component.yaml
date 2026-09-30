@@ -367,6 +367,7 @@ tokens:
   title-row.min-block-size: "{sherpa.display-mode-size-lg}"
   context-icon.--_icon-size: "{sherpa.theme-size-icon-xs}"
   context-icon.color: "{sherpa.style-content-base}"
+  nav-menu.display: "{sherpa.app-header-nav-menu}"
   title.font-size: "{sherpa.font-size-body-large}"
   title.font-weight: "{sherpa.font-weight-regular}"
   title.line-height: "{sherpa.theme-content-line-height-large}"

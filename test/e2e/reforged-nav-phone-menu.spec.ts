@@ -67,6 +67,21 @@ test('on a phone the nav opens as a whole-screen menu; Cancel goes nowhere, a Co
   expect(went.menu).toBe(false);
 });
 
+/* Will, TODO 164: "the app header doesn't show the nav hamburger menu as it
+   doesn't get narrow enough to trigger it." The SHELL decides, below the
+   layout grid's 768, and tells the header — so the two never disagree. */
+for (const [width, mobile] of [[500, true], [767, true], [768, false], [800, false]] as const) {
+  test(`at ${width}px the rail and the menu button turn together (${mobile ? 'mobile' : 'rail'})`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto('http://localhost:4200/?context=records');
+    await page.waitForFunction(() =>
+      !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
+    expect(await look(page)).toMatchObject(mobile
+      ? { button: true, rail: 'hidden', inset: '0px' }
+      : { button: false, rail: 'visible' });
+  });
+}
+
 test('wider than a phone, the rail stays and there is no menu button', async ({ page }) => {
   await page.setViewportSize({ width: 1200, height: 800 });
   await page.goto('http://localhost:4200/?context=records');
