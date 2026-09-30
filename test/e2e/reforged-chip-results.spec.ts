@@ -79,6 +79,7 @@ test('on Records, a chip switched OFF keeps its number, and an emptied one loses
   await page.goto('http://localhost:4200/?context=records&view=risk');
   await page.waitForFunction(() =>
     !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
+  await page.waitForFunction(() => !!(window as unknown as { sherpa?: { source?: unknown } }).sherpa?.source);
   const chip = (): Promise<{ on: boolean; count: string | null; tip: string }> => page.evaluate(() => {
     const c = document.querySelector('#qft')!.shadowRoot!.querySelector<HTMLElement>('.chip[data-id="status"]')!;
     return { on: c.hasAttribute('data-current'), count: c.dataset['count'] ?? null,

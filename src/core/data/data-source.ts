@@ -1668,6 +1668,14 @@ export class DataSource extends EventTarget {
       if (scope.narrows || given.scopes[id]?.holds) continue;
       (next.scopes[id] ??= { holds: [], readings: {} }).holds = [...scope.holds];
     }
+    /* …and its SAVED filters, as chips: each stays on its bar, OFF unless the
+       View turns it on. A View that named none took them all off the bar.
+       TRAP T-a-view-keeps-the-saved-filter-chips */
+    for (const [id, scope] of Object.entries(this.#draft.scopes)) {
+      if (scope.narrows || !scope.presets) continue;
+      const to = (next.scopes[id] ??= { holds: [], readings: {} });
+      to.presets = { ...Object.fromEntries(Object.keys(scope.presets).map((p) => [p, false])), ...to.presets };
+    }
     for (const scope of Object.values(next.scopes)) {
       if (scope.narrows) continue;
       for (const field of Object.keys(scope.readings)) {

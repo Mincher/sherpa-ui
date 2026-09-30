@@ -204,3 +204,35 @@ test('the View\'s date is a RANGE; a component\'s date stays one day', async () 
   assert.equal(source.describe('view').filters.find((f) => f.id === 'created').range, true);
   assert.equal(source.describe('data').filters.find((f) => f.id === 'seen').range, undefined);
 });
+
+/* Found with TODO 167, fixed as 169: "Reset to default", and any View pick,
+   took a bar's saved filter chips off it — a View kept the FIELD chips a scope
+   holds and not its saved filters. TRAP T-a-view-keeps-the-saved-filter-chips */
+test('a View keeps a scope\'s saved filter chips: each OFF, unless the View turns it on', async () => {
+  const store = new ArrayStore([{ status: 'open', health: 40 }, { status: 'shut', health: 90 }]);
+  const source = await openSource({
+    store: 'rows',
+    fields: { status: { label: 'Status' }, health: { label: 'Health', type: 'number' } },
+    scopes: { data: { label: 'Alerts', holds: ['status'], presets: ['at-risk', 'shut'] } },
+    presets: {
+      'at-risk': { label: 'At risk', readings: { health: { op: 'lt', text: '60' } } },
+      shut: { label: 'Shut', readings: { status: { picked: ['shut'] } } },
+    },
+  }, store);
+  const presets = () => source.query.applied.scopes.data.presets;
+  assert.deepEqual(presets(), { 'at-risk': false, shut: false });
+
+  // A View that names NONE: both chips stay, off.
+  await source.setQuery({ v: 1, scopes: { data: { sort: [], group: null, search: '' } } }, { holds: 'keep' });
+  assert.deepEqual(presets(), { 'at-risk': false, shut: false });
+  assert.deepEqual(source.describe('data').filters.map((f) => [f.id, f.active ?? null]),
+    [['at-risk', false], ['shut', false], ['status', null]]);
+
+  // A View that turns ONE on: that one on, the other still there.
+  await source.setQuery({ v: 1, scopes: { data: { presets: { 'at-risk': true } } } }, { holds: 'keep' });
+  assert.deepEqual(presets(), { 'at-risk': true, shut: false });
+
+  // And back: the first is off again, and neither has gone.
+  await source.setQuery({ v: 1, scopes: { data: { sort: [], group: null, search: '' } } }, { holds: 'keep' });
+  assert.deepEqual(presets(), { 'at-risk': false, shut: false });
+});

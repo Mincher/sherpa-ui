@@ -12857,6 +12857,22 @@ def types each declared `conditions` for themselves.
 - Site: `test/unit/the-def-speaks-the-new-words.test.mjs`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 
+### T-a-view-keeps-the-saved-filter-chips
+
+A View pick (`setQuery(query, { holds: 'keep' })`) keeps the chips a scope
+holds that the View does not name. It kept the FIELD chips and not the SAVED
+filters: a View's scope replaced `presets` whole, so a View that named none —
+"All customers" — took every saved filter chip off the bar, and "Reset to
+default", which picks the View again, did the same. A page showed three saved
+filters at rest and none after the first View pick.
+
+Each saved filter a scope holds stays on its bar, OFF unless the View turns
+it on.
+
+- Site: `src/core/data/data-source.ts`
+- Site: `test/unit/page-definition.test.mjs`
+
+
 ### T-a-saved-filter-is-its-readings
 
 **A saved filter is a name and its READINGS, field by field — never a

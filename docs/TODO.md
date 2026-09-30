@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**61 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**60 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -58,7 +58,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16l | 148 | After a Reset, a date chip's value label reads `Unassigned` | bug |
 | ✅ | 16m | 151 | A filter moved across scopes does not keep its Simple or Advanced mode | bug |
 | ✅ | 16w | 168 | A filter sent from scope A to the View, then down to scope B, shows in A again: a filter is in ONE scope at any time | bug |
-| ⬜ | 16x | 169 | "Reset to default", and a View pick, take the saved filter chips off the bar | bug |
+| ✅ | 16x | 169 | "Reset to default", and a View pick, take the saved filter chips off the bar | bug |
 | ✅ | 16v | 167 | A Reset in a component scope clears a chip's "moved to the View" state and its inactive look | bug |
 | ✅ | 16u | 166 | A saved filter's badge shows its count only while it is ON — the count is not always known before | bug |
 | ⬜ | 16t | 165 | A filtered grid's group row badge shows the group's TOTAL rows, not the rows shown | bug |
@@ -1043,12 +1043,18 @@ section shows its legend's chips again — not answered.
   until the filter is sent back to the chart.
 `T-send-to-view-filters`
 
-### `[ ]` 169 — BUG: "Reset to default" and a View pick take the saved filter chips off the bar
+### `[x]` ✅ 169 — BUG: "Reset to default" and a View pick take the saved filter chips off the bar
 
 Found 2026-09-30, with 167. On Records the grid's bar shows three saved
 filters at rest. After "Reset to default", or after any View is picked, they
 are gone — unless the View names one as ON. A View keeps the FIELD chips a
 scope holds; it does not keep its saved filters.
+
+**✅ Done 2026-09-30.** A View pick keeps a scope's saved filter chips: each
+stays on its bar, off, unless the View turns it on. So "At risk" (the View)
+now shows `At risk` on, with `Has open tickets` and `Unassigned` beside it,
+off — before, it showed `At risk` alone.
+`T-a-view-keeps-the-saved-filter-chips`
 
 ### `[x]` ✅ 167 — BUG: a Reset in a component scope clears a chip's "moved to the View" state
 
@@ -3733,6 +3739,7 @@ One line each. The detail is in git and in the trap named.
 - 149: queued — the legend's items become swatch chips
 - 148: an emptied date range holds no ends — the chip read `undefined` after a Reset
 - 121: a panel field's Clear and Send to are one button group
+- 169: a View pick keeps a scope's saved filter chips, off unless the View turns one on — `T-a-view-keeps-the-saved-filter-chips`
 - 168: a filter that lands in one scope is let go by every other — it is in ONE scope at a time — `T-send-to-view-filters`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
