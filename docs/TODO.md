@@ -150,12 +150,12 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | | | | **J — Tidy-ups and renames** | |
 | ✅ | 49 | 11 | `sherpa-group`: what is left | tidy |
 | ❓ | 50 | 28 | A Figma component is NOT always a web component | tidy |
-| ⬜ | 51 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| ❓ | 51 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
 | ⬜ | 52 | 33 | Density as step offsets, and a breakpoint step | tokens |
 | ⬜ | 53 | 36 | CSS: compiled where it should inherit? | tidy |
 | ❓ | 54 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
 | ✅ | 55 | 84 | Use the platform: Intl for money, units and deltas; Temporal in the calendar | refactor |
-| ⬜ | 56 | 81 | Component contracts move from YAML to JSON | refactor |
+| ❓ | 56 | 81 | Component contracts move from YAML to JSON | refactor |
 | ✅ | 56a | 111 | A spec types every JS property as `string` — `reading`, `conditions`, `open` | tidy |
 | ⬜ | 57 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 | | | | **K — Agentic UI: much later** | |
@@ -3460,7 +3460,7 @@ neither is clear:
   One element per cell would be about 350 shadow roots on one Records page.
 - **B: keep it**, for the rebuild of the grid from Grid Cells.
 
-### `[ ]` 30 — Do we still need `icon-paths.ts` and `render-icon.ts`?
+### `[ ]` ❓ 30 — Do we still need `icon-paths.ts` and `render-icon.ts`?
 
 Will, twice: *"HTML & CSS should be handling this."*
 
@@ -3475,6 +3475,30 @@ What still stands: the `.svg` files do not ship (no `dist/icons/`), and 48 of
 (`data-icon-start="gear"`), which a static template cannot cover. Options: a
 sprite sheet (`<use href="#gear">` — check across a shadow root), or a CSS
 `mask-image` set coloured by `background-color`. Measure, then choose.
+
+**Measured 2026-09-30, in Chromium, Firefox and WebKit**, inside a shadow
+root with an adopted sheet, on a two-colour icon (a disc with a white tick,
+as `status-ok` is):
+
+| | the disc | the white tick |
+|---|---|---|
+| sprite: `<svg><use href="icons.svg#ok">` | the text colour ✓ | white ✓ |
+| mask: `mask: url(ok.svg)` + `background` | the text colour ✓ | **the text colour ✗** |
+
+So a MASK cannot draw a two-colour icon — the tick disappears. A SPRITE can,
+in every engine, and a file reference crosses a shadow root fine.
+
+What neither removes: a name from OUTSIDE (`data-icon-start="gear"`, 48 of
+76 sites) still needs one line of JS, to write `href="…#gear"`. What a sprite
+DOES remove: `icon-paths.ts` is 314 KB of JavaScript in every page, parsed
+before anything draws. A sprite is a file the browser caches.
+
+**❓ One choice:**
+- **A (my pick): a sprite.** `generate-icons.mjs` writes `dist/icons.svg`
+  (one `<symbol>` per icon, in its frame); an icon is `<svg><use href>`, and
+  `renderIcon` shrinks to writing that one `href`. A small list of names
+  stays, for `hasIcon`. The icon tests read the sprite instead.
+- **B: keep it as it is.** It works; its cost is the 314 KB.
 
 ### `[ ]` 33 — Density as step offsets, and a breakpoint step
 
@@ -3574,7 +3598,7 @@ by its literal. 66 properties across 24 specs changed — `reading` is
 `FieldReading`, `open` is `boolean`. Three say `unknown`, because nothing in
 the code names their type. A `@prop` tag's type still wins where it gives one.
 
-### `[ ]` 81 — Component contracts move from YAML to JSON
+### `[ ]` ❓ 81 — Component contracts move from YAML to JSON
 
 Will, 2026-09-27: *"We can probably accept moving the component YAML contracts
 to JSON, too."* The same rule as views and queries: JSON is what other
@@ -3587,6 +3611,15 @@ services send and receive. Each `sherpa-<name>.component.yaml` becomes
 server (`server.js`, `tools/discover.js`). One sweep, with `spec:check`
 proving every contract round-trips the same before and after. The
 hand-maintained YAML in `scripts/figma-data/` is a separate question.
+
+**❓ Blocked 2026-09-30 — it needs your permission.** The first step renames
+all 66 `*.component.yaml` files to `.component.json` (`git mv`, then write
+the same data as JSON). The session's permission check refused that as a
+change to shared files, so nothing was changed. Every reader is ready to
+switch: they all read through `scripts/lib/generation/data.mjs` (the MCP
+server too), plus eight scripts and one unit test that read the file
+directly. Say "go on 81" and allow the rename, and I finish it in one
+commit, with `spec:check` proving each contract the same.
 
 ### `[ ]` 29 — Rename `src/index.ts` to `src/app.ts`
 
