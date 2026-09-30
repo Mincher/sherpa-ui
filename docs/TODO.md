@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**58 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**57 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -82,7 +82,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 31c | 122 | Email starts SIMPLE, with a switch to Advanced; over 20 values it is one chip with a multi-select menu | feature |
 | ✅ | 31d | 120 | A view-scope filter gets "Send to `<scope name>`", the counterpart of "Send to view filters" | feature |
 | ✅ | 31e | 121 | Clear and Send to are ONE button group, with the grouping classes | quick |
-| ⬜ | 31f | 123 | An inactive chip KEEPS its match count badge; it goes only when every value and condition is removed | feature |
+| ✅ | 31f | 123 | An inactive chip KEEPS its match count badge; it goes only when every value and condition is removed | feature |
 | ✅ | 31g | 125 | The sort tooltip names the direction as well as the field | quick |
 | ✅ | 31h | 126 | "Filter applied at higher scope" becomes "Filter moved to `<scope name>` scope" | quick |
 | ⬜ | 31i | 129 | "Reset all to default", with a confirm dialog and a "Save filters before reset" switch | feature |
@@ -1744,13 +1744,29 @@ POSITION, so Clear alone — a View field has nowhere to send to — keeps both
 its corners. The pair shows once the field has an answer, as Clear did. 120's
 "Send to `<scope>`" button goes in this group when it is built.
 
-### `[ ]` 123 — An inactive chip KEEPS its match count badge
+### `[x]` ✅ 123 — An inactive chip KEEPS its match count badge
 
 Will, 2026-09-30: *"Don't hide the match count badge when a filter chip is
 set to inactive. Only remove the badge when all values/conditions are removed
 from the filter."*
 
 Changes 60, which shows the badge only while the chip is on.
+
+**✅ Done 2026-09-30.** A chip switched off keeps its badge: the rows its
+answer WOULD match. Empty it and the badge goes. A chip with a change that
+waits for Apply still shows none. The tooltip follows 147: off, it says
+nothing.
+
+❓ **One thing to see — saved filters.** A saved filter always holds its
+conditions, so by your rule it always shows its count, before it is ever
+switched on. On Records the bar now reads `90 Has open tickets`, `27 At
+risk`, `15 Unassigned` at rest.
+
+- **A (as built, my pick):** keep it — the number says what the switch will
+  give, before the press.
+- **B:** a saved filter shows its count only while it is on.
+
+`T-a-chip-counts-its-own-results`
 
 ### `[x]` ✅ 125 — The sort tooltip names the direction as well as the field
 
@@ -3328,6 +3344,7 @@ One line each. The detail is in git and in the trap named.
 - 149: queued — the legend's items become swatch chips
 - 148: an emptied date range holds no ends — the chip read `undefined` after a Reset
 - 121: a panel field's Clear and Send to are one button group
+- 123: a chip switched off keeps its results badge; the source counts an off answer, and a saved filter, on or off — `T-a-chip-counts-its-own-results`
 - 139: a chained chip's face shows its values — `U, an` — not the condition labels
 - 138: an Advanced chip, and the text it matched, are info blue again — `T-a-conditioned-chip-reads-as-info`
 - 120: a View field is sent DOWN to the one scope that has it, with its answer — `T-send-to-view-filters`

@@ -2,10 +2,10 @@ import { test, expect, type Bar } from './harness';
 
 /**
  * A CHIP'S BADGE IS ITS RESULTS — TODO 60. The rows its OWN answer matches, as
- * its source counted them; shown only while the chip is on and not pending.
+ * its source counted them; shown on or off (TODO 123), and never while pending.
  * TRAP T-a-chip-counts-its-own-results
  */
-test('a chip shows the results it is drawn, only while on and not pending', async ({ page }) => {
+test('a chip shows the results it is drawn, on or off, and none while pending', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const bar = await window.__mount<Bar & { drawResults(r: Record<string, number>): void }>(
       'sherpa-quick-filter-toolbar', [
@@ -31,8 +31,9 @@ test('a chip shows the results it is drawn, only while on and not pending', asyn
     return { before, drawn, pending, after: look('plan') };
   });
   expect(r.before).toEqual({ count: null, said: null });
-  // On: its number, in the reader's own digits. Off (Tier): none.
-  expect(r.drawn).toEqual({ plan: { count: '1,234', said: '1,234 results' }, tier: { count: null, said: null } });
+  // Its number, in the reader's own digits — off (Tier) too: the source counts
+  // only a chip that holds an answer. Will, TODO 123.
+  expect(r.drawn).toEqual({ plan: { count: '1,234', said: '1,234 results' }, tier: { count: '9', said: '9 results' } });
   // A draft has no results yet.
   expect(r.pending).toEqual({ count: null, said: null });
   expect(r.after).toEqual({ count: '1,234', said: '1,234 results' });
@@ -65,4 +66,39 @@ test('on Records, each answered chip shows the rows its own answer matches', asy
   expect(Object.keys(r.counted).sort()).toEqual(['at-risk', 'openTickets', 'status']);
   // An unanswered chip shows none.
   expect(r.chips['plan']).toBeNull();
+});
+
+/**
+ * OFF KEEPS ITS BADGE — Will, TODO 123: "Don't hide the match count badge when
+ * a filter chip is set to inactive. Only remove the badge when all
+ * values/conditions are removed from the filter."
+ */
+test('on Records, a chip switched OFF keeps its number, and an emptied one loses it', async ({ page }) => {
+  await page.goto('http://localhost:4200/?context=records&view=risk');
+  await page.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
+  const chip = (): Promise<{ on: boolean; count: string | null; tip: string }> => page.evaluate(() => {
+    const c = document.querySelector('#qft')!.shadowRoot!.querySelector<HTMLElement>('.chip[data-id="status"]')!;
+    return { on: c.hasAttribute('data-current'), count: c.dataset['count'] ?? null,
+      tip: c.shadowRoot!.querySelector<HTMLElement>('.count-wrap')!.dataset['text'] ?? '' };
+  });
+  type Source = { debugState(): { total: number } };
+  const total = (): Promise<number> => page.evaluate(() =>
+    (window as unknown as { sherpa: { source: Source } }).sherpa.source.debugState().total);
+  await expect.poll(async () => (await chip()).count).not.toBeNull();
+  const before = await chip();
+  const rows = await total();
+  expect(before.on).toBe(true);
+
+  // OFF: the rows widen, the number stays, and the tip says nothing.
+  await page.evaluate(() => document.querySelector('#qft')!.shadowRoot!
+    .querySelector('.chip[data-id="status"]')!.shadowRoot!.querySelector<HTMLElement>('.body')!.click());
+  await expect.poll(total).toBeGreaterThan(rows);
+  await expect.poll(chip).toEqual({ on: false, count: before.count, tip: '' });
+
+  // EMPTIED: nothing left to count.
+  await page.evaluate(() => (document.querySelector('#qft') as HTMLElement & {
+    setChipReading(id: string, r: unknown): void; report(): void }).setChipReading('status', { picked: [] }));
+  await page.evaluate(() => (document.querySelector('#qft') as HTMLElement & { report(): void }).report());
+  await expect.poll(async () => (await chip()).count).toBeNull();
 });

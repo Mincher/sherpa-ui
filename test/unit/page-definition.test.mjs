@@ -136,6 +136,10 @@ test('a chip counts the rows ITS OWN answer matches, within what its scope can s
     fields: { region: { label: 'Region' }, status: { label: 'Status' } },
     scopes: { view: { label: 'View filters', holds: ['region'] }, data: { label: 'Alerts', holds: ['status'] } },
   }, store);
+  // Bound, `data` is a COMPONENT's scope: its answers are not the page's.
+  source.bind({
+    populate() {}, setAttribute() {}, removeAttribute() {}, addEventListener() {}, removeEventListener() {},
+  }, { scope: 'data' });
   await source.setQuery({ v: 1, scopes: {
     view: { holds: ['region'], readings: { region: { picked: ['EMEA'] } } },
     data: { holds: ['status'], readings: { status: { picked: ['open'] } } },
@@ -144,6 +148,19 @@ test('a chip counts the rows ITS OWN answer matches, within what its scope can s
   assert.deepEqual(await source.results('view'), { region: 2 });
   // A component's chip: its own answer, within the View's EMEA rows — not 3.
   assert.deepEqual(await source.results('data'), { status: 1 });
+
+  /* OFF keeps its number: what the answer WOULD match. Will, TODO 123. An
+     off View answer narrows nothing, so the chip below counts over every row. */
+  source.suspendSelection('region');
+  assert.deepEqual(await source.results('view'), { region: 2 });
+  assert.deepEqual(await source.results('data'), { status: 3 });
+  // A saved filter the scope holds, off: counted too.
+  source.declarePreset('shut', { status: { picked: ['shut'] } }, { label: 'Shut' });
+  source.answer('data', { status: { picked: ['open'] } }, { shut: false });
+  assert.deepEqual(await source.results('data'), { status: 3, shut: 1 });
+  // EMPTIED, it has no number.
+  source.select('status', []);
+  assert.deepEqual(await source.results('data'), { shut: 1 });
 });
 
 test('a carry-over field keeps its answer through a View change; any other resets', async () => {

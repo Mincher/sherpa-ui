@@ -1599,14 +1599,18 @@ export class DataSource extends EventTarget {
     const viewed = andFilter([...parts, ...(view ? [view] : [])]);
     /* A DRAFT edit on a remote source changes nothing applied: no load, and
        the page stays where it is. It only changes what is pending. */
-    const same = this.#remote && JSON.stringify(next) === JSON.stringify(this.#filter)
+    const still = JSON.stringify(next) === JSON.stringify(this.#filter)
       && JSON.stringify(only) === JSON.stringify(this.#only);
+    const same = this.#remote && still;
     this.#only = only;
     this.#filter = next;
     this.#viewFilter = viewed;
     this.#scoped = scoped;
     this.#syncPending();
     if (!same) this.#requery();
+    /* The rows did not move, so no load will count again — yet an answer that
+       is OFF changed, and its chip still wears a number. TRAP T-a-chip-counts-its-own-results */
+    if (still && this.#loaded && this.#countedFor !== JSON.stringify(this.#applied)) void this.#drawResults();
   }
 
   /* ── Draft and applied — a REMOTE source only ─────────────────────────
@@ -1911,7 +1915,9 @@ export class DataSource extends EventTarget {
    * Each answered chip's RESULTS in a scope: the rows its OWN answer matches,
    * within what the scope can see — a component scope's, within the View's. By
    * field, or saved-filter id; from the APPLIED Query, so a draft has none.
-   * Will, TODO 60. TRAP T-a-chip-counts-its-own-results
+   * ON OR OFF: an answer switched off still says what it would match, and only
+   * one with nothing in it has no number. Will, TODO 60 and 123.
+   * TRAP T-a-chip-counts-its-own-results
    */
   async results(scope: string): Promise<Record<string, number>> {
     const q = this.#applied.scopes[scope];
@@ -1925,10 +1931,11 @@ export class DataSource extends EventTarget {
     const above = new Set(scope === VIEW ? [] : this.#applied.scopes[VIEW]?.holds ?? []);
     const own: Array<[string, Filter | undefined]> = [
       ...Object.entries(q.readings)
-        .filter(([f, reading]) => !reading.suspended && !above.has(f))
-        .map(([f, reading]): [string, Filter | undefined] => [f, readingClause({ field: f, ...field(f) }, reading)]),
-      ...Object.entries(q.presets ?? {}).filter(([, on]) => on)
-        .map(([id]): [string, Filter | undefined] => [id, andFilter(Object.entries(this.#presets.get(id) ?? {})
+        .filter(([f]) => !above.has(f))
+        .map(([f, { suspended: _off, ...reading }]): [string, Filter | undefined] =>
+          [f, readingClause({ field: f, ...field(f) }, reading)]),
+      ...Object.keys(q.presets ?? {})
+        .map((id): [string, Filter | undefined] => [id, andFilter(Object.entries(this.#presets.get(id) ?? {})
           .map(([f, reading]) => readingClause({ field: f, ...field(f) }, reading))
           .filter((c): c is NonNullable<typeof c> => !!c))]),
     ];
@@ -1947,6 +1954,7 @@ export class DataSource extends EventTarget {
     const drawn = [...this.#bound].flatMap(([el, b]) => (el.drawResults && b.scope
       ? [{ el, scopes: typeof b.scope === 'string' ? [b.scope] : b.scope }] : []));
     if (!drawn.length) return;
+    this.#countedFor = JSON.stringify(this.#applied);
     const ticket = (this.#counting = Symbol('count'));
     const byScope = new Map<string, Record<string, number>>();
     for (const scope of new Set(drawn.flatMap((d) => d.scopes))) {
@@ -1960,6 +1968,8 @@ export class DataSource extends EventTarget {
 
   /** The latest results count; an older one lands on nothing. */
   #counting: symbol | null = null;
+  /** The applied Query the chips' results were last counted for, as JSON. */
+  #countedFor = '';
 
   /** The ViewState as one comparable string. Key order is stable by construction. */
   #stateKey(): string {

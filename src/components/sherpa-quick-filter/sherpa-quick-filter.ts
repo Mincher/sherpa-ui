@@ -650,7 +650,8 @@ export class SherpaQuickFilter extends SherpaElement {
    * grid heading. Will, TODO 130. TRAP T-a-chip-says-its-own-answer
    */
   #writeTip(): void {
-    const n = this.#shownResults();
+    // OFF, the badge keeps its number and the tip says nothing.
+    const n = this.current ? this.#shownResults() : null;
     const matches = n == null ? '' : `${RESULTS.format(n)} ${n === 1 ? 'match' : 'matches'}`;
     // OFF filters nothing, so it says nothing — but one held ABOVE says where it went.
     const says = this.current || this.hasAttribute('data-superseded');
@@ -667,9 +668,10 @@ export class SherpaQuickFilter extends SherpaElement {
     else body?.removeAttribute('aria-description');
   }
 
-  /** The results the chip shows now: while it is on and applied, or none. */
+  /** The results the chip shows now: once applied, ON OR OFF — the source gives
+   *  a number only to a chip that holds an answer. Will, TODO 123. */
   #shownResults(): number | null {
-    return this.current && !this.hasAttribute('data-pending') ? this.#results ?? null : null;
+    return this.hasAttribute('data-pending') ? null : this.#results ?? null;
   }
 
   /**
@@ -832,8 +834,8 @@ export class SherpaQuickFilter extends SherpaElement {
   #results: number | null | undefined;
 
   /**
-   * The badge is the chip's RESULTS while it is on and applied — not a count of
-   * picks, nor `fx`: the tip says those. Will, TODO 60.
+   * The badge is the chip's RESULTS once applied, on or off — not a count of
+   * picks, nor `fx`: the tip says those. Will, TODO 60 and 123.
    * TRAP T-a-chip-counts-its-own-results
    */
   #syncBadge(): void {

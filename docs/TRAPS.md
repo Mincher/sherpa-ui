@@ -1192,10 +1192,21 @@ button's `aria-description` says it to a screen reader). Counted within what
 the chip's scope can see: a component chip within the rows the View allows.
 `source.results(scope)` counts from the APPLIED Query — `store.totalCount()`
 per answered field or saved filter — after every load, and draws them onto
-each scope-bound bar (`drawResults`); a later load's count wins. A chip shows
-its number only while it is on and not pending (46): a draft has no results
-yet. A chip never told its results, and with no menu, leaves `data-count` to
-its host, as before.
+each scope-bound bar (`drawResults`); a later load's count wins. A chip never
+told its results, and with no menu, leaves `data-count` to its host, as
+before.
+
+**ON OR OFF** — Will, TODO 123: a chip switched off keeps its badge, and only
+one with no values and no conditions has none. So the source counts an OFF
+answer too — what it WOULD match — and a saved filter its scope holds,
+whether it is on or not. Pending still shows none (46): a draft has no
+results yet. The TIP says its matches only while the chip is on; off, it says
+nothing.
+
+**An off answer that changes moves no rows, so no load follows** — and the
+count was only ever drawn after a load. Emptied, the chip kept its old
+number. `#recompose` draws the results itself when the filter stood still
+and the applied Query did not.
 
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
