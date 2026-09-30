@@ -8,7 +8,7 @@ import { test, expect } from './harness';
  */
 
 
-test('the nav rail is a full-height overlay; the header is sticky inside the scroller', async ({ page }) => {
+test('the nav rail is a full-height overlay; the header is a row above the scroller', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-app-shell') as HTMLElement & { rendered?: Promise<void> };
     el.innerHTML =
@@ -31,20 +31,14 @@ test('the nav rail is a full-height overlay; the header is sticky inside the scr
       atLeftEdge: Math.abs(navBox.left - shellBox.left) < 1,
       fullHeight: Math.abs(navBox.height - shellBox.height) < 1,
       frameDisplay: getComputedStyle(q('.frame')).display,
-      // ONE row: the header lives INSIDE the scrolling content now, so there is no
-      // header row to reserve. It had to move there to be sticky at all — as a
-      // grid row ABOVE the scroller it never moved, so `scroll-state(stuck: top)`
-      // could never fire and it never got its drop shadow.
+      // ONE row in the frame: the header is a row of `.content`, above the body.
       frameRows: getComputedStyle(q('.frame')).gridTemplateRows.split(' ').length,
-      headerInsideScroller: !!q('.content .header'),
-      headerSticky: getComputedStyle(q('.header')).position,
-      // The header is its own scroll-state container: such a container styles its
-      // DESCENDANTS, so it must BE the sticky element rather than the scroller.
-      headerIsScrollState: getComputedStyle(q('.header')).containerType,
-      // CHROMIUM ONLY. Firefox and WebKit drop the property and report
-      // "normal"; the header still sticks, it just never gains the stuck
-      // shadow. TRAP T-scroll-state-is-chromium-only
-      supportsScrollState: CSS.supports('container-type', 'scroll-state'),
+      /* ONLY THE CONTEXT SCROLLS: the header and both panel areas are outside
+         the scroller, so nothing scrolls them away. TRAP T-only-the-context-scrolls */
+      scrolls: ['.content', '.body', '.context-frame'].map((sel) => getComputedStyle(q(sel)).overflowY),
+      headerInScroller: !!q('.context-frame .header'),
+      panelsInScroller: !!q('.context-frame .panel-start, .context-frame .panel-end'),
+      headerPosition: getComputedStyle(q('.header')).position,
       // The view's inset moved off .content, so the sticky header bleeds full
       // width while the content below it stays on the layout grid.
       contentPadding: getComputedStyle(q('.content')).paddingTop,
@@ -58,10 +52,11 @@ test('the nav rail is a full-height overlay; the header is sticky inside the scr
   expect(r.contentSlot).toBe(true);
   expect(r.navPosition).toBe('absolute'); // an overlay, not a grid column
   expect(r.atLeftEdge).toBe(true);
-  expect(r.headerInsideScroller).toBe(true);
-  expect(r.headerSticky).toBe('sticky');
-  // The guard and the engine must AGREE — that is the whole safety of it.
-  expect(r.headerIsScrollState.includes('scroll-state')).toBe(r.supportsScrollState);
+  expect(r.scrolls).toEqual(['hidden', 'visible', 'auto']);
+  expect(r.headerInScroller).toBe(false);
+  expect(r.panelsInScroller).toBe(false);
+  // A row that nothing scrolls needs no `sticky`.
+  expect(r.headerPosition).toBe('relative');
   // NEITHER region pads. The LAYOUT GRID owns the view's inset — `.sherpa-grid`
   // already applies --sherpa-layout-grid-padding, and the shell applying it too
   // inset the content TWICE, so a card sat 32px off the rail instead of 16.
@@ -69,9 +64,50 @@ test('the nav rail is a full-height overlay; the header is sticky inside the scr
   expect(r.viewPadding).toBe('0px');
   expect(r.fullHeight).toBe(true);
   expect(r.frameDisplay).toBe('grid');
-  // ONE row, not two. The header moved INSIDE the scrolling content, so the frame
-  // no longer reserves a row for it.
   expect(r.frameRows).toBe(1);
+});
+
+test('only the Context scrolls: the header and a panel stay put, and the header takes a shadow', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '<div style="block-size: 400px"><sherpa-app-shell style="min-block-size: 0">'
+      + '<div slot="nav">N</div><div slot="header" class="head" style="block-size: 40px">H</div>'
+      + '<div slot="panel-start" class="side" open style="block-size: 100%">Filters</div>'
+      // A Context taller than its frame, as a page is: its CONTENT overflows.
+      + '<div><div class="page" style="block-size: 1200px">Context</div></div></sherpa-app-shell></div>';
+    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    await settle();
+    const shell = root.querySelector('sherpa-app-shell')!;
+    (shell.shadowRoot!.querySelector('.shell') as HTMLElement).style.minBlockSize = '0';
+    const frame = shell.shadowRoot!.querySelector<HTMLElement>('.context-frame')!;
+    const top = (sel: string): number => Math.round(root.querySelector(sel)!.getBoundingClientRect().top);
+    const shadow = (): string => getComputedStyle(root.querySelector('.head')!).boxShadow;
+    const frames = (): Promise<void> => new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(() => res())));
+    const at = { head: top('.head'), side: top('.side'), page: top('.page'), shadow: shadow() };
+    frame.scrollTop = 200;
+    await frames();
+    const scrolled = { head: top('.head'), side: top('.side'), page: top('.page'), shadow: shadow() };
+    frame.scrollTop = 0;
+    await frames();
+    return {
+      at, scrolled, back: shadow(),
+      panelShown: getComputedStyle(shell.shadowRoot!.querySelector('.panel-start')!).display,
+      // Chromium and WebKit; Firefox has no scroll-driven animation, and draws no shadow.
+      driven: CSS.supports('timeline-scope: --x') && CSS.supports('animation-timeline: --x'),
+    };
+  });
+  expect(r.panelShown).toBe('block');
+  // The page moved by the scroll; the header and the panel did not move at all.
+  expect(r.scrolled.page).toBe(r.at.page - 200);
+  expect(r.scrolled.head).toBe(r.at.head);
+  expect(r.scrolled.side).toBe(r.at.side);
+  /* The shadow is there only while something is scrolled under the header. At
+     the top an engine reports `none`, or the animation's start: a shadow of no
+     size and no colour. */
+  const drawn = (shadow: string): boolean => shadow !== 'none' && !/\/ 0\) 0px 0px 0px/.test(shadow);
+  expect(drawn(r.at.shadow)).toBe(false);
+  expect(drawn(r.scrolled.shadow)).toBe(r.driven);
+  expect(drawn(r.back)).toBe(false);
 });
 
 test('the content inset holds at the collapsed width until the rail is latched open', async ({ page }) => {

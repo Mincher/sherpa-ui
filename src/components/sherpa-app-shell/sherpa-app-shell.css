@@ -50,43 +50,31 @@
   transition: margin-inline-start 160ms ease;
 }
 
-/* The scroll-state container must be the STICKY ELEMENT ITSELF: it styles its
-   DESCENDANTS, not itself, and a query on the scroller styling a sibling does
-   nothing. Hence the header sits inside the scroller — as a grid row above it,
-   it could never be stuck. No border by design; the elevation below separates. */
+/* THE HEADER IS A ROW, above the body. Nothing under it scrolls it away, so it
+   is not sticky. No border by design; the shadow below separates. */
 .header {
-  position: sticky;
-  inset-block-start: 0;
-  container-type: scroll-state;
+  flex: 0 0 auto;
   min-inline-size: 0;
-  /* Above the scrolling content, below the nav rail (z-index: 2). */
+  /* Above the body it sits over, below the nav rail (z-index: 2). */
+  position: relative;
   z-index: 1;
-  /* Opaque, or the content shows through as it slides underneath. */
   background: var(--sherpa-style-surface-base, #ffffff);
-}
-
-/* `stuck: top` is true exactly when there is content underneath, and un-sets
-   itself on the way back up — no JS. */
-@container scroll-state(stuck: top) {
-  .header ::slotted(*) {
-    box-shadow: var(--sherpa-shadow-md);
-  }
 }
 
 /* No padding: the header is a child of this box and must bleed the full width.
    `isolation: isolate` resolves every z-index inside — a data grid's sticky
-   header — within this box, so it cannot paint over the hovered nav rail. */
+   header — within this box, so it cannot paint over the hovered nav rail.
+   NOT the scroller: only the Context scrolls, so the header and both panel
+   areas stay where they are. TRAP T-only-the-context-scrolls */
 .content {
   min-inline-size: 0;
   min-block-size: 0;
-  overflow: auto;
+  overflow: hidden;
   position: relative;
   z-index: 1;
   isolation: isolate;
   grid-area: 1 / 1;
-  /* A COLUMN, so `.context-frame` takes what the sticky header leaves rather than the
-     whole scroller. As a plain block a `block-size: 100%` Context started BELOW
-     the header and still ran a header's height past the fold.
+  /* A COLUMN: the header, then the body takes what it leaves.
      TRAP T-a-fit-grid-needs-a-sized-parent */
   display: flex;
   flex-direction: column;
@@ -164,21 +152,39 @@
   inline-size: 100%;
 }
 
+/* THE SCROLLER. A Context taller than its frame scrolls HERE, between the
+   panel areas and under the header. TRAP T-only-the-context-scrolls */
 .context-frame {
   min-inline-size: 0;
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   min-block-size: 0;
+  overflow: auto;
 }
-.context-frame ::slotted(*) {
-  flex: 1 1 auto;
-  min-block-size: 0;
+
+/* The header's shadow, while the Context is scrolled under it. The header is
+   not in the scroller, so it follows the scroller's TIMELINE: the scroller
+   names it, their shared parent lifts it into scope, and the shadow is an
+   animation over the first pixel of scroll. No JS. Guarded: without the
+   timeline the animation would run on the clock and leave the shadow on.
+   Firefox has none, and draws no shadow. TRAP T-only-the-context-scrolls */
+@supports (timeline-scope: --x) and (animation-timeline: --x) {
+  .content { timeline-scope: --sherpa-context-scroll; }
+  .context-frame { scroll-timeline: --sherpa-context-scroll block; }
+  .header ::slotted(*) {
+    animation: sherpa-header-lift linear both;
+    animation-timeline: --sherpa-context-scroll;
+    animation-range: 0px 1px;
+  }
+}
+@keyframes sherpa-header-lift {
+  to { box-shadow: var(--sherpa-shadow-md); }
 }
 
 /* THE SHELL ALWAYS FITS THE VIEWPORT. The CONTENT decides whether it scrolls
-   or fits — `.content` is the scroller either way, and a Context that fits simply
-   does not overflow it.
+   or fits — `.context-frame` is the scroller either way, and a Context that
+   fits simply does not overflow it.
 
    `min-block-size: 100vh` on .frame made the shell GROW with its content, so a
    `100%` inside a Context resolved against that growth (1809px in a 900px area)

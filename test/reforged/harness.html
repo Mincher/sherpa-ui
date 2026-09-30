@@ -139,9 +139,13 @@
          mid-flight — 292px on the way to 40. Frames do not wait for a
          transition; `Animation.finished` does.
          A rejection means the animation was cancelled, which is settled too.
+         ON THE CLOCK only: a scroll-driven animation never finishes, and
+         waiting for one hangs every test on the page.
          TRAP T-settled-waits-for-renders-not-transitions */
       await Promise.all(
-        document.getAnimations().map((a) => a.finished.catch(() => {})),
+        document.getAnimations()
+          .filter((a) => a.timeline === document.timeline)
+          .map((a) => a.finished.catch(() => {})),
       );
     };
 

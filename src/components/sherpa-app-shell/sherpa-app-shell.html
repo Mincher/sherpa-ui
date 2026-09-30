@@ -27,9 +27,8 @@
     <div class="nav" part="nav">
       <slot name="nav"><sherpa-nav></sherpa-nav></slot>
     </div>
-    <!-- The header must be the scroller's sticky first child — as a grid row
-         above it, `position: sticky` and `scroll-state(stuck: top)` silently
-         do nothing. -->
+    <!-- ONLY THE CONTEXT SCROLLS: the header and both panel areas stay put.
+         TRAP T-only-the-context-scrolls -->
     <div class="frame" part="frame">
       <main class="content" part="content">
         <header class="header" part="header">

@@ -32,7 +32,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | 🚧 | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | 🚧 | 5a | 113 | EXPLORE — state first, then render, in every component; a skeleton while the first render waits | explore |
 | | | | **C — Contained bugs** | |
-| ⬜ | 5b | 142 | NEXT UP — the shell's panel areas must not scroll with the page: they sit outside the scrolling wrapper | quick |
+| ✅ | 5b | 142 | The shell's panel areas must not scroll with the page: they sit outside the scrolling wrapper | quick |
 | ❓ | 6 | 112 | An Equals row in Advanced will not open its value list | bug |
 | ✅ | 7 | 45 | A picked date does not show in the chip | bug |
 | ✅ | 8 | 82 | A number chip set by a View shows no value on its face | bug |
@@ -90,6 +90,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 31n | 139 | An Advanced toolbar chip's value half shows its VALUES, truncated — not the condition labels | quick |
 | ⬜ | 31o | 140 | Every Sherpa input a reader types into shows the Clear button — not a number stepper, not a text area | feature |
 | ⬜ | 31p | 141 | Advanced is an icon button again — f(x), at the right of the section or menu header, active when on | quick |
+| ⬜ | 31q | 144 | A View's filters survive a swap to another View — a draft per View, for the session, and across sessions; two settings, on by default | feature |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
 | ✅ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
@@ -886,13 +887,20 @@ places. The chip (with its menu) should answer all three itself — `reading`
 get and set, and one `clear()` — so a host never asks what kind it is. Also
 the toolbar's: the date label on a chip's face (`#syncDateLabel`).
 
-### `[ ]` 142 — The shell's panel areas stay put while the page scrolls
+### `[x]` ✅ 142 — The shell's panel areas stay put while the page scrolls
 
 Will, 2026-09-30: *"The filter panel area, in the app shell, shouldn't scroll
 with the other page content. So it needs to be outside of that scrollable
 wrapper element so that it stays fixed on the left. This will be the same
 requirement for the right panel area (that we don't leverage yet). Should be a
 simple fix so we can bump it up near the top of the queue. :)"*
+
+**✅ Done 2026-09-30.** Only the Context scrolls now. The header and both
+panel areas stay put, and a panel taller than its area scrolls inside itself.
+CSS only: the markup is the same, the scroller moved from `.content` to
+`.context-frame`. The header still takes its shadow while something is
+scrolled under it, from the scroller's timeline — in Chromium and WebKit;
+Firefox draws none. `T-only-the-context-scrolls`
 
 ---
 
@@ -1661,6 +1669,23 @@ Will, 2026-09-30, a minor one to queue: *"Instead of a simple switch for
 'advanced' let's go back to a button on the right of the filter panel
 section, and toolbar chip menu, header that is icon only, uses the f(x) icon,
 and is active when advanced, default when simple."*
+
+### `[ ]` 144 — A View's filters survive a View swap: a draft per View
+
+Will, 2026-09-30: *"Filter configurations should survive view swaps during a
+session, even if not saved as a definition. We can leverage the definition
+functionality to support drafts, per view, for the session. It would be cool,
+actually, if they could persist across sessions, too. This will save the user
+from absolute headaches on app crashes etc. These should be configurable
+options for filtering (on by default) and we should expose toggles in the app
+settings nav & content. Potentially something we can do as we work on an
+adjacent filtering item."*
+
+Today the session keeps ONE Query per Context, with the View it was made on
+(`/filters/records`), and a View pick starts from that View's own filters.
+So: keep a draft Query per View; two settings, both on by default — keep
+drafts for the session, keep them across sessions — in Settings ›
+Application.
 
 ---
 
@@ -3040,6 +3065,7 @@ One line each. The detail is in git and in the trap named.
 - 131: the Range switch is reported — `T-range-switch-swaps-not-rebuilds`
 - 132: a number filter's reading keeps both shapes — `T-both-shapes-are-kept`
 - 137: every filter control shows the Query's answer — seven holes between the toolbar, the panel and the source, one test for all — `T-a-panel-follows-the-query-open-or-shut`
+- 142: only the Context scrolls; the header and the panel areas stay put — `T-only-the-context-scrolls`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

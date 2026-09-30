@@ -38,7 +38,9 @@
 }
 
 /* `scroll-state(stuck: top)` is true exactly when the sticky host has left its
-   natural position — i.e. there is content underneath. No scroll listener. */
+   natural position — i.e. there is content underneath. No scroll listener.
+   For a header that IS in a scroller; in the app shell it is not, and the
+   shell draws this shadow. TRAP T-scroll-state-is-chromium-only */
 @container scroll-state(stuck: top) {
   :host {
     box-shadow:

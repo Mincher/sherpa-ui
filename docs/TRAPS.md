@@ -13600,23 +13600,54 @@ had hidden real self-writes, verified by planting one and watching it fail.
 **Chromium only**. Measured in all three engines 2026-09-23: Firefox and WebKit
 drop the property and report `containerType: "normal"`.
 
-`sherpa-app-shell` uses it to give its sticky header a drop shadow once content
-slides underneath, with no JS. That degrades correctly — the header is still
-`position: sticky`, still `z-index: 1`, still opaque, in every engine. Only the
-shadow is missing.
+`sherpa-app-header` uses it, where it is itself in a scroller, to take a drop
+shadow once content slides underneath, with no JS. That degrades correctly —
+the header is still `position: sticky`, still `z-index: 1`, still opaque, in
+every engine. Only the shadow is missing. The data grid's pinned edges use
+`scrollable` the same way.
 
-So the CODE needed nothing. The TEST asserted
-`containerType` contains `scroll-state` in all three engines and failed two of
-them. It now asserts the stronger thing, which is the same shape
-`reforged-css-functions.spec.ts` already uses for `@function`:
+A test must not assert the property in every engine. Assert that the guard
+and the engine AGREE:
 
 ```ts
-expect(r.headerIsScrollState.includes('scroll-state')).toBe(r.supportsScrollState);
+expect(containerType.includes('scroll-state')).toBe(CSS.supports('container-type', 'scroll-state'));
 ```
 
-The guard and the engine must AGREE. That catches Chromium losing the feature
-as well as an engine gaining it, which a hardcoded expectation cannot.
+That catches Chromium losing the feature as well as an engine gaining it,
+which a hardcoded expectation cannot.
 
+In the APP SHELL the header is no longer in the scroller, so it is never
+stuck: the shell draws the shadow another way (`T-only-the-context-scrolls`).
+
+- Site: `src/components/sherpa-app-header/sherpa-app-header.css`
+
+### T-only-the-context-scrolls
+
+**In `sherpa-app-shell` only the CONTEXT scrolls. The header and both panel
+areas stay where they are** — TODO 142, Will: the filter panel area
+"shouldn't scroll with the other page content … it needs to be outside of
+that scrollable wrapper". `.content` was the scroller, holding the header
+(sticky) and the body row — panels and Context together — so a long page took
+the filter panel up with it. The scroller is `.context-frame` now. The DOM
+did not change: `.content` is `overflow: hidden`, a column of the header and
+the body row, and each panel area fills the row's height and scrolls inside
+itself.
+
+**The header's shadow** came from `scroll-state(stuck: top)` on a sticky
+header, and a header outside the scroller is never stuck. It follows the
+scroller's TIMELINE instead: `.context-frame` names a scroll timeline,
+`.content` lifts it into scope (`timeline-scope`) so a non-descendant can use
+it, and the slotted header's `box-shadow` is an animation over the first
+pixel of scroll. No JS. It is inside `@supports`, because without a scroll
+timeline the same animation runs on the CLOCK and leaves the shadow on for
+good. Chromium and WebKit have it; Firefox 155 does not, and draws no shadow.
+
+**A scroll-driven animation never FINISHES.** `__settled()` waited for every
+animation's `finished` promise, and every test on a page with this one hung.
+It waits for animations on the document's own timeline only.
+
+- Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
+- Site: `src/components/sherpa-app-shell/sherpa-app-shell.html`
 - Site: `test/e2e/reforged-app-shell.spec.ts`
 
 ### T-a-hairline-resolves-by-density
