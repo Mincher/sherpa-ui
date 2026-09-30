@@ -11,6 +11,8 @@ test('a Records field sent to the view filters takes its answer, once, and the r
   await page.goto('http://localhost:4200/?context=records&view=risk');
   await page.waitForFunction(() =>
     !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
+  // The page hands out its source a moment after its first rows draw.
+  await page.waitForFunction(() => !!(window as unknown as { sherpa?: { source?: unknown } }).sherpa?.source);
   await page.evaluate(() => {
     (document.querySelector('sherpa-provider') as HTMLElement & { filterMode: string }).filterMode = 'panel';
   });

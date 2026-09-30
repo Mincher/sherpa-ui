@@ -1933,8 +1933,9 @@ export class DataSource extends EventTarget {
    * Each answered chip's RESULTS in a scope: the rows its OWN answer matches,
    * within what the scope can see — a component scope's, within the View's. By
    * field, or saved-filter id; from the APPLIED Query, so a draft has none.
-   * ON OR OFF: an answer switched off still says what it would match, and only
-   * one with nothing in it has no number. Will, TODO 60 and 123.
+   * A FIELD's answer, on or off: switched off, it still says what it would
+   * match (123). A SAVED filter only while it is on: its count is not always
+   * known before (166). Will, TODO 60.
    * TRAP T-a-chip-counts-its-own-results
    */
   async results(scope: string): Promise<Record<string, number>> {
@@ -1952,8 +1953,8 @@ export class DataSource extends EventTarget {
         .filter(([f]) => !above.has(f))
         .map(([f, { suspended: _off, ...reading }]): [string, Filter | undefined] =>
           [f, readingClause({ field: f, ...field(f) }, reading)]),
-      ...Object.keys(q.presets ?? {})
-        .map((id): [string, Filter | undefined] => [id, andFilter(Object.entries(this.#presets.get(id) ?? {})
+      ...Object.entries(q.presets ?? {}).filter(([, on]) => on)
+        .map(([id]): [string, Filter | undefined] => [id, andFilter(Object.entries(this.#presets.get(id) ?? {})
           .map(([f, reading]) => readingClause({ field: f, ...field(f) }, reading))
           .filter((c): c is NonNullable<typeof c> => !!c))]),
     ];

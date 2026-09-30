@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**61 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**60 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -58,7 +58,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16l | 148 | After a Reset, a date chip's value label reads `Unassigned` | bug |
 | ✅ | 16m | 151 | A filter moved across scopes does not keep its Simple or Advanced mode | bug |
 | ⬜ | 16v | 167 | A Reset in a component scope clears a chip's "moved to the View" state and its inactive look | bug |
-| ⬜ | 16u | 166 | A saved filter's badge shows its count only while it is ON — the count is not always known before | bug |
+| ✅ | 16u | 166 | A saved filter's badge shows its count only while it is ON — the count is not always known before | bug |
 | ⬜ | 16t | 165 | A filtered grid's group row badge shows the group's TOTAL rows, not the rows shown | bug |
 | ✅ | 16s | 160 | Ungrouped, a page still holds fewer rows than the pager says: a row the schema refuses is dropped AFTER the page is cut | bug |
 | ✅ | 16n | 152 | Data grid pages do not keep to the row count set in the pagination: the count varies from page to page | bug |
@@ -1021,7 +1021,7 @@ the pair to the answer in 121; only Clear belongs to it.
 Will, 2026-09-30: *"Resetting filters in a component scope clears the
 elevated to view scope state, and inactive styling, from filter chips."*
 
-### `[ ]` 166 — A saved filter shows its count only while it is on
+### `[x]` ✅ 166 — A saved filter shows its count only while it is on
 
 Will, 2026-09-30, a minor fix: *"Preset filters always show their badge with
 count. We won't always know this number before activating the filter so we
@@ -1029,6 +1029,10 @@ should only show it when active."*
 
 This takes back the "A for now" of 123: a saved filter that is OFF shows no
 number. A field chip that is off still keeps its badge.
+
+**✅ Done 2026-09-30.** The source counts a saved filter only while it is on.
+At rest the Records bar reads `Has open tickets`, `At risk`, `Unassigned`,
+with no number.
 
 ### `[ ]` 165 — BUG: a filtered grid's group badge counts rows that are not shown
 
@@ -1967,7 +1971,7 @@ risk`, `15 Unassigned` at rest.
 - **B:** a saved filter shows its count only while it is on.
 
 **✅ Ruled, Will 2026-09-30: "A for now."** A saved filter shows its count at
-rest.
+rest. **Then B, the same day (166):** only while it is on.
 
 `T-a-chip-counts-its-own-results`
 
@@ -3665,6 +3669,7 @@ One line each. The detail is in git and in the trap named.
 - 149: queued — the legend's items become swatch chips
 - 148: an emptied date range holds no ends — the chip read `undefined` after a Reset
 - 121: a panel field's Clear and Send to are one button group
+- 166: a saved filter shows its count only while it is on
 - 160: a local store checks its rows BEFORE it cuts a page — a refused row left its page short — `T-a-refused-row-never-shortens-a-page`
 - 159: while the View holds a chart's field, its legend shows and changes the View's answer — `T-a-legend-follows-the-view-when-it-holds-the-field`
 - 158: a View field's Send down offers every scope that has it — a menu where there is more than one — `T-send-to-view-filters`

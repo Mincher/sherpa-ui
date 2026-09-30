@@ -47,6 +47,8 @@ test('on Records, each answered chip shows the rows its own answer matches', asy
   await page.goto('http://localhost:4200/?context=records&view=risk');
   await page.waitForFunction(() =>
     !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
+  // The page hands out its source a moment after its first rows draw.
+  await page.waitForFunction(() => !!(window as unknown as { sherpa?: { source?: unknown } }).sherpa?.source);
   const read = () => page.evaluate(async () => {
     type Source = { debugState(): { total: number }; results(s: string): Promise<Record<string, number>> };
     const source = (window as unknown as { sherpa: { source: Source } }).sherpa.source;
