@@ -666,3 +666,45 @@ test('a field populated with conditions opens in Advanced mode on its rows', asy
   });
   expect(r).toEqual({ custom: true, switchOn: true, reading: [{ op: 'contains', text: 'Da' }] });
 });
+
+/**
+ * CLEAR AND SEND TO ARE ONE CONTROL — a button group, joined by position, so
+ * Clear alone (a View field has nowhere to send to) keeps both its corners.
+ * Will, 2026-09-30 (TODO 121).
+ */
+test('Clear and Send to are one button group; Clear alone keeps its corners', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    el.populate([
+      { scope: 'view', label: 'View filters', filters: [
+        { id: 'region', label: 'Region', options: [{ value: 'EMEA', label: 'EMEA', selected: true }] } ] },
+      { scope: 'data', label: 'Customer records', filters: [
+        { id: 'status', label: 'Status', options: [{ value: 'active', label: 'active', selected: true }] },
+        { id: 'plan', label: 'Plan', options: [{ value: 'Pro', label: 'Pro' }] } ] },
+    ]);
+    await new Promise((r) => setTimeout(r, 300));
+    const read = (field) => {
+      const group = sr.querySelector('.field[data-field="' + field + '"] .field-group');
+      return {
+        grouped: group.classList.contains('sherpa-group'),
+        shown: group.getClientRects().length > 0,
+        buttons: [...group.children].map((b) => {
+          const t = getComputedStyle(b.shadowRoot.querySelector('button'));
+          const box = b.getBoundingClientRect();
+          return { is: b.className, corners: [t.borderStartStartRadius, t.borderStartEndRadius], x: box.x, w: box.width };
+        }),
+      };
+    };
+    return { view: read('region'), data: read('status'), idle: read('plan') };
+  })()`) as Record<string, { grouped: boolean; shown: boolean; buttons: { is: string; corners: string[]; x: number; w: number }[] }>;
+
+  expect(r['view']!.buttons.map((b) => [b.is, b.corners])).toEqual([['field-clear', ['4px', '4px']]]);
+  const [clear, raise] = r['data']!.buttons;
+  expect(r['data']!.grouped).toBe(true);
+  expect([clear!.is, clear!.corners]).toEqual(['field-clear', ['4px', '0px']]);
+  expect([raise!.is, raise!.corners]).toEqual(['field-raise', ['0px', '4px']]);
+  // Joined: no gap between the two.
+  expect(raise!.x).toBe(clear!.x + clear!.w);
+  // Nothing to clear, nothing shown.
+  expect(r['idle']!.shown).toBe(false);
+});

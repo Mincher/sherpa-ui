@@ -124,11 +124,14 @@
         <h3 slot="heading" class="field-title sherpa-text-small"></h3>
         <!-- DEFAULT look. No Remove: the scope's Add menu is the whole list. -->
         <span slot="actions" class="field-acts">
-          <sherpa-button class="field-clear" data-type="icon" data-size="sm"
-                         data-icon-start="arrow-rotate-left"></sherpa-button>
-          <!-- A component's field, SENT UP to the View's filters. TRAP T-send-to-view-filters -->
-          <sherpa-button class="field-raise" data-type="icon" data-size="sm"
-                         data-icon-start="arrow-up"></sherpa-button>
+          <!-- Clear and Send to, as ONE control. Will, TODO 121. -->
+          <span class="field-group sherpa-group">
+            <sherpa-button class="field-clear" data-type="icon" data-size="sm"
+                           data-icon-start="arrow-rotate-left"></sherpa-button>
+            <!-- A component's field, SENT UP to the View's filters. TRAP T-send-to-view-filters -->
+            <sherpa-button class="field-raise" data-type="icon" data-size="sm"
+                           data-icon-start="arrow-up"></sherpa-button>
+          </span>
           <!-- REMOTE only, once changed. DISCARD goes back to the last Apply. -->
           <sherpa-button class="field-discard" data-type="icon" data-size="sm"
                          data-icon-start="cross" aria-label="Discard"></sherpa-button>

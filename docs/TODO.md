@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**62 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**61 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -81,7 +81,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 31b | 124 | The Filters button and menu move to the filter panel HEADER: one menu for every scope | feature |
 | ⬜ | 31c | 122 | Email starts SIMPLE, with a switch to Advanced; over 20 values it is one chip with a multi-select menu | feature |
 | ⬜ | 31d | 120 | A view-scope filter gets "Send to `<scope name>`", the counterpart of "Send to view filters" | feature |
-| ⬜ | 31e | 121 | Clear and Send to are ONE button group, with the grouping classes | quick |
+| ✅ | 31e | 121 | Clear and Send to are ONE button group, with the grouping classes | quick |
 | ⬜ | 31f | 123 | An inactive chip KEEPS its match count badge; it goes only when every value and condition is removed | feature |
 | ✅ | 31g | 125 | The sort tooltip names the direction as well as the field | quick |
 | ✅ | 31h | 126 | "Filter applied at higher scope" becomes "Filter moved to `<scope name>` scope" | quick |
@@ -1720,10 +1720,16 @@ the view context to 'Send to &componentScopeName' with a down arrow icon."*
 
 The other way of 21f. The name is the scope the field came from.
 
-### `[ ]` 121 — Clear and Send to are ONE button group
+### `[x]` ✅ 121 — Clear and Send to are ONE button group
 
 Will, 2026-09-30: *"The 'clear' and 'send to' buttons should be in a button
 group with grouping style classes applied."*
+
+**✅ Done 2026-09-30.** In a panel field's header the two are one
+`.sherpa-group`: joined, with the inner corners square. The group is by
+POSITION, so Clear alone — a View field has nowhere to send to — keeps both
+its corners. The pair shows once the field has an answer, as Clear did. 120's
+"Send to `<scope>`" button goes in this group when it is built.
 
 ### `[ ]` 123 — An inactive chip KEEPS its match count badge
 
@@ -3294,6 +3300,7 @@ One line each. The detail is in git and in the trap named.
 - 52: each chart's own scope is in the filter panel — one filter, a swatch chip per legend item; it narrows its chart alone, and ↑ sends it to the View — `T-a-chart-scope-is-its-legend-field`
 - 149: queued — the legend's items become swatch chips
 - 148: an emptied date range holds no ends — the chip read `undefined` after a Reset
+- 121: a panel field's Clear and Send to are one button group
 - 126: a filter another scope holds says `Filter moved to View scope.` — `T-an-inactive-chip-says-where-its-filter-went`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`

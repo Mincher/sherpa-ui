@@ -69,12 +69,13 @@
   block-size: var(--sherpa-theme-content-size-base-1, 16px);
 }
 
-/* Reset and its ▾, as one control. */
-.reset-group {
+/* Reset and its ▾, and a field's Clear and Send to: each pair one control. */
+.reset-group,
+.field-group {
   display: inline-flex;
   align-items: center;
 }
-.reset-group > :not(:first-child) {
+:is(.reset-group, .field-group) > :not(:first-child) {
   margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
 }
 
@@ -112,8 +113,9 @@
   text-transform: uppercase;
 }
 .field-acts { display: flex; }
-/* CLEAR only appears once there is something to clear. Will, 2026-09-24. */
-.field:not([data-answered]) .field-clear { display: none; }
+/* CLEAR — and Send to, its pair — appear once there is something to clear.
+   Will, 2026-09-24. */
+.field:not([data-answered]) .field-group { display: none; }
 .field:not([data-answered]):not([data-pending]) .field-acts { display: none; }
 /* APPLY and DISCARD: a REMOTE field, once changed. TRAP T-apply-and-discard-wait-for-a-change */
 .field-apply, .field-discard { display: none; }
