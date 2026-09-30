@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**47 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**46 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -123,7 +123,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | 🚧 | 35a | 146 | The app shell's FIXED panel areas resize by dragging their inner edge; the content reflows; two levels of container query | feature |
 | | | | **F — Data states and charts** | |
 | ✅ | 36 | 58 | Loading, empty and error states in a container | feature |
-| 🚧 | 37 | 9b | A Data Viz header, for metrics and chart containers | component |
+| ✅ | 37 | 9b | A Data Viz header, for metrics and chart containers | component |
 | ⬜ | 38 | 80 | Container and Data Viz headers: Figma's new button styling and grouping | component |
 | ✅ | 39 | 14 | An example of real-time data | feature |
 | ✅ | 39a | 128 | A gauge's tooltip names the segment as the legend does | quick |
@@ -2731,7 +2731,7 @@ answer at open no longer stops the page. The example shows each: `?remote`
 (slow), `?fail` (every load fails). No Figma design — the look follows the
 empty state. `T-a-container-shows-its-datas-state`
 
-### `[~]` 9b — A Data Viz header, for metrics and chart containers
+### `[x]` ✅ 9b — A Data Viz header, for metrics and chart containers
 
 Figma `Data Viz Header`, node `1456:30467`, page `✅ Headers`. For Metrics,
 and any Container that holds a chart. 32px tall, horizontal, `gap/sm`,
@@ -2759,6 +2759,17 @@ INSIDE the 20, as Figma's stroke does. `sherpa-data-viz-header` is the 64th
 component; the Dashboard's four chart cards wear it. **Left:** the METRIC —
 read Figma's Metric to see how it composes the header (the Figma plugin was
 closed at the time).
+
+**✅ Done 2026-09-30.** Read live from Figma's Metric (`61:263`): it composes
+the Data Viz Header — an icon, the name, no metadata, no actions, and its rule
+HIDDEN. `sherpa-metric` does the same now: `data-label` is the header's
+heading, a new `data-icon` its glyph, and the header takes
+`data-divider="none"` (the section header's word for the same thing).
+
+**One thing to know:** the header is 20px tall where the label was 16px, and
+Figma's Metric is 96px with an 8px gap. The layout row here is 88px, so the
+gap under the header is 4px and the tile still fits its row. Say if the row
+should grow instead.
 
 ### `[ ]` 80 — Container and Data Viz headers: Figma's new button styling and grouping
 
@@ -4111,6 +4122,7 @@ One line each. The detail is in git and in the trap named.
 - 144: a View keeps a draft of the filters left on it, for the tab and across sessions; two settings, on — `T-a-view-keeps-a-draft`
 - 146 🚧: a panel area resizes by its inner edge, dragged or by the keys, within its min and 33% of the row; kept through a reload. Levels 1 and 2 left — `T-an-edge-resizes-its-box`
 - 90 🚧: a number field can go Advanced — number questions, typed values, its answer carried over; dates wait on 21d — `T-a-number-has-advanced-rows`
+- 9b: a metric's name is its composed Data Viz Header, as Figma's Metric has it — no rule, an optional icon
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

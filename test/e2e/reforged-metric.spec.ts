@@ -37,8 +37,10 @@ test('populate() renders label, value, delta and derives an up trend', async ({ 
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const text = (sel: string) => el.shadowRoot!.querySelector(sel)!.textContent;
+    // The name is its composed HEADER's title (Figma's Metric, TODO 9b).
+    const title = () => el.shadowRoot!.querySelector('.head')!.shadowRoot!.querySelector('.title')!.textContent;
     return {
-      label: text('.label'),
+      label: title(),
       value: text('.value'),
       delta: text('.delta'),
       trend: el.getAttribute('data-trend'),
@@ -84,7 +86,9 @@ test('attribute-only usage renders text without populate()', async ({ page }) =>
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const text = (sel: string) => el.shadowRoot!.querySelector(sel)!.textContent;
-    return { label: text('.label'), value: text('.value'), delta: text('.delta') };
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const label = el.shadowRoot!.querySelector('.head')!.shadowRoot!.querySelector('.title')!.textContent;
+    return { label, value: text('.value'), delta: text('.delta') };
   });
   expect(r.label).toBe('Users');
   expect(r.value).toBe('48,201');
@@ -208,7 +212,7 @@ test('a [data-status] ancestor does NOT recolour the label or the value', async 
       await (window as unknown as { __settled: () => Promise<void> }).__settled();
       const sr = el.shadowRoot!;
       return {
-        label: getComputedStyle(sr.querySelector('.label')!).color,
+        label: getComputedStyle(sr.querySelector('.head')!.shadowRoot!.querySelector('.title')!).color,
         value: getComputedStyle(sr.querySelector('.value')!).color,
       };
     };
@@ -251,7 +255,7 @@ test('populate takes label, and the old `name` still works', async ({ page }) =>
       await (window as unknown as { __settled: () => Promise<void> }).__settled();
       return {
         attr: el.dataset['label'] ?? null,
-        text: (el.shadowRoot?.textContent ?? '').replace(/\s+/g, ' ').trim(),
+        text: (el.shadowRoot?.querySelector('.head')?.shadowRoot?.textContent ?? '').replace(/\s+/g, ' ').trim(),
       };
     };
 
@@ -485,4 +489,32 @@ test('the trend, delta and status all follow a filter', async ({ page }) => {
   expect(r.amer.trend).toBe('down');
   expect(r.amer.status).toBe('critical');
   expect(r.amer.delta?.startsWith('-')).toBe(true);
+});
+
+/* TODO 9b: Figma's Metric (61:263) composes the Data Viz Header — its name,
+   an optional icon, and no rule under it. It still fits one layout row. */
+test('a metric\'s name is its composed Data Viz Header, with no rule, in one layout row', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-metric') as MetricEl;
+    el.setAttribute('data-label', 'Seats');
+    el.setAttribute('data-icon', 'users');
+    el.setAttribute('data-value', '12,308');
+    el.setAttribute('data-delta', '+2%');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const head = el.shadowRoot!.querySelector<HTMLElement>('.head')!;
+    const before = { tag: head.localName, heading: head.dataset['heading'], icon: head.dataset['icon'],
+      rule: getComputedStyle(head).boxShadow };
+    el.removeAttribute('data-icon');
+    el.setAttribute('data-label', 'Seats sold');
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const tile = el.getBoundingClientRect();
+    const trend = el.shadowRoot!.querySelector('.trend')!.getBoundingClientRect();
+    return { before, after: { heading: head.dataset['heading'], icon: head.dataset['icon'] ?? null },
+      fits: trend.bottom <= tile.bottom };
+  });
+  expect(r.before).toEqual({ tag: 'sherpa-data-viz-header', heading: 'Seats', icon: 'users', rule: 'none' });
+  expect(r.after).toEqual({ heading: 'Seats sold', icon: null });
+  expect(r.fits).toBe(true);
 });

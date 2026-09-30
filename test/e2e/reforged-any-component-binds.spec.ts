@@ -117,7 +117,10 @@ test('a component with its OWN renderData is untouched', async ({ page }) => {
     await src.load({ force: true });
     await new Promise((res) => setTimeout(res, 300));
 
-    return (metric.shadowRoot?.textContent ?? '').replace(/\s+/g, ' ').trim();
+    // Its name is in its composed header's own shadow root (TODO 9b).
+    const said = [metric.shadowRoot, metric.shadowRoot?.querySelector('.head')?.shadowRoot]
+      .map((root) => root?.textContent ?? '').join(' ');
+    return said.replace(/\s+/g, ' ').trim();
   });
 
   expect(r).toContain('Records');

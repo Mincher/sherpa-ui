@@ -9,6 +9,7 @@ export class SherpaDataVizHeader extends SherpaElement {
   static override html = new URL('./sherpa-data-viz-header.html', import.meta.url);
   static override props = {
     'data-heading': { type: 'string', kind: 'content', to: '.title' },
+    'data-divider': { type: 'enum', kind: 'style', values: ['none'] },
     'data-description': { type: 'string', kind: 'content', to: '.description' },
     // A slotted icon wins over the data-icon glyph.
     'data-icon': { type: 'string', kind: 'content', to: '.icon', as: 'icon' },

@@ -2,7 +2,8 @@
   sherpa-metric — a KPI tile with an optional embedded sparkline.
 
   Public API:
-    data-label   — the metric name (shown above the value)
+    data-label   — the metric name, in its header above the value
+    data-icon    — a glyph before the name
     data-value   — the formatted value string (big number)
     data-delta   — the change text (e.g. "+12.5%")
     data-trend   — up | down | flat  (colours the delta + shows the arrow)
@@ -17,7 +18,9 @@
   Fires: nothing.
 -->
 <template id="default">
-  <p class="label sherpa-truncate" part="label"></p>
+  <!-- Its HEADER is the Data Viz Header, as Figma's Metric composes it — no
+       rule under it there. Will, TODO 9b. -->
+  <sherpa-data-viz-header class="head" part="header" data-divider="none"></sherpa-data-viz-header>
 
   <div class="row">
     <div class="figures">

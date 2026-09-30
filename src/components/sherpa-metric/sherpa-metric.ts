@@ -8,6 +8,7 @@ import { formatValue } from '../../core/data/format-tick.js';
 import { report } from '../../core/data/report.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import '../sherpa-sparkline/sherpa-sparkline.js';
+import '../sherpa-data-viz-header/sherpa-data-viz-header.js';
 
 interface MetricData {
   /** TRAP T-populate-label-not-name */
@@ -66,12 +67,33 @@ export class SherpaMetric extends SherpaElement {
     ...SUMMARY_PROPS,
     /** The value's `Intl.NumberFormatOptions`, as JSON. TRAP T-a-format-is-the-platforms */
     'data-format': { type: 'string', kind: 'style' },
-    'data-label': { type: 'string', kind: 'content', to: '.label' },
+    // Handed to its composed header, as ITS heading and icon.
+    'data-label': { type: 'string', kind: 'content' },
+    'data-icon': { type: 'string', kind: 'content' },
     'data-value': { type: 'string', kind: 'content', to: '.value' },
     'data-delta': { type: 'string', kind: 'content', to: '.delta' },
     'data-trend': { type: 'enum', kind: 'style', values: ['up', 'down', 'flat'] },
     'data-status': { type: 'enum', kind: 'style', values: ['success', 'critical'] },
   } as const;
+
+  override onRender(): void {
+    this.#syncHead();
+  }
+
+  override onChange(name: string): void {
+    if (name === 'data-label' || name === 'data-icon') this.#syncHead();
+  }
+
+  /** Its name and glyph, as its header's own. */
+  #syncHead(): void {
+    const head = this.$<HTMLElement>('.head');
+    if (!head) return;
+    for (const [from, to] of [['label', 'heading'], ['icon', 'icon']] as const) {
+      const value = this.dataset[from];
+      if (value) head.dataset[to] = value;
+      else delete head.dataset[to];
+    }
+  }
 
   /** The data path. */
   protected override renderData(source: unknown): void {

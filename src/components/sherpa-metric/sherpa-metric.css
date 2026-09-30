@@ -8,7 +8,9 @@
 :host {
   display: flex;
   flex-direction: column;
-  gap: var(--sherpa-display-mode-space-xs, 8px);
+  /* 4, not Figma's 8: its header is 20 tall where the label was 16, and the
+     tile must stay one layout row (size/row, 88). Figma's Metric is 96. */
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
   min-inline-size: 0;
   /* Figma's stroke is INSIDE and takes no room, so the padding gives it back:
      the tile is exactly one layout-grid row (size/row) tall. */
@@ -43,21 +45,9 @@
     + var(--sherpa-theme-content-line-height-small, 16px));
 }
 
-/* ── Label — outside the card, uppercase via CSS so the accessible name and
-   data-label stay as written. Theme ink, as Figma binds it: the label names the
-   metric, it does not report on it. ─────────────────────────────────────── */
-.label {
-  margin: 0;
-  font-size: var(--sherpa-theme-content-size-small, 12px);
-  font-weight: var(--sherpa-font-weight-light, 300);
-  line-height: var(--sherpa-theme-content-line-height-small, 16px);
-  letter-spacing: var(--sherpa-theme-content-letter-spacing-small, 0px);
-  text-transform: uppercase;
-  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
-  /* Truncation via `.sherpa-truncate` in the template. */
-
-  &:empty { display: none; }
-}
+/* ── Header — the Data Viz Header, composed: its title is the small light
+   caps the label was. ──────────────────────────────────────────────────── */
+.head { flex: 0 0 auto; }
 
 /* ── Card row: figures + sparkline ───────────────────────────────────────
    NO fill and NO padding in Figma — the card is drawn by its rounding and a
@@ -179,6 +169,6 @@
 
 /* ── Disabled — never opacity. Figma has no disabled Metric, and body/+2 has
    no Style name. ─────────────────────────────────────────────────────── */
-:host([disabled]) :is(.value, .label, .trend) {
+:host([disabled]) :is(.value, .head, .trend) {
   color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */
 }

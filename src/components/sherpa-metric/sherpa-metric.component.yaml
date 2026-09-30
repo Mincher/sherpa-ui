@@ -13,15 +13,19 @@ $name: sherpa-metric
 $description: a KPI tile with an optional embedded sparkline.
 element:
   $type: element
-  tag: p
+  tag: sherpa-data-viz-header
+  attributes:
+    data-divider: none
   provides: []
 templates:
   - default
 anatomy:
   roots:
-    - el: p
-      class: label sherpa-truncate
-      part: label
+    - el: sherpa-data-viz-header
+      class: head
+      part: header
+      attrs:
+        data-divider: none
     - el: div
       class: row
       children:
@@ -83,11 +87,17 @@ props:
     kind: style
     description: — the value's Intl.NumberFormatOptions, as JSON
   - $type: prop
+    name: data-icon
+    type: string
+    observed: false
+    kind: content
+    description: — a glyph before the name
+  - $type: prop
     name: data-label
     type: string
     observed: false
     kind: content
-    description: — the metric name (shown above the value)
+    description: — the metric name, in its header above the value
   - $type: prop
     name: data-over-field
     type: string
@@ -130,11 +140,6 @@ capabilities:
     api: js-property-mirror
     description: read/write JS properties (value). See $extensions.sherpa.jsProps.
 tokens:
-  label.font-size: "{sherpa.theme-content-size-small}"
-  label.font-weight: "{sherpa.font-weight-light}"
-  label.line-height: "{sherpa.theme-content-line-height-small}"
-  label.letter-spacing: "{sherpa.theme-content-letter-spacing-small}"
-  label.color: "{sherpa.theme-content-body-1}"
   row.gap: "{sherpa.structure-space-gap}"
   row.border-radius: "{sherpa.display-mode-border-rounding-lg}"
   row.box-shadow: "{sherpa.elevation-offset-x}"

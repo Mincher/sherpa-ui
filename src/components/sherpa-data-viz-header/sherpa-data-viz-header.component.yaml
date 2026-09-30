@@ -69,6 +69,12 @@ props:
     kind: content
     description: a line under it (else the metadata slot)
   - $type: prop
+    name: data-divider
+    type: string
+    observed: false
+    kind: style
+    description: the rule under it; shown by DEFAULT — "none" hides it (a metric's)
+  - $type: prop
     name: data-heading
     type: string
     observed: false
@@ -81,6 +87,9 @@ props:
     kind: content
     description: a glyph before the title (else the left slot)
 states:
+  - $type: state
+    name: none
+    selector: ":host([data-divider=\"none\"])"
   - $type: state
     name: icon
     selector: ":host([data-icon])"
