@@ -149,11 +149,11 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 48a | 170 | MAJOR, LAST, and only when Will says — the data layer runs on the client, the server, or both, whole or in parts | explore |
 | | | | **J — Tidy-ups and renames** | |
 | ✅ | 49 | 11 | `sherpa-group`: what is left | tidy |
-| ⬜ | 50 | 28 | A Figma component is NOT always a web component | tidy |
+| ❓ | 50 | 28 | A Figma component is NOT always a web component | tidy |
 | ⬜ | 51 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
 | ⬜ | 52 | 33 | Density as step offsets, and a breakpoint step | tokens |
 | ⬜ | 53 | 36 | CSS: compiled where it should inherit? | tidy |
-| ⬜ | 54 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| ❓ | 54 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
 | ✅ | 55 | 84 | Use the platform: Intl for money, units and deltas; Temporal in the calendar | refactor |
 | ⬜ | 56 | 81 | Component contracts move from YAML to JSON | refactor |
 | ✅ | 56a | 111 | A spec types every JS property as `string` — `reading`, `conditions`, `open` | tidy |
@@ -3425,7 +3425,7 @@ want any of it anyway.
    position; `<sherpa-group>` is for a grid, whose positions must be told.
    CSS before JS.
 
-### `[ ]` 28 — A Figma component is NOT always a web component
+### `[ ]` ❓ 28 — A Figma component is NOT always a web component
 
 A sub-component is often only a `<template>` in its parent's `.html`, or a set
 of CSS classes. `sherpa-grid-cell` is the clear case.
@@ -3440,6 +3440,25 @@ of CSS classes. `sherpa-grid-cell` is the clear case.
 and rule. Compose it (the nav mirrors `data-collapsed` onto each section — one
 `setAttribute`), fold it, or leave its 65 correct lines. A Figma component
 stays a Figma component either way.
+
+**Measured 2026-09-30.** Step 1 is done already, in
+`scripts/figma-data/name-map.yaml`: 52 Figma components are elements, and 28
+more are a parent's template or a composition (`figmaOnly` — the Calendar
+Button, the File Item, the Input types, and the rest). Two are left, and
+neither is clear:
+
+- **Grid Cell.** `sherpa-grid-cell` is composed by nothing: the grid draws
+  its own cells, and the grid's spec already maps Figma's Grid Cell. But the
+  name map (2026-09-02) says the grid is to be REBUILT from Grid Cells, and a
+  grid can compose it inside each `<td>`.
+- **Nav Section.** The nav heads each section with a real `<h2>`;
+  `sherpa-nav-section` draws a `<span>`. Composing it would lose the
+  heading. My pick: leave it as it is.
+
+**❓ One choice, for the Grid Cell:**
+- **A (my pick): fold it.** The grid's own templates are Figma's Grid Cell.
+  One element per cell would be about 350 shadow roots on one Records page.
+- **B: keep it**, for the rebuild of the grid from Grid Cells.
 
 ### `[ ]` 30 — Do we still need `icon-paths.ts` and `render-icon.ts`?
 
@@ -3490,7 +3509,7 @@ CSS has no mixin) and the dist PostCSS transform. Find what can move into
 `sherpa-base.css` / `sherpa-element` as inherited rules, and what genuinely
 needs a generator.
 
-### `[ ]` 11d — `data-type` means nine things; `data-empty` means three
+### `[ ]` ❓ 11d — `data-type` means nine things; `data-empty` means three
 
 `data-type` selects: which control element, how many thumbs, pill vs
 rectangle, square vs labelled, a look, a template variant, a scope, a
@@ -3498,6 +3517,20 @@ cardinality, a role. `data-empty` is a message string (list), a host boolean
 (grid), a per-pane boolean (transfer-list). Both are rulings, not bugs. The
 question: reserve `data-type` for TEMPLATE SELECTION, as four of its nine uses
 already do?
+
+**Measured 2026-09-30 — one rule already explains all nine.** `data-type`
+is **Figma's `Type` variant axis**, as `T-calendar-view-is-not-the-figma-type`
+says: whatever Figma calls a component's Type — its control, its shape, its
+look — is `data-type` in code, and a design that swaps a Type swaps it here.
+The nine "meanings" are nine components' own Type axes. `data-empty` is
+three components' own words for "nothing to show".
+
+**❓ One choice:**
+- **A (my pick): keep both.** `data-type` stays Figma's Type axis. Say it
+  in PRINCIPLES, and a new component names a Type the same way.
+- **B: reserve `data-type` for template selection**, and rename the other
+  five to new attributes. Each rename breaks the Figma mapping and every
+  page that sets it.
 
 ### `[x]` ✅ 84 — Use the platform: Intl for money, units and deltas; Temporal in the calendar
 
