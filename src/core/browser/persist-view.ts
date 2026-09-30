@@ -21,6 +21,7 @@
  * - SavedViewStore — The user's own saved views for one page, keyed by id like a preset set.
  * - loadSavedViews — Read a page's user-saved views.
  * - saveViewAs — Save what is on screen as a NEW named view, and hand back the whole set.
+ * - viewQueryOf — What is on screen as a View's JSON: the applied Query, with the rows' arrangement.
  * - deleteSavedView — Forget one saved view.
  */
 import type { DataSource, ViewState } from '../data/data-source.js';
@@ -344,7 +345,7 @@ export function onViewPicked(
   targets: {
     source?: {
       setState(next: Partial<ViewState>): void;
-      setQuery?(query: QueryDefaults, options: { holds: 'keep' }): Promise<void>;
+      setQuery?(query: QueryDefaults, options?: { holds: 'keep' }): Promise<void>;
     };
     elements?: Record<string, HTMLElement>;
   },
@@ -361,6 +362,12 @@ export function onViewPicked(
     applied?: string | null;
     /** Stop listening when this aborts — `addEventListener` honours it natively. */
     signal?: AbortSignal;
+    /** A pick was TAKEN: the last moment the old View's answers are on the
+        source. TRAP T-a-view-keeps-a-draft */
+    before?: (id: string) => void;
+    /** A Query to put on INSTEAD of the View's own — the draft a reader left
+        on it. Exact: nothing carries over. TRAP T-a-view-keeps-a-draft */
+    draft?: (id: string, view: SavedView) => QueryDefaults | undefined;
   } = {},
 ): () => void {
   if (!host) return () => {};
@@ -393,6 +400,7 @@ export function onViewPicked(
     // AFTER the library check: recording an id the library lacks would make the
     // pick that follows its save a no-op.
     applied = id;
+    options.before?.(id);
 
     /* TRAP T-content-first-original-once — content before snapshot. */
     const host = options.into;
@@ -444,7 +452,9 @@ export function onViewPicked(
       // The element that REPORTED the pick — a host above it has no chips.
       const bar = (event.composedPath()[0] ?? event.currentTarget) as { values?: Record<string, readonly string[]> } | null;
       if (bar?.values && bar.values['view']?.[0] !== id) bar.values = { ...bar.values, view: [id] };
-      void targets.source.setQuery(view.query, { holds: 'keep' }).then(() => {
+      const draft = options.draft?.(id, view);
+      const put = draft ? targets.source.setQuery(draft) : targets.source.setQuery(view.query, { holds: 'keep' });
+      void put.then(() => {
         const waiting = applyElements(view.ui ?? {}, elements, report);
         if (waiting) void waiting.then(() => done(report));
         else done(report);
@@ -535,7 +545,7 @@ export function saveViewAs(
 
 /** What is on screen as a View's JSON: the applied Query, with the rows'
  *  arrangement on the View scope. TRAP T-a-view-is-json */
-function viewQueryOf(source: { state: ViewState; query: { applied: Query } }): QueryDefaults {
+export function viewQueryOf(source: { state: ViewState; query: { applied: Query } }): QueryDefaults {
   const scopes: QueryDefaults['scopes'] = structuredClone(source.query.applied.scopes);
   const { sort, group, search } = source.state;
   scopes[VIEW] = { ...(scopes[VIEW] ?? { holds: [], readings: {} }), sort, group, search };

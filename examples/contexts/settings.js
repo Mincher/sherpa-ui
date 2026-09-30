@@ -53,6 +53,22 @@ const WIRING = [
     hierarchy.checked = session.get('/nav/hierarchy');
     hierarchy.addEventListener('change', (e) => session.set('/nav/hierarchy', e.detail.checked));
   },
+
+  /* A draft per View: for the tab, and across sessions. The second means
+     nothing without the first. TRAP T-a-view-keeps-a-draft */
+  (root, session) => {
+    const drafts = root.querySelector('#filters-drafts');
+    const across = root.querySelector('#filters-drafts-across');
+    if (!drafts || !across) return;
+    const sync = () => {
+      drafts.checked = session.get('/filters/drafts');
+      across.checked = session.get('/filters/drafts') && session.get('/filters/draftsAcross');
+      across.toggleAttribute('disabled', !session.get('/filters/drafts'));
+    };
+    sync();
+    drafts.addEventListener('change', (e) => { session.set('/filters/drafts', e.detail.checked); sync(); });
+    across.addEventListener('change', (e) => session.set('/filters/draftsAcross', e.detail.checked));
+  },
 ];
 
 /** `label` is the Context row's; `header` is the Settings overlay's own. */

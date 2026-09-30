@@ -22,13 +22,15 @@ import { summarise, type SummarySpec } from '../../core/data/aggregate.js';
 import { bindSelection, type Selector } from '../../core/data/bind-selection.js';
 import { valueKey, type Store } from '../../core/data/store.js';
 import {
-  deleteSavedView, loadSavedViews, onViewPicked, saveViewAs, uniqueViewLabel, viewOptions, type ViewLibrary,
+  deleteSavedView, loadSavedViews, onViewPicked, saveViewAs, uniqueViewLabel, viewOptions, viewQueryOf,
+  type ViewLibrary,
 } from '../../core/browser/persist-view.js';
 import { labelId } from '../../core/browser/web-storage.js';
+import { clearDraft, draftSig, loadDraft, saveDraft, type DraftMode } from '../../core/browser/view-drafts.js';
 import { loadSavedFilters } from '../../core/browser/saved-filters.js';
 import { openSource, type PageDefinition } from '../../core/data/page-definition.js';
 import type { DataSource, SourceState } from '../../core/data/data-source.js';
-import { VIEW, type Query } from '../../core/data/query.js';
+import { VIEW, type Query, type QueryDefaults } from '../../core/data/query.js';
 import type { FieldReading } from '../../core/data/filter-state.js';
 import { applyState, type Populatable } from '../../core/ui/apply-state.js';
 
@@ -43,6 +45,10 @@ export interface ProvideOptions {
   /** Where the Query outlives a reload — for this View only — under `key`. */
   session?: { get(key: string): unknown; set(key: string, value: unknown): void };
   key?: string;
+  /** A DRAFT per View, kept by this page's id: what a reader left on a View
+   *  comes back when they return to it. `mode` is asked at each write, so a
+   *  setting applies at once. None: no drafts. TRAP T-a-view-keeps-a-draft */
+  drafts?: { page: string; mode: () => DraftMode };
 }
 
 /** What `open()` is given beside a page's definition: the app's stores, by the
@@ -54,6 +60,9 @@ export interface OpenOptions {
   views?: ViewLibrary;
   view?: string;
   session?: ProvideOptions['session'];
+  /** Keep a draft per View: off, for the tab, or across sessions. Asked at
+   *  each write. None: no drafts. TRAP T-a-view-keeps-a-draft */
+  drafts?: () => DraftMode;
 }
 
 /** A filter bar, as the provider draws it. */
@@ -347,6 +356,7 @@ export class SherpaProvider extends SherpaElement {
       ...(library ? {
         views: library, ...(view ? { view } : {}),
         ...(options.session ? { session: options.session } : {}), key: `/filters/${definition.id}`,
+        ...(options.drafts ? { drafts: { page: definition.id, mode: options.drafts } } : {}),
       } : {}),
     });
     return page.signal.aborted ? undefined : source;
@@ -375,13 +385,22 @@ export class SherpaProvider extends SherpaElement {
     const name = label == null ? own?.label
       : label.trim() && uniqueViewLabel(label, Object.values(opened.library()).map((v) => v.label));
     if (!name) return undefined;
+    this.#flush?.();
     saveViewAs(opened.id, name, { source: opened.source });
+    /* SAVED: the filters have a home, so neither the View they were made on
+       nor the one just saved keeps a draft of them. TRAP T-a-view-keeps-a-draft */
+    if (this.#drafts) {
+      if (this.#view) clearDraft(this.#drafts.page, this.#view);
+      clearDraft(this.#drafts.page, labelId(name));
+    }
     // Read BEFORE the redraw: a rebuilt bar's first report is empty.
     const kept = opened.source.query.applied;
     const id = labelId(name);
     // The View chip lists it either way; only a plain save moves to it.
-    await this.#drawBars(options.stay ? this.#view : id);
-    await opened.source.setQuery(kept);
+    await this.#quietly(async () => {
+      await this.#drawBars(options.stay ? this.#view : id);
+      await opened.source.setQuery(kept);
+    });
     // Reported, so the URL and the nav follow the View just saved.
     if (!options.stay) this.#viewBar()?.report?.();
     return id;
@@ -393,6 +412,7 @@ export class SherpaProvider extends SherpaElement {
     const opened = this.#opened;
     if (!opened?.library || !id || !loadSavedViews(opened.id)[id]) return false;
     deleteSavedView(opened.id, id);
+    if (this.#drafts) clearDraft(this.#drafts.page, id);
     if (id !== this.#view) {
       await this.#drawBars(this.#view);
       return true;
@@ -426,8 +446,13 @@ export class SherpaProvider extends SherpaElement {
     const opened = this.#opened;
     if (!opened) return;
     const view = this.#view ? opened.library?.()[this.#view] : undefined;
-    await opened.source.setQuery(structuredClone(opened.initial));
-    if (view?.query) await opened.source.setQuery(view.query, { holds: 'keep' });
+    await this.#quietly(async () => {
+      await opened.source.setQuery(structuredClone(opened.initial));
+      if (view?.query) await opened.source.setQuery(view.query, { holds: 'keep' });
+    });
+    // The View's own filters are on: nothing of the reader's is left to keep.
+    if (this.#drafts && this.#view) clearDraft(this.#drafts.page, this.#view);
+    this.#settle?.();
   }
 
   /** Stops the open page's listeners. */
@@ -572,20 +597,84 @@ export class SherpaProvider extends SherpaElement {
     this.#view = options.view ?? first;
     const kept = key ? session?.get(key) as { view?: string; query?: Query } | undefined : undefined;
     const start = this.#view ? library()[this.#view] : undefined;
+    this.#drafts = options.drafts ? { ...options.drafts, source, library } : null;
+    // A link to a View the reader left a draft on opens on the draft.
+    const draft = this.#view ? this.#draftOf(this.#view) : undefined;
     if (kept?.query && kept.view === this.#view) await source.setQuery(kept.query);
+    else if (draft) await source.setQuery(draft);
     else if (this.#view !== first && start?.query) await source.setQuery(start.query, { holds: 'keep' });
     if (signal.aborted) return;
     this.#hear = () => this.#hearPicks(source, library, signal);
     this.#hear();
-    if (!key || !session) return;
+    if (!this.#drafts && !(key && session)) return;
     let frame = 0;
-    const keep = (): void => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => session.set(key, { view: this.#view, query: source.query.applied }));
+    const write = (): void => {
+      frame = 0;
+      if (key && session) session.set(key, { view: this.#view, query: source.query.applied });
+      this.#keepDraft();
     };
+    /* The READER's changes only: a pick or a reset writes the source too, and
+       kept then, the new View's filters were saved under the old View's name.
+       TRAP T-a-view-keeps-a-draft */
+    const keep = (): void => {
+      if (this.#writing) return;
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(write);
+    };
+    // A pick is taken: what waits for its frame is written NOW, under the View it was made on.
+    this.#flush = () => {
+      if (!frame) return;
+      cancelAnimationFrame(frame);
+      write();
+    };
+    // After a pick or a reset, the page's kept Query is the one on screen.
+    this.#settle = () => { if (key && session) session.set(key, { view: this.#view, query: source.query.applied }); };
     for (const type of ['selection-change', 'scope-change']) source.addEventListener(type, keep, { signal });
     // A preset switched is a report, and no selection changes.
     this.addEventListener('quick-filter-change', keep, { signal });
+    signal.addEventListener('abort', () => {
+      cancelAnimationFrame(frame);
+      this.#flush = this.#settle = null;
+      this.#drafts = null;
+    }, { once: true });
+  }
+
+  /** Drafts for the open page: where they are kept, and what to read them from. */
+  #drafts: { page: string; mode: () => DraftMode; source: DataSource; library: () => ViewLibrary } | null = null;
+  /** Write now what a reader's change left waiting for its frame. */
+  #flush: (() => void) | null = null;
+  /** Keep the Query on screen as the page's own, after the provider wrote it. */
+  #settle: (() => void) | null = null;
+  /** The PROVIDER is writing the source — a View pick, a reset — so nothing heard is the reader's. */
+  #writing = false;
+
+  /** The draft a reader left on one View, if drafts are kept. */
+  #draftOf(id: string): QueryDefaults | undefined {
+    const d = this.#drafts;
+    return d ? loadDraft(d.page, id, draftSig(d.library()[id]), d.mode()) : undefined;
+  }
+
+  /** Keep what is on screen as the draft of the View on screen. */
+  #keepDraft(): void {
+    const d = this.#drafts;
+    if (!d || !this.#view) return;
+    saveDraft(d.page, this.#view, viewQueryOf(d.source), draftSig(d.library()[this.#view]), d.mode());
+  }
+
+  /** Run a write of the provider's own, and hear nothing of it as the reader's:
+   *  a bar redrawn by it reports a frame or two later. */
+  async #quietly(work: () => Promise<void>): Promise<void> {
+    this.#writing = true;
+    try {
+      await work();
+    } finally {
+      this.#unquietSoon();
+    }
+  }
+
+  /** The reader is heard again, two frames on. */
+  #unquietSoon(): void {
+    requestAnimationFrame(() => requestAnimationFrame(() => { this.#writing = false; }));
   }
 
   /** Listen for View picks again, knowing the View on screen now. */
@@ -611,8 +700,16 @@ export class SherpaProvider extends SherpaElement {
       // TRAP T-a-persistent-chip-reports-on-every-change
       applied: this.#view ?? null,
       into: this.querySelector<HTMLElement>('[data-view-content]'),
+      // The old View's draft is written before its answers go. TRAP T-a-view-keeps-a-draft
+      before: () => {
+        this.#flush?.();
+        this.#writing = true;
+      },
+      draft: (id) => this.#draftOf(id),
       after: ({ id, rendered }) => {
         this.#view = id;
+        this.#settle?.();
+        this.#unquietSoon();
         this.#viewBar()?.toggleAttribute('data-custom-view', this.customView);
         this.emit('view-change', { id, ...(rendered ? { elements: rendered.elements } : {}) });
       },

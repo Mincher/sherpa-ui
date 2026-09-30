@@ -1291,6 +1291,44 @@ itself. Figma has no chart glyph of its own yet, so a chart's section wears
 - Site: `test/unit/page-definition.test.mjs`
 - Site: `test/e2e/reforged-panel-scope-icon.spec.ts`
 
+### T-a-view-keeps-a-draft
+
+**A View keeps a DRAFT: the filters a reader left on it, unsaved** — Will,
+TODO 144: *"Filter configurations should survive view swaps during a session,
+even if not saved as a definition … if they could persist across sessions,
+too … configurable options for filtering (on by default)."* A pick used to
+put the View's own filters on, so what the reader had set on the View they
+left was gone.
+
+`src/core/browser/view-drafts.ts` keeps one map per page, View id →
+`{ query, sig }`, in the tab's storage — and the shared one too in `always`.
+`sig` is the View's own definition as it was when the draft was made: a
+draft over another definition is DROPPED, so a changed preset never hides
+behind an old draft. The provider takes a `drafts` option — a function
+asked at every write, so a setting applies at once; none means no drafts.
+
+Four things that are not obvious:
+
+- **Only the READER's changes write it.** A pick and a reset write the
+  source too, and heard then, the NEW View's filters were saved under the
+  OLD View's name (its id changes only after the pick's async write). While
+  the provider writes (`#writing`), nothing is heard as the reader's, and it
+  stays so for two frames, as a redrawn bar reports late.
+- **A pick FLUSHES first**: a change still waiting for its frame is written,
+  under the View it was made on, before the pick's own write.
+- **A draft is read INSIDE the pick** (`onViewPicked`'s `draft` hook), in
+  place of the View's Query, so the View's own filters never flash. It is a
+  RESTORE, so it is exact: a carry-over field does not follow into it.
+- **Reset all to default, Save and Delete clear it**: the View's own filters
+  are on, or the filters have a home.
+
+- Site: `examples/contexts/settings.js`
+- Site: `examples/index.html`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/core/browser/persist-view.ts`
+- Site: `src/core/browser/view-drafts.ts`
+- Site: `test/e2e/reforged-view-drafts.spec.ts`
+
 ### T-reset-to-default-is-the-views-own
 
 **Reset puts every filter back to ITS own default; Reset to default puts the

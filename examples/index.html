@@ -178,7 +178,10 @@
       /* TOOLBARS or PANEL. App chrome, like the nav pin: it survives a reload
          and a Context change, and dies with the session.
          TRAP T-panel-mode-hides-what-the-panel-answers */
-      filters: { mode: 'toolbars', records: null, dashboard: null },
+      /* …and a DRAFT per View, on by default: what a reader left on a View
+         comes back, for the tab and across sessions. Settings › Application.
+         TRAP T-a-view-keeps-a-draft */
+      filters: { mode: 'toolbars', records: null, dashboard: null, drafts: true, draftsAcross: true },
     });
     session.persist('/theme/mode');
     session.persist('/theme/density', { guard: (v) => ['compact', 'default', 'comfortable'].includes(v) });
@@ -188,6 +191,8 @@
     session.persist('/filters/mode', {
       guard: (v) => v === 'toolbars' || v === 'panel',
     });
+    session.persist('/filters/drafts', { guard: (v) => typeof v === 'boolean' });
+    session.persist('/filters/draftsAcross', { guard: (v) => typeof v === 'boolean' });
     /* The PROVIDER switches toolbars and panel for every page; the app keeps
        the reader's choice. TRAP T-the-provider-owns-the-panel-mode */
     const provider = document.querySelector('sherpa-provider');
@@ -437,6 +442,9 @@
           alerts: alertStore,
         },
         views: PRESET_VIEWS[name], view, session,
+        // Asked at each write, so a switch in Settings applies at once.
+        drafts: () => (!session.get('/filters/drafts') ? 'off'
+          : session.get('/filters/draftsAcross') ? 'always' : 'session'),
       }) : undefined;
       if (token !== loadToken) return;
 

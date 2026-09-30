@@ -19,6 +19,22 @@
     </sherpa-stack>
 
     <sherpa-stack>
+      <sherpa-section-header id="section-filtering" data-heading="Filtering">
+        <span slot="description">What happens to filters you have not saved.</span>
+      </sherpa-section-header>
+      <sherpa-list>
+        <sherpa-list-item data-label="Keep each view's filters while I switch views"
+                          data-description="Come back to a view and find the filters you left on it.">
+          <sherpa-switch slot="trailing" id="filters-drafts" name="filters-drafts" checked></sherpa-switch>
+        </sherpa-list-item>
+        <sherpa-list-item data-label="Keep them across sessions"
+                          data-description="A closed tab or a crash does not lose them.">
+          <sherpa-switch slot="trailing" id="filters-drafts-across" name="filters-drafts-across" checked></sherpa-switch>
+        </sherpa-list-item>
+      </sherpa-list>
+    </sherpa-stack>
+
+    <sherpa-stack>
       <sherpa-section-header id="section-navigation" data-heading="Navigation">
         <span slot="description">What the navigation panel lists.</span>
       </sherpa-section-header>

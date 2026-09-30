@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**48 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**47 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -108,7 +108,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31n | 139 | An Advanced toolbar chip's value half shows its VALUES, truncated — not the condition labels | quick |
 | ✅ | 31o | 140 | Every Sherpa input a reader types into shows the Clear button — not a number stepper, not a text area | feature |
 | ✅ | 31p | 141 | Advanced is an icon button again — f(x), at the right of the section or menu header, active when on | quick |
-| ⬜ | 31q | 144 | A View's filters survive a swap to another View — a draft per View, for the session, and across sessions; two settings, on by default | feature |
+| ✅ | 31q | 144 | A View's filters survive a swap to another View — a draft per View, for the session, and across sessions; two settings, on by default | feature |
 | ✅ | 31r | 171 | The filter panel's search matches FIELD labels as well as value labels | feature |
 | ✅ | 31s | 172 | In the filter panel, each chip of a multi-value filter shows its own count badge | feature |
 | | | | **E — Views and navigation** | |
@@ -2355,7 +2355,7 @@ back until the next edit. The switch hid it — its own `change` event made a
 second, late report. The flip now reports once, when the rows are drawn.
 `T-a-filter-menu-has-two-modes` · `T-a-rebuilt-row-reads-empty-for-a-tick`
 
-### `[ ]` 144 — A View's filters survive a View swap: a draft per View
+### `[x]` ✅ 144 — A View's filters survive a View swap: a draft per View
 
 Will, 2026-09-30: *"Filter configurations should survive view swaps during a
 session, even if not saved as a definition. We can leverage the definition
@@ -2396,6 +2396,15 @@ Application.
   gets no drafts.
 - Tests that pin "a fresh View resets" (`reforged-view-chips.spec.ts`) then
   mean "on a first visit".
+
+**✅ Done 2026-09-30, as planned.** Change a filter on a View, go to another
+View, come back: your filters are there. A View you never changed opens on
+its own filters. Reset all to default, Save and Delete clear a View's draft.
+Settings › Application has a new "Filtering" section with two switches, both
+on: "Keep each view's filters while I switch views", and "Keep them across
+sessions" (a new tab, or a crash). The second is off and greyed while the
+first is off. In the library: `provider.open(…, { drafts })`, and
+`src/core/browser/view-drafts.ts`.
 
 ---
 
@@ -4074,6 +4083,7 @@ One line each. The detail is in git and in the trap named.
 - 146, 144, 149, 98, 89, 90, 122, 110: planned from a read of the code, each in its item — five carry one choice (❓)
 - 124: ONE Filters button in the panel header, for every scope; a row says its scope — `T-a-panel-adds-through-the-bar-that-owns-the-list`
 - 117: the accessibility baseline has no structural failure left — `T-an-accordion-action-is-not-a-toggle`
+- 144: a View keeps a draft of the filters left on it, for the tab and across sessions; two settings, on — `T-a-view-keeps-a-draft`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on
