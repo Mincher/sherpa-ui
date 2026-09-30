@@ -1,15 +1,4 @@
 {
-  "sherpa-barchart": {
-    "button-name": 3,
-    "nested-interactive": 1
-  },
-  "sherpa-calendar": {
-    "aria-required-children": 1,
-    "aria-required-parent": 31
-  },
-  "sherpa-chart-legend": {
-    "aria-allowed-attr": 3
-  },
   "sherpa-chip": {
     "color-contrast": 1
   },
@@ -19,35 +8,10 @@
   "sherpa-input-text": {
     "color-contrast": 1
   },
-  "sherpa-line-chart": {
-    "nested-interactive": 1
-  },
-  "sherpa-list": {
-    "list": 1
-  },
-  "sherpa-list-item": {
-    "list": 1
-  },
-  "sherpa-menu": {
-    "aria-required-children": 1
-  },
   "sherpa-metric": {
     "color-contrast": 1
   },
-  "sherpa-notifications": {
-    "aria-required-children": 1
-  },
-  "sherpa-select-card": {
-    "label": 2,
-    "nested-interactive": 2
-  },
-  "sherpa-sparkline": {
-    "nested-interactive": 1
-  },
   "sherpa-toast": {
     "color-contrast": 1
-  },
-  "sherpa-transfer-list": {
-    "nested-interactive": 3
   }
 }

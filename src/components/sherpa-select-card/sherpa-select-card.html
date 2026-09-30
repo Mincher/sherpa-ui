@@ -38,8 +38,10 @@
 
     <div class="footer" part="footer">
       <slot name="footer">
-        <sherpa-select-radio class="footer-control control-radio" part="footer-control"></sherpa-select-radio>
-        <sherpa-select-checkbox class="footer-control control-checkbox" part="footer-control"></sherpa-select-checkbox>
+        <!-- INERT: the CARD is the control. These only show its state, and a
+             press on one falls through to the card. -->
+        <sherpa-select-radio class="footer-control control-radio" part="footer-control" inert></sherpa-select-radio>
+        <sherpa-select-checkbox class="footer-control control-checkbox" part="footer-control" inert></sherpa-select-checkbox>
       </slot>
     </div>
   </div>

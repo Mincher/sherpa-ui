@@ -160,6 +160,15 @@ export class SherpaCalendar extends SherpaElement {
     return cell;
   }
 
+  /** How many months, or years, make one row of their grid — the CSS's three tracks. */
+  static readonly PER_ROW = 3;
+
+  /** Put a cell in its grid's last ROW, opening a new one when `first` in it. */
+  #toRow(grid: Element, cell: HTMLElement, first: boolean): void {
+    if (first) grid.appendChild(this.clone('template.cal-row-tpl')!);
+    grid.lastElementChild!.appendChild(cell);
+  }
+
   /** Stamp the day grid. TRAP T-two-months-share-one-grid — `data-two-up` is the GRID's. */
   #renderDays(): void {
     const grid = this.$('.cal-days');
@@ -228,6 +237,7 @@ export class SherpaCalendar extends SherpaElement {
     const place = (cell: HTMLElement): void => {
       cell.style.gridColumn = String(column + slot);
       cell.style.gridRow = String(row);
+      this.#toRow(grid, cell, slot === 0);
       slot += 1;
       if (slot === 7) {
         slot = 0;
@@ -243,7 +253,6 @@ export class SherpaCalendar extends SherpaElement {
       blank.removeAttribute('role');
       blank.setAttribute('aria-hidden', 'true');
       place(blank);
-      grid.appendChild(blank);
     }
     for (let d = 1; d <= daysInMonth; d++) {
       const iso = toIso(y, m, d);
@@ -287,7 +296,6 @@ export class SherpaCalendar extends SherpaElement {
         }
       }
       place(cell);
-      grid.appendChild(cell);
     }
   }
 
@@ -313,7 +321,7 @@ export class SherpaCalendar extends SherpaElement {
         cell.setAttribute('data-state', 'selected');
         cell.setAttribute('aria-selected', 'true');
       }
-      grid.appendChild(cell);
+      this.#toRow(grid, cell, i % SherpaCalendar.PER_ROW === 0);
     });
   }
 
@@ -341,7 +349,7 @@ export class SherpaCalendar extends SherpaElement {
         cell.setAttribute('data-state', 'selected');
         cell.setAttribute('aria-selected', 'true');
       }
-      grid.appendChild(cell);
+      this.#toRow(grid, cell, i % SherpaCalendar.PER_ROW === 0);
     }
   }
 

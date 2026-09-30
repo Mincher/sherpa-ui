@@ -85,7 +85,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 42 | 23 | A focused grid row opens a details panel | feature |
 | | | | **H — The accessibility gate** | |
 | ✅ | 43 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
-| ⬜ | 43a | 117 | Clear the accessibility baseline — 12 components with a structural failure | bug |
+| ❓ | 43a | 117 | Clear the accessibility baseline — 11 of 12 done; the accordion's actions wait on a choice | bug |
 | ❓ | 43b | 118 | Four texts fail colour contrast — the success green, and a field's description | figma |
 | | | | **I — The big builds** | |
 | ⬜ | 44 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
@@ -1692,22 +1692,34 @@ transfer list's two lists are named, and a blank calendar cell is hidden from
 a reader. 16 are left: 117 and 118.
 `T-the-a11y-gate-reads-shadow-roots`
 
-### `[ ]` 117 — Clear the accessibility baseline — 12 components with a structural failure
+### `[~]` 117 — Clear the accessibility baseline — 12 components with a structural failure
 
 Each is in `test/a11y/baseline.json`; run `npm run test:a11y` and read its
 report in `test/a11y/reports/`. Fix one, then `npm run test:a11y:update`.
 
-| Component | Rule | What is wrong |
+**🚧 2026-09-30: 11 of 12 are clean.** One is left, and it needs a choice.
+
+| Component | Was wrong | Now |
 |---|---|---|
-| barchart, line-chart, sparkline | `nested-interactive` | the plot is `role="img"` and holds focusable marks |
-| barchart | `button-name` | a bar is a button with no name |
-| calendar | `aria-required-parent` | a `gridcell` with no `row`; two months share one grid |
-| chart-legend | `aria-allowed-attr` | a button with `role="listitem"` and `aria-pressed` |
-| filter-panel (accordion) | `nested-interactive` | buttons inside a `<summary>` |
-| list, list-item | `list` | a `<ul>` whose children are `sherpa-list-item`, not `<li>` |
-| menu, notifications | `aria-required-children` | `role="menu"` holds inputs and buttons, not menu items |
-| select-card | `label`, `nested-interactive` | a `role="radio"` host that holds an unnamed radio |
-| transfer-list | `nested-interactive` | an `option` that holds a focusable list item |
+| barchart, line-chart | the plot was `role="img"` over focusable marks | ✅ a `group`; each bar is named `Pro: 12` |
+| sparkline | the same, with hover dots as buttons | ✅ the dots are not controls |
+| calendar | a `gridcell` with no `row` | ✅ cells sit in `role="row"` boxes, `display: contents` |
+| chart-legend | a button with `role="listitem"` and `aria-pressed` | ✅ a `group` of toggle buttons |
+| list, list-item | a `<ul>` whose children are not `<li>` | ✅ `role="list"`; a slotted row is a `listitem` |
+| menu, notifications | `role="menu"` held inputs and buttons | ✅ a named `dialog`; triggers say `aria-haspopup="dialog"` |
+| select-card | a `role="radio"` host held a live, unnamed radio | ✅ its own footer controls are `inert` |
+| transfer-list | a `listbox` whose options held a checkbox | ✅ two named plain lists |
+| **filter-panel (accordion)** | buttons inside a `<summary>` | ❓ below |
+
+`T-a-menu-is-a-dialog-of-native-controls`
+
+**❓ Will — the accordion's `actions` slot.** A `<summary>` is a button, and a
+button may not hold buttons. The filter panel puts `Filters` and `Save filter`
+there.
+- **A (my pick):** the actions move to the first row of the BODY. Native
+  `<details>` stays. They hide when the section is shut.
+- **B:** the actions stay in the header row, shown when shut. Then the
+  accordion drops `<details>` for a `<button aria-expanded>` and a panel.
 
 ### `[ ]` 118 — Four texts fail colour contrast — the success green, and a field's description
 
@@ -2648,6 +2660,7 @@ One line each. The detail is in git and in the trap named.
 - 22: an overlay panel is wider, and resizes from its left edge — `T-an-overlay-panel-resizes-from-its-left-edge`
 - 23: a grid row opens its details in an overlay panel; the chevrons step it; the trail names it — `T-a-current-row-opens-its-details`
 - 24: the accessibility gate — axe-core over a fixture of every component, a report each, a baseline that may only fall — `T-the-a11y-gate-reads-shadow-roots`; 117 and 118 are what it found
+- 117: 11 of the 12 structural accessibility failures are fixed; the accordion's actions slot waits on Will — `T-a-menu-is-a-dialog-of-native-controls`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

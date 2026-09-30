@@ -140,12 +140,10 @@ anatomy:
         attrs:
           aria-hidden: "true"
         children:
-          - el: button
+          - el: span
             class: hotspot chart-mark
             attrs:
-              type: button
               data-index: "0"
-              tabindex: "-1"
           - el: span
             class: chart-tip
             attrs:
@@ -154,12 +152,10 @@ anatomy:
             children:
               - el: span
                 class: chart-tip-value
-          - el: button
+          - el: span
             class: hotspot chart-mark
             attrs:
-              type: button
               data-index: "1"
-              tabindex: "-1"
           - el: span
             class: chart-tip
             attrs:
@@ -168,12 +164,10 @@ anatomy:
             children:
               - el: span
                 class: chart-tip-value
-          - el: button
+          - el: span
             class: hotspot chart-mark
             attrs:
-              type: button
               data-index: "2"
-              tabindex: "-1"
           - el: span
             class: chart-tip
             attrs:
@@ -182,12 +176,10 @@ anatomy:
             children:
               - el: span
                 class: chart-tip-value
-          - el: button
+          - el: span
             class: hotspot chart-mark
             attrs:
-              type: button
               data-index: "3"
-              tabindex: "-1"
           - el: span
             class: chart-tip
             attrs:
@@ -196,12 +188,10 @@ anatomy:
             children:
               - el: span
                 class: chart-tip-value
-          - el: button
+          - el: span
             class: hotspot chart-mark
             attrs:
-              type: button
               data-index: "4"
-              tabindex: "-1"
           - el: span
             class: chart-tip
             attrs:
@@ -210,12 +200,10 @@ anatomy:
             children:
               - el: span
                 class: chart-tip-value
-          - el: button
+          - el: span
             class: hotspot chart-mark
             attrs:
-              type: button
               data-index: "5"
-              tabindex: "-1"
           - el: span
             class: chart-tip
             attrs:
@@ -224,12 +212,10 @@ anatomy:
             children:
               - el: span
                 class: chart-tip-value
-          - el: button
+          - el: span
             class: hotspot chart-mark
             attrs:
-              type: button
               data-index: "6"
-              tabindex: "-1"
           - el: span
             class: chart-tip
             attrs:
@@ -238,12 +224,10 @@ anatomy:
             children:
               - el: span
                 class: chart-tip-value
-          - el: button
+          - el: span
             class: hotspot chart-mark
             attrs:
-              type: button
               data-index: "7"
-              tabindex: "-1"
           - el: span
             class: chart-tip
             attrs:

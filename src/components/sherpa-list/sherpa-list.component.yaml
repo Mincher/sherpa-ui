@@ -15,16 +15,20 @@ $description: >-
   the .row-tpl prototype.
 element:
   $type: element
-  tag: ul
+  tag: div
+  attributes:
+    role: list
   provides: []
 templates:
   - default
 anatomy:
   roots:
-    - el: ul
+    - el: div
       class: body
       part: body
       slot: ""
+      attrs:
+        role: list
     - el: div
       class: empty
       part: empty
@@ -34,8 +38,10 @@ anatomy:
     - el: template
       class: row-tpl
       children:
-        - el: li
+        - el: div
           class: row-item
+          attrs:
+            role: listitem
           children:
             - el: sherpa-list-item
               attrs:

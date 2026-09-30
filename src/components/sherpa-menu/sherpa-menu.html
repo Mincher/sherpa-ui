@@ -113,7 +113,7 @@
     filter-mode-change — the mode button was pressed. detail: { mode } — simple | advanced
 -->
 <template id="default">
-  <div class="menu sherpa-border-edges sherpa-border-corners" part="menu" popover="manual" role="menu">
+  <div class="menu sherpa-border-edges sherpa-border-corners" part="menu" popover="manual" role="dialog">
     <!-- HEADER — CSS-gated on the slot-presence flag, so an unslotted menu is unchanged. -->
     <div class="header" part="header">
       <!-- Shown only in a DRILLED menu. The trail IS sherpa-breadcrumbs, never re-drawn here. -->
@@ -243,7 +243,7 @@
 </template>
 
 <template id="filter">
-  <div class="menu sherpa-border-edges sherpa-border-corners" part="menu" popover="manual" role="menu">
+  <div class="menu sherpa-border-edges sherpa-border-corners" part="menu" popover="manual" role="dialog">
     <!-- HEADER — CSS-gated on the slot-presence flag, so an unslotted menu is unchanged. -->
     <div class="header" part="header">
       <!-- Shown only in a DRILLED menu. The trail IS sherpa-breadcrumbs, never re-drawn here. -->

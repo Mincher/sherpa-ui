@@ -15,7 +15,8 @@ element:
   $type: element
   tag: div
   attributes:
-    role: list
+    role: group
+    aria-label: Legend
   provides: []
 templates:
   - default
@@ -25,7 +26,8 @@ anatomy:
       class: legend
       part: legend
       attrs:
-        role: list
+        role: group
+        aria-label: Legend
     - el: template
       class: item-tpl
       children:
@@ -33,7 +35,6 @@ anatomy:
           class: item
           attrs:
             type: button
-            role: listitem
             aria-pressed: "true"
           children:
             - el: span

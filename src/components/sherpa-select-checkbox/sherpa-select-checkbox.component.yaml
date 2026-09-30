@@ -59,7 +59,7 @@ anatomy:
             data-size: sm
             data-group: end
             data-icon-start: triangle-down
-            aria-haspopup: menu
+            aria-haspopup: dialog
             aria-expanded: "false"
             aria-label: Selection options
     - slot: menu

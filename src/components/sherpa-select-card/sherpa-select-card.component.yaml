@@ -48,9 +48,13 @@ anatomy:
               - el: sherpa-select-radio
                 class: footer-control control-radio
                 part: footer-control
+                attrs:
+                  inert: ""
               - el: sherpa-select-checkbox
                 class: footer-control control-checkbox
                 part: footer-control
+                attrs:
+                  inert: ""
 props:
   - $type: prop
     name: data-description

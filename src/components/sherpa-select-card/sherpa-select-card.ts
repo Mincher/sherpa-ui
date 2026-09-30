@@ -46,8 +46,6 @@ export class SherpaSelectCard extends SherpaElement {
 
     this.#card?.addEventListener('click', this.#onCardClick);
     this.addEventListener('keydown', this.#onKeydown);
-    // A change from the footer control drives the card selection back.
-    this.addEventListener('change', this.#onControlChange);
   }
 
   override onChange(name: string): void {
@@ -91,14 +89,9 @@ export class SherpaSelectCard extends SherpaElement {
 
   /* ── Interaction ──────────────────────────────────────────────────── */
 
-  /** A click on the card toggles it — unless it landed on the control itself. */
-  #onCardClick = (event: MouseEvent): void => {
+  /** A click anywhere on the card toggles it. */
+  #onCardClick = (): void => {
     if (this.hasAttribute('disabled')) return;
-    // The control's own change handles it; don't double-toggle from the card.
-    const path = event.composedPath();
-    for (const control of this.$$('.footer-control')) {
-      if (path.includes(control)) return;
-    }
     this.#toggle();
   };
 
@@ -109,14 +102,6 @@ export class SherpaSelectCard extends SherpaElement {
       event.preventDefault();
       this.#toggle();
     }
-  };
-
-  /** A footer control changed → adopt its checked state. */
-  #onControlChange = (event: Event): void => {
-    const control = this.$$<FooterControl>('.footer-control').find((c) => c === event.target);
-    if (!control) return; // slotted control: consumer owns it
-    event.stopPropagation(); // we re-emit our own change below
-    this.#setSelected(control.checked);
   };
 
   /** A radio selects; a checkbox flips. */

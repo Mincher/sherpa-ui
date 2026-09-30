@@ -105,6 +105,9 @@
 .cal-days { padding-block-end: var(--sherpa-theme-padding-md, 8px); }
 
 /* Month / year: the same box, three tracks rather than seven. */
+/* A row is there for a screen reader only: its cells lie on the grid. */
+.cal-row { display: contents; }
+
 .cal-months,
 .cal-years {
   display: grid;

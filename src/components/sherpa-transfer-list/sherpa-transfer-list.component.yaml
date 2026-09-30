@@ -38,8 +38,6 @@ anatomy:
               class: pane-list
               part: list
               attrs:
-                role: listbox
-                aria-multiselectable: "true"
                 aria-labelledby: source-heading
             - el: p
               class: pane-empty
@@ -92,8 +90,6 @@ anatomy:
               class: pane-list
               part: list
               attrs:
-                role: listbox
-                aria-multiselectable: "true"
                 aria-labelledby: target-heading
             - el: p
               class: pane-empty
@@ -104,7 +100,6 @@ anatomy:
         - el: li
           class: row
           attrs:
-            role: option
             data-attr-data-value: value
           children:
             - el: sherpa-list-item

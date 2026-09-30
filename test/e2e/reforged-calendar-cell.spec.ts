@@ -124,7 +124,7 @@ test('a calendar COMPOSES these cells rather than drawing its own', async ({ pag
     cal.setAttribute('data-value-end', '2026-08-14');
     document.getElementById('root')!.appendChild(cal);
     await cal.rendered;
-    const cells = [...cal.shadowRoot!.querySelectorAll('.cal-days > *')] as (HTMLElement & {
+    const cells = [...cal.shadowRoot!.querySelectorAll('.cal-days .cal-cell')] as (HTMLElement & {
       rendered?: Promise<void>;
       shadowRoot: ShadowRoot;
     })[];

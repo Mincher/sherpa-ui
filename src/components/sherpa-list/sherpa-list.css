@@ -13,11 +13,7 @@
   --_row-gap: var(--sherpa-display-mode-space-3xs, 2px);
 }
 
-/* Native <ul> — reset the default list chrome. */
 .body {
-  margin: 0;
-  padding: 0;
-  list-style: none;
   display: flex;
   flex-direction: column;
   gap: var(--_row-gap);

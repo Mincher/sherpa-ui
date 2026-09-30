@@ -609,6 +609,25 @@ under the pointer or focus.
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
 - Site: `test/e2e/reforged-overlay-panel.spec.ts`
 
+### T-a-menu-is-a-dialog-of-native-controls
+
+**`sherpa-menu`'s card is `role="dialog"`, not `role="menu"`** — TODO 117. An
+ARIA menu may hold only menu items, and this one holds native checkboxes,
+radios, inputs, buttons and a footer with Apply: real form controls, which
+keep their own native semantics and need none written over them. So the card
+is a small non-modal dialog, ALWAYS named — its heading, else the host's
+`aria-label`, else "Menu" — and every trigger says `aria-haspopup="dialog"`.
+The same finding, the same answer, in four more places: a chart legend is a
+GROUP of toggle buttons (a `listitem` may not take `aria-pressed`); a transfer
+list's panes are plain lists of checkbox rows, not listboxes; a bar or line
+chart's plot is a GROUP, because an `img` hides the named marks it holds; and
+`sherpa-list` is `role="list"` on a `<div>`, since a `<ul>` may hold only
+`<li>` and a slotted row is a custom element — the list names each slotted
+row a `listitem`. A calendar's cells sit in `role="row"` boxes that are
+`display: contents`, so they still lie on the grid.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+
 ### T-the-a11y-gate-reads-shadow-roots
 
 **The accessibility gate is axe-core over ONE FIXTURE per component, WCAG 2.1
@@ -7309,6 +7328,11 @@ cross shadow roots: selecting one card queries
 toggle means "select" — you cannot unselect one by re-clicking — while a CHECKBOX
 card flips. The host's `role` and `aria-checked` follow the mode and the state
 for the same reason.
+
+**Both footer controls are `inert`.** The CARD is the control — the host has
+the role, the tab stop and `aria-checked` — so a live radio inside it is a
+control nested in a control, and an unnamed one. They only SHOW the state; a
+press on one falls through to the card. TODO 117.
 
 A click that lands ON a footer control is ignored by the card's own handler
 (checked with `composedPath`), because that control already fires its own

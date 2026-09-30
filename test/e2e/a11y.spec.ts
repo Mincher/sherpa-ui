@@ -115,7 +115,7 @@ test('axe reaches inside a shadow root', async ({ page }) => {
 
 test('a host label reaches its control — read by ROLE, never the attribute', async ({ page }) => {
   await mount(page, { html: '<sherpa-switch aria-label="Increase contrast"></sherpa-switch>'
-    + '<sherpa-button data-type="icon" data-icon-start="xmark" aria-label="Close"></sherpa-button>' });
+    + '<sherpa-button data-type="icon" data-icon-start="cross" aria-label="Close"></sherpa-button>' });
   await expect(page.getByRole('switch', { name: 'Increase contrast' })).toHaveCount(1);
   await expect(page.getByRole('button', { name: 'Close' })).toHaveCount(1);
 });

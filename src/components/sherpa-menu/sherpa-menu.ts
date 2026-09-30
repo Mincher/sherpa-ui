@@ -1249,10 +1249,9 @@ export class SherpaMenu extends SherpaElement {
     this.#syncModeButton();
     // The name must reach a screen reader even when no heading is drawn.
     // TRAP T-calendar-header-has-no-heading
-    const card = this.#card();
-    const name = this.dataset['heading'] ?? '';
-    if (card && name) card.setAttribute('aria-label', name);
-    else card?.removeAttribute('aria-label');
+    // ALWAYS named: the card is a dialog, and a dialog with no name is a failure.
+    // TRAP T-a-menu-is-a-dialog-of-native-controls
+    this.#card()?.setAttribute('aria-label', this.dataset['heading'] || this.getAttribute('aria-label') || 'Menu');
 
     // A shared name makes the browser enforce "one at a time".
     if (this.dataset['select'] === 'single') {

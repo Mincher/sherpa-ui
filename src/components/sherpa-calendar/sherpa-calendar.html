@@ -100,4 +100,9 @@
   <template class="cal-cell-tpl">
     <sherpa-calendar-cell class="cal-cell" role="gridcell"></sherpa-calendar-cell>
   </template>
+  <!-- A grid's cells sit in ROWS. The box is `display: contents`, so the cells
+       still lie on the grid itself. -->
+  <template class="cal-row-tpl">
+    <div class="cal-row" role="row"></div>
+  </template>
 </template>

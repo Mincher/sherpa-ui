@@ -56,7 +56,7 @@ anatomy:
                     data-group: end
                     data-icon-start: triangle-down
                     aria-label: Reset options
-                    aria-haspopup: menu
+                    aria-haspopup: dialog
                   children:
                     - el: sherpa-menu
                       attrs:
@@ -103,7 +103,7 @@ anatomy:
                     data-size: sm
                     data-icon-start: plus
                     data-icon-end: triangle-down
-                    aria-haspopup: menu
+                    aria-haspopup: dialog
                 - el: sherpa-button
                   class: scope-save
                   attrs:

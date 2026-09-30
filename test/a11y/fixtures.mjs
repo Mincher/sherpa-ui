@@ -33,7 +33,7 @@ export const FIXTURES = {
   'sherpa-app-shell': {
     html: '<div style="block-size: 480px"><sherpa-app-shell><sherpa-nav slot="nav" data-current-id="home"></sherpa-nav>'
       + '<sherpa-app-header slot="header" data-heading="Home"></sherpa-app-header><p>The page.</p></sherpa-app-shell></div>',
-    fill: [{ at: 'sherpa-nav', data: { product: { name: 'Sherpa' }, sections: [{ label: 'Main', items: [{ id: 'home', label: 'Home', icon: 'house', href: '?context=home' }] }] } }],
+    fill: [{ at: 'sherpa-nav', data: { product: { name: 'Sherpa' }, sections: [{ label: 'Main', items: [{ id: 'home', label: 'Home', icon: 'home', href: '?context=home' }] }] } }],
   },
   'sherpa-badge': { html: '<sherpa-badge aria-label="3 unread">3</sherpa-badge>' },
   'sherpa-barchart': {
@@ -46,7 +46,7 @@ export const FIXTURES = {
   },
   'sherpa-button': {
     html: '<sherpa-button>Save</sherpa-button> <sherpa-button data-look="saturated" data-icon-start="plus">Add customer</sherpa-button> '
-      + '<sherpa-button data-type="icon" data-icon-start="xmark" aria-label="Close"></sherpa-button> <sherpa-button disabled>Delete</sherpa-button>',
+      + '<sherpa-button data-type="icon" data-icon-start="cross" aria-label="Close"></sherpa-button> <sherpa-button disabled>Delete</sherpa-button>',
   },
   'sherpa-calendar': { html: '<sherpa-calendar data-value="2026-08-13"></sherpa-calendar>' },
   'sherpa-calendar-cell': { html: '<div role="grid" aria-label="August 2026"><div role="row"><sherpa-calendar-cell role="gridcell" data-label="15" data-value="2026-08-15"></sherpa-calendar-cell></div></div>' },
@@ -57,7 +57,7 @@ export const FIXTURES = {
   },
   'sherpa-chat-message': {
     html: '<sherpa-chat-message data-type="assistant" data-name="Sherpa" data-timestamp="10:30" data-message="The answer is 42."></sherpa-chat-message>'
-      + '<sherpa-chat-message data-type="user" data-name="You" data-timestamp="10:31" data-message="Thanks."></sherpa-chat-message>',
+      + '<sherpa-chat-message data-type="person" data-name="You" data-timestamp="10:31" data-message="Thanks."></sherpa-chat-message>',
   },
   'sherpa-chip': { html: '<sherpa-chip>EMEA</sherpa-chip> <sherpa-chip data-status="success" data-dismissible>Active</sherpa-chip>' },
   'sherpa-code-block': { html: '<sherpa-code-block data-language="javascript" data-line-numbers data-code="const answer = 42;"></sherpa-code-block>' },
@@ -79,7 +79,7 @@ export const FIXTURES = {
           { field: 'seats', header: 'Seats', type: 'number', sortable: true },
         ],
         rows: ROWS,
-        actions: [{ id: 'edit', label: 'Edit', icon: 'pen' }, { id: 'delete', label: 'Delete', icon: 'trash', danger: true, multi: true }],
+        actions: [{ id: 'edit', label: 'Edit', icon: 'pencil' }, { id: 'delete', label: 'Delete', icon: 'trash', danger: true, multi: true }],
       },
     }],
   },
@@ -151,22 +151,22 @@ export const FIXTURES = {
       data: {
         product: { name: 'Sherpa' },
         sections: [
-          { label: 'Main', items: [{ id: 'home', label: 'Home', icon: 'house', href: '?context=home' }, { id: 'records', label: 'Records', icon: 'table-columns', href: '?context=records' }] },
-          { label: 'Admin', items: [{ id: 'team', label: 'Team', icon: 'user', children: [{ id: 'roles', label: 'Roles', href: '?context=roles' }] }] },
+          { label: 'Main', items: [{ id: 'home', label: 'Home', icon: 'home', href: '?context=home' }, { id: 'records', label: 'Records', icon: 'table-columns', href: '?context=records' }] },
+          { label: 'Admin', items: [{ id: 'team', label: 'Team', icon: 'person', children: [{ id: 'roles', label: 'Roles', href: '?context=roles' }] }] },
         ],
       },
     }],
   },
-  'sherpa-nav-item': { html: '<sherpa-nav-item data-icon="house" data-label="Home" data-href="?context=home" data-badge="3"></sherpa-nav-item>' },
-  'sherpa-nav-section': { html: '<sherpa-nav-section data-label="Workspace"><sherpa-nav-item data-icon="house" data-label="Home" data-href="?context=home"></sherpa-nav-item></sherpa-nav-section>' },
+  'sherpa-nav-item': { html: '<sherpa-nav-item data-icon="home" data-label="Home" data-href="?context=home" data-badge="3"></sherpa-nav-item>' },
+  'sherpa-nav-section': { html: '<sherpa-nav-section data-label="Workspace"><sherpa-nav-item data-icon="home" data-label="Home" data-href="?context=home"></sherpa-nav-item></sherpa-nav-section>' },
   'sherpa-notifications': {
-    html: '<sherpa-button class="opener" data-type="icon" data-icon-start="bell" aria-label="Notifications"></sherpa-button><sherpa-notifications></sherpa-notifications>',
+    html: '<sherpa-button class="opener" data-type="icon" data-icon-start="notifications" aria-label="Notifications"></sherpa-button><sherpa-notifications></sherpa-notifications>',
     fill: [{ at: 'sherpa-notifications', data: [{ id: 'a', title: 'Renewed', description: 'Enterprise', time: '2m ago', unread: true }, { id: 'b', title: 'Report ready', time: '2d ago' }] }],
     show: 'sherpa-notifications',
     anchor: '.opener',
   },
   'sherpa-overlay-panel': {
-    html: '<sherpa-overlay-panel data-heading="Ada Lovelace" data-icon="user" data-dismissible data-collapsible data-expandable><p>Pro plan, 12 seats.</p>'
+    html: '<sherpa-overlay-panel data-heading="Ada Lovelace" data-icon="person" data-dismissible data-collapsible data-expandable><p>Pro plan, 12 seats.</p>'
       + '<sherpa-button slot="footer">Edit</sherpa-button></sherpa-overlay-panel>',
     show: 'sherpa-overlay-panel',
   },

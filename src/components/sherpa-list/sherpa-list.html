@@ -10,19 +10,21 @@
   to keep a single current row.
 -->
 <template id="default">
-  <ul class="body" part="body">
+  <!-- A role, not a <ul>: a slotted row is a custom element, and a <ul> may
+       hold only <li>. The list names each slotted row a listitem. -->
+  <div class="body" part="body" role="list">
     <slot></slot>
-  </ul>
+  </div>
   <div class="empty" part="empty" role="status" aria-live="polite"></div>
 
   <template class="row-tpl">
-    <li class="row-item">
+    <div class="row-item" role="listitem">
       <sherpa-list-item
         data-attr-data-label="title"
         data-attr-data-description="description"
         data-when-current="active"
         data-when-interactive="interactive"
       ></sherpa-list-item>
-    </li>
+    </div>
   </template>
 </template>

@@ -9,10 +9,10 @@
   Fires: legend-item-click — detail: { index, label, active }
 -->
 <template id="default">
-  <div class="legend" part="legend" role="list"></div>
+  <div class="legend" part="legend" role="group" aria-label="Legend"></div>
 
   <template class="item-tpl">
-    <button class="item" type="button" role="listitem" aria-pressed="true">
+    <button class="item" type="button" aria-pressed="true">
       <span class="swatch sherpa-border-corners" part="swatch" aria-hidden="true"></span>
       <span class="label sherpa-truncate" part="label"></span>
       <span class="value" part="value"></span>
@@ -25,7 +25,7 @@
     data-commit keeps the menu open while several rows are ticked.
   -->
   <template class="rollup-tpl">
-    <span class="rollup" role="listitem">
+    <span class="rollup">
       <button class="item rollup-toggle" type="button" aria-pressed="true">
         <span class="swatch sherpa-border-corners" part="swatch" aria-hidden="true"></span>
         <span class="label sherpa-truncate" part="label"></span>
@@ -39,7 +39,7 @@
         data-size="xs"
         data-type="icon"
         data-icon-start="triangle-down"
-        aria-label="Breakdown" aria-haspopup="menu">
+        aria-label="Breakdown" aria-haspopup="dialog">
         <sherpa-menu slot="menu" class="rollup-menu" data-heading="Breakdown" data-commit></sherpa-menu>
       </sherpa-button>
     </span>

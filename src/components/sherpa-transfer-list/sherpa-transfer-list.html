@@ -12,7 +12,8 @@
   <div class="panes" part="panes">
     <div class="pane source" part="pane">
       <h3 class="pane-heading" part="heading" id="source-heading"></h3>
-      <ul class="pane-list" part="list" role="listbox" aria-multiselectable="true" aria-labelledby="source-heading"></ul>
+      <!-- A plain list: each row holds a real checkbox, which an `option` may not. -->
+      <ul class="pane-list" part="list" aria-labelledby="source-heading"></ul>
       <p class="pane-empty" part="empty">No items</p>
     </div>
 
@@ -25,13 +26,13 @@
 
     <div class="pane target" part="pane">
       <h3 class="pane-heading" part="heading" id="target-heading"></h3>
-      <ul class="pane-list" part="list" role="listbox" aria-multiselectable="true" aria-labelledby="target-heading"></ul>
+      <ul class="pane-list" part="list" aria-labelledby="target-heading"></ul>
       <p class="pane-empty" part="empty">Nothing selected</p>
     </div>
   </div>
 
   <template class="row-tpl">
-    <li class="row" role="option" data-attr-data-value="value">
+    <li class="row" data-attr-data-value="value">
       <sherpa-list-item data-selectable data-interactive
                         data-attr-data-heading="label"></sherpa-list-item>
     </li>

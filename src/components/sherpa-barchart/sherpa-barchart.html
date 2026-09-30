@@ -26,7 +26,7 @@
       <span class="axis-label axis-label-y" part="axis-label"></span>
       <div class="y-axis" part="y-axis" aria-hidden="true"></div>
 
-      <div class="plot" part="plot" role="img" aria-label="Bar chart">
+      <div class="plot" part="plot" role="group" aria-label="Bar chart">
         <div class="gridlines" part="gridlines" aria-hidden="true"></div>
         <div class="bars" part="bars">
           <!-- Only drawn when the scale dips below zero; see data-below-zero. -->
@@ -64,5 +64,5 @@
     <span class="bar-label sherpa-truncate" part="bar-label"></span>
   </template>
 </template>
-<!-- The plot is role="img" so AT reads the CSS-drawn bars as one labelled image
-     rather than descending into meaningless divs. -->
+<!-- The plot is a GROUP, not an img: its bars are buttons, and an img hides
+     what it holds. Each bar is named with its label and value. -->

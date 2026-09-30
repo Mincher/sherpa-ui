@@ -51,7 +51,7 @@ anatomy:
                 data-size: sm
                 data-icon-start: plus
                 data-icon-end: triangle-down
-                aria-haspopup: menu
+                aria-haspopup: dialog
             - el: sherpa-button
               class: act
               attrs:
@@ -80,7 +80,7 @@ anatomy:
                     data-group: end
                     data-icon-start: triangle-down
                     aria-label: Reset options
-                    aria-haspopup: menu
+                    aria-haspopup: dialog
                   children:
                     - el: sherpa-menu
                       attrs:
@@ -124,7 +124,7 @@ anatomy:
                     data-group: end
                     data-icon-start: triangle-down
                     aria-label: Save view options
-                    aria-haspopup: menu
+                    aria-haspopup: dialog
                   children:
                     - el: sherpa-menu
                       class: view-menu
@@ -158,7 +158,7 @@ anatomy:
                 data-type: icon
                 data-icon-start: ellipses-vertical
                 aria-label: More actions
-                aria-haspopup: menu
+                aria-haspopup: dialog
     - el: sherpa-menu
       class: more-menu
       attrs:

@@ -496,7 +496,7 @@ test('clone: the calendar still stamps its day cells', async ({ page }) => {
     root.appendChild(el);
     await el.rendered;
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
-    return el.shadowRoot!.querySelectorAll('.cal-days > *').length;
+    return el.shadowRoot!.querySelectorAll('.cal-days .cal-cell').length;
   });
   // A month grid is never empty.
   expect(cells).toBeGreaterThan(27);

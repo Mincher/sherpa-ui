@@ -45,7 +45,7 @@ anatomy:
               class: plot
               part: plot
               attrs:
-                role: img
+                role: group
                 aria-label: Line chart
               children:
                 - el: svg

@@ -32,10 +32,18 @@ export class SherpaList extends SherpaElement {
 
   override onRender(): void {
     this.addEventListener('item-select', this.#onItemClick);
-    this.$('slot')?.addEventListener('slotchange', this.#syncEmpty);
+    this.$('slot')?.addEventListener('slotchange', this.#onSlotChange);
     if (this.#rows.length) this.#render();
-    this.#syncEmpty();
+    this.#onSlotChange();
   }
+
+  /** A slotted row is a list item to a reader — unless its page gave it a role. */
+  #onSlotChange = (): void => {
+    for (const row of this.querySelectorAll(':scope > sherpa-list-item:not([role])')) {
+      row.setAttribute('role', 'listitem');
+    }
+    this.#syncEmpty();
+  };
 
   override onChange(name: string): void {
     if (name === 'data-empty') this.#syncEmpty();

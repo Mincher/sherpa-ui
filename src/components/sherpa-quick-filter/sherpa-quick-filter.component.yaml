@@ -58,7 +58,7 @@ anatomy:
         part: caret
         attrs:
           type: button
-          aria-haspopup: menu
+          aria-haspopup: dialog
           aria-expanded: "false"
           aria-label: Choose values
         children:
