@@ -161,6 +161,12 @@ interface ScopeFilter {
   on: boolean;
 }
 
+/** A chip that answers a whole field: its own reading, and its own clear. */
+interface AnswerChip extends HTMLElement {
+  reading: FieldReading | null;
+  clear(): void;
+}
+
 /** What the panel asks of a `<sherpa-menu>`. */
 type MenuApi = HTMLElement & {
   rendered?: Promise<void>;
@@ -326,10 +332,7 @@ export class SherpaFilterPanel extends SherpaElement {
     /* A DATE too: its answer is its calendar's days. Its ONE chip is ticked or
        not, and the ticked chip's own id was sent as the day — so a date set in
        the panel filtered nothing. OFF keeps the days. TRAP T-a-panel-date-answers-with-its-days */
-    if (menu?.dataset['body'] === 'date') {
-      const on = this.#oneChip(held)?.hasAttribute('data-current') ?? true;
-      return { ...menu.reading, ...(on ? {} : { suspended: true }) };
-    }
+    if (menu?.dataset['body'] === 'date') return this.#answerChip(held)?.reading ?? menu.reading;
     const picked = this.#picked(held);
     return menu ? { ...menu.reading, picked } : { picked };
   }
@@ -358,15 +361,13 @@ export class SherpaFilterPanel extends SherpaElement {
       // A chart's field may be the View's too: the SCOPE says which. Without one, the first.
       if (held.def.id !== id || (scope != null && held.scope !== scope)) continue;
       const menu = held.menu as (HTMLElement & { reading: FieldReading }) | undefined;
-      const chip = this.#oneChip(held) as (HTMLElement & { refresh?: () => void }) | null;
-      if (chip) {
+      const chip = this.#answerChip(held);
+      if (this.#oneChip(held)) {
         // Group and Sort ARRANGE: no reading draws them.
-        if (menu?.dataset['body'] !== 'date') continue;
-        /* A DATE is one chip, and a chip has an OFF: it keeps its days.
-           TRAP T-a-panel-date-answers-with-its-days */
-        menu.reading = given;
-        chip.toggleAttribute('data-current', (given.picked ?? []).length > 0 && !given.suspended);
-        chip.refresh?.();
+        if (!chip || menu?.dataset['body'] !== 'date') continue;
+        /* A DATE is one chip, and a chip has an OFF: it keeps its days. The
+           chip draws it. TRAP T-a-panel-date-answers-with-its-days */
+        chip.reading = given;
       } else if (menu?.dataset['body'] === 'number') {
         menu.reading = reading;
       } else {
@@ -974,6 +975,13 @@ export class SherpaFilterPanel extends SherpaElement {
     return this.#chipIn(held, held.def.id);
   }
 
+  /** The ONE chip that ANSWERS a field — a date — and so reads, draws and
+   *  empties itself. Group and Sort arrange; a run has no one chip.
+   *  TRAP T-a-chip-says-its-own-answer */
+  #answerChip(held: Held): AnswerChip | null {
+    return arranges(kindOf(held.def)) ? null : this.#oneChip(held) as AnswerChip | null;
+  }
+
   /** The chip for one value in a field's run. */
   #chipIn(held: Held, value: string): HTMLElement | null {
     return held.values.querySelector<HTMLElement>(`.value[data-value="${CSS.escape(value)}"]`);
@@ -1469,6 +1477,9 @@ export class SherpaFilterPanel extends SherpaElement {
   /** EMPTY one field, whatever answers it: its value chips, and its menu's
    *  rows, number or days. TRAP T-empty-is-every-kind-of-answer */
   #empty(held: Held): void {
+    // ONE chip that answers a field empties itself. TRAP T-a-chip-says-its-own-answer
+    const chip = this.#answerChip(held);
+    if (chip) return chip.clear();
     for (const one of held.values.querySelectorAll<HTMLElement>('.value')) {
       if (this.#heldOfChip(one) !== held) continue;
       one.removeAttribute('data-current');

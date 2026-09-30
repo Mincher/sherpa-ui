@@ -180,3 +180,67 @@ test('a RESET leaves a date chip with no value — a kept range holds no ends, n
   // The shape is kept: it is still a range.
   expect(r.range).toBe(true);
 });
+
+/* TODO 130, second half: the toolbar and the panel each read, drew and emptied
+   a chip in their own way. The CHIP has the one door now — `reading`, get and
+   set, and `clear()` — for a list, a number and a date alike. */
+test('a chip reads, draws and empties its own answer: a list, a number and a date', async ({ page }) => {
+  const r = await page.evaluate(async (wait) => {
+    type Door = Chip & { reading: Record<string, unknown> | null; clear(): void; readonly answered: boolean };
+    const bar = await window.__mount<Bar & { readings: Record<string, Record<string, unknown>> }>('sherpa-quick-filter-toolbar', [
+      { id: 'seats', label: 'Seats', kind: 'number', min: 0, max: 500 },
+      { id: 'created', label: 'Date', kind: 'date', range: true },
+      { id: 'plan', label: 'Plan', advanced: true, options: [{ value: 'Pro', label: 'Pro' }, { value: 'Free', label: 'Free' }] },
+      { id: 'risk', label: 'At risk' },
+    ], { style: 'inline-size: 1200px' });
+    await window.__settled();
+    const chip = (id: string): Door => bar.shadowRoot!.querySelector(`.chip[data-id="${id}"]`)!;
+    const settle = async (): Promise<void> => { await window.__settled(); await eval(wait); };
+    const look = (id: string) => ({ on: chip(id).current, answered: chip(id).answered, picked: chip(id).reading?.['picked'], off: chip(id).reading?.['suspended'] });
+
+    const empty = { seats: look('seats'), created: look('created'), plan: look('plan') };
+    // DRAWN — silent, as every steer is.
+    let heard = 0;
+    bar.addEventListener('quick-filter-change', () => { heard += 1; });
+    chip('seats').reading = { picked: ['37', '120'], range: true };
+    chip('created').reading = { picked: ['2024-01-05', '2024-02-06'], range: true };
+    chip('plan').reading = { picked: ['Pro'] };
+    await settle();
+    const drawn = { seats: look('seats'), created: look('created'), plan: look('plan') };
+    // The bar reports what each chip says.
+    const reported = Object.fromEntries(Object.entries(bar.readings).map(([id, x]) => [id, [x['picked'], x['suspended']]]));
+
+    // SUSPENDED: the answer is kept, and the chip is off.
+    chip('plan').reading = { picked: ['Pro'], suspended: true };
+    await settle();
+    const suspended = look('plan');
+    // Rows answer it too: Advanced, and on.
+    chip('plan').reading = { picked: [], mode: 'advanced', conditions: [{ op: 'contains', text: 'Pr' }] };
+    await settle();
+    const rows = { ...look('plan'), mode: chip('plan').reading?.['mode'] };
+
+    // EMPTIED: every kind, and off.
+    for (const id of ['seats', 'created', 'plan']) chip(id).clear();
+    await settle();
+    const cleared = { seats: look('seats'), created: look('created'), plan: { ...look('plan'), mode: chip('plan').reading?.['mode'] } };
+    // A toggle chip answers no field.
+    return { empty, drawn, reported, suspended, rows, cleared, toggle: chip('risk').reading, heard };
+  }, frames);
+
+  for (const id of ['seats', 'created', 'plan'] as const) {
+    expect(r.empty[id]).toMatchObject({ on: false, answered: false, off: true });
+    expect(r.cleared[id]).toMatchObject({ on: false, answered: false, off: true });
+  }
+  expect(r.drawn.seats).toEqual({ on: true, answered: true, picked: ['37', '120'], off: undefined });
+  expect(r.drawn.created).toEqual({ on: true, answered: true, picked: ['2024-01-05', '2024-02-06'], off: undefined });
+  expect(r.drawn.plan).toEqual({ on: true, answered: true, picked: ['Pro'], off: undefined });
+  expect(r.reported).toEqual({
+    seats: [['37', '120'], false], created: [['2024-01-05', '2024-02-06'], false], plan: [['Pro'], false],
+  });
+  expect(r.suspended).toEqual({ on: false, answered: true, picked: ['Pro'], off: true });
+  expect(r.rows).toMatchObject({ on: true, answered: true, mode: 'advanced' });
+  expect(r.cleared.plan.mode).toBe('simple');
+  expect(r.cleared.seats.picked).toEqual([]);
+  expect(r.toggle).toBeNull();
+  expect(r.heard).toBe(0);
+});

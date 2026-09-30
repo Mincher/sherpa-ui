@@ -732,9 +732,26 @@ source draws results to the panel too, scope by scope, so its one-chip fields
 and saved filters say theirs. A panel VALUE chip is one value of a run and
 has no count of its own yet (TODO 133).
 
-Still the hosts', and the next to move: reading a chip's answer, drawing one
-and emptying one are each written in the toolbar and again in the panel, and
-each asks what kind of field it is.
+**The chip has ONE door for its answer too**: `reading`, get and set, and
+`clear()`. Reading a chip's answer, drawing one, emptying one and asking if it
+is on were each written in the toolbar and again in the panel, and each asked
+"a list, a number or a date?" — five of the seven holes in TODO 137 were one
+of those four done differently in two places. The toolbar had its own
+typed-answer check, which knew nothing of Advanced rows; packing a saved
+filter emptied a list field and left a number holding its value. Now:
+
+- `chip.reading` is the menu's whole answer, with `suspended` while the chip
+  is off — and `null` for a chip that answers no field (a toggle, a selector,
+  Group, Sort). Setting it draws the answer, on or off, and the face. SILENT.
+- `chip.clear(op)` empties every kind and switches off; `op` is the condition
+  a list goes back to, which only its host's def knows.
+- `chip.answered` — a pick, a day, a number, typing or an answered row.
+
+What stays the hosts': the toolbar's rebuild (`#pendingAnswers`) and its
+drill, where a chip's rows are away in the Filters menu; and the panel's RUN
+of value chips, which has no one chip — its field reads the inline menu's own
+`reading`, the same door one level down. The panel's date is one chip, and
+uses the chip's.
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
@@ -742,6 +759,7 @@ each asks what kind of field it is.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 - Site: `test/e2e/reforged-chip-tips.spec.ts`
 - Site: `test/unit/filter-face.test.mjs`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-a-panel-follows-the-query-open-or-shut
 
@@ -804,6 +822,7 @@ number: it empties the shape in force and keeps the other
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-coordination.spec.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 
 ### T-a-panel-date-answers-with-its-days
 
@@ -856,7 +875,7 @@ holds for a DATE too — a cleared range calendar came back as a single day.
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/unit/both-shapes-are-kept.test.mjs`
 
@@ -1539,7 +1558,6 @@ one, or a def's typed condition came back on every rebuild.
 - Site: `test/unit/both-answers-are-kept.test.mjs`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-menu-keeps-both-answers.spec.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/filter-face.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
@@ -8914,7 +8932,7 @@ writes. A reading carries EITHER — never both.
 
 - Site: `src/core/data/filter-state.ts`
 - Site: `test/unit/filter-conditions.test.mjs`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
@@ -12581,6 +12599,7 @@ that follows is what makes it read as unset.
 - Site: `test/unit/filter-state.test.mjs`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 ### T-a-breakdown-pick-is-a-legend-pick
 
 Unticking a folded category in the "Other" breakdown menu did NOTHING to the

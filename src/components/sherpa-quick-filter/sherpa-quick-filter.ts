@@ -9,7 +9,7 @@ import {
   DEFAULT_OP, OP_TAKES, type FilterOp, type SortDirection, valueSet,
 } from '../../core/data/store.js';
 import {
-  fieldState, type FieldReading, type FilterState,
+  fieldState, readingRows, type FieldCondition, type FieldReading, type FilterState,
 } from '../../core/data/filter-state.js';
 import { filterFace } from '../../core/data/filter-face.js';
 import { NON_VALUE_ROWS, ORGANISE_ICONS, movedTo } from '../../core/ui/shared-constants.js';
@@ -34,6 +34,13 @@ interface MenuLike extends HTMLElement {
   hide?: () => void;
   values?: string[];
   mode?: string;
+}
+
+/** A menu that answers a FIELD — a list, a number or a date. */
+interface FieldMenu extends MenuLike {
+  reading: FieldReading;
+  conditionValue?: string;
+  conditions?: readonly FieldCondition[];
 }
 
 export class SherpaQuickFilter extends SherpaElement {
@@ -265,6 +272,100 @@ export class SherpaQuickFilter extends SherpaElement {
     }
     // Read BACK, never trust the ask: a value naming no row never landed.
     this.#applySelection((menu.values ?? []) as string[]);
+  }
+
+  /** The menu that answers a FIELD, or null: a toggle, a selector, Group, Sort. */
+  #fieldMenu(): FieldMenu | null {
+    const menu = this.menu;
+    const body = menu?.dataset['body'];
+    return menu && (body === 'number' || body === 'date' || menu.getAttribute('data-type') === 'filter')
+      ? menu as FieldMenu : null;
+  }
+
+  /**
+   * reading — the chip's WHOLE answer as its menu holds it, and `suspended`
+   * while the chip is OFF. Null: it answers no field. SET draws the answer,
+   * on or off, and the face — SILENT, as every steer is.
+   * TRAP T-a-chip-says-its-own-answer · TRAP T-grid-suspend-is-not-clear
+   */
+  get reading(): FieldReading | null {
+    const menu = this.#fieldMenu();
+    return menu ? { ...menu.reading, ...(this.current ? {} : { suspended: true }) } : null;
+  }
+  set reading(next: FieldReading) {
+    const menu = this.#fieldMenu();
+    if (!menu) return;
+    const body = menu.dataset['body'];
+    /* A NUMBER takes its WHOLE reading: which shape is in force, and the one
+       kept. TRAP T-both-shapes-are-kept · TRAP T-a-menu-owns-its-own-bodies */
+    if (body === 'number') {
+      menu.reading = next;
+      const answered = (next.picked ?? []).length > 0 || (next.text ?? '').trim() !== '';
+      this.current = answered && !next.suspended;
+      // TRAP T-a-silent-steer-still-redraws-its-chip
+      this.refresh();
+      return;
+    }
+    /* A DATE takes its answer as it reports it: one day, or two ends. Through
+       the menu's own door, which keeps a reading given before it has drawn. */
+    if (body === 'date') {
+      menu.reading = next;
+      this.#applySelection((menu.values ?? []) as string[]);
+      const days = (next.text ?? '').trim() ? 1 : (next.picked ?? []).length;
+      this.current = days > 0 && !next.suspended;
+      this.refresh();
+      return;
+    }
+    /* BOTH ANSWERS, and the mode the reading names. A steer carrying rows IS
+       the opt-in reaching the menu.
+       TRAP T-both-answers-are-kept · TRAP T-many-conditions-are-one-reading */
+    const rows = readingRows(next);
+    if (rows.length) menu.setAttribute('data-advanced', '');
+    menu.reading = next;
+    if (menu.mode === 'advanced') {
+      this.current = rows.length > 0 && !next.suspended;
+      this.refresh();
+      return;
+    }
+    this.#setPicks((next.picked ?? []).map(String), next.suspended);
+  }
+
+  /** Picks, and OFF where there are none or the answer is suspended.
+   *  TRAP T-everything-on-is-no-filter */
+  #setPicks(picks: readonly string[], off = false): void {
+    this.values = picks;
+    if (!picks.length || off) this.current = false;
+  }
+
+  /**
+   * clear(op) — EMPTY the chip, whatever answers it, and switch it off: a
+   * list's ticks, typing and rows, a number's two shapes, a date's days.
+   * SILENT. `op` is the condition a list goes back to.
+   * TRAP T-empty-is-every-kind-of-answer
+   */
+  clear(op: FilterOp = DEFAULT_OP): void {
+    const menu = this.#fieldMenu();
+    if (menu?.dataset['body'] === 'number') {
+      // BOTH shapes: `values = []` empties only the one in force.
+      menu.reading = { picked: [] };
+      this.current = false;
+      this.refresh();
+      return;
+    }
+    if (menu && !menu.dataset['body']) {
+      menu.dataset['op'] = op;
+      menu.conditionValue = '';
+      if ((menu.conditions ?? []).length) menu.conditions = [];
+      menu.mode = 'simple';
+    }
+    if (this.hasAttribute('data-menu')) return this.#setPicks([]);
+    this.removeAttribute('data-current');
+    for (const input of this.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
+  }
+
+  /** Does the chip hold an answer — a pick, a day, a number, typing or a row? */
+  get answered(): boolean {
+    return this.values.length > 0 || this.#hasTypedAnswer();
   }
 
   /** Everything the chip derives from its picks. */

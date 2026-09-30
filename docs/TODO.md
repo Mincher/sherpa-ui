@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**55 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**54 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -50,7 +50,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16d | 114 | About 1 time in 20, a folded Advanced-only filter's row in the Filters menu opens nothing | bug |
 | ✅ | 16e | 119 | The panel header's Reset menu button wears the grouping `end` style; it takes none | bug |
 | ✅ | 16f | 127 | A number input: `Enter a value`, right-aligned, Sherpa's own steppers — it came back native | bug |
-| 🚧 | 16g | 130 | Filter panel chips show no tooltip: the tip belongs to the CHIP — and check what else does | bug |
+| ✅ | 16g | 130 | Filter panel chips show no tooltip: the tip belongs to the CHIP — and check what else does | bug |
 | ✅ | 16h | 131 | Switching a number filter to Range fires no update, so the range is not used | bug |
 | ✅ | 16i | 132 | Back from a changed Range, a number filter has lost the Simple value typed before | bug |
 | ✅ | 16j | 137 | A number RANGE filter's values do not match between the filter panel and the filter toolbar | bug |
@@ -814,7 +814,7 @@ panel, where the steppers shrink so the digits show. A stepper with no value
 to step to is inactive. Figma draws the pagination's page box with no
 steppers; yours has them, as you said.
 
-### `[~]` 130 — BUG: filter panel chips show no tooltip — the tip belongs to the CHIP
+### `[x]` ✅ 130 — BUG: filter panel chips show no tooltip — the tip belongs to the CHIP
 
 Will, 2026-09-30: *"Filter panel chips don't display tooltips. This
 functionality should be on the filter chip component and not on the
@@ -872,6 +872,15 @@ Five of the seven holes in 137 were one of these done differently in two
 places. The fix is one door on the chip — `reading` get and set, `clear()` —
 which its menu already has. That is a refactor of both hosts; say when.
 `T-a-chip-says-its-own-answer`
+
+**✅ Done 2026-09-30 — the second half.** Will: *"130: Good. A."* The chip
+has the one door: `reading` (read and draw), `clear()` and `answered`. The
+toolbar's three kinds of draw, its two kinds of empty and its own
+typed-answer check are gone; the panel's date chip uses the same door.
+Nothing changes on screen, with one fix found on the way: packing or
+unpacking a saved filter now empties a number or a date field too, as it
+did a list. The panel's run of value chips has no one chip, so its field
+still reads its inline menu's own `reading`.
 
 ### `[x]` ✅ 131 — BUG: switching a number filter to Range fires no update
 
@@ -3778,6 +3787,7 @@ One line each. The detail is in git and in the trap named.
 - 161: the app header's scroll shadow fades, 100ms — the timeline flips a property, a transition follows it — `T-only-the-context-scrolls`
 - 163: a panel area is 1.5 times three grid columns — `T-the-shell-owns-the-panel-areas`
 - 162: a narrow chart puts its legend below, and a legend strip becomes a list — `T-a-narrow-chart-stacks-its-legend`
+- 130: the chip reads, draws and empties its own answer — `reading`, `clear()`, `answered`; the toolbar and the panel's date use it — `T-a-chip-says-its-own-answer`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

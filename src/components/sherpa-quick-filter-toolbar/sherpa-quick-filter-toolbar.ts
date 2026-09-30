@@ -19,13 +19,10 @@ import {
   FILTERS_LABEL, MenuDrill, ON, filtersMenuItems, onOffMenu, type AddedFilter,
 } from '../../core/ui/filters-button.js';
 import { report } from '../../core/data/report.js';
-import {
-  DEFAULT_OP, OP_TAKES,
-  type FilterOp,
-} from '../../core/data/store.js';
+import { DEFAULT_OP, type FilterOp } from '../../core/data/store.js';
 import {
   fieldState, readingRows, savedReading,
-  type FieldCondition, type FieldReading, type FilterState,
+  type FieldReading, type FilterState,
 } from '../../core/data/filter-state.js';
 import type { SavedFilter } from '../../core/browser/saved-filters.js';
 import type { ScopeQuery } from '../../core/data/query.js';
@@ -110,6 +107,14 @@ interface ChipEl extends HTMLElement {
   current: boolean;
   /** Setting these brings the chip's label and badge along. */
   values: readonly string[];
+  /** Its whole answer, read and drawn; null where it answers no field.
+   *  TRAP T-a-chip-says-its-own-answer */
+  reading: FieldReading | null;
+  /** Does it hold an answer of any kind. */
+  readonly answered: boolean;
+  /** Empty it and switch it off. A property type, as `refresh` is. */
+  readonly clear: (op?: FilterOp) => void;
+  readonly menu: HTMLElement | null;
   /** Redraw the face after a silent steer. A property type, so the spec does
    *  not read it as one of the TOOLBAR's methods. */
   readonly refresh: () => void;
@@ -538,47 +543,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * TRAP T-a-conditioned-chip-answers-with-its-clause
    */
   setChipReading(id: string, reading: FieldReading): void {
-    for (const chip of this.#chips()) {
-      if (chip.dataset['id'] !== id || !chip.hasAttribute('data-menu')) continue;
-      const menu = (chip as ChipEl & { menu?: HTMLElement }).menu as
-        (HTMLElement & { conditions?: readonly FieldCondition[] }) | null;
-      if (!menu) return;
-
-      /* A NUMBER takes its WHOLE reading: which shape is in force, and the
-         one kept. Values alone lose both — a range drawn from another control
-         came back as whatever shape this menu was in.
-         TRAP T-both-shapes-are-kept · TRAP T-a-menu-owns-its-own-bodies */
-      if (menu.dataset['body'] === 'number') {
-        (menu as HTMLElement & { reading: FieldReading }).reading = reading;
-        const answered = (reading.picked ?? []).length > 0 || (reading.text ?? '').trim() !== '';
-        chip.current = answered && !reading.suspended;
-        // SILENT, so the chip is told. TRAP T-a-silent-steer-still-redraws-its-chip
-        chip.refresh();
-        return;
-      }
-      /* A DATE body takes its answer as it reports it: one day, or two ends. */
-      if (menu.dataset['body'] === 'date') {
-        if (reading.op) menu.dataset['op'] = reading.op;
-        const one = (reading.text ?? '').trim();
-        this.setChipValues(id, one ? [one] : (reading.picked ?? []).map(String));
-        return;
-      }
-      /* BOTH ANSWERS, and the mode the reading names; a reading with no
-         mode lets its rows decide, and leaves a menu with none alone. A steer
-         carrying rows IS the opt-in reaching the menu.
-         TRAP T-both-answers-are-kept · TRAP T-many-conditions-are-one-reading */
-      const rows = readingRows(reading);
-      if (rows.length) menu.setAttribute('data-advanced', '');
-      (menu as HTMLElement & { reading: FieldReading }).reading = reading;
-      if ((menu as HTMLElement & { mode?: string }).mode === 'advanced') {
-        chip.current = rows.length > 0;
-        // SILENT, so the chip is told. TRAP T-a-silent-steer-still-redraws-its-chip
-        chip.refresh();
-        return;
-      }
-      this.setChipValues(id, (reading.picked ?? []).map(String));
-      return;
-    }
+    // The CHIP draws it: it knows what answers it. TRAP T-a-chip-says-its-own-answer
+    const chip = this.#chips().find((c) => c.dataset['id'] === id && c.hasAttribute('data-menu'));
+    if (chip) chip.reading = reading;
   }
 
   /**
@@ -642,6 +609,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    *  none of it. TRAP T-grid-suspend-is-not-clear */
   #drawChip(id: string, reading: FieldReading): void {
     this.setChipReading(id, reading);
+    // A chip with no field menu — a saved filter — is only on or off.
     if (reading.suspended) this.#setChipActive(id, false);
   }
 
@@ -1147,7 +1115,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // The rebuilt menus take rows only once they have drawn.
     return this.#settled().then(() => {
       for (const [field, reading] of Object.entries(readings)) {
-        this.#clearField(field);
+        this.#emptyField(field);
         this.setChipReading(field, reading);
       }
       this.#emitChange();
@@ -1185,7 +1153,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       return;
     }
     // First: the rebuild below carries every answer across, these included.
-    for (const field of Object.keys(readings)) this.#clearField(field);
+    for (const field of Object.keys(readings)) this.#emptyField(field);
     const def: QuickFilterDef = { id, label, readings, active: true, removable: true, editable: true };
     this.#unpacked = null;
     const i = this.#filters.findIndex((f) => f.id === id);
@@ -1207,32 +1175,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   #emptyChip(chip: ChipEl): void {
     const id = chip.dataset['id'] ?? '';
-    if (this.#filterMenu(id)) return this.#clearField(id);
-    const menu = chip.querySelector<HTMLElement & { reading: FieldReading }>('sherpa-menu');
-    if (menu?.dataset['body'] === 'number') {
-      // BOTH shapes: `values = []` empties only the one in force.
-      menu.reading = { picked: [] };
-      chip.current = false;
-      chip.refresh();
-      return;
-    }
-    if (chip.hasAttribute('data-menu')) return this.setChipValues(id, []);
-    chip.removeAttribute('data-current');
-    for (const input of chip.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
+    this.#pendingAnswers.delete(id);
+    // The CHIP empties itself; the def says which condition a list opens on.
+    chip.clear(this.#filters.find((f) => f.id === id)?.op ?? DEFAULT_OP);
   }
 
-  /** Empty one field chip — ticks, op, typing and rows — and switch it off. */
-  #clearField(id: string): void {
-    const menu = this.#filterMenu(id) as (HTMLElement & {
-      conditionValue: string; conditions?: readonly FieldCondition[]; mode?: string;
-    }) | null;
-    if (!menu) return;
-    this.#pendingAnswers.delete(id);
-    menu.dataset['op'] = this.#filters.find((f) => f.id === id)?.op ?? DEFAULT_OP;
-    menu.conditionValue = '';
-    if ((menu.conditions ?? []).length) menu.conditions = [];
-    menu.mode = 'simple';
-    this.setChipValues(id, []);
+  /** Empty the chip that has this id, where the bar holds one. */
+  #emptyField(id: string): void {
+    const chip = this.#chips().find((c) => c.dataset['id'] === id);
+    if (chip) this.#emptyChip(chip);
   }
 
   /**
@@ -1264,53 +1215,25 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       // A SUPERSEDED chip is the view's now; it narrows nothing here.
       if (!field || chip.hasAttribute('data-superseded')) continue;
 
-      /* The MENU holds the condition — one field, one filter menu, whether a
-         chip or a column heading opened it.
-         TRAP T-one-field-one-filter-menu */
-      const menu = (chip as ChipEl & { menu?: HTMLElement }).menu as (HTMLElement & {
-        conditionValue?: string; conditions?: FieldCondition[]; mode?: string;
-      }) | null;
-      /* A NUMBER or DATE menu answers with its own body: one value under its
-         operator, or two ends. Left out, a Seats range showed on its chip and
-         filtered nothing. TRAP T-a-menu-owns-its-own-bodies */
-      const body = menu?.dataset['body'];
-      if (menu && (body === 'number' || body === 'date')) {
-        out[field] = {
-          label: chip.dataset['label'] ?? field,
-          values: [],
-          ...(menu as HTMLElement & { reading: FieldReading }).reading,
-          suspended: !chip.hasAttribute('data-current'),
-        };
-        continue;
-      }
-      if (menu?.getAttribute('data-type') !== 'filter') continue;
-
-      const all = [...menu.querySelectorAll<HTMLInputElement>('input')]
-        .filter((i) => !i.closest(NON_VALUE_ROWS))
-        .map((i) => i.value);
-      /* A chip switched OFF keeps its picks and applies none of them — off is
-         not gone, and `suspended` below is what says so. Reporting an empty
-         list instead DELETED the reading, so one click wiped what the reader
-         had chosen and the chip could not switch back on.
-         TRAP T-grid-suspend-is-not-clear */
-      const picked = this.#chipPicks(chip);
-
-      /* THE MENU'S WHOLE ANSWER — both modes, and which is in force. Reading
-         row one's condition in Simple mode forced the chip back to Advanced.
-         A menu a rebuild has not drawn yet answers from what the rebuild kept.
-         TRAP T-both-answers-are-kept · TRAP T-a-conditioned-chip-answers-with-its-clause */
-      const held = this.#pendingAnswers.get(field);
+      /* The CHIP says its own answer, and whether it is OFF: off keeps the
+         answer and applies none of it. Null: a toggle or a selector.
+         TRAP T-a-chip-says-its-own-answer · TRAP T-grid-suspend-is-not-clear */
+      const reading = chip.reading;
+      if (!reading) continue;
+      const listed = !chip.menu?.dataset['body'];
+      /* A LIST: a menu a rebuild has not drawn yet answers from what the
+         rebuild kept, and a drilled chip's rows are in the Filters menu.
+         TRAP T-a-rebuild-keeps-every-answer */
+      const all = listed
+        ? [...chip.menu!.querySelectorAll<HTMLInputElement>('input')]
+          .filter((i) => !i.closest(NON_VALUE_ROWS)).map((i) => i.value)
+        : [];
       out[field] = {
         label: chip.dataset['label'] ?? field,
         values: all,
-        ...(held ?? (menu as HTMLElement & { reading: FieldReading }).reading),
-        picked,
-        /* An OFF chip SUSPENDS: it keeps every row and applies none of them,
-           exactly as it keeps its picks. Reporting none of them instead read
-           as "no filter", and the chip could never switch itself back ON —
-           it needed a clause to go on, and the clause needed it on.
-           TRAP T-grid-suspend-is-not-clear */
-        suspended: !chip.hasAttribute('data-current'),
+        ...((listed ? this.#pendingAnswers.get(field) : undefined) ?? reading),
+        ...(listed ? { picked: this.#chipPicks(chip) } : {}),
+        suspended: !!reading.suspended,
       };
     }
     return out;
@@ -1355,16 +1278,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         : null;
     }
     return null;
-  }
-
-  /** Is this chip's menu on a typing condition with something typed? */
-  #hasTypedAnswer(chip: HTMLElement): boolean {
-    const menu = chip.querySelector('sherpa-menu') as
-      (HTMLElement & { conditionValue?: string }) | null;
-    if (menu?.getAttribute('data-type') !== 'filter') return false;
-    const op = (menu.dataset['op'] ?? DEFAULT_OP) as FilterOp;
-    if ((OP_TAKES[op] ?? 'list') !== 'text') return false;
-    return (menu.conditionValue ?? '').trim() !== '';
   }
 
   /**
@@ -1954,7 +1867,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
           'data-current',
           filterChip.hasAttribute('data-persistent')
             || this.#chipPicks(filterChip).length > 0
-            || this.#hasTypedAnswer(filterChip),
+            || (filterChip as ChipEl).answered,
         );
         (filterChip as ChipEl).refresh();
         this.#emitChange();

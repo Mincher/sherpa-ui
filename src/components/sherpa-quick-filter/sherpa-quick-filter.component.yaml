@@ -318,12 +318,12 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: >-
-      read/write JS properties (current, valueLabel, menu, values, column, direction, results). See
-      $extensions.sherpa.jsProps.
+      read/write JS properties (current, valueLabel, menu, values, reading, answered, column,
+      direction, results). See $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
     description: >-
-      callable from a view definition's state block (arrangeBy, toggleMenu, refresh). See
+      callable from a view definition's state block (clear, arrangeBy, toggleMenu, refresh). See
       $extensions.sherpa.methods.
 events:
   - $type: event
@@ -382,6 +382,13 @@ $extensions:
     figmaName: Filter Chip (atom)
     methods:
       - $type: method
+        name: clear
+        args: "op: FilterOp = DEFAULT_OP"
+        description: >-
+          clear(op) — EMPTY the chip, whatever answers it, and switch it off: a list's ticks, typing
+          and rows, a number's two shapes, a date's days. SILENT. `op` is the condition a list goes
+          back to.
+      - $type: method
         name: arrangeBy
         args: "field: string, direction?: string | null"
         description: >-
@@ -426,6 +433,12 @@ $extensions:
       - name: values
         type: string
         access: read-write
+      - name: reading
+        type: string
+        access: read-write
+      - name: answered
+        type: string
+        access: read
       - name: column
         type: string
         access: read
