@@ -231,6 +231,8 @@ export class SherpaMenu extends SherpaElement {
       this.shadowRoot?.addEventListener(type, this.#onDraft);
     }
     this.$('.clear')?.addEventListener('click', this.#onClear);
+    // A number's Reset is its Clear, by another name.
+    this.$('.reset')?.addEventListener('click', this.#onClear);
     this.$('.today')?.addEventListener('click', this.#onToday);
     this.$('.remove')?.addEventListener('click', this.#onRemove);
     this.$('.save')?.addEventListener('click', this.#onSave);
@@ -1718,6 +1720,14 @@ export class SherpaMenu extends SherpaElement {
     for (const s of this.querySelectorAll<HTMLElement & { range: [number, number] }>('sherpa-slider')) {
       s.range = [Number(s.getAttribute('min') ?? 0), Number(s.getAttribute('max') ?? 100)];
       s.removeAttribute('data-touched');
+    }
+    /* A NUMBER BODY is the menu's own, in its shadow root — the sweeps above
+       reach slotted children only, so Clear left its field and its handles as
+       they were. BOTH shapes go back to where they started.
+       TRAP T-a-number-is-reset-not-cleared */
+    if (this.dataset['body'] === 'number') {
+      this.#setNumberBody('', []);
+      this.#syncDirty();
     }
     this.emit('menu-clear');
     /* ALWAYS, even on a COMMITTING menu. Clear is an action ON THE FILTER, not

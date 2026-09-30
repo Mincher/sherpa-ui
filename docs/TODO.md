@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**57 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**56 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -88,7 +88,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31h | 126 | "Filter applied at higher scope" becomes "Filter moved to `<scope name>` scope" | quick |
 | ⬜ | 31i | 129 | "Reset all to default", with a confirm dialog and a "Save filters before reset" switch | feature |
 | ⬜ | 31j | 133 | The results count badge shows at the right of a filter panel SECTION header, where it fits | feature |
-| ⬜ | 31k | 134 | A number filter menu has Reset, not Clear: its field and slider handles go back to their original values | feature |
+| ✅ | 31k | 134 | A number filter menu has Reset, not Clear: its field and slider handles go back to their original values | feature |
 | ⬜ | 31l | 135 | A calendar with limited dates: a Month or Year with no date to pick is inactive too | feature |
 | ✅ | 31m | 138 | Advanced filters go back to the INFO status styling, from success | quick |
 | ✅ | 31n | 139 | An Advanced toolbar chip's value half shows its VALUES, truncated — not the condition labels | quick |
@@ -1789,6 +1789,9 @@ risk`, `15 Unassigned` at rest.
   give, before the press.
 - **B:** a saved filter shows its count only while it is on.
 
+**✅ Ruled, Will 2026-09-30: "A for now."** A saved filter shows its count at
+rest.
+
 `T-a-chip-counts-its-own-results`
 
 ### `[x]` ✅ 125 — The sort tooltip names the direction as well as the field
@@ -1809,8 +1812,8 @@ moved to $scopeName scope'."*
 sentence, from one function (`movedTo`): `Filter moved to View scope.` — and
 on a chip that still holds picks, `… This chip holds active, churned.` My
 pick: the View's heading is "View filters", so the sentence drops "filters"
-and says "View scope", not "View filters scope". Say if you want the heading
-word for word. `T-an-inactive-chip-says-where-its-filter-went`
+and says "View scope", not "View filters scope". Will, 2026-09-30: "That's
+ok." `T-an-inactive-chip-says-where-its-filter-went`
 
 ### `[ ]` 129 — "Reset all to default", with a confirm dialog and "Save filters before reset"
 
@@ -1834,11 +1837,23 @@ filter panel section header where appropriate."*
 The chip's badge from 60, for a field drawn in the panel with no chip to
 carry it.
 
-### `[ ]` 134 — A number filter menu has Reset, not Clear
+### `[x]` ✅ 134 — A number filter menu has Reset, not Clear
 
 Will, 2026-09-30: *"Numeric filter menus have a 'Clear' button but this isn't
 appropriate. It should be a reset button that resets inputs and slider handles
 to their original values."*
+
+**✅ Done 2026-09-30.** A number menu's footer reads **Reset**, with the ↺
+icon. It empties the field and puts both handles back on the bounds — both
+shapes, the one in force and the one kept — and the chip goes off at once.
+A list menu keeps Clear.
+
+**What I found:** Clear did NOTHING to a number. It looked for the slider
+among the menu's slotted children, and the number body lives inside the menu
+now. So the button was there and the filter stayed. My reading of "original
+values" is where they started — empty, and the handles on the bounds. Cancel
+is still the way back to what was last applied.
+`T-a-number-is-reset-not-cleared`
 
 ### `[ ]` 135 — A calendar's Month and Year views mark what has no date to pick
 
@@ -3408,6 +3423,7 @@ One line each. The detail is in git and in the trap named.
 - 149: queued — the legend's items become swatch chips
 - 148: an emptied date range holds no ends — the chip read `undefined` after a Reset
 - 121: a panel field's Clear and Send to are one button group
+- 134: a number menu has Reset — the field empties and the handles go back, both shapes; Clear had done nothing to a number — `T-a-number-is-reset-not-cleared`
 - 151: a filter moved across scopes keeps its mode — the View's answer wins on the way down, and a menu built at a flip takes the answer as it stands — `T-a-late-built-menu-takes-the-answer-as-it-stands`
 - 150: queued — the gauge's risk score, and thresholds in the central Query
 - 141: Advanced is an f(x) icon button at the end of a menu's and a panel field's header; the panel's flip reports once its rows are drawn — `T-a-filter-menu-has-two-modes`

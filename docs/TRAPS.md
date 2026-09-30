@@ -1355,6 +1355,25 @@ rule names the view type too.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 
+### T-a-number-is-reset-not-cleared
+
+A number menu's footer button is **Reset**, not Clear — Will, TODO 134: its
+field goes empty and its slider's handles go back to the bounds, in BOTH
+shapes, and the filter goes with them at once, as Clear's does.
+
+Clear had done NOTHING to a number. Its sweeps are
+`this.querySelectorAll('input' | 'sherpa-calendar' | 'sherpa-slider')` — the
+menu's SLOTTED children — and the number body moved into the menu's own
+shadow root (`T-a-menu-owns-its-own-bodies`). The button emitted `menu-clear`
+and a `menu-change` that still carried both ends, so the chip stayed on.
+
+Both buttons exist in the template and CSS shows one: `.reset` where
+`data-body="number"`, `.clear` everywhere else.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `test/e2e/reforged-number-filter-reports.spec.ts`
+
+
 ### T-a-number-waits-for-apply
 
 **A number filter waits for Apply — single or range, local or remote — and

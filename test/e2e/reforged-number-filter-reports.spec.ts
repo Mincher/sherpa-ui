@@ -256,3 +256,61 @@ for (const host of ['toolbar', 'panel'] as const) {
     expect(r.again).toBe(3);
   });
 }
+
+/**
+ * A NUMBER IS RESET, NOT CLEARED — TODO 134. Will, 2026-09-30: "Numeric filter
+ * menus have a 'Clear' button but this isn't appropriate. It should be a reset
+ * button that resets inputs and slider handles to their original values."
+ * Clear had reached slotted children only, so it did nothing to a number.
+ * TRAP T-a-number-is-reset-not-cleared
+ */
+test('a number menu has Reset: its field and its handles go back, both shapes, and the chip goes off', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    type Steer = Bar & { setChipReading(id: string, r: unknown): void };
+    const bar = await window.__mount<Steer>('sherpa-quick-filter-toolbar', [
+      { id: 'seats', label: 'Seats', kind: 'number', min: 0, max: 500, active: true },
+      { id: 'plan', label: 'Plan', options: [{ value: 'Pro', label: 'Pro' }] },
+    ], { style: 'inline-size: 1200px' });
+    await window.__settled();
+    const chip = (id: string): HTMLElement => bar.shadowRoot!.querySelector(`.chip[data-id="${id}"]`)!;
+    const menu = chip('seats').querySelector('sherpa-menu') as Menu & { reading: { picked?: unknown[]; kept?: unknown } };
+    // A template that has no such button shows none.
+    const shown = (m: Element, sel: string): boolean => {
+      const el = m.shadowRoot!.querySelector(sel);
+      return !!el && getComputedStyle(el).display !== 'none';
+    };
+    const body = () => {
+      const slider = menu.shadowRoot.querySelector('.body-number-range') as HTMLElement & { range: [number, number] };
+      const one = menu.shadowRoot.querySelector('.body-number-one') as HTMLElement & { value: string };
+      return { ends: slider.range, touched: slider.hasAttribute('data-touched'), one: one.value, reading: menu.reading,
+        on: chip('seats').hasAttribute('data-current'), value: chip('seats').shadowRoot!.querySelector('.caret-label')!.textContent };
+    };
+    // Both shapes hold something: two ends in force, and a single value kept.
+    bar.setChipReading('seats', { picked: ['37', '120'], range: true, kept: { picked: ['12'] } });
+    await window.__settled();
+    const before = body();
+    const heard: unknown[] = [];
+    bar.addEventListener('quick-filter-change', () => heard.push(bar.readings['seats']?.picked ?? null));
+    chip('seats').shadowRoot!.querySelector<HTMLElement>('.caret')!.click();
+    await window.__settled();
+    const buttons = { reset: shown(menu, '.reset'), clear: shown(menu, '.clear'),
+      label: menu.shadowRoot.querySelector('.reset')!.textContent!.trim() };
+    menu.shadowRoot.querySelector('.reset')!.shadowRoot!.querySelector<HTMLElement>('button')!.click();
+    await window.__settled();
+    const list = chip('plan').querySelector('sherpa-menu')!;
+    return { before, buttons, after: body(), heard,
+      list: { reset: shown(list, '.reset'), clear: shown(list, '.clear') } };
+  });
+
+  expect(r.before).toMatchObject({ ends: [37, 120], touched: true, one: '12', on: true, value: '37 to 120' });
+  expect(r.buttons).toEqual({ reset: true, clear: false, label: 'Reset' });
+  // Where they started: the handles on the bounds, the field empty, nothing kept.
+  expect(r.after).toMatchObject({ ends: [0, 500], touched: false, one: '', on: false, value: '' });
+  expect(r.after.reading.picked).toEqual([]);
+  expect(r.after.reading.kept).toBeUndefined();
+  // The filter went with it, at once — as Clear's does.
+  expect(r.heard.length).toBeGreaterThan(0);
+  expect(r.heard.at(-1) ?? []).toEqual([]);
+  // A list still has Clear.
+  expect(r.list).toEqual({ reset: false, clear: true });
+});

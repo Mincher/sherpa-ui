@@ -383,8 +383,9 @@
    order and the accessibility tree. */
 .rows ::slotted([data-filtered-out]) { display: none; }
 
-/* Clear, Save, Remove, Today — each opt-in, so a plain menu is unchanged. */
+/* Clear, Reset, Save, Remove, Today — each opt-in, so a plain menu is unchanged. */
 .clear,
+.reset,
 .today,
 .save,
 .remove,
@@ -393,6 +394,9 @@
 /* Separate attributes: only a removable chip has anything to remove, only a
    menu holding a value has anything to clear. */
 :host([data-clearable]) .clear { display: inline-flex; }
+/* A NUMBER is reset, not cleared: the same button's place, other words. */
+:host([data-clearable][data-body="number"]) .clear { display: none; }
+:host([data-clearable][data-body="number"]) .reset { display: inline-flex; }
 :host([data-removable]) .remove { display: inline-flex; }
 :host([data-saveable]) .save { display: inline-flex; }
 
