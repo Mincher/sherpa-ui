@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**39 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**37 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -141,11 +141,11 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 43b | 118 | Four texts fail colour contrast — re-point the alias chain to a darker shade, no new hex | figma |
 | | | | **I — The big builds** | |
 | ✅ | 44 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
-| ⬜ | 45 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
+| ✅ | 45 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
 | ✅ | 45a | 136 | A FIND input: jump to the next or previous match; an optional Find & Replace menu | component |
-| ⬜ | 46 | 27 | A consumer can supply their OWN templates and CSS | feature |
+| ✅ | 46 | 27 | A consumer can supply their OWN templates and CSS | feature |
 | ⬜ | 47 | 25 | `sherpa-layout-canvas` + minimap | component |
-| ⬜ | 48 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
+| ❓ | 48 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
 | ⬜ | 48a | 170 | MAJOR, LAST, and only when Will says — the data layer runs on the client, the server, or both, whole or in parts | explore |
 | | | | **J — Tidy-ups and renames** | |
 | ✅ | 49 | 11 | `sherpa-group`: what is left | tidy |
@@ -3235,7 +3235,7 @@ Three things I chose — say if any should change:
 - **Replace is not on any page yet** — nothing in the examples holds text to
   replace. The component asks; a page does the replacing.
 
-### `[ ]` 68 — `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement`
+### `[x]` ✅ 68 — `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement`
 
 Will, 2026-09-26: Sherpa's equivalent of hot reloading is fetching and
 modifying HTML templates — *"this might be mashing 2 concerns together. So I'm
@@ -3257,7 +3257,24 @@ attributes, slotted content and state, as a variant re-stamp does today. 27
 "use this template instead" and "this template changed" are one mechanism.
 Do 27 with it.
 
-### `[ ]` 27 — A consumer can supply their OWN templates and CSS
+**✅ Done 2026-09-30, with 27.** The fetching, caching and splitting of
+templates and sheets moved out of `sherpa-element.ts` into an imported
+helper, `src/core/ui/templater.ts` — a helper, not a component, since a
+component extends `SherpaElement` alone. The base keeps props, slots,
+`emit`, `$` / `$$` and the lifecycle.
+
+**Hot reload.** `SherpaElement.reload(tag)` fetches a component's files
+again. A sheet changes IN PLACE — the one shared sheet object — so every
+element restyles at once and nothing is drawn again. Changed markup is
+stamped again, as a variant is. **In the example app it is live**: run
+`npm run build:watch`, and a saved component file redraws that component on
+the open page, with no page reload. **Restart the :4200 server once** — the
+route (`/live/files`) is new. `T-a-templater-owns-the-files`
+
+Not done: the Templater also turning a View's JSON into a template (the
+memory of 2026-09-27). Views still carry markup; that is a separate step.
+
+### `[x]` ✅ 27 — A consumer can supply their OWN templates and CSS
 
 Someone building with Sherpa-UI must be able to give a component their own
 HTML template, and their own CSS that EXTENDS the default rather than
@@ -3271,6 +3288,19 @@ parts, slots and classes the JS and CSS expect — the `.component.yaml`
 anatomy is the natural thing to check against. Do it with 68: "use my template" and "the
 template changed" are one mechanism.
 
+**✅ Done 2026-09-30, with 68.** One call, no subclass:
+
+```js
+import { useTemplate } from 'sherpa-ui';
+useTemplate('sherpa-tag', { html: '/my/tag.html', css: '/my/tag.css' });
+```
+
+Your markup replaces the component's; your sheets come AFTER its own, so
+they extend it and win. Your markup is checked against the component's
+OWN template file, not the spec: each template id, part, slot name and
+class it has — its code reaches for them. What yours lacks is reported
+(`template-missing`), never thrown. `T-a-templater-owns-the-files`
+
 ### `[ ]` 25 — `sherpa-layout-canvas` — an infinite canvas content area
 
 Pans and zooms without an edge, on a CROSSHAIR grid pattern. A floating button
@@ -3282,7 +3312,7 @@ moves the viewport from it. PART OF the canvas, not its own component: it needs
 the canvas's pan and zoom, and a separate element would be a second owner of
 one value. Split it out only if a second host wants one.
 
-### `[ ]` 26 — A `Grouped` mode for the content area
+### `[ ]` ❓ 26 — A `Grouped` mode for the content area
 
 Every container in the content area reads as ONE stitched object: gutters
 `0px`, MID rounding on every container, only the top-most keeps its own.
@@ -3298,6 +3328,31 @@ spread over `data-rows`, `data-row-count`, a named `data-col-span` and a
 `grid-template-areas` per scenario, each child naming its AREA, might replace
 most of it. Find what it cannot do — spans re-scale per breakpoint; the fit
 grid's last row takes the rest — before building either.
+
+**The Grouped mode is BUILT** (measured 2026-09-30): `<sherpa-layout-grid
+data-grouped>` drops the gutters, writes each child's grid position
+(`grouped-grid.ts`, from laid-out geometry), and only the four OUTER
+corners stay round. Tested in `reforged-layout-grid.spec.ts`.
+
+**Your question — are we re-inventing the grid?** Measured against
+`grid-template-areas`. Areas CAN do a fixed layout per breakpoint in one
+string, with row spans and no JS. They CANNOT do three things the grid does
+now:
+
+1. **An unknown number of children.** Areas name every cell; four metric
+   tiles or seven are the same markup today.
+2. **A lone last item that widens** to fill its row — the generated
+   `:nth-last-child(… of …)` rules in `tokens.css`.
+3. **Spans from Figma.** The names (`full`, `large`, `medium`, …) and what
+   each spans per breakpoint are PROJECTED from the layout tokens, so a
+   re-export moves every page. Areas would be hand-written per page.
+
+**❓ One choice:**
+- **A (my pick): keep the grid as it is.** Nothing is re-invented: it is CSS
+  grid with Figma's span names. Close 26.
+- **B: add areas beside it**, as an opt-in for a FIXED layout
+  (`data-areas`, a template per breakpoint), for a page whose parts never
+  change.
 
 ### `[ ]` 170 — MAJOR, later: the data layer on the client, the server, or both
 
@@ -4226,6 +4281,7 @@ One line each. The detail is in git and in the trap named.
 - 11: closed — the grid positions have callers, the edge classes are grouping's other half, the class is CSS first
 - 84: the platform formats the delta and the upload size (`Intl`), and the calendar counts its days (`Temporal`)
 - 136: a Find input steps through a host's matches; Find & Replace asks, and Replace all asks first — on Records, the grid's toolbar — `T-a-find-asks-its-host-to-step`
+- 68, 27: the templater owns a component's files — your own markup and sheets by `useTemplate`, and a live reload that restyles in place — `T-a-templater-owns-the-files`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

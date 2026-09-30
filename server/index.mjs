@@ -20,6 +20,7 @@
  */
 import express from 'express';
 import { readFile } from 'node:fs/promises';
+import { existsSync, watch } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { componentUsage } from './component-usage.mjs';
@@ -53,6 +54,33 @@ app.get('/live/alerts', (req, res) => {
   }, every);
   req.on('close', () => clearInterval(tick));
 });
+
+// ── LIVE FILES: a component's BUILT markup or CSS changed, so every page draws
+//    it again (`SherpaElement.reload`). Run `npm run build:watch` beside this.
+//    Will, TODO 68. TRAP T-a-templater-owns-the-files
+const pages = new Set();
+app.get('/live/files', (req, res) => {
+  res.set({ 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' });
+  res.flushHeaders();
+  pages.add(res);
+  req.on('close', () => pages.delete(res));
+});
+if (existsSync(join(ROOT, 'dist'))) {
+  // A save writes several files: they go out as ONE message.
+  let changed = new Set();
+  let timer;
+  watch(join(ROOT, 'dist'), { recursive: true }, (_event, file) => {
+    if (!file || !/\.(html|css)$/.test(file)) return;
+    // A component's own file names it; a shared sheet redraws every one.
+    changed.add(/components[\\/](sherpa-[a-z0-9-]+)[\\/]/.exec(file)?.[1] ?? '*');
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      const tags = [...changed];
+      changed = new Set();
+      for (const res of pages) res.write(`data: ${JSON.stringify({ tags })}\n\n`);
+    }, 150);
+  });
+}
 
 // ── template source #1: derived default component usage ───────────────────────
 app.get('/template/component/:name', async (req, res) => {

@@ -140,7 +140,7 @@
   </sherpa-overlay-panel>
 
   <script type="module">
-    import { ArrayStore, DataSource, SessionStore, loadSavedViews, spoofRemote } from '../dist/index.js';
+    import { ArrayStore, DataSource, SessionStore, SherpaElement, loadSavedViews, spoofRemote } from '../dist/index.js';
     import { DASHBOARD_VIEWS } from '/examples/definitions/dashboard-views.js';
     import { RECORDS_VIEWS } from '/examples/definitions/records-views.js';
     // The SAME URLs the Contexts import, or each gets a store of its own. TRAP T-two-urls-are-two-modules
@@ -153,6 +153,13 @@
 
     // Sentinel proving hot-swaps stay in the SAME document (never a full reload).
     window.__sherpaAppBooted = (window.__sherpaAppBooted ?? 0) + 1;
+
+    /* HOT RELOAD, while `npm run build:watch` runs: a component's built markup or
+       CSS changed, so it draws again — nothing reloads. `*` is a shared sheet.
+       TRAP T-a-templater-owns-the-files */
+    new EventSource('/live/files').addEventListener('message', (event) => {
+      for (const tag of JSON.parse(event.data).tags) void SherpaElement.reload(tag === '*' ? undefined : tag);
+    });
 
     /* A CONTEXT is what a nav row opens: it fills the header and the content.
        Terms: CLAUDE.md "Navigation terms". A Settings Context opens in an

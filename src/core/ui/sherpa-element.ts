@@ -21,9 +21,9 @@
 import { hasIcon, renderIcon, upgradeIcons } from './render-icon.js';
 import { ContextRequestEvent, DATA_CONTEXT, type DataAsk } from './context.js';
 import { liftTips } from './top-layer-tips.js';
-
-/** id → innerHTML. `null` when the file is a single flat template. */
-type TemplateMap = Map<string, string> | null;
+import {
+  cachedTemplates, checkOwnTemplate, filesFor, loadSheets, loadTemplates, onReload, reloadFiles, templateBody,
+} from './templater.js';
 
 /** How `num()` narrows a parsed value. */
 export interface NumOptions {
@@ -75,11 +75,6 @@ export interface PropDef {
 
 /** A component's whole declared attribute surface. */
 export type PropMap = Readonly<Record<string, PropDef>>;
-
-/* Class-level caches, keyed by resolved URL, shared across instances. */
-const htmlCache = new Map<string, Promise<string>>();
-const templateCache = new Map<string, TemplateMap>();
-const sheetCache = new Map<string, Promise<CSSStyleSheet>>();
 
 /* ── The SHARED vocabulary ────────────────────────────────────────────────
  * Attributes more than one component declares, stated once.
@@ -178,49 +173,6 @@ export const SHARED_PROPS = {
     ],
   },
 } as const satisfies PropMap;
-
-/** Fetch a stylesheet URL once; every element adopting it shares one sheet object. */
-function loadSheet(url: string): Promise<CSSStyleSheet> {
-  let pending = sheetCache.get(url);
-  if (!pending) {
-    pending = fetch(url)
-      .then((r) => r.text())
-      .then((css) => {
-        const sheet = new CSSStyleSheet();
-        sheet.replaceSync(css);
-        return sheet;
-      });
-    sheetCache.set(url, pending);
-  }
-  return pending;
-}
-
-/** Fetch an HTML file once per URL (cached promise). */
-function loadHtml(url: string): Promise<string> {
-  let pending = htmlCache.get(url);
-  if (!pending) {
-    pending = fetch(url).then((r) => {
-      // A 404 RESOLVES, so without this the body is the server's error page.
-      if (!r.ok) throw new Error(`${r.status} ${r.statusText} for ${url}`);
-      return r.text();
-    });
-    htmlCache.set(url, pending);
-  }
-  return pending;
-}
-
-/**
- * Parse `<template id="...">` → innerHTML. Null when there are no id'd templates.
- * TRAP T-cloning-prototypes-have-no-id — an item prototype must carry no `id`.
- */
-function parseTemplates(html: string): TemplateMap {
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  const templates = doc.querySelectorAll('template[id]');
-  if (templates.length === 0) return null;
-  const map = new Map<string, string>();
-  for (const t of templates) map.set(t.id, (t as HTMLTemplateElement).innerHTML);
-  return map;
-}
 
 /**
  * Coerce a raw attribute string to a number, or return `fallback`.
@@ -337,6 +289,37 @@ export abstract class SherpaElement extends HTMLElement {
 
   /** Shared stylesheet URLs adopted into every shadow root (set once at app init). */
   static sharedStyles: URL[] = [];
+
+  /** Every element on the page now, so a reload can draw them again. */
+  static #live = new Set<SherpaElement>();
+
+  /* A RELOAD redraws each element drawn from what changed: its markup again,
+     or a sheet it did not have. A sheet it has changed in place already. */
+  static {
+    onReload((changed) => {
+      for (const el of SherpaElement.#live) {
+        const files = el.#files();
+        if ((files.html && changed.has(files.html)) || files.css.some((c) => changed.has(c))) void el.#redraw();
+      }
+    });
+  }
+
+  /**
+   * Fetch a component's markup and sheets again — or every one's on the page,
+   * the shared sheets too — and draw each element again. What a development
+   * server calls when a file changes. Will, TODO 68. TRAP T-a-templater-owns-the-files
+   */
+  static async reload(tag?: string): Promise<void> {
+    const html = new Set<string>();
+    const css = new Set<string>(tag ? [] : SherpaElement.sharedStyles.map((u) => u.href));
+    for (const el of SherpaElement.#live) {
+      if (tag && el.localName !== tag) continue;
+      const files = el.#files();
+      if (files.html) html.add(files.html);
+      for (const c of files.css) css.add(c);
+    }
+    await reloadFiles({ html: [...html], css: [...css] });
+  }
 
   /**
    * Declared attributes — the public surface as data. Every key is observed.
@@ -478,6 +461,7 @@ export abstract class SherpaElement extends HTMLElement {
   /* ── Native lifecycle — the platform calls these ─────────────────────── */
 
   connectedCallback(): void {
+    SherpaElement.#live.add(this);
     // Once per page: a tip is lifted over everything. TRAP T-a-tip-lives-in-the-top-layer
     liftTips();
     // BEFORE anything reads state.
@@ -495,6 +479,7 @@ export abstract class SherpaElement extends HTMLElement {
   }
 
   disconnectedCallback(): void {
+    SherpaElement.#live.delete(this);
     this.#connected = false;
     // BEFORE onDisconnect, so a component's teardown finds the listeners gone.
     this.#ac.abort();
@@ -771,11 +756,12 @@ export abstract class SherpaElement extends HTMLElement {
 
   /** Adopt the styles, stamp the template, then run the first render. */
   async #bootstrap(): Promise<void> {
-    const Ctor = this.constructor as typeof SherpaElement;
-
     // Styles awaited before any DOM write — no flash of unstyled content.
-    const styling = this.#adoptStyles(Ctor);
-    const markup = Ctor.html ? loadHtml(Ctor.html.href) : Promise.resolve('');
+    const files = this.#files();
+    const styling = this.#adoptStyles(files.css);
+    const markup = files.html ? loadTemplates(files.html).then((t) => t.html) : Promise.resolve('');
+    // A consumer's own markup must keep what this component reaches for.
+    if (files.html && files.ownHtml) void checkOwnTemplate(this.localName, files.html, files.ownHtml);
 
     /* THE MARKUP LEG MUST NOT LEAVE `rendered` PENDING. A dropped connection
        rejects the fetch, and an unguarded await here skipped
@@ -790,7 +776,9 @@ export abstract class SherpaElement extends HTMLElement {
       console.error(`[${this.localName}] template failed to load`, error);
     }
 
-    const [body, id] = this.#resolveTemplate(Ctor, html);
+    this.#stampedFrom = files.html;
+    const [body, id] = files.html
+      ? templateBody(cachedTemplates(files.html)?.map ?? null, html, this.templateId) : ['', null];
     this.#stamp(body, id);
     this.#resolveRendered();
 
@@ -801,38 +789,35 @@ export abstract class SherpaElement extends HTMLElement {
     }
   }
 
-  /** Adopted sheets: shared first, then this component's CSS. */
-  async #adoptStyles(Ctor: typeof SherpaElement): Promise<void> {
-    // TRAP T-shared-sheets-settle-independently
-    await Promise.resolve();
-    const urls = [...Ctor.sharedStyles.map((u) => u.href)];
-    for (const url of [Ctor.css ?? []].flat()) urls.push(url.href);
-    // TRAP T-shared-sheets-settle-independently — settle each, keep what loaded.
-    const results = await Promise.allSettled(urls.map(loadSheet));
-    const sheets = results
-      .filter((r): r is PromiseFulfilledResult<CSSStyleSheet> => r.status === 'fulfilled')
-      .map((r) => r.value);
-    this.root.adoptedStyleSheets = sheets;
+  /** The markup and sheets this element is drawn from now — its own, then a
+   *  consumer's. TRAP T-a-templater-owns-the-files */
+  #files(): { html?: string; css: string[]; ownHtml?: string } {
+    const Ctor = this.constructor as typeof SherpaElement;
+    return filesFor(this.localName, Ctor.html, Ctor.css);
   }
 
-  /**
-   * Pick the template body: the id from `templateId`, else the first, else raw html.
-   * Returns the id alongside the body. TRAP T-template-id-read-once-was-permanent
-   */
-  #resolveTemplate(Ctor: typeof SherpaElement, html: string): [string, string | null] {
-    const key = Ctor.html?.href;
-    if (!key) return ['', null];
-    let map = templateCache.get(key);
-    if (map === undefined) {
-      map = parseTemplates(html);
-      templateCache.set(key, map);
-    }
-    if (!map) return [html, null]; // single flat template
-    const wanted = this.templateId;
-    if (wanted && map.has(wanted)) return [map.get(wanted)!, wanted];
-    // The FIRST template's REAL id — TRAP T-template-id-read-once-was-permanent
-    const [id, body] = map.entries().next().value ?? [null, html];
-    return [body, id];
+  /** The markup it was stamped from. */
+  #stampedFrom: string | undefined;
+
+  /** Adopted sheets: shared first, then this component's CSS, then a consumer's. */
+  async #adoptStyles(css: readonly string[]): Promise<void> {
+    // TRAP T-shared-sheets-settle-independently
+    await Promise.resolve();
+    const Ctor = this.constructor as typeof SherpaElement;
+    this.root.adoptedStyleSheets = await loadSheets([...Ctor.sharedStyles.map((u) => u.href), ...css]);
+  }
+
+  /** A RELOAD: the sheets again, and the tree stamped again from its markup —
+   *  as a variant re-stamp is. TRAP T-restamp-does-not-abort */
+  async #redraw(): Promise<void> {
+    if (!this.#hasRendered) return;
+    const files = this.#files();
+    await this.#adoptStyles(files.css);
+    const cached = files.html ? cachedTemplates(files.html) : undefined;
+    if (!cached) return;
+    this.#stampedFrom = files.html;
+    const [body, id] = templateBody(cached.map, cached.html, this.templateId);
+    this.#stamp(body, id);
   }
 
   /**
@@ -880,13 +865,12 @@ export abstract class SherpaElement extends HTMLElement {
    * TRAP T-restamp-runs-after-on-change
    */
   #restampIfVariantChanged(): void {
-    const Ctor = this.constructor as typeof SherpaElement;
     const wanted = this.templateId;
     // A component with one template never opts in; only a CHANGE re-stamps.
     if (wanted === null || wanted === this.#stampedTemplate) return;
 
     // Cached per URL at first render — a re-stamp costs no fetch.
-    const map = templateCache.get(Ctor.html?.href ?? '');
+    const map = cachedTemplates(this.#stampedFrom ?? '')?.map;
     if (!map?.has(wanted)) return;
 
     this.#stamp(map.get(wanted)!, wanted);

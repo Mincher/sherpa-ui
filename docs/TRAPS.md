@@ -3297,7 +3297,7 @@ variant set. An `id` on a row prototype would make SherpaElement's
 multi-template parser pick it up as a whole tree to stamp, so the component
 would render one row and nothing else.
 
-- Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/core/ui/templater.ts`
 
 ### T-coerce-and-clamp-are-shared
 
@@ -3624,6 +3624,7 @@ variant component that fell back would otherwise look like it had no template
 and never re-stamp.
 
 - Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/core/ui/templater.ts`
 
 ### T-restamp-runs-after-on-change
 
@@ -3667,6 +3668,7 @@ Styles are awaited BEFORE any DOM is written, which is what prevents a flash of
 unstyled content; the HTML fetch runs in parallel with them.
 
 - Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/core/ui/templater.ts`
 
 ### T-populate-settles-after-render-data
 
@@ -10019,6 +10021,7 @@ reported: an app should not crash because one chip lost its menu.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/unit/a-broken-assumption-reports.test.mjs`
 - Site: `test/e2e/reforged-a-broken-assumption-reports.spec.ts`
+- Site: `src/core/ui/templater.ts`
 
 ### T-a-bug-report-should-be-a-paste
 
@@ -15349,6 +15352,36 @@ attribute: an attribute check passes on exactly the bug.
 - Site: `src/components/sherpa-switch/sherpa-switch.ts`
 - Site: `test/e2e/reforged-host-label.spec.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+
+### T-a-templater-owns-the-files
+
+**A component's markup and sheets come from ONE imported helper,
+`src/core/ui/templater.ts` — not the base class.** Will, TODO 68: *"it would
+be good to be able to offload that and slim the base UI component down"*,
+and 27: a consumer gives a component their OWN template, and CSS that
+EXTENDS the default rather than replacing it.
+
+- **Fetched once, by URL.** Every element of a kind shares one parsed
+  template map and one `CSSStyleSheet` per file.
+- **`useTemplate(tag, { html, css })`** draws every `tag` from your markup,
+  and adds your sheets AFTER its own, so they win. Set it before the elements
+  draw; one already drawn takes it on `SherpaElement.reload(tag)`.
+- **What your markup lacks is REPORTED, never thrown**: each template id,
+  part, slot name and class of the component's own — its code reaches for
+  them. A class is on the list because `this.$('.x')` finds nothing without it.
+- **A reload changes a sheet IN PLACE.** `replaceSync` on the one shared
+  object restyles every element that adopted it; nothing is drawn again.
+  New MARKUP is stamped again, as a variant re-stamp is, so a component whose
+  `onRender` draws from its own state comes back as it was.
+  `SherpaElement.reload()` with no tag reloads the shared sheets too.
+- **The example app reloads live** while `npm run build:watch` runs: the
+  examples server watches `dist/` and sends `/live/files`, and the page
+  calls `SherpaElement.reload(tag)`. Restart the server once to get the route.
+
+- Site: `src/core/ui/templater.ts`
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `examples/index.html`
+- Site: `test/e2e/reforged-templater.spec.ts`
 
 ### T-a-tip-lives-in-the-top-layer
 

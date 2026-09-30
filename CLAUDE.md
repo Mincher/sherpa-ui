@@ -176,7 +176,7 @@ entry point stays clean.
 
 ### `SherpaElement` base class (`src/core/ui/sherpa-element.ts`)
 
-All components extend this. It handles template fetching (with class-level cache), shadow DOM setup via `adoptedStyleSheets`, slot-presence detection (`data-has-{slotName}` on host), and multi-template support.
+All components extend this. It handles shadow DOM setup via `adoptedStyleSheets`, slot-presence detection (`data-has-{slotName}` on host), and multi-template support. The FILES — fetched once per URL, a consumer's own by `useTemplate(tag, { html, css })`, and reloaded live by `SherpaElement.reload(tag)` — are `src/core/ui/templater.ts`'s (TRAP `T-a-templater-owns-the-files`).
 
 ```ts
 export class SherpaFoo extends SherpaElement {
