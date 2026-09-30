@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**42 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**41 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -148,7 +148,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 48 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
 | ⬜ | 48a | 170 | MAJOR, LAST, and only when Will says — the data layer runs on the client, the server, or both, whole or in parts | explore |
 | | | | **J — Tidy-ups and renames** | |
-| ⬜ | 49 | 11 | `sherpa-group`: what is left | tidy |
+| ✅ | 49 | 11 | `sherpa-group`: what is left | tidy |
 | ⬜ | 50 | 28 | A Figma component is NOT always a web component | tidy |
 | ⬜ | 51 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
 | ⬜ | 52 | 33 | Density as step offsets, and a breakpoint step | tokens |
@@ -3301,7 +3301,7 @@ DOM (the lint boundary and a node test hold it), and the Query is plain JSON.
 
 ## J — Tidy-ups and renames
 
-### `[ ]` 11 — `sherpa-group`: what is left
+### `[x]` ✅ 11 — `sherpa-group`: what is left
 
 `<sherpa-group>` is BUILT (2026-09-23), but only `sherpa-pagination` uses it.
 Measured 2026-09-26, all three still open:
@@ -3313,6 +3313,20 @@ Measured 2026-09-26, all three still open:
    components use them. Move them to their own `sherpa-borders.css`.
 3. The `.sherpa-group` class is still used in calendar, menu,
    quick-filter-toolbar and select-checkbox.
+
+**✅ Closed 2026-09-30 — measured again, nothing left to build.** Say if you
+want any of it anyway.
+
+1. **The `grid-*` and `vertical-*` blocks have callers now.** The layout
+   grid's grouped mode (`grouped-grid.ts`) writes `grid-top-*` and the rest,
+   and `SherpaElement` lists them as `data-group` values.
+2. **The edge and corner classes ARE grouping.** They read the
+   `--sherpa-border-*` variables that a grouping position writes — the other
+   half of it. Their own sheet would be a ninth in every shadow root, for a
+   name.
+3. **The class stays where it is.** `.sherpa-group` is CSS only, by
+   position; `<sherpa-group>` is for a grid, whose positions must be told.
+   CSS before JS.
 
 ### `[ ]` 28 — A Figma component is NOT always a web component
 
@@ -4176,6 +4190,7 @@ One line each. The detail is in git and in the trap named.
 - 50: a saved filter's line opens its field; the change applies, unsaved, until Save or Discard — `T-a-saved-filter-keeps-its-edit`
 - 111: a spec types a property as its accessor does, `unknown` where nothing says
 - 118: success text and a field's description pass 4.5:1 — one step darker on their own ramps, no new hex; the a11y baseline is empty
+- 11: closed — the grid positions have callers, the edge classes are grouping's other half, the class is CSS first
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on
