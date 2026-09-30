@@ -1,0 +1,34 @@
+<!--
+  sherpa-data-viz-header — the header strip of a metric or a chart's card.
+  Figma "Data Viz Header" (1456:30467).
+
+  Public API:
+    data-heading      the title — small, light, in CAPS
+    data-description  a line under it (else the metadata slot)
+    data-icon         a glyph before the title (else the left slot)
+
+  Slots:
+    left      a custom leading icon          (data-accepts: icon)
+    metadata  what sits under the title      (data-accepts: content)
+    actions   icon-only controls at the end  (data-accepts: control)
+
+  Fires: nothing by itself — its controls are the host's.
+-->
+<template id="default">
+  <header class="header" part="header">
+    <span class="left" part="left" aria-hidden="true">
+      <slot name="left" data-accepts="icon"><i class="icon sherpa-icon-box" part="icon"></i></slot>
+    </span>
+    <div class="labels" part="labels">
+      <span class="title sherpa-truncate" part="title"></span>
+      <div class="metadata" part="metadata">
+        <slot name="metadata" data-accepts="content">
+          <span class="description sherpa-truncate" part="description"></span>
+        </slot>
+      </div>
+    </div>
+    <div class="actions" part="actions">
+      <slot name="actions" data-accepts="control"></slot>
+    </div>
+  </header>
+</template>

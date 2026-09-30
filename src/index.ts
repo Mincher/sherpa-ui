@@ -163,6 +163,7 @@ export { SherpaSparkline } from './components/sherpa-sparkline/sherpa-sparkline.
 export { SherpaSlider } from './components/sherpa-slider/sherpa-slider.js';
 export { SherpaToast, type ToastOptions } from './components/sherpa-toast/sherpa-toast.js';
 export { SherpaContainerHeader } from './components/sherpa-container-header/sherpa-container-header.js';
+export { SherpaDataVizHeader } from './components/sherpa-data-viz-header/sherpa-data-viz-header.js';
 export { SherpaContainerFooter } from './components/sherpa-container-footer/sherpa-container-footer.js';
 export { SherpaNavItem } from './components/sherpa-nav-item/sherpa-nav-item.js';
 export { SherpaNavSection } from './components/sherpa-nav-section/sherpa-nav-section.js';

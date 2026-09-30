@@ -76,7 +76,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 35 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
 | | | | **F — Data states and charts** | |
 | ✅ | 36 | 58 | Loading, empty and error states in a container | feature |
-| ⬜ | 37 | 9b | A Data Viz header, for metrics and chart containers | component |
+| 🚧 | 37 | 9b | A Data Viz header, for metrics and chart containers | component |
 | ⬜ | 38 | 80 | Container and Data Viz headers: Figma's new button styling and grouping | component |
 | ⬜ | 39 | 14 | An example of real-time data | feature |
 | ⬜ | 40 | 59 | EXPLORE, later — Will's own loading pattern | explore |
@@ -1558,7 +1558,7 @@ answer at open no longer stops the page. The example shows each: `?remote`
 (slow), `?fail` (every load fails). No Figma design — the look follows the
 empty state. `T-a-container-shows-its-datas-state`
 
-### `[ ]` 9b — A Data Viz header, for metrics and chart containers
+### `[~]` 9b — A Data Viz header, for metrics and chart containers
 
 Figma `Data Viz Header`, node `1456:30467`, page `✅ Headers`. For Metrics,
 and any Container that holds a chart. 32px tall, horizontal, `gap/sm`,
@@ -1576,6 +1576,16 @@ The title is NOT the normal heading: `content/font/body`, `weight/light`,
 `size/small` (12px), `line-height/small` (16px), `content/body/+1`,
 **UPPERCASE**. The filter panel's field titles use the same look
 (`sherpa-text-small`, caps, light). Compose both Buttons from `sherpa-button`.
+
+**🚧 Built 2026-09-30, from Figma's NEWER design** (80 said so), which the
+notes above predate: 20 px tall, not 32; no drag handle; a hug · fill · hug
+row, `gap/sm`, padding 2 / 4; a `left` icon slot; the title (12/16, light,
+CAPS, `content/body/+1`) over a `metadata` slot (a 12/16 regular line); an
+`actions` slot (Figma's example: an xs icon Button). The 0.5 px rule sits
+INSIDE the 20, as Figma's stroke does. `sherpa-data-viz-header` is the 64th
+component; the Dashboard's four chart cards wear it. **Left:** the METRIC —
+read Figma's Metric to see how it composes the header (the Figma plugin was
+closed at the time).
 
 ### `[ ]` 80 — Container and Data Viz headers: Figma's new button styling and grouping
 
@@ -2557,6 +2567,7 @@ One line each. The detail is in git and in the trap named.
 - 34: Figma speaks Context; the closed rail follows density from Figma, not an override
 - 79: the nav header's Settings and Pin are one composed default group, as Figma draws it
 - 58: a card shows its data's state — loading, no data, no matches, an error — driven by the provider — `T-a-container-shows-its-datas-state`
+- 9b 🚧: `sherpa-data-viz-header`, from Figma's newer design, on the Dashboard's chart cards; the metric is left
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

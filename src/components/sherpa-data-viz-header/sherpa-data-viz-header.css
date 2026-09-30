@@ -1,0 +1,66 @@
+/**
+ * sherpa-data-viz-header.css — Figma's Data Viz Header: an icon, a title in
+ * small light caps with an optional line under it, and icon-only actions.
+ */
+
+:host {
+  display: block;
+  /* The rule under it: border/width/sm in style-border/base +1, INSIDE the
+     20px, as Figma's stroke is — a border would add to the height. No fill. */
+  box-shadow: inset 0 calc(-1 * var(--sherpa-display-mode-border-width-sm, 0.5px)) 0 0 var(--sherpa-style-border-base-1, #b3b3c3);
+}
+
+/* Figma's grid is hug · fill · hug. A FLEX row, so a hidden icon takes no gap. */
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-theme-gap-sm, 4px);
+  padding-block: var(--sherpa-display-mode-space-3xs, 2px);
+  padding-inline: var(--sherpa-theme-padding-sm, 4px);
+}
+
+.left,
+.metadata,
+.actions { display: none; }
+
+.left {
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  color: var(--sherpa-style-content-secondary, #35353d);
+}
+:host(:is([data-icon], [data-has-left])) .left { display: inline-flex; }
+
+.labels {
+  flex: 1 1 0;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sherpa-display-mode-space-3xs, 2px);
+}
+
+/* The title is NOT a heading: 12/16, light, in caps, content/body/+1. */
+.title,
+.description {
+  font-size: var(--sherpa-font-size-body-small, 12px);
+  line-height: var(--sherpa-theme-content-line-height-small, 16px);
+  color: var(--sherpa-style-content-secondary, #35353d);
+}
+.title {
+  font-weight: var(--sherpa-font-weight-light, 300);
+  text-transform: uppercase;
+}
+.description { font-weight: var(--sherpa-font-weight-regular, 400); }
+
+.metadata {
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-sm, 12px);
+}
+:host(:is([data-description], [data-has-metadata])) .metadata { display: flex; }
+
+.actions {
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+}
+:host([data-has-actions]) .actions { display: flex; }

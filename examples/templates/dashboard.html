@@ -27,7 +27,7 @@
        a real height to draw into. The legend is SLOTTED INTO the chart, not placed
        beside it here, so the chart owns the split. -->
   <sherpa-container data-col-span="medium" data-row-span="4">
-    <sherpa-container-header slot="header" data-heading="Alerts by category"></sherpa-container-header>
+    <sherpa-data-viz-header slot="header" data-heading="Alerts by category"></sherpa-data-viz-header>
     <!-- The legend reads its chart's field; a click narrows this chart alone. -->
     <sherpa-barchart id="bar" data-legend="horizontal" data-segment-field="category">
       <sherpa-chart-legend slot="legend" id="bar-legend" data-orientation="horizontal"></sherpa-chart-legend>
@@ -35,7 +35,7 @@
   </sherpa-container>
 
   <sherpa-container data-col-span="medium" data-row-span="4">
-    <sherpa-container-header slot="header" data-heading="Endpoints by OS"></sherpa-container-header>
+    <sherpa-data-viz-header slot="header" data-heading="Endpoints by OS"></sherpa-data-viz-header>
     <!-- No data-label: "1,284" was hardcoded and stayed put while the ring
          beneath it redrew. TRAP T-the-centre-totals-what-the-ring-draws -->
     <sherpa-radial-chart id="donut" data-sublabel="endpoints" data-segment-field="os">
@@ -44,7 +44,7 @@
   </sherpa-container>
 
   <sherpa-container data-col-span="medium" data-row-span="4">
-    <sherpa-container-header slot="header" data-heading="Storage used"></sherpa-container-header>
+    <sherpa-data-viz-header slot="header" data-heading="Storage used"></sherpa-data-viz-header>
     <!-- The gauge's legend names its ZONES, not a series, so it is read-only. No
          `data-palette`: a zone's status is a mode in that palette and a gauge
          paints several at once, so it cannot pin one. -->
@@ -64,7 +64,7 @@
 
   <!-- A time series needs horizontal room, so it takes 12 of 12. -->
   <sherpa-container data-col-span="full" data-row-span="4">
-    <sherpa-container-header slot="header" data-heading="Alerts by severity"></sherpa-container-header>
+    <sherpa-data-viz-header slot="header" data-heading="Alerts by severity"></sherpa-data-viz-header>
     <sherpa-line-chart id="line" data-type="area" data-legend="horizontal"
                        data-over-field="day" data-segment-field="severity">
       <sherpa-chart-legend slot="legend" id="line-legend" data-orientation="horizontal"></sherpa-chart-legend>
