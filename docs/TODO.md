@@ -109,6 +109,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 31o | 140 | Every Sherpa input a reader types into shows the Clear button — not a number stepper, not a text area | feature |
 | ✅ | 31p | 141 | Advanced is an icon button again — f(x), at the right of the section or menu header, active when on | quick |
 | ⬜ | 31q | 144 | A View's filters survive a swap to another View — a draft per View, for the session, and across sessions; two settings, on by default | feature |
+| ✅ | 31r | 171 | The filter panel's search matches FIELD labels as well as value labels | feature |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
 | ✅ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
@@ -1562,6 +1563,18 @@ provider passes it to `source.bind()`, and `describe(scope)` reports `shows`
 `table-columns`. **Figma has no chart glyph and no table glyph** (searched the
 whole file) — so a chart's section shows none, and `table-columns` stands in:
 that is 115. `T-a-scope-says-what-it-shows`
+
+### `[x]` ✅ 171 — The filter panel's search matches field labels too
+
+Will, 2026-09-30: *"Search in the filter panel should search field labels as
+well as value labels."*
+
+**✅ Done 2026-09-30.** A field whose name matches shows whole, with every
+value of it: `own` shows Owner with Dana and Ravi. A section heading counts
+too (`preset` shows every preset). A value still matches on its own, and
+keeps its field's label. One fix on the way: a field with a body of its own
+— a number — had no chips to match, so any search hid it, and it stayed
+hidden when the box was emptied. It is found by its name now, and comes back.
 
 ### `[x]` ✅ 154 — A data viz section in the filter panel has a chart icon
 
@@ -3798,6 +3811,7 @@ One line each. The detail is in git and in the trap named.
 - 162: a narrow chart puts its legend below, and a legend strip becomes a list — `T-a-narrow-chart-stacks-its-legend`
 - 130: the chip reads, draws and empties its own answer — `reading`, `clear()`, `answered`; the toolbar and the panel's date use it — `T-a-chip-says-its-own-answer`
 - 49: every saved filter chip opens a menu that lists its conditions, a heading per field — `T-a-saved-chip-lists-its-conditions`
+- 171: the filter panel's search matches a field's name too, and then shows the whole field
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

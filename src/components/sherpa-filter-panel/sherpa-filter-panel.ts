@@ -1546,20 +1546,29 @@ export class SherpaFilterPanel extends SherpaElement {
     for (const id of gone) this.emit('filter-remove', { scope, id });
   };
 
-  /** ONE search, across every value in the panel. Field labels stay: a reader
-   *  searching "gold" still needs to see that Gold is a Tier. */
+  /**
+   * ONE search, across every value in the panel AND every field's name: a
+   * field that is named shows whole, and one with a body of its own — a
+   * number, a date — has only its name to match. Will, TODO 171. A matched
+   * value keeps its field's label: "gold" still says Gold is a Tier.
+   */
   #onSearch = (): void => {
     const field = this.$<HTMLElement & { value?: string }>('.search');
     const q = (field?.value ?? '').trim().toLowerCase();
+    // By BOX: Group and Sort are two fields in one section.
+    const shown = new Set<HTMLElement>();
     for (const [, held] of this.#held) {
-      let shown = 0;
+      const names = [held.def.label, held.box.querySelector('.field-title')?.textContent ?? ''];
+      const named = !q || names.some((name) => name.toLowerCase().includes(q));
+      if (named) shown.add(held.box);
       for (const one of held.values.querySelectorAll<HTMLElement>('.value')) {
-        const hit = !q || (one.dataset['search'] ?? '').includes(q);
+        if (this.#heldOfChip(one) !== held) continue;
+        const hit = named || (one.dataset['search'] ?? '').includes(q);
         one.toggleAttribute('data-filtered-out', !hit);
-        if (hit) shown += 1;
+        if (hit) shown.add(held.box);
       }
-      held.box.toggleAttribute('data-no-matches', shown === 0);
     }
+    for (const [, held] of this.#held) held.box.toggleAttribute('data-no-matches', !shown.has(held.box));
   };
 
   /**

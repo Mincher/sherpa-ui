@@ -279,8 +279,9 @@ test('Reset all clears every scope, Group and Sort too, and applies', async ({ p
 });
 
 /**
- * ONE SEARCH, ACROSS EVERY VALUE. It hides value chips, never field labels: a
- * reader searching "gold" still needs to see that Gold is a Tier.
+ * ONE SEARCH, ACROSS EVERY VALUE. It hides value chips, never the label of a
+ * field that still shows one: a reader searching "gold" still needs to see
+ * that Gold is a Tier.
  */
 test('the search matches values everywhere, and keeps the labels', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
@@ -301,6 +302,69 @@ test('the search matches values everywhere, and keeps the labels', async ({ page
   expect(r.empty).toEqual(['organise', 'status', 'owner']);
   // Every field still names itself.
   expect(r.labels).toBe(4);
+});
+
+/* Will, TODO 171: "Search in the filter panel should search field labels as
+   well as value labels." A named field shows whole. */
+test('the search matches a field by its NAME too, and then shows every value of it', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const search = sr.querySelector('.search');
+    const type = async (text) => {
+      search.value = text;
+      search.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      return {
+        shown: q('.value:not([data-filtered-out])').map((c) => c.dataset.value),
+        fields: q('.field:not([data-no-matches])').map((f) => f.dataset.field),
+      };
+    };
+    const all = await type('');
+    return { all, owner: await type('own'), sort: await type('SORT'), section: await type('preset'),
+      mixed: await type('ri'), none: await type('zzz'), back: await type('') };
+  })()`) as Record<string, { shown: string[]; fields: string[] }>;
+
+  // A field's name: the field, with EVERY value of it.
+  expect(r.owner).toEqual({ shown: ['Dana', 'Ravi'], fields: ['owner'] });
+  // One of two chips in a shared section is named: the other goes.
+  expect(r.sort).toEqual({ shown: ['sort'], fields: ['organise'] });
+  // A section's own heading names everything in it.
+  expect(r.section).toEqual({ shown: ['at-risk', 'unassigned'], fields: ['presets'] });
+  // A value still matches on its own: "At RIsk".
+  expect(r.mixed).toEqual({ shown: ['at-risk'], fields: ['presets'] });
+  expect(r.none).toEqual({ shown: [], fields: [] });
+  // Emptied, everything is back.
+  expect(r.back).toEqual(r.all);
+  expect(r.all.fields).toEqual(['organise', 'presets', 'status', 'owner']);
+});
+
+test('a field with a body of its own — a number — is found by its name, and comes back', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const panel = await window.__mount<HTMLElement>('sherpa-filter-panel', [{
+      scope: 'data', label: 'Customer records',
+      filters: [
+        { id: 'seats', label: 'Seats', kind: 'number', min: 0, max: 500 },
+        { id: 'plan', label: 'Plan', options: [{ value: 'Pro', label: 'Pro' }, { value: 'Free', label: 'Free' }] },
+      ],
+    }], { open: true, 'data-min-width': '0', style: 'inline-size: 400px' });
+    await window.__settled();
+    const sr = panel.shadowRoot!;
+    const search = sr.querySelector<HTMLElement & { value: string }>('.search')!;
+    const type = async (text: string): Promise<string[]> => {
+      search.value = text;
+      search.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+      await window.__settled();
+      return [...sr.querySelectorAll<HTMLElement>('.field')]
+        .filter((f) => getComputedStyle(f).display !== 'none').map((f) => f.dataset['field'] ?? '');
+    };
+    return { named: await type('seat'), value: await type('pro'), back: await type('') };
+  });
+
+  expect(r.named).toEqual(['seats']);
+  // It has no value chips, so a value's name does not find it.
+  expect(r.value).toEqual(['plan']);
+  // It was left hidden once a search had run, even with the box emptied.
+  expect(r.back).toEqual(['seats', 'plan']);
 });
 
 /**
