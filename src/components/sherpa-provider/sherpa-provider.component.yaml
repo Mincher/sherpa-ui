@@ -109,11 +109,11 @@ $extensions:
           source it does not name is left as it is.
     jsProps:
       - name: filterMode
-        type: string
+        type: "'toolbars' | 'panel'"
         access: read-write
       - name: customView
-        type: string
+        type: boolean
         access: read
       - name: view
-        type: string
+        type: string | undefined
         access: read

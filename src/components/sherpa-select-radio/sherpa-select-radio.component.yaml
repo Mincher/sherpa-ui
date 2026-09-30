@@ -153,11 +153,11 @@ $extensions:
         history.
     jsProps:
       - name: checked
-        type: string
+        type: boolean
         access: read-write
       - name: value
         type: string
         access: read-write
       - name: disabled
-        type: string
+        type: boolean
         access: read-write

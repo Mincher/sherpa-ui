@@ -292,8 +292,8 @@ $extensions:
       - hasExpand
     jsProps:
       - name: current
-        type: string
+        type: boolean
         access: read-write
       - name: selected
-        type: string
+        type: boolean
         access: read-write

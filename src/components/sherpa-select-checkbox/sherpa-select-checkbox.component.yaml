@@ -194,14 +194,14 @@ $extensions:
         [[sherpa-fieldset-checkbox-radio-templates]] for the earlier template history.
     jsProps:
       - name: checked
-        type: string
+        type: boolean
         access: read-write
       - name: indeterminate
-        type: string
+        type: boolean
         access: read-write
       - name: value
         type: string
         access: read-write
       - name: disabled
-        type: string
+        type: boolean
         access: read-write

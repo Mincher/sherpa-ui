@@ -206,5 +206,5 @@ $extensions:
     category: chart
     jsProps:
       - name: value
-        type: string
+        type: number
         access: read-write

@@ -462,9 +462,11 @@ function parseTsJsProps(ts) {
   const props = new Map();
   for (const m of ts.matchAll(/@prop\s*(?:\{([^}]*)\})?\s*([\w$]+)\s*[—-]?\s*([^\n*]*)/g)) {
     const [, type, name, desc] = m;
-    props.set(name, { name, type: (type || '').trim() || 'string', description: desc.trim() });
+    // A TYPE only where the tag names one; else the accessor's own says it.
+    props.set(name, { name, ...(type?.trim() ? { type: type.trim() } : {}), description: desc.trim() });
   }
   for (const p of parseClassApi(ts).props) props.set(p.name, { ...props.get(p.name), ...p, type: props.get(p.name)?.type ?? p.type });
+  for (const p of props.values()) p.type ??= 'unknown';
   return [...props.values()];
 }
 

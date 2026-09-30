@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**44 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**43 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -156,7 +156,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 54 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
 | ⬜ | 55 | 84 | Use the platform: Intl for money, units and deltas; Temporal in the calendar | refactor |
 | ⬜ | 56 | 81 | Component contracts move from YAML to JSON | refactor |
-| ⬜ | 56a | 111 | A spec types every JS property as `string` — `reading`, `conditions`, `open` | tidy |
+| ✅ | 56a | 111 | A spec types every JS property as `string` — `reading`, `conditions`, `open` | tidy |
 | ⬜ | 57 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 | | | | **K — Agentic UI: much later** | |
 | ⬜ | 58 | 76 | DEFERRED (Will, 2026-09-30) — WebMCP: agents do UI tasks through Sherpa's own contracts — a core system | explore |
@@ -3386,7 +3386,7 @@ The DOM-free data layer stays off `Temporal` and `Math.sumPrecise` until Node
 has them. The metric's VALUE takes `Intl` options as JSON since provider P2
 (`data-format`); its delta and the upload size do not yet.
 
-### `[ ]` 111 — A spec types every JS property as `string`
+### `[x]` ✅ 111 — A spec types every JS property as `string`
 
 Found in 102 step 2 (2026-09-29): `parseClassApi` (`scripts/lib/ts-facts.mjs`)
 gives every getter and setter `type: 'string'`, so `sherpa-menu`'s spec says
@@ -3394,6 +3394,12 @@ gives every getter and setter `type: 'string'`, so `sherpa-menu`'s spec says
 type in a contract is worse than an honest gap: read the accessor's own
 annotation, and write `unknown` where there is none. Every spec's `jsProps`
 moves when it lands.
+
+**✅ Done 2026-09-30.** A property's type is what its accessor says: the
+getter's return type, else the setter's argument; a `static config` default
+by its literal. 66 properties across 24 specs changed — `reading` is
+`FieldReading`, `open` is `boolean`. Three say `unknown`, because nothing in
+the code names their type. A `@prop` tag's type still wins where it gives one.
 
 ### `[ ]` 81 — Component contracts move from YAML to JSON
 
@@ -4150,6 +4156,7 @@ One line each. The detail is in git and in the trap named.
 - 9b: a metric's name is its composed Data Viz Header, as Figma's Metric has it — no rule, an optional icon
 - 80: the container header is Figma's one grid — metadata under the title, the chevron leading
 - 50: a saved filter's line opens its field; the change applies, unsaved, until Save or Discard — `T-a-saved-filter-keeps-its-edit`
+- 111: a spec types a property as its accessor does, `unknown` where nothing says
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

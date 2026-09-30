@@ -286,5 +286,5 @@ $extensions:
     category: control
     jsProps:
       - name: files
-        type: string
+        type: File[]
         access: read

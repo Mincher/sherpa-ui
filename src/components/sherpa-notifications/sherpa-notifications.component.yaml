@@ -140,5 +140,5 @@ $extensions:
     category: container
     jsProps:
       - name: unreadCount
-        type: string
+        type: number
         access: read

@@ -555,29 +555,29 @@ $extensions:
         grid-sort-change, row-click) is preserved on both sides.
     jsProps:
       - name: columns
-        type: string
+        type: unknown
         access: read-write
       - name: key
-        type: string
+        type: unknown
         access: read-write
       - name: actions
-        type: string
+        type: unknown
         access: read-write
       - name: groups
-        type: string
+        type: GroupSummary[]
         access: read
       - name: currentKey
-        type: string
+        type: string | null
         access: read-write
       - name: current
-        type: string
+        type: GridRow | null
         access: read
       - name: selectedRecords
-        type: string
+        type: GridRow[]
         access: read
       - name: selectedKeys
-        type: string
+        type: string[]
         access: read
       - name: selected
-        type: string
+        type: string[]
         access: read-write

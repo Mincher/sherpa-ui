@@ -360,11 +360,11 @@ $extensions:
           its menu a calendar.
     jsProps:
       - name: values
-        type: string
+        type: Record<string, Record<string, string[]>>
         access: read
       - name: readings
-        type: string
+        type: Record<string, Record<string, FieldReading>>
         access: read
       - name: open
-        type: string
+        type: boolean
         access: read-write

@@ -327,8 +327,8 @@ $extensions:
       - isMaximised
     jsProps:
       - name: current
-        type: string
+        type: boolean
         access: read-write
       - name: expanded
-        type: string
+        type: boolean
         access: read-write

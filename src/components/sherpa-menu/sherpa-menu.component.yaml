@@ -685,23 +685,23 @@ $extensions:
         description: the checked row values (read/write)
         access: read-write
       - name: mode
-        type: string
+        type: ConditionType
         access: read-write
       - name: reading
-        type: string
+        type: FieldReading
         access: read-write
       - name: conditions
-        type: string
+        type: FieldCondition[]
         access: read-write
       - name: op
-        type: string
+        type: FilterOp
         access: read-write
       - name: conditionValue
         type: string
         access: read-write
       - name: open
-        type: string
+        type: boolean
         access: read-write
       - name: dirty
-        type: string
+        type: boolean
         access: read

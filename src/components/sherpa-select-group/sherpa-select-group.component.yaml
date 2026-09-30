@@ -166,5 +166,5 @@ $extensions:
         reworked.
     jsProps:
       - name: value
-        type: string
+        type: string[] | string | null
         access: read-write

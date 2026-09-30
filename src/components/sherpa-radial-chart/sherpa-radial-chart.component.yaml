@@ -170,5 +170,5 @@ $extensions:
     category: chart
     jsProps:
       - name: slices
-        type: string
+        type: RadialSlice[]
         access: read

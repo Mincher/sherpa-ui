@@ -534,35 +534,35 @@ $extensions:
         expand to match Figma without a deliberate decision.
     jsProps:
       - name: active
-        type: string
+        type: string[]
         access: read
       - name: values
-        type: string
+        type: Record<string, string[]>
         access: read-write
       - name: superseded
-        type: string
+        type: string[]
         access: read
       - name: readings
-        type: string
+        type: "Record<string, FieldReading & { label: string; values: string[] }>"
         access: read
       - name: savedReadings
-        type: string
+        type: Record<string, Record<string, FieldReading>>
         access: read
       - name: presets
-        type: string
+        type: "Record<string, { on: boolean; readings: Record<string, FieldReading> }>"
         access: read
       - name: heldFields
-        type: string
+        type: string[]
         access: read
       - name: groupField
-        type: string
+        type: string | null
         access: read
       - name: sortField
-        type: string
+        type: string | null
         access: read
       - name: sortDirection
-        type: string
+        type: SortDirection
         access: read
       - name: sortSuspended
-        type: string
+        type: boolean
         access: read

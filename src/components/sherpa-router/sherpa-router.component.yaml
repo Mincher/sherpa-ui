@@ -66,5 +66,5 @@ $extensions:
         description: "Navigate: the changes over the route now. Settles when the page has."
     jsProps:
       - name: route
-        type: string
+        type: Route
         access: read

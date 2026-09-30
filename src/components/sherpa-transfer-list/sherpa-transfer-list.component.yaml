@@ -163,5 +163,5 @@ $extensions:
     category: container
     jsProps:
       - name: selected
-        type: string
+        type: string[]
         access: read-write

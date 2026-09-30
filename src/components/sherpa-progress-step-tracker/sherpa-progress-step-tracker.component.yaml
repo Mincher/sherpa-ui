@@ -107,8 +107,8 @@ $extensions:
     category: control
     jsProps:
       - name: steps
-        type: string
+        type: Step[]
         access: read-write
       - name: currentStep
-        type: string
+        type: number
         access: read-write

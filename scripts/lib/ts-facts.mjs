@@ -129,6 +129,15 @@ function summaryOf(node, sf) {
     .trim();
 }
 
+/** A config default's type, where its literal says it; otherwise undefined. */
+function literalType(node) {
+  if (!node) return undefined;
+  if (ts.isStringLiteralLike(node)) return 'string';
+  if (ts.isNumericLiteral(node)) return 'number';
+  if (node.kind === ts.SyntaxKind.TrueKeyword || node.kind === ts.SyntaxKind.FalseKeyword) return 'boolean';
+  return undefined;
+}
+
 /** Is this member the class's own, and public? */
 function isPublic(member) {
   if (!member.name || ts.isPrivateIdentifier(member.name)) return false;
@@ -152,7 +161,10 @@ export function parseClassApi(src) {
   const cls = classes.find((c) => c.name?.text === registered) ?? classes[0];
   const methods = [];
   const props = new Map();
-  const prop = (name) => props.get(name) ?? props.set(name, { name, type: 'string', get: false, set: false }).get(name);
+  /* A TYPE as written, or `unknown`: a wrong type in a contract is worse than
+     an honest gap. Every property read `string` before. */
+  const prop = (name) => props.get(name) ?? props.set(name, { name, type: 'unknown', get: false, set: false }).get(name);
+  const written = (node) => node?.getText(sf).replace(/\s+/g, ' ').trim();
   for (const member of cls?.members ?? []) {
     const name = member.name && !ts.isPrivateIdentifier(member.name) ? member.name.getText(sf) : '';
     // `static config` names are read-write properties the BASE class defines. TRAP T-configuration-is-not-data
@@ -162,6 +174,7 @@ export function parseClassApi(src) {
         if (!p.name) continue;
         const entry = prop(p.name.getText(sf));
         entry.get = entry.set = true;
+        entry.type = literalType(ts.isPropertyAssignment(p) ? p.initializer : undefined) ?? entry.type;
       }
       continue;
     }
@@ -175,8 +188,16 @@ export function parseClassApi(src) {
         args: member.parameters.map((p) => p.getText(sf)).join(', ').replace(/\s+/g, ' ').trim(),
         ...(description ? { description } : {}),
       });
-    } else if (ts.isGetAccessorDeclaration(member)) prop(name).get = true;
-    else if (ts.isSetAccessorDeclaration(member)) prop(name).set = true;
+    } else if (ts.isGetAccessorDeclaration(member)) {
+      // What a reader GETS names it; a setter may take more.
+      const entry = prop(name);
+      entry.get = true;
+      entry.type = written(member.type) ?? entry.type;
+    } else if (ts.isSetAccessorDeclaration(member)) {
+      const entry = prop(name);
+      entry.set = true;
+      if (entry.type === 'unknown') entry.type = written(member.parameters[0]?.type) ?? entry.type;
+    }
   }
   return {
     methods,

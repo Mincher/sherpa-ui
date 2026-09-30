@@ -602,5 +602,5 @@ $extensions:
         type: string
         access: read-write
       - name: disabled
-        type: string
+        type: boolean
         access: read-write

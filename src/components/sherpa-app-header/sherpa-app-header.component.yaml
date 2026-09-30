@@ -388,5 +388,5 @@ $extensions:
       - hasLoadingBar
     jsProps:
       - name: values
-        type: string
+        type: Record<string, readonly string[]>
         access: read-write

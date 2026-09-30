@@ -433,29 +433,29 @@ $extensions:
       - hasLabel
     jsProps:
       - name: current
-        type: string
+        type: boolean
         access: read-write
       - name: valueLabel
         type: string
         access: read-write
       - name: menu
-        type: string
+        type: MenuLike | null
         access: read
       - name: values
-        type: string
+        type: string[]
         access: read-write
       - name: reading
-        type: string
+        type: FieldReading | null
         access: read-write
       - name: answered
-        type: string
+        type: boolean
         access: read
       - name: column
         type: string
         access: read
       - name: direction
-        type: string
+        type: SortDirection | null
         access: read
       - name: results
-        type: string
+        type: number | null
         access: read-write

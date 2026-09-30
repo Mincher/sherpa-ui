@@ -133,8 +133,8 @@ $extensions:
         container query does what the variant switch does in Figma.
     jsProps:
       - name: "off"
-        type: string
+        type: string[]
         access: read-write
       - name: picked
-        type: string
+        type: string[]
         access: read-write

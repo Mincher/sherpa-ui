@@ -308,13 +308,13 @@ $extensions:
     category: nav
     jsProps:
       - name: state
-        type: string
+        type: NavState
         access: read-write
       - name: pinned
-        type: string
+        type: boolean
         access: read-write
       - name: activeEntry
-        type: string
+        type: NavRowInfo | null
         access: read
       - name: currentId
         type: string
