@@ -12951,6 +12951,44 @@ it on.
 - Site: `test/unit/page-definition.test.mjs`
 
 
+### T-a-saved-chip-lists-its-conditions
+
+**Every saved filter's chip has a menu, and the menu LISTS its conditions** —
+TODO 49, Will: *"Any preset or saved filter chip should have a menu button to
+show a menu with the conditions applied."* Read-only lines, a heading per
+field (`HEALTH` · Less than 60; `OWNER` · Equals Unassigned), on a bar and in
+the panel. Only a reader's OWN filter had a menu before, and it held two
+actions and no words.
+
+- **The words are made once**, in `filter-face.ts`: `conditionLines(state)`
+  is a line per row in force, and `sayReadings(readings, factsOf)` is a saved
+  filter field by field. Several picks are ONE line (`Is one of Pro, Free`);
+  a field that answers nothing — every value ticked — has no line.
+- **The SOURCE says them** (`source.say(readings)`, and `says` on each preset
+  it describes), because it knows a field's name, type and values. A bar
+  knows only the fields it holds: left to it, `openTickets` has no name.
+  Unbound, a control words the readings itself from its own defs.
+- **A LINE is not a row.** The menu's `inert` item is a `<p>`: no box, no
+  hover, nothing to press. The bare `<label>` row shades on hover and reads
+  as a control.
+- **The chip is still a TOGGLE.** A menu used to mean "a value chip": the
+  bar's `active` list left such a chip out, and its `values` setter switched
+  it off. Both ask the def now (`#isSaved`).
+
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/filter-face.ts`
+- Site: `src/core/ui/filter-menu.ts`
+- Site: `src/data.ts`
+- Site: `test/e2e/reforged-saved-filter.spec.ts`
+- Site: `test/unit/filter-face.test.mjs`
+
 ### T-a-saved-filter-is-its-readings
 
 **A saved filter is a name and its READINGS, field by field — never a

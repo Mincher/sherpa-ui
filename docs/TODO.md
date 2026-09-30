@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**54 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**53 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -81,7 +81,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ❓ | 22a | 115 | Figma: a chart glyph and a table glyph for the panel's section icons | figma |
 | ✅ | 22b | 154 | A data viz section in the filter panel has a chart icon | quick |
 | ✅ | 23 | 60 | Once applied, a chip's badge shows the number of results | feature |
-| ❓ | 24 | 49 | A preset Advanced chip shows its conditions, read-only | feature |
+| ✅ | 24 | 49 | A preset Advanced chip shows its conditions, read-only | feature |
 | ⬜ | 25 | 50 | A reader's saved Advanced chip shows its conditions, editable | feature |
 | ✅ | 26 | 48 | A child menu opens on hover or click of its row | feature |
 | ✅ | 27 | 21c | A condition's matches must ALL highlight | feature |
@@ -1608,7 +1608,7 @@ in the tip, and now also reach a screen reader as the button's
 Tickets 75. Not drawn: a bar bound with no scope, and the panel's values.
 `T-a-chip-counts-its-own-results`
 
-### `[ ]` 49 — A preset Advanced chip shows its conditions, read-only
+### `[x]` ✅ 49 — A preset Advanced chip shows its conditions, read-only
 
 A PRESET Advanced chip (a saved filter the app ships) gets the `fx` button
 in the Success look. It opens a menu of its condition rows, read-only. It sits
@@ -1638,6 +1638,14 @@ button to show a menu with the conditions applied."* So: EVERY preset and
 saved filter chip, not only the Advanced ones, and a MENU button (the chip's
 own ▾), not an `fx` button. The A / B choice above — how a two-field filter
 reads in one menu — is still open; I will build A unless you say B.
+
+**✅ Done 2026-09-30, as A.** Every preset and saved filter chip has the ▾
+now, on a bar and in the panel. Its menu lists the conditions, read-only,
+with a heading per field: `HEALTH` · Less than 60, `OWNER` · Equals
+Unassigned. A reader's own saved filter keeps Edit filter and Delete filter
+under the lines. The chip is still a toggle: its body switches it. The
+source makes the words, so a field has its real name. Not built: the `fx`
+button on a column heading — Will's later words ask for chips only.
 
 ### `[ ]` 50 — A reader's saved Advanced chip shows its conditions, editable
 
@@ -3789,6 +3797,7 @@ One line each. The detail is in git and in the trap named.
 - 163: a panel area is three grid columns, and never under 464px (150% of its width at 1280) — `T-the-shell-owns-the-panel-areas`
 - 162: a narrow chart puts its legend below, and a legend strip becomes a list — `T-a-narrow-chart-stacks-its-legend`
 - 130: the chip reads, draws and empties its own answer — `reading`, `clear()`, `answered`; the toolbar and the panel's date use it — `T-a-chip-says-its-own-answer`
+- 49: every saved filter chip opens a menu that lists its conditions, a heading per field — `T-a-saved-chip-lists-its-conditions`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

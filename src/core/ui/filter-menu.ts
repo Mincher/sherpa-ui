@@ -12,9 +12,12 @@
  * - FilterMenuDef — Enough of a filter definition to draw its menu.
  * - FilterMenuOptions — where the card stays inside, and whether it draws inline
  * - menuFor — Build a field's menu.
+ * - saidItems — a saved filter's conditions as menu lines, a section per field
  */
 
 import { OPS_FOR_TYPE, type FilterOp } from '../data/store.js';
+import { sayReadings, type SaidField } from '../data/filter-face.js';
+import type { FieldFacts, FieldReading } from '../data/filter-state.js';
 import {
   advancedOf, hasOwnBody, kindOf, picksOne, type FilterKind, type KindSource,
 } from './filter-kind.js';
@@ -33,6 +36,8 @@ export interface FilterMenuItem {
   drill?: boolean;
   /** `false`: no tick box. */
   pickable?: boolean;
+  /** A line that only says something. */
+  inert?: boolean;
   /** Picks its child menu holds. */
   count?: number;
 }
@@ -169,4 +174,32 @@ export function menuFor(
   }
 
   return { menu, kind, items: [...(def.options ?? [])] };
+}
+
+/**
+ * A saved filter's conditions as menu LINES, a section per field — read-only.
+ * `says` is the source's own wording; without one, the readings are worded
+ * from the defs the control holds. TRAP T-a-saved-chip-lists-its-conditions
+ */
+export function saidItems(
+  saved: { says?: readonly SaidField[]; readings?: Readonly<Record<string, unknown>> },
+  defs: readonly { id: string; field?: string | null; label?: string; kind?: string;
+    options?: readonly { value: string; label?: string }[] }[] = [],
+): FilterMenuItem[] {
+  const factsOf = (field: string): Omit<FieldFacts, 'field'> => {
+    const def = defs.find((d) => (d.field ?? d.id) === field);
+    return {
+      ...(def?.label ? { label: def.label } : {}),
+      ...(def?.kind === 'number' || def?.kind === 'date' ? { type: def.kind } : {}),
+      ...(def?.options?.length ? {
+        values: def.options.map((o) => o.value),
+        labels: Object.fromEntries(def.options.map((o) => [o.value, o.label ?? o.value])),
+      } : {}),
+    };
+  };
+  const says = saved.says
+    ?? sayReadings((saved.readings ?? {}) as Record<string, FieldReading>, factsOf);
+  return says.flatMap((said) => said.lines.map((line, i) => ({
+    value: `${said.field}:${i}`, label: line, section: said.label, inert: true,
+  })));
 }

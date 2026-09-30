@@ -285,7 +285,12 @@ export {
      it. */
   CONDITION_BADGE,
   spellConditions,
+  /* A saved filter in words, field by field — what its chip's menu lists.
+     TRAP T-a-saved-chip-lists-its-conditions */
+  conditionLines,
+  sayReadings,
   type FilterFace,
+  type SaidField,
 } from './core/data/filter-face.js';
 
 /* The read/draw/write loop ANY control over a field needs — a chip, a column

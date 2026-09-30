@@ -390,12 +390,13 @@ test('the Add menu offers saved filters at the bottom, under Custom', async ({ p
 
 /**
  * EDIT UNPACKS; DELETE FORGETS. A reader's OWN saved chip opens "Edit filter"
- * and "Delete filter"; an app preset opens nothing — it is the app's. Edit puts
+ * and "Delete filter"; an app preset offers neither — it is the app's, and its
+ * menu only lists its conditions (TODO 49). Edit puts
  * the answer back into its fields — a field not on the bar comes onto it — and
  * the saved chip goes off, in ONE event. Saving next offers the old name, so
  * the same name updates it. TRAP T-edit-unpacks-a-saved-filter
  */
-test('a reader\'s own saved chip opens Edit and Delete; a preset does not', async ({ page }) => {
+test('a reader\'s own saved chip offers Edit and Delete; a preset does not', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const readings = { health: { op: 'lt', text: '60' } };
     const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [
@@ -413,7 +414,8 @@ test('a reader\'s own saved chip opens Edit and Delete; a preset does not', asyn
     };
   });
 
-  expect(r.preset).toEqual({ menu: false, actions: [] });
+  // A preset has a menu — its conditions — and no action in it.
+  expect(r.preset).toEqual({ menu: true, actions: [] });
   // Still an Advanced filter with a menu: the answer is given.
   expect(r.own).toEqual({ menu: true, actions: ['edit', 'delete'], condition: 'advanced' });
 });
@@ -681,4 +683,88 @@ test('in panel mode the Records page saves a whole scope, and deletes it from th
   await expect.poll(kept).toEqual([]);
   await expect.poll(() => inPanel(preset)).toBe(false);
   await page.evaluate(() => localStorage.removeItem('sherpa:filters:customers'));
+});
+
+/* Will, TODO 49: "Any preset or saved filter chip should have a menu button to
+   show a menu with the conditions applied." Read-only lines, a heading per
+   field; the chip is still a toggle. TRAP T-a-saved-chip-lists-its-conditions */
+test('every saved chip on a bar opens its conditions, a heading per field; it is still a toggle', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const health = { op: 'lt', text: '60' };
+    const bar = await window.__mount<Bar & { active: string[] }>('sherpa-quick-filter-toolbar', [
+      { id: 'owner', label: 'Owner', options: [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' },
+        { value: 'Unassigned', label: 'Nobody' }] },
+      { id: 'at-risk', label: 'At risk', readings: { health } },
+      { id: 'risky', label: 'Risky and unowned', readings: { health, owner: { op: 'eq', picked: ['Unassigned'] } } },
+      { id: 'custom:mine', label: 'Mine', editable: true, removable: true, readings: { owner: { picked: ['Dana', 'Unassigned'] } } },
+      // In its SOURCE's words, where it has one.
+      { id: 'told', label: 'Told', readings: { health }, says: [{ field: 'health', label: 'Health score', lines: ['Under 60'] }] },
+    ], { style: 'inline-size: 1200px' });
+    await window.__settled();
+    const chip = (id: string) => bar.shadowRoot!.querySelector<HTMLElement & { toggleMenu(): void }>(`.chip[data-id="${id}"]`)!;
+    const rows = (id: string): string[] => [...chip(id).querySelector('sherpa-menu')!.children]
+      .map((row) => `${row.localName}${row.classList.contains('menu-section') ? '.section' : row.classList.contains('menu-line') ? '.line' : ''}:${row.textContent!.trim()}`);
+    const listed = Object.fromEntries(['at-risk', 'risky', 'custom:mine', 'told'].map((id) => [id, rows(id)]));
+    const carets = ['at-risk', 'risky', 'custom:mine', 'told'].map((id) => chip(id).hasAttribute('data-menu'));
+
+    // The BODY still switches it, and it is reported as a toggle.
+    let heard: string[] = [];
+    bar.addEventListener('quick-filter-change', (e) => { heard = (e as CustomEvent).detail.active; });
+    chip('at-risk').shadowRoot!.querySelector<HTMLElement>('.body')!.click();
+    await window.__settled();
+    const on = { current: chip('at-risk').hasAttribute('data-current'), active: bar.active, heard, amber: chip('at-risk').hasAttribute('data-empty') };
+
+    // The CARET opens the list; a line is not a control.
+    chip('risky').toggleMenu();
+    await window.__settled();
+    const menu = chip('risky').querySelector<HTMLElement>('sherpa-menu')!;
+    const line = menu.querySelector<HTMLElement>('.menu-line')!;
+    const open = menu.hasAttribute('open');
+    line.click();
+    await window.__settled();
+    return {
+      listed, carets, on, open,
+      after: { open: menu.hasAttribute('open'), current: chip('risky').hasAttribute('data-current') },
+      cursor: getComputedStyle(line).cursor,
+    };
+  });
+
+  expect(r.carets).toEqual([true, true, true, true]);
+  // A field the bar does not hold is named by its id; one it holds, by its label.
+  expect(r.listed['at-risk']).toEqual(['p.section:health', 'p.line:Less than 60']);
+  expect(r.listed['risky']).toEqual([
+    'p.section:health', 'p.line:Less than 60', 'p.section:Owner', 'p.line:Equals Nobody',
+  ]);
+  // The reader's OWN keeps Edit and Delete, under its conditions.
+  expect(r.listed['custom:mine']).toEqual([
+    'p.section:Owner', 'p.line:Is one of Dana, Nobody', 'hr:', 'button:Edit filter', 'button:Delete filter',
+  ]);
+  expect(r.listed['told']).toEqual(['p.section:Health score', 'p.line:Under 60']);
+  expect(r.on).toEqual({ current: true, active: ['at-risk'], heard: ['at-risk'], amber: false });
+  expect(r.open).toBe(true);
+  expect(r.after).toEqual({ open: true, current: false });
+  expect(r.cursor).not.toBe('pointer');
+});
+
+test('a preset chip in the panel opens its conditions too', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const panel = await window.__mount<HTMLElement & { populate(d: unknown): Promise<void> }>('sherpa-filter-panel', [{
+      scope: 'data', label: 'Customer records',
+      filters: [
+        { id: 'owner', label: 'Owner', options: [{ value: 'Dana', label: 'Dana' }, { value: 'Unassigned', label: 'Unassigned' }] },
+        { id: 'risky', label: 'Risky and unowned', preset: true,
+          readings: { health: { op: 'lt', text: '60' }, owner: { op: 'eq', picked: ['Unassigned'] } } },
+        { id: 'custom:mine', label: 'Mine', preset: true, editable: true, readings: { owner: { picked: ['Dana'] } } },
+      ],
+    }], { open: true, style: 'inline-size: 400px' });
+    await window.__settled();
+    const chip = (id: string) => panel.shadowRoot!.querySelector<HTMLElement>(`.value[data-value="${id}"]`)!;
+    const rows = (id: string): string[] => [...chip(id).querySelector('sherpa-menu')!.children]
+      .map((row) => `${row.localName}:${row.textContent!.trim()}`);
+    return { risky: rows('risky'), mine: rows('custom:mine'), caret: chip('risky').hasAttribute('data-menu') };
+  });
+
+  expect(r.caret).toBe(true);
+  expect(r.risky).toEqual(['p:health', 'p:Less than 60', 'p:Owner', 'p:Equals Unassigned']);
+  expect(r.mine).toEqual(['p:Owner', 'p:Equals Dana', 'hr:', 'button:Edit filter', 'button:Delete filter']);
 });

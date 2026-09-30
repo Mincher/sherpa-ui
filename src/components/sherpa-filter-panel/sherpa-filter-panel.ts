@@ -18,7 +18,8 @@ import type { FieldFilter, HeldFilter, ScopeDescription, ScopeShows } from '../.
 import {
   arranges, advancedOf, hasOwnBody, kindOf, picksOne, type FilterKind, type OffersAdvanced,
 } from '../../core/ui/filter-kind.js';
-import { menuFor, type FilterMenuDef, type FilterMenuItem } from '../../core/ui/filter-menu.js';
+import { menuFor, saidItems, type FilterMenuDef, type FilterMenuItem } from '../../core/ui/filter-menu.js';
+import type { SaidField } from '../../core/data/filter-face.js';
 import {
   FILTERS_LABEL, MenuDrill, ON, filtersMenuItems, onOffMenu, type AddedFilter,
 } from '../../core/ui/filters-button.js';
@@ -51,6 +52,9 @@ export interface PanelValue {
   kind?: FilterKind;
   /** A reader's OWN saved filter: its chip opens Edit filter and Delete filter. */
   editable?: boolean;
+  /** A saved filter's conditions, as its chip's menu lists them.
+   *  TRAP T-a-saved-chip-lists-its-conditions */
+  said?: readonly FilterMenuItem[];
   /** The data-viz series a chart draws this value in, from 1 — its chip's swatch. */
   swatch?: number;
 }
@@ -95,6 +99,9 @@ export interface PanelFilter extends OffersAdvanced {
   readings?: Readonly<Record<string, unknown>>;
   /** The reader's OWN saved filter. TRAP T-the-panel-saves-a-whole-scope */
   editable?: boolean;
+  /** A saved filter's conditions in words, as its source says them.
+   *  TRAP T-a-saved-chip-lists-its-conditions */
+  says?: SaidField[];
   /** A scope ABOVE holds it now: it keeps its place here — its heading, and
    *  one line saying so — and draws no values. TRAP T-a-panel-asks-for-its-scopes */
   appliedAt?: string;
@@ -571,6 +578,8 @@ export class SherpaFilterPanel extends SherpaElement {
             // A preset that carries its answer wears fx. TRAP T-a-saved-filter-is-its-readings
             ...(kindOf(p) === 'advanced' ? { kind: 'advanced' as const } : {}),
             ...(p.editable ? { editable: true } : {}),
+            // In the source's words, or worded here from the scope's own fields.
+            said: saidItems(p, [...fields, ...(scope.available ?? [])]),
           })),
           select: 'multiple',
         }, scope.scope, true)!);
@@ -794,7 +803,7 @@ export class SherpaFilterPanel extends SherpaElement {
       const one = this.#valueChip(option.value, option.label ?? option.value,
         { current: !!option.selected, ...(option.kind ? { kind: option.kind } : {}),
           ...(option.swatch ? { swatch: option.swatch } : {}) });
-      if (one && option.editable) this.#addSavedMenu(one);
+      if (one && (option.editable || option.said?.length)) this.#addSavedMenu(one, option);
       if (one) values!.append(one);
     }
 
@@ -1411,10 +1420,15 @@ export class SherpaFilterPanel extends SherpaElement {
     if (Object.keys(readings).length) this.emit('filter-save', { scope, readings });
   }
 
-  /** A reader's own saved preset: Edit filter and Delete filter. */
-  #addSavedMenu(chip: HTMLElement): void {
-    const menu = this.clone('template.saved-menu-tpl');
+  /** A saved preset's menu: its conditions, read-only, a heading per field —
+   *  and, for a reader's own, Edit filter and Delete filter. Will, TODO 49.
+   *  TRAP T-a-saved-chip-lists-its-conditions */
+  #addSavedMenu(chip: HTMLElement, option: PanelValue): void {
+    const menu = this.clone<MenuApi>('template.saved-menu-tpl');
     if (!menu) return;
+    if (!option.editable) for (const own of menu.querySelectorAll('.saved-own')) own.remove();
+    menu.setAttribute('data-heading', option.label ?? option.value);
+    menu.items?.(option.said ?? []);
     chip.setAttribute('data-menu', '');
     chip.appendChild(menu);
   }

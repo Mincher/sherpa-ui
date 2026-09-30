@@ -14,7 +14,8 @@ import { DATA_PROPS, SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-el
 import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
 import { allow, type AllowList } from '../../core/data/allow.js';
 import { advancedOf, kindOf, type FilterKind, type OffersAdvanced } from '../../core/ui/filter-kind.js';
-import { menuFor } from '../../core/ui/filter-menu.js';
+import { menuFor, saidItems, type FilterMenuItem } from '../../core/ui/filter-menu.js';
+import type { SaidField } from '../../core/data/filter-face.js';
 import {
   FILTERS_LABEL, MenuDrill, ON, filtersMenuItems, onOffMenu, type AddedFilter,
 } from '../../core/ui/filters-button.js';
@@ -101,6 +102,9 @@ export interface QuickFilterDef extends OffersAdvanced {
   /** The reader's OWN saved filter: its menu offers Edit filter and Delete filter.
    *  TRAP T-edit-unpacks-a-saved-filter */
   editable?: boolean;
+  /** A saved filter's conditions in WORDS, as its source says them; without
+   *  one the bar words its readings. TRAP T-a-saved-chip-lists-its-conditions */
+  says?: SaidField[];
 }
 
 interface ChipEl extends HTMLElement {
@@ -448,7 +452,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** The active TOGGLE chips. TRAP T-toggle-chips-have-no-field — menu chips are in `values`. */
   get active(): string[] {
     return this.#chips()
-      .filter((c) => c.current && !c.hasAttribute('data-menu'))
+      .filter((c) => c.current && (!c.hasAttribute('data-menu') || this.#isSaved(c)))
       .map((c) => c.dataset['id'] ?? '');
   }
 
@@ -476,7 +480,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   set values(next: Record<string, readonly string[]>) {
     for (const chip of this.#chips()) {
       const id = chip.dataset['id'];
-      if (!id || !chip.hasAttribute('data-menu')) continue;
+      // A saved filter is a toggle: its menu holds no picks to set.
+      if (!id || !chip.hasAttribute('data-menu') || this.#isSaved(chip)) continue;
       const wanted = next[id];
       // Never switched off, but it still follows a pick.
       if (chip.hasAttribute('data-persistent')) {
@@ -740,7 +745,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
          toggle, told what it is. TRAP T-a-saved-filter-is-its-readings */
       if (f.readings) {
         chip.dataset['kind'] = kind;
-        if (f.editable) this.#addSavedMenu(chip, f);
+        this.#addSavedMenu(chip, f);
       } else if (kind !== 'boolean' || advancedOf(f)) this.#addMenu(chip, f, prior?.picked);
       list.appendChild(chip);
       if (kind === 'date') {
@@ -916,14 +921,29 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       )));
   }
 
-  /** A reader's own saved chip: Edit filter and Delete filter, and Remove if it may go. */
+  /**
+   * EVERY saved chip's menu: its conditions, read-only, a heading per field —
+   * and, for a reader's own, Edit filter and Delete filter; Remove if it may go.
+   * Will, TODO 49. TRAP T-a-saved-chip-lists-its-conditions
+   */
   #addSavedMenu(chip: HTMLElement, def: QuickFilterDef): void {
-    const menu = this.clone('template.qf-saved-menu-tpl');
+    const menu = this.clone<HTMLElement & { items?(next: readonly FilterMenuItem[]): void }>(
+      'template.qf-saved-menu-tpl');
     if (!menu) return;
+    const lines = saidItems(def, [...this.#filters, ...this.#available]);
+    if (!def.editable) for (const own of menu.querySelectorAll('.qf-saved-own')) own.remove();
+    // Nothing to say and nothing to do: the chip stays a plain toggle.
+    if (!lines.length && !def.editable && !(def.removable && !def.persistent)) return;
     menu.setAttribute('data-heading', def.label);
+    menu.items?.(lines);
     this.#addRemove(chip, menu, def);
     chip.setAttribute('data-menu', '');
     chip.appendChild(menu);
+  }
+
+  /** A SAVED filter's chip: a toggle, whatever its menu lists. */
+  #isSaved(chip: HTMLElement): boolean {
+    return !!this.#filters.find((f) => f.id === chip.dataset['id'])?.readings;
   }
 
   /** Give a chip's menu its "Remove" action. TRAP T-remove-is-opt-in-and-a-footer-button */

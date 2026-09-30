@@ -14,10 +14,15 @@
  * - filterFace — How one field's state READS, for any control that draws it.
  * - CONDITION_BADGE — The ONE mark a control wears when conditions are applied.
  * - spellConditions — Chained rows, in words: `Contains "ab" or Equals cd`.
+ * - SaidField — One field's part of a saved filter, in words.
+ * - conditionLines — a state's answer in force, a line per condition
+ * - sayReadings — a saved filter in words, field by field
  */
 import { DEFAULT_OP, OP_LABELS, OP_TAKES, valueKey } from './store.js';
 import { formatDate } from './format-date.js';
-import type { FieldCondition, FilterState } from './filter-state.js';
+import {
+  fieldState, type FieldCondition, type FieldFacts, type FieldReading, type FilterState,
+} from './filter-state.js';
 
 /**
  * What a control SHOWS for a field — the same six facts whatever draws them.
@@ -118,4 +123,52 @@ export function spellConditions(state: FilterState): string {
   return state.conditions
     .map((row, i) => (i ? `${row.join === 'or' ? 'or' : 'and'} ${part(row)}` : part(row)))
     .join(' ');
+}
+
+/** One field's part of a saved filter, in words. */
+export interface SaidField {
+  field: string;
+  /** The field's name as a reader sees it — the heading. */
+  label: string;
+  /** Its conditions, one a line: `Less than 60`, `or Contains ab`. */
+  lines: string[];
+}
+
+/**
+ * A state's answer IN FORCE, a line per condition — for a control that LISTS
+ * them. Several picks are one line (`Is one of Pro, Free`), and every row
+ * after the first says how it joins. TRAP T-a-saved-chip-lists-its-conditions
+ */
+export function conditionLines(state: FilterState): string[] {
+  const labelOf = new Map(state.values.map((v) => [v.value, v.label]));
+  const dated = state.type === 'date';
+  return state.rows.map((row, i) => {
+    const picks = (row.picked ?? []).map((v) => {
+      const said = labelOf.get(valueKey(v)) ?? String(v);
+      return dated ? formatDate(said) : said;
+    });
+    // Several picks under `=` are any of them; under `≠`, none of them.
+    const op = picks.length > 1 && row.op === 'eq' ? 'in'
+      : picks.length > 1 && row.op === 'ne' ? 'notin' : row.op;
+    const said = (OP_TAKES[row.op] ?? 'list') === 'text' ? (row.text ?? '')
+      : row.op === 'between' ? picks.join(' and ') : picks.join(', ');
+    const line = `${OP_LABELS[op] ?? op} ${said}`.trim();
+    return i ? `${row.join === 'or' ? 'or' : 'and'} ${line}` : line;
+  });
+}
+
+/**
+ * A saved filter in words, field by field — what its chip's menu lists.
+ * `factsOf` gives what is known of a field: its label, its type, its values.
+ * TRAP T-a-saved-chip-lists-its-conditions
+ */
+export function sayReadings(
+  readings: Readonly<Record<string, FieldReading>>,
+  factsOf: (field: string) => Omit<FieldFacts, 'field'> = () => ({}),
+): SaidField[] {
+  return Object.entries(readings).map(([field, reading]) => {
+    // What it WOULD filter by: on or off is the chip's, not the list's.
+    const state = fieldState({ field, ...factsOf(field) }, { ...reading, suspended: false });
+    return { field, label: state.label, lines: conditionLines(state) };
+  }).filter((said) => said.lines.length);
 }

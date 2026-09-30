@@ -474,8 +474,9 @@ export class SherpaProvider extends SherpaElement {
   #offer(): void {
     const opened = this.#opened;
     if (!opened) return;
+    // In the source's words, so a field the bar does not hold still has its name.
     const saved = Object.entries(loadSavedFilters(opened.store)).map(([id, { label, readings }]) => ({
-      id: `custom:${id}`, label, readings, editable: true,
+      id: `custom:${id}`, label, readings, editable: true, says: opened.source.say(readings),
     }));
     for (const bar of this.#bars() as Bar[]) {
       const scope = this.#inherited(bar, 'data-scope');

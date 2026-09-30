@@ -46,6 +46,7 @@
  * - .answer — ONE SCOPE'S WHOLE ANSWER — a bar's report.
  * - .declarePreset — A saved filter's readings, by id — the library a preset that is ON compiles from.
  * - .describe — One scope, whole: its filters and answers, what it may add, how it is arranged.
+ * - .say — say(readings) — a saved filter in WORDS, field by field: the source knows each field's name, type and values.
  * - .declareValues — every value a field can take, so each control offers the same list
  * - .declareField — Declare a field's KIND and its reader-facing name.
  * - .declareFromRows — Each field here that its schema says nothing of takes it from the ROWS: a set, its unique values in order; a…
@@ -87,6 +88,7 @@ import {
   andFilter, compareValues, filterFields, filterNeedles, filterRows, groupSummaries, readField, valueKey,
 } from './store.js';
 import { fieldState, readingClause, stateClause } from './filter-state.js';
+import { sayReadings, type SaidField } from './filter-face.js';
 import { compile, VIEW, type Query, type QueryDefaults, type ScopeQuery } from './query.js';
 import { report } from './report.js';
 import type { Populatable } from '../ui/apply-state.js';
@@ -147,6 +149,9 @@ export interface FieldFilter extends Omit<FieldDeclaration, 'type'> {
   /** A PRESET — a saved filter: its answer, field by field, and whether the reader may edit it. */
   readings?: Readonly<Record<string, FieldReading>>;
   editable?: boolean;
+  /** …and that answer in WORDS, field by field, as its chip's menu lists it.
+   *  TRAP T-a-saved-chip-lists-its-conditions */
+  says?: SaidField[];
 }
 
 /** A source's whole question, as JSON — to send out and take back in: the
@@ -856,6 +861,7 @@ export class DataSource extends EventTarget {
       return {
         id, label: facts.label ?? id, readings: this.#presets.get(id) ?? {}, active: on, removable: true,
         ...(facts.editable ? { editable: true } : {}),
+        says: this.#says(id),
       };
     });
     const fields: HeldFilter[] = q.holds.filter((f) => this.#fields.has(f)).map((f) => {
@@ -874,7 +880,8 @@ export class DataSource extends EventTarget {
     const offered = scope === VIEW ? [] : [...this.#presetFacts.keys()]
       .filter((id) => !(id in (q.presets ?? {})))
       .map((id) => ({ id, label: this.#presetFacts.get(id)?.label ?? id,
-        readings: this.#presets.get(id) ?? {}, ...(this.#presetFacts.get(id)?.editable ? { editable: true } : {}) }));
+        readings: this.#presets.get(id) ?? {}, ...(this.#presetFacts.get(id)?.editable ? { editable: true } : {}),
+        says: this.#says(id) }));
     const shows = scope === VIEW ? 'view'
       : [...this.#bound.values()].find((b) => b.scope === scope && b.shows)?.shows;
     const out: ScopeDescription = {
@@ -896,6 +903,17 @@ export class DataSource extends EventTarget {
       }
     }
     return out;
+  }
+
+  /** say(readings) — a saved filter in WORDS, field by field: the source knows
+   *  each field's name, type and values. TRAP T-a-saved-chip-lists-its-conditions */
+  say(readings: Readonly<Record<string, FieldReading>>): SaidField[] {
+    return sayReadings(readings, (field) => this.#facts(field));
+  }
+
+  /** A preset it holds, in words. */
+  #says(id: string): SaidField[] {
+    return this.say(this.#presets.get(id) ?? {});
   }
 
   /** A control over several scopes — the panel — is drawn each WHOLE, once

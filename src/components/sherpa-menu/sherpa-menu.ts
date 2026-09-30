@@ -49,6 +49,9 @@ export interface MenuItem {
   drill?: boolean;
   /** `false`: no tick box — a row naming what it cannot pick. */
   pickable?: boolean;
+  /** A LINE: it only says something — no box, no hover, not a control.
+   *  TRAP T-a-saved-chip-lists-its-conditions */
+  inert?: boolean;
   /** How many picks its child menu holds, as a badge. */
   count?: number;
 }
@@ -1143,6 +1146,11 @@ export class SherpaMenu extends SherpaElement {
 
     const name = `sherpa-menu-${this.dataset['heading'] ?? 'group'}`;
     const stamp = (item: MenuItem): HTMLElement => {
+      const line = item.inert ? this.clone('template.menu-line-tpl') : null;
+      if (line) {
+        line.textContent = item.label ?? item.value;
+        return line;
+      }
       const bare = item.pickable === false ? this.clone('template.menu-bare-tpl') : null;
       const row = bare ?? tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       const box = row.querySelector('input');

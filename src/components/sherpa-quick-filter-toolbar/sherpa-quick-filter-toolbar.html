@@ -168,11 +168,14 @@
        only its rows move. TRAP T-a-row-opens-its-child-menu -->
   <div class="qf-built" hidden></div>
 
-  <!-- A reader's OWN saved filter opens these. TRAP T-edit-unpacks-a-saved-filter -->
+  <!-- A saved filter's menu: its conditions, as lines, stamped above these —
+       and the reader's OWN filter keeps its two actions.
+       TRAP T-a-saved-chip-lists-its-conditions · TRAP T-edit-unpacks-a-saved-filter -->
   <template class="qf-saved-menu-tpl">
-    <sherpa-menu slot="menu">
-      <button type="button" value="edit">Edit filter</button>
-      <button type="button" value="delete">Delete filter</button>
+    <sherpa-menu slot="menu" data-no-select-all>
+      <hr class="qf-saved-own" />
+      <button type="button" class="qf-saved-own" value="edit">Edit filter</button>
+      <button type="button" class="qf-saved-own" value="delete">Delete filter</button>
     </sherpa-menu>
   </template>
 
