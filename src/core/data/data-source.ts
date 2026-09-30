@@ -80,12 +80,13 @@
  * - .setPageSize — rows per page, or null for all
  * - .load — Re-read and push to every bound component.
  * - .results — Each answered chip's results in a scope: the rows its own answer matches.
+ * - .valueResults — Each PICKED value's own results in a scope: the rows that ONE value matches, within what the scope can see —…
  * - .bind — Point a component at this source.
  * - .unbind — Stop steering and stop populating this component.
  * - .boundElements — Every component currently bound.
  */
 import {
-  andFilter, compareValues, filterFields, filterNeedles, filterRows, groupSummaries, readField, valueKey,
+  DEFAULT_OP, andFilter, compareValues, filterFields, filterNeedles, filterRows, groupSummaries, readField, valueKey,
 } from './store.js';
 import { fieldState, readingClause, stateClause } from './filter-state.js';
 import { sayReadings, type SaidField } from './filter-face.js';
@@ -2002,6 +2003,39 @@ export class DataSource extends EventTarget {
     return out;
   }
 
+  /**
+   * Each PICKED value's own results in a scope: the rows that ONE value
+   * matches, within what the scope can see — by field, then by value. Only a
+   * list answer in force has values to count: rows, a range, a field that is
+   * off or held above have none. Will, TODO 172.
+   * TRAP T-a-chip-counts-its-own-results
+   */
+  async valueResults(scope: string): Promise<Record<string, Record<string, number>>> {
+    const q = this.#applied.scopes[scope];
+    if (!q) return {};
+    const { view } = compile(this.#applied, {
+      field: (f) => this.#facts(f), preset: (id) => this.#presets.get(id), components: this.#componentScopes(),
+    });
+    const base = scope === VIEW || !view ? [] : [view];
+    const above = new Set(scope === VIEW ? [] : this.#applied.scopes[VIEW]?.holds ?? []);
+    const out: Record<string, Record<string, number>> = {};
+    await Promise.all(Object.entries(q.readings).flatMap(([f, reading]) => {
+      if (above.has(f) || reading.suspended) return [];
+      const state = this.#stateFor(f, reading);
+      if (state.mode !== 'simple' || state.range || state.op !== DEFAULT_OP) return [];
+      const type = this.#fields.get(f)?.type;
+      return (reading.picked ?? []).map(async (value) => {
+        /* ONE value, with no list beside it: against the field's whole list,
+           the one value of a one-value field reads as "everything", no filter.
+           TRAP T-everything-on-is-no-filter */
+        const clause = readingClause({ field: f, ...(type ? { type } : {}) }, { picked: [value], range: false });
+        if (!clause) return;
+        (out[f] ??= {})[valueKey(value)] = await this.store.totalCount({ filter: andFilter([...base, clause])! });
+      });
+    }));
+    return out;
+  }
+
   /** Each bound bar — and the panel, scope by scope — is drawn its chips'
    *  results, off the load that just landed; a later load's count wins.
    *  TRAP T-a-chip-counts-its-own-results */
@@ -2019,6 +2053,15 @@ export class DataSource extends EventTarget {
     }
     for (const { el, scopes } of drawn) {
       for (const scope of scopes) el.drawResults?.(byScope.get(scope) ?? {}, scope);
+    }
+    // A control that draws a chip per VALUE is told each picked value's own too.
+    for (const { el, scopes } of drawn) {
+      if (!el.drawValueResults) continue;
+      for (const scope of scopes) {
+        const byValue = await this.valueResults(scope);
+        if (this.#counting !== ticket) return;
+        el.drawValueResults(byValue, scope);
+      }
     }
   }
 

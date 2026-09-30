@@ -1253,6 +1253,18 @@ badge sits right of the title. A chart's own scope is counted too. The panel
 KEEPS each scope's last results and draws them again after a redraw: a redraw
 builds new headers and chips, and no load follows it.
 
+**In the panel, each PICKED value chip wears its own count** — Will, TODO
+172: *"For multi value filters in the filter panel each chip should show
+their own count badge."* A field drawn as a run has no one chip, so its
+header wears the field's count (133); each picked chip now wears the rows
+that ONE value matches, within what its scope can see
+(`source.valueResults(scope)`, by field then value, drawn by
+`drawValueResults`). A chip that is not picked wears none, as a saved filter
+that is off wears none (166). Only a list answer in force has values: rows,
+a range, a field that is off or held above have none. The one value is
+counted with NO list beside it — against a one-value field's whole list it
+reads as "everything", which is no filter (`T-everything-on-is-no-filter`).
+
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
@@ -12621,6 +12633,7 @@ that follows is what makes it read as unset.
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/core/data/data-source.ts`
 ### T-a-breakdown-pick-is-a-legend-pick
 
 Unticking a folded category in the "Other" breakdown menu did NOTHING to the

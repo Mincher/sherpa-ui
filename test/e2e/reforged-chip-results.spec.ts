@@ -164,3 +164,56 @@ test('on Records, an answered panel field shows its results beside its title, an
   await expect.poll(async () => (await badge('data', 'plan')).shown).toBe(false);
   await expect.poll(async () => (await badge('picks:r-bar-legend', 'status')).shown).toBe(false);
 });
+
+/* Will, TODO 172: "For multi value filters in the filter panel each chip
+   should show their own count badge." Each PICKED chip of a run; the header
+   keeps the field's. */
+test('on Records, each picked value chip in the panel shows its own results', async ({ page }) => {
+  await page.setViewportSize({ width: 1700, height: 1200 });
+  await page.goto('http://localhost:4200/?context=records');
+  await page.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
+  await page.evaluate(() => {
+    (document.querySelector('sherpa-provider') as HTMLElement & { filterMode: string }).filterMode = 'panel';
+  });
+  const field = page.locator('#filter-panel .scope[data-scope="view"] .field[data-field="region"]');
+  type Source = {
+    results(s: string): Promise<Record<string, number>>;
+    valueResults(s: string): Promise<Record<string, Record<string, number>>>;
+  };
+  /** Each Region chip's badge, by value; and the header's. */
+  const look = (): Promise<{ chips: Record<string, string | null>; head: string | null }> => page.evaluate(() => {
+    const box = (document.querySelector('#filter-panel') as HTMLElement).shadowRoot!
+      .querySelector<HTMLElement>('.scope[data-scope="view"] .field[data-field="region"]')!;
+    return {
+      chips: Object.fromEntries([...box.querySelectorAll<HTMLElement>('.value')]
+        .map((c) => [c.dataset['value'] ?? '', c.dataset['count'] ?? null])),
+      head: box.dataset['results'] ?? null,
+    };
+  });
+  const counted = () => page.evaluate(async () => {
+    const source = (window as unknown as { sherpa: { source: Source } }).sherpa.source;
+    return { field: (await source.results('view'))['region'], values: (await source.valueResults('view'))['region'] ?? {} };
+  });
+
+  await expect.poll(() => field.locator('.value').count()).toBeGreaterThan(2);
+  expect(Object.values((await look()).chips).every((n) => n === null)).toBe(true);
+
+  // TWO picked: each wears its own, the rest none, and the header the two together.
+  await field.locator('.value').nth(0).locator('.body').click();
+  await field.locator('.value').nth(2).locator('.body').click();
+  await expect.poll(async () => Object.values((await look()).chips).filter((n) => n !== null).length).toBe(2);
+  const two = await counted();
+  const [a, b] = Object.keys(two.values);
+  const seen = await look();
+  expect(seen.chips[a!]).toBe(String(two.values[a!]));
+  expect(seen.chips[b!]).toBe(String(two.values[b!]));
+  expect(Object.values(two.values).reduce((x, y) => x + y, 0)).toBe(two.field);
+  expect(seen.head).toBe(String(two.field));
+
+  // One switched off: its number goes, the other's stays.
+  await field.locator('.value').nth(0).locator('.body').click();
+  await expect.poll(async () => Object.values((await look()).chips).filter((n) => n !== null).length).toBe(1);
+  expect((await look()).chips[b!]).toBe(String(two.values[b!]));
+});
+

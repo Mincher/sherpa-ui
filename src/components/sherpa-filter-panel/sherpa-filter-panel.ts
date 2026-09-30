@@ -435,6 +435,28 @@ export class SherpaFilterPanel extends SherpaElement {
   /** Each scope's results as last drawn. */
   #counted = new Map<string, Readonly<Record<string, number>>>();
 
+  /**
+   * drawValueResults(results, scope) — a bound source tells the panel the rows
+   * each PICKED value matches on its own, by field then value: each chip of a
+   * run wears its own count, and one that is not picked wears none. The
+   * header keeps the field's. SILENT. Will, TODO 172.
+   * TRAP T-a-chip-counts-its-own-results
+   */
+  drawValueResults(results: Readonly<Record<string, Readonly<Record<string, number>>>>, scope: string): void {
+    this.#valueCounted.set(scope, results);
+    for (const held of this.#held.values()) {
+      // A run only: one chip, the presets and a body are drawn by drawResults.
+      if (held.scope !== scope || held.def.id === 'presets' || this.#oneChip(held)) continue;
+      const own = results[held.def.field ?? held.def.id] ?? {};
+      for (const chip of held.values.querySelectorAll<HTMLElement & { results?: number | null }>('.value')) {
+        if (this.#heldOfChip(chip) === held) chip.results = own[chip.dataset['value'] ?? ''] ?? null;
+      }
+    }
+  }
+
+  /** Each scope's per-value results as last drawn. */
+  #valueCounted = new Map<string, Readonly<Record<string, Readonly<Record<string, number>>>>>();
+
   /** A field's results, on its header's badge — or none. Will, TODO 133. */
   #headResults(held: Held, n: number | null): void {
     const badge = held.box.querySelector('.field-results');
@@ -621,6 +643,7 @@ export class SherpaFilterPanel extends SherpaElement {
     this.#syncAllAnswered();
     this.#syncPending();
     for (const [scope, results] of this.#counted) this.drawResults(results, scope);
+    for (const [scope, results] of this.#valueCounted) this.drawValueResults(results, scope);
   }
 
   /** A field a HIGHER scope holds: its heading, and the line a chip's tooltip

@@ -26,6 +26,8 @@ export interface Populatable extends HTMLElement {
   drawScope?: (slice: ScopeQuery, scope: string) => void | Promise<void>;
   /** Each answered chip's results — the rows its own answer matches. */
   drawResults?: (results: Readonly<Record<string, number>>, scope?: string) => void;
+  /** Each PICKED value's own results, by field then value — for a control that draws a chip per value. */
+  drawValueResults?: (results: Readonly<Record<string, Readonly<Record<string, number>>>>, scope: string) => void;
   /** A control over SEVERAL scopes — the panel — drawn each one whole. */
   drawScopes?: (scopes: ScopeDescription[]) => void | Promise<void>;
   /** The fields its chips hold — what a scoped bar's scope holds. */

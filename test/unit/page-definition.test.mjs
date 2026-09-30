@@ -125,6 +125,43 @@ test('a scope says what it narrows: the View is the view, a bound component name
   assert.equal(source.describe('data').shows, undefined, 'unbound, it says nothing');
 });
 
+/* Will, TODO 172: "For multi value filters in the filter panel each chip
+   should show their own count badge." TRAP T-a-chip-counts-its-own-results */
+test('each PICKED value has a count of its own — and only a list answer in force has values', async () => {
+  const store = new ArrayStore([
+    { region: 'EMEA', status: 'open', seats: 5 }, { region: 'EMEA', status: 'shut', seats: 9 },
+    { region: 'AMER', status: 'open', seats: 5 }, { region: 'AMER', status: 'open', seats: 1 },
+    { region: 'APAC', status: 'open', seats: 5 },
+  ]);
+  const source = await openSource({
+    store: 'rows',
+    fields: { region: { label: 'Region' }, status: { label: 'Status' }, seats: { label: 'Seats', type: 'number' } },
+    scopes: { view: { label: 'View filters', holds: ['region'] }, data: { label: 'Alerts', holds: ['status', 'seats'] } },
+  }, store);
+  source.bind({
+    populate() {}, setAttribute() {}, removeAttribute() {}, addEventListener() {}, removeEventListener() {},
+  }, { scope: 'data' });
+  await source.setQuery({ v: 1, scopes: {
+    view: { holds: ['region'], readings: { region: { picked: ['EMEA', 'AMER'] } } },
+    data: { holds: ['status', 'seats'], readings: { status: { picked: ['open', 'shut'] }, seats: { picked: ['5', '9'], range: true } } },
+  } });
+  // The View's two values: each over everything. The field's own count is both.
+  assert.deepEqual(await source.valueResults('view'), { region: { EMEA: 2, AMER: 2 } });
+  assert.deepEqual(await source.results('view'), { region: 4 });
+  /* A component's values: each within the View's rows. `status` has two values
+     and both are picked — as a field that filters nothing, but each chip still
+     counts its own. A RANGE has no values to count. */
+  assert.deepEqual(await source.valueResults('data'), { status: { open: 3, shut: 1 } });
+
+  // Rows answer it: no values. Off: none. Emptied: none.
+  source.select('status', [], { mode: 'advanced', conditions: [{ op: 'contains', text: 'op' }] });
+  assert.deepEqual(await source.valueResults('data'), {});
+  source.suspendSelection('region');
+  assert.deepEqual(await source.valueResults('view'), {});
+  source.select('region', []);
+  assert.deepEqual(await source.valueResults('view'), {});
+});
+
 test('a chip counts the rows ITS OWN answer matches, within what its scope can see', async () => {
   // TRAP T-a-chip-counts-its-own-results
   const store = new ArrayStore([

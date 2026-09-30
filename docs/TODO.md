@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**53 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**52 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -110,7 +110,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31p | 141 | Advanced is an icon button again — f(x), at the right of the section or menu header, active when on | quick |
 | ⬜ | 31q | 144 | A View's filters survive a swap to another View — a draft per View, for the session, and across sessions; two settings, on by default | feature |
 | ✅ | 31r | 171 | The filter panel's search matches FIELD labels as well as value labels | feature |
-| ⬜ | 31s | 172 | In the filter panel, each chip of a multi-value filter shows its own count badge | feature |
+| ✅ | 31s | 172 | In the filter panel, each chip of a multi-value filter shows its own count badge | feature |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
 | ✅ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
@@ -1565,13 +1565,22 @@ provider passes it to `source.bind()`, and `describe(scope)` reports `shows`
 whole file) — so a chart's section shows none, and `table-columns` stands in:
 that is 115. `T-a-scope-says-what-it-shows`
 
-### `[ ]` 172 — In the filter panel, each value chip shows its own count
+### `[x]` ✅ 172 — In the filter panel, each value chip shows its own count
 
 Will, 2026-09-30: *"For multi value filters in the filter panel each chip
 should show their own count badge."*
 
 Until now a value chip had no count: the field's header carries the field's
 count (133), and 130 noted "a count per value is not asked for". Now it is.
+
+**✅ Done 2026-09-30.** Each PICKED chip shows the rows its one value
+matches: with EMEA and APAC picked, `27 EMEA`, `29 APAC`, and the header
+still says `REGION 56`. A chart's own chips do the same. A chip that is not
+picked shows no number — the same rule as a saved filter that is off (166).
+
+**❓ One choice, if you want it:** a number on EVERY value, picked or not
+(what picking it would give). I built picked-only: it matches 166, and it
+asks the store once per picked value, not once per value of every field.
 
 ### `[x]` ✅ 171 — The filter panel's search matches field labels too
 
@@ -3839,6 +3848,7 @@ One line each. The detail is in git and in the trap named.
 - 49: every saved filter chip opens a menu that lists its conditions, a heading per field — `T-a-saved-chip-lists-its-conditions`
 - 171: the filter panel's search matches a field's name too, and then shows the whole field
 - 129: Reset all to default asks first, and can save what is on screen as a View before it resets — `T-reset-to-default-is-the-views-own`
+- 172: in the panel, each picked value chip shows its own results; the header keeps the field's — `T-a-chip-counts-its-own-results`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on
