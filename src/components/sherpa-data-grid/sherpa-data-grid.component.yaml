@@ -203,8 +203,8 @@ props:
     observed: true
     kind: style
     description: >-
-      the visual page, WHILE GROUPED only — a page is data-page-size screen LINES, and a shut group
-      is one. Written by SherpaDataSource; the grid reports back the page count it arrives at and
+      the visual page, WHILE GROUPED only — a page is data-page-size ROWS, and a shut group is one
+      slot. Written by SherpaDataSource; the grid reports back the page count it arrives at and
       never writes data-page itself.
   - $type: prop
     name: data-page-size
@@ -212,8 +212,8 @@ props:
     observed: true
     kind: style
     description: >-
-      the visual page, WHILE GROUPED only — a page is data-page-size screen LINES, and a shut group
-      is one. Written by SherpaDataSource; the grid reports back the page count it arrives at and
+      the visual page, WHILE GROUPED only — a page is data-page-size ROWS, and a shut group is one
+      slot. Written by SherpaDataSource; the grid reports back the page count it arrives at and
       never writes data-page itself.
   - $type: prop
     name: data-scope

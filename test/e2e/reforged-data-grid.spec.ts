@@ -2237,9 +2237,10 @@ test('selectedKeys is EMPTY without a key — honest, not approximate', async ({
 });
 
 test('a SHUT group costs one slot of the page, not one per row', async ({ page }) => {
-  // TRAP T-grid-collapsed-group-is-one-slot — a page is SCREEN LINES. Shutting
-  // Gold used to leave a page holding one heading and 24 rows CSS was hiding,
-  // and a pager insisting there were more pages like it.
+  // TRAP T-grid-collapsed-group-is-one-slot — a page is ROWS, as the pager
+  // says (Will, TODO 152): an open group's heading is free, and a SHUT group
+  // is one slot. Shutting Gold used to leave a page holding one heading and 24
+  // rows CSS was hiding, and a pager insisting there were more pages like it.
   const r = await page.evaluate(async () => {
     const settled = () => (window as unknown as { __settled: () => Promise<void> }).__settled();
     const el = document.createElement('sherpa-data-grid') as HTMLElement & {
@@ -2249,8 +2250,8 @@ test('a SHUT group costs one slot of the page, not one per row', async ({ page }
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
 
-    // Three groups of four, and a page of five LINES. Open, that is
-    // heading+4 = 5 for one group alone, so ONE group fills page 1 exactly.
+    // Three groups of four, and a page of five ROWS. Open, that is Bronze's
+    // four and Gold's first — two headings, five rows.
     // Groups sort A→Z (T-grid-group-drops-the-column), so the order on screen
     // is Bronze, Gold, Silver whatever order they are populated in.
     const rows = ['Gold', 'Silver', 'Bronze'].flatMap((tier) =>
@@ -2285,8 +2286,8 @@ test('a SHUT group costs one slot of the page, not one per row', async ({ page }
 
     const page1 = read();
 
-    // Shut the FIRST group (Bronze). One line now, so four slots come free and
-    // the next rows must move UP onto this page rather than leaving a hole.
+    // Shut the FIRST group (Bronze). One slot now, so three come free and the
+    // next rows must move UP onto this page rather than leaving a hole.
     const first = sr.querySelector<HTMLElement>('.group-row')!;
     first.querySelector<HTMLElement>('.group-toggle')!.click();
     await settled();
@@ -2300,29 +2301,30 @@ test('a SHUT group costs one slot of the page, not one per row', async ({ page }
     return { page1, folded, page2, reports };
   });
 
-  // PAGE 1, all open: Bronze's heading + its four rows is the whole page.
-  expect(r.page1.groups.map((g) => g.label)).toEqual(['Bronze']);
-  expect(r.page1.drawn).toBe(4);
-  expect(r.page1.indices).toEqual(['0', '1', '2', '3']);
+  // PAGE 1, all open: FIVE ROWS, as the page size says — the two headings
+  // over them cost nothing.
+  expect(r.page1.groups.map((g) => g.label)).toEqual(['Bronze', 'Gold']);
+  expect(r.page1.drawn).toBe(5);
+  expect(r.page1.shown).toBe(5);
+  expect(r.page1.indices).toEqual(['0', '1', '2', '3', '4']);
 
-  // SHUT: Bronze is one line, so Gold's heading and its first three rows fill
-  // the remaining four slots. This is the whole point of the trap.
+  // SHUT: Bronze is one slot, so ALL of Gold's four rows fill the other four.
+  // This is the whole point of the trap.
   expect(r.folded.groups.map((g) => g.label)).toEqual(['Bronze', 'Gold']);
   // The count is the group's REAL size, not the part this page drew.
   expect(r.folded.groups.map((g) => g.count)).toEqual(['4', '4']);
-  expect(r.folded.shown).toBe(3);        // three Gold rows are visible…
-  expect(r.folded.drawn).toBe(7);        // …and Bronze's four are drawn but hidden
+  expect(r.folded.shown).toBe(4);        // Gold's four rows are visible…
+  expect(r.folded.drawn).toBe(8);        // …and Bronze's four are drawn but hidden
   // Indices still point into the full list — Gold starts at 4.
-  expect(r.folded.indices).toEqual(['0', '1', '2', '3', '4', '5', '6']);
+  expect(r.folded.indices).toEqual(['0', '1', '2', '3', '4', '5', '6', '7']);
 
-  // PAGE 2 redraws Gold's heading: a page that opened mid-group with no
-  // heading would not say which group it was showing.
-  expect(r.page2.groups.map((g) => g.label)).toEqual(['Gold', 'Silver']);
-  expect(r.page2.indices![0]).toBe('7');
+  // PAGE 2 is Silver, and its indices go on from the full list.
+  expect(r.page2.groups.map((g) => g.label)).toEqual(['Silver']);
+  expect(r.page2.indices![0]).toBe('8');
 
   // The grid REPORTED its page count; it never wrote data-page itself.
   expect(r.reports.length).toBeGreaterThan(0);
-  expect(r.reports.at(-1)!.pages).toBeGreaterThanOrEqual(2);
+  expect(r.reports.at(-1)!.pages).toBe(2);
 });
 
 test('row actions: a pinned trailing column, one shared menu, and a report', async ({ page }) => {

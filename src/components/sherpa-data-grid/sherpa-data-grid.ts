@@ -1196,8 +1196,9 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   /* ── Visual paging ──────────────────────────────────────────────────
-   * TRAP T-grid-collapsed-group-is-one-slot — a SHUT group is one line, so it
-   * costs one line of the page. The store counts RECORDS and cannot know that.
+   * TRAP T-grid-collapsed-group-is-one-slot — a page is `data-page-size` ROWS,
+   * grouped or not; a SHUT group is one line, so it costs one. The store
+   * counts RECORDS and cannot know what is shut.
    * Ungrouped these do nothing: the store's window IS the page.
    */
 
@@ -1217,9 +1218,11 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   /**
-   * Cut the visible rows into pages of `size` SCREEN LINES, returning each
-   * page's start index, so a page stays a plain slice. A heading is one line; a
-   * shut group costs only that. An OPEN group longer than a page IS split.
+   * Cut the visible rows into pages of `size` ROWS, returning each page's
+   * start index, so a page stays a plain slice. A ROW is one slot; an open
+   * group's heading is free, so a page holds the rows the pager says. A SHUT
+   * group is one slot, whatever it holds. An OPEN group longer than a page IS
+   * split.
    */
   #pageStarts(rows: GridRow[], field: string, size: number): number[] {
     const starts: number[] = [0];
@@ -1228,23 +1231,12 @@ export class SherpaDataGrid extends SherpaElement {
 
     for (let i = 0; i < rows.length; i += 1) {
       const key = String(rows[i]![field] ?? '');
-      const opensGroup = key !== lastGroup;
-      const collapsed = this.#collapsed.has(key);
-      // A shut group's ROWS are drawn but hidden, so they cost nothing.
-      const cost = (opensGroup ? 1 : 0) + (collapsed ? 0 : 1);
-
-      // A heading on a page's last slot still starts the page — the next page
-      // redraws it anyway.
+      // A shut group's ROWS are drawn but hidden: its first one pays for the heading.
+      const cost = this.#collapsed.has(key) ? (key !== lastGroup ? 1 : 0) : 1;
       if (cost > 0 && slots + cost > size && slots > 0) {
         starts.push(i);
         slots = 0;
-        lastGroup = null;
-        // Re-cost against the fresh page: this row now OPENS its group.
-        slots += 1 + (collapsed ? 0 : 1);
-        lastGroup = key;
-        continue;
       }
-
       slots += cost;
       lastGroup = key;
     }

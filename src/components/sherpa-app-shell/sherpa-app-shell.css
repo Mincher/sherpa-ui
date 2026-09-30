@@ -162,6 +162,14 @@
   min-block-size: 0;
   overflow: auto;
 }
+/* THE CONTEXT FILLS THE FRAME, however little it holds: a fit grid's `100%`
+   measures this box. Left to its content, a grid of ten rows "fitted" a
+   shorter card than one of fifty. Taller than the frame, it overflows it, and
+   the frame scrolls. TRAP T-a-fit-grid-needs-a-sized-parent */
+.context-frame ::slotted(*) {
+  flex: 1 1 auto;
+  min-block-size: 0;
+}
 
 /* The header's shadow, while the Context is scrolled under it. The header is
    not in the scroller, so it follows the scroller's TIMELINE: the scroller

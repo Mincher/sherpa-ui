@@ -6863,12 +6863,19 @@ reader got a panel holding one heading and twenty-four hidden rows — a page th
 looks empty, with a pager insisting there are ten more like it. The rows were
 there; CSS was hiding them; the count had already been spent.
 
-So the grid cuts the page itself, in SCREEN LINES:
+So the grid cuts the page itself:
 
 | | costs |
 |---|---|
+| a row | 1 |
+| an open group's heading | nothing |
 | a shut group | 1 — the heading, and nothing for its rows |
-| an open group | 1 + one per row |
+
+**A page is `data-page-size` ROWS, grouped or not** — Will, TODO 152: "Data
+grid pages don't respect the row count value set in the pagination." The
+first cut counted every heading as a line, so a page of 25 held 24 or 23 rows
+and a grouped view had one page more than the same rows ungrouped. With every
+group open, the pages now match the ungrouped ones.
 
 `#pageStarts` walks the visible rows once and records the index each page opens
 at. A page is then a plain slice, and `data-index` stays an index into the FULL
@@ -6894,6 +6901,7 @@ and slicing it again would hide rows nobody folded.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
+- Site: `test/e2e/reforged-records-grid-pages.spec.ts`
 
 ### T-grouped-page-change-publishes-without-loading
 
@@ -6930,8 +6938,8 @@ needs this branch too — `#stateKey` will not see it.
 **STORE paging and VISUAL paging are not the same thing**, and a grouped view is
 where they come apart.
 
-`skip`/`take` counts RECORDS. A page of screen lines counts LINES, and which
-lines exist depends on which groups the reader has folded — a fact that lives in
+`skip`/`take` counts RECORDS. A grouped page counts what is ON SCREEN — a
+row, or a shut group as one — and which groups are shut is a fact that lives in
 the grid's `#collapsed`, has never been sent to a store, and should not be.
 
 So while `group` is set, `DataSource`:
@@ -11381,9 +11389,18 @@ plain block, a `block-size: 100%` view took the whole scroller and started
 BELOW the 120px sticky header, so it ran a header's height past the fold.
 `.view` takes what the header leaves instead.
 
+**And the slotted Context must GROW to fill its frame** (`.context-frame
+::slotted(*) { flex: 1 1 auto; min-block-size: 0 }`). Left at its content's
+height, a fit grid's `100%` measured the CONTENT: the Records card was 586px
+with ten rows and 632px with fifty, and the pager moved with it. The rule was
+dropped when the scroller moved to `.context-frame` (142) and nothing failed,
+because every test page was taller than its frame. Will, TODO 153.
+
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
 - Site: `test/e2e/reforged-layout-grid.spec.ts`
 - Site: `examples/index.html`
+- Site: `test/e2e/reforged-app-shell.spec.ts`
+- Site: `test/e2e/reforged-records-grid-pages.spec.ts`
 
 ### T-a-band-label-names-what-it-counts
 

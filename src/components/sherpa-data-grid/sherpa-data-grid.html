@@ -9,9 +9,10 @@
   caller a re-populate (and their sort/selection). filter-change still fires for
   a server-side query.
 
-  While data-group-field is set the grid pages itself, by SCREEN LINES — a shut
-  group is one line whatever it holds. A store's skip/take counts RECORDS and
-  cannot know what is folded. Ungrouped, paging is the store's.
+  While data-group-field is set the grid pages itself: a page is data-page-size
+  ROWS, as ungrouped, and a shut group is one slot whatever it holds. A store's
+  skip/take counts RECORDS and cannot know what is folded. Ungrouped, paging is
+  the store's.
 
   Public API:
     data-sort-field / data-sort-direction   current sort (asc | desc)
@@ -40,7 +41,7 @@
                     absence, so neither leaves a span to point at.
                     TRAP T-a-needle-comes-from-either-direction
     data-page / data-page-size               the visual page, WHILE GROUPED only —
-                    a page is data-page-size screen LINES, and a shut group is one.
+                    a page is data-page-size ROWS, and a shut group is one slot.
                     Written by SherpaDataSource; the grid reports back the page
                     count it arrives at and never writes data-page itself.
     data-actions                             set BY populate() when `actions` is

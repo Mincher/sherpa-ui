@@ -67,6 +67,31 @@ test('the nav rail is a full-height overlay; the header is a row above the scrol
   expect(r.frameRows).toBe(1);
 });
 
+/* A SHORT Context still fills its frame — or a fit grid inside it "fits" its
+   own content, and a card changes height with its row count. Will, TODO 153.
+   TRAP T-a-fit-grid-needs-a-sized-parent */
+test('a Context fills its frame however little it holds, so `100%` inside it measures the area', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '<div style="block-size: 400px"><sherpa-app-shell style="min-block-size: 0">'
+      + '<div slot="header" style="block-size: 40px">H</div>'
+      + '<div class="ctx" style="min-block-size: 0"><div class="fit" style="block-size: 100%"><div style="block-size: 50px">little</div></div></div>'
+      + '</sherpa-app-shell></div>';
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const shell = root.querySelector('sherpa-app-shell')!;
+    (shell.shadowRoot!.querySelector('.shell') as HTMLElement).style.minBlockSize = '0';
+    await new Promise<void>((res) => requestAnimationFrame(() => res()));
+    const frame = shell.shadowRoot!.querySelector<HTMLElement>('.context-frame')!;
+    const h = (sel: string): number => Math.round(root.querySelector(sel)!.getBoundingClientRect().height);
+    return { frame: frame.clientHeight, ctx: h('.ctx'), fit: h('.fit'), scrolls: frame.scrollHeight > frame.clientHeight };
+  });
+  expect(r.frame).toBe(360);
+  expect(r.ctx).toBe(r.frame);
+  // `100%` inside it is the AREA, not the 50px it holds.
+  expect(r.fit).toBe(r.frame);
+  expect(r.scrolls).toBe(false);
+});
+
 test('only the Context scrolls: the header and a panel stay put, and the header takes a shadow', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const root = document.getElementById('root')!;

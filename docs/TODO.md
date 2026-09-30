@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**56 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**55 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -57,8 +57,9 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16k | 147 | A chip switched off under the pointer leaves an EMPTY tooltip: the whole tooltip hides | bug |
 | ✅ | 16l | 148 | After a Reset, a date chip's value label reads `Unassigned` | bug |
 | ✅ | 16m | 151 | A filter moved across scopes does not keep its Simple or Advanced mode | bug |
-| 🚧 | 16n | 152 | Data grid pages do not keep to the row count set in the pagination: the count varies from page to page | bug |
-| ⬜ | 16o | 153 | In a fixed-row layout grid, the data grid and its container change height with the row count; the container must keep its height and the grid fill it | bug |
+| ✅ | 16n | 152 | Data grid pages do not keep to the row count set in the pagination: the count varies from page to page | bug |
+| 🚧 | 16p | 155 | The change-scope buttons show on a panel filter only after its first edit; they must always show | bug |
+| ✅ | 16o | 153 | In a fixed-row layout grid, the data grid and its container change height with the row count; the container must keep its height and the grid fill it | bug |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | ❓ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ⬜ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
@@ -960,17 +961,50 @@ wrote "no first day" into it as a day. A kept range with no ends holds none
 now. It came in with 137 (an emptied date keeps its range shape). If you did
 see the word `Unassigned` on a date chip, say where — I could not make it.
 
-### `[~]` 152 — BUG: data grid pages do not keep to the pagination's row count
+### `[~]` 155 — BUG: the change-scope buttons show only after the first edit
+
+Will, 2026-09-30, a minor issue: *"Change scope buttons only appear on
+filters after the first edit. This action should always be available."*
+
+### `[x]` ✅ 152 — BUG: data grid pages do not keep to the pagination's row count
 
 Will, 2026-09-30: *"Data grid pages don't respect the row count value set in
 the pagination. When i change pages I see varying row counts."*
 
-### `[ ]` 153 — BUG: the grid and its container change height with the row count
+**✅ Done 2026-09-30.** I could make this happen only with the rows GROUPED.
+Ungrouped, every page held the pager's count in each case I tried: sizes 10,
+25 and 50, sorted, filtered, through the pager's own controls.
+
+Grouped, a page was 25 screen LINES, and each group heading was a line. So
+the pages held 24, 24, 23, 23 and 6 rows — and there were five pages, where
+the same rows ungrouped make four. That was the rule of 2026-09-17 ("visual
+paging"); your report changes it:
+
+- **A page is 25 ROWS, grouped or not.** An open group's heading costs
+  nothing. Records grouped by Plan: 25, 25, 25, 25, on four pages.
+- **A SHUT group is still one slot**, whatever it holds — so shutting a group
+  still pulls the next rows up.
+
+❓ If you saw it with NO grouping, say which page and size: that is a second
+bug, and I could not make it.
+`T-grid-collapsed-group-is-one-slot`
+
+### `[x]` ✅ 153 — BUG: the grid and its container change height with the row count
 
 Will, 2026-09-30: *"The data grid, and it's container, in a fixed row count
 layout grid also changes height to fit the row count. This isn't desirable.
 The container should stay the same height and the grid should fill the
 available height."*
+
+**✅ Done 2026-09-30. My mistake, in 142.** When I moved the scroller to the
+Context's frame I dropped the rule that makes the Context FILL that frame.
+So the Context was as tall as its content, and the "fit" grid fitted the
+content: the Records card was 586 px with ten rows and 632 px with fifty, and
+the pager moved with it. The rule is back. The card keeps one height at ten
+rows, fifty rows and a short last page; the grid fills it; the pager stays at
+its foot. No test had caught it, because every test page was taller than its
+frame — two do now.
+`T-a-fit-grid-needs-a-sized-parent`
 
 ### `[x]` ✅ 151 — BUG: a filter moved across scopes does not keep its mode
 
@@ -3473,6 +3507,8 @@ One line each. The detail is in git and in the trap named.
 - 149: queued — the legend's items become swatch chips
 - 148: an emptied date range holds no ends — the chip read `undefined` after a Reset
 - 121: a panel field's Clear and Send to are one button group
+- 152: a grouped grid page holds the pager's ROW count — a heading costs nothing, a shut group one slot — `T-grid-collapsed-group-is-one-slot`
+- 153: the Context fills its frame again, so a fit grid's card keeps one height — `T-a-fit-grid-needs-a-sized-parent`
 - 154: a chart's section in the filter panel wears the `reports` glyph
 - 133: a panel field's header wears its results badge, right of the title; a chart's own field too — `T-a-chip-counts-its-own-results`
 - 135: a calendar's Month and Year views disable what holds no day to pick
