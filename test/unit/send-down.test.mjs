@@ -49,12 +49,18 @@ async function setup() {
   return { source, seen, chart, send, sendTo };
 }
 
-test('a View field names the ONE scope it may go down to — the only one that has it', async () => {
+test('a View field names each scope it may go down to — and the reader picks where there are two', async () => {
   const { source, chart, sendTo } = await setup();
-  assert.deepEqual(sendTo('region'), { scope: 'data', label: 'Customer records' });
-  // A chart's own scope has the field too: two is no answer.
+  assert.deepEqual(sendTo('region'), [{ scope: 'data', label: 'Customer records' }]);
+  // A chart's own scope has the field too: both are offered, and the source does not guess.
   source.declarePart('picks:bar', { field: 'region', only: chart, label: 'By region' });
-  assert.equal(sendTo('region'), undefined);
+  assert.deepEqual(sendTo('region'), [
+    { scope: 'data', label: 'Customer records' }, { scope: 'picks:bar', label: 'By region' },
+  ]);
+  // A field no scope below has: nowhere to send it.
+  source.declareField('owner', { label: 'Owner' });
+  source.hold('view', ['region', 'owner']);
+  assert.equal(sendTo('owner'), undefined);
 });
 
 test('SENT DOWN, the View lets go and the answer goes with the field', async () => {
@@ -79,7 +85,8 @@ test('a field goes back down to where it CAME UP from — a chart\'s own scope �
   send('view', 'plan', 'picks:bar');
   await tick();
   assert.deepEqual(seen.get('grid'), [1, 3]);
-  assert.deepEqual(sendTo('plan'), { scope: 'picks:bar', label: 'By plan' });
+  // Where it came UP from leads.
+  assert.deepEqual(sendTo('plan'), [{ scope: 'picks:bar', label: 'By plan' }, { scope: 'data', label: 'Customer records' }]);
 
   send('picks:bar', 'plan', 'view');
   await tick();

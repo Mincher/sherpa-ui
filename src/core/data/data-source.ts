@@ -167,9 +167,9 @@ export interface HeldFilter extends FieldFilter {
   removable?: boolean;
   /** A scope ABOVE holds it now — that scope's name. It keeps its place here. */
   appliedAt?: string;
-  /** A View field may be SENT DOWN to this one scope — where it came up from,
-   *  or the only one that has it. TRAP T-send-to-view-filters */
-  sendTo?: { scope: string; label: string };
+  /** Where a View field may be SENT DOWN: each scope that has it, the one it
+   *  came up from first. TRAP T-send-to-view-filters */
+  sendTo?: { scope: string; label: string }[];
 }
 
 /** What a scope's filters narrow: the View, or the content one component shows. */
@@ -860,14 +860,14 @@ export class DataSource extends EventTarget {
     });
     const fields: HeldFilter[] = q.holds.filter((f) => this.#fields.has(f)).map((f) => {
       const reading = this.#home(f) === scope ? this.#reading(f) : undefined;
-      const down = scope === VIEW ? this.#lowerTo(f) : undefined;
+      const down = scope === VIEW ? this.#lowerTo(f) : [];
       return {
         ...this.filterDef(f), removable: true,
         // The View's date slices the whole view, so it is a RANGE. Will, TODO 20b.
         ...(scope === VIEW && this.#fields.get(f)?.type === 'date' ? { range: true } : {}),
         ...(reading ? { state: structuredClone(reading) } : {}),
         ...(above.includes(f) ? { appliedAt: this.scopeLabel(VIEW) } : {}),
-        ...(down ? { sendTo: { scope: down, label: this.#narrowing.get(down)?.label ?? this.scopeLabel(down) } } : {}),
+        ...(down.length ? { sendTo: down.map((to) => ({ scope: to, label: this.#narrowing.get(to)?.label ?? this.scopeLabel(to) })) } : {}),
       };
     });
     // Below the View, a saved filter it does not hold is offered too.
@@ -982,16 +982,16 @@ export class DataSource extends EventTarget {
   /** Where each field the View holds came UP from, this session. */
   #cameFrom = new Map<string, string>();
 
-  /** The ONE scope a View field may be sent down to: where it came up from,
-   *  else the only scope that has it — a component's, or a chart's own. Two
-   *  that have it is no answer. TRAP T-send-to-view-filters */
-  #lowerTo(field: string): string | undefined {
+  /** Each scope a View field may be sent down to — a component's that has it,
+   *  or a chart's own — the one it came UP from first. The reader picks where
+   *  there is more than one: the source does not guess, and does not rely on
+   *  what it remembers, which a reload forgets. TRAP T-send-to-view-filters */
+  #lowerTo(field: string): string[] {
     const has = (scope: string): boolean =>
       this.#narrowing.get(scope)?.field === field || this.canHold(scope, field);
+    const all = [...this.#offers.keys(), ...this.#narrowing.keys()].filter((s) => s !== VIEW && has(s));
     const from = this.#cameFrom.get(field);
-    if (from && from !== VIEW && has(from)) return from;
-    const all = [...this.#offers.keys(), ...this.#narrowing.keys()].filter(has);
-    return all.length === 1 ? all[0] : undefined;
+    return from && all.includes(from) ? [from, ...all.filter((s) => s !== from)] : all;
   }
 
   /** SEND a View field DOWN: the View lets go of it, and its answer goes to

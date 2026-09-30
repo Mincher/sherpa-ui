@@ -1156,11 +1156,17 @@ cleared. Then the answer is written AGAIN, whole: the bar below is freed as
 the View lets go, and reports the answer it kept from before the field went
 up — an old one, which put a filter sent down in Advanced back to Simple.
 
-The SOURCE names the one scope (`describe('view')` → `sendTo`), never the
-panel: where the field came up from this session, else the ONLY scope that
-has it — a component's offer, or a chart's own scope. Two that have it and no
-memory of where it came from is no answer, and no button. A guess would move
-a reader's filter to a component they did not mean.
+The SOURCE names the scopes (`describe('view')` → `sendTo`, a list), never
+the panel: each scope that has the field — a component's offer, or a chart's
+own scope — the one it came up from first. ONE, and the button sends it and
+says where. MORE, and the button opens a menu of them: the reader picks. The
+source does not guess, and a guess would move a reader's filter to a
+component they did not mean.
+
+It first offered a button only for ONE scope, or for where the field came up
+from — which it remembers for a session. On Records a chart's field is the
+grid's too, so after a reload there were two scopes, no memory, and no way
+down: Will, TODO 158.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`

@@ -98,8 +98,9 @@ export interface PanelFilter extends OffersAdvanced {
   /** A scope ABOVE holds it now: it keeps its place here — its heading, and
    *  one line saying so — and draws no values. TRAP T-a-panel-asks-for-its-scopes */
   appliedAt?: string;
-  /** A View field may be SENT DOWN to this one scope. TRAP T-send-to-view-filters */
-  sendTo?: { scope: string; label: string };
+  /** Where a View field may be SENT DOWN. One: the button sends it. More: the
+   *  button opens them. TRAP T-send-to-view-filters */
+  sendTo?: { scope: string; label: string }[];
 }
 
 /** A column Group or Sort may arrange by. */
@@ -765,8 +766,9 @@ export class SherpaFilterPanel extends SherpaElement {
     if (!box.hasAttribute('data-advanced-ok')) box.querySelector('.field-advanced')?.remove();
     if (!box.hasAttribute('data-clearable')) box.querySelector('.field-clear')?.remove();
     if (!box.hasAttribute('data-raisable')) box.querySelector('.field-raise')?.remove();
-    // A View field, SENT DOWN to the one scope it may go to. TRAP T-send-to-view-filters
-    if (isPresets || organise || !def.sendTo) box.querySelector('.field-lower')?.remove();
+    // A View field, SENT DOWN to a scope that has it. TRAP T-send-to-view-filters
+    const targets = isPresets || organise ? [] : def.sendTo ?? [];
+    if (!targets.length) box.querySelector('.field-lower')?.remove();
 
     const head = box.querySelector('.field-head');
     const title = box.querySelector('.field-title');
@@ -774,7 +776,7 @@ export class SherpaFilterPanel extends SherpaElement {
     const name = def.label;
     head?.querySelector('.field-clear')?.setAttribute('aria-label', `Clear ${name}`);
     head?.querySelector('.field-raise')?.setAttribute('aria-label', `Send ${name} to view filters`);
-    head?.querySelector('.field-lower')?.setAttribute('aria-label', `Send ${name} to ${def.sendTo?.label ?? ''}`);
+    this.#drawLower(head?.querySelector<HTMLElement>('.field-lower') ?? null, name, targets);
     box.querySelector('.field-advanced')?.setAttribute('aria-label', `Advanced ${name}`);
 
     const values = box.querySelector('.field-values') as HTMLElement | null;
@@ -1263,9 +1265,8 @@ export class SherpaFilterPanel extends SherpaElement {
     const lower = this.pathFind(event, '.field-lower');
     if (lower) {
       const down = this.#fieldOf(lower);
-      if (down?.def.sendTo) {
-        this.emit('filter-add-request', { scope: down.def.sendTo.scope, ids: [down.def.field ?? down.def.id], from: down.scope });
-      }
+      // More than one: the button opens its menu, and the pick sends it.
+      if (down?.def.sendTo?.length === 1) this.#sendDown(down, down.def.sendTo[0]!.scope);
       return;
     }
     // REMOTE: one field's own Apply or Discard. TRAP T-apply-and-discard-wait-for-a-change
@@ -1413,6 +1414,13 @@ export class SherpaFilterPanel extends SherpaElement {
   /** A saved preset's Edit or Delete: ASK, as Add and Remove do. The bar owns the list. */
   #onSavedAction = (event: Event): void => {
     const value = (event as CustomEvent).detail?.value;
+    // A Send to menu's pick: the scope the field goes down to.
+    const lower = this.pathFind(event, '.field-lower');
+    const down = lower && this.#fieldOf(lower);
+    if (down && typeof value === 'string' && down.def.sendTo?.some((t) => t.scope === value)) {
+      event.stopPropagation();
+      return this.#sendDown(down, value);
+    }
     if (value !== 'edit' && value !== 'delete') return;
     const chip = this.pathFind(event, '.value');
     const id = chip?.dataset['value'];
@@ -1421,6 +1429,33 @@ export class SherpaFilterPanel extends SherpaElement {
     event.stopPropagation();
     this.emit(value === 'edit' ? 'filter-edit' : 'filter-delete', { scope, id });
   };
+
+  /** Ask the source to send a View field DOWN to one scope. */
+  #sendDown(held: Held, scope: string): void {
+    this.emit('filter-add-request', { scope, ids: [held.def.field ?? held.def.id], from: held.scope });
+  }
+
+  /** The Send down button: one scope, and it says which; more, and it opens
+   *  a menu of them. TRAP T-send-to-view-filters */
+  #drawLower(button: HTMLElement | null, name: string, targets: readonly { scope: string; label: string }[]): void {
+    if (!button || !targets.length) return;
+    if (targets.length === 1) {
+      button.setAttribute('aria-label', `Send ${name} to ${targets[0]!.label}`);
+      return;
+    }
+    button.setAttribute('aria-label', `Send ${name} to a scope`);
+    button.setAttribute('aria-haspopup', 'dialog');
+    const menu = this.clone('template.lower-menu-tpl');
+    const row = this.$<HTMLTemplateElement>('template.lower-item-tpl')?.content.firstElementChild;
+    if (!menu || !row) return;
+    for (const { scope, label } of targets) {
+      const item = row.cloneNode(true) as HTMLButtonElement;
+      item.value = scope;
+      item.textContent = `Send to ${label}`;
+      menu.append(item);
+    }
+    button.append(menu);
+  }
 
   /** Untick a field's values and clear its conditions. */
   #clearField(btn: HTMLElement): void {

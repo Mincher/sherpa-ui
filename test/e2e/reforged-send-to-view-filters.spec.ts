@@ -105,3 +105,64 @@ test('a View field is sent DOWN to the one scope that has it, with its answer, a
   });
   expect(await total()).toBe(before);
 });
+
+/**
+ * WILL'S BUG, TODO 158: "I can't move data viz filters back down from the view
+ * scope." On Records the chart's field is the grid's too, so TWO scopes may
+ * take it — and the source offered neither unless it remembered where the
+ * field came up from, which a reload forgets. It offers both now, and the
+ * reader picks.
+ */
+test('a chart\'s filter in the View goes back DOWN to its chart, after a reload too', async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.setViewportSize({ width: 1700, height: 1200 });
+  const open = async (): Promise<void> => {
+    await page.waitForFunction(() => !!document.querySelector('#r-bar')?.shadowRoot?.querySelector('.bar'));
+    await page.evaluate(() => {
+      (document.querySelector('sherpa-provider') as HTMLElement & { filterMode: string }).filterMode = 'panel';
+    });
+  };
+  await page.goto('http://localhost:4200/?context=records');
+  await open();
+  const chart = 'picks:r-bar-legend';
+  const field = (scope: string) => page.locator(`#filter-panel .scope[data-scope="${scope}"] .field[data-field="status"]`);
+  /** Press a field's own header button — its trigger, not a row of its menu. */
+  const press = (scope: string, button: string): Promise<void> => page.evaluate(([s, b]) => {
+    (document.querySelector('#filter-panel') as HTMLElement).shadowRoot!
+      .querySelector(`.scope[data-scope="${s}"] .field[data-field="status"] .${b}`)!
+      .shadowRoot!.querySelector<HTMLElement>('.trigger')!.click();
+  }, [scope, button]);
+  type Source = { debugState(): { total: number }; scope(s: string): string[];
+    query: { applied: { scopes: Record<string, { readings: Record<string, { picked?: string[] }> } | undefined> } } };
+  const read = (): Promise<{ view: boolean; chart: string[] | null; total: number; bars: number }> => page.evaluate((s) => {
+    const source = (window as unknown as { sherpa: { source: Source } }).sherpa.source;
+    return {
+      view: source.scope('view').includes('status'),
+      chart: source.query.applied.scopes[s]?.readings['status']?.picked ?? null,
+      total: source.debugState().total,
+      bars: document.querySelector('#r-bar')!.shadowRoot!.querySelectorAll('.bar').length,
+    };
+  }, chart);
+
+  await expect.poll(() => field(chart).locator('.value').count()).toBeGreaterThan(0);
+  const all = (await read()).total;
+  const first = await field(chart).locator('.value').first().getAttribute('data-value');
+  await field(chart).locator('.value').first().locator('.body').click();
+  await expect.poll(async () => (await read()).chart).toEqual([first]);
+  await press(chart, 'field-raise');
+  await expect.poll(async () => (await read()).view).toBe(true);
+  await expect.poll(async () => (await read()).total).toBeLessThan(all);
+
+  // A RELOAD: the View still holds it, and the source remembers nothing.
+  await page.reload();
+  await open();
+  await expect.poll(() => field('view').locator('.field-lower').count()).toBe(1);
+  const lower = field('view').locator('.field-lower');
+  expect(await lower.getAttribute('aria-label')).toBe('Send Status to a scope');
+  await expect(lower.locator('.lower-item')).toHaveText(['Send to Customer records', 'Send to By status']);
+
+  await press('view', 'field-lower');
+  await lower.locator('.lower-item', { hasText: 'Send to By status' }).click();
+  // The chart alone again: its answer, every row, one bar.
+  await expect.poll(read).toEqual({ view: false, chart: [first], total: all, bars: 1 });
+});
