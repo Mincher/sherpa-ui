@@ -183,6 +183,32 @@ test('a schema refuses a bad write and DROPS a bad read', async ({ page }) => {
   expect(r.dropped).toBe(1);
 });
 
+/* Will, TODO 160: "Row count was set to 25. Not all data grid pages had 25
+   rows." A database that has lived a while holds rows an older schema let in.
+   Each one the page held was dropped AFTER the page was cut.
+   TRAP T-a-refused-row-never-shortens-a-page */
+test('rows the schema refuses never shorten a page', async ({ page }) => {
+  const r = await page.evaluate(async (database) => {
+    const { IdbStore, rules, required } = await import('/dist/index.js');
+    // Written WITHOUT the schema, as an older build wrote them: three have no name.
+    const raw = new IdbStore({ name: 'aged', key: 'id', database });
+    const bad = new Set([3, 8, 15]);
+    await raw.putAll(Array.from({ length: 30 }, (_, i) => ({ id: i + 1, name: bad.has(i + 1) ? '' : `Row ${i + 1}` })));
+    const store = new IdbStore({ name: 'aged', key: 'id', database, schema: rules({ name: required() }) });
+    const pages = [];
+    for (const skip of [0, 10, 20]) pages.push(await store.load({ skip, take: 10 }));
+    store.close();
+    raw.close();
+    return pages.map((p) => ({ rows: p.rows.length, total: p.total, dropped: p.dropped }));
+  }, freshDb());
+
+  expect(r).toEqual([
+    { rows: 10, total: 27, dropped: 3 },
+    { rows: 10, total: 27, dropped: 3 },
+    { rows: 7, total: 27, dropped: 3 },
+  ]);
+});
+
 test('a DataSource binds to an IdbStore exactly as it binds to any other', async ({ page }) => {
   // The whole reason the Store interface exists: a view moves from an array to
   // IndexedDB without touching a component.

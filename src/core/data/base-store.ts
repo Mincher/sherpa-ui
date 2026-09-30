@@ -7,7 +7,7 @@
  * - StoreOptions — Options every store shares.
  * - BaseStore — what every store shares: key, time, schema guard, change events
  */
-import { readField, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail } from './store.js';
+import { applyOptions, readField, type LoadOptions, type LoadResult, type Row, type Store, type StoreChangeDetail } from './store.js';
 import { carryKey, keyRow } from './row-key.js';
 import {
   domainsOf, validate, ValidationError, type FieldDomain, type Issue, type StandardSchema,
@@ -108,6 +108,17 @@ export abstract class BaseStore extends EventTarget implements Store {
       dropped,
       issues: issues.slice(0, 5), // the first few only
     };
+  }
+
+  /**
+   * A PAGE of the rows the schema accepts: checked FIRST, then searched,
+   * sorted and cut. Cut first, a refused row left its page short, and the
+   * total changed from page to page. TRAP T-a-refused-row-never-shortens-a-page
+   */
+  protected async page(rows: readonly Row[], options: LoadOptions = {}): Promise<LoadResult> {
+    const { rows: accepted, dropped, issues } = await this.checkRows({ rows: [...rows], total: rows.length });
+    const result = applyOptions(accepted, options);
+    return dropped ? { ...result, dropped, ...(issues ? { issues } : {}) } : result;
   }
 
   /**

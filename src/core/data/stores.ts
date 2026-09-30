@@ -15,7 +15,6 @@
  * - LocalStore — Records in Web Storage — saved views, column state, preferences.
  */
 import {
-  applyOptions,
   readField,
   sameKey,
   type LoadOptions,
@@ -61,10 +60,10 @@ export class ArrayStore extends BaseStore {
     this.announce({ type: 'update' });
   }
 
-  load(options: LoadOptions = {}): Promise<LoadResult> {
-    const result = applyOptions(this.#rows, options);
+  async load(options: LoadOptions = {}): Promise<LoadResult> {
+    const result = await this.page(this.#rows, options);
     // TRAP T-array-store-copies-both-ways — copies out, each by its original's key.
-    return this.checkRows({ ...result, rows: result.rows.map((r) => this.keyed({ ...r }, r)) });
+    return { ...result, rows: result.rows.map((r) => this.keyed({ ...r }, r)) };
   }
 
   /** Where a row is, by its key field — or by the key made up for it. */
@@ -174,8 +173,8 @@ export class JsonStore extends BaseStore {
   async load(options: LoadOptions = {}): Promise<LoadResult> {
     await this.#ensure();
     // The inner ArrayStore holds no schema, so the check happens once, here —
-    // TRAP T-schema-guard-belongs-at-the-store
-    return this.checkRows(await this.#inner.load(options));
+    // over EVERY row, before the page is cut. TRAP T-schema-guard-belongs-at-the-store
+    return this.page((await this.#inner.load()).rows, options);
   }
 
   async byKey(key: unknown): Promise<Row | undefined> {
@@ -417,7 +416,7 @@ export class LocalStore extends BaseStore {
   }
 
   load(options: LoadOptions = {}): Promise<LoadResult> {
-    return this.checkRows(applyOptions(this.#read(), options));
+    return this.page(this.#read(), options);
   }
 
   byKey(key: unknown): Promise<Row | undefined> {

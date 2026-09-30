@@ -12,7 +12,6 @@
  * - IdbStore — Records in IndexedDB — the real local store.
  */
 import {
-  applyOptions,
   readField,
   sameKey,
   type Filter,
@@ -141,8 +140,8 @@ export class IdbStore extends BaseStore {
 
   async load(options: LoadOptions = {}): Promise<LoadResult> {
     const rows = await this.#readRows(options.filter);
-    // The index only NARROWED the read; applyOptions still decides.
-    return this.checkRows(applyOptions(rows, options));
+    // The index only NARROWED the read; `page` still decides — checked, then cut.
+    return this.page(rows, options);
   }
 
   async byKey(key: unknown): Promise<Row | undefined> {

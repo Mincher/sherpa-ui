@@ -1839,7 +1839,7 @@ export class DataSource extends EventTarget {
   }
 
   /** Re-read and push to every bound component. TRAP T-error-is-a-state-not-a-throw */
-  async load(options: { force?: boolean } = {}): Promise<LoadResult> {
+  load(options: { force?: boolean } = {}): Promise<LoadResult> {
     // Skip a load that would ask the same question twice. `force` is how a load
     // that MUST happen says so.
     // TRAP T-no-op-load-guard
@@ -1850,10 +1850,22 @@ export class DataSource extends EventTarget {
          flight will land and overwrite the answer, so a request back to the
          last finished one must still run — skipping it lost the reader's
          filter for good. TRAP T-in-flight-ticket-discards-stale */
-      if (key === this.#lastLoadKey && this.#loaded && !this.#inFlight) return this.#result;
-      if (key === this.#inFlightKey) return this.#result;                  // asked
+      if (key === this.#lastLoadKey && this.#loaded && !this.#inFlight) return Promise.resolve(this.#result);
+      /* ASKED: the caller waits for THAT answer. Handed the result of the load
+         BEFORE it, `await source.load()` came back with no rows while the
+         first load was still out. TRAP T-an-asked-load-is-awaited */
+      if (key === this.#inFlightKey && this.#asking) return this.#asking;
     }
+    const asking = this.#ask(key);
+    this.#asking = asking;
+    return asking;
+  }
 
+  /** The load in flight, for a caller that asks the same question again. */
+  #asking: Promise<LoadResult> | null = null;
+
+  /** Ask the store, and publish the answer if it is still the latest asked. */
+  async #ask(key: string): Promise<LoadResult> {
     const ticket = Symbol('load');
     this.#inFlight = ticket;
     this.#inFlightKey = key;
@@ -1911,6 +1923,7 @@ export class DataSource extends EventTarget {
       if (this.#inFlight === ticket) {
         this.#inFlight = null;
         this.#inFlightKey = null;
+        this.#asking = null;
         this.dispatchEvent(new CustomEvent('loading', { detail: { loading: false } }));
       }
     }

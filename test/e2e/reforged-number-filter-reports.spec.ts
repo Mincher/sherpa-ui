@@ -197,10 +197,13 @@ for (const host of ['toolbar', 'panel'] as const) {
       await window.__settled();
       const rows = [5, 10, 10, 20, 40, 80].map((seats, id) => ({ id, seats }));
       const source = new DataSource({ store: new ArrayStore(rows) });
-      source.declareField('seats', { label: 'Seats', type: 'number' });
+      // ONE value to start, as the def above: a bound panel is drawn from the SOURCE's.
+      source.declareField('seats', { label: 'Seats', type: 'number', range: false });
       if (where === 'panel') source.hold('data', ['seats']);
       source.bind(el, where === 'toolbar' ? { steerOnly: true } : { steerOnly: true, scope: ['data'] });
       await source.load();
+      // A bound panel is drawn its scopes once the load lands: its field is new.
+      await window.__settled();
       const total = (): number => source.debugState().total;
       // FRESH each time: a panel rebuilds a field when its answer changes.
       const menu = (): Menu & { show(t: Element): void } => el.shadowRoot!.querySelector(where === 'toolbar'

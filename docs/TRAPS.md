@@ -2481,6 +2481,46 @@ calendar.
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 
+### T-an-asked-load-is-awaited
+
+`source.load()` asked a second time, while the SAME question is still out,
+returns that load's own promise. It used to return the result in hand — the
+one from BEFORE the load — so `await source.load()` came back with no rows
+while the first load was still in flight.
+
+Nothing saw it while a local store answered in one microtask: the first load
+always won the race. The store's check moving ahead of its page cut
+(`T-a-refused-row-never-shortens-a-page`) added two ticks, and 27 tests that
+bind, then `await load()`, read an empty page. The race was always there; a
+store over a network loses it every time.
+
+- Site: `src/core/data/data-source.ts`
+
+
+### T-a-refused-row-never-shortens-a-page
+
+A local store CHECKS its rows first, then searches, sorts and cuts the page
+(`BaseStore.page`). It did it the other way round: `applyOptions` cut 25
+rows, and `checkRows` then dropped the ones the schema refused — so each
+refused row left its page one short, and the total ("it drops with the rows")
+changed from page to page, moving the pager's page count with it.
+
+It shows only on a store that has LIVED. A fresh seed is all valid; a
+database that an older build wrote to holds rows today's schema refuses — a
+customer saved with no organisation, before that was required. Will, TODO
+160: "Row count was set to 25. Not all data grid pages had 25 rows." No test
+and no clean browser could see it.
+
+`dropped` and `issues` are now of the WHOLE set, said on every page. The cost
+is a check of every row on each load, where it was one page; `sample` still
+bounds it (`T-schema-sample-cost`). A REMOTE store is paged by its server, so
+it can only check the page it was sent.
+
+- Site: `src/core/data/base-store.ts`
+- Site: `test/unit/refused-row-page.test.mjs`
+- Site: `test/e2e/reforged-idb-store.spec.ts`
+
+
 ### T-dropped-rows-must-be-countable
 
 `LoadResult.dropped` is the count of rows the store's schema REFUSED and so did

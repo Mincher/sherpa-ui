@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**54 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**61 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -57,6 +57,10 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16k | 147 | A chip switched off under the pointer leaves an EMPTY tooltip: the whole tooltip hides | bug |
 | ✅ | 16l | 148 | After a Reset, a date chip's value label reads `Unassigned` | bug |
 | ✅ | 16m | 151 | A filter moved across scopes does not keep its Simple or Advanced mode | bug |
+| ⬜ | 16v | 167 | A Reset in a component scope clears a chip's "moved to the View" state and its inactive look | bug |
+| ⬜ | 16u | 166 | A saved filter's badge shows its count only while it is ON — the count is not always known before | bug |
+| ⬜ | 16t | 165 | A filtered grid's group row badge shows the group's TOTAL rows, not the rows shown | bug |
+| ✅ | 16s | 160 | Ungrouped, a page still holds fewer rows than the pager says: a row the schema refuses is dropped AFTER the page is cut | bug |
 | ✅ | 16n | 152 | Data grid pages do not keep to the row count set in the pagination: the count varies from page to page | bug |
 | ✅ | 16p | 155 | The change-scope buttons show on a panel filter only after its first edit; they must always show | bug |
 | ✅ | 16q | 157 | Tooltips are clipped by other elements: they must sit in the top layer, above everything | bug |
@@ -109,6 +113,9 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ❓ | 33a | 116 | `sherpa-nav` binds to a Store: its entries as data, drawn and redrawn | refactor |
 | ✅ | 34 | 34 | Figma: use the Navigation terms | figma |
 | ✅ | 35 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
+| ⬜ | 35d | 164 | At the mobile breakpoint the app header shows no nav hamburger: it does not get narrow enough to trigger it | bug |
+| ⬜ | 35b | 161 | The app header's shadow FADES in, very quickly, as the Context scrolls under it | quick |
+| ⬜ | 35c | 163 | The app shell's panel areas are 150% of their width today, at the least | quick |
 | ⬜ | 35a | 146 | The app shell's FIXED panel areas resize by dragging their inner edge; the content reflows; two levels of container query | feature |
 | | | | **F — Data states and charts** | |
 | ✅ | 36 | 58 | Loading, empty and error states in a container | feature |
@@ -116,6 +123,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 38 | 80 | Container and Data Viz headers: Figma's new button styling and grouping | component |
 | ✅ | 39 | 14 | An example of real-time data | feature |
 | ⬜ | 39a | 128 | A gauge's tooltip names the segment as the legend does | quick |
+| ⬜ | 39c | 162 | A chart and its legend go from side by side to stacked as their container narrows — container queries | feature |
 | ⬜ | 39b | 150 | EXPLORE — how the example gauge's risk score is worked out; THRESHOLDS in the central Query | explore |
 | ⬜ | 40 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | ⬜ | 40a | 143 | EXPERIMENT, later — scrolled-past metrics become a compact sticky header; a toggle in Settings › Experiments | explore |
@@ -1008,6 +1016,45 @@ Clear still comes once there is something to clear, and joins it as one
 group. Before that, Send to stands alone with all its corners. I had tied
 the pair to the answer in 121; only Clear belongs to it.
 
+### `[ ]` 167 — BUG: a Reset in a component scope clears a chip's "moved to the View" state
+
+Will, 2026-09-30: *"Resetting filters in a component scope clears the
+elevated to view scope state, and inactive styling, from filter chips."*
+
+### `[ ]` 166 — A saved filter shows its count only while it is on
+
+Will, 2026-09-30, a minor fix: *"Preset filters always show their badge with
+count. We won't always know this number before activating the filter so we
+should only show it when active."*
+
+This takes back the "A for now" of 123: a saved filter that is OFF shows no
+number. A field chip that is off still keeps its badge.
+
+### `[ ]` 165 — BUG: a filtered grid's group badge counts rows that are not shown
+
+Will, 2026-09-30, a minor one: *"The badge count on a filtered data grids
+group rows should show the number of actual rows shown. Right now it show the
+total row count for the group regardless of visibility."*
+
+### `[x]` ✅ 160 — BUG: ungrouped, a page still holds fewer rows than the pager says
+
+Will, 2026-09-30, on 152: *"All customers. Row count was set to 25. Not all
+data grid pages had 25 rows."*
+
+**✅ Done 2026-09-30.** The store cut the page of 25 first, and THEN dropped
+any row its rules refuse. So each bad row left its page one short.
+
+I could not see it because my browser's data is new, and all of it is good.
+Yours has lived: it holds rows that an older build saved and today's rules
+refuse — a customer with no organisation, from before that was required. The
+store now checks every row first and cuts the page after. Each page holds 25
+of the good rows, and the page count does not move as you page.
+
+Those old rows are still in your browser's database, and still not shown.
+`source.result.dropped` says how many. To get a clean set, clear the site's
+data for `localhost:4200` — or say, and I will make the page report them.
+`T-a-refused-row-never-shortens-a-page`
+
 ### `[x]` ✅ 152 — BUG: data grid pages do not keep to the pagination's row count
 
 Will, 2026-09-30: *"Data grid pages don't respect the row count value set in
@@ -1029,6 +1076,10 @@ paging"); your report changes it:
 
 ❓ If you saw it with NO grouping, say which page and size: that is a second
 bug, and I could not make it.
+
+**Will, 2026-09-30:** *"All customers. Row count was set to 25. Not all data
+grid pages had 25 rows."* So it WAS a second bug, with no grouping — it is
+160.
 `T-grid-collapsed-group-is-one-slot`
 
 ### `[x]` ✅ 153 — BUG: the grid and its container change height with the row count
@@ -1512,6 +1563,12 @@ presets on Records are one field each.
 - **B: the `fx` menu lists the preset's fields**, and a field's row drills
   into that field's own rows (as the Filters menu drills into a chip). No new
   menu shape; two clicks to read a two-field preset.
+
+**Will, 2026-09-30:** *"Any preset or saved filter chip should have a menu
+button to show a menu with the conditions applied."* So: EVERY preset and
+saved filter chip, not only the Advanced ones, and a MENU button (the chip's
+own ▾), not an `fx` button. The A / B choice above — how a two-field filter
+reads in one menu — is still open; I will build A unless you say B.
 
 ### `[ ]` 50 — A reader's saved Advanced chip shows its conditions, editable
 
@@ -2231,6 +2288,27 @@ the raw `.hdr-btn`s, their CSS and their two state pins are gone. A host's
 measures the button's own sm icon: 14 px, as Figma's Structure collection
 projects it.
 
+### `[ ]` 164 — BUG: at the mobile breakpoint the app header shows no nav hamburger
+
+Will, 2026-09-30: *"The breakpoint for mobile mode isn't wide enough. Also at
+the mobile breakpoint the nav hamburger menu appears but the collapsed nav
+sidebar isn't hidden."* Then, a moment later: *"Actually the mobile breakpoint
+is hit. It's just that the app header doesn't show the nav hamburger menu as
+it doesn't get narrow enough to trigger it."*
+
+So the second message is the bug: the shell goes to mobile, and the header's
+own rule for the hamburger reads the HEADER's width, which is still too wide.
+
+### `[ ]` 161 — The app header's shadow fades in as the Context scrolls under it
+
+Will, 2026-09-30, a minor one: *"Add a very quick fade transition to the app
+header shadow on scroll under."*
+
+### `[ ]` 163 — The app shell's panel areas: 150% of their min width
+
+Will, 2026-09-30, a minor one: *"Increase the min width of panel areas, in
+the app shel to 150% of their current min width."*
+
 ### `[ ]` 146 — The app shell's FIXED panel areas resize by dragging their edge
 
 Will, 2026-09-30, a future todo: *"Allow the side of the panel areas, in the
@@ -2410,6 +2488,13 @@ thresholds it provides, to present it back to the user.*
 So the two ways you name are the question: a component ASKS for data shaped
 by thresholds it gives, or the thresholds are part of the data's own schema
 and every component gets them. Either way the three copies become one.
+
+### `[ ]` 162 — A chart and its legend stack as their container narrows
+
+Will, 2026-09-30, a minor one: *"Have data viz charts and legends go from
+horizontal layout to vertical layout as their container gets narrower. Use
+container queries. If a layout is set to vertical by default in it's template
+then this won't apply."*
 
 ### `[ ]` 128 — A gauge's tooltip names the segment as the legend does
 
@@ -3580,6 +3665,7 @@ One line each. The detail is in git and in the trap named.
 - 149: queued — the legend's items become swatch chips
 - 148: an emptied date range holds no ends — the chip read `undefined` after a Reset
 - 121: a panel field's Clear and Send to are one button group
+- 160: a local store checks its rows BEFORE it cuts a page — a refused row left its page short — `T-a-refused-row-never-shortens-a-page`
 - 159: while the View holds a chart's field, its legend shows and changes the View's answer — `T-a-legend-follows-the-view-when-it-holds-the-field`
 - 158: a View field's Send down offers every scope that has it — a menu where there is more than one — `T-send-to-view-filters`
 - 157: every button and chart tip is a popover, lifted to the top layer while it shows — `T-a-tip-lives-in-the-top-layer`
