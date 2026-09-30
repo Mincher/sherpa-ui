@@ -297,9 +297,6 @@ states:
     name: actions
     selector: ":host([data-actions])"
   - $type: state
-    name: not-single
-    selector: ":host(:not([data-select=\"single\"]))"
-  - $type: state
     name: focus-visible
     selector: .filter-input:focus-visible
 capabilities:

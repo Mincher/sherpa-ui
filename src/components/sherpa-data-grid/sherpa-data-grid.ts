@@ -290,7 +290,7 @@ export class SherpaDataGrid extends SherpaElement {
     this.#renderBody();
     // TRAP T-grid-select-all-is-derived — never reset here, or a sort throws
     // the user's selection away.
-    this.#syncSelectAll();
+    this.#syncSelected();
     this.#syncGroupSelects();
     this.#syncCurrent();
     this.#syncPinned();
@@ -1100,9 +1100,9 @@ export class SherpaDataGrid extends SherpaElement {
       // The radio needs the shared per-grid NAME that unpicks the previous row.
       const radio = tr.querySelector<SelectBox>('.row-one');
       if (radio) radio.setAttribute('name', this.#selectName);
-      for (const box of tr.querySelectorAll<SelectBox>('.row-select')) {
-        box.checked = this.#selected.has(record);
-      }
+      const ticked = this.#selected.has(record);
+      for (const box of tr.querySelectorAll<SelectBox>('.row-select')) box.checked = ticked;
+      tr.toggleAttribute('data-selected', ticked);
       // Its group, so CSS hides it when that group is shut — no `display` write.
       if (group && lastGroup !== null) tr.dataset['groupKey'] = lastGroup;
       columns.forEach((col, c) => {
@@ -1557,7 +1557,7 @@ export class SherpaDataGrid extends SherpaElement {
     if (this.#paginates) {
       this.#renderBody();
       // The body was replaced, so re-derive from #selected.
-      this.#syncSelectAll();
+      this.#syncSelected();
       this.#syncGroupSelects();
       this.#syncCurrent();
     }
@@ -1652,6 +1652,7 @@ export class SherpaDataGrid extends SherpaElement {
     if (!checked) this.#wantedKeys = null;
     // BOTH boxes on purpose — a write, not a count. CSS decides which shows.
     this.$$<SelectBox>('.row-select').forEach((box) => (box.checked = checked));
+    this.#syncSelected();
     this.#syncGroupSelects();
     this.#emitSelection();
   };
@@ -1683,7 +1684,7 @@ export class SherpaDataGrid extends SherpaElement {
       if ((target as SelectBox).checked) this.#selected.add(record);
       else this.#selected.delete(record);
     }
-    this.#syncSelectAll();
+    this.#syncSelected();
     this.#syncGroupSelects();
     this.#emitSelection();
   };
@@ -1723,7 +1724,7 @@ export class SherpaDataGrid extends SherpaElement {
       if (box.checked) this.#selected.add(record);
       else this.#selected.delete(record);
     }
-    this.#syncSelectAll();
+    this.#syncSelected();
     this.#emitSelection();
   }
 
@@ -1761,7 +1762,7 @@ export class SherpaDataGrid extends SherpaElement {
     }
 
     this.#renderBody();
-    this.#syncSelectAll();
+    this.#syncSelected();
     this.#syncGroupSelects();
     this.#emitSelection();
   };
@@ -1773,9 +1774,11 @@ export class SherpaDataGrid extends SherpaElement {
       .filter((r): r is GridRow => r !== undefined);
   }
 
-  /** Reflect all/none/indeterminate on the header select-all box. */
-  #syncSelectAll(): void {
+  /** Mark each ticked ROW, which CSS paints, and reflect all / some / none on
+   *  the header box. TRAP T-firefox-never-rereads-a-has-after-host */
+  #syncSelected(): void {
     const all = this.#rowBoxes();
+    for (const box of all) box.closest('.row')?.toggleAttribute('data-selected', box.checked);
     const selectAll = this.$<SelectBox>('.select-all');
     if (!selectAll) return;
     const checked = all.filter((b) => b.checked).length;
@@ -1864,7 +1867,7 @@ export class SherpaDataGrid extends SherpaElement {
     // The boxes are stamped from #selected on every render, so a rebuild writes
     // the ticks — one path, not two.
     this.#renderBody();
-    this.#syncSelectAll();
+    this.#syncSelected();
     this.#syncGroupSelects();
   }
 
@@ -1973,7 +1976,7 @@ export class SherpaDataGrid extends SherpaElement {
     const visible = this.#visibleRows().length;
     this.toggleAttribute('data-no-matches', visible === 0 && this.#rows.length > 0);
     // DERIVE the select-all: a filter changes what is VISIBLE, not what is chosen.
-    this.#syncSelectAll();
+    this.#syncSelected();
     this.#syncGroupSelects();
 
     this.emit('filter-change', {

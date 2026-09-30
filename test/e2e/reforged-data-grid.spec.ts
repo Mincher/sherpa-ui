@@ -1067,6 +1067,7 @@ test('the header grip resizes a column, clamps it, and does not sort', async ({ 
 /**
  * Row states are two channels: SELECTED swaps the row's base for the active
  * one, FOCUSED mixes its grey over whichever base is there.
+ * TRAP T-firefox-never-rereads-a-has-after-host
  */
 test('a SELECTED row paints the active base; focused mixes the grey over it', async ({ page }) => {
   const r = await page.evaluate(async (config) => {

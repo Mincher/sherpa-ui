@@ -2116,6 +2116,10 @@ functionality while still working in the primary content space."*
 - **Rows.** Selected is the active base; hover and focused are a grey MIXED
   over whichever base the row has. The old selected rule never matched —
   `:checked` does not match a custom element — so a ticked row had no fill.
+- **Firefox, the same day.** It never re-read the selected rule — a `:has()`
+  after `:host(…)` — so a ticked row kept its old fill there. The grid marks
+  the row `data-selected` now, and CSS selects that.
+  `T-firefox-never-rereads-a-has-after-host`
 - **An empty forwarded slot no longer reads as filled**, in `SherpaElement`:
   the panel's empty description slot drew an empty strip under every heading.
   `T-slot-guards-only-when-filled`
@@ -3209,6 +3213,7 @@ One line each. The detail is in git and in the trap named.
 - 22: an overlay panel is wider, and resizes from its left edge — `T-an-overlay-panel-resizes-from-its-left-edge`
 - 23: a grid row opens its details in an overlay panel; the chevrons step it; the trail names it — `T-a-current-row-opens-its-details`
 - 145: the details panel follows Figma's Panel header, has no scrim, and a selected row paints the active base
+- 145, more: Firefox never re-reads a `:has()` after `:host()`, so the grid marks a selected row itself — `T-firefox-never-rereads-a-has-after-host`
 - 24: the accessibility gate — axe-core over a fixture of every component, a report each, a baseline that may only fall — `T-the-a11y-gate-reads-shadow-roots`; 117 and 118 are what it found
 - 117: 11 of the 12 structural accessibility failures are fixed; the accordion's actions slot waits on Will — `T-a-menu-is-a-dialog-of-native-controls`
 - 67: `sherpa-router` owns the URL, on the Navigation API; the example app routes through it — `T-the-router-owns-the-url`

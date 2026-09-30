@@ -193,6 +193,31 @@ silently destroy column sizing here.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
+### T-firefox-never-rereads-a-has-after-host
+
+In Firefox 155, a `:has()` rule whose selector begins with `:host(…)` matches
+at first paint and is never read again. `el.matches()` says true; the computed
+style does not change until something else restyles the element.
+
+```css
+:host(:not([data-select="single"])) .row:has(.row-multi[checked]) { … }  /* stale */
+.row:has(.row-multi[checked]) { … }                                     /* re-read */
+```
+
+Measured alone, one rule per page: the bare form updates, and `:host`,
+`:host([attr])` and `:host(:not(…))` before it do not. A ticked grid row kept
+its old fill, and an unticked one its selected fill. Chromium and WebKit
+re-read both forms.
+
+So a state a `:host()` would gate is marked ON THE ELEMENT by its owner — the
+grid writes `data-selected` on the row from the shown box — and CSS selects
+that.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
+- Site: `test/e2e/reforged-data-grid.spec.ts`
+
+
 ---
 
 ## Events and listeners

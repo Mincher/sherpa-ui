@@ -655,10 +655,9 @@ sherpa-menu[data-range] .head-filter-value { display: none; }
   }
 }
 
-/* SELECTED: the active mode's base. `[checked]` on the SHOWN box of the two —
-   `:checked` never matches a custom element. */
-:host(:not([data-select="single"])) .row:has(.row-multi[checked]),
-:host([data-select="single"]) .row:has(.row-one[checked]) {
+/* SELECTED: the active mode's base. The grid marks the row.
+   TRAP T-firefox-never-rereads-a-has-after-host */
+.row[data-selected] {
   --_row-base: var(--sherpa-style-active-surface-base, #f2dfff);
 }
 
