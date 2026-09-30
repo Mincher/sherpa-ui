@@ -5,6 +5,7 @@
  * Map:
  * - namePrompt — wire one Name dialog; returns ask(value), which resolves the name, or null
  * - confirmPrompt — wire one Confirm dialog; returns ask(question), which resolves true or false
+ * - resetPrompt — wire the Reset all dialog; returns ask(), which resolves null, or the name to save under first
  */
 
 /**
@@ -67,6 +68,60 @@ export function confirmPrompt(dialog, signal) {
     if (critical) dialog.dataset.status = 'critical';
     if (text) text.textContent = words;
     if (ok) ok.textContent = action;
+    dialog.show();
+  });
+}
+
+/**
+ * The Reset all dialog: a `<p>`, a switch that shows ONE name field, and a
+ * footer of Cancel, then the action. It resolves null for no; else `{ save }`
+ * — the name to keep the filters under first, or null. With the switch on a
+ * name is needed: the action with none leaves the dialog open. TODO 129.
+ */
+export function resetPrompt(dialog, signal) {
+  const toggle = dialog.querySelector('sherpa-switch');
+  const field = dialog.querySelector('sherpa-input-text');
+  const [cancel, ok] = dialog.querySelectorAll('sherpa-container-footer sherpa-button');
+  let waiting = null;
+  const answer = (value) => {
+    const done = waiting;
+    waiting = null;
+    done?.(value);
+  };
+  const saving = () => !!toggle?.checked;
+  const reveal = () => {
+    if (!field) return;
+    field.hidden = !saving();
+    if (saving()) field.focus();
+  };
+  const commit = () => {
+    if (!waiting) return;
+    const name = String(field?.value ?? '').trim();
+    if (saving() && !name) {
+      field?.setAttribute('data-error', 'Enter a name to save the filters under.');
+      field?.focus();
+      return;
+    }
+    answer({ save: saving() ? name : null });
+    dialog.close();
+  };
+  toggle?.addEventListener('change', reveal, { signal });
+  ok?.addEventListener('button-click', commit, { signal });
+  cancel?.addEventListener('button-click', () => dialog.close(), { signal });
+  field?.addEventListener('input', () => field.removeAttribute('data-error'), { signal });
+  field?.addEventListener('keydown', (e) => { if (e.key === 'Enter') commit(); }, { signal });
+  dialog.addEventListener('dialog-close', () => answer(null), { signal });
+
+  return () => new Promise((resolve) => {
+    answer(null);
+    waiting = resolve;
+    // Off each time: a save is asked for, never left on.
+    if (toggle) toggle.checked = false;
+    if (field) {
+      field.value = '';
+      field.removeAttribute('data-error');
+    }
+    reveal();
     dialog.show();
   });
 }

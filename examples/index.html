@@ -99,6 +99,24 @@
       <sherpa-button data-look="saturated"></sherpa-button>
     </sherpa-container-footer>
   </sherpa-dialog>
+  <!-- RESET ALL TO DEFAULT asks first, and can keep what is on screen under a
+       name before it goes. TODO 129. TRAP T-reset-to-default-is-the-views-own -->
+  <sherpa-dialog id="reset-confirm" data-heading="Reset all to default?">
+    <sherpa-stack>
+      <p style="margin: 0">This resets every filter, in every scope, to the View's default.</p>
+      <sherpa-list>
+        <sherpa-list-item data-label="Save filters before reset"
+                          data-description="Keep the filters on screen as a saved View.">
+          <sherpa-switch slot="trailing" id="reset-save"></sherpa-switch>
+        </sherpa-list-item>
+      </sherpa-list>
+      <sherpa-input-text data-label="Name" placeholder="My filters" autocomplete="off" hidden></sherpa-input-text>
+    </sherpa-stack>
+    <sherpa-container-footer slot="footer">
+      <sherpa-button>Cancel</sherpa-button>
+      <sherpa-button data-look="saturated">Reset all</sherpa-button>
+    </sherpa-container-footer>
+  </sherpa-dialog>
 
   <!-- The assistant: sherpa-overlay-panel is a <dialog> opened with show(), not
        showModal(), so the page behind stays live. Outside the app-shell so a
@@ -127,7 +145,7 @@
     import { RECORDS_VIEWS } from '/examples/definitions/records-views.js';
     // The SAME URLs the Contexts import, or each gets a store of its own. TRAP T-two-urls-are-two-modules
     import { customerStore, customersReady } from './contexts/records-data.js';
-    import { confirmPrompt, namePrompt } from './contexts/ask-name.js';
+    import { confirmPrompt, namePrompt, resetPrompt } from './contexts/ask-name.js';
     import { alertStore } from './contexts/dashboard-data.js';
 
     // Font Awesome must be in the DOCUMENT too: sharedStyles carries the class
@@ -547,6 +565,25 @@
       });
       if (yes && await provider.deleteView()) void refreshNav();
     });
+
+    /* ── Reset all to default — it asks first ─────────────────────────────
+       The bar's and the panel's menu row is a REQUEST the provider answers by
+       itself; asked in CAPTURE and prevented, the app takes it over. With
+       "Save filters before reset" on, what is on screen is kept as a saved
+       View first, and the page stays on its own View. TODO 129.
+       TRAP T-reset-to-default-is-the-views-own */
+    const confirmReset = resetPrompt(document.querySelector('#reset-confirm'));
+    provider.addEventListener('view-reset', async (event) => {
+      event.preventDefault();
+      const answer = await confirmReset();
+      if (!answer) return;
+      if (answer.save) {
+        // Not saved, so not reset: the filters are still on screen to try again.
+        if (!await provider.saveView(answer.save, { stay: true })) return;
+        void refreshNav();
+      }
+      await provider.resetView();
+    }, { capture: true });
 
     /* ── Settings — an overlay on the Context ─────────────────────────────
        The URL's `settings` is the ONE owner. The settings button, the back

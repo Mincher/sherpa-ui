@@ -52,7 +52,7 @@
     filter-delete        — a saved filter's Delete: it is off the bar. detail: { id }
     filter-add           — the Add chip's body was clicked
     filter-clear         — the undo button: every chip reset
-    view-reset           — Reset to default: put back the View's own filters
+    view-reset           — Reset all to default: put back the View's own filters, in every scope. Cancelable
     ai-filter-request    — the AI button
     data-refresh         — the refresh button
     view-save            — Save (view type)
@@ -103,7 +103,7 @@
       <sherpa-button class="act" data-size="sm" data-act="ai" data-type="icon"
                      data-icon-start="wand-magic-sparkles"
                      aria-label="Suggest filters"></sherpa-button>
-      <!-- RESET, and its menu: Reset to default. Will, TODO 109.
+      <!-- RESET, and its menu: Reset all to default. Will, TODO 109 and 129.
            TRAP T-reset-to-default-is-the-views-own -->
       <span class="reset-group sherpa-group">
         <sherpa-button class="act" data-size="sm" data-act="clear" data-group="start"
@@ -113,7 +113,7 @@
                        data-group="end" data-icon-start="triangle-down"
                        aria-label="Reset options" aria-haspopup="dialog">
           <sherpa-menu slot="menu" data-align="end">
-            <button type="button" value="reset-default">Reset to default</button>
+            <button type="button" value="reset-default">Reset all to default</button>
           </sherpa-menu>
         </sherpa-button>
       </span>

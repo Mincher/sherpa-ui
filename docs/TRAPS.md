@@ -1289,6 +1289,21 @@ pick puts it on. So a filter the reader ADDED since goes, as it is not the
 View's. A page may call `resetView()` itself. Reset and its ▾ are one
 `.sherpa-group`, like Save and its ▾; folded, the ⋮ lists both.
 
+**The row reads "Reset all to default", and the ask is CANCELABLE** — Will,
+TODO 129: it *"should throw a confirmation sherpa dialog informing the user
+that it will reset all filters across all scopes to the view default"*, with
+a switch to *"Save filters before reset"* and a name. A dialog is the APP's,
+as the Save view ones are, so the library only makes room for it: the
+provider answers `view-reset` unless it was prevented, and an app that asks
+first listens in CAPTURE on the provider, prevents it, and calls
+`resetView()` when the reader says yes. The save is
+`provider.saveView(name, { stay: true })`: what is on screen is kept as the
+reader's own View, and the page STAYS on its View — a plain save moves to
+the saved one, and a reset after that would put back what was just saved.
+Not saved means not reset. When 105's saved filter sets are ruled, the save
+moves to them.
+
+- Site: `examples/index.html`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`

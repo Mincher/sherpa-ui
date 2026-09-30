@@ -328,7 +328,7 @@ export class SherpaProvider extends SherpaElement {
     }
     const shipped = options.views;
     const library = shipped ? (): ViewLibrary => ({ ...shipped, ...loadSavedViews(definition.id) }) : null;
-    // The page as DEFINED, before a kept Query: what Reset to default starts from.
+    // The page as DEFINED, before a kept Query: what Reset all to default starts from.
     const initial = structuredClone(source.query.applied);
     this.#opened = { id: definition.id, store: def.store, source, library, initial };
     // A View this page does not have is the first.
@@ -337,7 +337,11 @@ export class SherpaProvider extends SherpaElement {
     await Promise.all([this.#drawBars(view), this.#configure(definition.ui ?? {})]);
     if (page.signal.aborted) return undefined;
     source.addEventListener('scope-change', () => this.#offer(), { signal: page.signal });
-    this.addEventListener('view-reset', () => void this.resetView(), { signal: page.signal });
+    /* A REQUEST. A host that asks the reader first — a confirm dialog —
+       prevents it, and calls resetView() itself. TRAP T-reset-to-default-is-the-views-own */
+    this.addEventListener('view-reset', (event) => {
+      if (!event.defaultPrevented) void this.resetView();
+    }, { signal: page.signal });
     await this.provide({
       sources: { [definition.id]: source },
       ...(library ? {
@@ -360,9 +364,11 @@ export class SherpaProvider extends SherpaElement {
    * chip. With a name, a NEW View — a name any View has already gets ` -
    * Copy-001`. With none, over the reader's own View on screen; a preset is
    * never overwritten, so that answers undefined. The saved View's id, else
-   * undefined. TRAP T-a-view-is-json · TRAP T-a-saved-view-is-the-readers-own
+   * undefined. `stay`: keep it for later, and stay on the View on screen — the
+   * save before a Reset all to default.
+   * TRAP T-a-view-is-json · TRAP T-a-saved-view-is-the-readers-own
    */
-  async saveView(label?: string): Promise<string | undefined> {
+  async saveView(label?: string, options: { stay?: boolean } = {}): Promise<string | undefined> {
     const opened = this.#opened;
     if (!opened?.library) return undefined;
     const own = this.#view ? loadSavedViews(opened.id)[this.#view] : undefined;
@@ -373,10 +379,11 @@ export class SherpaProvider extends SherpaElement {
     // Read BEFORE the redraw: a rebuilt bar's first report is empty.
     const kept = opened.source.query.applied;
     const id = labelId(name);
-    await this.#drawBars(id);
+    // The View chip lists it either way; only a plain save moves to it.
+    await this.#drawBars(options.stay ? this.#view : id);
     await opened.source.setQuery(kept);
     // Reported, so the URL and the nav follow the View just saved.
-    this.#viewBar()?.report?.();
+    if (!options.stay) this.#viewBar()?.report?.();
     return id;
   }
 
@@ -413,7 +420,7 @@ export class SherpaProvider extends SherpaElement {
   /**
    * Put the filters back as the View on screen DEFINES them: the page's first
    * Query, then the View's, as a pick puts it on. A filter the reader added
-   * since goes. What "Reset to default" does. TRAP T-reset-to-default-is-the-views-own
+   * since goes. What "Reset all to default" does. TRAP T-reset-to-default-is-the-views-own
    */
   async resetView(): Promise<void> {
     const opened = this.#opened;

@@ -1557,8 +1557,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         this.clearAll();
         break;
       case 'reset-default':
-        // The View's OWN filters — only its provider knows them. TRAP T-reset-to-default-is-the-views-own
-        this.emit('view-reset');
+        /* The View's OWN filters — only its provider knows them. CANCELABLE: a
+           host that asks the reader first takes it over.
+           TRAP T-reset-to-default-is-the-views-own */
+        this.dispatchEvent(new CustomEvent('view-reset', { bubbles: true, composed: true, cancelable: true, detail: {} }));
         break;
       case 'refresh':
         this.emit('data-refresh');
@@ -1602,7 +1604,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
     const first: HTMLElement[] = [];
     if (folded(act('ai'))) first.push(row('ai', 'Suggest filters'));
-    if (folded(act('clear'))) first.push(row('clear', 'Reset filters'), row('reset-default', 'Reset to default'));
+    if (folded(act('clear'))) first.push(row('clear', 'Reset filters'), row('reset-default', 'Reset all to default'));
     // The PAGE's buttons in the `actions` slot — the panel switch is one.
     [...this.querySelectorAll<HTMLElement>(':scope > [slot="actions"]')].forEach((extra, i) => {
       if (folded(extra)) first.push(row(`extra:${i}`, extra.getAttribute('aria-label') ?? extra.textContent?.trim() ?? ''));

@@ -99,7 +99,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31f | 123 | An inactive chip KEEPS its match count badge; it goes only when every value and condition is removed | feature |
 | ✅ | 31g | 125 | The sort tooltip names the direction as well as the field | quick |
 | ✅ | 31h | 126 | "Filter applied at higher scope" becomes "Filter moved to `<scope name>` scope" | quick |
-| ⬜ | 31i | 129 | "Reset all to default", with a confirm dialog and a "Save filters before reset" switch | feature |
+| ✅ | 31i | 129 | "Reset all to default", with a confirm dialog and a "Save filters before reset" switch | feature |
 | ✅ | 31j | 133 | The results count badge shows at the right of a filter panel SECTION header, where it fits | feature |
 | ✅ | 31k | 134 | A number filter menu has Reset, not Clear: its field and slider handles go back to their original values | feature |
 | ✅ | 31l | 135 | A calendar with limited dates: a Month or Year with no date to pick is inactive too | feature |
@@ -110,6 +110,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31p | 141 | Advanced is an icon button again — f(x), at the right of the section or menu header, active when on | quick |
 | ⬜ | 31q | 144 | A View's filters survive a swap to another View — a draft per View, for the session, and across sessions; two settings, on by default | feature |
 | ✅ | 31r | 171 | The filter panel's search matches FIELD labels as well as value labels | feature |
+| ⬜ | 31s | 172 | In the filter panel, each chip of a multi-value filter shows its own count badge | feature |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
 | ✅ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
@@ -1564,6 +1565,14 @@ provider passes it to `source.bind()`, and `describe(scope)` reports `shows`
 whole file) — so a chart's section shows none, and `table-columns` stands in:
 that is 115. `T-a-scope-says-what-it-shows`
 
+### `[ ]` 172 — In the filter panel, each value chip shows its own count
+
+Will, 2026-09-30: *"For multi value filters in the filter panel each chip
+should show their own count badge."*
+
+Until now a value chip had no count: the field's header carries the field's
+count (133), and 130 noted "a count per value is not asked for". Now it is.
+
 ### `[x]` ✅ 171 — The filter panel's search matches field labels too
 
 Will, 2026-09-30: *"Search in the filter panel should search field labels as
@@ -2082,7 +2091,7 @@ pick: the View's heading is "View filters", so the sentence drops "filters"
 and says "View scope", not "View filters scope". Will, 2026-09-30: "That's
 ok." `T-an-inactive-chip-says-where-its-filter-went`
 
-### `[ ]` 129 — "Reset all to default", with a confirm dialog and "Save filters before reset"
+### `[x]` ✅ 129 — "Reset all to default", with a confirm dialog and "Save filters before reset"
 
 Will, 2026-09-30: *"'Reset to default' in filter toolbars should be renamed to
 'Reset all to default'. It should throw a confirmation sherpa dialog informing
@@ -2095,6 +2104,23 @@ the provided name, before all filters are reset."*
 
 Builds on 109 (the Reset menu). The save is 105's "every scope under one
 name", which still waits on a ruling.
+
+**✅ Done 2026-09-30.** The row reads "Reset all to default" on a bar, in the
+panel and in the ⋮ menu. It opens a Sherpa dialog: "This resets every
+filter, in every scope, to the View's default", Cancel and Reset all. The
+switch "Save filters before reset" shows a Name field. On, with no name,
+Reset all stays open and says "Enter a name to save the filters under". With
+a name, the filters on screen are saved first, then everything resets, and
+the page stays on its own View.
+
+**One thing to know:** the save is a saved VIEW — the View chip lists it
+under your own Views, and picking it puts every scope's filters back. It is
+the one store that holds every scope under one name today. When you rule on
+105 (saved filter sets), the save moves there.
+
+In the library: `view-reset` is cancelable, and `provider.saveView(name,
+{ stay: true })` saves without leaving the View on screen. The dialog is the
+example app's (`#reset-confirm`, `resetPrompt`), as the Save view dialogs are.
 
 ### `[x]` ✅ 133 — The results count badge, at the right of a filter panel section header
 
@@ -3812,6 +3838,7 @@ One line each. The detail is in git and in the trap named.
 - 130: the chip reads, draws and empties its own answer — `reading`, `clear()`, `answered`; the toolbar and the panel's date use it — `T-a-chip-says-its-own-answer`
 - 49: every saved filter chip opens a menu that lists its conditions, a heading per field — `T-a-saved-chip-lists-its-conditions`
 - 171: the filter panel's search matches a field's name too, and then shows the whole field
+- 129: Reset all to default asks first, and can save what is on screen as a View before it resets — `T-reset-to-default-is-the-views-own`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

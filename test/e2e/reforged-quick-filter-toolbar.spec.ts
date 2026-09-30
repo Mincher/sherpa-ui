@@ -379,7 +379,7 @@ test('the ⋮ menu lists every folded action in order, and a row does what its b
 
   expect(r.collapse).toBe('3');
   expect(r.rows).toEqual([
-    'Suggest filters', 'Reset filters', 'Reset to default', 'View as filter panel', '---',
+    'Suggest filters', 'Reset filters', 'Reset all to default', 'View as filter panel', '---',
     'Favorite', 'Save view', 'Save view as', 'Refresh view',
   ]);
   expect(r.heard).toEqual(['data-refresh', 'view-save', 'extra']);

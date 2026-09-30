@@ -235,7 +235,8 @@ export class SherpaFilterPanel extends SherpaElement {
     this.$('.reset-more')?.addEventListener('menu-select', (event) => {
       if ((event as CustomEvent).detail?.value !== 'reset-default') return;
       event.stopPropagation();
-      this.emit('view-reset');
+      // CANCELABLE: a host that asks the reader first takes it over.
+      this.dispatchEvent(new CustomEvent('view-reset', { bubbles: true, composed: true, cancelable: true, detail: {} }));
     });
     this.$('.search')?.addEventListener('input', this.#onSearch);
     // ONE listener for every drawn control — a field added later needs no wiring.
