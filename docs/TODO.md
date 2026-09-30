@@ -70,6 +70,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 21b | 109 | Reset has a label, and a menu button: "Reset to default" puts back the View's own filters | feature |
 | ✅ | 22 | 97 | A filter panel section shows an icon for WHAT it filters: View, Chart, Grid, Form, List | quick |
 | ❓ | 22a | 115 | Figma: a chart glyph and a table glyph for the panel's section icons | figma |
+| ✅ | 22b | 154 | A data viz section in the filter panel has a chart icon | quick |
 | ✅ | 23 | 60 | Once applied, a chip's badge shows the number of results | feature |
 | ❓ | 24 | 49 | A preset Advanced chip shows its conditions, read-only | feature |
 | ⬜ | 25 | 50 | A reader's saved Advanced chip shows its conditions, editable | feature |
@@ -1365,6 +1366,16 @@ provider passes it to `source.bind()`, and `describe(scope)` reports `shows`
 `table-columns`. **Figma has no chart glyph and no table glyph** (searched the
 whole file) — so a chart's section shows none, and `table-columns` stands in:
 that is 115. `T-a-scope-says-what-it-shows`
+
+### `[x]` ✅ 154 — A data viz section in the filter panel has a chart icon
+
+Will, 2026-09-30, a minor one: *"An accordion for data viz filters, in the
+filter panel, should have a chart icon."*
+
+**✅ Done 2026-09-30.** A chart's section wears `reports` — three bars. It is
+the one chart glyph in the icon set now; the others near it are `gauge`,
+`dashboard` (four squares) and `insights` (a light bulb). If you draw a chart
+glyph in Figma (115), it is one word to change in `SHOWS_ICON`.
 
 ### `[ ]` 115 — Figma: a chart glyph and a table glyph for the panel's section icons
 
@@ -3462,6 +3473,7 @@ One line each. The detail is in git and in the trap named.
 - 149: queued — the legend's items become swatch chips
 - 148: an emptied date range holds no ends — the chip read `undefined` after a Reset
 - 121: a panel field's Clear and Send to are one button group
+- 154: a chart's section in the filter panel wears the `reports` glyph
 - 133: a panel field's header wears its results badge, right of the title; a chart's own field too — `T-a-chip-counts-its-own-results`
 - 135: a calendar's Month and Year views disable what holds no day to pick
 - 134: a number menu has Reset — the field empties and the handles go back, both shapes; Clear had done nothing to a number — `T-a-number-is-reset-not-cleared`

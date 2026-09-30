@@ -137,10 +137,10 @@ export interface PanelScope {
   sortDirection?: 'asc' | 'desc';
 }
 
-/** A scope's icon, for what it narrows. No chart glyph exists in Figma yet (TODO 97).
- *  TRAP T-a-scope-says-what-it-shows */
+/** A scope's icon, for what it narrows. A chart wears `reports` — three bars,
+ *  the one chart glyph in the set. TRAP T-a-scope-says-what-it-shows */
 const SHOWS_ICON: Partial<Record<ScopeShows, string>> = {
-  view: 'monitor', grid: 'table-columns', form: 'file-lines', list: 'list',
+  view: 'monitor', chart: 'reports', grid: 'table-columns', form: 'file-lines', list: 'list',
 };
 
 /** What one drawn field holds. */

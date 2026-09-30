@@ -1232,8 +1232,8 @@ chart, a form (`file-lines`), a list (`list`). Will, TODO 97; in its header,
 caret, icon, label. The kind comes from the COMPONENT: its `asks.shows`, which
 the provider passes to `source.bind()`, and `describe(scope)` reports as
 `shows` — never a tag name, so a new grid-like component says what it is
-itself. Figma has no chart glyph yet, so a chart's section shows none; and
-`table-columns` stands in for a table glyph.
+itself. Figma has no chart glyph of its own yet, so a chart's section wears
+`reports` (three bars), and `table-columns` stands in for a table glyph.
 
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/ui/context.ts`

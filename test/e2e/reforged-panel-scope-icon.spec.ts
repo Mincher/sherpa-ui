@@ -27,9 +27,9 @@ test('on Records, each panel section wears the icon for what it filters, after i
     });
   })).toEqual([
     { scope: 'view', icon: 'monitor', drawn: true, order: true },
-    // A chart's own section (52). Figma has no chart glyph yet — that is 115.
-    { scope: 'picks:r-bar-legend', icon: null, drawn: false, order: true },
-    { scope: 'picks:r-donut-legend', icon: null, drawn: false, order: true },
+    // A chart's own section (52) wears the three-bar glyph. Will, TODO 154.
+    { scope: 'picks:r-bar-legend', icon: 'reports', drawn: true, order: true },
+    { scope: 'picks:r-donut-legend', icon: 'reports', drawn: true, order: true },
     { scope: 'data', icon: 'table-columns', drawn: true, order: true },
   ]);
 });
