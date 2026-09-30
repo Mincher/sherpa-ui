@@ -123,6 +123,7 @@ export const FIXTURES = {
     html: '<sherpa-key-value-list data-orientation="vertical"></sherpa-key-value-list>',
     fill: [{ at: 'sherpa-key-value-list', data: [{ key: 'Plan', value: 'Pro' }, { key: 'Seats', value: '12' }] }],
   },
+  'sherpa-layout-canvas': { html: '<sherpa-layout-canvas style="inline-size: 640px; block-size: 360px"><div style="--x: 40px; --y: 40px">A card on the canvas</div></sherpa-layout-canvas>' },
   'sherpa-layout-grid': { html: '<sherpa-layout-grid><div data-col-span="medium">One</div><div data-col-span="medium">Two</div></sherpa-layout-grid>' },
   'sherpa-line-chart': {
     html: '<sherpa-container><sherpa-data-viz-header slot="header" data-heading="Alerts over time"></sherpa-data-viz-header><sherpa-line-chart data-type="area"></sherpa-line-chart></sherpa-container>',

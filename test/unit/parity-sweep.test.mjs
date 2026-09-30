@@ -67,6 +67,7 @@ const KNOWN = {
   'sherpa-notifications.unreadCount': 'ok: populate() — derived from the items',
   'sherpa-quick-filter.menu': 'ok: the slotted <… slot="menu"> element IS the write',
   'sherpa-quick-filter.answered': 'ok: the `reading` setter, the `values` setter, or clear()',
+  'sherpa-layout-canvas.view': 'ok: panTo(x, y) and zoomTo(zoom), or data-zoom',
   'sherpa-quick-filter-toolbar.active': 'ok: populate() — a def carries `active: true`',
   'sherpa-quick-filter-toolbar.savedReadings': 'ok: populate() — a def carries `readings`; `active: true` turns it on',
   'sherpa-quick-filter-toolbar.presets': 'ok: populate() — a def carries `readings`; setChipActive() turns it on or off',

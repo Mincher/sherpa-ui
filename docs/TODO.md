@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**37 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**36 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -144,7 +144,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 45 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
 | ✅ | 45a | 136 | A FIND input: jump to the next or previous match; an optional Find & Replace menu | component |
 | ✅ | 46 | 27 | A consumer can supply their OWN templates and CSS | feature |
-| ⬜ | 47 | 25 | `sherpa-layout-canvas` + minimap | component |
+| ✅ | 47 | 25 | `sherpa-layout-canvas` + minimap | component |
 | ❓ | 48 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
 | ⬜ | 48a | 170 | MAJOR, LAST, and only when Will says — the data layer runs on the client, the server, or both, whole or in parts | explore |
 | | | | **J — Tidy-ups and renames** | |
@@ -3301,7 +3301,7 @@ OWN template file, not the spec: each template id, part, slot name and
 class it has — its code reaches for them. What yours lacks is reported
 (`template-missing`), never thrown. `T-a-templater-owns-the-files`
 
-### `[ ]` 25 — `sherpa-layout-canvas` — an infinite canvas content area
+### `[x]` ✅ 25 — `sherpa-layout-canvas` — an infinite canvas content area
 
 Pans and zooms without an edge, on a CROSSHAIR grid pattern. A floating button
 group at the BOTTOM RIGHT: Pan, Zoom in, Zoom out, Options (a menu). Compose
@@ -3311,6 +3311,26 @@ from `sherpa-button` and the menu; do not hand-roll either.
 moves the viewport from it. PART OF the canvas, not its own component: it needs
 the canvas's pan and zoom, and a separate element would be a second owner of
 one value. Split it out only if a second host wants one.
+
+**✅ Done 2026-09-30.** `<sherpa-layout-canvas>`: it pans and zooms with no
+edge, on a crosshair grid that moves and scales with it. Content sits where
+its `--x` and `--y` say. Pan, Zoom in, Zoom out and Options float at the
+bottom right as one group; Options holds Fit to content, Zoom to 100% and
+Hide minimap. The minimap, at the bottom left, draws each piece and the
+view; a press or a drag on it moves the view.
+
+A wheel pans, and Ctrl or ⌘ with it — a trackpad pinch — zooms about the
+pointer. The arrows pan, + and − zoom, 0 is 100%. With the Pan tool on, a
+drag anywhere pans; off, only a drag on the empty canvas does, so the
+content keeps its own clicks. The canvas owns its view and reports each
+move (`canvas-change`). `T-a-canvas-owns-its-view`
+
+Two things to know:
+
+- **There is no hand icon** in the icon set, so Pan wears
+  `diverging-arrows`. Say which icon you want, or add a hand to Figma.
+- **It is on no example page yet** — it is in the sandbox
+  (`npm run sandbox`). 78, the workflow creator, is where it would live.
 
 ### `[ ]` ❓ 26 — A `Grouped` mode for the content area
 
@@ -4282,6 +4302,7 @@ One line each. The detail is in git and in the trap named.
 - 84: the platform formats the delta and the upload size (`Intl`), and the calendar counts its days (`Temporal`)
 - 136: a Find input steps through a host's matches; Find & Replace asks, and Replace all asks first — on Records, the grid's toolbar — `T-a-find-asks-its-host-to-step`
 - 68, 27: the templater owns a component's files — your own markup and sheets by `useTemplate`, and a live reload that restyles in place — `T-a-templater-owns-the-files`
+- 25: `sherpa-layout-canvas` — an infinite canvas that pans and zooms, with a minimap and four floating controls — `T-a-canvas-owns-its-view`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

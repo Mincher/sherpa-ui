@@ -195,6 +195,7 @@ export { SherpaDataGrid, type GridColumn } from './components/sherpa-data-grid/s
 export { SherpaQuickFilterToolbar, type QuickFilterDef } from './components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js';
 export { SherpaAppShell } from './components/sherpa-app-shell/sherpa-app-shell.js';
 export { SherpaLayoutGrid } from './components/sherpa-layout-grid/sherpa-layout-grid.js';
+export { SherpaLayoutCanvas } from './components/sherpa-layout-canvas/sherpa-layout-canvas.js';
 export { SherpaGroup } from './components/sherpa-group/sherpa-group.js';
 export { SherpaProvider, type ProvideOptions, type ProviderState } from './components/sherpa-provider/sherpa-provider.js';
 export { SherpaRouter, type RouteChange } from './components/sherpa-router/sherpa-router.js';

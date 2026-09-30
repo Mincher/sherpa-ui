@@ -15353,6 +15353,35 @@ attribute: an attribute check passes on exactly the bug.
 - Site: `test/e2e/reforged-host-label.spec.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 
+### T-a-canvas-owns-its-view
+
+**An infinite canvas OWNS its view — the pan and the zoom — as a grid owns
+its scroll, and REPORTS each move** (`canvas-change { x, y, zoom }`). Will,
+TODO 25. A host that must set it uses `panTo`, `zoomTo`, `fit()` or
+`data-zoom`; the canvas writes `data-zoom` back, rounded to three places,
+and a change to the value it just wrote is not heard as a host's.
+
+- **The view is three custom properties** on the host — `--_x`, `--_y`,
+  `--_zoom` — and everything that moves reads them: the plane's transform,
+  the crosshair grid's mask position and size. The grid is a MASK over a
+  token colour, so the crosses follow the theme.
+- **Content says where it sits** with `--x` and `--y` on the plane — CSS,
+  no JS placement.
+- **A drag pans only off the content**, unless the Pan tool is on
+  (`data-panning`, which also turns the content's own pointer events off) or
+  it is the middle button. Ctrl or ⌘ with the wheel — a trackpad's pinch —
+  zooms about the pointer; a plain wheel pans.
+- **The minimap is PART of the canvas.** A second element would be a second
+  owner of one value. It draws each piece of content and the view, scaled
+  to the box round both; a press or a drag on it puts the view's middle there.
+- `setPointerCapture` throws on a synthetic pointer in Firefox; both drags
+  catch it and follow the pointer's own events.
+
+- Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.ts`
+- Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.html`
+- Site: `src/components/sherpa-layout-canvas/sherpa-layout-canvas.css`
+- Site: `test/e2e/reforged-layout-canvas.spec.ts`
+
 ### T-a-templater-owns-the-files
 
 **A component's markup and sheets come from ONE imported helper,

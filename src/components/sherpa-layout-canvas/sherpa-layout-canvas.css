@@ -1,0 +1,119 @@
+/**
+ * sherpa-layout-canvas.css — the view, the crosshair grid, the minimap and the
+ * floating controls. The pan and the zoom are `--_x`, `--_y` and `--_zoom`,
+ * written by the canvas; everything that moves reads them.
+ * TRAP T-a-canvas-owns-its-view
+ */
+
+:host {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  block-size: 100%;
+  min-block-size: 20rem;
+  --_x: 0px;
+  --_y: 0px;
+  --_zoom: 1;
+  /* One grid step, on the spacing grid; it scales with the zoom. */
+  --_step: var(--sherpa-display-mode-size-xl, 24px);
+  --_inset: var(--sherpa-display-mode-space-base, 16px);
+  background: var(--sherpa-style-surface-base, #ffffff);
+}
+
+/* ── The view ─────────────────────────────────────────────────────────── */
+.viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
+}
+.viewport:focus-visible {
+  outline: none;
+  box-shadow: var(--sherpa-focus-ring);
+}
+
+/* THE GRID: a cross at every step, moving and scaling with the plane. A MASK,
+   so the cross wears a token rather than a colour baked into an image. */
+.viewport::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-color: var(--sherpa-style-border-base, #b3b3c3);
+  --_cell: calc(var(--_step) * var(--_zoom));
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 9v6M9 12h6' stroke='black'/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 9v6M9 12h6' stroke='black'/%3E%3C/svg%3E");
+  mask-size: var(--_cell) var(--_cell);
+  -webkit-mask-size: var(--_cell) var(--_cell);
+  /* The cross sits mid-cell; half a cell back puts one on every step. */
+  mask-position: calc(var(--_x) - var(--_cell) / 2) calc(var(--_y) - var(--_cell) / 2);
+  -webkit-mask-position: calc(var(--_x) - var(--_cell) / 2) calc(var(--_y) - var(--_cell) / 2);
+}
+
+/* The PLANE: the content's own space, moved and scaled as one. */
+.plane {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  transform: translate(var(--_x), var(--_y)) scale(var(--_zoom));
+  transform-origin: 0 0;
+}
+
+/* Content sits where it says: `--x` and `--y` on the plane. */
+::slotted(*) {
+  position: absolute;
+  left: var(--x, 0px);
+  top: var(--y, 0px);
+}
+
+/* The Pan tool: a drag anywhere moves the view, and the content does not hear it. */
+:host([data-panning]) .viewport { cursor: grab; }
+:host([data-panning]) .plane { pointer-events: none; }
+:host([data-dragging]) .viewport { cursor: grabbing; }
+
+/* ── The controls ─────────────────────────────────────────────────────── */
+.controls {
+  position: absolute;
+  inset-block-end: var(--_inset);
+  inset-inline-end: var(--_inset);
+  display: inline-flex;
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  box-shadow:
+    var(--sherpa-elevation-offset-x, 0)
+    var(--sherpa-elevation-offset-y, 1px)
+    var(--sherpa-elevation-blur, 2px)
+    var(--sherpa-elevation-spread, 0)
+    var(--sherpa-style-surface-shadow, #35353d4c);
+}
+
+/* ── The minimap ──────────────────────────────────────────────────────── */
+.minimap {
+  position: absolute;
+  inset-block-end: var(--_inset);
+  inset-inline-start: var(--_inset);
+  inline-size: 10rem;
+  block-size: 7.5rem;
+  overflow: hidden;
+  background: var(--sherpa-style-surface-base, #ffffff);
+  border-color: var(--sherpa-style-border-base, #b3b3c3);
+  cursor: pointer;
+  touch-action: none;
+}
+:host([data-no-minimap]) .minimap { display: none; }
+.minimap-items { position: absolute; inset: 0; pointer-events: none; }
+.minimap-item,
+.minimap-view {
+  position: absolute;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+.minimap-item {
+  /* The border ink: a surface step is too pale to see at this size. */
+  background: var(--sherpa-style-border-base, #b3b3c3);
+  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
+}
+/* Where the view sits: the active edge, as the thing a reader moves. */
+.minimap-view {
+  border: var(--sherpa-display-mode-border-width-lg, 2px) solid var(--sherpa-style-active-border-base-1, #c046ff);
+  border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
+}

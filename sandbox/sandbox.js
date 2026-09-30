@@ -19,7 +19,7 @@ const COMPONENTS = [
   'sherpa-data-grid', 'sherpa-dialog', 'sherpa-radial-chart', 'sherpa-empty-state', 'sherpa-file-upload',
   'sherpa-grid-cell',
   'sherpa-gauge-chart', 'sherpa-input-text', 'sherpa-key-value-list',
-  'sherpa-line-chart', 'sherpa-list', 'sherpa-list-item', 'sherpa-loader',
+  'sherpa-layout-canvas', 'sherpa-line-chart', 'sherpa-list', 'sherpa-list-item', 'sherpa-loader',
   'sherpa-metric', 'sherpa-nav', 'sherpa-nav-item', 'sherpa-nav-section',
   'sherpa-overlay-panel', 'sherpa-panel',
   'sherpa-pagination', 'sherpa-progress-bar', 'sherpa-progress-step-tracker', 'sherpa-prompt-composer',

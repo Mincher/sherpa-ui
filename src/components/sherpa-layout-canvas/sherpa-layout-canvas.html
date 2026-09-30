@@ -1,0 +1,52 @@
+<!--
+  sherpa-layout-canvas — an infinite canvas content area: it pans and zooms
+  with no edge, on a crosshair grid. Will, TODO 25.
+  TRAP T-a-canvas-owns-its-view
+
+  Public API:
+    data-zoom        the zoom, 1 is 100%; written BY the canvas as it zooms, and read
+                     when a host sets it
+    data-min-zoom    the smallest zoom (default 0.25)
+    data-max-zoom    the largest zoom (default 4)
+    data-panning     written BY the canvas: the Pan tool is on, so a drag anywhere pans
+    data-no-minimap  no minimap
+
+  Slots:
+    (default)   the content, placed on the canvas at its `--x` and `--y` (px)
+
+  Fires:
+    canvas-change — the view moved: panned or zoomed. detail: { x, y, zoom }
+-->
+<template id="default">
+  <!-- The VIEW: what the reader sees of the canvas. The keys pan and zoom it. -->
+  <div class="viewport" part="viewport" tabindex="0" role="group"
+       aria-roledescription="canvas" aria-label="Canvas">
+    <div class="plane" part="plane"><slot></slot></div>
+  </div>
+
+  <!-- The WHOLE canvas small, and where the view sits on it. A drag moves the view. -->
+  <div class="minimap sherpa-border-edges sherpa-border-corners" part="minimap" aria-hidden="true">
+    <div class="minimap-items"></div>
+    <span class="minimap-view"></span>
+    <template class="minimap-item-tpl"><span class="minimap-item"></span></template>
+  </div>
+
+  <!-- The four controls, floating at the bottom right, as ONE object. -->
+  <span class="controls sherpa-group" part="controls" role="toolbar" aria-label="Canvas">
+    <sherpa-button class="pan" data-type="icon" data-icon-start="diverging-arrows"
+                   aria-label="Pan" aria-pressed="false"></sherpa-button>
+    <sherpa-button class="zoom-in" data-type="icon" data-icon-start="plus"
+                   aria-label="Zoom in"></sherpa-button>
+    <sherpa-button class="zoom-out" data-type="icon" data-icon-start="minus"
+                   aria-label="Zoom out"></sherpa-button>
+    <sherpa-button class="options" data-type="icon" data-icon-start="ellipsis-horizontal"
+                   aria-label="Canvas options" aria-haspopup="dialog">
+      <sherpa-menu slot="menu" data-align="end">
+        <button type="button" value="fit">Fit to content</button>
+        <button type="button" value="actual">Zoom to 100%</button>
+        <hr />
+        <button type="button" class="minimap-toggle" value="minimap">Hide minimap</button>
+      </sherpa-menu>
+    </sherpa-button>
+  </span>
+</template>
