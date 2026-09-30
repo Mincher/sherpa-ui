@@ -184,6 +184,36 @@ anatomy:
             attrs:
               role: status
           - el: div
+            class: body-range
+            part: body-range
+            children:
+              - el: sherpa-switch
+                class: body-range-switch
+                attrs:
+                  data-type: simple
+                  aria-label: Range
+              - el: span
+                class: body-range-label
+          - el: div
+            class: body-number
+            part: body-number
+            children:
+              - el: sherpa-input-text
+                class: body-op
+                attrs:
+                  data-type: select
+                  aria-label: Condition
+              - el: sherpa-input-text
+                class: body-number-one
+                attrs:
+                  data-type: number
+                  aria-label: Value
+              - el: sherpa-slider
+                class: body-number-range
+                attrs:
+                  data-type: range
+                  data-show-value: ""
+          - el: div
             class: rows
             part: rows
             slot: ""

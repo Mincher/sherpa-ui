@@ -119,6 +119,14 @@ export function menuFor(
     menu.setAttribute('data-min', String(def.min ?? 0));
     menu.setAttribute('data-max', String(def.max ?? 100));
     if (def.step != null) menu.setAttribute('data-step', String(def.step));
+    /* ADVANCED, where the field opts in: a FILTER menu, its rows asking the
+       NUMBER questions. Its Simple body is unchanged. Will, TODO 90.
+       TRAP T-a-number-has-advanced-rows */
+    if (advancedOf(def) === true) {
+      menu.setAttribute('data-type', 'filter');
+      menu.setAttribute('data-advanced', '');
+      menu.setAttribute('data-conditions', (OPS_FOR_TYPE['number'] ?? []).join(','));
+    }
     return { menu, kind, items: [] };
   }
 

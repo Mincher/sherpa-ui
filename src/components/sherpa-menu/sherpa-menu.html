@@ -297,6 +297,23 @@
     <!-- Without this the card collapses to an empty box and reads as broken. -->
     <p class="no-matches" part="no-matches" role="status">No matches</p>
 
+    <!-- A NUMBER that offers Advanced is a FILTER menu too: in Simple it is
+         the same body as any number, in Advanced the rows above. Both shapes
+         always exist. Will, TODO 90. TRAP T-a-number-has-advanced-rows -->
+    <div class="body-range" part="body-range">
+      <sherpa-switch class="body-range-switch" data-type="simple"
+                     aria-label="Range"></sherpa-switch>
+      <span class="body-range-label">Range</span>
+    </div>
+    <div class="body-number" part="body-number">
+      <sherpa-input-text class="body-op" data-type="select"
+                         aria-label="Condition"></sherpa-input-text>
+      <sherpa-input-text class="body-number-one" data-type="number"
+                         aria-label="Value"></sherpa-input-text>
+      <sherpa-slider class="body-number-range" data-type="range"
+                     data-show-value></sherpa-slider>
+    </div>
+
     <div class="rows" part="rows">
       <slot></slot>
     </div>

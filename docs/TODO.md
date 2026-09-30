@@ -71,7 +71,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | | | | **D — Filters: Will's features, on the foundation** | |
 | ❓ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ❓ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
-| ⬜ | 19 | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
+| 🚧 | 19 | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
 | ❓ | 19a | 110 | In Advanced rows, AND is serial and OR is parallel: an AND row offers only what the rows before it leave | feature |
 | ❓ | 20 | 21d | EXPLORE — conditions for a DATE field | explore |
 | ❓ | 21 | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
@@ -1426,7 +1426,7 @@ async. Build with 99.
 - **B: shown, dimmed, and not pickable** — as an unavailable value reads
   elsewhere.
 
-### `[ ]` 90 — Any filter switches to ADVANCED: condition rows, with options per field type
+### `[~]` 90 — Any filter switches to ADVANCED: condition rows, with options per field type
 
 Will, 2026-09-27: *"Any filter should be able to be toggled to 'Advanced',
 using simple switch, to build a multi condition scenario using conditional
@@ -1446,6 +1446,16 @@ LEFT: the operators do not follow the type — `menuFor` gives every Advanced
 menu the text list, and a number or date menu returns before it gets rows.
 `OPS_FOR_TYPE` has the number list already (a grid heading uses it). So:
 number rows first; a date waits on 21d's two open choices.
+
+**🚧 2026-09-30 — numbers are done; dates wait on 21d.** A number field that
+opts in (`advanced: true`) gets the f(x) button, on a toolbar chip and in the
+panel. Advanced shows condition rows with the number questions (=, ≠, >, ≥,
+<, ≤), every value typed. Switching over carries the number in: `37` stays
+`= 37`, and a range `20 to 80` becomes `At least 20` AND `At most 80`.
+Switching back finds the Simple answer as it was. On Records the four number
+fields opt in (Seats, Spend, Tickets, Health). Advanced is still opt-in per
+field (`T-conditions-are-opt-in-per-field`): say if EVERY field should offer
+it.
 
 ### `[ ]` 98 — One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes
 
@@ -4100,6 +4110,7 @@ One line each. The detail is in git and in the trap named.
 - 117: the accessibility baseline has no structural failure left — `T-an-accordion-action-is-not-a-toggle`
 - 144: a View keeps a draft of the filters left on it, for the tab and across sessions; two settings, on — `T-a-view-keeps-a-draft`
 - 146 🚧: a panel area resizes by its inner edge, dragged or by the keys, within its min and 33% of the row; kept through a reload. Levels 1 and 2 left — `T-an-edge-resizes-its-box`
+- 90 🚧: a number field can go Advanced — number questions, typed values, its answer carried over; dates wait on 21d — `T-a-number-has-advanced-rows`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

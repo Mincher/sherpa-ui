@@ -312,7 +312,14 @@ export class SherpaMenu extends SherpaElement {
     if (to === 'advanced' && !this.#offersAdvanced()) return;
     // There is nowhere else to go. TRAP T-a-filter-answers-by-values-conditions-or-both
     if (to === 'simple' && this.#advancedOnly()) return;
+    const was = this.mode;
     this.dataset['mode'] = to;
+    /* A NUMBER going Advanced carries its body into the rows, whoever flipped
+       it — the menu's own button, a panel's f(x). TRAP T-a-number-has-advanced-rows */
+    if (this.#numeric() && was !== 'advanced' && to === 'advanced' && this.$('.condition-rows')) {
+      if (!this.#rowEls().length) this.#addRow();
+      this.#seedFromPicks();
+    }
     this.#syncModeButton();
     this.#syncDirty();
   }
@@ -381,6 +388,18 @@ export class SherpaMenu extends SherpaElement {
   #seedFromPicks(): void {
     // Rows the reader wrote are theirs. TRAP T-both-answers-are-kept
     if (!this.#mirror && this.conditions.some(rowAnswered)) return;
+    /* A NUMBER carries its body over: one value under its op, or a range as
+       At least AND At most. TRAP T-a-number-has-advanced-rows */
+    if (this.#numeric()) {
+      const now = this.#bodyReading();
+      const [a, b] = (now.picked ?? []).map(String);
+      const typed = (now.text ?? '').trim();
+      if (now.range && a != null && b != null) {
+        this.conditions = [{ op: 'gte', text: a }, { op: 'lte', join: 'and', text: b }];
+      } else if (typed) this.conditions = [{ op: now.op ?? DEFAULT_OP, text: typed }];
+      else if (a != null) this.conditions = [{ op: now.op ?? DEFAULT_OP, picked: [a] }];
+      return;
+    }
     this.conditions = this.values.map((value, i) => (
       i ? { op: DEFAULT_OP, join: 'or' as const, picked: [value] }
         : { op: DEFAULT_OP, picked: [value] }
@@ -405,6 +424,12 @@ export class SherpaMenu extends SherpaElement {
   get reading(): FieldReading {
     if (this.#early) return { ...this.#early };
     const body = this.dataset['body'];
+    /* A NUMBER that offers Advanced keeps BOTH answers, as a list does: its
+       body is Simple's, its rows Advanced's. TRAP T-a-number-has-advanced-rows */
+    if (body === 'number' && this.#offersAdvanced()) {
+      const rows = this.#rowEls().length ? this.conditions.filter(rowAnswered) : [];
+      return { ...this.#bodyReading(), ...(rows.length ? { conditions: rows } : {}), mode: this.mode };
+    }
     if (body === 'number' || body === 'date') return this.#bodyReading();
     const out: FieldReading = { picked: this.values };
     if (!this.#offersAdvanced()) return out;
@@ -476,6 +501,12 @@ export class SherpaMenu extends SherpaElement {
       if (one.op) this.#setBodyOp(one.op);
       this.#setShape(range);
       this.#setNumberBody(((one.text ?? '').trim() || valueKey(one.picked?.[0] ?? '')), ends);
+      /* …and its ROWS, where it offers them: only the reading's own rows — a
+         Simple `> 2` is the body's, not a row. TRAP T-a-number-has-advanced-rows */
+      if (this.#offersAdvanced()) {
+        this.#setRows((next.conditions ?? []).filter(rowAnswered));
+        this.mode = next.mode ?? 'simple';
+      }
       this.#syncDirty();
       return;
     }
@@ -573,7 +604,7 @@ export class SherpaMenu extends SherpaElement {
     })));
     const op = seed?.op && ops.includes(seed.op) ? seed.op : (ops[0] ?? DEFAULT_OP);
     if (cond) cond.value = op;
-    row.dataset['takes'] = OP_TAKES[op] ?? 'list';
+    row.dataset['takes'] = this.#takes(op);
 
     /* `Equals` answers with a LIST of the field's own values, never a text box.
        The values are the menu's own rows, so there is one vocabulary.
@@ -594,7 +625,19 @@ export class SherpaMenu extends SherpaElement {
         if (want) pick.value = want;
       });
     }
-    if (text) text.value = seed?.text ?? '';
+    // A NUMBER's `=` is typed too, and kept as its one pick.
+    if (text) text.value = seed?.text ?? (this.#numeric() && seed?.picked?.length ? String(seed.picked[0]) : '');
+  }
+
+  /** A NUMBER menu's rows are TYPED, whatever the op: it has no list to pick
+   *  from. TRAP T-a-number-has-advanced-rows */
+  #numeric(): boolean {
+    return this.dataset['body'] === 'number';
+  }
+
+  /** What a row answers with: a pick, or typing. */
+  #takes(op: FilterOp): 'list' | 'text' | 'range' {
+    return this.#numeric() ? 'text' : (OP_TAKES[op] ?? 'list');
   }
 
   /** The ops this menu offers, from `data-conditions` or the text set. */
@@ -647,7 +690,12 @@ export class SherpaMenu extends SherpaElement {
       const takes = OP_TAKES[op] ?? 'list';
       const out: FieldCondition = { op };
       if (i > 0) out.join = (row.querySelector<FieldEl>('.join')?.value ?? 'or') as 'and' | 'or';
-      if (takes === 'list') {
+      /* A NUMBER's `=` is typed, and answers as the one number it picks —
+         as the body's one value does. TRAP T-one-number-is-a-pick-under-equals */
+      if (this.#numeric() && takes === 'list') {
+        const typed = (row.querySelector<FieldEl>('.condition-value')?.value ?? '').trim();
+        if (typed) out.picked = [typed];
+      } else if (takes === 'list') {
         /* `row.dataset.want` is what the READER chose. A `<select>` shows its
            first option whether or not anyone touched it, so reading `.value`
            made every untouched row report a pick — and a mode switch then
@@ -685,6 +733,8 @@ export class SherpaMenu extends SherpaElement {
       region.replaceChildren();
       for (const row of rows.length ? rows : [{ op: DEFAULT_OP } as FieldCondition]) this.#addRow(row);
     }
+    // A NUMBER's `data-op` is its BODY's. TRAP T-a-number-has-advanced-rows
+    if (this.#numeric()) return;
     // Every sync rebuilds row one from these two — from the row SHOWN, when the
     // rows were kept. TRAP T-row-one-is-data-op
     const first = keep ? this.conditions[0] : rows[0];
@@ -759,12 +809,14 @@ export class SherpaMenu extends SherpaElement {
     if (row instanceof HTMLElement) {
       this.#mirror = false;
       const op = (row.querySelector<FieldEl>('.condition')?.value ?? DEFAULT_OP) as FilterOp;
-      row.dataset['takes'] = OP_TAKES[op] ?? 'list';
+      row.dataset['takes'] = this.#takes(op);
       // The reader just answered, so THAT is what the row wants now.
       const picked = row.querySelector<FieldEl>('.condition-pick')?.value ?? '';
       if (picked) row.dataset['want'] = picked;
     }
 
+    // A NUMBER's host attributes are its BODY's. TRAP T-a-number-has-advanced-rows
+    if (this.#numeric()) return this.#emitConditions();
     // Row one still mirrors to the host attributes: the one-row view.
     const op = (this.#conditionField()?.value ?? DEFAULT_OP) as FilterOp;
     if (this.dataset['op'] !== op) this.dataset['op'] = op;
@@ -841,6 +893,8 @@ export class SherpaMenu extends SherpaElement {
        TRAP T-conditions-are-opt-in-per-field */
     if (!this.$('.condition-rows') || !this.#offersAdvanced()) return;
     if (!this.#rowEls().length) this.#addRow();
+    // A NUMBER's `data-op` is its body's, not row one's. TRAP T-a-number-has-advanced-rows
+    if (this.#numeric()) return this.#numberRows();
 
     const ops = this.#opList();
     const op = ops.includes(this.op) ? this.op : (ops[0] ?? DEFAULT_OP);
@@ -1282,7 +1336,8 @@ export class SherpaMenu extends SherpaElement {
        read. A host names the set; the menu draws it.
        TRAP T-ops-follow-the-column-type */
     const picker = this.$<HTMLElement & { populate?: (i: unknown[]) => void; value?: string }>('.body-op');
-    if (picker && this.hasAttribute('data-conditions')) {
+    // A FILTER menu's conditions are its rows; its Simple body has no operator.
+    if (picker && this.hasAttribute('data-conditions') && this.dataset['type'] !== 'filter') {
       const ops = this.#opList();
       if (!this.#opsDrawn) {
         this.#opsDrawn = true;

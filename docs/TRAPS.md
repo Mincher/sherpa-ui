@@ -9090,6 +9090,42 @@ each row is `[And|Or] [condition] [value]`.
 
 ---
 
+### T-a-number-has-advanced-rows
+
+**A number that opts in (`advanced: true`) has Advanced condition rows**, as
+a list does — Will, TODO 90: *"Any filter should be able to be toggled to
+'Advanced' … We'll need different conditional options for numeric, and date,
+field types."* Its menu is a FILTER menu with `data-body="number"`: in
+Simple it draws the same number body as any number chip (no operator
+select: conditions go in rows), and in Advanced the rows take its place, with
+the NUMBER questions (`OPS_FOR_TYPE.number`: =, ≠, >, ≥, <, ≤).
+
+Four things that are not obvious:
+
+- **Every row is TYPED** — a number has no list to pick from. So its `=`
+  and `≠` rows take a typed value too, and answer as their one pick
+  (`picked: [n]`), as the body's one value does
+  (`T-one-number-is-a-pick-under-equals`); the others answer with `text`.
+- **`data-op` is the BODY's.** A list menu mirrors row one into `data-op` and
+  `data-value` (`T-row-one-is-data-op`); a number menu must not, or editing a
+  row changed its Simple answer's operator.
+- **Going Advanced carries the body over**, whoever flips it — the menu's
+  own button or a panel's f(x), so it happens in the `mode` setter: one value
+  under its op, or a range as At least AND At most. Back in Simple the body is
+  as it was: both answers are kept (`T-both-answers-are-kept`).
+- **A reading's rows are only its own `conditions`.** `readingRows()` turns a
+  Simple `> 2` into a row, and with no mode named its rows decide — which
+  flipped every typed number into Advanced.
+
+Dates are not done: their questions wait on TODO 21d.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/core/ui/filter-menu.ts`
+- Site: `test/e2e/reforged-number-advanced.spec.ts`
+
 ### T-conditions-are-opt-in-per-field
 
 Conditions are OFF by default. A field answered by ticking a closed set of

@@ -300,7 +300,9 @@ export class SherpaQuickFilter extends SherpaElement {
        kept. TRAP T-both-shapes-are-kept · TRAP T-a-menu-owns-its-own-bodies */
     if (body === 'number') {
       menu.reading = next;
-      const answered = (next.picked ?? []).length > 0 || (next.text ?? '').trim() !== '';
+      // In Advanced its ROWS answer it. TRAP T-a-number-has-advanced-rows
+      const answered = next.mode === 'advanced' ? readingRows(next).length > 0
+        : (next.picked ?? []).length > 0 || (next.text ?? '').trim() !== '';
       this.current = answered && !next.suspended;
       // TRAP T-a-silent-steer-still-redraws-its-chip
       this.refresh();

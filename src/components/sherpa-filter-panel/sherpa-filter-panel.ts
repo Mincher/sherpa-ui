@@ -1419,9 +1419,10 @@ export class SherpaFilterPanel extends SherpaElement {
       menu.reading = { ...kept, picked: this.#picked(held), mode: 'advanced' };
     }
     /* CARRY THE CHIPS OVER on the first switch, and while the rows still mirror
-       them: X and Y become Equals X OR Equals Y. TRAP T-both-answers-are-kept */
+       them: X and Y become Equals X OR Equals Y. TRAP T-both-answers-are-kept
+       A NUMBER has no chips: its menu carries its own body over. */
     const now = menu?.reading;
-    if (on && menu && now && (now.mirror || !(now.conditions ?? []).length)) {
+    if (on && menu && now && !menu.dataset['body'] && (now.mirror || !(now.conditions ?? []).length)) {
       menu.reading = { ...now, picked: this.#picked(held), mode: 'advanced', mirror: true };
     }
     this.#syncAnswered(held);
@@ -1454,7 +1455,9 @@ export class SherpaFilterPanel extends SherpaElement {
          panel's own button IS that opt-in reaching it.
          TRAP T-conditions-are-opt-in-per-field */
       if (on) held.menu.setAttribute('data-advanced', '');
-      held.menu.dataset['mode'] = on ? 'advanced' : 'simple';
+      // A NUMBER through its own door, which carries its body into the rows.
+      if (held.menu.dataset['body'] === 'number') (held.menu as HTMLElement & { mode: string }).mode = on ? 'advanced' : 'simple';
+      else held.menu.dataset['mode'] = on ? 'advanced' : 'simple';
     }
   }
 

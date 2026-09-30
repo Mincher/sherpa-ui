@@ -602,6 +602,12 @@
 /* A RANGE has no operator to choose — it IS `between`. */
 :host([data-body="number"][data-range]) .body-op { display: none; }
 
+/* A NUMBER in a FILTER menu: its Simple body is the chip's (no operator — the
+   rows are where conditions go), and in Advanced the rows take its place.
+   TRAP T-a-number-has-advanced-rows */
+:host([data-type="filter"][data-body="number"]) .body-op { display: none; }
+:host([data-body="number"][data-mode="advanced"]) :is(.body-range, .body-number) { display: none; }
+
 /* READ-ONLY: the answer is shown and nothing here changes it — no footer, no
    Add condition, no Advanced button. `!important`: each is a composed
    component whose own `:host` display wins otherwise.
