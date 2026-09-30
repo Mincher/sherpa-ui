@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**57 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**56 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -117,7 +117,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 35 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
 | ✅ | 35d | 164 | At the mobile breakpoint the app header shows no nav hamburger: it does not get narrow enough to trigger it | bug |
 | ✅ | 35b | 161 | The app header's shadow FADES in, very quickly, as the Context scrolls under it | quick |
-| ⬜ | 35c | 163 | The app shell's panel areas are 150% of their width today, at the least | quick |
+| ✅ | 35c | 163 | The app shell's panel areas are 150% of their width today, at the least | quick |
 | ⬜ | 35a | 146 | The app shell's FIXED panel areas resize by dragging their inner edge; the content reflows; two levels of container query | feature |
 | | | | **F — Data states and charts** | |
 | ✅ | 36 | 58 | Loading, empty and error states in a container | feature |
@@ -2376,10 +2376,17 @@ header's area, and the header's shadow follows that with a transition.
 Chromium and WebKit; Firefox has no scroll timeline and draws no shadow, as
 before.
 
-### `[ ]` 163 — The app shell's panel areas: 150% of their min width
+### `[x]` ✅ 163 — The app shell's panel areas: 150% of their min width
 
 Will, 2026-09-30, a minor one: *"Increase the min width of panel areas, in
 the app shel to 150% of their current min width."*
+
+**✅ Done 2026-09-30.** A panel area is 1.5 times its old width, at every
+desktop width: the panel card is 449 / 569 / 689 at 1280 / 1600 / 1920, where
+it was 294 / 374 / 454. It is no longer a whole count of grid columns — 4
+columns (133%) or 5 (167%) would be, if that matters more than the number.
+At 1280 the Context is left 775px, and its charts crop their legends: 162 is
+the fix for that.
 
 ### `[ ]` 146 — The app shell's FIXED panel areas resize by dragging their edge
 
@@ -3762,6 +3769,7 @@ One line each. The detail is in git and in the trap named.
 - 165: a group's badge counts the rows shown, under the grid's scope and its filter row — `T-a-group-is-a-data-layer-concept`
 - 164: mobile starts below 768px; the shell hides the rail and tells the header to show its menu button — `T-the-nav-is-a-menu-on-a-phone`
 - 161: the app header's scroll shadow fades, 100ms — the timeline flips a property, a transition follows it — `T-only-the-context-scrolls`
+- 163: a panel area is 1.5 times three grid columns — `T-the-shell-owns-the-panel-areas`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

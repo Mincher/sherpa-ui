@@ -9611,12 +9611,14 @@ Without it the panel's top and bottom overshoot the cards beside it by 16 at
 each end and its edges are cut by the frame, which is exactly what it looked
 like: a clipped border.
 
-**An area is THREE grid columns wide.** Will, 2026-09-26. Worked out in CSS
-from the grid's own tokens — the column the body row would hold, `(100% − pad
-− (cols − 1) × gap) / cols`, times three, plus two gutters and the area's own
-inset — so the panel card measures exactly a 3-column card of the page with
-the panel shut (294 / 374 / 454 at 1280 / 1600 / 1920). The Context keeps its
-own grid in what is left: narrower, never re-counted. `--sherpa-panel-area-width`
+**An area is one and a half times THREE grid columns wide.** Three columns
+was Will's, 2026-09-26; then *"150% of their current min width"* (TODO 163).
+Worked out in CSS from the grid's own tokens — the column the body row would
+hold, `(100% − pad − (cols − 1) × gap) / cols`, times three, plus two gutters
+and the area's own inset, all times 1.5 — so the panel card measures 449 /
+569 / 689 at 1280 / 1600 / 1920, where a 3-column card of the page is 294 /
+374 / 454. It is no longer ON the column grid. The Context keeps its own grid
+in what is left: narrower, never re-counted. `--sherpa-panel-area-width`
 still overrides it. It had been a 400px fallback, as the token was defined
 nowhere.
 

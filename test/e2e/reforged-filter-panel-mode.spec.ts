@@ -88,12 +88,13 @@ test('panel mode survives a reload, in both directions', async ({ page }) => {
 });
 
 /**
- * THE PANEL IS THREE COLUMNS WIDE — exactly a 3-column card of the grid the
+ * THE PANEL AREA IS ONE AND A HALF TIMES A 3-COLUMN CARD'S — of the grid the
  * page has with the panel shut, at every desktop width. The content keeps its
- * own grid in what is left. Will, 2026-09-26. TRAP T-the-shell-owns-the-panel-areas
+ * own grid in what is left. Will, 2026-09-26, and TODO 163: "150% of their
+ * current min width". TRAP T-the-shell-owns-the-panel-areas
  */
 for (const width of [1280, 1600, 1920]) {
-  test(`the filter panel is three grid columns wide at ${width}px`, async ({ page }) => {
+  test(`the filter panel area is 150% of three grid columns at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 1000 });
     await page.goto('http://localhost:4200/?context=records');
     await page.waitForFunction(() =>
@@ -115,7 +116,8 @@ for (const width of [1280, 1600, 1920]) {
         .querySelector('.panel')!.getBoundingClientRect().width),
       scrolls: document.documentElement.scrollWidth > innerWidth,
     }));
-    expect(r.card).toBe(shut);
+    // The AREA is 1.5 × (a 3-column card + its 16 inset); the card is that less the inset.
+    expect(Math.abs(r.card - (1.5 * (shut + 16) - 16))).toBeLessThanOrEqual(1);
     expect(r.scrolls).toBe(false);
   });
 }
