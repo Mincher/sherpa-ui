@@ -111,7 +111,7 @@
   "src/index.ts": 200,
   "src/components/sherpa-accordion/sherpa-accordion.css": 136,
   "src/components/sherpa-app-header/sherpa-app-header.css": 247,
-  "src/components/sherpa-app-shell/sherpa-app-shell.css": 229,
+  "src/components/sherpa-app-shell/sherpa-app-shell.css": 234,
   "src/components/sherpa-badge/sherpa-badge.css": 29,
   "src/components/sherpa-barchart/sherpa-barchart.css": 217,
   "src/components/sherpa-breadcrumbs/sherpa-breadcrumbs.css": 70,

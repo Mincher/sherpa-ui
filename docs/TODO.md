@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**58 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**57 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -116,7 +116,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 34 | 34 | Figma: use the Navigation terms | figma |
 | ✅ | 35 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
 | ✅ | 35d | 164 | At the mobile breakpoint the app header shows no nav hamburger: it does not get narrow enough to trigger it | bug |
-| ⬜ | 35b | 161 | The app header's shadow FADES in, very quickly, as the Context scrolls under it | quick |
+| ✅ | 35b | 161 | The app header's shadow FADES in, very quickly, as the Context scrolls under it | quick |
 | ⬜ | 35c | 163 | The app shell's panel areas are 150% of their width today, at the least | quick |
 | ⬜ | 35a | 146 | The app shell's FIXED panel areas resize by dragging their inner edge; the content reflows; two levels of container query | feature |
 | | | | **F — Data states and charts** | |
@@ -2365,10 +2365,16 @@ the menu button, so the two turn together. Before, each read its own width at
 480px: a desktop window cannot go that narrow, and from 481 to 520 the button
 showed beside the rail. The header's filters still go at its own 480px.
 
-### `[ ]` 161 — The app header's shadow fades in as the Context scrolls under it
+### `[x]` ✅ 161 — The app header's shadow fades in as the Context scrolls under it
 
 Will, 2026-09-30, a minor one: *"Add a very quick fade transition to the app
 header shadow on scroll under."*
+
+**✅ Done 2026-09-30.** The shadow fades in and out in 100ms. The first pixel
+of scroll still decides it, with no JS: it now flips a property on the
+header's area, and the header's shadow follows that with a transition.
+Chromium and WebKit; Firefox has no scroll timeline and draws no shadow, as
+before.
 
 ### `[ ]` 163 — The app shell's panel areas: 150% of their min width
 
@@ -3755,6 +3761,7 @@ One line each. The detail is in git and in the trap named.
 - 168: a filter that lands in one scope is let go by every other — it is in ONE scope at a time — `T-send-to-view-filters`
 - 165: a group's badge counts the rows shown, under the grid's scope and its filter row — `T-a-group-is-a-data-layer-concept`
 - 164: mobile starts below 768px; the shell hides the rail and tells the header to show its menu button — `T-the-nav-is-a-menu-on-a-phone`
+- 161: the app header's scroll shadow fades, 100ms — the timeline flips a property, a transition follows it — `T-only-the-context-scrolls`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

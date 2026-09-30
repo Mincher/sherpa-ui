@@ -171,23 +171,28 @@
   min-block-size: 0;
 }
 
-/* The header's shadow, while the Context is scrolled under it. The header is
-   not in the scroller, so it follows the scroller's TIMELINE: the scroller
-   names it, their shared parent lifts it into scope, and the shadow is an
-   animation over the first pixel of scroll. No JS. Guarded: without the
-   timeline the animation would run on the clock and leave the shadow on.
-   Firefox has none, and draws no shadow. TRAP T-only-the-context-scrolls */
+/* The header's shadow, while the Context is scrolled under it: the scroller's
+   TIMELINE flips a property on the header's area, and the shadow follows it
+   with a transition. No JS. Guarded: on the clock it would stay on. Firefox
+   has no timeline, and draws no shadow. TRAP T-only-the-context-scrolls */
 @supports (timeline-scope: --x) and (animation-timeline: --x) {
   .content { timeline-scope: --sherpa-context-scroll; }
   .context-frame { scroll-timeline: --sherpa-context-scroll block; }
-  .header ::slotted(*) {
+  .header {
+    /* A value to start FROM: without one WebKit never applies the keyframe. */
+    --_header-shadow: none;
     animation: sherpa-header-lift linear both;
     animation-timeline: --sherpa-context-scroll;
     animation-range: 0px 1px;
   }
+  .header ::slotted(*),
+  .header slot > * {
+    box-shadow: var(--_header-shadow, none);
+    transition: box-shadow var(--sherpa-motion-fast, 100ms) var(--sherpa-motion-ease, ease);
+  }
 }
 @keyframes sherpa-header-lift {
-  to { box-shadow: var(--sherpa-shadow-md); }
+  to { --_header-shadow: var(--sherpa-shadow-md); }
 }
 
 /* THE SHELL ALWAYS FITS THE VIEWPORT. The CONTENT decides whether it scrolls

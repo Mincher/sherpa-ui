@@ -108,14 +108,23 @@ test('only the Context scrolls: the header and a panel stay put, and the header 
     const top = (sel: string): number => Math.round(root.querySelector(sel)!.getBoundingClientRect().top);
     const shadow = (): string => getComputedStyle(root.querySelector('.head')!).boxShadow;
     const frames = (): Promise<void> => new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(() => res())));
+    // The shadow FADES (TODO 161): a transition runs, and the reading waits for its end.
+    const fades: boolean[] = [];
+    const faded = async (): Promise<void> => {
+      await frames();
+      const running = root.querySelector('.head')!.getAnimations()
+        .filter((a) => (a as CSSTransition).transitionProperty === 'box-shadow');
+      fades.push(running.length > 0);
+      await Promise.all(running.map((a) => a.finished));
+    };
     const at = { head: top('.head'), side: top('.side'), page: top('.page'), shadow: shadow() };
     frame.scrollTop = 200;
-    await frames();
+    await faded();
     const scrolled = { head: top('.head'), side: top('.side'), page: top('.page'), shadow: shadow() };
     frame.scrollTop = 0;
-    await frames();
+    await faded();
     return {
-      at, scrolled, back: shadow(),
+      at, scrolled, back: shadow(), fades,
       panelShown: getComputedStyle(shell.shadowRoot!.querySelector('.panel-start')!).display,
       // Chromium and WebKit; Firefox has no scroll-driven animation, and draws no shadow.
       driven: CSS.supports('timeline-scope: --x') && CSS.supports('animation-timeline: --x'),
@@ -133,6 +142,8 @@ test('only the Context scrolls: the header and a panel stay put, and the header 
   expect(drawn(r.at.shadow)).toBe(false);
   expect(drawn(r.scrolled.shadow)).toBe(r.driven);
   expect(drawn(r.back)).toBe(false);
+  // In and out, each by a transition — never a snap.
+  expect(r.fades).toEqual([r.driven, r.driven]);
 });
 
 test('the content inset holds at the collapsed width until the rail is latched open', async ({ page }) => {
@@ -143,10 +154,11 @@ test('the content inset holds at the collapsed width until the rail is latched o
     const frame = () => el.shadowRoot!.querySelector('.frame') as HTMLElement;
     const inset = (): string => getComputedStyle(frame()).marginInlineStart;
 
-    // The margin ANIMATES, so read it after the transition rather than mid-flight.
+    // The margin ANIMATES, so read it once its transition has ended — not after a guess.
     const setState = async (state: string): Promise<string> => {
       el.dataset['navState'] = state;
-      await new Promise((res) => setTimeout(res, 250));
+      await new Promise<void>((res) => requestAnimationFrame(() => requestAnimationFrame(() => res())));
+      await Promise.all(frame().getAnimations().map((a) => a.finished));
       return inset();
     };
     return {

@@ -13870,6 +13870,14 @@ pixel of scroll. No JS. It is inside `@supports`, because without a scroll
 timeline the same animation runs on the CLOCK and leaves the shadow on for
 good. Chromium and WebKit have it; Firefox 155 does not, and draws no shadow.
 
+**The shadow FADES, and the timeline cannot do that itself** (TODO 161). An
+animation over one pixel of scroll is a snap, and a transition cannot follow
+an animation on its own element. So the timeline animates a PROPERTY on the
+header's area — `--_header-shadow`, unregistered, so it flips — and the
+slotted header's `box-shadow` reads it and carries the transition. The
+property needs a value to start FROM: with none, WebKit runs the animation
+to the end and never applies the keyframe.
+
 **A scroll-driven animation never FINISHES.** `__settled()` waited for every
 animation's `finished` promise, and every test on a page with this one hung.
 It waits for animations on the document's own timeline only.
