@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**63 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**64 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -50,10 +50,12 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16d | 114 | About 1 time in 20, a folded Advanced-only filter's row in the Filters menu opens nothing | bug |
 | ✅ | 16e | 119 | The panel header's Reset menu button wears the grouping `end` style; it takes none | bug |
 | ✅ | 16f | 127 | A number input: `Enter a value`, right-aligned, Sherpa's own steppers — it came back native | bug |
-| ⬜ | 16g | 130 | Filter panel chips show no tooltip: the tip belongs to the CHIP — and check what else does | bug |
+| 🚧 | 16g | 130 | Filter panel chips show no tooltip: the tip belongs to the CHIP — and check what else does | bug |
 | ✅ | 16h | 131 | Switching a number filter to Range fires no update, so the range is not used | bug |
 | ✅ | 16i | 132 | Back from a changed Range, a number filter has lost the Simple value typed before | bug |
 | ✅ | 16j | 137 | A number RANGE filter's values do not match between the filter panel and the filter toolbar | bug |
+| ✅ | 16k | 147 | A chip switched off under the pointer leaves an EMPTY tooltip: the whole tooltip hides | bug |
+| ⬜ | 16l | 148 | After a Reset, a date chip's value label reads `Unassigned` | bug |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | ❓ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ⬜ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
@@ -73,14 +75,14 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 28 | 21f | "Send to view filters" | feature |
 | ✅ | 29 | 21b | Which header chips carry over between views | feature |
 | ✅ | 30 | 20b | The Date filter should be a view-scope date RANGE | feature |
-| ❓ | 31 | 52 | EXPLORE — a data viz scope in the filter panel | explore |
+| ⬜ | 31 | 52 | A data viz scope in the filter panel: one Simple filter, a chip per legend item, with its swatch | feature |
 | ❓ | 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
 | ⬜ | 31b | 124 | The Filters button and menu move to the filter panel HEADER: one menu for every scope | feature |
 | ⬜ | 31c | 122 | Email starts SIMPLE, with a switch to Advanced; over 20 values it is one chip with a multi-select menu | feature |
 | ⬜ | 31d | 120 | A view-scope filter gets "Send to `<scope name>`", the counterpart of "Send to view filters" | feature |
 | ⬜ | 31e | 121 | Clear and Send to are ONE button group, with the grouping classes | quick |
 | ⬜ | 31f | 123 | An inactive chip KEEPS its match count badge; it goes only when every value and condition is removed | feature |
-| ⬜ | 31g | 125 | The sort tooltip names the direction as well as the field | quick |
+| ✅ | 31g | 125 | The sort tooltip names the direction as well as the field | quick |
 | ⬜ | 31h | 126 | "Filter applied at higher scope" becomes "Filter moved to `<scope name>` scope" | quick |
 | ⬜ | 31i | 129 | "Reset all to default", with a confirm dialog and a "Save filters before reset" switch | feature |
 | ⬜ | 31j | 133 | The results count badge shows at the right of a filter panel SECTION header, where it fits | feature |
@@ -109,6 +111,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 41 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
 | ✅ | 42 | 23 | A focused grid row opens a details panel | feature |
 | ✅ | 42a | 145 | The details panel, tidied: Figma's Panel header, no scrim, a selected row paints the active base | quick |
+| ⬜ | 42b | 146 | The app shell's panel AREAS resize by dragging their inner edge; the content reflows; two levels of container query | feature |
 | | | | **H — The accessibility gate** | |
 | ✅ | 43 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
 | 🚧 | 43a | 117 | Clear the accessibility baseline — 11 of 12 done; the accordion is ruled, and waits on 124 | bug |
@@ -789,7 +792,7 @@ panel, where the steppers shrink so the digits show. A stepper with no value
 to step to is inactive. Figma draws the pagination's page box with no
 steppers; yours has them, as you said.
 
-### `[ ]` 130 — BUG: filter panel chips show no tooltip — the tip belongs to the CHIP
+### `[~]` 130 — BUG: filter panel chips show no tooltip — the tip belongs to the CHIP
 
 Will, 2026-09-30: *"Filter panel chips don't display tooltips. This
 functionality should be on the filter chip component and not on the
@@ -807,6 +810,45 @@ count."*
 
 Will, 2026-09-30, a bug: *"Numeric and Date filter chips don't show a
 tooltip."*
+
+**🚧 2026-09-30 — the tooltip is done; the audit's moves are not.** The tip
+was the chip's already, but it read only a list menu. Now, on a bar, in the
+panel and on a grid heading alike:
+
+| Chip | Its tip |
+|---|---|
+| a list | `active, trial - 49 matches` |
+| a number | `37 to 120 - 28 matches`, or `12 - 1 match` |
+| a date | `05 Jan to 06 Feb 2024 - 10 matches` |
+| conditions | `2 conditions applied - 5 matches` |
+| a saved filter | `4 matches` |
+| Sort, Group | `Name, descending` · `Plan` |
+| a grid heading's sort button | `Sorted by Name, descending` |
+
+The matches show while the chip is on and applied, as its badge does (123
+will change both together). A chip that is OFF says nothing — it filters
+nothing (147); one a scope above holds still says where its filter went. Three things moved INTO the chip to do this: a
+date's label (it was the toolbar's, so a panel date chip showed no days), the
+Group and Sort steer (`arrangeBy` — the panel had none, so its Group and Sort
+never followed the toolbar or a grid heading), and the wording of a range.
+
+**Not done: a panel VALUE chip.** It is one value of a run, and has no count
+of its own. It needs a count per value from the data layer — with 133.
+
+**The audit — what else belongs on the chip.** Still written twice, in the
+toolbar and in the panel, each asking "a list, a number or a date?":
+
+| Job | Toolbar | Panel |
+|---|---|---|
+| READ a chip's answer | `#answers()` | `#readingOf()` |
+| DRAW an answer into it | `setChipReading()` | `setFieldReading()` |
+| EMPTY it | `#emptyChip()` | `#empty()` |
+| is it ON | `#chipPicks()` + typed check | `data-current` per value chip |
+
+Five of the seven holes in 137 were one of these done differently in two
+places. The fix is one door on the chip — `reading` get and set, `clear()` —
+which its menu already has. That is a refactor of both hosts; say when.
+`T-a-chip-says-its-own-answer`
 
 ### `[x]` ✅ 131 — BUG: switching a number filter to Range fires no update
 
@@ -887,6 +929,23 @@ seven holes above were one of those three jobs done differently in two
 places. The chip (with its menu) should answer all three itself — `reading`
 get and set, and one `clear()` — so a host never asks what kind it is. Also
 the toolbar's: the date label on a chip's face (`#syncDateLabel`).
+
+### `[x]` ✅ 147 — BUG: a chip switched off under the pointer leaves an empty tooltip
+
+Will, 2026-09-30: *"When I set a filter chip to inactive while it's tooltip
+is visible then only the tooltip content is hidden. The whole tooltip should
+be hidden."*
+
+**✅ Done 2026-09-30.** `sherpa-tooltip` owns it: when its text goes while the
+bubble shows, the bubble shuts; when the text changes, the bubble is placed
+again for its new width. And every chip agrees now — OFF says nothing. A
+number or a date chip kept its answer in the tip while off, where a list chip
+did not. The tip comes back the next time the pointer enters the chip.
+
+### `[ ]` 148 — BUG: after a Reset, a date chip's value label reads `Unassigned`
+
+Will, 2026-09-30, a minor bug for later: *"When filters are reset, a date
+chip shows 'Unassigned' in it's value label. Not needed."*
 
 ### `[x]` ✅ 142 — The shell's panel areas stay put while the page scrolls
 
@@ -1557,6 +1616,29 @@ provider reads into its summary.
     chart has that axis.
   - **B: Segment by only**, and the rest when asked.
 
+**✅ Ruled, Will 2026-09-30 — a first, small shape. Do it after 130.** *"I
+think it would be really neat to see the data viz component scopes in the
+filter panel. I'd expect them between the view and grid scope accordions.
+They will only have 1 filter section. Each is just a Simple filter with a
+chip per legend item (might be nice to include the swatch where the left icon
+usually is). I don't think Advanced filters make sense for chart data just
+yet. As per previously established rules, component scope filters don't
+affect other component scopes. Filters should be elevated to view scope to
+achieve that."*
+
+So, for now: no arranging chips (Segment by, Measure, Over) and no Advanced —
+the two choices above wait. One section per chart, between the View's and the
+grid's, holding ONE Simple filter: the legend's field, a chip per legend
+item, with its swatch.
+
+**And a thought of Will's, the same day:** *"legend items could just be a
+boolean filter chip variant. It's just style differences and a swatch instead
+of an icon. Functionally they are the same. That keeps all representation of
+simple filters using filter chips of some kind. This could lead to cleaner,
+consolidated, code, too."* So the panel's chip and the legend's item should be
+ONE chip, with a swatch — build the panel's that way, and then look at moving
+`sherpa-chart-legend` onto it.
+
 ### `[ ]` 124 — The Filters button and menu move to the filter panel HEADER
 
 Will, 2026-09-30: *"Let's move the 'Filters' button, and menu, to the filter
@@ -1597,10 +1679,14 @@ from the filter."*
 
 Changes 60, which shows the badge only while the chip is on.
 
-### `[ ]` 125 — The sort tooltip names the direction as well as the field
+### `[x]` ✅ 125 — The sort tooltip names the direction as well as the field
 
 Will, 2026-09-30: *"Sort tooltip should show direction (e.g ascending) as well
 as the field name."*
+
+**✅ Done 2026-09-30, with 130.** A Sort chip's tip reads `Name, descending`,
+on a bar and in the panel. A grid heading's sort button reads `Sort by Name`,
+then `Sorted by Name, descending`. `T-a-chip-says-its-own-answer`
 
 ### `[ ]` 126 — "Filter applied at higher scope" becomes "Filter moved to `<scope name>` scope"
 
@@ -2037,6 +2123,38 @@ functionality while still working in the primary content space."*
 ❓ **One ruling left — the title's ink.** Figma's Panel variant inks it
 link-blue. Will's call of 2026-09-15 was the DEFAULT ink: blue "reads as
 something you can click when it isn't". Kept as ruled; say if Figma wins now.
+
+### `[ ]` 146 — The app shell's panel areas resize by dragging their edge
+
+Will, 2026-09-30, a future todo: *"Allow the side of the panel areas, in the
+app shell to be dragged to resize like we can do with the overlay panel.*
+
+*Left panel's width, in the current examples, is a good min width. 33% of the
+area between the nav and viewport edge (not sure of wrapper name) is probably
+a good max width.*
+
+*Obviously only the right side of the left panel area is draggable. The
+inverse for the right panel area.*
+
+*The drag indicator should show on the edge of the panel area (not panel) on
+hover & drag.*
+
+*The content area's content should respond and reflow following the
+breakpoint rules, and container queries, that we built previously.*
+
+*We will need to rework the container query that hides panel areas at lower
+breakpoints to use the viewport width (I think?). Perhaps it's not the
+viewport but a different wrapper element.*
+
+*Either way I think that there's 2 levels of container query and scopes of
+breakpoint responsiveness needed."*
+
+So, to find when it is built: which wrapper is "the area between the nav and
+the viewport edge" (the max is 33% of it, and it may be the container the
+hide-the-panels query reads); and the two levels — one for the shell, which
+shows or hides a panel area, and one for the content area, which reflows as a
+panel area grows. The handle follows 22's: a `role="separator"`, drag or
+arrow keys.
 
 ---
 
@@ -3102,6 +3220,11 @@ One line each. The detail is in git and in the trap named.
 - 132: a number filter's reading keeps both shapes — `T-both-shapes-are-kept`
 - 137: every filter control shows the Query's answer — seven holes between the toolbar, the panel and the source, one test for all — `T-a-panel-follows-the-query-open-or-shut`
 - 142: only the Context scrolls; the header and the panel areas stay put — `T-only-the-context-scrolls`
+- 130, first half: a chip says its own answer — number, date, sort and its matches, on a bar, in the panel and on a heading — `T-a-chip-says-its-own-answer`
+- 125: a sort's tip names which way
+- 147: a tooltip whose text goes shuts whole; an off chip says nothing
+- 146, 148: queued — the shell's panel areas resize by their edge; a reset date chip reads `Unassigned`
+- 52: ruled — a data viz scope is one Simple filter, a chip per legend item
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

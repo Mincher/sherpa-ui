@@ -548,7 +548,9 @@ this; `target` is wrong for any composed event here.
 ### T-date-label-reads-in-full
 
 A date chip's pick is an ISO string, which is not what a bar should read.
-Formatting it has four separate traps, all in `#syncDateLabel`:
+Formatting it has four separate traps. They were the toolbar's, in
+`#syncDateLabel`; the wording is `filterFace`'s now, from `formatDate`, so the
+CHIP draws its own date wherever it sits (`T-a-chip-says-its-own-answer`):
 
 1. **Parsed as UTC, so FORMATTED as UTC.** Otherwise a browser west of
    Greenwich renders the previous day.
@@ -567,8 +569,8 @@ Formatting it has four separate traps, all in `#syncDateLabel`:
 
 The base label is remembered on the chip, because a second pick would otherwise
 format a label that already carried the first one.
+- Site: `src/core/data/filter-face.ts`
 
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
 ### T-render-captures-live-state
 
@@ -676,6 +678,46 @@ half.
 - Site: `test/e2e/reforged-input-number.spec.ts`
 - Site: `test/unit/a-number-input-is-sherpas.test.mjs`
 
+### T-a-chip-says-its-own-answer
+
+**A filter chip's face — its value, its tooltip, its matches — is the CHIP's
+own, wherever it is drawn** — TODO 130, Will: "Filter panel chips don't
+display tooltips. This functionality should be on the filter chip component
+and not on the filter-toolbar or filter-panel components." The tooltip was the
+chip's already, but it read only a LIST menu, and three things it needed were
+somewhere else:
+
+- **A number and a date said nothing.** The chip handed `fieldState` an empty
+  value list (`values: []`) for a menu with no rows, which says "nothing can
+  be picked", so nothing was. It names the TYPE instead, and the picks are
+  the values. `filterFace` words two ends as a range — `37 to 120` — and a
+  day as a day.
+- **A date's label was the TOOLBAR's** (`#syncDateLabel`), so a date chip in
+  the panel showed no days at all. The wording is `filterFace`'s, from
+  `formatDate`; the chip redraws on its calendar's own pick.
+- **Group and Sort were steered by the toolbar**, by hand, from
+  `data-sort-field`. The panel had no such code, so its Group and Sort chips
+  never followed a sort set on the toolbar or a grid heading. The chip has
+  `arrangeBy(field, direction)`; a bar and the panel both call it from the
+  same three attributes.
+
+The tip is the answer in words, then ` - X matches` while the chip shows its
+results — and for a sort, which WAY: `Name, descending` (TODO 125). The
+source draws results to the panel too, scope by scope, so its one-chip fields
+and saved filters say theirs. A panel VALUE chip is one value of a run and
+has no count of its own yet (TODO 133).
+
+Still the hosts', and the next to move: reading a chip's answer, drawing one
+and emptying one are each written in the toolbar and again in the panel, and
+each asks what kind of field it is.
+
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/core/data/filter-face.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
+- Site: `test/e2e/reforged-chip-tips.spec.ts`
+- Site: `test/unit/filter-face.test.mjs`
+
 ### T-a-panel-follows-the-query-open-or-shut
 
 **ONE owner holds every filter answer: the Query, in the `DataSource`.** A
@@ -702,6 +744,7 @@ changed, add its step there. It supersedes the "refilled on open" half of
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-coordination.spec.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 
 ### T-a-suspended-answer-is-drawn-as-off
 
@@ -1121,6 +1164,7 @@ its host, as before.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/page-definition.test.mjs`
 - Site: `test/e2e/reforged-chip-results.spec.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-a-scope-says-what-it-shows
 
@@ -1315,10 +1359,11 @@ not.
 
 - Site: `src/core/data/format-date.ts`
 - Site: `src/data.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/unit/format-date.test.mjs`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `test/e2e/reforged-records-persist.spec.ts`
+- Site: `src/core/data/filter-face.ts`
+- Site: `test/unit/filter-face.test.mjs`
 
 ### T-a-made-up-key-never-leaves-the-data-layer
 
@@ -4223,10 +4268,9 @@ until the user opened the menu.
 
 `valueLabel` is the text shown in the CARET button — the chip's PICKED VALUE.
 
-Public because the value is not always the chip's own to derive: a DATE chip's
-pick is an ISO string that has to be formatted to the reader's locale, and the
-TOOLBAR owns that formatting (`T-date-label-reads-in-full`). The chip owns the
-ELEMENT; the caller owns the WORDS.
+Public for a host that draws a value the chip cannot derive. The chip writes
+its own for every answer it holds — a date's days too, which were once the
+toolbar's to format (`T-a-chip-says-its-own-answer`).
 
 Empty collapses the button back to a bare caret (`.caret-label:empty` in CSS),
 so there is no separate "hide the label" flag.
@@ -11467,11 +11511,11 @@ or resuming would jump to a column the reader had moved on from.
 
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/data/cycle.ts`
 - Site: `test/unit/suspended-sort.test.mjs`
 - Site: `test/unit/cycle.test.mjs`
 - Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 
 ### T-bind-locks-what-it-owns
 
@@ -14717,6 +14761,7 @@ nothing, so counting it would promise a filter that is not there.
 
 - Site: `src/core/data/filter-face.ts`
 - Site: `test/unit/filter-state.test.mjs`
+- Site: `test/unit/filter-face.test.mjs`
 
 ### T-a-host-label-must-reach-its-control
 
@@ -14797,6 +14842,7 @@ off, which stays the host's. Both silent paths call it.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
 ### T-a-view-change-resets-the-header-chips
 

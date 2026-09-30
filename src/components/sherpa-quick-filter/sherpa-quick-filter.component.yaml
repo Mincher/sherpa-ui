@@ -92,6 +92,11 @@ anatomy:
               type: button
 props:
   - $type: prop
+    name: aria-label
+    type: string
+    observed: true
+    description: the name of a chip that shows no label. Its tooltip says it. TRAP T-a-chip-says-its-own-answer
+  - $type: prop
     name: asc
     type: string
     observed: false
@@ -302,7 +307,7 @@ capabilities:
   - $type: capability
     api: js-methods
     description: >-
-      callable from a view definition's state block (toggleMenu, refresh). See
+      callable from a view definition's state block (arrangeBy, toggleMenu, refresh). See
       $extensions.sherpa.methods.
 events:
   - $type: event
@@ -360,6 +365,14 @@ $extensions:
   sherpa:
     figmaName: Filter Chip (atom)
     methods:
+      - $type: method
+        name: arrangeBy
+        args: "field: string, direction?: string | null"
+        description: >-
+          arrangeBy(field, direction) — steer a GROUP or SORT chip: its column, and for a sort which
+          way. SILENT, like every steer. No field is OFF, and the chip keeps the column it had; a
+          sort with `''` for its direction is suspended, and resumes ascending. The CHIP's own, so a
+          bar and a panel follow the same attributes the same way.
       - $type: method
         name: toggleMenu
         args: "anchor?: HTMLElement"

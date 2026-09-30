@@ -1849,19 +1849,22 @@ export class DataSource extends EventTarget {
     return out;
   }
 
-  /** Each bound bar is drawn its chips' results, off the load that just landed;
-   *  a later load's count wins. TRAP T-a-chip-counts-its-own-results */
+  /** Each bound bar — and the panel, scope by scope — is drawn its chips'
+   *  results, off the load that just landed; a later load's count wins.
+   *  TRAP T-a-chip-counts-its-own-results */
   async #drawResults(): Promise<void> {
-    const bars = [...this.#bound].filter(([el, b]) => el.drawResults && typeof b.scope === 'string');
-    if (!bars.length) return;
+    const drawn = [...this.#bound].flatMap(([el, b]) => (el.drawResults && b.scope
+      ? [{ el, scopes: typeof b.scope === 'string' ? [b.scope] : b.scope }] : []));
+    if (!drawn.length) return;
     const ticket = (this.#counting = Symbol('count'));
     const byScope = new Map<string, Record<string, number>>();
-    for (const [, { scope }] of bars) {
-      if (byScope.has(scope as string)) continue;
-      byScope.set(scope as string, await this.results(scope as string));
+    for (const scope of new Set(drawn.flatMap((d) => d.scopes))) {
+      byScope.set(scope, await this.results(scope));
       if (this.#counting !== ticket) return;
     }
-    for (const [el, { scope }] of bars) el.drawResults?.(byScope.get(scope as string) ?? {});
+    for (const { el, scopes } of drawn) {
+      for (const scope of scopes) el.drawResults?.(byScope.get(scope) ?? {}, scope);
+    }
   }
 
   /** The latest results count; an older one lands on nothing. */

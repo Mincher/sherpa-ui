@@ -60,6 +60,15 @@ test('a toolbar, the header, the panel and a grid heading all show what the Quer
       ['view', 'region'], ['view', 'created'], ['view', 'customer'],
     ];
     const out: { step: string; wrong: string[] }[] = [];
+    /** The panel's Group or Sort chip, in the grid's scope. */
+    const arrangeChip = (kind: string): any => ([...panel.shadowRoot.querySelectorAll('.value')] as any[])
+      .find((c) => c.dataset.value === kind && c.closest('[data-scope="data"]'));
+    /** Pick row `i` of a Group or Sort chip's menu. */
+    const arrange = async (c: any, i: number): Promise<void> => {
+      const m = c.querySelector('sherpa-menu'); m.show(c); await wait(250);
+      ([...m.querySelectorAll('input')] as HTMLInputElement[])[i]!.click(); await wait(400);
+      m.hide?.(); await wait(500);
+    };
     /** Every control against the Query. The panel is checked open AND shut. */
     const check = (step: string): void => {
       const wrong: string[] = [];
@@ -69,6 +78,20 @@ test('a toolbar, the header, the panel and a grid heading all show what the Quer
         const inPanel = inForce(panel.readings?.[scope]?.[field]);
         if (provider.filterMode === 'toolbars' && inBar !== query) wrong.push(`${field}: bar ${inBar}, Query ${query}`);
         if (inPanel !== query) wrong.push(`${field}: panel ${inPanel}, Query ${query}`);
+      }
+      // GROUP and SORT: the column, and which way — on the bar and in the panel.
+      const first = source.state.sort[0];
+      const arranged: Record<string, string | null> = {
+        sort: first ? `${first.field}:${first.direction}` : null,
+        group: source.state.group ? `${source.state.group}:` : null,
+      };
+      for (const kind of ['sort', 'group']) {
+        const shown = (c: any): string | null => (c?.hasAttribute('data-current')
+          ? `${c.column}:${kind === 'sort' ? c.dataset.direction : ''}` : null);
+        const onBar = shown(([...bar.shadowRoot.querySelectorAll('.organise-chip')] as any[]).find((c) => c.dataset.kind === kind));
+        const inPanel = shown(arrangeChip(kind));
+        if (onBar !== arranged[kind]) wrong.push(`${kind}: bar ${onBar}, source ${arranged[kind]}`);
+        if (inPanel !== arranged[kind]) wrong.push(`${kind}: panel ${inPanel}, source ${arranged[kind]}`);
       }
       const presets = JSON.stringify(source.query.applied.scopes.data?.presets ?? {});
       const barPresets = JSON.stringify(Object.fromEntries(Object.entries(bar.presets ?? {}).map(([k, v]: any) => [k, v.on])));
@@ -173,6 +196,20 @@ test('a toolbar, the header, the panel and a grid heading all show what the Quer
     check('grid heading: Seats at least 100');
     const heading = JSON.stringify(grid.columnClause('seats'));
 
+    // ── GROUP and SORT: an arrangement, set in each place ────────────────
+    { const sortChip = ([...bar.shadowRoot.querySelectorAll('.organise-chip')] as any[]).find((c) => c.dataset.kind === 'sort');
+      await arrange(sortChip, 0); check('toolbar: Sort by the first column');
+      sortChip.shadowRoot.querySelector('.body').click(); await wait(600); check('toolbar: Sort turned the other way'); }
+    const sortTip = ([...bar.shadowRoot.querySelectorAll('.organise-chip')] as any[]).find((c) => c.dataset.kind === 'sort')
+      .shadowRoot.querySelector('.count-wrap').dataset.text;
+    await to('panel'); check('panel shows the Sort');
+    await arrange(arrangeChip('group'), 1); check('panel: Group by the second column');
+    await to('toolbars'); check('toolbar shows the Group');
+    grid.shadowRoot.querySelector('.head-cell[data-field="plan"] .head-btn').click(); await wait(700);
+    check('grid heading: Sort by Plan');
+    await to('panel'); check('panel shows the heading\'s Sort');
+    await to('toolbars');
+
     // ── RESET, from each ───────────────────────────────────────────────
     bar.shadowRoot.querySelector('.act[data-act="clear"]').shadowRoot.querySelector('button').click(); await wait(900);
     check('toolbar: Reset empties every kind of field');
@@ -185,7 +222,7 @@ test('a toolbar, the header, the panel and a grid heading all show what the Quer
     const afterPanelReset = ['status', 'seats'].map((f) => JSON.stringify(source.reading('data', f) ?? null));
     await to('toolbars'); check('toolbar, after the panel Reset');
 
-    return { out, offTotal, all: 100, keptEnd, panelSeats, presetChip, panelDate, wantDate: JSON.stringify([days[4], days[8]]), heading, afterBarReset, afterPanelReset };
+    return { out, sortTip, offTotal, all: 100, keptEnd, panelSeats, presetChip, panelDate, wantDate: JSON.stringify([days[4], days[8]]), heading, afterBarReset, afterPanelReset };
   });
 
   // The ONE claim, at every step: no control disagrees with the Query.
@@ -197,6 +234,8 @@ test('a toolbar, the header, the panel and a grid heading all show what the Quer
   expect(steps.presetChip).toBe(true);
   expect(steps.panelDate).toBe(steps.wantDate);
   expect(steps.heading).toBe('["seats","gte",100]');
+  // A sort says its column AND which way. TODO 125
+  expect(steps.sortTip).toBe('Name, descending');
   expect(steps.afterBarReset).toEqual(['null', 'null', 'null']);
   expect(steps.afterPanelReset).toEqual(['null', 'null']);
 });

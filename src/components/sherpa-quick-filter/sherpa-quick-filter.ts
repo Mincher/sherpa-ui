@@ -97,10 +97,12 @@ export class SherpaQuickFilter extends SherpaElement {
 
   // data-label is hand-written: an absent attribute must leave the template's
   // own default label alone.
-  static override observed = ['data-label', 'data-icon-start', 'data-current'];
+  static override observed = ['data-label', 'data-icon-start', 'data-current', 'aria-label'];
 
   override onRender(): void {
     this.#syncText();
+    // A name given before the first render is said now.
+    this.#writeTip();
     this.$('.body')?.addEventListener('click', this.#onClick);
     this.$('.caret')?.addEventListener('click', this.#onCaret);
     // The menu lives in the light DOM; its events bubble up through the host.
@@ -111,6 +113,9 @@ export class SherpaQuickFilter extends SherpaElement {
     this.addEventListener('menu-items', this.#onMenuItems as EventListener);
     // A FILTER menu's condition is part of what this chip reads back.
     this.addEventListener('condition-change', this.#onCondition as EventListener);
+    // Its calendar's pick: the face says the day, or the two. TRAP T-a-chip-says-its-own-answer
+    this.addEventListener('datetime-change', this.#onDated);
+    this.addEventListener('range-select', this.#onDated);
     this.addEventListener('menu-open', this.#onMenuToggle as EventListener);
     this.addEventListener('menu-close', this.#onMenuToggle as EventListener);
     this.addEventListener('menu-select', this.#onJump as EventListener);
@@ -170,6 +175,7 @@ export class SherpaQuickFilter extends SherpaElement {
        while Sort remembered: one of the two blanked the caret.
        TRAP T-off-is-not-forgotten */
     if (this.#arranges()) this.#drawArrangement();
+    if (name === 'aria-label' || name === 'data-current') this.#writeTip();
     if (name === 'data-current' || name === 'data-pending') this.#syncBadge();
     if (name === 'data-current') this.#syncEmpty();
     /* The tooltip says WHY a chip is off, so it must follow the two attributes
@@ -191,8 +197,9 @@ export class SherpaQuickFilter extends SherpaElement {
   /**
    * The text in the caret button — the chip's PICKED VALUE.
    *
-   * TRAP T-value-label-is-the-callers-words — public because a DATE chip's ISO
-   * pick is the toolbar's to format.
+   * TRAP T-value-label-is-the-callers-words — public for a host that draws a
+   * value the chip cannot derive. The chip writes its own for every answer it
+   * holds, a date included.
    */
   set valueLabel(text: string) {
     const caret = this.$('.caret-label');
@@ -366,6 +373,37 @@ export class SherpaQuickFilter extends SherpaElement {
     });
   }
 
+  /**
+   * arrangeBy(field, direction) — steer a GROUP or SORT chip: its column, and
+   * for a sort which way. SILENT, like every steer. No field is OFF, and the
+   * chip keeps the column it had; a sort with `''` for its direction is
+   * suspended, and resumes ascending. The CHIP's own, so a bar and a panel
+   * follow the same attributes the same way.
+   * TRAP T-a-chip-body-cycles-its-states · TRAP T-off-is-not-forgotten
+   * TRAP T-a-suspended-sort-is-one-owners-job · TRAP T-one-cycle-for-one-value
+   */
+  arrangeBy(field: string, direction?: string | null): void {
+    if (!this.#arranges()) return;
+    if (!field) {
+      this.removeAttribute('data-current');
+      this.#drawArrangement();
+      return;
+    }
+    /* NAME THE COLUMN, then tick it. A rebuilt menu has no rows for a frame, so
+       the tick can miss — `data-column` is what the chip reads until it lands.
+       TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
+    this.dataset['column'] = field;
+    for (const radio of this.querySelectorAll<HTMLInputElement>('input[type="radio"]')) {
+      radio.checked = radio.value === field;
+    }
+    const suspended = this.dataset['kind'] === 'sort' && direction === '';
+    if (this.dataset['kind'] === 'sort') {
+      this.dataset['direction'] = suspended ? 'asc' : sortDirectionFrom(direction ?? undefined) ?? 'asc';
+    }
+    this.toggleAttribute('data-current', !suspended);
+    this.#drawArrangement();
+  }
+
   /** The column in the caret, and the glyph that says which way. */
   #drawArrangement(): void {
     if (!this.#arranges()) return;
@@ -376,11 +414,15 @@ export class SherpaQuickFilter extends SherpaElement {
     const row = this.querySelector<HTMLElement>(`[slot="menu"] input[value="${CSS.escape(field)}"]`)
       ?.closest<HTMLElement>('label, .menu-row');
     this.valueLabel = field ? (row?.textContent ?? '').trim() || field : '';
+    const dir = this.dataset['kind'] === 'sort' ? this.direction : null;
     if (this.dataset['kind'] === 'sort') {
-      const dir = this.direction;
       this.setAttribute('data-icon-start', dir === null ? ORGANISE_ICONS.sortNone
         : dir === 'desc' ? ORGANISE_ICONS.sortDesc : ORGANISE_ICONS.sortAsc);
     }
+    // The tip says the column, and for a sort which WAY. Will, TODO 125.
+    const way = dir === 'desc' ? 'descending' : dir === 'asc' ? 'ascending' : '';
+    this.#said = this.current && this.valueLabel ? [this.valueLabel, way].filter(Boolean).join(', ') : '';
+    this.#writeTip();
   }
 
   /** The body was clicked: toggle, or let Group and Sort do their own thing. */
@@ -582,14 +624,39 @@ export class SherpaQuickFilter extends SherpaElement {
    *  the button for a screen reader, as the tooltip describes only itself.
    *  TRAP T-one-state-per-filtered-field */
   #syncCountTip(values: string[]): void {
-    const face = filterFace(this.#state(values));
-    const text = this.#tipText(face.tip);
+    this.#said = filterFace(this.#state(values)).tip;
+    this.#writeTip();
+  }
+
+  /** What the chip's answer says, in words — the tip before its matches. */
+  #said = '';
+
+  /**
+   * WRITE THE TIP: the answer in words, then ` - X matches` while the chip
+   * shows its results. The CHIP's own, whatever draws it — a bar, a panel, a
+   * grid heading. Will, TODO 130. TRAP T-a-chip-says-its-own-answer
+   */
+  #writeTip(): void {
+    const n = this.#shownResults();
+    const matches = n == null ? '' : `${RESULTS.format(n)} ${n === 1 ? 'match' : 'matches'}`;
+    // OFF filters nothing, so it says nothing — but one held ABOVE says where it went.
+    const says = this.current || this.hasAttribute('data-superseded');
+    const said = [says ? this.#tipText(this.#said) : '', matches].filter(Boolean).join(' - ');
+    /* A chip with NO WORDS on it — a grid heading's sort button — says its
+       name in the tip, as an icon button does: "Sorted by Name, descending". */
+    const name = this.hasAttribute('data-icon-only') ? this.getAttribute('aria-label') ?? '' : '';
     // `data-text` is sherpa-tooltip's own API — the component writes the bubble.
     const tip = this.$<HTMLElement>('.count-wrap');
-    if (tip) tip.dataset['text'] = text;
+    if (tip) tip.dataset['text'] = said || name;
+    // For a screen reader the name is said already; only the answer describes.
     const body = this.$('.body');
-    if (text) body?.setAttribute('aria-description', text);
+    if (said) body?.setAttribute('aria-description', said);
     else body?.removeAttribute('aria-description');
+  }
+
+  /** The results the chip shows now: while it is on and applied, or none. */
+  #shownResults(): number | null {
+    return this.current && !this.hasAttribute('data-pending') ? this.#results ?? null : null;
   }
 
   /**
@@ -642,6 +709,11 @@ export class SherpaQuickFilter extends SherpaElement {
     this.#syncCondition(state);
   }
 
+  /** A day or a range was picked in the chip's calendar: redraw the face. */
+  #onDated = (): void => {
+    if (this.menu?.dataset['body'] === 'date') this.#drawFace();
+  };
+
   /** A condition row changed: re-derive the face from it. */
   #onCondition = (): void => {
     this.#applySelection((this.menu?.values ?? []) as string[]);
@@ -691,7 +763,7 @@ export class SherpaQuickFilter extends SherpaElement {
     const isFilter = menu?.getAttribute('data-type') === 'filter';
     /* The menu's whole answer — both modes, and which is in force — so the
        badge and the tip read the answer that filters. A number's "> 2" is
-       typed text there, not a tick. A date draws its own label.
+       typed text there, not a tick.
        TRAP T-a-condition-badge-says-that-not-which · TRAP T-both-answers-are-kept */
     const body = menu?.dataset['body'];
     const list = body === 'number' || (isFilter && body !== 'date') ? menu?.reading : undefined;
@@ -702,13 +774,18 @@ export class SherpaQuickFilter extends SherpaElement {
       {
         field: this.dataset['id'] ?? this.dataset['label'] ?? '',
         label: this.#field ?? this.dataset['label'] ?? '',
-        values: all,
+        /* A NUMBER or a DATE has no list: its picks ARE its values. An empty
+           list said "nothing to pick", and the chip said nothing at all.
+           TRAP T-a-chip-says-its-own-answer */
+        ...(body === 'number' || body === 'date' ? { type: body } : { values: all }),
         labels: Object.fromEntries(all.map((v) => [v, this.#valueLabel(v)])),
       },
       list ? { ...list, picked: values } : {
         picked: values,
         op: isFilter ? ((menu?.dataset['op'] ?? DEFAULT_OP) as FilterOp) : DEFAULT_OP,
         text: isFilter ? (menu?.conditionValue ?? '') : '',
+        // A DATE's two days are a span, as its calendar has it.
+        ...(body === 'date' ? { range: !!menu?.hasAttribute('data-range') } : {}),
       },
     );
   }
@@ -747,8 +824,10 @@ export class SherpaQuickFilter extends SherpaElement {
    * TRAP T-a-chip-counts-its-own-results
    */
   #syncBadge(): void {
+    // The tip names the matches too, and follows the same rule.
+    this.#writeTip();
     if (this.#results === undefined && !this.menu) return;
-    const n = this.current && !this.hasAttribute('data-pending') ? this.#results ?? null : null;
+    const n = this.#shownResults();
     const badge = this.$('.count');
     if (n == null) {
       badge?.removeAttribute('aria-label');

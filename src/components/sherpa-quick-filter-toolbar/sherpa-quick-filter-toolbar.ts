@@ -12,11 +12,9 @@
  */
 import { DATA_PROPS, SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
-import { sortDirectionFrom } from '../../core/data/cycle.js';
 import { allow, type AllowList } from '../../core/data/allow.js';
 import { advancedOf, kindOf, type FilterKind, type OffersAdvanced } from '../../core/ui/filter-kind.js';
 import { menuFor } from '../../core/ui/filter-menu.js';
-import { formatDate } from '../../core/data/format-date.js';
 import {
   FILTERS_LABEL, MenuDrill, ON, filtersMenuItems, onOffMenu, type AddedFilter,
 } from '../../core/ui/filters-button.js';
@@ -327,12 +325,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#built = null;
   }
 
-  /** A calendar picked a day or range — relabel its chip. */
+  /** A calendar picked a day or range. The chip relabels itself. */
   #onDatePicked = (event: Event): void => {
     // TRAP T-path-not-target-finds-chip-host — match the TAG, not `.chip`.
     const chip = this.pathFind(event, 'sherpa-quick-filter');
     if (!chip) return;
-    this.#syncDateLabel(chip);
     // A date chip turns itself ON by picking — it has no body toggle.
     chip.toggleAttribute('data-current', this.#chipPicks(chip).length > 0);
     this.#emitChange();
@@ -515,7 +512,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
          chip reading "3 Plan Enterprise…" while claiming to be off. */
       chip.values = picks;
       if (!picks.length) chip.current = false;
-      this.#syncDateLabel(chip);
       return;
     }
   }
@@ -714,22 +710,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       .map((i) => i.value);
   }
 
-  /** TRAP T-date-label-reads-in-full — UTC, day-then-month, in full, no badge. */
-  /** A date chip's caret shows its picked day or range, formatted. */
-  #syncDateLabel(chip: HTMLElement): void {
-    // The calendar is the MENU's, so ask what KIND of body it has.
-    if (!chip.querySelector('sherpa-menu[data-body="date"]')) return;
-    const picked = this.#chipPicks(chip);
-    const target = chip as HTMLElement & { valueLabel?: string };
-    if (!picked.length) {
-      if ('valueLabel' in target) target.valueLabel = '';
-      return;
-    }
-    // ONE way a date reads. TRAP T-a-date-reads-one-way
-    const label = formatDate(picked[0]!, picked[1]);
-    if ('valueLabel' in target) target.valueLabel = label;
-  }
-
   /** The filter chips in the run — not Group, Sort or More. */
   #chips(): ChipEl[] {
     return this.$$<ChipEl>('.chips > .chip');
@@ -797,7 +777,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       list.appendChild(chip);
       if (kind === 'date') {
         chip.setAttribute('data-full-value', '');
-        this.#syncDateLabel(chip);
+        // The chip says its own days. TRAP T-a-chip-says-its-own-answer
+        (chip as ChipEl).refresh();
       }
     }
 
@@ -1067,37 +1048,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * TRAP T-a-chip-body-cycles-its-states — no event; an empty field SUSPENDS.
    */
   #syncArrangement(kind: 'group' | 'sort'): void {
-    const chip = this.$<HTMLElement>(`.organise-chip[data-id="${kind}"]`);
-    if (!chip) return;
-
-    // No field — OFF, keeping whatever pick it had. Off is not forgotten.
-    const field = this.dataset[kind === 'sort' ? 'sortField' : 'groupField'] ?? '';
-    if (!field) {
-      chip.removeAttribute('data-current');
-      return;
-    }
-
-    /* NAME THE COLUMN, then tick it. A rebuilt menu has no rows for a frame, so
-       the tick can miss — `data-column` is what the chip reads until it lands,
-       and its rows are RADIOS, so a later tick can only ever agree.
-       TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
-    chip.dataset['column'] = field;
-    for (const radio of chip.querySelectorAll<HTMLInputElement>('input[type="radio"]')) {
-      radio.checked = radio.value === field;
-    }
-    if (kind === 'group') {
-      chip.toggleAttribute('data-current', true);
-      return;
-    }
-
-    /* An EMPTY direction is a SUSPENDED sort: the column is still pushed, so
-       only the direction says whether it runs — and a resume starts ASCENDING,
-       so a suspended chip must not keep its `desc`.
-       TRAP T-a-suspended-sort-is-one-owners-job · TRAP T-one-cycle-for-one-value */
-    const raw = this.dataset['sortDirection'];
-    const suspended = raw === '';
-    chip.dataset['direction'] = suspended ? 'asc' : sortDirectionFrom(raw) ?? 'asc';
-    chip.toggleAttribute('data-current', !suspended);
+    const chip = this.$<HTMLElement & { arrangeBy(field: string, direction?: string | null): void }>(
+      `.organise-chip[data-id="${kind}"]`);
+    // The chip knows how: a bar and a panel follow the same attributes the same way.
+    chip?.arrangeBy(this.dataset[kind === 'sort' ? 'sortField' : 'groupField'] ?? '', this.dataset['sortDirection']);
   }
 
   /** Report the whole filter state — the active toggle chips and every menu chip's picks. */
@@ -1998,7 +1952,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
             || this.#chipPicks(filterChip).length > 0
             || this.#hasTypedAnswer(filterChip),
         );
-        this.#syncDateLabel(filterChip);
+        (filterChip as ChipEl).refresh();
         this.#emitChange();
       }
       return;

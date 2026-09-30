@@ -38,6 +38,14 @@ export class SherpaTooltip extends SherpaElement {
     this.on(anchor, 'focusout', this.#onHide);
   }
 
+  /** Its text changed while it shows: an empty bubble says nothing, so it
+   *  shuts; new words are a new width, so it is placed again. */
+  override onChange(name: string): void {
+    if (name !== 'data-text' || !this.$('.bubble')?.matches(':popover-open')) return;
+    if (this.dataset['text'] || this.hasAttribute('data-has-tip')) this.#place();
+    else this.#hide();
+  }
+
   /** What the bubble describes: this element, or the box `data-anchor` names. */
   #anchor(): HTMLElement {
     const sel = this.dataset['anchor'];

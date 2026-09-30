@@ -110,6 +110,14 @@ anatomy:
                     data-size: sm
 props:
   - $type: prop
+    name: data-group-field
+    type: string
+    observed: true
+    kind: style
+    description: >-
+      the group in force. Written by the source; the Group chip shows it. TRAP
+      T-a-panel-follows-the-query-open-or-shut
+  - $type: prop
     name: data-heading
     type: string
     observed: true
@@ -157,6 +165,18 @@ props:
       own saved preset opens Edit filter and Delete filter — each asked for. TRAP
       T-the-panel-saves-a-whole-scope
   - $type: prop
+    name: data-sort-direction
+    type: string
+    observed: true
+    kind: style
+    description: the sort in force. Written by the source; the Sort chip shows it.
+  - $type: prop
+    name: data-sort-field
+    type: string
+    observed: true
+    kind: style
+    description: the sort in force. Written by the source; the Sort chip shows it.
+  - $type: prop
     name: open
     type: string
     observed: true
@@ -175,8 +195,8 @@ capabilities:
   - $type: capability
     api: js-methods
     description: >-
-      callable from a view definition's state block (setFieldReading, drawReading, show, hide,
-      close, toggle, drawScopes). See $extensions.sherpa.methods.
+      callable from a view definition's state block (setFieldReading, drawReading, drawResults,
+      show, hide, close, toggle, drawScopes). See $extensions.sherpa.methods.
 events:
   - $type: event
     name: quick-filter-change
@@ -288,6 +308,13 @@ $extensions:
           drawReading(field, reading, scope) — a bound source tells the panel one field's answer, in
           the scope that holds it. OPEN OR SHUT: a shut panel that skipped this opened on an old
           answer, and its next report wrote that answer back over the Query.
+      - $type: method
+        name: drawResults
+        args: "results: Readonly<Record<string, number>>, scope?: string"
+        description: >-
+          drawResults(results, scope) — a bound source tells the panel the rows each answer in a
+          scope matches, by field or saved-filter id. A field drawn as ONE chip, and a saved
+          filter's chip, show it in their tip. SILENT.
       - $type: method
         name: show
         args: ""

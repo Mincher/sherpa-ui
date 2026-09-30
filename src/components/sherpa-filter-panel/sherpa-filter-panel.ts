@@ -184,6 +184,8 @@ export class SherpaFilterPanel extends SherpaElement {
     'data-heading', 'open',
     // The host saves filters. TRAP T-the-panel-saves-a-whole-scope
     'data-saveable',
+    // The arrangement, as a bound source writes it on every control. TRAP T-a-panel-follows-the-query-open-or-shut
+    'data-sort-field', 'data-sort-direction', 'data-group-field',
   ];
 
   /** Every drawn field, by `${scope}:${id}`. */
@@ -243,12 +245,26 @@ export class SherpaFilterPanel extends SherpaElement {
     if (name === 'data-heading') this.#syncHeading();
     else if (name === 'open') this.#enforceWidth();
     else if (name === 'data-saveable') this.#syncSaveable();
+    else if (name.startsWith('data-sort-') || name === 'data-group-field') this.#syncArrangement();
     else if (name === 'data-pending' || name === 'data-remote') this.#syncPending();
   }
 
   override onConnect(): void {
     this.#media()?.addEventListener('change', this.#enforceWidth);
     this.#enforceWidth();
+  }
+
+  /** Follow the arrangement onto each Group and Sort chip: a toolbar, a grid
+   *  heading or a View set it. The chip knows how.
+   *  TRAP T-a-panel-follows-the-query-open-or-shut */
+  #syncArrangement(): void {
+    for (const held of this.#held.values()) {
+      const kind = held.def.id;
+      if (kind !== 'group' && kind !== 'sort') continue;
+      const chip = this.#oneChip(held) as (HTMLElement & {
+        arrangeBy?: (field: string, direction?: string | null) => void }) | null;
+      chip?.arrangeBy?.(this.dataset[kind === 'sort' ? 'sortField' : 'groupField'] ?? '', this.dataset['sortDirection']);
+    }
   }
 
   /* ── The public API ───────────────────────────────────────────────── */
@@ -370,6 +386,26 @@ export class SherpaFilterPanel extends SherpaElement {
    */
   drawReading(field: string, reading: FieldReading, scope: string): void {
     if (this.#held.has(`${scope}:${field}`)) this.setFieldReading(field, reading);
+  }
+
+  /**
+   * drawResults(results, scope) — a bound source tells the panel the rows each
+   * answer in a scope matches, by field or saved-filter id. A field drawn as
+   * ONE chip, and a saved filter's chip, show it in their tip. SILENT.
+   * TRAP T-a-chip-counts-its-own-results
+   */
+  drawResults(results: Readonly<Record<string, number>>, scope?: string): void {
+    for (const held of this.#held.values()) {
+      if (held.scope !== scope) continue;
+      type Counted = HTMLElement & { results?: number | null };
+      const one = this.#oneChip(held) as Counted | null;
+      if (one) one.results = results[held.def.field ?? held.def.id] ?? null;
+      else if (held.def.id === 'presets') {
+        for (const chip of held.values.querySelectorAll<Counted>('.value')) {
+          chip.results = results[chip.dataset['value'] ?? ''] ?? null;
+        }
+      }
+    }
   }
 
   /** Is it showing? The `open` attribute, as on every surface that opens. */
@@ -789,7 +825,11 @@ export class SherpaFilterPanel extends SherpaElement {
     if (items.length) api.items?.(items);
     // `range` and `kept`: a number's shape, and the shape not in force. TRAP T-both-shapes-are-kept
     if (!state || (!readingRows(state).length && !state.mode && !state.mirror && state.range == null && !state.kept)) return;
-    this.#answering.push(Promise.resolve(api.rendered).then(() => { api.reading = state; }));
+    this.#answering.push(Promise.resolve(api.rendered).then(() => {
+      api.reading = state;
+      // SILENT, so its chip is told. TRAP T-a-silent-steer-still-redraws-its-chip
+      menu.closest<HTMLElement & { refresh?: () => void }>('sherpa-quick-filter')?.refresh?.();
+    }));
     if (this.#answering.length === 1) queueMicrotask(() => this.#settleAnswers());
   }
 

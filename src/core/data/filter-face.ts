@@ -16,6 +16,7 @@
  * - spellConditions — Chained rows, in words: `Contains "ab" or Equals cd`.
  */
 import { DEFAULT_OP, OP_LABELS, OP_TAKES, valueKey } from './store.js';
+import { formatDate } from './format-date.js';
 import type { FieldCondition, FilterState } from './filter-state.js';
 
 /**
@@ -63,8 +64,16 @@ export function filterFace(state: FilterState): FilterFace {
   const condition = named ? OP_LABELS[op] : '';
   const typed = (OP_TAKES[op] ?? 'list') === 'text';
 
-  const value = typed ? text : picks.length > 1 ? `${picks[0]}…` : (picks[0] ?? '');
-  const spelled = typed ? text : picks.join(', ');
+  /* TWO ENDS read as a range, and a DAY as a day — the one way every control
+     says them. TRAP T-a-date-reads-one-way · TRAP T-date-label-reads-in-full
+     TRAP T-a-chip-says-its-own-answer */
+  const dated = state.type === 'date' && !lead;
+  const ends = !typed && state.range && picks.length === 2;
+  const span = ends ? (dated ? formatDate(picks[0]!, picks[1]) : `${picks[0]} to ${picks[1]}`) : '';
+  const said = dated ? picks.map((day) => formatDate(day)) : picks;
+
+  const value = typed ? text : span || (said.length > 1 ? `${said[0]}…` : (said[0] ?? ''));
+  const spelled = typed ? text : span || said.join(', ');
 
   /* Many rows say their own story; one row falls back to the old wording. */
   const chained = state.conditions.length > 1 ? spellConditions(state) : '';
