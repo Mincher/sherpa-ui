@@ -1152,6 +1152,7 @@ down is not asked for.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-send-to-view-filters.spec.ts`
+- Site: `src/core/data/data-source.ts`
 
 ### T-a-condition-marks-every-match
 
@@ -9150,6 +9151,7 @@ The VIEW scope keeps its own name, because there is exactly one of it.
 ---
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
 
 ### T-a-panel-adds-through-the-bar-that-owns-the-list
 
@@ -15092,6 +15094,40 @@ applies them, which is why none of them caught it; the new test uses a real
 - Site: `src/core/data/bind-selection.ts`
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
+
+### T-a-chart-scope-is-its-legend-field
+
+A chart has a scope of its own in the filter panel, and it is ONE Simple
+filter: the legend's field, a chip per legend item, each with its series'
+swatch. No Advanced, nothing to add, nothing to save. Will, TODO 52.
+
+It is the scope the legend already writes (`picks:<legend id>`, narrowing its
+chart alone), DECLARED: `source.declarePart(scope, { field, only, label })`.
+Three things follow from the declaring, and each was a hole without it:
+
+- **It is drawn before it is answered.** An unanswered scope is pruned from the
+  Query, so `describe()` reads the declaration, never `holds`.
+- **A write from anywhere narrows the one chart.** The panel has no pointer to
+  the chart; `write()` finds `only` in the declaration. Without it the scope
+  came back WIDE and narrowed every component.
+- **Both views are told.** The legend hears `selection-change`; a panel is
+  drawn `drawReading(field, reading, scope)` — and takes it BY SCOPE, because
+  a chart's field is often the grid's or the View's too.
+
+A panel draws the parts after the View and before every other scope. The
+swatch is the value's place in the field's declared values, from 1 — the same
+number the chart paints by.
+
+SENT UP, the answer goes to the View with its field and the chart lets go of
+it; its section then says where the filter went. The View draws only a field
+it knows, so declaring a part declares its field.
+
+- Site: `src/core/data/data-source.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
+- Site: `test/unit/chart-scope.test.mjs`
+- Site: `test/e2e/reforged-chart-scope.spec.ts`
 
 ### T-one-query-one-owner
 

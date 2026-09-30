@@ -10,7 +10,10 @@
       "region": {
         "label": "Region", "select": "multiple", "icon": "globe",
         "labels": { "AMER": "Americas", "LATAM": "Latin America" }
-      }
+      },
+      "category": { "label": "Category", "select": "multiple" },
+      "os": { "label": "OS", "select": "multiple" },
+      "severity": { "label": "Severity", "select": "multiple" }
     },
     "scopes": {
       "view": { "label": "View filters", "holds": ["customer", "region"] }

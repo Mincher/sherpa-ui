@@ -75,7 +75,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 28 | 21f | "Send to view filters" | feature |
 | ✅ | 29 | 21b | Which header chips carry over between views | feature |
 | ✅ | 30 | 20b | The Date filter should be a view-scope date RANGE | feature |
-| ⬜ | 31 | 52 | A data viz scope in the filter panel: one Simple filter, a chip per legend item, with its swatch | feature |
+| ✅ | 31 | 52 | A data viz scope in the filter panel: one Simple filter, a chip per legend item, with its swatch | feature |
+| ⬜ | 31aa | 149 | A chart legend's items ARE swatch chips: move `sherpa-chart-legend` onto `sherpa-quick-filter` | refactor |
 | ❓ | 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
 | ⬜ | 31b | 124 | The Filters button and menu move to the filter panel HEADER: one menu for every scope | feature |
 | ⬜ | 31c | 122 | Email starts SIMPLE, with a switch to Advanced; over 20 values it is one chip with a multi-select menu | feature |
@@ -1579,7 +1580,7 @@ the last report before it loads.
     and remote already waits for Apply by design.
   - **B: may choose live too**, with the debounce.
 
-### `[ ]` 52 — EXPLORE, later: a data viz scope in the filter panel
+### `[x]` ✅ 52 — A data viz scope in the filter panel
 
 A legend toggle IS a filter (42, done: `only` narrows one component), so a chart could have its own component
 scope in the panel. It may want chips for its AXES or its AGGREGATION, the way
@@ -1638,6 +1639,53 @@ simple filters using filter chips of some kind. This could lead to cleaner,
 consolidated, code, too."* So the panel's chip and the legend's item should be
 ONE chip, with a swatch — build the panel's that way, and then look at moving
 `sherpa-chart-legend` onto it.
+
+**✅ Done 2026-09-30 — the first, small shape.** Each chart with a legend has
+a section in the panel, after the View's and before the grid's, named as its
+card is ("Alerts by category"). It holds ONE filter: the legend's field, a
+chip per legend item, each with its swatch — the same colour the chart
+paints. No Advanced, no Filters button, no Save.
+
+- **One answer, two views.** A chip and the legend's item are the same
+  answer: press either and the other follows. It narrows that chart ALONE —
+  on Records the grid holds `status` too, and its chips, its rows and the
+  other chart do not move.
+- **Sent up.** The field's ↑ sends the answer to the View filters: every
+  component narrows, and the chart's section says where the filter went.
+  Take the field off the View and the chart's chips come back.
+- **The chip.** `sherpa-quick-filter` takes `data-swatch="<series>"`: it leads
+  with that series' swatch where its icon goes.
+- **The data layer.** `source.declarePart(scope, { field, only, label })` —
+  the provider declares it for each legend — and `describe(scope)` gives the
+  panel the one filter. The dashboard's JSON names the three fields
+  (Category, OS, Severity).
+
+Two things to know. A panel shows EVERY value; the legend folds the seventh
+and later into "Other". And with no chip on, every series shows — so the
+panel's chips all read off where the legend's items all read on. That is how
+every filter chip reads; 149 is where the two become one control.
+`T-a-chart-scope-is-its-legend-field`
+
+The arranging chips (Segment by, Measure, Over) and the two choices above
+still wait.
+
+### `[ ]` 149 — A chart legend's items ARE swatch chips
+
+Will, 2026-09-30 (with 52): *"legend items could just be a boolean filter
+chip variant. It's just style differences and a swatch instead of an icon.
+Functionaly they are the same. That keeps all representation of simple
+filters using filter chips of some kind. This could lead to cleaner,
+consolidated, code, too."*
+
+The chip has its swatch now (52), so the panel's half is done. What is left
+is `sherpa-chart-legend` itself: draw each item as a `sherpa-quick-filter
+data-swatch`. Four things a legend item has that a chip does not, to settle
+when it is built:
+
+- its VALUE (the count at the right, in a shared column);
+- the "Other" roll-up row and its menu;
+- read-only mode (a gauge's zones: a key, not a filter);
+- "every item on" as the rest state, where a chip's is "every chip off".
 
 ### `[ ]` 124 — The Filters button and menu move to the filter panel HEADER
 
@@ -3230,6 +3278,8 @@ One line each. The detail is in git and in the trap named.
 - 147: a tooltip whose text goes shuts whole; an off chip says nothing
 - 146, 148: queued — the shell's panel areas resize by their edge; a reset date chip reads `Unassigned`
 - 52: ruled — a data viz scope is one Simple filter, a chip per legend item
+- 52: each chart's own scope is in the filter panel — one filter, a swatch chip per legend item; it narrows its chart alone, and ↑ sends it to the View — `T-a-chart-scope-is-its-legend-field`
+- 149: queued — the legend's items become swatch chips
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

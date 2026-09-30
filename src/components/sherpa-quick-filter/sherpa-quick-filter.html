@@ -23,6 +23,9 @@
                     "Field: Value" while exactly ONE menu value is picked;
                     two or more revert to the field name plus the count badge.
     data-icon-start leading icon — an icon name (Figma default is a funnel)
+    data-swatch     a data-viz series, from 1: the chip leads with that series'
+                    swatch, as a chart's legend does — one value of a chart's
+                    own filter. TRAP T-a-chart-scope-is-its-legend-field
     aria-label      the name of a chip that shows no label. Its tooltip says it.
                     TRAP T-a-chip-says-its-own-answer
     data-indicator  show the leading status dot (Figma "Indicator (atom)", opt-in)
@@ -91,6 +94,7 @@
       <span class="indicator" part="indicator" aria-hidden="true"></span>
       <!-- role=img so the aria-label is announced: no role = no accessible name. -->
       <span class="count" part="count" role="img"></span>
+      <span class="swatch" part="swatch" aria-hidden="true"></span>
       <span class="icon sherpa-icon-box" part="icon" aria-hidden="true"></span>
       <span class="label" part="label"><slot></slot></span>
     </button>

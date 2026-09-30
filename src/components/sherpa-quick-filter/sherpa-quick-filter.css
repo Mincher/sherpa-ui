@@ -169,6 +169,21 @@
    style here. An absolute bubble was clipped by `.chips { overflow: clip }` at
    any z-index — a clip is not a stacking question. */
 
+/* Leading SWATCH — Figma "Legend Swatch", as a chart's legend draws it: the
+   series hue, and a solid stroke of it. JS sets --_hue and --_border. */
+.swatch { display: none; }
+:host([data-swatch]) .swatch {
+  display: inline-block;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  inline-size: var(--sherpa-display-mode-size-xs, 12px);
+  block-size: var(--sherpa-display-mode-size-xs, 12px);
+  border: var(--sherpa-display-mode-border-width-base, 1px) solid
+    var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)));
+  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
+  background: var(--_hue, var(--sherpa-data-viz-series-1, #8364c880));
+}
+
 /* Leading icon — shown only with data-icon-start (Figma "Icon", funnel default). */
 .icon { display: none; }
 /* Box + glyph come from .sherpa-icon-box; Figma "Icon" is content/size/base. */

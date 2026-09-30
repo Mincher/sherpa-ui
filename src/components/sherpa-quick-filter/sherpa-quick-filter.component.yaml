@@ -45,6 +45,11 @@ anatomy:
             attrs:
               role: img
           - el: span
+            class: swatch
+            part: swatch
+            attrs:
+              aria-hidden: "true"
+          - el: span
             class: icon sherpa-icon-box
             part: icon
             attrs:
@@ -231,6 +236,14 @@ props:
       case — you are always in SOME view, so the amber "on but filtering by nothing" state is one it
       cannot be in.
   - $type: prop
+    name: data-swatch
+    type: string
+    observed: false
+    kind: style
+    description: >-
+      a data-viz series, from 1: the chip leads with that series' swatch, as a chart's legend does —
+      one value of a chart's own filter. TRAP T-a-chart-scope-is-its-legend-field
+  - $type: prop
     name: data-type
     type: enum
     observed: false
@@ -274,6 +287,9 @@ states:
   - $type: state
     name: count
     selector: ":host([data-count])"
+  - $type: state
+    name: swatch
+    selector: ":host([data-swatch])"
   - $type: state
     name: icon-start
     selector: ":host([data-icon-start])"

@@ -21,11 +21,15 @@ test('on Records, each panel section wears the icon for what it filters, after i
       const x = (s: string): number => sr.querySelector(s)!.getBoundingClientRect().x;
       return {
         scope: a.dataset['scope'], icon: a.dataset['icon'] ?? null, drawn: !!sr.querySelector('.icon svg'),
-        order: x('.chevron') < x('.icon') && x('.icon') < x('.heading'),
+        // A section with no icon has no order to keep.
+        order: !a.dataset['icon'] || (x('.chevron') < x('.icon') && x('.icon') < x('.heading')),
       };
     });
   })).toEqual([
     { scope: 'view', icon: 'monitor', drawn: true, order: true },
+    // A chart's own section (52). Figma has no chart glyph yet — that is 115.
+    { scope: 'picks:r-bar-legend', icon: null, drawn: false, order: true },
+    { scope: 'picks:r-donut-legend', icon: null, drawn: false, order: true },
     { scope: 'data', icon: 'table-columns', drawn: true, order: true },
   ]);
 });

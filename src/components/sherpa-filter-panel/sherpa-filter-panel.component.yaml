@@ -226,6 +226,7 @@ events:
     bubbles: true
     composed: true
     detail:
+      from: unknown
       ids: unknown
       scope: unknown
   - $type: event
@@ -296,7 +297,7 @@ $extensions:
     methods:
       - $type: method
         name: setFieldReading
-        args: "id: string, given: FieldReading"
+        args: "id: string, given: FieldReading, scope?: string"
         description: >-
           setFieldReading(id, reading) — steer ONE field with a whole reading: what another control
           set while the panel shows. SILENT, like every steer, and it is that field's last Apply

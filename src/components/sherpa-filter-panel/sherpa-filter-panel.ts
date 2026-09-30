@@ -47,6 +47,8 @@ export interface PanelValue {
   kind?: FilterKind;
   /** A reader's OWN saved filter: its chip opens Edit filter and Delete filter. */
   editable?: boolean;
+  /** The data-viz series a chart draws this value in, from 1 — its chip's swatch. */
+  swatch?: number;
 }
 
 /** One field the panel draws. The shape a quick-filter toolbar takes. */
@@ -107,6 +109,9 @@ export interface PanelScope {
   label: string;
   /** What it narrows — its header's icon. */
   shows?: ScopeShows;
+  /** ONE component's own answer to one field — a chart's legend field: nothing
+   *  to add, nothing to save. TRAP T-a-chart-scope-is-its-legend-field */
+  part?: boolean;
   filters?: PanelFilter[];
   /** Fields this scope may still add. */
   available?: PanelFilter[];
@@ -338,13 +343,14 @@ export class SherpaFilterPanel extends SherpaElement {
    * one chip — Group, Sort, a date — is left alone.
    * TRAP T-an-open-panel-follows-the-data-layer
    */
-  setFieldReading(id: string, given: FieldReading): void {
+  setFieldReading(id: string, given: FieldReading, scope?: string): void {
     /* OFF filters nothing, and a panel has no "off": it shows no answer. The
        Query keeps it, for the chip that switched it off.
        TRAP T-a-suspended-answer-is-drawn-as-off */
     const reading: FieldReading = given.suspended ? { picked: [] } : given;
     for (const [key, held] of this.#held) {
-      if (held.def.id !== id) continue;
+      // A chart's field may be the View's too: the SCOPE says which. Without one, the first.
+      if (held.def.id !== id || (scope != null && held.scope !== scope)) continue;
       const menu = held.menu as (HTMLElement & { reading: FieldReading }) | undefined;
       const chip = this.#oneChip(held) as (HTMLElement & { refresh?: () => void }) | null;
       if (chip) {
@@ -385,7 +391,7 @@ export class SherpaFilterPanel extends SherpaElement {
    * answer back over the Query. TRAP T-a-panel-follows-the-query-open-or-shut
    */
   drawReading(field: string, reading: FieldReading, scope: string): void {
-    if (this.#held.has(`${scope}:${field}`)) this.setFieldReading(field, reading);
+    if (this.#held.has(`${scope}:${field}`)) this.setFieldReading(field, reading, scope);
   }
 
   /**
@@ -477,10 +483,13 @@ export class SherpaFilterPanel extends SherpaElement {
       const icon = scope.shows ? SHOWS_ICON[scope.shows] : undefined;
       if (icon) box.setAttribute('data-icon', icon);
       if (this.#shut.has(scope.scope)) box.removeAttribute('open');
+      box.toggleAttribute('data-part', !!scope.part);
 
       const mine = (scope.filters ?? []).filter((f) => {
         // One HELD ABOVE keeps its place here, and says so. TRAP T-a-panel-asks-for-its-scopes
         if (f.appliedAt) return true;
+        // A chart's own answer narrows that chart alone, so it is never a second copy.
+        if (scope.part) return true;
         if (taken.has(f.id)) return false;
         taken.add(f.id);
         return true;
@@ -632,7 +641,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** ONE value chip. The only place this panel makes a `<sherpa-quick-filter>`. */
   #valueChip(value: string, label: string, opts: {
-    icon?: string; current?: boolean; kind?: FilterKind; column?: string;
+    icon?: string; current?: boolean; kind?: FilterKind; column?: string; swatch?: number;
   } = {}): HTMLElement | null {
     const proto = this.$<HTMLTemplateElement>('template.value-tpl');
     const one = proto?.content.firstElementChild?.cloneNode(true) as HTMLElement | null;
@@ -646,6 +655,7 @@ export class SherpaFilterPanel extends SherpaElement {
     if (opts.icon) one.setAttribute('data-icon-start', opts.icon);
     if (opts.kind) one.dataset['kind'] = opts.kind;
     if (opts.column) one.dataset['column'] = opts.column;
+    if (opts.swatch) one.dataset['swatch'] = String(opts.swatch);
     one.toggleAttribute('data-current', !!opts.current);
     return one;
   }
@@ -750,7 +760,8 @@ export class SherpaFilterPanel extends SherpaElement {
 
     for (const option of values ? options : []) {
       const one = this.#valueChip(option.value, option.label ?? option.value,
-        { current: !!option.selected, ...(option.kind ? { kind: option.kind } : {}) });
+        { current: !!option.selected, ...(option.kind ? { kind: option.kind } : {}),
+          ...(option.swatch ? { swatch: option.swatch } : {}) });
       if (one && option.editable) this.#addSavedMenu(one);
       if (one) values!.append(one);
     }
@@ -1210,7 +1221,7 @@ export class SherpaFilterPanel extends SherpaElement {
     const raise = this.pathFind(event, '.field-raise');
     if (raise) {
       const up = this.#fieldOf(raise);
-      if (up) this.emit('filter-add-request', { scope: VIEW, ids: [up.def.field ?? up.def.id] });
+      if (up) this.emit('filter-add-request', { scope: VIEW, ids: [up.def.field ?? up.def.id], from: up.scope });
       return;
     }
     // REMOTE: one field's own Apply or Discard. TRAP T-apply-and-discard-wait-for-a-change
@@ -1308,7 +1319,8 @@ export class SherpaFilterPanel extends SherpaElement {
     const saves = this.hasAttribute('data-saveable');
     for (const box of this.$$<HTMLElement>('.scope[data-scope]')) {
       const scope = box.dataset['scope'] ?? '';
-      box.toggleAttribute('data-can-save', saves && Object.keys(this.#scopeReadings(scope)).length > 0);
+      box.toggleAttribute('data-can-save', saves && !box.hasAttribute('data-part')
+        && Object.keys(this.#scopeReadings(scope)).length > 0);
     }
   }
 

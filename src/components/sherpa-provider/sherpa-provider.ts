@@ -105,6 +105,13 @@ const containerOf = (el: Element): HTMLElement | null => {
   return null;
 };
 
+/** What a reader calls a component: its own `aria-label`, or the heading of
+ *  the card it sits in. TRAP T-a-scope-is-named-for-its-content */
+const nameOf = (el: Element): string =>
+  el.getAttribute('aria-label')
+  ?? containerOf(el)?.querySelector(':scope > [slot="header"]')?.getAttribute('data-heading')
+  ?? '';
+
 /** One component that asked, and how to stop answering it. */
 interface Asked {
   request: ContextRequestEvent<unknown>;
@@ -813,7 +820,9 @@ export class SherpaProvider extends SherpaElement {
       return undefined;
     }
     const only = picks.narrows === 'host' ? up(el) : el;
-    return bindSelection(el, source as unknown as Selector, {
+    // One part per component, or the second would replace the first.
+    const key = `picks:${el.id || field}`;
+    const unbind = bindSelection(el, source as unknown as Selector, {
       field,
       values,
       read: (c) => c.picked,
@@ -821,9 +830,17 @@ export class SherpaProvider extends SherpaElement {
       event: picks.event,
       reach: 'component',
       ...(only ? { only } : {}),
-      // One part per component, or the second would replace the first.
-      key: `picks:${el.id || field}`,
+      key,
     }).destroy;
+    if (!only) return unbind;
+    /* The chart's OWN scope, so a filter panel draws it — named as the chart
+       is. TRAP T-a-chart-scope-is-its-legend-field */
+    const label = nameOf(only);
+    source.declarePart(key, { field, only: only as Populatable, ...(label ? { label } : {}) });
+    return () => {
+      source.declarePart(key, undefined);
+      unbind();
+    };
   }
 
   /**

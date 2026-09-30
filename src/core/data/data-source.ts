@@ -38,6 +38,7 @@
  * - .setFilter — Replace the WHOLE filter, clearing every contribution.
  * - .contribute — Own ONE NAMED PART — the COMPONENT scope.
  * - .write — Write ONE scope's reading of ONE field — a component's own answer.
+ * - .declarePart — Declare a PART: one field that narrows one component — a chart's legend field.
  * - .declareDefault — A component's OWN default filter — readings that narrow `only` it — as its scope in the Query.
  * - .reading — One scope's reading of one field, or undefined.
  * - .contributions — Every named part currently applied — the component-scope filters.
@@ -135,7 +136,8 @@ export interface FieldFilter extends Omit<FieldDeclaration, 'type'> {
   label: string;
   /** A number or a date draws a control of its own; any other field, its values. */
   kind?: 'number' | 'date';
-  options?: { value: string; label: string }[];
+  /** `swatch`: the data-viz series a chart draws this value in, from 1. */
+  options?: { value: string; label: string; swatch?: number }[];
   /** A date's days that have records — every other day draws inactive. */
   availableDates?: string[];
   /** Its picks are ENDS from the start — the View's date. TRAP T-a-range-is-bounded-by-the-data */
@@ -177,6 +179,9 @@ export interface ScopeDescription {
   label: string;
   /** What it narrows, as its bound component says. TRAP T-a-scope-says-what-it-shows */
   shows?: ScopeShows;
+  /** A PART: one component's own answer to ONE field — a chart's legend field.
+   *  Nothing is added to it or saved from it. TRAP T-a-chart-scope-is-its-legend-field */
+  part?: boolean;
   filters: HeldFilter[];
   available: FieldFilter[];
   group?: { field: string; label: string }[];
@@ -397,6 +402,9 @@ export class DataSource extends EventTarget {
   #defaults = new Map<string, ScopeQuery>();
   /** Each scope's name as a reader sees it. */
   #scopeLabels = new Map<string, string>();
+  /** Each PART: the one field it answers, and the one component it narrows.
+   *  TRAP T-a-chart-scope-is-its-legend-field */
+  #narrowing = new Map<string, { field: string; only: Populatable; label?: string }>();
 
   constructor(options: DataSourceOptions) {
     super();
@@ -656,8 +664,10 @@ export class DataSource extends EventTarget {
    * TRAP T-a-component-part-narrows-one-component · TRAP T-one-query-one-owner
    */
   write(scope: string, field: string, reading: FieldReading | undefined, at: { only?: Populatable } = {}): void {
-    const bind = at.only ? this.#bound.get(at.only) : undefined;
-    if (reading && at.only && bind?.rows !== 'all') {
+    // A declared part narrows its own component, whoever writes it — a panel too.
+    const only = at.only ?? this.#narrowing.get(scope)?.only;
+    const bind = only ? this.#bound.get(only) : undefined;
+    if (reading && only && bind?.rows !== 'all') {
       report({
         code: 'component-part-on-a-page',
         message: 'write: a scope that narrows one component needs a bound `rows: "all"` component.',
@@ -683,6 +693,25 @@ export class DataSource extends EventTarget {
     // The shared filter did not move, so no load will push it: push it here.
     for (const [el, b] of this.#bound) if (narrows.includes(b.id)) this.#push(el);
     this.dispatchEvent(new CustomEvent('selection-change', { detail: { field, scope } }));
+    // A panel shows a part too, and is told as a bar is. TRAP T-one-query-one-owner
+    if (this.#narrowing.has(scope)) {
+      const drawn = structuredClone(this.#draft.scopes[scope]?.readings[field] ?? { picked: [] });
+      for (const [el, b] of this.#bound) if (Array.isArray(b.scope)) el.drawReading?.(field, drawn, scope);
+    }
+  }
+
+  /**
+   * Declare a PART — the scope of ONE field that narrows ONE component, a
+   * chart's legend field — so a panel draws it before it is answered, and a
+   * write to it from anywhere narrows that component. `undefined` forgets it.
+   * TRAP T-a-chart-scope-is-its-legend-field
+   */
+  declarePart(scope: string, part: { field: string; only: Populatable; label?: string } | undefined): void {
+    if (part) this.#narrowing.set(scope, part);
+    else this.#narrowing.delete(scope);
+    // Sent up, the View holds its field — and draws only a field it knows.
+    if (part && !this.#fields.has(part.field)) this.declareField(part.field);
+    this.#drawScopesSoon();
   }
 
   /**
@@ -803,6 +832,22 @@ export class DataSource extends EventTarget {
   describe(scope: string): ScopeDescription {
     const q = this.#draft.scopes[scope] ?? { holds: [], readings: {} };
     const above = scope === VIEW ? [] : this.scope(VIEW);
+    const part = this.#narrowing.get(scope);
+    if (part) {
+      /* ONE Simple filter: a chip per value, each with the series it is drawn
+         in. No Advanced — Will, TODO 52. TRAP T-a-chart-scope-is-its-legend-field */
+      const { advanced: _a, custom: _c, kind: _k, options, ...def } = this.filterDef(part.field);
+      const reading = q.readings[part.field];
+      return {
+        scope, label: part.label ?? def.label, shows: 'chart', part: true, available: [],
+        filters: options?.length ? [{
+          ...def,
+          options: options.map((o, i) => ({ ...o, swatch: i + 1 })),
+          ...(reading ? { state: structuredClone(reading) } : {}),
+          ...(above.includes(part.field) ? { appliedAt: this.scopeLabel(VIEW) } : {}),
+        }] : [],
+      };
+    }
     const presets: HeldFilter[] = Object.entries(q.presets ?? {}).map(([id, on]) => {
       const facts = this.#presetFacts.get(id) ?? {};
       return {
@@ -858,7 +903,10 @@ export class DataSource extends EventTarget {
       for (const [el, { scope }] of this.#bound) {
         // A scope this page does not have — nothing held, nothing to offer — is not drawn.
         if (Array.isArray(scope) && el.drawScopes) {
-          void el.drawScopes(scope.map((s) => this.describe(s))
+          // Each chart's own, between the View and the rest. Will, TODO 52.
+          const [first, ...rest] = scope as string[];
+          const asked = first === VIEW ? [VIEW, ...this.#narrowing.keys(), ...rest] : [...this.#narrowing.keys(), ...scope];
+          void el.drawScopes(asked.map((s) => this.describe(s))
             .filter((d) => d.scope === VIEW || d.filters.length || d.available.length));
         }
       }
@@ -894,6 +942,11 @@ export class DataSource extends EventTarget {
         if (id === 'presets') {
           this.#setPresets(scope, (reading.picked ?? []).map(String));
           switched.push(scope);
+          continue;
+        }
+        // A chart's own field narrows that chart alone. TRAP T-a-chart-scope-is-its-legend-field
+        if (this.#narrowing.has(scope)) {
+          this.write(scope, id, reading.picked?.length ? { picked: [...reading.picked] } : undefined);
           continue;
         }
         this.select(id, reading.picked ?? [], reading);
@@ -2072,7 +2125,19 @@ export class DataSource extends EventTarget {
       case 'filter-add-request': {
         const scope = detail['scope'];
         const ids = detail['ids'];
-        if (typeof scope === 'string' && Array.isArray(ids)) this.#take(scope, ids.map(String));
+        if (typeof scope !== 'string' || !Array.isArray(ids)) return;
+        const from = detail['from'];
+        const part = typeof from === 'string' ? this.#narrowing.get(from) : undefined;
+        const answer = part ? this.reading(from as string, part.field) : undefined;
+        this.#take(scope, ids.map(String));
+        /* SENT UP from a chart: its answer goes with the field, and the chart
+           lets go of it — the View narrows every component now. TRAP T-send-to-view-filters */
+        if (part && answer && ids.includes(part.field)) {
+          this.write(from as string, part.field, undefined);
+          this.select(part.field, answer.picked ?? [], answer);
+          this.commit();
+          this.#drawBars(scope);
+        }
         return;
       }
       case 'filter-apply':

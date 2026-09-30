@@ -17,6 +17,7 @@ import { arranges, FILTER_KINDS, type FilterKind } from '../../core/ui/filter-ki
 import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
 // Floating, so the count tooltip escapes the toolbar's clipping chip run.
 import '../sherpa-tooltip/sherpa-tooltip.js';
+import { paintSeries } from '../../core/ui/chart-parts.js';
 
 /** A results count as the reader's locale writes it. */
 const RESULTS = new Intl.NumberFormat();
@@ -47,6 +48,8 @@ export class SherpaQuickFilter extends SherpaElement {
        TRAP T-a-trigger-click-follows-light-dismiss */
     'data-open': { type: 'boolean', kind: 'style' },
     'data-indicator': { type: 'boolean', kind: 'style' },
+    /* A data-viz series, from 1: the chip leads with its swatch. */
+    'data-swatch': { type: 'string', kind: 'style' },
     'data-menu': { type: 'boolean', kind: 'style' },
     'data-type': { type: 'enum', kind: 'style', values: ['ai', 'jump'] },
     'data-plain': { type: 'boolean', kind: 'style' },
@@ -103,6 +106,7 @@ export class SherpaQuickFilter extends SherpaElement {
     this.#syncText();
     // A name given before the first render is said now.
     this.#writeTip();
+    this.#paintSwatch();
     this.$('.body')?.addEventListener('click', this.#onClick);
     this.$('.caret')?.addEventListener('click', this.#onCaret);
     // The menu lives in the light DOM; its events bubble up through the host.
@@ -176,6 +180,7 @@ export class SherpaQuickFilter extends SherpaElement {
        TRAP T-off-is-not-forgotten */
     if (this.#arranges()) this.#drawArrangement();
     if (name === 'aria-label' || name === 'data-current') this.#writeTip();
+    if (name === 'data-swatch') return this.#paintSwatch();
     if (name === 'data-current' || name === 'data-pending') this.#syncBadge();
     if (name === 'data-current') this.#syncEmpty();
     /* The tooltip says WHY a chip is off, so it must follow the two attributes
@@ -184,6 +189,13 @@ export class SherpaQuickFilter extends SherpaElement {
     else if (name === 'data-superseded' || name === 'data-applied-at') {
       this.#syncCountTip((this.menu?.values ?? []) as string[]);
     } else this.#syncText();
+  }
+
+  /** Give the swatch its series' hue and stroke — the legend's own paint. */
+  #paintSwatch(): void {
+    const n = Number(this.dataset['swatch']);
+    const swatch = this.$<HTMLElement>('.swatch');
+    if (swatch && Number.isInteger(n) && n > 0) paintSeries(swatch, n - 1, n);
   }
 
   get current(): boolean {
