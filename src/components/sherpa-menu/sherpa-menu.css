@@ -143,7 +143,7 @@
   grid-template-columns: 1fr auto;
 }
 
-/* The mode switch sits on the heading's own row, at its end — and ONLY when
+/* The mode button sits on the heading's own row, at its end — and ONLY when
    the field opted in. TRAP T-conditions-are-opt-in-per-field */
 .use-condition { display: none; }
 
@@ -152,13 +152,7 @@
 :host([data-type="filter"][data-conditional]) .use-condition {
   display: inline-flex;
   align-items: center;
-  gap: var(--sherpa-display-mode-space-xs, 8px);
   grid-area: mode;
-}
-
-.use-advanced-label {
-  color: var(--sherpa-style-content-base, #35353d);
-  font-size: var(--sherpa-theme-content-size-base, 14px);
 }
 
 /* NOWHERE TO SWITCH TO. An advanced-only field has no list behind the button.
@@ -592,7 +586,7 @@
 :host([data-body="number"][data-range]) .body-op { display: none; }
 
 /* READ-ONLY: the answer is shown and nothing here changes it — no footer, no
-   Add condition, no Advanced switch. `!important`: each is a composed
+   Add condition, no Advanced button. `!important`: each is a composed
    component whose own `:host` display wins otherwise.
    TRAP T-a-composed-child-hides-with-important
    TRAP T-a-view-held-heading-shows-and-refuses */

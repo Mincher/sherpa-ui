@@ -39,8 +39,8 @@ test('a heading switches both ways, each mode filters by its own answer, and a r
       box.dispatchEvent(new Event('change', { bubbles: true }));
     };
     const flip = async (): Promise<void> => {
-      const sw = menu().shadowRoot.querySelector('.use-advanced-switch') as HTMLElement & { shadowRoot: ShadowRoot };
-      sw.shadowRoot.querySelector<HTMLElement>('.input')!.click();
+      const sw = menu().shadowRoot.querySelector('.use-advanced') as HTMLElement & { shadowRoot: ShadowRoot };
+      sw.shadowRoot.querySelector<HTMLElement>('button')!.click();
       await wait();
     };
     const apply = async (): Promise<void> => {

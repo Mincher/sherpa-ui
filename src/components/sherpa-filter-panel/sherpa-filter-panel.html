@@ -116,8 +116,8 @@
   </template>
 
   <template class="field-tpl">
-    <!-- A FIELD: its header — the label, and Clear at the right — then the
-         Advanced switch, then its chips or its body. Will, 2026-09-26. -->
+    <!-- A FIELD: its header — the label, and its buttons at the right — then
+         its chips or its body. Will, 2026-09-26. -->
     <div class="field">
       <sherpa-section-header class="field-head" data-size="sm" data-divider="none">
         <!-- The TYPE SCALE's small class, in caps and light, as a metric's title. -->
@@ -140,13 +140,11 @@
                          data-icon-start="cross" aria-label="Discard"></sherpa-button>
           <sherpa-button class="field-apply" data-type="icon" data-size="sm"
                          data-icon-start="tick" aria-label="Apply"></sherpa-button>
+          <!-- ADVANCED: f(x), at the header's end, ON in Advanced. Will, TODO 141. -->
+          <sherpa-button class="field-advanced" data-type="icon" data-size="sm"
+                         data-icon-start="function" aria-pressed="false"></sherpa-button>
         </span>
       </sherpa-section-header>
-      <!-- BELOW the header, as the menu's Range switch is. -->
-      <div class="field-advanced">
-        <sherpa-switch class="field-advanced-switch" data-type="simple"></sherpa-switch>
-        <span class="sherpa-text-small">Advanced</span>
-      </div>
       <!-- `hug`: each chip at its own width. Every other value STRETCHES its
            items to share the line, which makes a chip read as a button. -->
       <sherpa-stack class="field-values" data-direction="inline" data-gap="sm"

@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**57 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**56 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -92,7 +92,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31m | 138 | Advanced filters go back to the INFO status styling, from success | quick |
 | ✅ | 31n | 139 | An Advanced toolbar chip's value half shows its VALUES, truncated — not the condition labels | quick |
 | ⬜ | 31o | 140 | Every Sherpa input a reader types into shows the Clear button — not a number stepper, not a text area | feature |
-| ⬜ | 31p | 141 | Advanced is an icon button again — f(x), at the right of the section or menu header, active when on | quick |
+| ✅ | 31p | 141 | Advanced is an icon button again — f(x), at the right of the section or menu header, active when on | quick |
 | ⬜ | 31q | 144 | A View's filters survive a swap to another View — a draft per View, for the session, and across sessions; two settings, on by default | feature |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
@@ -1860,12 +1860,24 @@ we do in the sherpa text input."*
 
 Today it is opt-in: `data-clearable` on `sherpa-input-text`.
 
-### `[ ]` 141 — Advanced is an f(x) icon button, not a switch
+### `[x]` ✅ 141 — Advanced is an f(x) icon button, not a switch
 
 Will, 2026-09-30, a minor one to queue: *"Instead of a simple switch for
 'advanced' let's go back to a button on the right of the filter panel
 section, and toolbar chip menu, header that is icon only, uses the f(x) icon,
 and is active when advanced, default when simple."*
+
+**✅ Done 2026-09-30.** The switch and its "Advanced" word are gone. A chip
+menu's header and a panel field's header each end in an f(x) icon button,
+named "Advanced" (in the panel, "Advanced Owner"). It is pressed — the
+active look — in Advanced, and plain in Simple. In the panel it sits after
+the Clear and Send to group, and shows before the field has an answer.
+
+**A bug this showed, fixed.** In the panel, the flip to Advanced reported the
+field BEFORE its new rows were drawn: "Advanced, no rows". So every row came
+back until the next edit. The switch hid it — its own `change` event made a
+second, late report. The flip now reports once, when the rows are drawn.
+`T-a-filter-menu-has-two-modes` · `T-a-rebuilt-row-reads-empty-for-a-tick`
 
 ### `[ ]` 144 — A View's filters survive a View swap: a draft per View
 
@@ -3344,6 +3356,7 @@ One line each. The detail is in git and in the trap named.
 - 149: queued — the legend's items become swatch chips
 - 148: an emptied date range holds no ends — the chip read `undefined` after a Reset
 - 121: a panel field's Clear and Send to are one button group
+- 141: Advanced is an f(x) icon button at the end of a menu's and a panel field's header; the panel's flip reports once its rows are drawn — `T-a-filter-menu-has-two-modes`
 - 123: a chip switched off keeps its results badge; the source counts an off answer, and a saved filter, on or off — `T-a-chip-counts-its-own-results`
 - 139: a chained chip's face shows its values — `U, an` — not the condition labels
 - 138: an Advanced chip, and the text it matched, are info blue again — `T-a-conditioned-chip-reads-as-info`

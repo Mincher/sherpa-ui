@@ -17,18 +17,19 @@ test('a menu speaks the new words', async ({ page }) => {
     const menu = await window.__mount<HTMLElement & { mode: string }>('sherpa-menu', undefined,
       { 'data-type': 'filter', 'data-advanced': true });
     const btn = menu.shadowRoot!.querySelector<HTMLElement>('.use-condition')!;
-    const flip = () => btn.querySelector('sherpa-switch')!.shadowRoot!.querySelector('input')!.click();
+    const flip = () => btn.querySelector('sherpa-button')!.shadowRoot!.querySelector('button')!.click();
     const heard: unknown[] = [];
     menu.addEventListener('filter-mode-change', (e) => heard.push((e as CustomEvent).detail));
     const shown = getComputedStyle(btn).display !== 'none';
     const start = menu.mode;
     flip();
     await window.__settled();
-    const sw = btn.querySelector('sherpa-switch')!;
-    const on = { mode: menu.mode, attr: menu.getAttribute('data-mode'), checked: sw.hasAttribute('checked') };
+    const sw = btn.querySelector('sherpa-button')!;
+    const pressed = (): boolean => sw.getAttribute('aria-pressed') === 'true';
+    const on = { mode: menu.mode, attr: menu.getAttribute('data-mode'), checked: pressed() };
     flip();
     await window.__settled();
-    const off = { mode: menu.mode, attr: menu.getAttribute('data-mode'), checked: sw.hasAttribute('checked') };
+    const off = { mode: menu.mode, attr: menu.getAttribute('data-mode'), checked: pressed() };
 
     // ADVANCED ONLY opens in Advanced, hides the switch, and cannot leave.
     const only = await window.__mount<HTMLElement & { mode: string }>('sherpa-menu', undefined,
@@ -37,15 +38,16 @@ test('a menu speaks the new words', async ({ page }) => {
     await window.__settled();
     const onlyBtn = only.shadowRoot!.querySelector<HTMLElement>('.use-condition')!;
     return {
-      shown, start, on, off, heard, label: btn.textContent!.trim(),
+      shown, start, on, off, heard, label: sw.getAttribute('aria-label'), glyph: sw.getAttribute('data-icon-start'),
       only: { mode: only.mode, attr: only.getAttribute('data-mode'), btn: getComputedStyle(onlyBtn).display },
     };
   });
 
   expect(r.shown).toBe(true);
   expect(r.start).toBe('simple');
-  // A SWITCH labelled Advanced, as Range is — Will's word (TODO 75).
+  // An f(x) BUTTON named Advanced — Will's word (TODO 75), and his button (TODO 141).
   expect(r.label).toBe('Advanced');
+  expect(r.glyph).toBe('function');
   expect(r.on).toEqual({ mode: 'advanced', attr: 'advanced', checked: true });
   expect(r.off).toEqual({ mode: 'simple', attr: 'simple', checked: false });
   expect(r.heard).toEqual([{ mode: 'advanced' }, { mode: 'simple' }]);
@@ -174,8 +176,8 @@ test('the panel reports its mode in the menu\'s own words', async ({ page }) => 
     const heard: unknown[] = [];
     panel.addEventListener('filter-condition-change', (e) => heard.push((e as CustomEvent).detail));
     const sr = panel.shadowRoot!;
-    const press = () => sr.querySelector('.field[data-field="owner"] .field-advanced sherpa-switch')!
-      .shadowRoot!.querySelector('input')!.click();
+    const press = () => sr.querySelector('.field[data-field="owner"] .field-advanced')!
+      .shadowRoot!.querySelector('button')!.click();
     press();
     await window.__settled();
     const menu = sr.querySelector('.field[data-field="owner"] sherpa-menu') as Menu | null;

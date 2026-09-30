@@ -40,8 +40,8 @@ test('the switch carries the chips over, the rows follow them until edited, and 
       await wait();
     };
     const flip = async (): Promise<void> => {
-      const sw = field.querySelector('.field-advanced-switch') as HTMLElement & { shadowRoot: ShadowRoot };
-      sw.shadowRoot.querySelector<HTMLElement>('input')!.click();
+      const sw = field.querySelector('.field-advanced') as HTMLElement & { shadowRoot: ShadowRoot };
+      sw.shadowRoot.querySelector<HTMLElement>('button')!.click();
       await wait();
     };
     const read = (): Reading => {
@@ -115,8 +115,8 @@ test('a Records panel field switches back to Simple after a typed row, and keeps
       await wait(500);
     };
     const flip = async (): Promise<void> => {
-      const sw = field.querySelector('.field-advanced-switch') as HTMLElement & { shadowRoot: ShadowRoot };
-      sw.shadowRoot.querySelector<HTMLElement>('input')!.click();
+      const sw = field.querySelector('.field-advanced') as HTMLElement & { shadowRoot: ShadowRoot };
+      sw.shadowRoot.querySelector<HTMLElement>('button')!.click();
       await wait(700);
     };
     const snap = () => {
@@ -131,6 +131,8 @@ test('a Records panel field switches back to Simple after a typed row, and keeps
     await chip(values[1]!);
     const picked = source.debugState().total;
     await flip();
+    // The flip alone moves no rows: it reports once its rows are drawn.
+    const flipped = source.debugState().total;
     const menu = field.querySelector('sherpa-menu')!;
     const row = menu.shadowRoot!.querySelector('.condition-row')!;
     const cond = row.querySelector('.condition') as HTMLElement & { value: string };
@@ -145,9 +147,12 @@ test('a Records panel field switches back to Simple after a typed row, and keeps
     await flip();
     const simple = snap();
     await flip();
-    return { picked, typed, simple, advanced: snap() };
+    return { picked, flipped, typed, simple, advanced: snap() };
   });
 
+  // Read at once, a menu just built has no rows: the report said "Advanced,
+  // no rows" and every row came back. TRAP T-a-rebuilt-row-reads-empty-for-a-tick
+  expect(r.flipped).toBe(r.picked);
   expect(r.typed).toMatchObject({ advanced: true, rows: 2 });
   expect(r.simple).toEqual({ advanced: false, rows: 2, total: r.picked });
   expect(r.advanced).toEqual(r.typed);

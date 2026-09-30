@@ -125,7 +125,7 @@ test('the two modes swap, and NEITHER loses what the other holds', async ({ page
     };
 
     // The header button switches to ADVANCED mode.
-    sr.querySelector<HTMLElement>('.use-condition sherpa-switch')!.shadowRoot!.querySelector('input')!.click();
+    sr.querySelector<HTMLElement>('.use-condition sherpa-button')!.shadowRoot!.querySelector('button')!.click();
     await wait();
     const onCustom = {
       mode: menu.mode,
@@ -155,7 +155,7 @@ test('the two modes swap, and NEITHER loses what the other holds', async ({ page
     };
 
     // …and BACK to default. The rows are still there; so is the typing.
-    sr.querySelector<HTMLElement>('.use-condition sherpa-switch')!.shadowRoot!.querySelector('input')!.click();
+    sr.querySelector<HTMLElement>('.use-condition sherpa-button')!.shadowRoot!.querySelector('button')!.click();
     await wait();
     return {
       onDefault, onCustom, typed,
@@ -223,7 +223,7 @@ test('Add condition chains rows, and each row asks its own question', async ({ p
 
     // OPEN, so a control in it can take focus.
     (menu as HTMLElement & { show(): void }).show();
-    sr.querySelector<HTMLElement>('.use-condition sherpa-switch')!.shadowRoot!.querySelector('input')!.click();
+    sr.querySelector<HTMLElement>('.use-condition sherpa-button')!.shadowRoot!.querySelector('button')!.click();
     await wait();
 
     // ROW ONE: a typed Contains. It has NO join — nothing precedes it.
@@ -345,7 +345,7 @@ test('a chip that did not opt in has NO Advanced mode at all', async ({ page }) 
     const before = { custom: menu.hasAttribute('data-advanced'), btn: getComputedStyle(btn).display };
 
     // Press it anyway. Nothing happens — the mode does not exist for this field.
-    btn.querySelector('sherpa-switch')!.shadowRoot!.querySelector('input')!.click();
+    btn.querySelector('sherpa-button')!.shadowRoot!.querySelector('button')!.click();
     await new Promise((res) => { setTimeout(res, 120); });
     const afterClick = { mode: menu.mode, rows: sr.querySelectorAll('.condition-row').length };
 
@@ -393,7 +393,7 @@ test('the BADGE never names a condition; the tip says which', async ({ page }) =
     let inCondition = false;
     const pick = async (op: string): Promise<void> => {
       if (!inCondition) {
-        menu.shadowRoot!.querySelector<HTMLElement>('.use-condition sherpa-switch')!.shadowRoot!.querySelector('input')!.click();
+        menu.shadowRoot!.querySelector<HTMLElement>('.use-condition sherpa-button')!.shadowRoot!.querySelector('button')!.click();
         inCondition = true;
         // The row's composed fields upgrade on their own schedule.
         await wait();
@@ -486,7 +486,7 @@ test('a TYPED condition survives Apply, and its hits mark', async ({ page }) => 
     await wait();
 
     // Into CONDITION mode; the rows live there.
-    menu.shadowRoot!.querySelector<HTMLElement>('.use-condition sherpa-switch')!.shadowRoot!.querySelector('input')!.click();
+    menu.shadowRoot!.querySelector<HTMLElement>('.use-condition sherpa-button')!.shadowRoot!.querySelector('button')!.click();
     await wait();
     const row = menu.shadowRoot!.querySelector('.condition-row')!;
 
@@ -621,8 +621,8 @@ test('the badge is legible, and the tooltip COUNTS the conditions', async ({ pag
 
     // The rows are ADVANCED's answer: a reader switches to them first.
     // TRAP T-both-answers-are-kept
-    menu.shadowRoot!.querySelector<HTMLElement>('.use-condition sherpa-switch')!
-      .shadowRoot!.querySelector('input')!.click();
+    menu.shadowRoot!.querySelector<HTMLElement>('.use-condition sherpa-button')!
+      .shadowRoot!.querySelector('button')!.click();
     await wait();
     const field = menu.shadowRoot!.querySelector('.condition') as HTMLElement & { value: string };
     field.value = 'notcontains';
@@ -734,7 +734,7 @@ test('row ONE\'s value select is populated, not just later rows', async ({ page 
     const sr = menu.shadowRoot;
     const wait = (ms = 150): Promise<void> => new Promise((res) => { setTimeout(res, ms); });
 
-    sr.querySelector<HTMLElement>('.use-condition sherpa-switch')!.shadowRoot!.querySelector('input')!.click();
+    sr.querySelector<HTMLElement>('.use-condition sherpa-button')!.shadowRoot!.querySelector('button')!.click();
     await wait();
     const opts = (row: Element): string[] => {
       const pick = row.querySelector('.condition-pick') as HTMLElement & { shadowRoot: ShadowRoot };

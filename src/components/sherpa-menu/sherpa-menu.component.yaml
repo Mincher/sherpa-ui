@@ -150,13 +150,14 @@ anatomy:
                 class: use-condition
                 part: use-condition
                 children:
-                  - el: sherpa-switch
-                    class: use-advanced-switch
+                  - el: sherpa-button
+                    class: use-advanced
                     attrs:
-                      data-type: simple
+                      data-type: icon
+                      data-size: sm
+                      data-icon-start: function
                       aria-label: Advanced
-                  - el: span
-                    class: use-advanced-label
+                      aria-pressed: "false"
               - el: sherpa-input-text
                 class: search
                 part: search
@@ -227,7 +228,7 @@ props:
     observed: false
     kind: style
     description: >-
-      FILTER type only: this field offers Advanced conditions, so the mode switch shows. OPT-IN:
+      FILTER type only: this field offers Advanced conditions, so the mode button shows. OPT-IN:
       most fields are answered by ticking values, and a `Contains` box over a closed set of three is
       noise. TRAP T-conditions-are-opt-in-per-field
   - $type: prop
@@ -338,7 +339,7 @@ props:
     kind: style
     description: >-
       FILTER type only: simple | advanced (Will's words). `simple` is a ticked list with a search;
-      `advanced` is the And/Or condition rows. An Advanced switch in the header moves between them.
+      `advanced` is the And/Or condition rows. An Advanced button in the header moves between them.
       The old values default | custom | select | condition are read, and rewritten to the new ones.
       TRAP T-a-filter-menu-has-two-modes
   - $type: prop
@@ -364,7 +365,7 @@ props:
     kind: style
     description: >-
       SHOW an answer held elsewhere — rows and conditions inert, no footer, no Add condition, no
-      Advanced switch
+      Advanced button
   - $type: prop
     name: data-removable
     type: string
@@ -581,8 +582,6 @@ tokens:
   menu.color: "{sherpa.theme-content-body-base}"
   menu.font-family: "{sherpa.font-family-body}"
   menu.box-shadow: "{sherpa.shadow-md}"
-  use-advanced-label.color: "{sherpa.style-content-base}"
-  use-advanced-label.font-size: "{sherpa.theme-content-size-base}"
   heading.padding-inline: "{sherpa.theme-padding-none}"
   heading.color: "{sherpa.theme-content-body-1}"
   heading.font-size: "{sherpa.theme-content-size-small}"

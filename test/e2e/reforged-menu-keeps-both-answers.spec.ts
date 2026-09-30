@@ -37,8 +37,8 @@ async function ownerMenu(page: import('@playwright/test').Page): Promise<void> {
       await window.__settled();
     };
     w['flip'] = async () => {
-      const sw = menu.shadowRoot.querySelector('.use-advanced-switch') as HTMLElement & { shadowRoot: ShadowRoot };
-      sw.shadowRoot.querySelector<HTMLElement>('.input')!.click();
+      const sw = menu.shadowRoot.querySelector('.use-advanced') as HTMLElement & { shadowRoot: ShadowRoot };
+      sw.shadowRoot.querySelector<HTMLElement>('button')!.click();
       await window.__settled();
     };
     // A reader's edit: row one's condition becomes "starts with R".
@@ -154,8 +154,8 @@ test('a Records chip switches back to Simple after a typed row, and each mode fi
       await wait(500);
     };
     const flip = async (): Promise<void> => {
-      const sw = menu.shadowRoot.querySelector('.use-advanced-switch') as HTMLElement & { shadowRoot: ShadowRoot };
-      sw.shadowRoot.querySelector<HTMLElement>('.input')!.click();
+      const sw = menu.shadowRoot.querySelector('.use-advanced') as HTMLElement & { shadowRoot: ShadowRoot };
+      sw.shadowRoot.querySelector<HTMLElement>('button')!.click();
       await wait(600);
     };
     const snap = () => ({

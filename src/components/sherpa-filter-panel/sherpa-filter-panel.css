@@ -112,20 +112,17 @@
   font-weight: var(--sherpa-font-weight-light, 300);
   text-transform: uppercase;
 }
-.field-acts { display: flex; }
+.field-acts {
+  display: flex;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
+}
 /* CLEAR — and Send to, its pair — appear once there is something to clear.
    Will, 2026-09-24. */
 .field:not([data-answered]) .field-group { display: none; }
-.field:not([data-answered]):not([data-pending]) .field-acts { display: none; }
 /* APPLY and DISCARD: a REMOTE field, once changed. TRAP T-apply-and-discard-wait-for-a-change */
 .field-apply, .field-discard { display: none; }
 :host([data-remote]) .field[data-pending] :is(.field-apply, .field-discard) { display: inline-flex; }
-
-.field-advanced {
-  display: flex;
-  align-items: center;
-  gap: var(--sherpa-display-mode-space-xs, 8px);
-}
 
 /* The search hides a VALUE; JS writes the flag, CSS owns the hiding. */
 .value[data-filtered-out] { display: none; }

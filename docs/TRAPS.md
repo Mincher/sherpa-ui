@@ -8883,15 +8883,15 @@ is the same shape of gap.
 
 A filter menu asks ONE question two ways, and they are not two menus.
 
-**SIMPLE** is a search over ticked rows. **ADVANCED** is the And/Or rows. A
-switch labelled **Advanced** in the header moves between them, as the Range
-switch does — in the menu and in a panel field's header alike. Will,
-2026-09-26: the icon-only `fx` button it replaced is kept for the CHIPS (the
-toolbar, a panel section, a column heading), to open their conditions.
+**SIMPLE** is a search over ticked rows. **ADVANCED** is the And/Or rows. An
+icon button — f(x), named **Advanced** — at the end of the header moves
+between them, in the menu and in a panel field's header alike; it is ON
+(`aria-pressed`) in Advanced. It was that button first, then a switch
+(2026-09-26), and the button again — Will, 2026-09-30, TODO 141.
 
 Both stay STAMPED. Flipping a mode is a change of VIEW, not a reset: the ticks
 survive a trip through Advanced mode, and the typed rows survive a trip back.
-A mode that cleared the other would make the switch a destructive control
+A mode that cleared the other would make the button a destructive control
 wearing no warning.
 
 `data-mode` = `simple` | `advanced` (the old `select` | `condition` and `default` | `custom` are read). The rows live in `.condition-rows`, and
@@ -9055,11 +9055,17 @@ and the toolbar re-emits (`#conditionFrame`).
 **The recheck only ever turns a chip ON.** Re-applying unconditionally made it
 fight the reader: switching a conditioned chip off flipped it straight back on.
 
+**A panel field flipped to Advanced is the same case.** Its menu is built at
+the flip, so an immediate report read "Advanced, no rows" and dropped the
+filter until the next edit. The flip reports a frame after the menu has
+rendered (`#reportSoon`).
+
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `test/e2e/reforged-panel-keeps-both-answers.spec.ts`
 
 ---
 
@@ -9883,7 +9889,7 @@ hour earlier. Two mechanisms for "this column is typed, not ticked" is one too
 many, and the condition rows already do it better — an operator, and an
 or-chain.
 
-**The PANEL asks the same question.** It drew its Advanced switch for any
+**The PANEL asks the same question.** It drew its Advanced button for any
 truthy `advancedOf()`, and `'only'` is truthy — so Email showed a switch with
 nothing behind it (Will, 2026-09-26). The switch is for `advanced === true` only.
 
@@ -15048,7 +15054,7 @@ shown, but held higher.
 each with its answer. Such a heading draws that answer — handed to its menu as
 a reading, as its own is — with the chip's superseded look and tip ("Filter moved to View scope. This chip
 holds EMEA."), and its menu `data-readonly`: rows and conditions `inert`, no
-footer, no Add condition, no Advanced switch. The heading's own filter is
+footer, no Add condition, no Advanced button. The heading's own filter is
 never set by it (`columnClause` stays null), so nothing applies twice. A field
 not named is released.
 

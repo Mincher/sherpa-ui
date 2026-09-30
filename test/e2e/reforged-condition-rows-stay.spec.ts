@@ -37,8 +37,8 @@ test('a chip menu: Add condition adds a row, and it stays', async ({ page }) => 
     const menu = chip.querySelector('sherpa-menu');
     chip.shadowRoot.querySelector('.body').click();
     await new Promise((r) => setTimeout(r, 300));
-    const sw = menu.shadowRoot.querySelector('.use-advanced-switch');
-    sw.shadowRoot.querySelector('.input').click();
+    const sw = menu.shadowRoot.querySelector('.use-advanced');
+    sw.shadowRoot.querySelector('button').click();
     await new Promise((r) => setTimeout(r, 400));
     ${ADVANCE}
     return { rows: rows().length, answered: menu.conditions.filter((c) => (c.picked ?? []).length).length };
@@ -54,8 +54,8 @@ test('the panel: a new row keeps its place when its condition changes', async ({
     const panel = document.querySelector('#filter-panel');
     const field = [...panel.shadowRoot.querySelectorAll('[data-scope="data"] .field')]
       .find((f) => (f.querySelector('.field-title')?.textContent ?? '').trim().toLowerCase() === 'owner');
-    const sw = field.querySelector('.field-advanced-switch');
-    sw.shadowRoot.querySelector('.input').click();
+    const sw = field.querySelector('.field-advanced');
+    sw.shadowRoot.querySelector('button').click();
     await new Promise((r) => setTimeout(r, 600));
     const menu = field.querySelector('sherpa-menu');
     ${ADVANCE}

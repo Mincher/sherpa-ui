@@ -30,7 +30,7 @@ test('typed rows, then a press on the chip: the condition is applied', async ({ 
     const wait = (ms = 150) => new Promise((res) => setTimeout(res, ms));
     chip.shadowRoot!.querySelector<HTMLElement>('.caret')!.click();
     await wait();
-    menu.shadowRoot.querySelector('.use-condition sherpa-switch')!.shadowRoot!.querySelector('input')!.click();
+    menu.shadowRoot.querySelector('.use-condition sherpa-button')!.shadowRoot!.querySelector('button')!.click();
     await wait();
     const row = menu.shadowRoot.querySelector('.condition-row')!;
     const set = (sel: string, value: string, type: string) => {

@@ -290,7 +290,7 @@ tokens:
   field.row-gap: "{sherpa.display-mode-space-xs}"
   field-title.color: "{sherpa.style-content-secondary}"
   field-title.font-weight: "{sherpa.font-weight-light}"
-  field-advanced.gap: "{sherpa.display-mode-space-xs}"
+  field-acts.gap: "{sherpa.display-mode-space-2xs}"
   scope-actions.gap: "{sherpa.display-mode-space-2xs}"
 $extensions:
   sherpa:

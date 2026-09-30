@@ -241,7 +241,7 @@ export class SherpaMenu extends SherpaElement {
     const region = this.$('.condition-rows');
     region?.addEventListener('change', this.#onCondition);
     region?.addEventListener('input', this.#onCondition);
-    this.$('.use-advanced-switch')?.addEventListener('change', this.#onModeSwitch);
+    this.$('.use-advanced')?.addEventListener('button-click', this.#onModeSwitch);
     this.$('.add-condition')?.addEventListener('click', this.#onAddCondition);
     region?.addEventListener('click', this.#onDropCondition);
     // A reading set before this menu drew has rows and ticks to hold it now.
@@ -294,9 +294,9 @@ export class SherpaMenu extends SherpaElement {
     return this.hasAttribute('data-advanced-only');
   }
 
-  /** The Advanced switch is ON in advanced mode. */
+  /** The Advanced button is ON in advanced mode. */
   #syncModeButton(): void {
-    this.$('.use-advanced-switch')?.toggleAttribute('checked', this.mode === 'advanced');
+    this.$('.use-advanced')?.setAttribute('aria-pressed', String(this.mode === 'advanced'));
   }
 
   set mode(next: ConditionType | 'select' | 'condition' | 'default' | 'custom') {
@@ -352,9 +352,7 @@ export class SherpaMenu extends SherpaElement {
     // The menu's own control, not a value change. As Range.
     event.stopPropagation();
     if (!this.#offersAdvanced() || this.#advancedOnly()) return this.#syncModeButton();
-    const on = !!(event.target as HTMLElement & { checked?: boolean }).checked;
-    const next: ConditionType = on ? 'advanced' : 'simple';
-    if (next === this.mode) return;
+    const next: ConditionType = this.mode === 'advanced' ? 'simple' : 'advanced';
     this.mode = next;
     // An Advanced mode with no rows has nothing to answer with.
     if (next === 'advanced' && !this.#rowEls().length) this.#addRow();

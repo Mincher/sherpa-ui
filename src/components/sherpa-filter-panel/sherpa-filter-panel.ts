@@ -222,7 +222,6 @@ export class SherpaFilterPanel extends SherpaElement {
     this.$('.search')?.addEventListener('input', this.#onSearch);
     // ONE listener for every drawn control — a field added later needs no wiring.
     this.$('.scopes')?.addEventListener('button-click', this.#onAction);
-    this.$('.scopes')?.addEventListener('change', this.#onAdvancedSwitch);
     this.$('.scopes')?.addEventListener('quick-filter-click', this.#onValueClick);
     this.$('.scopes')?.addEventListener('menu-change', this.#onAddCommit);
     this.$('.scopes')?.addEventListener('menu-select', this.#onSavedAction);
@@ -750,8 +749,7 @@ export class SherpaFilterPanel extends SherpaElement {
     head?.querySelector('.field-clear')?.setAttribute('aria-label', `Clear ${name}`);
     head?.querySelector('.field-raise')?.setAttribute('aria-label', `Send ${name} to view filters`);
     head?.querySelector('.field-lower')?.setAttribute('aria-label', `Send ${name} to ${def.sendTo?.label ?? ''}`);
-    box.querySelector('.field-advanced-switch')
-      ?.setAttribute('aria-label', `Advanced ${name}`);
+    box.querySelector('.field-advanced')?.setAttribute('aria-label', `Advanced ${name}`);
 
     const values = box.querySelector('.field-values') as HTMLElement | null;
 
@@ -1145,7 +1143,12 @@ export class SherpaFilterPanel extends SherpaElement {
   #onEdited = (event: Event): void => {
     // A dragged handle reports once, when it is let go — as a bar chip does.
     if (event.type === 'input' && (event.target as Element).matches?.('sherpa-menu[data-body]')) return;
-    const held = event.target instanceof HTMLElement ? this.#fieldOf(event.target) : undefined;
+    this.#reportSoon(event.target instanceof HTMLElement ? this.#fieldOf(event.target) : undefined);
+  };
+
+  /** Report a field a frame on, once its rows have settled — a rebuilt row
+   *  reads empty for a tick. TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
+  #reportSoon(held?: Held): void {
     if (held) this.#edited.add(held);
     if (this.#editFrame != null) return;
     this.#editFrame = requestAnimationFrame(() => {
@@ -1154,7 +1157,7 @@ export class SherpaFilterPanel extends SherpaElement {
       this.#edited.clear();
       for (const one of done) this.#report(one);
     });
-  };
+  }
 
   /** The fields edited since the last frame. */
   #edited = new Set<Held>();
@@ -1206,21 +1209,19 @@ export class SherpaFilterPanel extends SherpaElement {
     this.#syncAnswered(held);
   };
 
-  /** A field's Advanced switch. */
-  #onAdvancedSwitch = (event: Event): void => {
-    const sw = this.pathFind(event, '.field-advanced-switch');
-    const held = sw && this.#fieldOf(sw);
-    if (!held) return;
-    const on = !!(sw as HTMLElement & { checked?: boolean }).checked;
-    if (on !== held.box.hasAttribute('data-advanced')) this.#flipCondition(held);
-  };
-
-  /** A field's Save or Clear button. */
+  /** A field's own buttons, and its scope's Save. */
   #onAction = (event: Event): void => {
     const save = this.pathFind(event, '.scope-save');
     if (save) return this.#requestSave(save);
     const clear = this.pathFind(event, '.field-clear');
     if (clear) return this.#clearField(clear);
+    // ADVANCED: the f(x) button flips the field's mode.
+    const advanced = this.pathFind(event, '.field-advanced');
+    if (advanced) {
+      const flipped = this.#fieldOf(advanced);
+      if (flipped) this.#flipCondition(flipped);
+      return;
+    }
     /* SENT UP: the View holds it, and its answer goes with it; the chip below
        keeps its place, suspended. TRAP T-send-to-view-filters */
     const raise = this.pathFind(event, '.field-raise');
@@ -1285,13 +1286,17 @@ export class SherpaFilterPanel extends SherpaElement {
     this.emit('filter-condition-change', {
       scope: held.scope, id: held.def.id, mode: on ? 'advanced' : 'simple',
     });
-    this.#report(held);
+    /* ONCE ITS ROWS ARE DRAWN. Read at once, a menu just built has none: the
+       report said "Advanced, no rows", and the filter dropped until the next
+       edit. TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
+    void Promise.resolve((held.menu as { rendered?: Promise<void> } | undefined)?.rendered)
+      .then(() => this.#reportSoon(held));
   }
 
   /** Put a field in Advanced mode, or take it out: its flag, its switch, its menu. */
   #setCustom(held: Held, on: boolean): void {
     held.box.toggleAttribute('data-advanced', on);
-    held.box.querySelector('.field-advanced-switch')?.toggleAttribute('checked', on);
+    held.box.querySelector('.field-advanced')?.setAttribute('aria-pressed', String(on));
 
     /* THE ROWS ARE THE MENU'S, and this field may not have needed one until
        now — a run of chips answers it otherwise. CSS shows the body off

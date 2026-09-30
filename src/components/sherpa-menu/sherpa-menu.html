@@ -21,7 +21,7 @@
   Public API:
     data-commit     show the Apply / Cancel footer and DEFER changes until Apply
     data-readonly   SHOW an answer held elsewhere — rows and conditions inert, no
-                    footer, no Add condition, no Advanced switch
+                    footer, no Add condition, no Advanced button
     data-heading  optional heading (rendered upper-case at 10/16)
     data-search   show a search input under the heading that filters the rows
     data-removable  show a "Remove" button in the footer (after Today);
@@ -55,7 +55,7 @@
                   show()/hide() become no-ops.
                   TRAP T-an-inline-menu-is-the-same-menu
     data-advanced FILTER type only: this field offers Advanced conditions,
-                  so the mode switch shows. OPT-IN: most fields are answered by
+                  so the mode button shows. OPT-IN: most fields are answered by
                   ticking values, and a `Contains` box over a closed set of three
                   is noise. TRAP T-conditions-are-opt-in-per-field
     data-advanced-only  FILTER type only: Advanced conditions and NOTHING
@@ -65,7 +65,7 @@
                   TRAP T-a-filter-answers-by-values-conditions-or-both
     data-mode     FILTER type only: simple | advanced (Will's words). `simple`
                   is a ticked list with a search; `advanced` is the And/Or
-                  condition rows. An Advanced switch in the header moves between
+                  condition rows. An Advanced button in the header moves between
                   them. The old values default | custom | select | condition are
                   read, and rewritten to the new ones.
                   TRAP T-a-filter-menu-has-two-modes
@@ -263,13 +263,13 @@
            The search box is the last child while the rows are the answer; the
            input takes its place once a typing condition does.
            TRAP T-grouping-is-an-attribute-and-a-class -->
-      <!-- The mode switch, on the heading's row: the two modes are the SAME
-           filter seen two ways, not two menus. A switch, as Range is.
-           TRAP T-a-filter-menu-has-two-modes -->
+      <!-- The mode button, at the end of the heading's row: the two modes are
+           the SAME filter seen two ways, not two menus. f(x), and ON in
+           Advanced. Will, TODO 141. TRAP T-a-filter-menu-has-two-modes -->
       <div class="use-condition" part="use-condition">
-        <sherpa-switch class="use-advanced-switch" data-type="simple"
-                       aria-label="Advanced"></sherpa-switch>
-        <span class="use-advanced-label">Advanced</span>
+        <sherpa-button class="use-advanced" data-type="icon" data-size="sm"
+                       data-icon-start="function" aria-label="Advanced"
+                       aria-pressed="false"></sherpa-button>
       </div>
 
       <!-- SELECT MODE — the search leads the ticked rows beneath it. -->
