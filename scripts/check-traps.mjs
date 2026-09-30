@@ -25,6 +25,7 @@ const SOURCES = [
   'playwright.config.ts',
   'test/e2e/*.ts',
   'test/unit/*.mjs',
+  'test/a11y/*.mjs',
   'scripts/*.mjs',
   // The build LIBRARY too. `scripts/*.mjs` is one level deep, so a citation in
   // scripts/lib/ was invisible and the gate reported its own Site as uncited.

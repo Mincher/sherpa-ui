@@ -32,12 +32,15 @@ anatomy:
             - el: h3
               class: pane-heading
               part: heading
+              attrs:
+                id: source-heading
             - el: ul
               class: pane-list
               part: list
               attrs:
                 role: listbox
                 aria-multiselectable: "true"
+                aria-labelledby: source-heading
             - el: p
               class: pane-empty
               part: empty
@@ -83,12 +86,15 @@ anatomy:
             - el: h3
               class: pane-heading
               part: heading
+              attrs:
+                id: target-heading
             - el: ul
               class: pane-list
               part: list
               attrs:
                 role: listbox
                 aria-multiselectable: "true"
+                aria-labelledby: target-heading
             - el: p
               class: pane-empty
               part: empty

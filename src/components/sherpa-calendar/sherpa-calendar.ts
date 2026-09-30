@@ -239,6 +239,9 @@ export class SherpaCalendar extends SherpaElement {
       const blank = this.#cell();
       blank.setAttribute('data-blank', '');
       blank.setAttribute('disabled', '');
+      // A spacer, not a day: nothing to read.
+      blank.removeAttribute('role');
+      blank.setAttribute('aria-hidden', 'true');
       place(blank);
       grid.appendChild(blank);
     }

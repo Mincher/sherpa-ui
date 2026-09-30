@@ -77,7 +77,6 @@ export class SherpaTabs extends SherpaElement {
     this.renderItems('.tabs', 'template.tab-tpl', this.#tabs, {
       after: (btn, tab, i) => {
         btn.id = `tab-${tab.id}`;
-        btn.setAttribute('aria-controls', `panel-${tab.id}`);
         // Roving tabindex, until #applyCurrent moves it to the active tab.
         btn.setAttribute('tabindex', i === 0 ? '0' : '-1');
       },
@@ -104,8 +103,9 @@ export class SherpaTabs extends SherpaElement {
     for (const panel of this.#panels()) {
       panel.toggleAttribute('data-current', panel.dataset['tab'] === active);
       panel.setAttribute('role', 'tabpanel');
-      panel.id = `panel-${panel.dataset['tab'] ?? ''}`;
-      panel.setAttribute('aria-labelledby', `tab-${panel.dataset['tab'] ?? ''}`);
+      // Named by TEXT: an id reference cannot cross the shadow boundary to its tab.
+      const tab = this.#tabs.find((t) => t.id === panel.dataset['tab']);
+      if (tab) panel.setAttribute('aria-label', tab.label);
     }
   }
 

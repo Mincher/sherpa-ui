@@ -101,6 +101,12 @@ export class SherpaNavItem extends SherpaElement {
       setAll('.promo-description', this.dataset['description'] ?? '');
     } else {
       setAll('.badge', this.dataset['badge'] ?? '');
+      // NAMED, because a collapsed rail hides the label and leaves the icon alone.
+      const name = [this.dataset['label'], this.dataset['badge']].filter(Boolean).join(', ');
+      for (const row of this.$$('.nav')) {
+        if (name) row.setAttribute('aria-label', name);
+        else row.removeAttribute('aria-label');
+      }
     }
 
     const link = this.$<HTMLAnchorElement>(promo ? '.promo-link' : '.nav-link');

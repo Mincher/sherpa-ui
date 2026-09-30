@@ -61,6 +61,8 @@
     "prebuild": "npm run clean",
     "test": "playwright test",
     "test:node": "node --test 'test/unit/**/*.test.mjs'",
+    "test:a11y": "playwright test test/e2e/a11y.spec.ts --project=chromium",
+    "test:a11y:update": "UPDATE_A11Y_BASELINE=1 playwright test test/e2e/a11y.spec.ts --project=chromium",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:report": "playwright show-report"
@@ -76,6 +78,7 @@
     "@typescript-eslint/parser": "^8.60.1",
     "ajv": "^8.18.0",
     "autoprefixer": "^10.5.5",
+    "axe-core": "^4.13.0",
     "cssnano": "^7.1.9",
     "eslint": "^8.55.0",
     "express": "^5.2.1",

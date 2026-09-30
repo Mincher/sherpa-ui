@@ -35,6 +35,8 @@ export class SherpaOverlayPanel extends SherpaElement {
       for (const other of SherpaOverlayPanel.#shown) if (other !== this) other.hide();
       SherpaOverlayPanel.#shown.add(this);
       dialog.show();
+      // A focusable separator must state its value: the width it is drawn at.
+      this.$('.resize')?.setAttribute('aria-valuenow', String(Math.round(dialog.getBoundingClientRect().width)));
     },
     closed: () => {
       SherpaOverlayPanel.#shown.delete(this);

@@ -11,8 +11,8 @@
 <template id="default">
   <div class="panes" part="panes">
     <div class="pane source" part="pane">
-      <h3 class="pane-heading" part="heading"></h3>
-      <ul class="pane-list" part="list" role="listbox" aria-multiselectable="true"></ul>
+      <h3 class="pane-heading" part="heading" id="source-heading"></h3>
+      <ul class="pane-list" part="list" role="listbox" aria-multiselectable="true" aria-labelledby="source-heading"></ul>
       <p class="pane-empty" part="empty">No items</p>
     </div>
 
@@ -24,8 +24,8 @@
     </div>
 
     <div class="pane target" part="pane">
-      <h3 class="pane-heading" part="heading"></h3>
-      <ul class="pane-list" part="list" role="listbox" aria-multiselectable="true"></ul>
+      <h3 class="pane-heading" part="heading" id="target-heading"></h3>
+      <ul class="pane-list" part="list" role="listbox" aria-multiselectable="true" aria-labelledby="target-heading"></ul>
       <p class="pane-empty" part="empty">Nothing selected</p>
     </div>
   </div>

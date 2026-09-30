@@ -609,6 +609,37 @@ under the pointer or focus.
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
 - Site: `test/e2e/reforged-overlay-panel.spec.ts`
 
+### T-the-a11y-gate-reads-shadow-roots
+
+**The accessibility gate is axe-core over ONE FIXTURE per component, WCAG 2.1
+level AA** — TODO 24. `test/a11y/fixtures.mjs` holds a realistic instance of
+all 64, written as a page writes it; `test/e2e/a11y.spec.ts` draws each in the
+harness and runs axe on it. Three things make a green result mean something.
+**It is proved to read a shadow root**: a test puts an unnamed `<button>`
+inside one and expects axe to report it, with a target that crosses the
+boundary. A checker that reads only the light DOM sees almost nothing of a
+Sherpa component and passes everything. **A name is asserted by ROLE**
+(`getByRole('switch', { name })`), never by reading `aria-label` back — the
+attribute was there all along on hosts where it named nothing
+(`T-a-host-label-must-reach-its-control`). **Every component must have a
+fixture**, so a new one cannot skip the gate.
+
+The output is a REPORT per component in `test/a11y/reports/` (not tracked):
+what is wrong, the criterion it breaks, and how to correct it. The failures
+known today are in `test/a11y/baseline.json`, as a count per rule, and the
+gate fails when a count is not EQUAL — a rise is a regression, and a fall
+must be recorded (`npm run test:a11y:update`) so it cannot come back unseen.
+Chromium only, in one worker: the rules are the same in every engine, and one
+baseline file cannot hold three answers or take two writers.
+
+Two lessons from the first run. An id reference (`aria-controls`,
+`aria-labelledby`) cannot cross a shadow boundary, so a tab names its light-DOM
+panel by TEXT. And a row whose label is hidden — a collapsed nav rail — has no
+name at all unless the row carries `aria-label`.
+
+- Site: `test/e2e/a11y.spec.ts`
+- Site: `test/a11y/fixtures.mjs`
+
 ### T-one-overlay-panel-at-a-time
 
 **Opening an overlay panel shuts every other one** — TODO 23. They all sit on

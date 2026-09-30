@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**43 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**44 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -84,7 +84,9 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 41 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
 | ✅ | 42 | 23 | A focused grid row opens a details panel | feature |
 | | | | **H — The accessibility gate** | |
-| ⬜ | 43 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
+| ✅ | 43 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
+| ⬜ | 43a | 117 | Clear the accessibility baseline — 12 components with a structural failure | bug |
+| ❓ | 43b | 118 | Four texts fail colour contrast — the success green, and a field's description | figma |
 | | | | **I — The big builds** | |
 | ⬜ | 44 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
 | ⬜ | 45 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
@@ -1664,7 +1666,7 @@ shuts it, in place. My pick: the trail is in the app header, not in the panel
 
 ## H — The accessibility gate
 
-### `[ ]` 24 — Playwright must test accessibility — WCAG 2.1 AA
+### `[x]` ✅ 24 — Playwright must test accessibility — WCAG 2.1 AA
 
 Every component, level AA. None today; `axe-core` is not a dependency.
 
@@ -1676,6 +1678,53 @@ result — one that reads the light DOM sees almost nothing of a Sherpa
 component. Its first finding is fixed: a HOST `aria-label` named nothing
 (`T-a-host-label-must-reach-its-control`). Assert names with `getByRole(…,
 { name })`, never the attribute.
+
+**✅ Done 2026-09-30.** `npm run test:a11y` runs axe-core (a new dev
+dependency) over one realistic fixture of each of the 64 components, at WCAG
+2.1 A and AA. A test proves axe reads inside a shadow root, one asserts a host
+label by role, and one fails when a component has no fixture. Each run writes
+`test/a11y/reports/<name>.md` (not tracked): the rule, the criterion, the
+element, and how to correct it. `test/a11y/baseline.json` holds the known
+failures, and a count may only fall. The first run found failures in 22
+components. Six are clean now: nav rows are named in a collapsed rail, a tab
+names its panel by text, the overlay panel's resize edge states its value, a
+transfer list's two lists are named, and a blank calendar cell is hidden from
+a reader. 16 are left: 117 and 118.
+`T-the-a11y-gate-reads-shadow-roots`
+
+### `[ ]` 117 — Clear the accessibility baseline — 12 components with a structural failure
+
+Each is in `test/a11y/baseline.json`; run `npm run test:a11y` and read its
+report in `test/a11y/reports/`. Fix one, then `npm run test:a11y:update`.
+
+| Component | Rule | What is wrong |
+|---|---|---|
+| barchart, line-chart, sparkline | `nested-interactive` | the plot is `role="img"` and holds focusable marks |
+| barchart | `button-name` | a bar is a button with no name |
+| calendar | `aria-required-parent` | a `gridcell` with no `row`; two months share one grid |
+| chart-legend | `aria-allowed-attr` | a button with `role="listitem"` and `aria-pressed` |
+| filter-panel (accordion) | `nested-interactive` | buttons inside a `<summary>` |
+| list, list-item | `list` | a `<ul>` whose children are `sherpa-list-item`, not `<li>` |
+| menu, notifications | `aria-required-children` | `role="menu"` holds inputs and buttons, not menu items |
+| select-card | `label`, `nested-interactive` | a `role="radio"` host that holds an unnamed radio |
+| transfer-list | `nested-interactive` | an `option` that holds a focusable list item |
+
+### `[ ]` 118 — Four texts fail colour contrast — the success green, and a field's description
+
+WCAG 1.4.3 needs 4.5:1 for small text. Measured by the gate (24):
+
+- **Success text is `#00ad62`: 2.93:1 on white.** A success chip, a metric's
+  `+12.5%`, and a success toast's message.
+- **A field's description is `content-body-2` (`#b3b3c3`): 1.7:1.** That is
+  the colour a DISABLED control uses.
+
+Both are Figma values, so they are yours to change.
+
+**❓ Will — which?**
+- **A (my pick):** darken them in Figma. Success text to a green at 4.5:1 or
+  more on white, and the description to the body text one step lighter than
+  the label. I re-project, and the four baseline entries go.
+- **B:** keep the colours. The four stay in the baseline as known failures.
 
 ---
 
@@ -2598,6 +2647,7 @@ One line each. The detail is in git and in the trap named.
 - 14: live alerts over Server-Sent Events move the Dashboard's tiles — `T-a-live-feed-goes-into-the-store`
 - 22: an overlay panel is wider, and resizes from its left edge — `T-an-overlay-panel-resizes-from-its-left-edge`
 - 23: a grid row opens its details in an overlay panel; the chevrons step it; the trail names it — `T-a-current-row-opens-its-details`
+- 24: the accessibility gate — axe-core over a fixture of every component, a report each, a baseline that may only fall — `T-the-a11y-gate-reads-shadow-roots`; 117 and 118 are what it found
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

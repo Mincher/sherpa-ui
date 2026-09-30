@@ -79,6 +79,12 @@ npm run test:ui           # the Playwright UI runner
 npm run test:headed
 npm run test:report       # open the last HTML report
 
+# The ACCESSIBILITY gate — axe-core over every component, WCAG 2.1 AA. It
+# writes a report per component to test/a11y/reports/ (not tracked), and
+# test/a11y/baseline.json holds the known failures: a count may only fall.
+npm run test:a11y
+npm run test:a11y:update  # record a baseline that FELL
+
 # Serve
 npm run sandbox           # build, then serve the repo on :4000 (sandbox/)
 npm run preview           # serve WITHOUT building — :4000

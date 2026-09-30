@@ -26,7 +26,7 @@ figma-tokens/Classic/
 .build-metrics.json
 
 # Accessibility test reports (generated)
-test/a11y/report.json
+test/a11y/reports/
 
 # Component audit reports (generated)
 COMPONENT-AUDIT-REPORT.json
