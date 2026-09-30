@@ -128,7 +128,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 39 | 14 | An example of real-time data | feature |
 | ✅ | 39a | 128 | A gauge's tooltip names the segment as the legend does | quick |
 | ✅ | 39c | 162 | A chart and its legend go from side by side to stacked as their container narrows — container queries | feature |
-| ⬜ | 39b | 150 | EXPLORE — how the example gauge's risk score is worked out; THRESHOLDS in the central Query | explore |
+| ❓ | 39b | 150 | EXPLORE — how the example gauge's risk score is worked out; THRESHOLDS in the central Query | explore |
 | ⬜ | 40 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | ⬜ | 40a | 143 | EXPERIMENT, later — scrolled-past metrics become a compact sticky header; a toggle in Settings › Experiments | explore |
 | | | | **G — Overlay panels** | |
@@ -2634,6 +2634,45 @@ So the two ways you name are the question: a component ASKS for data shaped
 by thresholds it gives, or the thresholds are part of the data's own schema
 and every component gets them. Either way the three copies become one.
 
+**❓ Explored 2026-09-30 — one choice for Will.** A second agent read the
+whole path; I checked its main points against the code.
+
+*How the score is made.* One field, one sum: `100 − mean(health)`, over every
+row the filters leave (`rows: 'all'`), in a hand-written adapter in
+`examples/contexts/records.js`. `health` is seeded 40 to 100, so the score
+sits near 30. The dashboard's gauge needs no adapter: it asks its provider
+(`data-aggregate="mean" data-field="storage"`). Only the `100 −` forces the
+hand-written one — an ask cannot turn a value round.
+
+*The copies now.* 128 took one away (the legend's names are the gauge's).
+Two are left, and they are in different units: the gauge's zones are on RISK
+(`0-20`, `20-40`, `40-100`), and the saved filter "At risk" is on HEALTH
+(`health < 60`, which is risk > 40). They agree, but nothing says so.
+
+*What the data layer has.* No threshold, and no aggregate in the Query — on
+purpose: a summary shows the data and never steers it
+(`T-aggregation-is-data`). Aggregates are in `src/core/data/aggregate.ts`
+(`count`, `sum`, `mean`, `min`, `max`, `distinct`). The nearest thing to a
+threshold is `bandBy(rows, field, edges)`: it cuts a number field into bands
+for a bar chart (`data-bands`). Its bands have no name and no status, and a
+gauge cannot read them. A field's declared facts are `type`, `label`, `min`,
+`max`, `step`, `labels` — and they already reach every bar and panel from
+the page's definition.
+
+- **A (my pick): thresholds are a FACT of the field**, declared once in the
+  page's definition beside `min` and `max`: each band's top, name and status.
+  The gauge's zones, its legend, the "At risk" saved filter and a bar chart's
+  bands all read it. This is your "part of the data and data shaping". It
+  needs one more fact for a score that runs the other way (risk is
+  `100 − health`): a derived field, or `invert`.
+- **B: a component ASKS with its own thresholds** (your first way). The
+  provider answers with the value AND its band. Smaller — the bands plumbing
+  is there — but each component still holds its own copy, so the gauge and
+  the saved filter stay apart.
+
+Either way the Query stays as it is: it filters and arranges, and never
+summarises.
+
 ### `[x]` ✅ 162 — A chart and its legend stack as their container narrows
 
 Will, 2026-09-30, a minor one: *"Have data viz charts and legends go from
@@ -3859,6 +3898,7 @@ One line each. The detail is in git and in the trap named.
 - 129: Reset all to default asks first, and can save what is on screen as a View before it resets — `T-reset-to-default-is-the-views-own`
 - 172: in the panel, each picked value chip shows its own results; the header keeps the field's — `T-a-chip-counts-its-own-results`
 - 128: a gauge zone is named once; its tooltip and its legend row say the same — `T-a-gauge-names-its-zones-once`
+- 150: explored — the gauge's score is `100 − mean(health)`; thresholds as a field fact (A) or in a component's ask (B) — ❓ in the item
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on
