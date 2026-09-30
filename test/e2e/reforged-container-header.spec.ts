@@ -247,7 +247,7 @@ test('the panel variant renders a link-style title and the metadata row', async 
   expect(r.titleColorDiffers).toBe(true);
 });
 
-test('the default variant is unchanged: metadata hidden, no link-style title', async ({ page }) => {
+test('the default variant: its description is the metadata row, and no link-style title', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-container-header') as HeaderEl;
     el.setAttribute('data-heading', 'Default header');
@@ -264,7 +264,52 @@ test('the default variant is unchanged: metadata hidden, no link-style title', a
     };
   });
   expect(r.variant).toBeNull();
-  expect(r.metadataVisible).toBe(false); // no metadata slotted → hidden (Default)
-  expect(r.descriptionVisible).toBe(true); // Default still shows description
+  // The description IS the metadata row's first line, as Figma's is (TODO 80).
+  expect(r.metadataVisible).toBe(true);
+  expect(r.descriptionVisible).toBe(true);
   expect(r.title).toBe('Default header');
 });
+
+/* Will, TODO 80: the header is Figma's GRID (912:33355) — LEFT · TITLE ·
+   ACTIONS, the metadata under the TITLE (not the icon), 4 below; and a
+   collapsible header's chevron LEADS, as the accordion variant has it. */
+test('the header is Figma\'s grid: metadata under the title, 4 below; the chevron leads', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const make = async (attrs: Record<string, string>, inner = ''): Promise<HeaderEl> => {
+      const el = document.createElement('sherpa-container-header') as HeaderEl;
+      for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+      el.innerHTML = inner;
+      el.style.inlineSize = '576px';
+      document.getElementById('root')!.appendChild(el);
+      await el.rendered;
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      return el;
+    };
+    const box = (el: HeaderEl, sel: string) => el.shadowRoot!.querySelector(sel)!.getBoundingClientRect();
+    const full = await make({ 'data-heading': 'Header title', 'data-icon': 'home', 'data-description': 'Optional description' },
+      '<sherpa-button slot="actions" data-type="icon" data-size="sm" data-icon-start="cross" aria-label="x"></sherpa-button>');
+    const icon = box(full, '.icon');
+    const title = box(full, '.labels');
+    const meta = box(full, '.metadata');
+    const bare = await make({ 'data-heading': 'Bare' });
+    const fold = await make({ 'data-heading': 'Folds', 'data-collapsible': '' });
+    return {
+      metaUnderTitle: Math.round(meta.left) === Math.round(title.left) && meta.left > icon.right,
+      metaGap: Math.round(meta.top - title.bottom),
+      // The grid's own box: the rule under the host is drawn outside it.
+      fullHeight: Math.round(box(full, '.header').height),
+      bareHeight: Math.round(box(bare, '.header').height),
+      // No leading cell: the title starts at the padding, with no gap spent.
+      bareTitleAt: Math.round(box(bare, '.labels').left - bare.getBoundingClientRect().left),
+      chevronLeads: box(fold, '.toggle').right <= box(fold, '.labels').left,
+    };
+  });
+  expect(r.metaUnderTitle).toBe(true);
+  expect(r.metaGap).toBeGreaterThanOrEqual(4);
+  expect(r.fullHeight).toBe(60);
+  // A title alone: its 20px line and the 8px padding — no row is spent on metadata.
+  expect(r.bareHeight).toBe(36);
+  expect(r.bareTitleAt).toBe(8);
+  expect(r.chevronLeads).toBe(true);
+});
+

@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**46 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**45 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -124,7 +124,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | | | | **F — Data states and charts** | |
 | ✅ | 36 | 58 | Loading, empty and error states in a container | feature |
 | ✅ | 37 | 9b | A Data Viz header, for metrics and chart containers | component |
-| ⬜ | 38 | 80 | Container and Data Viz headers: Figma's new button styling and grouping | component |
+| ✅ | 38 | 80 | Container and Data Viz headers: Figma's new button styling and grouping | component |
 | ✅ | 39 | 14 | An example of real-time data | feature |
 | ✅ | 39a | 128 | A gauge's tooltip names the segment as the legend does | quick |
 | ✅ | 39c | 162 | A chart and its legend go from side by side to stacked as their container narrows — container queries | feature |
@@ -2771,7 +2771,7 @@ Figma's Metric is 96px with an 8px gap. The layout row here is 88px, so the
 gap under the header is 4px and the tile still fits its row. Say if the row
 should grow instead.
 
-### `[ ]` 80 — Container and Data Viz headers: Figma's new button styling and grouping
+### `[x]` ✅ 80 — Container and Data Viz headers: Figma's new button styling and grouping
 
 Will, 2026-09-27: *"I've also tweaked the Container Headers and Data Viz
 Headers in Figma. Mainly adjusting button styling and grouping. We need to
@@ -2787,6 +2787,15 @@ buttons are `sm`, and the overlay panel's toolbar is grouped and divided as
 `Variant=Panel`. Left: the 3-column GRID (the metadata row sits under the
 TITLE, 4 px below it — not under the icon, 8 px below), the accordion's
 chevron in the `left` slot, and the Data Viz header.
+
+**✅ Done 2026-09-30.** The header is ONE grid, as Figma's Container Header
+(912:33355) is: `left · title · actions` on row one, and the metadata row
+under the TITLE, 4 px below it, running to the end. The description is the
+metadata row's first line now. With nothing to lead, the grid drops to two
+columns, so a bare header is still 36 px and its title starts at 8 px. The
+collapse chevron moved into `left`, before the icon. The Data Viz header is
+9b's `sherpa-data-viz-header`. Not done: Figma's Accordion variant pads
+16 / 8 / 4 / 8 — no Sherpa header asks for it yet.
 
 ### `[x]` ✅ 14 — An example of real-time data
 
@@ -4123,6 +4132,7 @@ One line each. The detail is in git and in the trap named.
 - 146 🚧: a panel area resizes by its inner edge, dragged or by the keys, within its min and 33% of the row; kept through a reload. Levels 1 and 2 left — `T-an-edge-resizes-its-box`
 - 90 🚧: a number field can go Advanced — number questions, typed values, its answer carried over; dates wait on 21d — `T-a-number-has-advanced-rows`
 - 9b: a metric's name is its composed Data Viz Header, as Figma's Metric has it — no rule, an optional icon
+- 80: the container header is Figma's one grid — metadata under the title, the chevron leading
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

@@ -18,7 +18,7 @@
   Slots:
     heading   — custom heading element (replaces the default .title)
     icon      — custom icon element (else data-icon glyph)
-    actions   — extra trailing action controls (before toggle/close)
+    actions   — extra trailing action controls (before close)
     metadata  — bottom metadata strip (Panel) / secondary content (Default)
 
   Fires:
@@ -27,35 +27,40 @@
     header-drag      (detail: {})
 -->
 <template id="default">
+  <!-- ONE GRID, as Figma's Container Header is (912:33355): LEFT · TITLE ·
+       ACTIONS, and the METADATA under the title, not under the icon, 4px
+       below. Will, TODO 80. -->
   <header class="header" part="header">
-    <div class="row" part="row">
+    <!-- The leading cell: the drag handle, the icon — and, collapsible, the
+         chevron, as Figma's accordion variant has it. -->
+    <span class="left" part="left">
       <!-- Composed sherpa-buttons, not raw <button>s: a unicode glyph inks at
            the body font's weight and reads wrong beside every other control. -->
       <sherpa-button class="drag" part="drag" data-type="icon" data-size="xs"
                      data-look="transparent" data-icon-start="drag-handle-vertical"
                      aria-label="Drag to reorder"></sherpa-button>
-
+      <sherpa-button class="toggle" part="toggle" data-type="icon" data-size="sm"
+                     data-look="transparent" data-icon-start="chevron-up"
+                     aria-expanded="true" aria-label="Collapse"></sherpa-button>
       <span class="icon" part="icon" aria-hidden="true"><slot name="icon"></slot></span>
+    </span>
 
-      <div class="labels" part="labels">
-        <slot name="heading">
-          <span class="title sherpa-truncate" part="title"></span>
-        </slot>
-        <span class="description sherpa-truncate" part="description"></span>
-      </div>
-
-      <div class="actions" part="actions">
-        <slot name="actions" data-accepts="control,input"></slot>
-        <sherpa-button class="toggle" part="toggle" data-type="icon" data-size="sm"
-                       data-look="transparent" data-icon-start="chevron-up"
-                       aria-expanded="true" aria-label="Collapse"></sherpa-button>
-        <sherpa-button class="close" part="close" data-type="icon" data-size="sm"
-                       data-look="transparent" data-icon-start="cross"
-                       aria-label="Close"></sherpa-button>
-      </div>
+    <div class="labels" part="labels">
+      <slot name="heading">
+        <span class="title sherpa-truncate" part="title"></span>
+      </slot>
     </div>
 
+    <div class="actions" part="actions">
+      <slot name="actions" data-accepts="control,input"></slot>
+      <sherpa-button class="close" part="close" data-type="icon" data-size="sm"
+                     data-look="transparent" data-icon-start="cross"
+                     aria-label="Close"></sherpa-button>
+    </div>
+
+    <!-- The description is the metadata's own first line, as Figma's is. -->
     <div class="metadata" part="metadata">
+      <span class="description sherpa-truncate" part="description"></span>
       <slot name="metadata" data-accepts="content,control"></slot>
     </div>
   </header>

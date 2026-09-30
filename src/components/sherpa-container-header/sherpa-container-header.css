@@ -10,30 +10,45 @@
   border-block-end: var(--sherpa-style-border-width, 0.5px) solid var(--sherpa-style-border-base-1, #b3b3c3);
 }
 
-/* ── Layout ───────────────────────────────────────────────────────────── */
+/* ── Layout ─────────────────────────────────────────────────────────────
+   ONE grid, as Figma's (912:33355): LEFT · TITLE · ACTIONS, then the metadata
+   under the title — spanning to the end, not under the icon — 4 below.
+   Will, TODO 80. */
 .header {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sherpa-theme-gap-md, 8px);
-}
-
-.row {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "left labels actions"
+    ".    meta   meta";
   align-items: center;
-  gap: var(--sherpa-theme-gap-sm, 4px);
+  /* NO row gap: a hidden metadata row would still take one. It brings its own. */
+  column-gap: var(--sherpa-theme-gap-sm, 4px);
   padding: var(--sherpa-theme-padding-md, 8px);
+}
+/* Nothing leads: the title takes the first column, so no gap is spent on an
+   empty one. */
+:host(:not([data-draggable], [data-icon], [data-has-icon], [data-collapsible])) .header {
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "labels actions"
+    "meta   meta";
 }
 
 .labels {
-  flex: 1 1 0;
+  grid-area: labels;
   min-inline-size: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sherpa-display-mode-space-3xs, 2px);
   overflow: hidden;
 }
 
-/* ── Drag handle + icon — same square, hidden until flagged ───────────── */
+/* ── The leading cell: drag handle, chevron, icon ─────────────────────── */
+.left {
+  grid-area: left;
+  display: none;
+  align-items: center;
+  gap: var(--sherpa-theme-gap-sm, 4px);
+}
+:host(:is([data-draggable], [data-icon], [data-has-icon], [data-collapsible])) .left { display: inline-flex; }
+
 .drag,
 .icon {
   display: none;
@@ -88,6 +103,7 @@ slot[name="heading"] { display: contents; }
 
 /* ── Actions (Figma actions slot: gap/sm 4) ───────────────────────────── */
 .actions {
+  grid-area: actions;
   display: flex;
   flex-shrink: 0;
   align-items: center;
@@ -109,29 +125,29 @@ slot[name="heading"] { display: contents; }
 :host([data-dismissible]) .close { display: inline-flex; }
 :host([data-collapsed]) .toggle { transform: rotate(180deg); }
 
-:host(:not([data-has-actions]):not([data-dismissible]):not([data-collapsible])) .actions { display: none; }
+:host(:not([data-has-actions]):not([data-dismissible])) .actions { display: none; }
 
-/* ── Metadata strip ───────────────────────────────────────────────────── */
+/* ── Metadata strip — the description first, then whatever is slotted ─── */
 .metadata {
+  grid-area: meta;
   display: none;
   align-items: center;
+  min-inline-size: 0;
+  margin-block-start: var(--sherpa-theme-gap-sm, 4px);
   gap: var(--sherpa-theme-gap-lg, 12px);
-  padding: 0 var(--sherpa-theme-padding-md, 8px) var(--sherpa-theme-padding-md, 8px);
   color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
   font-family: var(--sherpa-font-family-body, "Inter", system-ui, sans-serif);
   font-size: var(--sherpa-font-size-body-small, 12px);
   line-height: var(--sherpa-theme-content-line-height-small, 16px);
 }
-:host([data-has-metadata]) .metadata { display: flex; }
+:host(:is([data-description], [data-has-metadata])) .metadata { display: flex; }
 
 /* ── Panel variant — same skeleton, different look ────────────────────── */
 :host([data-type="panel"]) .title {
   color: var(--sherpa-theme-content-link-1, #2b34b4); /* theme-direct */
 }
-:host([data-type="panel"]) .actions { margin-inline-start: auto; }
 
 /* ── Narrow: drop the description first ───────────────────────────────── */
 @container sherpa-container-header (max-width: 220px) {
   .description { display: none; }
-  .row { gap: var(--sherpa-display-mode-space-2xs, 4px); }
 }

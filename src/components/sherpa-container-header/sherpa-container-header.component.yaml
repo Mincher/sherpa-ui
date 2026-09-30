@@ -23,9 +23,9 @@ anatomy:
     class: header
     part: header
     children:
-      - el: div
-        class: row
-        part: row
+      - el: span
+        class: left
+        part: left
         children:
           - el: sherpa-button
             class: drag
@@ -36,54 +36,54 @@ anatomy:
               data-look: transparent
               data-icon-start: drag-handle-vertical
               aria-label: Drag to reorder
+          - el: sherpa-button
+            class: toggle
+            part: toggle
+            attrs:
+              data-type: icon
+              data-size: sm
+              data-look: transparent
+              data-icon-start: chevron-up
+              aria-expanded: "true"
+              aria-label: Collapse
           - el: span
             class: icon
             part: icon
             slot: icon
             attrs:
               aria-hidden: "true"
-          - el: div
-            class: labels
-            part: labels
+      - el: div
+        class: labels
+        part: labels
+        children:
+          - slot: heading
             children:
-              - slot: heading
-                children:
-                  - el: span
-                    class: title sherpa-truncate
-                    part: title
               - el: span
-                class: description sherpa-truncate
-                part: description
-          - el: div
-            class: actions
-            part: actions
-            children:
-              - slot: actions
-                attrs:
-                  data-accepts: control,input
-              - el: sherpa-button
-                class: toggle
-                part: toggle
-                attrs:
-                  data-type: icon
-                  data-size: sm
-                  data-look: transparent
-                  data-icon-start: chevron-up
-                  aria-expanded: "true"
-                  aria-label: Collapse
-              - el: sherpa-button
-                class: close
-                part: close
-                attrs:
-                  data-type: icon
-                  data-size: sm
-                  data-look: transparent
-                  data-icon-start: cross
-                  aria-label: Close
+                class: title sherpa-truncate
+                part: title
+      - el: div
+        class: actions
+        part: actions
+        children:
+          - slot: actions
+            attrs:
+              data-accepts: control,input
+          - el: sherpa-button
+            class: close
+            part: close
+            attrs:
+              data-type: icon
+              data-size: sm
+              data-look: transparent
+              data-icon-start: cross
+              aria-label: Close
       - el: div
         class: metadata
         part: metadata
         children:
+          - el: span
+            class: description sherpa-truncate
+            part: description
           - slot: metadata
             attrs:
               data-accepts: content,control
@@ -152,14 +152,14 @@ states:
     name: has-icon
     selector: ":host([data-has-icon])"
   - $type: state
+    name: collapsible
+    selector: ":host([data-collapsible])"
+  - $type: state
     name: has-heading
     selector: ":host([data-has-heading])"
   - $type: state
     name: description
     selector: ":host([data-description])"
-  - $type: state
-    name: collapsible
-    selector: ":host([data-collapsible])"
   - $type: state
     name: dismissible
     selector: ":host([data-dismissible])"
@@ -188,10 +188,9 @@ events:
     bubbles: true
     composed: true
 tokens:
-  header.gap: "{sherpa.theme-gap-md}"
-  row.gap: "{sherpa.theme-gap-sm}"
-  row.padding: "{sherpa.theme-padding-md}"
-  labels.gap: "{sherpa.display-mode-space-3xs}"
+  header.column-gap: "{sherpa.theme-gap-sm}"
+  header.padding: "{sherpa.theme-padding-md}"
+  left.gap: "{sherpa.theme-gap-sm}"
   drag.inline-size: "{sherpa.display-mode-size-sm}"
   drag.block-size: "{sherpa.display-mode-size-sm}"
   icon.inline-size: "{sherpa.theme-content-size-base}"
@@ -208,8 +207,8 @@ tokens:
   description.line-height: "{sherpa.theme-content-line-height-small}"
   actions.gap: "{sherpa.theme-gap-sm}"
   toggle.transition: "{sherpa.motion-base}"
+  metadata.margin-block-start: "{sherpa.theme-gap-sm}"
   metadata.gap: "{sherpa.theme-gap-lg}"
-  metadata.padding: "{sherpa.theme-padding-md}"
   metadata.color: "{sherpa.theme-content-body-1}"
   metadata.font-family: "{sherpa.font-family-body}"
   metadata.font-size: "{sherpa.font-size-body-small}"
