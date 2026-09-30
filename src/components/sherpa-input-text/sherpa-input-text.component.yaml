@@ -467,7 +467,7 @@ tokens:
   label.color: "{sherpa.theme-content-body-base}"
   description.font-size: "{sherpa.font-size-body-small}"
   description.line-height: "{sherpa.theme-content-line-height-small}"
-  description.color: "{sherpa.theme-content-body-2}"
+  description.color: "{sherpa.theme-content-body-1}"
   control-row.gap: "{sherpa.structure-space-gap}"
   control-row.min-block-size: "{sherpa.display-mode-size-2xl}"
   control-row.padding-inline: "{sherpa.structure-space-padding}"

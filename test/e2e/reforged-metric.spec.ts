@@ -51,7 +51,8 @@ test('populate() renders label, value, delta and derives an up trend', async ({ 
   expect(r.value).toBe('$1.2M');
   expect(r.delta).toBe('+12.5%'); // derived from deltaPercent
   expect(r.trend).toBe('up');
-  expect(r.deltaColor).toBe('rgb(0, 173, 98)'); // theme-content-success-1 #00AD62 (readable up-trend ink)
+  // theme-content-success-base #006B37: 4.5:1 on white, where success-1 was 2.93 (TODO 118)
+  expect(r.deltaColor).toBe('rgb(0, 107, 55)');
 });
 
 test('a down trend colours the delta critical', async ({ page }) => {

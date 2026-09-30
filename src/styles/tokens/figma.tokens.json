@@ -9475,7 +9475,7 @@
           "figma-console-mcp": {
             "collectionId": "VariableCollectionId:18:187",
             "figmaResolvedType": "COLOR",
-            "lastSyncedAt": "2026-09-11T10:40:00.000Z",
+            "lastSyncedAt": "2026-09-30T18:40:00.000Z",
             "lastSyncedValue": {
               "active": {
                 "reference": "{theme.content.active.base}"
@@ -9493,7 +9493,7 @@
                 "reference": "{theme.content.info.+1}"
               },
               "success": {
-                "reference": "{theme.content.success.+1}"
+                "reference": "{theme.content.success.base}"
               },
               "urgent": {
                 "reference": "{theme.content.urgent.+1}"
@@ -9507,7 +9507,7 @@
               "critical": "{theme.content.critical.+1}",
               "warning": "{theme.content.body.base}",
               "urgent": "{theme.content.urgent.+1}",
-              "success": "{theme.content.success.+1}",
+              "success": "{theme.content.success.base}",
               "active": "{theme.content.active.base}",
               "inactive": "{theme.content.body.+1}"
             },

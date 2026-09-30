@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**43 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**42 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -138,7 +138,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | | | | **H — The accessibility gate** | |
 | ✅ | 43 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
 | ✅ | 43a | 117 | Clear the accessibility baseline — 11 of 12 done; the accordion is ruled, and waits on 124 | bug |
-| ⬜ | 43b | 118 | Four texts fail colour contrast — re-point the alias chain to a darker shade, no new hex | figma |
+| ✅ | 43b | 118 | Four texts fail colour contrast — re-point the alias chain to a darker shade, no new hex | figma |
 | | | | **I — The big builds** | |
 | ✅ | 44 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
 | ⬜ | 45 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
@@ -3095,7 +3095,7 @@ The panel audits clean, and its entry is out of `test/a11y/baseline.json`.
 Twelve of twelve. What is left in the baseline is four colour-contrast
 failures: that is 118.
 
-### `[ ]` 118 — Four texts fail colour contrast — the success green, and a field's description
+### `[x]` ✅ 118 — Four texts fail colour contrast — the success green, and a field's description
 
 WCAG 1.4.3 needs 4.5:1 for small text. Measured by the gate (24):
 
@@ -3117,6 +3117,24 @@ be mapped back to a darker shade rather than directly applying new hex
 values."* So: no new colour. Follow each token's alias chain in Figma to the
 ramp it points at, and re-point it to a darker STEP of that same ramp that
 reaches 4.5:1. Only if no step does, say so and ask.
+
+**✅ Done 2026-09-30, with no new colour.** Both moved one step darker on
+their own ramp, in Figma first:
+
+- **Success text:** Style `style-content/base`, mode `success`, pointed at
+  Theme `content/success/+1` (`#00AD62`, 2.93:1). It points at
+  `content/success/base` now (`#006B37`, about 6.6:1) — as Active already
+  points at `content/active/base`. Re-projected.
+- **A field's description:** the ALIAS was not the fault. Theme `body/+2`
+  is the disabled grey, and moving it would move every disabled text. Two of
+  Figma's six inputs — Input Text and Input Number — bound their description
+  to `body/+2`; the other four bind `body/+1`, one step lighter than the
+  label. Those two now bind `body/+1` too, and so does the code.
+
+The a11y baseline is empty now: no known failures. **One more of the same:**
+the Transparent look's success text (`style-transparent`, a hand-kept
+override collection) still points at `success/+1`. No text wears it today;
+say if it should move too.
 
 ---
 
@@ -4157,6 +4175,7 @@ One line each. The detail is in git and in the trap named.
 - 80: the container header is Figma's one grid — metadata under the title, the chevron leading
 - 50: a saved filter's line opens its field; the change applies, unsaved, until Save or Discard — `T-a-saved-filter-keeps-its-edit`
 - 111: a spec types a property as its accessor does, `unknown` where nothing says
+- 118: success text and a field's description pass 4.5:1 — one step darker on their own ramps, no new hex; the a11y baseline is empty
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

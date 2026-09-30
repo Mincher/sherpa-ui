@@ -1,14 +1,1 @@
-{
-  "sherpa-chip": {
-    "color-contrast": 1
-  },
-  "sherpa-input-text": {
-    "color-contrast": 1
-  },
-  "sherpa-metric": {
-    "color-contrast": 1
-  },
-  "sherpa-toast": {
-    "color-contrast": 1
-  }
-}
+{}

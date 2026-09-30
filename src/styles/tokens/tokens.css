@@ -1799,7 +1799,7 @@
   --sherpa-style-success-border-base-1: var(--sherpa-theme-border-success-3);
   --sherpa-style-success-border-width: var(--sherpa-display-mode-border-width-sm);
   --sherpa-style-success-border-data-viz: var(--sherpa-theme-data-viz-status-success-color-5);
-  --sherpa-style-success-content-base: var(--sherpa-theme-content-success-1);
+  --sherpa-style-success-content-base: var(--sherpa-theme-content-success-base);
   --sherpa-style-success-content-inverse: var(--sherpa-theme-content-body-base-fixed);
   --sherpa-style-success-content-secondary: var(--sherpa-theme-content-body-1);
   --sherpa-style-success-content-tertiary: var(--sherpa-theme-content-body-2);
