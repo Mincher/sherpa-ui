@@ -57,6 +57,9 @@ anatomy:
               attrs:
                 slot: actions
               children:
+                - slot: actions
+                  attrs:
+                    data-accepts: control
                 - el: sherpa-button
                   class: expand
                   part: expand

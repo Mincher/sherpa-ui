@@ -166,6 +166,8 @@ export async function init(root, { source }) {
     }
 
     const gone = records.length - failed.length;
+    // The record the details panel shows is gone: shut it.
+    if (records.some((r) => r.email === grid.currentKey && !failed.some((f) => f.record === r))) details?.hide();
     // KEEP what refused, so the reader can try those again; a full success
     // clears the selection, because `select([])` is a clear.
     grid.select(failed.map((f) => f.record.email));
@@ -229,6 +231,55 @@ export async function init(root, { source }) {
 
   grid.addEventListener('row-action', (e) => {
     runAction(e.detail.id, e.detail.records ?? []);
+  }, { signal });
+
+  /* DETAILS: the current row opens its record in the app's details panel. A
+     drilldown, so the header's trail names it; its first crumb shuts it.
+     TRAP T-a-current-row-opens-its-details */
+  const details = document.getElementById('details');
+  const detailFields = details?.querySelector('.details-fields');
+  const steps = [...(details?.querySelectorAll('.details-step') ?? [])];
+  const NUMBER = new Intl.NumberFormat();
+  // UTC: a date-only value is midnight UTC, and a local zone would show the day before.
+  const DAY = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeZone: 'UTC' });
+  /** A value as a reader reads it, by its field's declared type. */
+  const shown = (field, value) => {
+    const { type, labels } = source.fieldFacts(field);
+    if (value == null || value === '') return '—';
+    if (type === 'number') return NUMBER.format(Number(value));
+    const day = type === 'date' ? new Date(String(value)) : null;
+    if (day && !Number.isNaN(day.valueOf())) return DAY.format(day);
+    return labels?.[value] ?? String(value);
+  };
+  /** Draw a record in the panel: every declared field, under its label. */
+  const drawDetails = (record) => {
+    details.dataset.heading = String(record.name ?? '');
+    detailFields?.populate(Object.keys(record)
+      .filter((field) => source.fieldFacts(field).label)
+      .map((field) => ({ key: source.fieldFacts(field).label, value: shown(field, record[field]) })));
+    for (const step of steps) step.toggleAttribute('disabled', !grid.neighbour(Number(step.dataset.by)));
+  };
+  const showDetails = (record) => {
+    if (!record || !details) return;
+    drawDetails(record);
+    void header?.populate({ breadcrumb: [
+      { label: header.getAttribute('data-heading') || 'Records', href: location.search },
+      { label: String(record.name ?? '') },
+    ] });
+    details.show();
+  };
+  grid.addEventListener('row-select', (e) => showDetails(e.detail.row), { signal });
+  for (const step of steps) {
+    step.addEventListener('button-click', () => showDetails(grid.stepCurrent(Number(step.dataset.by))), { signal });
+  }
+  details?.addEventListener('panel-close', () => void header?.populate({ breadcrumb: [] }), { signal });
+  document.addEventListener('breadcrumb-select', (e) => {
+    if (e.detail.index === 0 && details?.open) details.hide();
+  }, { signal });
+  // An edit reloads the rows: redraw the record from them, if it is still on the page.
+  source.addEventListener('change', () => {
+    const record = details?.open ? grid.current : null;
+    if (record) drawDetails(record);
   }, { signal });
 
   /* THE BULK BAR. `grid.actionsFor(count)` is the row menu's own list, narrowed
@@ -320,5 +371,6 @@ export async function init(root, { source }) {
      binding, the persister and the view picker. */
   return () => {
     page.abort();
+    details?.hide();
   };
 }

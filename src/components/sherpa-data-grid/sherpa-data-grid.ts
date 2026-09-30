@@ -214,8 +214,9 @@ export class SherpaDataGrid extends SherpaElement {
   #key: string | null = null;
   /** Keys a caller asked to select. */
   #wantedKeys: string[] | null = null;
-  /** The last row CLICKED. A record, not DOM focus, which a click never takes. */
-  #focused: GridRow | null = null;
+  /** The CURRENT row's key: the last row clicked, or set. Not DOM focus, which a
+   *  click never takes. A key, so a re-populate keeps it. */
+  #currentKey: string | null = null;
 
   override onRender(): void {
     // TRAP T-grid-header-needs-capture — the chip's stopPropagation() hides the
@@ -271,7 +272,6 @@ export class SherpaDataGrid extends SherpaElement {
       if (!fields.has(field)) this.#columnFilters.delete(field);
     }
     this.#resolveSelection();
-    this.#focused = null;
     this.#render();
   }
 
@@ -292,7 +292,7 @@ export class SherpaDataGrid extends SherpaElement {
     // the user's selection away.
     this.#syncSelectAll();
     this.#syncGroupSelects();
-    this.#syncFocused();
+    this.#syncCurrent();
     this.#syncPinned();
   }
 
@@ -1491,19 +1491,46 @@ export class SherpaDataGrid extends SherpaElement {
     const index = Number(raw);
     // Resolve against the VISIBLE list — data-index is a position in that list.
     const record = this.#visibleRows()[index];
-    // FOCUSED: the last row clicked, remembered so a re-render re-applies it.
-    this.#focused = record ?? null;
-    this.#syncFocused();
+    this.#currentKey = record ? this.#keyOf(record) ?? null : null;
+    this.#syncCurrent();
     this.emit('row-select', { index, row: record });
   };
 
   /** Mark the CURRENT row — one of many, the house word; CSS owns the tint. */
-  #syncFocused(): void {
+  #syncCurrent(): void {
     const rows = this.#visibleRows();
     for (const tr of this.$$<HTMLElement>('.row')) {
-      const i = coerceNum(tr.dataset['index'], -1, { int: true });
-      tr.toggleAttribute('data-current', !!this.#focused && rows[i] === this.#focused);
+      const row = rows[coerceNum(tr.dataset['index'], -1, { int: true })];
+      tr.toggleAttribute('data-current', !!row && this.#currentKey !== null && this.#keyOf(row) === this.#currentKey);
     }
+  }
+
+  /** The current row's key, or null. Setting it is silent, as `select()` is. */
+  get currentKey(): string | null {
+    return this.#currentKey;
+  }
+  set currentKey(key: string | null) {
+    this.#currentKey = key == null || key === '' ? null : String(key);
+    this.#syncCurrent();
+  }
+
+  /** The current RECORD among the rows held now — null when it is not one of them. */
+  get current(): GridRow | null {
+    return this.#rows.find((r) => this.#keyOf(r) === this.#currentKey) ?? null;
+  }
+
+  /** The row `by` rows from the current one, in the order drawn — or null. */
+  neighbour(by: number): GridRow | null {
+    const rows = this.#visibleRows();
+    const at = rows.findIndex((r) => this.#keyOf(r) === this.#currentKey);
+    return at < 0 ? null : rows[at + by] ?? null;
+  }
+
+  /** Move the current row `by` rows. Silent; returns the new one, or null at an end. */
+  stepCurrent(by: number): GridRow | null {
+    const next = this.neighbour(by);
+    if (next) this.currentKey = this.#keyOf(next) ?? null;
+    return next;
   }
 
   /* ── Grouping ───────────────────────────────────────────────────── */
@@ -1532,7 +1559,7 @@ export class SherpaDataGrid extends SherpaElement {
       // The body was replaced, so re-derive from #selected.
       this.#syncSelectAll();
       this.#syncGroupSelects();
-      this.#syncFocused();
+      this.#syncCurrent();
     }
 
     this.emit('group-toggle', { value: key, collapsed });

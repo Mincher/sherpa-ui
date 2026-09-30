@@ -18,6 +18,7 @@
   Slots:
     icon         — custom lead icon (else the data-icon glyph)
     description  — the metadata / description row under the title (reflects data-has-description)
+    actions      — the host's own header controls, before expand and close
     (default)    — the panel body
     footer       — footer action controls (reflects data-has-footer)
 
@@ -45,6 +46,7 @@
 
       <!-- Specific to a FLOATING panel, so they sit in the actions slot. -->
       <span slot="actions" class="toolbar" part="toolbar">
+        <slot name="actions" data-accepts="control"></slot>
         <sherpa-button class="expand" part="expand" data-type="icon" data-size="xs"
                        data-look="transparent" data-icon-start="fullscreen"
                        aria-label="Expand"></sherpa-button>

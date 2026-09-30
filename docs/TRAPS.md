@@ -609,6 +609,38 @@ under the pointer or focus.
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
 - Site: `test/e2e/reforged-overlay-panel.spec.ts`
 
+### T-one-overlay-panel-at-a-time
+
+**Opening an overlay panel shuts every other one** — TODO 23. They all sit on
+the right edge, so two open at once draw one over the other. It works as a
+native `popover="auto"` does: the panel keeps a static set of the panels open
+now and hides the rest on `show()`. A set, not a `document` query, so a panel
+inside a shadow root is found too. A shut panel still fires `panel-close`, so
+its host hears it. The Assistant and the Records details panel are the pair.
+
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
+- Site: `examples/index.html`
+- Site: `test/e2e/reforged-records-details.spec.ts`
+
+### T-a-current-row-opens-its-details
+
+**A row click opens that record in the app's details panel** — TODO 23. The
+grid holds the CURRENT row BY KEY (`currentKey`), so a re-populate, which is
+what an edit causes, keeps it. It was a row OBJECT, cleared on every populate.
+A caller can do what a click does: `currentKey = key` sets it (silent, as
+`select()` is), `neighbour(by)` reads the row above or below in drawn order,
+and `stepCurrent(by)` moves to it. The panel's up and down chevrons use those,
+and each disables at an end of the page. The panel lives in `index.html`, beside
+the Assistant, and the Context fills it: the heading is the record's name, and
+the body is every DECLARED field under its label, formatted by its type. A
+drilldown is where a trail belongs, so the header's trail reads
+`Records › <name>` while it is open. Its first crumb shuts the panel. A crumb
+is a real `<a href="?…">`, so `index.html` stops the reload on the real click,
+as it does for the nav.
+
+- Site: `examples/contexts/records.js`
+- Site: `test/e2e/reforged-records-details.spec.ts`
+
 ### T-a-live-feed-goes-into-the-store
 
 **Real-time data comes in through the data layer, INTO the store the page

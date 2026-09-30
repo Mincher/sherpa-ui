@@ -46,6 +46,7 @@ const KNOWN = {
   // so populate() is the only door. TRAP T-a-group-is-a-data-layer-concept
   'sherpa-data-grid.groups': 'ok: populate({ groups }) — the data layer names them',
   'sherpa-data-grid.selectedRecords': 'ok: select(keys) — derived from the same set',
+  'sherpa-data-grid.current': 'ok: currentKey = key — the record that key names',
   /* A group or sort chip's arrangement. Both are DECLARED props, so a host
      writes them and the chip draws itself from them.
      TRAP T-a-chip-knows-what-kind-it-is */

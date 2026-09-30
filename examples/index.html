@@ -104,6 +104,16 @@
                         data-icon="wand-magic-sparkles"
                         data-dismissible></sherpa-overlay-panel>
 
+  <!-- DETAILS: a Context fills it with its current record. Beside the assistant,
+       since only one overlay panel is open at a time. TRAP T-one-overlay-panel-at-a-time -->
+  <sherpa-overlay-panel id="details" data-icon="user" data-dismissible>
+    <sherpa-button slot="actions" class="details-step" data-by="-1" data-type="icon" data-size="xs"
+                   data-look="transparent" data-icon-start="chevron-up" aria-label="Previous record"></sherpa-button>
+    <sherpa-button slot="actions" class="details-step" data-by="1" data-type="icon" data-size="xs"
+                   data-look="transparent" data-icon-start="chevron-down" aria-label="Next record"></sherpa-button>
+    <sherpa-key-value-list class="details-fields" data-orientation="vertical"></sherpa-key-value-list>
+  </sherpa-overlay-panel>
+
   <script type="module">
     import { ArrayStore, DataSource, SessionStore, loadSavedViews, spoofRemote } from '../dist/index.js';
     import { DASHBOARD_VIEWS } from '/examples/definitions/dashboard-views.js';
@@ -729,9 +739,17 @@
       syncSettings();
     });
 
+    // A crumb is a real <a href="?…">: stop the reload on the real click, as the
+    // nav does. breadcrumb-select below does the swap.
+    document.addEventListener('click', (e) => {
+      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const link = e.composedPath().find((n) => n.localName === 'a' && n.classList?.contains('link'));
+      if (link?.getRootNode().host?.localName === 'sherpa-breadcrumbs' && link.getAttribute('href')?.startsWith('?')) e.preventDefault();
+    });
+
     // A BREADCRUMB click swaps in-page too — sherpa-breadcrumbs fires this and
-    // it bubbles composed through the header.
-    // with the crumb's href. A crumb with no href is the current page.
+    // it bubbles composed through the header, with the crumb's href. A crumb
+    // with no href is the current page.
     document.addEventListener('breadcrumb-select', (e) => {
       const href = e.detail?.href;
       const context = contextForHref(href);

@@ -268,8 +268,6 @@ props:
       (needs `key` in populate) actionsFor(count)              the actions that apply to a selection
       of that size — all of them for 1, only the `multi` ones for 2+, none for 0. A bulk toolbar
       reads this so it cannot disagree with the row menu selectedKeys / selectedRecords read it back
-      Column widths are fixed so long labels truncate; the header grip drags between
-      SherpaDataGrid.MIN_COL_WIDTH and MAX_COL_WIDTH.
 states:
   - $type: state
     name: empty
@@ -305,14 +303,15 @@ capabilities:
   - $type: capability
     api: js-property-mirror
     description: >-
-      read/write JS properties (columns, key, actions, groups, selectedRecords, selectedKeys,
-      selected). See $extensions.sherpa.jsProps.
+      read/write JS properties (columns, key, actions, groups, currentKey, current, selectedRecords,
+      selectedKeys, selected). See $extensions.sherpa.jsProps.
   - $type: capability
     api: js-methods
     description: >-
       callable from a view definition's state block (setColumnFilter, supersedeColumns,
       columnClause, columnReading, drawReading, columnLabel, suspendColumnFilter, openColumnFilter,
-      clearColumnFilter, actionsFor, select, clearSelection). See $extensions.sherpa.methods.
+      clearColumnFilter, actionsFor, neighbour, stepCurrent, select, clearSelection). See
+      $extensions.sherpa.methods.
 events:
   - $type: event
     name: column-resize
@@ -519,6 +518,14 @@ $extensions:
         args: "count: number"
         description: "The actions for the CURRENT selection — one row: all; two or more: only `multi`. ."
       - $type: method
+        name: neighbour
+        args: "by: number"
+        description: The row `by` rows from the current one, in the order drawn — or null.
+      - $type: method
+        name: stepCurrent
+        args: "by: number"
+        description: Move the current row `by` rows. Silent; returns the new one, or null at an end.
+      - $type: method
         name: select
         args: "keys: readonly string[]"
         description: >-
@@ -557,6 +564,12 @@ $extensions:
         type: string
         access: read-write
       - name: groups
+        type: string
+        access: read
+      - name: currentKey
+        type: string
+        access: read-write
+      - name: current
         type: string
         access: read
       - name: selectedRecords

@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**44 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**43 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -82,7 +82,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 40 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | | | | **G — Overlay panels** | |
 | ✅ | 41 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
-| ⬜ | 42 | 23 | A focused grid row opens a details panel | feature |
+| ✅ | 42 | 23 | A focused grid row opens a details panel | feature |
 | | | | **H — The accessibility gate** | |
 | ⬜ | 43 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
 | | | | **I — The big builds** | |
@@ -1641,12 +1641,24 @@ ArrowRight by 16 px; each resize reports `panel-resize { width }`. Figma was
 closed, so the widths are my pick — say if Figma has its own.
 `T-an-overlay-panel-resizes-from-its-left-edge`
 
-### `[ ]` 23 — A focused grid row opens a details panel on the right
+### `[x]` ✅ 23 — A focused grid row opens a details panel on the right
 
 Focus a row in `sherpa-data-grid` → an overlay panel opens on the right with
 more about that record. Any other open overlay closes first. Its header has up
 and down chevrons that step the focused row. Needs 22's resizing panel.
 A drilldown like this is where a breadcrumb trail belongs — the first real one.
+
+**✅ Done 2026-09-30.** A Records row click opens a details panel: the heading
+is the name, the body is every declared field under its label. Its up and
+down chevrons step the grid's current row, and disable at an end of the page.
+The grid holds the current row BY KEY now, so an edit keeps it, and a caller
+can set it (`currentKey`), read the next one (`neighbour(by)`) and step it
+(`stepCurrent(by)`). An overlay panel takes an `actions` slot, and opening one
+shuts every other one — the Assistant and the details are the pair. The
+header's trail reads `Records › <name>` while it is open; its first crumb
+shuts it, in place. My pick: the trail is in the app header, not in the panel
+— say if you want it in the panel.
+`T-a-current-row-opens-its-details` · `T-one-overlay-panel-at-a-time`
 
 ---
 
@@ -2585,6 +2597,7 @@ One line each. The detail is in git and in the trap named.
 - 9b 🚧: `sherpa-data-viz-header`, from Figma's newer design, on the Dashboard's chart cards; the metric is left
 - 14: live alerts over Server-Sent Events move the Dashboard's tiles — `T-a-live-feed-goes-into-the-store`
 - 22: an overlay panel is wider, and resizes from its left edge — `T-an-overlay-panel-resizes-from-its-left-edge`
+- 23: a grid row opens its details in an overlay panel; the chevrons step it; the trail names it — `T-a-current-row-opens-its-details`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

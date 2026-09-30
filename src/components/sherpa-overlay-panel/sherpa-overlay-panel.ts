@@ -25,10 +25,21 @@ export class SherpaOverlayPanel extends SherpaElement {
   } as const;
   static override observed = ['data-heading', 'data-icon', 'data-collapsed', 'data-collapsible', 'data-dismissible', 'open'];
 
+  /** The panels open now. They share the right edge, so opening one shuts the
+   *  rest. TRAP T-one-overlay-panel-at-a-time */
+  static #shown = new Set<SherpaOverlayPanel>();
+
   /** The native dialog the panel draws in, NON-modal. */
   #surface = new DialogSurface(this, () => this.$<HTMLDialogElement>('.root'), {
-    open: (dialog) => dialog.show(),
-    closed: () => this.emit('panel-close'),
+    open: (dialog) => {
+      for (const other of SherpaOverlayPanel.#shown) if (other !== this) other.hide();
+      SherpaOverlayPanel.#shown.add(this);
+      dialog.show();
+    },
+    closed: () => {
+      SherpaOverlayPanel.#shown.delete(this);
+      this.emit('panel-close');
+    },
   });
 
   override onRender(): void {
@@ -85,6 +96,10 @@ export class SherpaOverlayPanel extends SherpaElement {
     const now = this.$<HTMLElement>('.root')?.getBoundingClientRect().width ?? 0;
     this.#resizeTo(now + step * SherpaOverlayPanel.RESIZE_STEP, true);
   };
+
+  override onDisconnect(): void {
+    SherpaOverlayPanel.#shown.delete(this);
+  }
 
   override onChange(name: string): void {
     if (name === 'open') this.#surface.follow();

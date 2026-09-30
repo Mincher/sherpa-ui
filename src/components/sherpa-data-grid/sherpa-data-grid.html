@@ -64,6 +64,10 @@
                     all of them for 1, only the `multi` ones for 2+, none for 0. A bulk
                     toolbar reads this so it cannot disagree with the row menu
     selectedKeys / selectedRecords read it back
+    currentKey / current           the CURRENT row, the last one clicked, by key.
+                    Setting currentKey is silent, as select() is
+    neighbour(by) / stepCurrent(by) the row `by` away in drawn order; step moves
+                    to it, and gives null at an end
 
   Column widths are fixed so long labels truncate; the header grip drags between
   SherpaDataGrid.MIN_COL_WIDTH and MAX_COL_WIDTH.
