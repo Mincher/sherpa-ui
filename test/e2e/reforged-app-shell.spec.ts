@@ -275,3 +275,122 @@ for (const [density, px] of [['compact', 36], ['default', 40], ['comfortable', 4
     expect(r).toEqual({ rail: px, tile: `${px}x${px}`, inset: `${px}px` });
   });
 }
+
+/* Will, TODO 146: "Allow the side of the panel areas, in the app shell to be
+   dragged to resize like we can do with the overlay panel… Obviously only the
+   right side of the left panel area is draggable. The inverse for the right
+   panel area. The drag indicator should show on the edge of the panel area
+   (not panel) on hover & drag." TRAP T-an-edge-resizes-its-box */
+test('a panel area resizes by its INNER edge — dragged or by the keys — within its min and 33% of the row', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 900 });
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '<div style="block-size: 600px"><sherpa-app-shell style="min-block-size: 0" data-no-nav>'
+      + '<div slot="header" style="block-size: 40px">H</div>'
+      + '<div slot="panel-start" class="start" open style="block-size: 100%">Filters</div>'
+      + '<div slot="panel-end" class="end" open style="block-size: 100%">Details</div>'
+      + '<div>Context</div></sherpa-app-shell></div>';
+    await window.__settled();
+    const shell = root.querySelector('sherpa-app-shell')!;
+    const sr = shell.shadowRoot!;
+    const area = (side: string) => sr.querySelector<HTMLElement>(`.panel-${side}`)!;
+    const edge = (side: string) => sr.querySelector<HTMLElement>(`.edge-${side}`)!;
+    const width = (side: string) => Math.round(area(side).getBoundingClientRect().width);
+    const row = Math.round(sr.querySelector('.body')!.getBoundingClientRect().width);
+    const heard: unknown[] = [];
+    shell.addEventListener('panel-area-resize', (e) => heard.push((e as CustomEvent).detail));
+    const frames = () => new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+    const drag = async (side: string, by: number): Promise<void> => {
+      const e = edge(side);
+      const b = e.getBoundingClientRect();
+      const at = { x: b.left + b.width / 2, y: b.top + b.height / 2 };
+      const opts = (x: number) => ({ bubbles: true, composed: true, clientX: x, clientY: at.y, pointerId: 1, button: 0 });
+      e.dispatchEvent(new PointerEvent('pointerdown', opts(at.x)));
+      e.dispatchEvent(new PointerEvent('pointermove', opts(at.x + by / 2)));
+      const mid = e.hasAttribute('data-dragging');
+      e.dispatchEvent(new PointerEvent('pointerup', opts(at.x + by)));
+      await frames();
+      held.push(mid);
+    };
+    const held: boolean[] = [];
+    const key = async (side: string, k: string) => {
+      edge(side).dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true }));
+      await frames();
+    };
+
+    const before = { start: width('start'), end: width('end') };
+    // The START area's edge is its right: pulling right widens.
+    await drag('start', 60);
+    const wider = width('start');
+    // The END area's edge is its left: pulling LEFT widens.
+    await drag('end', -40);
+    const endWider = width('end');
+    // Keys: the edge moves the way the key points.
+    await key('start', 'ArrowLeft');
+    const keyed = width('start');
+    // Past the ends: the clamp holds.
+    await drag('start', 2000);
+    const most = width('start');
+    await drag('start', -2000);
+    const least = width('start');
+    await key('start', 'End');
+    const end = width('start');
+    // The indicator is on the AREA's edge, not the panel's.
+    const e = edge('start').getBoundingClientRect();
+    const a = area('start').getBoundingClientRect();
+    const panel = root.querySelector('.start')!.getBoundingClientRect();
+    // The host's width, IN.
+    shell.setAttribute('data-panel-start-width', '500');
+    await frames();
+    const given = width('start');
+    shell.removeAttribute('data-panel-start-width');
+    await frames();
+    return {
+      row, before, wider, endWider, keyed, most, least, end, given, back: width('start'), heard, held,
+      edge: { atAreaEdge: Math.abs(e.right - a.right) <= 1, outsidePanel: e.left >= panel.right - 1 },
+      aria: { role: edge('start').getAttribute('role'), now: edge('start').getAttribute('aria-valuenow'),
+        min: edge('start').getAttribute('aria-valuemin'), max: edge('start').getAttribute('aria-valuemax') },
+    };
+  });
+
+  expect(r.wider).toBe(r.before.start + 60);
+  expect(r.endWider).toBe(r.before.end + 40);
+  expect(r.keyed).toBe(r.wider - 16);
+  // Never over 33% of the row, never under the area's min.
+  expect(Math.abs(r.most - r.row * 0.33)).toBeLessThanOrEqual(1);
+  expect(r.least).toBe(464);
+  expect(r.end).toBe(r.most);
+  expect(r.given).toBe(500);
+  expect(r.back).toBe(r.before.start);
+  // Reported on release and on each key, never on every pixel.
+  expect(r.heard).toEqual([
+    { side: 'start', width: r.wider }, { side: 'end', width: r.endWider }, { side: 'start', width: r.keyed },
+    { side: 'start', width: r.most }, { side: 'start', width: r.least }, { side: 'start', width: r.end },
+  ]);
+  expect(r.held.every(Boolean)).toBe(true);
+  expect(r.edge).toEqual({ atAreaEdge: true, outsidePanel: true });
+  expect(r.aria).toEqual({ role: 'separator', now: String(r.end), min: '464', max: String(Math.round(r.row * 0.33)) });
+});
+
+test('on Records, a dragged filter panel area keeps its width through a reload', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1000 });
+  // The filter PANEL, as a reader who chose it last visit.
+  await page.addInitScript(() => localStorage.setItem('sherpa:session:/filters/mode', '"panel"'));
+  await page.goto('http://localhost:4200/?context=records');
+  await page.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
+  const width = () => page.evaluate(() => Math.round(document.querySelector('sherpa-app-shell')!.shadowRoot!
+    .querySelector('.panel-start')!.getBoundingClientRect().width));
+  await expect.poll(width).toBeGreaterThan(0);
+  const before = await width();
+  // The keys, as a reader without a pointer does it.
+  await page.evaluate(() => {
+    const edge = document.querySelector('sherpa-app-shell')!.shadowRoot!.querySelector<HTMLElement>('.edge-start')!;
+    for (let i = 0; i < 3; i++) edge.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+  });
+  await expect.poll(width).toBe(before + 48);
+  await page.reload();
+  await page.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
+  await expect.poll(width).toBe(before + 48);
+});

@@ -122,10 +122,13 @@
   --_gap: var(--sherpa-layout-grid-gap-horizontal, 16px);
   --_pad: var(--sherpa-layout-grid-padding, 16px);
   --_col: calc((100% - var(--_pad) - (var(--_cols) - 1) * var(--_gap)) / var(--_cols));
-  flex: 0 0 var(--sherpa-panel-area-width, calc(3 * var(--_col) + 2 * var(--_gap) + var(--_pad)));
-  /* …and never narrower than this: 150% of the 310px it is at 1280, where a
-     panel first shows. Will, TODO 163. */
+  flex: 0 0 var(--_asked, var(--sherpa-panel-area-width, calc(3 * var(--_col) + 2 * var(--_gap) + var(--_pad))));
+  /* …never narrower than this: 150% of the 310px it is at 1280, where a panel
+     first shows (Will, TODO 163) — and, dragged, never over 33% of the row
+     (TODO 146). The min wins where the two cross. */
   min-inline-size: var(--sherpa-panel-area-min-width, 464px);
+  max-inline-size: 33%;
+  position: relative;
   min-block-size: 0;
   /* The layout grid's own inset, which the panel does not otherwise carry —
      without it a panel's top and bottom overshoot the cards beside it by 16
@@ -148,6 +151,30 @@
 .panel-end { display: none; }
 :host([data-has-panel-start][data-panel-start-open]) .panel-start,
 :host([data-has-panel-end][data-panel-end-open]) .panel-end { display: block; }
+
+.panel-start { --_asked: var(--_asked-start); }
+.panel-end { --_asked: var(--_asked-end); }
+
+/* The INNER edge's handle: a strip in the area's own inset — the AREA's edge,
+   not the panel's — drawn while it is pointed at, focused or held.
+   TRAP T-an-edge-resizes-its-box */
+.edge {
+  position: absolute;
+  inset-block: 0;
+  z-index: 1;
+  inline-size: var(--sherpa-display-mode-space-xs, 8px);
+  cursor: ew-resize;
+  touch-action: none;
+}
+.edge-start { inset-inline-end: 0; }
+.edge-end { inset-inline-start: 0; }
+.edge:focus-visible { outline: none; }
+.edge-start:is(:hover, :focus-visible, [data-dragging]) {
+  box-shadow: inset -2px 0 0 var(--sherpa-style-indicator-accent, #3b4ccd);
+}
+.edge-end:is(:hover, :focus-visible, [data-dragging]) {
+  box-shadow: inset 2px 0 0 var(--sherpa-style-indicator-accent, #3b4ccd);
+}
 
 .panel-start ::slotted(*),
 .panel-end ::slotted(*) {

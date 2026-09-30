@@ -5,11 +5,14 @@
  * rail's state onto the host.
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { resizeByEdge } from '../../core/ui/edge-resize.js';
 
 export class SherpaAppShell extends SherpaElement {
   static override css = new URL('./sherpa-app-shell.css', import.meta.url);
   static override html = new URL('./sherpa-app-shell.html', import.meta.url);
-  static override observed = ['data-nav-state', 'data-no-nav', 'data-no-header'];
+  static override observed = [
+    'data-nav-state', 'data-no-nav', 'data-no-header', 'data-panel-start-width', 'data-panel-end-width',
+  ];
 
   /** The shell writes these itself, mirroring each panel's own `open`. */
   static override props = {
@@ -35,7 +38,49 @@ export class SherpaAppShell extends SherpaElement {
       this.$(`slot[name="panel-${side}"]`)
         ?.addEventListener('slotchange', () => this.#watchPanel(side));
       this.#watchPanel(side);
+      this.#resizable(side);
+      this.#askWidth(side);
     }
+  }
+
+  /**
+   * An area's INNER edge resizes it: drag it, or the arrow keys, Home and End.
+   * The shell draws the width live and REPORTS it on release — the host keeps
+   * it, and hands it back in `data-panel-<side>-width`. Its CSS owns the clamp:
+   * never under its min, never over 33% of the row. Will, TODO 146.
+   * TRAP T-an-edge-resizes-its-box
+   */
+  #resizable(side: 'start' | 'end'): void {
+    const edge = this.$<HTMLElement>(`.edge-${side}`);
+    const area = (): HTMLElement | null => this.$<HTMLElement>(`.panel-${side}`);
+    if (!edge) return;
+    const drawn = (): number => area()?.getBoundingClientRect().width ?? 0;
+    resizeByEdge(edge, {
+      grows: side === 'start' ? 1 : -1,
+      measure: drawn,
+      min: () => parseFloat(getComputedStyle(area() ?? this).minInlineSize) || 0,
+      // 33% of the row, as the CSS has it. Will's number.
+      max: () => (this.$<HTMLElement>('.body')?.getBoundingClientRect().width ?? 0) * 0.33,
+      apply: (px, done) => {
+        this.style.setProperty(`--_asked-${side}`, `${Math.round(px)}px`);
+        // What the clamp DREW is the width: a key moves from there.
+        const width = Math.round(drawn());
+        this.style.setProperty(`--_asked-${side}`, `${width}px`);
+        if (done) this.emit('panel-area-resize', { side, width });
+      },
+    });
+  }
+
+  override onChange(name: string): void {
+    if (name === 'data-panel-start-width') this.#askWidth('start');
+    else if (name === 'data-panel-end-width') this.#askWidth('end');
+  }
+
+  /** The host's width for an area, in: none is the area's own. */
+  #askWidth(side: 'start' | 'end'): void {
+    const px = Number(this.getAttribute(`data-panel-${side}-width`));
+    if (px > 0) this.style.setProperty(`--_asked-${side}`, `${px}px`);
+    else this.style.removeProperty(`--_asked-${side}`);
   }
 
   /** Mirror one panel's `open` onto the host, and follow it. */

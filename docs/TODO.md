@@ -120,7 +120,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 35d | 164 | At the mobile breakpoint the app header shows no nav hamburger: it does not get narrow enough to trigger it | bug |
 | ✅ | 35b | 161 | The app header's shadow FADES in, very quickly, as the Context scrolls under it | quick |
 | ✅ | 35c | 163 | The app shell's panel areas are 150% of their width today, at the least | quick |
-| ❓ | 35a | 146 | The app shell's FIXED panel areas resize by dragging their inner edge; the content reflows; two levels of container query | feature |
+| 🚧 | 35a | 146 | The app shell's FIXED panel areas resize by dragging their inner edge; the content reflows; two levels of container query | feature |
 | | | | **F — Data states and charts** | |
 | ✅ | 36 | 58 | Loading, empty and error states in a container | feature |
 | 🚧 | 37 | 9b | A Data Viz header, for metrics and chart containers | component |
@@ -2593,7 +2593,7 @@ and the area has a MIN width of 464px. That is 150% of the 310px it is at
 at 1280 and at 1600, and from about 1900 the three columns are wider and
 take over (454 at 1920).
 
-### `[ ]` 146 — The app shell's FIXED panel areas resize by dragging their edge
+### `[~]` 146 — The app shell's FIXED panel areas resize by dragging their edge
 
 Will, 2026-09-30, a future todo: *"Allow the side of the panel areas, in the
 app shell to be dragged to resize like we can do with the overlay panel.*
@@ -2658,6 +2658,21 @@ or arrow keys — but it is on the AREA's edge, in `sherpa-app-shell`.
 - Build order: the second container → the shell-level hide → the clamp → the
   helper → the handles → attributes and events → the grid's container
   queries → the example's persistence.
+
+**🚧 2026-09-30 — the drag is built; the two levels are not.** Each panel
+area's INNER edge resizes it: drag it, or the arrow keys (Home and End go to
+the ends). The line shows on the AREA's edge on hover, focus and drag. It
+never goes under the area's min (464px) or over 33% of the row, and the
+example app keeps the width through a reload. The overlay panel's handle is
+the same code now (one helper, `src/core/ui/edge-resize.ts`).
+
+**One thing to know:** at 1280 wide, 33% of the row is 409px — under the
+464px min from 163 — so the area cannot be dragged there. It gives from about
+1446px wide. Say if the max or the min should move.
+
+Not built: level 1 (the shell, not the filter panel, hides an area when it is
+too narrow) and level 2 (the Context's grid reflows by its own width). Level
+2 waits on the choice below.
 
 **❓ One choice before level 2.** The grid's bands (768 / 1280 / 1920) are
 viewport widths. As container widths they are narrower by the nav and the
@@ -4084,6 +4099,7 @@ One line each. The detail is in git and in the trap named.
 - 124: ONE Filters button in the panel header, for every scope; a row says its scope — `T-a-panel-adds-through-the-bar-that-owns-the-list`
 - 117: the accessibility baseline has no structural failure left — `T-an-accordion-action-is-not-a-toggle`
 - 144: a View keeps a draft of the filters left on it, for the tab and across sessions; two settings, on — `T-a-view-keeps-a-draft`
+- 146 🚧: a panel area resizes by its inner edge, dragged or by the keys, within its min and 33% of the row; kept through a reload. Levels 1 and 2 left — `T-an-edge-resizes-its-box`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

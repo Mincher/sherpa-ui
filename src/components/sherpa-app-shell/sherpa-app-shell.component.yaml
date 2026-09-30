@@ -57,6 +57,14 @@ anatomy:
                       - slot: panel-start
                         attrs:
                           data-accepts: filter-panel, panel
+                      - el: div
+                        class: edge edge-start
+                        part: panel-start-edge
+                        attrs:
+                          role: separator
+                          aria-orientation: vertical
+                          aria-label: Resize the start panel area
+                          tabindex: "0"
                   - el: div
                     class: context-frame
                     slot: ""
@@ -64,6 +72,14 @@ anatomy:
                     class: panel-end
                     part: panel-end
                     children:
+                      - el: div
+                        class: edge edge-end
+                        part: panel-end-edge
+                        attrs:
+                          role: separator
+                          aria-orientation: vertical
+                          aria-label: Resize the end panel area
+                          tabindex: "0"
                       - slot: panel-end
                         attrs:
                           data-accepts: panel, overlay-panel
@@ -103,6 +119,22 @@ props:
     kind: style
     default: false
     description: drop the nav rail; the content spans the full width
+  - $type: prop
+    name: data-panel-end-width
+    type: string
+    observed: true
+    kind: style
+    description: >-
+      a panel area's width, in px — what a reader dragged it to, handed back by the host. The area
+      never goes under its min or over 33% of its row.
+  - $type: prop
+    name: data-panel-start-width
+    type: string
+    observed: true
+    kind: style
+    description: >-
+      a panel area's width, in px — what a reader dragged it to, handed back by the host. The area
+      never goes under its min or over 33% of its row.
 states:
   - $type: state
     name: pinned
@@ -116,6 +148,17 @@ states:
   - $type: state
     name: no-header
     selector: ":host([data-no-header])"
+  - $type: state
+    name: focus-visible
+    selector: .edge:focus-visible
+events:
+  - $type: event
+    name: panel-area-resize
+    bubbles: true
+    composed: true
+    detail:
+      side: unknown
+      width: unknown
 tokens:
   header.background: "{sherpa.style-surface-base}"
   panel-start.--_cols: "{sherpa.layout-grid-columns}"
@@ -132,6 +175,7 @@ tokens:
   panel-end.min-inline-size: "{sherpa.panel-area-min-width}"
   panel-end.padding-block: "{sherpa.layout-grid-padding}"
   panel-end.padding-inline: "{sherpa.layout-grid-padding}"
+  edge.inline-size: "{sherpa.display-mode-space-xs}"
 $extensions:
   sherpa:
     figmaName: App Shell

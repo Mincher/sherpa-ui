@@ -8,6 +8,7 @@
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import { DialogSurface } from '../../core/ui/disclosure.js';
+import { resizeByEdge } from '../../core/ui/edge-resize.js';
 // Defined before the template stamps them.
 import '../sherpa-container-header/sherpa-container-header.js';
 import '../sherpa-container-footer/sherpa-container-footer.js';
@@ -54,51 +55,29 @@ export class SherpaOverlayPanel extends SherpaElement {
     // `button-click`, not `click` — a disabled sherpa-button still gets raw clicks.
     this.$('.expand')?.addEventListener('button-click', this.#onExpand);
     this.$('.external')?.addEventListener('button-click', this.#onExternal);
+    /* The LEFT edge: dragged, it moves as far as the pointer does, and
+       ArrowLeft widens. TRAP T-an-overlay-panel-resizes-from-its-left-edge
+       TRAP T-an-edge-resizes-its-box */
     const edge = this.$<HTMLElement>('.resize');
-    edge?.addEventListener('pointerdown', this.#onEdgeDown);
-    edge?.addEventListener('keydown', this.#onEdgeKey);
+    const drawn = (): number => this.$<HTMLElement>('.root')?.getBoundingClientRect().width ?? 0;
+    const rem = (): number => parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    if (edge) {
+      resizeByEdge(edge, {
+        grows: -1,
+        measure: drawn,
+        // The CSS clamp: `clamp(min(20rem, 92vw), …, 92vw)`.
+        min: () => Math.min(20 * rem(), 0.92 * innerWidth),
+        max: () => 0.92 * innerWidth,
+        apply: (px, done) => {
+          this.style.setProperty('--_width', `${Math.round(px)}px`);
+          // The CSS clamp is the truth: write back what it drew, so a key moves from there.
+          const width = Math.round(drawn());
+          this.style.setProperty('--_width', `${width}px`);
+          if (done) this.emit('panel-resize', { width });
+        },
+      });
+    }
   }
-
-  /** How far one arrow key moves the left edge. */
-  static readonly RESIZE_STEP = 16;
-
-  /** Set the width, as the CSS clamps it, and report it. */
-  #resizeTo(px: number, report: boolean): void {
-    this.style.setProperty('--_width', `${Math.round(px)}px`);
-    const root = this.$<HTMLElement>('.root');
-    const width = Math.round(root?.getBoundingClientRect().width ?? px);
-    // The CSS clamp is the truth: write back what it drew, so a key moves from there.
-    this.style.setProperty('--_width', `${width}px`);
-    this.$('.resize')?.setAttribute('aria-valuenow', String(width));
-    if (report) this.emit('panel-resize', { width });
-  }
-
-  /** Drag the left edge: it moves as far as the pointer does, from where it was
-   *  grabbed. TRAP T-an-overlay-panel-resizes-from-its-left-edge */
-  #onEdgeDown = (event: PointerEvent): void => {
-    const edge = event.currentTarget as HTMLElement;
-    const start = this.$<HTMLElement>('.root')?.getBoundingClientRect().width ?? 0;
-    const from = event.clientX;
-    edge.setPointerCapture(event.pointerId);
-    event.preventDefault();
-    const move = (e: PointerEvent): void => this.#resizeTo(start + from - e.clientX, false);
-    const up = (e: PointerEvent): void => {
-      edge.removeEventListener('pointermove', move);
-      edge.removeEventListener('pointerup', up);
-      this.#resizeTo(start + from - e.clientX, true);
-    };
-    edge.addEventListener('pointermove', move);
-    edge.addEventListener('pointerup', up);
-  };
-
-  /** ArrowLeft widens, ArrowRight narrows — the edge moves the way the key points. */
-  #onEdgeKey = (event: KeyboardEvent): void => {
-    const step = { ArrowLeft: 1, ArrowRight: -1 }[event.key];
-    if (!step) return;
-    event.preventDefault();
-    const now = this.$<HTMLElement>('.root')?.getBoundingClientRect().width ?? 0;
-    this.#resizeTo(now + step * SherpaOverlayPanel.RESIZE_STEP, true);
-  };
 
   override onDisconnect(): void {
     SherpaOverlayPanel.#shown.delete(this);

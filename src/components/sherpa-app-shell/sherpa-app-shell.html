@@ -7,6 +7,12 @@
                      mirrored from the rail; drives the content inset
     data-no-nav      drop the nav rail; the content spans the full width (boolean)
     data-no-header   let the content span the full height (no header row) (boolean)
+    data-panel-start-width / data-panel-end-width   a panel area's width, in px —
+                     what a reader dragged it to, handed back by the host. The
+                     area never goes under its min or over 33% of its row.
+
+  Fires:
+    panel-area-resize — an area's inner edge was dragged, or moved by the keys. detail: { side: start | end, width }
 
   Slots:
     nav       replace the default <sherpa-nav>          (data-accepts: nav)
@@ -41,9 +47,15 @@
         <div class="body" part="body">
           <aside class="panel-start" part="panel-start">
             <slot name="panel-start" data-accepts="filter-panel, panel"></slot>
+            <!-- The area's INNER edge resizes it: drag it, or the arrow keys.
+                 TRAP T-an-edge-resizes-its-box -->
+            <div class="edge edge-start" part="panel-start-edge" role="separator"
+                 aria-orientation="vertical" aria-label="Resize the start panel area" tabindex="0"></div>
           </aside>
           <div class="context-frame"><slot></slot></div>
           <aside class="panel-end" part="panel-end">
+            <div class="edge edge-end" part="panel-end-edge" role="separator"
+                 aria-orientation="vertical" aria-label="Resize the end panel area" tabindex="0"></div>
             <slot name="panel-end" data-accepts="panel, overlay-panel"></slot>
           </aside>
         </div>

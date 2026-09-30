@@ -175,6 +175,9 @@
     const session = new SessionStore({
       theme: { mode: document.documentElement.dataset.mode ?? 'light', density: 'default' },
       nav: { pinned: false, favorites: [], recent: [], hierarchy: false },
+      /* The width each panel AREA was dragged to, or null for its own. App
+         chrome, like the nav pin. TRAP T-an-edge-resizes-its-box */
+      panels: { start: null, end: null },
       /* TOOLBARS or PANEL. App chrome, like the nav pin: it survives a reload
          and a Context change, and dies with the session.
          TRAP T-panel-mode-hides-what-the-panel-answers */
@@ -186,6 +189,17 @@
     session.persist('/theme/mode');
     session.persist('/theme/density', { guard: (v) => ['compact', 'default', 'comfortable'].includes(v) });
     session.persist('/nav/pinned');
+    /* The shell REPORTS a dragged width; the app keeps it and hands it back. */
+    const shell = document.querySelector('sherpa-app-shell');
+    for (const side of ['start', 'end']) {
+      session.persist(`/panels/${side}`, { guard: (v) => v === null || (Number.isFinite(v) && v > 0) });
+      const px = session.get(`/panels/${side}`);
+      if (px) shell.setAttribute(`data-panel-${side}-width`, String(px));
+    }
+    shell.addEventListener('panel-area-resize', (e) => {
+      session.set(`/panels/${e.detail.side}`, e.detail.width);
+      shell.setAttribute(`data-panel-${e.detail.side}-width`, String(e.detail.width));
+    });
     // "Show full view hierarchy": each Context's Views as child rows in the nav.
     session.persist('/nav/hierarchy', { guard: (v) => typeof v === 'boolean' });
     session.persist('/filters/mode', {

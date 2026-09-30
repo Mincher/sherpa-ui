@@ -9693,6 +9693,43 @@ accordion section too, in its own `.field-body`, replacing the chips.
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 
+### T-an-edge-resizes-its-box
+
+**One helper resizes a box by its EDGE: `resizeByEdge` in
+`src/core/ui/edge-resize.ts`.** The overlay panel's left edge had its own
+drag and keys; the app shell's two panel areas needed the same (Will, TODO
+146: *"Allow the side of the panel areas … to be dragged to resize like we
+can do with the overlay panel"*). So it is ONE imported helper, never a base
+class. The component says how wide the box is drawn and writes the width it
+is asked for; its CSS owns the clamp, and the width written back is what the
+clamp DREW, so a key moves from there.
+
+- `grows` says which way the edge widens: the start area's edge is its end
+  (+1), the end area's and the overlay panel's is their start (−1). A key
+  moves the edge the way it points, so ArrowRight widens one and narrows the
+  other. Home and End go to the clamp's ends.
+- It states `aria-valuenow`, `aria-valuemin` and `aria-valuemax` — the old
+  handle never said its range — and holds `data-dragging` while held, so the
+  indicator stays when the pointer leaves the strip.
+- Firefox THROWS on `setPointerCapture` for a pointer it did not start (a
+  synthetic one), which ended the drag before it began: the capture is tried.
+
+The shell's area: `flex` takes `--_asked-<side>` (the drag, or the host's
+`data-panel-<side>-width`), `min-inline-size` its min (464px) and
+`max-inline-size: 33%` of the row. The min wins where they cross: at 1280
+33% of the row is 409px, so an area gives only from about 1446px wide. The
+handle is in the area's own inset, so it is the AREA's edge, not the
+panel's. The shell REPORTS on release (`panel-area-resize`); the example app
+keeps the width in its session and hands it back.
+
+- Site: `examples/index.html`
+- Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
+- Site: `src/components/sherpa-app-shell/sherpa-app-shell.html`
+- Site: `src/components/sherpa-app-shell/sherpa-app-shell.ts`
+- Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
+- Site: `src/core/ui/edge-resize.ts`
+- Site: `test/e2e/reforged-app-shell.spec.ts`
+
 ### T-the-shell-owns-the-panel-areas
 
 `sherpa-app-shell` has `panel-start` and `panel-end` slots beside the Context.
