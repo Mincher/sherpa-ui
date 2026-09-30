@@ -676,14 +676,16 @@ test('a field populated with conditions opens in Advanced mode on its rows', asy
 /**
  * CLEAR AND SEND TO ARE ONE CONTROL — a button group, joined by position, so
  * Clear alone (a View field has nowhere to send to) keeps both its corners.
- * Will, 2026-09-30 (TODO 121).
+ * Will, 2026-09-30 (TODO 121). SEND TO IS ALWAYS THERE, before the first edit
+ * too (TODO 155); Clear comes once there is something to clear.
  */
-test('Clear and Send to are one button group; Clear alone keeps its corners', async ({ page }) => {
+test('Clear and Send to are one button group; Send to shows before any answer, and leads the group alone', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     el.populate([
       { scope: 'view', label: 'View filters', filters: [
-        { id: 'region', label: 'Region', options: [{ value: 'EMEA', label: 'EMEA', selected: true }] } ] },
+        { id: 'region', label: 'Region', options: [{ value: 'EMEA', label: 'EMEA', selected: true }] },
+        { id: 'customer', label: 'Customer', options: [{ value: 'Contoso', label: 'Contoso' }] } ] },
       { scope: 'data', label: 'Customer records', filters: [
         { id: 'status', label: 'Status', options: [{ value: 'active', label: 'active', selected: true }] },
         { id: 'plan', label: 'Plan', options: [{ value: 'Pro', label: 'Pro' }] } ] },
@@ -694,14 +696,15 @@ test('Clear and Send to are one button group; Clear alone keeps its corners', as
       return {
         grouped: group.classList.contains('sherpa-group'),
         shown: group.getClientRects().length > 0,
-        buttons: [...group.children].map((b) => {
+        // Only what a reader SEES: Clear is hidden until there is an answer.
+        buttons: [...group.children].filter((b) => b.getClientRects().length > 0).map((b) => {
           const t = getComputedStyle(b.shadowRoot.querySelector('button'));
           const box = b.getBoundingClientRect();
           return { is: b.className, corners: [t.borderStartStartRadius, t.borderStartEndRadius], x: box.x, w: box.width };
         }),
       };
     };
-    return { view: read('region'), data: read('status'), idle: read('plan') };
+    return { view: read('region'), data: read('status'), idle: read('plan'), nowhere: read('customer') };
   })()`) as Record<string, { grouped: boolean; shown: boolean; buttons: { is: string; corners: string[]; x: number; w: number }[] }>;
 
   expect(r['view']!.buttons.map((b) => [b.is, b.corners])).toEqual([['field-clear', ['4px', '4px']]]);
@@ -711,6 +714,8 @@ test('Clear and Send to are one button group; Clear alone keeps its corners', as
   expect([raise!.is, raise!.corners]).toEqual(['field-raise', ['0px', '4px']]);
   // Joined: no gap between the two.
   expect(raise!.x).toBe(clear!.x + clear!.w);
-  // Nothing to clear, nothing shown.
-  expect(r['idle']!.shown).toBe(false);
+  // NO ANSWER YET: Send to is there all the same, alone, with all its corners.
+  expect(r['idle']!.buttons.map((b) => [b.is, b.corners])).toEqual([['field-raise', ['4px', '4px']]]);
+  // Nothing to clear and nowhere to send: nothing drawn.
+  expect(r['nowhere']!.buttons).toEqual([]);
 });

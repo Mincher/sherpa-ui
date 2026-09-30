@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**55 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**54 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -58,7 +58,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16l | 148 | After a Reset, a date chip's value label reads `Unassigned` | bug |
 | ✅ | 16m | 151 | A filter moved across scopes does not keep its Simple or Advanced mode | bug |
 | ✅ | 16n | 152 | Data grid pages do not keep to the row count set in the pagination: the count varies from page to page | bug |
-| 🚧 | 16p | 155 | The change-scope buttons show on a panel filter only after its first edit; they must always show | bug |
+| ✅ | 16p | 155 | The change-scope buttons show on a panel filter only after its first edit; they must always show | bug |
 | ✅ | 16o | 153 | In a fixed-row layout grid, the data grid and its container change height with the row count; the container must keep its height and the grid fill it | bug |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | ❓ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
@@ -961,10 +961,15 @@ wrote "no first day" into it as a day. A kept range with no ends holds none
 now. It came in with 137 (an emptied date keeps its range shape). If you did
 see the word `Unassigned` on a date chip, say where — I could not make it.
 
-### `[~]` 155 — BUG: the change-scope buttons show only after the first edit
+### `[x]` ✅ 155 — BUG: the change-scope buttons show only after the first edit
 
 Will, 2026-09-30, a minor issue: *"Change scope buttons only appear on
 filters after the first edit. This action should always be available."*
+
+**✅ Done 2026-09-30.** Send to (↑ or ↓) shows on a field from the start.
+Clear still comes once there is something to clear, and joins it as one
+group. Before that, Send to stands alone with all its corners. I had tied
+the pair to the answer in 121; only Clear belongs to it.
 
 ### `[x]` ✅ 152 — BUG: data grid pages do not keep to the pagination's row count
 
@@ -1813,7 +1818,7 @@ scope that has it (a grid's, or a chart's own). When two scopes have it and
 it did not come up from one, there is no button — the source will not guess.
 On Records that is every View field today: Customer, Region and Date all go
 to "Customer records". A field sent up from a chart (52) goes back to that
-chart. The button shows once the field has an answer, as Clear and ↑ do.
+chart. The button shows from the start, as ↑ does (155).
 `T-send-to-view-filters`
 
 ### `[x]` ✅ 121 — Clear and Send to are ONE button group
@@ -1824,7 +1829,8 @@ group with grouping style classes applied."*
 **✅ Done 2026-09-30.** In a panel field's header the two are one
 `.sherpa-group`: joined, with the inner corners square. The group is by
 POSITION, so Clear alone — a View field has nowhere to send to — keeps both
-its corners. The pair shows once the field has an answer, as Clear did. 120's
+its corners. Send to shows from the start (155); Clear joins it once the
+field has an answer. 120's
 "Send to `<scope>`" button goes in this group when it is built.
 
 ### `[x]` ✅ 123 — An inactive chip KEEPS its match count badge
@@ -3507,6 +3513,7 @@ One line each. The detail is in git and in the trap named.
 - 149: queued — the legend's items become swatch chips
 - 148: an emptied date range holds no ends — the chip read `undefined` after a Reset
 - 121: a panel field's Clear and Send to are one button group
+- 155: a panel field's Send to buttons show before its first answer
 - 152: a grouped grid page holds the pager's ROW count — a heading costs nothing, a shut group one slot — `T-grid-collapsed-group-is-one-slot`
 - 153: the Context fills its frame again, so a fit grid's card keeps one height — `T-a-fit-grid-needs-a-sized-parent`
 - 154: a chart's section in the filter panel wears the `reports` glyph

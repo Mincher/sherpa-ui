@@ -128,9 +128,15 @@
   align-items: center;
   gap: var(--sherpa-display-mode-space-2xs, 4px);
 }
-/* CLEAR — and Send to, its pair — appear once there is something to clear.
-   Will, 2026-09-24. */
-.field:not([data-answered]) .field-group { display: none; }
+/* CLEAR appears once there is something to clear (Will, 2026-09-24). Send to
+   is ALWAYS there (Will, TODO 155) — so with Clear gone, the button after it
+   leads the group: its outer edge and corners, back. */
+.field:not([data-answered]) .field-clear { display: none; }
+.field:not([data-answered]) .field-clear + * {
+  --sherpa-border-left: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
 /* APPLY and DISCARD: a REMOTE field, once changed. TRAP T-apply-and-discard-wait-for-a-change */
 .field-apply, .field-discard { display: none; }
 :host([data-remote]) .field[data-pending] :is(.field-apply, .field-discard) { display: inline-flex; }
