@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**40 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**39 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -142,7 +142,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | | | | **I — The big builds** | |
 | ✅ | 44 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
 | ⬜ | 45 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
-| ⬜ | 45a | 136 | A FIND input: jump to the next or previous match; an optional Find & Replace menu | component |
+| ✅ | 45a | 136 | A FIND input: jump to the next or previous match; an optional Find & Replace menu | component |
 | ⬜ | 46 | 27 | A consumer can supply their OWN templates and CSS | feature |
 | ⬜ | 47 | 25 | `sherpa-layout-canvas` + minimap | component |
 | ⬜ | 48 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
@@ -3184,7 +3184,7 @@ link-click listeners are gone, for one `route-change` listener. One behaviour
 changed: a Context row pressed while on a later View goes to the first View.
 `T-the-router-owns-the-url`
 
-### `[ ]` 136 — A FIND input, and an optional Find & Replace
+### `[x]` ✅ 136 — A FIND input, and an optional Find & Replace
 
 Will, 2026-09-30: *"A variant of the search input, a Find input, that locates
 string matches and allows the user to jump to the next/previous match using 2
@@ -3212,6 +3212,28 @@ designs for a WYSIWYG text area editor that I'll want to implement eventually
 but we're not there yet."*
 
 Builds on the number field's steppers (127) and the grid's match marks (21c).
+
+**✅ Done 2026-09-30.** `sherpa-input-text data-type="find"`: the search
+glyph, "Find" when empty, and two steppers — Previous and Next — flush to the
+edge, as a number's are. Enter is Next and Shift+Enter Previous. With
+`data-replace` a pencil opens Find & Replace: a "Replace with" field, then
+**Replace** in a group with a ▾ that holds **Replace all**, and Previous and
+Next. Replace all asks first, in a dialog. The field cannot see what it
+searches, so each button ASKS its host (`find-step`, `find-replace`).
+
+**On Records** the Find sits at the right of the grid's toolbar. What you
+type is the search: the rows narrow and every hit is marked. Previous and
+Next move a stronger mark from hit to hit; past a page's last hit it opens
+the next page, and it goes round from the end. `T-a-find-asks-its-host-to-step`
+
+Three things I chose — say if any should change:
+
+- **It still narrows the rows**, as the search it replaces did. A browser's
+  own find only marks.
+- **No "3 of 12" count.** You did not ask for one; the host can set
+  `data-matches`, and at `0` the steppers go inactive.
+- **Replace is not on any page yet** — nothing in the examples holds text to
+  replace. The component asks; a page does the replacing.
 
 ### `[ ]` 68 — `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement`
 
@@ -4203,6 +4225,7 @@ One line each. The detail is in git and in the trap named.
 - 118: success text and a field's description pass 4.5:1 — one step darker on their own ramps, no new hex; the a11y baseline is empty
 - 11: closed — the grid positions have callers, the edge classes are grouping's other half, the class is CSS first
 - 84: the platform formats the delta and the upload size (`Intl`), and the calendar counts its days (`Temporal`)
+- 136: a Find input steps through a host's matches; Find & Replace asks, and Replace all asks first — on Records, the grid's toolbar — `T-a-find-asks-its-host-to-step`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

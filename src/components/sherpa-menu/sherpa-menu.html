@@ -93,6 +93,8 @@
     header    — controls ABOVE the heading (a calendar's month stepper). Slotted
                 content lands in the MENU's light DOM, so this component styles
                 it — see the `::slotted(.cal-header)` block in sherpa-menu.css.
+    footer    — the host's own footer buttons, leading the footer row; the row
+                shows once it is filled (a Find's Replace, Previous and Next)
     (default) — the rows (labels with inputs, or buttons)
 
   Fires:
@@ -229,6 +231,8 @@
       the card does not re-query on every tick; Cancel restores the opening values.
     -->
     <sherpa-container-footer class="footer" part="footer" data-align="end">
+      <!-- The HOST's own buttons, leading the row. The footer shows when it is filled. -->
+      <slot name="footer"></slot>
       <!-- Today is the calendar's left slot, and REPLACES Clear rather than joining it. -->
       <sherpa-button class="today" part="today">Today</sherpa-button>
       <!--

@@ -86,6 +86,8 @@
     row-action       — detail: { id, records }   an action was chosen, from the row
                        menu or a host's bulk bar. A REPORT: the grid never acts on
                        the record itself
+    page-change      — detail: { page }   a Find stepped past this page's first or
+                       last match: a REQUEST for the page it goes on to
     grid-pages-change — detail: { pages, page }   how many pages the CURRENT fold
                        state makes, while grouped. A REPORT, not a request: the
                        host owns data-page, and folding changes the count under it

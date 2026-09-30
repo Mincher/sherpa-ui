@@ -135,6 +135,16 @@
   .step { --sherpa-button-size-height: var(--sherpa-display-mode-size-md, 20px); }
 }
 
+/* ── FIND ── the search glyph, and its steppers flush to the edge as a
+   number's are. The pencil only with `data-replace`. Will, TODO 136.
+   TRAP T-a-find-asks-its-host-to-step */
+:host([data-type="find"]) .icon-start { display: inline-flex; }
+:host([data-type="find"]) .control-row { padding-inline-end: 0; }
+.find-replace { display: none; }
+:host([data-type="find"][data-replace]) .find-replace { display: inline-flex; }
+.replace-with { inline-size: 100%; }
+.replace-gap { flex: 1 1 auto; }
+
 /* ── CLEAR ── on every field a reader TYPES into, while it holds something:
    not a text area or a select (those still opt in with `data-clearable`),
    not a number (it has steppers, and no button), and not a field that cannot

@@ -12,6 +12,10 @@ import { validateField, type FieldRules } from '../../core/data/validate.js';
 import { FormValue } from '../../core/ui/form-value.js';
 // The number type's steppers. Defined before the template stamps them.
 import '../sherpa-button/sherpa-button.js';
+// A Find's replace menu, and the question Replace all asks.
+import '../sherpa-menu/sherpa-menu.js';
+import '../sherpa-dialog/sherpa-dialog.js';
+import '../sherpa-container-footer/sherpa-container-footer.js';
 
 /** Mirrored verbatim from the host onto the inner control. */
 const MIRRORED = [
@@ -36,6 +40,11 @@ const MIRRORED = [
 
 /** What an empty number field says. Will, 2026-09-30. */
 const NUMBER_PLACEHOLDER = 'Enter a value';
+/** What an empty Find says. */
+const FIND_PLACEHOLDER = 'Find';
+
+/** The composed pieces a Find reaches for. */
+type Popover = HTMLElement & { open?: boolean; show(trigger?: HTMLElement): void; hide(): void };
 
 type Control = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 
@@ -58,7 +67,9 @@ export class SherpaInputText extends SherpaElement {
     'data-has-value': { type: 'boolean', kind: 'style' },
     /* Which control the field draws. `select` is one of a known set — the
        platform's own element, not a re-implemented listbox. */
-    'data-type': { type: 'enum', kind: 'style', values: ['minimal', 'select', 'number'] },
+    'data-type': { type: 'enum', kind: 'style', values: ['minimal', 'select', 'number', 'find'] },
+    /* A Find offers Find & Replace. TRAP T-a-find-asks-its-host-to-step */
+    'data-replace': { type: 'boolean', kind: 'style' },
     /* The VALIDATION state a host reports, styled by the token region. */
     'data-state': { type: 'enum', kind: 'style', values: ['error', 'success', 'warning'] },
     'data-label': { type: 'string', kind: 'content', to: '.label' },
@@ -75,6 +86,8 @@ export class SherpaInputText extends SherpaElement {
     'data-icon-start',
     'data-icon-end',
     'data-rules',
+    // How many matches a Find's host found: none, and there is nothing to step to.
+    'data-matches',
     ...MIRRORED,
   ];
 
@@ -91,6 +104,7 @@ export class SherpaInputText extends SherpaElement {
     if (type === 'minimal') return 'minimal';
     if (type === 'select') return 'select';
     if (type === 'number') return 'number';
+    if (type === 'find') return 'find';
     return this.hasAttribute('data-multiline') ? 'multiline' : 'default';
   }
 
@@ -139,6 +153,103 @@ export class SherpaInputText extends SherpaElement {
   #syncHasValue(): void {
     this.toggleAttribute('data-has-value', (this.#control?.value ?? '') !== '');
     this.#syncSteps();
+    this.#syncFind();
+  }
+
+  /* ── FIND ── Will, TODO 136. The field cannot see what it searches, so it
+     ASKS: Previous and Next are `find-step`, Replace is `find-replace`, and
+     the host moves the match. TRAP T-a-find-asks-its-host-to-step */
+
+  /** A Find's steppers, keys and replace menu. */
+  #wireFind(): void {
+    if (this.dataset['type'] !== 'find') return;
+    this.$('.steppers')?.addEventListener('button-click', this.#onFindStep);
+    this.#control?.addEventListener('keydown', this.#onFindKey);
+    this.$('.find-replace')?.addEventListener('button-click', this.#onReplaceToggle);
+    const menu = this.$('.replace-menu');
+    menu?.addEventListener('button-click', this.#onReplaceAction);
+    menu?.addEventListener('menu-select', this.#onReplaceMore);
+    for (const type of ['menu-open', 'menu-close']) menu?.addEventListener(type, this.#onReplaceOpen);
+    // The REPLACEMENT is the menu's, never this field's value.
+    for (const type of ['input', 'change']) {
+      this.$('.replace-with')?.addEventListener(type, (event) => event.stopPropagation());
+    }
+    this.$('.replace-cancel')?.addEventListener('button-click', () => this.$<Popover>('.replace-confirm')?.hide());
+    this.$('.replace-all')?.addEventListener('button-click', this.#onReplaceAll);
+  }
+
+  /** Nothing to find, or nothing found: nothing to step to or replace. */
+  #syncFind(): void {
+    if (this.dataset['type'] !== 'find') return;
+    const none = !this.value.trim() || this.dataset['matches'] === '0';
+    for (const el of this.$$<HTMLElement>('.find-step, .replace-one, .replace-more')) el.toggleAttribute('disabled', none);
+  }
+
+  /** Previous or Next, from a stepper or the menu's footer. */
+  #onFindStep = (event: Event): void => {
+    const by = Number((event.target as HTMLElement).closest<HTMLElement>('.find-step')?.dataset['step']);
+    if (by) this.#findStep(by);
+  };
+
+  /** Enter is Next and Shift+Enter Previous, as a browser's own find. */
+  #onFindKey = (event: Event): void => {
+    const { key, shiftKey } = event as KeyboardEvent;
+    if (key !== 'Enter') return;
+    event.preventDefault();
+    this.#findStep(shiftKey ? -1 : 1);
+  };
+
+  /** ASK the host to move to the next or previous match. */
+  #findStep(direction: number): void {
+    if (!this.value.trim() || this.dataset['matches'] === '0') return;
+    this.emit('find-step', { direction: direction > 0 ? 1 : -1, value: this.value });
+  }
+
+  /** The pencil opens the replace menu, and shuts it. */
+  #onReplaceToggle = (): void => {
+    const menu = this.$<Popover>('.replace-menu');
+    const button = this.$<HTMLElement>('.find-replace');
+    if (!menu || !button) return;
+    if (menu.open) menu.hide();
+    else menu.show(button);
+  };
+
+  /** Say to assistive tech whether the menu is open. */
+  #onReplaceOpen = (event: Event): void => {
+    this.$('.find-replace')?.setAttribute('aria-expanded', String(event.type === 'menu-open'));
+  };
+
+  /** Replace, Previous or Next, in the menu. */
+  #onReplaceAction = (event: Event): void => {
+    const target = event.target as HTMLElement;
+    if (target.closest('.find-step')) return this.#onFindStep(event);
+    if (target.closest('.replace-one')) this.#replace(false);
+  };
+
+  /** The split button's menu: Replace all asks first. */
+  #onReplaceMore = (event: Event): void => {
+    if ((event as CustomEvent).detail?.value !== 'replace-all') return;
+    event.stopPropagation();
+    const text = this.$('.replace-confirm-text');
+    if (text) text.textContent = `Every match of “${this.value}” becomes “${this.#replacement()}”.`;
+    this.$<Popover>('.replace-confirm')?.show();
+  };
+
+  /** Replace all, confirmed. */
+  #onReplaceAll = (): void => {
+    this.$<Popover>('.replace-confirm')?.hide();
+    this.#replace(true);
+  };
+
+  /** What the replace menu's field holds. */
+  #replacement(): string {
+    return (this.$('.replace-with') as HTMLElement & { value?: string } | null)?.value ?? '';
+  }
+
+  /** ASK the host to replace the match in focus, or every one. */
+  #replace(all: boolean): void {
+    if (!this.value.trim() || this.dataset['matches'] === '0') return;
+    this.emit('find-replace', { value: this.value, replacement: this.#replacement(), all });
   }
 
   /** A stepper with NOWHERE TO GO is inactive: Increase at `max`, Decrease at
@@ -182,6 +293,7 @@ export class SherpaInputText extends SherpaElement {
     this.$('.clear')?.addEventListener('click', this.#onClear);
     // `button-click`, not `click` — a disabled sherpa-button still gets raw clicks.
     this.$('.steppers')?.addEventListener('button-click', this.#onStep);
+    this.#wireFind();
     this.#syncHasValue();
     this.#control?.addEventListener('input', this.#onInput);
     this.#control?.addEventListener('change', this.#onChange);
@@ -191,6 +303,7 @@ export class SherpaInputText extends SherpaElement {
   }
 
   override onChange(name: string): void {
+    if (name === 'data-matches') this.#syncFind();
     if (!name.startsWith('data-')) {
       this.#syncAttrs();
       // `required`, `value`, a pattern: each moves what the form sees.
@@ -293,7 +406,9 @@ export class SherpaInputText extends SherpaElement {
 
   /** The two icons; the label, description and error are declared props. */
   #syncIcons(): void {
-    this.#syncIcon('.icon-start', this.dataset['iconStart']);
+    // A Find's glyph is the search one, unless the host names another.
+    this.#syncIcon('.icon-start', this.dataset['iconStart']
+      ?? (this.dataset['type'] === 'find' ? 'magnifying-glass' : undefined));
     this.#syncIcon('.icon-end', this.dataset['iconEnd']);
   }
 
@@ -331,6 +446,11 @@ export class SherpaInputText extends SherpaElement {
       c.setAttribute('type', 'number');
       if (!this.hasAttribute('inputmode')) c.setAttribute('inputmode', 'decimal');
       if (!this.hasAttribute('placeholder')) c.setAttribute('placeholder', NUMBER_PLACEHOLDER);
+    }
+    // A Find says what it is for; its type is the template's.
+    if (this.dataset['type'] === 'find') {
+      c.setAttribute('type', 'text');
+      if (!this.hasAttribute('placeholder')) c.setAttribute('placeholder', FIND_PLACEHOLDER);
     }
     if (this.hasAttribute('value')) c.value = this.getAttribute('value') ?? '';
     // `min`, `max`, `disabled` or the value moved: so may what a stepper can do.

@@ -503,11 +503,12 @@
  * padding, gap and top stroke; this only says WHEN it appears. `display: none`
  * beats the component's own [data-has-content-slot] rule.
  *
- * Five things can raise the row and any ONE of them earns it: data-commit
+ * Six things can raise the row and any ONE of them earns it — a filled
+ * `footer` slot, data-commit
  * (Cancel·Apply), data-removable, data-clearable, data-saveable, Type=calendar
  * (Today). Each control hides itself on its own flag, below. */
 .footer { display: none; }
-:host(:is([data-commit], [data-type="calendar"], [data-clearable], [data-removable], [data-saveable])) .footer {
+:host(:is([data-commit], [data-type="calendar"], [data-clearable], [data-removable], [data-saveable], [data-has-footer])) .footer {
   display: block;
 }
 

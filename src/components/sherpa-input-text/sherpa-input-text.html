@@ -7,6 +7,12 @@
     data-type        "minimal" for the bare inline field (default is the full molecule);
                      "select" for one of a known set; "number" for a number, right-aligned,
                      with Sherpa's own up and down steppers — Figma "Input Number" (937:39395)
+                     "find" for a search that steps through what a host found:
+                     Previous and Next, and Enter / Shift+Enter
+    data-replace      a Find also offers Find & Replace (the pencil): Replace,
+                      Replace all (asked first), Previous and Next
+    data-matches      how many matches a Find's host found; "0" leaves nothing to
+                      step to or replace
     data-borderless   drop the control border (minimal style)
     data-multiline    auto-growing <textarea> (default style only)
     data-label        field label (hidden when empty)
@@ -29,7 +35,11 @@
   Slots:
     actions           trailing controls in the field row (steppers, buttons); CSS-gated
 
-  Fires: input, change (re-dispatched from the inner control)
+  Fires:
+    input
+    change
+    find-step — a Find's Previous or Next. detail: { direction, value } — direction is -1 or 1
+    find-replace — a Find's Replace, or Replace all once confirmed. detail: { value, replacement, all }
 -->
 <template id="default">
   <label class="field" part="field">
@@ -114,6 +124,65 @@
     </span>
     <span class="message" part="message"></span>
   </label>
+</template>
+
+<!-- A FIND is the search field with two steppers that step through the matches
+     a host found, and — with `data-replace` — a Find & Replace menu. Will,
+     TODO 136. TRAP T-a-find-asks-its-host-to-step -->
+<template id="find">
+  <label class="field" part="field">
+    <span class="label" part="label"></span>
+    <span class="description" part="description"></span>
+    <span class="control-row sherpa-border-edges" part="control-row">
+      <span class="icon sherpa-icon-box icon-start" part="icon-start" aria-hidden="true"></span>
+      <input class="control" part="control" type="text" enterkeyhint="search" />
+      <button class="clear" part="clear" type="button" tabindex="-1"
+              aria-label="Clear">
+        <i class="sherpa-icon-box" data-icon="cross-in-tag-left" aria-hidden="true"></i>
+      </button>
+      <!-- Out of the tab order: Enter and Shift+Enter in the field do the same. -->
+      <span class="steppers" part="steppers">
+        <sherpa-button class="find-step" data-step="-1" data-type="icon" data-look="transparent"
+                       data-icon-start="chevron-up" data-no-tip data-no-tab
+                       aria-label="Previous match"></sherpa-button>
+        <sherpa-button class="find-step" data-step="1" data-type="icon" data-look="transparent"
+                       data-icon-start="chevron-down" data-no-tip data-no-tab
+                       aria-label="Next match"></sherpa-button>
+      </span>
+      <sherpa-button class="find-replace" part="replace" data-type="icon" data-look="transparent"
+                     data-icon-start="pencil" aria-label="Find and replace"
+                     aria-haspopup="dialog" aria-expanded="false"></sherpa-button>
+      <span class="actions" part="actions"><slot name="actions"></slot></span>
+    </span>
+    <span class="message" part="message"></span>
+  </label>
+  <!-- OUTSIDE the label: a click in a label's plain content activates its
+       control, and took the focus out of the replacement field. -->
+  <sherpa-menu class="replace-menu" part="replace-menu" data-align="end" data-heading="Replace">
+    <sherpa-input-text class="replace-with" data-label="Replace with"
+                       placeholder="Replacement" autocomplete="off"></sherpa-input-text>
+    <span slot="footer" class="replace-split sherpa-group">
+      <sherpa-button class="replace-one" data-group="start">Replace</sherpa-button>
+      <sherpa-button class="replace-more" data-group="end" data-type="icon"
+                     data-icon-start="triangle-down" aria-label="More ways to replace"
+                     aria-haspopup="dialog">
+        <sherpa-menu slot="menu" data-align="end">
+          <button type="button" value="replace-all">Replace all</button>
+        </sherpa-menu>
+      </sherpa-button>
+    </span>
+    <span slot="footer" class="replace-gap"></span>
+    <sherpa-button slot="footer" class="find-step" data-step="-1">Previous</sherpa-button>
+    <sherpa-button slot="footer" class="find-step" data-step="1">Next</sherpa-button>
+  </sherpa-menu>
+  <!-- Replace all asks first: it cannot be undone here. -->
+  <sherpa-dialog class="replace-confirm" data-heading="Replace all matches?">
+    <p class="replace-confirm-text"></p>
+    <sherpa-container-footer slot="footer">
+      <sherpa-button class="replace-cancel">Cancel</sherpa-button>
+      <sherpa-button class="replace-all" data-look="saturated">Replace all</sherpa-button>
+    </sherpa-container-footer>
+  </sherpa-dialog>
 </template>
 
 <template id="minimal">

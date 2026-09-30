@@ -1123,6 +1123,8 @@ export class SherpaDataGrid extends SherpaElement {
     // Folding changes how many pages there ARE. After the draw, so a host that
     // re-renders finds the DOM settled.
     this.#reportPages(pages);
+    // A Find that stepped off the last page lands on this one's first match.
+    if (this.#landing) this.#land();
   }
 
   /**
@@ -1144,7 +1146,55 @@ export class SherpaDataGrid extends SherpaElement {
        the grid cannot see the bar that holds it. Without this a chip filtering
        "Contains Ravi" narrowed the rows and marked nothing.
        TRAP T-a-needle-comes-from-either-direction */
-    markNeedles(td, text, own.length ? own : this.#needles.get(col.field) ?? []);
+    markNeedles(td, text, [...(own.length ? own : this.#needles.get(col.field) ?? []), ...this.#needles.get('*') ?? []]);
+  }
+
+  /* ── FIND ── Will, TODO 136. TRAP T-a-find-asks-its-host-to-step */
+
+  /** Where a Find lands once the page it asked for is drawn. */
+  #landing: 'first' | 'last' | null = null;
+
+  /** Every mark on this page, in reading order. */
+  #marks(): HTMLElement[] {
+    return this.$$<HTMLElement>('.cell mark.match');
+  }
+
+  /**
+   * findStep(direction) — move to the next or previous MATCH, and show it.
+   * Past this page's last it asks for the next page (`page-change`) and lands
+   * on its first; before the first, the previous page's last — round from the
+   * end to the start, as a browser's own find. Answers where it is on this
+   * page: `{ index, count }`, `index` -1 while a page loads.
+   */
+  findStep(direction: 1 | -1 = 1): { index: number; count: number } {
+    const marks = this.#marks();
+    const at = marks.findIndex((m) => m.hasAttribute('data-current'));
+    let next = at < 0 ? (direction > 0 ? 0 : marks.length - 1) : at + direction;
+    const pages = Math.max(1, Number(this.dataset['totalPages'] ?? 1) || 1);
+    if (marks.length && pages > 1 && (next < 0 || next >= marks.length)) {
+      const page = Math.max(1, Number(this.dataset['page'] ?? 1) || 1);
+      this.#landing = direction > 0 ? 'first' : 'last';
+      this.emit('page-change', { page: ((page - 1 + direction + pages) % pages) + 1 });
+      return { index: -1, count: marks.length };
+    }
+    if (!marks.length) return { index: -1, count: 0 };
+    next = (next + marks.length) % marks.length;
+    this.#showMatch(marks, next);
+    return { index: next, count: marks.length };
+  }
+
+  /** The asked-for page is drawn: its first or last match. */
+  #land(): void {
+    const marks = this.#marks();
+    const to = this.#landing === 'last' ? marks.length - 1 : 0;
+    this.#landing = null;
+    if (marks.length) this.#showMatch(marks, to);
+  }
+
+  /** Mark ONE match as the one a Find is on, and bring it into view. */
+  #showMatch(marks: readonly HTMLElement[], index: number): void {
+    for (const [i, mark] of marks.entries()) mark.toggleAttribute('data-current', i === index);
+    marks[index]?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   }
 
   /** Needles from OUTSIDE, by field — see `data-needles`. */

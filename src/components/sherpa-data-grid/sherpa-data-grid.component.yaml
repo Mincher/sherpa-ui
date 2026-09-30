@@ -310,7 +310,7 @@ capabilities:
     description: >-
       callable from a view definition's state block (setColumnFilter, supersedeColumns,
       columnClause, columnReading, drawReading, columnLabel, suspendColumnFilter, openColumnFilter,
-      clearColumnFilter, actionsFor, neighbour, stepCurrent, select, clearSelection). See
+      clearColumnFilter, findStep, actionsFor, neighbour, stepCurrent, select, clearSelection). See
       $extensions.sherpa.methods.
 events:
   - $type: event
@@ -378,6 +378,12 @@ events:
     detail:
       id: unknown
       records: unknown
+  - $type: event
+    name: page-change
+    bubbles: true
+    composed: true
+    detail:
+      page: unknown
   - $type: event
     name: grid-pages-change
     bubbles: true
@@ -513,6 +519,14 @@ $extensions:
         name: clearColumnFilter
         args: "field?: string"
         description: Drop one column's heading filter from OUTSIDE; nothing drops them all. .
+      - $type: method
+        name: findStep
+        args: "direction: 1 | -1 = 1"
+        description: >-
+          findStep(direction) — move to the next or previous MATCH, and show it. Past this page's
+          last it asks for the next page (`page-change`) and lands on its first; before the first,
+          the previous page's last — round from the end to the start, as a browser's own find.
+          Answers where it is on this page: `{ index, count }`, `index` -1 while a page loads.
       - $type: method
         name: actionsFor
         args: "count: number"

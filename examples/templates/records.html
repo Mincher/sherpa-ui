@@ -80,6 +80,12 @@
             style="display: flex; align-items: center;
                    gap: var(--sherpa-display-mode-space-xs, 8px)"></span>
       <span slot="trailing" id="bulk-count" class="bulk-count" hidden></span>
+      <!-- FIND: the search narrows the rows and marks what it found; Previous
+           and Next step through the marks. Will, TODO 136.
+           TRAP T-a-find-asks-its-host-to-step -->
+      <sherpa-input-text slot="trailing" id="grid-find" data-type="find"
+                         placeholder="Find customers" aria-label="Find customers"
+                         autocomplete="off" style="inline-size: 16rem"></sherpa-input-text>
     </sherpa-toolbar>
 
     <!-- data-gap="md": the filter toolbar has no rule of its own (Figma's

@@ -275,6 +275,20 @@ export async function init(root, { source }) {
     if (record) drawDetails(record);
   }, { signal });
 
+  /* FIND: what the reader types is the source's search, which narrows the rows
+     and marks each hit; Previous and Next ask the grid to step through them.
+     TRAP T-a-find-asks-its-host-to-step */
+  const find = root.querySelector('#grid-find');
+  find?.addEventListener('input', (e) => {
+    // The field's own report, not the native keystroke that crossed the shadow.
+    if (!(e instanceof CustomEvent)) return;
+    delete find.dataset.matches;
+    source.setSearch(find.value);
+  }, { signal });
+  find?.addEventListener('find-step', (e) => {
+    find.dataset.matches = String(grid.findStep(e.detail.direction).count);
+  }, { signal });
+
   /* THE BULK BAR. `grid.actionsFor(count)` is the row menu's own list, narrowed
      to what survives a multi-row selection — so Edit disappears the moment a
      second row is ticked, without this view knowing why. */

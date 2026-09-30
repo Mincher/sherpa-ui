@@ -1852,6 +1852,14 @@ export class DataSource extends EventTarget {
     this.#requery();
   }
 
+  /** The SEARCH as needles, so a view marks what it found: a `contains` on each
+   *  field it searches, or on every field (`*`). TRAP T-a-find-asks-its-host-to-step */
+  #searchNeedles(): string {
+    const term = this.#state.search.trim().replace(/\n/g, ' ');
+    if (!term) return '';
+    return (this.#searchFields?.length ? this.#searchFields : ['*']).map((f) => `${f}:contains:${term}`).join('\n');
+  }
+
   setPage(page: number): void {
     // Clamped against the CURRENT total, so a pager cannot walk past the end.
     this.#state.page = Math.min(Math.max(1, Math.trunc(page) || 1), this.totalPages);
@@ -2432,7 +2440,7 @@ export class DataSource extends EventTarget {
     /* …and WHAT it matched on, so a component can point at the hit. A view
        highlights what it filtered by, whichever control set the filter.
        TRAP T-a-needle-comes-from-either-direction */
-    const needles = filterNeedles(filter);
+    const needles = [filterNeedles(filter), this.#searchNeedles()].filter(Boolean).join('\n');
     setAttr(el, 'data-needles', needles || undefined);
     setAttr(el, 'data-page', pageSize ? String(page) : undefined);
     setAttr(el, 'data-total-pages', pageSize ? String(this.totalPages) : undefined);

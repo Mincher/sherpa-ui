@@ -10206,6 +10206,42 @@ nothing behind it (Will, 2026-09-26). The switch is for `advanced === true` only
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `src/core/ui/filter-menu.ts`
 
+
+### T-a-find-asks-its-host-to-step
+
+**A Find cannot see what it searches, so it ASKS.** Will, TODO 136: *"a Find
+input, that locates string matches and allows the user to jump to the
+next/previous match using 2 stepper buttons."* `sherpa-input-text
+data-type="find"` is the search field with two steppers; Previous, Next,
+Enter and Shift+Enter send `find-step { direction, value }`, and — with
+`data-replace` — the pencil's menu sends `find-replace { value,
+replacement, all }`. The HOST moves the match: the grid's `findStep()`.
+
+- **The search is published as NEEDLES** — `field:contains:term` on each
+  field the source searches, `*` for every field — so a view marks what it
+  found, as it marks a filter's condition. The grid adds `*` needles to every
+  text column.
+- **A step off the page's last match ASKS for the next page**
+  (`page-change`) and lands on its first once it is drawn; before the first,
+  the previous page's last — round from the end, as a browser's own find.
+  Any redraw starts again at the first.
+- **The replace menu sits OUTSIDE the field's `<label>`.** A click on a
+  label's plain content activates its control: the focus left the
+  replacement field for the Find field.
+- **The replacement field's `input` and `change` stop at the menu.** They
+  are composed, and reached the Find's host as its own.
+- `data-matches="0"` — the host found none — makes the steppers and Replace
+  inactive. Replace all opens a dialog first; only its confirm asks.
+
+- Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
+- Site: `src/components/sherpa-input-text/sherpa-input-text.html`
+- Site: `src/components/sherpa-input-text/sherpa-input-text.css`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
+- Site: `src/core/data/data-source.ts`
+- Site: `examples/contexts/records.js`
+- Site: `examples/templates/records.html`
+- Site: `test/e2e/reforged-input-find.spec.ts`
 ### T-a-section-heading-is-not-a-field
 
 The filter panel's `Organise` section holds Group and Sort. They share one

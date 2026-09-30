@@ -505,6 +505,9 @@ states:
     name: commit
     selector: ":host([data-commit])"
   - $type: state
+    name: has-footer
+    selector: ":host([data-has-footer])"
+  - $type: state
     name: number
     selector: ":host([data-body=\"number\"])"
   - $type: state

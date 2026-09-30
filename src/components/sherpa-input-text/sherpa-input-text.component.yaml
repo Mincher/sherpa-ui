@@ -23,6 +23,7 @@ templates:
   - multiline
   - select
   - number
+  - find
   - minimal
 anatomy:
   byTemplate:
@@ -231,6 +232,157 @@ anatomy:
           - el: span
             class: message
             part: message
+    find:
+      - el: label
+        class: field
+        part: field
+        children:
+          - el: span
+            class: label
+            part: label
+          - el: span
+            class: description
+            part: description
+          - el: span
+            class: control-row sherpa-border-edges
+            part: control-row
+            children:
+              - el: span
+                class: icon sherpa-icon-box icon-start
+                part: icon-start
+                attrs:
+                  aria-hidden: "true"
+              - el: input
+                class: control
+                part: control
+                attrs:
+                  type: text
+                  enterkeyhint: search
+              - el: button
+                class: clear
+                part: clear
+                attrs:
+                  type: button
+                  tabindex: "-1"
+                  aria-label: Clear
+                children:
+                  - el: i
+                    class: sherpa-icon-box
+                    attrs:
+                      data-icon: cross-in-tag-left
+                      aria-hidden: "true"
+              - el: span
+                class: steppers
+                part: steppers
+                children:
+                  - el: sherpa-button
+                    class: find-step
+                    attrs:
+                      data-step: "-1"
+                      data-type: icon
+                      data-look: transparent
+                      data-icon-start: chevron-up
+                      data-no-tip: ""
+                      data-no-tab: ""
+                      aria-label: Previous match
+                  - el: sherpa-button
+                    class: find-step
+                    attrs:
+                      data-step: "1"
+                      data-type: icon
+                      data-look: transparent
+                      data-icon-start: chevron-down
+                      data-no-tip: ""
+                      data-no-tab: ""
+                      aria-label: Next match
+              - el: sherpa-button
+                class: find-replace
+                part: replace
+                attrs:
+                  data-type: icon
+                  data-look: transparent
+                  data-icon-start: pencil
+                  aria-label: Find and replace
+                  aria-haspopup: dialog
+                  aria-expanded: "false"
+              - el: span
+                class: actions
+                part: actions
+                slot: actions
+          - el: span
+            class: message
+            part: message
+      - el: sherpa-menu
+        class: replace-menu
+        part: replace-menu
+        attrs:
+          data-align: end
+          data-heading: Replace
+        children:
+          - el: sherpa-input-text
+            class: replace-with
+            attrs:
+              data-label: Replace with
+              placeholder: Replacement
+              autocomplete: "off"
+          - el: span
+            class: replace-split sherpa-group
+            attrs:
+              slot: footer
+            children:
+              - el: sherpa-button
+                class: replace-one
+                attrs:
+                  data-group: start
+              - el: sherpa-button
+                class: replace-more
+                attrs:
+                  data-group: end
+                  data-type: icon
+                  data-icon-start: triangle-down
+                  aria-label: More ways to replace
+                  aria-haspopup: dialog
+                children:
+                  - el: sherpa-menu
+                    attrs:
+                      slot: menu
+                      data-align: end
+                    children:
+                      - el: button
+                        attrs:
+                          type: button
+                          value: replace-all
+          - el: span
+            class: replace-gap
+            attrs:
+              slot: footer
+          - el: sherpa-button
+            class: find-step
+            attrs:
+              slot: footer
+              data-step: "-1"
+          - el: sherpa-button
+            class: find-step
+            attrs:
+              slot: footer
+              data-step: "1"
+      - el: sherpa-dialog
+        class: replace-confirm
+        attrs:
+          data-heading: Replace all matches?
+        children:
+          - el: p
+            class: replace-confirm-text
+          - el: sherpa-container-footer
+            attrs:
+              slot: footer
+            children:
+              - el: sherpa-button
+                class: replace-cancel
+              - el: sherpa-button
+                class: replace-all
+                attrs:
+                  data-look: saturated
     minimal:
       - el: label
         class: field field-minimal
@@ -290,6 +442,12 @@ props:
     kind: content
     description: field label (hidden when empty)
   - $type: prop
+    name: data-matches
+    type: string
+    observed: true
+    kind: style
+    description: how many matches a Find's host found; "0" leaves nothing to step to or replace
+  - $type: prop
     name: data-multiline
     type: string
     observed: false
@@ -304,6 +462,14 @@ props:
     description: >-
       no Clear button. A typed field shows one by itself while it holds something; a number has
       steppers and shows none
+  - $type: prop
+    name: data-replace
+    type: string
+    observed: false
+    kind: style
+    description: >-
+      a Find also offers Find & Replace (the pencil): Replace, Replace all (asked first), Previous
+      and Next
   - $type: prop
     name: data-rules
     type: string
@@ -321,6 +487,8 @@ props:
     description: >-
       "minimal" for the bare inline field ; "select" for one of a known set; "number" for a number,
       right-aligned, with Sherpa's own up and down steppers — Figma "Input Number" (937:39395)
+      "find" for a search that steps through what a host found: Previous and Next, and Enter /
+      Shift+Enter
   - $type: prop
     name: autocomplete
     type: string
@@ -416,6 +584,9 @@ states:
     name: number
     selector: ":host([data-type=\"number\"])"
   - $type: state
+    name: find
+    selector: ":host([data-type=\"find\"])"
+  - $type: state
     name: select
     selector: ":host([data-type=\"select\"])"
   - $type: state
@@ -458,6 +629,21 @@ events:
     bubbles: true
     composed: true
     detail:
+      value: unknown
+  - $type: event
+    name: find-step
+    bubbles: true
+    composed: true
+    detail:
+      direction: unknown
+      value: unknown
+  - $type: event
+    name: find-replace
+    bubbles: true
+    composed: true
+    detail:
+      all: unknown
+      replacement: unknown
       value: unknown
 tokens:
   field.gap: "{sherpa.theme-gap-sm}"
