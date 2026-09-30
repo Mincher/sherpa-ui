@@ -12,6 +12,17 @@
 :host {
   /* Zero-box anchor — the real surface is the popover. */
   display: contents;
+
+  /* ITS OWN SURFACE: the grouping of the button that opens it is inherited,
+     and squared this card's corners. TRAP T-a-menu-takes-no-grouping */
+  --sherpa-border-top: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-bottom: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-left: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-right: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
 }
 
 .menu {
@@ -566,24 +577,6 @@
 :host([data-body="number"]) .body-number-range { display: none; }
 :host([data-body="number"][data-range]) .body-number-one { display: none; }
 :host([data-body="number"][data-range]) .body-number-range { display: block; }
-
-.body-number-one {
-  inline-size: 100%;
-  min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
-  padding: var(--sherpa-display-mode-space-2xs, 4px)
-    var(--sherpa-display-mode-space-xs, 8px);
-  border-style: solid;
-  border-color: var(--sherpa-style-border-base, #b3b3c3);
-  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
-  background: var(--sherpa-style-surface-base, #ffffff);
-  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
-  /* An <input> does NOT inherit the page font — browsers substitute their own. */
-  font-family: inherit;
-  font-size: var(--sherpa-theme-content-size-base, 14px);
-  box-sizing: border-box;
-}
-
-.body-number-one:focus-visible { outline: none; box-shadow: var(--sherpa-focus-ring); }
 
 .body-range-label {
   color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */

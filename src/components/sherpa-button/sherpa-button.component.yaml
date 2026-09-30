@@ -125,6 +125,12 @@ props:
       saturated (primary) | transparent (tertiary) (omitted = default / "secondary": white surface,
       grey border, dark ink)
   - $type: prop
+    name: data-no-tab
+    type: string
+    observed: true
+    kind: style
+    description: out of the tab order — for a host whose own keys do the same (a stepper)
+  - $type: prop
     name: data-no-tip
     type: string
     observed: false

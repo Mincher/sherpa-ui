@@ -97,6 +97,26 @@
 .control::placeholder { color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */ }
 .control:focus-visible { outline: none; }
 
+/* ── NUMBER ── right-aligned, and Sherpa's own steppers in place of the
+   native spinner. Figma "Input Number" (937:39395).
+   TRAP T-a-number-input-wears-sherpas-steppers */
+:host([data-type="number"]) .control {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+  appearance: textfield;
+}
+:host([data-type="number"]) .control::-webkit-outer-spin-button,
+:host([data-type="number"]) .control::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+/* The two buttons sit flush against the box edge, as slotted actions do. */
+:host([data-type="number"]) .control-row { padding-inline-end: 0; }
+.steppers {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
 /* ── CLEAR ── opt-in per field, shown only with something to clear. */
 .clear {
   display: none;

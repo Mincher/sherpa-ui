@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**53 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**56 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -47,8 +47,11 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16b | 106 | A click between a menu's items reaches what is behind it — an accordion toggles | bug |
 | ✅ | 16c | 108 | A Filters menu row's scope is a DESCRIPTION under its label, with no "in" | quick |
 | ✅ | 16d | 114 | About 1 time in 20, a folded Advanced-only filter's row in the Filters menu opens nothing | bug |
-| ⬜ | 16e | 119 | The panel header's Reset menu button wears the grouping `end` style; it takes none | bug |
-| ⬜ | 16f | 127 | A number input: `Enter a value`, right-aligned, Sherpa's own steppers — it came back native | bug |
+| ✅ | 16e | 119 | The panel header's Reset menu button wears the grouping `end` style; it takes none | bug |
+| ✅ | 16f | 127 | A number input: `Enter a value`, right-aligned, Sherpa's own steppers — it came back native | bug |
+| ⬜ | 16g | 130 | Filter panel chips show no tooltip: the tip belongs to the CHIP — and check what else does | bug |
+| ⬜ | 16h | 131 | Switching a number filter to Range fires no update, so the range is not used | bug |
+| ⬜ | 16i | 132 | Back from a changed Range, a number filter has lost the Simple value typed before | bug |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | ❓ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ⬜ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
@@ -77,6 +80,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 31f | 123 | An inactive chip KEEPS its match count badge; it goes only when every value and condition is removed | feature |
 | ⬜ | 31g | 125 | The sort tooltip names the direction as well as the field | quick |
 | ⬜ | 31h | 126 | "Filter applied at higher scope" becomes "Filter moved to `<scope name>` scope" | quick |
+| ⬜ | 31i | 129 | "Reset all to default", with a confirm dialog and a "Save filters before reset" switch | feature |
+| ⬜ | 31j | 133 | The results count badge shows at the right of a filter panel SECTION header, where it fits | feature |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
 | ✅ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
@@ -95,8 +100,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 42 | 23 | A focused grid row opens a details panel | feature |
 | | | | **H — The accessibility gate** | |
 | ✅ | 43 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
-| ❓ | 43a | 117 | Clear the accessibility baseline — 11 of 12 done; the accordion's actions wait on a choice | bug |
-| ❓ | 43b | 118 | Four texts fail colour contrast — the success green, and a field's description | figma |
+| 🚧 | 43a | 117 | Clear the accessibility baseline — 11 of 12 done; the accordion is ruled, and waits on 124 | bug |
+| ⬜ | 43b | 118 | Four texts fail colour contrast — re-point the alias chain to a darker shade, no new hex | figma |
 | | | | **I — The big builds** | |
 | ✅ | 44 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
 | ⬜ | 45 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
@@ -730,13 +735,18 @@ and check no other page sets `data-title` on a container that reads
 page or template sets `data-title`. An app test reads the heading, and fails
 on the old attribute.
 
-### `[ ]` 119 — BUG: the panel header's Reset menu button wears the grouping `end` style
+### `[x]` ✅ 119 — BUG: the panel header's Reset menu button wears the grouping `end` style
 
 Will, 2026-09-30: *"The 'reset' filters menu, in the filter panel header, has
 the grouping 'end' styling applied. It should have no grouping applied at
 all."*
 
-### `[ ]` 127 — BUG: a number input is native again — placeholder, alignment and steppers
+**✅ Done 2026-09-30.** The menu inherited its button's grouping, so its card
+had square left corners. A menu now states its own edges, so no grouping
+reaches it — in the panel, and in the toolbar's Reset and Save menus, which
+had the same fault. `T-a-menu-takes-no-grouping`
+
+### `[x]` ✅ 127 — BUG: a number input is native again — placeholder, alignment and steppers
 
 Will, 2026-09-30: *"Numerical inputs should have a placeholder of 'Enter a
 value'. Their input text should be right aligned. They should also be
@@ -747,6 +757,47 @@ reintroduce the mistake."*
 It came back once, so the fix is not done until a test holds it: every number
 input a filter draws is a `sherpa-input-text`, right-aligned, with the
 placeholder and Sherpa's own steppers.
+
+**✅ Done 2026-09-30.** `sherpa-input-text data-type="number"` is Figma's
+`Input Number`: right-aligned, "Enter a value" when empty, and two composed
+`sherpa-button`s (`chevron-up`, `chevron-down`, Transparent) in place of the
+native spinner. A filter menu's number body uses it. A unit test now fails on
+any component template with a bare `<input type="number">`, so it cannot come
+back unseen. Two are left as they are, each with its reason in that test: the
+slider's value box and the pagination's page box — say if you want those
+changed too. One difference from Figma: the steppers sit flush to the right
+edge, as slotted actions already do; Figma leaves 8px.
+`T-a-number-input-wears-sherpas-steppers`
+
+### `[ ]` 130 — BUG: filter panel chips show no tooltip — the tip belongs to the CHIP
+
+Will, 2026-09-30: *"Filter panel chips don't display tooltips. This
+functionality should be on the filter chip component and not on the
+filter-toolbar or filter-panel components. Also check for any other
+functionality, or features, that should be at the chip level rather than the
+parent toolbar or panel."*
+
+Two parts. Move the tooltip into `sherpa-quick-filter`, so a chip shows it
+wherever it is drawn. Then AUDIT the toolbar and the panel for everything else
+a chip should own, and list it here before moving it.
+
+### `[ ]` 131 — BUG: switching a number filter to Range fires no update
+
+Will, 2026-09-30: *"Switching a numerical filter to Range mode doesn't fire an
+update event to start using the range parameters."*
+
+Seen in the code: the switch reports `menu-range-change` only, never the
+values, so nothing re-filters until an end is moved.
+
+### `[ ]` 132 — BUG: back from a changed Range, the Simple value is gone
+
+Will, 2026-09-30: *"Switching a numerical filter back to Simple mode, from a
+modified range, does not retain any original simple values that were input
+before switching to Range."*
+
+Seen in the code: when a range is written back to the menu, `#setBodyValues`
+empties the single field. Both shapes must keep what they hold
+(`T-range-switch-swaps-not-rebuilds`).
 
 ---
 
@@ -1452,6 +1503,28 @@ as the field name."*
 Will, 2026-09-30: *"Change the 'Filter applied at higher scope' to 'Filter
 moved to $scopeName scope'."*
 
+### `[ ]` 129 — "Reset all to default", with a confirm dialog and "Save filters before reset"
+
+Will, 2026-09-30: *"'Reset to default' in filter toolbars should be renamed to
+'Reset all to default'. It should throw a confirmation sherpa dialog informing
+the user that it will reset all filters across all scopes to the view default.
+Include a simple switch to 'Save filters before reset' that will reveal a text
+input that allows the user to name the filter definition. When this save
+filters before reset feature is enabled, and a valid name entered, on
+confirming reset then the current filter configuration should be saved, using
+the provided name, before all filters are reset."*
+
+Builds on 109 (the Reset menu). The save is 105's "every scope under one
+name", which still waits on a ruling.
+
+### `[ ]` 133 — The results count badge, at the right of a filter panel section header
+
+Will, 2026-09-30: *"The results count badge should show to the right of the
+filter panel section header where appropriate."*
+
+The chip's badge from 60, for a field drawn in the panel with no chip to
+carry it.
+
 ---
 
 ## E — Views and navigation
@@ -1804,6 +1877,13 @@ there.
 - **B:** the actions stay in the header row, shown when shut. Then the
   accordion drops `<details>` for a `<button aria-expanded>` and a panel.
 
+**✅ Ruled, Will 2026-09-30:** *"There is an item to move the Filters button
+to the filter panel header. We can move the save filters button to the first
+row of the body of the accordion."* So: `Filters` leaves the section with 124,
+and `Save filter` goes to the first row of the section's BODY. Then nothing is
+in the `<summary>`, native `<details>` stays, and the last baseline entry
+goes. Do it with 124.
+
 ### `[ ]` 118 — Four texts fail colour contrast — the success green, and a field's description
 
 WCAG 1.4.3 needs 4.5:1 for small text. Measured by the gate (24):
@@ -1820,6 +1900,12 @@ Both are Figma values, so they are yours to change.
   more on white, and the description to the body text one step lighter than
   the label. I re-project, and the four baseline entries go.
 - **B:** keep the colours. The four stay in the baseline as known failures.
+
+**✅ Ruled, Will 2026-09-30: A** — *"but determine if the aliasing chain can
+be mapped back to a darker shade rather than directly applying new hex
+values."* So: no new colour. Follow each token's alias chain in Figma to the
+ramp it points at, and re-point it to a darker STEP of that same ramp that
+reaches 4.5:1. Only if no step does, say so and ask.
 
 ---
 
@@ -2758,7 +2844,9 @@ One line each. The detail is in git and in the trap named.
 - 24: the accessibility gate — axe-core over a fixture of every component, a report each, a baseline that may only fall — `T-the-a11y-gate-reads-shadow-roots`; 117 and 118 are what it found
 - 117: 11 of the 12 structural accessibility failures are fixed; the accordion's actions slot waits on Will — `T-a-menu-is-a-dialog-of-native-controls`
 - 67: `sherpa-router` owns the URL, on the Navigation API; the example app routes through it — `T-the-router-owns-the-url`
-- 119–128: ten items from Will, queued
+- 119–133: fifteen items from Will, queued; 117 and 118 ruled
+- 119: a menu takes no grouping from the grouped button that opens it — `T-a-menu-takes-no-grouping`
+- 127: a number input is Sherpa's own, and a gate holds it — `T-a-number-input-wears-sherpas-steppers`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

@@ -4,7 +4,9 @@
   (auto-growing <textarea>), minimal (bare inline field, no description/message).
 
   Public API:
-    data-type        "minimal" for the bare inline field (default is the full molecule)
+    data-type        "minimal" for the bare inline field (default is the full molecule);
+                     "select" for one of a known set; "number" for a number, right-aligned,
+                     with Sherpa's own up and down steppers — Figma "Input Number" (937:39395)
     data-borderless   drop the control border (minimal style)
     data-multiline    auto-growing <textarea> (default style only)
     data-label        field label (hidden when empty)
@@ -18,6 +20,7 @@
                       (e.g. "email") — see the TS for the rule set
     name / required / disabled / readonly / minlength / maxlength / pattern / inputmode / autocomplete
                       native attributes, reflected to the inner control
+    min / max / step  a number field's bounds and step, reflected too
 
   Slots:
     actions           trailing controls in the field row (steppers, buttons); CSS-gated
@@ -78,6 +81,31 @@
               aria-label="Clear">
         <i class="sherpa-icon-box" data-icon="cross-in-tag-left" aria-hidden="true"></i>
       </button>
+      <span class="actions" part="actions"><slot name="actions"></slot></span>
+    </span>
+    <span class="message" part="message"></span>
+  </label>
+</template>
+
+<!-- A NUMBER is the same field over `<input type="number">`: the platform's own
+     check, arrow keys and stepUp(). Its native spinner is hidden in CSS, for
+     two composed buttons. TRAP T-a-number-input-wears-sherpas-steppers -->
+<template id="number">
+  <label class="field" part="field">
+    <span class="label" part="label"></span>
+    <span class="description" part="description"></span>
+    <span class="control-row sherpa-border-edges" part="control-row">
+      <span class="icon sherpa-icon-box icon-start" part="icon-start" aria-hidden="true"></span>
+      <input class="control" part="control" type="number" inputmode="decimal" />
+      <!-- Out of the tab order: ArrowUp and ArrowDown in the field do the same. -->
+      <span class="steppers" part="steppers">
+        <sherpa-button class="step" data-step="1" data-type="icon" data-look="transparent"
+                       data-icon-start="chevron-up" data-no-tip data-no-tab
+                       aria-label="Increase"></sherpa-button>
+        <sherpa-button class="step" data-step="-1" data-type="icon" data-look="transparent"
+                       data-icon-start="chevron-down" data-no-tip data-no-tab
+                       aria-label="Decrease"></sherpa-button>
+      </span>
       <span class="actions" part="actions"><slot name="actions"></slot></span>
     </span>
     <span class="message" part="message"></span>

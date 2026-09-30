@@ -38,6 +38,7 @@ export class SherpaButton extends SherpaElement {
     'data-icon-start',
     'data-icon-end',
     'data-badge',
+    'data-no-tab',
     'disabled',
   ];
 
@@ -54,6 +55,7 @@ export class SherpaButton extends SherpaElement {
     this.#syncIcons();
     this.#syncBadge();
     this.#syncDisabled();
+    this.#syncTab();
     this.#syncTip();
     this.$('.label slot')?.addEventListener('slotchange', this.#syncTip);
 
@@ -71,6 +73,7 @@ export class SherpaButton extends SherpaElement {
     else if (name === 'data-icon-start' || name === 'data-icon-end') this.#syncIcons();
     else if (name === 'data-badge') this.#syncBadge();
     else if (name === 'disabled') this.#syncDisabled();
+    else if (name === 'data-no-tab') this.#syncTab();
   }
 
   /** A data-label value overrides slotted content. */
@@ -111,6 +114,13 @@ export class SherpaButton extends SherpaElement {
     const end = this.$('.icon-end');
     if (start) this.writeIcon(start, this.dataset['iconStart'] ?? '');
     if (end) this.writeIcon(end, this.dataset['iconEnd'] ?? '');
+  }
+
+  /** `data-no-tab` takes the trigger out of the tab order; a pointer still reaches it. */
+  #syncTab(): void {
+    const trigger = this.$('.trigger');
+    if (this.hasAttribute('data-no-tab')) trigger?.setAttribute('tabindex', '-1');
+    else trigger?.removeAttribute('tabindex');
   }
 
   /** Carry `disabled` to the inner button, and say it to assistive tech. */

@@ -89,13 +89,11 @@ anatomy:
                 attrs:
                   data-type: select
                   aria-label: Condition
-              - el: input
-                class: body-number-one sherpa-border-edges
+              - el: sherpa-input-text
+                class: body-number-one
                 attrs:
-                  type: number
-                  inputmode: decimal
+                  data-type: number
                   aria-label: Value
-                  placeholder: Any
               - el: sherpa-slider
                 class: body-number-range
                 attrs:
@@ -486,7 +484,7 @@ states:
     selector: ":host([data-readonly])"
   - $type: state
     name: focus-visible
-    selector: .body-number-one:focus-visible
+    selector: ":focus-visible"
 capabilities:
   - $type: capability
     api: js-property-mirror
@@ -595,13 +593,6 @@ tokens:
   remove.--_status-border: "{sherpa.theme-border-critical-2}"
   remove.--_status-icon: "{sherpa.theme-content-critical-1}"
   rows.gap: "{sherpa.display-mode-space-2xs}"
-  body-number-one.min-block-size: "{sherpa.display-mode-size-2xl}"
-  body-number-one.padding: "{sherpa.display-mode-space-2xs}"
-  body-number-one.border-color: "{sherpa.style-border-base}"
-  body-number-one.border-radius: "{sherpa.display-mode-border-rounding-base}"
-  body-number-one.background: "{sherpa.style-surface-base}"
-  body-number-one.color: "{sherpa.theme-content-body-1}"
-  body-number-one.font-size: "{sherpa.theme-content-size-base}"
   body-range-label.color: "{sherpa.theme-content-body-1}"
   body-range-label.font-size: "{sherpa.theme-content-size-base}"
 $extensions:

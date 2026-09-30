@@ -957,7 +957,7 @@ export class SherpaMenu extends SherpaElement {
   /** A NUMBER menu's value, or null. TRAP T-a-full-range-is-still-a-range */
   #numericValues(): string[] | null {
     if (this.dataset['body'] !== 'number') return null;
-    const field = this.$<HTMLInputElement>('.body-number-one');
+    const field = this.$<FieldEl>('.body-number-one');
     const slider = this.$<HTMLElement & { range: [number, number] }>('.body-number-range');
     if (!field && !slider) return null;
     if (this.hasAttribute('data-range')) {
@@ -991,7 +991,7 @@ export class SherpaMenu extends SherpaElement {
         cal.setAttribute('data-value-end', next[1]!);
       } else if (next[0]) cal.setAttribute('data-value', next[0]);
     } else {
-      const field = this.$<HTMLInputElement>('.body-number-one');
+      const field = this.$<FieldEl>('.body-number-one');
       const slider = this.$<HTMLElement>('.body-number-range');
       if (field) field.value = range ? '' : (next[0] ?? '');
       if (slider && range) {

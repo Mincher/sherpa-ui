@@ -115,6 +115,7 @@ export const FIXTURES = {
     html: '<sherpa-input-text data-label="Name" name="name" placeholder="Jane Doe" required></sherpa-input-text>'
       + '<sherpa-input-text data-label="Notes" name="notes" data-multiline data-description="Optional."></sherpa-input-text>'
       + '<sherpa-input-text data-label="Email" name="email" type="email" data-error="Enter an email address."></sherpa-input-text>'
+      + '<sherpa-input-text data-label="Seats" name="seats" data-type="number" min="0" max="50"></sherpa-input-text>'
       + '<sherpa-input-text class="pick" data-label="Region" name="region" data-type="select"></sherpa-input-text>',
     fill: [{ at: '.pick', data: OPTIONS }],
   },

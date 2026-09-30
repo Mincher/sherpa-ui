@@ -10,6 +10,8 @@ import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import { renderIcon, hasIcon } from '../../core/ui/render-icon.js';
 import { validateField, type FieldRules } from '../../core/data/validate.js';
 import { FormValue } from '../../core/ui/form-value.js';
+// The number type's steppers. Defined before the template stamps them.
+import '../sherpa-button/sherpa-button.js';
 
 /** Mirrored verbatim from the host onto the inner control. */
 const MIRRORED = [
@@ -26,7 +28,14 @@ const MIRRORED = [
   'pattern',
   'inputmode',
   'autocomplete',
+  // A number's bounds and step.
+  'min',
+  'max',
+  'step',
 ] as const;
+
+/** What an empty number field says. Will, 2026-09-30. */
+const NUMBER_PLACEHOLDER = 'Enter a value';
 
 type Control = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 
@@ -48,7 +57,7 @@ export class SherpaInputText extends SherpaElement {
     'data-has-value': { type: 'boolean', kind: 'style' },
     /* Which control the field draws. `select` is one of a known set — the
        platform's own element, not a re-implemented listbox. */
-    'data-type': { type: 'enum', kind: 'style', values: ['minimal', 'select'] },
+    'data-type': { type: 'enum', kind: 'style', values: ['minimal', 'select', 'number'] },
     /* The VALIDATION state a host reports, styled by the token region. */
     'data-state': { type: 'enum', kind: 'style', values: ['error', 'success', 'warning'] },
     'data-label': { type: 'string', kind: 'content', to: '.label' },
@@ -80,6 +89,7 @@ export class SherpaInputText extends SherpaElement {
     const type = this.dataset['type'];
     if (type === 'minimal') return 'minimal';
     if (type === 'select') return 'select';
+    if (type === 'number') return 'number';
     return this.hasAttribute('data-multiline') ? 'multiline' : 'default';
   }
 
@@ -107,6 +117,21 @@ export class SherpaInputText extends SherpaElement {
     this.#control.dispatchEvent(new Event('input', { bubbles: true }));
     this.#control.dispatchEvent(new Event('change', { bubbles: true }));
     this.#control.focus();
+  };
+
+  /** A stepper: the platform's own step, reported as a keystroke would be.
+   *  TRAP T-a-number-input-wears-sherpas-steppers */
+  #onStep = (event: Event): void => {
+    const control = this.#control;
+    const by = Number((event.target as HTMLElement).closest<HTMLElement>('.step')?.dataset['step']);
+    if (!(control instanceof HTMLInputElement) || !by || control.disabled || control.readOnly) return;
+    const was = control.value;
+    if (by > 0) control.stepUp();
+    else control.stepDown();
+    // At a bound nothing moved, so nothing is reported.
+    if (control.value === was) return;
+    control.dispatchEvent(new Event('input', { bubbles: true }));
+    control.dispatchEvent(new Event('change', { bubbles: true }));
   };
 
   /** JS writes the flag; CSS owns the Clear button's reveal. */
@@ -138,6 +163,8 @@ export class SherpaInputText extends SherpaElement {
     this.#syncIcons();
     this.#syncAttrs();
     this.$('.clear')?.addEventListener('click', this.#onClear);
+    // `button-click`, not `click` — a disabled sherpa-button still gets raw clicks.
+    this.$('.steppers')?.addEventListener('button-click', this.#onStep);
     this.#syncHasValue();
     this.#control?.addEventListener('input', this.#onInput);
     this.#control?.addEventListener('change', this.#onChange);
@@ -279,6 +306,14 @@ export class SherpaInputText extends SherpaElement {
     // The shared loop; `value` is a property, set below.
     // TRAP T-mirroring-skips-value
     this.mirrorAttrs(c, MIRRORED);
+    /* A NUMBER keeps what the mirror would take away: its type, and words for
+       an empty box. TRAP T-a-number-input-wears-sherpas-steppers */
+    if (this.dataset['type'] === 'number') {
+      c.setAttribute('type', 'number');
+      if (!this.hasAttribute('inputmode')) c.setAttribute('inputmode', 'decimal');
+      if (!this.hasAttribute('placeholder')) c.setAttribute('placeholder', NUMBER_PLACEHOLDER);
+      for (const step of this.$$('.step')) step.toggleAttribute('disabled', this.hasAttribute('disabled') || this.hasAttribute('readonly'));
+    }
     if (this.hasAttribute('value')) c.value = this.getAttribute('value') ?? '';
   }
 

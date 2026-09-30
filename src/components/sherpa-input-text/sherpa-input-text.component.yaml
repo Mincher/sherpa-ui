@@ -22,6 +22,7 @@ templates:
   - default
   - multiline
   - select
+  - number
   - minimal
 anatomy:
   byTemplate:
@@ -173,6 +174,63 @@ anatomy:
           - el: span
             class: message
             part: message
+    number:
+      - el: label
+        class: field
+        part: field
+        children:
+          - el: span
+            class: label
+            part: label
+          - el: span
+            class: description
+            part: description
+          - el: span
+            class: control-row sherpa-border-edges
+            part: control-row
+            children:
+              - el: span
+                class: icon sherpa-icon-box icon-start
+                part: icon-start
+                attrs:
+                  aria-hidden: "true"
+              - el: input
+                class: control
+                part: control
+                attrs:
+                  type: number
+                  inputmode: decimal
+              - el: span
+                class: steppers
+                part: steppers
+                children:
+                  - el: sherpa-button
+                    class: step
+                    attrs:
+                      data-step: "1"
+                      data-type: icon
+                      data-look: transparent
+                      data-icon-start: chevron-up
+                      data-no-tip: ""
+                      data-no-tab: ""
+                      aria-label: Increase
+                  - el: sherpa-button
+                    class: step
+                    attrs:
+                      data-step: "-1"
+                      data-type: icon
+                      data-look: transparent
+                      data-icon-start: chevron-down
+                      data-no-tip: ""
+                      data-no-tab: ""
+                      aria-label: Decrease
+              - el: span
+                class: actions
+                part: actions
+                slot: actions
+          - el: span
+            class: message
+            part: message
     minimal:
       - el: label
         class: field field-minimal
@@ -246,7 +304,9 @@ props:
     observed: false
     kind: style
     default: is the full molecule
-    description: "\"minimal\" for the bare inline field"
+    description: >-
+      "minimal" for the bare inline field ; "select" for one of a known set; "number" for a number,
+      right-aligned, with Sherpa's own up and down steppers — Figma "Input Number" (937:39395)
   - $type: prop
     name: autocomplete
     type: string
@@ -267,11 +327,23 @@ props:
     native: true
     description: native attributes, reflected to the inner control
   - $type: prop
+    name: max
+    type: string
+    observed: true
+    native: true
+    description: a number field's bounds and step, reflected too
+  - $type: prop
     name: maxlength
     type: string
     observed: true
     native: true
     description: native attributes, reflected to the inner control
+  - $type: prop
+    name: min
+    type: string
+    observed: false
+    native: true
+    description: a number field's bounds and step, reflected too
   - $type: prop
     name: minlength
     type: string
@@ -311,6 +383,12 @@ props:
     default: false
     description: native attributes, reflected to the inner control
   - $type: prop
+    name: step
+    type: string
+    observed: true
+    native: true
+    description: a number field's bounds and step, reflected too
+  - $type: prop
     name: value
     type: string
     observed: true
@@ -320,6 +398,9 @@ states:
   - $type: state
     name: has-actions
     selector: ":host([data-has-actions])"
+  - $type: state
+    name: number
+    selector: ":host([data-type=\"number\"])"
   - $type: state
     name: select
     selector: ":host([data-type=\"select\"])"

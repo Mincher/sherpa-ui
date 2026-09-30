@@ -609,6 +609,51 @@ under the pointer or focus.
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.css`
 - Site: `test/e2e/reforged-overlay-panel.spec.ts`
 
+### T-a-menu-takes-no-grouping
+
+**A menu opened from a GROUPED button wore that button's grouping** — TODO
+119, Will: the filter panel header's Reset menu had the `end` style. Grouping
+is eight INHERITED custom properties (`--sherpa-border-*`), and a slotted
+`sherpa-menu` is a child of its button, so it inherited them: its card drew
+with square left corners. A menu is its own surface, so its `:host` states
+the solo values, and nothing above it reaches the card. Every grouped button
+with a menu had this — the toolbar's Reset and Save groups too.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `test/e2e/reforged-menu.spec.ts`
+
+### T-a-number-input-wears-sherpas-steppers
+
+**A number a reader types goes in `sherpa-input-text data-type="number"`** —
+TODO 127, Will: *"We've already fixed this before but seem to reintroduce the
+mistake."* It is Figma's `Input Number` (937:39395): the Input Field, its
+value right-aligned, and two `Button / Type=icon` in the Transparent look,
+`chevron-up` and `chevron-down`. An empty one says "Enter a value".
+
+The control is still `<input type="number">`, for the platform's own check,
+arrow keys and `stepUp()`; its native spinner is hidden in CSS. The steppers
+are composed `sherpa-button`s that call `stepUp()` / `stepDown()` and report
+`input` and `change` as a keystroke would — and nothing at a bound, where the
+value did not move. They are out of the tab order (`data-no-tab`, new on
+`sherpa-button`), because ArrowUp and ArrowDown in the field do the same.
+`mirrorAttrs` removes what the host does not carry, so the number type puts
+back its `type`, its `inputmode` and its placeholder after each mirror.
+
+**Why it came back.** A `sherpa-input-number` component existed and was pruned
+(`47dc974e`); each place that needed a number then wrote a bare native input.
+So it is GATED: `test/unit/a-number-input-is-sherpas.test.mjs` fails on any
+component template that holds a bare `<input type="number">`. Three are
+allowed, by name and with the reason: the number field itself, the slider's
+value box (the track is the control), and the pagination's page box (Previous
+and Next are its steppers).
+
+- Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
+- Site: `src/components/sherpa-input-text/sherpa-input-text.html`
+- Site: `src/components/sherpa-input-text/sherpa-input-text.css`
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `test/e2e/reforged-input-number.spec.ts`
+- Site: `test/unit/a-number-input-is-sherpas.test.mjs`
+
 ### T-the-router-owns-the-url
 
 **`sherpa-router` is the ONE owner of the URL, on the Navigation API** — TODO

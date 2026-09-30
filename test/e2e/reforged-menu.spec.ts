@@ -709,3 +709,31 @@ test('a committing menu\'s Apply and Cancel wait for a change', async ({ page })
   expect(r.ticked).toEqual({ apply: false, cancel: false });
   expect(r.back).toEqual({ apply: true, cancel: true });
 });
+
+// TRAP T-a-menu-takes-no-grouping
+test('a menu takes NO grouping from the grouped button that opens it', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    type Menu = HTMLElement & { rendered?: Promise<void>; show(trigger?: HTMLElement): void };
+    const root = document.getElementById('root')!;
+    root.innerHTML = `
+      <span class="sherpa-group">
+        <sherpa-button data-group="start">Reset</sherpa-button>
+        <sherpa-button class="grouped" data-group="end" data-type="icon" data-icon-start="triangle-down" aria-label="More">
+          <sherpa-menu slot="menu"><button type="button" value="a">One</button></sherpa-menu>
+        </sherpa-button>
+      </span>
+      <sherpa-button class="plain">Plain<sherpa-menu slot="menu"><button type="button" value="a">One</button></sherpa-menu></sherpa-button>`;
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const edges = (host: string) => {
+      const menu = root.querySelector<Menu>(`${host} sherpa-menu`)!;
+      menu.show(root.querySelector<HTMLElement>(host)!);
+      const s = getComputedStyle(menu.shadowRoot!.querySelector('.menu')!);
+      return [s.borderTopLeftRadius, s.borderTopRightRadius, s.borderBottomLeftRadius, s.borderBottomRightRadius,
+        s.borderLeftWidth, s.borderRightWidth].join(' ');
+    };
+    return { grouped: edges('.grouped'), plain: edges('.plain') };
+  });
+  // Every corner round, and both sides the same weight — as a menu opened anywhere.
+  expect(r.grouped).toBe(r.plain);
+  expect(r.plain.split(' ').slice(0, 4)).toEqual(['4px', '4px', '4px', '4px']);
+});

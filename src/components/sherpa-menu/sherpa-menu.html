@@ -160,8 +160,10 @@
            the set. TRAP T-ops-follow-the-column-type -->
       <sherpa-input-text class="body-op" data-type="select"
                          aria-label="Condition"></sherpa-input-text>
-      <input class="body-number-one sherpa-border-edges" type="number" inputmode="decimal"
-             aria-label="Value" placeholder="Any" />
+      <!-- A Sherpa number field, NEVER a bare native number input.
+           TRAP T-a-number-input-wears-sherpas-steppers -->
+      <sherpa-input-text class="body-number-one" data-type="number"
+                         aria-label="Value"></sherpa-input-text>
       <sherpa-slider class="body-number-range" data-type="range"
                      data-show-value></sherpa-slider>
     </div>
