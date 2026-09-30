@@ -24,7 +24,7 @@ import {
 } from '../../core/ui/filters-button.js';
 import { report } from '../../core/data/report.js';
 import {
-  fieldState, readingRows, savedReading, type FieldCondition, type FieldReading,
+  fieldState, readingRows, savedReading, type FieldReading,
 } from '../../core/data/filter-state.js';
 import { valueKey } from '../../core/data/store.js';
 import { VIEW } from '../../core/data/query.js';
@@ -296,6 +296,13 @@ export class SherpaFilterPanel extends SherpaElement {
     const menu = held.menu as (HTMLElement & { reading: FieldReading }) | undefined;
     // A NUMBER body answers for itself, as it does on a bar chip.
     if (menu?.dataset['body'] === 'number') return menu.reading;
+    /* A DATE too: its answer is its calendar's days. Its ONE chip is ticked or
+       not, and the ticked chip's own id was sent as the day — so a date set in
+       the panel filtered nothing. OFF keeps the days. TRAP T-a-panel-date-answers-with-its-days */
+    if (menu?.dataset['body'] === 'date') {
+      const on = this.#oneChip(held)?.hasAttribute('data-current') ?? true;
+      return { ...menu.reading, ...(on ? {} : { suspended: true }) };
+    }
     const picked = this.#picked(held);
     return menu ? { ...menu.reading, picked } : { picked };
   }
@@ -315,11 +322,24 @@ export class SherpaFilterPanel extends SherpaElement {
    * one chip — Group, Sort, a date — is left alone.
    * TRAP T-an-open-panel-follows-the-data-layer
    */
-  setFieldReading(id: string, reading: FieldReading): void {
+  setFieldReading(id: string, given: FieldReading): void {
+    /* OFF filters nothing, and a panel has no "off": it shows no answer. The
+       Query keeps it, for the chip that switched it off.
+       TRAP T-a-suspended-answer-is-drawn-as-off */
+    const reading: FieldReading = given.suspended ? { picked: [] } : given;
     for (const [key, held] of this.#held) {
-      if (held.def.id !== id || this.#oneChip(held)) continue;
+      if (held.def.id !== id) continue;
       const menu = held.menu as (HTMLElement & { reading: FieldReading }) | undefined;
-      if (menu?.dataset['body'] === 'number') {
+      const chip = this.#oneChip(held) as (HTMLElement & { refresh?: () => void }) | null;
+      if (chip) {
+        // Group and Sort ARRANGE: no reading draws them.
+        if (menu?.dataset['body'] !== 'date') continue;
+        /* A DATE is one chip, and a chip has an OFF: it keeps its days.
+           TRAP T-a-panel-date-answers-with-its-days */
+        menu.reading = given;
+        chip.toggleAttribute('data-current', (given.picked ?? []).length > 0 && !given.suspended);
+        chip.refresh?.();
+      } else if (menu?.dataset['body'] === 'number') {
         menu.reading = reading;
       } else {
         // BOTH answers: the chips, then the rows — and the mode only where the
@@ -343,12 +363,12 @@ export class SherpaFilterPanel extends SherpaElement {
   }
 
   /**
-   * drawReading(field, reading, scope) — a bound source tells the OPEN panel one
-   * field's answer, in the scope that holds it. Shut, it draws nothing: it is
-   * refilled when it opens. TRAP T-an-open-panel-follows-the-data-layer
+   * drawReading(field, reading, scope) — a bound source tells the panel one
+   * field's answer, in the scope that holds it. OPEN OR SHUT: a shut panel
+   * that skipped this opened on an old answer, and its next report wrote that
+   * answer back over the Query. TRAP T-a-panel-follows-the-query-open-or-shut
    */
   drawReading(field: string, reading: FieldReading, scope: string): void {
-    if (!this.hasAttribute('open')) return;
     if (this.#held.has(`${scope}:${field}`)) this.setFieldReading(field, reading);
   }
 
@@ -539,8 +559,13 @@ export class SherpaFilterPanel extends SherpaElement {
    * TRAP T-a-panel-asks-for-its-scopes · TRAP T-a-chip-with-no-field-is-a-preset
    */
   drawScopes(scopes: readonly ScopeDescription[]): Promise<void> {
-    const asFilter = (f: FieldFilter | HeldFilter): PanelFilter => {
-      const picked = new Set(('state' in f ? f.state?.picked ?? [] : []).map(String));
+    const asFilter = (given: FieldFilter | HeldFilter): PanelFilter => {
+      // OFF filters nothing, so it is drawn as no answer. TRAP T-a-suspended-answer-is-drawn-as-off
+      const { state, ...rest } = given as HeldFilter;
+      // A date is ONE chip, and a chip has an OFF of its own: it keeps its days.
+      const shown = state && (!state.suspended || given.kind === 'date');
+      const f: FieldFilter | HeldFilter = shown ? { ...rest, state } : rest;
+      const picked = new Set((shown ? state.picked ?? [] : []).map(String));
       return {
         ...f,
         ...(f.readings ? { preset: true } : {}),
@@ -600,9 +625,11 @@ export class SherpaFilterPanel extends SherpaElement {
     box: HTMLElement, values: HTMLElement): HTMLElement | null {
     const kind = kindOf(def);
     const on = (def.options ?? []).find((o) => o.selected)?.value;
+    // A DATE has no options: it is on when it holds days, and is not switched off.
+    const dated = kind === 'date' && (def.state?.picked ?? []).length > 0 && !def.state?.suspended;
     const one = this.#valueChip(def.id, def.label, {
       ...(def.icon ? { icon: def.icon } : {}),
-      current: !!on,
+      current: !!on || dated,
       ...(arranges(kind) ? { kind } : {}),
       /* NAME THE COLUMN. The chip's own menu stamps its rows a tick later, so
          this is what it reads until then. */
@@ -1292,11 +1319,21 @@ export class SherpaFilterPanel extends SherpaElement {
   #clearField(btn: HTMLElement): void {
     const held = this.#fieldOf(btn);
     if (!held) return;
-    for (const one of held.values.querySelectorAll('.value')) {
-      one.removeAttribute('data-current');
-    }
+    this.#empty(held);
     this.#syncAnswered(held);
     this.#report(held);
+  }
+
+  /** EMPTY one field, whatever answers it: its value chips, and its menu's
+   *  rows, number or days. TRAP T-empty-is-every-kind-of-answer */
+  #empty(held: Held): void {
+    for (const one of held.values.querySelectorAll<HTMLElement>('.value')) {
+      if (this.#heldOfChip(one) !== held) continue;
+      one.removeAttribute('data-current');
+      delete one.dataset['direction'];
+    }
+    const menu = held.menu as (HTMLElement & { reading: FieldReading }) | undefined;
+    if (menu && !arranges(kindOf(held.def))) menu.reading = { picked: [] };
   }
 
   /** The Add menu committed. The HOST owns the list; this is a request. */
@@ -1390,17 +1427,7 @@ export class SherpaFilterPanel extends SherpaElement {
   /** RESET ALL: every field in both scopes, Group and Sort too, then applied —
    *  as the toolbar's Reset is. Will, 2026-09-26. */
   #onResetAll = (): void => {
-    for (const held of this.#held.values()) {
-      for (const one of held.values.querySelectorAll<HTMLElement>('.value')) {
-        if (this.#heldOfChip(one) !== held) continue;
-        one.removeAttribute('data-current');
-        delete one.dataset['direction'];
-      }
-      const menu = held.menu as (HTMLElement & {
-        conditions?: readonly FieldCondition[]; conditionValue?: string }) | undefined;
-      if (menu?.conditions?.length) menu.conditions = [];
-      if (menu?.conditionValue) menu.conditionValue = '';
-    }
+    for (const held of this.#held.values()) this.#empty(held);
     for (const scope of new Set([...this.#held.values()].map((h) => h.scope))) {
       if (this.#held.has(`${scope}:group`)) this.emit('group-change', { scope, field: null });
       if (this.#held.has(`${scope}:sort`)) {

@@ -888,17 +888,22 @@ export class DataSource extends EventTarget {
   /** The panel's answer: each field it changed, and each scope's presets. A
    *  preset switch is an Apply, as a bar's report is. */
   #answerScopes(readings: Record<string, Record<string, FieldReading>> | undefined): void {
+    const switched: string[] = [];
     for (const [scope, fields] of Object.entries(readings ?? {})) {
       for (const [id, reading] of Object.entries(fields)) {
         if (id === 'presets') {
           this.#setPresets(scope, (reading.picked ?? []).map(String));
-          this.#drawBars(scope);
-          this.commit();
+          switched.push(scope);
           continue;
         }
         this.select(id, reading.picked ?? [], reading);
       }
     }
+    /* THE BARS LAST, once every field is in. A bar draws a COPY of its scope a
+       moment later: drawn mid-way through a Reset, it put back the fields the
+       rest of that report then cleared. TRAP T-a-bar-is-drawn-the-scope-as-it-ends */
+    for (const scope of switched) this.#drawBars(scope);
+    if (switched.length) this.commit();
   }
 
   /** A scope TAKES fields and presets: a field is held, and a saved filter
@@ -1115,17 +1120,21 @@ export class DataSource extends EventTarget {
    * TELL EACH BAR over this field's scope what it now holds — a chip, a heading
    * or the panel changed it, and the bar is a VIEW of the Query, not a copy.
    * Its CONDITIONS go too, or a chip stays blank while its field filters.
-   * A SUSPENDED field is skipped: the chip already shows it, and drawing it
-   * would switch it back on. TRAP T-one-query-one-owner · TRAP T-grid-suspend-is-not-clear
+   * A SUSPENDED answer is drawn too, and SAYS it is — `suspended: true` — so a
+   * bar keeps its chip off and a panel does not show an answer that filters
+   * nothing. TRAP T-one-query-one-owner · TRAP T-grid-suspend-is-not-clear
    * TRAP T-a-conditioned-chip-answers-with-its-clause
+   * TRAP T-a-suspended-answer-is-drawn-as-off
    */
   #draw(field: string): void {
     const home = this.#home(field);
     // A View answer shows in every grid's heading too.
     if (home === VIEW) this.#syncColumns();
     const state = this.selection(field);
-    if (state.fieldState === 'suspended') return;
-    const picked = state.values.filter((v) => v.state === 'picked').map((v) => v.value);
+    const off = state.fieldState === 'suspended';
+    // Suspended, its values are not "picked" in the state: they are the reading's own.
+    const picked = off ? (this.#reading(field)?.picked ?? []).map(valueKey)
+      : state.values.filter((v) => v.state === 'picked').map((v) => v.value);
     /* The WHOLE answer — its operator and its typed text too: "is not churned"
        drawn as "churned" is the opposite answer, and "contains an" drawn
        without its text is none. */

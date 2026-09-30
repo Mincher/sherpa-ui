@@ -196,9 +196,13 @@ test('a bar bound with a scope is DRAWN each answer in its scope, whoever set it
   // Region is the View's, so this bar is not told.
   src.select('region', ['EMEA']);
   assert.deepEqual(drawn, [['status', { picked: [], conditions: [{ op: 'contains', text: 'tri' }] }]]);
-  // SUSPENDED keeps the chip as it is — nothing is drawn.
+  /* SUSPENDED is drawn too, and SAYS it is off — so a panel does not go on
+     showing an answer that filters nothing. TRAP T-a-suspended-answer-is-drawn-as-off */
   src.suspendSelection('status');
-  assert.equal(drawn.length, 1);
+  assert.equal(drawn.length, 2);
+  assert.deepEqual(drawn[1], ['status', {
+    picked: [], conditions: [{ op: 'contains', text: 'tri' }], suspended: true,
+  }]);
 });
 
 test('a control bound over SEVERAL scopes — the panel — is drawn each, told which', async () => {

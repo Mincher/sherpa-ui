@@ -466,7 +466,8 @@ export class SherpaMenu extends SherpaElement {
          one that does not is two ends when it has two values.
          TRAP T-both-shapes-are-kept */
       const picked = (next.picked ?? []).map(valueKey);
-      const range = next.range ?? picked.length > 1;
+      // No shape named and nothing answered: the shape in force stays.
+      const range = next.range ?? (picked.length > 1 || (!picked.length && !typed && this.hasAttribute('data-range')));
       const one: KeptAnswer = range ? next.kept ?? {} : next;
       const ends = range ? picked : (next.kept?.picked ?? []).map(valueKey);
       if (one.op) this.#setBodyOp(one.op);
@@ -1025,19 +1026,18 @@ export class SherpaMenu extends SherpaElement {
   #setBodyValues(next: readonly string[]): boolean {
     const body = this.dataset['body'];
     if (body !== 'date' && body !== 'number') return false;
+    /* Two values are two ends and one is one value; NONE names no shape, so
+       the shape in force stays. A cleared range calendar came back as a
+       single-day one. TRAP T-both-shapes-are-kept */
+    const range = next.length > 1 || (next.length === 0 && this.hasAttribute('data-range'));
+    this.#setShape(range);
     if (body === 'number') {
-      /* ONLY THE SHAPE NAMED is written: two values are the ends, one is the
-         value, and none empties the shape in force. The other shape keeps
-         what it holds. TRAP T-both-shapes-are-kept */
-      const range = next.length > 1 || (next.length === 0 && this.hasAttribute('data-range'));
-      this.#setShape(range);
+      // ONLY THE SHAPE NAMED is written. The other keeps what it holds.
       const one = this.$<FieldEl>('.body-number-one')?.value ?? '';
       const ends = this.#endsAnswer().picked as string[];
       this.#setNumberBody(range ? one : (next[0] ?? ''), range ? [...next] : ends);
       return true;
     }
-    const range = next.length > 1;
-    this.#setShape(range);
     if (body === 'date') {
       const cal = this.querySelector<HTMLElement>('sherpa-calendar');
       if (!cal) return true;

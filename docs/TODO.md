@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**57 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**63 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -32,6 +32,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | 🚧 | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | 🚧 | 5a | 113 | EXPLORE — state first, then render, in every component; a skeleton while the first render waits | explore |
 | | | | **C — Contained bugs** | |
+| ⬜ | 5b | 142 | NEXT UP — the shell's panel areas must not scroll with the page: they sit outside the scrolling wrapper | quick |
 | ❓ | 6 | 112 | An Equals row in Advanced will not open its value list | bug |
 | ✅ | 7 | 45 | A picked date does not show in the chip | bug |
 | ✅ | 8 | 82 | A number chip set by a View shows no value on its face | bug |
@@ -52,6 +53,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 16g | 130 | Filter panel chips show no tooltip: the tip belongs to the CHIP — and check what else does | bug |
 | ✅ | 16h | 131 | Switching a number filter to Range fires no update, so the range is not used | bug |
 | ✅ | 16i | 132 | Back from a changed Range, a number filter has lost the Simple value typed before | bug |
+| ✅ | 16j | 137 | A number RANGE filter's values do not match between the filter panel and the filter toolbar | bug |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | ❓ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ⬜ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
@@ -84,6 +86,10 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 31j | 133 | The results count badge shows at the right of a filter panel SECTION header, where it fits | feature |
 | ⬜ | 31k | 134 | A number filter menu has Reset, not Clear: its field and slider handles go back to their original values | feature |
 | ⬜ | 31l | 135 | A calendar with limited dates: a Month or Year with no date to pick is inactive too | feature |
+| ⬜ | 31m | 138 | Advanced filters go back to the INFO status styling, from success | quick |
+| ⬜ | 31n | 139 | An Advanced toolbar chip's value half shows its VALUES, truncated — not the condition labels | quick |
+| ⬜ | 31o | 140 | Every Sherpa input a reader types into shows the Clear button — not a number stepper, not a text area | feature |
+| ⬜ | 31p | 141 | Advanced is an icon button again — f(x), at the right of the section or menu header, active when on | quick |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
 | ✅ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
@@ -97,6 +103,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 39 | 14 | An example of real-time data | feature |
 | ⬜ | 39a | 128 | A gauge's tooltip names the segment as the legend does | quick |
 | ⬜ | 40 | 59 | EXPLORE, later — Will's own loading pattern | explore |
+| ⬜ | 40a | 143 | EXPERIMENT, later — scrolled-past metrics become a compact sticky header; a toggle in Settings › Experiments | explore |
 | | | | **G — Overlay panels** | |
 | ✅ | 41 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
 | ✅ | 42 | 23 | A focused grid row opens a details panel | feature |
@@ -826,6 +833,66 @@ the other as `kept`. It had to be in the data, not only in the menu — a
 filter panel rebuilds a field's menu when its answer changes. Switch to Range
 and back, and the value typed before is there and applies again; the ends are
 kept the same way. Cancel puts the shape back too. `T-both-shapes-are-kept`
+
+### `[x]` ✅ 137 — BUG: a number range's values differ between the panel and the toolbar
+
+Will, 2026-09-30: *"Numeric range filter values don't match between the
+filter-panel and filter-toolbar. I'm worried that we're not using a
+centralised condition query etc. to coordinate filters and such. Look at this
+first, and any other filter coordination items/issues, before moving on to
+130."*
+
+**✅ Done 2026-09-30.** There IS one owner: the Query, in the `DataSource`. A
+toolbar, the header bar, the filter panel and a grid heading are views of it;
+each reports what a reader did, and the source draws the answer back into
+every one. The views had holes. Seven, all found by setting an answer in one
+control and reading it in the others:
+
+| # | What was wrong | Why |
+|---|---|---|
+| 1 | The panel opened on OLD answers, and its next change wrote them back over the Query. This is the bug reported: the toolbar said 37 to 120, the panel 4 to 240, and typing 60 in the panel made it 60 to 240 | a shut panel ignored every `drawReading`, and nothing refilled it on open — the page did once, and that went when the provider took the page over |
+| 2 | A number chip drew VALUES only, so the shape in force and the kept shape were lost on the way to the toolbar | `setChipReading` cut a number reading down to its values |
+| 3 | A rebuilt panel field dropped a number's answer | `#fill` kept only rows, a mode or a mirror |
+| 4 | A chip switched OFF showed as ON in the panel | the source skipped a suspended answer when it drew |
+| 5 | Reset did not empty a number chip: it switched it off and left the value, so the Query kept a suspended answer | Reset emptied list chips only |
+| 6 | The panel's Reset and a field's Clear did not empty a number field | they cleared value chips and rows only |
+| 7 | A date range set IN THE PANEL filtered nothing: the panel sent the chip's own id, `created`, as the day | a date is one chip, and a ticked chip's value is its id |
+
+And one in the source: a panel report that switched a saved filter drew the
+bars mid-way, from a copy of the scope, so a Reset's cleared fields came back
+on the toolbar a moment later.
+
+All are fixed, and `test/e2e/reforged-filter-coordination.spec.ts` holds
+them: one Records page, forty steps — a list, OFF and ON, a number in both
+shapes, conditions, a saved filter, a date range both ways, a grid heading,
+Reset from each side — and after EACH step every control must hold what the
+Query holds, the panel open or shut. A reload, a View change and remote mode
+(drafts, pending, Apply) were probed the same way and agree.
+
+**One choice is yours.** A chip switched OFF keeps its value. The panel has no
+"off" for a run of value chips, so it shows that field as not answered; the
+Query keeps the value for the chip. Say if the panel should show it another
+way — for example the values drawn, dimmed.
+
+`T-a-panel-follows-the-query-open-or-shut` · `T-a-suspended-answer-is-drawn-as-off`
+· `T-empty-is-every-kind-of-answer` · `T-a-panel-date-answers-with-its-days`
+· `T-a-bar-is-drawn-the-scope-as-it-ends`
+
+**For 130 — what else belongs on the chip.** Seen while here: the toolbar and
+the panel each have their own code to READ a field's answer, to DRAW one and
+to EMPTY one, and each asks "is it a list, a number or a date?". Five of the
+seven holes above were one of those three jobs done differently in two
+places. The chip (with its menu) should answer all three itself — `reading`
+get and set, and one `clear()` — so a host never asks what kind it is. Also
+the toolbar's: the date label on a chip's face (`#syncDateLabel`).
+
+### `[ ]` 142 — The shell's panel areas stay put while the page scrolls
+
+Will, 2026-09-30: *"The filter panel area, in the app shell, shouldn't scroll
+with the other page content. So it needs to be outside of that scrollable
+wrapper element so that it stays fixed on the left. This will be the same
+requirement for the right panel area (that we don't leverage yet). Should be a
+simple fix so we can bump it up near the top of the queue. :)"*
 
 ---
 
@@ -1568,6 +1635,33 @@ viable selectable dates to inactive, too."*
 The day view already does this, from `data-available`, `data-min` and
 `data-max`.
 
+### `[ ]` 138 — Advanced filters use the info status styling again
+
+Will, 2026-09-30, a future small one: *"Move advanced filters back to using
+the info status styling rather than the success status styling."*
+
+### `[ ]` 139 — An Advanced chip's value half shows its values, not the condition labels
+
+Will, 2026-09-30: *"Actually ignore that improvement. The values should be
+shown, truncated, but not the condition labels."* (He first asked for the
+f(x) icon and the ▾ alone, then took that back.) So `Owner: Starts with: U
+or Contains: an` reads `Owner: U, an`, cut short where it is long.
+
+### `[ ]` 140 — Every typed Sherpa input shows the Clear button
+
+Will, 2026-09-30, a future one: *"Any sherpa input that I type into, that
+isn't a numeric stepper or text area, should show the clear input button like
+we do in the sherpa text input."*
+
+Today it is opt-in: `data-clearable` on `sherpa-input-text`.
+
+### `[ ]` 141 — Advanced is an f(x) icon button, not a switch
+
+Will, 2026-09-30, a minor one to queue: *"Instead of a simple switch for
+'advanced' let's go back to a button on the right of the filter panel
+section, and toolbar chip menu, header that is icon only, uses the f(x) icon,
+and is active when advanced, default when simple."*
+
 ---
 
 ## E — Views and navigation
@@ -1825,6 +1919,29 @@ the same three states.
 
 Will, 2026-09-30: *"Gauge tooltips should match the segment name as shown in
 the legend."*
+
+### `[ ]` 143 — EXPERIMENT: scrolled-past metrics become a compact sticky header
+
+Will, 2026-09-30, a fun concept to explore later: *"When a content area
+scrolls, if there are metric items in the first row that have reached the
+upper boundary of the content area, they should:*
+
+- *Be grouped with no gap*
+- *The group becomes a sticky header, ignores layout grid margins, gutters,
+  padding.*
+- *Value label text size is reduced to smaller size token (approx half size)*
+- *Metric item height reduces to follow value label height reduction*
+
+*As soon as the content area is scrolled the other way, and the metrics
+should be back in view then we reverse all of this and show them again in the
+layout grid. Actually a visibility toggle, and content injection, is probably
+the best way to do this. This is just an experiment, so add it to the app
+settings as a toggle in an Experiments section. There's a possibility we
+remove this or archive it for later. So don't intertwine the logic and code
+too much if possible."*
+
+So: one module of its own, switched by one setting, that a delete removes
+whole.
 
 ---
 
@@ -2916,12 +3033,13 @@ One line each. The detail is in git and in the trap named.
 - 24: the accessibility gate — axe-core over a fixture of every component, a report each, a baseline that may only fall — `T-the-a11y-gate-reads-shadow-roots`; 117 and 118 are what it found
 - 117: 11 of the 12 structural accessibility failures are fixed; the accordion's actions slot waits on Will — `T-a-menu-is-a-dialog-of-native-controls`
 - 67: `sherpa-router` owns the URL, on the Navigation API; the example app routes through it — `T-the-router-owns-the-url`
-- 119–136: eighteen items from Will, queued; 117 and 118 ruled
+- 119–142: Will's items, queued as they came; 117 and 118 ruled
 - 119: a menu takes no grouping from the grouped button that opens it — `T-a-menu-takes-no-grouping`
 - 127: a number input is Sherpa's own, and a gate holds it — `T-a-number-input-wears-sherpas-steppers`
 - 127, more: the slider's and the pagination's number boxes are the Sherpa field too; slider fields sit under the track
 - 131: the Range switch is reported — `T-range-switch-swaps-not-rebuilds`
 - 132: a number filter's reading keeps both shapes — `T-both-shapes-are-kept`
+- 137: every filter control shows the Query's answer — seven holes between the toolbar, the panel and the source, one test for all — `T-a-panel-follows-the-query-open-or-shut`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

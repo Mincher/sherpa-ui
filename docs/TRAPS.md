@@ -676,6 +676,92 @@ half.
 - Site: `test/e2e/reforged-input-number.spec.ts`
 - Site: `test/unit/a-number-input-is-sherpas.test.mjs`
 
+### T-a-panel-follows-the-query-open-or-shut
+
+**ONE owner holds every filter answer: the Query, in the `DataSource`.** A
+toolbar, the header bar, the filter panel and a grid heading are VIEWS of it.
+Each reports what a reader did; the source writes it to the Query and draws
+it back into every bound control — `drawReading` for one field, `drawScope`
+or `drawScopes` for a whole scope. No control is asked what another holds.
+
+**The panel follows it open OR shut** — TODO 137, Will: "Numeric range filter
+values don't match between the filter-panel and filter-toolbar." A shut panel
+used to skip every `drawReading`, "refilled when it opens" — and the refill
+was the PAGE's, which went when the provider took the page over. So it opened
+on whatever it was last drawn with: the toolbar said Seats 37 to 120, the
+panel 4 to 240. Worse, its next change reported from that old state and wrote
+it over the Query — typing 60 made the range 60 to 240, and the 120 was gone.
+A view that can go stale is a second owner. The guard is gone: a shut panel
+is drawn as a bar is.
+
+**The gate** is `test/e2e/reforged-filter-coordination.spec.ts`: one Records
+page, forty steps across every kind of answer, and after each step every
+control must hold what the Query holds. When a filter control is added or
+changed, add its step there. It supersedes the "refilled on open" half of
+`T-an-open-panel-follows-the-data-layer`.
+
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-filter-coordination.spec.ts`
+
+### T-a-suspended-answer-is-drawn-as-off
+
+**A chip switched OFF keeps its answer and applies none of it — and the source
+DRAWS that, with `suspended: true`.** It used to skip a suspended field when
+it drew, because a bar drew every reading as ON. So the chip that was pressed
+knew, and nothing else did: the panel went on showing `Status: active` while
+no row was filtered by it. Now a bar draws the answer and then switches the
+chip off (`#drawChip`), and the panel — which has no "off" for a run of value
+chips — shows no answer, in `setFieldReading` and in `drawScopes` alike. The
+Query keeps the value, for the chip. A DATE in the panel is one chip, which
+does have an off, so it keeps its days.
+
+- Site: `src/core/data/data-source.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/unit/query.test.mjs`
+- Site: `test/e2e/reforged-filter-coordination.spec.ts`
+
+### T-empty-is-every-kind-of-answer
+
+**Reset and Clear EMPTY a field whatever answers it** — a list's ticks and
+rows, a number's two shapes, a date's days. Each host emptied only what it
+first knew: the toolbar's Reset cleared list chips and merely switched a
+number chip OFF, value kept, so the Query held a suspended answer after a
+Reset; the panel's Reset and a field's Clear unticked value chips and cleared
+rows, and left a number field as it was. One door each now — the toolbar's
+`#emptyChip`, the panel's `#empty` — and both write `{ picked: [] }` to the
+menu, which empties every body it owns. `values = []` is NOT that for a
+number: it empties the shape in force and keeps the other
+(`T-both-shapes-are-kept`).
+
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-filter-coordination.spec.ts`
+
+### T-a-panel-date-answers-with-its-days
+
+**A date set in the filter panel filtered nothing.** In the panel a field is a
+run of value chips, and its answer is the ticked chips' values. A date is ONE
+chip with a calendar in its menu — so its "value" was its own id, and the
+panel sent `{ picked: ['created'], range: true }`. The Query stored it, no
+row matched a day called `created`, and the header's Date chip came back
+empty. A date answers with its menu's own reading, as a number does, and the
+source's answer is drawn into that chip: its days, and whether it is on.
+
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-filter-coordination.spec.ts`
+
+### T-a-bar-is-drawn-the-scope-as-it-ends
+
+**A bar is drawn a COPY of its scope, a moment later** — `drawScope` waits for
+its chips to settle. So it must be asked for AFTER the last write of a report.
+The panel's whole report — a Reset — names `presets` first, and the source
+drew the bars there, mid-loop: the copy still held Status and Seats, the loop
+then cleared them, and two frames on the bar put them back, silently. The
+Query was empty and the toolbar said otherwise. `#answerScopes` draws the
+bars once, at the end.
+
+- Site: `src/core/data/data-source.ts`
+
 ### T-both-shapes-are-kept
 
 **A number filter has two shapes — one value, or two ends — and its reading
@@ -694,9 +780,15 @@ are the ends, one the value, and none empties the shape in force without
 switching it. Cancel restores the whole reading, so the shape goes back too.
 The same idea as `T-both-answers-are-kept`, for Simple and Advanced.
 
+A HOST passes the whole reading on, never its values: the toolbar's
+`setChipReading` cut a number down to values, so a range from the panel came
+back in whatever shape the chip's menu was in. And "none names no shape"
+holds for a DATE too — a cleared range calendar came back as a single day.
+
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/unit/both-shapes-are-kept.test.mjs`
 

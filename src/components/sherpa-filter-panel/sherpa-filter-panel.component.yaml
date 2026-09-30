@@ -276,7 +276,7 @@ $extensions:
     methods:
       - $type: method
         name: setFieldReading
-        args: "id: string, reading: FieldReading"
+        args: "id: string, given: FieldReading"
         description: >-
           setFieldReading(id, reading) — steer ONE field with a whole reading: what another control
           set while the panel shows. SILENT, like every steer, and it is that field's last Apply
@@ -285,8 +285,9 @@ $extensions:
         name: drawReading
         args: "field: string, reading: FieldReading, scope: string"
         description: >-
-          drawReading(field, reading, scope) — a bound source tells the OPEN panel one field's
-          answer, in the scope that holds it. Shut, it draws nothing: it is refilled when it opens.
+          drawReading(field, reading, scope) — a bound source tells the panel one field's answer, in
+          the scope that holds it. OPEN OR SHUT: a shut panel that skipped this opened on an old
+          answer, and its next report wrote that answer back over the Query.
       - $type: method
         name: show
         args: ""

@@ -548,9 +548,20 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         (HTMLElement & { conditions?: readonly FieldCondition[] }) | null;
       if (!menu) return;
 
-      /* A NUMBER or DATE body takes its answer as it reports it: one value
-         under its operator, or two ends. TRAP T-a-menu-owns-its-own-bodies */
-      if (menu.dataset['body'] === 'number' || menu.dataset['body'] === 'date') {
+      /* A NUMBER takes its WHOLE reading: which shape is in force, and the
+         one kept. Values alone lose both — a range drawn from another control
+         came back as whatever shape this menu was in.
+         TRAP T-both-shapes-are-kept · TRAP T-a-menu-owns-its-own-bodies */
+      if (menu.dataset['body'] === 'number') {
+        (menu as HTMLElement & { reading: FieldReading }).reading = reading;
+        const answered = (reading.picked ?? []).length > 0 || (reading.text ?? '').trim() !== '';
+        chip.current = answered && !reading.suspended;
+        // SILENT, so the chip is told. TRAP T-a-silent-steer-still-redraws-its-chip
+        chip.refresh();
+        return;
+      }
+      /* A DATE body takes its answer as it reports it: one day, or two ends. */
+      if (menu.dataset['body'] === 'date') {
         if (reading.op) menu.dataset['op'] = reading.op;
         const one = (reading.text ?? '').trim();
         this.setChipValues(id, one ? [one] : (reading.picked ?? []).map(String));
@@ -625,10 +636,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const chip = this.#chips().find((c) => c.dataset['id'] === id);
     const menu = chip?.querySelector('sherpa-menu');
     if (chip && (!chip.shadowRoot?.childElementCount || (menu && !menu.shadowRoot?.childElementCount))) {
-      void this.#settled().then(() => { if (!this.superseded.includes(id)) this.setChipReading(id, reading); });
+      void this.#settled().then(() => { if (!this.superseded.includes(id)) this.#drawChip(id, reading); });
       return;
     }
+    this.#drawChip(id, reading);
+  }
+
+  /** One chip's answer, and whether it is ON. OFF keeps the answer and applies
+   *  none of it. TRAP T-grid-suspend-is-not-clear */
+  #drawChip(id: string, reading: FieldReading): void {
     this.setChipReading(id, reading);
+    if (reading.suspended) this.#setChipActive(id, false);
   }
 
   /** The chip that answers a field: its def's `field`, else its id. */
@@ -1227,6 +1245,28 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#emitChange();
   }
 
+  /**
+   * EMPTY one chip, whatever answers it, and switch it off: a list's ticks and
+   * rows, a number's two shapes, a date's days. Reset and a redraw both come
+   * here — a number chip used to be switched off and left holding its value.
+   * TRAP T-empty-is-every-kind-of-answer
+   */
+  #emptyChip(chip: ChipEl): void {
+    const id = chip.dataset['id'] ?? '';
+    if (this.#filterMenu(id)) return this.#clearField(id);
+    const menu = chip.querySelector<HTMLElement & { reading: FieldReading }>('sherpa-menu');
+    if (menu?.dataset['body'] === 'number') {
+      // BOTH shapes: `values = []` empties only the one in force.
+      menu.reading = { picked: [] };
+      chip.current = false;
+      chip.refresh();
+      return;
+    }
+    if (chip.hasAttribute('data-menu')) return this.setChipValues(id, []);
+    chip.removeAttribute('data-current');
+    for (const input of chip.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
+  }
+
   /** Empty one field chip — ticks, op, typing and rows — and switch it off. */
   #clearField(id: string): void {
     const menu = this.#filterMenu(id) as (HTMLElement & {
@@ -1460,9 +1500,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const id = this.#idOf(field);
       answered.add(id);
       if (persistent.has(id)) continue;
-      this.setChipReading(id, reading);
-      // OFF keeps the answer and applies none of it. TRAP T-grid-suspend-is-not-clear
-      if (reading.suspended) this.#setChipActive(id, false);
+      this.#drawChip(id, reading);
     }
     /* THE WHOLE SCOPE: a chip it does not answer is EMPTY — a View is a clean
        slate. A superseded chip keeps the reader's own picks. TRAP T-a-view-is-json */
@@ -1470,8 +1508,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const chip = this.#chips().find((c) => c.dataset['id'] === def.id);
       if (!chip || answered.has(def.id) || persistent.has(def.id) || def.readings) continue;
       if (chip.hasAttribute('data-superseded')) continue;
-      if (this.#filterMenu(def.id)) this.#clearField(def.id);
-      else if (chip.hasAttribute('data-menu')) this.setChipValues(def.id, []);
+      this.#emptyChip(chip);
     }
     for (const def of this.#filters) if (def.readings) this.#setChipActive(def.id, !!presets[def.id]);
   }
@@ -1785,12 +1822,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const id = chip.dataset['id'] ?? '';
       // A View change leaves a carry-over chip; Reset does not. TRAP T-a-field-can-carry-over-views
       if (options.carry && this.#filters.find((f) => f.id === id)?.carryOver) continue;
-      if (this.#filterMenu(id)) {
-        this.#clearField(id);
-        continue;
-      }
-      chip.removeAttribute('data-current');
-      for (const input of chip.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
+      this.#emptyChip(chip);
     }
     if (organise) this.#clearOrganise();
     this.emit('filter-clear');
