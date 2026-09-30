@@ -50,3 +50,18 @@ test('a list is unchanged: the first pick and an ellipsis, every pick in the tip
   assert.equal(list.value, 'active…');
   assert.equal(list.tip, 'active, trial');
 });
+
+/* Will, TODO 139: "The values should be shown, truncated, but not the
+   condition labels." The words stay, for a name. */
+test('chained rows: the face shows each row\'s VALUES, and the words keep the conditions', () => {
+  const typed = face({ values: ['Una', 'Dana'] }, { picked: [], mode: 'advanced', conditions: [
+    { op: 'startswith', text: 'U' }, { op: 'contains', text: 'an', join: 'or' }] });
+  assert.equal(typed.value, 'U, an');
+  assert.equal(typed.condition, 'Starts with: U or Contains: an');
+  assert.equal(typed.tip, '2 conditions applied');
+
+  // A row that picks from the list shows its picks, by their labels.
+  const picked = face({ values: ['a', 'b'], labels: { a: 'Alpha', b: 'Beta' } }, { picked: [], mode: 'advanced', conditions: [
+    { op: 'eq', picked: ['a'] }, { op: 'ne', picked: ['b'], join: 'and' }] });
+  assert.equal(picked.value, 'Alpha, Beta');
+});

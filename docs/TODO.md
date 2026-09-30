@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**59 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**58 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -90,7 +90,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 31k | 134 | A number filter menu has Reset, not Clear: its field and slider handles go back to their original values | feature |
 | ⬜ | 31l | 135 | A calendar with limited dates: a Month or Year with no date to pick is inactive too | feature |
 | ✅ | 31m | 138 | Advanced filters go back to the INFO status styling, from success | quick |
-| ⬜ | 31n | 139 | An Advanced toolbar chip's value half shows its VALUES, truncated — not the condition labels | quick |
+| ✅ | 31n | 139 | An Advanced toolbar chip's value half shows its VALUES, truncated — not the condition labels | quick |
 | ⬜ | 31o | 140 | Every Sherpa input a reader types into shows the Clear button — not a number stepper, not a text area | feature |
 | ⬜ | 31p | 141 | Advanced is an icon button again — f(x), at the right of the section or menu header, active when on | quick |
 | ⬜ | 31q | 144 | A View's filters survive a swap to another View — a draft per View, for the session, and across sessions; two settings, on by default | feature |
@@ -1822,12 +1822,19 @@ one colour from the chip to the cell. One pin changed
 (`scripts/figma-data/state-pins.yaml`), and the trap is renamed to match.
 `T-a-conditioned-chip-reads-as-info`
 
-### `[ ]` 139 — An Advanced chip's value half shows its values, not the condition labels
+### `[x]` ✅ 139 — An Advanced chip's value half shows its values, not the condition labels
 
 Will, 2026-09-30: *"Actually ignore that improvement. The values should be
 shown, truncated, but not the condition labels."* (He first asked for the
 f(x) icon and the ▾ alone, then took that back.) So `Owner: Starts with: U
 or Contains: an` reads `Owner: U, an`, cut short where it is long.
+
+**✅ Done 2026-09-30.** A chip with two or more condition rows shows what each
+row answers with — typed text, or the picked values by their labels — joined
+by commas: `U, an`. The chip cuts it short as it does any long value. The
+tooltip still says `2 conditions applied`. A grid heading's
+`column-filter-change` label keeps the full words (`Contains: Da or Starts
+with: R`); that is a label for a host, not the chip's face.
 
 ### `[ ]` 140 — Every typed Sherpa input shows the Clear button
 
@@ -3321,6 +3328,7 @@ One line each. The detail is in git and in the trap named.
 - 149: queued — the legend's items become swatch chips
 - 148: an emptied date range holds no ends — the chip read `undefined` after a Reset
 - 121: a panel field's Clear and Send to are one button group
+- 139: a chained chip's face shows its values — `U, an` — not the condition labels
 - 138: an Advanced chip, and the text it matched, are info blue again — `T-a-conditioned-chip-reads-as-info`
 - 120: a View field is sent DOWN to the one scope that has it, with its answer — `T-send-to-view-filters`
 - 126: a filter another scope holds says `Filter moved to View scope.` — `T-an-inactive-chip-says-where-its-filter-went`

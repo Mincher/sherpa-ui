@@ -80,7 +80,7 @@
   "src/core/data/chart-datum.ts": 75,
   "src/core/data/cycle.ts": 60,
   "src/core/data/data-source.ts": 2394,
-  "src/core/data/filter-face.ts": 117,
+  "src/core/data/filter-face.ts": 122,
   "src/core/data/filter-state.ts": 455,
   "src/core/data/format-date.ts": 42,
   "src/core/data/format-tick.ts": 341,

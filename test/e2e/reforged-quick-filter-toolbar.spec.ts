@@ -2670,8 +2670,9 @@ test('a chip steered with conditions redraws its value and tip', async ({ page }
     };
     return { owner: face('owner'), email: face('email') };
   });
+  // The VALUES, not the condition labels. Will, TODO 139.
   expect(r.owner).toEqual({ on: true, condition: 'advanced',
-    value: 'Contains: Da or Starts with: R', tip: '2 conditions applied' });
+    value: 'Da, R', tip: '2 conditions applied' });
   expect(r.email).toEqual({ on: true, condition: 'advanced', value: 'zz', tip: '1 condition applied' });
 });
 

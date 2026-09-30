@@ -77,6 +77,11 @@ export function filterFace(state: FilterState): FilterFace {
 
   /* Many rows say their own story; one row falls back to the old wording. */
   const chained = state.conditions.length > 1 ? spellConditions(state) : '';
+  /* …and on a chip's face, what each row ANSWERS with — no condition labels:
+     `U, an`. The words are the condition's, for a name. Will, TODO 139. */
+  const answered = state.conditions.flatMap((row) => ((OP_TAKES[row.op] ?? 'list') === 'text'
+    ? (row.text ? [row.text] : [])
+    : (row.picked ?? []).map((v) => labelOf.get(valueKey(v)) ?? String(v))));
   // Answered rows only. Will, 2026-09-26. TRAP T-a-condition-tip-counts-its-rows
   const rows = state.rows.length;
   const counted = `${rows} condition${rows === 1 ? '' : 's'} applied`;
@@ -88,7 +93,7 @@ export function filterFace(state: FilterState): FilterFace {
        too. TRAP T-a-condition-badge-says-that-not-which · TRAP T-one-condition-system */
     badge: state.condition === 'advanced' ? CONDITION_BADGE : '',
     condition: chained || condition,
-    value: chained ? chained : value,
+    value: chained ? answered.join(', ') : value,
     count: picks.length,
     tip: state.condition === 'advanced' ? counted
       : (condition && spelled ? `${condition}: ${spelled}` : (spelled || condition)),
