@@ -27,9 +27,7 @@ const CASES: [string, string, Record<string, string>][] = [
   // input all go (see sherpa-nav.css). `data-nav-state` opens it.
   ['sherpa-nav', '.search', { 'data-searchable': '', 'data-nav-state': 'pinned' }],
   ['sherpa-overlay-panel', '.root', {}],
-  ['sherpa-pagination', '.page-input', {}],
   ['sherpa-quick-filter', '.count', { 'data-count': '3' }],
-  ['sherpa-slider', '.value-input', {}],
   ['sherpa-switch', '.track', {}],
   ['sherpa-tag', '.pill', {}],
   ['sherpa-toast', '.toast', {}],

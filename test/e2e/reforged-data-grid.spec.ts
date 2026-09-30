@@ -1529,6 +1529,9 @@ test('a NUMBER column filters by condition, or by a RANGE, and coerces its ends'
 
     // RANGE: the switch re-points the menu rather than rebuilding it, so what
     // was typed on the single side is still there on the way back.
+    // OPEN, as a reader has it: a shut menu has no draft for Apply to take.
+    (chip().querySelector('sherpa-menu') as HTMLElement & { show(t: Element): void }).show(chip());
+    await settle();
     const sw = chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector('.body-range-switch') as HTMLElement & { checked: boolean };
     sw.checked = true;
     sw.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
@@ -1640,6 +1643,9 @@ test('a DATE column filters with a calendar, one day or a span', async ({ page }
 
     // RANGE. The switch re-points the CALENDAR — it already owns both shapes,
     // so there is no second calendar to swap in.
+    // OPEN, as a reader has it: a shut menu has no draft for Apply to take.
+    (chip().querySelector('sherpa-menu') as HTMLElement & { show(t: Element): void }).show(chip());
+    await settle();
     const sw = chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector('.body-range-switch') as HTMLElement & { checked: boolean };
     sw.checked = true;
     sw.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
@@ -1648,6 +1654,8 @@ test('a DATE column filters with a calendar, one day or a span', async ({ page }
 
     cal().dataset['valueStart'] = '2026-01-01';
     cal().dataset['valueEnd'] = '2026-01-31';
+    // What a second click on a day reports: the draft has moved.
+    cal().dispatchEvent(new CustomEvent('range-select', { bubbles: true, composed: true }));
     await apply();
 
     return { shape, calType, events };

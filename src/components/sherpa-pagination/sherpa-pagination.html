@@ -1,8 +1,8 @@
 <!--
   sherpa-pagination — results-size + page navigation control.
 
-  The native <select> and <input type="number"> work without JS; JS only
-  reflects state, clamps, and emits. Rows options stamp from
+  The native <select> works without JS; the page box is a Sherpa number field.
+  JS only reflects state, clamps, and emits. Rows options stamp from
   <template class="rows-opt-tpl"> — no id, so the base parser ignores it.
 
   Public API:
@@ -35,8 +35,10 @@
                        aria-label="Previous page"></sherpa-button>
       </sherpa-group>
 
-      <input class="page-input sherpa-border-edges sherpa-border-corners" type="number" inputmode="numeric" min="1" step="1"
-             part="page-input" aria-label="Page number" />
+      <!-- A Sherpa number field. TRAP T-a-number-input-wears-sherpas-steppers -->
+      <sherpa-input-text class="page-input" part="page-input" data-type="number"
+                         inputmode="numeric" min="1" step="1"
+                         aria-label="Page number"></sherpa-input-text>
       <span class="total" part="total" aria-hidden="true">of 1</span>
 
       <sherpa-group class="pair">

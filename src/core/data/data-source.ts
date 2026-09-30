@@ -2235,7 +2235,9 @@ function answersOf(scope: ScopeQuery | undefined): unknown {
 function answers(reading: FieldReading): boolean {
   return (reading.picked ?? []).length > 0
     || (reading.text ?? '').trim() !== ''
-    || (reading.conditions ?? []).some((r) => (r.text ?? '').trim() !== '' || (r.picked ?? []).length > 0);
+    || (reading.conditions ?? []).some((r) => (r.text ?? '').trim() !== '' || (r.picked ?? []).length > 0)
+    // The other shape's answer is worth keeping too. TRAP T-both-shapes-are-kept
+    || (!!reading.kept && answers(reading.kept));
 }
 
 /** The ANSWER keys of a reading only — a bar's reading also carries its label
@@ -2246,7 +2248,7 @@ function answerOf(reading: FieldReading): FieldReading {
   return out as FieldReading;
 }
 // A key left off this list is DROPPED, silently. TRAP T-both-answers-are-kept
-const READING_KEYS = ['picked', 'present', 'op', 'text', 'conditions', 'mode', 'mirror', 'range', 'suspended'] as const;
+const READING_KEYS = ['picked', 'present', 'op', 'text', 'conditions', 'mode', 'mirror', 'range', 'kept', 'suspended'] as const;
 
 /** Write or remove an attribute. `undefined` removes, so CSS stops matching. */
 function setAttr(el: HTMLElement, name: string, value: string | undefined): void {

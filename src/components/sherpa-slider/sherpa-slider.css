@@ -39,47 +39,37 @@
   &:empty { display: none; }
 }
 
-/* ── Slider row: track + editable value input ──────────────────────── */
+/* ── Slider row: the track, and the value fields UNDER it ────────────
+   Two equal columns, so a range's two fields share ONE row at any width and
+   never stack. Will, 2026-09-30. A lone field takes the second column. */
 .slider-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: center;
-  gap: var(--sherpa-display-mode-space-sm, 12px);
+  gap: var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-display-mode-space-sm, 12px);
 }
-
-/* Mono + right-aligned per the numeric convention. */
+/* The value FIELD: a composed sherpa-input-text, which owns its own look. */
 .value-input {
   display: none;
-  inline-size: var(--sherpa-display-mode-size-6xl, 64px);
-  min-block-size: var(--sherpa-display-mode-size-2xl, 32px);
-  padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-display-mode-space-xs, 8px);
-  /* Widths + border-style come from .sherpa-border-edges in the template. */
-  border-color: var(--sherpa-style-border-base, #b3b3c3);
-  border-radius: var(--sherpa-display-mode-border-rounding-base, 4px);
-  background: var(--sherpa-style-surface-base, #ffffff);
-  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
-  font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
-  font-size: var(--sherpa-font-size-body-base, 14px);
-  text-align: right;
-  /* Hide the native spinners — the slider is the primary control. */
-  appearance: textfield;
-  -moz-appearance: textfield;
-
-  &::-webkit-outer-spin-button,
-  &::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-  &:focus-visible {
-    outline: none;
-    border-color: var(--sherpa-theme-border-accent-2, #3b4ccd); /* theme-direct */
-    box-shadow: var(--sherpa-focus-ring);
-  }
+  min-inline-size: 0;
 }
+.value-start { grid-column: 1; grid-row: 2; }
+.value-end { grid-column: 2; grid-row: 2; }
 :host([data-show-value]) .value-end { display: block; }
 /* Range only: beside a single slider an empty box reads as a value that failed. */
 :host([data-type="range"][data-show-value]) .value-start { display: block; }
-:host([data-value-readonly]) .value-input { pointer-events: none; background: transparent; border-color: transparent; }
+/* READ-ONLY shows the number alone: no box, no steppers. */
+:host([data-value-readonly]) .value-input { pointer-events: none; }
+:host([data-value-readonly]) .value-input::part(control-row) {
+  border-color: transparent;
+  background: transparent;
+}
+:host([data-value-readonly]) .value-input::part(steppers) { display: none; }
 :host([disabled]) .value-input { pointer-events: none; }
+
 /* ── Track area: styled rail + fill + transparent native input ─────── */
 .track-area {
-  flex: 1 1 auto;
+  grid-column: 1 / -1;
   position: relative;
   display: flex;
   align-items: center;

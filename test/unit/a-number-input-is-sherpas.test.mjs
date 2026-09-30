@@ -17,12 +17,9 @@ import { join } from 'node:path';
 
 const COMPONENTS = join(import.meta.dirname, '../../src/components');
 
-/** The templates that MAY hold one, and why. Add a name only with its reason. */
-const ALLOWED = {
-  'sherpa-input-text': 'the number field itself',
-  'sherpa-slider': 'a value box beside a track: the track is the control, so no steppers',
-  'sherpa-pagination': 'the page box: Previous and Next are its steppers',
-};
+/** The ONE template that may hold one: the number field itself. Will,
+ *  2026-09-30: "all numerical inputs should use Sherpa's style." */
+const ALLOWED = { 'sherpa-input-text': 'the number field itself' };
 
 test('a number is typed in a Sherpa number field, never a bare native input', () => {
   const bare = readdirSync(COMPONENTS).filter((name) => {

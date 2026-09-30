@@ -137,6 +137,22 @@ export class SherpaInputText extends SherpaElement {
   /** JS writes the flag; CSS owns the Clear button's reveal. */
   #syncHasValue(): void {
     this.toggleAttribute('data-has-value', (this.#control?.value ?? '') !== '');
+    this.#syncSteps();
+  }
+
+  /** A stepper with NOWHERE TO GO is inactive: Increase at `max`, Decrease at
+   *  `min`, and both while the field is disabled or read-only. An empty field
+   *  can step either way. Will, 2026-09-30. */
+  #syncSteps(): void {
+    const control = this.#control;
+    if (!(control instanceof HTMLInputElement) || this.dataset['type'] !== 'number') return;
+    const off = control.disabled || control.readOnly;
+    const value = control.value === '' ? NaN : Number(control.value);
+    const past = (bound: string, by: number): boolean => bound !== '' && Number.isFinite(value) && (value - Number(bound)) * by >= 0;
+    for (const step of this.$$<HTMLElement>('.step')) {
+      const by = Number(step.dataset['step']);
+      step.toggleAttribute('disabled', off || past(by > 0 ? control.max : control.min, by));
+    }
   }
 
   /** Write the choices into a select control, keeping the current value. */
@@ -263,12 +279,14 @@ export class SherpaInputText extends SherpaElement {
 
   formResetCallback(): void {
     if (this.#control) this.#control.value = this.getAttribute('value') ?? '';
+    this.#syncHasValue();
     this.#setError('');
   }
 
   /** Back-button or session restore — what setFormValue stored. */
   formStateRestoreCallback(state: string): void {
     if (this.#control) this.#control.value = state;
+    this.#syncHasValue();
     this.#syncValue();
   }
 
@@ -312,9 +330,10 @@ export class SherpaInputText extends SherpaElement {
       c.setAttribute('type', 'number');
       if (!this.hasAttribute('inputmode')) c.setAttribute('inputmode', 'decimal');
       if (!this.hasAttribute('placeholder')) c.setAttribute('placeholder', NUMBER_PLACEHOLDER);
-      for (const step of this.$$('.step')) step.toggleAttribute('disabled', this.hasAttribute('disabled') || this.hasAttribute('readonly'));
     }
     if (this.hasAttribute('value')) c.value = this.getAttribute('value') ?? '';
+    // `min`, `max`, `disabled` or the value moved: so may what a stepper can do.
+    this.#syncSteps();
   }
 
   get value(): string {

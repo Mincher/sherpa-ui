@@ -7,7 +7,8 @@
     max              — maximum value (native, default 100)
     step             — step increment (native, default 1)
     value            — current value (native)
-    data-show-value  — show the editable value input beside the track (boolean)
+    data-show-value  — show the editable value field under the track (boolean);
+                       a range's two fields share that row, half each
     data-value-readonly — make the value display read-only (no typing)
     data-type        — single (default) | range — two thumbs and two value fields
     value-start / value-end — the range ends (data-type="range" only)
@@ -27,9 +28,10 @@
   </div>
 
   <div class="slider-row">
-    <!-- Hidden outside range mode; CSS owns that. -->
-    <input class="value-input sherpa-border-edges value-start" part="value-start" type="number"
-           inputmode="decimal" aria-label="Minimum" />
+    <!-- Hidden outside range mode; CSS owns that. A Sherpa number field, as
+         Figma's Slider composes one. TRAP T-a-number-input-wears-sherpas-steppers -->
+    <sherpa-input-text class="value-input value-start" part="value-start" data-type="number"
+                       aria-label="Minimum"></sherpa-input-text>
 
     <div class="track-area">
       <div class="track" part="track">
@@ -41,7 +43,7 @@
              aria-label="Maximum" />
     </div>
 
-    <input class="value-input sherpa-border-edges value-end" part="value" type="number"
-           inputmode="decimal" aria-label="Value" />
+    <sherpa-input-text class="value-input value-end" part="value" data-type="number"
+                       aria-label="Value"></sherpa-input-text>
   </div>
 </template>

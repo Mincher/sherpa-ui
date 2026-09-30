@@ -147,14 +147,17 @@ test('data-show-value reveals an editable value input; typing updates the slider
     // `.value-end`, not `.value-input`: range mode added a SECOND field before
     // the track, so the bare class now matches two and querySelector would take
     // the start one — which single mode keeps hidden.
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const field = el.shadowRoot!.querySelector('.value-end') as HTMLInputElement;
     const visible = getComputedStyle(field).display !== 'none';
     const initial = field.value;
 
     let changed = -1;
     el.addEventListener('change', (e) => (changed = (e as CustomEvent).detail.value));
-    field.value = '65';
-    field.dispatchEvent(new Event('change', { bubbles: true }));
+    // As a reader types: into the Sherpa number field's own control.
+    const control = field.shadowRoot!.querySelector<HTMLInputElement>('.control')!;
+    control.value = '65';
+    control.dispatchEvent(new Event('change', { bubbles: true }));
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     return { visible, initial, changed, hostValue: el.getAttribute('value'), pct: (el.style as CSSStyleDeclaration).getPropertyValue('--_pct') };
@@ -178,9 +181,11 @@ test('the value input clamps out-of-range entries to min/max on commit', async (
     // `.value-end`, not `.value-input`: range mode added a SECOND field before
     // the track, so the bare class now matches two and querySelector would take
     // the start one — which single mode keeps hidden.
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const field = el.shadowRoot!.querySelector('.value-end') as HTMLInputElement;
-    field.value = '999';
-    field.dispatchEvent(new Event('change', { bubbles: true }));
+    const control = field.shadowRoot!.querySelector<HTMLInputElement>('.control')!;
+    control.value = '999';
+    control.dispatchEvent(new Event('change', { bubbles: true }));
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return { fieldValue: field.value, hostValue: el.getAttribute('value') };
   });
@@ -302,4 +307,55 @@ test('the range ends clamp against each other and always read low-first', async 
   expect(r.written).toEqual([30, 90]);
 
   expect(r.events).toEqual([{ start: 30, end: 80 }]);
+});
+
+test('a value field is a Sherpa number field; its event stops at the slider, which reports its own', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-slider') as SliderEl;
+    el.setAttribute('data-type', 'range');
+    el.setAttribute('min', '0');
+    el.setAttribute('max', '100');
+    el.setAttribute('step', '10');
+    el.setAttribute('value-start', '20');
+    el.setAttribute('value-end', '60');
+    el.setAttribute('data-show-value', '');
+    document.getElementById('root')!.appendChild(el);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const fields = [...el.shadowRoot!.querySelectorAll<HTMLElement>('.value-input')];
+    const seen: unknown[] = [];
+    // OUTSIDE the slider: only its own reports arrive, never a field's `{ value }`.
+    document.addEventListener('change', (e) => seen.push((e as CustomEvent).detail));
+    // The END field's Increase stepper.
+    fields[1]!.shadowRoot!.querySelector('.steppers sherpa-button')!.shadowRoot!.querySelector<HTMLElement>('.trigger')!.click();
+    return {
+      fields: fields.map((f) => `${f.localName}[${f.getAttribute('data-type')}]`),
+      bare: el.shadowRoot!.querySelectorAll('input[type="number"]').length,
+      end: el.getAttribute('value-end'),
+      seen,
+    };
+  });
+  expect(r.fields).toEqual(['sherpa-input-text[number]', 'sherpa-input-text[number]']);
+  expect(r.bare).toBe(0);
+  expect(r.end).toBe('70');
+  expect(r.seen).toEqual([{ start: 20, end: 70 }]);
+});
+
+test('the value fields sit UNDER the track, in one row, at any width', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = [200, 640].map((w) => `<div style="inline-size: ${w}px"><sherpa-slider data-type="range" min="0" max="100000"`
+      + ' value-start="0" value-end="100000" data-show-value></sherpa-slider></div>').join('');
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    return [...root.querySelectorAll('sherpa-slider')].map((el) => {
+      const box = (sel: string) => el.shadowRoot!.querySelector(sel)!.getBoundingClientRect();
+      const [track, start, end] = [box('.track-area'), box('.value-start'), box('.value-end')];
+      return {
+        under: start.top >= track.bottom && end.top >= track.bottom,
+        oneRow: Math.round(start.top) === Math.round(end.top),
+        halves: Math.abs(start.width - end.width) < 1,
+        inside: end.right <= el.getBoundingClientRect().right + 1,
+      };
+    });
+  });
+  for (const at of r) expect(at).toEqual({ under: true, oneRow: true, halves: true, inside: true });
 });

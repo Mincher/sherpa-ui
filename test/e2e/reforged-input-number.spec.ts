@@ -99,3 +99,54 @@ test('a filter menu\'s number body is that field, with no bare native input', as
   });
   expect(r).toEqual({ tag: 'sherpa-input-text', type: 'number', placeholder: 'Enter a value', max: '500', steppers: 2, bare: 0 });
 });
+
+test('a stepper with nowhere to go is inactive: Increase at max, Decrease at min', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-input-text') as Field;
+    el.setAttribute('data-type', 'number');
+    el.setAttribute('aria-label', 'Seats');
+    el.setAttribute('min', '0');
+    el.setAttribute('max', '10');
+    document.getElementById('root')!.appendChild(el);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const off = (): boolean[] => [...el.shadowRoot!.querySelectorAll('.steppers sherpa-button')].map((s) => s.hasAttribute('disabled'));
+    const empty = off();
+    el.value = '0';
+    const atMin = off();
+    el.value = '5';
+    const between = off();
+    // As a reader types it.
+    const control = el.shadowRoot!.querySelector<HTMLInputElement>('.control')!;
+    control.value = '10';
+    control.dispatchEvent(new Event('input', { bubbles: true }));
+    const atMax = off();
+    el.setAttribute('max', '20');
+    const raised = off();
+    el.setAttribute('disabled', '');
+    return { empty, atMin, between, atMax, raised, disabled: off() };
+  });
+  // [Increase, Decrease]. An EMPTY field can step either way.
+  expect(r).toEqual({
+    empty: [false, false], atMin: [false, true], between: [false, false],
+    atMax: [true, false], raised: [false, false], disabled: [true, true],
+  });
+});
+
+test('a narrow number field narrows its steppers, so its digits show', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    root.innerHTML = '<div style="inline-size: 320px"><sherpa-input-text class="wide" data-type="number" aria-label="a" value="100000"></sherpa-input-text></div>'
+      + '<div style="inline-size: 92px"><sherpa-input-text class="narrow" data-type="number" aria-label="b" value="1000" style="min-inline-size: 0"></sherpa-input-text></div>';
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const read = (sel: string) => {
+      const el = root.querySelector(sel)!;
+      const control = el.shadowRoot!.querySelector<HTMLInputElement>('.control')!;
+      const step = el.shadowRoot!.querySelector('.steppers sherpa-button')!.shadowRoot!.querySelector('.trigger')!;
+      return { step: Math.round(step.getBoundingClientRect().width), fits: control.scrollWidth <= control.clientWidth };
+    };
+    return { wide: read('.wide'), narrow: read('.narrow') };
+  });
+  expect(r.wide).toEqual({ step: 32, fits: true });
+  expect(r.narrow.step).toBeLessThan(32);
+  expect(r.narrow.fits).toBe(true);
+});

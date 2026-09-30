@@ -170,3 +170,89 @@ test('a bound source filters the ROWS by a typed number, and by a dragged range'
 
   expect(r).toEqual({ all: 6, draft: 6, typed: 2, dragged: 3 });
 });
+
+/* THE RANGE SWITCH IS A CHANGE — TODO 131, 132. Will, 2026-09-30: switching to
+   Range "doesn't fire an update event to start using the range parameters",
+   and switching back "does not retain any original simple values".
+   TRAP T-range-switch-swaps-not-rebuilds */
+for (const host of ['toolbar', 'panel'] as const) {
+  test(`${host}: the Range switch is reported, and each shape keeps what it held`, async ({ page }) => {
+    const r = await page.evaluate(async (where) => {
+      const { ArrayStore, DataSource } = await import('/dist/data.js') as unknown as {
+        ArrayStore: new (rows: unknown[]) => unknown;
+        DataSource: new (o: { store: unknown }) => {
+          declareField(f: string, o: Record<string, unknown>): void;
+          hold(scope: string, fields: string[]): void;
+          bind(el: HTMLElement, o?: Record<string, unknown>): void;
+          load(): Promise<unknown>;
+          debugState(): { total: number };
+        };
+      };
+      const def = { id: 'seats', label: 'Seats', kind: 'number', min: 0, max: 100, range: false, active: true };
+      const el = where === 'toolbar'
+        ? await window.__mount<HTMLElement>('sherpa-quick-filter-toolbar', [def], { style: 'inline-size: 1200px' })
+        : await window.__mount<HTMLElement & { show(): void }>('sherpa-filter-panel',
+          [{ scope: 'data', label: 'Data', filters: [def] }], { 'data-min-width': '0' });
+      (el as unknown as { show?: () => void }).show?.();
+      await window.__settled();
+      const rows = [5, 10, 10, 20, 40, 80].map((seats, id) => ({ id, seats }));
+      const source = new DataSource({ store: new ArrayStore(rows) });
+      source.declareField('seats', { label: 'Seats', type: 'number' });
+      if (where === 'panel') source.hold('data', ['seats']);
+      source.bind(el, where === 'toolbar' ? { steerOnly: true } : { steerOnly: true, scope: ['data'] });
+      await source.load();
+      const total = (): number => source.debugState().total;
+      // FRESH each time: a panel rebuilds a field when its answer changes.
+      const menu = (): Menu & { show(t: Element): void } => el.shadowRoot!.querySelector(where === 'toolbar'
+        ? '.chip[data-id="seats"] sherpa-menu' : '.field[data-field="seats"] sherpa-menu')!;
+      // A PANEL field's menu is inline, and reports at once: there is no chip to open.
+      const chip = where === 'toolbar' ? el.shadowRoot!.querySelector('.chip[data-id="seats"]') : null;
+      const settle = async (): Promise<void> => {
+        await window.__settled();
+        await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+        await source.load();
+        await window.__settled();
+      };
+      /** Make the change take effect: a toolbar chip's menu waits for Apply. */
+      const act = async (change: () => void): Promise<void> => {
+        if (chip && !menu().hasAttribute('open')) { menu().show(chip); await window.__settled(); }
+        change();
+        await window.__settled();
+        if (chip) menu().shadowRoot.querySelector<HTMLElement>('.apply')!.click();
+        await settle();
+      };
+      const type = (field: HTMLElement, value: string): void => {
+        const control = field.shadowRoot!.querySelector<HTMLInputElement>('.control')!;
+        control.value = value;
+        control.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+        control.dispatchEvent(new Event('change', { bubbles: true }));
+      };
+      const one = (): HTMLElement & { value: string } => menu().shadowRoot.querySelector('.body-number-one')!;
+      const slider = (): Slider => menu().shadowRoot.querySelector('.body-number-range') as Slider;
+      const flip = (): void => (menu().shadowRoot.querySelector('.body-range-switch') as Slider)
+        .shadowRoot.querySelector<HTMLElement>('.input')!.click();
+
+      const all = total();
+      await act(() => type(one(), '10'));
+      const typed = total();
+      // To RANGE: the one value no longer applies, with nothing else moved.
+      await act(flip);
+      const toRange = { total: total(), range: menu().hasAttribute('data-range') };
+      await act(() => type(slider().shadowRoot.querySelector('.value-start')!, '20'));
+      const ranged = total();
+      // Back to SIMPLE: the 10 typed before is still there, and applies again.
+      await act(flip);
+      const back = { total: total(), range: menu().hasAttribute('data-range'), field: one().value };
+      // …and to Range once more: the 20 is still there too.
+      await act(flip);
+      return { all, typed, toRange, ranged, back, again: total() };
+    }, host);
+
+    expect(r.all).toBe(6);
+    expect(r.typed).toBe(2);
+    expect(r.toRange).toEqual({ total: 6, range: true });
+    expect(r.ranged).toBe(3);
+    expect(r.back).toEqual({ total: 2, range: false, field: '10' });
+    expect(r.again).toBe(3);
+  });
+}

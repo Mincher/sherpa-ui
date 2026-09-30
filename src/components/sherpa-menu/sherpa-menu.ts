@@ -20,7 +20,7 @@ import {
   DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type FilterOp, valueKey, valueSet,
 } from '../../core/data/store.js';
 import {
-  readingRows, rowAnswered, type ConditionType, type FieldCondition, type FieldReading,
+  readingRows, rowAnswered, type ConditionType, type FieldCondition, type FieldReading, type KeptAnswer,
 } from '../../core/data/filter-state.js';
 import { NON_VALUE_ROWS } from '../../core/ui/shared-constants.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
@@ -339,6 +339,12 @@ export class SherpaMenu extends SherpaElement {
     this.querySelector('sherpa-calendar')?.setAttribute('data-type', on ? 'range' : 'single');
     this.#syncBody();
     this.emit('menu-range-change', { range: on });
+    /* THE SHAPE CHANGED, so what the filter means changed: said as a value
+       change is — a plain `change` for an inline host, and the values.
+       TRAP T-range-switch-swaps-not-rebuilds */
+    this.dispatchEvent(new Event('change', { bubbles: true }));
+    this.#syncDirty();
+    this.#report();
   };
 
   /** Switch between the value list and the condition rows. */
@@ -416,16 +422,35 @@ export class SherpaMenu extends SherpaElement {
    */
   #bodyReading(): FieldReading {
     const values = this.values;
-    // Two ENDS are the answer; the operator is the single side's, left behind.
-    if (this.hasAttribute('data-range')) return { picked: [...values], op: DEFAULT_OP, range: true };
+    if (this.dataset['body'] !== 'number') {
+      // Two ENDS are the answer; the operator is the single side's, left behind.
+      if (this.hasAttribute('data-range')) return { picked: [...values], op: DEFAULT_OP, range: true };
+      return { picked: [...values], op: this.op, range: false };
+    }
+    /* A NUMBER keeps BOTH shapes: the one in force, and the other as `kept`.
+       TRAP T-both-shapes-are-kept */
+    const one = this.#oneAnswer();
+    const ends = this.#endsAnswer();
+    const range = this.hasAttribute('data-range');
+    const [now, other] = range ? [{ ...ends, op: DEFAULT_OP }, one] : [{ picked: [], ...one }, ends];
+    return { ...now, range, ...(other.picked?.length || other.text ? { kept: other } : {}) };
+  }
+
+  /** The ONE-value shape's answer: a pick under `=`, typed text under an op that takes text.
+   *  TRAP T-one-number-is-a-pick-under-equals */
+  #oneAnswer(): KeptAnswer {
+    const one = this.$<FieldEl>('.body-number-one')?.value.trim() ?? '';
     // The number body's own select is the live operator. TRAP T-a-menu-owns-its-own-bodies
     const op = this.op;
-    if (this.dataset['body'] === 'number') {
-      const one = values[0] ?? '';
-      if (OP_TAKES[op] === 'text') return { picked: [], op, text: one };
-      return { picked: one ? [one] : [], op, range: false };
-    }
-    return { picked: [...values], op, range: false };
+    if (OP_TAKES[op] === 'text') return { picked: [], op, text: one };
+    return { picked: one ? [one] : [], op };
+  }
+
+  /** The RANGE shape's answer: its two ends, once a reader has moved one.
+   *  TRAP T-a-full-range-is-still-a-range */
+  #endsAnswer(): KeptAnswer {
+    const slider = this.$<HTMLElement & { range: [number, number] }>('.body-number-range');
+    return { picked: slider?.hasAttribute('data-touched') ? slider.range.map(String) : [] };
   }
 
   set reading(next: FieldReading) {
@@ -436,7 +461,21 @@ export class SherpaMenu extends SherpaElement {
     }
     const typed = (next.text ?? '').trim();
     const body = this.dataset['body'];
-    if (body === 'number' || body === 'date') {
+    if (body === 'number') {
+      /* BOTH shapes, and which is in force. The reading SAYS the shape; an old
+         one that does not is two ends when it has two values.
+         TRAP T-both-shapes-are-kept */
+      const picked = (next.picked ?? []).map(valueKey);
+      const range = next.range ?? picked.length > 1;
+      const one: KeptAnswer = range ? next.kept ?? {} : next;
+      const ends = range ? picked : (next.kept?.picked ?? []).map(valueKey);
+      if (one.op) this.#setBodyOp(one.op);
+      this.#setShape(range);
+      this.#setNumberBody(((one.text ?? '').trim() || valueKey(one.picked?.[0] ?? '')), ends);
+      this.#syncDirty();
+      return;
+    }
+    if (body === 'date') {
       if (next.op) this.#setBodyOp(next.op);
       this.values = typed ? [typed] : (next.picked ?? []).map(valueKey);
       return;
@@ -683,9 +722,19 @@ export class SherpaMenu extends SherpaElement {
   /** The baseline is taken for this opening. */
   #baselineHeld = false;
 
+  /** A NUMBER body's whole answer at open — both shapes, and which was in force. */
+  #numberBaseline: FieldReading | null = null;
+
+  /** Put the values back as they were at open. A number's SHAPE goes back too. */
+  #restoreValues(): void {
+    if (this.#numberBaseline) this.reading = this.#numberBaseline;
+    else this.values = this.#baseline;
+  }
+
   /** Remember what Cancel restores. TRAP T-the-baseline-is-taken-at-show */
   #takeBaseline(): void {
     this.#baseline = this.values;
+    this.#numberBaseline = this.dataset['body'] === 'number' ? this.reading : null;
     this.#conditionBaseline = this.conditions;
     this.#mirrorBaseline = this.#mirror;
     this.#modeBaseline = this.mode;
@@ -976,11 +1025,19 @@ export class SherpaMenu extends SherpaElement {
   #setBodyValues(next: readonly string[]): boolean {
     const body = this.dataset['body'];
     if (body !== 'date' && body !== 'number') return false;
-    const range = next.length > 1;
-    if (range !== this.hasAttribute('data-range')) {
-      this.toggleAttribute('data-range', range);
-      if (!this.hasAttribute('data-commit-fixed')) this.toggleAttribute('data-commit', range);
+    if (body === 'number') {
+      /* ONLY THE SHAPE NAMED is written: two values are the ends, one is the
+         value, and none empties the shape in force. The other shape keeps
+         what it holds. TRAP T-both-shapes-are-kept */
+      const range = next.length > 1 || (next.length === 0 && this.hasAttribute('data-range'));
+      this.#setShape(range);
+      const one = this.$<FieldEl>('.body-number-one')?.value ?? '';
+      const ends = this.#endsAnswer().picked as string[];
+      this.#setNumberBody(range ? one : (next[0] ?? ''), range ? [...next] : ends);
+      return true;
     }
+    const range = next.length > 1;
+    this.#setShape(range);
     if (body === 'date') {
       const cal = this.querySelector<HTMLElement>('sherpa-calendar');
       if (!cal) return true;
@@ -990,18 +1047,34 @@ export class SherpaMenu extends SherpaElement {
         cal.setAttribute('data-value-start', next[0]!);
         cal.setAttribute('data-value-end', next[1]!);
       } else if (next[0]) cal.setAttribute('data-value', next[0]);
-    } else {
-      const field = this.$<FieldEl>('.body-number-one');
-      const slider = this.$<HTMLElement>('.body-number-range');
-      if (field) field.value = range ? '' : (next[0] ?? '');
-      if (slider && range) {
-        slider.setAttribute('value-start', next[0]!);
-        slider.setAttribute('value-end', next[1]!);
-        slider.setAttribute('data-touched', '');
-      } else slider?.removeAttribute('data-touched');
     }
     this.#syncBody();
     return true;
+  }
+
+  /** One value or two ends: the shape, and the commit rule that follows it. */
+  #setShape(range: boolean): void {
+    if (range === this.hasAttribute('data-range')) return;
+    this.toggleAttribute('data-range', range);
+    if (!this.hasAttribute('data-commit-fixed')) this.toggleAttribute('data-commit', range);
+  }
+
+  /** Write BOTH number shapes: the one value, and the two ends — none puts the
+   *  slider back on its bounds, untouched. TRAP T-a-full-range-is-still-a-range */
+  #setNumberBody(one: string, ends: readonly string[]): void {
+    const field = this.$<FieldEl>('.body-number-one');
+    if (field && field.value !== one) field.value = one;
+    const slider = this.$<HTMLElement & { range: [number, number] }>('.body-number-range');
+    if (slider && ends.length > 1) {
+      slider.setAttribute('value-start', ends[0]!);
+      slider.setAttribute('value-end', ends[1]!);
+      slider.setAttribute('data-touched', '');
+    } else if (slider?.hasAttribute('data-touched')) {
+      // The reset writes both ends, which re-flags it, so the flag comes off LAST.
+      slider.range = [Number(slider.getAttribute('min') ?? 0), Number(slider.getAttribute('max') ?? 100)];
+      slider.removeAttribute('data-touched');
+    }
+    this.#syncBody();
   }
 
   /** A CALENDAR menu's value, or null when this is not one. */
@@ -1390,7 +1463,7 @@ export class SherpaMenu extends SherpaElement {
          `current` stayed false, so it LOOKED set and filtered nothing.
          TRAP T-a-draft-dies-with-its-menu */
       if (this.#commits && !this.#applying && !this.#settledByAction) {
-        this.values = this.#baseline;
+        this.#restoreValues();
         /* The ROWS are a draft too — but only when they actually DIFFER.
            `conditions =` REBUILDS every row, and a rebuilt row's value select
            is filled asynchronously, so restoring identical rows still blanked
@@ -1555,8 +1628,13 @@ export class SherpaMenu extends SherpaElement {
   #onBodyChange = (event: Event): void => {
     const from = event.target as Element;
     if (!from.matches('.body-number-one, .body-number-range')) return;
-    // The slider's own change is composed and already crosses; the field's is not.
-    if (!event.composed) this.dispatchEvent(new Event('change', { bubbles: true }));
+    /* The slider's own change is composed and already crosses. The FIELD's is
+       its own `{ value }`, which is not the menu's to pass on: it stops here,
+       and the menu sends a plain one, as a row's is. */
+    if (from.matches('.body-number-one')) {
+      event.stopPropagation();
+      this.dispatchEvent(new Event('change', { bubbles: true }));
+    }
     this.#report();
   };
 
@@ -1613,7 +1691,7 @@ export class SherpaMenu extends SherpaElement {
     // Restore, THEN report.
     this.#applying = true;
     this.#settledByAction = true;
-    this.values = this.#baseline;
+    this.#restoreValues();
     this.mode = this.#modeBaseline;
     if (this.mode === 'advanced') this.conditions = this.#conditionBaseline;
     this.#mirror = this.#mirrorBaseline;

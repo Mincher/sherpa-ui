@@ -10,6 +10,7 @@ import { DATA_PROPS, SherpaElement, clampNum } from '../../core/ui/sherpa-elemen
 import type { DataAsk } from '../../core/ui/context.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-group/sherpa-group.js';
+import '../sherpa-input-text/sherpa-input-text.js';
 
 export class SherpaPagination extends SherpaElement {
   static override css = new URL('./sherpa-pagination.css', import.meta.url);
@@ -28,6 +29,8 @@ export class SherpaPagination extends SherpaElement {
     this.$('.controls')?.addEventListener('click', this.#onClick);
     this.$('.rows')?.addEventListener('change', this.#onRowsChange);
     this.$('.page-input')?.addEventListener('change', this.#onPageInput);
+    // The field's own typing is not the pager's to report: `page-change` is.
+    this.$('.page-input')?.addEventListener('input', (event) => event.stopPropagation());
     this.#renderOptions();
     this.#render();
   }
@@ -118,9 +121,9 @@ export class SherpaPagination extends SherpaElement {
     const total = this.totalPages;
     const page = this.page;
 
-    const input = this.$<HTMLInputElement>('.page-input');
+    const input = this.$<HTMLElement & { value: string }>('.page-input');
     if (input) {
-      input.max = String(total);
+      input.setAttribute('max', String(total));
       input.value = String(page);
     }
 
@@ -167,8 +170,9 @@ export class SherpaPagination extends SherpaElement {
 
   /** A page typed into the field. */
   #onPageInput = (event: Event): void => {
-    const input = event.target as HTMLInputElement;
-    this.goToPage(parseInt(input.value, 10));
+    // The field's `change` stops here; the pager reports `page-change`.
+    event.stopPropagation();
+    this.goToPage(parseInt((event.target as HTMLElement & { value: string }).value, 10));
   };
 
   /** The rows-per-page picker — writes only when unlocked. */

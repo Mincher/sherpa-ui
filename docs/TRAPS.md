@@ -642,17 +642,63 @@ back its `type`, its `inputmode` and its placeholder after each mirror.
 **Why it came back.** A `sherpa-input-number` component existed and was pruned
 (`47dc974e`); each place that needed a number then wrote a bare native input.
 So it is GATED: `test/unit/a-number-input-is-sherpas.test.mjs` fails on any
-component template that holds a bare `<input type="number">`. Three are
-allowed, by name and with the reason: the number field itself, the slider's
-value box (the track is the control), and the pagination's page box (Previous
-and Next are its steppers).
+component template that holds a bare `<input type="number">`. ONE is allowed:
+the number field itself. Will, 2026-09-30: *"all numerical inputs should use
+Sherpa's style"* — so the filter menu's value, the slider's value boxes and
+the pagination's page box are all this field. (Figma draws the pagination's
+page box with no steppers; Will's word is followed.)
+
+**A stepper with nowhere to go is inactive**: Increase at `max`, Decrease at
+`min`. An empty field can step either way.
+
+**A NARROW field gives the room to its digits.** The field is its own query
+container; under 9rem its steppers are 24px and under 6rem 20px, set through
+the button's own `--sherpa-button-size-height`. Not `::part(trigger)`: WebKit
+applies no `::part()` rule inside a container query — the gap changed and the
+buttons did not. Contained, the field has no width of its own, so it keeps a
+10rem floor, which a composer with a width of its own sets to 0.
+
+**A composer stops the field's events.** The field reports `input` and
+`change` with `{ value }`, composed. The slider, the pagination and the menu
+each answer it and report their OWN event, so they stop it — and act only on
+the field's own event, never the native one that arrives with it.
+
+**The slider's fields sit UNDER the track, in one row, half each** — Will,
+2026-09-30 — at any width, so two never stack. A lone field takes the second
+half.
 
 - Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.html`
 - Site: `src/components/sherpa-input-text/sherpa-input-text.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `src/components/sherpa-slider/sherpa-slider.html`
+- Site: `src/components/sherpa-pagination/sherpa-pagination.html`
 - Site: `test/e2e/reforged-input-number.spec.ts`
 - Site: `test/unit/a-number-input-is-sherpas.test.mjs`
+
+### T-both-shapes-are-kept
+
+**A number filter has two shapes — one value, or two ends — and its reading
+keeps BOTH** — TODO 132, Will: switching back to Simple "does not retain any
+original simple values". The shape in force is `picked` (or `text`) with
+`range`; the other is `kept: { picked, op, text }`, remembered and never
+applied. It is in the READING, not only in the menu, because a filter panel
+REBUILDS a field's menu when its answer changes: a value held only in the old
+menu's input is gone. `answers()` counts a `kept` answer, so a range with
+nothing moved still holds the value typed before, and `READING_KEYS` carries
+the key — a key left off that list is dropped silently.
+
+In the menu: `#bodyReading()` writes both; `set reading` draws both and takes
+the shape from `range`; a bare `values =` writes only the shape it names — two
+are the ends, one the value, and none empties the shape in force without
+switching it. Cancel restores the whole reading, so the shape goes back too.
+The same idea as `T-both-answers-are-kept`, for Simple and Advanced.
+
+- Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/unit/both-shapes-are-kept.test.mjs`
 
 ### T-the-router-owns-the-url
 
@@ -1365,9 +1411,14 @@ The switch comes FIRST, above the calendar: it decides what the calendar below
 it IS, so reading it after the grid would be backwards.
 
 Flipping also moves `data-commit` (see `T-commit-follows-select-mode`) unless
-the definition pinned it, and emits `quick-filter-change` — the filter's SHAPE
-changed, so what it means changed with it, and a host reading `values` needs to
-hear that even though no value moved.
+the definition pinned it, and it is REPORTED — the filter's SHAPE changed, so
+what it means changed with it, and a host reading `values` needs to hear that
+even though no value moved. The menu says it as it says a value change: a
+plain `change` for an inline host, its draft marked dirty for Apply, and
+`menu-change` where it does not wait. When the menu took over its own bodies
+the flip kept only `menu-range-change`, which nothing hears, so a switch to
+Range filtered nothing until an end was moved — TODO 131. Each shape keeps
+what it held: `T-both-shapes-are-kept`.
 
 `sherpa-switch` re-dispatches its native `change` as a COMPOSED one, which is
 why this reaches the toolbar where a bare checkbox's would not.
@@ -1380,6 +1431,7 @@ template.
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `test/e2e/reforged-number-filter-reports.spec.ts`
 
 ---
 

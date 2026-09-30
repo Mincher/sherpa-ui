@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**56 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**57 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -50,8 +50,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16e | 119 | The panel header's Reset menu button wears the grouping `end` style; it takes none | bug |
 | ✅ | 16f | 127 | A number input: `Enter a value`, right-aligned, Sherpa's own steppers — it came back native | bug |
 | ⬜ | 16g | 130 | Filter panel chips show no tooltip: the tip belongs to the CHIP — and check what else does | bug |
-| ⬜ | 16h | 131 | Switching a number filter to Range fires no update, so the range is not used | bug |
-| ⬜ | 16i | 132 | Back from a changed Range, a number filter has lost the Simple value typed before | bug |
+| ✅ | 16h | 131 | Switching a number filter to Range fires no update, so the range is not used | bug |
+| ✅ | 16i | 132 | Back from a changed Range, a number filter has lost the Simple value typed before | bug |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | ❓ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ⬜ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
@@ -82,6 +82,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 31h | 126 | "Filter applied at higher scope" becomes "Filter moved to `<scope name>` scope" | quick |
 | ⬜ | 31i | 129 | "Reset all to default", with a confirm dialog and a "Save filters before reset" switch | feature |
 | ⬜ | 31j | 133 | The results count badge shows at the right of a filter panel SECTION header, where it fits | feature |
+| ⬜ | 31k | 134 | A number filter menu has Reset, not Clear: its field and slider handles go back to their original values | feature |
+| ⬜ | 31l | 135 | A calendar with limited dates: a Month or Year with no date to pick is inactive too | feature |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
 | ✅ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
@@ -105,6 +107,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | | | | **I — The big builds** | |
 | ✅ | 44 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
 | ⬜ | 45 | 68 | `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement` | refactor |
+| ⬜ | 45a | 136 | A FIND input: jump to the next or previous match; an optional Find & Replace menu | component |
 | ⬜ | 46 | 27 | A consumer can supply their OWN templates and CSS | feature |
 | ⬜ | 47 | 25 | `sherpa-layout-canvas` + minimap | component |
 | ⬜ | 48 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
@@ -769,6 +772,14 @@ changed too. One difference from Figma: the steppers sit flush to the right
 edge, as slotted actions already do; Figma leaves 8px.
 `T-a-number-input-wears-sherpas-steppers`
 
+**More, Will 2026-09-30.** *"all numerical inputs should use Sherpa's style"*:
+the slider's value boxes and the pagination's page box are the same field
+now, and the gate allows no other. The slider's fields sit UNDER the track in
+one row, half each, and never stack — also in a filter menu and a narrow
+panel, where the steppers shrink so the digits show. A stepper with no value
+to step to is inactive. Figma draws the pagination's page box with no
+steppers; yours has them, as you said.
+
 ### `[ ]` 130 — BUG: filter panel chips show no tooltip — the tip belongs to the CHIP
 
 Will, 2026-09-30: *"Filter panel chips don't display tooltips. This
@@ -781,7 +792,14 @@ Two parts. Move the tooltip into `sherpa-quick-filter`, so a chip shows it
 wherever it is drawn. Then AUDIT the toolbar and the panel for everything else
 a chip should own, and list it here before moving it.
 
-### `[ ]` 131 — BUG: switching a number filter to Range fires no update
+Will, 2026-09-30, a tweak: *"Filter chip tooltips (which we are fixing in
+another item already) should have " - X matches" appended. X is the result
+count."*
+
+Will, 2026-09-30, a bug: *"Numeric and Date filter chips don't show a
+tooltip."*
+
+### `[x]` ✅ 131 — BUG: switching a number filter to Range fires no update
 
 Will, 2026-09-30: *"Switching a numerical filter to Range mode doesn't fire an
 update event to start using the range parameters."*
@@ -789,7 +807,11 @@ update event to start using the range parameters."*
 Seen in the code: the switch reports `menu-range-change` only, never the
 values, so nothing re-filters until an end is moved.
 
-### `[ ]` 132 — BUG: back from a changed Range, the Simple value is gone
+**✅ Done 2026-09-30.** The switch is reported as a value change is. In a
+panel the rows follow at once; in a toolbar chip the draft is dirty, so Apply
+takes it. `T-range-switch-swaps-not-rebuilds`
+
+### `[x]` ✅ 132 — BUG: back from a changed Range, the Simple value is gone
 
 Will, 2026-09-30: *"Switching a numerical filter back to Simple mode, from a
 modified range, does not retain any original simple values that were input
@@ -798,6 +820,12 @@ before switching to Range."*
 Seen in the code: when a range is written back to the menu, `#setBodyValues`
 empties the single field. Both shapes must keep what they hold
 (`T-range-switch-swaps-not-rebuilds`).
+
+**✅ Done 2026-09-30.** The reading keeps both shapes: the one in force, and
+the other as `kept`. It had to be in the data, not only in the menu — a
+filter panel rebuilds a field's menu when its answer changes. Switch to Range
+and back, and the value typed before is there and applies again; the ends are
+kept the same way. Cancel puts the shape back too. `T-both-shapes-are-kept`
 
 ---
 
@@ -1525,6 +1553,21 @@ filter panel section header where appropriate."*
 The chip's badge from 60, for a field drawn in the panel with no chip to
 carry it.
 
+### `[ ]` 134 — A number filter menu has Reset, not Clear
+
+Will, 2026-09-30: *"Numeric filter menus have a 'Clear' button but this isn't
+appropriate. It should be a reset button that resets inputs and slider handles
+to their original values."*
+
+### `[ ]` 135 — A calendar's Month and Year views mark what has no date to pick
+
+Will, 2026-09-30: *"In calendars, where the viable selectable dates are
+limited, the Month and Year modes should set Months and Year buttons with no
+viable selectable dates to inactive, too."*
+
+The day view already does this, from `data-available`, `data-min` and
+`data-max`.
+
 ---
 
 ## E — Views and navigation
@@ -1954,6 +1997,35 @@ through it: its four `history` sites, its `popstate` listener and its two
 link-click listeners are gone, for one `route-change` listener. One behaviour
 changed: a Context row pressed while on a later View goes to the first View.
 `T-the-router-owns-the-url`
+
+### `[ ]` 136 — A FIND input, and an optional Find & Replace
+
+Will, 2026-09-30: *"A variant of the search input, a Find input, that locates
+string matches and allows the user to jump to the next/previous match using 2
+stepper buttons, like the numeric sherpa input has.*
+
+*This Find input should also support an optional 'replace' attribute. This
+adds a third 'Find & Replace' button (pencil icon) to the input field.
+Clicking this button opens a menu with an input to enter a replacement value
+into.*
+
+*The menu should have footer with buttons for Replace, Previous, and Next.*
+
+*Replace should be in a button group with an icon only menu button that
+exposes a 'Replace all' menu item in a menu. Clicking Replace will replace the
+currently focused match. Clicking Replace all will replace all matches with
+the new value.*
+
+*Replace all should throw a confirmation dialog before actioning.*
+
+*We can use the Find (without replace attr) for the data grid toolbar's
+'search' input on the right and show it in the examples.*
+
+*We might need a future example page to show Find & Replace in action. I have
+designs for a WYSIWYG text area editor that I'll want to implement eventually
+but we're not there yet."*
+
+Builds on the number field's steppers (127) and the grid's match marks (21c).
 
 ### `[ ]` 68 — `sherpa-templater`: templates fetched and swapped live, out of `SherpaElement`
 
@@ -2844,9 +2916,12 @@ One line each. The detail is in git and in the trap named.
 - 24: the accessibility gate — axe-core over a fixture of every component, a report each, a baseline that may only fall — `T-the-a11y-gate-reads-shadow-roots`; 117 and 118 are what it found
 - 117: 11 of the 12 structural accessibility failures are fixed; the accordion's actions slot waits on Will — `T-a-menu-is-a-dialog-of-native-controls`
 - 67: `sherpa-router` owns the URL, on the Navigation API; the example app routes through it — `T-the-router-owns-the-url`
-- 119–133: fifteen items from Will, queued; 117 and 118 ruled
+- 119–136: eighteen items from Will, queued; 117 and 118 ruled
 - 119: a menu takes no grouping from the grouped button that opens it — `T-a-menu-takes-no-grouping`
 - 127: a number input is Sherpa's own, and a gate holds it — `T-a-number-input-wears-sherpas-steppers`
+- 127, more: the slider's and the pagination's number boxes are the Sherpa field too; slider fields sit under the track
+- 131: the Range switch is reported — `T-range-switch-swaps-not-rebuilds`
+- 132: a number filter's reading keeps both shapes — `T-both-shapes-are-kept`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

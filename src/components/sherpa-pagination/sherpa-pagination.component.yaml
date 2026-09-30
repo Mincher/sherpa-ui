@@ -61,11 +61,11 @@ anatomy:
                     data-look: transparent
                     data-icon-start: chevron-left
                     aria-label: Previous page
-            - el: input
-              class: page-input sherpa-border-edges sherpa-border-corners
+            - el: sherpa-input-text
+              class: page-input
               part: page-input
               attrs:
-                type: number
+                data-type: number
                 inputmode: numeric
                 min: "1"
                 step: "1"
@@ -174,19 +174,6 @@ tokens:
   rows.background: "{sherpa.style-surface-base}"
   rows.color: "{sherpa.theme-content-body-1}"
   rows.font-size: "{sherpa.font-size-body-base}"
-  page-input.padding: "{sherpa.theme-padding-sm}"
-  page-input.border-color: "{sherpa.style-border-base}"
-  page-input.border-block-start-width: "{sherpa.border-top}"
-  page-input.border-block-end-width: "{sherpa.border-bottom}"
-  page-input.border-inline-start-width: "{sherpa.border-left}"
-  page-input.border-inline-end-width: "{sherpa.border-right}"
-  page-input.border-start-start-radius: "{sherpa.border-rounding-top-left}"
-  page-input.border-start-end-radius: "{sherpa.border-rounding-top-right}"
-  page-input.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
-  page-input.border-end-end-radius: "{sherpa.border-rounding-bottom-right}"
-  page-input.background: "{sherpa.style-surface-base}"
-  page-input.color: "{sherpa.theme-content-body-1}"
-  page-input.font-size: "{sherpa.font-size-body-base}"
   rows.padding-inline-end: "{sherpa.structure-space-padding}"
   rows.background-position: "{sherpa.structure-space-padding}"
   rows.background-size: "{sherpa.theme-size-icon-xs}"

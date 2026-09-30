@@ -2,7 +2,7 @@
  * sherpa-pagination.css — pager presentation.
  *
  * One row: "Rows per page" label + native <select>, then the nav buttons with a
- * native number <input>. CSS owns every visual; JS only stamps <option>s and
+ * Sherpa number field. CSS owns every visual; JS only stamps <option>s and
  * reflects state.
  */
 
@@ -16,9 +16,10 @@
   font-size: var(--sherpa-font-size-body-base, 14px);
   color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
   --_control: var(--sherpa-display-mode-size-2xl, 32px);
-  /* Two widths, from Figma Pagination 48:65826: rows field 72, page field 48. */
+  /* The rows field is Figma's 72 (Pagination 48:65826). The page field holds
+     two 32px steppers and four digits — Figma draws it 48, with none. */
   --_field-rows: 72px;
-  --_field-page: 48px;
+  --_field-page: 112px;
   --_border-focus: var(--sherpa-theme-border-accent-2, #3b4ccd); /* theme-direct */
 }
 
@@ -56,9 +57,8 @@
   padding: var(--sherpa-display-mode-space-xs, 8px) var(--sherpa-display-mode-space-sm, 12px);
 }
 
-/* ── Native field look (select + number input) ───────────────────────── */
-.rows,
-.page-input {
+/* ── Native field look (the select) ──────────────────────────────────── */
+.rows {
   block-size: var(--_control);
   padding: var(--sherpa-theme-padding-sm, 4px) var(--sherpa-structure-space-padding, 8px);
   border-style: solid;
@@ -94,8 +94,7 @@
 
 /* Fixed widths (not ch or auto) stop the row reflowing as the page number gains
    a digit. A <select> draws its caret INSIDE its own padding, so the shared 8px
-   leaves the label running into the glyph — trailing side only, so .page-input
-   keeps symmetry. */
+   leaves the label running into the glyph — trailing side only. */
 .rows {
   inline-size: var(--_field-rows);
   padding-inline-end: calc(var(--sherpa-structure-space-padding, 8px) * 3);
@@ -109,13 +108,16 @@
   background-size: var(--sherpa-theme-size-icon-xs, 14px);
 }
 
+/* The page box is a composed sherpa-input-text, which owns its own look. */
 .page-input {
+  flex: 0 0 auto;
+  /* Its own width, under the number field's floor. */
+  min-inline-size: 0;
   inline-size: var(--_field-page);
   margin-inline: var(--sherpa-display-mode-space-xs, 8px);
-  text-align: center;
 }
 
-:is(.rows, .page-input):focus-visible {
+.rows:focus-visible {
   outline: none;
   border-color: var(--_border-focus);
   box-shadow: inset 0 0 0 2px var(--_border-focus);
@@ -138,7 +140,7 @@
 /* ── Disabled fields — the box is the inactive PIN; body/+2 has no Style name.
    NOT `.sherpa-inert`: that class is static markup, so it cannot follow
    [disabled], and it also kills pointer-events, which these fields keep. */
-:host([disabled]) :is(.rows, .page-input) {
+:host([disabled]) .rows {
   cursor: not-allowed;
   color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */
 }

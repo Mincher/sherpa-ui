@@ -8,6 +8,11 @@
  * @prop {[number, number]} range — the two ends (read/write); low end first
  */
 import { SherpaElement, coerceNum, clampNum } from '../../core/ui/sherpa-element.js';
+// The value fields. Defined before the template stamps them.
+import '../sherpa-input-text/sherpa-input-text.js';
+
+/** A composed value field — `sherpa-input-text data-type="number"`. */
+type Field = HTMLElement & { value: string };
 
 interface SliderData {
   value?: number;
@@ -41,27 +46,37 @@ export class SherpaSlider extends SherpaElement {
   /** A range's END input. */
   #endInput: HTMLInputElement | null = null;
   /** Editable number field — the HIGH end in range mode. */
-  #valueField: HTMLInputElement | null = null;
+  #valueField: Field | null = null;
   /** Editable number field for the low end. Range mode only. */
-  #startField: HTMLInputElement | null = null;
+  #startField: Field | null = null;
 
   override onRender(): void {
     this.#input = this.$<HTMLInputElement>('.range');
     this.#endInput = this.$<HTMLInputElement>('.range-end');
-    this.#valueField = this.$<HTMLInputElement>('.value-end');
-    this.#startField = this.$<HTMLInputElement>('.value-start');
+    this.#valueField = this.$<Field>('.value-end');
+    this.#startField = this.$<Field>('.value-start');
     // TRAP T-abort-controller-per-connect
     const signal = this.signal;
     this.#input?.addEventListener('input', this.#onInput, { signal });
     this.#input?.addEventListener('change', this.#onChange, { signal });
     this.#endInput?.addEventListener('input', this.#onEndInput, { signal });
     this.#endInput?.addEventListener('change', this.#onEndChange, { signal });
-    this.#valueField?.addEventListener('input', this.#onFieldInput, { signal });
-    this.#valueField?.addEventListener('change', this.#onFieldChange, { signal });
-    this.#startField?.addEventListener('input', this.#onStartFieldInput, { signal });
-    this.#startField?.addEventListener('change', this.#onStartFieldChange, { signal });
+    this.#valueField?.addEventListener('input', this.#own(this.#onFieldInput), { signal });
+    this.#valueField?.addEventListener('change', this.#own(this.#onFieldChange), { signal });
+    this.#startField?.addEventListener('input', this.#own(this.#onStartFieldInput), { signal });
+    this.#startField?.addEventListener('change', this.#own(this.#onStartFieldChange), { signal });
     this.#syncInputAttrs();
     this.#sync();
+  }
+
+  /** A field's event is the slider's to answer, and goes no further: the
+   *  slider reports its OWN `input` and `change`. A field fires twice — the
+   *  native event, then its own — and only its own is acted on. */
+  #own(handler: () => void): EventListener {
+    return (event) => {
+      event.stopPropagation();
+      if (event instanceof CustomEvent) handler();
+    };
   }
 
   override onChange(name: string): void {
@@ -154,9 +169,11 @@ export class SherpaSlider extends SherpaElement {
     }
     for (const el of [this.#valueField, this.#startField]) {
       if (!el) continue;
-      el.min = min; el.max = max; el.step = step;
-      el.disabled = disabled;
-      el.readOnly = readOnly;
+      el.setAttribute('min', min);
+      el.setAttribute('max', max);
+      el.setAttribute('step', step);
+      el.toggleAttribute('disabled', disabled);
+      el.toggleAttribute('readonly', readOnly);
     }
   }
 
@@ -166,8 +183,8 @@ export class SherpaSlider extends SherpaElement {
     return ((value - this.#min) / span) * 100;
   }
 
-  /** Write into a native input. TRAP T-never-fight-a-focused-field. */
-  #put(el: HTMLInputElement | null, value: number): void {
+  /** Write into an input or a field. TRAP T-never-fight-a-focused-field. */
+  #put(el: HTMLInputElement | Field | null, value: number): void {
     if (!el || el === this.shadowRoot?.activeElement) return;
     const text = String(value);
     if (el.value !== text) el.value = text;

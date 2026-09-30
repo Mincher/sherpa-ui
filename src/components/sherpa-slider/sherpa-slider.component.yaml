@@ -30,12 +30,11 @@ anatomy:
     - el: div
       class: slider-row
       children:
-        - el: input
-          class: value-input sherpa-border-edges value-start
+        - el: sherpa-input-text
+          class: value-input value-start
           part: value-start
           attrs:
-            type: number
-            inputmode: decimal
+            data-type: number
             aria-label: Minimum
         - el: div
           class: track-area
@@ -59,12 +58,11 @@ anatomy:
               attrs:
                 type: range
                 aria-label: Maximum
-        - el: input
-          class: value-input sherpa-border-edges value-end
+        - el: sherpa-input-text
+          class: value-input value-end
           part: value
           attrs:
-            type: number
-            inputmode: decimal
+            data-type: number
             aria-label: Value
 props:
   - $type: prop
@@ -79,7 +77,9 @@ props:
     observed: false
     kind: style
     default: false
-    description: — show the editable value input beside the track
+    description: >-
+      — show the editable value field under the track ; a range's two fields share that row, half
+      each
   - $type: prop
     name: data-type
     type: string
@@ -157,7 +157,7 @@ states:
     selector: ":host([disabled])"
   - $type: state
     name: focus-visible
-    selector: .value-input:focus-visible
+    selector: .range:focus-visible
 capabilities:
   - $type: capability
     api: js-property-mirror
@@ -180,16 +180,7 @@ tokens:
   label.color: "{sherpa.style-content-base}"
   label.font-weight: "{sherpa.font-weight-medium}"
   label.line-height: "{sherpa.theme-content-line-height-base}"
-  slider-row.gap: "{sherpa.display-mode-space-sm}"
-  value-input.inline-size: "{sherpa.display-mode-size-6xl}"
-  value-input.min-block-size: "{sherpa.display-mode-size-2xl}"
-  value-input.padding: "{sherpa.display-mode-space-2xs}"
-  value-input.border-color: "{sherpa.style-border-base}"
-  value-input.border-radius: "{sherpa.display-mode-border-rounding-base}"
-  value-input.background: "{sherpa.style-surface-base}"
-  value-input.color: "{sherpa.theme-content-body-1}"
-  value-input.font-family: "{sherpa.font-family-mono}"
-  value-input.font-size: "{sherpa.font-size-body-base}"
+  slider-row.gap: "{sherpa.display-mode-space-xs}"
   track.background: "{sherpa.theme-surface-default-2}"
   track.border-radius: "{sherpa.display-mode-border-rounding-full}"
 $extensions:

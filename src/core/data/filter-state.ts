@@ -23,6 +23,7 @@
  * - isRanged — A field whose picks are ENDS, not a list to tick.
  * - FieldFacts — What a caller knows about a field before anything is chosen.
  * - FieldReading — What is true right now, which decides the STATES.
+ * - KeptAnswer — One shape's answer, as `FieldReading.kept` holds it.
  * - FieldCondition — One row of a multi-condition filter.
  * - rowAnswered — Does this condition row have what its op needs to narrow anything?
  * - readingRows — a reading's Advanced answer as rows, old single-condition forms included
@@ -172,9 +173,18 @@ export interface FieldReading {
    * ends — there is nothing to tick. TRAP T-the-field-type-decides-the-clause
    */
   range?: boolean;
+  /**
+   * The answer of the shape NOT in force — the one value while a range
+   * applies, the two ends while one value does — so the Range switch loses
+   * nothing. Kept, never applied. TRAP T-both-shapes-are-kept
+   */
+  kept?: KeptAnswer;
   /** Remembered but not applied. TRAP T-grid-suspend-is-not-clear */
   suspended?: boolean;
 }
+
+/** One shape's answer, as `FieldReading.kept` holds it. */
+export type KeptAnswer = Pick<FieldReading, 'picked' | 'op' | 'text'>;
 
 /** One row of a multi-condition filter. */
 export interface FieldCondition {

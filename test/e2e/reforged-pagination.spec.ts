@@ -33,10 +33,12 @@ test('renders the page input + "of N" total and the rows-per-page select', async
     el.setAttribute('data-rows-options', '10,25,50');
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    // A Sherpa number field: its value is the host's, its `max` reaches the inner control.
     const input = el.shadowRoot!.querySelector<HTMLInputElement>('.page-input')!;
     const total = el.shadowRoot!.querySelector('.total')!.textContent ?? '';
     const opts = Array.from(el.shadowRoot!.querySelectorAll('.rows option')).map((o) => o.textContent);
-    return { value: input.value, max: input.max, total: total.trim(), opts };
+    return { value: input.value, max: input.shadowRoot!.querySelector<HTMLInputElement>('.control')!.max, total: total.trim(), opts };
   });
   expect(r.value).toBe('2');
   expect(r.max).toBe('10');
@@ -193,7 +195,8 @@ test('the row-count select and page field are shaped like a Sherpa input', async
     const sr = pager.shadowRoot!;
     return {
       rows: shape(sr.querySelector('.rows')),
-      pageInput: shape(sr.querySelector('.page-input')),
+      // The page box is a composed field: its BOX is that field's control row.
+      pageInput: shape(sr.querySelector('.page-input')!.shadowRoot!.querySelector('.control-row')),
       // The control every field is measured against.
       reference: shape(input.shadowRoot!.querySelector('.control-row')),
     };
@@ -217,4 +220,29 @@ test('the row-count select and page field are shaped like a Sherpa input', async
      correct; the read-back is not, so asserting it tests the engine.
      TRAP T-a-native-select-keeps-its-own-shape */
   expect(r.pageInput!.borderColor).toBe(r.reference!.borderColor);
+});
+
+test('the page box is a Sherpa number field: its stepper moves the page, and only page-change leaves', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-pagination') as PagerEl;
+    el.setAttribute('data-page', '2');
+    el.setAttribute('data-total-pages', '3');
+    document.getElementById('root')!.appendChild(el);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const box = el.shadowRoot!.querySelector<HTMLElement>('.page-input')!;
+    const leaked: string[] = [];
+    for (const type of ['change', 'input']) document.addEventListener(type, (e) => { if (e instanceof CustomEvent) leaked.push(type); });
+    const pages: number[] = [];
+    el.addEventListener('page-change', (e) => pages.push((e as CustomEvent).detail.page));
+    const up = box.shadowRoot!.querySelector('.steppers sherpa-button')!.shadowRoot!.querySelector<HTMLElement>('.trigger')!;
+    up.click();
+    // At the last page the stepper stops, as the field's `max` says.
+    up.click();
+    return {
+      box: `${box.localName}[${box.getAttribute('data-type')}]`,
+      bare: el.shadowRoot!.querySelectorAll('input[type="number"]').length,
+      pages, page: el.getAttribute('data-page'), leaked,
+    };
+  });
+  expect(r).toEqual({ box: 'sherpa-input-text[number]', bare: 0, pages: [3], page: '3', leaked: [] });
 });

@@ -760,7 +760,8 @@ export class SherpaFilterPanel extends SherpaElement {
       rendered?: Promise<void>;
     };
     if (items.length) api.items?.(items);
-    if (!state || (!readingRows(state).length && !state.mode && !state.mirror)) return;
+    // `range` and `kept`: a number's shape, and the shape not in force. TRAP T-both-shapes-are-kept
+    if (!state || (!readingRows(state).length && !state.mode && !state.mirror && state.range == null && !state.kept)) return;
     this.#answering.push(Promise.resolve(api.rendered).then(() => { api.reading = state; }));
     if (this.#answering.length === 1) queueMicrotask(() => this.#settleAnswers());
   }

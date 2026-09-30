@@ -116,6 +116,22 @@
   display: inline-flex;
   flex: 0 0 auto;
 }
+/* A NARROW number field — half a filter panel's column — gives the room to
+   its digits: the steppers shrink, and the gap with them. The field is its own
+   query container, so it keeps a floor: contained, it has no width of its own.
+   The button's OWN size token, not `::part()` — WebKit applies no `::part()`
+   rule inside a container query. */
+:host([data-type="number"]) {
+  container: sherpa-number / inline-size;
+  min-inline-size: 10rem;
+}
+@container sherpa-number (max-width: 9rem) {
+  .control-row { gap: var(--sherpa-display-mode-space-2xs, 4px); }
+  .step { --sherpa-button-size-height: var(--sherpa-display-mode-size-lg, 24px); }
+}
+@container sherpa-number (max-width: 6rem) {
+  .step { --sherpa-button-size-height: var(--sherpa-display-mode-size-md, 20px); }
+}
 
 /* ── CLEAR ── opt-in per field, shown only with something to clear. */
 .clear {

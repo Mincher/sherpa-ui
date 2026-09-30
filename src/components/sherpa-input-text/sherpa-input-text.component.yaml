@@ -466,6 +466,7 @@ tokens:
   control.color: "{sherpa.theme-content-body-base}"
   control.font-size: "{sherpa.font-size-body-base}"
   control.line-height: "{sherpa.theme-content-line-height-base}"
+  step.--sherpa-button-size-height: "{sherpa.display-mode-size-lg}"
   clear.inline-size: "{sherpa.theme-size-icon-xs}"
   clear.block-size: "{sherpa.theme-size-icon-xs}"
   clear.border-radius: "{sherpa.display-mode-border-rounding-base}"
