@@ -50,9 +50,10 @@ export class SherpaInputText extends SherpaElement {
      rule is a public API and belongs in one place. */
   static override props = {
     'data-borderless': { type: 'boolean', kind: 'style' },
-    /* Offer a Clear button at the field's trailing edge. OPT-IN: a required
-       field, or one a host owns, must not offer to empty itself. */
+    /* A typed field shows Clear by itself while it holds something. This
+       opts a TEXT AREA or a SELECT in; `data-no-clear` opts any field out. */
     'data-clearable': { type: 'boolean', kind: 'style' },
+    'data-no-clear': { type: 'boolean', kind: 'style' },
     /* Written BY the field: there is something to clear. */
     'data-has-value': { type: 'boolean', kind: 'style' },
     /* Which control the field draws. `select` is one of a known set — the

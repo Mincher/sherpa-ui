@@ -133,7 +133,10 @@
   .step { --sherpa-button-size-height: var(--sherpa-display-mode-size-md, 20px); }
 }
 
-/* ── CLEAR ── opt-in per field, shown only with something to clear. */
+/* ── CLEAR ── on every field a reader TYPES into, while it holds something:
+   not a text area or a select (those still opt in with `data-clearable`),
+   not a number (it has steppers, and no button), and not a field that cannot
+   be edited. `data-no-clear` opts out. Will, TODO 140. */
 .clear {
   display: none;
   align-items: center;
@@ -149,7 +152,10 @@
   cursor: pointer;
 }
 
-:host([data-clearable][data-has-value]) .clear { display: inline-flex; }
+:host([data-has-value]:not([data-multiline], [data-type="select"], [data-no-clear], [disabled], [readonly])) .clear,
+:host([data-clearable][data-has-value]:not([data-no-clear], [disabled], [readonly])) .clear {
+  display: inline-flex;
+}
 
 .clear:focus-visible {
   outline: none;

@@ -175,3 +175,52 @@ test('data-borderless drops the control border on the minimal field', async ({ p
   expect(r.borderColor).toBe('rgba(0, 0, 0, 0)');
   expect(r.background).toBe('rgba(0, 0, 0, 0)');
 });
+
+/* Will, TODO 140: "Any sherpa input that I type into, that isn't a numeric
+   stepper or text area, should show the clear input button like we do in the
+   sherpa text input." It was opt-in (`data-clearable`). */
+test('a typed field shows Clear by itself while it holds something; a text area, a select and a number do not', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const root = document.getElementById('root')!;
+    const make = async (attrs: Record<string, string>, value = 'Ada'): Promise<HTMLElement & { value: string }> => {
+      const el = document.createElement('sherpa-input-text') as HTMLElement & { value: string; rendered?: Promise<void>; populate?(d: unknown): unknown };
+      for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+      root.append(el);
+      await el.rendered;
+      if (attrs['data-type'] === 'select') await el.populate?.([{ value: 'Ada', label: 'Ada' }, { value: 'Bo', label: 'Bo' }]);
+      el.value = value;
+      await window.__settled();
+      return el;
+    };
+    const shown = (el: HTMLElement): boolean => {
+      const clear = el.shadowRoot!.querySelector<HTMLElement>('.clear');
+      return !!clear && getComputedStyle(clear).display !== 'none';
+    };
+    const text = await make({});
+    const empty = await make({}, '');
+    const out = {
+      text: shown(text), empty: shown(empty),
+      area: shown(await make({ 'data-multiline': '' })),
+      select: shown(await make({ 'data-type': 'select' })),
+      number: shown(await make({ 'data-type': 'number' }, '3')),
+      optedOut: shown(await make({ 'data-no-clear': '' })),
+      readonly: shown(await make({ readonly: '' })),
+      disabled: shown(await make({ disabled: '' })),
+      // A text area still opts IN.
+      areaAsked: shown(await make({ 'data-multiline': '', 'data-clearable': '' })),
+    };
+    // Pressed, it empties the field and says so, as typing would.
+    const heard: string[] = [];
+    text.addEventListener('input', () => heard.push('input'));
+    text.addEventListener('change', () => heard.push('change'));
+    text.shadowRoot!.querySelector<HTMLElement>('.clear')!.click();
+    await window.__settled();
+    return { ...out, after: { value: text.value, shown: shown(text), heard } };
+  });
+
+  expect(r).toMatchObject({
+    text: true, empty: false, area: false, select: false, number: false,
+    optedOut: false, readonly: false, disabled: false, areaAsked: true,
+  });
+  expect(r.after).toEqual({ value: '', shown: false, heard: ['input', 'change'] });
+});

@@ -12,6 +12,10 @@
     data-label        field label (hidden when empty)
     data-description   helper text under the label (default style)
     data-error        validation message — shown as a filled critical bar (default style)
+    data-no-clear     no Clear button. A typed field shows one by itself while
+                      it holds something; a number has steppers and shows none
+    data-clearable    a text area or a select shows Clear too (they do not by
+                      themselves)
     data-icon-start    leading icon glyph inside the control row (CSS-gated)
     data-icon-end      trailing icon glyph inside the control row (CSS-gated)
     placeholder       native placeholder
@@ -35,7 +39,7 @@
       <span class="icon sherpa-icon-box icon-start" part="icon-start" aria-hidden="true"></span>
       <input class="control" part="control" type="text" />
       <span class="icon sherpa-icon-box icon-end" part="icon-end" aria-hidden="true"></span>
-      <!-- Opt-in with data-clearable; CSS reveals it off data-has-value. -->
+      <!-- CSS reveals it off data-has-value; data-no-clear opts out. -->
       <button class="clear" part="clear" type="button" tabindex="-1"
               aria-label="Clear">
         <i class="sherpa-icon-box" data-icon="cross-in-tag-left" aria-hidden="true"></i>

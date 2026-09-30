@@ -252,6 +252,12 @@ props:
     kind: style
     description: drop the control border (minimal style)
   - $type: prop
+    name: data-clearable
+    type: string
+    observed: false
+    kind: style
+    description: a text area or a select shows Clear too (they do not by themselves)
+  - $type: prop
     name: data-description
     type: string
     observed: false
@@ -290,6 +296,14 @@ props:
     kind: style
     default: style only
     description: auto-growing <textarea>
+  - $type: prop
+    name: data-no-clear
+    type: string
+    observed: false
+    kind: style
+    description: >-
+      no Clear button. A typed field shows one by itself while it holds something; a number has
+      steppers and shows none
   - $type: prop
     name: data-rules
     type: string

@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**51 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**50 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -106,7 +106,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31m | 138 | Advanced filters go back to the INFO status styling, from success | quick |
 | ✅ | 31ma | 156 | Advanced filters use the DEFAULT ACTIVE styling — no colour of their own | quick |
 | ✅ | 31n | 139 | An Advanced toolbar chip's value half shows its VALUES, truncated — not the condition labels | quick |
-| ⬜ | 31o | 140 | Every Sherpa input a reader types into shows the Clear button — not a number stepper, not a text area | feature |
+| ✅ | 31o | 140 | Every Sherpa input a reader types into shows the Clear button — not a number stepper, not a text area | feature |
 | ✅ | 31p | 141 | Advanced is an icon button again — f(x), at the right of the section or menu header, active when on | quick |
 | ⬜ | 31q | 144 | A View's filters survive a swap to another View — a draft per View, for the session, and across sessions; two settings, on by default | feature |
 | ✅ | 31r | 171 | The filter panel's search matches FIELD labels as well as value labels | feature |
@@ -2223,13 +2223,22 @@ tooltip still says `2 conditions applied`. A grid heading's
 `column-filter-change` label keeps the full words (`Contains: Da or Starts
 with: R`); that is a label for a host, not the chip's face.
 
-### `[ ]` 140 — Every typed Sherpa input shows the Clear button
+### `[x]` ✅ 140 — Every typed Sherpa input shows the Clear button
 
 Will, 2026-09-30, a future one: *"Any sherpa input that I type into, that
 isn't a numeric stepper or text area, should show the clear input button like
 we do in the sherpa text input."*
 
 Today it is opt-in: `data-clearable` on `sherpa-input-text`.
+
+**✅ Done 2026-09-30.** A text field shows Clear by itself while it holds
+something. Not a number (it has steppers), not a text area, not a select,
+and not a field that is read-only or disabled. `data-no-clear` turns it off
+for one field; `data-clearable` still turns it on for a text area or a
+select. The other typed inputs had a Clear already: the nav's search, the
+grid's filter row, a menu's search and its condition value. Not done: the
+`minimal` variant (a bare inline field, used nowhere in the library or the
+examples) — it has no row to hold a button.
 
 ### `[x]` ✅ 141 — Advanced is an f(x) icon button, not a switch
 
@@ -3899,6 +3908,7 @@ One line each. The detail is in git and in the trap named.
 - 172: in the panel, each picked value chip shows its own results; the header keeps the field's — `T-a-chip-counts-its-own-results`
 - 128: a gauge zone is named once; its tooltip and its legend row say the same — `T-a-gauge-names-its-zones-once`
 - 150: explored — the gauge's score is `100 − mean(health)`; thresholds as a field fact (A) or in a component's ask (B) — ❓ in the item
+- 140: a typed text field shows Clear by itself; `data-no-clear` opts out
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on
