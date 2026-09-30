@@ -25,8 +25,10 @@ const EXPECTED = {
   // The two looks hold only what they OVERRIDE, as refs — the rest is Style's.
   'style-transparent': 7,
   'style-saturated': 8,
-  'display-compact': 119,
-  'display-comfortable': 119,
+  // Density overrides SPACE and SIZE only — 27 each. The rest was a stale copy
+  // of the ramp, and painted an old success green. TRAP T-a-density-mode-is-one-step
+  'display-compact': 27,
+  'display-comfortable': 27,
   vertical: 8,
   'grid-top': 8,
   'grid-mid': 8,

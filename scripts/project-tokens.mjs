@@ -1300,6 +1300,21 @@ ${gridBlock(layers['display-mode'].root)}
 ${documentResetBlock}
 }`;
 
+/* Density moves SPACE and SIZE, which no mode changes — so a dark re-point is
+   emitted only if a density ever carries a value that differs by mode. */
+const darkOnes = [densityCompact.dark, densityComfortable.dark].filter(Boolean);
+const densityDark = darkOnes.length ? `
+
+  /* Density dark re-points. */
+  :root[data-mode="dark"] {
+${darkOnes.join('\n')}
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-mode="light"]) {
+${darkOnes.map((b) => b.replace(/^/gm, '  ')).join('\n')}
+    }
+  }` : '';
+
 const displayModeLayer = `@layer display-mode {
 ${rootBlock(layers['display-mode'].root)}
 ${darkBlocks(layers['display-mode'].rootDark)}
@@ -1307,19 +1322,7 @@ ${darkBlocks(layers['display-mode'].rootDark)}
   /* Density — [data-density] overrides the ramp (light). */
 ${densityCompact.light}
 
-${densityComfortable.light}
-
-  /* Density dark re-points. */
-  :root[data-mode="dark"] {
-${densityCompact.dark}
-${densityComfortable.dark}
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-mode="light"]) {
-${densityCompact.dark.replace(/^/gm, '  ')}
-${densityComfortable.dark.replace(/^/gm, '  ')}
-    }
-  }
+${densityComfortable.light}${densityDark}
 }`;
 
 // theme — scoped [data-theme="sherpa"], and also :root so a document with no

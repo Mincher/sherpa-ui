@@ -8481,7 +8481,15 @@ primitives) so a density block ALIASES one step along rather than restating a
 number, and `project-tokens.mjs` gates the rule — proven by breaking one cache
 value, which reported `12px → 10px, but one step is 8px`.
 
+
+**A density overrides SPACE and SIZE only — 27 values each** (Figma's
+`variableOverrides`, read live 2026-09-30). The hand-kept file had carried
+119: the other 92 were a stale copy of the ramp, and five of them painted an
+OLD success green under `[data-density]`, light and dark. The file keeps only
+what the collection overrides, and `check:extensions` counts it. With no
+colour in a density, no dark re-point is emitted either.
 - Site: `scripts/project-tokens.mjs`
+- Site: `scripts/check-extensions.mjs`
 
 ### T-a-gauge-composes-the-ring
 

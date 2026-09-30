@@ -151,7 +151,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 49 | 11 | `sherpa-group`: what is left | tidy |
 | ❓ | 50 | 28 | A Figma component is NOT always a web component | tidy |
 | ❓ | 51 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
-| ⬜ | 52 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| ❓ | 52 | 33 | Density as step offsets, and a breakpoint step | tokens |
 | ❓ | 53 | 36 | CSS: compiled where it should inherit? | tidy |
 | ❓ | 54 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
 | ✅ | 55 | 84 | Use the platform: Intl for money, units and deltas; Temporal in the calendar | refactor |
@@ -3504,7 +3504,7 @@ before anything draws. A sprite is a file the browser caches.
   stays, for `hasIcon`. The icon tests read the sprite instead.
 - **B: keep it as it is.** It works; its cost is the 314 KB.
 
-### `[ ]` 33 — Density as step offsets, and a breakpoint step
+### `[~]` ❓ 33 — Density as step offsets, and a breakpoint step
 
 Will, 2026-09-23: in code, two scalings would do what Figma's remapped modes
 do — by BREAKPOINT (bigger on touch), then by MODE (compact / comfortable),
@@ -3527,6 +3527,27 @@ space values off it), a step cannot.
 The density values live in the hand-kept `figma.extensions.json`; read them
 live through the figma-console MCP
 (`T-an-override-collection-is-keyed-by-its-parent`).
+
+**✅ Step 1 done 2026-09-30 — and it found a bug.** A density already
+ALIASED the scale (`var(--sherpa-scale-…)`), one step along. But each density
+block also copied the WHOLE ramp — 119 values, colours and borders too — and
+then a dark copy of the colours. Read live, Figma's compact and comfortable
+override only **27 values: space and size**. The other 92 were a stale copy,
+and five of them painted an **old success green** under `[data-density]`
+(`#007a45` where the base is `#00ad62`), in light and dark. The file now
+keeps only the 27, so `tokens.css` lost 376 lines. Measured in a browser:
+with no density nothing changed; with compact or comfortable, only that
+green changed, to the true one. `T-a-density-mode-is-one-step`
+
+**Step 3** (consume `--sherpa-grid-space-step`) waits for a size that is
+truly dynamic; none is today.
+
+**❓ Step 2 — one choice.** A breakpoint step makes every space and size one
+step bigger on a small screen, before density.
+- **A (my pick): one step up below 768 px** (a phone), density relative to
+  it; tablet unchanged.
+- **B: one step up below 1280 px** (tablet and phone), as the item says.
+  Every layout and test at a narrow width moves.
 
 ### `[ ]` ❓ 36 — CSS: compiled where it should inherit?
 
@@ -4393,6 +4414,7 @@ One line each. The detail is in git and in the trap named.
 - 136: a Find input steps through a host's matches; Find & Replace asks, and Replace all asks first — on Records, the grid's toolbar — `T-a-find-asks-its-host-to-step`
 - 68, 27: the templater owns a component's files — your own markup and sheets by `useTemplate`, and a live reload that restyles in place — `T-a-templater-owns-the-files`
 - 25: `sherpa-layout-canvas` — an infinite canvas that pans and zooms, with a minimap and four floating controls — `T-a-canvas-owns-its-view`
+- 33 (step 1): a density carries only the 27 space and size values Figma overrides; a stale copy had painted an old success green — `T-a-density-mode-is-one-step`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on
