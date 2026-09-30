@@ -7,6 +7,11 @@
 .sherpa-tip,
 .chart-tip {
   position: fixed;
+  /* A tip is a `popover`, LIFTED to the top layer while it shows, so no box it
+     sits in clips it. The browser's own popover box is undone here, so it is
+     placed exactly as it was. TRAP T-a-tip-lives-in-the-top-layer */
+  inset: auto;
+  overflow: visible;
   position-anchor: var(--_anchor);
   /* Radial charts override --_area to push each tip outward — see radialArea()
      in core/format-tick.ts. */

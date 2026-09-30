@@ -20,6 +20,7 @@
 
 import { hasIcon, renderIcon, upgradeIcons } from './render-icon.js';
 import { ContextRequestEvent, DATA_CONTEXT, type DataAsk } from './context.js';
+import { liftTips } from './top-layer-tips.js';
 
 /** id → innerHTML. `null` when the file is a single flat template. */
 type TemplateMap = Map<string, string> | null;
@@ -477,6 +478,8 @@ export abstract class SherpaElement extends HTMLElement {
   /* ── Native lifecycle — the platform calls these ─────────────────────── */
 
   connectedCallback(): void {
+    // Once per page: a tip is lifted over everything. TRAP T-a-tip-lives-in-the-top-layer
+    liftTips();
     // BEFORE anything reads state.
     // TRAP T-a-property-set-before-upgrade-shadows-its-accessor
     this.#upgradeProperties();

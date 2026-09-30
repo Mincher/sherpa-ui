@@ -14888,6 +14888,37 @@ attribute: an attribute check passes on exactly the bug.
 - Site: `test/e2e/reforged-host-label.spec.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 
+### T-a-tip-lives-in-the-top-layer
+
+A tip — a button's, a chart mark's — is a `popover`, and is LIFTED to the top
+layer while it shows. Will, TODO 157: "Tooltips should be at the top level in
+CSS so that they sit above everything else."
+
+`position: fixed` was not enough. A fixed box is held by the nearest ancestor
+with layout containment, and every card is one (`container-type` gives it) —
+so a tip was cut at its card's or its panel's edge. "Send Region to Customer
+records" read "Send Region to Custome". The top layer has no ancestor.
+
+**CSS still shows and places it; JS only lifts it.** `sherpa-anchor.css`
+decides `display` off `:hover` / `:focus-visible` and places it by CSS anchor
+positioning, as before — an anchor and its tip share a shadow root, so the
+name resolves from the top layer too. `core/ui/top-layer-tips.ts` hears
+`pointerover` and `focusin` on the DOCUMENT, once, finds the anchor under the
+deepest target and calls `showPopover()`. With no JS the tip still shows, in
+the page. The browser's own popover box (`inset: 0`, `overflow: auto`) is
+undone in the shared rule, or the tip is placed by it instead.
+
+**It drops a frame after `pointerout`.** Firefox still matches `:hover` while
+the event is heard, so a check made at once left every tip open.
+
+`sherpa-tooltip` lifts its own bubble, with `data-floating`.
+
+- Site: `src/core/ui/top-layer-tips.ts`
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `src/core/sherpa-anchor.css`
+- Site: `test/e2e/reforged-button-tip.spec.ts`
+
+
 ### T-every-button-says-its-action
 
 **A `sherpa-button` with no visible label shows a tip that says what it

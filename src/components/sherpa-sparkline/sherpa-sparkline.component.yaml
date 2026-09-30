@@ -147,6 +147,7 @@ anatomy:
           - el: span
             class: chart-tip
             attrs:
+              popover: manual
               role: tooltip
               data-index: "0"
             children:
@@ -159,6 +160,7 @@ anatomy:
           - el: span
             class: chart-tip
             attrs:
+              popover: manual
               role: tooltip
               data-index: "1"
             children:
@@ -171,6 +173,7 @@ anatomy:
           - el: span
             class: chart-tip
             attrs:
+              popover: manual
               role: tooltip
               data-index: "2"
             children:
@@ -183,6 +186,7 @@ anatomy:
           - el: span
             class: chart-tip
             attrs:
+              popover: manual
               role: tooltip
               data-index: "3"
             children:
@@ -195,6 +199,7 @@ anatomy:
           - el: span
             class: chart-tip
             attrs:
+              popover: manual
               role: tooltip
               data-index: "4"
             children:
@@ -207,6 +212,7 @@ anatomy:
           - el: span
             class: chart-tip
             attrs:
+              popover: manual
               role: tooltip
               data-index: "5"
             children:
@@ -219,6 +225,7 @@ anatomy:
           - el: span
             class: chart-tip
             attrs:
+              popover: manual
               role: tooltip
               data-index: "6"
             children:
@@ -231,6 +238,7 @@ anatomy:
           - el: span
             class: chart-tip
             attrs:
+              popover: manual
               role: tooltip
               data-index: "7"
             children:

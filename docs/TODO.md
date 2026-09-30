@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**55 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**56 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -59,7 +59,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16m | 151 | A filter moved across scopes does not keep its Simple or Advanced mode | bug |
 | ✅ | 16n | 152 | Data grid pages do not keep to the row count set in the pagination: the count varies from page to page | bug |
 | ✅ | 16p | 155 | The change-scope buttons show on a panel filter only after its first edit; they must always show | bug |
-| 🚧 | 16q | 157 | Tooltips are clipped by other elements: they must sit in the top layer, above everything | bug |
+| ✅ | 16q | 157 | Tooltips are clipped by other elements: they must sit in the top layer, above everything | bug |
+| ⬜ | 16r | 158 | A data viz filter sent up to the View cannot be sent back down | bug |
 | ✅ | 16o | 153 | In a fixed-row layout grid, the data grid and its container change height with the row count; the container must keep its height and the grid fill it | bug |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | ❓ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
@@ -82,6 +83,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 29 | 21b | Which header chips carry over between views | feature |
 | ✅ | 30 | 20b | The Date filter should be a view-scope date RANGE | feature |
 | ✅ | 31 | 52 | A data viz scope in the filter panel: one Simple filter, a chip per legend item, with its swatch | feature |
+| ⬜ | 31ab | 159 | A data viz filter held by the View: a legend click changes the VIEW's values, and toggles the item | feature |
 | ⬜ | 31aa | 149 | A chart legend's items ARE swatch chips: move `sherpa-chart-legend` onto `sherpa-quick-filter` | refactor |
 | ❓ | 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
 | ⬜ | 31b | 124 | The Filters button and menu move to the filter panel HEADER: one menu for every scope | feature |
@@ -963,10 +965,26 @@ wrote "no first day" into it as a day. A kept range with no ends holds none
 now. It came in with 137 (an emptied date keeps its range shape). If you did
 see the word `Unassigned` on a date chip, say where — I could not make it.
 
-### `[~]` 157 — BUG: tooltips are clipped by other elements
+### `[ ]` 158 — BUG: a data viz filter cannot be moved back down from the View
+
+Will, 2026-09-30: *"I can't move data viz filters back down from the view
+scope."*
+
+### `[x]` ✅ 157 — BUG: tooltips are clipped by other elements
 
 Will, 2026-09-30: *"Tooltip are getting clipped by other elements. Tooltips
 should be at the top level in CSS so that they sit above everything else."*
+
+**✅ Done 2026-09-30.** Every button tip and every chart tip is a `popover`
+now, lifted to the browser's TOP LAYER while it shows. Nothing is above the
+top layer, so no card or panel can cut it. I saw the bug on the panel's new
+buttons: "Send Region to Customer records" was cut at the panel's edge.
+
+CSS still shows and places the tip; one small listener on the page lifts it.
+A filter chip's tooltip was in the top layer already. One thing left as it
+was: `sherpa-tooltip` with no `data-floating` still draws in the page —
+nothing in the library or the examples uses it that way.
+`T-a-tip-lives-in-the-top-layer`
 
 ### `[x]` ✅ 155 — BUG: the change-scope buttons show only after the first edit
 
@@ -1769,6 +1787,15 @@ every filter chip reads; 149 is where the two become one control.
 
 The arranging chips (Segment by, Measure, Over) and the two choices above
 still wait.
+
+### `[ ]` 159 — A data viz filter in the View scope: a legend click changes the View's values
+
+Will, 2026-09-30: *"When a data viz filter is added to the view scope then
+clicking on a legend item should adjust values at the view scope as well as
+toggling the legend item active state."*
+
+Today a legend always writes its chart's OWN scope, even while the View holds
+the field — so the two can disagree.
 
 ### `[ ]` 149 — A chart legend's items ARE swatch chips
 
@@ -3533,6 +3560,7 @@ One line each. The detail is in git and in the trap named.
 - 149: queued — the legend's items become swatch chips
 - 148: an emptied date range holds no ends — the chip read `undefined` after a Reset
 - 121: a panel field's Clear and Send to are one button group
+- 157: every button and chart tip is a popover, lifted to the top layer while it shows — `T-a-tip-lives-in-the-top-layer`
 - 156: an Advanced chip wears the plain active styling; no pin, no CSS of its own — `T-a-conditioned-chip-reads-as-active`
 - 155: a panel field's Send to buttons show before its first answer
 - 152: a grouped grid page holds the pager's ROW count — a heading costs nothing, a shut group one slot — `T-grid-collapsed-group-is-one-slot`

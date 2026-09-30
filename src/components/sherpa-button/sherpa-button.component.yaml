@@ -65,6 +65,7 @@ anatomy:
         class: tip sherpa-tip
         part: tip
         attrs:
+          popover: manual
           aria-hidden: "true"
     icon:
       - el: button
@@ -87,6 +88,7 @@ anatomy:
         class: tip sherpa-tip
         part: tip
         attrs:
+          popover: manual
           aria-hidden: "true"
 props:
   - $type: prop
