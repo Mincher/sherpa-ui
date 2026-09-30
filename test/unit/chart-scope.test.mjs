@@ -114,3 +114,51 @@ test('a part forgotten is drawn no more', async () => {
   await tick();
   assert.deepEqual(drawn.scopes.at(-1).map((s) => s.scope), ['view']);
 });
+
+/* Will, TODO 159: "When a data viz filter is added to the view scope then
+   clicking on a legend item should adjust values at the view scope as well as
+   toggling the legend item active state."
+   TRAP T-a-legend-follows-the-view-when-it-holds-the-field */
+test('while the VIEW holds its field, a legend shows the View\'s answer and changes it', async () => {
+  const { bindSelection } = await import(new URL('bind-selection.js', core));
+  const { source, seen, chart } = await setup();
+  source.declareField('sev', { label: 'Severity' });
+  // A legend: what is ON, and the event it fires when a reader toggles one.
+  const legend = Object.assign(new EventTarget(), { picked: [] });
+  const press = (on) => { legend.picked = on; legend.dispatchEvent(new Event('legend-item-click')); };
+  bindSelection(legend, source, {
+    field: 'sev', values: ['critical', 'warning', 'info'],
+    read: (c) => c.picked, draw: (c, picked) => { c.picked = [...picked]; },
+    event: 'legend-item-click', reach: 'component', only: chart, key: 'picks:bar',
+  });
+
+  // Its own scope first: the chart alone.
+  press(['critical']);
+  await tick();
+  assert.deepEqual(seen.get('bar'), [1, 3]);
+  assert.deepEqual(seen.get('donut'), [1, 2, 3, 4]);
+
+  // The View TAKES the field: the legend's own answer is dropped, and it shows the View's.
+  source.hold('view', ['sev']);
+  source.select('sev', ['info']);
+  await tick();
+  assert.equal(source.query.applied.scopes['picks:bar'], undefined);
+  assert.deepEqual(legend.picked, ['info']);
+
+  // A press changes the VIEW's answer: every component narrows.
+  press(['warning', 'info']);
+  await tick();
+  assert.deepEqual(source.query.applied.scopes.view.readings.sev.picked, ['warning', 'info']);
+  assert.equal(source.query.applied.scopes['picks:bar'], undefined);
+  assert.deepEqual(seen.get('bar'), [2, 4]);
+  assert.deepEqual(seen.get('donut'), [2, 4]);
+  assert.deepEqual(legend.picked, ['warning', 'info']);
+
+  // The View lets go: the legend answers for its chart alone again.
+  source.hold('view', []);
+  await tick();
+  press(['critical']);
+  await tick();
+  assert.deepEqual(source.query.applied.scopes['picks:bar'].readings.sev.picked, ['critical']);
+  assert.deepEqual(seen.get('donut'), [1, 2, 3, 4]);
+});

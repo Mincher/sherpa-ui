@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**55 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**54 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -83,7 +83,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 29 | 21b | Which header chips carry over between views | feature |
 | ✅ | 30 | 20b | The Date filter should be a view-scope date RANGE | feature |
 | ✅ | 31 | 52 | A data viz scope in the filter panel: one Simple filter, a chip per legend item, with its swatch | feature |
-| ⬜ | 31ab | 159 | A data viz filter held by the View: a legend click changes the VIEW's values, and toggles the item | feature |
+| ✅ | 31ab | 159 | A data viz filter held by the View: a legend click changes the VIEW's values, and toggles the item | feature |
 | ⬜ | 31aa | 149 | A chart legend's items ARE swatch chips: move `sherpa-chart-legend` onto `sherpa-quick-filter` | refactor |
 | ❓ | 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
 | ⬜ | 31b | 124 | The Filters button and menu move to the filter panel HEADER: one menu for every scope | feature |
@@ -1800,7 +1800,7 @@ every filter chip reads; 149 is where the two become one control.
 The arranging chips (Segment by, Measure, Over) and the two choices above
 still wait.
 
-### `[ ]` 159 — A data viz filter in the View scope: a legend click changes the View's values
+### `[x]` ✅ 159 — A data viz filter in the View scope: a legend click changes the View's values
 
 Will, 2026-09-30: *"When a data viz filter is added to the view scope then
 clicking on a legend item should adjust values at the view scope as well as
@@ -1808,6 +1808,14 @@ toggling the legend item active state."*
 
 Today a legend always writes its chart's OWN scope, even while the View holds
 the field — so the two can disagree.
+
+**✅ Done 2026-09-30.** While the View holds a chart's field, its legend
+shows the View's answer, and a press on a legend item changes the View's
+values. So the View's chips follow, and EVERY component narrows — the item
+toggles as it did. When the View lets go of the field, the legend answers for
+its own chart again. The chart keeps no answer of its own while the View
+holds the field: two answers to one field, one of them hidden, was the fault.
+`T-a-legend-follows-the-view-when-it-holds-the-field`
 
 ### `[ ]` 149 — A chart legend's items ARE swatch chips
 
@@ -3572,6 +3580,7 @@ One line each. The detail is in git and in the trap named.
 - 149: queued — the legend's items become swatch chips
 - 148: an emptied date range holds no ends — the chip read `undefined` after a Reset
 - 121: a panel field's Clear and Send to are one button group
+- 159: while the View holds a chart's field, its legend shows and changes the View's answer — `T-a-legend-follows-the-view-when-it-holds-the-field`
 - 158: a View field's Send down offers every scope that has it — a menu where there is more than one — `T-send-to-view-filters`
 - 157: every button and chart tip is a popover, lifted to the top layer while it shows — `T-a-tip-lives-in-the-top-layer`
 - 156: an Advanced chip wears the plain active styling; no pin, no CSS of its own — `T-a-conditioned-chip-reads-as-active`

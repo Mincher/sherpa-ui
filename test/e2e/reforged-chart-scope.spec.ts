@@ -163,5 +163,61 @@ test('SENT UP to the View, a chart\'s answer narrows every component, and its se
       legend: (document.querySelector('#bar-legend') as HTMLElement & { picked: string[] }).picked,
     };
   }, scope);
-  expect(r).toEqual({ view: ['Disk'], above: true, chips: 0, legend: [] });
+  // The legend shows the VIEW's answer now: it is the one in force (159).
+  expect(r).toEqual({ view: ['Disk'], above: true, chips: 0, legend: ['Disk'] });
+});
+
+/**
+ * Will, TODO 159: "When a data viz filter is added to the view scope then
+ * clicking on a legend item should adjust values at the view scope as well as
+ * toggling the legend item active state."
+ * TRAP T-a-legend-follows-the-view-when-it-holds-the-field
+ */
+test('while the View holds a chart\'s field, a legend press changes the VIEW\'s values and every component', async ({ page }) => {
+  await open(page);
+  type Source = { debugState(): { total: number };
+    query: { applied: { scopes: Record<string, { readings: Record<string, { picked?: string[] }> } | undefined> } } };
+  const state = (): Promise<{ view: string[]; own: string[] | null; chips: string[]; legend: string[]; bars: number; total: number }> =>
+    page.evaluate((s) => {
+      const source = (window as unknown as { sherpa: { source: Source } }).sherpa.source;
+      const panel = (document.querySelector('#filter-panel') as HTMLElement).shadowRoot!;
+      return {
+        view: source.query.applied.scopes['view']?.readings['status']?.picked ?? [],
+        own: source.query.applied.scopes[s]?.readings['status']?.picked ?? null,
+        chips: [...panel.querySelectorAll<HTMLElement>('.scope[data-scope="view"] .field[data-field="status"] .value[data-current]')]
+          .map((c) => c.dataset['value']!),
+        legend: (document.querySelector('#r-bar-legend') as HTMLElement & { picked: string[] }).picked,
+        bars: document.querySelector('#r-bar')!.shadowRoot!.querySelectorAll('.bar').length,
+        total: source.debugState().total,
+      };
+    }, BAR);
+  const legendItem = (n: number): Promise<void> => page.evaluate((i) => {
+    (document.querySelector('#r-bar-legend')!.shadowRoot!.querySelectorAll<HTMLElement>('.item')[i]!).click();
+  }, n);
+  const names = await page.evaluate(() =>
+    [...document.querySelector('#r-bar-legend')!.shadowRoot!.querySelectorAll('.item .label')].map((l) => l.textContent!));
+  const [a, b, c] = names as [string, string, string];
+  const all = (await state()).total;
+
+  // Two values, in the chart's own scope — the grid keeps every row — then UP to the View.
+  await press(page, BAR, a);
+  await press(page, BAR, b);
+  await expect.poll(async () => (await state()).own).toEqual([a, b]);
+  expect((await state()).total).toBe(all);
+  await page.evaluate((s) => {
+    (document.querySelector('#filter-panel') as HTMLElement).shadowRoot!
+      .querySelector(`.scope[data-scope="${s}"] .field-raise`)!.shadowRoot!.querySelector<HTMLElement>('.trigger')!.click();
+  }, BAR);
+  await expect.poll(state).toMatchObject({ view: [a, b], own: null, legend: [a, b] });
+  await expect.poll(async () => (await state()).total).toBeLessThan(all);
+  const two = (await state()).total;
+
+  // The LEGEND switches the second off: the View's values change, its chips follow, the grid narrows.
+  await legendItem(1);
+  await expect.poll(state).toMatchObject({ view: [a], own: null, chips: [a], legend: [a], bars: 1 });
+  await expect.poll(async () => (await state()).total).toBeLessThan(two);
+
+  // …and the third on.
+  await legendItem(2);
+  await expect.poll(state).toMatchObject({ view: [a, c], own: null, chips: [a, c], legend: [a, c], bars: 2 });
 });

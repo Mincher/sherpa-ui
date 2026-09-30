@@ -18,6 +18,7 @@
  */
 import type { FilterClause } from './store.js';
 import type { FieldReading, FilterState } from './filter-state.js';
+import { VIEW } from './query.js';
 
 /**
  * Enough of a DataSource to own a FIELD's selection. Not `contribute`: keyed
@@ -25,7 +26,7 @@ import type { FieldReading, FilterState } from './filter-state.js';
  * TRAP T-one-field-one-filter-menu
  */
 export interface Selector extends EventTarget {
-  select: (field: string, picked: readonly unknown[]) => void;
+  select: (field: string, picked: readonly unknown[], reading?: FieldReading) => void;
   selection: (field: string) => FilterState;
   declareValues: (field: string, values: readonly unknown[]) => void;
   /** A COMPONENT-reach control needs this; a VIEW-reach one does not.
@@ -34,6 +35,9 @@ export interface Selector extends EventTarget {
   /** …and one that narrows ONE component writes its own scope instead. */
   write?: (scope: string, field: string, reading: FieldReading | undefined, at?: { only?: EventTarget }) => void;
   reading?: (scope: string, field: string) => FieldReading | undefined;
+  /** Does a scope hold a field? A control that narrows one component asks of
+   *  the View. TRAP T-a-legend-follows-the-view-when-it-holds-the-field */
+  holds?: (scope: string, field: string) => boolean;
 }
 
 /** How one control reads and draws a field. */
@@ -115,6 +119,11 @@ export function bindSelection<T extends EventTarget>(
   /** This binding's OWN answer, for a component scope. Empty is no constraint. */
   let own: string[] = [];
 
+  /** THE VIEW HOLDS THIS FIELD, so its answer is the one in force: a control
+   *  over ONE component shows it and changes it, and keeps none of its own.
+   *  TRAP T-a-legend-follows-the-view-when-it-holds-the-field */
+  const raised = (): boolean => reach === 'component' && !!only && !!source.holds?.(VIEW, field);
+
   /**
    * What this control draws. A VIEW binding shows the field's one selection, so
    * every control over it agrees. A COMPONENT binding shows its OWN answer —
@@ -123,8 +132,8 @@ export function bindSelection<T extends EventTarget>(
    */
   const picked = (): string[] => {
     // ITS OWN SCOPE's answer, from the source — so a restored Query draws it.
-    if (reach === 'component' && only) return (source.reading!(key, field)?.picked ?? []).map(String);
-    if (reach === 'component') return own;
+    if (reach === 'component' && only && !raised()) return (source.reading!(key, field)?.picked ?? []).map(String);
+    if (reach === 'component' && !only) return own;
     return source.selection(field).values.filter((v) => v.state === 'picked').map((v) => v.value);
   };
 
@@ -136,6 +145,12 @@ export function bindSelection<T extends EventTarget>(
     const want = next.filter((v) => known.has(v));
     // EVERYTHING picked is no constraint. TRAP T-everything-on-is-no-filter
     const answer = want.length === values.length ? [] : want;
+    if (raised()) {
+      // Its picks are Simple's: rows the View kept stay kept, and out of force.
+      const held = source.reading?.(VIEW, field);
+      source.select(field, answer, held?.conditions?.length ? { ...held, mode: 'simple' } : {});
+      return;
+    }
     if (reach === 'component') {
       own = [...answer];
       // ANDed under the view's, so it can only narrow further.
@@ -157,13 +172,22 @@ export function bindSelection<T extends EventTarget>(
   };
 
 
+  /** The View took the field, or let it go: what this control shows changed.
+   *  Taken, its own answer is dropped — the View's is the one in force. */
+  const onScopeChange = (): void => {
+    if (raised() && source.reading?.(key, field)) source.write!(key, field, undefined, { only: only! });
+    redraw();
+  };
+
   control.addEventListener(event, onControlChange);
   source.addEventListener('selection-change', onSelectionChange);
+  if (reach === 'component' && only) source.addEventListener('scope-change', onScopeChange);
   redraw();
 
   const destroy = (): void => {
     control.removeEventListener(event, onControlChange);
     source.removeEventListener('selection-change', onSelectionChange);
+    source.removeEventListener('scope-change', onScopeChange);
     // A part outlives its control otherwise, and nothing else can name it.
     if (reach === 'component' && only) source.write!(key, field, undefined);
     else if (reach === 'component') source.contribute!(key, undefined);

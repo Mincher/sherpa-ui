@@ -15230,6 +15230,28 @@ it knows, so declaring a part declares its field.
 - Site: `test/unit/chart-scope.test.mjs`
 - Site: `test/e2e/reforged-chart-scope.spec.ts`
 
+### T-a-legend-follows-the-view-when-it-holds-the-field
+
+A legend narrows its own chart (`T-a-component-part-narrows-one-component`) —
+UNTIL the View holds its field. Then the View's answer is the one in force, so
+the legend shows IT, and a press changes IT: every component narrows, and the
+View's chips follow. Will, TODO 159.
+
+Before, a legend always wrote its chart's own scope. With the field sent up,
+the View said "Disk" while the legend showed every item on, and a legend
+press narrowed one chart under a View filter nobody had changed from there.
+
+`bindSelection` asks at each draw and each write — `source.holds('view',
+field)` — so nothing is cached, and it hears `scope-change` to redraw when
+the View takes the field or lets it go. Taken, the binding DROPS its own
+answer: two answers to one field, one of them hidden, is the bug. A press
+writes plain picks; rows the View kept stay kept, in Simple mode.
+
+- Site: `src/core/data/bind-selection.ts`
+- Site: `test/unit/chart-scope.test.mjs`
+- Site: `test/e2e/reforged-chart-scope.spec.ts`
+
+
 ### T-one-query-one-owner
 
 **A page's data is under ONE Query, in the reader's terms, and a filter is
