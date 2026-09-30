@@ -1776,6 +1776,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       const id = chip.dataset['id'] ?? '';
       // A View change leaves a carry-over chip; Reset does not. TRAP T-a-field-can-carry-over-views
       if (options.carry && this.#filters.find((f) => f.id === id)?.carryOver) continue;
+      /* A chip the VIEW holds is not this bar's to reset: it keeps what it
+         shows, and its own picks for when the View lets go.
+         TRAP T-a-superseded-chip-suspends-it-is-never-removed */
+      if (chip.hasAttribute('data-superseded')) continue;
       this.#emptyChip(chip);
     }
     if (organise) this.#clearOrganise();

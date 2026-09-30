@@ -6376,10 +6376,15 @@ Three parts make it work:
   named is restored — which makes the call idempotent and means a host can send
   the list after every change without tracking what it sent last
 
+**A bar's Reset leaves it alone** (`clearAll`). It emptied every chip, so a
+chip the View held lost the value it showed and read "off" while the View
+went on filtering. Will, TODO 167.
+
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
 - Site: `src/core/data/data-source.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 
 ### T-unavailable-value-sorts-below-a-divider
 

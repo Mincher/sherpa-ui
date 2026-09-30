@@ -2708,3 +2708,44 @@ test('adding a second Advanced filter keeps the first one\'s rows in every repor
   expect(r.on).toBe(true);
   expect(r.now).toEqual([{ op: 'contains', text: 'Da' }]);
 });
+
+/**
+ * Will, TODO 167: "Resetting filters in a component scope clears the elevated
+ * to view scope state, and inactive styling, from filter chips." A chip the
+ * VIEW holds is not this bar's to reset.
+ * TRAP T-a-superseded-chip-suspends-it-is-never-removed
+ */
+test('a Reset leaves a chip the View holds as it is, and empties the rest', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    type Steer = Bar & { supersede(ids: string[], at?: string): void; clearAll(): void };
+    const bar = await window.__mount<Steer>('sherpa-quick-filter-toolbar', [
+      { id: 'status', label: 'Status', active: true, options: [
+        { value: 'active', label: 'active', selected: true }, { value: 'trial', label: 'trial' }] },
+      { id: 'plan', label: 'Plan', active: true, options: [
+        { value: 'Pro', label: 'Pro', selected: true }, { value: 'Free', label: 'Free' }] },
+    ], { style: 'inline-size: 1200px' });
+    await window.__settled();
+    bar.supersede(['status'], 'View filters');
+    await window.__settled();
+    const look = (id: string) => {
+      const chip = bar.shadowRoot!.querySelector<HTMLElement>(`.chip[data-id="${id}"]`)!;
+      return {
+        held: chip.hasAttribute('data-superseded'), at: chip.getAttribute('data-applied-at'),
+        on: chip.hasAttribute('data-current'),
+        value: chip.shadowRoot!.querySelector('.caret-label')!.textContent,
+        tip: chip.shadowRoot!.querySelector<HTMLElement>('.count-wrap')!.dataset['text'],
+        ticked: [...chip.querySelectorAll<HTMLInputElement>('input:checked')].map((i) => i.value),
+      };
+    };
+    const before = look('status');
+    bar.clearAll();
+    await window.__settled();
+    await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+    return { before, status: look('status'), plan: look('plan') };
+  });
+  expect(r.before).toMatchObject({ held: true, on: true, value: 'active' });
+  // Nothing of it moved: its look, its place with the View, the picks it keeps.
+  expect(r.status).toEqual(r.before);
+  expect(r.status.tip).toBe('Filter moved to View scope. This chip holds active.');
+  expect(r.plan).toMatchObject({ held: false, on: false, value: '', ticked: [] });
+});

@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**60 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**61 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -57,7 +57,9 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16k | 147 | A chip switched off under the pointer leaves an EMPTY tooltip: the whole tooltip hides | bug |
 | ✅ | 16l | 148 | After a Reset, a date chip's value label reads `Unassigned` | bug |
 | ✅ | 16m | 151 | A filter moved across scopes does not keep its Simple or Advanced mode | bug |
-| ⬜ | 16v | 167 | A Reset in a component scope clears a chip's "moved to the View" state and its inactive look | bug |
+| ⬜ | 16w | 168 | A filter sent from scope A to the View, then down to scope B, shows in A again: a filter is in ONE scope at any time | bug |
+| ⬜ | 16x | 169 | "Reset to default", and a View pick, take the saved filter chips off the bar | bug |
+| ✅ | 16v | 167 | A Reset in a component scope clears a chip's "moved to the View" state and its inactive look | bug |
 | ✅ | 16u | 166 | A saved filter's badge shows its count only while it is ON — the count is not always known before | bug |
 | ⬜ | 16t | 165 | A filtered grid's group row badge shows the group's TOTAL rows, not the rows shown | bug |
 | ✅ | 16s | 160 | Ungrouped, a page still holds fewer rows than the pager says: a row the schema refuses is dropped AFTER the page is cut | bug |
@@ -1016,10 +1018,33 @@ Clear still comes once there is something to clear, and joins it as one
 group. Before that, Send to stands alone with all its corners. I had tied
 the pair to the answer in 121; only Clear belongs to it.
 
-### `[ ]` 167 — BUG: a Reset in a component scope clears a chip's "moved to the View" state
+### `[ ]` 168 — BUG: a filter moved A → View → B shows in A again
+
+Will, 2026-09-30: *"If I send a filter from component scope A to View scope
+then back to component scope B then the filter shows again in component scope
+A. A filter should only ever be in 1 scope at any time."*
+
+### `[ ]` 169 — BUG: "Reset to default" and a View pick take the saved filter chips off the bar
+
+Found 2026-09-30, with 167. On Records the grid's bar shows three saved
+filters at rest. After "Reset to default", or after any View is picked, they
+are gone — unless the View names one as ON. A View keeps the FIELD chips a
+scope holds; it does not keep its saved filters.
+
+### `[x]` ✅ 167 — BUG: a Reset in a component scope clears a chip's "moved to the View" state
 
 Will, 2026-09-30: *"Resetting filters in a component scope clears the
 elevated to view scope state, and inactive styling, from filter chips."*
+
+**✅ Done 2026-09-30.** A bar's Reset emptied EVERY chip, the ones the View
+holds too. Such a chip lost the value it showed and went to "off", while the
+View went on filtering. A chip the View holds is not that bar's to reset: it
+is left as it is — its look, its value, the picks it keeps. What I saw was the
+value going; the grey look stayed in my runs. If the look still goes for you,
+say which button you pressed.
+
+**Found on the way, 169:** "Reset to default" and a View pick take the saved
+filter chips (Has open tickets, At risk, Unassigned) off the bar.
 
 ### `[x]` ✅ 166 — A saved filter shows its count only while it is on
 
@@ -3669,6 +3694,7 @@ One line each. The detail is in git and in the trap named.
 - 149: queued — the legend's items become swatch chips
 - 148: an emptied date range holds no ends — the chip read `undefined` after a Reset
 - 121: a panel field's Clear and Send to are one button group
+- 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on
 - 160: a local store checks its rows BEFORE it cuts a page — a refused row left its page short — `T-a-refused-row-never-shortens-a-page`
 - 159: while the View holds a chart's field, its legend shows and changes the View's answer — `T-a-legend-follows-the-view-when-it-holds-the-field`
