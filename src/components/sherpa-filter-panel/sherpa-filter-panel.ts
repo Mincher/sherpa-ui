@@ -12,7 +12,7 @@
  * - PanelScope — One scope: a named group of fields, plus what its Add button offers.
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
-import { APPLIED_ABOVE, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
+import { ORGANISE_ICONS, movedTo } from '../../core/ui/shared-constants.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import type { FieldFilter, HeldFilter, ScopeDescription, ScopeShows } from '../../core/data/data-source.js';
 import {
@@ -591,7 +591,7 @@ export class SherpaFilterPanel extends SherpaElement {
     box.setAttribute('data-applied-at', def.appliedAt ?? '');
     const note = this.clone('template.applied-tpl');
     if (note) {
-      note.textContent = APPLIED_ABOVE;
+      note.textContent = movedTo(def.appliedAt);
       box.querySelector('.field-head')?.append(note);
     }
     return box;

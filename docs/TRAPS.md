@@ -8809,12 +8809,14 @@ both:
 
 | | |
 |---|---|
-| no picks of its own | `Filter applied at higher scope.` |
-| picks it still holds | `Filter applied at higher scope. This chip holds active, churned.` |
+| no picks of its own | `Filter moved to View scope.` |
+| picks it still holds | `Filter moved to View scope. This chip holds active, churned.` |
 
-**It names the SCOPE, not the place.** It said "Filtered by the App header"
-until Will, 2026-09-26. `supersede(ids, appliedAt)` still records the place in
-`data-applied-at`; the words no longer carry it.
+**It names the scope the filter MOVED to** — Will, 2026-09-30 (TODO 126).
+`movedTo(scope)` writes the words for a chip and a panel alike, from
+`data-applied-at` and `appliedAt`. A scope's heading may end in "filters"
+("View filters"); the sentence says "View scope". With no name it says "a
+higher scope".
 
 The tooltip follows `data-superseded` and `data-applied-at` from `onChange`,
 because neither touches the VALUES and nothing else re-syncs it.
@@ -8825,6 +8827,7 @@ because neither touches the VALUES and nothing else re-syncs it.
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/ui/shared-constants.ts`
+- Site: `test/unit/moved-to.test.mjs`
 
 ### T-a-restored-filter-still-needs-its-chip
 
@@ -14493,7 +14496,7 @@ P3c, 2026-09-27. Before it, Records built the panel from the BARS —
 refilling two frames later because a rebuilt bar reads empty.
 
 A field a scope ABOVE holds keeps its place in the scope below — its heading,
-and the line a raised chip's tooltip says (`APPLIED_ABOVE`), no values
+and the line a raised chip's tooltip says (`movedTo`), no values
 (Will, TODO 87 and 88). A request the panel makes of a scope is drawn onto
 that scope's bar from the Query (`drawScope`), so the bar and the panel are
 two views of one answer. The panel is redrawn once per moment, when what a
@@ -15044,7 +15047,7 @@ shown, but held higher.
 
 `supersedeColumns(readings, appliedAt)` names the fields a higher scope holds,
 each with its answer. Such a heading draws that answer — handed to its menu as
-a reading, as its own is — with the chip's superseded look and tip ("Filter applied at higher scope. This chip
+a reading, as its own is — with the chip's superseded look and tip ("Filter moved to View scope. This chip
 holds EMEA."), and its menu `data-readonly`: rows and conditions `inert`, no
 footer, no Add condition, no Advanced switch. The heading's own filter is
 never set by it (`columnClause` stays null), so nothing applies twice. A field

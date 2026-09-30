@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**63 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**62 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -84,7 +84,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 31e | 121 | Clear and Send to are ONE button group, with the grouping classes | quick |
 | ⬜ | 31f | 123 | An inactive chip KEEPS its match count badge; it goes only when every value and condition is removed | feature |
 | ✅ | 31g | 125 | The sort tooltip names the direction as well as the field | quick |
-| ⬜ | 31h | 126 | "Filter applied at higher scope" becomes "Filter moved to `<scope name>` scope" | quick |
+| ✅ | 31h | 126 | "Filter applied at higher scope" becomes "Filter moved to `<scope name>` scope" | quick |
 | ⬜ | 31i | 129 | "Reset all to default", with a confirm dialog and a "Save filters before reset" switch | feature |
 | ⬜ | 31j | 133 | The results count badge shows at the right of a filter panel SECTION header, where it fits | feature |
 | ⬜ | 31k | 134 | A number filter menu has Reset, not Clear: its field and slider handles go back to their original values | feature |
@@ -1742,10 +1742,17 @@ as the field name."*
 on a bar and in the panel. A grid heading's sort button reads `Sort by Name`,
 then `Sorted by Name, descending`. `T-a-chip-says-its-own-answer`
 
-### `[ ]` 126 — "Filter applied at higher scope" becomes "Filter moved to `<scope name>` scope"
+### `[x]` ✅ 126 — "Filter applied at higher scope" becomes "Filter moved to `<scope name>` scope"
 
 Will, 2026-09-30: *"Change the 'Filter applied at higher scope' to 'Filter
 moved to $scopeName scope'."*
+
+**✅ Done 2026-09-30.** A chip's tooltip and the panel's note say the same
+sentence, from one function (`movedTo`): `Filter moved to View scope.` — and
+on a chip that still holds picks, `… This chip holds active, churned.` My
+pick: the View's heading is "View filters", so the sentence drops "filters"
+and says "View scope", not "View filters scope". Say if you want the heading
+word for word. `T-an-inactive-chip-says-where-its-filter-went`
 
 ### `[ ]` 129 — "Reset all to default", with a confirm dialog and "Save filters before reset"
 
@@ -3287,6 +3294,7 @@ One line each. The detail is in git and in the trap named.
 - 52: each chart's own scope is in the filter panel — one filter, a swatch chip per legend item; it narrows its chart alone, and ↑ sends it to the View — `T-a-chart-scope-is-its-legend-field`
 - 149: queued — the legend's items become swatch chips
 - 148: an emptied date range holds no ends — the chip read `undefined` after a Reset
+- 126: a filter another scope holds says `Filter moved to View scope.` — `T-an-inactive-chip-says-where-its-filter-went`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

@@ -2987,7 +2987,7 @@ test('a view-held heading shows the view\'s answer, read-only, and is released a
     return { held, released: read() };
   });
   expect(r.held).toEqual({ superseded: true, readonly: true, inert: true, ticked: ['EMEA'],
-    tip: 'Filter applied at higher scope. This chip holds EMEA.', own: null });
+    tip: 'Filter moved to App header scope. This chip holds EMEA.', own: null });
   expect(r.released).toMatchObject({ superseded: false, readonly: false, inert: false, ticked: [], own: null });
 });
 

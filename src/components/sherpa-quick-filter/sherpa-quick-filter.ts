@@ -12,7 +12,7 @@ import {
   fieldState, type FieldReading, type FilterState,
 } from '../../core/data/filter-state.js';
 import { filterFace } from '../../core/data/filter-face.js';
-import { APPLIED_ABOVE, NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
+import { NON_VALUE_ROWS, ORGANISE_ICONS, movedTo } from '../../core/ui/shared-constants.js';
 import { arranges, FILTER_KINDS, type FilterKind } from '../../core/ui/filter-kind.js';
 import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
 // Floating, so the count tooltip escapes the toolbar's clipping chip run.
@@ -548,7 +548,8 @@ export class SherpaQuickFilter extends SherpaElement {
   #tipText(values: string): string {
     if (this.hasAttribute('data-superseded')) {
       // The VALUES too where there are any: they come back when the field is free.
-      return values ? `${APPLIED_ABOVE} This chip holds ${values}.` : APPLIED_ABOVE;
+      const moved = movedTo(this.dataset['appliedAt']);
+      return values ? `${moved} This chip holds ${values}.` : moved;
     }
     return values;
   }

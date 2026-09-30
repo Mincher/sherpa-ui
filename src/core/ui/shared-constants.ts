@@ -7,7 +7,7 @@
  *
  * Map:
  * - ORGANISE_ICONS — The ORGANISE glyphs — grouping and the three sort states.
- * - APPLIED_ABOVE — What a filter held by a higher scope says — a chip's tooltip, a panel's note.
+ * - movedTo — What a filter another scope holds says: `Filter moved to View scope.`
  * - NON_VALUE_ROWS — Rows in a filter menu that are NOT values, as a selector.
  * - MIRRORED_CONTROL_ATTRS — Native attributes a select control mirrors onto its inner `<input>`.
  * - RADIAL_BOX — A radial chart's geometry, in viewBox units of a 100×100 box.
@@ -18,9 +18,13 @@
  * - DEFAULT_TICKS — Gridlines a cartesian chart draws when `data-ticks` is absent.
  */
 
-/** What a filter held by a higher scope says — a chip's tooltip and a panel's
- *  note, in the SAME words. TRAP T-an-inactive-chip-says-where-its-filter-went */
-export const APPLIED_ABOVE = 'Filter applied at higher scope.';
+/** What a filter another scope holds says — a chip's tooltip and a panel's
+ *  note, in the SAME words. A scope's heading may end in "filters"; the
+ *  sentence says "scope". TRAP T-an-inactive-chip-says-where-its-filter-went */
+export function movedTo(scope?: string | null): string {
+  const name = (scope ?? '').replace(/\s+filters$/i, '').trim();
+  return `Filter moved to ${name || 'a higher'} scope.`;
+}
 
 /**
  * The ORGANISE glyphs — grouping and the three sort states.
