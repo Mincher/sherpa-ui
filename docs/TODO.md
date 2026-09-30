@@ -252,6 +252,22 @@ grid's `ColumnFilter`), 10 (the wrapped native control, four times), 12
 (chart axes), 14 (the app-header re-exposes the bar) and 15 (leftovers). Item
 8 is 68; item 11 is 84.
 
+**Measured 2026-09-30 — the grid's headings on `menuFor()`.** It is not a
+plain move. Today a NUMBER heading has an operator select ("Greater than")
+in its Simple body; a number CHIP, built by `menuFor()`, has none since 90 —
+it answers with Advanced rows where the field offers them. And a heading is
+drawn from the page's column (`ui.grid.columns`), which does not say
+`advanced`; the chip is drawn from the source's field, which does. On
+`menuFor()` the heading's date calendar code goes too: the menu reads and
+writes a date body itself. The dead Range switch handler goes either way.
+
+**❓ One choice:**
+- **A (my pick): the heading is the chip's menu.** It is built from the
+  source's own field (`advanced` included), so "Greater than" is an Advanced
+  row there, as on the chip. One field, one menu.
+- **B: keep the heading's operator select**, and build only the rest on
+  `menuFor()`.
+
 ### `[x]` ✅ 74 — EXPLORE: the Query builds every group, sort and filter menu; a menu shows its sub-query
 
 Will, 2026-09-27: *"The query language, and single query object, can be used
