@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**47 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**46 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -75,7 +75,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 34 | 34 | Figma: use the Navigation terms | figma |
 | ✅ | 35 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
 | | | | **F — Data states and charts** | |
-| ⬜ | 36 | 58 | Loading, empty and error states in a container | feature |
+| ✅ | 36 | 58 | Loading, empty and error states in a container | feature |
 | ⬜ | 37 | 9b | A Data Viz header, for metrics and chart containers | component |
 | ⬜ | 38 | 80 | Container and Data Viz headers: Figma's new button styling and grouping | component |
 | ⬜ | 39 | 14 | An example of real-time data | feature |
@@ -1520,7 +1520,7 @@ projects it.
 
 ## F — Data states and charts
 
-### `[ ]` 58 — Loading, empty and error states in a container
+### `[x]` ✅ 58 — Loading, empty and error states in a container
 
 Will, 2026-09-26: *"Gracefully handle data loading and loading, or no data,
 errors."* It mirrors Apex for now; it is not his favourite pattern (see 59).
@@ -1544,6 +1544,19 @@ container of each bound component follows — so no host writes
 shapes to reuse, and 62's debug flag is how the example shows each state. "No data" must not fire on a filter that matched nothing —
 that is a different message ("No matches", clear the filter), and a zero-row
 view already reads as a broken filter.
+
+**✅ Done 2026-09-30.** The container shows each state IN PLACE of its body
+(an opaque overlay), with a composed default for each: `sherpa-loader` and
+"Loading…"; `sherpa-empty-state` for no data (data illustration) and no
+matches (search illustration, Clear filters); and for an error its own words,
+Retry as the CTA and Dismiss plain. A slotted state still replaces its
+default. The PROVIDER drives it from each source's `loading`, `change` and
+`error`: loading only after 300 ms; empty and no matches on a rows
+component's card only; Retry (and a bar's Refresh) force a load; Clear
+filters resets every bar; Dismiss is the card's own. A store that cannot
+answer at open no longer stops the page. The example shows each: `?remote`
+(slow), `?fail` (every load fails). No Figma design — the look follows the
+empty state. `T-a-container-shows-its-datas-state`
 
 ### `[ ]` 9b — A Data Viz header, for metrics and chart containers
 
@@ -2543,6 +2556,7 @@ One line each. The detail is in git and in the trap named.
 - 116: ❓ the nav keeps its open Areas, or a full Store binding
 - 34: Figma speaks Context; the closed rail follows density from Figma, not an override
 - 79: the nav header's Settings and Pin are one composed default group, as Figma draws it
+- 58: a card shows its data's state — loading, no data, no matches, an error — driven by the provider — `T-a-container-shows-its-datas-state`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`
 - 83: a picked day turns the committing footer on, and a disabled button acts on nothing — `T-a-disabled-button-acts-on-nothing`

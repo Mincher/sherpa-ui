@@ -2131,34 +2131,6 @@ sherpa-container {
   --_status-icon: initial;
 }
 
-:host(sherpa-container[data-has-error]) .state-text {
-  --sherpa-style-border-base: var(--sherpa-style-critical-border-base);
-  --sherpa-style-border-base-1: var(--sherpa-style-critical-border-base-1);
-  --sherpa-style-border-width: var(--sherpa-style-critical-border-width);
-  --sherpa-style-border-data-viz: var(--sherpa-style-critical-border-data-viz);
-  --sherpa-style-content-base: var(--sherpa-style-critical-content-base);
-  --sherpa-style-content-inverse: var(--sherpa-style-critical-content-inverse);
-  --sherpa-style-content-secondary: var(--sherpa-style-critical-content-secondary);
-  --sherpa-style-content-tertiary: var(--sherpa-style-critical-content-tertiary);
-  --sherpa-style-indicator-accent: var(--sherpa-style-critical-indicator-accent);
-  --sherpa-style-surface-base: var(--sherpa-style-critical-surface-base);
-  --sherpa-style-surface-base-1: var(--sherpa-style-critical-surface-base-1);
-  --sherpa-style-surface-base-2: var(--sherpa-style-critical-surface-base-2);
-  --sherpa-style-surface-shadow: var(--sherpa-style-critical-surface-shadow);
-  --sherpa-style-surface-data-viz: var(--sherpa-style-critical-surface-data-viz);
-  --_status-surface: var(--sherpa-style-critical-surface-base);
-  --_status-surface-subtle: var(--sherpa-style-critical-surface-base-1);
-  --_status-surface-strong: var(--sherpa-style-critical-surface-base-2);
-  --_status-shadow: var(--sherpa-style-critical-surface-shadow);
-  --_status-border: var(--sherpa-style-critical-border-base);
-  --_status-border-strong: var(--sherpa-style-critical-border-base-1);
-  --_status-data-viz: var(--sherpa-style-critical-surface-data-viz);
-  --_status-data-viz-border: var(--sherpa-style-critical-border-data-viz);
-  --_status-text: var(--sherpa-style-critical-content-base);
-  --_status-text-on-color: var(--sherpa-style-critical-content-inverse);
-  --_status-icon: var(--sherpa-style-critical-indicator-accent);
-}
-
 sherpa-dialog {
   --sherpa-style-border-base: var(--sherpa-style-default-border-base);
   --sherpa-style-border-base-1: var(--sherpa-style-default-border-base-1);

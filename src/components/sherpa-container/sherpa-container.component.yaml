@@ -42,22 +42,58 @@ anatomy:
           attrs:
             class: state-loading
           children:
-            - el: span
-              class: spinner
+            - el: sherpa-loader
               attrs:
-                aria-label: Loading
+                data-orientation: vertical
+              children:
+                - el: span
+                  attrs:
+                    slot: label
         - slot: empty
           attrs:
             class: state-empty
           children:
-            - el: span
-              class: state-text
+            - el: sherpa-empty-state
+              class: empty-default
+              attrs:
+                data-illustration: data
+                data-size: sm
+                data-heading: No data yet
+                data-description: There is nothing here yet.
+            - el: sherpa-empty-state
+              class: no-matches-default
+              attrs:
+                data-illustration: search
+                data-size: sm
+                data-heading: No matches
+              children:
+                - el: span
+                - el: sherpa-button
+                  class: clear-filters
+                  attrs:
+                    slot: action
         - slot: error
           attrs:
             class: state-error
           children:
-            - el: span
-              class: state-text
+            - el: sherpa-empty-state
+              class: error-default
+              attrs:
+                data-illustration: error
+                data-size: sm
+                data-heading: The data could not load
+              children:
+                - el: span
+                  class: error-message
+                - el: sherpa-button
+                  class: retry
+                  attrs:
+                    slot: action
+                    data-look: saturated
+                - el: sherpa-button
+                  class: dismiss
+                  attrs:
+                    slot: action
 props:
   - $type: prop
     name: data-elevation
@@ -71,6 +107,12 @@ props:
       - lg
     description: none  | sm | md | lg
   - $type: prop
+    name: data-error-message
+    type: string
+    observed: false
+    kind: content
+    description: the error's own words, under its heading
+  - $type: prop
     name: data-fill
     type: string
     observed: false
@@ -79,8 +121,8 @@ props:
       with data-row-span AND several body children: only the child marked data-grow takes the spare
       height; the rest keep their natural size. A records card is a toolbar, a filter bar, the GRID,
       then the pager — the grid grows, the pager stays put. Not needed for the common one-child
-      card. No data-state attribute: slotting empty / error shows that overlay, via the base class
-      reflecting data-has-{slot}.
+      card. Slotting empty / error shows that overlay too, via the base class reflecting
+      data-has-{slot}; a slotted one replaces the default content.
   - $type: prop
     name: data-loading
     type: string
@@ -114,6 +156,18 @@ props:
       4 | 6 | 8 | 10 | 12 — a FIXED height of N layout-grid rows. The body's content fills it, so a
       chart draws into the whole card and a data grid scrolls inside it instead of the card growing
       with the data.
+  - $type: prop
+    name: data-state
+    type: enum
+    observed: false
+    kind: visibility
+    values:
+      - empty
+      - no-matches
+      - error
+    description: >-
+      empty | no-matches | error — its default content, IN PLACE of the body. Written by the
+      provider. TRAP T-a-container-shows-its-datas-state
 states:
   - $type: state
     name: sm
@@ -187,14 +241,27 @@ states:
   - $type: state
     name: has-error
     selector: ":host([data-has-error])"
+  - $type: state
+    name: state
+    selector: ":host([data-state])"
+  - $type: state
+    name: no-matches
+    selector: ":host([data-state=\"no-matches\"])"
+events:
+  - $type: event
+    name: data-refresh
+    bubbles: true
+    composed: true
+  - $type: event
+    name: state-dismiss
+    bubbles: true
+    composed: true
+  - $type: event
+    name: filters-clear
+    bubbles: true
+    composed: true
 tokens:
   state.background: "{sherpa.style-surface-base}"
-  state-text.color: "{sherpa.style-content-base}"
-  state-text.font-size: "{sherpa.font-size-body-base}"
-  spinner.inline-size: "{sherpa.display-mode-size-md}"
-  spinner.block-size: "{sherpa.display-mode-size-md}"
-  spinner.border-width: "{sherpa.theme-surface-default-2}"
-  spinner.border-block-start-color: "{sherpa.style-indicator-accent}"
 $extensions:
   sherpa:
     figmaName: Container

@@ -96,6 +96,15 @@ type Picker = Element & { picked: string[] };
 const up = (el: Element): Element | null =>
   el.parentElement ?? ((el.getRootNode() as ShadowRoot).host ?? null);
 
+/** A load quicker than this shows no spinner, so nothing flashes. */
+const SLOW_LOAD = 300;
+
+/** The card a component sits in, across shadow roots, or null. */
+const containerOf = (el: Element): HTMLElement | null => {
+  for (let at = up(el); at; at = up(at)) if (at.localName === 'sherpa-container') return at as HTMLElement;
+  return null;
+};
+
 /** One component that asked, and how to stop answering it. */
 interface Asked {
   request: ContextRequestEvent<unknown>;
@@ -118,6 +127,15 @@ export class SherpaProvider extends SherpaElement {
     // Any bar's Configure, and the panel's own close and reopen.
     this.addEventListener('filter-panel-close', this.#onPanelClose);
     this.addEventListener('filter-panel-reopen', this.#onPanelReopen);
+    /* A container's Retry, and a bar's Refresh: load again. Its Clear filters:
+       every bar resets. TRAP T-a-container-shows-its-datas-state */
+    this.addEventListener('data-refresh', (event) => {
+      const source = this.#resolve(event.target as Element) ?? Object.values(this.#sources)[0];
+      void source?.load({ force: true });
+    });
+    this.addEventListener('filters-clear', () => {
+      for (const bar of this.#bars() as Array<Bar & { clearAll?: () => void }>) bar.clearAll?.();
+    });
   }
 
   /**
@@ -252,6 +270,10 @@ export class SherpaProvider extends SherpaElement {
       this.#opened = null;
     }
     this.#sources = { ...options.sources };
+    // BEFORE answering: an answer binds, and a bind starts the first load.
+    this.#states?.abort();
+    this.#states = new AbortController();
+    this.#watchStates(this.#states.signal);
     for (const asked of this.#asked.values()) this.#answer(asked);
     this.#views?.abort();
     this.#views = null;
@@ -474,6 +496,51 @@ export class SherpaProvider extends SherpaElement {
 
   /** Stops the Views' listeners when the sources change. */
   #views: AbortController | null = null;
+  /** Stops watching the sources' loading, emptiness and failure. */
+  #states: AbortController | null = null;
+
+  /**
+   * Each source's loading, emptiness and failure, drawn on the card of every
+   * component it answers — so no page writes `data-loading` by hand. Loading
+   * and a failure reach every data component's card; empty and NO MATCHES a
+   * ROWS one's only, as a chart under the View alone still has its rows.
+   * Will, TODO 58. TRAP T-a-container-shows-its-datas-state
+   */
+  #watchStates(signal: AbortSignal): void {
+    for (const source of Object.values(this.#sources)) {
+      const cards = (rowsOnly: boolean): HTMLElement[] => [...new Set([...this.#asked.keys()]
+        .filter((el) => {
+          if (this.#resolve(el) !== source) return false;
+          const shape = ((el.constructor as { asks?: DataAsk }).asks ?? { shape: 'rows' }).shape;
+          return rowsOnly ? shape === 'rows' : shape !== 'scope' && shape !== 'state';
+        })
+        .map(containerOf).filter((c): c is HTMLElement => !!c))];
+      let slow: ReturnType<typeof setTimeout> | undefined;
+      source.addEventListener('loading', (event) => {
+        clearTimeout(slow);
+        const loading = !!(event as CustomEvent).detail?.loading;
+        if (loading) slow = setTimeout(() => { for (const c of cards(false)) c.toggleAttribute('data-loading', true); }, SLOW_LOAD);
+        else for (const c of cards(false)) c.removeAttribute('data-loading');
+      }, { signal });
+      source.addEventListener('change', (event) => {
+        const { total } = (event as CustomEvent).detail as { total: number };
+        const { filter, search } = source.state;
+        const state = total > 0 ? null : filter || search ? 'no-matches' : 'empty';
+        for (const c of cards(false)) if (c.dataset['state'] === 'error') delete c.dataset['state'];
+        for (const c of cards(true)) {
+          if (state) c.dataset['state'] = state;
+          else delete c.dataset['state'];
+        }
+      }, { signal });
+      source.addEventListener('error', (event) => {
+        const { error } = (event as CustomEvent).detail as { error: unknown };
+        for (const c of cards(false)) {
+          c.dataset['state'] = 'error';
+          c.dataset['errorMessage'] = error instanceof Error ? error.message : String(error);
+        }
+      }, { signal });
+    }
+  }
   /** The View on screen. */
   #view: string | undefined;
 

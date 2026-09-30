@@ -164,9 +164,14 @@
        filter waits for Apply. `?remote=0` turns it off. Kept for the session.
        TRAP T-apply-and-discard-wait-for-a-change */
     session.persist('/debug/remote', { guard: (v) => typeof v === 'boolean' });
+    // `?fail` makes every Records load FAIL, to show a card's error. TODO 58.
+    session.persist('/debug/fail', { guard: (v) => typeof v === 'boolean' });
     {
-      const flag = new URLSearchParams(location.search).get('remote');
+      const params = new URLSearchParams(location.search);
+      const flag = params.get('remote');
       if (flag !== null) session.set('/debug/remote', flag !== '0');
+      const fail = params.get('fail');
+      if (fail !== null) session.set('/debug/fail', fail !== '0');
     }
     /* Each Context's kept Query, under its own name. TRAP T-navigating-sets-up-the-page */
     for (const context of ['records', 'dashboard']) {
@@ -382,6 +387,7 @@
          no Context can forget a step. TRAP T-a-page-is-its-definition
          TRAP T-navigating-sets-up-the-page */
       const remote = session.get('/debug/remote') === true;
+      const fail = session.get('/debug/fail') === true;
       const definition = DEFINED.has(name) ? await (await fetch(`/examples/definitions/${name}.json`)).json() : null;
       // SEED FIRST: a source over an empty store has no values to offer.
       await customersReady;
@@ -389,7 +395,10 @@
       const source = definition ? await provider.open(definition, {
         /* `?remote` makes the records ACT remote, so every filter waits for
            Apply. TRAP T-apply-and-discard-wait-for-a-change */
-        stores: { customers: remote ? spoofRemote(customerStore, { delay: 800 }) : customerStore, alerts: alertStore },
+        stores: {
+          customers: remote || fail ? spoofRemote(customerStore, { delay: remote ? 800 : 0, fail: fail ? 1 : 0 }) : customerStore,
+          alerts: alertStore,
+        },
         views: PRESET_VIEWS[name], view, session,
       }) : undefined;
       if (token !== loadToken) return;

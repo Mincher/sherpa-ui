@@ -5,6 +5,9 @@
   Public API:
     data-elevation  none (default) | sm | md | lg
     data-loading    show the loading overlay (ratified boolean-verb state)
+    data-state      empty | no-matches | error — its default content, IN PLACE of
+                    the body. Written by the provider. TRAP T-a-container-shows-its-datas-state
+    data-error-message  the error's own words, under its heading
     data-padding    none | sm | base (default) | lg
     data-row-span       4 | 6 | 8 | 10 | 12 — a FIXED height of N layout-grid rows.
                     The body's content fills it, so a chart draws into the whole
@@ -16,8 +19,8 @@
                     GRID, then the pager — the grid grows, the pager stays put.
                     Not needed for the common one-child card.
 
-  No data-state attribute: slotting empty / error shows that overlay, via the
-  base class reflecting data-has-{slot}.
+  Slotting empty / error shows that overlay too, via the base class reflecting
+  data-has-{slot}; a slotted one replaces the default content.
 
   Slots:
     (default) — the card body
@@ -27,7 +30,10 @@
     empty     — empty-state content; slotting it shows the empty overlay (data-has-empty)
     error     — error-state content; slotting it shows the error overlay (data-has-error)
 
-  Fires: nothing by itself — it's a surface. Consumers wire their own controls.
+  Fires:
+    data-refresh  — Retry, on an error
+    state-dismiss — Dismiss, on an error: the overlay goes, the last data stays
+    filters-clear — Clear filters, on no matches
 -->
 <template id="default">
   <header class="header" part="header">
@@ -43,14 +49,29 @@
   </footer>
 
   <div class="state" role="status" aria-live="polite" part="state">
+    <!-- Each state's DEFAULT content, composed; a slotted one replaces it.
+         TRAP T-a-container-shows-its-datas-state -->
     <slot name="loading" class="state-loading">
-      <span class="spinner" aria-label="Loading"></span>
+      <sherpa-loader data-orientation="vertical"><span slot="label">Loading…</span></sherpa-loader>
     </slot>
     <slot name="empty" class="state-empty">
-      <span class="state-text">Nothing to show yet.</span>
+      <sherpa-empty-state class="empty-default" data-illustration="data" data-size="sm"
+                          data-heading="No data yet" data-description="There is nothing here yet."></sherpa-empty-state>
+      <!-- The words as CONTENT: any child, whitespace too, replaces data-description. -->
+      <sherpa-empty-state class="no-matches-default" data-illustration="search" data-size="sm"
+                          data-heading="No matches">
+        <span>Nothing matches these filters.</span>
+        <sherpa-button slot="action" class="clear-filters">Clear filters</sherpa-button>
+      </sherpa-empty-state>
     </slot>
     <slot name="error" class="state-error">
-      <span class="state-text">Something went wrong.</span>
+      <sherpa-empty-state class="error-default" data-illustration="error" data-size="sm"
+                          data-heading="The data could not load">
+        <span class="error-message"></span>
+        <!-- RETRY resolves it, so it is the CTA; Dismiss does not. -->
+        <sherpa-button slot="action" class="retry" data-look="saturated">Retry</sherpa-button>
+        <sherpa-button slot="action" class="dismiss">Dismiss</sherpa-button>
+      </sherpa-empty-state>
     </slot>
   </div>
 </template>

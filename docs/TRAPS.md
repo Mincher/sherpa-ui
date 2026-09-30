@@ -590,6 +590,39 @@ overflowing until the window happened to be resized.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
+### T-a-container-shows-its-datas-state
+
+**A container shows what its DATA is doing, in place of its body** — Will,
+TODO 58: loading (a spinner and "Loading…"), no data (the data illustration),
+no MATCHES (the search one, and Clear filters), and an error (its own words,
+Retry as the CTA because it resolves it, Dismiss as a plain button). Each has
+a DEFAULT, composed from `sherpa-loader`, `sherpa-empty-state` and
+`sherpa-button`, shown by `data-state` (or `data-loading`); a slotted state
+still replaces its default. Loading wins over the rest. "No data" and "no
+matches" are two states on purpose: a filter that matched nothing is not an
+empty table (`sherpa-a-zero-row-view-reads-as-a-broken-filter`). Retry and
+Clear filters are REQUESTS (`data-refresh`, `filters-clear`); Dismiss is the
+card's own — its overlay goes, the last data stays.
+
+**The PROVIDER draws it, so no page writes it.** It watches each source's
+`loading`, `change` and `error` — BEFORE it answers anyone, as an answer
+binds and a bind starts the first load — and writes the card of every
+component it answers. Loading shows only after 300 ms, so a quick load never
+flashes. Loading and a failure reach every data component's card; empty and
+no matches a ROWS component's only, as a chart under the View alone still has
+its rows. It answers `data-refresh` (a card's Retry, a bar's Refresh) with a
+forced load, and `filters-clear` by resetting every bar. A store that cannot
+answer at `openSource()` no longer stops the page: `declareFromRows` reports
+`values-unread`, and the first load shows the failure on its card.
+
+- Site: `src/components/sherpa-container/sherpa-container.ts`
+- Site: `src/components/sherpa-container/sherpa-container.html`
+- Site: `src/components/sherpa-container/sherpa-container.css`
+- Site: `test/e2e/reforged-container.spec.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `test/e2e/reforged-card-data-states.spec.ts`
+
 ### T-the-nav-is-a-menu-on-a-phone
 
 **On a phone the nav is a MENU, and it is the SAME `sherpa-nav`** — TODO 17b.
@@ -11305,7 +11338,6 @@ their component's geometry.
 
 - Site: `src/core/sherpa-motion.css`
 - Site: `src/components/sherpa-loader/sherpa-loader.css`
-- Site: `src/components/sherpa-container/sherpa-container.css`
 
 ### T-anchoring-is-generic
 

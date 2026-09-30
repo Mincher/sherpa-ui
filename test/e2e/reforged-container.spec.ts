@@ -138,3 +138,57 @@ test('slotting [slot="empty"] shows the empty overlay (slot-driven, D6)', async 
   expect(r.error).toBe(false);
   expect(r.loading).toBe(false);
 });
+
+/**
+ * THE DATA'S STATE, IN PLACE OF THE BODY — TODO 58. Empty, no matches and an
+ * error each show their own default content; an error says its words and
+ * offers Retry (the CTA) and Dismiss; loading wins over the rest.
+ * TRAP T-a-container-shows-its-datas-state
+ */
+test('each data state shows its own default, and its buttons ask or dismiss', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-container') as HTMLElement & {
+      rendered?: Promise<void>; populate(d: unknown): void;
+    };
+    el.innerHTML = '<p>body</p>';
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const sr = el.shadowRoot!;
+    const on = (sel: string) => !!sr.querySelector<HTMLElement>(sel)?.checkVisibility();
+    const look = () => ({
+      loading: on('.state-loading sherpa-loader'), empty: on('.empty-default'),
+      noMatches: on('.no-matches-default'), error: on('.error-default'),
+    });
+    const heard: string[] = [];
+    for (const n of ['data-refresh', 'state-dismiss', 'filters-clear']) el.addEventListener(n, () => heard.push(n));
+    const press = (sel: string) => (sr.querySelector(sel) as HTMLElement).shadowRoot!.querySelector<HTMLElement>('button')!.click();
+    const out: Record<string, unknown> = {};
+    for (const state of ['empty', 'no-matches', 'error', 'loading']) {
+      el.populate({ state, message: 'The server did not answer.' });
+      await settle();
+      out[state] = look();
+    }
+    el.populate({ state: 'no-matches' });
+    await settle();
+    press('.clear-filters');
+    el.populate({ state: 'error', message: 'The server did not answer.' });
+    await settle();
+    out['said'] = sr.querySelector('.error-message')?.textContent;
+    out['cta'] = sr.querySelector('.retry')?.getAttribute('data-look');
+    press('.retry');
+    press('.dismiss');
+    await settle();
+    out['dismissed'] = { state: el.dataset['state'] ?? null, body: on('.state') };
+    return { ...out, heard };
+  });
+  const none = { loading: false, empty: false, noMatches: false, error: false };
+  expect(r['empty']).toEqual({ ...none, empty: true });
+  expect(r['no-matches']).toEqual({ ...none, noMatches: true });
+  expect(r['error']).toEqual({ ...none, error: true });
+  expect(r['loading']).toEqual({ ...none, loading: true });
+  expect(r['said']).toBe('The server did not answer.');
+  expect(r['cta']).toBe('saturated');
+  expect(r['dismissed']).toEqual({ state: null, body: false });
+  expect(r['heard']).toEqual(['filters-clear', 'data-refresh', 'state-dismiss']);
+});

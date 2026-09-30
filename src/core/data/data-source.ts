@@ -988,7 +988,19 @@ export class DataSource extends EventTarget {
       if (facts.type === 'number') return facts.min == null || facts.max == null;
       return (facts.advanced ?? facts.custom) !== 'only' && !this.#domains.has(f);
     });
-    const rows = open.length ? (await this.store.load({})).rows : [];
+    let rows: Row[] = [];
+    try {
+      if (open.length) rows = (await this.store.load({})).rows;
+    } catch (error) {
+      /* A store that cannot answer yet must not stop the page: its fields
+         offer no values, and the first load shows the failure on its card.
+         TRAP T-a-container-shows-its-datas-state */
+      report({
+        code: 'values-unread',
+        message: 'declareFromRows: the rows could not be read, so these fields offer no values yet.',
+        at: { fields: open.join(','), error: error instanceof Error ? error.message : String(error) },
+      });
+    }
     for (const field of fields) {
       const facts = this.#fields.get(field) ?? {};
       const held = open.includes(field)

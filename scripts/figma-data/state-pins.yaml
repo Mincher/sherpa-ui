@@ -141,10 +141,8 @@ sherpa-code-block:
   '&[data-copied] .copied-label': success
 
 sherpa-container:
-  # Container pins Style=default at its root. No Figma design for the error
-  # overlay; its text keeps the critical ink it had, as a pin.
+  # Container pins Style=default at its root.
   '&': default
-  '&[data-has-error] .state-text': critical
 
 sherpa-dialog:
   # Dialog pins Style=default at its root. A data-status on the host still wins
