@@ -157,3 +157,65 @@ test('a Records panel field switches back to Simple after a typed row, and keeps
   expect(r.simple).toEqual({ advanced: false, rows: 2, total: r.picked });
   expect(r.advanced).toEqual(r.typed);
 });
+
+/**
+ * WILL'S BUG, TODO 151: "Moving a filter across scopes doesn't retain the
+ * simple/advanced mode state." A move redraws the field from the Query. Its
+ * menu is then built at the NEXT flip — and took the draw-time answer a tick
+ * later, which put the mode back. With a reader's own presses.
+ * TRAP T-a-late-built-menu-takes-the-answer-as-it-stands
+ */
+test('a field sent up keeps its mode, and flips to Advanced again with the rows it kept', async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.setViewportSize({ width: 1700, height: 1200 });
+  await page.goto('http://localhost:4200/?context=records');
+  await page.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
+  await page.evaluate(() => {
+    (document.querySelector('sherpa-provider') as HTMLElement & { filterMode: string }).filterMode = 'panel';
+  });
+  const owner = (scope: string) => page.locator(`#filter-panel .scope[data-scope="${scope}"] .field[data-field="owner"]`);
+  type Source = {
+    debugState(): { total: number };
+    query: { applied: { scopes: Record<string, { readings: Record<string, { mode?: string; conditions?: { op: string }[] }> } | undefined> } };
+  };
+  const read = (scope: string): Promise<{ total: number; mode: string | null; ops: string[]; advanced: boolean; pressed: string | null; rows: number }> =>
+    page.evaluate((at) => {
+      const source = (window as unknown as { sherpa: { source: Source } }).sherpa.source;
+      const held = source.query.applied.scopes[at]?.readings['owner'];
+      // A move redraws the panel a moment after the Query changes: it may not be there yet.
+      const field = (document.querySelector('#filter-panel') as HTMLElement).shadowRoot!
+        .querySelector<HTMLElement>(`.scope[data-scope="${at}"] .field[data-field="owner"]`);
+      return {
+        total: source.debugState().total, mode: held?.mode ?? null, ops: (held?.conditions ?? []).map((c) => c.op),
+        advanced: !!field?.hasAttribute('data-advanced'),
+        pressed: field?.querySelector('.field-advanced')?.getAttribute('aria-pressed') ?? null,
+        rows: field?.querySelector('sherpa-menu')?.shadowRoot?.querySelectorAll('.condition-row').length ?? 0,
+      };
+    }, scope);
+
+  // One owner, then Advanced: "is not" that owner — every other row.
+  await expect.poll(async () => (await read('data')).pressed).toBe('false');
+  const all = (await read('data')).total;
+  await owner('data').locator('.value').nth(1).locator('.body').click();
+  await expect.poll(async () => (await read('data')).total).toBeLessThan(all);
+  const simple = (await read('data')).total;
+  const isNot = all - simple;
+  await owner('data').locator('.field-advanced button').click();
+  await owner('data').locator('sherpa-menu .condition-row').first().locator('.condition select').selectOption('ne');
+  await expect.poll(() => read('data')).toMatchObject({ ops: ['ne'], total: isNot });
+
+  // Back to Simple — both answers are kept — and UP to the View.
+  await owner('data').locator('.field-advanced button').click();
+  await expect.poll(() => read('data')).toMatchObject({ mode: 'simple', total: simple });
+  await owner('data').locator('.field-raise button').click();
+  await expect.poll(() => read('view')).toMatchObject({ mode: 'simple', total: simple, advanced: false, pressed: 'false', ops: ['ne'] });
+
+  // Advanced again, in the View: the rows it kept answer, and the Query says so.
+  await owner('view').locator('.field-advanced button').click();
+  await expect.poll(() => read('view')).toEqual({ total: isNot, mode: 'advanced', ops: ['ne'], advanced: true, pressed: 'true', rows: 1 });
+
+  // And DOWN again, still Advanced.
+  await owner('view').locator('.field-lower button').click();
+  await expect.poll(() => read('data')).toEqual({ total: isNot, mode: 'advanced', ops: ['ne'], advanced: true, pressed: 'true', rows: 1 });
+});

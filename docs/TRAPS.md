@@ -1152,7 +1152,9 @@ header gets ONE chip — the View's Add list stops offering it.
 with a down arrow, in the same button group. It is the same request the
 other way — `{ scope: <the scope>, ids, from: 'view' }` — and the View LETS
 GO: the field is held below first, so its answer moves there and is not
-cleared.
+cleared. Then the answer is written AGAIN, whole: the bar below is freed as
+the View lets go, and reports the answer it kept from before the field went
+up — an old one, which put a filter sent down in Advanced back to Simple.
 
 The SOURCE names the one scope (`describe('view')` → `sendTo`), never the
 panel: where the field came up from this session, else the ONLY scope that
@@ -9042,6 +9044,27 @@ merely present ones, because a menu in Advanced mode always holds one row.
 - Site: `src/core/data/filter-state.ts`
 
 ---
+
+### T-a-late-built-menu-takes-the-answer-as-it-stands
+
+A panel field drawn as chips has NO menu. One is built the first time the
+field flips to Advanced — and it used to be filled from `def.state`, the
+answer as the source DREW it, a tick after it rendered.
+
+That is right at draw and wrong at a flip. A field the Query holds as "Simple,
+with rows kept" — every field that was flipped back, then moved across a scope
+— was drawn Simple; its f(x) built the menu, set Advanced, and the late fill
+wrote `mode: 'simple'` back over it. The button read ON, the Query read
+Simple, and the next move drew it Simple: Will, TODO 151.
+
+So `#giveMenu(…, restore)` fills from the draw-time state only AT DRAW. A
+menu built later takes the answer as it stands NOW, set by whoever built it:
+the flip gives it the rows the Query kept and the chips as they are ticked;
+a source's steer gives it its own reading.
+
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `test/e2e/reforged-panel-keeps-both-answers.spec.ts`
+
 
 ### T-a-rebuilt-row-reads-empty-for-a-tick
 

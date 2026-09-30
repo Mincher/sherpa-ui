@@ -1006,6 +1006,10 @@ export class DataSource extends EventTarget {
     this.hold(VIEW, this.scope(VIEW).filter((f) => f !== field));
     // A chart's own scope takes the picks; the View's answer went with its hold.
     if (part) this.write(to, field, answer?.picked?.length ? { picked: [...answer.picked] } : undefined);
+    /* THE VIEW'S ANSWER WINS, whole — its mode and its rows. The bar below is
+       freed as the View lets go, and reports the answer IT kept from before
+       the field went up: an old one. TRAP T-send-to-view-filters */
+    else if (answer) this.select(field, answer.picked ?? [], answer);
     this.#cameFrom.delete(field);
     this.commit();
     this.#drawBars(VIEW);

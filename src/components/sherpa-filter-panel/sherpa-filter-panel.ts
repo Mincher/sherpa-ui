@@ -785,7 +785,7 @@ export class SherpaFilterPanel extends SherpaElement {
        and the next Apply reported it unanswered: adding Email reset Owner.
        TRAP T-a-conditioned-field-opens-on-its-rows */
     const opens = def.state?.mode ?? (readingRows(def.state ?? {}).length ? 'advanced' : 'simple');
-    if (box.hasAttribute('data-advanced-ok') && opens === 'advanced') this.#setCustom(held, true);
+    if (box.hasAttribute('data-advanced-ok') && opens === 'advanced') this.#setCustom(held, true, true);
     return box;
   }
 
@@ -798,7 +798,7 @@ export class SherpaFilterPanel extends SherpaElement {
    * the same control without being the same element.
    * TRAP T-a-panel-builds-its-own-menus
    */
-  #giveMenu(held: Held, host: HTMLElement, inline = false, force = false): void {
+  #giveMenu(held: Held, host: HTMLElement, inline = false, force = false, restore = true): void {
     const def = held.def;
     const kind = kindOf(def);
     // A run of chips answers it already; only its OWN body needs a menu.
@@ -821,7 +821,10 @@ export class SherpaFilterPanel extends SherpaElement {
     }
     held.menu = menu;
     host.append(menu);
-    this.#fill(menu, items, def.state);
+    /* `restore` off: a menu built AFTER the draw must not take the draw-time
+       answer a tick later — it undid the flip that built it.
+       TRAP T-a-late-built-menu-takes-the-answer-as-it-stands */
+    this.#fill(menu, items, restore ? def.state : undefined);
   }
 
   /**
@@ -1273,10 +1276,17 @@ export class SherpaFilterPanel extends SherpaElement {
    *  TRAP T-conditions-are-opt-in-per-field */
   #flipCondition(held: Held): void {
     const on = !held.box.hasAttribute('data-advanced');
+    const built = !held.menu;
     this.#setCustom(held, on);
+    const menu = held.menu as (HTMLElement & { reading: FieldReading }) | undefined;
+    /* BUILT AT THIS FLIP: it takes the rows the Query kept, and the chips as
+       they are ticked NOW. TRAP T-a-late-built-menu-takes-the-answer-as-it-stands */
+    const kept = held.def.state;
+    if (on && built && menu && kept && readingRows(kept).length) {
+      menu.reading = { ...kept, picked: this.#picked(held), mode: 'advanced' };
+    }
     /* CARRY THE CHIPS OVER on the first switch, and while the rows still mirror
        them: X and Y become Equals X OR Equals Y. TRAP T-both-answers-are-kept */
-    const menu = held.menu as (HTMLElement & { reading: FieldReading }) | undefined;
     const now = menu?.reading;
     if (on && menu && now && (now.mirror || !(now.conditions ?? []).length)) {
       menu.reading = { ...now, picked: this.#picked(held), mode: 'advanced', mirror: true };
@@ -1294,7 +1304,7 @@ export class SherpaFilterPanel extends SherpaElement {
   }
 
   /** Put a field in Advanced mode, or take it out: its flag, its switch, its menu. */
-  #setCustom(held: Held, on: boolean): void {
+  #setCustom(held: Held, on: boolean, atDraw = false): void {
     held.box.toggleAttribute('data-advanced', on);
     held.box.querySelector('.field-advanced')?.setAttribute('aria-pressed', String(on));
 
@@ -1304,7 +1314,7 @@ export class SherpaFilterPanel extends SherpaElement {
        TRAP T-a-panel-builds-its-own-menus */
     const body = held.box.querySelector('.field-body');
     if (on && !held.menu && body) {
-      this.#giveMenu(held, body as HTMLElement, true, true);
+      this.#giveMenu(held, body as HTMLElement, true, true, atDraw);
     }
     if (held.menu) {
       /* The MENU refuses Advanced mode unless the field opted in, and a

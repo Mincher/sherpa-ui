@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**56 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**57 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -56,6 +56,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16j | 137 | A number RANGE filter's values do not match between the filter panel and the filter toolbar | bug |
 | ✅ | 16k | 147 | A chip switched off under the pointer leaves an EMPTY tooltip: the whole tooltip hides | bug |
 | ✅ | 16l | 148 | After a Reset, a date chip's value label reads `Unassigned` | bug |
+| ✅ | 16m | 151 | A filter moved across scopes does not keep its Simple or Advanced mode | bug |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | ❓ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ⬜ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
@@ -106,6 +107,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 38 | 80 | Container and Data Viz headers: Figma's new button styling and grouping | component |
 | ✅ | 39 | 14 | An example of real-time data | feature |
 | ⬜ | 39a | 128 | A gauge's tooltip names the segment as the legend does | quick |
+| ⬜ | 39b | 150 | EXPLORE — how the example gauge's risk score is worked out; THRESHOLDS in the central Query | explore |
 | ⬜ | 40 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | ⬜ | 40a | 143 | EXPERIMENT, later — scrolled-past metrics become a compact sticky header; a toggle in Settings › Experiments | explore |
 | | | | **G — Overlay panels** | |
@@ -953,6 +955,27 @@ the header bar's Reset emptied the Date chip's RANGE calendar, and the menu
 wrote "no first day" into it as a day. A kept range with no ends holds none
 now. It came in with 137 (an emptied date keeps its range shape). If you did
 see the word `Unassigned` on a date chip, say where — I could not make it.
+
+### `[x]` ✅ 151 — BUG: a filter moved across scopes does not keep its mode
+
+Will, 2026-09-30, a minor bug to queue: *"Moving a filter across scopes
+doesn't retain the simple/advanced mode state."*
+
+**✅ Done 2026-09-30. Two causes, both fixed.**
+
+- **Sent DOWN, the mode went back.** As the View let go of the field, the
+  toolbar below was freed and reported the answer IT had kept from before the
+  field went up. That old answer replaced the one that came down. The View's
+  answer now wins, whole — its mode and its rows.
+- **After any move, f(x) did not hold.** A move redraws the field. A field
+  drawn Simple has no menu; its first f(x) press builds one. That menu then
+  took the answer as it was DRAWN, a tick later — Simple — and undid the
+  press. The button read on, the Query read Simple. A menu built at a press
+  now takes the answer as it stands.
+
+The test uses a reader's own presses: tick, Advanced, "is not", Simple, send
+up, Advanced, send down.
+`T-a-late-built-menu-takes-the-answer-as-it-stands` · `T-send-to-view-filters`
 
 ### `[x]` ✅ 142 — The shell's panel areas stay put while the page scrolls
 
@@ -2155,6 +2178,35 @@ Will, 2026-09-26, an alternative to 58 for later. Content is never replaced:
 Build 58 so its states are data, not markup, and this is a second rendering of
 the same three states.
 
+### `[ ]` 150 — EXPLORE: the gauge's risk score, and thresholds in the central Query
+
+Will, 2026-09-30: *"We need to take a look at how the example gauge's risk
+score is being calculated.*
+
+*I feel like this is probably a compound filter across fields and values with
+various conditions. We cover this type of scenario with 'Presets' or Saved
+filters.*
+
+*We don't support thresholds in the centralised query system. If we did then
+a gauge (or any component potentially) could request prepared data, with
+thresholds it provides, to present it back to the user.*
+
+*Thresholds could also be part of the data and data shaping without the gauge
+(or any component) providing them."*
+
+**What is there today** (read 2026-09-30, nothing changed):
+
+- The score is NOT a filter. It is `100 − mean(health)` over every matching
+  row, worked out by hand in `examples/contexts/records.js` — the one
+  component on the page that the provider does not answer.
+- The thresholds are written in THREE places, and nothing joins them: the
+  gauge's `data-zones` (`0-20`, `20-40`, `40-100`), the legend's zone names
+  (typed in `records.js`), and the saved filter "At risk" (`health < 60`).
+
+So the two ways you name are the question: a component ASKS for data shaped
+by thresholds it gives, or the thresholds are part of the data's own schema
+and every component gets them. Either way the three copies become one.
+
 ### `[ ]` 128 — A gauge's tooltip names the segment as the legend does
 
 Will, 2026-09-30: *"Gauge tooltips should match the segment name as shown in
@@ -3356,6 +3408,8 @@ One line each. The detail is in git and in the trap named.
 - 149: queued — the legend's items become swatch chips
 - 148: an emptied date range holds no ends — the chip read `undefined` after a Reset
 - 121: a panel field's Clear and Send to are one button group
+- 151: a filter moved across scopes keeps its mode — the View's answer wins on the way down, and a menu built at a flip takes the answer as it stands — `T-a-late-built-menu-takes-the-answer-as-it-stands`
+- 150: queued — the gauge's risk score, and thresholds in the central Query
 - 141: Advanced is an f(x) icon button at the end of a menu's and a panel field's header; the panel's flip reports once its rows are drawn — `T-a-filter-menu-has-two-modes`
 - 123: a chip switched off keeps its results badge; the source counts an off answer, and a saved filter, on or off — `T-a-chip-counts-its-own-results`
 - 139: a chained chip's face shows its values — `U, an` — not the condition labels
