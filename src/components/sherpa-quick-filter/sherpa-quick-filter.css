@@ -93,16 +93,6 @@
   border-width: var(--sherpa-border-width-sm, 1px);
 }
 
-/* An ADVANCED chip takes the INFO edge and ink. The `fx` badge says the same
-   thing in the other channel. TRAP T-a-conditioned-chip-reads-as-info */
-:host([data-condition="advanced"][data-current]) :is(.body, .caret) {
-  border-color: var(--sherpa-style-info-border-base-1, #008bba);
-}
-:host([data-condition="advanced"][data-current]) .count {
-  border-color: var(--sherpa-style-info-border-base-1, #008bba);
-  color: var(--sherpa-style-info-content-base, #006c91);
-}
-
 /* PENDING: changed, not yet applied — the active EDGE, and no fill (its pin
    keeps it default). TRAP T-a-pending-chip-has-no-fill */
 :host([data-pending]) :is(.body, .caret) {

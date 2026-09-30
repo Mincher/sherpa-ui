@@ -123,7 +123,8 @@ props:
     kind: style
     description: >-
       written BY the chip: simple | advanced — which condition it holds, absent when it holds none.
-      `advanced` reads as `info`, not the plain on-tint. TRAP T-a-conditioned-chip-reads-as-info
+      No colour follows it: an Advanced chip is active, as a Simple one. TRAP
+      T-a-conditioned-chip-reads-as-active
   - $type: prop
     name: data-count
     type: string

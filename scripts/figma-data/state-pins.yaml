@@ -20,16 +20,13 @@ sherpa-quick-filter:
   '&[data-current]': active
   # On but holding no values — the contradiction reads as a warning.
   '&[data-current][data-empty]': warning
-  # A CONDITION is an answer of a different kind, so it reads differently:
-  # info, never the plain on-tint. Will, 2026-09-30 (TODO 138): back from success.
-  # TRAP T-a-conditioned-chip-reads-as-info
-  '&[data-current][data-condition="advanced"]': info
+  # An ADVANCED chip takes no pin of its own: it is ON, so it is active, as a
+  # Simple one. Will, 2026-09-30 (TODO 156). TRAP T-a-conditioned-chip-reads-as-active
   # PENDING: changed, not yet applied — NO fill, whatever it was. Its edge is the
   # active one (the chip's CSS). It turns on, or green, only once applied.
   # Will, 2026-09-26 (TODO 46). TRAP T-a-pending-chip-has-no-fill
   '&[data-pending]': default
   '&[data-current][data-pending]': default
-  '&[data-current][data-condition="advanced"][data-pending]': default
 
   # The view took this field; reads as inactive, keeps its value.
   '&[data-superseded]': inactive

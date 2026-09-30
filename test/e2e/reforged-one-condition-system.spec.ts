@@ -17,6 +17,8 @@ async function chip(page: import('@playwright/test').Page, def: Record<string, u
     await window.__settled();
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
     const c = bar.shadowRoot!.querySelector<HTMLElement>('.chips > .chip')!;
+    // The edge eases to its colour: read it once it is there.
+    await Promise.all(c.shadowRoot!.querySelector('.body')!.getAnimations().map((a) => a.finished.catch(() => {})));
     return {
       on: c.hasAttribute('data-current'),
       green: c.getAttribute('data-condition') === 'advanced',
@@ -27,15 +29,21 @@ async function chip(page: import('@playwright/test').Page, def: Record<string, u
   }, def);
 }
 
-test('a TYPED condition in list mode is Advanced: green, and no fx', async ({ page }) => {
+test('a TYPED condition in list mode is Advanced — and wears the active edge, as a Simple chip does', async ({ page }) => {
   const r = await chip(page, {
     id: 'owner', label: 'Owner', select: 'multiple', active: true, custom: true,
     op: 'contains', text: 'Da',
     options: [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }],
   });
   expect(r.green).toBe(true);
-  // INFO blue, light mode. TRAP T-a-conditioned-chip-reads-as-info
-  expect(r.edge).toBe('rgb(0, 139, 186)');
+  // The ACTIVE edge, light mode — no colour of its own. Will, TODO 156.
+  // TRAP T-a-conditioned-chip-reads-as-active
+  expect(r.edge).toBe('rgb(192, 70, 255)');
+  const simple = await chip(page, {
+    id: 'plan', label: 'Plan', select: 'multiple', active: true,
+    options: [{ value: 'Pro', label: 'Pro', selected: true }, { value: 'Free', label: 'Free' }],
+  });
+  expect(simple.edge).toBe(r.edge);
   // The badge is RESULTS since TODO 60 — never a condition's mark.
   expect(r.badge).toBe('');
 });

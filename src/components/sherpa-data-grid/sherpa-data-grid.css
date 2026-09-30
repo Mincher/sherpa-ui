@@ -360,13 +360,13 @@
 
 /* The part of a cell a TEXT column's filter matched.
  *
- * INFO blue, not the brand purple: a match is what a CONDITION found, and the
- * chip that found it wears the same blue. A reader following one colour from
- * the chip to the cell is reading one fact, not two.
- * TRAP T-a-conditioned-chip-reads-as-info */
+ * The ACTIVE colour: a match is what a CONDITION found, and the chip that
+ * found it is active. A reader following one colour from the chip to the cell
+ * is reading one fact, not two.
+ * TRAP T-a-conditioned-chip-reads-as-active */
 .cell mark.match {
   background: color-mix(in srgb,
-    var(--sherpa-style-info-border-base-1, #008bba) 24%, transparent);
+    var(--sherpa-style-active-border-base-1, #c046ff) 24%, transparent);
   color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
   border-radius: var(--sherpa-display-mode-border-rounding-sm, 2px);
 }

@@ -10000,10 +10000,10 @@ machinery was already there: `data-advanced`, `data-op`, `data-value`.
 
 **And the colour half.** `sherpa-data-grid.#lightFilterChip` gave a
 condition-answered column the `fx` glyph and left it in the plain active
-purple, because nothing wrote the chip's condition — the success rule is
-`:host([data-condition="advanced"][data-current])`. Glyph and colour now come
-from the same `state.condition`, so they cannot disagree.
-TRAP T-a-conditioned-chip-reads-as-info
+purple, because nothing wrote the chip's condition. The glyph and the chip's
+`data-condition` now come from the same `state.condition`. (The colour went
+again in TODO 156: an Advanced chip is active, as a Simple one.)
+TRAP T-a-conditioned-chip-reads-as-active
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
@@ -10608,41 +10608,31 @@ menu is right, and the grid does not move.
 ---
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 
-### T-a-conditioned-chip-reads-as-info
+### T-a-conditioned-chip-reads-as-active
 
-A chip answering with CONDITIONS wears the INFO mode: a blue edge and ink.
-It was info first, then success (Will, 2026-09-26: "not obvious enough"), and
-info again — Will, 2026-09-30, TODO 138.
+A chip answering with CONDITIONS wears the ACTIVE mode, as a chip answering
+with ticks does. It takes NO colour of its own — Will, 2026-09-30, TODO 156:
+"use the default active styling for advanced filters instead of diverging to
+use the info styling." It was info, then success (2026-09-26), then info
+again (138), each for a day.
 
-**The fill is WHITE, and that is the mode, not a bug.** `info-surface-base`
-points at `surface-default-base`. The edge and ink carry "on", with the `fx`
-badge in the other channel.
+So there is no state pin and no CSS for `data-condition`. The attribute stays,
+because three things still read it:
 
-| | fill | edge | badge |
-|---|---|---|---|
-| off | default white | grey | — |
-| active — a Simple filter | active purple | active purple | count |
-| conditioned — an Advanced filter | white | **info blue** | `fx` |
-
-**A status pin is not a look.** Before reaching for one, check what its surface
-actually resolves to; `info`, `neutral` and `default` all resolve to the plain
-surface, which is invisible on something whose job is to stand out.
+- a grid heading shows the `fx` glyph for an Advanced column;
+- an Advanced chip is never `data-empty` — a condition is an answer, so the
+  amber "on but filtering by nothing" warning would be a lie;
+- a test can ask which kind a chip is.
 
 **Which one a chip is, is the STATE's to say** — `state.condition`, see
-`T-one-condition-system`. The chip used to work it out from its menu's MODE
-while the badge read the state, so a typed condition in list mode wore `fx`
-and no colour.
+`T-one-condition-system`. `data-condition` is written by the chip in
+`#syncCondition`.
 
-The same blue runs through to the cells: a `mark.match` in the grid is
-`--sherpa-style-info-border-base-1`, so a reader follows ONE colour from the
+The same colour runs through to the cells: a `mark.match` in the grid is
+`--sherpa-style-active-border-base-1`, so a reader follows ONE colour from the
 chip that found the match to the text it matched. Change one, change the
 other.
 
-`data-condition` is written by the chip in `#syncCondition`, and an Advanced
-chip is never `data-empty` — a condition is an answer, so the amber "on but
-filtering by nothing" warning would be a lie.
-
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`

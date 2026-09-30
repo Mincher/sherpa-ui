@@ -997,10 +997,8 @@ export class SherpaDataGrid extends SherpaElement {
     const condition = held ? this.#inForce(field, held).condition : null;
     if (condition === 'advanced') chip.setAttribute('data-icon-start', CONDITION_ICON);
     else chip.removeAttribute('data-icon-start');
-    /* THE COLOUR SAYS IT TOO. The glyph alone left the chip in the plain active
-       purple, so a column answered by a condition looked like one answered by
-       a ticked list. Written from the SAME `condition`, so the two can never
-       disagree. TRAP T-a-conditioned-chip-reads-as-info
+    /* The chip is TOLD its condition too, from the SAME answer as the glyph.
+       TRAP T-a-conditioned-chip-reads-as-active
        TRAP T-an-external-chip-caret-must-open-its-condition */
     if (condition) chip.dataset['condition'] = condition;
     else chip.removeAttribute('data-condition');
