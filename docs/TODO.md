@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**60 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**59 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -61,7 +61,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16x | 169 | "Reset to default", and a View pick, take the saved filter chips off the bar | bug |
 | ✅ | 16v | 167 | A Reset in a component scope clears a chip's "moved to the View" state and its inactive look | bug |
 | ✅ | 16u | 166 | A saved filter's badge shows its count only while it is ON — the count is not always known before | bug |
-| ⬜ | 16t | 165 | A filtered grid's group row badge shows the group's TOTAL rows, not the rows shown | bug |
+| ✅ | 16t | 165 | A filtered grid's group row badge shows the group's TOTAL rows, not the rows shown | bug |
 | ✅ | 16s | 160 | Ungrouped, a page still holds fewer rows than the pager says: a row the schema refuses is dropped AFTER the page is cut | bug |
 | ✅ | 16n | 152 | Data grid pages do not keep to the row count set in the pagination: the count varies from page to page | bug |
 | ✅ | 16p | 155 | The change-scope buttons show on a panel filter only after its first edit; they must always show | bug |
@@ -1084,11 +1084,17 @@ number. A field chip that is off still keeps its badge.
 At rest the Records bar reads `Has open tickets`, `At risk`, `Unassigned`,
 with no number.
 
-### `[ ]` 165 — BUG: a filtered grid's group badge counts rows that are not shown
+### `[x]` ✅ 165 — BUG: a filtered grid's group badge counts rows that are not shown
 
 Will, 2026-09-30, a minor one: *"The badge count on a filtered data grids
 group rows should show the number of actual rows shown. Right now it show the
 total row count for the group regardless of visibility."*
+
+**✅ Done 2026-09-30.** Two causes, both fixed. With a chart bound beside the
+grid, the source counted the groups from the View's rows, so a filter on the
+grid's own bar did not reach the badge. And the grid's filter row hides rows
+the source does not know of: while that row holds a filter, the grid counts
+the rows it shows.
 
 ### `[x]` ✅ 160 — BUG: ungrouped, a page still holds fewer rows than the pager says
 
@@ -3741,6 +3747,7 @@ One line each. The detail is in git and in the trap named.
 - 121: a panel field's Clear and Send to are one button group
 - 169: a View pick keeps a scope's saved filter chips, off unless the View turns one on — `T-a-view-keeps-the-saved-filter-chips`
 - 168: a filter that lands in one scope is let go by every other — it is in ONE scope at a time — `T-send-to-view-filters`
+- 165: a group's badge counts the rows shown, under the grid's scope and its filter row — `T-a-group-is-a-data-layer-concept`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

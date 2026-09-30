@@ -1183,12 +1183,13 @@ export class SherpaDataGrid extends SherpaElement {
    * How many rows share one group value.
    *
    * THE DATA LAYER'S COUNT where it gave one: this grid may hold a page, so
-   * its own tally is a page tally. The fallback is for a grid populated by
-   * hand, with no source behind it.
+   * its own tally is a page tally. The grid's OWN tally where its filter row
+   * hides rows — the data layer does not know of those — and for a grid
+   * populated by hand, with no source behind it.
    * TRAP T-a-group-is-a-data-layer-concept
    */
   #groupSize(rows: GridRow[], field: string, key: string): number {
-    const told = this.#groups?.find((g) => g.key === key);
+    const told = this.#filters.size ? undefined : this.#groups?.find((g) => g.key === key);
     if (told) return told.count;
     return rows.filter((r) => String(r[field] ?? '') === key).length;
   }

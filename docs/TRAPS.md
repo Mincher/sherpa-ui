@@ -10508,6 +10508,15 @@ Measured on the running page, grouped by Plan: the source named four groups —
 Enterprise 24, Free 25, Pro 24, Starter 27 — and the grid drew the one that
 fitted its visual page, carrying the source's count of 24.
 
+**A count is of the rows SHOWN** (Will, TODO 165). Two ways it was not. The
+source counted from `#allRows` whenever a summary was bound beside the grid —
+and those are the VIEW's rows, without the grid's own scope
+(`T-only-the-view-trickles-down`) — so a filter on the Records bar left every
+badge at its total. Now `groups()` counts the load itself, which is whole
+whenever it is grouped or unpaged, and turns to `#allRows` only for a page.
+And the grid's own FILTER ROW hides rows the data layer never hears of: while
+it holds a filter, the grid counts what it shows.
+
 - Site: `src/core/data/store.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`

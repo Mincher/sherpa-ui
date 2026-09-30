@@ -3026,3 +3026,37 @@ test('a View-held heading marks the View\'s matches, not its own old answer', as
   expect(r.held).toEqual(['Ra']);
   expect(r.released).toEqual(['Da']);
 });
+
+/* Will, TODO 165: "The badge count on a filtered data grids group rows should
+   show the number of actual rows shown." The data layer's count is every row
+   in the group; the grid's own filter row hides some, and only the grid knows. */
+test('a group badge counts the rows SHOWN under the grid\'s own filter row', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const rows = ['Gold', 'Silver'].flatMap((tier) => [1, 2, 3, 12].map((n) => ({ name: `${tier}-${n}`, tier })));
+    const grid = await window.__mount<HTMLElement>('sherpa-data-grid', {
+      columns: [{ field: 'name' }, { field: 'tier' }],
+      rows,
+      // As a bound source hands them over: every row in the group.
+      groups: [{ key: 'Gold', value: 'Gold', count: 4 }, { key: 'Silver', value: 'Silver', count: 4 }],
+    }, { 'data-filterable': true, 'data-group-field': 'tier' });
+    await window.__settled();
+    const sr = grid.shadowRoot!;
+    const badges = (): string[] => [...sr.querySelectorAll('.group-count')].map((b) => b.textContent ?? '');
+    const type = async (value: string): Promise<void> => {
+      const input = sr.querySelector<HTMLInputElement>('.filter-cell[data-field="name"] .filter-input')!;
+      input.value = value;
+      input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+      await window.__settled();
+    };
+    const told = badges();
+    await type('-1');
+    const filtered = badges();
+    await type('');
+    return { told, filtered, cleared: badges() };
+  });
+
+  expect(r.told).toEqual(['4', '4']);
+  // "-1" keeps Gold-1, Gold-12, Silver-1, Silver-12.
+  expect(r.filtered).toEqual(['2', '2']);
+  expect(r.cleared).toEqual(['4', '4']);
+});

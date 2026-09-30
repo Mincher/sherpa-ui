@@ -1275,10 +1275,11 @@ export class DataSource extends EventTarget {
       });
       return [];
     }
-    /* EVERY matching row. `#allRows` is filled only for a `rows: 'all'` bind,
-       and a GROUPED load is never windowed, so the page IS everything then.
-       TRAP T-a-summary-binds-to-all-the-rows */
-    const rows = this.#allRows.length ? this.#allRows : this.#result.rows;
+    /* The rows a component SHOWS: an unwindowed load is those, under every
+       scope. `#allRows` is the VIEW's alone, so it stands in only for a page.
+       TRAP T-a-group-is-a-data-layer-concept */
+    const whole = this.#state.group != null || this.#state.pageSize == null;
+    const rows = !whole && this.#allRows.length ? this.#allRows : this.#result.rows;
     return groupSummaries(rows, field);
   }
 

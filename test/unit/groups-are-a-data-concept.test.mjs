@@ -75,6 +75,27 @@ test('a FILTER narrows the groups, because they count matching rows', async () =
   ]);
 });
 
+/* Will, TODO 165: "Right now it show the total row count for the group
+   regardless of visibility." A summary bound beside the grid made the source
+   keep the VIEW's rows, and the groups were counted from those. */
+test('a filter in a COMPONENT scope narrows the groups, with a summary bound beside it', async () => {
+  const src = await source();
+  src.declareScope('view', { label: 'View filters' });
+  src.declareScope('data', { label: 'Records' });
+  const chart = Object.assign(new EventTarget(), {
+    id: 'chart', setAttribute() {}, removeAttribute() {}, hasAttribute: () => false, populate() {},
+  });
+  src.bind(chart, { rows: 'all', readonly: true });
+  src.setGroup('team');
+  src.hold('data', ['team']);
+  src.write('data', 'team', { picked: ['Blue', 'Red'] });
+  await settle();
+  assert.deepEqual(src.groups(), [
+    { key: 'Blue', value: 'Blue', count: 3 },
+    { key: 'Red', value: 'Red', count: 2 },
+  ]);
+});
+
 test('the count spans PAGES — a page count is the grid\'s, not the group\'s', async () => {
   const src = await source({ pageSize: 2 });
   src.setGroup('team');
