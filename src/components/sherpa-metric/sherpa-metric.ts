@@ -42,6 +42,11 @@ interface MetricData {
 
 type Sparkline = HTMLElement & { populate?: (v: number[]) => void };
 
+/** A delta: a signed percent, two decimals at most; no sign on zero. */
+const DELTA = new Intl.NumberFormat(undefined, {
+  style: 'percent', signDisplay: 'exceptZero', maximumFractionDigits: 2,
+});
+
 /**
  * The number a tile shows when the caller gave none: the LAST reading, or the
  * sum. TRAP T-a-total-says-so-in-its-label
@@ -90,8 +95,8 @@ export class SherpaMetric extends SherpaElement {
     if (!head) return;
     for (const [from, to] of [['label', 'heading'], ['icon', 'icon']] as const) {
       const value = this.dataset[from];
-      if (value) head.dataset[to] = value;
-      else delete head.dataset[to];
+      if (value) head.setAttribute(`data-${to}`, value);
+      else head.removeAttribute(`data-${to}`);
     }
   }
 
@@ -118,14 +123,9 @@ export class SherpaMetric extends SherpaElement {
     if (data.delta != null) {
       this.dataset['delta'] = data.delta;
     } else if (data.deltaPercent != null && Number.isFinite(data.deltaPercent)) {
-      /* TWO decimals (Will, 2026-09-22). Every caller used to pass a tidy
-         literal like 3.1, so the raw interpolation never showed — until a
-         DERIVED delta arrived and the tile read "-0.6211180124223602%".
-         A percentage is a presentation value, and this is the presentation.
-         TRAP T-a-delta-is-derived-not-declared */
-      const rounded = Number(data.deltaPercent.toFixed(2));
-      const sign = rounded > 0 ? '+' : '';
-      this.dataset['delta'] = `${sign}${rounded}%`;
+      /* TWO decimals at most (Will, 2026-09-22), signed, in the reader's own
+         digits — the platform's percent. TRAP T-a-delta-is-derived-not-declared */
+      this.dataset['delta'] = DELTA.format(data.deltaPercent / 100);
     }
 
     const trend = data.trend ?? this.#deriveTrend(data.deltaPercent);

@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**41 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**40 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -154,7 +154,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 52 | 33 | Density as step offsets, and a breakpoint step | tokens |
 | ⬜ | 53 | 36 | CSS: compiled where it should inherit? | tidy |
 | ⬜ | 54 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
-| ⬜ | 55 | 84 | Use the platform: Intl for money, units and deltas; Temporal in the calendar | refactor |
+| ✅ | 55 | 84 | Use the platform: Intl for money, units and deltas; Temporal in the calendar | refactor |
 | ⬜ | 56 | 81 | Component contracts move from YAML to JSON | refactor |
 | ✅ | 56a | 111 | A spec types every JS property as `string` — `reading`, `conditions`, `open` | tidy |
 | ⬜ | 57 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
@@ -3402,7 +3402,7 @@ cardinality, a role. `data-empty` is a message string (list), a host boolean
 question: reserve `data-type` for TEMPLATE SELECTION, as four of its nine uses
 already do?
 
-### `[ ]` 84 — Use the platform: Intl for money, units and deltas; Temporal in the calendar
+### `[x]` ✅ 84 — Use the platform: Intl for money, units and deltas; Temporal in the calendar
 
 Will, 2026-09-27: *"No need to reinvent foundational things that we already
 get for free."* Measured support is in `QUERY-DESIGN.md` §4. What the repo
@@ -3417,6 +3417,17 @@ hand-rolls today:
 The DOM-free data layer stays off `Temporal` and `Math.sumPrecise` until Node
 has them. The metric's VALUE takes `Intl` options as JSON since provider P2
 (`data-format`); its delta and the upload size do not yet.
+
+**✅ Done 2026-09-30.** No hand-rolled formatter or day maths is left in the
+three:
+
+- **The metric's delta** is `Intl.NumberFormat` percent, signed, two
+  decimals at most, no sign on zero — `+12.5%`, `-4%`, `0%` in English.
+- **The upload's size** is `Intl.NumberFormat` units: `512 byte`, `12 kB`,
+  `1.5 MB`. The kilobyte is the platform's `kB` now, not `KB`.
+- **The calendar** holds the month on view as one `Temporal.PlainYearMonth`,
+  and every day, month length, weekday, step and "today" is Temporal's. Its
+  month names are the platform's too, in the reader's own language.
 
 ### `[x]` ✅ 111 — A spec types every JS property as `string`
 
@@ -4191,6 +4202,7 @@ One line each. The detail is in git and in the trap named.
 - 111: a spec types a property as its accessor does, `unknown` where nothing says
 - 118: success text and a field's description pass 4.5:1 — one step darker on their own ramps, no new hex; the a11y baseline is empty
 - 11: closed — the grid positions have callers, the edge classes are grouping's other half, the class is CSS first
+- 84: the platform formats the delta and the upload size (`Intl`), and the calendar counts its days (`Temporal`)
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

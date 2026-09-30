@@ -175,11 +175,13 @@ export class SherpaFileUpload extends SherpaElement {
     if (el) el.textContent = status;
   }
 
-  /** A byte count as B, KB or MB. */
+  /** A byte count in bytes, kilobytes or megabytes, as the platform writes the unit. */
   #formatSize(bytes: number): string {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    const [unit, n, digits] = bytes < 1024 ? ['byte', bytes, 0]
+      : bytes < 1024 * 1024 ? ['kilobyte', bytes / 1024, 0] : ['megabyte', bytes / (1024 * 1024), 1];
+    return new Intl.NumberFormat(undefined, {
+      style: 'unit', unit, unitDisplay: 'short', maximumFractionDigits: digits,
+    }).format(n);
   }
 
   get files(): File[] {
