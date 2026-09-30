@@ -58,9 +58,6 @@
   border-inline-width: 0;
 }
 
-/* The scope's HEADER stays put while its fields scroll past — a reader deep in
-   a long list still knows which scope they are in, and the Filters button stays
-   reachable. `::part`, because the summary row is in the accordion's shadow. */
 /* ONE SIZE UP. A panel header is the app's own chrome, not a card's, so its
    glyph and its switch read at the next step rather than the container
    default. Will, 2026-09-24. */
@@ -177,26 +174,22 @@
 .field[data-body] .field-body { display: block; }
 .field[data-body] .field-values { display: none; }
 
-/* ONE ROW: the chevron LEADS the heading, and the scope's buttons sit on the
-   right. Will, 2026-09-26. The chevron has no part, so the two parts after it
-   are reordered instead. Centred: a scope has no description row. */
+/* The chevron LEADS the heading. Will, 2026-09-26. The chevron has no part,
+   so the two parts after it are reordered instead. Centred: a scope has no
+   description row. */
 .scope::part(header) { align-items: center; }
 .scope::part(icon),
 .scope::part(titles) { order: 1; }
-.scope::part(actions) { order: 2; }
 
-.scope-actions {
+/* The scope's own row, FIRST in its body: only a scope with something to
+   save, in a host that saves. */
+.scope-acts { display: none; }
+.scope[data-can-save] .scope-acts {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--sherpa-display-mode-space-2xs, 4px);
+  justify-content: flex-end;
 }
-.scope-add,
-.scope-save { display: none; }
-/* Only a scope with something to save, in a host that saves. */
-.scope[data-can-save] .scope-save { display: inline-flex; }
+.scope-acts + .field { margin-block-start: var(--sherpa-display-mode-space-xs, 8px); }
 /* No wrap: "Save / filter" on two lines reads as two controls. */
-.scope[data-can-add] .scope-add {
-  display: inline-flex;
-  white-space: nowrap;
-}
+.scope-save,
+.filters-btn { white-space: nowrap; }
 

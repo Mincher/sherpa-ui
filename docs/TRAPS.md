@@ -8817,7 +8817,7 @@ and the panel is refilled when it comes back. The panel open was the hole.
 ### T-a-shut-scope-folds-like-a-bar
 
 **A SHUT scope in the filter panel hides its filters the way a narrow bar
-folds its chips, so its Filters button does what the bar's does.** Will,
+folds its chips, so the panel's Filters button does what the bar's does.** Will,
 2026-09-25: *"make the Add Filters button in the filter panel behave the same
 as the toolbar version BUT shows More Filters when the accordion is
 collapsed."*
@@ -8838,6 +8838,9 @@ shadow, which a drill cannot move, so its door OPENS THE SCOPE on the field.
 
 **Which scopes are shut is the panel's own**, kept across a redraw: nothing
 outside can see it, and a populate re-opened every scope the reader had shut.
+
+Since 124 the button is ONE, in the panel's header: its badge and its active
+state sum every shut scope, and a toggle rebuilds the whole list.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-panel-filters-button.spec.ts`
@@ -8875,7 +8878,7 @@ many filters are folded away, not how many are on — two questions, and a
 reader needs both. It is a `sherpa-badge`, pinned `default` like every Badge
 instance, so the button's own active tint never reaches it.
 
-The panel's scope button is the same door, over a SHUT scope
+The panel's one Filters button is the same door, over every SHUT scope
 (`T-a-shut-scope-folds-like-a-bar`).
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
@@ -9363,8 +9366,15 @@ Both halves are read-backs the bar did not have: `available()` was a setter
 with no getter, and `#addFilters` was private. "A host that SET something needs
 to ask what the component now holds" — `T-state-ownership`.
 
-The button lives in the ACCORDION's header, beside its chevron: it is the
-scope's own action, not a row at the end of its list.
+**ONE button, in the PANEL's header, for every scope** — Will, TODO 124:
+*"This will consolidate the filter menu for all scopes into 1 menu. We
+already show the scope for filters in the menu item description … Filters
+will get added to their default scope. It's then up to the user to move
+their scope."* It lived in each scope's accordion header until then. A row's
+value is `scope:id` — a chart's own field can share its id with a scope's —
+and its description names its scope. An Available field is listed ONCE, in
+its DEFAULT scope: the first component scope that offers it, else the View.
+A commit sends each ask to the scope its row names. Toolbars keep their own.
 
 **ONE FIELD, ONE SCOPE.** A field held by BOTH bars would draw twice, and a
 reader cannot tell which of the two is in force — the same reason the records
@@ -9389,6 +9399,13 @@ The slot is inside the `<summary>`, which is a handle by definition — so
 without `preventDefault()` on the slot, pressing a button there did its own job
 AND flipped the accordion. `preventDefault` rather than `stopPropagation`: the
 event still has to reach the button.
+
+**And a host should put nothing a reader can PRESS there.** A `<summary>` is
+a button, and a button may not hold buttons: axe reports it
+(`nested-interactive`), and it was the last structural failure in the
+accessibility baseline (TODO 117). The filter panel kept two there. Its
+`Filters` is in the panel's own header now (124), and `Save filter` is the
+first row of the scope's BODY.
 
 ---
 - Site: `src/components/sherpa-accordion/sherpa-accordion.ts`
@@ -10239,6 +10256,7 @@ a list of them, so the list is where they are managed. Will's ruling
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/core/ui/filters-button.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 
 ### T-the-field-type-decides-the-clause
 

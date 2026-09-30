@@ -66,7 +66,8 @@ test('a scope draws its presets, its fields, and nothing it cannot', async ({ pa
       // Group and Sort ARRANGE; a condition means nothing to them.
       organiseActions: ['advanced', 'clear', 'remove']
         .filter((a) => !!sr.querySelector('.field[data-field="organise"] .field-' + a)),
-      canAdd: q('.scope[data-can-add]').map((s) => s.getAttribute('data-scope')),
+      // ONE Filters button, in the panel's header, live while any scope has a list.
+      canAdd: [q('.filters-btn').length, q('.filters-btn[disabled]').length, q('.scope-add').length],
       emptyScopes: q('.scope-empty').length,
     };
   })()`) as Record<string, unknown>;
@@ -92,7 +93,7 @@ test('a scope draws its presets, its fields, and nothing it cannot', async ({ pa
   expect(r['presetActions']).toEqual([]);
   expect(r['organiseActions']).toEqual([]);
 
-  expect(r['canAdd']).toEqual(['data']);
+  expect(r['canAdd']).toEqual([1, 0, 0]);
   // An empty scope SAYS SO; absent, it reads as a bug rather than an answer.
   expect(r['emptyScopes']).toBe(1);
 });
@@ -381,24 +382,27 @@ test('the Add menu adds AND removes, and changes nothing by itself', async ({ pa
       el.addEventListener(n, (e) => heard.push([n, e.detail]));
     }
 
-    // WHAT THE MENU HOLDS: every removable field, the held ones ticked.
-    const menu = sr.querySelector('.scope[data-scope="data"] .scope-add sherpa-menu');
+    // WHAT THE MENU HOLDS: every removable field, the held ones ticked. ONE
+    // menu, in the panel's header; each row's value says its scope (TODO 124).
+    const menu = sr.querySelector('.filters-btn sherpa-menu');
     await new Promise((r) => setTimeout(r, 200));
     const rows = [...menu.querySelectorAll('.menu-row')]
       .filter((row) => !row.matches('.qf-all, .menu-all, .menu-section'))
-      .map((row) => [row.querySelector('input').value, row.querySelector('input').checked]);
+      .map((row) => [row.querySelector('input').value, row.querySelector('input').checked, row.dataset.note ?? null]);
 
     /* SEATS ticked, STATUS unticked — one of each, in one commit. */
     menu.dispatchEvent(new CustomEvent('menu-change', {
-      bubbles: true, composed: true, detail: { values: ['seats'] },
+      bubbles: true, composed: true, detail: { values: ['data:seats'] },
     }));
     await new Promise((r) => setTimeout(r, 120));
 
     return { heard, rows, after: q('.field').map((f) => f.dataset.field) };
-  })()`) as { heard: [string, unknown][]; rows: [string, boolean][]; after: string[] };
+  })()`) as { heard: [string, unknown][]; rows: [string, boolean, string | null][]; after: string[] };
 
-  // The held field is TICKED; what is left to add is not.
-  expect(r.rows).toEqual([['status', true], ['seats', false]]);
+  // The held field is TICKED; what is left to add is not. Each says its scope.
+  expect(r.rows).toEqual([
+    ['data:status', true, 'Customer records'], ['data:seats', false, 'Customer records'],
+  ]);
 
   expect(r.heard).toEqual([
     ['filter-add-request', { scope: 'data', ids: ['seats'] }],

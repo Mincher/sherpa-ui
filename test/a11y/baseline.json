@@ -2,9 +2,6 @@
   "sherpa-chip": {
     "color-contrast": 1
   },
-  "sherpa-filter-panel": {
-    "nested-interactive": 1
-  },
   "sherpa-input-text": {
     "color-contrast": 1
   },

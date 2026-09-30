@@ -9,7 +9,7 @@
  * - PanelValue — One value a field offers.
  * - PanelFilter — One field the panel draws.
  * - PanelColumn — A column Group or Sort may arrange by.
- * - PanelScope — One scope: a named group of fields, plus what its Add button offers.
+ * - PanelScope — One scope: a named group of fields, plus what the Filters menu offers for it.
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import { ORGANISE_ICONS, movedTo } from '../../core/ui/shared-constants.js';
@@ -21,7 +21,7 @@ import {
 import { menuFor, saidItems, type FilterMenuDef, type FilterMenuItem } from '../../core/ui/filter-menu.js';
 import type { SaidField } from '../../core/data/filter-face.js';
 import {
-  FILTERS_LABEL, MenuDrill, ON, filtersMenuItems, onOffMenu, type AddedFilter,
+  FILTERS_LABEL, MenuDrill, ON, filtersMenuItems, onOffMenu, type AddedFilter, type ListedFilter,
 } from '../../core/ui/filters-button.js';
 import { report } from '../../core/data/report.js';
 import {
@@ -116,7 +116,7 @@ export interface PanelColumn {
   label: string;
 }
 
-/** One scope: a named group of fields, plus what its Add button offers. */
+/** One scope: a named group of fields, plus what the Filters menu offers for it. */
 export interface PanelScope {
   scope: string;
   /** The CONTENT's own name. TRAP T-a-scope-is-named-for-its-content */
@@ -248,14 +248,17 @@ export class SherpaFilterPanel extends SherpaElement {
     for (const type of ['condition-change', 'input', 'change', 'menu-change']) {
       this.$('.scopes')?.addEventListener(type, this.#onEdited);
     }
-    // A SHUT scope's Filters menu leads with what it hides. TRAP T-a-shut-scope-folds-like-a-bar
+    // The Filters menu leads with what a SHUT scope hides. TRAP T-a-shut-scope-folds-like-a-bar
     for (const type of ['accordion-open', 'accordion-close']) {
       this.$('.scopes')?.addEventListener(type, this.#onScopeToggle);
     }
-    // CLICK, not hover: a passing pointer would drill the list out from under it.
-    this.$('.scopes')?.addEventListener('menu-drill', this.#onMenuDrill);
-    this.$('.scopes')?.addEventListener('menu-back', this.#onDrillBack);
-    this.$('.scopes')?.addEventListener('menu-close', this.#onDrillBack);
+    /* The ONE Filters menu is in the HEADER, outside `.scopes`. CLICK, not
+       hover: a passing pointer would drill the list out from under it. */
+    const filters = this.$('.filters-btn');
+    filters?.addEventListener('menu-change', this.#onAddCommit);
+    filters?.addEventListener('menu-drill', this.#onMenuDrill);
+    filters?.addEventListener('menu-back', this.#onDrillBack);
+    filters?.addEventListener('menu-close', this.#onDrillBack);
     /* THE CHIP says WHAT changed; only this panel knows WHICH SCOPE it belongs
        to, so it annotates and passes it on rather than working the
        arrangement out again. TRAP T-a-chip-knows-what-kind-it-is */
@@ -525,6 +528,7 @@ export class SherpaFilterPanel extends SherpaElement {
     const region = this.$('.scopes');
     if (!region) return;
     this.#held.clear();
+    this.#lists.clear();
     region.replaceChildren();
 
     /* ONE FIELD, ONE SCOPE. A field in two scopes would draw twice, and a
@@ -626,7 +630,6 @@ export class SherpaFilterPanel extends SherpaElement {
          `presets` SECTION it was drawn in, so it cannot say which ones are
          held. TRAP T-the-add-menu-is-the-whole-list */
       this.#lists.set(scope.scope, { held: removable, offers });
-      this.#fillFilters(box);
 
       /* An empty scope SAYS SO. Absent, it reads as a bug rather than as an
          answer — and a scope can legitimately be empty. */
@@ -637,6 +640,8 @@ export class SherpaFilterPanel extends SherpaElement {
 
       region.append(box);
     }
+    // ONE menu for every scope, once each is on the page to say if it is shut.
+    this.#fillFilters();
     /* THE MENUS ARE IN THE PAGE NOW. A detached `<sherpa-menu>` has not
        upgraded, so rows stamped before this are lost.
        TRAP T-custom-element-upgrade */
@@ -930,43 +935,99 @@ export class SherpaFilterPanel extends SherpaElement {
   }
 
   /**
-   * The scope's Filters menu — the toolbar's, row for row. A SHUT scope leads
-   * it with every filter it hides, as a narrow bar leads with its folded chips.
-   * TRAP T-a-shut-scope-folds-like-a-bar
+   * The panel's ONE Filters menu, for every scope — the toolbar's, row for
+   * row: what each scope holds, then what may be added, and each row says its
+   * scope. A SHUT scope's filters lead it, as a narrow bar leads with its
+   * folded chips. A filter is added to its DEFAULT scope — the first
+   * component scope that offers it, else the View — and the reader moves it
+   * from there. Will, TODO 124.
+   * TRAP T-the-add-menu-is-the-whole-list · TRAP T-a-shut-scope-folds-like-a-bar
    */
-  #fillFilters(box: HTMLElement): void {
-    const btn = box.querySelector<HTMLElement>('.scope-add');
-    const scope = box.dataset['scope'] ?? '';
-    const list = this.#lists.get(scope);
-    if (!btn || !list) return;
+  #fillFilters(): void {
+    const btn = this.$<HTMLElement>('.filters-btn');
+    if (!btn) return;
     if (this.#drill.menu && btn.contains(this.#drill.menu)) this.#drillOut();
+    this.#rows.clear();
+    const row = (scope: string, id: string): string => {
+      const value = `${scope}:${id}`;
+      this.#rows.set(value, { scope, id });
+      return value;
+    };
 
-    const hidden = box.hasAttribute('open') ? [] : this.#hiddenOf(scope);
-    const any = list.held.length + list.offers.length + hidden.length > 0;
-    /* ONE section for what the scope holds. SHUT, every filter it draws is
-       hidden, and each row opens its child menu. TRAP T-a-shut-scope-folds-like-a-bar */
-    const removable = new Set(list.held.map((f) => f.id));
-    const listed = new Set(hidden.map((f) => f.id));
-    const added: AddedFilter[] = [
-      ...hidden.map((f) => ({
-        id: f.id, label: f.label, removable: removable.has(f.id), hidden: true, count: this.#countOf(scope, f.id),
-      })),
-      ...list.held.filter((f) => !listed.has(f.id))
-        .map((f) => ({ id: f.id, label: f.label, removable: true, hidden: false })),
-    ];
-    box.toggleAttribute('data-can-add', any);
-    if (hidden.length) btn.dataset['badge'] = String(hidden.length);
+    /* ONE section for what the scopes hold. SHUT, every filter a scope draws
+       is hidden, and each row opens its child menu. */
+    const added: AddedFilter[] = [];
+    let hides = 0;
+    for (const scope of this.#scopes) {
+      const list = this.#lists.get(scope.scope);
+      if (!list) continue;
+      const hidden = this.#isShut(scope.scope) ? this.#hiddenOf(scope.scope) : [];
+      hides += hidden.length;
+      const removable = new Set(list.held.map((f) => f.id));
+      const listed = new Set(hidden.map((f) => f.id));
+      for (const f of hidden) {
+        added.push({
+          id: row(scope.scope, f.id), label: f.label, note: scope.label,
+          removable: removable.has(f.id), hidden: true, count: this.#countOf(scope.scope, f.id),
+        });
+      }
+      for (const f of list.held) {
+        if (listed.has(f.id)) continue;
+        added.push({ id: row(scope.scope, f.id), label: f.label, note: scope.label, removable: true, hidden: false });
+      }
+    }
+
+    // A chart's own field is that chart's: it does not stop a scope offering it.
+    const parts = new Set(this.#scopes.filter((s) => s.part).map((s) => s.scope));
+    const taken = new Set<string>();
+    for (const held of this.#held.values()) {
+      if (parts.has(held.scope)) continue;
+      if (held.def.id === 'presets') for (const o of held.def.options ?? []) taken.add(o.value);
+      else taken.add(held.def.id);
+    }
+    const offer: ListedFilter[] = [];
+    const order = [...this.#scopes.filter((s) => s.scope !== VIEW), ...this.#scopes.filter((s) => s.scope === VIEW)];
+    for (const scope of order) {
+      for (const f of this.#lists.get(scope.scope)?.offers ?? []) {
+        if (taken.has(f.id)) continue;
+        taken.add(f.id);
+        offer.push({
+          id: row(scope.scope, f.id), label: f.label, note: scope.label,
+          ...(f.readings ? { readings: f.readings } : {}),
+        });
+      }
+    }
+
+    const any = added.length + offer.length > 0;
+    btn.toggleAttribute('disabled', !any);
+    if (hides) btn.dataset['badge'] = String(hides);
     else btn.removeAttribute('data-badge');
     btn.querySelector('sherpa-menu')?.remove();
     if (!any) return;
 
     const { menu, items } = menuFor({
       id: 'add', label: FILTERS_LABEL, select: 'multiple', commit: true, selectAll: false,
-      options: filtersMenuItems(added, list.offers),
+      options: filtersMenuItems(added, offer),
     });
+    menu.setAttribute('data-align', 'end');
     btn.append(menu);
     (menu as MenuApi).items?.(items);
-    this.#syncScopeFilters(scope);
+    this.#syncFilters();
+  }
+
+  /** The Filters menu's rows: each value, and the scope and filter it stands
+   *  for — a chart's own field can share its id with a scope's. */
+  #rows = new Map<string, { scope: string; id: string }>();
+
+  /** One scope's accordion. */
+  #scopeBox(scope: string): HTMLElement | null {
+    return this.$<HTMLElement>(`.scope[data-scope="${CSS.escape(scope)}"]`);
+  }
+
+  /** Is this scope's section shut? */
+  #isShut(scope: string): boolean {
+    const box = this.#scopeBox(scope);
+    return !!box && !box.hasAttribute('open');
   }
 
   /** What a SHUT scope hides, in the order it draws them. Each preset is its own. */
@@ -1021,41 +1082,45 @@ export class SherpaFilterPanel extends SherpaElement {
   }
 
   /**
-   * The Filters button is ON only while a filter its SHUT scope hides is, and
+   * The Filters button is ON only while a filter a SHUT scope hides is, and
    * each door counts its field's picks. An open scope speaks for itself.
    * TRAP T-the-filters-button-is-a-door-not-a-filter
    */
-  #syncScopeFilters(scope: string): void {
-    const box = this.$<HTMLElement>(`.scope[data-scope="${CSS.escape(scope)}"]`)
-      ?? [...this.#held.values()].find((h) => h.scope === scope)?.box.closest<HTMLElement>('.scope');
-    const btn = box?.querySelector<HTMLElement>('.scope-add');
-    if (!box || !btn) return;
-    const shut = !box.hasAttribute('open');
-    if (shut && this.#hiddenOf(scope).some((f) => f.on)) btn.dataset['status'] = 'active';
-    else btn.removeAttribute('data-status');
+  #syncFilters(): void {
+    const btn = this.$<HTMLElement>('.filters-btn');
+    if (!btn) return;
     const menu = btn.querySelector<HTMLElement & { setCount?(value: string, count: number): void }>('sherpa-menu');
-    if (!menu || !shut) return;
-    for (const f of this.#hiddenOf(scope)) menu.setCount?.(f.id, this.#countOf(scope, f.id));
+    let on = false;
+    for (const { scope } of this.#scopes) {
+      if (!this.#isShut(scope)) continue;
+      for (const f of this.#hiddenOf(scope)) {
+        on ||= f.on;
+        menu?.setCount?.(`${scope}:${f.id}`, this.#countOf(scope, f.id));
+      }
+    }
+    if (on) btn.dataset['status'] = 'active';
+    else btn.removeAttribute('data-status');
   }
 
-  /** A scope opened or shut: its Filters menu is rebuilt for what it now hides. */
+  /** A scope opened or shut: the Filters menu is rebuilt for what is now hidden. */
   #onScopeToggle = (event: Event): void => {
     const box = event.target;
     if (!(box instanceof HTMLElement) || !box.classList.contains('scope')) return;
     const scope = box.dataset['scope'] ?? '';
     if (box.hasAttribute('open')) this.#shut.delete(scope);
     else this.#shut.add(scope);
-    this.#fillFilters(box);
+    this.#fillFilters();
   };
 
   /** A hidden filter's row asked for its child menu. TRAP T-a-row-opens-its-child-menu */
   #onMenuDrill = (event: Event): void => {
-    const box = this.pathFind(event, '.scope');
-    const menu = this.pathFind(event, '.scope-add')?.querySelector<HTMLElement>('sherpa-menu');
-    const id = String((event as CustomEvent).detail?.value ?? '');
-    if (!box || !menu || !id) return;
+    const menu = this.pathFind(event, '.filters-btn')?.querySelector<HTMLElement>('sherpa-menu');
+    // The ROW says which scope's filter it is.
+    const at = this.#rows.get(String((event as CustomEvent).detail?.value ?? ''));
+    const box = at && this.#scopeBox(at.scope);
+    if (!box || !menu || !at) return;
     event.stopPropagation();
-    const scope = box.dataset['scope'] ?? '';
+    const { scope, id } = at;
     const held = this.#held.get(`${scope}:${id}`);
     if (held) {
       void this.#openDoor(held, box, menu, held.def.label);
@@ -1402,7 +1467,7 @@ export class SherpaFilterPanel extends SherpaElement {
       && (menu?.conditions?.length ?? 0) > 0;
     held.box.toggleAttribute('data-answered', ticked || advanced);
     this.#syncSaveable();
-    this.#syncScopeFilters(held.scope);
+    this.#syncFilters();
   }
 
   /** Every field, after anything that could have changed an answer. */
@@ -1551,23 +1616,25 @@ export class SherpaFilterPanel extends SherpaElement {
       return;
     }
 
-    const btn = this.pathFind(event, '.scope-add');
-    if (!btn) return;
+    if (!this.pathFind(event, '.filters-btn')) return;
     // A DRILLED filter's pick is that filter's — never an Add or a Remove.
     if (this.#drill.home) return this.#onDrilled(event);
-    const scope = btn.closest('.scope')?.getAttribute('data-scope') ?? '';
     const want = new Set(((event as CustomEvent).detail?.values ?? []) as string[]);
 
-    /* TICKED IS HELD. The menu lists the whole scope, so what changed is the
+    /* TICKED IS HELD. The menu lists every scope, so what changed is the
        difference between what it now says and what the panel is drawing — a
-       row unticked is a REMOVE, and that is the only way to remove one.
+       row unticked is a REMOVE, and that is the only way to remove one. Each
+       row says its scope, so each ask goes to the scope it names.
        TRAP T-the-add-menu-is-the-whole-list */
-    const held = new Set((this.#lists.get(scope)?.held ?? []).map((f) => f.id));
-    const added = [...want].filter((id) => !held.has(id));
-    const gone = [...held].filter((id) => !want.has(id));
-
-    if (added.length) this.emit('filter-add-request', { scope, ids: added });
-    for (const id of gone) this.emit('filter-remove', { scope, id });
+    const adds = new Map<string, string[]>();
+    const gone: { scope: string; id: string }[] = [];
+    for (const [value, { scope, id }] of this.#rows) {
+      const held = (this.#lists.get(scope)?.held ?? []).some((f) => f.id === id);
+      if (held && !want.has(value)) gone.push({ scope, id });
+      if (!held && want.has(value)) adds.set(scope, [...(adds.get(scope) ?? []), id]);
+    }
+    for (const [scope, ids] of adds) this.emit('filter-add-request', { scope, ids });
+    for (const detail of gone) this.emit('filter-remove', detail);
   };
 
   /**

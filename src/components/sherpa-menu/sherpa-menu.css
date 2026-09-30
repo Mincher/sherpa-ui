@@ -453,6 +453,9 @@
   min-block-size: 0;
   overflow-y: auto;
 }
+/* A row keeps its height and the LIST scrolls: a flex item shrinks first, and
+   a long list squeezed every row until its note ran under the next one. */
+.rows ::slotted(*) { flex-shrink: 0; }
 
 /* ── Rows ── slotted light-DOM controls (a <label> wrapping an input, or a
    <button>), so ::slotted styles them. Transparent look: no fill until hover. */

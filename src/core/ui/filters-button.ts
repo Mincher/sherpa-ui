@@ -66,7 +66,7 @@ export function filtersMenuItems(
   return [
     // A held filter the reader cannot take off is listed only while hidden.
     ...added.filter((f) => f.removable || f.hidden).map((f) => ({
-      value: f.id, label: f.label, section: ADDED_SECTION,
+      value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}), section: ADDED_SECTION,
       ...(f.removable ? { selected: true } : { pickable: false }),
       ...(f.hidden ? { drill: true, count: f.count ?? 0 } : {}),
     })),
@@ -74,7 +74,7 @@ export function filtersMenuItems(
       value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}), section: AVAILABLE_SECTION,
     })),
     ...offer.filter((f) => f.readings)
-      .map((f) => ({ value: f.id, label: f.label, section: SAVED_SECTION })),
+      .map((f) => ({ value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}), section: SAVED_SECTION })),
   ];
 }
 

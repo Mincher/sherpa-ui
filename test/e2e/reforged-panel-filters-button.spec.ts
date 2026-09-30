@@ -5,7 +5,10 @@ import { test, expect } from './harness';
  * Filters button in the filter panel behave the same as the toolbar version
  * BUT shows More Filters when the accordion is collapsed."
  *
- * A SHUT scope hides its filters the way a narrow bar folds its chips, so its
+ * ONE button, in the panel's HEADER, for every scope (TODO 124): each row says
+ * its scope, and a filter is added to its default scope.
+ *
+ * A SHUT scope hides its filters the way a narrow bar folds its chips, so the
  * Filters menu leads with them: a door into each, a tick for each preset. The
  * badge counts them, and the button is ON while one of them is.
  * TRAP T-a-shut-scope-folds-like-a-bar
@@ -43,7 +46,7 @@ const SETUP = `
   const sr = el.shadowRoot;
   const settle = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
   const scope = () => sr.querySelector('.scope[data-scope="data"]');
-  const btn = () => scope().querySelector('.scope-add');
+  const btn = () => sr.querySelector('.filters-btn');
   const menu = () => btn().querySelector('sherpa-menu');
   /* The menu's rows in order: §Heading, a tick's value (+ ticked), › a caret. */
   const rows = () => [...menu().children].filter((n) => !n.classList.contains('qf-all')).map((n) => {
@@ -52,7 +55,8 @@ const SETUP = `
     const caret = n.hasAttribute('data-drill') ? '›' : '';
     return box ? box.value + (box.checked ? '+' : '') + caret : caret + n.dataset.value;
   });
-  const caret = (id) => menu().querySelector('.menu-row[data-value="' + id + '"] .menu-row-drill');
+  // A row's value names its SCOPE: every filter here is in the data scope.
+  const caret = (id) => menu().querySelector('.menu-row[data-value="data:' + id + '"] .menu-row-drill');
   const look = () => ({
     rows: rows(), badge: btn().getAttribute('data-badge'), on: btn().getAttribute('data-status'),
   });
@@ -62,7 +66,7 @@ const SETUP = `
   const press = (host) => host.shadowRoot.querySelector('button').click();
 `;
 
-test('one header row: the chevron leads the heading, and the buttons sit on the right', async ({ page }) => {
+test('the Filters button is in the panel header; a scope header holds no button, and Save is its body\'s first row', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     el.setAttribute('data-saveable', '');
@@ -70,23 +74,36 @@ test('one header row: the chevron leads the heading, and the buttons sit on the 
     const box = scope();
     const rect = (n) => { const b = n.getBoundingClientRect();
       return { top: b.top, bottom: b.bottom, left: b.left, right: b.right, mid: (b.top + b.bottom) / 2 }; };
+    const summary = box.shadowRoot.querySelector('.header');
     return {
-      header: rect(box.shadowRoot.querySelector('.header')),
+      header: rect(summary),
       heading: rect(box.shadowRoot.querySelector('.heading')),
       chevron: rect(box.shadowRoot.querySelector('.chevron')),
-      add: rect(btn()),
+      filters: rect(btn()),
+      reset: rect(sr.querySelector('.reset-all')),
       save: rect(box.querySelector('.scope-save')),
+      firstField: rect(box.querySelector('.field')),
+      // A summary is a button: nothing a reader can press may sit in it. TODO 117.
+      inSummary: box.querySelectorAll(':scope > [slot="actions"]').length,
+      inPanelHead: !!btn().closest('.head'),
+      // The old button is gone, not hidden.
+      old: sr.querySelectorAll('.scope-add').length,
     };
-  })()`) as Record<string, { top: number; bottom: number; left: number; right: number; mid: number }>;
+  })()`) as Record<string, { top: number; bottom: number; left: number; right: number; mid: number }> &
+    { inSummary: number; inPanelHead: boolean; old: number };
 
-  // Will, 2026-09-26: the chevron LEFT of the label, the Filters button on its row.
+  // Will, 2026-09-26: the chevron LEFT of the label.
   expect(r['chevron']!.right).toBeLessThanOrEqual(r['heading']!.left);
-  expect(r['add']!.left).toBeGreaterThanOrEqual(r['heading']!.right);
-  expect(Math.abs(r['add']!.mid - r['heading']!.mid)).toBeLessThanOrEqual(2);
-  expect(r['save']!.top).toBe(r['add']!.top);
-  expect(r['save']!.left).toBeGreaterThan(r['add']!.left);
-  // …at the header's right edge.
-  expect(r['header']!.right - r['save']!.right).toBeLessThanOrEqual(12);
+  expect(r.inSummary).toBe(0);
+  expect(r.old).toBe(0);
+  // ONE Filters button, in the panel's header, before Reset on its row.
+  expect(r.inPanelHead).toBe(true);
+  expect(r['filters']!.right).toBeLessThanOrEqual(r['reset']!.left);
+  expect(Math.abs(r['filters']!.mid - r['reset']!.mid)).toBeLessThanOrEqual(2);
+  // Save filter: under the scope's header, above its first field, at the right.
+  expect(r['save']!.top).toBeGreaterThanOrEqual(r['header']!.bottom);
+  expect(r['save']!.bottom).toBeLessThanOrEqual(r['firstField']!.top);
+  expect(r['header']!.right - r['save']!.right).toBeLessThanOrEqual(16);
 });
 
 test('open, it is the whole list; shut, it leads with what the scope hides', async ({ page }) => {
@@ -99,15 +116,15 @@ test('open, it is the whole list; shut, it leads with what the scope hides', asy
 
   // OPEN: nothing is hidden, so no section of hidden filters and no badge.
   expect(r['open']).toEqual({
-    rows: ['§Added filters', 'status+', '§Available filters', 'plan', '§Saved filters', 'custom:mine'],
+    rows: ['§Added filters', 'data:status+', '§Available filters', 'data:plan', '§Saved filters', 'data:custom:mine'],
     badge: null, on: null,
   });
   /* SHUT: every filter it draws, in its order, IN Added filters — one section,
      each row with a caret into its child menu. Only Status can be taken off,
      so only Status has a box. TRAP T-a-row-opens-its-child-menu */
   expect(r['shut']!.rows).toEqual([
-    '§Added filters', '›sort', '›at-risk', '›unassigned', 'status+›', '›seats',
-    '§Available filters', 'plan', '§Saved filters', 'custom:mine',
+    '§Added filters', '›data:sort', '›data:at-risk', '›data:unassigned', 'data:status+›', '›data:seats',
+    '§Available filters', 'data:plan', '§Saved filters', 'data:custom:mine',
   ]);
   expect(r['shut']!.badge).toBe('5');
   // ON: Status is answered, and it is hidden.
@@ -247,4 +264,65 @@ test('a shut scope stays shut when the panel is filled again', async ({ page }) 
   })()`) as Record<string, unknown>;
 
   expect(r).toEqual({ open: false, carets: 5, view: true });
+});
+
+/* Will, TODO 124: "move the 'Filters' button, and menu, to the filter panel
+   header. This will consolidate the filter menu for all scopes into 1 menu…
+   Filters will get added to their default scope." */
+test('ONE menu for every scope: each row says its scope, and a filter is added to its default scope', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const panel = await window.__mount<HTMLElement>('sherpa-filter-panel', [
+      { scope: 'view', label: 'View filters',
+        filters: [{ id: 'region', label: 'Region', removable: true, options: [{ value: 'EMEA', label: 'EMEA' }] }],
+        // The View may take ANY component's field — and one of its own.
+        available: [{ id: 'seats', label: 'Seats' }, { id: 'status', label: 'Status', note: 'Customer records' },
+          { id: 'owner', label: 'Owner' }] },
+      // A chart's own field shares its id with the grid's.
+      { scope: 'picks:bar', label: 'By status', part: true,
+        filters: [{ id: 'status', label: 'Status', options: [{ value: 'active', label: 'active' }] }] },
+      { scope: 'data', label: 'Customer records',
+        filters: [{ id: 'status', label: 'Status', removable: true, options: [{ value: 'active', label: 'active' }] }],
+        available: [{ id: 'seats', label: 'Seats' }, { id: 'custom:mine', label: 'Mine', readings: { plan: { picked: ['gold'] } } }] },
+    ], { open: true, 'data-min-width': '0', style: 'inline-size: 480px' });
+    await window.__settled();
+    const sr = panel.shadowRoot!;
+    const btn = sr.querySelector<HTMLElement>('.filters-btn')!;
+    const menu = (): HTMLElement => btn.querySelector('sherpa-menu')!;
+    const rows = (): string[] => [...menu().children].map((n) => {
+      if (n.classList.contains('menu-section')) return `§${n.textContent}`;
+      const box = n.querySelector('input');
+      return `${box?.value ?? (n as HTMLElement).dataset['value']}${box?.checked ? '+' : ''} · ${(n as HTMLElement).dataset['note'] ?? ''}`;
+    });
+    const heard: [string, unknown][] = [];
+    for (const type of ['filter-add-request', 'filter-remove']) {
+      panel.addEventListener(type, (e) => heard.push([type, (e as CustomEvent).detail]));
+    }
+    const listed = rows();
+    // Seats and Owner ticked, Region unticked: one commit.
+    menu().dispatchEvent(new CustomEvent('menu-change', {
+      bubbles: true, composed: true, detail: { values: ['data:status', 'data:seats', 'view:owner'] },
+    }));
+    await window.__settled();
+    return { listed, heard, buttons: sr.querySelectorAll('.filters-btn, .scope-add').length };
+  });
+
+  expect(r.buttons).toBe(1);
+  expect(r.listed).toEqual([
+    '§Added filters',
+    'view:region+ · View filters',
+    'data:status+ · Customer records',
+    '§Available filters',
+    // ONCE, in its DEFAULT scope: the component scope that offers it…
+    'data:seats · Customer records',
+    // …and the View only for a field no component offers.
+    'view:owner · View filters',
+    '§Saved filters',
+    'data:custom:mine · Customer records',
+  ]);
+  // Each ask goes to the scope its row names.
+  expect(r.heard).toEqual([
+    ['filter-add-request', { scope: 'data', ids: ['seats'] }],
+    ['filter-add-request', { scope: 'view', ids: ['owner'] }],
+    ['filter-remove', { scope: 'view', id: 'region' }],
+  ]);
 });

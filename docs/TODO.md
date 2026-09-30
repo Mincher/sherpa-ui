@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**50 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**48 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -92,7 +92,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31ab | 159 | A data viz filter held by the View: a legend click changes the VIEW's values, and toggles the item | feature |
 | ❓ | 31aa | 149 | A chart legend's items ARE swatch chips: move `sherpa-chart-legend` onto `sherpa-quick-filter` | refactor |
 | ❓ | 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
-| ⬜ | 31b | 124 | The Filters button and menu move to the filter panel HEADER: one menu for every scope | feature |
+| ✅ | 31b | 124 | The Filters button and menu move to the filter panel HEADER: one menu for every scope | feature |
 | ⬜ | 31c | 122 | Email starts SIMPLE, with a switch to Advanced; over 20 values it is one chip with a multi-select menu | feature |
 | ✅ | 31d | 120 | A view-scope filter gets "Send to `<scope name>`", the counterpart of "Send to view filters" | feature |
 | ✅ | 31e | 121 | Clear and Send to are ONE button group, with the grouping classes | quick |
@@ -137,7 +137,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 42a | 145 | The details panel, tidied: Figma's Panel header, no scrim, a selected row paints the active base | quick |
 | | | | **H — The accessibility gate** | |
 | ✅ | 43 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
-| 🚧 | 43a | 117 | Clear the accessibility baseline — 11 of 12 done; the accordion is ruled, and waits on 124 | bug |
+| ✅ | 43a | 117 | Clear the accessibility baseline — 11 of 12 done; the accordion is ruled, and waits on 124 | bug |
 | ⬜ | 43b | 118 | Four texts fail colour contrast — re-point the alias chain to a darker shade, no new hex | figma |
 | | | | **I — The big builds** | |
 | ✅ | 44 | 67 | A UTILITY layer: `sherpa-router`, on the Navigation API | feature |
@@ -2077,7 +2077,7 @@ every one is off. The same value reads the two ways round.
 - **B:** the legend follows the panel — at rest no chip is on, and all read
   in full ink.
 
-### `[ ]` 124 — The Filters button and menu move to the filter panel HEADER
+### `[x]` ✅ 124 — The Filters button and menu move to the filter panel HEADER
 
 Will, 2026-09-30: *"Let's move the 'Filters' button, and menu, to the filter
 panel header. This will consolidate the filter menu for all scopes into 1
@@ -2086,6 +2086,20 @@ we can leverage that for all filter menu items. We can still separate Added
 and Available filters. Filters will get added to their default scope. It's
 then up to the user to move their scope. Filter toolbars still maintain their
 own filter buttons and menus."*
+
+**✅ Done 2026-09-30.** One Filters button, in the panel's header, left of
+Reset. Its menu lists every scope: Added filters, Available filters, Saved
+filters. Each row says its scope under its name. A shut scope's filters lead
+the list with a caret each, and the badge counts them, as before.
+
+A filter not held yet is listed ONCE, and is added to its default scope. I
+read "default scope" as the scope of the component that offers it (on
+Records: Customer records); a field no component offers goes to the View.
+You then move it with its ↑. Say if the default must come from the page's
+definition (so Region, taken off, would come back in View filters).
+
+Found on the way: a long menu squeezed its rows until a row's description
+ran under the next row. A row keeps its height now, and the list scrolls.
 
 ### `[ ]` 122 — Email starts SIMPLE; over 20 values it is one chip with a multi-select menu
 
@@ -2969,7 +2983,7 @@ transfer list's two lists are named, and a blank calendar cell is hidden from
 a reader. 16 are left: 117 and 118.
 `T-the-a11y-gate-reads-shadow-roots`
 
-### `[~]` 117 — Clear the accessibility baseline — 12 components with a structural failure
+### `[x]` ✅ 117 — Clear the accessibility baseline — 12 components with a structural failure
 
 Each is in `test/a11y/baseline.json`; run `npm run test:a11y` and read its
 report in `test/a11y/reports/`. Fix one, then `npm run test:a11y:update`.
@@ -3004,6 +3018,12 @@ row of the body of the accordion."* So: `Filters` leaves the section with 124,
 and `Save filter` goes to the first row of the section's BODY. Then nothing is
 in the `<summary>`, native `<details>` stays, and the last baseline entry
 goes. Do it with 124.
+
+**✅ Done 2026-09-30, with 124.** Nothing a reader can press is in a scope's
+header now. `Save filter` is the first row of the scope's body, at the right.
+The panel audits clean, and its entry is out of `test/a11y/baseline.json`.
+Twelve of twelve. What is left in the baseline is four colour-contrast
+failures: that is 118.
 
 ### `[ ]` 118 — Four texts fail colour contrast — the success green, and a field's description
 
@@ -4052,6 +4072,8 @@ One line each. The detail is in git and in the trap named.
 - 150: explored — the gauge's score is `100 − mean(health)`; thresholds as a field fact (A) or in a component's ask (B) — ❓ in the item
 - 140: a typed text field shows Clear by itself; `data-no-clear` opts out
 - 146, 144, 149, 98, 89, 90, 122, 110: planned from a read of the code, each in its item — five carry one choice (❓)
+- 124: ONE Filters button in the panel header, for every scope; a row says its scope — `T-a-panel-adds-through-the-bar-that-owns-the-list`
+- 117: the accessibility baseline has no structural failure left — `T-an-accordion-action-is-not-a-toggle`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

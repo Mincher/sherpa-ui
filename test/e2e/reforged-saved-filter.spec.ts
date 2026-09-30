@@ -594,10 +594,11 @@ test('the panel: saved presets are Advanced, and a scope asks to save, edit and 
     const presets = { preset: face('at-risk'), own: face('custom:mine') };
 
     const save = () => sr.querySelector<HTMLElement>('.scope[data-scope="data"] .scope-save')!;
-    const hidden = getComputedStyle(save()).display === 'none';
+    // Its ROW is what shows or not: the first row of the scope's body (TODO 117).
+    const hidden = save().getClientRects().length === 0;
     panel.setAttribute('data-saveable', '');
     await window.__settled();
-    const shown = getComputedStyle(save()).display !== 'none';
+    const shown = save().getClientRects().length > 0;
 
     const asked: unknown[] = [];
     for (const type of ['filter-save', 'filter-edit', 'filter-delete']) {

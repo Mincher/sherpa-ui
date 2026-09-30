@@ -34,6 +34,15 @@ anatomy:
             slot: header
             data-icon: filter
           children:
+            - el: sherpa-button
+              class: filters-btn
+              part: filters
+              attrs:
+                slot: actions
+                data-size: sm
+                data-icon-start: plus
+                data-icon-end: triangle-down
+                aria-haspopup: dialog
             - el: span
               class: reset-group sherpa-group
               attrs:
@@ -92,18 +101,9 @@ anatomy:
           attrs:
             open: ""
           children:
-            - el: span
-              class: scope-actions
-              attrs:
-                slot: actions
+            - el: div
+              class: scope-acts
               children:
-                - el: sherpa-button
-                  class: scope-add
-                  attrs:
-                    data-size: sm
-                    data-icon-start: plus
-                    data-icon-end: triangle-down
-                    aria-haspopup: dialog
                 - el: sherpa-button
                   class: scope-save
                   attrs:
@@ -233,9 +233,6 @@ events:
     name: filter-remove
     bubbles: true
     composed: true
-    detail:
-      id: unknown
-      scope: unknown
   - $type: event
     name: group-change
     bubbles: true
@@ -292,7 +289,6 @@ tokens:
   field-title.color: "{sherpa.style-content-secondary}"
   field-title.font-weight: "{sherpa.font-weight-light}"
   field-acts.gap: "{sherpa.display-mode-space-2xs}"
-  scope-actions.gap: "{sherpa.display-mode-space-2xs}"
 $extensions:
   sherpa:
     methods:
