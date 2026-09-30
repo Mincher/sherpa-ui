@@ -40,7 +40,9 @@
    under the first row's, which is what makes it a grid rather than three
    ragged columns. TRAP T-a-horizontal-legend-is-three-by-two */
 :host([data-orientation="horizontal"]) .legend {
-  grid-template-columns: repeat(3, 1fr);
+  /* ONE column where its chart is narrow: the chart says so.
+     TRAP T-a-narrow-chart-stacks-its-legend */
+  grid-template-columns: repeat(var(--sherpa-chart-legend-columns, 3), 1fr);
   justify-content: stretch;
   column-gap: var(--sherpa-display-mode-space-md, 16px);
   row-gap: var(--sherpa-display-mode-space-xs, 8px);

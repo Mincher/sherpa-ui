@@ -12604,6 +12604,39 @@ narrower detail.
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `test/e2e/reforged-chart-legend.spec.ts`
 
+### T-a-narrow-chart-stacks-its-legend
+
+**Below 22rem of its own width, a chart puts a legend that was BESIDE it
+below it, and a legend STRIP becomes a list** — Will, TODO 162: *"go from
+horizontal layout to vertical layout as their container gets narrower. Use
+container queries."* A chart already stacked is left alone. 22rem, so the
+Records page at 1280 with the filter panel shut (a 363px chart) is as it was.
+
+Three things that are not obvious:
+
+- **The HOST is the container, and a container cannot restyle itself.** The
+  bar, line and gauge charts put the side-by-side grid on `:host`, so the
+  narrow query cannot take the grid away. It re-places what is IN the grid
+  instead: the plot and the legend each span both columns, and the legend
+  takes a third row.
+- **The rule must be LAST.** The plot's `grid-column: 1` lived in each
+  chart's own sheet, which is adopted after its family's — so it beat the
+  family's narrow rule. It is in the family sheets now, above the query.
+- **The legend is TOLD, it does not measure.** Beside a chart it hugs its
+  content, and an inline-size container has no content width: as its own
+  container it would collapse. The chart's query sets
+  `--sherpa-chart-legend-columns: 1` on its slotted legend, and the legend's
+  3-by-2 grid reads its column count from that.
+
+`::slotted()` inside an `@container` on the host works in Chromium, WebKit
+and Firefox — measured, by the tests below.
+
+- Site: `src/core/sherpa-chart-axes.css`
+- Site: `src/core/sherpa-chart-segments.css`
+- Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.css`
+- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.css`
+- Site: `test/e2e/reforged-chart-legend-slot.spec.ts`
+
 ### T-a-horizontal-legend-is-three-by-two
 
 A horizontal legend was a wrapping flex row, so it put a different number of

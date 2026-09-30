@@ -4,6 +4,8 @@
  * shared sheets, before their own (Will, 2026-09-29).
  */
 
+:host { container: sherpa-chart / inline-size; }
+
 /* display:contents — children stay flex items of the host. */
 .chart-figure {
   display: contents;
@@ -15,9 +17,27 @@
   grid-row: 1;
 }
 
+:host([data-legend="vertical"]) .chart-body {
+  grid-column: 1;
+  grid-row: 2;
+}
+
 :host([data-legend="vertical"]) ::slotted([slot="legend"]) {
   grid-column: 2;
   grid-row: 2;
+}
+
+/* NARROW: a legend BESIDE the chart goes below it, and a legend strip becomes
+   a list. The host is the container, so only what is IN it can turn.
+   TRAP T-a-narrow-chart-stacks-its-legend */
+@container sherpa-chart (max-width: 22rem) {
+  :host([data-legend="vertical"]) .chart-body { grid-column: 1 / -1; }
+  :host([data-legend="vertical"]) ::slotted([slot="legend"]) {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-self: center;
+  }
+  ::slotted([slot="legend"]) { --sherpa-chart-legend-columns: 1; }
 }
 
 .title {

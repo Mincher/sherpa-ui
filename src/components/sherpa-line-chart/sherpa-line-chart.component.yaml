@@ -158,9 +158,6 @@ props:
     description: x-axis caption (shown when set)
 states:
   - $type: state
-    name: vertical
-    selector: ":host([data-legend=\"vertical\"])"
-  - $type: state
     name: x-axis-label
     selector: ":host([data-x-axis-label])"
   - $type: state

@@ -4,11 +4,6 @@
  * the JS; each series carries a --_hue. non-scaling-stroke keeps weights honest.
  */
 
-:host([data-legend="vertical"]) .chart-body {
-  grid-column: 1;
-  grid-row: 2;
-}
-
 .plot {
   position: relative;
   min-inline-size: 0;

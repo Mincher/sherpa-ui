@@ -128,6 +128,9 @@ props:
     description: donut  | pie   (pie fills to the centre, no hole)
 states:
   - $type: state
+    name: has-legend
+    selector: ":host([data-has-legend])"
+  - $type: state
     name: pie
     selector: ":host([data-type=\"pie\"])"
   - $type: state

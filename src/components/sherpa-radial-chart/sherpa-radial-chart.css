@@ -37,6 +37,15 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
+/* NARROW: the legend goes below the ring. TRAP T-a-narrow-chart-stacks-its-legend */
+@container sherpa-chart (max-width: 22rem) {
+  :host([data-has-legend]) .layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: var(--sherpa-display-mode-space-xs, 8px);
+  }
+}
+
 .ring-wrap {
   position: relative;
   /* Sized from the HEIGHT, width as the cap: a derived height ignores

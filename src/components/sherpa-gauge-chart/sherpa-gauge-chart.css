@@ -61,8 +61,6 @@
 }
 
 :host([data-legend="vertical"]) .chart-body {
-  grid-column: 1;
-  grid-row: 2;
   /* A CELL, not a flex item: filling it sizes the ring against the card. */
   inline-size: 100%;
   block-size: 100%;

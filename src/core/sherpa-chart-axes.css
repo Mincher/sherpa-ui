@@ -15,6 +15,7 @@
   --_plot-height: 180px;
   /* Fill a sized parent; keep natural height in an unsized one. */
   min-block-size: 0;
+  container: sherpa-chart / inline-size;
 }
 
 /* Figure semantics without a layout box — children stay flex items of the host. */
@@ -46,9 +47,27 @@
   grid-row: 1;
 }
 
+:host([data-legend="vertical"]) .chart-body {
+  grid-column: 1;
+  grid-row: 2;
+}
+
 :host([data-legend="vertical"]) ::slotted([slot="legend"]) {
   grid-column: 2;
   grid-row: 2;
+}
+
+/* NARROW: a legend BESIDE the chart goes below it, and a legend strip becomes
+   a list. The host is the container, so only what is IN it can turn.
+   TRAP T-a-narrow-chart-stacks-its-legend */
+@container sherpa-chart (max-width: 22rem) {
+  :host([data-legend="vertical"]) .chart-body { grid-column: 1 / -1; }
+  :host([data-legend="vertical"]) ::slotted([slot="legend"]) {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-self: center;
+  }
+  ::slotted([slot="legend"]) { --sherpa-chart-legend-columns: 1; }
 }
 
 .title {

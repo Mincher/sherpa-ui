@@ -11,8 +11,6 @@
 
 /* A grid item has no flex basis, so beside a vertical legend the floor is a track. */
 :host([data-legend="vertical"]) .chart-body {
-  grid-column: 1;
-  grid-row: 2;
   grid-template-rows: minmax(var(--_plot-height), 1fr) auto;
 }
 

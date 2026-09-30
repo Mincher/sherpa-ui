@@ -23,14 +23,14 @@ test.beforeEach(async ({ page }) => {
   await page.waitForFunction(() => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true);
 });
 
-/** Build one chart in a fixed 600x400 box with a legend slotted in. */
-async function build(page: import('@playwright/test').Page, tag: string, orientation: string) {
+/** Build one chart in a fixed box, 600x400 unless told, with a legend slotted in. */
+async function build(page: import('@playwright/test').Page, tag: string, orientation: string, width = 600) {
   return page.evaluate(
-    async ([t, o]) => {
+    async ([t, o, w]) => {
       const root = document.getElementById('root')!;
       root.innerHTML = '';
       const box = document.createElement('div');
-      box.style.cssText = 'inline-size:600px;block-size:400px';
+      box.style.cssText = `inline-size:${w}px;block-size:400px`;
       const chart = document.createElement(t) as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
       chart.setAttribute('data-legend', o);
       const legend = document.createElement('sherpa-chart-legend') as HTMLElement & {
@@ -56,11 +56,40 @@ async function build(page: import('@playwright/test').Page, tag: string, orienta
         const b = el.getBoundingClientRect();
         return { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height) };
       };
-      const body = chart.shadowRoot!.querySelector('.chart-body') as HTMLElement;
-      return { chart: r(chart), legend: r(legend), body: r(body), hostDisplay: getComputedStyle(chart).display };
+      // The radial chart has no .chart-body: its ring is the plot.
+      const body = chart.shadowRoot!.querySelector('.chart-body, .ring-wrap') as HTMLElement;
+      const items = [...legend.shadowRoot!.querySelectorAll('.item')].map(r);
+      return { chart: r(chart), legend: r(legend), body: r(body), items, hostDisplay: getComputedStyle(chart).display };
     },
-    [tag, orientation] as const,
+    [tag, orientation, width] as const,
   );
+}
+
+/* Will, TODO 162: "Have data viz charts and legends go from horizontal layout
+   to vertical layout as their container gets narrower. Use container queries.
+   If a layout is set to vertical by default in it's template then this won't
+   apply." TRAP T-a-narrow-chart-stacks-its-legend */
+for (const tag of [...CHARTS, 'sherpa-radial-chart']) {
+  test(`${tag}: NARROW, a legend beside the plot goes below it`, async ({ page }) => {
+    const wide = await build(page, tag, 'vertical');
+    expect(wide.legend.x).toBeGreaterThanOrEqual(wide.body.x + wide.body.w - 1);
+    const narrow = await build(page, tag, 'vertical', 300);
+    expect(narrow.legend.y).toBeGreaterThanOrEqual(narrow.body.y + narrow.body.h - 1);
+    expect(narrow.legend.x).toBeLessThan(narrow.body.x + narrow.body.w);
+    // Nothing is pushed out of the chart.
+    expect(narrow.legend.x + narrow.legend.w).toBeLessThanOrEqual(narrow.chart.x + narrow.chart.w + 1);
+  });
+}
+for (const tag of CHARTS) {
+  test(`${tag}: NARROW, a legend strip becomes a list`, async ({ page }) => {
+    const wide = await build(page, tag, 'horizontal');
+    expect(wide.items[1]!.y).toBe(wide.items[0]!.y);
+    const narrow = await build(page, tag, 'horizontal', 300);
+    expect(narrow.items[1]!.y).toBeGreaterThan(narrow.items[0]!.y);
+    expect(narrow.items[1]!.x).toBe(narrow.items[0]!.x);
+    // Still below the plot: a stacked chart stays stacked.
+    expect(narrow.legend.y).toBeGreaterThanOrEqual(narrow.body.y + narrow.body.h - 1);
+  });
 }
 
 for (const tag of CHARTS) {

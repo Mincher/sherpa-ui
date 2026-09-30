@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**56 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**55 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -125,7 +125,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 38 | 80 | Container and Data Viz headers: Figma's new button styling and grouping | component |
 | ✅ | 39 | 14 | An example of real-time data | feature |
 | ⬜ | 39a | 128 | A gauge's tooltip names the segment as the legend does | quick |
-| ⬜ | 39c | 162 | A chart and its legend go from side by side to stacked as their container narrows — container queries | feature |
+| ✅ | 39c | 162 | A chart and its legend go from side by side to stacked as their container narrows — container queries | feature |
 | ⬜ | 39b | 150 | EXPLORE — how the example gauge's risk score is worked out; THRESHOLDS in the central Query | explore |
 | ⬜ | 40 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | ⬜ | 40a | 143 | EXPERIMENT, later — scrolled-past metrics become a compact sticky header; a toggle in Settings › Experiments | explore |
@@ -2568,12 +2568,19 @@ So the two ways you name are the question: a component ASKS for data shaped
 by thresholds it gives, or the thresholds are part of the data's own schema
 and every component gets them. Either way the three copies become one.
 
-### `[ ]` 162 — A chart and its legend stack as their container narrows
+### `[x]` ✅ 162 — A chart and its legend stack as their container narrows
 
 Will, 2026-09-30, a minor one: *"Have data viz charts and legends go from
 horizontal layout to vertical layout as their container gets narrower. Use
 container queries. If a layout is set to vertical by default in it's template
 then this won't apply."*
+
+**✅ Done 2026-09-30.** Below 352px (22rem) of its own width, a chart puts a
+legend that was beside it below it, and a legend strip (three per line)
+becomes a list, one per line. A chart that is stacked already is left alone.
+All four charts, by container queries, no JS. 352px keeps Records at 1280
+with the panel shut as it was; with the panel open every label now shows in
+full. If it must turn sooner, it is one number in three places.
 
 ### `[ ]` 128 — A gauge's tooltip names the segment as the legend does
 
@@ -3770,6 +3777,7 @@ One line each. The detail is in git and in the trap named.
 - 164: mobile starts below 768px; the shell hides the rail and tells the header to show its menu button — `T-the-nav-is-a-menu-on-a-phone`
 - 161: the app header's scroll shadow fades, 100ms — the timeline flips a property, a transition follows it — `T-only-the-context-scrolls`
 - 163: a panel area is 1.5 times three grid columns — `T-the-shell-owns-the-panel-areas`
+- 162: a narrow chart puts its legend below, and a legend strip becomes a list — `T-a-narrow-chart-stacks-its-legend`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on
