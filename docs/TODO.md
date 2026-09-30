@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**52 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**51 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -126,7 +126,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | 🚧 | 37 | 9b | A Data Viz header, for metrics and chart containers | component |
 | ⬜ | 38 | 80 | Container and Data Viz headers: Figma's new button styling and grouping | component |
 | ✅ | 39 | 14 | An example of real-time data | feature |
-| ⬜ | 39a | 128 | A gauge's tooltip names the segment as the legend does | quick |
+| ✅ | 39a | 128 | A gauge's tooltip names the segment as the legend does | quick |
 | ✅ | 39c | 162 | A chart and its legend go from side by side to stacked as their container narrows — container queries | feature |
 | ⬜ | 39b | 150 | EXPLORE — how the example gauge's risk score is worked out; THRESHOLDS in the central Query | explore |
 | ⬜ | 40 | 59 | EXPLORE, later — Will's own loading pattern | explore |
@@ -159,7 +159,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 56a | 111 | A spec types every JS property as `string` — `reading`, `conditions`, `open` | tidy |
 | ⬜ | 57 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 | | | | **K — Agentic UI: much later** | |
-| ⬜ | 58 | 76 | WebMCP: agents do UI tasks through Sherpa's own contracts — a core system | explore |
+| ⬜ | 58 | 76 | DEFERRED (Will, 2026-09-30) — WebMCP: agents do UI tasks through Sherpa's own contracts — a core system | explore |
 | ⬜ | 59 | 77 | CONTRACTED UX patterns, so a generated experience is consistent and useful | explore |
 | ⬜ | 60 | 78 | A node-based WORKFLOW creator: make, edit and view patterns and generated workflows | explore |
 | | | | **✅ Done — newest first** | |
@@ -2648,10 +2648,16 @@ All four charts, by container queries, no JS. 352px keeps Records at 1280
 with the panel shut as it was; with the panel open every label now shows in
 full. If it must turn sooner, it is one number in three places.
 
-### `[ ]` 128 — A gauge's tooltip names the segment as the legend does
+### `[x]` ✅ 128 — A gauge's tooltip names the segment as the legend does
 
 Will, 2026-09-30: *"Gauge tooltips should match the segment name as shown in
 the legend."*
+
+**✅ Done 2026-09-30.** A zone is named once, on the gauge:
+`data-zones="0-20:success:Low,…"`. The tooltip says `Low` · `0–20%`, and the
+gauge fills its own legend with the same words, so a row reads `Low 0–20%`.
+The two example pages no longer fill the gauge legend by hand. Before, the
+tooltip said `Success` and the legend said `Low (0–20)`.
 
 ### `[ ]` 143 — EXPERIMENT: scrolled-past metrics become a compact sticky header
 
@@ -3145,6 +3151,9 @@ system — like the data layer, or routing and template swapping — never a
 feature of one app.
 
 ### `[ ]` 76 — WebMCP: agents do UI tasks through Sherpa's own contracts
+
+**DEFERRED.** Will, 2026-09-30: *"we can defer the WebMCP aspect for now."*
+Not to be started in the churn; it waits for his word.
 
 Agentic UI components: a component exposes what an agent may do with it, and
 an agent does it for the reader. Will's examples — *"generating data viz and
@@ -3849,6 +3858,7 @@ One line each. The detail is in git and in the trap named.
 - 171: the filter panel's search matches a field's name too, and then shows the whole field
 - 129: Reset all to default asks first, and can save what is on screen as a View before it resets — `T-reset-to-default-is-the-views-own`
 - 172: in the panel, each picked value chip shows its own results; the header keeps the field's — `T-a-chip-counts-its-own-results`
+- 128: a gauge zone is named once; its tooltip and its legend row say the same — `T-a-gauge-names-its-zones-once`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

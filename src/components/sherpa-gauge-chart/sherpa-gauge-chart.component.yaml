@@ -163,7 +163,8 @@ props:
     description: >-
       threshold bands — "0-50:success,50-80:warning,80-100:critical" (compact) OR a JSON array
       [{to,color}|{from,to,color}]. Colours are status names (success|warning|urgent|critical|info)
-      or any CSS colour. Omit for the single-colour sweep.
+      or any CSS colour. Omit for the single-colour sweep. A band may be NAMED — "0-50:success:Low",
+      or `label` in the JSON — and the name is its tooltip's and its legend row's.
 states:
   - $type: state
     name: vertical

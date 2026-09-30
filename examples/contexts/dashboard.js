@@ -55,13 +55,6 @@ export async function init(root, { source, session }) {
 
   const provider = document.querySelector('sherpa-provider');
 
-  // The gauge legend names THRESHOLD ZONES. No colour indices: a zone's colour
-  // is a status, not a categorical series hue.
-  $('#gauge-legend')?.populate([
-    { label: 'Healthy (0–60%)', status: 'success' },
-    { label: 'Warning (60–85%)', status: 'warning' },
-    { label: 'Critical (85–100%)', status: 'critical' },
-  ]);
   // A second DataSource over the shared customer store — a different store to
   // the one the charts read, which is the point of the demonstration.
   const customerSource = new DataSource({ store: customerStore });

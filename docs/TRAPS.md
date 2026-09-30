@@ -66,6 +66,7 @@ template's content still lives in its inert document and does NOT upgrade —
 - Site: `test/e2e/reforged-app-header.spec.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/ui/filter-menu.ts`
+- Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
 
 ### T-tokens-css-never-reaches-shadow
 
@@ -12656,6 +12657,28 @@ narrower detail.
 
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `test/e2e/reforged-chart-legend.spec.ts`
+
+### T-a-gauge-names-its-zones-once
+
+**A gauge's zone is NAMED on the gauge, and its tooltip and its legend row
+both say that name** — TODO 128, Will: *"Gauge tooltips should match the
+segment name as shown in the legend."* The two had different owners: the tip
+said the zone's STATUS word (`Success`, `Warning`, `Critical`), and the
+legend was filled by hand in the page's script (`Low (0–20)`, `Watch
+(20–40)`), so they could not agree, and the ranges were typed twice.
+
+A band in `data-zones` takes a third part — `0-20:success:Low`, or `label` in
+the JSON form. The tip reads `Low` · `0–20%` (the range carries the gauge's
+unit), and the gauge FILLS its slotted legend with the same two — label and
+value — so a legend row is `Low 0–20%`.
+
+Only NAMED zones fill a legend: a gauge with no names leaves its legend to
+its host, as before, and a band with no name keeps its status word. The fill
+is skipped when the rows have not changed, as every value write comes
+through the same sync.
+
+- Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
+- Site: `test/e2e/reforged-gauge-chart.spec.ts`
 
 ### T-a-narrow-chart-stacks-its-legend
 

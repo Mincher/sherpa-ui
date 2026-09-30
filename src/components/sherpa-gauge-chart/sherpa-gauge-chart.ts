@@ -25,6 +25,8 @@ interface Zone {
   rawTo: number;
   /** The colour NAME as written (a status name, or a raw CSS colour). */
   name: string;
+  /** What the band is CALLED, where its zone says: the tip's name and the legend's. */
+  label?: string;
 }
 
 /** TRAP T-gauge-status-is-named — resolved BY NAME, never by position. */
@@ -89,6 +91,7 @@ export class SherpaGaugeChart extends SherpaElement {
 
     const zones = this.#parseZones(min, max);
     this.#renderHotspots(this.#renderArcs(zones, frac));
+    this.#fillLegend(zones);
 
     // Three SCALE ticks: min, midpoint, max. The middle one is a tick, not the
     // reading — TRAP T-zones-paint-in-full.
@@ -122,27 +125,26 @@ export class SherpaGaugeChart extends SherpaElement {
     const span = max > min ? max - min : 1;
     const clamp = (n: number): number => Math.min(1, Math.max(0, (n - min) / span));
 
-    let raw: Array<{ from?: number; to: number; color: string }> = [];
+    type Band = { from?: number; to: number; color: string; label?: string };
+    let raw: Band[] = [];
     const trimmed = spec.trim();
     if (trimmed.startsWith('[')) {
       try {
-        const parsed = JSON.parse(trimmed) as Array<{ from?: number; to: number; color: string }>;
-        raw = parsed;
+        raw = JSON.parse(trimmed) as Band[];
       } catch {
         return [];
       }
     } else {
       raw = trimmed
         .split(',')
-        .map((part) => {
-          const [range, color] = part.split(':').map((s) => s.trim());
+        .map((part): Band | null => {
+          const [range, color, label] = part.split(':').map((s) => s.trim());
           if (!range || !color) return null;
           const [a, b] = range.split('-').map((n) => Number(n));
-          return b === undefined
-            ? { to: a, color }
-            : { from: a, to: b, color };
+          const band: Band = b === undefined ? { to: a! } as Band : { from: a!, to: b } as Band;
+          return { ...band, color, ...(label ? { label } : {}) };
         })
-        .filter((z): z is { from?: number; to: number; color: string } => z !== null);
+        .filter((z): z is Band => z !== null);
     }
 
     const out: Zone[] = [];
@@ -158,6 +160,7 @@ export class SherpaGaugeChart extends SherpaElement {
         rawFrom: from,
         rawTo: band.to,
         name: band.color,
+        ...(band.label ? { label: band.label } : {}),
       });
       cursor = band.to;
     }
@@ -190,9 +193,8 @@ export class SherpaGaugeChart extends SherpaElement {
       tip.style.setProperty('--_area', radialArea(angle));
       dot.style.setProperty('--_hue', zone.color);
       pairAnchor(`--gauge-zone-${i}`, dot, tip);
-      // A raw CSS colour has no name worth showing — that row is the range alone.
-      const label = isStatus(zone.name) ? this.#zoneLabel(zone.name) : '';
-      fillTip(tip, label, `${zone.rawFrom}–${zone.rawTo}`);
+      const label = this.#zoneName(zone);
+      fillTip(tip, label, this.#zoneRange(zone));
       /* The accessible name goes on the ARC, and so does `tabindex` — without
          it the name was there and nothing could reach it. The CSS lights this
          zone's tip on :focus-visible as well as :hover.
@@ -207,10 +209,46 @@ export class SherpaGaugeChart extends SherpaElement {
     });
   }
 
-  /** A status name, title-cased for display ("warning" → "Warning"). */
-  #zoneLabel(name: string): string {
-    return name.charAt(0).toUpperCase() + name.slice(1);
+  /** A band's NAME: its zone's own label, else its status title-cased
+   *  ("warning" → "Warning"). A raw CSS colour has no name worth showing.
+   *  TRAP T-a-gauge-names-its-zones-once */
+  #zoneName(zone: Zone): string {
+    if (zone.label) return zone.label;
+    return isStatus(zone.name) ? zone.name.charAt(0).toUpperCase() + zone.name.slice(1) : '';
   }
+
+  /** A band's bounds on the reader's scale, with the gauge's unit. */
+  #zoneRange(zone: Zone): string {
+    return `${zone.rawFrom}–${zone.rawTo}${this.dataset['unit'] ?? ''}`;
+  }
+
+  /**
+   * NAMED zones fill the slotted legend: one name for a band, in its tip and
+   * in its legend row. Zones with no label leave a legend to its host.
+   * TRAP T-a-gauge-names-its-zones-once
+   */
+  #fillLegend(zones: Zone[]): void {
+    if (!zones.some((zone) => zone.label)) return;
+    const rows = zones.map((zone) => ({
+      label: this.#zoneName(zone), value: this.#zoneRange(zone),
+      ...(isStatus(zone.name) ? { status: zone.name } : {}),
+    }));
+    const legend = this.querySelector<HTMLElement & { populate?(d: unknown): unknown }>('[slot="legend"]');
+    if (!legend) return;
+    // Not upgraded yet: it has no populate() to call. TRAP T-custom-element-upgrade
+    if (!legend.populate) {
+      void customElements.whenDefined(legend.localName).then(() => this.#fillLegend(zones));
+      return;
+    }
+    // Only on a change: every value write comes through here.
+    const said = JSON.stringify(rows);
+    if (said === this.#legendSaid) return;
+    this.#legendSaid = said;
+    void legend.populate(rows);
+  }
+
+  /** The legend rows last written, as JSON. */
+  #legendSaid = '';
 
   /** A zone's colour name → its band's fill. Anything unknown passes through. */
   #zoneColour(name: string): string {

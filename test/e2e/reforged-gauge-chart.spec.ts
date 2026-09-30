@@ -216,3 +216,52 @@ test('grey fills only the scale the bands leave uncovered', async ({ page }) => 
   expect(r.bareFull.coloured).toBe(1);
   expect(r.bareFull.fillerFrac).toBeNull();
 });
+
+/* Will, TODO 128: "Gauge tooltips should match the segment name as shown in
+   the legend." A zone is NAMED once, on the gauge; the tip and the legend row
+   both say that name. TRAP T-a-gauge-names-its-zones-once */
+test('a named zone is called the same in its tooltip and in the legend', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const build = async (zones: string, unit?: string) => {
+      const root = document.getElementById('root')!;
+      const el = document.createElement('sherpa-gauge-chart') as HTMLElement & { rendered?: Promise<void> };
+      el.setAttribute('data-value', '30');
+      el.setAttribute('data-zones', zones);
+      if (unit) el.setAttribute('data-unit', unit);
+      const legend = document.createElement('sherpa-chart-legend') as HTMLElement & { populate(d: unknown): Promise<void> };
+      legend.setAttribute('slot', 'legend');
+      legend.setAttribute('data-readonly', '');
+      el.append(legend);
+      root.replaceChildren(el);
+      await el.rendered;
+      await window.__settled();
+      const text = (n: Element | null): string => n?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+      return {
+        el, legend,
+        read: () => ({
+          tips: [...el.shadowRoot!.querySelectorAll('.chart-tip')].map((t) => [text(t.querySelector('.chart-tip-label')), text(t.querySelector('.chart-tip-value'))]),
+          rows: [...legend.shadowRoot!.querySelectorAll('.item')].map((i) => [text(i.querySelector('.label')), text(i.querySelector('.value'))]),
+          said: [...el.shadowRoot!.querySelectorAll('.zone:not([data-rest])')].map((z) => z.getAttribute('aria-label')),
+        }),
+      };
+    };
+    const named = (await build('0-20:success:Low,20-40:warning:Watch,40-100:critical:At risk', '%')).read();
+    // As JSON too, and a band with no name of its own keeps its status word.
+    const json = (await build('[{"to":60,"color":"success","label":"Healthy"},{"to":100,"color":"critical"}]')).read();
+    // No names: the legend is its host's to fill, and stays as the host left it.
+    const plain = await build('0-60:success,60-100:critical');
+    await plain.legend.populate([{ label: 'Mine', status: 'success' }]);
+    plain.el.setAttribute('data-value', '80');
+    await window.__settled();
+    return { named, json, plain: plain.read() };
+  });
+
+  expect(r.named.tips).toEqual([['Low', '0–20%'], ['Watch', '20–40%'], ['At risk', '40–100%']]);
+  // The SAME names and ranges, row for row.
+  expect(r.named.rows).toEqual(r.named.tips);
+  expect(r.named.said).toEqual(['Low 0 to 20', 'Watch 20 to 40', 'At risk 40 to 100']);
+  expect(r.json.tips).toEqual([['Healthy', '0–60'], ['Critical', '60–100']]);
+  expect(r.json.rows).toEqual(r.json.tips);
+  expect(r.plain.tips).toEqual([['Success', '0–60'], ['Critical', '60–100']]);
+  expect(r.plain.rows).toEqual([['Mine', '']]);
+});

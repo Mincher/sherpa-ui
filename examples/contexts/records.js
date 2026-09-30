@@ -85,13 +85,6 @@ export async function init(root, { source }) {
      TRAP T-a-summary-binds-to-all-the-rows · TRAP T-an-aggregate-returns-the-number */
   const gauge = root.querySelector('#r-gauge');
   if (gauge) source.bind(gauge, { readonly: true, rows: 'all', signal, as: (rows) => 100 - reduceRows(rows, 'mean', 'health') });
-  /* The gauge legend names threshold ZONES, not a series, so no colour
-     indices: a zone's colour is a status. Static, so it is populated once. */
-  root.querySelector('#r-gauge-legend')?.populate([
-    { label: 'Low (0–20)', status: 'success' },
-    { label: 'Watch (20–40)', status: 'warning' },
-    { label: 'At risk (40–100)', status: 'critical' },
-  ]);
 
   /* SAVE PACKS: the bar asks, this page names the filter and keeps it over the
      CUSTOMER records — not over this page — and the bar shows it in place of
