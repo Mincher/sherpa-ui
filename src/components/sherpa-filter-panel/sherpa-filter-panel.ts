@@ -94,6 +94,8 @@ export interface PanelFilter extends OffersAdvanced {
   /** A scope ABOVE holds it now: it keeps its place here — its heading, and
    *  one line saying so — and draws no values. TRAP T-a-panel-asks-for-its-scopes */
   appliedAt?: string;
+  /** A View field may be SENT DOWN to this one scope. TRAP T-send-to-view-filters */
+  sendTo?: { scope: string; label: string };
 }
 
 /** A column Group or Sort may arrange by. */
@@ -738,6 +740,8 @@ export class SherpaFilterPanel extends SherpaElement {
     if (!box.hasAttribute('data-advanced-ok')) box.querySelector('.field-advanced')?.remove();
     if (!box.hasAttribute('data-clearable')) box.querySelector('.field-clear')?.remove();
     if (!box.hasAttribute('data-raisable')) box.querySelector('.field-raise')?.remove();
+    // A View field, SENT DOWN to the one scope it may go to. TRAP T-send-to-view-filters
+    if (isPresets || organise || !def.sendTo) box.querySelector('.field-lower')?.remove();
 
     const head = box.querySelector('.field-head');
     const title = box.querySelector('.field-title');
@@ -745,6 +749,7 @@ export class SherpaFilterPanel extends SherpaElement {
     const name = def.label;
     head?.querySelector('.field-clear')?.setAttribute('aria-label', `Clear ${name}`);
     head?.querySelector('.field-raise')?.setAttribute('aria-label', `Send ${name} to view filters`);
+    head?.querySelector('.field-lower')?.setAttribute('aria-label', `Send ${name} to ${def.sendTo?.label ?? ''}`);
     box.querySelector('.field-advanced-switch')
       ?.setAttribute('aria-label', `Advanced ${name}`);
 
@@ -1222,6 +1227,15 @@ export class SherpaFilterPanel extends SherpaElement {
     if (raise) {
       const up = this.#fieldOf(raise);
       if (up) this.emit('filter-add-request', { scope: VIEW, ids: [up.def.field ?? up.def.id], from: up.scope });
+      return;
+    }
+    // …and SENT DOWN, to the one scope the source named.
+    const lower = this.pathFind(event, '.field-lower');
+    if (lower) {
+      const down = this.#fieldOf(lower);
+      if (down?.def.sendTo) {
+        this.emit('filter-add-request', { scope: down.def.sendTo.scope, ids: [down.def.field ?? down.def.id], from: down.scope });
+      }
       return;
     }
     // REMOTE: one field's own Apply or Discard. TRAP T-apply-and-discard-wait-for-a-change

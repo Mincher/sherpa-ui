@@ -167,6 +167,9 @@ export interface HeldFilter extends FieldFilter {
   removable?: boolean;
   /** A scope ABOVE holds it now — that scope's name. It keeps its place here. */
   appliedAt?: string;
+  /** A View field may be SENT DOWN to this one scope — where it came up from,
+   *  or the only one that has it. TRAP T-send-to-view-filters */
+  sendTo?: { scope: string; label: string };
 }
 
 /** What a scope's filters narrow: the View, or the content one component shows. */
@@ -857,12 +860,14 @@ export class DataSource extends EventTarget {
     });
     const fields: HeldFilter[] = q.holds.filter((f) => this.#fields.has(f)).map((f) => {
       const reading = this.#home(f) === scope ? this.#reading(f) : undefined;
+      const down = scope === VIEW ? this.#lowerTo(f) : undefined;
       return {
         ...this.filterDef(f), removable: true,
         // The View's date slices the whole view, so it is a RANGE. Will, TODO 20b.
         ...(scope === VIEW && this.#fields.get(f)?.type === 'date' ? { range: true } : {}),
         ...(reading ? { state: structuredClone(reading) } : {}),
         ...(above.includes(f) ? { appliedAt: this.scopeLabel(VIEW) } : {}),
+        ...(down ? { sendTo: { scope: down, label: this.#narrowing.get(down)?.label ?? this.scopeLabel(down) } } : {}),
       };
     });
     // Below the View, a saved filter it does not hold is offered too.
@@ -972,6 +977,39 @@ export class DataSource extends EventTarget {
       this.#drawScopesSoon();
     }
     this.#drawBars(scope);
+  }
+
+  /** Where each field the View holds came UP from, this session. */
+  #cameFrom = new Map<string, string>();
+
+  /** The ONE scope a View field may be sent down to: where it came up from,
+   *  else the only scope that has it — a component's, or a chart's own. Two
+   *  that have it is no answer. TRAP T-send-to-view-filters */
+  #lowerTo(field: string): string | undefined {
+    const has = (scope: string): boolean =>
+      this.#narrowing.get(scope)?.field === field || this.canHold(scope, field);
+    const from = this.#cameFrom.get(field);
+    if (from && from !== VIEW && has(from)) return from;
+    const all = [...this.#offers.keys(), ...this.#narrowing.keys()].filter(has);
+    return all.length === 1 ? all[0] : undefined;
+  }
+
+  /** SEND a View field DOWN: the View lets go of it, and its answer goes to
+   *  the one scope named. TRAP T-send-to-view-filters */
+  #lower(field: string, to: string): void {
+    if (!this.holds(VIEW, field)) return;
+    const answer = this.reading(VIEW, field);
+    const part = this.#narrowing.get(to);
+    if (!part && !this.canHold(to, field)) return;
+    // Held BELOW first, so the answer moves there and is not cleared.
+    if (!part && !this.holds(to, field)) this.hold(to, [...this.scope(to), field]);
+    this.hold(VIEW, this.scope(VIEW).filter((f) => f !== field));
+    // A chart's own scope takes the picks; the View's answer went with its hold.
+    if (part) this.write(to, field, answer?.picked?.length ? { picked: [...answer.picked] } : undefined);
+    this.#cameFrom.delete(field);
+    this.commit();
+    this.#drawBars(VIEW);
+    if (!part) this.#drawBars(to);
   }
 
   /** A scope lets ONE go — a field or a preset. */
@@ -2127,6 +2165,12 @@ export class DataSource extends EventTarget {
         const ids = detail['ids'];
         if (typeof scope !== 'string' || !Array.isArray(ids)) return;
         const from = detail['from'];
+        // SENT DOWN from the View, to the one scope named.
+        if (from === VIEW && scope !== VIEW) {
+          for (const id of ids) this.#lower(String(id), scope);
+          return;
+        }
+        if (scope === VIEW && typeof from === 'string') for (const id of ids) this.#cameFrom.set(String(id), from);
         const part = typeof from === 'string' ? this.#narrowing.get(from) : undefined;
         const answer = part ? this.reading(from as string, part.field) : undefined;
         this.#take(scope, ids.map(String));

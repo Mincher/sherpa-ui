@@ -1146,13 +1146,25 @@ own fields have none). It is the panel's ordinary `filter-add-request`, with
 the View's scope: the View HOLDS the field, its answer goes with it
 (`#rehome`), and the chip below keeps its place, suspended, saying where its
 filter went (`T-up-is-open-down-is-closed`). So the rows do not move, and the
-header gets ONE chip — the View's Add list stops offering it. The trip back
-down is not asked for.
+header gets ONE chip — the View's Add list stops offering it.
+
+**And down** — Will, TODO 120: a View field has "Send to `<scope name>`",
+with a down arrow, in the same button group. It is the same request the
+other way — `{ scope: <the scope>, ids, from: 'view' }` — and the View LETS
+GO: the field is held below first, so its answer moves there and is not
+cleared.
+
+The SOURCE names the one scope (`describe('view')` → `sendTo`), never the
+panel: where the field came up from this session, else the ONLY scope that
+has it — a component's offer, or a chart's own scope. Two that have it and no
+memory of where it came from is no answer, and no button. A guess would move
+a reader's filter to a component they did not mean.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-send-to-view-filters.spec.ts`
 - Site: `src/core/data/data-source.ts`
+- Site: `test/unit/send-down.test.mjs`
 
 ### T-a-condition-marks-every-match
 

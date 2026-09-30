@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**61 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**60 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -80,7 +80,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ❓ | 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
 | ⬜ | 31b | 124 | The Filters button and menu move to the filter panel HEADER: one menu for every scope | feature |
 | ⬜ | 31c | 122 | Email starts SIMPLE, with a switch to Advanced; over 20 values it is one chip with a multi-select menu | feature |
-| ⬜ | 31d | 120 | A view-scope filter gets "Send to `<scope name>`", the counterpart of "Send to view filters" | feature |
+| ✅ | 31d | 120 | A view-scope filter gets "Send to `<scope name>`", the counterpart of "Send to view filters" | feature |
 | ✅ | 31e | 121 | Clear and Send to are ONE button group, with the grouping classes | quick |
 | ⬜ | 31f | 123 | An inactive chip KEEPS its match count badge; it goes only when every value and condition is removed | feature |
 | ✅ | 31g | 125 | The sort tooltip names the direction as well as the field | quick |
@@ -1713,12 +1713,25 @@ menu."*
 Part of 89 (every panel filter starts Simple) and 90 (any filter switches to
 Advanced). Today `email` is declared `"advanced": "only"` in `records.json`.
 
-### `[ ]` 120 — A view-scope filter gets "Send to `<scope name>`"
+### `[x]` ✅ 120 — A view-scope filter gets "Send to `<scope name>`"
 
 Will, 2026-09-30: *"'Send filter to View' should have a counterpart button in
 the view context to 'Send to &componentScopeName' with a down arrow icon."*
 
 The other way of 21f. The name is the scope the field came from.
+
+**✅ Done 2026-09-30.** A View field in the panel has a ↓ button beside
+Clear, in the same group: "Send Region to Customer records". The View lets
+go of the field, and its answer goes with it — so the rows do not move. The
+header bar loses the chip and the grid's bar gets it.
+
+Which scope: the one the field came UP from; if it did not come up, the ONLY
+scope that has it (a grid's, or a chart's own). When two scopes have it and
+it did not come up from one, there is no button — the source will not guess.
+On Records that is every View field today: Customer, Region and Date all go
+to "Customer records". A field sent up from a chart (52) goes back to that
+chart. The button shows once the field has an answer, as Clear and ↑ do.
+`T-send-to-view-filters`
 
 ### `[x]` ✅ 121 — Clear and Send to are ONE button group
 
@@ -3301,6 +3314,7 @@ One line each. The detail is in git and in the trap named.
 - 149: queued — the legend's items become swatch chips
 - 148: an emptied date range holds no ends — the chip read `undefined` after a Reset
 - 121: a panel field's Clear and Send to are one button group
+- 120: a View field is sent DOWN to the one scope that has it, with its answer — `T-send-to-view-filters`
 - 126: a filter another scope holds says `Filter moved to View scope.` — `T-an-inactive-chip-says-where-its-filter-went`
 - 43: the ⋮ menu holds every folded action, and a view bar's ★ · Save · ▾ folds at last — `T-the-more-menu-holds-what-folded`
 - 94: a number menu waits for Apply, and Cancel puts back — `T-a-number-waits-for-apply`

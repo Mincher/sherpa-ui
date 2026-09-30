@@ -45,3 +45,63 @@ test('a Records field sent to the view filters takes its answer, once, and the r
   // Raised WITH its answer, so the rows do not move.
   expect(r).toMatchObject({ total: r.before.total, held: true, reading: { op: 'ne', picked: ['churned'] }, statusChips: 1 });
 });
+
+/**
+ * …AND DOWN — TODO 120, Will: "'Send filter to View' should have a counterpart
+ * button in the view context to 'Send to &componentScopeName' with a down
+ * arrow icon." The View lets go; the answer goes with the field.
+ */
+test('a View field is sent DOWN to the one scope that has it, with its answer, and the rows stay', async ({ page }) => {
+  await page.goto('http://localhost:4200/?context=records');
+  await page.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
+  await page.evaluate(() => {
+    (document.querySelector('sherpa-provider') as HTMLElement & { filterMode: string }).filterMode = 'panel';
+  });
+  const at = '.scope[data-scope="view"] .field[data-field="region"]';
+  await expect.poll(() => page.evaluate((sel) => !!(document.querySelector('#filter-panel') as HTMLElement)
+    .shadowRoot!.querySelector(`${sel} .value`), at)).toBe(true);
+  // Answer it: the pair shows once there is something to send.
+  await page.evaluate((sel) => {
+    (document.querySelector('#filter-panel') as HTMLElement).shadowRoot!
+      .querySelector<HTMLElement>(`${sel} .value[data-value="EMEA"]`)!.shadowRoot!.querySelector<HTMLElement>('.body')!.click();
+  }, at);
+  type Source = {
+    debugState(): { total: number }; scope(s: string): string[];
+    query: { applied: { scopes: Record<string, { readings: Record<string, { picked?: string[] }> } | undefined> } };
+  };
+  const total = (): Promise<number> => page.evaluate(() =>
+    (window as unknown as { sherpa: { source: Source } }).sherpa.source.debugState().total);
+  await expect.poll(total).toBeLessThan(100);
+  const before = await total();
+
+  const r = await page.evaluate(async (sel) => {
+    const source = (window as unknown as { sherpa: { source: Source } }).sherpa.source;
+    const panel = (document.querySelector('#filter-panel') as HTMLElement).shadowRoot!;
+    const button = panel.querySelector<HTMLElement>(`${sel} .field-lower`)!;
+    const glyph = button.getAttribute('data-icon-start');
+    const label = button.getAttribute('aria-label');
+    const group = [...button.parentElement!.children].map((b) => b.className);
+    button.shadowRoot!.querySelector<HTMLElement>('button')!.click();
+    await new Promise((res) => setTimeout(res, 1000));
+    const chips = (bar: string): (string | undefined)[] => [...document.querySelector(bar)!
+      .shadowRoot!.querySelectorAll<HTMLElement>('.chips > .chip')].map((c) => c.dataset['id']);
+    return {
+      glyph, label, group,
+      view: source.scope('view').includes('region'),
+      data: source.scope('data').includes('region'),
+      reading: source.query.applied.scopes['data']?.readings['region']?.picked ?? null,
+      ofView: source.query.applied.scopes['view']?.readings['region'] ?? null,
+      header: chips('sherpa-quick-filter-toolbar[data-type="view"]').includes('region'),
+      bar: chips('#qft').filter((id) => id === 'region').length,
+      // In the panel it is the grid's field now, and can go up again.
+      panel: !!panel.querySelector('.scope[data-scope="data"] .field[data-field="region"] .field-raise'),
+      gone: !panel.querySelector(sel),
+    };
+  }, at);
+  expect(r).toEqual({
+    glyph: 'arrow-down', label: 'Send Region to Customer records', group: ['field-clear', 'field-lower'],
+    view: false, data: true, reading: ['EMEA'], ofView: null, header: false, bar: 1, panel: true, gone: true,
+  });
+  expect(await total()).toBe(before);
+});
