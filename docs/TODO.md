@@ -27,9 +27,9 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | 🚧 | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
 | ✅ | 2a | 103 | Rows with no key get one from the data layer — Sherpa's own, never sent out | foundation |
-| 🚧 | 3 | 38 | One model, one builder, one owner — what is left | refactor |
+| ❓ | 3 | 38 | One model, one builder, one owner — what is left | refactor |
 | ✅ | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
-| 🚧 | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
+| ❓ | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | 🚧 | 5a | 113 | EXPLORE — state first, then render, in every component; a skeleton while the first render waits | explore |
 | | | | **C — Contained bugs** | |
 | ✅ | 5b | 142 | The shell's panel areas must not scroll with the page: they sit outside the scrolling wrapper | quick |
@@ -344,10 +344,11 @@ built (`npm run check:size`).
   `#drawSection` and `#drawField`. The bar and the panel differ by the layout
   DIRECTION and whether values EXPLODE into a run — two flags (89's 16-value
   line is the second), not two implementations. Do it WITH 89, which redraws
-  the panel's fields anyway, and 99, which groups them.
-- **"Scope" still means three things** — query reach (`view` / a component
-  scope), which rows a bind is pushed (`page` / `all`), and the app's surfaces
-  (`view` / `data`). Rename them apart.
+  the panel's fields anyway, and 99, which groups them. **❓ Waits on 89 and 99**, which each wait on one choice.
+- ✅ **"Scope" means one thing now — measured 2026-09-30.** A SCOPE is a
+  named place in the Query (`view`, `data`, a chart's part); the app's
+  surfaces ARE those places. Which rows a bind gets is `rows: 'page' | 'all'`,
+  and how far an answer goes is `reach`. Nothing is left to rename.
 - ✅ **Left from 44c — done 2026-09-29:** a heading that ALREADY held its own
   filter when the View took its field applies none of it — the Query answers a
   View-held field in the View alone (`compile`) — and the grid now marks the
@@ -479,11 +480,14 @@ Will, 2026-09-25:
    ✅ **Measured 2026-09-29: no component names an example field** —
    `openTickets`, `spend`, `owner` and the rest appear in `src/components`
    only as the `data-status` attribute or in comments.
-3. **Extension, not forking** — item 27 is the mechanism. **Waits on 27.**
+3. ✅ **Extension, not forking — done 2026-09-30, by 27.** A consumer gives a
+   component their own markup and sheets with `useTemplate`, without a fork
+   or a subclass (`T-a-templater-owns-the-files`).
 4. **Split the example app into its own repo**, LAST. Anything it cannot do
    from outside the library is a boundary the library has not drawn. Its
    pages are JSON now (`examples/definitions/`, Will 2026-09-29), so the folder
-   moves with it.
+   moves with it. **❓ Waits on you:** a new repository is yours to make. Say
+   where it lives, and I move the example app into it.
 
 ---
 
