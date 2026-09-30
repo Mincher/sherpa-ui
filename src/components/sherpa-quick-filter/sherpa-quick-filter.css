@@ -94,8 +94,9 @@
 }
 
 /* PENDING: changed, not yet applied — the active EDGE, and no fill (its pin
-   keeps it default). TRAP T-a-pending-chip-has-no-fill */
-:host([data-pending]) :is(.body, .caret) {
+   keeps it default). A saved filter's unsaved change wears it too.
+   TRAP T-a-pending-chip-has-no-fill · TRAP T-a-saved-filter-keeps-its-edit */
+:host(:is([data-pending], [data-edited])) :is(.body, .caret) {
   border-width: var(--sherpa-border-width-sm, 1px);
   border-color: var(--sherpa-style-active-border-base-1, #c046ff);
 }

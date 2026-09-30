@@ -73,6 +73,9 @@ export class SherpaQuickFilter extends SherpaElement {
     /* Changed, not yet applied: the active edge, no fill. Written by the BAR —
        the one writer. TRAP T-a-pending-chip-has-no-fill */
     'data-pending': { type: 'boolean', kind: 'style' },
+    /* A saved filter CHANGED, not saved: the pending look, and it still
+       counts. Written by the bar or panel. TRAP T-a-saved-filter-keeps-its-edit */
+    'data-edited': { type: 'boolean', kind: 'style' },
     /* A filter PANEL is drawing this field instead, so the bar hides the chip.
        Written by the HOST. TRAP T-the-view-chip-stays-on-the-header */
     'data-panelled': { type: 'boolean', kind: 'style' },
@@ -301,7 +304,7 @@ export class SherpaQuickFilter extends SherpaElement {
     if (body === 'number') {
       menu.reading = next;
       // In Advanced its ROWS answer it. TRAP T-a-number-has-advanced-rows
-      const answered = next.mode === 'advanced' ? readingRows(next).length > 0
+      const answered = menu.mode === 'advanced' ? readingRows(next).length > 0
         : (next.picked ?? []).length > 0 || (next.text ?? '').trim() !== '';
       this.current = answered && !next.suspended;
       // TRAP T-a-silent-steer-still-redraws-its-chip

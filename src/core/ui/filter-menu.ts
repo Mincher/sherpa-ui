@@ -13,11 +13,17 @@
  * - FilterMenuOptions — where the card stays inside, and whether it draws inline
  * - menuFor — Build a field's menu.
  * - saidItems — a saved filter's conditions as menu lines, a section per field
+ * - lineField — the field a saved filter's line names
+ * - EDITOR_EVENTS — what a saved filter's field editor says, and no chip may hear
+ * - editorFor — a saved filter's field, opened to change it: the field's own menu, waiting for Apply
+ * - withAnswer — a saved filter's readings with one field's answer changed, in their own order
  */
 
 import { OPS_FOR_TYPE, type FilterOp } from '../data/store.js';
 import { sayReadings, type SaidField } from '../data/filter-face.js';
-import type { FieldFacts, FieldReading } from '../data/filter-state.js';
+import {
+  fieldState, readingRows, savedReading, type FieldFacts, type FieldReading,
+} from '../data/filter-state.js';
 import {
   advancedOf, hasOwnBody, kindOf, picksOne, type FilterKind, type KindSource,
 } from './filter-kind.js';
@@ -210,4 +216,50 @@ export function saidItems(
   return says.flatMap((said) => said.lines.map((line, i) => ({
     value: `${said.field}:${i}`, label: line, section: said.label, inert: true,
   })));
+}
+
+/** The field a saved filter's line names — its value is `field:n`. */
+export function lineField(value: string): string {
+  return value.slice(0, value.lastIndexOf(':'));
+}
+
+/** What a saved filter's field editor says is its OWN — no chip may hear it
+ *  as its menu's. TRAP T-a-saved-filter-keeps-its-edit */
+export const EDITOR_EVENTS = [
+  'menu-change', 'menu-apply', 'menu-cancel', 'menu-clear', 'menu-close', 'menu-select',
+  'condition-change', 'filter-mode-change', 'input', 'change',
+] as const;
+
+/**
+ * A saved filter's field, opened to CHANGE it: that field's own menu, waiting
+ * for Apply. Give it `answer` once it has drawn. TRAP T-a-saved-filter-keeps-its-edit
+ */
+export function editorFor(
+  def: FilterMenuDef,
+  answer: FieldReading,
+  opts: FilterMenuOptions = {},
+): { menu: HTMLElement; items: FilterMenuItem[] } {
+  const { menu, items } = menuFor({ ...def, commit: true }, opts);
+  // Rows ARE the opt-in reaching the menu. TRAP T-many-conditions-are-one-reading
+  if (readingRows(answer).length) menu.setAttribute('data-advanced', '');
+  return { menu, items };
+}
+
+/**
+ * A saved filter's readings with ONE field's answer changed — in their own
+ * order, so a change put back compares equal. No answer drops the field.
+ * TRAP T-a-saved-filter-keeps-its-edit
+ */
+export function withAnswer(
+  readings: Readonly<Record<string, FieldReading>>,
+  field: string,
+  def: { label?: string; options?: readonly { value: string }[] },
+  answer: FieldReading,
+): Record<string, FieldReading> {
+  const values = (def.options ?? []).map((o) => o.value);
+  const kept = savedReading(fieldState({ field, label: def.label ?? field, values }, answer));
+  const next = Object.fromEntries(Object.entries(readings)
+    .flatMap(([f, r]): [string, FieldReading][] => (f !== field ? [[f, r]] : kept ? [[f, kept]] : [])));
+  if (kept && !(field in readings)) next[field] = kept;
+  return next;
 }

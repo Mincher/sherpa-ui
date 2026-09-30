@@ -45,6 +45,7 @@
  * - .apply — Apply a whole control's READING of several fields, at one scope.
  * - .answer — ONE SCOPE'S WHOLE ANSWER — a bar's report.
  * - .declarePreset — A saved filter's readings, by id — the library a preset that is ON compiles from.
+ * - .editPreset — EDIT a saved filter: what it applies now, while the library keeps what was saved.
  * - .describe — One scope, whole: its filters and answers, what it may add, how it is arranged.
  * - .say — say(readings) — a saved filter in WORDS, field by field: the source knows each field's name, type and values.
  * - .declareValues — every value a field can take, so each control offers the same list
@@ -173,6 +174,8 @@ export interface HeldFilter extends FieldFilter {
   removable?: boolean;
   /** A scope ABOVE holds it now — that scope's name. It keeps its place here. */
   appliedAt?: string;
+  /** A saved filter's EDIT, not saved: what it applies now. TRAP T-a-saved-filter-keeps-its-edit */
+  edited?: Record<string, FieldReading>;
   /** Where a View field may be SENT DOWN: each scope that has it, the one it
    *  came up from first. TRAP T-send-to-view-filters */
   sendTo?: { scope: string; label: string }[];
@@ -293,6 +296,8 @@ const STEERING_EVENTS = [
   'filter-apply',
   'filter-discard',
   'filter-change',
+  // A saved filter's rows changed, or its change was put back. TRAP T-a-saved-filter-keeps-its-edit
+  'preset-edit',
   'page-change',
   'page-size-change',
   'search-change',
@@ -809,6 +814,8 @@ export class DataSource extends EventTarget {
     // The saved filters it holds, on or off — the whole set. TRAP T-a-saved-filter-is-its-readings
     if (Object.keys(presets).length) this.#scope(scope).presets = { ...presets };
     else if (this.#draft.scopes[scope]) delete this.#draft.scopes[scope]!.presets;
+    // A saved filter it no longer holds takes its edit with it.
+    for (const id of Object.keys(this.#draft.scopes[scope]?.edits ?? {})) if (!(id in presets)) this.#dropEdit(scope, id);
     this.#prune();
     this.#recompose();
     if (JSON.stringify(this.#draft.scopes[scope]?.presets ?? {}) !== before) this.#drawScopesSoon();
@@ -824,12 +831,48 @@ export class DataSource extends EventTarget {
     if (readings) {
       this.#presets.set(id, readings);
       this.#presetFacts.set(id, { ...this.#presetFacts.get(id), ...facts });
+      // SAVED as it was changed: that change is no change now.
+      for (const [scope, entry] of Object.entries(this.#draft.scopes)) {
+        if (JSON.stringify(entry.edits?.[id]) === JSON.stringify(readings)) this.#dropEdit(scope, id);
+      }
     } else {
       this.#presets.delete(id);
       this.#presetFacts.delete(id);
+      for (const scope of Object.keys(this.#draft.scopes)) this.#dropEdit(scope, id);
     }
     this.#recompose();
     this.#drawScopesSoon();
+  }
+
+  /**
+   * EDIT a saved filter: the readings it applies now, while the library keeps
+   * what was saved. `undefined` puts the saved one back. Will, TODO 50.
+   * TRAP T-a-saved-filter-keeps-its-edit
+   */
+  editPreset(scope: string, id: string, readings: Readonly<Record<string, FieldReading>> | undefined): void {
+    if (!this.#presets.has(id)) {
+      // TRAP T-a-broken-assumption-reports
+      report({ code: 'unknown-preset', message: 'editPreset: no saved filter has that id.', at: { scope, id } });
+      return;
+    }
+    if (readings && JSON.stringify(readings) !== JSON.stringify(this.#presets.get(id))) {
+      const entry = this.#scope(scope);
+      entry.edits = { ...entry.edits, [id]: structuredClone(readings) as Record<string, FieldReading> };
+    } else {
+      this.#dropEdit(scope, id);
+    }
+    this.#recompose();
+    this.commit();
+    this.#drawScopesSoon();
+    this.#drawBars(scope);
+  }
+
+  /** Forget one scope's edit of a saved filter. */
+  #dropEdit(scope: string, id: string): void {
+    const entry = this.#draft.scopes[scope];
+    if (!entry?.edits || !(id in entry.edits)) return;
+    Reflect.deleteProperty(entry.edits, id);
+    if (!Object.keys(entry.edits).length) delete entry.edits;
   }
 
   /**
@@ -859,10 +902,13 @@ export class DataSource extends EventTarget {
     }
     const presets: HeldFilter[] = Object.entries(q.presets ?? {}).map(([id, on]) => {
       const facts = this.#presetFacts.get(id) ?? {};
+      const edit = q.edits?.[id];
       return {
         id, label: facts.label ?? id, readings: this.#presets.get(id) ?? {}, active: on, removable: true,
         ...(facts.editable ? { editable: true } : {}),
-        says: this.#says(id),
+        // An EDIT is what its menu says now. TRAP T-a-saved-filter-keeps-its-edit
+        ...(edit ? { edited: structuredClone(edit) } : {}),
+        says: edit ? this.say(edit) : this.#says(id),
       };
     });
     const fields: HeldFilter[] = q.holds.filter((f) => this.#fields.has(f)).map((f) => {
@@ -1049,6 +1095,7 @@ export class DataSource extends EventTarget {
     const entry = this.#draft.scopes[scope];
     if (entry?.presets && id in entry.presets) {
       Reflect.deleteProperty(entry.presets, id);
+      this.#dropEdit(scope, id);
       this.#prune();
       this.#recompose();
       this.#drawScopesSoon();
@@ -1991,7 +2038,7 @@ export class DataSource extends EventTarget {
         .map(([f, { suspended: _off, ...reading }]): [string, Filter | undefined] =>
           [f, readingClause({ field: f, ...field(f) }, reading)]),
       ...Object.entries(q.presets ?? {}).filter(([, on]) => on)
-        .map(([id]): [string, Filter | undefined] => [id, andFilter(Object.entries(this.#presets.get(id) ?? {})
+        .map(([id]): [string, Filter | undefined] => [id, andFilter(Object.entries(q.edits?.[id] ?? this.#presets.get(id) ?? {})
           .map(([f, reading]) => readingClause({ field: f, ...field(f) }, reading))
           .filter((c): c is NonNullable<typeof c> => !!c))]),
     ];
@@ -2291,6 +2338,17 @@ export class DataSource extends EventTarget {
           this.commit();
           this.#drawBars(scope);
         }
+        return;
+      }
+      case 'preset-edit': {
+        // A bar edits in its own scope; the panel names one. TRAP T-a-saved-filter-keeps-its-edit
+        const own = this.#bound.get(event.currentTarget as Populatable)?.scope;
+        const scope = typeof own === 'string' ? own : detail['scope'];
+        const id = detail['id'];
+        const readings = detail['readings'];
+        if (typeof scope !== 'string' || typeof id !== 'string') return;
+        this.editPreset(scope, id, readings && typeof readings === 'object'
+          ? readings as Record<string, FieldReading> : undefined);
         return;
       }
       case 'filter-apply':

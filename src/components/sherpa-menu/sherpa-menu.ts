@@ -504,8 +504,10 @@ export class SherpaMenu extends SherpaElement {
       /* …and its ROWS, where it offers them: only the reading's own rows — a
          Simple `> 2` is the body's, not a row. TRAP T-a-number-has-advanced-rows */
       if (this.#offersAdvanced()) {
-        this.#setRows((next.conditions ?? []).filter(rowAnswered));
-        this.mode = next.mode ?? 'simple';
+        const rows = (next.conditions ?? []).filter(rowAnswered);
+        this.#setRows(rows);
+        // No `mode` — a saved answer: its rows decide, as a list's do.
+        this.mode = next.mode ?? (rows.length ? 'advanced' : 'simple');
       }
       this.#syncDirty();
       return;

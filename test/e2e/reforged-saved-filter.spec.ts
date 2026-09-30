@@ -736,9 +736,10 @@ test('every saved chip on a bar opens its conditions, a heading per field; it is
   expect(r.listed['risky']).toEqual([
     'p.section:health', 'p.line:Less than 60', 'p.section:Owner', 'p.line:Equals Nobody',
   ]);
-  // The reader's OWN keeps Edit and Delete, under its conditions.
+  // The reader's OWN keeps Edit and Delete, under its conditions — and a line
+  // opens its field, to change it (TODO 50).
   expect(r.listed['custom:mine']).toEqual([
-    'p.section:Owner', 'p.line:Is one of Dana, Nobody', 'hr:', 'button:Edit filter', 'button:Delete filter',
+    'p.section:Owner', 'label:Is one of Dana, Nobody', 'hr:', 'button:Edit filter', 'button:Delete filter',
   ]);
   expect(r.listed['told']).toEqual(['p.section:Health score', 'p.line:Under 60']);
   expect(r.on).toEqual({ current: true, active: ['at-risk'], heard: ['at-risk'], amber: false });
@@ -767,5 +768,6 @@ test('a preset chip in the panel opens its conditions too', async ({ page }) => 
 
   expect(r.caret).toBe(true);
   expect(r.risky).toEqual(['p:health', 'p:Less than 60', 'p:Owner', 'p:Equals Unassigned']);
-  expect(r.mine).toEqual(['p:Owner', 'p:Equals Dana', 'hr:', 'button:Edit filter', 'button:Delete filter']);
+  // The reader's OWN opens a line's field, to change it (TODO 50).
+  expect(r.mine).toEqual(['p:Owner', 'label:Equals Dana', 'hr:', 'button:Edit filter', 'button:Delete filter']);
 });

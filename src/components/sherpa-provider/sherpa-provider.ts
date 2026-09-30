@@ -630,8 +630,9 @@ export class SherpaProvider extends SherpaElement {
     // After a pick or a reset, the page's kept Query is the one on screen.
     this.#settle = () => { if (key && session) session.set(key, { view: this.#view, query: source.query.applied }); };
     for (const type of ['selection-change', 'scope-change']) source.addEventListener(type, keep, { signal });
-    // A preset switched is a report, and no selection changes.
-    this.addEventListener('quick-filter-change', keep, { signal });
+    // A preset switched or edited is a report, and no selection changes.
+    // TRAP T-a-saved-filter-keeps-its-edit
+    for (const type of ['quick-filter-change', 'preset-edit']) this.addEventListener(type, keep, { signal });
     signal.addEventListener('abort', () => {
       cancelAnimationFrame(frame);
       this.#flush = this.#settle = null;

@@ -2802,6 +2802,62 @@
     --_status-icon: initial;
   }
 
+  sherpa-quick-filter[data-edited] {
+    --sherpa-style-border-base: var(--sherpa-style-default-border-base);
+    --sherpa-style-border-base-1: var(--sherpa-style-default-border-base-1);
+    --sherpa-style-border-width: var(--sherpa-style-default-border-width);
+    --sherpa-style-border-data-viz: var(--sherpa-style-default-border-data-viz);
+    --sherpa-style-content-base: var(--sherpa-style-default-content-base);
+    --sherpa-style-content-inverse: var(--sherpa-style-default-content-inverse);
+    --sherpa-style-content-secondary: var(--sherpa-style-default-content-secondary);
+    --sherpa-style-content-tertiary: var(--sherpa-style-default-content-tertiary);
+    --sherpa-style-indicator-accent: var(--sherpa-style-default-indicator-accent);
+    --sherpa-style-surface-base: var(--sherpa-style-default-surface-base);
+    --sherpa-style-surface-base-1: var(--sherpa-style-default-surface-base-1);
+    --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
+    --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
+    --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
+    --_status-surface: initial;
+    --_status-surface-subtle: initial;
+    --_status-surface-strong: initial;
+    --_status-shadow: initial;
+    --_status-border: initial;
+    --_status-border-strong: initial;
+    --_status-data-viz: initial;
+    --_status-data-viz-border: initial;
+    --_status-text: initial;
+    --_status-text-on-color: initial;
+    --_status-icon: initial;
+  }
+
+  sherpa-quick-filter[data-current][data-edited] {
+    --sherpa-style-border-base: var(--sherpa-style-default-border-base);
+    --sherpa-style-border-base-1: var(--sherpa-style-default-border-base-1);
+    --sherpa-style-border-width: var(--sherpa-style-default-border-width);
+    --sherpa-style-border-data-viz: var(--sherpa-style-default-border-data-viz);
+    --sherpa-style-content-base: var(--sherpa-style-default-content-base);
+    --sherpa-style-content-inverse: var(--sherpa-style-default-content-inverse);
+    --sherpa-style-content-secondary: var(--sherpa-style-default-content-secondary);
+    --sherpa-style-content-tertiary: var(--sherpa-style-default-content-tertiary);
+    --sherpa-style-indicator-accent: var(--sherpa-style-default-indicator-accent);
+    --sherpa-style-surface-base: var(--sherpa-style-default-surface-base);
+    --sherpa-style-surface-base-1: var(--sherpa-style-default-surface-base-1);
+    --sherpa-style-surface-base-2: var(--sherpa-style-default-surface-base-2);
+    --sherpa-style-surface-shadow: var(--sherpa-style-default-surface-shadow);
+    --sherpa-style-surface-data-viz: var(--sherpa-style-default-surface-data-viz);
+    --_status-surface: initial;
+    --_status-surface-subtle: initial;
+    --_status-surface-strong: initial;
+    --_status-shadow: initial;
+    --_status-border: initial;
+    --_status-border-strong: initial;
+    --_status-data-viz: initial;
+    --_status-data-viz-border: initial;
+    --_status-text: initial;
+    --_status-text-on-color: initial;
+    --_status-icon: initial;
+  }
+
   sherpa-quick-filter[data-superseded] {
     --sherpa-style-border-base: var(--sherpa-style-inactive-border-base);
     --sherpa-style-border-base-1: var(--sherpa-style-inactive-border-base-1);

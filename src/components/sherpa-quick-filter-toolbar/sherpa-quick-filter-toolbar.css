@@ -21,6 +21,9 @@
   container: qf-bar / inline-size;
 }
 
+/* A saved filter's field, opened to change it: no box of its own. */
+.qf-editor { display: contents; }
+
 /* The view bar bottom-aligns to the nav's first quick row; data centres. */
 :host([data-type="view"]) .bar {
   align-items: flex-end;

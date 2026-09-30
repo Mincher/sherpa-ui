@@ -345,6 +345,8 @@ events:
     bubbles: true
     composed: true
     detail:
+      id: unknown
+      label: unknown
       readings: unknown
   - $type: event
     name: filter-delete
@@ -352,6 +354,13 @@ events:
     composed: true
     detail:
       id: unknown
+  - $type: event
+    name: preset-edit
+    bubbles: true
+    composed: true
+    detail:
+      id: unknown
+      readings: unknown
   - $type: event
     name: filter-add
     bubbles: true

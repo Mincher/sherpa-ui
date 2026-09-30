@@ -27,6 +27,10 @@ sherpa-quick-filter:
   # Will, 2026-09-26 (TODO 46). TRAP T-a-pending-chip-has-no-fill
   '&[data-pending]': default
   '&[data-current][data-pending]': default
+  # A saved filter CHANGED and not saved wears the pending look. Will, TODO 50.
+  # TRAP T-a-saved-filter-keeps-its-edit
+  '&[data-edited]': default
+  '&[data-current][data-edited]': default
 
   # The view took this field; reads as inactive, keeps its value.
   '&[data-superseded]': inactive

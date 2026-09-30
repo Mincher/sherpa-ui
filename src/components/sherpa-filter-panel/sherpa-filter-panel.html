@@ -50,9 +50,10 @@
     filter-remove — a field's Remove. detail: { scope, id }
     group-change — a Group chip or Reset all, with its scope. detail: { field, scope }
     sort-change — a Sort chip or Reset all, with its scope. detail: { field, direction, scope }
-    filter-save — a scope's Save filter. detail: { scope, readings }
+    filter-save — a scope's Save filter, or a saved filter's change saved. detail: { scope, readings, id?, label? }
     filter-edit — a saved preset's Edit filter. detail: { scope, id }
     filter-delete — a saved preset's Delete filter. detail: { scope, id }
+    preset-edit — a saved preset's rows changed. detail: { scope, id, readings } — null puts the saved one back
     view-reset — Reset all to default: put back the View's own filters, in every scope. Cancelable
 -->
 <template id="default">
@@ -102,6 +103,9 @@
     <slot></slot>
 
   </sherpa-container>
+  <!-- A saved filter's field, opened to change it — outside the scopes, so
+       no field hears it as its own. TRAP T-a-saved-filter-keeps-its-edit -->
+  <div class="editor"></div>
 
   <!-- PROTOTYPES. Every element the panel will ever show exists here from the
        start; JS clones, it never createElement()s. -->
@@ -178,11 +182,14 @@
   </template>
 
   <!-- A saved preset's menu: its conditions, as lines, stamped above these —
-       and the reader's OWN keeps its two actions.
-       TRAP T-a-saved-chip-lists-its-conditions · TRAP T-the-panel-saves-a-whole-scope -->
+       and the reader's OWN keeps its actions; Save and Discard only while it
+       holds a change. TRAP T-a-saved-chip-lists-its-conditions
+       TRAP T-the-panel-saves-a-whole-scope · TRAP T-a-saved-filter-keeps-its-edit -->
   <template class="saved-menu-tpl">
     <sherpa-menu slot="menu" data-no-select-all>
       <hr class="saved-own" />
+      <button type="button" class="saved-edit" value="save-edit">Save filter</button>
+      <button type="button" class="saved-edit" value="discard-edit">Discard changes</button>
       <button type="button" class="saved-own" value="edit">Edit filter</button>
       <button type="button" class="saved-own" value="delete">Delete filter</button>
     </sherpa-menu>

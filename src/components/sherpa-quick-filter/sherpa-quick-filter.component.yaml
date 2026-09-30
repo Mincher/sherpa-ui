@@ -155,6 +155,14 @@ props:
       asc | desc — which way a sort chip POINTS. `data-current` says whether it runs, so a suspended
       sort resumes the way it was. TRAP T-off-is-not-forgotten
   - $type: prop
+    name: data-edited
+    type: string
+    observed: false
+    kind: style
+    description: >-
+      a saved filter changed and not saved: the pending look, still counted. TRAP
+      T-a-saved-filter-keeps-its-edit
+  - $type: prop
     name: data-icon
     type: string
     observed: false
@@ -278,6 +286,9 @@ states:
   - $type: state
     name: pending
     selector: ":host([data-pending])"
+  - $type: state
+    name: edited
+    selector: ":host([data-edited])"
   - $type: state
     name: ai
     selector: ":host([data-type=\"ai\"])"

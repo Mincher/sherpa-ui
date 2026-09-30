@@ -23,6 +23,9 @@
 
 }
 
+/* A saved filter's field, opened to change it: no box of its own. */
+.editor { display: contents; }
+
 /* The BODY scrolls, not the panel: the search and the footer stay put. Without
    it the scopes push both out of the box and the panel overflows its own
    edges. `::part` is the only way in — the body is in the panel's shadow.

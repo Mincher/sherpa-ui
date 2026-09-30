@@ -9006,6 +9006,7 @@ writes. A reading carries EITHER — never both.
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/core/data/data-source.ts`
+- Site: `src/core/ui/filter-menu.ts`
 
 ### T-an-inactive-chip-says-where-its-filter-went
 
@@ -13205,6 +13206,57 @@ ON ones itself, so a preset was a chip in one file and a query in another.
 - Site: `src/data.ts`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 - Site: `test/unit/a-saved-filter-is-its-readings.test.mjs`
+
+### T-a-saved-filter-keeps-its-edit
+
+**A reader's own saved filter can be CHANGED from its menu, and the change is
+an EDIT: applied now, not saved.** Will, TODO 50: *"rows that can be edited.
+On a filter the reader SAVED that is applied, an edit is a temporary DRAFT;
+the saved filter does not change. When the draft differs, the menu … offer[s]
+Save."* Called an EDIT in the code: the source's `#draft` and a View's drafts
+(144) already use the other word.
+
+- **The QUERY owns it** — `scopes[id].edits[presetId]`, beside `presets`. An
+  ON saved filter compiles from its edit; the library keeps what was saved.
+  So a reload, a View save and a second view all see it — once the provider
+  hears `preset-edit` and keeps the Query, as it keeps a switch. A bar and the panel
+  only REPORT one (`preset-edit`), and are drawn it back
+  (`drawScope`'s `edits`, `describe`'s `edited`).
+- **No change is no edit.** An edit equal to what was saved is dropped — by
+  `editPreset`, and by `declarePreset` when the change is saved. It goes
+  with its filter: taken off the bar, or deleted.
+- **A line OPENS its field**, in that field's own menu (`editorFor`, which is
+  `menuFor` waiting for Apply), holding what the filter applies now. The
+  menu's `reading` reads and writes every kind, so there is one path for a
+  list, a number and Advanced rows. The editor lives OUTSIDE the chips and
+  scopes, and its events stop there: a bar or panel hearing its `menu-change`
+  as a chip's reported a filter the reader never set.
+- **ON FIRST, then the edit.** A filter that is off comes on as its change
+  is applied. The source draws the scope a moment later from a COPY; sent
+  the other way round, the copy had it off and switched it off again.
+- **Saved under a NEW name**, the change is spent: its old filter goes back
+  to what it saved, and off (`packFilter`).
+- **It wears the pending look** (`data-edited`), not `data-pending`: a
+  pending chip draws no count, and an edited one is applied.
+- A number saved as rows has no `mode`, so its rows decide it, as a list's
+  do. It opened Simple, with its rows hidden.
+
+Not built: Save in the panel section's header. Will ruled in 117 that a
+scope's header holds nothing to press; Save is in the chip's own menu.
+
+- Site: `src/core/data/query.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/ui/filter-menu.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
+- Site: `test/e2e/reforged-saved-filter-edit.spec.ts`
+- Site: `test/unit/a-saved-filter-keeps-its-edit.test.mjs`
 
 ### T-save-packs-the-fields-into-one-chip
 

@@ -93,6 +93,8 @@ anatomy:
           class: scopes
           part: scopes
         - slot: ""
+    - el: div
+      class: editor
     - el: template
       class: scope-tpl
       children:
@@ -253,6 +255,8 @@ events:
     bubbles: true
     composed: true
     detail:
+      id: unknown
+      label: unknown
       readings: unknown
       scope: unknown
   - $type: event
@@ -263,6 +267,14 @@ events:
     name: filter-delete
     bubbles: true
     composed: true
+  - $type: event
+    name: preset-edit
+    bubbles: true
+    composed: true
+    detail:
+      id: unknown
+      readings: unknown
+      scope: unknown
   - $type: event
     name: view-reset
     bubbles: true

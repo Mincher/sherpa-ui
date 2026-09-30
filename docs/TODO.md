@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**45 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**44 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -82,7 +82,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 22b | 154 | A data viz section in the filter panel has a chart icon | quick |
 | ✅ | 23 | 60 | Once applied, a chip's badge shows the number of results | feature |
 | ✅ | 24 | 49 | A preset Advanced chip shows its conditions, read-only | feature |
-| ⬜ | 25 | 50 | A reader's saved Advanced chip shows its conditions, editable | feature |
+| ✅ | 25 | 50 | A reader's saved Advanced chip shows its conditions, editable | feature |
 | ✅ | 26 | 48 | A child menu opens on hover or click of its row | feature |
 | ✅ | 27 | 21c | A condition's matches must ALL highlight | feature |
 | ✅ | 28 | 21f | "Send to view filters" | feature |
@@ -1742,12 +1742,28 @@ under the lines. The chip is still a toggle: its body switches it. The
 source makes the words, so a field has its real name. Not built: the `fx`
 button on a column heading — Will's later words ask for chips only.
 
-### `[ ]` 50 — A reader's saved Advanced chip shows its conditions, editable
+### `[x]` ✅ 50 — A reader's saved Advanced chip shows its conditions, editable
 
 The same `fx` button, with rows that can be edited. On a filter the reader SAVED
 that is applied, an edit is a temporary DRAFT; the saved filter does not
 change. When the draft differs, the menu and the panel section header offer
 Save. Needs 49, and 46's pending look for the draft.
+
+**✅ Done 2026-09-30.** On a reader's own saved chip, each line in its ▾ menu
+now opens that field in the field's own menu, holding what the filter
+applies. Apply is the change. The rows follow at once; what is saved does
+not. The chip wears the pending look (46) and keeps its count, and its menu
+adds **Save filter** (the page's name dialog, its own name offered) and
+**Discard changes**. Bar and panel alike. The change lives in the Query, so
+a reload keeps it. A shipped preset still only lists its lines.
+`T-a-saved-filter-keeps-its-edit`
+
+Two things differ from the words above:
+
+- **No Save in the panel section's header.** 117 ruled that a scope's
+  header holds nothing to press. Save is in the chip's menu.
+- **Edit filter stays.** It still unpacks the filter into its fields — the
+  only way to ADD a field to a saved filter. Say if it should go.
 
 ### `[x]` ✅ 48 — A child menu opens on hover or click of its parent row
 
@@ -4133,6 +4149,7 @@ One line each. The detail is in git and in the trap named.
 - 90 🚧: a number field can go Advanced — number questions, typed values, its answer carried over; dates wait on 21d — `T-a-number-has-advanced-rows`
 - 9b: a metric's name is its composed Data Viz Header, as Figma's Metric has it — no rule, an optional icon
 - 80: the container header is Figma's one grid — metadata under the title, the chevron leading
+- 50: a saved filter's line opens its field; the change applies, unsaved, until Save or Discard — `T-a-saved-filter-keeps-its-edit`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

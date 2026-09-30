@@ -38,6 +38,9 @@ export interface ScopeQuery {
   readings: Record<string, FieldReading>;
   /** Saved filters on this scope, on or off. Their readings live in the library. */
   presets?: Record<string, boolean>;
+  /** A saved filter the reader CHANGED and has not saved, by id: an ON one
+   *  applies this, and the library keeps what was saved. TRAP T-a-saved-filter-keeps-its-edit */
+  edits?: Record<string, Record<string, FieldReading>>;
   /** The ONLY bound components this scope narrows — a legend's own chart.
    *  Absent, it narrows every one. TRAP T-a-component-part-narrows-one-component */
   narrows?: string[];
@@ -119,7 +122,7 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
     }
     for (const [preset, on] of Object.entries(scope.presets ?? {})) {
       if (!on) continue;
-      const given = facts.preset?.(preset);
+      const given = scope.edits?.[preset] ?? facts.preset?.(preset);
       if (!given) {
         report({
           code: 'unknown-preset',
