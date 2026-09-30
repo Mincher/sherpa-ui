@@ -152,7 +152,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ❓ | 50 | 28 | A Figma component is NOT always a web component | tidy |
 | ❓ | 51 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
 | ⬜ | 52 | 33 | Density as step offsets, and a breakpoint step | tokens |
-| ⬜ | 53 | 36 | CSS: compiled where it should inherit? | tidy |
+| ❓ | 53 | 36 | CSS: compiled where it should inherit? | tidy |
 | ❓ | 54 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
 | ✅ | 55 | 84 | Use the platform: Intl for money, units and deltas; Temporal in the calendar | refactor |
 | ❓ | 56 | 81 | Component contracts move from YAML to JSON | refactor |
@@ -3528,7 +3528,7 @@ The density values live in the hand-kept `figma.extensions.json`; read them
 live through the figma-console MCP
 (`T-an-override-collection-is-keyed-by-its-parent`).
 
-### `[ ]` 36 — CSS: compiled where it should inherit?
+### `[ ]` ❓ 36 — CSS: compiled where it should inherit?
 
 Will, 2026-09-24: the system is designed on INHERITANCE, so why is so much CSS
 compiled? Two generators: the state pins (`state-pins.yaml` → ~21 re-pointed
@@ -3536,6 +3536,26 @@ Style names per line, into `tokens.css` and `sherpa-style-modes.css`, because
 CSS has no mixin) and the dist PostCSS transform. Find what can move into
 `sherpa-base.css` / `sherpa-element` as inherited rules, and what genuinely
 needs a generator.
+
+**Measured 2026-09-30 — each generator earns its place; one has a choice.**
+
+- **The state pins** (`state-pins.yaml`): a pin puts an element in a Style
+  MODE, which is about 21 Style names re-pointed at once. Inheritance cannot
+  do it: the names must be set ON the element, and CSS has no mixin to name
+  the set once (`@mixin` ships in no engine). Setting `data-status` from JS
+  instead would be JS for a visual state. Keep the generator.
+- **Typography, group positions and tokens** are generated from FIGMA, which
+  is their source. Keep.
+- **The PostCSS step** does three things: minifies (keep), adds a few
+  `-webkit-` prefixes, and — the only real COMPILING — lowers CSS nesting in
+  70 of 76 sheets. It lowers nesting because the support list includes
+  **Safari 16**, which has none (nesting came in Safari 17.2).
+
+**❓ One choice, the support floor:**
+- **A (my pick): keep Safari 16**, and the nesting lowered. It costs
+  nothing a reader sees.
+- **B: raise the floor to Safari 17.2** — the nesting ships as written, and
+  preset-env goes from the build.
 
 ### `[ ]` ❓ 11d — `data-type` means nine things; `data-empty` means three
 
