@@ -70,11 +70,11 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16o | 153 | In a fixed-row layout grid, the data grid and its container change height with the row count; the container must keep its height and the grid fill it | bug |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | ❓ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
-| ⬜ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
+| ❓ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
 | ⬜ | 19 | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
-| ⬜ | 19a | 110 | In Advanced rows, AND is serial and OR is parallel: an AND row offers only what the rows before it leave | feature |
+| ❓ | 19a | 110 | In Advanced rows, AND is serial and OR is parallel: an AND row offers only what the rows before it leave | feature |
 | ❓ | 20 | 21d | EXPLORE — conditions for a DATE field | explore |
-| ⬜ | 21 | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
+| ❓ | 21 | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
 | ❓ | 21a | 105 | "Save filters" saves EVERY scope under one name; a "Saved" chip shows it, warns when edited, and undoes it | feature |
 | ✅ | 21b | 109 | Reset has a label, and a menu button: "Reset to default" puts back the View's own filters | feature |
 | ✅ | 22 | 97 | A filter panel section shows an icon for WHAT it filters: View, Chart, Grid, Form, List | quick |
@@ -90,7 +90,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 30 | 20b | The Date filter should be a view-scope date RANGE | feature |
 | ✅ | 31 | 52 | A data viz scope in the filter panel: one Simple filter, a chip per legend item, with its swatch | feature |
 | ✅ | 31ab | 159 | A data viz filter held by the View: a legend click changes the VIEW's values, and toggles the item | feature |
-| ⬜ | 31aa | 149 | A chart legend's items ARE swatch chips: move `sherpa-chart-legend` onto `sherpa-quick-filter` | refactor |
+| ❓ | 31aa | 149 | A chart legend's items ARE swatch chips: move `sherpa-chart-legend` onto `sherpa-quick-filter` | refactor |
 | ❓ | 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
 | ⬜ | 31b | 124 | The Filters button and menu move to the filter panel HEADER: one menu for every scope | feature |
 | ⬜ | 31c | 122 | Email starts SIMPLE, with a switch to Advanced; over 20 values it is one chip with a multi-select menu | feature |
@@ -120,7 +120,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 35d | 164 | At the mobile breakpoint the app header shows no nav hamburger: it does not get narrow enough to trigger it | bug |
 | ✅ | 35b | 161 | The app header's shadow FADES in, very quickly, as the Context scrolls under it | quick |
 | ✅ | 35c | 163 | The app shell's panel areas are 150% of their width today, at the least | quick |
-| ⬜ | 35a | 146 | The app shell's FIXED panel areas resize by dragging their inner edge; the content reflows; two levels of container query | feature |
+| ❓ | 35a | 146 | The app shell's FIXED panel areas resize by dragging their inner edge; the content reflows; two levels of container query | feature |
 | | | | **F — Data states and charts** | |
 | ✅ | 36 | 58 | Loading, empty and error states in a container | feature |
 | 🚧 | 37 | 9b | A Data Viz header, for metrics and chart containers | component |
@@ -1326,6 +1326,19 @@ mode."* Its content is one of three, by the field:
 builder's explode-or-menu flag, 38 step 4). 47 (more than 20 values, one chip)
 is merged here. Mode words: TODO 75.
 
+**Plan, 2026-09-30** (a second agent read the code; nothing built yet).
+NOT built: there is no "16 values" line anywhere in `src/`. Every field with
+options is a run of chips; only a date, Group and Sort are one chip. The
+line belongs in `src/core/ui/filter-kind.ts` (DOM-free), read by the panel
+and the bar. Two fixes ride with it: a one-chip field's picks are its MENU's
+values, not the chip's on/off (`#picked`), and its Advanced switch is the
+chip menu's own, as the inline body is never built for it.
+
+**❓ One number.** 89 says 16, and that it replaces 47's 20. 122, later, says
+"over 20 unique values".
+- **A (my pick): 16** — 89 calls it the one line for the bar and the panel.
+- **B: 20.**
+
 ### `[x]` ✅ 102 — Simple AND Advanced answers are both kept, so a filter switches mode at any time
 
 **Progress, 2026-09-29.** ✅ Step 1: a reading keeps both answers, and `mode`
@@ -1400,6 +1413,19 @@ The data layer has the tool: `present` is the values a row still carries under
 the other filters. Build with 90 (options per field type) and 99 (serial /
 parallel for whole filters), so "serial" means one thing in both.
 
+**Plan, 2026-09-30** (a second agent read the code; nothing built yet).
+`FieldReading.present` is READ (a value not in it shows as unavailable) but
+NOTHING writes it: the data layer has the type, not the sum. Needed: a
+DOM-free rule in `filter-state.ts` (walk back to the last OR), a source
+method that answers "which values are left under these rows", and a way for
+a row to ask — the menu reads its own DOM today, and a remote store is
+async. Build with 99.
+
+**❓ One choice.** In an AND row, a value the rows before it rule out is:
+- **A (my pick): hidden** — "offers only what the rows before it leave".
+- **B: shown, dimmed, and not pickable** — as an unavailable value reads
+  elsewhere.
+
 ### `[ ]` 90 — Any filter switches to ADVANCED: condition rows, with options per field type
 
 Will, 2026-09-27: *"Any filter should be able to be toggled to 'Advanced',
@@ -1413,6 +1439,13 @@ and date each get their own list (21d is the date half). Switching back to
 Simple keeps what it can show and says what it cannot, never drops a
 condition silently. **The word is Advanced** — Will chose it over
 *Complex*, 2026-09-27 (75).
+
+**Plan, 2026-09-30** (a second agent read the code; nothing built yet).
+DONE: Advanced rows on a TEXT field, both answers kept, the f(x) switch.
+LEFT: the operators do not follow the type — `menuFor` gives every Advanced
+menu the text list, and a number or date menu returns before it gets rows.
+`OPS_FOR_TYPE` has the number list already (a grid heading uses it). So:
+number rows first; a date waits on 21d's two open choices.
 
 ### `[ ]` 98 — One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes
 
@@ -1452,6 +1485,27 @@ This gives us some more horizontal space for content."*
   `.field-discard`) leave the header too.
 - **The actions column goes**: the panel's reserved right-hand column
   (`.field-acts`, from `24c3a57c`) is deleted, and its width goes to the content.
+
+**Plan, 2026-09-30** (a second agent read the code; nothing built yet).
+
+- DONE already: the actions column (the field is one column now), and the
+  per-field Apply and Discard — but they show only while a REMOTE change
+  waits, and they sit in the header.
+- Left: one `.field-row` after the field's body holding Reset, Discard and
+  Apply; in Advanced it is the Add condition row (the menu needs a public
+  `addCondition()`, as its own button is in its shadow root); and a footer
+  with Apply all and Discard all. The source must hear an apply with no
+  field (it ignores one today).
+- It changes later rulings on purpose: 62's "no footer" trap and test, and
+  121's Clear + Send to group (Send to stays in the header, alone).
+
+**❓ One choice.** On a LOCAL source an Advanced row applies as you edit it
+(62), so Apply and Discard have nothing to do.
+- **A (my pick):** keep that. Apply, Discard and the footer show only while
+  a remote change waits. The row still holds Reset and Add condition.
+- **B:** Advanced rows are a DRAFT until Apply, on every source, as 98 says
+  word for word. The menu has a draft model, but only for an open popover,
+  not an inline one.
 
 ### `[ ]` 105 — "Save filters" saves EVERY scope under one name; a "Saved" chip shows it
 
@@ -2000,6 +2054,29 @@ when it is built:
 - read-only mode (a gauge's zones: a key, not a filter);
 - "every item on" as the rest state, where a chip's is "every chip off".
 
+**Plan, 2026-09-30** (a second agent read the code; nothing built yet).
+
+- The legend COMPOSES one `sherpa-quick-filter` per item, in its own
+  template. It keeps the layout (the value column, the 3-by-2 grid), the
+  "Other" roll-up and its menu, its off-set, `legend-item-click`,
+  `populate` — so charts, the provider and the gauge change nothing. The
+  other way — no legend, a chart slots a run of chips — moves all of that
+  into four charts for no gain.
+- The chip needs: a `key` kind (no border, mono 12px, 16px tall, its label
+  truncates); `data-readonly` (a gauge's key: not a control); a STATUS
+  swatch (a gauge's zones); and `aria-pressed` on a boolean chip, which no
+  chip sets today — a real gap for the panel's chips too.
+- The VALUE stays the legend's own cell beside the chip, so the column still
+  lines up. A click on the number then does nothing.
+
+**❓ One choice.** A legend chip is ON when its value is SHOWN, and at rest
+every one is on. A panel chip is ON when its value is PICKED, and at rest
+every one is off. The same value reads the two ways round.
+- **A (my pick): leave it.** The legend says what the chart shows; the panel
+  says what you picked. Each is true where it is.
+- **B:** the legend follows the panel — at rest no chip is on, and all read
+  in full ink.
+
 ### `[ ]` 124 — The Filters button and menu move to the filter panel HEADER
 
 Will, 2026-09-30: *"Let's move the 'Filters' button, and menu, to the filter
@@ -2019,6 +2096,11 @@ menu."*
 
 Part of 89 (every panel filter starts Simple) and 90 (any filter switches to
 Advanced). Today `email` is declared `"advanced": "only"` in `records.json`.
+
+**Plan, 2026-09-30.** `email` is `"advanced": "only"`, so the source never
+reads its values. Changing it to `"advanced": true` collects them; then 89's
+line draws it as one chip with a multi-select menu, and the chip menu's f(x)
+switches to Advanced. Waits on 89's number.
 
 ### `[x]` ✅ 120 — A view-scope filter gets "Send to `<scope name>`"
 
@@ -2276,6 +2358,31 @@ So: keep a draft Query per View; two settings, both on by default — keep
 drafts for the session, keep them across sessions — in Settings ›
 Application.
 
+**Plan, 2026-09-30** (a second agent read the code; nothing built yet).
+
+- Today: ONE kept Query per page (`/filters/<page>`), tagged with its View,
+  and restored only if the View matches. A pick throws it away. It is kept
+  in localStorage already, so it outlives the tab.
+- A draft per View: a new `src/core/browser/view-drafts.ts` beside the saved
+  Views — a map per page, View id → `{ query, sig }`. `sig` is the View's own
+  definition as it was; a draft whose `sig` no longer matches is dropped, so
+  a changed preset is not hidden by an old draft.
+- Written on the same frame-debounced path that keeps the page's Query now,
+  and FLUSHED before a pick — the View's id changes only after an async
+  write, so a pending frame would save the new View's filters under the old
+  name. No draft while the Query is the View's own.
+- Read inside the pick, in place of the View's own Query (no flash), and at
+  open, so a reload or a link to a View restores its draft. A draft is a
+  RESTORE: exact, so it wins over carry-over.
+- Cleared by Reset all to default, by Save (the saved View owns them now),
+  and by Delete.
+- Two switches in Settings › Application, a "Filtering" section, both on:
+  keep each View's filters while I switch Views (the tab); keep them across
+  sessions. The provider takes them as an option; an app that gives none
+  gets no drafts.
+- Tests that pin "a fresh View resets" (`reforged-view-chips.spec.ts`) then
+  mean "on a first visit".
+
 ---
 
 ## E — Views and navigation
@@ -2500,6 +2607,41 @@ hide-the-panels query reads); and the two levels — one for the shell, which
 shows or hides a panel area, and one for the content area, which reflows as a
 panel area grows. The handle can follow the overlay panel's (22): a `role="separator"`, drag
 or arrow keys — but it is on the AREA's edge, in `sherpa-app-shell`.
+
+**Plan, 2026-09-30** (a second agent read the code; nothing built yet).
+
+- The model is `sherpa-overlay-panel`'s handle: a `role="separator"` strip,
+  pointer capture, arrow keys in 16px steps, the width in a custom property,
+  CSS owning the clamp, `panel-resize` on release. It lacks `aria-valuemin`
+  and `aria-valuemax`, a dragging state and `pointercancel`. A new imported
+  helper, `src/core/ui/edge-resize.ts`, gives all of that to both.
+- "The area between the nav and the viewport edge" is the shell's `.body`.
+  The area becomes `flex: 0 0 clamp(464px, asked or 3 columns, 33%)`; the
+  drag writes only the asked width. Nothing asked means today's width, so
+  the 3-column test still holds.
+- In: `data-panel-start-width`, `data-panel-end-width`. Out: one event on
+  release and on each key press. The example keeps the width in its session
+  store, as it keeps the nav pin.
+- LEVEL 1 (the shell shows or hides an area): nothing in the shell hides a
+  panel today — the filter panel does it itself, by the VIEWPORT
+  (`data-min-width`, 1280). The shell should own it, by its own width, and
+  tell the panel, or a pinned nav and the panel disagree.
+- LEVEL 2 (the content reflows): the layout grid's column spans are viewport
+  `@media` rules in the GENERATED `tokens.css` (`scripts/project-tokens.mjs`).
+  They need `@container` twins on the Context's frame, with `@media` kept as
+  the fallback for a page with no shell. To measure first, in three engines:
+  can slotted light-DOM content query a container that is in the shell's
+  shadow tree?
+- Build order: the second container → the shell-level hide → the clamp → the
+  helper → the handles → attributes and events → the grid's container
+  queries → the example's persistence.
+
+**❓ One choice before level 2.** The grid's bands (768 / 1280 / 1920) are
+viewport widths. As container widths they are narrower by the nav and the
+panels.
+- **A (my pick):** keep the numbers, offset for the nav's inset, so today's
+  layouts do not change at today's widths.
+- **B:** use them as they are; every layout steps down a little earlier.
 
 ## F — Data states and charts
 
@@ -3909,6 +4051,7 @@ One line each. The detail is in git and in the trap named.
 - 128: a gauge zone is named once; its tooltip and its legend row say the same — `T-a-gauge-names-its-zones-once`
 - 150: explored — the gauge's score is `100 − mean(health)`; thresholds as a field fact (A) or in a component's ask (B) — ❓ in the item
 - 140: a typed text field shows Clear by itself; `data-no-clear` opts out
+- 146, 144, 149, 98, 89, 90, 122, 110: planned from a read of the code, each in its item — five carry one choice (❓)
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on
