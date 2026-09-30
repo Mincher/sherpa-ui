@@ -1065,6 +1065,76 @@ test('the header grip resizes a column, clamps it, and does not sort', async ({ 
 });
 
 /**
+ * Row states are two channels: SELECTED swaps the row's base for the active
+ * one, FOCUSED mixes its grey over whichever base is there.
+ */
+test('a SELECTED row paints the active base; focused mixes the grey over it', async ({ page }) => {
+  const r = await page.evaluate(async (config) => {
+    const settle = (): Promise<void> =>
+      (window as unknown as { __settled: () => Promise<void> }).__settled();
+    const root = document.getElementById('root')!;
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & {
+      rendered?: Promise<void>;
+      populate?: (d: unknown) => void;
+    };
+    el.setAttribute('data-selectable', '');
+    root.appendChild(el);
+    await el.rendered;
+    el.populate!(config);
+    await settle();
+
+    /** What the browser makes of a colour expression, from the page's tokens. */
+    const swatch = (css: string): string => {
+      const d = document.createElement('div');
+      d.style.background = css;
+      root.appendChild(d);
+      const c = getComputedStyle(d).backgroundColor;
+      d.remove();
+      return c;
+    };
+    const rows = (): HTMLElement[] => [...el.shadowRoot!.querySelectorAll<HTMLElement>('.body .row')];
+    /** The row's fill, once its 80ms transition has run out. */
+    const paint = async (i: number): Promise<string> => {
+      await Promise.all(rows()[i]!.getAnimations().map((a) => a.finished));
+      return getComputedStyle(rows()[i]!).backgroundColor;
+    };
+    const tick = (i: number): void =>
+      rows()[i]!.querySelector('.row-multi')!.shadowRoot!.querySelector<HTMLInputElement>('.control')!.click();
+
+    const plain = await paint(0);
+    tick(0);
+    await settle();
+    const selected = await paint(0);
+    rows()[0]!.querySelector<HTMLElement>('.cell')!.click();
+    await settle();
+    const both = await paint(0);
+    const current = rows()[0]!.hasAttribute('data-current');
+    tick(0);
+    await settle();
+    const focused = await paint(0);
+
+    const base = 'var(--sherpa-style-surface-base)';
+    const active = 'var(--sherpa-style-active-surface-base)';
+    const grey = 'var(--sherpa-style-surface-base-2) 30%';
+    return {
+      plain, selected, both, focused, current,
+      want: {
+        plain: swatch(`color-mix(in srgb, transparent 0%, ${base})`),
+        selected: swatch(`color-mix(in srgb, transparent 0%, ${active})`),
+        both: swatch(`color-mix(in srgb, ${grey}, ${active})`),
+        focused: swatch(`color-mix(in srgb, ${grey}, ${base})`),
+      },
+      activeHex: swatch(active),
+    };
+  }, CONFIG);
+  expect(r.current).toBe(true);
+  expect(r.activeHex).toBe('rgb(242, 223, 255)');
+  expect({ plain: r.plain, selected: r.selected, both: r.both, focused: r.focused }).toEqual(r.want);
+  // Four states, four different paints.
+  expect(new Set([r.plain, r.selected, r.both, r.focused]).size).toBe(4);
+});
+
+/**
  * data-select="single" — the grid picks ONE row.
  *
  * Radios, not checkboxes: the native type buys the group behaviour, so the

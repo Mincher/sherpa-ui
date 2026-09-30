@@ -3490,6 +3490,11 @@ The same distinction governs `#reflectSlot`: `assignedNodes()` WITHOUT
 own fallback content, which `flatten: true` would count as "present" and
 collapse by the slot's own `data-has-*` rule.
 
+A FORWARDED slot — `<slot slot="metadata">`, handed on to a child
+component — is the one node read WITH `flatten`: it counts only for what it
+carries. Read as a plain element, an empty one was "filled", and the overlay
+panel drew an empty metadata strip under every heading.
+
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components/sherpa-toast/sherpa-toast.ts`
 

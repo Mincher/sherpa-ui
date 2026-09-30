@@ -15,82 +15,91 @@ $description: >-
   trap, no ESC — the page behind stays interactive.
 element:
   $type: element
-  tag: div
-  attributes:
-    aria-hidden: "true"
-  provides: []
+  tag: dialog
+  provides:
+    - modal
+    - focus-trap
+    - escape-close
+    - backdrop
+  stateCss:
+    open: "[open]"
 templates:
   - default
 anatomy:
-  roots:
-    - el: div
-      class: scrim
-      part: scrim
-      attrs:
-        aria-hidden: "true"
-    - el: dialog
-      class: root sherpa-border-edges sherpa-border-corners
-      part: root
-      children:
-        - el: div
-          class: resize
-          part: resize
-          attrs:
-            role: separator
-            aria-orientation: vertical
-            aria-label: Resize panel
-            tabindex: "0"
-        - el: sherpa-container-header
-          class: header
-          part: header
-          children:
-            - slot: icon
-              attrs:
-                slot: icon
-            - slot: description
-              attrs:
-                slot: metadata
-                data-accepts: content,control
-            - el: span
-              class: toolbar
-              part: toolbar
-              attrs:
-                slot: actions
-              children:
-                - slot: actions
-                  attrs:
-                    data-accepts: control
-                - el: sherpa-button
-                  class: expand
-                  part: expand
-                  attrs:
-                    data-type: icon
-                    data-size: xs
-                    data-look: transparent
-                    data-icon-start: fullscreen
-                    aria-label: Expand
-                - el: sherpa-button
-                  class: external
-                  part: external
-                  attrs:
-                    data-type: icon
-                    data-size: xs
-                    data-look: transparent
-                    data-icon-start: arrow-up-right-from-square
-                    aria-label: Open externally
-        - el: div
-          class: body
-          part: body
-          slot: ""
-        - el: sherpa-container-footer
-          class: footer
-          part: footer
-          attrs:
-            data-align: stretch
-          children:
-            - slot: footer
-              attrs:
-                data-accepts: control,input
+  root:
+    el: dialog
+    class: root sherpa-border-edges sherpa-border-corners
+    part: root
+    children:
+      - el: div
+        class: resize
+        part: resize
+        attrs:
+          role: separator
+          aria-orientation: vertical
+          aria-label: Resize panel
+          tabindex: "0"
+      - el: sherpa-container-header
+        class: header
+        part: header
+        children:
+          - slot: icon
+            attrs:
+              slot: icon
+          - slot: description
+            attrs:
+              slot: metadata
+              data-accepts: content,control
+          - el: span
+            class: toolbar
+            part: toolbar
+            attrs:
+              slot: actions
+            children:
+              - slot: actions
+                attrs:
+                  data-accepts: control
+              - el: span
+                class: divider after-actions
+                attrs:
+                  aria-hidden: "true"
+              - el: sherpa-group
+                class: view-modes
+                part: view-modes
+                children:
+                  - el: sherpa-button
+                    class: expand
+                    part: expand
+                    attrs:
+                      data-type: icon
+                      data-size: sm
+                      data-icon-start: fullscreen
+                      aria-label: Expand
+                  - el: sherpa-button
+                    class: external
+                    part: external
+                    attrs:
+                      data-type: icon
+                      data-size: sm
+                      data-icon-start: open-externally
+                      aria-label: Open externally
+              - el: span
+                class: divider before-close
+                attrs:
+                  aria-hidden: "true"
+      - el: div
+        class: body
+        part: body
+        slot: ""
+      - el: sherpa-container-footer
+        class: footer
+        part: footer
+        attrs:
+          data-align: stretch
+        children:
+          - slot: footer
+            attrs:
+              data-accepts: control,input
 props:
   - $type: prop
     name: data-collapsed
@@ -127,7 +136,7 @@ props:
     type: string
     observed: true
     kind: style
-    description: link-style header title text (rendered into .title)
+    description: header title text (rendered into .title)
   - $type: prop
     name: data-icon
     type: string
@@ -197,12 +206,14 @@ events:
     detail:
       width: unknown
 tokens:
-  scrim.background: "{sherpa.display-mode-color-neutral-fixed-color-5}"
   root.border-start-start-radius: "{sherpa.border-rounding-top-left}"
   root.border-end-start-radius: "{sherpa.border-rounding-bottom-left}"
   root.color: "{sherpa.style-content-base}"
   root.box-shadow: "{sherpa.shadow-lg}"
   toolbar.gap: "{sherpa.theme-gap-sm}"
+  divider.inline-size: "{sherpa.display-mode-border-width-base}"
+  divider.block-size: "{sherpa.theme-content-size-xs}"
+  divider.background: "{sherpa.style-border-base}"
   resize.inline-size: "{sherpa.display-mode-space-xs}"
 $extensions:
   sherpa:

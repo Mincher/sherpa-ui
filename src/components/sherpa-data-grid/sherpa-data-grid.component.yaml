@@ -297,6 +297,9 @@ states:
     name: actions
     selector: ":host([data-actions])"
   - $type: state
+    name: not-single
+    selector: ":host(:not([data-select=\"single\"]))"
+  - $type: state
     name: focus-visible
     selector: .filter-input:focus-visible
 capabilities:
@@ -443,7 +446,7 @@ tokens:
   group-inner.inset-inline-start: "{sherpa.display-mode-space-2xs}"
   group-inner.gap: "{sherpa.theme-gap-md}"
   group-inner.min-block-size: "{sherpa.display-mode-size-lg}"
-  row.background: "{sherpa.style-surface-base}"
+  row.--_row-base: "{sherpa.style-surface-base}"
   cell.padding: "{sherpa.display-mode-space-2xs}"
   cell.line-height: "{sherpa.theme-content-line-height-base}"
   group-row.background: "{sherpa.style-surface-base-1}"

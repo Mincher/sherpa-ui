@@ -179,3 +179,83 @@ test('the panel opens 640 wide, drags from its left edge within its bounds, and 
   expect(keyed).toBe(336);
   expect(heard).toEqual([740, 320, 336]);
 });
+
+/** NO scrim: the panel is a quick peek, so the page beside it is not dimmed. */
+test('an open panel draws nothing over the page beside it', async ({ page }) => {
+  await page.setViewportSize({ width: 1200, height: 800 });
+  const clip = { x: 100, y: 100, width: 4, height: 4 };
+  await page.evaluate(async () => {
+    const el = document.createElement('sherpa-overlay-panel') as PanelEl;
+    el.setAttribute('data-heading', 'Peek');
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+  });
+  const before = await page.screenshot({ clip });
+  const parts = await page.evaluate(async () => {
+    const el = document.querySelector('sherpa-overlay-panel') as PanelEl;
+    el.show!();
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    return [...el.shadowRoot!.children].map((n) => n.tagName.toLowerCase());
+  });
+  const after = await page.screenshot({ clip });
+  expect(parts).toEqual(['dialog']);
+  expect(after.equals(before)).toBe(true);
+});
+
+/** Figma Container Header `Variant=Panel`: 24px buttons, the view-mode pair
+ *  grouped, and a divider only where a control sits on both sides of it. */
+test('the header buttons are 24px; the pair is one object; a divider needs both neighbours', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const read = async (attrs: string[], action: boolean) => {
+      const el = document.createElement('sherpa-overlay-panel') as PanelEl;
+      el.setAttribute('data-heading', 'Peek');
+      for (const a of attrs) el.setAttribute(a, '');
+      if (action) {
+        el.innerHTML = '<sherpa-button slot="actions" data-size="sm">Go</sherpa-button>'
+          + '<span slot="description">Pro plan</span>';
+      }
+      document.getElementById('root')!.replaceChildren(el);
+      await el.rendered;
+      el.show!();
+      await (window as unknown as { __settled: () => Promise<void> }).__settled();
+      const sr = el.shadowRoot!;
+      const header = sr.querySelector('.header')!.shadowRoot!;
+      const size = (n: Element | null) => {
+        const b = n!.getBoundingClientRect();
+        return [Math.round(b.width), Math.round(b.height)];
+      };
+      const shown = (sel: string) => getComputedStyle(sr.querySelector(sel)!).display !== 'none';
+      const corner = (sel: string) => getComputedStyle(sr.querySelector(sel)!)
+        .getPropertyValue('--sherpa-border-rounding-top-right').trim();
+      return {
+        header: size(sr.querySelector('.header')),
+        metadata: sr.querySelector('.header')!.hasAttribute('data-has-metadata'),
+        close: size(header.querySelector('.close')),
+        expand: size(sr.querySelector('.expand')),
+        afterActions: shown('.after-actions'),
+        beforeClose: shown('.before-close'),
+        expandEnd: corner('.expand'),
+      };
+    };
+    return {
+      full: await read(['data-dismissible', 'data-expandable', 'data-external'], true),
+      lone: await read(['data-dismissible', 'data-expandable'], false),
+      bare: await read(['data-dismissible'], false),
+    };
+  });
+  expect(r.full.close).toEqual([24, 24]);
+  expect(r.full.expand).toEqual([24, 24]);
+  expect(r.full.afterActions).toBe(true);
+  expect(r.full.beforeClose).toBe(true);
+  // Grouped: expand's trailing corners are square against pop-out.
+  expect(r.full.expandEnd).toBe('0px');
+  // Alone, it is a whole button — and nothing sits before it to divide from.
+  expect(r.lone.expandEnd).toBe('4px');
+  expect(r.lone.afterActions).toBe(false);
+  expect(r.lone.beforeClose).toBe(true);
+  expect(r.bare).toMatchObject({ afterActions: false, beforeClose: false });
+  // An EMPTY forwarded description is no metadata row: the header is one 40px row.
+  expect(r.full.metadata).toBe(true);
+  expect(r.bare.metadata).toBe(false);
+  expect(r.bare.header[1]).toBeLessThanOrEqual(41);
+});

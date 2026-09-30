@@ -1,6 +1,6 @@
 /**
  * sherpa-overlay-panel.css — a non-modal floating panel on native <dialog>,
- * docked right. Same card look as sherpa-dialog, no ::backdrop.
+ * docked right. Same card look as sherpa-dialog, no ::backdrop and no scrim.
  */
 
 :host {
@@ -10,18 +10,6 @@
   --_border: var(--sherpa-style-border-base-1, #b3b3c3);
   --_pad: var(--sherpa-card-pad);
 }
-
-/* `pointer-events: none` is what keeps this NON-modal — the page behind stays
-   clickable. The scrim is purely a visual tint. */
-.scrim {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: var(--_z, 100);
-  pointer-events: none;
-  background: color-mix(in srgb, var(--sherpa-display-mode-color-neutral-fixed-color-5, #0c0b11) 20%, transparent); /* theme-direct */
-}
-:host([open]) .scrim { display: block; }
 
 .root {
   /* A closed <dialog> is hidden by the UA with `display: none`; setting `display`
@@ -44,8 +32,8 @@
      — with both block edges pinned that overflows the window. */
   margin: 0;
   block-size: auto;
-  /* Above the nav rail (z-index 2), one step above the scrim. */
-  z-index: calc(var(--_z, 100) + 1);
+  /* Above the nav rail (z-index 2). */
+  z-index: 101;
 
   background: var(--_surface);
   border-style: solid;
@@ -110,6 +98,31 @@
 }
 :host(:not([data-expandable])) .expand { display: none; }
 :host(:not([data-external])) .external { display: none; }
+:host(:not([data-expandable]):not([data-external])) .view-modes { display: none; }
+
+/* One of the pair alone is a whole button, not half a group. */
+:host(:not([data-external])) .expand,
+:host(:not([data-expandable])) .external {
+  --sherpa-border-left: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-right: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+}
+
+/* A divider shows only with a control on BOTH sides of it. */
+.divider {
+  display: none;
+  flex: none;
+  inline-size: var(--sherpa-display-mode-border-width-base, 1px);
+  block-size: var(--sherpa-theme-content-size-xs, 10px);
+  background: var(--sherpa-style-border-base, #b3b3c3);
+}
+:host([data-has-actions]:is([data-expandable], [data-external])) .after-actions,
+:host(:is([data-has-actions], [data-expandable], [data-external]):is([data-dismissible], [data-collapsible])) .before-close {
+  display: block;
+}
 
 /* Collapsed → only the header shows. */
 :host([data-collapsed]) .body,

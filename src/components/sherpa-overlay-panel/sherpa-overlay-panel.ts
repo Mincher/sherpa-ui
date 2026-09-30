@@ -12,6 +12,7 @@ import { DialogSurface } from '../../core/ui/disclosure.js';
 import '../sherpa-container-header/sherpa-container-header.js';
 import '../sherpa-container-footer/sherpa-container-footer.js';
 import '../sherpa-button/sherpa-button.js';
+import '../sherpa-group/sherpa-group.js';
 
 export class SherpaOverlayPanel extends SherpaElement {
   static override css = new URL('./sherpa-overlay-panel.css', import.meta.url);

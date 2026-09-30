@@ -938,6 +938,8 @@ export abstract class SherpaElement extends HTMLElement {
     // fallback never counts as "present".
     const has = slot.assignedNodes().some((n) => {
       if (n.nodeType === Node.TEXT_NODE) return (n.textContent ?? '').trim().length > 0;
+      // A FORWARDED slot is only as full as what it carries.
+      if (n instanceof HTMLSlotElement) return n.assignedNodes({ flatten: true }).length > 0;
       return (n as Element).tagName !== 'TEMPLATE';
     });
     /* `-slot`, not `data-has-content`: the attribute says THE DEFAULT SLOT IS

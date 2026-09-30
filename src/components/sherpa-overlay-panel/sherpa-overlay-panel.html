@@ -4,7 +4,7 @@
 
   Public API:
     data-icon         a glyph before the title (shows the icon slot area)
-    data-heading      link-style header title text (rendered into .title)
+    data-heading      header title text (rendered into .title)
     open              native boolean (read reflects dialog.open; set → show()/close())
     data-collapsed    collapsed state (body/footer hidden; the collapse toggle reflects it)
     data-status       status colour cascade (critical | warning | success | info | urgent)
@@ -18,7 +18,7 @@
   Slots:
     icon         — custom lead icon (else the data-icon glyph)
     description  — the metadata / description row under the title (reflects data-has-description)
-    actions      — the host's own header controls, before expand and close
+    actions      — the host's own header controls, before the view-mode pair and close
     (default)    — the panel body
     footer       — footer action controls (reflects data-has-footer)
 
@@ -30,9 +30,7 @@
     panel-resize     (detail: { width })  its left edge was dragged, or moved by the keys
 -->
 <template id="default">
-  <!-- A non-modal <dialog> gets no ::backdrop, so the tint is a real element.
-       Pointer-transparent by design: the page behind stays clickable. -->
-  <div class="scrim" part="scrim" aria-hidden="true"></div>
+  <!-- NO scrim: a quick peek, while the page behind stays in use. -->
   <dialog class="root sherpa-border-edges sherpa-border-corners" part="root">
     <!-- The LEFT edge resizes it: drag it, or ArrowLeft / ArrowRight on it.
          TRAP T-an-overlay-panel-resizes-from-its-left-edge -->
@@ -44,15 +42,19 @@
       <slot name="icon" slot="icon"></slot>
       <slot name="description" slot="metadata" data-accepts="content,control"></slot>
 
-      <!-- Specific to a FLOATING panel, so they sit in the actions slot. -->
+      <!-- Figma Container Header `Variant=Panel`: the host's controls, then the
+           view-mode pair, each divided from the next. -->
       <span slot="actions" class="toolbar" part="toolbar">
         <slot name="actions" data-accepts="control"></slot>
-        <sherpa-button class="expand" part="expand" data-type="icon" data-size="xs"
-                       data-look="transparent" data-icon-start="fullscreen"
-                       aria-label="Expand"></sherpa-button>
-        <sherpa-button class="external" part="external" data-type="icon" data-size="xs"
-                       data-look="transparent" data-icon-start="arrow-up-right-from-square"
-                       aria-label="Open externally"></sherpa-button>
+        <span class="divider after-actions" aria-hidden="true"></span>
+        <sherpa-group class="view-modes" part="view-modes">
+          <sherpa-button class="expand" part="expand" data-type="icon" data-size="sm"
+                         data-icon-start="fullscreen" aria-label="Expand"></sherpa-button>
+          <sherpa-button class="external" part="external" data-type="icon" data-size="sm"
+                         data-icon-start="open-externally"
+                         aria-label="Open externally"></sherpa-button>
+        </sherpa-group>
+        <span class="divider before-close" aria-hidden="true"></span>
       </span>
     </sherpa-container-header>
 

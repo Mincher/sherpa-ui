@@ -23,15 +23,6 @@
   border-radius: 0;
   /* `auto` here would give a second scrollbar; the table's box owns scrolling. */
   overflow: hidden;
-
-  /* The three row-state tints, declared once. 13 sites restated these — the row
-     itself, and again on each sticky cell, which paints its own background and
-     so cannot receive the row's. TRAP T-one-value-one-declaration. */
-  /* Hover +1, focused +2, selected the ACTIVE mode's +2. Selected is a checked
-     box in the shadow DOM, with no attribute to pin. */
-  --_tint-hover: color-mix(in srgb, var(--sherpa-style-surface-base-1, #e8e8f6) 20%, transparent);
-  --_tint-focused: color-mix(in srgb, var(--sherpa-style-surface-base-2, #b3b3c3) 30%, transparent);
-  --_tint-selected: color-mix(in srgb, var(--sherpa-style-active-surface-base-2, #c046ff) 30%, transparent);
 }
 
 /* The scroll box is a wrapper DIV, not the <table>: `display: block` on a table
@@ -527,25 +518,10 @@ sherpa-menu[data-range] .head-filter-value { display: none; }
   }
 }
 
-/* An opaque base, then the row's state tint on top: a sticky cell paints its
-   own background, so the row's cannot reach it. */
+/* Opaque, in the row's own fill: a sticky cell paints its own background, so
+   the row's cannot reach it. */
 .row > .actions-cell {
-  background: var(--sherpa-style-surface-base, #ffffff);
-}
-.row:hover > .actions-cell {
-  background:
-    linear-gradient(var(--_tint-hover) 0 100%),
-    var(--sherpa-style-surface-base, #ffffff);
-}
-.row[data-current] > .actions-cell {
-  background:
-    linear-gradient(var(--_tint-focused) 0 100%),
-    var(--sherpa-style-surface-base, #ffffff);
-}
-.row:has(.row-select:checked) > .actions-cell {
-  background:
-    linear-gradient(var(--_tint-selected) 0 100%),
-    var(--sherpa-style-surface-base, #ffffff);
+  background: var(--_row-fill);
 }
 
 /* The trigger: icon-only, so square, sized from the grid's icon token. Pinned
@@ -606,33 +582,11 @@ sherpa-menu[data-range] .head-filter-value { display: none; }
   inset-inline-start: var(--_pin-offset, 0px);
 }
 
-/* Body cells: an opaque base fill so scrolling columns do not show through. */
+/* Body cells: opaque, in the row's own fill, so scrolling columns do not show
+   through. */
 .cell[data-pinned],
 .row > .select-cell[data-pinned] {
-  background: var(--sherpa-style-surface-base, #ffffff);
-}
-/* …then the row's state tint on top, restated because the row background
-   cannot reach a sticky cell. */
-.row:hover > [data-pinned] {
-  background:
-    linear-gradient(var(--_tint-hover) 0 100%),
-    var(--sherpa-style-surface-base, #ffffff);
-}
-.row[data-current] > [data-pinned] {
-  background:
-    linear-gradient(var(--_tint-focused) 0 100%),
-    var(--sherpa-style-surface-base, #ffffff);
-}
-.row:has(.row-select:checked) > [data-pinned] {
-  background:
-    linear-gradient(var(--_tint-selected) 0 100%),
-    var(--sherpa-style-surface-base, #ffffff);
-}
-.row[data-current]:has(.row-select:checked) > [data-pinned] {
-  background:
-    linear-gradient(var(--_tint-focused) 0 100%),
-    linear-gradient(var(--_tint-selected) 0 100%),
-    var(--sherpa-style-surface-base, #ffffff);
+  background: var(--_row-fill);
 }
 
 /* The header corner: sticks in BOTH axes, so it outranks its own row and the
@@ -669,14 +623,19 @@ sherpa-menu[data-range] .head-filter-value { display: none; }
 }
 
 /* ── Body: row states ───────────────────────────────────────────────
- * Unselected < focused < selected. The tints are TRANSPARENT on purpose, so a
- * row keeps the context under it — which is why `.cell` carries no opaque fill.
- * Figma has no row states; the tints are declared on :host. */
+ * Two facts, two channels: the TINT says hover or focused, the BASE says
+ * selected. So a selected AND focused row is the grey mixed over the active
+ * base. Figma has no row states. */
 .row {
   cursor: pointer;
   transition: background-color 80ms ease;
-  /* On the row rather than the cell, so the state tints can layer over it. */
-  background: var(--sherpa-style-surface-base, #ffffff);
+  --_row-base: var(--sherpa-style-surface-base, #ffffff);
+  --_row-tint: transparent;
+  --_row-tint-amount: 0%;
+  /* Worked out ON the row, where its parts are set; a sticky cell inherits the
+     answer. TRAP T-one-value-one-declaration */
+  --_row-fill: color-mix(in srgb, var(--_row-tint) var(--_row-tint-amount), var(--_row-base));
+  background: var(--_row-fill);
 
   &:not(:last-child) .cell {
     border-block-end: var(--sherpa-border-bottom, 0.5px) solid
@@ -685,30 +644,22 @@ sherpa-menu[data-range] .head-filter-value { display: none; }
 
   /* Hover — one step lighter than the focused state it previews. */
   &:hover {
-    background: var(--_tint-hover);
+    --_row-tint: var(--sherpa-style-surface-base-1, #e8e8f6);
+    --_row-tint-amount: 20%;
   }
 
-  /* FOCUSED: the +2 step — +1 at 20% alpha was invisible against white. */
+  /* FOCUSED: the +2 step — +1 at 20% was invisible against white. */
   &[data-current] {
-    background: var(--_tint-focused);
-  }
-
-  /* SELECTED: the active mode's tint, the system's "chosen". */
-  &:has(.row-select:checked) {
-    background: var(--_tint-selected);
+    --_row-tint: var(--sherpa-style-surface-base-2, #b3b3c3);
+    --_row-tint-amount: 30%;
   }
 }
 
-/* SELECTED **AND** FOCUSED: both are true, so both show — the focus grey is
-   LAYERED over the active tint. Picking a winner lost real information. */
-@supports (color: color-mix(in srgb, red, blue)) {
-  .row[data-current]:has(.row-select:checked) {
-    background: color-mix(
-      in srgb,
-      var(--_tint-focused),
-      var(--_tint-selected)
-    );
-  }
+/* SELECTED: the active mode's base. `[checked]` on the SHOWN box of the two —
+   `:checked` never matches a custom element. */
+:host(:not([data-select="single"])) .row:has(.row-multi[checked]),
+:host([data-select="single"]) .row:has(.row-one[checked]) {
+  --_row-base: var(--sherpa-style-active-surface-base, #f2dfff);
 }
 
 /* Figma Grid Cell `Type=cell`: padding 4 all round, strokes top and bottom

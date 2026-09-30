@@ -108,6 +108,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | | | | **G — Overlay panels** | |
 | ✅ | 41 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
 | ✅ | 42 | 23 | A focused grid row opens a details panel | feature |
+| ✅ | 42a | 145 | The details panel, tidied: Figma's Panel header, no scrim, a selected row paints the active base | quick |
 | | | | **H — The accessibility gate** | |
 | ✅ | 43 | 24 | Playwright tests accessibility — WCAG 2.1 AA | gate |
 | 🚧 | 43a | 117 | Clear the accessibility baseline — 11 of 12 done; the accordion is ruled, and waits on 124 | bug |
@@ -1913,6 +1914,12 @@ header does not exist in code yet (9b), so it is BUILT from the new Figma,
 not the old notes above. Same kind of change as 79 (the nav header's Actions
 group): compose `sherpa-button`s, group them, keep them in a slot.
 
+**Partly done by 145, 2026-09-30:** the header's own close and collapse
+buttons are `sm`, and the overlay panel's toolbar is grouped and divided as
+`Variant=Panel`. Left: the 3-column GRID (the metadata row sits under the
+TITLE, 4 px below it — not under the icon, 8 px below), the accordion's
+chevron in the `left` slot, and the Data Viz header.
+
 ### `[x]` ✅ 14 — An example of real-time data
 
 Data that changes in real time — WebSocket, or like it — coming through the
@@ -2002,6 +2009,34 @@ header's trail reads `Records › <name>` while it is open; its first crumb
 shuts it, in place. My pick: the trail is in the app header, not in the panel
 — say if you want it in the panel.
 `T-a-current-row-opens-its-details` · `T-one-overlay-panel-at-a-time`
+
+### `[x]` ✅ 145 — The details panel, tidied
+
+Will, 2026-09-30: the panel's header buttons are too small, and Figma has an
+Overlay Panel Header variant to follow; a selected row wants the active
+surface, with the focus grey mixed over it; and *"the overlay panel shouldn't
+show a scrim behind it. It's whole purpose is for quick-peek drill down
+functionality while still working in the primary content space."*
+
+**✅ Done 2026-09-30.**
+
+- **The header, as Figma's Container Header `Variant=Panel`** (911:32577).
+  The close and collapse buttons are `sm`, 24 px, in EVERY container header:
+  Figma has them so in all three variants. The panel's expand and pop-out
+  are one bordered group, the details' up and down another, with a divider
+  between each and before close. A divider shows only with a control on both
+  sides of it.
+- **No scrim.** The element, its rule and its part are gone.
+- **Rows.** Selected is the active base; hover and focused are a grey MIXED
+  over whichever base the row has. The old selected rule never matched —
+  `:checked` does not match a custom element — so a ticked row had no fill.
+- **An empty forwarded slot no longer reads as filled**, in `SherpaElement`:
+  the panel's empty description slot drew an empty strip under every heading.
+  `T-slot-guards-only-when-filled`
+
+❓ **One ruling left — the title's ink.** Figma's Panel variant inks it
+link-blue. Will's call of 2026-09-15 was the DEFAULT ink: blue "reads as
+something you can click when it isn't". Kept as ruled; say if Figma wins now.
 
 ---
 
@@ -3055,6 +3090,7 @@ One line each. The detail is in git and in the trap named.
 - 14: live alerts over Server-Sent Events move the Dashboard's tiles — `T-a-live-feed-goes-into-the-store`
 - 22: an overlay panel is wider, and resizes from its left edge — `T-an-overlay-panel-resizes-from-its-left-edge`
 - 23: a grid row opens its details in an overlay panel; the chevrons step it; the trail names it — `T-a-current-row-opens-its-details`
+- 145: the details panel follows Figma's Panel header, has no scrim, and a selected row paints the active base
 - 24: the accessibility gate — axe-core over a fixture of every component, a report each, a baseline that may only fall — `T-the-a11y-gate-reads-shadow-roots`; 117 and 118 are what it found
 - 117: 11 of the 12 structural accessibility failures are fixed; the accordion's actions slot waits on Will — `T-a-menu-is-a-dialog-of-native-controls`
 - 67: `sherpa-router` owns the URL, on the Navigation API; the example app routes through it — `T-the-router-owns-the-url`

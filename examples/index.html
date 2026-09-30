@@ -112,10 +112,12 @@
   <!-- DETAILS: a Context fills it with its current record. Beside the assistant,
        since only one overlay panel is open at a time. TRAP T-one-overlay-panel-at-a-time -->
   <sherpa-overlay-panel id="details" data-icon="person" data-dismissible>
-    <sherpa-button slot="actions" class="details-step" data-by="-1" data-type="icon" data-size="xs"
-                   data-look="transparent" data-icon-start="chevron-up" aria-label="Previous record"></sherpa-button>
-    <sherpa-button slot="actions" class="details-step" data-by="1" data-type="icon" data-size="xs"
-                   data-look="transparent" data-icon-start="chevron-down" aria-label="Next record"></sherpa-button>
+    <sherpa-group slot="actions">
+      <sherpa-button class="details-step" data-by="-1" data-type="icon" data-size="sm"
+                     data-icon-start="chevron-up" aria-label="Previous record"></sherpa-button>
+      <sherpa-button class="details-step" data-by="1" data-type="icon" data-size="sm"
+                     data-icon-start="chevron-down" aria-label="Next record"></sherpa-button>
+    </sherpa-group>
     <sherpa-key-value-list class="details-fields" data-orientation="vertical"></sherpa-key-value-list>
   </sherpa-overlay-panel>
 
