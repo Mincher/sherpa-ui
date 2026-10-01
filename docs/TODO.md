@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**27 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**30 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -114,6 +114,9 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31t | 173 | BUG: a panel section header's count badge ADDS its values' counts; it should be the UNIQUE results of them all | bug |
 | 🚧 | 31u | 174 | Two View fields that share no rows return NOTHING, though each badge has a count; a filterset's fields should limit each other's options | bug |
 | ✅ | 31v | 176 | A greyed-out chip says WHY in its tooltip, in a few simple words | feature |
+| ⬜ | 31w | 180 | A picked value a LATER filter rules out goes inactive and leaves the query; the latest filter wins | feature |
+| ⬜ | 31x | 179 | Every place a ruled-out value shows is inactive — a chart legend's item too | bug |
+| ⬜ | 31y | 178 | The filter panel's header gets an overflow (⋯) menu; "Limit matching filters" is an item in it and in the toolbar's | feature |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
 | ✅ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
@@ -1742,6 +1745,41 @@ panel's value chips. Its tooltip says "No matches with your other filters."
 Query, told to each control as `drawPresent`. Probed on the Dashboard: with
 Customer = Adventure Works, Latin America is greyed.
 `T-a-ruled-out-value-is-greyed`
+
+### `[ ]` 180 — A picked value a later filter rules out goes inactive and leaves the query
+
+Will, 2026-10-01: *"If a filter is active but a subsequent filterset filter
+makes it unviable (e.g. Customer A is selected but made unviable by Region C
+being activated) then the unviable filter needs to be made inactive and
+ignored in the query."*
+
+And: *"The previous scenario becomes possible if Customer B makes Region C
+viable again and selectable even if Customer A made it unviable."*
+
+So: Customer A and B picked; B makes Region C viable; the reader picks C; A
+has no C rows, so A goes inactive and the query ignores it. B stays. This
+replaces 174's first rule that a picked value always stays in force.
+
+### `[ ]` 179 — Every place a ruled-out value shows is inactive — a legend item too
+
+Will, 2026-10-01: *"Finally, we need to make other representations of
+non-viable filter options to inactive in the view. Legend items are a good
+example. It can be inactive in the panel but toggleable in the data viz
+legend. This might be the only edge case we haven't covered, actually."*
+
+### `[ ]` 178 — An overflow menu in the filter panel's header, with "Limit matching filters"
+
+Will, 2026-10-01: *"Add an ellipsis overflow menu button to the top of the
+filter panel header, after the toggle toolbar button.*
+
+*Other header buttons reflow into the menu of this button. Similar to the
+filter toolbard overflow button.*
+
+*Add a single menu item to this button, by default, to toggle the 'Limit
+matching filters' capability.*
+
+*This menu item should be in the filter toolbar overflow button's menu
+also."*
 
 ### `[x]` ✅ 176 — A greyed-out chip says WHY in its tooltip
 
