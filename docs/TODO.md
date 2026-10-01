@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**38 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**37 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -144,7 +144,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 35c11 | 195 | The spec becomes the whole contract: props only, slots, `populate()` shape, typed events; a usage gate | tooling |
 | ❓ | 35c12 | 196 | ONE filter surface and a smaller DataSource: `bind()` out of the data layer; one helper for bar and panel | refactor |
 | ❓ | 35c13 | 197 | ONE way to write a filter condition in a definition or a View: readings, or a plain `{ field: { gt: 0 } }` | foundation |
-| ⬜ | 35c2 | 185 | Sherpa Demos: `definitions/` becomes `views/` (JSON, templates in HTML by id), `view-schemas/`; rethink `contexts/` | refactor |
+| ✅ | 35c2 | 185 | Sherpa Demos: `definitions/` becomes `views/` (JSON, templates in HTML by id), `view-schemas/`; rethink `contexts/` | refactor |
 | ⬜ | 35d | 184 | INVESTIGATE — does sherpa-ui need Node to ship? A CDN, a script or a small zip may suit it better | explore |
 | | | | **F — Data states and charts** | |
 | ✅ | 36 | 58 | Loading, empty and error states in a container | feature |
@@ -3030,7 +3030,7 @@ Every observed `data-*` moves into `static props` and `check:props` checks membe
 
 ❓ Waits on choice 4 in 183. Today an agent learns two grammars: `[field, op, value]` (DATA-SOURCE-RULES §2) and readings with numbers as strings, `{"op":"gt","text":"0"}`. Keep readings, or store a plain form with numbers as numbers and migrate saved Views. Decide before 193.
 
-### `[ ]` 185 — Sherpa Demos: views, view schemas, and what `contexts/` is for
+### `[x]` ✅ 185 — Sherpa Demos: views, view schemas, and what `contexts/` is for
 
 Will, 2026-10-01, in the example app, to do later:
 
@@ -3048,6 +3048,18 @@ how it should be leveraged.*
 
 *This is probably all part of the overall review of the architecture, and
 building with, Sherpa."* — so it goes with 183.
+
+**✅ Done 2026-10-01.** Sherpa Demos has `app/views/` — only `*-views.json`,
+plus `dashboard-views.html`, where the Capacity View's cards live as
+`<template id="capacity">`; the JSON names it, `"template":
+"dashboard-views.html#capacity"`. The page definitions moved to
+`app/view-schemas/`, and `definitions/` is gone. The library gained
+`loadViewLibrary(url)`, which reads a views file and fills each View's content
+from its template (`T-a-views-markup-lives-in-a-template`). A Demos test checks
+`views/` holds only those files and that every named template exists. Demos is
+not in git, so its half is uncommitted. **What `contexts/` is for** is
+answered by 183: about 60% is glue the library should own, and items 190, 191
+and 194 move it out — `docs/CONSUMER-REVIEW.md` §2.1.
 
 ### `[x]` ✅ 183 — REVIEW: how a consumer builds an app on Sherpa — and an AI agent
 

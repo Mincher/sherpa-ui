@@ -1,0 +1,5 @@
+{
+  "all": { "label": "All", "query": { "v": 1, "scopes": {} } },
+  "capacity": { "label": "Capacity", "template": "demo-views.html#capacity" },
+  "lost": { "label": "Lost", "template": "demo-views.html#nowhere" }
+}

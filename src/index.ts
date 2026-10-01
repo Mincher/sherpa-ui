@@ -78,6 +78,8 @@ export {
   type MarkupReport,
   type ParseResult,
 } from './core/browser/view-markup.js';
+// A page's views from JSON files, each view's markup in an HTML template.
+export { loadViewLibrary } from './core/browser/view-files.js';
 // ONE datum shape for every chart and the legend beside it — see chart-datum.ts.
 export type { ChartDatum, LegendDatum } from './core/data/chart-datum.js';
 
