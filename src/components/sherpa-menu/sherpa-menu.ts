@@ -559,6 +559,9 @@ export class SherpaMenu extends SherpaElement {
     this.#mirror = false;
     hit.closest('.condition-row')?.remove();
     this.#numberRows();
+    // Row one is ALSO data-op and data-value: a dropped first row, left there,
+    // came back at the next sync. TRAP T-row-one-is-data-op
+    this.#setRows(this.conditions);
     this.#emitConditions();
   };
 
@@ -668,7 +671,7 @@ export class SherpaMenu extends SherpaElement {
   #fieldValues(): { value: string; label: string }[] {
     // Its own value ROWS: a nested menu's group is not one. TRAP T-a-nested-menu-answers-for-itself
     return this.#rows()
-      .filter((row) => row.matches('.menu-row') && !row.matches(NON_VALUE_ROWS))
+      .filter((row) => !row.matches(NON_VALUE_ROWS) && !row.querySelector('sherpa-menu'))
       .map((row) => ({
         value: row.querySelector<HTMLInputElement>('input')?.value ?? '',
         label: (row.textContent ?? '').trim(),

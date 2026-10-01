@@ -13155,8 +13155,9 @@ clause.** Will, 2026-09-25: presets *"are actually compound conditional filters
 that (potentially) use more than 1 field and those fields values"*, and a
 reader must be able to save and edit their own.
 
-Readings, because readings are what the fields HELD. Edit puts them back into
-those fields (§16.6, pack / unpack); a clause cannot be re-opened in any UI. So
+Readings, because readings are what the fields HELD. Edit filter shows them
+again, each in its field's own menu, and edits them in place
+(`T-a-saved-filter-keeps-its-edit`); a clause cannot be re-opened in any UI. So
 `{ health: { op: 'lt', text: '60' } }`, not `['health', 'lt', 60]` — and the
 data layer compiles it, with the field's type, as it compiles every reading.
 
@@ -13212,7 +13213,23 @@ Save."* Called an EDIT in the code: the source's `#draft` and a View's drafts
   — the panel redraws every scope on each source draw). Then ONE
   `preset-edit`, folding in only the fields that moved, each read with its
   type — a date read as text was dropped. Nothing moved, nothing is sent.
-  Discard puts the saved rows back.
+  Discard puts the saved rows back. Either way the card is drawn again,
+  read-only.
+- **READ before any write.** Ending an edit reads every field menu first: the
+  `data-readonly` write re-syncs a menu, and a dropped FIRST row came back
+  (`T-row-one-is-data-op`).
+- **A change put back IS the saved answer.** Rows that only restate a saved
+  Simple answer — a list's OR'd picks, a number's two ends — are folded back
+  to it, so the edit compares equal and is dropped. Saved `{ picked }` came
+  back as `{ conditions }` and stayed "edited" with nothing changed.
+- **No field left is no edit.** An edit that empties every field compiled to
+  no clause: an ON filter matching every row. The card keeps its last answer,
+  and `editPreset` drops an empty edit too.
+- **Kept BEFORE the bar's list changes** — Add, Remove, a rebuild — so its
+  source draws back a bar that still holds what it reported.
+- **`says` is the words for what it applies NOW** — the source words an edit
+  by its edit. When that answer goes (Discard, a new edit), the words go with
+  it, and the card words the new answer itself.
 - **Its source draws it back IN PLACE** (`drawScope`'s `edits`): the card is
   not rebuilt, so an open one stays open.
 - **Only a reader's OWN saved filter (`editable`) offers Edit filter and
@@ -13257,7 +13274,8 @@ scope's header holds nothing to press; Save is in the chip's own menu.
 
 **Save moves the answered fields into ONE chip, which comes on, and the fields
 clear — pack.** Will, 2026-09-25, choosing *"Pack / unpack"*. Nothing filters
-twice, and no second editor is needed: Edit puts the answer back (unpack).
+twice, and no second editor is needed: Edit filter edits the saved chip's own
+field menus in place (`T-a-saved-filter-keeps-its-edit`; unpack went in 181).
 
 **The bar ASKS; the host keeps.** A host that saves filters sets
 `data-saveable` on the bar. "Save filter" then shows only where there is
@@ -13358,7 +13376,9 @@ Save flagged the menu (`data-saveable`), which is a sync — but the panel and
 `#keepAnswer` write rows the same way.
 
 `set conditions` now writes row one's op and typed value back to the two
-attributes, so the menu's own record and its rows agree.
+attributes, so the menu's own record and its rows agree. So does a row's
+Remove: a dropped FIRST row left its op and text in the two attributes, and
+the next sync drew it back.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-menu-row-one.spec.ts`

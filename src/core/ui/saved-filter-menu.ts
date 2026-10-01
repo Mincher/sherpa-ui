@@ -13,8 +13,9 @@
 
 import { sayReadings, type SaidField } from '../data/filter-face.js';
 import {
-  fieldState, readingRows, savedReading, type FieldFacts, type FieldReading,
+  fieldState, readingRows, savedReading, type FieldCondition, type FieldFacts, type FieldReading,
 } from '../data/filter-state.js';
+import { DEFAULT_OP } from '../data/store.js';
 import { report } from '../data/report.js';
 import { advancedOf, kindOf, type FilterKind } from './filter-kind.js';
 import { menuFor, type FilterMenuDef, type FilterMenuItem } from './filter-menu.js';
@@ -24,7 +25,7 @@ export interface SavedAnswer {
   readings: Readonly<Record<string, FieldReading>>;
   /** The change it applies now, not yet saved. */
   edited?: Readonly<Record<string, FieldReading>> | undefined;
-  /** Its conditions in words, as its source says them. */
+  /** Its conditions in words, as its source says them: for what it applies now. */
   says?: readonly SaidField[] | undefined;
 }
 
@@ -98,23 +99,42 @@ function factsOf(def: FilterMenuDef | undefined): Omit<FieldFacts, 'field'> {
 
 /** A field's conditions in words: its source's, or worded from its def. */
 function wordsOf(saved: SavedAnswer, field: string, answer: FieldReading, def: FilterMenuDef | undefined): SaidField | undefined {
-  // The source's words are for what was SAVED.
-  if (!saved.edited) {
-    const said = saved.says?.find((s) => s.field === field);
-    if (said) return said;
-  }
+  const said = saved.says?.find((s) => s.field === field);
+  if (said) return said;
   return sayReadings({ [field]: answer }, () => factsOf(def))[0];
 }
 
-/** The readings with ONE field's answer changed — in their own order, so a
- *  change put back compares equal. No answer drops the field. */
+/** The rows a field menu draws for a saved Simple answer — as `shown()` asks. */
+function seeded(saved: FieldReading, kind: FilterKind | null): FieldCondition[] {
+  const rows = readingRows(saved);
+  if (saved.mode !== 'simple' && rows.length) return rows;
+  const picks = (saved.picked ?? []).map(String);
+  if (kind === 'number') {
+    const [a, b] = picks;
+    if (saved.range && a != null && b != null) return [{ op: 'gte', text: a }, { op: 'lte', join: 'and', text: b }];
+    const typed = (saved.text ?? '').trim();
+    if (typed) return [{ op: saved.op ?? DEFAULT_OP, text: typed }];
+    return a != null ? [{ op: saved.op ?? DEFAULT_OP, picked: [a] }] : [];
+  }
+  return picks.map((v, i) => (i ? { op: DEFAULT_OP, join: 'or' as const, picked: [v] } : { op: DEFAULT_OP, picked: [v] }));
+}
+
+/** The readings with ONE field's answer changed — in their own order, and a
+ *  change put back IS the saved answer, so it compares equal. No answer drops
+ *  the field. */
 function withAnswer(
   readings: Readonly<Record<string, FieldReading>>,
   field: string,
   def: FilterMenuDef | undefined,
   answer: FieldReading,
+  saved: FieldReading | undefined,
 ): Record<string, FieldReading> {
-  const kept = savedReading(fieldState({ field, ...factsOf(def) }, answer));
+  const facts = { field, ...factsOf(def) };
+  let kept = savedReading(fieldState(facts, answer));
+  // Rows that only restate a saved Simple answer are that answer.
+  const restated = saved && !saved.conditions?.length
+    && savedReading(fieldState(facts, { conditions: seeded(saved, def ? kindOf(def) : null), mode: 'advanced' }));
+  if (kept && restated && JSON.stringify(kept) === JSON.stringify(restated)) kept = { ...saved };
   const next = Object.fromEntries(Object.entries(readings)
     .flatMap(([f, r]): [string, FieldReading][] => (f !== field ? [[f, r]] : kept ? [[f, kept]] : [])));
   if (kept && !(field in readings)) next[field] = kept;
@@ -137,8 +157,10 @@ function fieldNodes(card: Card, field: string, answer: FieldReading, def: Filter
     if (words.length) group.setAttribute('aria-description', words.join(', '));
     for (const type of FIELD_EVENTS) group.addEventListener(type, stop);
     // ONE DEF, ONE MENU — the field's own, on its rows. TRAP T-one-field-one-filter-menu
+    // A number is always given rows: 'only' is a list's word.
+    const only = advancedOf(def) === 'only' && kindOf(def) !== 'number';
     const built = menuFor(
-      { ...def, advanced: advancedOf(def) === 'only' ? 'only' : true, commit: false, selectAll: false },
+      { ...def, advanced: only ? 'only' : true, commit: false, selectAll: false },
       { inline: true, remote: false, bounds: card.host.bounds },
     );
     const own = built.menu as FieldMenu;
@@ -213,7 +235,11 @@ export function editSavedMenu(menu: HTMLElement): void {
   if (!card || card.start) return;
   const menus = fieldMenus(menu);
   card.start = new Map(menus.map((m) => [m.dataset['field'] ?? '', JSON.stringify(m.reading)]));
-  for (const m of menus) m.removeAttribute('data-readonly');
+  for (const m of menus) {
+    m.removeAttribute('data-readonly');
+    // Live rows say themselves; the words are for what was drawn.
+    m.parentElement?.removeAttribute('aria-description');
+  }
   menu.setAttribute('data-editing', '');
   const words = new Set([...menu.querySelectorAll<HTMLElement>(':scope > .menu-line[data-field]')]
     .map((line) => line.dataset['field'] ?? ''));
@@ -227,33 +253,44 @@ export function editSavedMenu(menu: HTMLElement): void {
   }
 }
 
+/** Draw every field again, fresh and read-only, from what the card holds now. */
+function redraw(menu: HTMLElement, card: Card): void {
+  for (const field of card.drawn.keys()) card.drawn.set(field, '');
+  drawSavedMenu(menu, card.saved, card.host);
+}
+
 /**
  * Editing ends. `keep` sends what changed as ONE edit, the fields that moved
  * folded into the answer it applies now; `discard` puts the saved answer
- * back. Returns the edit, or null when nothing changed.
+ * back. Either way the card is drawn again, read-only. Returns the edit, or
+ * null when nothing changed — or nothing would be left.
  */
 export function endSavedEdit(menu: HTMLElement, how: 'keep' | 'discard'): Record<string, FieldReading> | null {
   const card = cards.get(menu);
   if (!card) return null;
   const start = card.start;
   card.start = null;
+  // READ FIRST: a write re-syncs a menu, and a dropped first row came back.
+  const read = fieldMenus(menu).map((m) => [m.dataset['field'] ?? '', m.reading] as const);
   menu.removeAttribute('data-editing');
-  const menus = fieldMenus(menu);
-  for (const m of menus) m.setAttribute('data-readonly', '');
+  // The source's words named the answer that applied; a new one is worded here.
   if (how === 'discard') {
-    card.drawn.clear();
-    drawSavedMenu(menu, { readings: card.saved.readings, says: card.saved.says }, card.host);
+    if (card.saved.edited) card.saved = { readings: card.saved.readings };
+    redraw(menu, card);
     return null;
   }
   if (!start) return null;
-  const changed = menus.filter((m) => JSON.stringify(m.reading) !== start.get(m.dataset['field'] ?? ''));
-  if (!changed.length) return null;
-  let next: Record<string, FieldReading> = { ...(card.saved.edited ?? card.saved.readings) };
-  for (const m of changed) {
-    const field = m.dataset['field'] ?? '';
-    next = withAnswer(next, field, card.host.defOf(field), m.reading);
+  const now = card.saved.edited ?? card.saved.readings;
+  let next: Record<string, FieldReading> = { ...now };
+  for (const [field, reading] of read) {
+    if (JSON.stringify(reading) === start.get(field)) continue;
+    next = withAnswer(next, field, card.host.defOf(field), reading, card.saved.readings[field]);
   }
-  card.saved = { ...card.saved, edited: next };
+  // Rows touched but meaning the same, or no field left — no filter — is no change.
+  const changed = JSON.stringify(next) !== JSON.stringify(now) && Object.keys(next).length > 0;
+  if (changed) card.saved = { readings: card.saved.readings, edited: next };
+  redraw(menu, card);
+  if (!changed) return null;
   card.host.edit(next);
   return next;
 }

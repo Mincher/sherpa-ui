@@ -72,7 +72,8 @@ test('Edit filter edits a saved filter in place; the change is sent once, as edi
     const draft = [...heard];
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     await window.__settled();
-    const closed = { heard: [...heard], open: menuOf('custom:mine').open, readonly: own.hasAttribute('data-readonly') };
+    // Drawn again, fresh and read-only.
+    const closed = { heard: [...heard], open: menuOf('custom:mine').open, readonly: field('custom:mine').hasAttribute('data-readonly') };
     heard.length = 0;
 
     // Its SOURCE keeps the change and draws it back, IN PLACE.
@@ -164,6 +165,9 @@ test('an OFF saved filter comes on as its change is kept; a number shows its row
       { id: 'custom:risky', label: 'Risky', editable: true, removable: true,
         readings: { health: { conditions: [{ op: 'lt', text: '60' }] } } },
       { id: 'custom:mid', label: 'Mid', readings: { health: { picked: ['10', '40'], range: true } } },
+      // A number never takes 'only': it still shows its rows.
+      { id: 'score', label: 'Score', kind: 'number', advanced: 'only', min: 0, max: 10 },
+      { id: 'custom:low', label: 'Low', readings: { score: { conditions: [{ op: 'lt', text: '5' }] } } },
     ], { style: 'inline-size: 1200px' });
     await window.__settled();
     const sr = bar.shadowRoot!;
@@ -174,7 +178,8 @@ test('an OFF saved filter comes on as its change is kept; a number shows its row
     for (const type of ['preset-edit', 'quick-filter-change']) {
       bar.addEventListener(type, (e) => heard.push({ type, ...(e as CustomEvent).detail }));
     }
-    const shown = { risky: rows('custom:risky'), mid: rows('custom:mid'), mode: field('custom:risky').dataset['mode'] };
+    const shown = { risky: rows('custom:risky'), mid: rows('custom:mid'), low: rows('custom:low'),
+      mode: field('custom:risky').dataset['mode'] };
     chip('custom:risky').toggleMenu();
     await window.__settled();
     chip('custom:risky').querySelector<HTMLElement>('button[value="edit"]')!.click();
@@ -192,7 +197,8 @@ test('an OFF saved filter comes on as its change is kept; a number shows its row
     };
   });
 
-  expect(r.shown).toEqual({ risky: [['lt', '', '60']], mid: [['gte', '', '10'], ['lte', 'and', '40']], mode: 'advanced' });
+  expect(r.shown).toEqual({ risky: [['lt', '', '60']], mid: [['gte', '', '10'], ['lte', 'and', '40']],
+    low: [['lt', '', '5']], mode: 'advanced' });
   expect(r.on).toBe(true);
   // ON first, then the change: a scope drawn with it off would switch it off.
   expect(r.heard).toEqual([
@@ -304,6 +310,150 @@ test('Edit filter, then a close with nothing changed, sends nothing; a rebuild m
     { type: 'preset-edit', id: 'custom:mine', readings: { owner: { conditions: [{ op: 'eq', picked: ['Dana'] }] } } },
   ]);
   expect(r.on).toBe(true);
+});
+
+/** The review of 181: the edges of an edit. TRAP T-a-saved-filter-keeps-its-edit */
+test('an edit keeps a dropped FIRST row; a change put back, or an emptied field, is no edit', async ({ page }) => {
+  const r = await page.evaluate(async (OPTS) => {
+    const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [
+      { id: 'owner', label: 'Owner', options: OPTS },
+      { id: 'custom:mine', label: 'Mine', editable: true, active: true, readings: { owner: { picked: ['Dana', 'Unassigned'] } } },
+    ], { style: 'inline-size: 1200px' });
+    await window.__settled();
+    const sr = bar.shadowRoot!;
+    const chip = () => sr.querySelector<HTMLElement & { toggleMenu(): void }>('.chip[data-id="custom:mine"]')!;
+    const menu = () => chip().querySelector<HTMLElement & { hide(): void }>(':scope > sherpa-menu')!;
+    const field = () => menu().querySelector<FieldMenu>(':scope > .saved-field > sherpa-menu')!;
+    const rows = () => field().conditions.map((c) => [c.op, c.join ?? '', ...(c.picked ?? [])]);
+    const said = () => field().parentElement!.getAttribute('aria-description');
+    const heard: unknown[] = [];
+    bar.addEventListener('preset-edit', (e) => heard.push((e as CustomEvent).detail.readings));
+    const edit = async () => {
+      chip().toggleMenu();
+      await window.__settled();
+      menu().querySelector<HTMLElement>(':scope > button[value="edit"]')!.click();
+      await window.__settled();
+    };
+    const close = async () => {
+      menu().hide();
+      await window.__settled();
+    };
+    const out: Record<string, unknown> = { said: said() };
+
+    // A blank row added, and a value changed and changed back: the same answer.
+    await edit();
+    out.editing = said();
+    field().shadowRoot!.querySelector<HTMLElement>('.add-condition')!.click();
+    await window.__settled();
+    field().conditions = [{ op: 'eq', picked: ['Ravi'] }, { op: 'eq', join: 'or', picked: ['Unassigned'] }];
+    await window.__settled();
+    field().conditions = [{ op: 'eq', picked: ['Dana'] }, { op: 'eq', join: 'or', picked: ['Unassigned'] }];
+    await window.__settled();
+    await close();
+    out.putBack = [...heard];
+
+    // Every row emptied: no filter is left, so no edit, and the card keeps its answer.
+    await edit();
+    field().conditions = [{ op: 'eq' }];
+    await window.__settled();
+    await close();
+    out.emptied = { heard: [...heard], rows: rows() };
+
+    // The FIRST row dropped: it stays dropped.
+    await edit();
+    field().shadowRoot!.querySelectorAll<HTMLElement>('.condition-row')[0]!.querySelector<HTMLElement>('.drop-condition')!.click();
+    await window.__settled();
+    await close();
+    out.dropped = { heard: [...heard], rows: rows(), said: said() };
+    return out;
+  }, OWNERS);
+
+  expect(r.said).toBe('Is one of Dana, Nobody');
+  // Live rows say themselves while editing.
+  expect(r.editing).toBeNull();
+  expect(r.putBack).toEqual([]);
+  expect(r.emptied).toEqual({ heard: [], rows: [['eq', '', 'Dana'], ['eq', 'or', 'Unassigned']] });
+  expect(r.dropped).toEqual({
+    heard: [{ owner: { conditions: [{ op: 'eq', picked: ['Unassigned'] }] } }],
+    rows: [['eq', '', 'Unassigned']],
+    said: 'Equals Nobody',
+  });
+});
+
+test('Discard drops a field only the edit had; an answer drawn mid-edit shows when it ends; words follow the answer', async ({ page }) => {
+  const r = await page.evaluate(async (OPTS) => {
+    const plan = { id: 'plan', label: 'Plan', options: [{ value: 'pro', label: 'Pro' }, { value: 'free', label: 'Free' }] };
+    const readings = { owner: { picked: ['Dana'] }, health: { op: 'lt', text: '60' } };
+    const bar = await window.__mount<Bar & { drawScope(s: unknown): Promise<void> }>('sherpa-quick-filter-toolbar', [
+      { id: 'owner', label: 'Owner', options: OPTS }, plan,
+      // The SOURCE words what applies now — here its edit. Health has no def on this bar.
+      { id: 'custom:mine', label: 'Mine', editable: true, active: true, readings,
+        edited: { ...readings, health: { op: 'lt', text: '50' }, plan: { picked: ['pro'] } },
+        says: [{ field: 'health', label: 'Health score', lines: ['Under 50'] }] },
+    ], { style: 'inline-size: 1200px' });
+    await window.__settled();
+    const sr = bar.shadowRoot!;
+    const chip = () => sr.querySelector<HTMLElement & { toggleMenu(): void }>('.chip[data-id="custom:mine"]')!;
+    const menu = () => chip().querySelector<HTMLElement & { hide(): void }>(':scope > sherpa-menu')!;
+    const parts = () => [...menu().children].filter((n) => n.hasAttribute('data-field'))
+      .map((n) => `${n.className}:${n.localName === 'div' ? n.getAttribute('data-field') : n.textContent}`);
+    const edited = parts();
+
+    chip().toggleMenu();
+    await window.__settled();
+    menu().querySelector<HTMLButtonElement>(':scope > button[value="discard-edit"]')!.click();
+    await window.__settled();
+    const discarded = parts();
+
+    // An answer drawn while the reader edits waits, and shows when editing ends with no change.
+    chip().toggleMenu();
+    await window.__settled();
+    menu().querySelector<HTMLElement>(':scope > button[value="edit"]')!.click();
+    await window.__settled();
+    await bar.drawScope({ holds: ['owner', 'plan'], readings: {}, presets: { 'custom:mine': true },
+      edits: { 'custom:mine': { owner: { picked: ['Ravi'] } } } });
+    await window.__settled();
+    const during = parts();
+    menu().hide();
+    await window.__settled();
+    const owner = menu().querySelector<FieldMenu>(':scope > .saved-field > sherpa-menu[data-field="owner"]')!;
+    return { edited, discarded, during, after: parts(), owner: owner.conditions.map((c) => c.picked) };
+  }, OWNERS);
+
+  expect(r.edited).toEqual(['menu-section:Owner', 'saved-field:owner', 'menu-section:Health score', 'menu-line:Under 50',
+    'menu-section:Plan', 'saved-field:plan']);
+  // Back to what was saved: Plan goes, and Health is worded from the saved answer.
+  expect(r.discarded).toEqual(['menu-section:Owner', 'saved-field:owner', 'menu-section:health', 'menu-line:Less than 60']);
+  expect(r.during).toEqual(r.discarded);
+  expect(r.after).toEqual(['menu-section:Owner', 'saved-field:owner']);
+  expect(r.owner).toEqual([['Ravi']]);
+});
+
+test('Remove while a saved filter is edited: its change is sent BEFORE the bar changes', async ({ page }) => {
+  const r = await page.evaluate(async (OPTS) => {
+    const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [
+      { id: 'owner', label: 'Owner', options: OPTS, removable: true },
+      { id: 'custom:mine', label: 'Mine', editable: true, active: true, readings: { owner: { picked: ['Dana', 'Unassigned'] } } },
+    ], { style: 'inline-size: 1200px' });
+    await window.__settled();
+    const sr = bar.shadowRoot!;
+    const chip = () => sr.querySelector<HTMLElement & { toggleMenu(): void }>('.chip[data-id="custom:mine"]')!;
+    const menu = () => chip().querySelector<HTMLElement>(':scope > sherpa-menu')!;
+    const heard: string[] = [];
+    for (const type of ['preset-edit', 'filter-remove', 'quick-filter-change']) bar.addEventListener(type, () => heard.push(type));
+    chip().toggleMenu();
+    await window.__settled();
+    menu().querySelector<HTMLElement>(':scope > button[value="edit"]')!.click();
+    await window.__settled();
+    menu().querySelector<FieldMenu>(':scope > .saved-field > sherpa-menu')!.conditions = [{ op: 'eq', picked: ['Ravi'] }];
+    await window.__settled();
+    bar.removeFilter('owner');
+    await window.__settled();
+    return heard;
+  }, OWNERS);
+
+  expect(r[0]).toBe('preset-edit');
+  expect(r).toContain('filter-remove');
 });
 
 test('a saved date shows its own calendar: a day press changes nothing until Edit filter', async ({ page }) => {

@@ -864,7 +864,8 @@ export class DataSource extends EventTarget {
       report({ code: 'unknown-preset', message: 'editPreset: no saved filter has that id.', at: { scope, id } });
       return;
     }
-    if (readings && JSON.stringify(readings) !== JSON.stringify(this.#presets.get(id))) {
+    // An empty edit would compile to no clause: an ON filter matching every row.
+    if (readings && Object.keys(readings).length && JSON.stringify(readings) !== JSON.stringify(this.#presets.get(id))) {
       const entry = this.#scope(scope);
       entry.edits = { ...entry.edits, [id]: structuredClone(readings) as Record<string, FieldReading> };
     } else {

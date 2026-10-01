@@ -832,3 +832,23 @@ test('an action row with data-stay-open reports and keeps the card open; a plain
   });
   expect(r).toEqual({ heard: ['stay', 'go'], afterStay: true, afterGo: false });
 });
+
+/** Rows a host writes by hand, with no class, are still the value list an
+ *  Equals row picks from. TRAP T-a-nested-menu-answers-for-itself */
+test('hand-written rows, with no class, still give an Equals row its values', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const menu = document.createElement('sherpa-menu') as HTMLElement & { rendered?: Promise<void>; show(): void };
+    menu.setAttribute('data-type', 'filter');
+    menu.setAttribute('data-advanced', '');
+    menu.setAttribute('data-mode', 'advanced');
+    menu.innerHTML = ['a', 'b']
+      .map((v) => `<label><input type="checkbox" value="${v}" /><span>${v.toUpperCase()}</span></label>`).join('');
+    document.getElementById('root')!.replaceChildren(menu);
+    await menu.rendered;
+    menu.show();
+    await window.__settled();
+    const pick = menu.shadowRoot!.querySelector<HTMLElement>('.condition-row .condition-pick')!;
+    return [...pick.shadowRoot!.querySelectorAll('option')].map((o) => o.value);
+  });
+  expect(r).toEqual(['', 'a', 'b']);
+});

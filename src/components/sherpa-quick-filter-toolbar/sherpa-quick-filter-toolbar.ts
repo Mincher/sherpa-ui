@@ -728,8 +728,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** Rebuild the chip run from `#filters`, keeping what the reader did. */
   #render(): void {
-    // A saved filter's change, being made, is kept first. TRAP T-a-saved-filter-keeps-its-edit
-    for (const menu of this.$$('.chips > .chip > sherpa-menu[data-editing]')) endSavedEdit(menu, 'keep');
+    this.#keepSavedEdits();
     const list = this.$('.chips');
     const tpl = this.$<HTMLTemplateElement>('template.qf-tpl');
     if (!list || !tpl) return;
@@ -988,6 +987,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     ?.querySelector<HTMLElement>(':scope > sherpa-menu')): void {
     if (!def.readings || !menu) return;
     drawSavedMenu(menu, { readings: def.readings ?? {}, edited: def.edited, says: def.says }, this.#savedHost(def.id));
+  }
+
+  /** A saved filter's change, being made, is kept BEFORE the list changes:
+   *  its source then draws a bar that still holds what it reports.
+   *  TRAP T-a-saved-filter-keeps-its-edit */
+  #keepSavedEdits(): void {
+    for (const menu of this.$$('.chips > .chip > sherpa-menu[data-editing]')) endSavedEdit(menu, 'keep');
   }
 
   /** What a saved filter's card borrows from this bar. */
@@ -1450,7 +1456,8 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     for (const [i, def] of this.#filters.entries()) {
       const edited = slice.edits?.[def.id];
       if (!def.readings || JSON.stringify(edited) === JSON.stringify(def.edited)) continue;
-      const { edited: _was, ...rest } = def;
+      // Its words were for the answer it had; the bar words the new one.
+      const { edited: _was, says: _said, ...rest } = def;
       const next: QuickFilterDef = { ...rest, ...(edited ? { edited: structuredClone(edited) } : {}) };
       this.#filters[i] = next;
       const chip = this.#chips().find((c) => c.dataset['id'] === next.id);
@@ -1536,6 +1543,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** Move the chosen available filters onto the bar. SILENT for a restore. */
   #addFilters(ids: string[], { silent = false } = {}): void {
+    this.#keepSavedEdits();
     const added: QuickFilterDef[] = [];
     for (const id of ids) {
       const i = this.#available.findIndex((f) => f.id === id);
@@ -1571,6 +1579,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** Take one filter back OFF the bar. It returns to the Add menu, clean. */
   #removeFilter(id: string, { silent = false } = {}): void {
+    this.#keepSavedEdits();
     const i = this.#filters.findIndex((f) => f.id === id);
     if (i < 0) {
       // TRAP T-a-broken-assumption-reports
