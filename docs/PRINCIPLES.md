@@ -63,7 +63,7 @@ are a reminder of why.
 | 9 | Every `:host([data-*])` and every `this.dataset` read is DECLARED in `static props` | `check:props` |
 | 10 | One owner per value. A bound component REPORTS; `data-locked` says the host owns it | `check:ownership` |
 | 11 | A `TRAP T-…` citation resolves to an entry in `TRAPS.md`, and its Sites match who cites it | `check:traps` |
-| 12 | A `.component.yaml` regenerates the source it describes, and is what that source generates now | `spec:check` |
+| 12 | A `.component.json` regenerates the source it describes, and is what that source generates now | `spec:check` |
 | 13 | The data layer imports no DOM — no `document`, `window`, `customElements`, storage | `lint` |
 | 14 | Every file's header says what it holds, and ends in a `Map:` of its exports — one line each. A changed file carries its map; `npm run map` prints them all | `check:map` |
 

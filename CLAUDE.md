@@ -121,7 +121,7 @@ Every component lives in `src/components/sherpa-<name>/`. Three hand-written sou
 | `sherpa-<name>.css` | **All** presentation: variants, states, visibility, responsiveness, transitions |
 | `sherpa-<name>.html` | Shadow DOM template, slots, semantic structure |
 
-A fourth file, `sherpa-<name>.component.yaml`, is **generated** — by
+A fourth file, `sherpa-<name>.component.json`, is **generated** — by
 `scripts/generate-component-spec.mjs` from the source + Figma — and git-tracked. It is
 the component's single contract (a DTCG-dialect spec), consumed by the MCP and the
 validate tooling. Never hand-edit it; regenerate it.
@@ -215,7 +215,7 @@ method, its call in `onRender`, and its branch of the `onChange` if-chain. Props
 written BEFORE `onRender`, and `onChange` still fires afterwards so a component can do
 extra work for the same attribute.
 
-The `kind` vocabulary matches the generated `.component.yaml`, so the code and the
+The `kind` vocabulary matches the generated `.component.json`, so the code and the
 contract agree:
 
 | `kind` | Meaning | What the base class does |
@@ -660,7 +660,7 @@ Resources (6): `sherpa://data-rules` (what Sherpa expects of your data),
 `ts`, `html` and `css`. Prompts:
 `generate_component`, `debug_component`, `review_component_usage`.
 
-The component contract it reads is `<name>.component.yaml`; tokens come from
+The component contract it reads is `<name>.component.json`; tokens come from
 `src/styles/tokens/`.
 
 ### Disabled state

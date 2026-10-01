@@ -7,6 +7,10 @@
   "additionalProperties": false,
   "required": ["$schema", "$type", "$name"],
   "properties": {
+    "$comment": {
+      "description": "Who wrote the file, for a reader: GENERATED specs say so here, as JSON has no comments.",
+      "type": "string"
+    },
     "$schema": {
       "description": "Points at this schema (or its URL). Free-form string so the file can name where it was validated.",
       "type": "string"

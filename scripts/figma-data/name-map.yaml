@@ -274,7 +274,7 @@ figmaOnly:
     note: >-
       composition-covered — sherpa-calendar renders the date Grid + Time Picker. Type=single|range,
       hasTime. sherpa-calendar's spec tracks the day/month/year layouts (intentional divergence,
-      recorded in its component.yaml under $extensions.sherpa.divergence).
+      recorded in its component.json under $extensions.sherpa.divergence).
   - figma: Chart Legend
     nodeId: '430:43129'
     note: >-

@@ -1,5 +1,5 @@
 /**
- * component-to-def.mjs — pure adapter: DTCG-dialect *.component.yaml spec → `def`.
+ * component-to-def.mjs — pure adapter: DTCG-dialect *.component.json spec → `def`.
  *
  * The round-trip guard needs to feed the new component spec through the EXISTING
  * pure compiler (scripts/lib/generation/compile-def.mjs :: compileDef), which
@@ -77,7 +77,7 @@ function specPropToDef(p) {
 }
 
 /**
- * Pure `spec → def`. Maps a parsed *.component.yaml object onto the `def` shape
+ * Pure `spec → def`. Maps a parsed *.component.json object onto the `def` shape
  * that compileDef(def) consumes.
  * @param {object} spec — the parsed DTCG-dialect component spec.
  * @returns {object} def — ready for compileDef().

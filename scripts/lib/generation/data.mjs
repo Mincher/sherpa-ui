@@ -14,7 +14,7 @@
  * - loadCssTokenNames — Every `--sherpa-*` token name declared in the generated sheet, as a Set.
  * - loadNameMap — the Figma-name → component map, cached
  * - loadComponentNames — The list of real components (dir names in src/components).
- * - loadSpec — The RAW spec — `<name>.component.yaml` as written, or null.
+ * - loadSpec — The RAW spec — `<name>.component.json` as written, or null.
  * - loadDef — a component's spec as a def, or null
  * - PATHS — where every generation input lives
  * - ROOT_DIR — the repo root, as an absolute path
@@ -22,7 +22,6 @@
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import yaml from 'js-yaml';
 import { loadContract } from '../contract-io.mjs';
 import { specToDef } from '../component-to-def.mjs';
 
@@ -73,14 +72,14 @@ export function loadComponentNames() {
 /**
  * Read a component's def, or null.
  *
- * The single component contract is `<name>.component.yaml` (the DTCG-dialect spec —
+ * The single component contract is `<name>.component.json` (the DTCG-dialect spec —
  * `*.thin.yaml` is retired). We adapt it to the legacy `def` shape the MCP + the
  * generation lib consume: specToDef supplies name/description/anatomy/templates/
  * props/events/tokens; the Figma binding (figmaName, category, figma summary) is
  * lifted from `$extensions.sherpa`.
  */
 /**
- * The RAW spec — `<name>.component.yaml` as written, or null.
+ * The RAW spec — `<name>.component.json` as written, or null.
  *
  * `loadDef` converts a spec into the shape `compileDef` walks, and that
  * conversion drops `$extensions` entirely: the compiler has no use for a Figma
@@ -89,16 +88,16 @@ export function loadComponentNames() {
  * "what can a caller DO to this" has to read the spec, not the def.
  */
 export function loadSpec(name) {
-  const specPath = join(P.components, name, `${name}.component.yaml`);
+  const specPath = join(P.components, name, `${name}.component.json`);
   if (!existsSync(specPath)) return null;
-  try { return yaml.load(readFileSync(specPath, 'utf8')) ?? null; } catch { return null; }
+  try { return JSON.parse(readFileSync(specPath, 'utf8')) ?? null; } catch { return null; }
 }
 
 export function loadDef(name) {
-  const specPath = join(P.components, name, `${name}.component.yaml`);
+  const specPath = join(P.components, name, `${name}.component.json`);
   if (!existsSync(specPath)) return null;
   let spec;
-  try { spec = yaml.load(readFileSync(specPath, 'utf8')); } catch { return null; }
+  try { spec = JSON.parse(readFileSync(specPath, 'utf8')); } catch { return null; }
   if (!spec || typeof spec !== 'object') return null;
   const def = specToDef(spec);
   // specToDef drops native-no-kind props (e.g. `disabled`) because compileDef must

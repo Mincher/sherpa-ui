@@ -9,7 +9,7 @@
  * without a flag day.
  *
  * NOTE: the thin-def flow is retired. Component defs are no longer authored as
- * `*.thin.yaml` (nor hydrated here) — `*.component.yaml` is the single component
+ * `*.thin.yaml` (nor hydrated here) — `*.component.json` is the single component
  * contract, read directly (see scripts/lib/generation/data.mjs :: loadDef). This
  * loader now serves only the non-component contracts (ontology/structure/name-map).
  *

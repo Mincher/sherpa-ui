@@ -207,7 +207,7 @@ export function register(server) {
       description:
         "Check a def against every design-system rule (docs/DEF-TO-FIGMA-BUILD-RULES.md): reuse existing components, tokens resolve to real ontology entries with the right role, control labels bind control-content not status-content (the Button bug), status containers alias through status, events well-formed. Returns errors (must fix) + warnings.",
       inputSchema: {
-        def: z.string().describe("The component def as a JSON string (the shape loadDef returns from <name>.component.yaml)"),
+        def: z.string().describe("The component def as a JSON string (the shape loadDef returns from <name>.component.json)"),
       },
     },
     async ({ def: defInput }) => {

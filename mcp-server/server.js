@@ -1,7 +1,7 @@
 /**
  * Sherpa UI MCP server — the def-driven design-system surface.
  *
- * The def (`<name>.component.yaml`) is the hub; the tools are thin wrappers over the
+ * The def (`<name>.component.json`) is the hub; the tools are thin wrappers over the
  * shared generation lib (scripts/lib/generation/*) — one implementation, two
  * surfaces (this MCP + the generate-sherpa-component skill).
  *

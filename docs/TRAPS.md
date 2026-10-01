@@ -3365,7 +3365,7 @@ Highlight layer, and a caller that only wants it drawn ignores the return.
 
 ### T-declared-only-means-css-owns-it
 
-`PropKind` is the same three-way split the generated `<name>.component.yaml`
+`PropKind` is the same three-way split the generated `<name>.component.json`
 uses, so the code and the contract agree:
 
 | kind | meaning |
@@ -12128,7 +12128,7 @@ which any component could use to place a tip beside any trigger.
 It now answers to `.sherpa-tip`, `.sherpa-anchor`, `.sherpa-anchor-point` and
 `.sherpa-anchor-el`, **with the `chart-*` names kept as aliases**. Not renamed
 outright: five chart components name them across ~38 sites, and one is in a
-`.component.yaml` that the spec round-trip gate reads — so a rename is a
+`.component.json` that the spec round-trip gate reads — so a rename is a
 migration, and the alias is what makes it a safe one.
 
 Two constraints the machinery carries, worth knowing before reusing it:
@@ -12512,7 +12512,7 @@ categories, and reads as ON while any of them is.
 
 A `:host([data-x])` rule is a PUBLIC API: a host sets the attribute and the
 component restyles. Undeclared, it is a contract between the CSS and nothing —
-invisible to the TS, to the generated `.component.yaml`, and to any agent
+invisible to the TS, to the generated `.component.json`, and to any agent
 reading either.
 
 **65 of them were in that state, across 31 of 58 components.** Measured the
@@ -12943,7 +12943,7 @@ label, which is a value of nothing.
 ### T-a-spec-on-disk-must-be-the-spec-the-source-makes
 
 `spec:check` generated a FRESH spec from the source and validated and
-round-tripped THAT — and never compared it with the `.component.yaml` on disk.
+round-tripped THAT — and never compared it with the `.component.json` on disk.
 So a committed spec that no longer described its component passed every
 commit.
 
@@ -12993,7 +12993,7 @@ command: 297 lines for the whole data and UI core, instead of 30 files.
 |---|---|
 | a file's purpose | the header's first line — already the convention |
 | an export | one `Map:` line in that file's header |
-| a component's props, events, methods | its `.component.yaml` — generated and gated already, so NOT repeated |
+| a component's props, events, methods | its `.component.json` — generated and gated already, so NOT repeated |
 | a `#private` member | a one-line comment above it, in place |
 | the WHY of anything non-obvious | `docs/TRAPS.md`, cited |
 

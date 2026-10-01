@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Round-trip guard: <name>.component.yaml → specToDef → compileDef → compare to
+ * Round-trip guard: <name>.component.json → specToDef → compileDef → compare to
  * the on-disk component files. Exit non-zero on any mismatch.
  *
  *   node scripts/roundtrip-component.mjs <sherpa-name>
@@ -14,7 +14,6 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import yaml from 'js-yaml';
 import { specToDef } from './lib/component-to-def.mjs';
 import { compileDef } from './lib/generation/compile-def.mjs';
 import { authoredCss, extractBindingsMap } from './lib/css-reader.mjs';
@@ -83,10 +82,10 @@ function residueReport(realTs, realCssAuthored) {
 // ── main ───────────────────────────────────────────────────────────────────────
 function run(name) {
   const dir = join(C, name);
-  const specPath = join(dir, `${name}.component.yaml`);
+  const specPath = join(dir, `${name}.component.json`);
   if (!existsSync(specPath)) { console.error(`✗ no spec: ${specPath}`); return 2; }
 
-  const spec = yaml.load(readFileSync(specPath, 'utf8'));
+  const spec = JSON.parse(readFileSync(specPath, 'utf8'));
   const def = specToDef(spec);
   if (!def.anatomy) { console.error(`✗ ${name}: spec carries no anatomy block — cannot regenerate HTML.`); return 2; }
   const gen = compileDef(def);

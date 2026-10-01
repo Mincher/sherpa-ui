@@ -8,10 +8,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import yaml from 'js-yaml';
 
 const surface = (name) => {
-  const spec = yaml.load(readFileSync(`src/components/${name}/${name}.component.yaml`, 'utf8'));
+  const spec = JSON.parse(readFileSync(`src/components/${name}/${name}.component.json`, 'utf8'));
   const ext = spec.$extensions?.sherpa ?? {};
   return {
     methods: new Set((ext.methods ?? []).map((m) => m.name)),

@@ -5,7 +5,7 @@
  * bindings, and its state→token links all use this same grammar — the single
  * seam shared with the token file. This resolver can walk BOTH:
  *
- *   • a component spec object (dot-path into the parsed *.component.yaml)
+ *   • a component spec object (dot-path into the parsed *.component.json)
  *   • the token DTCG (dot-path into figma.tokens.json, unwrapping DTCG $value)
  *
  * Pure + importable. Neither the token pipeline nor the component pipeline

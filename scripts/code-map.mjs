@@ -5,7 +5,7 @@
  * Each file's header ends in a `Map:` block, one line per export. This prints
  * those blocks, drafts them, and gates them, so "does this already exist?" is
  * one command instead of opening every file. A component's own members are in
- * its `.component.yaml`, so a component file maps only what it exports.
+ * its `.component.json`, so a component file maps only what it exports.
  *
  *   npm run map [paths…]          print the map (the whole repo by default)
  *   npm run map:write <files…>    add missing names, drop stale ones
@@ -109,7 +109,7 @@ export function exportsOf(text, file = 'x.ts') {
         ?.types[0]?.expression.getText(sf) ?? ''
       : null;
     /* THE COMPONENT ITSELF is the header's first line, and its members are its
-       `.component.yaml`. A Map line for it would say the title again. */
+       `.component.json`. A Map line for it would say the title again. */
     if (base === 'SherpaElement') continue;
     for (const n of names) out.push(entry(n, st));
     if (base === null) continue;

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Validate a *.component.yaml against schemas/component.v1.json.
+ * Validate a *.component.json against schemas/component.v1.json.
  * A schema error fails; an unresolved {ref} only warns.
  *
  *   node scripts/validate-component.mjs <name|path>... | --all
@@ -8,7 +8,6 @@
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname, isAbsolute } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import yaml from 'js-yaml';
 import Ajv2020 from 'ajv/dist/2020.js';
 import { isRef, resolveRef } from './lib/component-ref.mjs';
 
@@ -28,9 +27,9 @@ function loadTokens() {
 }
 
 function specPathFor(arg) {
-  if (arg.endsWith('.component.yaml')) return isAbsolute(arg) ? arg : join(ROOT, arg);
+  if (arg.endsWith('.component.json')) return isAbsolute(arg) ? arg : join(ROOT, arg);
   const name = arg.startsWith('sherpa-') ? arg : `sherpa-${arg}`;
-  return join(C, name, `${name}.component.yaml`);
+  return join(C, name, `${name}.component.json`);
 }
 
 function checkRefs(spec, tokens) {
@@ -57,8 +56,8 @@ function validateOne(arg, { ajv, validate, tokens }) {
   const path = specPathFor(arg);
   if (!existsSync(path)) return { arg, ok: false, fatal: `not found: ${path}` };
   let spec;
-  try { spec = yaml.load(readFileSync(path, 'utf8')); }
-  catch (e) { return { arg, ok: false, fatal: `YAML parse error: ${e.message}` }; }
+  try { spec = JSON.parse(readFileSync(path, 'utf8')); }
+  catch (e) { return { arg, ok: false, fatal: `JSON parse error: ${e.message}` }; }
 
   const ok = validate(spec);
   const errors = ok ? [] : (validate.errors || []).map((e) => `${e.instancePath || '/'} ${e.message}` + (e.params && Object.keys(e.params).length ? ` (${JSON.stringify(e.params)})` : ''));
@@ -71,7 +70,7 @@ function runCli() {
   let names = args.filter((a) => !a.startsWith('--'));
   if (args.includes('--all')) {
     names = readdirSync(C)
-      .filter((n) => existsSync(join(C, n, `${n}.component.yaml`)));
+      .filter((n) => existsSync(join(C, n, `${n}.component.json`)));
   }
   if (!names.length) {
     console.error('usage: node scripts/validate-component.mjs <name|path>... | --all');

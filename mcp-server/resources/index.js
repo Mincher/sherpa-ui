@@ -1,7 +1,7 @@
 /**
  * Resources — the def-driven read surface.
  *
- *   sherpa://def/{name}               — a component's <name>.component.yaml, as a def
+ *   sherpa://def/{name}               — a component's <name>.component.json, as a def
  *   sherpa://component/{name}/{kind}  — a component's shipped ts | html | css | def
  *   sherpa://rules                    — docs/DEF-TO-FIGMA-BUILD-RULES.md
  *   sherpa://data-rules               — docs/DATA-SOURCE-RULES.md
@@ -54,7 +54,7 @@ export function register(server) {
           })),
       }),
     }),
-    { description: "The component def, read from <name>.component.yaml — the shared source of truth for a Sherpa component", mimeType: "application/json" },
+    { description: "The component def, read from <name>.component.json — the shared source of truth for a Sherpa component", mimeType: "application/json" },
     async (uri, { name }) => {
       const src = readDef(name);
       return {
@@ -114,7 +114,7 @@ export function register(server) {
       const rules = fs.existsSync(RULES_PATH) ? fs.readFileSync(RULES_PATH, "utf8") : "(DEF-TO-FIGMA-BUILD-RULES.md not found)";
       const standard = fs.existsSync(STANDARD_PATH) ? fs.readFileSync(STANDARD_PATH, "utf8") : "";
       const text = standard
-        ? `${rules}\n\n---\n\n# Appendix: the component spec SCHEMA\n\nThe shape every \`<name>.component.yaml\` must match. Validated on every commit by \`npm run spec:check\`, so it describes what the specs really contain.\n\n\`\`\`json\n${standard}\n\`\`\``
+        ? `${rules}\n\n---\n\n# Appendix: the component spec SCHEMA\n\nThe shape every \`<name>.component.json\` must match. Validated on every commit by \`npm run spec:check\`, so it describes what the specs really contain.\n\n\`\`\`json\n${standard}\n\`\`\``
         : rules;
       return {
         contents: [{

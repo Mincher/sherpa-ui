@@ -180,7 +180,7 @@ function compileTs(def, name, cls) {
   if (def.docs?.ts) {
     L.push(`/**`, ...def.docs.ts.split('\n').map((l) => ` * ${l}`.trimEnd()), ` *`, ...behaviourLines, ` * @fires ${fires}`, ` */`);
   } else {
-    L.push(`/**`, ` * ${name} — ${def.description}`, ` *`, ...behaviourLines, ` * Generated from ${name}.component.yaml. @fires ${fires}`, ` */`);
+    L.push(`/**`, ` * ${name} — ${def.description}`, ` *`, ...behaviourLines, ` * Generated from ${name}.component.json. @fires ${fires}`, ` */`);
   }
   L.push(`import { SherpaElement } from '../../core/ui/sherpa-element.js';`, '');
   L.push(`export class ${cls} extends SherpaElement {`);

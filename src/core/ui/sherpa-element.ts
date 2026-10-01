@@ -39,7 +39,7 @@ export interface NumOptions {
 /** Base class for every `sherpa-*` component. */
 
 /**
- * How a declared attribute is REALISED. Matches the generated `.component.yaml`.
+ * How a declared attribute is REALISED. Matches the generated `.component.json`.
  * TRAP T-declared-only-means-css-owns-it — only `content` does any work.
  */
 export type PropKind = 'content' | 'style' | 'visibility';

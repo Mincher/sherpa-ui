@@ -164,7 +164,7 @@ file, export it first and pass the JSON:
 
 (`merge-figma.mjs` was retired 2026-09-02 and DELETED 2026-09-17. The binding used to
 live in a separate `*.def.json`; it now lives in the component's own
-`.component.yaml`.)
+`.component.json`.)
 
 ---
 
@@ -258,7 +258,7 @@ structural gates *don't* catch):
   clipped text, two-tone status icons render, status colour actually shows.
 
 When `build-figma-component` finishes, set `$extensions.sherpa.figmaName` (and
-`category`) in the component's `.component.yaml`. The spec generator preserves both,
+`category`) in the component's `.component.json`. The spec generator preserves both,
 so a regen will not lose them. To verify against the live file, export it and run
 `node scripts/resync-figma.mjs <live-figma.json> --check`.
 

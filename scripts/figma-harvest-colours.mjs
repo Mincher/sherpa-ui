@@ -32,11 +32,10 @@ const COMPONENTS = join(ROOT, 'src/components');
 export function componentMap() {
   const map = {};
   for (const dir of readdirSync(COMPONENTS)) {
-    const spec = join(COMPONENTS, dir, `${dir}.component.yaml`);
-    let text;
-    try { text = readFileSync(spec, 'utf8'); } catch { continue; }
-    const m = /^\s*figmaName:\s*(.+)$/m.exec(text);
-    if (m) map[dir] = m[1].trim();
+    let spec;
+    try { spec = JSON.parse(readFileSync(join(COMPONENTS, dir, `${dir}.component.json`), 'utf8')); } catch { continue; }
+    const name = spec.$extensions?.sherpa?.figmaName;
+    if (name) map[dir] = name;
   }
   return map;
 }

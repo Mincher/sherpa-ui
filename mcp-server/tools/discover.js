@@ -144,7 +144,7 @@ export function register(server) {
     {
       title: "Get a Component (def + code + Figma shape)",
       description:
-        "The full picture for one component: its component.yaml spec (structure, props, tokens, events), the compiled TS/HTML/CSS (from compile_def, when the def carries an anatomy block), and its Figma binding shape (variant axes, bool/text/instance props, mode pins). Use before authoring a variant, reusing it as a nested child, or building it in Figma.",
+        "The full picture for one component: its component.json spec (structure, props, tokens, events), the compiled TS/HTML/CSS (from compile_def, when the def carries an anatomy block), and its Figma binding shape (variant axes, bool/text/instance props, mode pins). Use before authoring a variant, reusing it as a nested child, or building it in Figma.",
       inputSchema: {
         name: z.string().describe("Component element name (e.g. sherpa-tag)"),
         include: z.enum(["all", "def", "code", "figma"]).optional()
