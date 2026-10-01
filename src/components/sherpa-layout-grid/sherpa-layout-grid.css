@@ -30,3 +30,61 @@
   --sherpa-layout-grid-gap-horizontal: 0px;
   --sherpa-layout-grid-gap-vertical: 0px;
 }
+
+/* ── Resizable ───────────────────────────────────────────────────────────
+   A handle in each gutter. TRAP T-a-gutter-moves-a-line */
+:host([data-resizable]) {
+  position: relative;
+}
+
+/* A zero-size anchor at the padding box: never a grid item, and it scrolls
+   with a fit grid's content. */
+.handles {
+  display: none;
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: 0;
+  block-size: 0;
+}
+
+:host([data-resizable]:not([data-grouped])) .handles {
+  display: block;
+}
+
+/* Physical, because each box is measured. */
+.handle {
+  position: absolute;
+  left: var(--_x, 0);
+  top: var(--_y, 0);
+  inline-size: var(--_w, 0);
+  block-size: var(--_h, 0);
+  z-index: 1;
+  touch-action: none;
+}
+
+.handle[aria-orientation='vertical'] { cursor: col-resize; }
+.handle[aria-orientation='horizontal'] { cursor: row-resize; }
+.handle:focus-visible { outline: none; }
+
+/* A 2px line down the gutter's middle, as the shell's panel edge shows. */
+.handle::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+}
+
+.handle[aria-orientation='vertical']::before {
+  inline-size: 0;
+  border-inline-start: 2px solid transparent;
+}
+
+.handle[aria-orientation='horizontal']::before {
+  block-size: 0;
+  border-block-start: 2px solid transparent;
+}
+
+.handle:is(:hover, :focus-visible, [data-dragging])::before {
+  border-color: var(--sherpa-style-indicator-accent, #3b4ccd);
+}

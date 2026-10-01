@@ -2346,6 +2346,7 @@ screen moved.
 
 - Site: `src/core/browser/persist-view.ts`
 - Site: `test/e2e/reforged-view-definition.spec.ts`
+- Site: `src/components/sherpa-layout-grid/grid-resize.ts`
 
 ### T-capture-reads-only-what-is-named
 
@@ -14563,6 +14564,7 @@ rest from that.
 - Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.ts`
 - Site: `src/index.ts`
 - Site: `test/e2e/reforged-layout-grid.spec.ts`
+- Site: `src/components/sherpa-layout-grid/grid-resize.ts`
 
 ### T-a-document-rule-outranks-an-adopted-host-rule
 
@@ -15910,6 +15912,7 @@ the authored layout back is a plain removal.
 - Site: `scripts/project-tokens.mjs`
 - Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.html`
 - Site: `test/e2e/reforged-layout-grid.spec.ts`
+- Site: `src/components/sherpa-layout-grid/grid-resize.ts`
 
 ### T-a-gutter-moves-a-line
 
@@ -15933,3 +15936,25 @@ values.
 
 - Site: `src/components/sherpa-layout-grid/grid-lines.ts`
 - Site: `test/unit/a-gutter-moves-a-line.test.mjs`
+- Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.ts`
+- Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.css`
+- Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.html`
+- Site: `test/e2e/reforged-layout-grid-resize.spec.ts`
+
+### T-a-handle-is-never-restamped-mid-drag
+
+**A held handle is never replaced.** TODO 177. The layout grid draws its
+gutter handles with `renderItems`, which EMPTIES `.handles` and stamps anew.
+A drag reflows the grid at every snapped step, and the set of handles can
+change under it — a row's trailing handle comes and goes as its free columns
+do. Removing the node that holds pointer capture ends the drag silently and
+loses focus.
+
+So the handles are re-stamped only when the set of keys changed AND none is
+`[data-dragging]`; otherwise each node is moved in place by its `data-key`.
+After a re-stamp, focus goes back to the handle with the same key. The
+`handle-tpl` is a SIBLING of `.handles`, never inside it: the first re-stamp
+would delete it.
+
+- Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.ts`
+- Site: `test/e2e/reforged-layout-grid-resize.spec.ts`

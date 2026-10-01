@@ -15,6 +15,8 @@
     data-row-count   set an explicit row count (1–12); a fit grid needs it
     data-rows        fit — every row one grid row tall, and the LAST row takes the rest
                    | fixed — every row is one grid row tall
+    data-resizable   draw a handle in each gutter, to resize the children by
+                   dragging or by the keys. TRAP T-a-gutter-moves-a-line
     data-grow        on a CHILD: the item that takes the remaining height
     data-min-row-span  on a CHILD: 1–12, the fewest rows a drag may leave it;
                    a child without one is not row-resizable
@@ -28,4 +30,11 @@
   <!-- The base class writes `data-has-content-slot` here. Nothing reads it on a
        layout element: a grid with no children is still a grid. -->
   <slot></slot>
+  <!-- The gutter handles: positioned, so never a grid item. -->
+  <div class="handles" part="handles"></div>
+  <!-- A SIBLING of .handles: a re-stamp empties that container. -->
+  <template class="handle-tpl">
+    <div class="handle" part="handle" role="separator" tabindex="0"
+      data-attr-aria-orientation="orientation" data-attr-aria-label="label" data-attr-data-key="key"></div>
+  </template>
 </template>

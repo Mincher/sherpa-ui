@@ -8,9 +8,34 @@
     "default"
   ],
   "anatomy": {
-    "root": {
-      "slot": ""
-    }
+    "roots": [
+      {
+        "slot": ""
+      },
+      {
+        "el": "div",
+        "class": "handles",
+        "part": "handles"
+      },
+      {
+        "el": "template",
+        "class": "handle-tpl",
+        "children": [
+          {
+            "el": "div",
+            "class": "handle",
+            "part": "handle",
+            "attrs": {
+              "role": "separator",
+              "tabindex": "0",
+              "data-attr-aria-orientation": "orientation",
+              "data-attr-aria-label": "label",
+              "data-attr-data-key": "key"
+            }
+          }
+        ]
+      }
+    ]
   },
   "props": [
     {
@@ -55,6 +80,14 @@
     },
     {
       "$type": "prop",
+      "name": "data-resizable",
+      "type": "string",
+      "observed": false,
+      "kind": "visibility",
+      "description": "draw a handle in each gutter, to resize the children by dragging or by the keys. TRAP T-a-gutter-moves-a-line"
+    },
+    {
+      "$type": "prop",
       "name": "data-row-count",
       "type": "string",
       "observed": false,
@@ -91,6 +124,16 @@
       "$type": "state",
       "name": "grouped",
       "selector": ":host([data-grouped])"
+    },
+    {
+      "$type": "state",
+      "name": "resizable",
+      "selector": ":host([data-resizable])"
+    },
+    {
+      "$type": "state",
+      "name": "focus-visible",
+      "selector": ".handle:focus-visible"
     }
   ],
   "$extensions": {
