@@ -195,16 +195,13 @@ map:
       the leaner rail row (hasIcon/hasIndicator/isMaximised).
   sherpa-data-grid:
     figma: Grid Cell
-    status: needs-rebuild
+    status: matched
     note: >-
       relinked 2026-09-02: the standalone "Data Grid" Figma component was reduced to a single
       "Grid Cell" (926:34253, Type=cell|header|group|filter) in the 2026-08-27 resync — the grid is
-      composed from Grid Cells. sherpa-data-grid's component spec tracks Grid Cell. CODE still the
-      legacy <table> — rebuild deferred to a dedicated session.
-  sherpa-grid-cell:
-    figma: Grid Cell
-    status: matched
-    tier: sub-component
+      composed from Grid Cells. sherpa-data-grid's component spec tracks Grid Cell. Will 2026-10-01:
+      Grid Cell is a Figma component for content variants, and only CSS styling in code — the
+      grid's own cells. sherpa-grid-cell was folded (TODO 28).
   sherpa-grid-column:
     figma: Grid Cell
     status: no-figma

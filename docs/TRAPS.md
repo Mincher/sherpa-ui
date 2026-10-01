@@ -148,7 +148,6 @@ light, 264 of 264 in dark.
 - Site: `test/e2e/reforged-button.spec.ts`
 - Site: `src/components/sherpa-chip/sherpa-chip.css`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
-- Site: `src/components/sherpa-grid-cell/sherpa-grid-cell.css`
 - Site: `src/components/sherpa-badge/sherpa-badge.css`
 
 ### T-scope-does-not-stop-inheritance
@@ -11296,34 +11295,6 @@ way up, since −5 is a fifth of the 25 span), the negative bar from 36 down to
 - Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
 - Site: `test/e2e/reforged-barchart.spec.ts`
 
-### T-one-event-name-one-detail-shape
-
-`sherpa-grid-cell` and `sherpa-data-grid` both emit `sort-change` and
-`group-toggle`, and they disagreed about what the detail holds:
-
-| event | the grid | the cell, before |
-|---|---|---|
-| `sort-change` | `{ field, direction }` | `{ direction }` — no field |
-| `group-toggle` | `{ value, collapsed }` | `{ expanded }` — **inverted** |
-
-A host listening over a subtree that holds both got `collapsed: true` from one
-and `expanded: false` from the other for the same gesture. And a `sort-change`
-without a `field` cannot be read by any listener above a single cell, which is
-every real listener.
-
-The cell now emits the grid's shapes. Nothing in `src/` or `examples/`
-listened to the cell's version — only its own spec file — so this cost one test
-line.
-
-The two components are not rivals. `scripts/figma-data/name-map.yaml` records
-that Figma reduced Data Grid to a single **Grid Cell** in the 2026-08-27
-resync, that the grid is meant to be composed from them, and that
-`sherpa-data-grid` is `status: needs-rebuild` with the rebuild deferred. The
-cell is what the grid is meant to become, not an orphan — which is exactly why
-the two must agree on an event before that work starts.
-
-- Site: `src/components/sherpa-grid-cell/sherpa-grid-cell.ts`
-
 ### T-one-verb-proxies-to-the-native-one
 
 Four components open and close, and each wraps a different platform API:
@@ -11950,7 +11921,6 @@ filtering were already clean: every component use of `data-group-field` and
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-pagination/sherpa-pagination.ts`
-- Site: `src/components/sherpa-grid-cell/sherpa-grid-cell.ts`
 - Site: `scripts/check-ownership.mjs`
 - Site: `src/core/ui/sherpa-element.ts`
 
@@ -12646,7 +12616,6 @@ one under-described the API.
 
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `scripts/check-ownership.mjs`
-- Site: `src/components/sherpa-grid-cell/sherpa-grid-cell.ts`
 
 ### T-a-suspended-legend-row-keeps-its-place
 

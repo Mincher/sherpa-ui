@@ -17,7 +17,6 @@ const COMPONENTS = [
   'sherpa-calendar', 'sherpa-callout', 'sherpa-chart-legend', 'sherpa-chat-message',
   'sherpa-chip', 'sherpa-code-block', 'sherpa-container', 'sherpa-container-footer', 'sherpa-container-header',
   'sherpa-data-grid', 'sherpa-dialog', 'sherpa-radial-chart', 'sherpa-empty-state', 'sherpa-file-upload',
-  'sherpa-grid-cell',
   'sherpa-gauge-chart', 'sherpa-input-text', 'sherpa-key-value-list',
   'sherpa-layout-canvas', 'sherpa-line-chart', 'sherpa-list', 'sherpa-list-item', 'sherpa-loader',
   'sherpa-metric', 'sherpa-nav', 'sherpa-nav-item', 'sherpa-nav-section',
@@ -329,8 +328,8 @@ customElements.whenDefined('sherpa-tabs').then(() => {
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 window.__sandboxReady = false;
-// whenDefined never resolves for a name that is never registered (e.g. sherpa-grid-cell
-// has a dir but no registration), so race each against a short timeout.
+// whenDefined never resolves for a name that is never registered, so race each
+// against a short timeout.
 function definedOrTimeout(name, ms = 2000) {
   return Promise.race([
     customElements.whenDefined(name).catch(() => {}),

@@ -128,7 +128,6 @@ export { SherpaButton } from './components/sherpa-button/sherpa-button.js';
 export { SherpaBadge } from './components/sherpa-badge/sherpa-badge.js';
 export { SherpaTag } from './components/sherpa-tag/sherpa-tag.js';
 export { SherpaChip } from './components/sherpa-chip/sherpa-chip.js';
-export { SherpaGridCell } from './components/sherpa-grid-cell/sherpa-grid-cell.js';
 export { SherpaContainer } from './components/sherpa-container/sherpa-container.js';
 export { SherpaStack } from './components/sherpa-stack/sherpa-stack.js';
 export { SherpaInputText } from './components/sherpa-input-text/sherpa-input-text.js';

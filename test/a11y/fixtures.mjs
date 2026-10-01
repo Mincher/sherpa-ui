@@ -106,10 +106,6 @@ export const FIXTURES = {
     html: '<sherpa-gauge-chart data-label="Mean risk" data-unit="%" data-caption="of 100"></sherpa-gauge-chart>',
     fill: [{ at: 'sherpa-gauge-chart', data: 42 }],
   },
-  'sherpa-grid-cell': {
-    html: '<table><thead><tr><th scope="col"><sherpa-grid-cell data-type="header">Name</sherpa-grid-cell></th></tr></thead>'
-      + '<tbody><tr><td><sherpa-grid-cell>Ada Lovelace</sherpa-grid-cell></td></tr></tbody></table>',
-  },
   'sherpa-group': { html: '<sherpa-group><sherpa-button>Day</sherpa-button><sherpa-button>Week</sherpa-button><sherpa-button>Month</sherpa-button></sherpa-group>' },
   'sherpa-input-text': {
     html: '<sherpa-input-text data-label="Name" name="name" placeholder="Jane Doe" required></sherpa-input-text>'

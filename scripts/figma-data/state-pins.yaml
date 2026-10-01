@@ -150,14 +150,6 @@ sherpa-dialog:
   # (attribute beats tag), so the critical confirm dialog keeps working.
   '&': default
 
-sherpa-grid-cell:
-  # Grid Cell pins its Checkbox Style=default in every type.
-  '& .checkbox': default
-  # The group toggle and the sort / menu buttons pin Transparent=default.
-  '& .toggle': transparent
-  '& .sort': transparent
-  '& .menu': transparent
-
 sherpa-input-text:
   # Input Field (atom) pins Style=default; its State=error pins Style=critical.
   '&': default

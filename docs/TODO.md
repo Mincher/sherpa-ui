@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**31 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**30 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -149,7 +149,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 48a | 170 | MAJOR, LAST, and only when Will says — the data layer runs on the client, the server, or both, whole or in parts | explore |
 | | | | **J — Tidy-ups and renames** | |
 | ✅ | 49 | 11 | `sherpa-group`: what is left | tidy |
-| ❓ | 50 | 28 | A Figma component is NOT always a web component | tidy |
+| ✅ | 50 | 28 | A Figma component is NOT always a web component | tidy |
 | ✅ | 51 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
 | ✅ | 52 | 33 | Density as step offsets, and a breakpoint step | tokens |
 | ❓ | 53 | 36 | CSS: compiled where it should inherit? | tidy |
@@ -3449,7 +3449,7 @@ want any of it anyway.
    position; `<sherpa-group>` is for a grid, whose positions must be told.
    CSS before JS.
 
-### `[ ]` ❓ 28 — A Figma component is NOT always a web component
+### `[x]` ✅ 28 — A Figma component is NOT always a web component
 
 A sub-component is often only a `<template>` in its parent's `.html`, or a set
 of CSS classes. `sherpa-grid-cell` is the clear case.
@@ -3483,6 +3483,13 @@ neither is clear:
 - **A (my pick): fold it.** The grid's own templates are Figma's Grid Cell.
   One element per cell would be about 350 shadow roots on one Records page.
 - **B: keep it**, for the rebuild of the grid from Grid Cells.
+
+**✅ Will, 2026-10-01: A.** *"Grid cell is a necessary figma component, for
+content variants, but it's just css styling in code."* `sherpa-grid-cell` is
+folded: gone from the source, the index, the sandbox, the a11y fixtures and
+the state pins. Figma's Grid Cell maps to the grid's own cells, and the name
+map no longer says the grid waits on a rebuild. The Nav Section stays as it
+is.
 
 ### `[x]` ✅ 30 — Do we still need `icon-paths.ts` and `render-icon.ts`?
 
@@ -4446,6 +4453,7 @@ One line each. The detail is in git and in the trap named.
 - 25: `sherpa-layout-canvas` — an infinite canvas that pans and zooms, with a minimap and four floating controls — `T-a-canvas-owns-its-view`
 - 33 (step 1): a density carries only the 27 space and size values Figma overrides; a stale copy had painted an old success green — `T-a-density-mode-is-one-step`
 - 26, 30, 33, 11d: closed by Will's rulings — the grid stays, the SVG icons stay, no breakpoint step, `data-type` is Figma's Type axis
+- 28: `sherpa-grid-cell` folded — Figma's Grid Cell is the grid's own CSS
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on
