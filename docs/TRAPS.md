@@ -11561,6 +11561,36 @@ responsive collapse a name gives.
 - Site: `scripts/project-tokens.mjs`
 - Site: `test/e2e/reforged-layout-grid.spec.ts`
 
+### T-a-context-steps-by-its-own-width
+
+**Inside the app shell, the layout grid steps by the CONTEXT's width, not the
+window's** — TODO 146, level 2. The Context element (the shell's light-DOM
+child with no `slot`) is a container, `sherpa-context`, and
+`project-tokens.mjs` emits a container twin of every layout band: the column
+count, the named spans, the stranded-row fill and fit mode. So the Context
+reflows when a pinned nav or an open panel area takes room.
+
+**The container is the LIGHT-DOM Context, declared in `tokens.css` — not the
+shell's `.context-frame`.** Measured 2026-10-01: a page rule matched a
+container in the shell's shadow tree in Chromium and Firefox, but in WebKit
+only for SOME descendants — the Context's own children never matched, so the
+grid stayed at 12 columns. A container name set from the shadow tree
+(`::slotted()`) matched nothing in WebKit. A document rule on the light-DOM
+element works in all three.
+
+**The bands are the viewport's less the shut rail's 40px** (Will, A): 728,
+1240 and 1880. So with nothing open, every layout is the same as before at
+the same window width. One seam: below 768 the shell hides the rail, so a
+728–767px window now gets the tablet band.
+
+**The viewport rules SKIP the Context** (`:where(:not(sherpa-app-shell >
+:not([slot]) …))`), or a desktop stranded-row rule would still fire in a
+tablet-wide Context. Outside the Context — a page with no shell, or the
+Settings overlay — the viewport rules are the only ones.
+
+- Site: `scripts/project-tokens.mjs`
+- Site: `test/e2e/reforged-filter-panel-mode.spec.ts`
+
 ### T-fit-is-a-desktop-mode
 
 `data-rows="fit"` applies from 1280 up and nowhere else.

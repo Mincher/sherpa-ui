@@ -169,3 +169,27 @@ test('with no room in the shell the panel shuts and the toolbars come back; room
   await pin();
   await expect.poll(look).toEqual(SHOWN);
 });
+
+/**
+ * THE CONTEXT STEPS BY ITS OWN WIDTH. TODO 146, level 2: an open panel area
+ * takes room, so the Context's grid steps down a band — 12 columns to 8 at
+ * 1440 — and back when it shuts. With nothing open, the band is the one the
+ * window gave before. TRAP T-a-context-steps-by-its-own-width
+ */
+test('the Context grid steps by its own width: a panel area takes it from 12 columns to 8, and back', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('http://localhost:4200/?context=records');
+  await page.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
+  const tracks = (): Promise<number> => page.evaluate(() =>
+    getComputedStyle(document.querySelector('#context-root .sherpa-grid')!).gridTemplateColumns.split(' ').length);
+  const mode = (m: string): Promise<void> => page.evaluate((v) => {
+    (document.querySelector('sherpa-provider') as HTMLElement & { filterMode: string }).filterMode = v;
+  }, m);
+
+  expect(await tracks()).toBe(12);
+  await mode('panel');
+  await expect.poll(tracks).toBe(8);
+  await mode('toolbars');
+  await expect.poll(tracks).toBe(12);
+});

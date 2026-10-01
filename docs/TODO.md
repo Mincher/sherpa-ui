@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**28 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**27 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -123,7 +123,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 35d | 164 | At the mobile breakpoint the app header shows no nav hamburger: it does not get narrow enough to trigger it | bug |
 | ✅ | 35b | 161 | The app header's shadow FADES in, very quickly, as the Context scrolls under it | quick |
 | ✅ | 35c | 163 | The app shell's panel areas are 150% of their width today, at the least | quick |
-| 🚧 | 35a | 146 | The app shell's FIXED panel areas resize by dragging their inner edge; the content reflows; two levels of container query | feature |
+| ✅ | 35a | 146 | The app shell's FIXED panel areas resize by dragging their inner edge; the content reflows; two levels of container query | feature |
 | | | | **F — Data states and charts** | |
 | ✅ | 36 | 58 | Loading, empty and error states in a container | feature |
 | ✅ | 37 | 9b | A Data Viz header, for metrics and chart containers | component |
@@ -2752,7 +2752,7 @@ and the area has a MIN width of 464px. That is 150% of the 310px it is at
 at 1280 and at 1600, and from about 1900 the three columns are wider and
 take over (454 at 1920).
 
-### `[~]` 146 — The app shell's FIXED panel areas resize by dragging their edge
+### `[x]` ✅ 146 — The app shell's FIXED panel areas resize by dragging their edge
 
 Will, 2026-09-30, a future todo: *"Allow the side of the panel areas, in the
 app shell to be dragged to resize like we can do with the overlay panel.*
@@ -2852,6 +2852,21 @@ panels.
 - **B:** use them as they are; every layout steps down a little earlier.
 
 **✅ Will, 2026-10-01: A.**
+
+**✅ Level 2 done 2026-10-01 — the Context steps by its own width.** The
+Context (the shell's child with no `slot`) is a container, and the token
+projector writes a container twin of every layout band: 728 / 1240 / 1880,
+the viewport bands less the shut rail's 40 px. With nothing open, every
+layout is as before at the same window width. Open the filter panel at
+1440 and the Records grid goes from 12 columns to 8; shut it and it is 12
+again. A pinned nav does the same. The viewport rules now skip the Context,
+so the two never fight; a page with no shell, and the Settings overlay, still
+step by the window. One seam: below 768 the shell hides the rail, so a
+728–767 px window now gets the tablet layout.
+
+Found on the way: WebKit cannot match a container inside the shell's shadow
+tree for the Context's own children, so the container is the light-DOM
+Context, declared in `tokens.css`. `T-a-context-steps-by-its-own-width`
 
 ## F — Data states and charts
 
@@ -4674,6 +4689,7 @@ One line each. The detail is in git and in the trap named.
 - 59: TRIAL — a card keeps its content: a loading bar under its header, a banner for a failure; Settings › Experiments — `T-a-container-shows-its-datas-state`
 - 175: the sticky metrics switch in CSS — a scroll-state query at grid padding + one row; sparkline kept, tighter, 14px value
 - 81: the 65 component contracts are JSON — `sherpa-<name>.component.json`, generated, validated, round-tripped, fresh
+- 146 level 2: the Context's grid steps by its own width — a container twin of every layout band — `T-a-context-steps-by-its-own-width`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

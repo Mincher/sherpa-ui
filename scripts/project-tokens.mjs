@@ -1391,27 +1391,43 @@ const COL_SPANS = {
    RANGE-SCOPED, not min-width: a min-width block stays true at every wider
    size, so the tablet rule fired at desktop and stretched a third-width chart
    to the full row. TRAP T-a-stranded-container-fills-its-row */
-const colBlock = (mode, cols, min, max) => {
+/* TWO LEVELS (TODO 146). Inside the app shell's Context the grid steps by the
+   CONTEXT's width — the slotted Context element is a container, `sherpa-context`
+   — so it reflows as a nav or panel area takes room. Everywhere else, by the viewport.
+   The container bands are the viewport's less the shut nav rail's 40px, so a
+   layout is unchanged at today's widths (Will, 2026-10-01, A). The viewport
+   rules skip the Context, so the two never fight.
+   TRAP T-a-context-steps-by-its-own-width */
+const CONTEXT = 'sherpa-context';
+const NAV_INSET = 40;
+const IN_CONTEXT = 'sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *';
+const GRID = { media: `.sherpa-grid:where(:not(${IN_CONTEXT}))`, container: '.sherpa-grid' };
+const at = (kind, query) => (kind === 'media' ? '@media ' : `@container ${CONTEXT} `) + query;
+const ranged = (kind, min, max) => {
+  const lo = kind === 'container' && min > 0 ? min - NAV_INSET : min;
+  const hi = max == null ? null : (kind === 'container' ? max - NAV_INSET : max) - 1;
+  return hi == null ? `(min-width: ${lo}px)` : `(min-width: ${lo}px) and (max-width: ${hi}px)`;
+};
+
+const colBlock = (mode, cols, min, max, kind = 'media') => {
   const rules = [];
   for (const [name, spans] of Object.entries(COL_SPANS)) {
     const span = spans[mode];
     if (!span) continue;
     const sel = "[data-col-span='" + name + "']";
-    rules.push('    .sherpa-grid > ' + sel
+    rules.push('      & > ' + sel
       + ' { grid-column: span ' + span + '; }');
     const across = Math.floor(cols / span);
     // One per row already fills it — nothing to rescue.
     if (across < 2) continue;
-    rules.push('    .sherpa-grid > ' + sel + ':nth-last-child(1 of ' + sel + ')'
+    rules.push('      & > ' + sel + ':nth-last-child(1 of ' + sel + ')'
       + ':nth-child(' + across + 'n + 1 of ' + sel + ')'
       + ':not(:nth-child(1 of ' + sel + '))'
       + ' { grid-column: 1 / -1; }');
   }
   if (!rules.length) return null;
-  const query = max == null
-    ? '(min-width: ' + min + 'px)'
-    : '(min-width: ' + min + 'px) and (max-width: ' + (max - 1) + 'px)';
-  return '  @media ' + query + ' {\n' + rules.join('\n') + '\n  }';
+  return '  ' + at(kind, ranged(kind, min, max)) + ' {\n    ' + GRID[kind] + ' {\n'
+    + rules.join('\n') + '\n    }\n  }';
 };
 
 const layoutBreakpointBlocks = (() => {
@@ -1437,7 +1453,8 @@ const layoutBreakpointBlocks = (() => {
     }
     if (!lines.length) return null;
     return `  /* ${mode} — the Layout collection's own mode, as its breakpoint. */\n` +
-      `  @media (min-width: ${min}px) {\n    :root {\n${lines.join('\n')}\n    }\n  }`;
+      `  @media (min-width: ${min}px) {\n    :root {\n${lines.join('\n')}\n    }\n  }\n` +
+      `  ${at('container', ranged('container', min))} {\n    .sherpa-grid {\n${lines.join('\n')}\n    }\n  }`;
   }).filter(Boolean);
 })();
 
@@ -1471,10 +1488,43 @@ const colBlocks = (() => {
      375px in Figma, which describes a phone artboard, not a floor below which
      a layout stops existing. Emitted at its own value, every span rule was
      missing under 375 — and, because the bands are ranged, under 768 too. */
-  return bands
-    .map((b, i) => colBlock(b.mode, b.cols, i === 0 ? 0 : b.min, bands[i + 1]?.min))
+  return ['media', 'container'].flatMap((kind) => bands
+    .map((b, i) => colBlock(b.mode, b.cols, i === 0 ? 0 : b.min, bands[i + 1]?.min, kind)))
     .filter(Boolean);
 })();
+
+/* FIT, at desktop and up — by the viewport, and inside the shell's Context by
+   its own width (TODO 146). TRAP T-fit-is-a-desktop-mode */
+const fitBlock = (kind) => `  ${at(kind, ranged(kind, 1280))} {
+    ${GRID[kind]}[data-rows='fit'] {
+      block-size: 100%;
+      min-block-size: 0;
+      /* AUTO, not hidden: when the rows above already exceed the area the
+         filler hits its floor and the grid scrolls rather than crushing it. */
+      overflow-y: auto;
+      grid-auto-rows: var(--sherpa-layout-grid-row-height, 88px);
+    }
+    ${GRID[kind]}[data-rows='fit'][data-row-count] {
+      grid-template-rows:
+        repeat(calc(var(--_row-count) - 1), var(--sherpa-layout-grid-row-height, 88px))
+        1fr;
+    }
+    /* repeat(0, …) is invalid, and would drop the whole template. */
+    ${GRID[kind]}[data-rows='fit'][data-row-count='1'] {
+      grid-template-rows: 1fr;
+    }
+    /* The filler, named by data-grow; with none, the LAST child fills.
+       Its FLOOR is two grid rows: below that there is no room for a header and
+       a line of content, so scrolling is the honest answer. */
+    ${GRID[kind]}[data-rows='fit'] > [data-grow],
+    ${GRID[kind]}[data-rows='fit']:not(:has(> [data-grow])) > :last-child {
+      min-block-size: calc(
+        2 * var(--sherpa-layout-grid-row-height, 88px)
+        + var(--sherpa-layout-grid-gap-vertical, 16px)
+      );
+      block-size: 100%;
+    }
+  }`;
 
 // The grid utility views lay themselves out on. It consumes the projected values, so
 // it re-flows at each breakpoint block above with no per-view media queries.
@@ -1586,39 +1636,16 @@ const gridUtilityBlock = `  /* Layout grid — the track system views place thei
 
      DESKTOP AND UP ONLY. At tablet and mobile a view is read by scrolling, so
      below 1280 the grid behaves as the default does. TRAP T-fit-is-a-desktop-mode */
-  @media (min-width: 1280px) {
-    .sherpa-grid[data-rows='fit'] {
-      block-size: 100%;
-      min-block-size: 0;
-      /* AUTO, not hidden: when the rows above already exceed the area the
-         filler hits its floor and the grid scrolls rather than crushing it. */
-      overflow-y: auto;
-      grid-auto-rows: var(--sherpa-layout-grid-row-height, 88px);
-    }
-    .sherpa-grid[data-rows='fit'][data-row-count] {
-      grid-template-rows:
-        repeat(calc(var(--_row-count) - 1), var(--sherpa-layout-grid-row-height, 88px))
-        1fr;
-    }
-    /* repeat(0, …) is invalid, and would drop the whole template. */
-    .sherpa-grid[data-rows='fit'][data-row-count='1'] {
-      grid-template-rows: 1fr;
-    }
-    /* The filler, named by data-grow; with none, the LAST child fills.
-       Its FLOOR is two grid rows: below that there is no room for a header and
-       a line of content, so scrolling is the honest answer. */
-    .sherpa-grid[data-rows='fit'] > [data-grow],
-    .sherpa-grid[data-rows='fit']:not(:has(> [data-grow])) > :last-child {
-      min-block-size: calc(
-        2 * var(--sherpa-layout-grid-row-height, 88px)
-        + var(--sherpa-layout-grid-gap-vertical, 16px)
-      );
-      block-size: 100%;
-    }
-  }`;
+${fitBlock('media')}
+${fitBlock('container')}`;
 
 const layoutLayer = `@layer layout {
 ${rootBlock(layers.layout.root)}
+
+  /* The shell's Context is the container its grid steps by. Declared HERE, on
+     the light-DOM element: WebKit cannot match a container in the shell's
+     shadow tree from a page rule. TRAP T-a-context-steps-by-its-own-width */
+  sherpa-app-shell > :not([slot]) { container: ${CONTEXT} / inline-size; }
 ${layoutBreakpointBlocks.length ? '\n' + layoutBreakpointBlocks.join('\n\n') + '\n' : ''}
 ${gridUtilityBlock}
 ${colBlocks.length ? '\n' + colBlocks.join('\n\n') + '\n' : ''}
