@@ -16,6 +16,13 @@
     data-rows        fit — every row one grid row tall, and the LAST row takes the rest
                    | fixed — every row is one grid row tall
     data-grow        on a CHILD: the item that takes the remaining height
+    data-min-row-span  on a CHILD: 1–12, the fewest rows a drag may leave it;
+                   a child without one is not row-resizable
+    data-col-span-8 / data-col-span-12  on a CHILD: a dragged width, counted, read
+                   only at that column count; only the grid (or a host putting
+                   a layout back) writes it
+    data-row-span-8 / data-row-span-12  on a CHILD: the same, for its rows.
+                   TRAP T-a-dragged-layout-is-kept-per-column-count
 -->
 <template id="default">
   <!-- The base class writes `data-has-content-slot` here. Nothing reads it on a

@@ -1411,6 +1411,9 @@ const ranged = (kind, min, max) => {
 
 const colBlock = (mode, cols, min, max, kind = 'media') => {
   const rules = [];
+  /* A DRAGGED layout is counted, per column count, where a drag can happen.
+     TRAP T-a-dragged-layout-is-kept-per-column-count */
+  const counted = cols >= 6;
   for (const [name, spans] of Object.entries(COL_SPANS)) {
     const span = spans[mode];
     if (!span) continue;
@@ -1423,7 +1426,18 @@ const colBlock = (mode, cols, min, max, kind = 'media') => {
     rules.push('      & > ' + sel + ':nth-last-child(1 of ' + sel + ')'
       + ':nth-child(' + across + 'n + 1 of ' + sel + ')'
       + ':not(:nth-child(1 of ' + sel + '))'
+      + (counted ? ':not([data-col-span-' + cols + '])' : '')
       + ' { grid-column: 1 / -1; }');
+  }
+  if (counted) {
+    // AFTER the names, at the same weight, so a count wins.
+    for (let n = 1; n <= cols; n++) {
+      rules.push(`      & > [data-col-span-${cols}='${n}'] { grid-column: span ${n}; }`);
+    }
+    // Sized in EVERY row mode: a counted row is a real height.
+    for (let n = 1; n <= 12; n++) {
+      rules.push(`      & > [data-row-span-${cols}='${n}'] { grid-row: span ${n}; block-size: calc(${n} * var(--sherpa-layout-grid-row-height, 88px) + ${n - 1} * var(--sherpa-layout-grid-gap-vertical, 16px)); }`);
+    }
   }
   if (!rules.length) return null;
   return '  ' + at(kind, ranged(kind, min, max)) + ' {\n    ' + GRID[kind] + ' {\n'
@@ -1497,6 +1511,8 @@ const colBlocks = (() => {
    its own width (TODO 146). TRAP T-fit-is-a-desktop-mode */
 const fitBlock = (kind) => `  ${at(kind, ranged(kind, 1280))} {
     ${GRID[kind]}[data-rows='fit'] {
+      /* Read by the grid's JS, which never asks the viewport. */
+      --_grid-fit: 1;
       block-size: 100%;
       min-block-size: 0;
       /* AUTO, not hidden: when the rows above already exceed the area the

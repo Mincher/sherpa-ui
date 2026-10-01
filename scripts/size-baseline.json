@@ -213,7 +213,7 @@
   "src/components/sherpa-input-text/sherpa-input-text.html": 194,
   "src/components/sherpa-key-value-list/sherpa-key-value-list.html": 23,
   "src/components/sherpa-layout-canvas/sherpa-layout-canvas.html": 53,
-  "src/components/sherpa-layout-grid/sherpa-layout-grid.html": 25,
+  "src/components/sherpa-layout-grid/sherpa-layout-grid.html": 32,
   "src/components/sherpa-line-chart/sherpa-line-chart.html": 78,
   "src/components/sherpa-list-item/sherpa-list-item.html": 63,
   "src/components/sherpa-list/sherpa-list.html": 31,

@@ -553,3 +553,83 @@ test('a grouped grid rounds only its four outer corners', async ({ page }) => {
   expect(r.corners[2]).toBe('0px 4px 0px 0px');
   expect(r.corners[3]).toBe('0px 0px 4px 4px');
 });
+
+/* ── a dragged layout: counted, per column count ──────────────────────────
+   TRAP T-a-dragged-layout-is-kept-per-column-count */
+
+/** A grid at a viewport width; each child's computed span, height and track count. */
+const counted = (page: import('@playwright/test').Page, width: number, inner: string, mode = '') =>
+  page.setViewportSize({ width, height: 800 }).then(() => page.evaluate(async ([inner, mode]) => {
+    const root = document.getElementById('root')!;
+    root.style.cssText = '';
+    root.innerHTML = `<div class="sherpa-grid"${mode ? ` data-rows="${mode}"` : ''}>${inner}</div>`;
+    await customElements.whenDefined('sherpa-metric');
+    await window.__settled();
+    const grid = root.querySelector<HTMLElement>('.sherpa-grid')!;
+    const cs = getComputedStyle(grid);
+    return {
+      tracks: cs.gridTemplateColumns.split(' ').length,
+      fit: cs.getPropertyValue('--_grid-fit').trim(),
+      rowH: parseFloat(cs.getPropertyValue('--sherpa-layout-grid-row-height')),
+      gap: parseFloat(cs.rowGap),
+      kids: [...grid.children].map((c) => ({
+        col: getComputedStyle(c).gridColumnStart,
+        h: Math.round(c.getBoundingClientRect().height),
+      })),
+    };
+  }, [inner, mode] as const));
+
+test('a counted width beats the name, only at its own column count', async ({ page }) => {
+  const kids = '<div data-col-span="medium" data-col-span-12="5" data-col-span-8="3">a</div>'
+    + '<div data-col-span="medium" data-col-span-8="5">b</div>';
+  const wide = await counted(page, 1400, kids);
+  const mid = await counted(page, 1000, kids);
+
+  expect(wide.tracks).toBe(12);
+  expect(wide.kids.map((k) => k.col)).toEqual(['span 5', 'span 4']);
+  expect(mid.tracks).toBe(8);
+  expect(mid.kids.map((k) => k.col)).toEqual(['span 3', 'span 5']);
+
+  // A LONE last medium is stretched to the row's end — unless it is counted.
+  const four = '<div data-col-span="medium">m</div>'.repeat(3);
+  const lone = await counted(page, 1400, four + '<div data-col-span="medium">d</div>');
+  const kept = await counted(page, 1400, four + '<div data-col-span="medium" data-col-span-12="4">d</div>');
+  expect([lone.kids[3]!.col, kept.kids[3]!.col]).toEqual(['1', 'span 4']);
+});
+
+test('a counted row span is a real height, even where rows hug their content', async ({ page }) => {
+  const r = await counted(page, 1400,
+    '<div data-col-span="small" data-row-span-12="2">x</div>'
+    + '<sherpa-metric data-col-span="small" data-row-span-12="2" data-label="M" data-value="1"></sherpa-metric>'
+    + '<div data-col-span="small" data-row-span="2">hug</div>');
+  const two = Math.round(2 * r.rowH + r.gap);
+  expect(r.kids.map((k) => k.h)).toEqual([two, two, two]);
+});
+
+test('--_grid-fit marks a fit grid at desktop width, and nothing else', async ({ page }) => {
+  const fit = await counted(page, 1400, '<div data-col-span="full">f</div>', 'fit');
+  const plain = await counted(page, 1400, '<div data-col-span="full">f</div>');
+  const narrow = await counted(page, 1000, '<div data-col-span="full">f</div>', 'fit');
+  expect([fit.fit, plain.fit, narrow.fit]).toEqual(['1', '', '']);
+});
+
+test('in an app-shell Context the count follows the Context width: 12, then 8 with the nav pinned', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 800 });
+  const r = await page.evaluate(async () => {
+    const shell = document.createElement('sherpa-app-shell') as HTMLElement & { rendered?: Promise<void> };
+    shell.innerHTML = '<div><div class="sherpa-grid">'
+      + '<div data-col-span="medium" data-col-span-12="5" data-col-span-8="3">a</div></div></div>';
+    document.getElementById('root')!.replaceChildren(shell);
+    await shell.rendered;
+    const frame = shell.shadowRoot!.querySelector<HTMLElement>('.frame')!;
+    const read = async (state: string) => {
+      shell.dataset['navState'] = state;
+      await new Promise<void>((res) => requestAnimationFrame(() => requestAnimationFrame(() => res())));
+      await Promise.all(frame.getAnimations().map((a) => a.finished));
+      const grid = shell.querySelector<HTMLElement>('.sherpa-grid')!;
+      return `${getComputedStyle(grid).gridTemplateColumns.split(' ').length}:${getComputedStyle(grid.firstElementChild!).gridColumnStart}`;
+    };
+    return { open: await read('collapsed'), pinned: await read('pinned') };
+  });
+  expect(r).toEqual({ open: '12:span 5', pinned: '8:span 3' });
+});

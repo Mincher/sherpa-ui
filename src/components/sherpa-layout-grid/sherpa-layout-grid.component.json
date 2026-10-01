@@ -23,6 +23,22 @@
     },
     {
       "$type": "prop",
+      "name": "data-col-span-12",
+      "type": "string",
+      "observed": false,
+      "kind": "style",
+      "description": "on a CHILD: a dragged width, counted, read only at that column count; only the grid (or a host putting a layout back) writes it"
+    },
+    {
+      "$type": "prop",
+      "name": "data-col-span-8",
+      "type": "string",
+      "observed": false,
+      "kind": "style",
+      "description": "on a CHILD: a dragged width, counted, read only at that column count; only the grid (or a host putting a layout back) writes it"
+    },
+    {
+      "$type": "prop",
       "name": "data-grow",
       "type": "string",
       "observed": false,
@@ -31,11 +47,35 @@
     },
     {
       "$type": "prop",
+      "name": "data-min-row-span",
+      "type": "string",
+      "observed": false,
+      "kind": "style",
+      "description": "on a CHILD: 1–12, the fewest rows a drag may leave it; a child without one is not row-resizable"
+    },
+    {
+      "$type": "prop",
       "name": "data-row-count",
       "type": "string",
       "observed": false,
       "kind": "style",
       "description": "set an explicit row count (1–12); a fit grid needs it"
+    },
+    {
+      "$type": "prop",
+      "name": "data-row-span-12",
+      "type": "string",
+      "observed": false,
+      "kind": "style",
+      "description": "on a CHILD: the same, for its rows. TRAP T-a-dragged-layout-is-kept-per-column-count"
+    },
+    {
+      "$type": "prop",
+      "name": "data-row-span-8",
+      "type": "string",
+      "observed": false,
+      "kind": "style",
+      "description": "on a CHILD: the same, for its rows. TRAP T-a-dragged-layout-is-kept-per-column-count"
     },
     {
       "$type": "prop",

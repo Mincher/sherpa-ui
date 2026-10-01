@@ -11501,7 +11501,9 @@ live in `COL_SPANS` in the projector.
 
 A NUMBER was the old API (`data-span="3"`). It is gone because it made the
 author hold the column count in their head, and it silently skipped the
-responsive collapse a name gives.
+responsive collapse a name gives. A DRAG is the one place a count comes back,
+in the grid's own attribute and per column count
+(`T-a-dragged-layout-is-kept-per-column-count`): the author still writes names.
 
 - Site: `scripts/project-tokens.mjs`
 - Site: `test/e2e/reforged-layout-grid.spec.ts`
@@ -11570,7 +11572,10 @@ window need 1288px. Crushing the filler to 2px loses content, so it has a FLOOR
 of two grid rows and `overflow-y: auto` takes over below that. The page then
 behaves like the default mode at that size, which is the honest answer.
 
-The DEFAULT is neither, so nothing that existed before changed.
+The DEFAULT is neither, so nothing that existed before changed. A DRAGGED row
+span (`data-row-span-<C>`) is sized in every mode, the default too: an
+authored `data-row-span` still hugs there, but a dragged one is a real height
+(`T-a-dragged-layout-is-kept-per-column-count`).
 
 - Site: `scripts/project-tokens.mjs`
 - Site: `test/e2e/reforged-layout-grid.spec.ts`
@@ -15868,3 +15873,31 @@ action row closes it as before.
 - Site: `test/e2e/reforged-menu.spec.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
+
+### T-a-dragged-layout-is-kept-per-column-count
+
+**An author writes names; a drag writes COUNTS, per column count.** TODO 177.
+A width class (`data-col-span="medium"`) is the author's, and it changes with
+the breakpoint. A dragged width is a number of tracks, and it only means
+something at the column count it was dragged at. So a drag writes the grid's
+OWN attributes — `data-col-span-12="5"`, `data-row-span-8="3"` — and never
+`data-col-span` or `data-row-span`. Every attribute has one writer, and putting
+the authored layout back is a plain removal.
+
+- The rules are GENERATED in `tokens.css`, only for bands of 6 or more columns
+  (8 and 12 today), AFTER the name rules at the same weight, so a count wins.
+  A document rule also outranks the grid's adopted sheet and
+  `sherpa-container`'s own `:host` height.
+- A counted row span carries its `block-size`, so it is a real height in
+  every row mode.
+- The stranded-row fill (`grid-column: 1 / -1`) has far more weight than a
+  count, so it is excluded with `:not([data-col-span-<C>])`, not out-weighed.
+- `--_grid-fit: 1` marks a fit grid for the JS, which never asks the viewport
+  (`T-fit-is-a-desktop-mode`). Named `--_grid-*`: a custom property inherits
+  into every child.
+- The first width written at a count freezes EVERY child at that count, so
+  one changed card cannot reflow the names around it.
+
+- Site: `scripts/project-tokens.mjs`
+- Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.html`
+- Site: `test/e2e/reforged-layout-grid.spec.ts`
