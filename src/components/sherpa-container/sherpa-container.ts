@@ -3,6 +3,8 @@ import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import '../sherpa-loader/sherpa-loader.js';
 import '../sherpa-empty-state/sherpa-empty-state.js';
 import '../sherpa-button/sherpa-button.js';
+import '../sherpa-callout/sherpa-callout.js';
+import '../sherpa-progress-bar/sherpa-progress-bar.js';
 
 /** What its data is doing. TRAP T-a-container-shows-its-datas-state */
 type DataState = 'loading' | 'empty' | 'no-matches' | 'error';
@@ -25,18 +27,22 @@ export class SherpaContainer extends SherpaElement {
     'data-padding-inline': { type: 'enum', kind: 'style', values: ['none', 'sm', 'md', 'lg'] },
     /* Its data's state — written by the provider. TRAP T-a-container-shows-its-datas-state */
     'data-state': { type: 'enum', kind: 'visibility', values: ['empty', 'no-matches', 'error'] },
-    'data-error-message': { type: 'string', kind: 'content', to: '.error-message' },
+    'data-error-message': { type: 'string', kind: 'content', to: '.error-message', all: true },
+    // A state is a bar or a banner, never IN PLACE of the body. Will, TODO 59.
+    'data-keep-content': { type: 'boolean', kind: 'style' },
   } as const;
 
   override onRender(): void {
     // Retry and Clear filters are REQUESTS: the data layer answers them.
-    this.$('.retry')?.addEventListener('button-click', () => this.emit('data-refresh'));
-    this.$('.clear-filters')?.addEventListener('button-click', () => this.emit('filters-clear'));
+    for (const b of this.$$('.retry')) b.addEventListener('button-click', () => this.emit('data-refresh'));
+    for (const b of this.$$('.clear-filters')) b.addEventListener('button-click', () => this.emit('filters-clear'));
     // Dismiss is this card's own: the overlay goes, the last data stays.
-    this.$('.dismiss')?.addEventListener('button-click', () => {
-      this.removeAttribute('data-state');
-      this.emit('state-dismiss');
-    });
+    for (const b of this.$$('.dismiss')) {
+      b.addEventListener('button-click', () => {
+        this.removeAttribute('data-state');
+        this.emit('state-dismiss');
+      });
+    }
   }
 
   /** populate({ state, message }) — a host with no provider sets the state by hand. */

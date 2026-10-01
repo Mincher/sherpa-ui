@@ -1052,6 +1052,15 @@ forced load, and `filters-clear` by resetting every bar. A store that cannot
 answer at `openSource()` no longer stops the page: `declareFromRows` reports
 `values-unread`, and the first load shows the failure on its card.
 
+**KEEP THE CONTENT is the second look** — Will's own, TODO 59, a trial in
+Settings › Experiments. The provider's `data-keep-content` goes onto every
+card it draws a state on. Then nothing replaces the body: loading is an
+indeterminate bar along the header's bottom edge, and the body takes no
+pointer; a state is a `sherpa-callout` banner above the body, with the same
+Retry, Dismiss and Clear filters. The overlay never shows. Its own buttons,
+not the callout's close: a callout REMOVES itself on dismiss, and the next
+failure would have no banner.
+
 - Site: `src/components/sherpa-container/sherpa-container.ts`
 - Site: `src/components/sherpa-container/sherpa-container.html`
 - Site: `src/components/sherpa-container/sherpa-container.css`

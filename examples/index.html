@@ -194,7 +194,7 @@
          TRAP T-a-view-keeps-a-draft */
       filters: { mode: 'toolbars', records: null, dashboard: null, drafts: true, draftsAcross: true },
       // Settings › Experiments. Off until a reader turns one on.
-      experiments: { stickyMetrics: false },
+      experiments: { stickyMetrics: false, keepContent: false },
     });
     session.persist('/theme/mode');
     session.persist('/theme/density', { guard: (v) => ['compact', 'default', 'comfortable'].includes(v) });
@@ -217,6 +217,7 @@
     });
     session.persist('/filters/drafts', { guard: (v) => typeof v === 'boolean' });
     session.persist('/experiments/stickyMetrics', { guard: (v) => typeof v === 'boolean' });
+    session.persist('/experiments/keepContent', { guard: (v) => typeof v === 'boolean' });
     session.persist('/filters/draftsAcross', { guard: (v) => typeof v === 'boolean' });
     /* The PROVIDER switches toolbars and panel for every page; the app keeps
        the reader's choice. TRAP T-the-provider-owns-the-panel-mode */
@@ -558,6 +559,12 @@
       stopExperiment = session.get('/experiments/stickyMetrics') ? stickyMetrics(contextRoot) : null;
     }
     session.subscribe('/experiments/stickyMetrics', syncExperiments);
+
+    /* TRIAL, TODO 59: a card keeps its content while its data loads or fails —
+       a bar and a banner, Will's own pattern — instead of an overlay. */
+    const keepContent = () => provider.toggleAttribute('data-keep-content', session.get('/experiments/keepContent') === true);
+    keepContent();
+    session.subscribe('/experiments/keepContent', keepContent);
 
     /* ── The ★ ────────────────────────────────────────────────────────
        The toolbar is `data-locked`, so its star is a REQUEST. The app owns the

@@ -130,6 +130,10 @@ interface Asked {
 export class SherpaProvider extends SherpaElement {
   static override css = new URL('./sherpa-provider.css', import.meta.url);
   static override html = new URL('./sherpa-provider.html', import.meta.url);
+  // How every card it draws a state on shows it. Will, TODO 59.
+  static override props = {
+    'data-keep-content': { type: 'boolean', kind: 'style' },
+  } as const;
 
   /** The sources this subtree provides, by name. */
   #sources: Record<string, DataSource> = {};
@@ -558,7 +562,7 @@ export class SherpaProvider extends SherpaElement {
           const shape = ((el.constructor as { asks?: DataAsk }).asks ?? { shape: 'rows' }).shape;
           return rowsOnly ? shape === 'rows' : shape !== 'scope' && shape !== 'state';
         })
-        .map(containerOf).filter((c): c is HTMLElement => !!c))];
+        .map(containerOf).filter((c): c is HTMLElement => !!c))].map((c) => this.#keep(c));
       let slow: ReturnType<typeof setTimeout> | undefined;
       source.addEventListener('loading', (event) => {
         clearTimeout(slow);
@@ -585,6 +589,20 @@ export class SherpaProvider extends SherpaElement {
       }, { signal });
     }
   }
+  /** A card shows its state as this provider says: kept content, or an overlay. */
+  #keep(card: HTMLElement): HTMLElement {
+    card.toggleAttribute('data-keep-content', this.hasAttribute('data-keep-content'));
+    return card;
+  }
+
+  override onChange(name: string): void {
+    if (name !== 'data-keep-content') return;
+    for (const el of this.#asked.keys()) {
+      const card = containerOf(el);
+      if (card) this.#keep(card);
+    }
+  }
+
   /** The View on screen. */
   #view: string | undefined;
 

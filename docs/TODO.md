@@ -131,8 +131,9 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 39a | 128 | A gauge's tooltip names the segment as the legend does | quick |
 | ✅ | 39c | 162 | A chart and its legend go from side by side to stacked as their container narrows — container queries | feature |
 | ❓ | 39b | 150 | EXPLORE — how the example gauge's risk score is worked out; THRESHOLDS in the central Query | explore |
-| ⬜ | 40 | 59 | EXPLORE, later — Will's own loading pattern | explore |
+| ✅ | 40 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | ✅ | 40a | 143 | EXPERIMENT, later — scrolled-past metrics become a compact sticky header; a toggle in Settings › Experiments | explore |
+| ⬜ | 40b | 175 | LATER — the sticky metrics keep a small sparkline, tighter gaps, a larger value; a slow scroll must still gather them | feature |
 | | | | **G — Overlay panels** | |
 | ✅ | 41 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
 | ✅ | 42 | 23 | A focused grid row opens a details panel | feature |
@@ -2953,7 +2954,7 @@ follows — a tile's value and its sparkline together (13). **To see it on
 on a second server Playwright starts on :4201, so it does not wait for that.
 `T-a-live-feed-goes-into-the-store`
 
-### `[ ]` 59 — EXPLORE, later: Will's own loading pattern
+### `[x]` ✅ 59 — EXPLORE, later: Will's own loading pattern
 
 Will, 2026-09-26, an alternative to 58 for later. Content is never replaced:
 
@@ -2966,6 +2967,16 @@ Will, 2026-09-26, an alternative to 58 for later. Content is never replaced:
 
 Build 58 so its states are data, not markup, and this is a second rendering of
 the same three states.
+
+**✅ Built 2026-10-01, as a trial.** Settings › Application › Experiments,
+"Keep the content while data loads" (off by default). On, every card keeps its
+content: a slow load shows an indeterminate bar along the bottom of the card
+header, and the body takes no clicks until it ends; a failure is a red banner
+above the body — "The data could not load", the error's words, "The last data
+is still shown.", Retry and Dismiss. No data and No matches are banners too.
+The overlay from 58 never shows. The provider carries it
+(`data-keep-content`), so no page sets it card by card.
+`T-a-container-shows-its-datas-state`
 
 ### `[ ]` 150 — EXPLORE: the gauge's risk score, and thresholds in the central Query
 
@@ -3095,6 +3106,23 @@ To remove it: delete `examples/experiments/sticky-metrics.js`; in
 `examples/index.html` its import, its `experiments` session key and the
 `syncExperiments` block and call; its wiring in `settings.js`; the section in
 `application.html`; and `test/e2e/reforged-sticky-metrics.spec.ts`.
+
+### `[ ]` 175 — LATER: the sticky metrics, tuned
+
+Will, 2026-10-01, "Todo later": *"Sticky metric items should still show the
+sparkline. It will have reduced height and width but that's ok.*
+
+*Also the gap between the title, value, and trend label should be reduced.
+This will reduce the overall height of these sticky metric items in the
+metrics group.*
+
+*The metric value label is a bit too small.*
+
+*Sometimes if I scroll slowly, or the metrics are already partly scrolled
+under, the app header then the metrics don't switch to the sticky metrics
+group.*
+
+*We need to check the CSS logic here."*
 
 ---
 
@@ -4586,6 +4614,7 @@ One line each. The detail is in git and in the trap named.
 - 174 (part): Adventure Works + AMER matched nothing because the Dashboard seed gave each customer one region — fixed; the symbiotic options wait on 110
 - 146 level 1: the shell, not the panel, says when there is room for a panel area — a pinned nav counts — `T-the-panel-is-desktop-only`
 - 143: EXPERIMENT — scrolled-past metrics become a compact sticky row; Settings › Experiments
+- 59: TRIAL — a card keeps its content: a loading bar under its header, a banner for a failure; Settings › Experiments — `T-a-container-shows-its-datas-state`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

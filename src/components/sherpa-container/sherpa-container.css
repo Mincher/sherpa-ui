@@ -171,3 +171,34 @@
 .no-matches-default { display: none; }
 :host([data-state="no-matches"]) .no-matches-default { display: block; }
 :host([data-state="no-matches"]) .empty-default { display: none; }
+
+/* ── KEEP THE CONTENT — Will, TODO 59. Loading is a bar along the header's
+   bottom edge and locks the body; a state is a banner above the body. The
+   overlay never shows. TRAP T-a-container-shows-its-datas-state ── */
+.body { position: relative; }
+.loading-bar,
+.banner,
+.banner > * { display: none; }
+.loading-bar {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  z-index: 1;
+}
+:host([data-keep-content]) .state { display: none; }
+/* flex, as the bar's own host is: as a block its <progress> sits on a text line, 14px down. */
+:host([data-keep-content][data-loading]) .loading-bar { display: flex; }
+:host([data-keep-content][data-loading]) .body { pointer-events: none; }
+:host([data-keep-content][data-state]) .banner {
+  display: block;
+  padding-block-start: var(--_pad);
+  padding-inline: var(--_pad-inline, var(--_pad));
+}
+:host([data-keep-content][data-state="error"]) .banner-error,
+:host([data-keep-content][data-state="empty"]) .banner-empty,
+:host([data-keep-content][data-state="no-matches"]) .banner-no-matches { display: block; }
+.banner-actions {
+  display: flex;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+  margin-block-start: var(--sherpa-display-mode-space-xs, 8px);
+}

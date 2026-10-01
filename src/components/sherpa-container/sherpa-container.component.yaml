@@ -24,9 +24,63 @@ anatomy:
       part: header
       slot: header
     - el: div
+      class: banner
+      part: banner
+      children:
+        - el: sherpa-callout
+          class: banner-error
+          attrs:
+            data-status: critical
+            data-heading: The data could not load
+          children:
+            - el: span
+              children:
+                - el: span
+                  class: error-message
+            - el: span
+              class: banner-actions
+              children:
+                - el: sherpa-button
+                  class: retry
+                  attrs:
+                    data-size: sm
+                    data-look: saturated
+                - el: sherpa-button
+                  class: dismiss
+                  attrs:
+                    data-size: sm
+        - el: sherpa-callout
+          class: banner-empty
+          attrs:
+            data-status: info
+            data-heading: No data yet
+          children:
+            - el: span
+        - el: sherpa-callout
+          class: banner-no-matches
+          attrs:
+            data-status: info
+            data-heading: No matches
+          children:
+            - el: span
+            - el: span
+              class: banner-actions
+              children:
+                - el: sherpa-button
+                  class: clear-filters
+                  attrs:
+                    data-size: sm
+    - el: div
       class: body
       part: body
-      slot: ""
+      children:
+        - el: sherpa-progress-bar
+          class: loading-bar
+          part: loading-bar
+          attrs:
+            data-indeterminate: ""
+            aria-label: Loading
+        - slot: ""
     - el: footer
       class: footer
       part: footer
@@ -123,6 +177,14 @@ props:
       then the pager — the grid grows, the pager stays put. Not needed for the common one-child
       card. Slotting empty / error shows that overlay too, via the base class reflecting
       data-has-{slot}; a slotted one replaces the default content.
+  - $type: prop
+    name: data-keep-content
+    type: string
+    observed: false
+    kind: style
+    description: >-
+      a state never replaces the body: loading is a bar under the header and the body is locked; a
+      state is a banner above it. Written by the provider. Will, TODO 59.
   - $type: prop
     name: data-loading
     type: string
@@ -247,6 +309,9 @@ states:
   - $type: state
     name: no-matches
     selector: ":host([data-state=\"no-matches\"])"
+  - $type: state
+    name: keep-content
+    selector: ":host([data-keep-content])"
 events:
   - $type: event
     name: data-refresh
@@ -262,6 +327,8 @@ events:
     composed: true
 tokens:
   state.background: "{sherpa.style-surface-base}"
+  banner-actions.gap: "{sherpa.display-mode-space-xs}"
+  banner-actions.margin-block-start: "{sherpa.display-mode-space-xs}"
 $extensions:
   sherpa:
     figmaName: Container

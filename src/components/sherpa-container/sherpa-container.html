@@ -8,6 +8,9 @@
     data-state      empty | no-matches | error — its default content, IN PLACE of
                     the body. Written by the provider. TRAP T-a-container-shows-its-datas-state
     data-error-message  the error's own words, under its heading
+    data-keep-content  a state never replaces the body: loading is a bar under the
+                    header and the body is locked; a state is a banner above it.
+                    Written by the provider. Will, TODO 59.
     data-padding    none | sm | base (default) | lg
     data-row-span       4 | 6 | 8 | 10 | 12 — a FIXED height of N layout-grid rows.
                     The body's content fills it, so a chart draws into the whole
@@ -40,7 +43,28 @@
     <slot name="header"></slot>
   </header>
 
+  <!-- KEEP THE CONTENT: each state as a banner, the body still shown. TODO 59 -->
+  <div class="banner" part="banner">
+    <sherpa-callout class="banner-error" data-status="critical" data-heading="The data could not load">
+      <span><span class="error-message"></span> The last data is still shown.</span>
+      <span class="banner-actions">
+        <sherpa-button class="retry" data-size="sm" data-look="saturated">Retry</sherpa-button>
+        <sherpa-button class="dismiss" data-size="sm">Dismiss</sherpa-button>
+      </span>
+    </sherpa-callout>
+    <sherpa-callout class="banner-empty" data-status="info" data-heading="No data yet">
+      <span>There is nothing here yet.</span>
+    </sherpa-callout>
+    <sherpa-callout class="banner-no-matches" data-status="info" data-heading="No matches">
+      <span>Nothing matches these filters.</span>
+      <span class="banner-actions">
+        <sherpa-button class="clear-filters" data-size="sm">Clear filters</sherpa-button>
+      </span>
+    </sherpa-callout>
+  </div>
+
   <div class="body" part="body">
+    <sherpa-progress-bar class="loading-bar" part="loading-bar" data-indeterminate aria-label="Loading"></sherpa-progress-bar>
     <slot></slot>
   </div>
 

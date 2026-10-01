@@ -54,12 +54,14 @@ const WIRING = [
     hierarchy.addEventListener('change', (e) => session.set('/nav/hierarchy', e.detail.checked));
   },
 
-  // EXPERIMENT, TODO 143.
+  // Experiments: TODO 143 and TODO 59. Each switch writes its own session key.
   (root, session) => {
-    const sticky = root.querySelector('#experiment-sticky-metrics');
-    if (!sticky) return;
-    sticky.checked = session.get('/experiments/stickyMetrics');
-    sticky.addEventListener('change', (e) => session.set('/experiments/stickyMetrics', e.detail.checked));
+    for (const [id, key] of [['#experiment-sticky-metrics', 'stickyMetrics'], ['#experiment-keep-content', 'keepContent']]) {
+      const sw = root.querySelector(id);
+      if (!sw) continue;
+      sw.checked = session.get(`/experiments/${key}`);
+      sw.addEventListener('change', (e) => session.set(`/experiments/${key}`, e.detail.checked));
+    }
   },
 
   /* A draft per View: for the tab, and across sessions. The second means

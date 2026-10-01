@@ -27,6 +27,15 @@ anatomy:
             data-type: icon
             data-size: sm
             data-filter-mode: ""
+props:
+  - $type: prop
+    name: data-keep-content
+    type: string
+    observed: false
+    kind: style
+    description: >-
+      every card it draws a state on keeps its content: a bar and a banner, never an overlay. Will,
+      TODO 59. (the rest — `provide()` gives it its sources)
 capabilities:
   - $type: capability
     api: js-property-mirror
