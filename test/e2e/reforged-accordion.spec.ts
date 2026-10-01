@@ -54,12 +54,16 @@ test('toggling the summary fires accordion-open, then accordion-close', async ({
 
     const summary = el.shadowRoot!.querySelector<HTMLElement>('.header')!;
     // The native <details> toggle event fires on a queued task and COALESCES
-    // multiple state changes in one task into a single event — so flush between
-    // the two clicks to observe both the open and the close toggle.
+    // multiple state changes in one task into a single event — so wait for each
+    // event before the next click. A settle alone lost one in Firefox, 3 in 25.
+    const heard = (type: string): Promise<unknown> =>
+      new Promise((res) => el.addEventListener(type, res, { once: true }));
+    let next = heard('accordion-open');
     summary.click(); // open
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await next;
+    next = heard('accordion-close');
     summary.click(); // close
-    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    await next;
     return { events, open: el.open };
   });
   expect(r.events).toEqual([true, false]);
