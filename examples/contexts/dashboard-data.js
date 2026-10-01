@@ -35,6 +35,13 @@ export const customerOrgs = [
   'Northwind', 'Contoso', 'Fabrikam', 'Tailspin', 'Adventure Works',
   'Litware', 'Proseware', 'Wingtip Toys',
 ];
+/** The customers each region holds, in REGIONS order. Contoso works in all four; Fabrikam and Litware in one. */
+const REGION_ORGS = [
+  ['Northwind', 'Contoso', 'Fabrikam', 'Adventure Works', 'Proseware'],
+  ['Northwind', 'Contoso', 'Tailspin', 'Adventure Works', 'Wingtip Toys'],
+  ['Contoso', 'Adventure Works', 'Litware', 'Proseware'],
+  ['Contoso', 'Tailspin', 'Wingtip Toys'],
+];
 const SEVERITIES = ['critical', 'warning', 'info'];
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -55,9 +62,9 @@ export function alertRow(i) {
        handful each, which is what a roll-up is for. */
     os: OSES[i % 23 < 16 ? Math.floor((i % 23) / 4) : 4 + ((i % 23) - 16) % 4],
     region: REGIONS[i % 4],
-    // 8 orgs against 4 regions — coprime strides, so the columns do not
-    // march in lockstep.
-    customer: customerOrgs[i % 8],
+    /* A customer works in SOME regions. `i % 8` against `i % 4` gave each
+       customer ONE region, so Adventure Works + AMER matched nothing (174). */
+    customer: REGION_ORGS[i % 4][Math.floor(i / 4) % REGION_ORGS[i % 4].length],
     severity: SEVERITIES[i % 3],
     // 0–100, for the gauge's "storage used".
     storage: (i * 37) % 101,

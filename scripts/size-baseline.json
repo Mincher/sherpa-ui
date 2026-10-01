@@ -251,7 +251,7 @@
   "src/components/sherpa-transfer-list/sherpa-transfer-list.html": 41,
   "examples/contexts/ask-name.js": 128,
   "examples/contexts/chat.js": 91,
-  "examples/contexts/dashboard-data.js": 87,
+  "examples/contexts/dashboard-data.js": 94,
   "examples/contexts/dashboard.js": 102,
   "examples/contexts/records-data.js": 187,
   "examples/contexts/records.js": 384,

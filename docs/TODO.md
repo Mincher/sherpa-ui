@@ -112,7 +112,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31r | 171 | The filter panel's search matches FIELD labels as well as value labels | feature |
 | ✅ | 31s | 172 | In the filter panel, each chip of a multi-value filter shows its own count badge | feature |
 | ✅ | 31t | 173 | BUG: a panel section header's count badge ADDS its values' counts; it should be the UNIQUE results of them all | bug |
-| ⬜ | 31u | 174 | Two View fields that share no rows return NOTHING, though each badge has a count; a filterset's fields should limit each other's options | bug |
+| ❓ | 31u | 174 | Two View fields that share no rows return NOTHING, though each badge has a count; a filterset's fields should limit each other's options | bug |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
 | ✅ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
@@ -1684,6 +1684,42 @@ it an app setting."*
 
 Builds on 99 (filtersets) and 110 (an AND row offers only what the rows
 before it leave).
+
+**Found, 2026-10-01 — the logic is right; the DATA was wrong. Fixed.** View
+fields are joined by AND, so the rows must be Adventure Works AND Americas.
+The numbers (160, 321) are the Dashboard's 1,284 alerts. Its seed gave each
+row `customer = orgs[i % 8]` and `region = regions[i % 4]`, and 4 divides 8:
+so every customer had ONE region. Adventure Works was always EMEA, and
+Adventure Works + AMER was 0 rows. The comment said "coprime strides"; they
+were not. Now each region holds a list of customers
+(`examples/contexts/dashboard-data.js`): Contoso works in all four regions,
+Fabrikam and Litware in one. Region counts do not change (321 each). Probed
+in the live Dashboard: Adventure Works 208, AMER 321, both **64** (was 0). A
+filterset is not needed for AND — the View already joins its fields.
+
+The `:4200` server imports the same file for its live feed, so a restart
+gives NEW live alerts the new customers. Old rows are not affected.
+
+**The symbiotic part is not built.** Today every option is offered, whatever
+the other fields pick (99 calls this PARALLEL). Will's ask, as a design:
+
+- **One helper in the data layer**: the values a field's rows still hold
+  under the OTHER answers that limit it. 99 (serial) and 110 (AND rows) use
+  the same helper.
+- **Both ways** in the View: Customer limits Region, and Region limits
+  Customer — each field is limited by every other View field.
+- **Trickle down**: a component's fields offer only the values in the rows
+  the View leaves.
+- **Configurable**: an app setting first — Settings › Application, "Limit
+  filter options to matching rows", off by default, so nothing changes until
+  it is on. Later a filterset (99) can set it per group.
+- **A pick already made stays ticked** — 99's Q3, my pick A.
+
+**❓ Waits on 110's choice:** a limited-out value is **hidden** (110 A, my
+pick) or **shown but not pickable** (110 B). Today's rule is "never drop a
+value" (`T-unavailable-value-sorts-below-a-divider`); "limit the options"
+breaks it for a limited field, so it is your call. Answer 110 and I build
+this.
 
 ### `[x]` ✅ 173 — BUG: a panel section header's count adds its values' counts
 
@@ -4523,6 +4559,7 @@ One line each. The detail is in git and in the trap named.
 - 36: preset-env is gone — the Safari 16 floor went, so nesting ships as written; no pixel moved
 - 86 (A7, the headings): a grid heading opens the chip's menu, from the source's own field — `T-a-heading-opens-the-chips-menu`
 - 173: no bug — a field's header is one count of its unique rows; a test pins it — `T-a-chip-counts-its-own-results`
+- 174 (part): Adventure Works + AMER matched nothing because the Dashboard seed gave each customer one region — fixed; the symbiotic options wait on 110
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on
