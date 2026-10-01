@@ -18,10 +18,10 @@ import type { FieldFilter, HeldFilter, ScopeDescription, ScopeShows } from '../.
 import {
   arranges, advancedOf, hasOwnBody, kindOf, picksOne, type FilterKind, type OffersAdvanced,
 } from '../../core/ui/filter-kind.js';
+import { menuFor, type FilterMenuDef, type FilterMenuItem } from '../../core/ui/filter-menu.js';
 import {
-  EDITOR_EVENTS, editorFor, lineField, menuFor, saidItems, withAnswer,
-  type FilterMenuDef, type FilterMenuItem,
-} from '../../core/ui/filter-menu.js';
+  drawSavedMenu, editSavedMenu, endSavedEdit, type SavedAnswer, type SavedMenuHost,
+} from '../../core/ui/saved-filter-menu.js';
 import type { SaidField } from '../../core/data/filter-face.js';
 import {
   FILTERS_LABEL, MenuDrill, ON, filtersMenuItems, onOffMenu, type AddedFilter, type ListedFilter,
@@ -55,9 +55,9 @@ export interface PanelValue {
   kind?: FilterKind;
   /** A reader's OWN saved filter: its chip opens Edit filter and Delete filter. */
   editable?: boolean;
-  /** A saved filter's conditions, as its chip's menu lists them.
+  /** A saved filter's answer, as its chip's card draws it.
    *  TRAP T-a-saved-chip-lists-its-conditions */
-  said?: readonly FilterMenuItem[];
+  saved?: SavedAnswer;
   /** A saved filter CHANGED and not saved: its chip wears the pending look, and
    *  its menu offers Save and Discard. TRAP T-a-saved-filter-keeps-its-edit */
   edited?: boolean;
@@ -191,9 +191,6 @@ type MenuApi = HTMLElement & {
   hide?: () => void;
 };
 
-/** The menu a saved filter's field is changed in. */
-type EditorMenu = MenuApi & { reading: FieldReading; show(trigger?: HTMLElement): void };
-
 export class SherpaFilterPanel extends SherpaElement {
   static override css = new URL('./sherpa-filter-panel.css', import.meta.url);
   static override html = new URL('./sherpa-filter-panel.html', import.meta.url);
@@ -260,10 +257,6 @@ export class SherpaFilterPanel extends SherpaElement {
     this.$('.scopes')?.addEventListener('quick-filter-click', this.#onValueClick);
     this.$('.scopes')?.addEventListener('menu-change', this.#onAddCommit);
     this.$('.scopes')?.addEventListener('menu-select', this.#onSavedAction);
-    // A saved filter's line opens its field. TRAP T-a-saved-filter-keeps-its-edit
-    this.$('.scopes')?.addEventListener('menu-drill', this.#onSavedDrill);
-    const editor = this.$('.editor');
-    for (const type of EDITOR_EVENTS) editor?.addEventListener(type, this.#onEditorEvent);
     // Rows and bodies change their answer without a chip click.
     for (const type of ['condition-change', 'input', 'change', 'menu-change']) {
       this.$('.scopes')?.addEventListener(type, this.#onEdited);
@@ -560,6 +553,8 @@ export class SherpaFilterPanel extends SherpaElement {
   #draw(): void {
     const region = this.$('.scopes');
     if (!region) return;
+    // A saved filter's change, being made, is kept first. TRAP T-a-saved-filter-keeps-its-edit
+    for (const menu of region.querySelectorAll<HTMLElement>('sherpa-menu[data-editing]')) endSavedEdit(menu, 'keep');
     this.#held.clear();
     this.#lists.clear();
     region.replaceChildren();
@@ -639,8 +634,9 @@ export class SherpaFilterPanel extends SherpaElement {
             ...(kindOf(p) === 'advanced' ? { kind: 'advanced' as const } : {}),
             ...(p.editable ? { editable: true } : {}),
             ...(p.edited ? { edited: true } : {}),
-            // In the source's words, or worded here from the scope's own fields.
-            said: saidItems({ ...p, readings: p.edited ?? p.readings ?? {} }, [...fields, ...(scope.available ?? [])]),
+            ...(p.readings ? { saved: {
+              readings: p.readings as Record<string, FieldReading>, edited: p.edited, says: p.says,
+            } } : {}),
           })),
           select: 'multiple',
         }, scope.scope, true)!);
@@ -867,7 +863,7 @@ export class SherpaFilterPanel extends SherpaElement {
       const one = this.#valueChip(option.value, option.label ?? option.value,
         { current: !!option.selected, ...(option.kind ? { kind: option.kind } : {}),
           ...(option.swatch ? { swatch: option.swatch } : {}) });
-      if (one && (option.editable || option.said?.length)) this.#addSavedMenu(one, option);
+      if (one && (option.editable || option.saved)) this.#addSavedMenu(one, option, scope);
       if (one) values!.append(one);
     }
 
@@ -1549,25 +1545,54 @@ export class SherpaFilterPanel extends SherpaElement {
     if (Object.keys(readings).length) this.emit('filter-save', { scope, readings });
   }
 
-  /** A saved preset's menu: its conditions, read-only, a heading per field —
-   *  and, for a reader's own, Edit filter and Delete filter. Will, TODO 49.
-   *  TRAP T-a-saved-chip-lists-its-conditions */
-  #addSavedMenu(chip: HTMLElement, option: PanelValue): void {
+  /** A saved preset's menu: each field's own menu, read-only, a heading per
+   *  field — and, for a reader's own, Edit filter and Delete filter. Will,
+   *  TODO 181. TRAP T-a-saved-chip-lists-its-conditions */
+  #addSavedMenu(chip: HTMLElement, option: PanelValue, scope: string): void {
     // Its change, not saved, wears the pending look. TRAP T-a-saved-filter-keeps-its-edit
     chip.toggleAttribute('data-edited', !!option.edited);
     const menu = this.clone<MenuApi>('template.saved-menu-tpl');
     if (!menu) return;
-    if (!option.editable) for (const own of menu.querySelectorAll('.saved-own')) own.remove();
-    if (!option.edited) for (const row of menu.querySelectorAll('.saved-edit')) row.remove();
+    // A shipped preset is never edited.
+    if (!option.editable) for (const own of menu.querySelectorAll('.saved-own, .saved-edit')) own.remove();
     menu.setAttribute('data-heading', option.label ?? option.value);
-    // The reader's own opens a line's field, to change it.
-    menu.items?.((option.said ?? []).map((line) =>
-      (option.editable ? { ...line, inert: false, drill: true, pickable: false } : line)));
     chip.setAttribute('data-menu', '');
     chip.appendChild(menu);
+    drawSavedMenu(menu, option.saved ?? { readings: {} }, this.#savedHost(chip, scope, option.value));
   }
 
-  /** A saved preset's Edit or Delete: ASK, as Add and Remove do. The bar owns the list. */
+  /** What a saved preset's card borrows from this panel. */
+  #savedHost(chip: HTMLElement, scope: string, id: string): SavedMenuHost {
+    return {
+      unit: () => this.clone<HTMLElement>('template.saved-field-tpl'),
+      defOf: (field) => this.#fieldDefIn(scope, field) as FilterMenuDef | undefined,
+      edit: (readings) => this.#onSavedEdit(chip, scope, id, readings),
+    };
+  }
+
+  /** A field's def: its own scope's first, then any scope's — the View may hold it. Never a preset. */
+  #fieldDefIn(scope: string, field: string): PanelFilter | undefined {
+    return [this.#scopes.find((s) => s.scope === scope), ...this.#scopes]
+      .flatMap((s) => [...(s?.filters ?? []), ...(s?.available ?? [])])
+      .find((f) => !f.preset && (f.field ?? f.id) === field);
+  }
+
+  /** A saved preset's change, as editing ended: its EDIT, sent to its source.
+   *  TRAP T-a-saved-filter-keeps-its-edit */
+  #onSavedEdit(chip: HTMLElement, scope: string, id: string, readings: Record<string, FieldReading>): void {
+    /* ON FIRST, as a tap on it would: the panel is drawn the scope as the
+       edit leaves it, and one drawn with the filter off switched it off. */
+    const held = this.#heldOfChip(chip);
+    if (held && !chip.hasAttribute('data-current')) {
+      chip.setAttribute('data-current', '');
+      this.#syncAnswered(held);
+      this.#report(held);
+    }
+    this.emit('preset-edit', { scope, id, readings });
+  }
+
+  /** A saved preset's own rows: edited in place, saved, put back, or deleted.
+   *  Delete ASKS, as Add and Remove do: the bar owns the list. */
   #onSavedAction = (event: Event): void => {
     const value = (event as CustomEvent).detail?.value;
     // A Send to menu's pick: the scope the field goes down to.
@@ -1580,101 +1605,28 @@ export class SherpaFilterPanel extends SherpaElement {
     const chip = this.pathFind(event, '.value');
     const id = chip?.dataset['value'];
     const scope = chip?.closest<HTMLElement>('.field')?.dataset['scope'];
-    if (!id || !scope) return;
-    // Its change: saved, or put back. TRAP T-a-saved-filter-keeps-its-edit
-    if (value === 'save-edit' || value === 'discard-edit') {
-      const preset = this.#presetOf(scope, id);
-      if (!preset?.edited) return;
-      event.stopPropagation();
-      if (value === 'save-edit') this.emit('filter-save', { scope, readings: preset.edited, id, label: preset.label });
-      else this.emit('preset-edit', { scope, id, readings: null });
-      return;
-    }
-    if (value !== 'edit' && value !== 'delete') return;
+    const menu = chip?.querySelector<HTMLElement>(':scope > sherpa-menu');
+    if (!id || !scope || !menu) return;
+    if (!['edit', 'save-edit', 'discard-edit', 'delete'].includes(value)) return;
     event.stopPropagation();
-    this.emit(value === 'edit' ? 'filter-edit' : 'filter-delete', { scope, id });
+    // TRAP T-a-saved-filter-keeps-its-edit
+    const preset = this.#presetOf(scope, id);
+    if (value === 'edit') {
+      editSavedMenu(menu);
+      // The pressed row hides.
+      menu.querySelector<HTMLElement>(':scope > [value="save-edit"]')?.focus();
+    } else if (value === 'save-edit') {
+      const readings = endSavedEdit(menu, 'keep') ?? preset?.edited;
+      if (readings) this.emit('filter-save', { scope, readings, id, label: preset?.label ?? id });
+    } else if (value === 'discard-edit') {
+      endSavedEdit(menu, 'discard');
+      if (preset?.edited) this.emit('preset-edit', { scope, id, readings: null });
+    } else this.emit('filter-delete', { scope, id });
   };
 
   /** A saved filter one scope holds, as it was drawn. */
   #presetOf(scope: string, id: string): PanelFilter | undefined {
     return this.#scopes.find((s) => s.scope === scope)?.filters?.find((f) => f.preset && f.id === id);
-  }
-
-  /** The saved filter's field open to change it, in the field's OWN menu. */
-  #editor: { menu: EditorMenu; scope: string; id: string; field: string; of: PanelFilter; chip: HTMLElement } | null = null;
-
-  /**
-   * A saved filter's LINE opens its field in that field's own menu, holding
-   * what the filter applies now. Apply is the change — an EDIT; the saved
-   * filter stays as it was. Will, TODO 50. TRAP T-a-saved-filter-keeps-its-edit
-   */
-  #onSavedDrill = async (event: Event): Promise<void> => {
-    const chip = this.pathFind(event, '.value');
-    const id = chip?.dataset['value'];
-    const scope = chip?.closest<HTMLElement>('.field')?.dataset['scope'];
-    const preset = scope && id ? this.#presetOf(scope, id) : undefined;
-    if (!chip || !scope || !id || !preset?.readings) return;
-    event.stopPropagation();
-    const field = lineField(String((event as CustomEvent).detail?.value ?? ''));
-    // Its own scope's defs first, then any scope's: the View may hold the field.
-    const of = [this.#scopes.find((s) => s.scope === scope), ...this.#scopes]
-      .flatMap((s) => [...(s?.filters ?? []), ...(s?.available ?? [])])
-      .find((f) => !f.preset && (f.field ?? f.id) === field);
-    if (!of) {
-      // TRAP T-a-broken-assumption-reports
-      report({
-        code: 'unknown-filter',
-        message: 'A saved filter names a field this panel cannot draw, so it cannot be changed here.',
-        at: { scope, id, field },
-      });
-      return;
-    }
-    (chip.querySelector('sherpa-menu') as MenuApi | null)?.hide?.();
-    this.#dropEditor();
-    const readings = (preset.edited ?? preset.readings) as Record<string, FieldReading>;
-    const answer = readings[field] ?? {};
-    const built = editorFor(of as FilterMenuDef, answer);
-    const editor = { menu: built.menu as EditorMenu, scope, id, field, of, chip };
-    this.#editor = editor;
-    this.$('.editor')?.append(editor.menu);
-    await editor.menu.rendered;
-    if (this.#editor !== editor) return;
-    if (built.items.length) editor.menu.items?.(built.items);
-    editor.menu.reading = answer;
-    editor.menu.show(chip);
-  };
-
-  /** The editor's events are its own; none reaches a scope as a field's. */
-  #onEditorEvent = (event: Event): void => {
-    event.stopPropagation();
-    if (event.type === 'menu-change') this.#applyEdit();
-    else if (event.type === 'menu-close') this.#dropEditor();
-  };
-
-  /** Apply or Clear in the editor: the saved filter's EDIT, sent to its source. */
-  #applyEdit(): void {
-    const at = this.#editor;
-    const preset = at && this.#presetOf(at.scope, at.id);
-    if (!at || !preset?.readings) return;
-    const base = (preset.edited ?? preset.readings) as Record<string, FieldReading>;
-    const next = withAnswer(base, at.field, at.of, at.menu.reading);
-    /* ON FIRST, as a tap on it would: the panel is drawn the scope as the
-       edit leaves it, and one drawn with the filter off switched it off. */
-    const held = this.#heldOfChip(at.chip);
-    if (held && !at.chip.hasAttribute('data-current')) {
-      at.chip.setAttribute('data-current', '');
-      this.#syncAnswered(held);
-      this.#report(held);
-    }
-    this.emit('preset-edit', { scope: at.scope, id: at.id, readings: next });
-  }
-
-  /** Take the editor away. */
-  #dropEditor(): void {
-    const menu = this.#editor?.menu;
-    this.#editor = null;
-    menu?.hide?.();
-    menu?.remove();
   }
 
   /** Ask the source to send a View field DOWN to one scope. */

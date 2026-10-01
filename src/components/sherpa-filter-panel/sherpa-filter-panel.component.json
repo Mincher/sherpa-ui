@@ -229,7 +229,7 @@
       "type": "string",
       "observed": true,
       "kind": "style",
-      "description": "the host SAVES filters: a scope with an answered field offers \"Save filter\", and a reader's own saved preset opens Edit filter and Delete filter — each asked for. TRAP T-the-panel-saves-a-whole-scope"
+      "description": "the host SAVES filters: a scope with an answered field offers \"Save filter\". A reader's own saved preset offers Edit filter and Delete filter whatever it says. TRAP T-the-panel-saves-a-whole-scope"
     },
     {
       "$type": "prop",
@@ -371,15 +371,13 @@
     },
     {
       "$type": "event",
-      "name": "filter-edit",
-      "bubbles": true,
-      "composed": true
-    },
-    {
-      "$type": "event",
       "name": "filter-delete",
       "bubbles": true,
-      "composed": true
+      "composed": true,
+      "detail": {
+        "id": "unknown",
+        "scope": "unknown"
+      }
     },
     {
       "$type": "event",

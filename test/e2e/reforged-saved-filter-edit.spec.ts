@@ -365,7 +365,7 @@ test('a saved date shows its own calendar: a day press changes nothing until Edi
 });
 
 /** THE PANEL, which answers for the bar in panel mode, has the same doors. */
-test('in the panel a saved line opens its field; its change is drawn, saved or put back', async ({ page }) => {
+test('in the panel Edit filter edits a saved filter in place; its change is drawn, saved or put back', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const owner = { id: 'owner', label: 'Owner', select: 'multiple',
       options: [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }, { value: 'Unassigned', label: 'Nobody' }] };
@@ -376,8 +376,13 @@ test('in the panel a saved line opens its field; its change is drawn, saved or p
     await window.__settled();
     const sr = panel.shadowRoot!;
     const chip = () => sr.querySelector<HTMLElement & { toggleMenu(): void }>('.value[data-value="custom:mine"]')!;
-    const rows = () => [...chip().querySelector('sherpa-menu')!.children]
-      .map((row) => `${row.localName}${row.hasAttribute('data-drill') ? '.drill' : ''}:${row.textContent!.trim()}`);
+    const menu = () => chip().querySelector<HTMLElement & { open: boolean; hide(): void }>(':scope > sherpa-menu')!;
+    const field = () => menu().querySelector<FieldMenu>(':scope > .saved-field > sherpa-menu')!;
+    const parts = () => [...menu().children].map((n) =>
+      (n.localName === 'div' ? `div.${n.className}:${n.getAttribute('data-field')}` : `${n.localName}:${n.textContent!.trim()}`));
+    const rows = () => field().conditions.map((c) => [c.op, c.join ?? '', ...(c.picked ?? [])]);
+    const shows = () => [...menu().querySelectorAll<HTMLButtonElement>(':scope > button')]
+      .filter((b) => getComputedStyle(b).display !== 'none').map((b) => b.value);
     const heard: unknown[] = [];
     for (const type of ['preset-edit', 'filter-save', 'quick-filter-change']) {
       panel.addEventListener(type, (e) => {
@@ -385,44 +390,70 @@ test('in the panel a saved line opens its field; its change is drawn, saved or p
         heard.push(type === 'quick-filter-change' ? { type, presets: d.readings?.data?.presets?.picked } : { type, ...d });
       });
     }
+    const drawn = { parts: parts(), rows: rows(), readonly: field().hasAttribute('data-readonly') };
 
     chip().toggleMenu();
     await window.__settled();
-    chip().querySelector<HTMLElement>('sherpa-menu [data-drill]')!.click();
+    menu().querySelector<HTMLElement>(':scope > button[value="edit"]')!.click();
     await window.__settled();
-    const editor = sr.querySelector<HTMLElement & { open: boolean; values: string[] }>('.editor sherpa-menu')!;
-    const opened = { open: editor.open, values: editor.values };
-    editor.querySelector<HTMLInputElement>('input[value="Unassigned"]')!.click();
-    editor.shadowRoot!.querySelector<HTMLElement>('.apply')!.click();
+    const editing = { open: menu().open, readonly: field().hasAttribute('data-readonly'), shows: shows() };
+    field().shadowRoot!.querySelectorAll<HTMLElement>('.condition-row')[1]!.querySelector<HTMLElement>('.drop-condition')!.click();
+    await window.__settled();
+    const draft = [...heard];
+    menu().hide();
     await window.__settled();
     const applied = [...heard];
     heard.length = 0;
 
-    // Its source draws the change back.
+    // Its source draws the change back. A rebuild mid-edit sends the change first.
+    const edit = { owner: { conditions: [{ op: 'eq', picked: ['Dana'] }] } };
     await panel.populate([{ scope: 'data', label: 'Customer records', filters: [
-      { ...mine, active: true, edited: { owner: { picked: ['Dana'] } } }, owner,
+      { ...mine, active: true, edited: edit }, owner,
     ] }]);
     await window.__settled();
-    const drawn = { edited: chip().hasAttribute('data-edited'), rows: rows() };
-    chip().querySelector<HTMLButtonElement>('button[value="save-edit"]')!.click();
-    chip().querySelector<HTMLButtonElement>('button[value="discard-edit"]')!.click();
-    return { opened, applied, drawn, actions: heard, gone: !sr.querySelector('.editor sherpa-menu') };
+    const back = { edited: chip().hasAttribute('data-edited'), rows: rows() };
+    chip().toggleMenu();
+    await window.__settled();
+    menu().querySelector<HTMLElement>(':scope > button[value="edit"]')!.click();
+    await window.__settled();
+    field().conditions = [{ op: 'eq', picked: ['Ravi'] }];
+    await window.__settled();
+    await panel.populate([{ scope: 'data', label: 'Customer records', filters: [
+      { ...mine, active: true, edited: edit }, owner,
+    ] }]);
+    await window.__settled();
+    const flushed = [...heard];
+    heard.length = 0;
+
+    menu().querySelector<HTMLButtonElement>(':scope > button[value="save-edit"]')!.click();
+    menu().querySelector<HTMLButtonElement>(':scope > button[value="discard-edit"]')!.click();
+    await window.__settled();
+    return { drawn, editing, draft, applied, back, flushed, actions: heard, rows: rows(),
+      editor: !!sr.querySelector('.editor') };
   });
 
-  expect(r.opened).toEqual({ open: true, values: ['Dana', 'Unassigned'] });
+  expect(r.drawn).toEqual({
+    parts: ['p:Owner', 'div.saved-field:owner', 'hr:', 'button:Save filter', 'button:Discard changes',
+      'button:Edit filter', 'button:Delete filter'],
+    rows: [['eq', '', 'Dana'], ['eq', 'or', 'Unassigned']],
+    readonly: true,
+  });
+  expect(r.editing).toEqual({ open: true, readonly: false, shows: ['save-edit', 'discard-edit'] });
+  expect(r.draft).toEqual([]);
   // ON first, as a tap on it would, then the change — in its scope.
   expect(r.applied).toEqual([
     { type: 'quick-filter-change', presets: ['custom:mine'] },
-    { type: 'preset-edit', scope: 'data', id: 'custom:mine', readings: { owner: { picked: ['Dana'] } } },
+    { type: 'preset-edit', scope: 'data', id: 'custom:mine', readings: { owner: { conditions: [{ op: 'eq', picked: ['Dana'] }] } } },
   ]);
-  expect(r.drawn).toEqual({
-    edited: true,
-    rows: ['p:Owner', 'label.drill:Equals Dana', 'hr:', 'button:Save filter', 'button:Discard changes',
-      'button:Edit filter', 'button:Delete filter'],
-  });
+  expect(r.back).toEqual({ edited: true, rows: [['eq', '', 'Dana']] });
+  expect(r.flushed).toEqual([
+    { type: 'preset-edit', scope: 'data', id: 'custom:mine', readings: { owner: { conditions: [{ op: 'eq', picked: ['Ravi'] }] } } },
+  ]);
   expect(r.actions).toEqual([
-    { type: 'filter-save', scope: 'data', readings: { owner: { picked: ['Dana'] } }, id: 'custom:mine', label: 'Mine' },
+    { type: 'filter-save', scope: 'data', readings: { owner: { conditions: [{ op: 'eq', picked: ['Dana'] }] } }, id: 'custom:mine', label: 'Mine' },
     { type: 'preset-edit', scope: 'data', id: 'custom:mine', readings: null },
   ]);
-  expect(r.gone).toBe(true);
+  // Discard puts the saved rows back.
+  expect(r.rows).toEqual([['eq', '', 'Dana'], ['eq', 'or', 'Unassigned']]);
+  expect(r.editor).toBe(false);
 });

@@ -30,8 +30,8 @@
     data-group-field  the group in force. Written by the source; the Group
                     chip shows it. TRAP T-a-panel-follows-the-query-open-or-shut
     data-saveable   the host SAVES filters: a scope with an answered field
-                    offers "Save filter", and a reader's own saved preset
-                    opens Edit filter and Delete filter — each asked for.
+                    offers "Save filter". A reader's own saved preset offers
+                    Edit filter and Delete filter whatever it says.
                     TRAP T-the-panel-saves-a-whole-scope
     data-remote     its source fetches from outside the data layer, so a
                     change waits for its field's Apply. Set by a bound source.
@@ -51,9 +51,8 @@
     group-change — a Group chip or Reset all, with its scope. detail: { field, scope }
     sort-change — a Sort chip or Reset all, with its scope. detail: { field, direction, scope }
     filter-save — a scope's Save filter, or a saved filter's change saved. detail: { scope, readings, id?, label? }
-    filter-edit — a saved preset's Edit filter. detail: { scope, id }
     filter-delete — a saved preset's Delete filter. detail: { scope, id }
-    preset-edit — a saved preset's rows changed. detail: { scope, id, readings } — null puts the saved one back
+    preset-edit — a saved preset's rows changed, sent once when its editing ends. detail: { scope, id, readings } — null puts the saved one back
     view-reset — Reset all to default: put back the View's own filters, in every scope. Cancelable
     limit-options-change — the ⋮ menu's "Limit matching filters". detail: { on }
 -->
@@ -118,10 +117,6 @@
   <template class="more-check-tpl">
     <label class="menu-row more-check"><input type="checkbox" value="limit-options" /><span class="menu-row-label">Limit matching filters</span></label>
   </template>
-
-  <!-- A saved filter's field, opened to change it — outside the scopes, so
-       no field hears it as its own. TRAP T-a-saved-filter-keeps-its-edit -->
-  <div class="editor"></div>
 
   <!-- PROTOTYPES. Every element the panel will ever show exists here from the
        start; JS clones, it never createElement()s. -->
@@ -197,18 +192,23 @@
     <button type="button" class="lower-item"></button>
   </template>
 
-  <!-- A saved preset's menu: its conditions, as lines, stamped above these —
-       and the reader's OWN keeps its actions; Save and Discard only while it
-       holds a change. TRAP T-a-saved-chip-lists-its-conditions
-       TRAP T-the-panel-saves-a-whole-scope · TRAP T-a-saved-filter-keeps-its-edit -->
+  <!-- A saved preset's menu: each field's own menu, read-only, drawn above
+       these. The reader's OWN keeps its actions; Save and Discard show while
+       it holds a change or is being edited. TRAP T-a-saved-chip-lists-its-conditions
+       TRAP T-the-panel-saves-a-whole-scope · TRAP T-a-saved-filter-keeps-its-edit
+       TRAP T-an-action-row-can-keep-its-menu-open -->
   <template class="saved-menu-tpl">
     <sherpa-menu slot="menu" data-no-select-all>
       <hr class="saved-own" />
       <button type="button" class="saved-edit" value="save-edit">Save filter</button>
       <button type="button" class="saved-edit" value="discard-edit">Discard changes</button>
-      <button type="button" class="saved-own" value="edit">Edit filter</button>
+      <button type="button" class="saved-own" value="edit" data-stay-open>Edit filter</button>
       <button type="button" class="saved-own" value="delete">Delete filter</button>
     </sherpa-menu>
+  </template>
+  <!-- One field of a saved preset: its heading, then its menu or its words. -->
+  <template class="saved-field-tpl">
+    <div><p class="menu-section"></p><div class="saved-field" role="group"></div><p class="menu-line"></p></div>
   </template>
 
   <!-- A field a higher scope holds: the line under its heading. -->

@@ -57,8 +57,10 @@
 
 }
 
-/* A saved filter's field, opened to change it: no box of its own. */
-.editor { display: contents; }
+/* A saved preset's Save and Discard: while it holds a change, or is being
+   edited — and then Edit and Delete step aside. TRAP T-a-saved-filter-keeps-its-edit */
+.value:not([data-edited]) > sherpa-menu:not([data-editing]) > .saved-edit { display: none; }
+.value > sherpa-menu[data-editing] > button.saved-own { display: none; }
 
 /* The BODY scrolls, not the panel: the search and the footer stay put. Without
    it the scopes push both out of the box and the panel overflows its own

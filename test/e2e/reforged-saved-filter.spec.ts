@@ -406,11 +406,11 @@ test('Edit filter edits in place, and the fields are left as they were; Delete f
 /**
  * THE PANEL, which answers for the bar in panel mode — the bar is hidden then,
  * so the panel needs every door the bar has. A saved filter in its Presets is
- * Advanced; a reader's own opens Edit and Delete, which the panel ASKS for, as it asks
- * for Add and Remove; and a whole SCOPE saves as one chip.
+ * Advanced; a reader's own edits in place, and its Delete the panel ASKS for, as
+ * it asks for Add and Remove; and a whole SCOPE saves as one chip.
  * TRAP T-the-panel-saves-a-whole-scope
  */
-test('the panel: saved presets are Advanced, and a scope asks to save, edit and delete', async ({ page }) => {
+test('the panel: saved presets are Advanced, and a scope asks to save and delete', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const readings = { health: { op: 'lt', text: '60' } };
     const panel = await window.__mount<HTMLElement & { show(): void; populate(d: unknown): unknown }>(
@@ -429,7 +429,7 @@ test('the panel: saved presets are Advanced, and a scope asks to save, edit and 
     const chip = (v: string) => sr.querySelector<HTMLElement>(`.field[data-field="presets"] .value[data-value="${v}"]`)!;
     const face = (v: string) => ({
       condition: chip(v).getAttribute('data-condition'), badge: chip(v).dataset['count'] ?? '',
-      actions: [...(chip(v).querySelector('sherpa-menu')?.querySelectorAll('button') ?? [])].map((b) => b.value),
+      actions: [...(chip(v).querySelector(':scope > sherpa-menu')?.querySelectorAll(':scope > button') ?? [])].map((b) => b.value),
     });
     const presets = { preset: face('at-risk'), own: face('custom:mine') };
 
@@ -441,28 +441,32 @@ test('the panel: saved presets are Advanced, and a scope asks to save, edit and 
     const shown = save().getClientRects().length > 0;
 
     const asked: unknown[] = [];
-    for (const type of ['filter-save', 'filter-edit', 'filter-delete']) {
+    for (const type of ['filter-save', 'filter-edit', 'filter-delete', 'preset-edit']) {
       panel.addEventListener(type, (e) => asked.push({ type, ...(e as CustomEvent).detail }));
     }
     save().dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
-    const own = chip('custom:mine').querySelector('sherpa-menu')!;
-    own.querySelector<HTMLButtonElement>('button[value="edit"]')!.click();
-    own.querySelector<HTMLButtonElement>('button[value="delete"]')!.click();
-    return { presets, hidden, shown, asked };
+    const own = chip('custom:mine').querySelector<HTMLElement>(':scope > sherpa-menu')!;
+    // Edit filter edits in place: nothing is asked.
+    own.querySelector<HTMLButtonElement>(':scope > button[value="edit"]')!.click();
+    const editing = own.hasAttribute('data-editing');
+    own.removeAttribute('data-editing');
+    own.querySelector<HTMLButtonElement>(':scope > button[value="delete"]')!.click();
+    return { presets, hidden, shown, asked, editing };
   });
 
   // Advanced, and no badge: it is RESULTS since TODO 60, and a panel draws none.
   const fx = { condition: 'advanced', badge: '' };
-  expect(r.presets).toEqual({ preset: { ...fx, actions: [] }, own: { ...fx, actions: ['edit', 'delete'] } });
+  expect(r.presets).toEqual({ preset: { ...fx, actions: [] },
+    own: { ...fx, actions: ['save-edit', 'discard-edit', 'edit', 'delete'] } });
   // Only when the host saves.
   expect(r.hidden).toBe(true);
   expect(r.shown).toBe(true);
   // The scope's ANSWERED fields, each as it can be saved — never the presets.
   expect(r.asked).toEqual([
     { type: 'filter-save', scope: 'data', readings: { owner: { picked: ['Dana'] } } },
-    { type: 'filter-edit', scope: 'data', id: 'custom:mine' },
     { type: 'filter-delete', scope: 'data', id: 'custom:mine' },
   ]);
+  expect(r.editing).toBe(true);
 });
 
 /* Will, TODO 49: "Any preset or saved filter chip should have a menu button to
@@ -547,13 +551,15 @@ test('a preset chip in the panel opens its conditions too', async ({ page }) => 
     }], { open: true, style: 'inline-size: 400px' });
     await window.__settled();
     const chip = (id: string) => panel.shadowRoot!.querySelector<HTMLElement>(`.value[data-value="${id}"]`)!;
-    const rows = (id: string): string[] => [...chip(id).querySelector('sherpa-menu')!.children]
-      .map((row) => `${row.localName}:${row.textContent!.trim()}`);
+    const rows = (id: string): string[] => [...chip(id).querySelector(':scope > sherpa-menu')!.children].map((row) =>
+      (row.classList.contains('saved-field') ? `menu:${row.getAttribute('data-field')}` : `${row.localName}:${row.textContent!.trim()}`));
     return { risky: rows('risky'), mine: rows('custom:mine'), caret: chip('risky').hasAttribute('data-menu') };
   });
 
   expect(r.caret).toBe(true);
-  expect(r.risky).toEqual(['p:health', 'p:Less than 60', 'p:Owner', 'p:Equals Unassigned']);
-  // The reader's OWN opens a line's field, to change it (TODO 50).
-  expect(r.mine).toEqual(['p:Owner', 'label:Equals Dana', 'hr:', 'button:Edit filter', 'button:Delete filter']);
+  // A field the panel holds shows its own menu; one it does not, its words.
+  expect(r.risky).toEqual(['p:health', 'p:Less than 60', 'p:Owner', 'menu:owner']);
+  // The reader's OWN keeps its actions (TODO 181).
+  expect(r.mine).toEqual(['p:Owner', 'menu:owner', 'hr:', 'button:Save filter', 'button:Discard changes',
+    'button:Edit filter', 'button:Delete filter']);
 });

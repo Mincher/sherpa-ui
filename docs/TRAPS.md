@@ -13212,7 +13212,8 @@ Save."* Called an EDIT in the code: the source's `#draft` and a View's drafts
   `data-readonly`; Save filter and Discard changes show, Edit and Delete step
   aside. Its rows are the field's own menu (`T-a-saved-chip-lists-its-conditions`).
 - **The change is a DRAFT until editing ends**: the card closes, Save filter
-  is pressed, or the bar rebuilds under it (`#render`). Then ONE
+  is pressed, or the bar or the panel rebuilds under it (`#render`, `#draw`
+  — the panel redraws every scope on each source draw). Then ONE
   `preset-edit`, folding in only the fields that moved, each read with its
   type — a date read as text was dropped. Nothing moved, nothing is sent.
   Discard puts the saved rows back.
@@ -13255,6 +13256,7 @@ scope's header holds nothing to press; Save is in the chip's own menu.
 - Site: `src/core/ui/saved-filter-menu.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 
 ### T-save-packs-the-fields-into-one-chip
 
@@ -13301,11 +13303,12 @@ scope."*
 - **A saved preset wears `fx`.** A preset carrying `readings` is drawn with
   kind `advanced`, and a chip with no filter menu then reads as Advanced by itself
   (`T-a-saved-filter-is-its-readings`).
-- **A reader's own preset opens Edit filter and Delete filter**, and the panel
-  ASKS for each — `filter-edit`, `filter-delete` — as it asks for Add and
-  Remove. The BAR owns the list (`T-a-panel-adds-through-the-bar-that-owns-the-list`),
-  so the host answers through `packFilter`, `unpackFilter` and `deleteFilter`
-  and refills the panel; `unpackFilter` returns a promise for that.
+- **A reader's own preset offers Edit filter and Delete filter.** Edit filter
+  edits its rows in place, through the same helper the bar uses
+  (`T-a-saved-filter-keeps-its-edit`); nothing is asked. Delete the panel
+  ASKS for — `filter-delete` — as it asks for Add and Remove. The BAR owns the
+  list (`T-a-panel-adds-through-the-bar-that-owns-the-list`), so the host
+  answers through `packFilter` and `deleteFilter` and refills the panel.
 
 **Two holes this found in what the panel is told.** The bar's `held` gave a
 chip with no field reading — a toggle, a saved filter — the `active` of its def,
@@ -15842,3 +15845,4 @@ action row closes it as before.
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `test/e2e/reforged-menu.spec.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
