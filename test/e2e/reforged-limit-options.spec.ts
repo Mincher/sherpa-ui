@@ -118,3 +118,23 @@ test('a later Region pick sets aside the Customer it rules out: ticked, greyed, 
   await expect.poll(() => page.evaluate(() =>
     document.querySelector('#m-endpoints')!.getAttribute('data-value'))).toBe(want.toLocaleString());
 });
+
+/**
+ * A LEGEND TOO — Will, TODO 179: "It can be inactive in the panel but
+ * toggleable in the data viz legend." Fabrikam has no CPU alerts, so with
+ * Customer = Fabrikam the bar chart's legend greys CPU and refuses a press.
+ */
+test('a chart legend greys the values the other filters rule out, and refuses them', async ({ page }) => {
+  await open(page, true);
+  await pick(page, { customer: ['Fabrikam'], region: [] });
+  const legend = () => page.evaluate(() => Object.fromEntries([...document.querySelector('#bar-legend')!.shadowRoot!
+    .querySelectorAll<HTMLElement>('.item')].map((i) => [i.querySelector('.label')!.textContent, {
+    greyed: i.hasAttribute('data-unavailable'), on: i.getAttribute('aria-pressed'), says: i.getAttribute('title') }])));
+  await expect.poll(async () => (await legend())['CPU']?.greyed).toBe(true);
+  expect((await legend())['CPU']).toEqual({ greyed: true, on: 'true', says: 'No matches with your other filters.' });
+  expect((await legend())['Disk']?.greyed).toBe(false);
+  // Pressed, it does nothing.
+  await page.evaluate(() => [...document.querySelector('#bar-legend')!.shadowRoot!.querySelectorAll<HTMLElement>('.item')]
+    .find((i) => i.querySelector('.label')!.textContent === 'CPU')!.click());
+  expect((await legend())['CPU']?.on).toBe('true');
+});

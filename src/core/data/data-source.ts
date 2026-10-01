@@ -2160,7 +2160,9 @@ export class DataSource extends EventTarget {
     if (!this.#limitOptions) return {};
     const q = this.#applied.scopes[scope];
     const above = new Set(scope === VIEW ? [] : this.#applied.scopes[VIEW]?.holds ?? []);
-    const fields = [...new Set([...(q?.holds ?? []), ...(scope === VIEW ? [] : this.fields(scope))])]
+    // A chart's own scope answers its legend's one field.
+    const part = this.#narrowing.get(scope)?.field;
+    const fields = [...new Set([...(q?.holds ?? []), ...(scope === VIEW ? [] : this.fields(scope)), ...(part ? [part] : [])])]
       .filter((f) => !above.has(f) && this.#isListField(f));
     // Fields limited by the same filter share one pass over the rows.
     const passes = new Map<string, { filter: Filter | undefined; fields: string[] }>();
@@ -2312,22 +2314,25 @@ export class DataSource extends EventTarget {
   #presentQueued = false;
 
   /** Each bound control is told what each field's other answers leave — once
-   *  per applied Query; a later pass wins. Off, each is told nothing is limited. */
+   *  per applied Query; a later pass wins. Off, each is told nothing is limited.
+   *  A chart's own scope too, announced as `present` for its legend (179). */
   async #drawPresent(): Promise<void> {
     const drawn = [...this.#bound].flatMap(([el, b]) => (el.drawPresent && b.scope
       ? [{ el, scopes: typeof b.scope === 'string' ? [b.scope] : [...b.scope, ...this.#narrowing.keys()] }] : []));
-    const key = `${this.#limitOptions}:${drawn.length}:${JSON.stringify(this.#applied)}`;
-    if (!drawn.length || key === this.#presentFor) return;
+    const parts = [...this.#narrowing.keys()];
+    const key = `${this.#limitOptions}:${drawn.length}:${parts.join()}:${JSON.stringify(this.#applied)}`;
+    if ((!drawn.length && !parts.length) || key === this.#presentFor) return;
     this.#presentFor = key;
     const ticket = (this.#presenting = Symbol('present'));
     const byScope = new Map<string, Record<string, string[]>>();
-    for (const scope of new Set(drawn.flatMap((d) => d.scopes))) {
+    for (const scope of new Set([...drawn.flatMap((d) => d.scopes), ...parts])) {
       byScope.set(scope, await this.present(scope));
       if (this.#presenting !== ticket) return;
     }
     for (const { el, scopes } of drawn) {
       for (const scope of scopes) el.drawPresent?.(byScope.get(scope) ?? {}, scope);
     }
+    this.dispatchEvent(new CustomEvent('present', { detail: { byScope: Object.fromEntries(byScope) } }));
   }
   /** The latest pass; an older one lands on nothing. */
   #presenting: symbol | null = null;

@@ -115,9 +115,10 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | 🚧 | 31u | 174 | Two View fields that share no rows return NOTHING, though each badge has a count; a filterset's fields should limit each other's options | bug |
 | ✅ | 31v | 176 | A greyed-out chip says WHY in its tooltip, in a few simple words | feature |
 | ✅ | 31w | 180 | A picked value a LATER filter rules out goes inactive and leaves the query; the latest filter wins | feature |
-| ⬜ | 31x | 179 | Every place a ruled-out value shows is inactive — a chart legend's item too | bug |
+| ✅ | 31x | 179 | Every place a ruled-out value shows is inactive — a chart legend's item too | bug |
 | ⬜ | 31y | 178 | The filter panel's header gets an overflow (⋯) menu; "Limit matching filters" is an item in it and in the toolbar's | feature |
 | ⬜ | 31z | 181 | A saved filter's menu shows its condition rows, read-only — the Advanced menu, not a bespoke one | refactor |
+| ⬜ | 31aa2 | 182 | The filter panel's search: more room above it, and the full width of the header less its padding | bug |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
 | ✅ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
@@ -1771,12 +1772,24 @@ set-aside value out. A chip whose every pick is set aside is greyed too.
 Works in the header's menus, the panel's chips and the grid headings.
 `T-a-later-answer-sets-an-earlier-pick-aside`
 
-### `[ ]` 179 — Every place a ruled-out value shows is inactive — a legend item too
+### `[x]` ✅ 179 — Every place a ruled-out value shows is inactive — a legend item too
 
 Will, 2026-10-01: *"Finally, we need to make other representations of
 non-viable filter options to inactive in the view. Legend items are a good
 example. It can be inactive in the panel but toggleable in the data viz
 legend. This might be the only edge case we haven't covered, actually."*
+
+**✅ Done 2026-10-01.** A chart legend greys a value the other filters rule
+out, says why on hover ("No matches with your other filters."), and refuses
+a press. On the Dashboard, Customer = Fabrikam greys CPU in the bar chart's
+legend. Every place a value shows now follows the same rule: a toolbar chip's
+menu, a grid heading's menu, the panel's chips, and a legend.
+
+### `[ ]` 182 — The filter panel's search: more room above it, and full width
+
+Will, 2026-10-01, a todo: *"Gap above search input in filter panel is too
+small. Search input should span the width of the header, excluding header
+padding. Right now it's inset on the left."*
 
 ### `[ ]` 181 — A saved filter's menu shows its condition rows, read-only
 
@@ -4792,6 +4805,7 @@ One line each. The detail is in git and in the trap named.
 - 146 level 2: the Context's grid steps by its own width — a container twin of every layout band — `T-a-context-steps-by-its-own-width`
 - 174 (most) + 176: "Limit filter options" — a ruled-out value is greyed, refused, and says why — `T-a-ruled-out-value-is-greyed`
 - 180: a later answer sets aside an earlier pick it rules out — kept, greyed, not applied — `T-a-later-answer-sets-an-earlier-pick-aside`
+- 179: a chart legend greys and refuses a ruled-out value, as its chip does — `T-a-ruled-out-value-is-greyed`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

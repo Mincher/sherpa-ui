@@ -106,7 +106,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (off, picked). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (present, off, picked). See $extensions.sherpa.jsProps."
     }
   ],
   "events": [
@@ -163,6 +163,11 @@
         "orientationIsFrameWidthOnly": "The Figma set's `Orientation` axis distinguishes only the FRAME WIDTH of its two variants (394 vs 153) — both lay their slot out the same way. The code has no data-orientation: the legend is a CSS grid that wraps to its container, so one element covers both, and a container query does what the variant switch does in Figma."
       },
       "jsProps": [
+        {
+          "name": "present",
+          "type": "readonly string[] | null",
+          "access": "read-write"
+        },
         {
           "name": "off",
           "type": "string[]",

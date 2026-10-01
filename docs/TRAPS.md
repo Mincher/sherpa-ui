@@ -6508,6 +6508,12 @@ Select all never ticks a ruled-out row. A grid heading used to mark values
 "available" from the PAGE it was given; one page cannot say what the source
 holds, so that is gone.
 
+**A chart LEGEND too** — Will, TODO 179: a legend picks through
+`bindSelection`, not a bound scope, so the source ANNOUNCES each pass
+(`present`, by scope — a chart's own scope included) and the provider hands
+its legend the field's list. A ruled-out legend row is inactive, says why in
+its `title`, and refuses a press, as its chip does in the panel.
+
 **It says why** — Will, TODO 176: a ruled-out chip's tooltip and a row's
 `aria-description` read "No matches with your other filters." A disabled
 chip says "Not available here." A chip the View took says where it went
@@ -6525,6 +6531,7 @@ chip says "Not available here." A chip the View took says where it went
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/unit/present-limits-each-field.test.mjs`
 - Site: `test/e2e/reforged-limit-options.spec.ts`
+- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 
 ### T-a-later-answer-sets-an-earlier-pick-aside
 

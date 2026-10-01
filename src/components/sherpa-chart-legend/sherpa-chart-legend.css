@@ -124,11 +124,15 @@
 .item[aria-pressed="false"],
 .item[aria-pressed="false"] .value,
 .item[data-empty],
-.item[data-empty] .value {
+.item[data-empty] .value,
+.item[data-unavailable],
+.item[data-unavailable] .value {
   color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */
 }
+.item[data-unavailable] { cursor: not-allowed; }
 .item[aria-pressed="false"] .swatch,
-.item[data-empty] .swatch {
+.item[data-empty] .swatch,
+.item[data-unavailable] .swatch {
   border-color: var(--sherpa-theme-border-default-2, #b3b3c3); /* theme-direct */
   background: transparent;
 }

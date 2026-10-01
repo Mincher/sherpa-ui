@@ -20,6 +20,7 @@ import { statusBorderVar, statusVar } from '../../core/data/format-tick.js';
 // The roll-up row composes a real button + menu; the page may not have imported them.
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-menu/sherpa-menu.js';
+import { RULED_OUT } from '../../core/ui/shared-constants.js';
 
 const MAX_ITEMS = 6;
 
@@ -51,6 +52,21 @@ export class SherpaChartLegend extends SherpaElement {
 
   /** The legend rows, as populated. */
   #items: LegendItem[] = [];
+
+  /**
+   * The values the other filters LEAVE, from its provider. A row they rule out
+   * is drawn inactive and refuses a press, as its chip does in the panel.
+   * `null` limits nothing. Will, TODO 179. TRAP T-a-ruled-out-value-is-greyed
+   */
+  set present(values: readonly string[] | null) {
+    this.#present = values ? new Set(values) : null;
+    if (this.#items.length) this.#render();
+  }
+  get present(): readonly string[] | null {
+    return this.#present ? [...this.#present] : null;
+  }
+  /** What the other filters leave; `null` is everything. */
+  #present: Set<string> | null = null;
   /**
    * The rows toggled OFF, by LABEL. By label and not by index because a
    * re-populate re-orders and re-counts: a filter that removed a category
@@ -223,6 +239,13 @@ export class SherpaChartLegend extends SherpaElement {
          row instead loses the way back — the legend IS how it comes on again.
          TRAP T-a-legend-row-goes-inactive-it-never-vanishes */
       entry.toggleAttribute('data-empty', Number(item.value) === 0);
+      // Ruled out by the other filters: inactive, and it says why. TRAP T-a-ruled-out-value-is-greyed
+      const out = !isRollup && !!this.#present && !this.#present.has(item.label);
+      entry.toggleAttribute('data-unavailable', out);
+      if (out) {
+        entry.setAttribute('title', RULED_OUT);
+        entry.setAttribute('aria-disabled', 'true');
+      }
       // Strip the button semantics; `disabled` would say the wrong thing.
       if (readonly) {
         entry.setAttribute('role', 'presentation');
@@ -293,7 +316,7 @@ export class SherpaChartLegend extends SherpaElement {
     if (this.hasAttribute('data-readonly')) return;
     const item = (event.target as HTMLElement).closest<HTMLElement>('.item');
     const raw = item?.dataset['index'];
-    if (raw == null || !item) return;
+    if (raw == null || !item || item.hasAttribute('data-unavailable')) return;
     const active = item.getAttribute('aria-pressed') !== 'true';
     const index = Number(raw);
     const isRollup = this.#rolledUp && index === this.#items.length - 1;

@@ -979,7 +979,14 @@ export class SherpaProvider extends SherpaElement {
        is. TRAP T-a-chart-scope-is-its-legend-field */
     const label = nameOf(only);
     source.declarePart(key, { field, only: only as Populatable, ...(label ? { label } : {}) });
+    // What the other filters leave, so the legend greys the rest. TRAP T-a-ruled-out-value-is-greyed
+    const hear = (event: Event): void => {
+      const left = (event as CustomEvent<{ byScope: Record<string, Record<string, string[]>> }>).detail.byScope[key];
+      (el as Picker & { present?: readonly string[] | null }).present = left?.[field] ?? null;
+    };
+    source.addEventListener('present', hear);
     return () => {
+      source.removeEventListener('present', hear);
       source.declarePart(key, undefined);
       unbind();
     };
