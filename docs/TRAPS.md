@@ -15802,3 +15802,33 @@ the reader has answered keeps every row, blank ones too, and row one's
 filter, a Clear from outside — still rebuilds.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
+
+### T-a-nested-menu-answers-for-itself
+
+**A menu inside another menu's rows is its own menu.** TODO 181, 2026-10-01. A
+saved filter's card holds one read-only `sherpa-menu` per field. The outer menu
+read its rows with `querySelectorAll('input')`, which reaches DOWN into every
+nested menu: their ticks counted as the outer's answer, a nested tick fired the
+outer's `menu-change`, and the outer's Clear unticked them. Two single-select
+menus also shared one radio `name`, so ticking in one unticked the other.
+
+Every light-DOM read now goes through `#own()`, which keeps a node only when
+its NEAREST menu is this one. The change and click handlers drop an event from
+a nested menu, and each menu names its radios with its own group. The chip
+reads its menu's inputs the same way.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `test/e2e/reforged-menu.spec.ts`
+
+### T-an-action-row-can-keep-its-menu-open
+
+**An action row closes its card, unless it says not to.** TODO 181,
+2026-10-01. "Edit filter" turns a saved filter's rows editable IN the card, so
+closing the card on the click hid the very rows it opened. A `<button>` with
+`data-stay-open` still reports its `menu-select`; the card stays up. Every other
+action row closes it as before.
+
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.html`
+- Site: `test/e2e/reforged-menu.spec.ts`

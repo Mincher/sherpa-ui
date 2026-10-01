@@ -276,7 +276,9 @@ export class SherpaQuickFilter extends SherpaElement {
     else {
       for (const input of this.querySelectorAll<HTMLInputElement>('[slot="menu"] input')) {
         // The "All" row is a control, not a value; it derives from the rest.
-        if (!input.closest(NON_VALUE_ROWS)) input.checked = want.has(input.value);
+        // A menu nested in the chip's answers for itself. TRAP T-a-nested-menu-answers-for-itself
+        if (input.closest('sherpa-menu') !== menu || input.closest(NON_VALUE_ROWS)) continue;
+        input.checked = want.has(input.value);
       }
     }
     // Read BACK, never trust the ask: a value naming no row never landed.
@@ -904,7 +906,7 @@ export class SherpaQuickFilter extends SherpaElement {
     const body = menu?.dataset['body'];
     const list = body === 'number' || (isFilter && body !== 'date') ? menu?.reading : undefined;
     const all = [...this.querySelectorAll<HTMLInputElement>('[slot="menu"] input')]
-      .filter((i) => !i.closest(NON_VALUE_ROWS))
+      .filter((i) => i.closest('sherpa-menu') === menu && !i.closest(NON_VALUE_ROWS))
       .map((i) => i.value);
     return fieldState(
       {
@@ -1002,9 +1004,9 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** The VISIBLE text of a menu row, falling back to the raw value. */
   #valueLabel(value: string): string {
-    const input = this.menu?.querySelector<HTMLInputElement>(
-      `input[value="${CSS.escape(value)}"]`,
-    );
+    const menu = this.menu;
+    const input = [...(menu?.querySelectorAll<HTMLInputElement>(`input[value="${CSS.escape(value)}"]`) ?? [])]
+      .find((i) => i.closest('sherpa-menu') === menu);
     const row = input?.closest('label');
     return row?.textContent?.trim() || value;
   }

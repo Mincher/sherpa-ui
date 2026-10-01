@@ -83,6 +83,9 @@ const modeOf = (raw: string | undefined): ConditionType =>
  *  takes its options through `populate()`. */
 type FieldEl = HTMLElement & { value: string; populate?: (d: unknown) => unknown };
 
+/** Each menu's own radio group number. */
+let radioGroups = 0;
+
 export class SherpaMenu extends SherpaElement {
   static override css = new URL('./sherpa-menu.css', import.meta.url);
   static override html = new URL('./sherpa-menu.html', import.meta.url);
@@ -348,7 +351,7 @@ export class SherpaMenu extends SherpaElement {
     if (!this.hasAttribute('data-commit-fixed')) this.toggleAttribute('data-commit', on);
     /* A FLIP names both sides. Any previous single pick is left alone —
        re-picking starts a range anyway. */
-    this.querySelector('sherpa-calendar')?.setAttribute('data-type', on ? 'range' : 'single');
+    this.#own('sherpa-calendar')[0]?.setAttribute('data-type', on ? 'range' : 'single');
     this.#syncBody();
     this.emit('menu-range-change', { range: on });
     /* THE SHAPE CHANGED, so what the filter means changed: said as a value
@@ -666,8 +669,9 @@ export class SherpaMenu extends SherpaElement {
 
   /** The field's own values, read from the menu's rows. */
   #fieldValues(): { value: string; label: string }[] {
+    // Its own value ROWS: a nested menu's group is not one. TRAP T-a-nested-menu-answers-for-itself
     return this.#rows()
-      .filter((row) => !row.matches(NON_VALUE_ROWS))
+      .filter((row) => row.matches('.menu-row') && !row.matches(NON_VALUE_ROWS))
       .map((row) => ({
         value: row.querySelector<HTMLInputElement>('input')?.value ?? '',
         label: (row.textContent ?? '').trim(),
@@ -968,7 +972,7 @@ export class SherpaMenu extends SherpaElement {
 
   /** Write a child menu's pick count on its row. An empty badge draws nothing. */
   setCount(value: string, count: number): void {
-    for (const row of this.querySelectorAll<HTMLElement>('.menu-row[data-drill]')) {
+    for (const row of this.#own<HTMLElement>('.menu-row[data-drill]')) {
       if (row.dataset['value'] !== value) continue;
       const badge = row.querySelector('.menu-row-count');
       if (badge) badge.textContent = count > 0 ? String(count) : '';
@@ -1100,7 +1104,7 @@ export class SherpaMenu extends SherpaElement {
       return true;
     }
     if (body === 'date') {
-      const cal = this.querySelector<HTMLElement>('sherpa-calendar');
+      const cal = this.#own<HTMLElement>('sherpa-calendar')[0];
       if (!cal) return true;
       for (const a of ['data-value', 'data-value-start', 'data-value-end']) cal.removeAttribute(a);
       cal.setAttribute('data-type', range ? 'range' : 'single');
@@ -1141,7 +1145,7 @@ export class SherpaMenu extends SherpaElement {
 
   /** A CALENDAR menu's value, or null when this is not one. */
   #calendarValues(): string[] | null {
-    const cal = this.querySelector<HTMLElement>('sherpa-calendar');
+    const cal = this.#own<HTMLElement>('sherpa-calendar')[0];
     if (!cal) return null;
     // A RANGE reports both ends, and only once BOTH are picked.
     const start = cal.dataset['valueStart'];
@@ -1242,7 +1246,7 @@ export class SherpaMenu extends SherpaElement {
     );
     if (!tpl?.content.firstElementChild) return;
 
-    const name = `sherpa-menu-${this.dataset['heading'] ?? 'group'}`;
+    const name = this.#group;
     const stamp = (item: MenuItem): HTMLElement => {
       const line = item.inert ? this.clone('template.menu-line-tpl') : null;
       if (line) {
@@ -1319,10 +1323,19 @@ export class SherpaMenu extends SherpaElement {
   /** Every value row's control; the select-all row is excluded.
    * TRAP T-select-all-is-not-a-value */
   #inputs(): HTMLInputElement[] {
-    return Array.from(
-      this.querySelectorAll<HTMLInputElement>('input[type="checkbox"], input[type="radio"]'),
-    ).filter((i) => !i.closest(NON_VALUE_ROWS));
+    return this.#own<HTMLInputElement>('input[type="checkbox"], input[type="radio"]')
+      .filter((i) => !i.closest(NON_VALUE_ROWS));
   }
+
+  /** This menu's OWN light-DOM nodes: a menu nested in it answers for itself.
+   *  TRAP T-a-nested-menu-answers-for-itself */
+  #own<T extends Element>(selector: string): T[] {
+    return [...this.querySelectorAll<T>(selector)].filter((n) => n.closest('sherpa-menu') === this);
+  }
+
+  /** This menu's radio group: its own, never a nested menu's of the same heading.
+   *  TRAP T-a-nested-menu-answers-for-itself */
+  readonly #group = `sherpa-menu-${++radioGroups}`;
 
   /** The drill trail. An `href` would dismiss the popover.
    * TRAP T-drill-crumbs-carry-no-href */
@@ -1363,7 +1376,7 @@ export class SherpaMenu extends SherpaElement {
 
     if (body === 'date') {
       // SLOTTED, not in this shadow root — see the template.
-      const cal = this.querySelector<HTMLElement>('sherpa-calendar');
+      const cal = this.#own<HTMLElement>('sherpa-calendar')[0];
       if (!cal) return;
       /* ONLY when RANGED. A fresh calendar has no `data-type` at all, and
          writing `single` onto it would be this menu answering a question
@@ -1434,7 +1447,7 @@ export class SherpaMenu extends SherpaElement {
 
     // A shared name makes the browser enforce "one at a time".
     if (this.dataset['select'] === 'single') {
-      const name = `sherpa-menu-${this.dataset['heading'] ?? 'group'}`;
+      const name = this.#group;
       for (const input of this.#inputs()) {
         if (input.type === 'radio' && !input.name) input.name = name;
       }
@@ -1616,7 +1629,7 @@ export class SherpaMenu extends SherpaElement {
 
   /** The select-all control (class `qf-all`). */
   #allRow(): HTMLInputElement | null {
-    return this.querySelector<HTMLInputElement>('.qf-all input');
+    return this.#own<HTMLInputElement>('.qf-all input')[0] ?? null;
   }
 
   /** Tick or clear every value row — writes the BOXES, so a committing menu's
@@ -1732,6 +1745,8 @@ export class SherpaMenu extends SherpaElement {
   #onChange = (event: Event): void => {
     const input = event.target as HTMLInputElement | null;
     if (!input || (input.type !== 'checkbox' && input.type !== 'radio')) return;
+    // A nested menu's row is ITS answer. TRAP T-a-nested-menu-answers-for-itself
+    if (input.closest('sherpa-menu') !== this) return;
     // The SELECT-ALL row drives the others, so it reports for itself.
     if (input.closest('.qf-all')) {
       this.#onSelectAll(input);
@@ -1823,20 +1838,20 @@ export class SherpaMenu extends SherpaElement {
   /** Empty the selection and report it — the checkboxes AND a slotted
    * calendar's date attributes. TRAP T-clear-empties-both-body-shapes */
   #onClear = (): void => {
-    for (const input of this.querySelectorAll<HTMLInputElement>('input')) input.checked = false;
+    for (const input of this.#own<HTMLInputElement>('input')) input.checked = false;
     // A FILTER menu's typed value is part of what Clear empties.
     if (this.dataset['type'] === 'filter') this.conditionValue = '';
     /* BOTH HALVES. Clear means "no filter", and a menu with two modes holds
        its answer in two places — leaving the rows behind gave a cleared chip
        that was still filtering. TRAP T-clear-empties-both-modes */
     if (this.#rowEls().length) this.conditions = [];
-    for (const cal of this.querySelectorAll<HTMLElement>('sherpa-calendar')) {
+    for (const cal of this.#own<HTMLElement>('sherpa-calendar')) {
       for (const a of ['data-value', 'data-value-start', 'data-value-end']) cal.removeAttribute(a);
     }
     // A cleared range is untouched again. The reset writes both ends, which
     // re-flags it, so the flag comes off LAST.
     // TRAP T-a-full-range-is-still-a-range
-    for (const s of this.querySelectorAll<HTMLElement & { range: [number, number] }>('sherpa-slider')) {
+    for (const s of this.#own<HTMLElement & { range: [number, number] }>('sherpa-slider')) {
       s.range = [Number(s.getAttribute('min') ?? 0), Number(s.getAttribute('max') ?? 100)];
       s.removeAttribute('data-touched');
     }
@@ -1862,7 +1877,7 @@ export class SherpaMenu extends SherpaElement {
   /** Drive the slotted calendar to today; stays OPEN.
    * TRAP T-today-and-remove-are-menu-chrome */
   #onToday = (): void => {
-    for (const cal of this.querySelectorAll<HTMLElement & { today?: () => void }>('sherpa-calendar')) {
+    for (const cal of this.#own<HTMLElement & { today?: () => void }>('sherpa-calendar')) {
       cal.today?.();
     }
   };
@@ -1885,6 +1900,8 @@ export class SherpaMenu extends SherpaElement {
        different answer. preventDefault, or the label ticks its box as well.
        TRAP T-a-row-opens-its-child-menu */
     const target = event.target as HTMLElement;
+    // A nested menu's click is its own. TRAP T-a-nested-menu-answers-for-itself
+    if (target.closest('sherpa-menu') !== this) return;
     const row = target.closest<HTMLElement>('.menu-row[data-drill]');
     if (row && !target.closest('input')) {
       event.preventDefault();
@@ -1896,7 +1913,8 @@ export class SherpaMenu extends SherpaElement {
     const button = target.closest('button');
     if (!button || button.disabled) return;
     this.emit('menu-select', { value: button.value, label: button.textContent?.trim() ?? '' });
-    this.hide();
+    // An action that changes the MENU, not the page, keeps it open. TRAP T-an-action-row-can-keep-its-menu-open
+    if (!button.hasAttribute('data-stay-open')) this.hide();
   };
 
   /** A click on no control is the menu's own: the card is drawn over the page,

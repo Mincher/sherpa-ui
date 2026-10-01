@@ -737,3 +737,98 @@ test('a menu takes NO grouping from the grouped button that opens it', async ({ 
   expect(r.grouped).toBe(r.plain);
   expect(r.plain.split(' ').slice(0, 4)).toEqual(['4px', '4px', '4px', '4px']);
 });
+
+/**
+ * A MENU INSIDE A MENU ANSWERS FOR ITSELF — TODO 181: a saved filter's menu
+ * holds each field's own menu. The outer reads, clears and selects-all only
+ * its own rows; a nested change is no outer change; radio groups never mix.
+ * TRAP T-a-nested-menu-answers-for-itself
+ */
+test('a nested menu answers for itself: the outer never reads, clears or hears its rows', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    type M = HTMLElement & { rendered: Promise<void>; values: string[]; items(i: unknown[]): void };
+    const root = document.getElementById('root')!;
+    root.replaceChildren();
+    const outer = document.createElement('sherpa-menu') as M;
+    outer.setAttribute('data-clearable', '');
+    root.append(outer);
+    await outer.rendered;
+    outer.items([{ value: 'a', label: 'A' }]);
+    const inner = document.createElement('sherpa-menu') as M;
+    inner.setAttribute('data-inline', '');
+    outer.append(inner);
+    await inner.rendered;
+    inner.items([{ value: 'x', label: 'X', selected: true }, { value: 'y', label: 'Y' }]);
+    await new Promise((res) => setTimeout(res, 50));
+    const heard: string[] = [];
+    outer.addEventListener('menu-change', (e) => { if (e.target === outer) heard.push('outer'); });
+    // A nested tick: the inner's answer, never the outer's.
+    inner.querySelector<HTMLInputElement>('input[value="y"]')!.click();
+    await new Promise((res) => setTimeout(res, 50));
+    const values = { outer: outer.values, inner: inner.values };
+    const heardBeforeClear = [...heard];
+    // The outer's Clear (which reports its OWN change) leaves the nested ticks.
+    outer.shadowRoot!.querySelector<HTMLElement>('.clear')?.shadowRoot?.querySelector<HTMLElement>('button')?.click();
+    await new Promise((res) => setTimeout(res, 50));
+    return { values, heard: heardBeforeClear, afterClear: inner.values };
+  });
+  expect(r.values.outer).toEqual([]);
+  expect([...r.values.inner].sort()).toEqual(['x', 'y']);
+  expect(r.heard).toEqual([]);
+  expect([...r.afterClear].sort()).toEqual(['x', 'y']);
+});
+
+test('two single-select menus of the same heading keep their own radio groups', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    type M = HTMLElement & { rendered: Promise<void>; items(i: unknown[]): void };
+    const root = document.getElementById('root')!;
+    root.replaceChildren();
+    const make = async (): Promise<M> => {
+      const m = document.createElement('sherpa-menu') as M;
+      m.setAttribute('data-select', 'single');
+      m.setAttribute('data-heading', 'Owner');
+      m.setAttribute('data-inline', '');
+      root.append(m);
+      await m.rendered;
+      m.items([{ value: 'me', label: 'Me' }, { value: 'anyone', label: 'Anyone' }]);
+      return m;
+    };
+    const one = await make();
+    const two = await make();
+    await new Promise((res) => setTimeout(res, 50));
+    one.querySelector<HTMLInputElement>('input[value="me"]')!.click();
+    two.querySelector<HTMLInputElement>('input[value="anyone"]')!.click();
+    return {
+      one: one.querySelector<HTMLInputElement>('input[value="me"]')!.checked,
+      two: two.querySelector<HTMLInputElement>('input[value="anyone"]')!.checked,
+      apart: one.querySelector('input')!.name !== two.querySelector('input')!.name,
+    };
+  });
+  expect(r).toEqual({ one: true, two: true, apart: true });
+});
+
+/** TRAP T-an-action-row-can-keep-its-menu-open */
+test('an action row with data-stay-open reports and keeps the card open; a plain one closes it', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    type M = HTMLElement & { rendered: Promise<void>; show(t?: Element): void; open: boolean };
+    const root = document.getElementById('root')!;
+    root.replaceChildren();
+    const trigger = document.createElement('button');
+    root.append(trigger);
+    const menu = document.createElement('sherpa-menu') as M;
+    menu.innerHTML = '<button type="button" value="stay" data-stay-open>Stay</button><button type="button" value="go">Go</button>';
+    root.append(menu);
+    await menu.rendered;
+    const heard: string[] = [];
+    menu.addEventListener('menu-select', (e) => heard.push((e as CustomEvent).detail.value));
+    menu.show(trigger);
+    await new Promise((res) => setTimeout(res, 50));
+    menu.querySelector<HTMLElement>('[value="stay"]')!.click();
+    await new Promise((res) => setTimeout(res, 50));
+    const afterStay = menu.hasAttribute('open');
+    menu.querySelector<HTMLElement>('[value="go"]')!.click();
+    await new Promise((res) => setTimeout(res, 50));
+    return { heard, afterStay, afterGo: menu.hasAttribute('open') };
+  });
+  expect(r).toEqual({ heard: ['stay', 'go'], afterStay: true, afterGo: false });
+});
