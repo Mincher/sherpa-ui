@@ -1583,15 +1583,7 @@ const gridUtilityBlock = `  /* Layout grid — the track system views place thei
   .sherpa-grid[data-row-count]:not([data-rows='fit']) {
     grid-template-rows: repeat(var(--_row-count), minmax(0, 1fr));
   }
-  .sherpa-grid[data-row-count='1'] { --_row-count: 1; }
-  .sherpa-grid[data-row-count='2'] { --_row-count: 2; }
-  .sherpa-grid[data-row-count='3'] { --_row-count: 3; }
-  .sherpa-grid[data-row-count='4'] { --_row-count: 4; }
-  .sherpa-grid[data-row-count='5'] { --_row-count: 5; }
-  .sherpa-grid[data-row-count='6'] { --_row-count: 6; }
-  .sherpa-grid[data-row-count='8'] { --_row-count: 8; }
-  .sherpa-grid[data-row-count='10'] { --_row-count: 10; }
-  .sherpa-grid[data-row-count='12'] { --_row-count: 12; }
+${Array.from({ length: 12 }, (_, i) => `  .sherpa-grid[data-row-count='${i + 1}'] { --_row-count: ${i + 1}; }`).join('\n')}
 
   /* Column spans — a child says what it IS; the breakpoint blocks above turn
      that into a span. The table and the reasoning live with COL_SPANS in
@@ -1601,15 +1593,7 @@ const gridUtilityBlock = `  /* Layout grid — the track system views place thei
   /* Row spans — a child N grid rows tall. Only meaningful where the rows HAVE
      a height, which is data-rows="fixed" or "fit"; in the default mode rows are
      auto and a span collapses to the content. */
-  .sherpa-grid > [data-row-span='1']  { grid-row: span 1; }
-  .sherpa-grid > [data-row-span='2']  { grid-row: span 2; }
-  .sherpa-grid > [data-row-span='3']  { grid-row: span 3; }
-  .sherpa-grid > [data-row-span='4']  { grid-row: span 4; }
-  .sherpa-grid > [data-row-span='5']  { grid-row: span 5; }
-  .sherpa-grid > [data-row-span='6']  { grid-row: span 6; }
-  .sherpa-grid > [data-row-span='8']  { grid-row: span 8; }
-  .sherpa-grid > [data-row-span='10'] { grid-row: span 10; }
-  .sherpa-grid > [data-row-span='12'] { grid-row: span 12; }
+${Array.from({ length: 12 }, (_, i) => `  .sherpa-grid > [data-row-span='${i + 1}']${i < 9 ? ' ' : ''} { grid-row: span ${i + 1}; }`).join('\n')}
 
   /* ── Row sizing — two variants, and the default is neither ───────────────
      No attribute: rows size to their CONTENT and the page scrolls, which is

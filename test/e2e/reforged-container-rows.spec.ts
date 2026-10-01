@@ -18,7 +18,7 @@ test('the height is N row units plus the gutters between them', async ({ page })
     const root = document.getElementById('root')!;
     root.innerHTML = '';
     const out: Record<string, number> = {};
-    for (const n of [4, 6, 8]) {
+    for (const n of [4, 6, 7, 8, 9, 11]) {
       const el = document.createElement('sherpa-container') as HTMLElement & { rendered?: Promise<void> };
       el.setAttribute('data-row-span', String(n));
       el.innerHTML = '<div>x</div>';
@@ -39,6 +39,8 @@ test('the height is N row units plus the gutters between them', async ({ page })
   expect(r.r4).toBe(Math.round(expected(4)));
   expect(r.r6).toBe(Math.round(expected(6)));
   expect(r.r8).toBe(Math.round(expected(8)));
+  // EVERY count 1–12: an unnamed one fell through to 6 rows. TRAP T-a-row-span-is-keyed-by-value
+  expect([r.r7, r.r9, r.r11]).toEqual([7, 9, 11].map((n) => Math.round(expected(n))));
   // And it really is a ladder, not one fixed number.
   expect(r.r8).toBeGreaterThan(r.r6);
   expect(r.r6).toBeGreaterThan(r.r4);

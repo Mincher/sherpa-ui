@@ -19,7 +19,7 @@ export class SherpaLayoutGrid extends SherpaElement {
     },
     'data-row-count': {
       type: 'enum', kind: 'style',
-      values: ['1', '2', '3', '4', '5', '6', '8', '10', '12'],
+      values: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'],
     },
     'data-rows': { type: 'enum', kind: 'style', values: ['fit', 'fixed'] },
     /**

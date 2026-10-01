@@ -879,8 +879,11 @@
   .sherpa-grid[data-row-count='4'] { --_row-count: 4; }
   .sherpa-grid[data-row-count='5'] { --_row-count: 5; }
   .sherpa-grid[data-row-count='6'] { --_row-count: 6; }
+  .sherpa-grid[data-row-count='7'] { --_row-count: 7; }
   .sherpa-grid[data-row-count='8'] { --_row-count: 8; }
+  .sherpa-grid[data-row-count='9'] { --_row-count: 9; }
   .sherpa-grid[data-row-count='10'] { --_row-count: 10; }
+  .sherpa-grid[data-row-count='11'] { --_row-count: 11; }
   .sherpa-grid[data-row-count='12'] { --_row-count: 12; }
 
   /* Column spans — a child says what it IS; the breakpoint blocks above turn
@@ -897,8 +900,11 @@
   .sherpa-grid > [data-row-span='4']  { grid-row: span 4; }
   .sherpa-grid > [data-row-span='5']  { grid-row: span 5; }
   .sherpa-grid > [data-row-span='6']  { grid-row: span 6; }
+  .sherpa-grid > [data-row-span='7']  { grid-row: span 7; }
   .sherpa-grid > [data-row-span='8']  { grid-row: span 8; }
+  .sherpa-grid > [data-row-span='9']  { grid-row: span 9; }
   .sherpa-grid > [data-row-span='10'] { grid-row: span 10; }
+  .sherpa-grid > [data-row-span='11'] { grid-row: span 11; }
   .sherpa-grid > [data-row-span='12'] { grid-row: span 12; }
 
   /* ── Row sizing — two variants, and the default is neither ───────────────

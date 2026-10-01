@@ -104,6 +104,14 @@ test('a row is one grid row whatever its content', async ({ page }) => {
   expect(r.fillerTop).toBe(PAD + r.rowH + r.gap);
 });
 
+/* Every count 1–12: 7, 9 and 11 were missing. TRAP T-a-row-span-is-keyed-by-value */
+test('a fit grid with data-row-count 7 draws six grid rows, then the filler', async ({ page }) => {
+  const one = '<div data-col-span="full" style="background:#eef">r</div>';
+  const r = await build(page, 'fit', one.repeat(6) + FILLER, 7, 1000);
+  expect(r.heights.slice(0, 6)).toEqual(Array(6).fill(r.rowH));
+  expect(r.fillerTop).toBe(PAD + 6 * (r.rowH + r.gap));
+});
+
 test('a grid of ONLY a filler gives it everything', async ({ page }) => {
   const r = await build(page, 'fit', FILLER, 1);
   expect(r.fillerH).toBe(500 - 2 * PAD);

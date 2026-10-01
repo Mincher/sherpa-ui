@@ -130,7 +130,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 35b | 161 | The app header's shadow FADES in, very quickly, as the Context scrolls under it | quick |
 | ✅ | 35c | 163 | The app shell's panel areas are 150% of their width today, at the least | quick |
 | ✅ | 35a | 146 | The app shell's FIXED panel areas resize by dragging their inner edge; the content reflows; two levels of container query | feature |
-| ⬜ | 35b | 177 | AFTER the example app moves (37) — an app setting: resize layout grid content by handles in its gutters, snapping to columns and rows | feature |
+| 🚧 | 35b | 177 | AFTER the example app moves (37) — an app setting: resize layout grid content by handles in its gutters, snapping to columns and rows | feature |
 | ⬜ | 35c | 183 | REVIEW — how a consumer builds an app on Sherpa: use, configure, extend, scaffold, the data layer; and for AI agents | explore |
 | ⬜ | 35c2 | 185 | Sherpa Demos: `definitions/` becomes `views/` (JSON, templates in HTML by id), `view-schemas/`; rethink `contexts/` | refactor |
 | ⬜ | 35d | 184 | INVESTIGATE — does sherpa-ui need Node to ship? A CDN, a script or a small zip may suit it better | explore |
@@ -3043,6 +3043,27 @@ already at their minimum span) then dragging won't increase the width.*
 to span lower than the highest min row span on elements in that row."*
 
 Starts after 37 step 4 — done 2026-10-01, so it may start. Builds on 146's edge helper (`src/core/ui/edge-resize.ts`).
+
+**Plan, 2026-10-01.** `<sherpa-layout-grid data-resizable>` draws a handle
+(a focusable separator) in each gutter. Drag it, or use the arrow keys. A
+pure solver moves ONE line: the card or row across it gives way first, down
+to its floor (3 columns; a row's highest `data-min-row-span`), then the next.
+Free space is used last. A step nobody can give is dropped. The grid writes
+only its own attributes — `data-col-span-<C>` and `data-row-span-<C>`, C the
+column count now — and reports `layout-change { layout }` on release. Setting
+`grid.layout` puts a layout back, silently. Sherpa Demos turns it on in
+Settings › Application › Layout and keeps each Context's layout by card id.
+Seven library steps, then the Demos part.
+
+**Built this way — say to change any:**
+1. What gives way: the card or row across the line, then the next (your
+   "can't force neighbouring rows lower than…"). Not: free space first.
+2. Handles at 8 and 12 columns, each width keeping its own layout (with the
+   nav pinned at 1440 the page has 8). Not: 12 columns only.
+3. Heights are kept per width too.
+4. A layout is kept per page (Context), by card — not per View.
+5. Turning the setting off hides the handles and keeps the sizes; "Reset card
+   sizes" forgets them.
 
 ### `[x]` ✅ 146 — The app shell's FIXED panel areas resize by dragging their edge
 

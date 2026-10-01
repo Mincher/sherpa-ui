@@ -23,7 +23,7 @@ export class SherpaContainer extends SherpaElement {
   static override props = {
     'data-fill': { type: 'boolean', kind: 'style' },
     'data-padding': { type: 'enum', kind: 'style', values: ['lg', 'none', 'sm'] },
-    'data-row-span': { type: 'enum', kind: 'style', values: ['1', '10', '12', '2', '3', '4', '5', '6', '8'] },
+    'data-row-span': { type: 'enum', kind: 'style', values: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'] },
     'data-padding-inline': { type: 'enum', kind: 'style', values: ['none', 'sm', 'md', 'lg'] },
     /* Its data's state — written by the provider. TRAP T-a-container-shows-its-datas-state */
     'data-state': { type: 'enum', kind: 'visibility', values: ['empty', 'no-matches', 'error'] },

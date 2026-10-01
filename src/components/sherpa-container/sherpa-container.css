@@ -73,8 +73,11 @@
 :host([data-row-span="4"]),
 :host([data-row-span="5"]),
 :host([data-row-span="6"]),
+:host([data-row-span="7"]),
 :host([data-row-span="8"]),
+:host([data-row-span="9"]),
 :host([data-row-span="10"]),
+:host([data-row-span="11"]),
 :host([data-row-span="12"]) {
   block-size: calc(
     var(--_rows) * var(--sherpa-layout-grid-row-height, 88px)
@@ -90,8 +93,11 @@
 :host([data-row-span="4"]) { --_rows: 4; }
 :host([data-row-span="5"]) { --_rows: 5; }
 :host([data-row-span="6"]) { --_rows: 6; }
+:host([data-row-span="7"]) { --_rows: 7; }
 :host([data-row-span="8"]) { --_rows: 8; }
+:host([data-row-span="9"]) { --_rows: 9; }
 :host([data-row-span="10"]) { --_rows: 10; }
+:host([data-row-span="11"]) { --_rows: 11; }
 :host([data-row-span="12"]) { --_rows: 12; }
 
 /* `min-block-size: 0` matters: a flex item's default floor is its min-content

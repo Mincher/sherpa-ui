@@ -35,7 +35,7 @@
       "type": "string",
       "observed": false,
       "kind": "style",
-      "description": "set an explicit row count (1|2|3|4|5|6|8|10|12); a fit grid needs it"
+      "description": "set an explicit row count (1–12); a fit grid needs it"
     },
     {
       "$type": "prop",

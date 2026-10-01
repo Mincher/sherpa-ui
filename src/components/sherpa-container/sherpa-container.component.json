@@ -308,17 +308,10 @@
     {
       "$type": "prop",
       "name": "data-row-span",
-      "type": "enum",
+      "type": "string",
       "observed": false,
       "kind": "style",
-      "values": [
-        "4",
-        "6",
-        "8",
-        "10",
-        "12"
-      ],
-      "description": "4 | 6 | 8 | 10 | 12 — a FIXED height of N layout-grid rows. The body's content fills it, so a chart draws into the whole card and a data grid scrolls inside it instead of the card growing with the data."
+      "description": "1–12 — a FIXED height of N layout-grid rows. The body's content fills it, so a chart draws into the whole card and a data grid scrolls inside it instead of the card growing with the data."
     },
     {
       "$type": "prop",
@@ -412,13 +405,28 @@
     },
     {
       "$type": "state",
+      "name": "7",
+      "selector": ":host([data-row-span=\"7\"])"
+    },
+    {
+      "$type": "state",
       "name": "8",
       "selector": ":host([data-row-span=\"8\"])"
     },
     {
       "$type": "state",
+      "name": "9",
+      "selector": ":host([data-row-span=\"9\"])"
+    },
+    {
+      "$type": "state",
       "name": "10",
       "selector": ":host([data-row-span=\"10\"])"
+    },
+    {
+      "$type": "state",
+      "name": "11",
+      "selector": ":host([data-row-span=\"11\"])"
     },
     {
       "$type": "state",
