@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**29 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**28 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -112,7 +112,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31r | 171 | The filter panel's search matches FIELD labels as well as value labels | feature |
 | ✅ | 31s | 172 | In the filter panel, each chip of a multi-value filter shows its own count badge | feature |
 | ✅ | 31t | 173 | BUG: a panel section header's count badge ADDS its values' counts; it should be the UNIQUE results of them all | bug |
-| 🚧 | 31u | 174 | Two View fields that share no rows return NOTHING, though each badge has a count; a filterset's fields should limit each other's options | bug |
+| ✅ | 31u | 174 | Two View fields that share no rows return NOTHING, though each badge has a count; a filterset's fields should limit each other's options | bug |
 | ✅ | 31v | 176 | A greyed-out chip says WHY in its tooltip, in a few simple words | feature |
 | ✅ | 31w | 180 | A picked value a LATER filter rules out goes inactive and leaves the query; the latest filter wins | feature |
 | ✅ | 31x | 179 | Every place a ruled-out value shows is inactive — a chart legend's item too | bug |
@@ -1699,7 +1699,7 @@ provider passes it to `source.bind()`, and `describe(scope)` reports `shows`
 whole file) — so a chart's section shows none, and `table-columns` stands in:
 that is 115. `T-a-scope-says-what-it-shows`
 
-### `[ ]` 174 — Two answered fields return nothing; a filterset's fields should limit each other
+### `[x]` ✅ 174 — Two answered fields return nothing; a filterset's fields should limit each other
 
 Will, 2026-10-01: *"We also need to check the logic. I have set the following
 conditions: Customer - Adventure Works (Badge count 160), Region - America
@@ -1769,6 +1769,12 @@ panel's value chips. Its tooltip says "No matches with your other filters."
 Query, told to each control as `drawPresent`. Probed on the Dashboard: with
 Customer = Adventure Works, Latin America is greyed.
 `T-a-ruled-out-value-is-greyed`
+
+**✅ Closed 2026-10-01.** Every part Will asked for is built: the AND logic
+checked, the data fixed, both-ways limiting, the trickle down, the setting
+(Settings, and the ⋮ menus — 178), a later answer setting an earlier pick
+aside (180), and legends (179). Grouping fields into a FILTERSET is 99, which
+still waits on its two choices.
 
 ### `[x]` ✅ 180 — A picked value a later filter rules out goes inactive and leaves the query
 
