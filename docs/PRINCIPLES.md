@@ -76,7 +76,8 @@ codebase obeys them.
 
 **15. `data-*` is the public API.** Native attributes (`disabled`, `name`,
 `value`) stay unprefixed. Component-private state is `--_*`, never a public
-`data-*`.
+`data-*`. `data-type` is the component's Figma **Type** axis — whatever that
+axis picks, a control, a shape, a look or a template (Will, 11d, 2026-10-01).
 
 **16. CSS owns visibility.** JS sets a `data-*` on the host; CSS selects it. JS
 never touches `.hidden`, `display` or `visibility` on a shadow node.

@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**35 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**31 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -29,7 +29,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 2a | 103 | Rows with no key get one from the data layer — Sherpa's own, never sent out | foundation |
 | ❓ | 3 | 38 | One model, one builder, one owner — what is left | refactor |
 | ✅ | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
-| ❓ | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
+| 🚧 | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | 🚧 | 5a | 113 | EXPLORE — state first, then render, in every component; a skeleton while the first render waits | explore |
 | | | | **C — Contained bugs** | |
 | ✅ | 5b | 142 | The shell's panel areas must not scroll with the page: they sit outside the scrolling wrapper | quick |
@@ -145,15 +145,15 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 45a | 136 | A FIND input: jump to the next or previous match; an optional Find & Replace menu | component |
 | ✅ | 46 | 27 | A consumer can supply their OWN templates and CSS | feature |
 | ✅ | 47 | 25 | `sherpa-layout-canvas` + minimap | component |
-| ❓ | 48 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
+| ✅ | 48 | 26 | A `Grouped` mode for the content area, and plain grid templates? | feature |
 | ⬜ | 48a | 170 | MAJOR, LAST, and only when Will says — the data layer runs on the client, the server, or both, whole or in parts | explore |
 | | | | **J — Tidy-ups and renames** | |
 | ✅ | 49 | 11 | `sherpa-group`: what is left | tidy |
 | ❓ | 50 | 28 | A Figma component is NOT always a web component | tidy |
-| ❓ | 51 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
-| ❓ | 52 | 33 | Density as step offsets, and a breakpoint step | tokens |
+| ✅ | 51 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
+| ✅ | 52 | 33 | Density as step offsets, and a breakpoint step | tokens |
 | ❓ | 53 | 36 | CSS: compiled where it should inherit? | tidy |
-| ❓ | 54 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
+| ✅ | 54 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
 | ✅ | 55 | 84 | Use the platform: Intl for money, units and deltas; Temporal in the calendar | refactor |
 | ❓ | 56 | 81 | Component contracts move from YAML to JSON | refactor |
 | ✅ | 56a | 111 | A spec types every JS property as `string` — `reading`, `conditions`, `open` | tidy |
@@ -502,8 +502,9 @@ Will, 2026-09-25:
 4. **Split the example app into its own repo**, LAST. Anything it cannot do
    from outside the library is a boundary the library has not drawn. Its
    pages are JSON now (`examples/definitions/`, Will 2026-09-29), so the folder
-   moves with it. **❓ Waits on you:** a new repository is yours to make. Say
-   where it lives, and I move the example app into it.
+   moves with it. **Will, 2026-10-01:** *"There's no repo just yet. Just a
+   local, sibling, folder to sherpa-ui called 'Sherpa Demos'."* So the
+   example app moves to `../Sherpa Demos`, last.
 
 ---
 
@@ -3352,7 +3353,7 @@ Two things to know:
 - **It is on no example page yet** — it is in the sandbox
   (`npm run sandbox`). 78, the workflow creator, is where it would live.
 
-### `[ ]` ❓ 26 — A `Grouped` mode for the content area
+### `[x]` ✅ 26 — A `Grouped` mode for the content area
 
 Every container in the content area reads as ONE stitched object: gutters
 `0px`, MID rounding on every container, only the top-most keeps its own.
@@ -3393,6 +3394,9 @@ now:
 - **B: add areas beside it**, as an opt-in for a FIXED layout
   (`data-areas`, a template per breakpoint), for a page whose parts never
   change.
+
+**✅ Will, 2026-10-01: A.** The grid stays as it is; the Grouped mode was
+built already. Nothing left.
 
 ### `[ ]` 170 — MAJOR, later: the data layer on the client, the server, or both
 
@@ -3480,7 +3484,7 @@ neither is clear:
   One element per cell would be about 350 shadow roots on one Records page.
 - **B: keep it**, for the rebuild of the grid from Grid Cells.
 
-### `[ ]` ❓ 30 — Do we still need `icon-paths.ts` and `render-icon.ts`?
+### `[x]` ✅ 30 — Do we still need `icon-paths.ts` and `render-icon.ts`?
 
 Will, twice: *"HTML & CSS should be handling this."*
 
@@ -3520,7 +3524,10 @@ before anything draws. A sprite is a file the browser caches.
   stays, for `hasIcon`. The icon tests read the sprite instead.
 - **B: keep it as it is.** It works; its cost is the 314 KB.
 
-### `[~]` ❓ 33 — Density as step offsets, and a breakpoint step
+**✅ Will, 2026-10-01: no sprite.** *"SVGs are fine for now. They are
+temporary until we connect a FA license."* Kept as they are.
+
+### `[x]` ✅ 33 — Density as step offsets, and a breakpoint step
 
 Will, 2026-09-23: in code, two scalings would do what Figma's remapped modes
 do — by BREAKPOINT (bigger on touch), then by MODE (compact / comfortable),
@@ -3565,6 +3572,9 @@ step bigger on a small screen, before density.
 - **B: one step up below 1280 px** (tablet and phone), as the item says.
   Every layout and test at a narrow width moves.
 
+**✅ Will, 2026-10-01:** *"Not sure it matters any more."* No breakpoint
+step. Step 1 stands; step 3 has nothing to consume it.
+
 ### `[ ]` ❓ 36 — CSS: compiled where it should inherit?
 
 Will, 2026-09-24: the system is designed on INHERITANCE, so why is so much CSS
@@ -3594,7 +3604,7 @@ needs a generator.
 - **B: raise the floor to Safari 17.2** — the nesting ships as written, and
   preset-env goes from the build.
 
-### `[ ]` ❓ 11d — `data-type` means nine things; `data-empty` means three
+### `[x]` ✅ 11d — `data-type` means nine things; `data-empty` means three
 
 `data-type` selects: which control element, how many thumbs, pill vs
 rectangle, square vs labelled, a look, a template variant, a scope, a
@@ -3616,6 +3626,10 @@ three components' own words for "nothing to show".
 - **B: reserve `data-type` for template selection**, and rename the other
   five to new attributes. Each rename breaks the Figma mapping and every
   page that sets it.
+
+**✅ Will, 2026-10-01:** *"Whatever makes most sense for Sherpa."* So A:
+`data-type` is the component's Figma Type axis, said once in PRINCIPLES
+rule 15. Nothing is renamed.
 
 ### `[x]` ✅ 84 — Use the platform: Intl for money, units and deltas; Temporal in the calendar
 
@@ -4431,6 +4445,7 @@ One line each. The detail is in git and in the trap named.
 - 68, 27: the templater owns a component's files — your own markup and sheets by `useTemplate`, and a live reload that restyles in place — `T-a-templater-owns-the-files`
 - 25: `sherpa-layout-canvas` — an infinite canvas that pans and zooms, with a minimap and four floating controls — `T-a-canvas-owns-its-view`
 - 33 (step 1): a density carries only the 27 space and size values Figma overrides; a stale copy had painted an old success green — `T-a-density-mode-is-one-step`
+- 26, 30, 33, 11d: closed by Will's rulings — the grid stays, the SVG icons stay, no breakpoint step, `data-type` is Figma's Type axis
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on
