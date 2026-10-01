@@ -230,8 +230,10 @@ export function moveHandle(m: GridModel, h: GridHandle, steps: number): boolean 
   let moved = false;
   if (h.axis === 'x') {
     const name = `data-col-span-${m.count}`;
+    const band = m.bands[h.band]!;
     // The first width at a count freezes every child, so no name reflows around it.
     const frozen = m.bands.flatMap((b) => b.kids).every((k) => k.hasAttribute(name));
+    if (!frozen && band.spans.every((s, i) => s === spans[i])) return false;
     if (!frozen) for (const b of m.bands) b.kids.forEach((k, i) => { moved = put(k, name, b.spans[i]!) || moved; });
     m.bands[h.band]!.kids.forEach((k, i) => { moved = put(k, name, spans[i]!) || moved; });
     return moved;
@@ -242,7 +244,9 @@ export function moveHandle(m: GridModel, h: GridHandle, steps: number): boolean 
     if (spans[b] === band.rows && !band.kids.some((k) => k.hasAttribute(name))) continue;
     for (const kid of band.kids) moved = put(kid, name, spans[b]!) || moved;
   }
-  if (m.fit) {
+  // Counted only once a row has moved: an untouched fit grid keeps its authored count.
+  // TRAP T-a-fit-grid-counts-its-resized-rows
+  if (m.fit && (moved || m.grid.style.getPropertyValue('--_row-count'))) {
     const total = String(rows.reduce((t, _, b) => t + spans[b]!, 0) + 1);
     if (m.grid.style.getPropertyValue('--_row-count') !== total) {
       m.grid.style.setProperty('--_row-count', total);

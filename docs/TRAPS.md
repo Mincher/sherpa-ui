@@ -11621,9 +11621,14 @@ Seven shapes were measured before the count existed. Every one failed:
 `repeat(calc(n - 1), …)` works in all three engines. `repeat(0, …)` does not —
 it drops the whole template — so a count of 1 is its own rule.
 
+A DRAGGED fit grid counts its own rows (`T-a-fit-grid-counts-its-resized-rows`),
+and a test fixture must still state every card's rows: without them the
+filler lands in row 3 of 5, not the last.
+
 - Site: `scripts/project-tokens.mjs`
 - Site: `src/components/sherpa-layout-grid/grouped-grid.ts`
 - Site: `test/e2e/reforged-layout-grid.spec.ts`
+- Site: `test/e2e/reforged-layout-grid-resize.spec.ts`
 
 
 ### T-a-fit-grid-needs-a-sized-parent
@@ -15913,6 +15918,7 @@ the authored layout back is a plain removal.
 - Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.html`
 - Site: `test/e2e/reforged-layout-grid.spec.ts`
 - Site: `src/components/sherpa-layout-grid/grid-resize.ts`
+- Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.ts`
 
 ### T-a-gutter-moves-a-line
 
@@ -15957,4 +15963,21 @@ After a re-stamp, focus goes back to the handle with the same key. The
 would delete it.
 
 - Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.ts`
+- Site: `test/e2e/reforged-layout-grid-resize.spec.ts`
+
+### T-a-fit-grid-counts-its-resized-rows
+
+**A dragged fit grid writes its row count INLINE, beside the author's.**
+TODO 177. A fit grid's rows are `repeat(--_row-count − 1, row) 1fr`, and the
+author states the count (`data-row-count`). When a drag grows a row, the
+count must grow with it, or the filler's `1fr` lands under the grown cards.
+The grid writes `--_row-count` on its own inline style — which beats the
+`[data-row-count='N']` rule — and never touches `data-row-count`. So the
+attribute can say 5 while 7 is drawn: read `grid.layout.rowCount`.
+
+It is written only once a row has moved: an untouched grid keeps its authored
+count. The filler gives only whole rows, down to two (its floor), so it keeps
+the part-row left over and still ends at the grid's foot.
+
+- Site: `src/components/sherpa-layout-grid/grid-resize.ts`
 - Site: `test/e2e/reforged-layout-grid-resize.spec.ts`

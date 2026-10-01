@@ -4,11 +4,15 @@
  * The tracks are CSS (`.sherpa-grid`, projected from Figma). This file supplies
  * only each child's `data-group`, which `data-grouped` cannot work out in CSS.
  *
- * Fires: nothing — a grid has no interactions of its own.
+ * Fires: layout-change — a child was resized from a gutter. detail: { layout }
  */
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { resizeByEdge } from '../../core/ui/edge-resize.js';
 import { measureGroupedGrid, watchGrid } from './grouped-grid.js';
-import { gridHandles, handleValues, readGrid, type GridHandle } from './grid-resize.js';
+import {
+  gridHandles, handleValues, moveHandle, readGrid, readLayout, writeLayout,
+  type GridHandle, type GridLayout, type GridModel,
+} from './grid-resize.js';
 
 export class SherpaLayoutGrid extends SherpaElement {
   static override css = new URL('./sherpa-layout-grid.css', import.meta.url);
@@ -55,8 +59,71 @@ export class SherpaLayoutGrid extends SherpaElement {
     watchGrid(this, layout, { signal: this.signal });
   }
 
+  /**
+   * The layout dragged into it: each child's counted spans, per column count.
+   * SET puts one back — or none, the authored layout — silently.
+   * TRAP T-a-dragged-layout-is-kept-per-column-count
+   */
+  get layout(): GridLayout {
+    return readLayout(this);
+  }
+
+  set layout(next: GridLayout | null) {
+    writeLayout(this, next);
+  }
+
   /** The handle keys last stamped. */
   #keys = '';
+
+  /** The gesture in hand, planned from the grid as it was when it began. */
+  #gesture: { model: GridModel; handle: GridHandle; start: number; pitch: number; before: string } | null = null;
+
+  /** A handle as the grid is drawn now. */
+  #now(key: string): { model: GridModel; handle: GridHandle; pitch: number } | null {
+    const model = readGrid(this);
+    const handle = model && gridHandles(model).find((h) => h.key === key);
+    return model && handle ? { model, handle, pitch: handle.axis === 'x' ? model.pitchX : model.pitchY } : null;
+  }
+
+  /** A handle moved: plan it from the gesture's start, write the spans; report on release. */
+  #move(key: string, px: number, done: boolean): void {
+    if (this.#gesture?.handle.key !== key) {
+      const at = this.#now(key);
+      if (!at) return;
+      const span = at.handle.segs[at.handle.line]!.span;
+      this.#gesture = { ...at, start: span * at.pitch, before: JSON.stringify(readLayout(this)) };
+    }
+    const g = this.#gesture!;
+    moveHandle(g.model, g.handle, Math.round((px - g.start) / g.pitch));
+    if (!done) return;
+    this.#gesture = null;
+    const layout = readLayout(this);
+    if (JSON.stringify(layout) !== g.before) this.emit('layout-change', { layout });
+    // Re-stamped once the handle is let go. TRAP T-a-handle-is-never-restamped-mid-drag
+    requestAnimationFrame(() => this.#drawHandles());
+  }
+
+  /** Wire one handle: it looks its line up by key, as a handle moves in place. */
+  #wire(node: HTMLElement, h: GridHandle): void {
+    const key = h.key;
+    const span = (): { now: number; min: number; max: number; pitch: number } | null => {
+      const at = this.#now(key);
+      if (!at) return null;
+      const told = handleValues(at.handle, at.model.count);
+      return { ...told, pitch: at.pitch };
+    };
+    resizeByEdge(node, {
+      axis: h.axis,
+      grows: 1,
+      step: () => span()?.pitch ?? 0,
+      measure: () => { const s = span(); return s ? s.now * s.pitch : 0; },
+      min: () => { const s = span(); return s ? s.min * s.pitch : 0; },
+      max: () => { const s = span(); return s ? s.max * s.pitch : 0; },
+      describe: () => { const at = this.#now(key); return at ? handleValues(at.handle, at.model.count) : { now: 0 }; },
+      apply: (px, done) => this.#move(key, px, done),
+      signal: this.signal,
+    });
+  }
   /** Children with no id are named once per grid. */
   #warned = false;
 
@@ -85,7 +152,12 @@ export class SherpaLayoutGrid extends SherpaElement {
     };
     if (keys !== this.#keys && !this.$('.handle[data-dragging]')) {
       const focused = (this.shadowRoot?.activeElement as HTMLElement | null)?.dataset['key'];
-      this.renderItems('.handles', 'template.handle-tpl', handles, { after: place });
+      this.renderItems('.handles', 'template.handle-tpl', handles, {
+        after: (node, h) => {
+          place(node, h);
+          this.#wire(node, h);
+        },
+      });
       this.#keys = keys;
       if (focused) this.$<HTMLElement>(`.handle[data-key="${CSS.escape(focused)}"]`)?.focus();
       return;

@@ -25,6 +25,9 @@
                    a layout back) writes it
     data-row-span-8 / data-row-span-12  on a CHILD: the same, for its rows.
                    TRAP T-a-dragged-layout-is-kept-per-column-count
+
+  Fires:
+    layout-change — a child was resized from a gutter, dragged or by the keys. detail: { layout }
 -->
 <template id="default">
   <!-- The base class writes `data-has-content-slot` here. Nothing reads it on a
