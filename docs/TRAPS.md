@@ -1706,7 +1706,6 @@ body: it would have nothing to project into.
 TRAP T-a-menu-owns-its-own-bodies
 
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/core/ui/filter-menu.ts`
 
 ### T-range-switch-swaps-not-rebuilds
@@ -1742,7 +1741,6 @@ why this reaches the toolbar where a bare checkbox's would not.
 template.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
@@ -2571,7 +2569,6 @@ A `date` offers NO operator list at all: a date is answered by clicking a
 calendar.
 
 - Site: `src/core/data/store.ts`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
@@ -2767,18 +2764,6 @@ of keys and survives anything.
 
 It is optional: a grid given no key behaves exactly as it always did, and
 `selectedKeys` returns empty rather than approximating.
-
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
-
-### T-grid-range-keeps-both-shapes
-
-`ColumnFilter.range` says which shape a column filter is: a single `op` +
-`value`, or a `between` over `from`..`to`. **Both are kept rather than a tagged
-union**, so flipping the Range switch and flipping back finds what was typed on
-the other side still there.
-
-This is the grid's half of `T-range-switch-swaps-not-rebuilds` — the toolbar
-keeps both shapes in the DOM, and the grid keeps both in the held clause.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
@@ -6516,8 +6501,6 @@ provider. (Records set it by hand until TODO 37.)
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/components/sherpa-provider/sherpa-provider.ts`
-- Site: `src/core/ui/context.ts`
 - Site: `test/e2e/reforged-provider.spec.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `test/unit/filter-state.test.mjs`
@@ -9016,6 +8999,7 @@ writes. A reading carries EITHER — never both.
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/ui/filter-menu.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
 ### T-an-inactive-chip-says-where-its-filter-went
 
@@ -9153,7 +9137,6 @@ button with a live mode is a control a reader cannot reach but a script can.
 A TEXT GRID COLUMN is the exception and always opts in. A column of free text
 is exactly what a reader asks "starts with" of.
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
@@ -9914,7 +9897,6 @@ about the data. `examples/contexts/records.js` has one rule, `PICKABLE_AT_MOST`,
 read by the bar's Add menu AND by the grid's headings, so the same column can
 never be a list in one place and a box in the other.
 
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 
 ### T-a-scope-is-a-place-not-a-reach
@@ -10109,7 +10091,6 @@ column in `data-column`; a menu, where there is one, is the answer.
 - Site: `test/e2e/reforged-organise-chip-never-amber.spec.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/core/ui/filter-kind.ts`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/unit/parity-sweep.test.mjs`
 
 ### T-off-is-not-forgotten
@@ -10211,7 +10192,6 @@ nothing behind it (Will, 2026-09-26). The switch is for `advanced === true` only
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/core/ui/filter-kind.ts`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `src/core/ui/filter-menu.ts`
@@ -15388,6 +15368,33 @@ EXTENDS the default rather than replacing it.
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `examples/index.html`
 - Site: `test/e2e/reforged-templater.spec.ts`
+
+### T-a-heading-opens-the-chips-menu
+
+**A grid heading opens the CHIP's menu — the one `menuFor()` builds from the
+source's own def of the field.** Will, TODO 86 (2026-10-01, A): one field,
+one menu, wherever it is asked. The grid ASKS its provider for each
+filterable column's `filters` (`DataAsk.filters`), and the provider sends
+`source.filterDef(field)`: the Advanced offer, the whole value list with its
+names, a date's days. A grid with no source builds the def from the column,
+where a text column still offers conditions.
+
+What moved with it:
+
+- **A number heading has no operator select in Simple.** Simple is one value
+  (equals) or a range; "at least" is an Advanced ROW, where the field offers
+  Advanced — as on the chip.
+- **A text heading offers conditions only where its field does.** It used to
+  offer them on every text column.
+- **The menu reads and writes every body** through `reading` — a date's
+  calendar too — so the grid's own calendar code, its dead Range switch
+  handler and two templates are gone. Clear is `reading = {}`.
+- **A value is shown by its NAME** (`AMER` reads "Americas"), as on the chip.
+
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/core/ui/context.ts`
+- Site: `test/e2e/reforged-data-grid.spec.ts`
 
 ### T-a-tip-lives-in-the-top-layer
 

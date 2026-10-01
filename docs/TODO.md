@@ -270,6 +270,19 @@ writes a date body itself. The dead Range switch handler goes either way.
 - **B: keep the heading's operator select**, and build only the rest on
   `menuFor()`.
 
+**✅ Will, 2026-10-01: A — built.** A grid heading now opens the chip's own
+menu: the grid asks its provider for each column's FILTER
+(`DataAsk.filters`, which replaced `values`), and `menuFor()` builds it from
+`source.filterDef()`. So a heading follows its field: Region shows
+"Americas" (the value's name), Owner offers Advanced and Region does not, a
+number asks "at least" as an Advanced row, and Created is the menu's own
+date body. The grid's calendar code, its dead Range switch handler and two
+templates are gone. A grid with no source builds the def from its column.
+`T-a-heading-opens-the-chips-menu`
+
+**Left of A7:** one event per act, and the 18 members go — still built with
+89.
+
 ### `[x]` ✅ 74 — EXPLORE: the Query builds every group, sort and filter menu; a menu shows its sub-query
 
 Will, 2026-09-27: *"The query language, and single query object, can be used
@@ -4495,6 +4508,7 @@ One line each. The detail is in git and in the trap named.
 - 26, 30, 33, 11d: closed by Will's rulings — the grid stays, the SVG icons stay, no breakpoint step, `data-type` is Figma's Type axis
 - 28: `sherpa-grid-cell` folded — Figma's Grid Cell is the grid's own CSS
 - 36: preset-env is gone — the Safari 16 floor went, so nesting ships as written; no pixel moved
+- 86 (A7, the headings): a grid heading opens the chip's menu, from the source's own field — `T-a-heading-opens-the-chips-menu`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

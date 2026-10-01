@@ -169,22 +169,6 @@
     </th>
   </template>
 
-  <!-- Cloned into a header's chip, one per filterable column. `data-commit`
-       gives it Apply / Cancel, so a half-built pair is not queried. -->
-  <template class="head-menu-tpl">
-    <sherpa-menu slot="menu" data-commit></sherpa-menu>
-  </template>
-
-
-
-  <!-- `data-embedded` makes the calendar sit in the menu card rather than float
-       as its own popover; JS writes `data-type="range"` when Range is on. -->
-  <template class="head-date-filter-tpl">
-    <div class="head-filter-body">
-      <sherpa-calendar class="head-filter-calendar" data-embedded></sherpa-calendar>
-    </div>
-  </template>
-
   <!-- One per drawn column. JS sets its inline-size; see .cols in the CSS. -->
   <template class="col-tpl">
     <col class="col" />

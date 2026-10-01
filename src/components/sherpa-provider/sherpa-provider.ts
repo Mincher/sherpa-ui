@@ -816,9 +816,10 @@ export class SherpaProvider extends SherpaElement {
         ? { as: (rows, src) => ({
           rows,
           groups: src.state.group && src.loaded ? src.groups() : null,
-          // The WHOLE column, which one page cannot say. TRAP T-unavailable-value-sorts-below-a-divider
-          ...(asks.values ? { values: Object.fromEntries(asks.values(el)
-            .map((f) => [f, src.valuesFor(f).map(valueKey)])) } : {}),
+          /* Each FILTER as the source defines it, as a chip's is — the whole
+             column too, which one page cannot say. TRAP T-a-heading-opens-the-chips-menu */
+          ...(asks.filters ? { filters: Object.fromEntries(asks.filters(el)
+            .map((f) => [f, src.filterDef(f)])) } : {}),
         }) }
         : {}),
       deliver: (payload) => callback(payload, leave),

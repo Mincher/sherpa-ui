@@ -14,6 +14,8 @@
  * - GridAction — One action a row offers.
  */
 import { kindOf, type OffersAdvanced } from '../../core/ui/filter-kind.js';
+import { menuFor, type FilterMenuDef, type FilterMenuItem } from '../../core/ui/filter-menu.js';
+import type { FieldFilter } from '../../core/data/data-source.js';
 import {
   DATA_PROPS, SHARED_PROPS, SherpaElement, coerceNum, clampNum, markNeedles,
 } from '../../core/ui/sherpa-element.js';
@@ -25,7 +27,7 @@ import {
   type Filter, type GroupSummary, type SortDirection, type SortSpec,
 } from '../../core/data/store.js';
 import {
-  DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, valueKey, type FilterOp,
+  DEFAULT_OP, OP_LABELS, OP_TAKES, valueKey, type FilterOp,
 } from '../../core/data/store.js';
 import {
   clauseConditions, fieldState, readingClause, readingRows,
@@ -100,24 +102,18 @@ interface GridConfig {
    * TRAP T-a-group-is-a-data-layer-concept
    */
   groups?: GroupSummary[];
-  /** Each text column's WHOLE list of values, by field — from the data layer,
-   *  for the heading menus. TRAP T-unavailable-value-sorts-below-a-divider */
-  values?: Readonly<Record<string, readonly string[]>>;
+  /** Each filterable column's FILTER as its source defines it, by field — so a
+   *  heading opens the chip's own menu, the whole value list with it.
+   *  TRAP T-a-heading-opens-the-chips-menu */
+  filters?: Readonly<Record<string, FieldFilter>>;
 }
 
-/** Which body template each column type's filter menu holds — TEXT has none:
-    it is the sherpa-menu FILTER variant. TRAP T-one-field-one-filter-menu */
-/* ONLY A DATE keeps a body of its own. A calendar projects its stepper into
-   the menu's `header` slot, and slot assignment reaches a host's LIGHT DOM
-   only — inside the menu's shadow root it has nothing to project into.
-   Everything else is the menu's now.
-   TRAP T-a-menu-owns-its-own-bodies
-   TRAP T-projected-slot-content-crosses-two-shadow-boundaries */
-const COLUMN_FILTER_BODIES: Record<string, string | null> = {
-  text: null,
-  number: null,
-  date: 'template.head-date-filter-tpl',
-};
+/** A heading's menu, as the grid reaches it. */
+type HeadMenu = HTMLElement & { reading: FieldReading; items(next: readonly FilterMenuItem[]): void };
+
+/** The column types a heading can filter. Every body is the menu's own.
+    TRAP T-a-menu-owns-its-own-bodies */
+const FILTERABLE: ReadonlySet<string> = new Set(['text', 'number', 'date']);
 
 
 export class SherpaDataGrid extends SherpaElement {
@@ -139,9 +135,9 @@ export class SherpaDataGrid extends SherpaElement {
      TRAP T-a-component-asks-its-provider */
   static override asks: DataAsk = {
     shape: 'rows', own: ['filter-change'], shows: 'grid',
-    // Its text headings' WHOLE value lists — an Advanced-only one lists none.
-    values: (el) => ((el as unknown as { columns?: GridColumn[] }).columns ?? [])
-      .filter((c) => (c.type ?? 'text') === 'text' && kindOf(c) !== 'advanced')
+    // Its headings' FILTERS, as the source defines them. TRAP T-a-heading-opens-the-chips-menu
+    filters: (el) => ((el as unknown as { columns?: GridColumn[] }).columns ?? [])
+      .filter((c) => FILTERABLE.has(c.type ?? 'text'))
       .map((c) => c.field),
   };
 
@@ -237,8 +233,6 @@ export class SherpaDataGrid extends SherpaElement {
     for (const type of ['quick-filter-change', 'quick-filter-click']) {
       this.$('.head-row')?.addEventListener(type, this.#stopChipEvent);
     }
-    // sherpa-switch re-dispatches a native `change`, so this covers both.
-    this.$('.head-row')?.addEventListener('change', this.#onColumnRangeToggle);
     this.$('.head-row')?.addEventListener('menu-select', this.#onColumnFilterRemove);
     // Delegated: the body is replaced per render. The menu sits outside it.
     this.$('.body')?.addEventListener('click', this.#onActionsClick);
@@ -258,7 +252,7 @@ export class SherpaDataGrid extends SherpaElement {
     this.#columns = Array.isArray(cfg.columns) ? cfg.columns : [];
     this.#rows = Array.isArray(cfg.rows) ? cfg.rows : [];
     this.#key = typeof cfg.key === 'string' ? cfg.key : null;
-    this.#givenValues = cfg.values ?? {};
+    this.#givenFilters = cfg.filters ?? {};
     this.#syncNeedles();
     this.#syncColumnValues();
     this.#actions = Array.isArray(cfg.actions) ? cfg.actions : [];
@@ -424,197 +418,96 @@ export class SherpaDataGrid extends SherpaElement {
   }
 
   /** TRAP T-grid-untyped-column-gets-no-filter-button — text|number|date only. */
-  /** Give a heading its filter chip and menu, for the column's type. */
+  /**
+   * Give a heading its filter chip and menu — the CHIP's own menu, made by
+   * `menuFor()` from the source's def of its field, so one field opens one
+   * menu wherever it is asked. Will, TODO 86. TRAP T-a-heading-opens-the-chips-menu
+   */
   #addColumnFilter(th: HTMLElement, col: GridColumn): void {
     const chip = th.querySelector<HTMLElement>('.head-filter');
     if (!chip) return;
-
-    const kind = col.type ?? 'text';
-    if (!(kind in COLUMN_FILTER_BODIES)) {
+    if (!FILTERABLE.has(col.type ?? 'text')) {
       // The chip's own flag, so CSS hides it without reaching into its shadow.
       chip.setAttribute('data-unsupported', '');
       return;
     }
-    const bodyTpl = COLUMN_FILTER_BODIES[kind];
-
-    const menu = this.clone('template.head-menu-tpl');
-    if (!menu) return;
-    const body = bodyTpl ? this.clone(bodyTpl) : null;
-    if (bodyTpl && !body) return;
-
-    /* THE MENU DRAWS THE OPERATOR SELECT. This heading only NAMES the set, from
-       the ONE vocabulary in store.ts — the same list the condition rows read.
-       TRAP T-ops-follow-the-column-type · TRAP T-a-menu-owns-its-own-bodies */
-    if (kind === 'number') {
-      const ops = OPS_FOR_TYPE[kind] ?? [];
-      if (ops.length) menu.setAttribute('data-conditions', ops.join(','));
-    }
-
+    const held = this.#shown(col.field);
+    const def = this.#filterDef(col, held);
+    // A top-layer popover escapes the scroller, inside the HOST's named region.
+    const { menu, items } = menuFor(def, { bounds: this.dataset['bounds'] });
     // Clear empties the controls and keeps the menu open; Remove drops the clause.
     menu.setAttribute('data-removable', '');
-
-    const label = col.header ?? col.field;
-    /* The FIELD, as a filter chip's own menu heads itself. The card is plainly
-       a filter menu — a condition row, value rows and Apply — so a "Filter "
-       prefix names the verb twice and makes one menu read unlike the other.
-       The CHIP on the heading keeps its `aria-label` of "Filter <field>", which
-       is where that verb belongs. TRAP T-one-field-one-filter-menu */
-    menu.setAttribute('data-heading', label);
-    // A top-layer popover escapes the scroller, inside the HOST's named region.
-    const bounds = this.dataset['bounds'];
-    if (bounds) menu.setAttribute('data-bounds', bounds);
-
-    const held = this.#shown(col.field);
-    const superseded = this.#superseded.has(col.field);
-
-    // TRAP T-grid-slider-spans-real-values — the 0..100 default crushes a
-    // spend column at the far left.
-    if (kind === 'number') {
-      menu.setAttribute('data-body', 'number');
-      /* `reduceRows`, not a hand-rolled Number() sweep: `null` and `''` coerce
-         to a FINITE 0, so counting them gave a Spend column of 120..340 a
-         slider starting at 0 — the very crush the comment above warns about.
-         TRAP T-number-of-null-is-zero */
-      const hasNumbers = this.#rows.some((row) => {
-        const raw = row[col.field];
-        return raw != null && raw !== '' && Number.isFinite(Number(raw));
-      });
-      if (hasNumbers) {
-        menu.setAttribute('data-min', String(Math.floor(reduceRows(this.#rows, 'min', col.field))));
-        menu.setAttribute('data-max', String(Math.ceil(reduceRows(this.#rows, 'max', col.field))));
-      }
-    }
-
-    if (kind === 'number' || kind === 'date') {
-      // A HELD clause wins — `held?.range || …` would force a saved single
-      // filter back to a range. TRAP T-a-default-is-not-an-override.
-      const asRange = held ? !!held.range : kind === 'number';
-
-      // The MENU carries the mode, because CSS selects the shape off it.
-      if (asRange) menu.setAttribute('data-range', '');
-    }
-
-    /* A TEXT column IS the shared filter menu: the condition row comes from
-       sherpa-menu's own `filter` template, and the rows below are this
-       column's distinct values — the same question a filter chip asks.
-       TRAP T-one-field-one-filter-menu */
-    if (kind === 'text') {
-      menu.setAttribute('data-type', 'filter');
-      /* A TEXT COLUMN always offers conditions. This is the one place they are
-         never noise: a column of free text is exactly what a reader asks
-         "starts with" of. A chip over a closed set opts in instead.
-         TRAP T-conditions-are-opt-in-per-field */
-      menu.setAttribute('data-advanced', '');
-      /* VALUES, CONDITIONS, OR BOTH — the column says which, because how many
-         values is too many is a question about the data.
-         TRAP T-a-filter-answers-by-values-conditions-or-both */
-      /* WHAT IT IS, from the ONE derivation the chips read.
-         TRAP T-a-chip-knows-what-kind-it-is */
-      if (kindOf(col) === 'advanced') {
-        menu.setAttribute('data-advanced-only', '');
-        menu.setAttribute('data-mode', 'advanced');
-      }
-      menu.setAttribute('data-search', '');
-      /* THE SAME MENU a filter chip opens for this field, so it carries the
-         same flags: MULTIPLE values (checkbox rows, and several picks become
-         `in`), and a Clear, which is the only way back to "no filter" once a
-         value is ticked. TRAP T-one-field-one-filter-menu */
-      menu.setAttribute('data-select', 'multiple');
-      menu.setAttribute('data-clearable', '');
-      /* `in` / `notin` are how SEVERAL picks read; the menu's own condition
-         stays `eq` / `ne`, because its dropdown offers no "is one of" — the
-         ticked list IS the "one of". */
-      // The DEF's opening condition; a held answer is drawn over it below.
-      menu.setAttribute('data-op', readingOp(col.op ?? DEFAULT_OP));
-      /* NO WALL OF ROWS. An advanced-only column has no list to tick, so
-         stamping its 240 values is work nobody sees.
-         TRAP T-a-wall-of-values-is-not-a-filter */
-      if (kindOf(col) !== 'advanced') this.#addColumnValues(menu, col.field, held);
-    }
-
-    // Restore the held clause — the header is rebuilt per sort and keystroke,
-    // so the menu would otherwise forget itself.
-    // Only the CALENDAR is still this heading's to fill; the menu holds the rest.
-    const cal = body?.querySelector('.head-filter-calendar');
-    if (held && cal) {
-      const [from = '', to = ''] = (held.picked ?? []).map(String);
-      if (held.range) {
-        cal.setAttribute('data-type', 'range');
-        cal.setAttribute('data-value-start', from);
-        cal.setAttribute('data-value-end', to);
-      } else {
-        cal.setAttribute('data-value', from);
-      }
-    } else if (kind === 'date' && body) {
-      // A fresh RANGE calendar still needs its two-click mode set.
-      const cal = body.querySelector('.head-filter-calendar');
-      if (cal && menu.hasAttribute('data-range')) cal.setAttribute('data-type', 'range');
-    }
-
     /* HELD HIGHER: shown, greyed, and refused here — the reader changes it where
        it is held. TRAP T-a-view-held-heading-shows-and-refuses */
+    const superseded = this.#superseded.has(col.field);
     chip.toggleAttribute('data-superseded', superseded);
     if (superseded && this.#supersededAt) chip.setAttribute('data-applied-at', this.#supersededAt);
     menu.toggleAttribute('data-readonly', superseded);
-
-    if (body) menu.appendChild(body);
     chip.appendChild(menu);
-    chip.setAttribute('aria-label', `Filter ${label}`);
-    /* THE MENU HOLDS ITS OWN — both answers and the mode — and keeps a reading
-       given before it has drawn. Upgraded FIRST: a property set on a plain
-       element hides the setter for good. The header is rebuilt on every sort
-       and keystroke, so this is how a heading remembers, and opens on it.
+    chip.setAttribute('aria-label', `Filter ${def.label}`);
+    /* THE MENU HOLDS ITS OWN — both answers and the mode, a date's days too —
+       and keeps a reading given before it has drawn. Upgraded FIRST: a property
+       set on a plain element hides the setter for good.
        TRAP T-custom-element-upgrade · TRAP T-both-answers-are-kept
        TRAP T-a-heading-menu-opens-on-what-it-holds */
-    if (held && !cal) {
-      customElements.upgrade(menu);
-      (menu as HTMLElement & { reading: FieldReading }).reading = held;
-    }
+    customElements.upgrade(menu);
+    if (items.length) (menu as HeadMenu).items(this.#columnItems(col.field, items, held));
+    if (!held) return;
+    // Rows ARE the opt-in reaching the menu. TRAP T-many-conditions-are-one-reading
+    if (readingRows(held).length) menu.setAttribute('data-advanced', '');
+    (menu as HeadMenu).reading = held;
   }
 
   /**
-   * A text column's distinct values, as the filter menu's rows.
-   *
-   * The filter CHIP over the same field offers exactly this list, so a reader
-   * is asked the same question whichever they open.
-   * TRAP T-one-field-one-filter-menu
+   * A heading's filter: the SOURCE's def of its field — its Advanced offer, its
+   * whole value list and their names, a date's days — else one made from the
+   * column, where a text column offers conditions as it always has.
+   * TRAP T-a-heading-opens-the-chips-menu
    */
-  #addColumnValues(menu: HTMLElement, field: string, held?: FieldReading): void {
-    // Simple's answer — the ticks. TRAP T-both-answers-are-kept
-    const on = new Set((held?.picked ?? []).map(valueKey));
-
-    // What the ROWS ON SCREEN carry — everything else is unreachable RIGHT NOW.
-    const present = new Set(
-      this.#rows
-        .map((row) => row[field])
-        .filter((v) => v != null && v !== '')
-        .map((v) => String(v)),
-    );
-
-    /* The WHOLE column, when a host supplies it. Building the list from the
-       drawn rows alone made every filter a one-way door: narrow on another
-       field and three of four owners vanished from the Owner menu, with no way
-       to tick them back. TRAP T-unavailable-value-sorts-below-a-divider */
-    const declared = this.#columnValues.get(field);
-    const values = declared?.length ? [...declared] : [...present].sort();
-
-    /* THE MENU draws its own items from this DATA, choosing the control from
-       its own `data-select`. Stamping rows here is what let a column heading
-       and a filter chip end up with different markup over the same field.
-       TRAP T-one-field-one-filter-menu */
-    (menu as HTMLElement & { items?: (i: unknown[]) => void }).items?.(values.map((value) => ({
-      value,
-      selected: on.has(value),
-      available: present.has(value),
-    })));
+  #filterDef(col: GridColumn, held: FieldReading | undefined): FilterMenuDef {
+    const kind = col.type ?? 'text';
+    const given = this.#givenFilters[col.field];
+    const values = this.#columnValues.get(col.field) ?? this.#presentValues(col.field).sort();
+    const own: FilterMenuDef = given ? { ...given } : {
+      // Any of the three spellings of the offer; none is Advanced too, for a text column.
+      ...(kind === 'text'
+        ? { advanced: col.advanced ?? col.custom ?? col.conditions ?? true, ...(col.op ? { op: col.op } : {}) }
+        : { kind: kind as 'number' | 'date', ...(col.advanced != null ? { advanced: col.advanced } : {}) }),
+      ...(kind === 'text' && kindOf(col) !== 'advanced' ? { options: values.map((v) => ({ value: v, label: v })) } : {}),
+    };
+    /* A NUMBER's slider spans the values it HAS: the 0..100 default crushes a
+       spend column at the far left. `reduceRows`, as `null` coerces to 0.
+       TRAP T-grid-slider-spans-real-values · TRAP T-number-of-null-is-zero */
+    const ends = kind === 'number' && own.min == null && this.#rows.some((row) => {
+      const raw = row[col.field];
+      return raw != null && raw !== '' && Number.isFinite(Number(raw));
+    }) ? { min: Math.floor(reduceRows(this.#rows, 'min', col.field)), max: Math.ceil(reduceRows(this.#rows, 'max', col.field)) } : {};
+    return {
+      ...own, ...ends, id: col.field, label: col.header ?? own.label ?? col.field, commit: true,
+      ...(kind === 'text' && !own.select ? { select: 'multiple' as const } : {}),
+      // A HELD shape wins. TRAP T-a-default-is-not-an-override
+      ...(kind !== 'text' && held ? { range: !!held.range } : {}),
+    };
   }
 
+  /** A text heading's rows: ticked as it holds, and the values on no row now
+   *  below a divider. TRAP T-unavailable-value-sorts-below-a-divider */
+  #columnItems(field: string, items: readonly FilterMenuItem[], held: FieldReading | undefined): FilterMenuItem[] {
+    const on = new Set((held?.picked ?? []).map(valueKey));
+    const present = new Set(this.#presentValues(field));
+    return items.map((item) => ({ ...item, selected: on.has(item.value), available: present.has(item.value) }));
+  }
 
-  /** The WHOLE column's values, by field — `data-column-values`, then the data layer's. */
+  /** The values the ROWS on screen carry. */
+  #presentValues(field: string): string[] {
+    return [...new Set(this.#rows.map((row) => row[field]).filter((v) => v != null && v !== '').map((v) => String(v)))];
+  }
+
+  /** The WHOLE column's values, by field, from `data-column-values`. */
   #columnValues = new Map<string, string[]>();
 
-  /** The data layer's whole-column values, as the last populate gave them. */
-  #givenValues: Readonly<Record<string, readonly string[]>> = {};
+  /** Each heading's filter as its source defines it, as the last populate gave them. */
+  #givenFilters: Readonly<Record<string, FieldFilter>> = {};
 
   /**
    * Parse `data-column-values`: `field:a|b|c` per entry, newline separated.
@@ -630,30 +523,7 @@ export class SherpaDataGrid extends SherpaElement {
       const values = entry.slice(at + 1).split('|').filter(Boolean);
       if (values.length) this.#columnValues.set(entry.slice(0, at), values);
     }
-    for (const [field, values] of Object.entries(this.#givenValues)) {
-      if (values.length) this.#columnValues.set(field, [...values]);
-    }
   }
-
-  /**
-   * The Range switch. TRAP T-range-switch-swaps-not-rebuilds · TRAP T-grid-range-keeps-both-shapes — an attribute
-   * write, never a rebuild, so the other side's typing survives a flip back.
-   */
-  #onColumnRangeToggle = (event: Event): void => {
-    const sw = (event.target as HTMLElement | null)?.closest?.('.head-filter-range-switch');
-    if (!sw) return;
-    const menu = (sw as HTMLElement).closest('sherpa-menu');
-    if (!menu) return;
-    const on = (sw as HTMLElement & { checked?: boolean }).checked
-      ?? sw.hasAttribute('checked');
-    menu.toggleAttribute('data-range', on);
-    // The calendar's two shapes are its own `data-type`, not a CSS reveal.
-    const cal = menu.querySelector('.head-filter-calendar');
-    if (cal) {
-      if (on) cal.setAttribute('data-type', 'range');
-      else cal.removeAttribute('data-type');
-    }
-  };
 
   /** REMOVE FILTER — ends a column's filter. Reported as a clear, so a host has one path. */
   #onColumnFilterRemove = (event: Event): void => {
@@ -695,19 +565,10 @@ export class SherpaDataGrid extends SherpaElement {
         /* The shared filter menu keeps its typed value in an ATTRIBUTE, which
            is the whole reason it survives a re-stamp — so clearing has to
            reach that, not only the boxes. TRAP T-one-field-one-filter-menu */
-        const fm = chip.querySelector('sherpa-menu');
-        if (fm?.getAttribute('data-type') === 'filter') {
-          fm.setAttribute('data-value', '');
-          // The MENU owns its rows; `values = []` unticks every one.
-          (fm as HTMLElement & { values?: string[] }).values = [];
-        }
-        for (const box of chip.querySelectorAll<HTMLInputElement>('input[type="text"], input[type="number"]')) {
-          box.value = '';
-        }
-        const cal = chip.querySelector('.head-filter-calendar');
-        cal?.removeAttribute('data-value');
-        cal?.removeAttribute('data-value-start');
-        cal?.removeAttribute('data-value-end');
+        const fm = chip.querySelector<HeadMenu>('sherpa-menu');
+        if (fm?.getAttribute('data-type') === 'filter') fm.setAttribute('data-value', '');
+        // The MENU empties its own answer, whatever its body: ticks, rows, a number, a day.
+        if (fm) fm.reading = {};
       }
     }
 
@@ -744,20 +605,11 @@ export class SherpaDataGrid extends SherpaElement {
    * and a range needs both ends. TRAP T-both-answers-are-kept
    */
   #readColumnFilter(chip: HTMLElement): FieldReading | null {
-    const menu = chip.querySelector<HTMLElement & { reading: FieldReading }>('sherpa-menu');
+    const menu = chip.querySelector<HeadMenu>('sherpa-menu');
     if (!menu) return null;
-    // A DATE column's calendar is still this heading's own.
-    const cal = chip.querySelector<HTMLElement>('.head-filter-calendar');
-    if (cal) {
-      if (menu.hasAttribute('data-range')) {
-        const from = (cal.dataset['valueStart'] ?? '').trim();
-        const to = (cal.dataset['valueEnd'] ?? '').trim();
-        return from && to ? { picked: [from, to], range: true } : null;
-      }
-      const day = (cal.dataset['value'] ?? '').trim();
-      return day ? { picked: [day], range: false } : null;
-    }
     const reading = menu.reading;
+    // A RANGE of days needs both ends: one is unfinished, not wrong.
+    if (menu.dataset['body'] === 'date' && reading.range && (reading.picked ?? []).length < 2) return null;
     return answersAnything(reading) ? reading : null;
   }
 

@@ -1537,11 +1537,10 @@ test('a column filter button never sorts the column it sits in', async ({ page }
   expect(r.menuOpen).toBe(true);
 });
 
-test('a NUMBER column filters by condition, or by a RANGE, and coerces its ends', async ({ page }) => {
-  // A number filter is "equals this" or "between these two" — one menu with a
-  // mode, not two controls the reader must choose between before they know
-  // which they want. The toolbar's own number chip works this way; this
-  // follows it so a reader meets one control, not two that behave alike.
+test('a NUMBER column filters by one value, an Advanced condition, or a RANGE, and coerces its ends', async ({ page }) => {
+  /* The heading IS the chip's menu (Will, TODO 86): Simple is one value or a
+     range; "at least" is an Advanced row, where the field offers Advanced.
+     TRAP T-a-heading-opens-the-chips-menu */
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-data-grid') as HTMLElement & {
       rendered?: Promise<void>;
@@ -1551,7 +1550,7 @@ test('a NUMBER column filters by condition, or by a RANGE, and coerces its ends'
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
     el.populate({
-      columns: [{ field: 'spend', header: 'Spend', type: 'number' }],
+      columns: [{ field: 'spend', header: 'Spend', type: 'number', advanced: true }],
       /* A COLUMN THAT SPANS. The slider CLAMPS to the column's real ends —
          "typing 500 into a 0..100 filter cannot ask for a row that cannot
          exist" — so a one-row column clamps every range to that one value and
@@ -1574,15 +1573,11 @@ test('a NUMBER column filters by condition, or by a RANGE, and coerces its ends'
       await settle();
     };
 
-    // DevExtreme's numeric binary operations. The string family (contains,
-    // startswith…) is absent — "starts with" on a spend column is not a
-    // question, and offering it invites a comparison with no meaning.
-    /* THE OPERATOR SELECT is the MENU's, and a sherpa-input-text keeps its own
-       <select> in ITS shadow root — so this is two boundaries down.
-       TRAP T-a-menu-owns-its-own-bodies */
-    const opSelect = chip().querySelector('sherpa-menu')!.shadowRoot!
-      .querySelector('.body-op')!.shadowRoot!.querySelector('select')!;
-    const conditions = Array.from(opSelect.options).map((o) => o.value).filter(Boolean);
+    type NumberMenu = HTMLElement & { mode: string; conditions: { op: string; text?: string }[] };
+    const menu = (): NumberMenu => chip().querySelector('sherpa-menu') as NumberMenu;
+    // The number questions an Advanced row asks. The string family (contains,
+    // startswith…) is absent — "starts with" on a spend column is not a question.
+    const conditions = (menu().dataset['conditions'] ?? '').split(',').filter(Boolean);
 
     /* SINGLE first — and a number column now OPENS as a range, so the switch
        has to be turned OFF to get there. That default is the point of
@@ -1593,10 +1588,24 @@ test('a NUMBER column filters by condition, or by a RANGE, and coerces its ends'
     off.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
     await settle();
 
-    // SINGLE: a condition and one value.
-    chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector<HTMLElement & { value: string }>('.body-op')!.value = 'gte';
-    chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector<HTMLInputElement>('.body-number-one')!.value = '100';
+    // SINGLE: one value, which is "equals". OPEN, as a reader has it: a shut
+    // menu has no draft for Apply to take.
+    (menu() as NumberMenu & { show(t: Element): void }).show(chip());
+    await settle();
+    // Typed, as a reader types: the menu hears the change.
+    const one = chip().querySelector('sherpa-menu')!.shadowRoot!.querySelector<HTMLInputElement>('.body-number-one')!;
+    one.value = '100';
+    for (const type of ['input', 'change']) one.dispatchEvent(new Event(type, { bubbles: true, composed: true }));
     await apply();
+
+    // ADVANCED: "at least 100" is a row.
+    (menu() as NumberMenu & { show(t: Element): void }).show(chip());
+    await settle();
+    menu().mode = 'advanced';
+    menu().conditions = [{ op: 'gte', text: '100' }];
+    await apply();
+    menu().mode = 'simple';
+    await settle();
 
     // RANGE: the switch re-points the menu rather than rebuilding it, so what
     // was typed on the single side is still there on the way back.
@@ -1639,12 +1648,14 @@ test('a NUMBER column filters by condition, or by a RANGE, and coerces its ends'
 
   expect(r.conditions).toEqual(['eq', 'ne', 'gt', 'gte', 'lt', 'lte']);
 
-  // The single clause carries a real NUMBER, not the typed string. The store
-  // compares numerically only when BOTH sides are numbers; as a string, "100"
-  // sorts below "9" and "at least 100" would miss every row above 99.
+  // The clauses carry a real NUMBER, not the typed string. The store compares
+  // numerically only when BOTH sides are numbers; as a string, "100" sorts
+  // below "9" and "at least 100" would miss every row above 99.
   const single = r.events[0] as Record<string, unknown>;
-  expect(single['clause']).toEqual(['spend', 'gte', 100]);
-  expect(single['label']).toBe('At least: 100');
+  expect(single['clause']).toEqual(['spend', 'eq', 100]);
+  const row = r.events[1] as Record<string, unknown>;
+  expect(row['clause']).toEqual(['spend', 'gte', 100]);
+  expect(row['label']).toBe('At least: 100');
 
   // Range mode swaps the shape without a rebuild.
   expect(r.ranged.mode).toBe(true);
@@ -1685,7 +1696,8 @@ test('a DATE column filters with a calendar, one day or a span', async ({ page }
     el.addEventListener('column-filter-change', (e) => events.push((e as CustomEvent).detail));
     const chip = (): HTMLElement =>
       sr.querySelector('.head-cell[data-field="created"] .head-filter') as HTMLElement;
-    const cal = (): HTMLElement => chip().querySelector('.head-filter-calendar') as HTMLElement;
+    // The MENU's own calendar, as a date chip's is. TRAP T-a-heading-opens-the-chips-menu
+    const cal = (): HTMLElement => chip().querySelector('sherpa-calendar') as HTMLElement;
     const apply = async (): Promise<void> => {
       chip().querySelector('sherpa-menu')!.shadowRoot!
         .querySelector<HTMLElement>('.apply')!.click();
