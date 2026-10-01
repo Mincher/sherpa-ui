@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**28 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**29 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -72,7 +72,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ❓ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ❓ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
 | 🚧 | 19 | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
-| ❓ | 19a | 110 | In Advanced rows, AND is serial and OR is parallel: an AND row offers only what the rows before it leave | feature |
+| ⬜ | 19a | 110 | In Advanced rows, AND is serial and OR is parallel: an AND row offers only what the rows before it leave | feature |
 | ❓ | 20 | 21d | EXPLORE — conditions for a DATE field | explore |
 | ❓ | 21 | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
 | ❓ | 21a | 105 | "Save filters" saves EVERY scope under one name; a "Saved" chip shows it, warns when edited, and undoes it | feature |
@@ -112,7 +112,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31r | 171 | The filter panel's search matches FIELD labels as well as value labels | feature |
 | ✅ | 31s | 172 | In the filter panel, each chip of a multi-value filter shows its own count badge | feature |
 | ✅ | 31t | 173 | BUG: a panel section header's count badge ADDS its values' counts; it should be the UNIQUE results of them all | bug |
-| ❓ | 31u | 174 | Two View fields that share no rows return NOTHING, though each badge has a count; a filterset's fields should limit each other's options | bug |
+| ⬜ | 31u | 174 | Two View fields that share no rows return NOTHING, though each badge has a count; a filterset's fields should limit each other's options | bug |
+| ⬜ | 31v | 176 | A greyed-out chip says WHY in its tooltip, in a few simple words | feature |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
 | ✅ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
@@ -158,7 +159,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 53 | 36 | CSS: compiled where it should inherit? | tidy |
 | ✅ | 54 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
 | ✅ | 55 | 84 | Use the platform: Intl for money, units and deltas; Temporal in the calendar | refactor |
-| ❓ | 56 | 81 | Component contracts move from YAML to JSON | refactor |
+| 🚧 | 56 | 81 | Component contracts move from YAML to JSON | refactor |
 | ✅ | 56a | 111 | A spec types every JS property as `string` — `reading`, `conditions`, `open` | tidy |
 | ⬜ | 57 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 | | | | **K — Agentic UI: much later** | |
@@ -520,7 +521,8 @@ Will, 2026-09-25:
    pages are JSON now (`examples/definitions/`, Will 2026-09-29), so the folder
    moves with it. **Will, 2026-10-01:** *"There's no repo just yet. Just a
    local, sibling, folder to sherpa-ui called 'Sherpa Demos'."* So the
-   example app moves to `../Sherpa Demos`, last.
+   example app moves to `../Sherpa Demos`, last. **Will, 2026-10-01: "go on
+   37".**
 
 ---
 
@@ -1463,6 +1465,9 @@ async. Build with 99.
 - **B: shown, dimmed, and not pickable** — as an unavailable value reads
   elsewhere.
 
+**✅ Will, 2026-10-01: B.** A value the rows before it rule out stays in the
+list, greyed out, and cannot be picked. The same rule for 174.
+
 ### `[~]` 90 — Any filter switches to ADVANCED: condition rows, with options per field type
 
 Will, 2026-09-27: *"Any filter should be able to be toggled to 'Advanced',
@@ -1721,6 +1726,17 @@ pick) or **shown but not pickable** (110 B). Today's rule is "never drop a
 value" (`T-unavailable-value-sorts-below-a-divider`); "limit the options"
 breaks it for a limited field, so it is your call. Answer 110 and I build
 this.
+
+**✅ Will, 2026-10-01: B** (on 110) — a limited-out value is shown, greyed
+out, and cannot be picked. To build.
+
+### `[ ]` 176 — A greyed-out chip says WHY in its tooltip
+
+Will, 2026-10-01: *"If a chip is greyed out (inactive) then it's tooltip
+should explain why in a few simple words."*
+
+Builds with 174 (a value the other answers rule out) and covers every greyed
+chip: one the View took (superseded), one that is disabled.
 
 ### `[x]` ✅ 173 — BUG: a panel section header's count adds its values' counts
 
@@ -2835,6 +2851,8 @@ panels.
   layouts do not change at today's widths.
 - **B:** use them as they are; every layout steps down a little earlier.
 
+**✅ Will, 2026-10-01: A.**
+
 ## F — Data states and charts
 
 ### `[x]` ✅ 58 — Loading, empty and error states in a container
@@ -3879,6 +3897,8 @@ switch: they all read through `scripts/lib/generation/data.mjs` (the MCP
 server too), plus eight scripts and one unit test that read the file
 directly. Say "go on 81" and allow the rename, and I finish it in one
 commit, with `spec:check` proving each contract the same.
+
+**Will, 2026-10-01: "go on … 81".**
 
 ### `[ ]` 29 — Rename `src/index.ts` to `src/app.ts`
 
