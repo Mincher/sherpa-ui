@@ -11,7 +11,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-const { DataSource, ArrayStore } = await import(new URL('../../dist/data.js', import.meta.url));
+const { DataSource, ArrayStore, onReport } = await import(new URL('../../dist/data.js', import.meta.url));
 
 const ROWS = Array.from({ length: 100 }, (_, i) => ({ id: i, band: i < 60 ? 'a' : 'b' }));
 
@@ -80,4 +80,14 @@ test('a view with NO summary never asks the store for the unpaged set', async ()
   for (const o of asked) {
     assert.equal(o.take, 25, `asked without a window: ${JSON.stringify(o)}`);
   }
+});
+
+test("`scope: 'all'` is a filter scope's name, so bind() says to use `rows: 'all'`", async () => {
+  const heard = [];
+  const stop = onReport((issue) => heard.push(issue.code));
+  const s = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }), pageSize: 25 });
+  s.bind(el('wrong'), { readonly: true, scope: 'all', as: (r) => r.length });
+  s.bind(el('right'), { readonly: true, rows: 'all', as: (r) => r.length });
+  stop();
+  assert.deepEqual(heard, ['scope-all']);
 });

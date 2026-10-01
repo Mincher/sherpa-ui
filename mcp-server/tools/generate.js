@@ -39,34 +39,35 @@ function scaffold(name, category) {
   const rootEl = isControl ? "span" : "div";
   const rootClass = isControl ? "control" : isContainer ? "surface" : "root";
 
-  // Aliases are written WITHOUT the --sherpa- prefix.
+  // Aliases are written WITHOUT the --sherpa- prefix — each one a real token in
+  // tokens.css. Colour binds the STYLE tier, so a status pin re-points it.
+  // TRAP T-a-state-colour-binds-the-style-mode
   const tokens = isControl
     ? {
-        [`${rootClass}.gap`]: "control-space-gap-sm",
-        [`${rootClass}.paddingBlock`]: "control-space-padding-xs",
-        [`${rootClass}.paddingInline`]: "control-space-padding-sm",
-        [`${rootClass}.borderWidth`]: "control-border-width",
-        [`${rootClass}.borderColor`]: { override: "status-border", fallback: "control-border-default" },
-        [`${rootClass}.borderRadius`]: "core-border-rounding-base",
-        [`${rootClass}.background`]: { override: "status-surface", fallback: "control-surface-default" },
-        [`${rootClass}.color`]: "control-content-default",
+        [`${rootClass}.gap`]: "structure-space-gap",
+        [`${rootClass}.paddingBlock`]: "structure-space-padding",
+        [`${rootClass}.paddingInline`]: "theme-padding-sm",
+        [`${rootClass}.borderWidth`]: "style-border-width",
+        [`${rootClass}.borderColor`]: "style-border-base",
+        [`${rootClass}.borderRadius`]: "display-mode-border-rounding-base",
+        [`${rootClass}.background`]: "style-surface-base",
+        [`${rootClass}.color`]: "style-content-base",
       }
     : isContainer
     ? {
-        [`${rootClass}.padding`]: "container-space-padding",
-        [`${rootClass}.gap`]: "container-space-gap",
-        [`${rootClass}.borderWidth`]: "container-border-width",
-        [`${rootClass}.borderColor`]: "container-border-default",
-        [`${rootClass}.borderRadius`]: "container-border-rounding",
-        [`${rootClass}.background`]: "container-surface-default",
-        [`${rootClass}.color`]: "content-primary-base",
+        [`${rootClass}.padding`]: "theme-padding-md",
+        [`${rootClass}.gap`]: "theme-gap-sm",
+        [`${rootClass}.borderWidth`]: "style-border-width",
+        [`${rootClass}.borderColor`]: "style-border-base",
+        [`${rootClass}.borderRadius`]: "display-mode-border-rounding-base",
+        [`${rootClass}.background`]: "style-surface-base",
+        [`${rootClass}.color`]: "style-content-base",
       }
     : {
-        [`${rootClass}.color`]: "content-primary-base",
+        [`${rootClass}.color`]: "style-content-base",
       };
 
   const def = {
-    $schema: "https://sherpa-ui.dev/schema/component-definition/v2.json",
     generated: false,
     name,
     figmaName: null,

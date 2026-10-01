@@ -6,6 +6,14 @@ disable-model-invocation: false
 
 # Generate a Sherpa-UI component (def-first)
 
+> **OUT OF DATE (2026-10-01, TODO 187).** The `*.def.json` flow below no longer
+> exists: no component has a def. A component is three hand-written files —
+> `sherpa-<name>.ts`, `.css`, `.html` — and a GENERATED contract,
+> `sherpa-<name>.component.json` (`node scripts/generate-component-spec.mjs <name>`).
+> Follow CLAUDE.md, "Component anatomy", and `docs/PRINCIPLES.md`. Events come
+> from the HTML `Fires:` block, not `@fires`. The rewrite is queued with the app
+> guide, TODO 193.
+
 The **def** (`src/components/<name>/<name>.def.json`) is the hub. One JSON file drives
 **both** the web component (TS / HTML / CSS) **and** the Figma component. You author the
 def, validate it against the encoded design-system rules, compile it to code, and — if the

@@ -74,13 +74,13 @@ export function register(server) {
 4. **Validate — loop until clean.** Call \`validate_def(def)\`. Fix every error (warnings too, where sensible). Re-run until it passes. Watch for: control labels must bind control-content NOT status-content (Rule 4); status containers bind container-* which alias through status (Rule 3).
 5. **Compile.** Call \`compile_def(def)\` → TS/HTML/CSS. Write the three files to \`src/components/${name}/\`, then hand-finish the CSS (hex fallbacks, edge-case rules, transitions).
 6. **Figma (optional).** To build the Figma component, invoke the \`build-figma-component\` skill — it binds Typography vars on text, keeps buttons on the Button size collection, and verifies icon swaps.
-7. **Audit.** Call \`audit_component("${name}")\` and \`check_bindings("${name}")\` to confirm bindings + ontology accuracy.
+7. **Audit.** Call \`audit_component("${name}")\` and \`check_bindings("${name}")\` to confirm the bindings.
 
 ## Rules to honour (read \`sherpa://rules\` for the full set)
 - data-* public API; reuse the shared vocabulary; native attrs stay bare.
 - Every text node binds all six Typography vars + a content colour (Rule 2).
 - Every geometry property binds the token that resolves to its value (Rule 9); skip off-scale values.
-- Events: bubbles + composed, unprefixed noun-verb, a matching @fires in the TS JSDoc.
+- Events: bubbles + composed, unprefixed noun-verb, each on its own line in the HTML \`Fires:\` block. The contract reads the events the TS really dispatches; an @fires JSDoc tag does nothing.
 
 ## Existing components (reuse these)
 ${componentSummary()}`,
@@ -132,7 +132,7 @@ ${defContext || "No recognised Sherpa components found."}
 
 ## Check for
 1. **Unknown attributes** — not in the def's props.
-2. **Wrong enum values** — e.g. data-variant="ghost" when only "primary|secondary" are valid.
+2. **Wrong enum values** — e.g. data-status="error" when the spec lists "info|success|warning|critical|urgent".
 3. **Missing required attributes**.
 4. **Self-closing custom elements** — must have explicit closing tags.
 5. **Wrong slot names / missing slot wrappers** — check each slot's \`accepts\`.
@@ -176,7 +176,6 @@ Report findings grouped by severity (error, warning, suggestion).`,
       } else {
         defText = `**Note:** "${name}" has no def — check the tag name spelling.`;
       }
-      const cssTemplate = readDoc("CSS-FILE-TEMPLATE.md") ?? "";
 
       return {
         messages: [{
@@ -202,8 +201,8 @@ ${defText}
 9. **CSS visibility** — controlled by :host([data-*]) selectors, not JS .hidden?
 10. **Token usage** — --sherpa-* semantic tokens with hardcoded fallbacks (never --core-*)?
 
-## CSS Standards Reference
-${cssTemplate}
+## CSS rules
+Read \`sherpa://rules\` for the design-system rules; CSS owns visibility, a token carries a hardcoded fallback, and a \`:host\` compound uses the functional form.
 
 Read \`sherpa://component/${name}/{ts,html,css}\` for the shipped source and \`sherpa://def/${name}\` for the full def. Diagnose the root cause and give a corrected, working example.`,
           },

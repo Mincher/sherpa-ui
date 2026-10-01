@@ -2360,6 +2360,12 @@ export class DataSource extends EventTarget {
     if (this.#bound.has(el)) return () => this.unbind(el);
     // TRAP T-signal-not-a-teardown-list — an aborted signal binds nothing.
     if (options.signal?.aborted) return () => {};
+    /* `scope` names a FILTER scope: "all" type-checks, binds to a scope of that
+       name, and counts one page. The whole set is `rows: 'all'`.
+       TRAP T-a-summary-binds-to-all-the-rows */
+    if (options.scope === 'all') {
+      report({ code: 'scope-all', message: "bind: `scope: 'all'` names a filter scope; for every row, say `rows: 'all'`." });
+    }
 
     const readonlyBind = options.readonly ?? false;
     const listeners: Array<[string, EventListener]> = [];

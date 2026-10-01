@@ -10,8 +10,8 @@
  *   Verify    audit_component · check_bindings
  *   Data      run_query · import_schema · scaffold_schema · validate_schema
  *   Drive     component_api · call_component · read_component · browser_close
- *   Resources sherpa://def/{name} · sherpa://ontology/{id}
- *             · sherpa://component/{name}/{ts|html|css|def} · sherpa://rules
+ *   Resources sherpa://def/{name} · sherpa://component/{name}/{ts|html|css}
+ *             · sherpa://rules · sherpa://data-rules
  *   Prompts   generate_component · review_component_usage · debug_component
  *
  * Map:

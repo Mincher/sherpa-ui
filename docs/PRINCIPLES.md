@@ -23,12 +23,18 @@ Everything below serves one separation:
 | **Data layer** | `src/core/*.ts` minus the element. Getting, setting and transforming rows. Touches no DOM, so a server, a test or an MCP tool imports it |
 | **Presentation layer** | `SherpaElement` + the 65 components. Shows what it is given; asks for what it wants; decides nothing about the data |
 
-The join is `DataSource.bind(el, options)` and nothing else. A component never
-reaches past the source to a store, and two components never speak directly.
+The join is the SOURCE. A component ASKS for what it wants, in its own
+attributes; `sherpa-provider` opens a page's source from its page definition
+(`docs/PAGE-DEFINITION.md`) and answers each ask through `DataSource.bind`.
+A hand `bind(el, options)` is the manual way, for a page with no provider. A
+component never reaches past the source to a store, and two components never
+speak directly.
 
 **A utility layer sits beside them.** App plumbing that holds no rows and draws
-nothing. `sherpa-router` is its first part: it owns the URL, on the Navigation
-API. `T-the-router-owns-the-url`
+nothing. `sherpa-router` owns the URL, on the Navigation API
+(`T-the-router-owns-the-url`); `sherpa-provider` opens a page's source and
+answers what its components ask. The frame they sit in is a component,
+`sherpa-app-shell`.
 
 **Where does new code go?**
 
@@ -171,9 +177,11 @@ the icon follows), **B8** (the 8px token is on the bulk-actions row), **B9**
 
 ## Where the docs are
 
-**Four markdown files, and three of them are read by code.** Everything else was
-deleted on 2026-09-22: 16 files and ~8,300 lines, in which every rule in this
-one appeared three to seven times over.
+**The RULES are four markdown files, and three of them are read by code.** The
+rest of `docs/` is record, not rule: the designs (`QUERY-DESIGN`,
+`PROVIDER-DESIGN`, `PAGE-DEFINITION`), the audits and reviews (`COMPONENT-AUDIT`,
+`COMPONENT-API-AUDIT`, `FILTER-REVIEW`, `CONSUMER-REVIEW`) and the ledger
+(`TODO`). Where one disagrees with the code, the code and its gate win.
 
 | File | Who reads it |
 |---|---|
@@ -183,7 +191,7 @@ one appeared three to seven times over.
 | `DATA-SOURCE-RULES.md` | The MCP server, as `sherpa://data-rules` |
 
 `TRAPS.md` is where the depth went, and it is gated both ways. That is the
-trade: the citation stays beside the code, the essay moves out. 326 citations
-point at it.
+trade: the citation stays beside the code, the essay moves out. About 1,800
+citations in `src/` point at it.
 
 If a rule here and a gate disagree, **the gate wins** — it runs.

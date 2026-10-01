@@ -3,7 +3,7 @@
  *
  *   import { ArrayStore, DataSource } from 'sherpa-ui/data';
  *
- * WHY A SECOND ENTRY POINT. `index.ts` exports all 58 components, and importing
+ * WHY A SECOND ENTRY POINT. `index.ts` exports all 65 components, and importing
  * a component DEFINES a custom element — so `import 'sherpa-ui'` throws
  * "HTMLElement is not defined" the moment a server, a test or an MCP tool tries
  * it. The data layer was always headless; there was simply no door into it.

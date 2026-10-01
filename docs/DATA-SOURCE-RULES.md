@@ -182,10 +182,11 @@ source.bind(chart, { readonly: true, as: byCategory });  // reads only
 - **`as`** — an adapter from rows to that component's payload shape.
 - **`into`** — this bind owns ONE named part of the payload, so two sources can
   feed one component without the last writer winning.
-- **`scope: 'all'`** — this bind wants the WHOLE matching set, not the page. A
+- **`rows: 'all'`** — this bind wants the WHOLE matching set, not the page. A
   grid shows page one of four; a total, a chart or a legend counting the same
   query must count all of it, or a donut redraws itself every time the reader
-  turns a page.
+  turns a page. (Not `scope: 'all'`: `scope` names a filter scope, so that
+  binds to a scope called "all" — and `bind()` reports it.)
 - **`signal`** — an `AbortSignal`; the binding ends when it aborts.
 
 **Which lives where:** a **store** is app-level, because records outlive any one
@@ -204,7 +205,7 @@ source.setSearch('ada');   // never throws, whatever the store does
 ```
 
 A failed load leaves the LAST GOOD ROWS on screen rather than blanking the
-view, and `source.error` holds what went wrong. A bound `sherpa-container`
+view, and the `error` event says what went wrong. A bound `sherpa-container`
 shows its own overlay off `loading` without being told to.
 
 ### The filter is NAMED PARTS, not one value
@@ -233,18 +234,20 @@ to move.
 
     component rows = view filter AND component filter
 
-That is two sources, with the component's taking the view's whole filter as one
-named part:
+That is ONE source, and its Query has SCOPES: `view` is the page's own, and a
+component scope narrows only the components it names (`narrows`). Each holds
+its own fields and their answers:
 
-```js
-const view = new DataSource({ store });
-const grid = new DataSource({ store });
-view.addEventListener('change', () => grid.contribute('scope:view', view.state.filter));
+```json
+{ "v": 1, "scopes": {
+  "view":  { "holds": ["region"], "readings": { "region": { "picked": ["EMEA"] } } },
+  "data":  { "holds": ["status"], "readings": { "status": { "picked": ["active"] } } }
+} }
 ```
 
-Because it arrives as ONE PART, a view change replaces that part and cannot
-touch the component's own — so a component filter survives the view being
-cleared entirely, and the two can never fight.
+A view change cannot touch a component scope's answers, so a component filter
+survives the view being cleared, and the two never fight. `docs/QUERY-DESIGN.md`
+§3 has the whole shape.
 
 **A field lives in exactly one scope.** Each toolbar offers only what the other
 has left alone:
@@ -260,8 +263,8 @@ not removed, it goes inactive holding what the reader picked, and comes back
 when the view lets the field go. Off is not gone.
 
 Nothing here needs to know what a "view" or a "component" is. They are two
-sources, one following the other — a card extending a dashboard, or a panel
-extending a card, is the same relationship with different words.
+scopes, one narrowing within the other — a card extending a dashboard, or a
+panel extending a card, is the same relationship with different words.
 
 ---
 
@@ -273,7 +276,7 @@ import { ArrayStore, DataSource } from 'sherpa-ui/data';
 
 Stores, queries, validation, live connections and saved views all work in Node —
 on a server, in a test, in an MCP tool. `sherpa-ui` itself does not: it exports
-58 components, and importing a component defines a custom element.
+65 components, and importing a component defines a custom element.
 
 A lint rule keeps those modules DOM-free, and a test proves the entry point
 stays free of components.

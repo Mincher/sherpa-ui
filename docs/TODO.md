@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**37 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**36 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -133,7 +133,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 35b2 | 198 | A direct link to a View with cards of its own (`?view=capacity`) draws the default View's cards | bug |
 | ✅ | 35b | 177 | AFTER the example app moves (37) — an app setting: resize layout grid content by handles in its gutters, snapping to columns and rows | feature |
 | ✅ | 35c | 183 | REVIEW — how a consumer builds an app on Sherpa: use, configure, extend, scaffold, the data layer; and for AI agents | explore |
-| ⬜ | 35c3 | 187 | Make the docs and the MCP text TRUE: `rows:'all'`, the provider in PRINCIPLES, dead names, prompt and scaffold text | docs |
+| ✅ | 35c3 | 187 | Make the docs and the MCP text TRUE: `rows:'all'`, the provider in PRINCIPLES, dead names, prompt and scaffold text | docs |
 | ⬜ | 35c4 | 188 | Fix the bugs 183 found, and run the gates we have: IdbStore update, Edit saves Plan, one badge writer, double `input`, provider reports and Fires; lint and node tests in the hook | bug |
 | ⬜ | 35c5 | 189 | Readiness and a smaller download: export `settled()`, shared sheets on single imports, minify, icons on demand | refactor |
 | ❓ | 35c6 | 190 | A Context contract and ONE `app.json`: the Contexts, the default, the Settings pages — the nav, router and server read it | foundation |
@@ -2986,10 +2986,21 @@ CDN URL to `dist/index.js` (from an npm release, or a git tag), or npm for
 those who want the types. Smaller wins, if wanted: minify the JS, and ship
 `schemas/`.
 
-### `[ ]` 187 — Make the docs and the MCP text true
+### `[x]` ✅ 187 — Make the docs and the MCP text true
 
 Found by 183. `DATA-SOURCE-RULES.md` (served to agents) and a TRAPS entry say `scope: 'all'` where the option is `rows: 'all'`; a wrong call passes the type check and a chart counts one page. `PRINCIPLES.md:26` says the join is `bind()` and nothing else; the app joins through `sherpa-provider`. CLAUDE.md names a `ThemeManager` that does not exist; the README links a deleted doc; the MCP prompts use `data-variant` and read a missing file; `scaffold_def` suggests token names that do not exist. Fix each, and make `bind()` report `scope: 'all'`. `docs/CONSUMER-REVIEW.md` §3.1.
 
+
+**✅ Done 2026-10-01.** `DATA-SOURCE-RULES.md` and the summary trap say
+`rows: 'all'`, and `bind()` now reports `scope: 'all'` (`scope-all`); the data
+rules teach ONE source with Query scopes, not two sources, and the `error`
+event, not a `source.error` that never existed. `PRINCIPLES.md` names the
+provider as the join and `bind()` as the manual way, and its doc list is true.
+CLAUDE.md's `ThemeManager` line, the README (an import map first, no dead
+link), the MCP prompts (`Fires:` not `@fires`, a real enum, no missing file, no
+ontology), the server's resource list and `scaffold_def`'s token names (each
+one real now) are fixed. The `generate-sherpa-component` skill is marked out
+of date; its rewrite goes with the guide, 193.
 ### `[ ]` 188 — Fix the bugs 183 found, and run the gates we have
 
 Found by reading, to be proved by a test each: `IdbStore.update` with a changed key writes a second row; Edit never saves Plan; the notification badge has three writers; `sherpa-input-text` fires `input` twice; the provider drops the keys `applyState` skipped, and its Fires block says nothing. And `npm run lint` and the node tests run in no hook. `docs/CONSUMER-REVIEW.md` §3.2.
