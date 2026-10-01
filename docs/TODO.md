@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**30 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**31 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -111,6 +111,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31q | 144 | A View's filters survive a swap to another View — a draft per View, for the session, and across sessions; two settings, on by default | feature |
 | ✅ | 31r | 171 | The filter panel's search matches FIELD labels as well as value labels | feature |
 | ✅ | 31s | 172 | In the filter panel, each chip of a multi-value filter shows its own count badge | feature |
+| ⬜ | 31t | 173 | BUG: a panel section header's count badge ADDS its values' counts; it should be the UNIQUE results of them all | bug |
+| ⬜ | 31u | 174 | Two View fields that share no rows return NOTHING, though each badge has a count; a filterset's fields should limit each other's options | bug |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
 | ✅ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
@@ -152,7 +154,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 50 | 28 | A Figma component is NOT always a web component | tidy |
 | ✅ | 51 | 30 | Do we still need `icon-paths.ts` and `render-icon.ts`? | tidy |
 | ✅ | 52 | 33 | Density as step offsets, and a breakpoint step | tokens |
-| ❓ | 53 | 36 | CSS: compiled where it should inherit? | tidy |
+| ✅ | 53 | 36 | CSS: compiled where it should inherit? | tidy |
 | ✅ | 54 | 11d | `data-type` means nine things; `data-empty` means three | tidy |
 | ✅ | 55 | 84 | Use the platform: Intl for money, units and deltas; Temporal in the calendar | refactor |
 | ❓ | 56 | 81 | Component contracts move from YAML to JSON | refactor |
@@ -1649,6 +1651,37 @@ provider passes it to `source.bind()`, and `describe(scope)` reports `shows`
 `table-columns`. **Figma has no chart glyph and no table glyph** (searched the
 whole file) — so a chart's section shows none, and `table-columns` stands in:
 that is 115. `T-a-scope-says-what-it-shows`
+
+### `[ ]` 174 — Two answered fields return nothing; a filterset's fields should limit each other
+
+Will, 2026-10-01: *"We also need to check the logic. I have set the following
+conditions: Customer - Adventure Works (Badge count 160), Region - America
+(Badge count 321). Customer section badge shows 160 result count. However
+there is nothing being returned for any of the component scoped
+data/filters. This may be because Customer and Region need to be in a
+filterset?*
+
+*Also we've only really talked about filtersets being serialised. We haven't
+done anything about symbiotic serial filtersets. For example, choosing a
+Customer filter should limit the Region options. Inversely, choosing a Region
+filter should limit the Customer filters in the filterset. There's
+potentially a need for limiting filter options to trickle down to the
+component scope, too. Perhaps this should be configurable. We can also make
+it an app setting."*
+
+Builds on 99 (filtersets) and 110 (an AND row offers only what the rows
+before it leave).
+
+### `[ ]` 173 — BUG: a panel section header's count adds its values' counts
+
+Will, 2026-10-01: *"To investigate: The total count badge, in filter panel
+section headers, totals the count from each active filter value in that
+section. However this should be the total number of unique results across
+all active filter values."*
+
+And, the same day: *"Active filter value counts should be showing the total
+number of matches for that filter value. I think this is the case but I want
+to validate in light of the section total investigation."*
 
 ### `[x]` ✅ 172 — In the filter panel, each value chip shows its own count
 
@@ -3582,7 +3615,7 @@ step bigger on a small screen, before density.
 **✅ Will, 2026-10-01:** *"Not sure it matters any more."* No breakpoint
 step. Step 1 stands; step 3 has nothing to consume it.
 
-### `[ ]` ❓ 36 — CSS: compiled where it should inherit?
+### `[x]` ✅ 36 — CSS: compiled where it should inherit?
 
 Will, 2026-09-24: the system is designed on INHERITANCE, so why is so much CSS
 compiled? Two generators: the state pins (`state-pins.yaml` → ~21 re-pointed
@@ -3610,6 +3643,13 @@ needs a generator.
   nothing a reader sees.
 - **B: raise the floor to Safari 17.2** — the nesting ships as written, and
   preset-env goes from the build.
+
+**✅ Will, 2026-10-01: B** — *"No-one cares about Safari."* The floor is
+Safari 17.2, the nesting ships as written, and `postcss-preset-env` is gone
+from the build and the package. Measured: 0 pixels differ on Records,
+Dashboard and Settings, in Chromium and WebKit. One thing reads differently:
+the minifier now writes a 50% colour-mix as `#rrggbb80`; two chart tests
+read that text, and take both forms now.
 
 ### `[x]` ✅ 11d — `data-type` means nine things; `data-empty` means three
 
@@ -4454,6 +4494,7 @@ One line each. The detail is in git and in the trap named.
 - 33 (step 1): a density carries only the 27 space and size values Figma overrides; a stale copy had painted an old success green — `T-a-density-mode-is-one-step`
 - 26, 30, 33, 11d: closed by Will's rulings — the grid stays, the SVG icons stay, no breakpoint step, `data-type` is Figma's Type axis
 - 28: `sherpa-grid-cell` folded — Figma's Grid Cell is the grid's own CSS
+- 36: preset-env is gone — the Safari 16 floor went, so nesting ships as written; no pixel moved
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

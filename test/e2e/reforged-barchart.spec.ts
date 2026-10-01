@@ -98,7 +98,8 @@ test('bars use the data-viz series ramp: translucent fill, solid 1px stroke', as
   // while the series were composed in CSS; Theme bakes the alpha into the hex
   // now, so the computed value is `rgba(…, .502)`. Asserting the SYNTAX made the
   // test a mirror of the token file rather than a check on the result.
-  const TRANSLUCENT = /(\b50%|0?\.5\d*\s*\)|\/\s*0?\.5)/;
+  // 50% however it is written — the minifier makes a colour-mix `#rrggbb80`.
+  const TRANSLUCENT = /(\b50%|0?\.5\d*\s*\)|\/\s*0?\.5|#[0-9a-f]{6}80\b)/i;
   expect(a!['hue']).toMatch(TRANSLUCENT);
   // …and its border is a SEPARATE value, not the fill — and SOLID.
   expect(a!['border']).not.toBe(a!['hue']);

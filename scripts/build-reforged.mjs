@@ -9,7 +9,6 @@ import { execSync, spawn } from 'node:child_process';
 import { readdirSync, mkdirSync, copyFileSync, readFileSync, writeFileSync, statSync, watch } from 'node:fs';
 import { join, dirname, relative } from 'node:path';
 import postcss from 'postcss';
-import postcssPresetEnv from 'postcss-preset-env';
 import autoprefixer from 'autoprefixer';
 import cssnano from 'cssnano';
 
@@ -18,17 +17,9 @@ const SRC = join(ROOT, 'src');
 const OUT = join(ROOT, 'dist');
 
 // Each output must stay ONE valid stylesheet — components adopt it into
-// adoptedStyleSheets.
+// adoptedStyleSheets. Nesting ships AS WRITTEN: no supported engine lacks it
+// since the Safari 16 floor went (Will, TODO 36).
 const cssProcessor = postcss([
-  postcssPresetEnv({
-    stage: 2,
-    features: {
-      'nesting-rules': true,
-      'custom-properties': false, // inlining would freeze the live token cascade
-      'cascade-layers': false, // real @layer ordering is load-bearing
-      'logical-properties-and-values': false, // lowering to left/right breaks RTL
-    },
-  }),
   autoprefixer(),
   cssnano({ preset: ['default', { discardComments: { removeAll: true } }] }),
 ]);
@@ -86,7 +77,7 @@ async function copyOne(full) {
   }
 }
 
-console.log('› css transform (preset-env + autoprefixer + cssnano)');
+console.log('› css transform (autoprefixer + cssnano)');
 const cssCount = await copyAssets(SRC);
 console.log(`✓ assets copied into dist/ (${cssCount} css transformed)`);
 

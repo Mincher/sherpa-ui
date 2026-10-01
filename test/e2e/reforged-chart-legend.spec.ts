@@ -40,7 +40,8 @@ test('renders a row per item with label + value and categorical swatches', async
   // while the series were composed in CSS; Theme bakes the alpha into the hex
   // now, so the computed value is `rgba(…, .502)`. Asserting the SYNTAX made the
   // test a mirror of the token file rather than a check on the result.
-  expect(r.hue1).toMatch(/(\b50%|0?\.5\d*\s*\)|\/\s*0?\.5)/);
+  // 50% however it is written — the minifier makes a colour-mix `#rrggbb80`.
+  expect(r.hue1).toMatch(/(\b50%|0?\.5\d*\s*\)|\/\s*0?\.5|#[0-9a-f]{6}80\b)/i);
   // Both must RESOLVE: an undefined custom property paints nothing, with no error.
   expect(r.ring1).not.toBe('rgb(0, 0, 0)');
   expect(r.ring5).not.toBe('rgb(0, 0, 0)');

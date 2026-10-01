@@ -85,7 +85,6 @@
     "husky": "^9.1.7",
     "js-yaml": "^4.1.1",
     "postcss": "^8.5.28",
-    "postcss-preset-env": "^11.5.2",
     "prettier": "^3.1.0",
     "typescript": "^6.0.3",
     "zod": "^3.23.8"
@@ -102,6 +101,6 @@
     "last 2 versions",
     "Firefox ESR",
     "not dead",
-    "Safari >= 16"
+    "Safari >= 17.2"
   ]
 }
