@@ -9708,12 +9708,21 @@ handle is in the area's own inset, so it is the AREA's edge, not the
 panel's. The shell REPORTS on release (`panel-area-resize`); the example app
 keeps the width in its session and hands it back.
 
+**Either axis, in the box's own units** (TODO 177). The layout grid's gutters
+move a HEIGHT too: `axis: 'y'` reads `clientY` and the Up and Down keys. Its
+`step` is a function, read at each press, because a grid's pitch follows its
+width and density. `describe` states the separator's values in columns or
+rows, with an `aria-valuetext`, rather than px. And every edge says its value
+when it is WIRED, not only once focused: a focusable separator with no
+`aria-valuenow` is announced with nothing.
+
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.html`
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.ts`
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
 - Site: `src/core/ui/edge-resize.ts`
 - Site: `test/e2e/reforged-app-shell.spec.ts`
+- Site: `test/e2e/reforged-edge-resize.spec.ts`
 
 ### T-the-shell-owns-the-panel-areas
 
@@ -15901,3 +15910,26 @@ the authored layout back is a plain removal.
 - Site: `scripts/project-tokens.mjs`
 - Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.html`
 - Site: `test/e2e/reforged-layout-grid.spec.ts`
+
+### T-a-gutter-moves-a-line
+
+**A drag moves ONE line; the span across it gives way.** TODO 177, Will:
+*"If there's no space on the row to grow an element's column span (siblings
+already at their minimum span) then dragging won't increase the width.
+Dragging to resize height/row span can't force neighbouring rows of content
+to span lower than the highest min row span on elements in that row."*
+
+Both rules only mean something if a neighbour SHRINKS, so: the span on the
+line's near side grows, and the spans across it give way — nearest first, each
+down to its floor — then free space (empty columns at a row's end, a page that
+scrolls, a fit grid's filler). A step nobody can give is dropped, so with
+every sibling at its minimum the drag grows nothing. The total is kept.
+
+One pure function, `moveLine`, serves both axes: a row's cards (floor 3
+columns) and a grid's bands (floor = the band's highest `data-min-row-span`).
+A locked segment (floor = ceil = span) passes a move through unchanged.
+`reach` says how far a line can go each way, for Home, End and the aria
+values.
+
+- Site: `src/components/sherpa-layout-grid/grid-lines.ts`
+- Site: `test/unit/a-gutter-moves-a-line.test.mjs`
