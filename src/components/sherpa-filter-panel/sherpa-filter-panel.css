@@ -42,6 +42,12 @@
 /* The search fills its row: a header's metadata strip is a flex row, and a
    field in it otherwise hugs its own content. */
 .search { flex: 1 1 auto; }
+/* …and the row spans the whole header, under its icon too, with room above.
+   Will, TODO 182. */
+.head::part(metadata) {
+  grid-column: 1 / -1;
+  margin-block-start: var(--sherpa-theme-gap-md, 8px);
+}
 
 /* ── Scopes ──────────────────────────────────────────────────────────── */
 

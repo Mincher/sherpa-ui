@@ -757,3 +757,24 @@ test('Clear and Send to are one button group; Send to shows before any answer, a
   // Nothing to clear and nowhere to send: nothing drawn.
   expect(r['nowhere']!.buttons).toEqual([]);
 });
+
+/* Will, TODO 182: "Search input should span the width of the header,
+   excluding header padding. Right now it's inset on the left." */
+test('the search spans the header, less its padding, with room above', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount('sherpa-filter-panel', undefined, { open: true, style: 'inline-size: 420px' }) as HTMLElement & {
+      populate(d: unknown): void };
+    el.populate([{ scope: 'view', label: 'View filters', filters: [] }]);
+    await window.__settled();
+    const header = el.shadowRoot!.querySelector('.head')!.shadowRoot!.querySelector<HTMLElement>('.header')!;
+    const box = header.getBoundingClientRect();
+    const pad = parseFloat(getComputedStyle(header).paddingInlineStart);
+    const search = el.shadowRoot!.querySelector('.search')!.getBoundingClientRect();
+    const title = el.shadowRoot!.querySelector('.head')!.shadowRoot!.querySelector('.labels')!.getBoundingClientRect();
+    return { left: Math.round(search.left - box.left - pad), right: Math.round(box.right - pad - search.right),
+      above: Math.round(search.top - title.bottom) };
+  });
+  expect(r.left).toBe(0);
+  expect(r.right).toBe(0);
+  expect(r.above).toBeGreaterThanOrEqual(8);
+});

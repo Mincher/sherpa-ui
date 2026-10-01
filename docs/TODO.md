@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**31 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**30 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -118,7 +118,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31x | 179 | Every place a ruled-out value shows is inactive — a chart legend's item too | bug |
 | ⬜ | 31y | 178 | The filter panel's header gets an overflow (⋯) menu; "Limit matching filters" is an item in it and in the toolbar's | feature |
 | ⬜ | 31z | 181 | A saved filter's menu shows its condition rows, read-only — the Advanced menu, not a bespoke one | refactor |
-| ⬜ | 31aa2 | 182 | The filter panel's search: more room above it, and the full width of the header less its padding | bug |
+| ✅ | 31aa2 | 182 | The filter panel's search: more room above it, and the full width of the header less its padding | bug |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
 | ✅ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
@@ -1805,11 +1805,16 @@ about limited filters."* Done the same day: a greyed value says, on hover,
 a chip alike; a set-aside pick says "Limited by your other filters: not
 applied." (The words before were "No matches with your other filters.")
 
-### `[ ]` 182 — The filter panel's search: more room above it, and full width
+### `[x]` ✅ 182 — The filter panel's search: more room above it, and full width
 
 Will, 2026-10-01, a todo: *"Gap above search input in filter panel is too
 small. Search input should span the width of the header, excluding header
 padding. Right now it's inset on the left."*
+
+**✅ Done 2026-10-01.** The search row spans the whole header, under its icon
+too — 8 px in from each edge, the header's own padding — with 8 px above it
+(it was 4). Done in the panel's CSS, through the header's `metadata` part, so
+other headers are unchanged.
 
 ### `[ ]` 181 — A saved filter's menu shows its condition rows, read-only
 
@@ -4865,6 +4870,7 @@ One line each. The detail is in git and in the trap named.
 - 180: a later answer sets aside an earlier pick it rules out — kept, greyed, not applied — `T-a-later-answer-sets-an-earlier-pick-aside`
 - 179: a chart legend greys and refuses a ruled-out value, as its chip does — `T-a-ruled-out-value-is-greyed`
 - 37 step 4: the example app is its own project, `../Sherpa Demos`, taking sherpa-ui as a dependency by name
+- 182: the filter panel's search spans its header, with more room above
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on
