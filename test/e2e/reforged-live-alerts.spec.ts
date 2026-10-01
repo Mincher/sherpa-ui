@@ -23,7 +23,8 @@ test('live alerts pushed by the server move a tile\'s value and its sparkline to
   const first = await tile(page);
   await expect.poll(async () => (await tile(page)).value, { timeout: 15000 }).toBeGreaterThan(first.value);
   const later = await tile(page);
-  expect(first.value).toBe(1284);
+  // The 1,284 seeded, and any alert pushed before the first read — under load one lands first.
+  expect(first.value).toBeGreaterThanOrEqual(1284);
   expect(first.line).not.toBe('');
   expect(later.line).not.toBe(first.line);
 });
