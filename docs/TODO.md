@@ -117,7 +117,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31w | 180 | A picked value a LATER filter rules out goes inactive and leaves the query; the latest filter wins | feature |
 | ✅ | 31x | 179 | Every place a ruled-out value shows is inactive — a chart legend's item too | bug |
 | ✅ | 31y | 178 | The filter panel's header gets an overflow (⋯) menu; "Limit matching filters" is an item in it and in the toolbar's | feature |
-| 🚧 | 31z | 181 | A saved filter's menu shows its condition rows, read-only — the Advanced menu, not a bespoke one | refactor |
+| ✅ | 31z | 181 | A saved filter's menu shows its condition rows, read-only — the Advanced menu, not a bespoke one | refactor |
+| ❓ | 31z2 | 186 | Saved filter card: six small choices left from 181, each built one way | feature |
 | ✅ | 31aa2 | 182 | The filter panel's search: more room above it, and the full width of the header less its padding | bug |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
@@ -1830,7 +1831,7 @@ too — 8 px in from each edge, the header's own padding — with 8 px above it
 (it was 4). Done in the panel's CSS, through the header's `metadata` part, so
 other headers are unchanged.
 
-### `[ ]` 181 — A saved filter's menu shows its condition rows, read-only
+### `[x]` ✅ 181 — A saved filter's menu shows its condition rows, read-only
 
 Will, 2026-10-01, a todo: *"The preset/saved filter menus should show the
 condition input rows, in read only mode, rather than just text labels.*
@@ -1852,6 +1853,43 @@ A Simple answer shows as its rows ("is EMEA" OR "is APAC").
   line does now.
 
 **✅ Will, 2026-10-01: A.**
+
+**✅ Done 2026-10-01.** A saved filter's card shows each field's OWN menu,
+read-only: its condition rows, or a date's calendar. A field the control has
+no definition for stays a line of words. Edit filter keeps the card open and
+makes the rows editable where they are; Save filter and Discard changes show
+in place of Edit and Delete. The change is sent once, when the card closes,
+Save filter is pressed, or the bar or panel rebuilds. The bar and the panel
+share one helper, `src/core/ui/saved-filter-menu.ts`. The old per-line editor,
+`unpackFilter` and the panel's `filter-edit` are gone. A folded saved chip
+shows its card at the Filters button. `T-a-saved-chip-lists-its-conditions`
+`T-a-saved-filter-keeps-its-edit` `T-a-nested-menu-answers-for-itself`
+`T-an-action-row-can-keep-its-menu-open`
+
+### `[ ]` 186 — Saved filter card: six small choices left from 181
+
+Each is built the first way. Say the word to change one.
+
+1. **Closing the card while editing** (click away, Escape) — **A (built):**
+   keeps the change, unsaved, and the chip shows it. **B:** Escape throws it
+   away; only a click away keeps it.
+2. **When the rows on screen follow an edit** — **A (built):** when editing
+   ends. **B:** live, as each row changes (the panel would first need to stop
+   redrawing every scope on each change).
+3. **Unpack is gone** — putting a saved filter's answer back into its field
+   chips. Edit filter now shows the rows in place. **A (built):** gone.
+   **B:** bring it back as its own row, "Put back into fields".
+4. **Read-only rows still show their select carets and a dead row ×**, as the
+   grid's held heading does. **A (built):** leave them. **B:** hide them when
+   read-only (this changes the grid's heading too).
+5. **Limit matching filters does not grey values inside a saved filter's
+   rows.** **A (built):** no. **B:** grey them as a chip's menu does.
+6. **A saved date shows its whole calendar**, so the card is tall. **A
+   (built):** the calendar. **B:** a line of words until Edit filter.
+
+And: a field the control has no definition for stays words, read-only even
+while editing, and is reported (`unknown-filter`). The source could hand its
+definitions over in `describe()` if that should change.
 
 ### `[x]` ✅ 178 — An overflow menu in the filter panel's header, with "Limit matching filters"
 
@@ -4951,6 +4989,7 @@ One line each. The detail is in git and in the trap named.
 - 182: the filter panel's search spans its header, with more room above
 - 178: the filter panel's ⋮ — Reset folds into it when narrow; both ⋮ menus hold "Limit matching filters"
 - 110: an AND row greys the values the rows before it rule out — `T-an-and-row-offers-what-the-rows-before-it-leave`
+- 181: a saved filter's card shows each field's own menu, read-only; Edit filter edits it in place — `T-a-saved-filter-keeps-its-edit`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

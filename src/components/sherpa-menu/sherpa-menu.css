@@ -358,8 +358,8 @@
   grid-template-columns: minmax(0, 1fr) auto auto;
 }
 
-/* A LINE that only says something: a row's box and ink, and nothing to press.
-   TRAP T-a-saved-chip-lists-its-conditions */
+/* A line a host slots that only says something: a row's box and ink, and
+   nothing to press. TRAP T-a-saved-chip-lists-its-conditions */
 .rows ::slotted(.menu-line) {
   margin: 0;
   padding: var(--sherpa-display-mode-space-2xs, 4px) var(--sherpa-theme-padding-md, 8px);

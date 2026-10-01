@@ -8959,7 +8959,6 @@ writes. A reading carries EITHER — never both.
 - Site: `test/e2e/reforged-filter-conditions.spec.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/core/data/data-source.ts`
-- Site: `src/core/ui/filter-menu.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
 ### T-an-inactive-chip-says-where-its-filter-went
@@ -13139,13 +13138,10 @@ actions and no words.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
-- Site: `src/components/sherpa-menu/sherpa-menu.html`
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/filter-face.ts`
-- Site: `src/core/ui/filter-menu.ts`
 - Site: `src/data.ts`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 - Site: `test/unit/filter-face.test.mjs`
@@ -13242,7 +13238,6 @@ scope's header holds nothing to press; Save is in the chip's own menu.
 
 - Site: `src/core/data/query.ts`
 - Site: `src/core/data/data-source.ts`
-- Site: `src/core/ui/filter-menu.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`

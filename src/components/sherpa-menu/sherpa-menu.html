@@ -98,7 +98,8 @@
     (default) — the rows (labels with inputs, or buttons). An action <button>
                 closes the card, unless it carries data-stay-open
                 (TRAP T-an-action-row-can-keep-its-menu-open). A menu
-                nested in another answers for itself.
+                nested in another answers for itself. A slotted
+                p.menu-section or p.menu-line takes the menu's own look.
 
   Fires:
     menu-change — the selection was COMMITTED. detail: { values: string[] }
@@ -210,10 +211,6 @@
     <!-- A row with NO tick box: it names what it cannot pick. -->
     <template class="menu-bare-tpl">
       <label class="menu-row menu-row-bare"><span class="menu-row-label"></span></label>
-    </template>
-    <!-- A LINE: it only says something. TRAP T-a-saved-chip-lists-its-conditions -->
-    <template class="menu-line-tpl">
-      <p class="menu-row menu-line"></p>
     </template>
     <!-- A CHILD MENU's door, at a row's end: its pick count, then its caret.
          TRAP T-a-row-opens-its-child-menu -->
@@ -376,10 +373,6 @@
     <!-- A row with NO tick box: it names what it cannot pick. -->
     <template class="menu-bare-tpl">
       <label class="menu-row menu-row-bare"><span class="menu-row-label"></span></label>
-    </template>
-    <!-- A LINE: it only says something. TRAP T-a-saved-chip-lists-its-conditions -->
-    <template class="menu-line-tpl">
-      <p class="menu-row menu-line"></p>
     </template>
     <!-- A CHILD MENU's door, at a row's end: its pick count, then its caret.
          TRAP T-a-row-opens-its-child-menu -->
