@@ -752,35 +752,6 @@ test('picking a range start does not move the grid; a host-set value still does'
 });
 
 /**
- * ON RECORDS, the header's Date — the View's — opens as a RANGE, and a day with
- * no records inside the span can still be an end. TODO 20b. Runs against the
- * EXAMPLES server (:4200). TRAP T-a-range-is-bounded-by-the-data
- */
-test('on Records, the View\'s Date opens as a range over the span of the data', async ({ page }) => {
-  await page.goto('http://localhost:4200/?context=records');
-  await page.waitForFunction(() =>
-    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
-  await expect.poll(() => page.evaluate(() => !!document.querySelector('sherpa-quick-filter-toolbar[data-type="view"]')
-    ?.shadowRoot?.querySelector('.chip[data-id="created"] sherpa-calendar'))).toBe(true);
-  const r = await page.evaluate(async () => {
-    const chip = document.querySelector('sherpa-quick-filter-toolbar[data-type="view"]')!
-      .shadowRoot!.querySelector<HTMLElement>('.chip[data-id="created"]')!;
-    const menu = chip.querySelector('sherpa-menu') as HTMLElement & { show(t?: HTMLElement): void };
-    const cal = menu.querySelector('sherpa-calendar') as HTMLElement & { rendered: Promise<void> };
-    menu.show(chip);
-    await cal.rendered;
-    await new Promise((res) => setTimeout(res, 300));
-    const days = (cal.dataset['available'] ?? '').split(',').filter(Boolean);
-    const cells = [...cal.shadowRoot!.querySelectorAll<HTMLElement>('[data-iso]')];
-    return {
-      range: menu.hasAttribute('data-range') && cal.dataset['type'] === 'range',
-      emptyButPickable: cells.some((c) => !days.includes(c.dataset['iso']!) && !c.hasAttribute('disabled')),
-    };
-  });
-  expect(r).toEqual({ range: true, emptyButPickable: true });
-});
-
-/**
  * A MONTH OR A YEAR WITH NO DAY TO PICK IS INACTIVE TOO — TODO 135. Will,
  * 2026-09-30: "where the viable selectable dates are limited, the Month and
  * Year modes should set Months and Year buttons with no viable selectable

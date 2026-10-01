@@ -73,7 +73,7 @@ It says `.chart-tip` and `.sherpa-snap-group` both live in `sherpa-base.css`.
 - `.chart-tip` is real and shared, but it is in `sherpa-anchor.css:8`. Only the
   file name in the doc is wrong.
 - `.sherpa-snap-group` **does not exist anywhere in the codebase.** Grepping
-  `src/` and `examples/` returns nothing. It was renamed: the behaviour now
+  `src/` and `../Sherpa Demos/app/` returns nothing. It was renamed: the behaviour now
   lives in `sherpa-grouping.css` as `.sherpa-group` (+ `.sherpa-group-vertical`,
   `.sherpa-group-grid`), and it works exactly as the doc describes — keyed off
   `:first-child` / `:last-child` at `sherpa-grouping.css:30,35` so a re-order
@@ -206,7 +206,7 @@ mechanical change that removes the guesswork.
 
 Same user action, same detail shape (`{ index, label, href }`), two names — and
 the app-header *contains* the breadcrumbs. A consumer listening for one misses
-the other. `examples/index.html:391` listens for `breadcrumb-click`, so the
+the other. `../Sherpa Demos/app/index.html:391` listens for `breadcrumb-click`, so the
 app-header's name is the one in use.
 
 > **Outcome: ✅ fixed** — see finding 6, *Fix a*.
@@ -668,13 +668,13 @@ tests failed immediately.
 
 My check had scanned CSS and TS and not the test files. A class can be load-
 bearing for a test without being load-bearing for a render. I re-ran the check
-across `test/` and `examples/` for all seven; only tabs was affected.
+across `test/` and `../Sherpa Demos/app/` for all seven; only tabs was affected.
 
 #### And one that was wired up rather than removed
 
 `sherpa-stack` documented it as "the floor an item may shrink to (default
 200px)". No rule mapped the attribute to `--_min-item`, so the 200px default
-applied whatever you set — and `examples/templates/settings.html:81` carries a
+applied whatever you set — and `../Sherpa Demos/app/templates/settings.html:81` carries a
 comment claiming the row "reflows the cards at data-min-item", which it never
 did.
 
@@ -728,7 +728,7 @@ one selector where `data-state` needs three values OR'd:
 
 So they are a **test query surface**, not dead code. The trap and the code
 comment now say that instead of the stale claim. This is the same lesson as
-`.label` in `sherpa-tabs` earlier in this audit: check `test/` and `examples/`
+`.label` in `sherpa-tabs` earlier in this audit: check `test/` and `../Sherpa Demos/app/`
 before removing something that renders nothing.
 
 **3. The three toolbar prototypes — removed.** `qf-row-tpl`, `qf-all-tpl` and
@@ -797,7 +797,7 @@ The child's event already bubbles composed, so it crosses the header's shadow
 boundary and reaches the document on its own. The handler was duplicating an
 event that was already arriving.
 
-Removed the listener and the handler; `examples/index.html` now listens for
+Removed the listener and the handler; `../Sherpa Demos/app/index.html` now listens for
 `breadcrumb-select`. Verified in the running app rather than by reading: a crumb
 click moved the URL from `?view=records` to `?view=dashboard` with zero page
 errors.
@@ -833,7 +833,7 @@ hide(): void { … }                 // the logic
 close(): void { this.hide(); }     // the platform spelling
 ```
 
-`examples/` had the problem this fixes: `dialog.close()` on one line,
+`../Sherpa Demos/app/` had the problem this fixes: `dialog.close()` on one line,
 `notifications.hide()` on the next, for the same intent.
 
 **`dismiss()` stays separate** because it REMOVES the element. A method that

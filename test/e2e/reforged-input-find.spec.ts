@@ -174,29 +174,3 @@ test('a grid steps through its marks, round the end, and asks for the next page 
   expect(r.asked).toEqual([{ page: 2 }]);
   expect(r.landed).toBe(0);
 });
-
-test('the Records page: a Find narrows the rows, marks them, and Enter steps', async ({ page }) => {
-  await page.goto('http://localhost:4200/?context=records');
-  await page.waitForFunction(() =>
-    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row'));
-  const all = await page.evaluate(() =>
-    (window as unknown as { sherpa: { source: { debugState(): { total: number } } } }).sherpa.source.debugState().total);
-  await page.locator('#grid-find').click();
-  await page.keyboard.type('dana');
-  const marks = () => page.evaluate(() => {
-    const grid = document.querySelector('#context-root sherpa-data-grid')!;
-    const found = [...grid.shadowRoot!.querySelectorAll('mark.match')];
-    return { count: found.length, current: found.findIndex((m) => m.hasAttribute('data-current')) };
-  });
-  await expect.poll(async () => (await marks()).count).toBeGreaterThan(0);
-  const total = await page.evaluate(() =>
-    (window as unknown as { sherpa: { source: { debugState(): { total: number } } } }).sherpa.source.debugState().total);
-  expect(total).toBeLessThan(all);
-  await page.keyboard.press('Enter');
-  await page.keyboard.press('Enter');
-  expect((await marks()).current).toBe(1);
-  expect(await page.evaluate(() => document.querySelector<HTMLElement>('#grid-find')!.dataset['matches']))
-    .toBe(String((await marks()).count));
-  await page.keyboard.press('Shift+Enter');
-  expect((await marks()).current).toBe(0);
-});

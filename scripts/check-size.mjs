@@ -29,8 +29,6 @@ export const SOURCES = [
   'src/core/sherpa-motion.css',
   'src/core/sherpa-chart-*.css',
   'src/components/**/*.html',
-  'examples/contexts/*.js',
-  'examples/definitions/*.js',
 ];
 
 const BASELINE = 'scripts/size-baseline.json';

@@ -153,7 +153,7 @@ The asymmetries this has already produced:
 
 Reproduced on the running page. It is **two** things, and only one is a bug.
 
-**Last Seen is the `mine` VIEW's own sort.** `examples/definitions/records-views.js`
+**Last Seen is the `mine` VIEW's own sort.** `../Sherpa Demos/app/definitions/records-views.js`
 line 33: `sort: [{ field: 'lastSeen', direction: 'desc' }]`. On
 `?context=records&view=mine` the Sort chip reads "Last seen" from a fresh load,
 before anyone touches it. Nothing is wrong — the view owns its arrangement —
@@ -520,7 +520,7 @@ Will, 2026-09-25:
 > the mechanism for all UI components. **1 system, 1 implementation.**
 
 Today the app hands `bind()` a closure — `as` — that builds each component's
-shape by hand. Measured in `examples/contexts/records.js`:
+shape by hand. Measured in `../Sherpa Demos/app/contexts/records.js`:
 
 | | |
 |---|---|
@@ -746,7 +746,7 @@ That makes it a prerequisite for §9.5's "a SERIES over a field", not a nicety.
 | `Store` options | `time?: string`, beside `key` |
 | `DataSource` | declare it as a date field; expose `timeField` |
 | the header's chip | "Created date" → "Date", bound to `timeField` |
-| `examples/contexts/*-data.js` | say which field is the time |
+| `../Sherpa Demos/app/contexts/*-data.js` | say which field is the time |
 | `debugState()` | report it, so a filter over nothing is visible |
 
 **Budget ≈ +60**, and it BUYS the series composition in §9.5 — which is most of
@@ -1805,7 +1805,7 @@ The scope's buttons have their own row, under its heading.
    Done 2026-09-25 on the Records page. It found a dialog bug: one shut and
    opened again at once was shut by its own late close
    (`T-a-reopened-dialog-hears-a-late-close`). The Dashboard's Save view asks
-   the same way; both pages share `examples/contexts/ask-name.js`.
+   the same way; both pages share `../Sherpa Demos/app/contexts/ask-name.js`.
 3. **Add condition is an icon button with a plus**, at the end of the LAST
    condition row. Every row before it shows Remove instead. Done 2026-09-25
    (`T-add-condition-ends-the-last-row`).

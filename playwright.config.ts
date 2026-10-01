@@ -50,35 +50,12 @@ export default defineConfig({
     { name: 'webkit', use: { ...devices['Desktop Safari'] } },
   ],
 
-  /* TWO servers. The harness needs the repo served statically; the
-     view-definition specs drive the real example APP, which is an Express
-     server on :4200 with its own routing.
-
-     `reforged-view-chips.spec.ts` navigates to `http://localhost:4200/#/dashboard`
-     and its five tests failed with ERR_CONNECTION_REFUSED unless someone had
-     run `npm run serve:examples` in another terminal first — a hidden
-     requirement nothing stated, so a clean `npm test` reported five failures
-     that were nothing to do with the code. */
-  webServer: [
-    {
-      command: 'npm run build && npx --yes serve . --listen 4173 --no-clipboard',
-      url: 'http://localhost:4173/test/reforged/harness.html',
-      reuseExistingServer: !process.env.CI,
-      timeout: 120_000,
-    },
-    {
-      command: 'npm run serve:examples',
-      url: 'http://localhost:4200/',
-      reuseExistingServer: !process.env.CI,
-      timeout: 60_000,
-    },
-    /* A SECOND examples server, from this checkout's code: a test of a new
-       server route runs here, never waiting on a restart of the one on :4200. */
-    {
-      command: 'PORT=4201 node server/index.mjs',
-      url: 'http://localhost:4201/',
-      reuseExistingServer: !process.env.CI,
-      timeout: 60_000,
-    },
-  ],
+  /* The harness needs the repo served statically. The example APP and its
+     tests live in ../Sherpa Demos, with their own server (TODO 37). */
+  webServer: {
+    command: 'npm run build && npx --yes serve . --listen 4173 --no-clipboard',
+    url: 'http://localhost:4173/test/reforged/harness.html',
+    reuseExistingServer: !process.env.CI,
+    timeout: 120_000,
+  },
 });

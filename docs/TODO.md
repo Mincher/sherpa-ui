@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**30 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**31 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -29,7 +29,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 2a | 103 | Rows with no key get one from the data layer — Sherpa's own, never sent out | foundation |
 | ❓ | 3 | 38 | One model, one builder, one owner — what is left | refactor |
 | ✅ | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
-| 🚧 | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
+| ✅ | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | 🚧 | 5a | 113 | EXPLORE — state first, then render, in every component; a skeleton while the first render waits | explore |
 | | | | **C — Contained bugs** | |
 | ✅ | 5b | 142 | The shell's panel areas must not scroll with the page: they sit outside the scrolling wrapper | quick |
@@ -130,6 +130,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 35c | 163 | The app shell's panel areas are 150% of their width today, at the least | quick |
 | ✅ | 35a | 146 | The app shell's FIXED panel areas resize by dragging their inner edge; the content reflows; two levels of container query | feature |
 | ⬜ | 35b | 177 | AFTER the example app moves (37) — an app setting: resize layout grid content by handles in its gutters, snapping to columns and rows | feature |
+| ⬜ | 35c | 183 | REVIEW — how a consumer builds an app on Sherpa: use, configure, extend, scaffold, the data layer; and for AI agents | explore |
+| ⬜ | 35d | 184 | INVESTIGATE — does sherpa-ui need Node to ship? A CDN, a script or a small zip may suit it better | explore |
 | | | | **F — Data states and charts** | |
 | ✅ | 36 | 58 | Loading, empty and error states in a container | feature |
 | ✅ | 37 | 9b | A Data Viz header, for metrics and chart containers | component |
@@ -491,7 +493,7 @@ early value (probed); nothing to do. **Left of 113:** the filter family —
 menu, toolbar, panel, chip — built with A7 and 89; and the skeleton, with 58
 and 59.
 
-### `[~]` 37 — Components are AGNOSTIC of the data, and of the example app
+### `[x]` ✅ 37 — Components are AGNOSTIC of the data, and of the example app
 
 Will, 2026-09-25:
 
@@ -529,6 +531,18 @@ Will, 2026-09-25:
    local, sibling, folder to sherpa-ui called 'Sherpa Demos'."* So the
    example app moves to `../Sherpa Demos`, last. **Will, 2026-10-01: "go on
    37".**
+
+   ✅ **Done 2026-10-01.** The app is `../Sherpa Demos`: `app/` (the old
+   `examples/`), its own server, and the tests that drive it. It takes
+   sherpa-ui as a dependency (`file:../sherpa-ui`) and imports it BY NAME —
+   `sherpa-ui` and `sherpa-ui/data`, through an import map in the browser and
+   `node_modules` in Node — as any consumer would. Nothing in it reaches into
+   the library's files. 25 test files moved whole and 12 were split: their
+   component tests stay here, their app tests went. sherpa-ui's own suite
+   needs no app server now. The 9 traps only the app meets moved to
+   `Sherpa Demos/docs/TRAPS.md`. Checked: the app loads with no errors (100
+   records, 1,284 alerts); the Demos suite passes 359 tests in three engines;
+   the library's split files pass 192.
 
 ---
 
@@ -2846,6 +2860,44 @@ and the area has a MIN width of 464px. That is 150% of the 310px it is at
 at 1280 and at 1600, and from about 1900 the three columns are wider and
 take over (454 at 1920).
 
+### `[ ]` 184 — Does sherpa-ui need Node to ship?
+
+Will, 2026-10-01, to investigate later: *"How much does sherpa actually need
+nodejs? Does it need nodejs to ship to consumers?*
+
+*A CDN, script, or even a small zip might be a much better approach for
+sherpa-ui."*
+
+Found while moving the app (37): the package ships `dist/`, but not
+`schemas/` — a consumer cannot check a page definition against the page
+schema without the repo.
+
+### `[ ]` 183 — REVIEW: how a consumer builds an app on Sherpa — and an AI agent
+
+Will, 2026-10-01, a todo once the example app moved: *"We need to review how
+a consumer of Sherpa will use it to build an application frontend.*
+
+*We need to make it easy to do things like:*
+
+*- Use, configure, extend, and co-ordinate sherpa components*
+*- Scaffold a sherpa application*
+*- Work with the data layer to provide data, data sources, set context and
+conditions etc.*
+
+*I'm sure there's a host of other things, too.*
+
+*We also don't want to forget making it easy for AI agents to build using
+Sherpa.*
+
+*The principles of sherpa need to be easy to understand and work with to make
+it viable.*
+
+*This review may likely involve really getting into the overall architecture
+and doing some overdue cleanup, refactoring and optimisation of Sherpa."*
+
+The app moved on 2026-10-01 (37), so this may start; Sherpa Demos is the
+first consumer to learn from.
+
 ### `[ ]` 177 — Resize layout grid content by dragging handles in its gutters
 
 Will, 2026-10-01, *"Todo after we move the example app to it's own project:*
@@ -2869,7 +2921,7 @@ already at their minimum span) then dragging won't increase the width.*
 *Dragging to resize height/row span can't force neighbouring rows of content
 to span lower than the highest min row span on elements in that row."*
 
-Starts after 37 step 4. Builds on 146's edge helper (`src/core/ui/edge-resize.ts`).
+Starts after 37 step 4 — done 2026-10-01, so it may start. Builds on 146's edge helper (`src/core/ui/edge-resize.ts`).
 
 ### `[x]` ✅ 146 — The app shell's FIXED panel areas resize by dragging their edge
 
@@ -4812,6 +4864,7 @@ One line each. The detail is in git and in the trap named.
 - 174 (most) + 176: "Limit filter options" — a ruled-out value is greyed, refused, and says why — `T-a-ruled-out-value-is-greyed`
 - 180: a later answer sets aside an earlier pick it rules out — kept, greyed, not applied — `T-a-later-answer-sets-an-earlier-pick-aside`
 - 179: a chart legend greys and refuses a ruled-out value, as its chip does — `T-a-ruled-out-value-is-greyed`
+- 37 step 4: the example app is its own project, `../Sherpa Demos`, taking sherpa-ui as a dependency by name
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

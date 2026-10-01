@@ -7,7 +7,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readdir, readFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import Ajv2020 from 'ajv/dist/2020.js';
 
 const core = new URL('../../dist/core/data/', import.meta.url);
@@ -19,15 +19,12 @@ const { openSource } = await import(new URL('page-definition.js', core));
 const ROOT = new URL('../../', import.meta.url);
 const json = async (path) => JSON.parse(await readFile(new URL(path, ROOT), 'utf8'));
 
-test('every definition in examples/definitions/ passes the page schema', async () => {
+// The app's own definitions are checked in Sherpa Demos; this one is a copy of its Records page.
+test('a real page definition passes the page schema', async () => {
   const Ajv = Ajv2020.default ?? Ajv2020;
   const check = new Ajv({ allErrors: true }).compile(await json('schemas/page.v1.json'));
-  const files = (await readdir(new URL('examples/definitions/', ROOT))).filter((f) => f.endsWith('.json'));
-  assert.ok(files.length > 0, 'no definitions found');
-  for (const file of files) {
-    const ok = check(await json(`examples/definitions/${file}`));
-    assert.ok(ok, `${file}: ${JSON.stringify(check.errors)}`);
-  }
+  const ok = check(await json('test/unit/fixtures/records.page.json'));
+  assert.ok(ok, JSON.stringify(check.errors));
 });
 
 test('a schema says each field\'s domain; a min on text is a length, not an end', () => {

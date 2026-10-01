@@ -3,7 +3,7 @@ import { test, expect } from './harness';
 /**
  * A saved view's content is MARKUP — parsed, never assigned.
  *
- * Every authored screen in examples/templates is HTML dropped into the app
+ * Every authored screen in ../Sherpa Demos/app/templates is HTML dropped into the app
  * shell, so a saved view (the same thing a USER made instead of an author) is
  * the same format. One way to describe a view, not two.
  *

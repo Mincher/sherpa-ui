@@ -88,7 +88,7 @@ npm run test:a11y:update  # record a baseline that FELL
 # Serve
 npm run sandbox           # build, then serve the repo on :4000 (sandbox/)
 npm run preview           # serve WITHOUT building — :4000
-npm run serve:examples    # express template server on :4200 (examples/)
+# The example APP is its own project now: ../Sherpa Demos — its server and tests are there (:4200)
 
 # The code map — every file's purpose and exports, from its header
 npm run map [path]        # print it; e.g. `npm run map src/core/data`
@@ -109,7 +109,7 @@ npm run mcp               # stdio transport — connect from Claude Desktop / Cu
 - **Web Components** — Custom Elements + Shadow DOM + HTML Templates. No framework, no virtual DOM, zero runtime dependencies.
 - **TypeScript** strict mode, compiled to ES2022 ES modules (`dist/components/`).
 - **CSS** with design tokens sourced from Figma Variables.
-- **MCP server** (`mcp-server/`) — gives AI agents structured access to component specs, tokens, the data layer and the build rules. (There is no `patterns/` directory on this branch — `examples/` is the working reference instead.)
+- **MCP server** (`mcp-server/`) — gives AI agents structured access to component specs, tokens, the data layer and the build rules. (There is no `patterns/` directory on this branch — the example app in `../Sherpa Demos` is the working reference instead.)
 
 ### Component anatomy (three source files + one generated def)
 
@@ -298,14 +298,14 @@ never disagree. Add an Area only when one is asked for.
 **A Settings Context is ONE page, with no Views**: a section header before each
 set of settings, and a Jump to chip (`sherpa-quick-filter data-type="jump"`) in
 its header that scrolls to each. A footer only where typed values need Save.
-`examples/templates/application.html` is the reference.
+`../Sherpa Demos/app/templates/application.html` is the reference.
 
 **Settings opens ON TOP of the Context**, in `<sherpa-dialog data-type="overlay">`
 in the app shell's `overlay` slot. The Context under it is never reloaded, so
 leaving Settings restores its View. The URL carries both:
 `?context=records&view=risk&settings=application`. A first View is left out.
 
-So a page is a **Context**, not a view: `examples/contexts/`, `loadContext`,
+So a page is a **Context**, not a view: `../Sherpa Demos/app/contexts/`, `loadContext`,
 `/template/context/:context`. "View" is kept for saved views — `ViewSnapshot`,
 `onViewPicked`, the `data-type="view"` toolbar and its `view-*` events. Figma
 still uses the old words; that rename is queued in `docs/TODO.md`.
@@ -627,7 +627,7 @@ app: open a `sherpa-dialog` with `.show()` (NOT the native `showModal()` — the
 component owns modality and the `open` attribute), read the fields, then append a
 `sherpa-toast` for feedback.
 
-`examples/contexts/records.js` is the working reference — the add-customer
+`../Sherpa Demos/app/contexts/records.js` is the working reference — the add-customer
 button → dialog → save → toast path.
 
 ### MCP server (`mcp-server/`)

@@ -449,10 +449,8 @@ counts as local.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
-- Site: `test/e2e/reforged-raising-a-filter-carries-its-value.spec.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/core/ui/filter-menu.ts`
-- Site: `test/e2e/reforged-remote-source.spec.ts`
 
 (none — `T-custom-element-upgrade` already exists and already lists this file as a Site.)
 
@@ -786,7 +784,6 @@ changed, add its step there. It supersedes the "refilled on open" half of
 `T-an-open-panel-follows-the-data-layer`.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `test/e2e/reforged-filter-coordination.spec.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 
 ### T-a-suspended-answer-is-drawn-as-off
@@ -804,7 +801,6 @@ does have an off, so it keeps its days.
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/unit/query.test.mjs`
-- Site: `test/e2e/reforged-filter-coordination.spec.ts`
 
 ### T-empty-is-every-kind-of-answer
 
@@ -821,7 +817,6 @@ number: it empties the shape in force and keeps the other
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `test/e2e/reforged-filter-coordination.spec.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 
 ### T-a-panel-date-answers-with-its-days
@@ -835,7 +830,6 @@ empty. A date answers with its menu's own reading, as a number does, and the
 source's answer is drawn into that chip: its days, and whether it is on.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `test/e2e/reforged-filter-coordination.spec.ts`
 
 ### T-a-bar-is-drawn-the-scope-as-it-ends
 
@@ -923,7 +917,6 @@ goes to its first View, because that is what its href says.
 - Site: `src/components/sherpa-router/sherpa-router.ts`
 - Site: `src/components/sherpa-router/sherpa-router.html`
 - Site: `src/core/browser/route.ts`
-- Site: `examples/index.html`
 - Site: `test/unit/route.test.mjs`
 - Site: `test/e2e/reforged-router.spec.ts`
 
@@ -987,7 +980,6 @@ inside a shadow root is found too. A shut panel still fires `panel-close`, so
 its host hears it. The Assistant and the Records details panel are the pair.
 
 - Site: `src/components/sherpa-overlay-panel/sherpa-overlay-panel.ts`
-- Site: `examples/index.html`
 - Site: `test/e2e/reforged-records-details.spec.ts`
 
 ### T-a-current-row-opens-its-details
@@ -1006,26 +998,7 @@ drilldown is where a trail belongs, so the header's trail reads
 is a real `<a href="?…">`, so `index.html` stops the reload on the real click,
 as it does for the nav.
 
-- Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-records-details.spec.ts`
-
-### T-a-live-feed-goes-into-the-store
-
-**Real-time data comes in through the data layer, INTO the store the page
-already reads** — TODO 14. The examples server pushes a new alert every 2 s
-over Server-Sent Events (`/live/alerts`, `?every=ms` for tests); the
-Dashboard, under `?live`, opens an `EventStore({ url, into: alertStore })`.
-The pushes land in the SAME store, so the page's source hears one `change`
-and every tile and chart follows — a tile's value and its sparkline together,
-which is what 13 fixed. Nothing on the page knows the rows are live, and the
-store closes with the page. The server makes each alert with the Dashboard's
-own `alertRow()`, so a pushed row passes the same schema. Its test runs on a
-second examples server (:4201) that Playwright starts from this checkout: a
-new route never waits on a restart of the one on :4200.
-
-- Site: `examples/contexts/dashboard.js`
-- Site: `examples/contexts/dashboard-data.js`
-- Site: `test/e2e/reforged-live-alerts.spec.ts`
 
 ### T-a-container-shows-its-datas-state
 
@@ -1067,7 +1040,6 @@ failure would have no banner.
 - Site: `test/e2e/reforged-container.spec.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/core/data/data-source.ts`
-- Site: `test/e2e/reforged-card-data-states.spec.ts`
 
 ### T-the-nav-is-a-menu-on-a-phone
 
@@ -1100,7 +1072,6 @@ cannot disagree about the current row or an open Area.
 - Site: `src/components/sherpa-app-header/sherpa-app-header.ts`
 - Site: `src/components/sherpa-app-header/sherpa-app-header.html`
 - Site: `src/components/sherpa-app-header/sherpa-app-header.css`
-- Site: `test/e2e/reforged-nav-phone-menu.spec.ts`
 
 ### T-a-second-container-type-drops-the-first
 
@@ -1136,9 +1107,6 @@ shows only then, critical — and the View chip lists the reader's under
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
-- Site: `examples/index.html`
-- Site: `test/e2e/reforged-save-view.spec.ts`
-- Site: `test/e2e/reforged-save-view-dialog.spec.ts`
 - Site: `test/unit/parity-sweep.test.mjs`
 
 ### T-a-range-is-bounded-by-the-data
@@ -1210,7 +1178,6 @@ down: Will, TODO 158.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
-- Site: `test/e2e/reforged-send-to-view-filters.spec.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/send-down.test.mjs`
 
@@ -1303,7 +1270,6 @@ itself. Figma has no chart glyph of its own yet, so a chart's section wears
 - Site: `src/core/ui/context.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/unit/page-definition.test.mjs`
-- Site: `test/e2e/reforged-panel-scope-icon.spec.ts`
 
 ### T-a-view-keeps-a-draft
 
@@ -1336,12 +1302,9 @@ Four things that are not obvious:
 - **Reset all to default, Save and Delete clear it**: the View's own filters
   are on, or the filters have a home.
 
-- Site: `examples/contexts/settings.js`
-- Site: `examples/index.html`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/core/browser/persist-view.ts`
 - Site: `src/core/browser/view-drafts.ts`
-- Site: `test/e2e/reforged-view-drafts.spec.ts`
 
 ### T-reset-to-default-is-the-views-own
 
@@ -1368,7 +1331,6 @@ the saved one, and a reset after that would put back what was just saved.
 Not saved means not reset. When 105's saved filter sets are ruled, the save
 moves to them.
 
-- Site: `examples/index.html`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
@@ -1443,19 +1405,6 @@ takes one for an open that did not come through `show()`; a close clears the
 flag.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-
-### T-a-favourite-is-a-view
-
-**The ★ stars the View on screen, not its whole Context.** TODO 16: it was keyed
-by Context, so starring one View starred them all. A favourite's `key` is
-`context:view` — and the FIRST View's is the Context alone, as the URL leaves
-the first View out. So a row stored before keys existed (it named only the
-Context) means that Context's first View: it is given `key: context` on load
-and stays what it was. The star re-syncs when the View chip picks another
-View, and a View favourite's rail row opens that View.
-
-- Site: `examples/index.html`
-- Site: `test/e2e/reforged-nav-favorites-recents.spec.ts`
 
 ### T-the-more-menu-holds-what-folded
 
@@ -1555,7 +1504,6 @@ not.
 - Site: `src/data.ts`
 - Site: `test/unit/format-date.test.mjs`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
-- Site: `test/e2e/reforged-records-persist.spec.ts`
 - Site: `src/core/data/filter-face.ts`
 - Site: `test/unit/filter-face.test.mjs`
 
@@ -1645,7 +1593,6 @@ one, or a def's typed condition came back on every rebuild.
 - Site: `test/e2e/reforged-panel-keeps-both-answers.spec.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-grid-keeps-both-answers.spec.ts`
-- Site: `test/e2e/reforged-a-view-draws-its-chips.spec.ts`
 
 ### T-one-number-is-a-pick-under-equals
 
@@ -1707,7 +1654,6 @@ host's. That reads like an inconsistency and is a platform limit.
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
-- Site: `test/e2e/reforged-records-persist.spec.ts`
 
 ### T-projected-slot-content-crosses-two-shadow-boundaries
 
@@ -2317,7 +2263,6 @@ guard rejected did the same; a value the guard accepted was kept.
 - Site: `src/core/browser/idb-store.ts`
 - Site: `src/core/data/stores.ts`
 - Site: `test/e2e/reforged-web-storage.spec.ts`
-- Site: `examples/contexts/records-data.js`
 
 ### T-one-snapshot-not-a-key-per-concern
 
@@ -3044,7 +2989,6 @@ See `T-grid-read-without-write-is-half-an-api` for the other half of the same
 idea — a value you can read and not write.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `test/e2e/reforged-panel-apply.spec.ts`
 
 ### T-grid-read-without-write-is-half-an-api
 
@@ -4760,7 +4704,7 @@ OR'd:
 
 So: `data-state` PAINTS, the flags are read by TESTS, and no CSS reads the
 flags. A flag that renders nothing is not automatically dead — check `test/`
-and `examples/` before removing one. Removing `.label` from `sherpa-tabs`
+and `../Sherpa Demos/app/` before removing one. Removing `.label` from `sherpa-tabs`
 earlier in this same audit failed for exactly that reason.
 
 Order is **TODAY first, SELECTED second** in all three grids, so a cell that is
@@ -5119,7 +5063,6 @@ them with their parent and hide them in the 40px rail — which a flat list of
 hand-tiered rows cannot express.
 
 - Site: `src/components/sherpa-nav/sherpa-nav.ts`
-- Site: `examples/index.html`
 
 ### T-nav-state-writes-only-the-attribute
 
@@ -5265,7 +5208,7 @@ restores a grid's column filters. It moved to `apply-state.ts` and stays.
 what markup already says, with `props` for attributes, `slots` for slots and
 `children` for children. Four tests called it. Nothing else ever did.
 
-**What real code does instead**, from `examples/contexts/chat.js`:
+**What real code does instead**, from `../Sherpa Demos/app/contexts/chat.js`:
 
 ```js
 const el = document.createElement('sherpa-chat-message');
@@ -5431,7 +5374,7 @@ What is left is one of each:
 
 The format question answered itself: every authored screen in this repo is
 already an HTML template dropped into `sherpa-app-shell`
-(`examples/templates/*.html`, four of them, none calling `renderView`). A saved
+(`../Sherpa Demos/app/templates/*.html`, four of them, none calling `renderView`). A saved
 view is the same thing a USER made instead of an author, so it is the same
 format. One way to describe a view, not two.
 
@@ -6079,7 +6022,6 @@ poison a session that is later granted storage.
 
 - Site: `src/core/browser/idb-store.ts`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
-- Site: `test/e2e/reforged-records-persist.spec.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
 - Site: `src/data.ts`
 
@@ -6183,7 +6125,6 @@ the server deleted must not survive locally.
 
 - Site: `src/core/browser/idb-store.ts`
 - Site: `test/e2e/reforged-idb-store.spec.ts`
-- Site: `test/e2e/reforged-records-persist.spec.ts`
 
 ### T-local-first-then-onward
 
@@ -6277,7 +6218,6 @@ A `set` writes THROUGH to storage for the pointer or any ANCESTOR of it: setting
 silently lose what a leaf write keeps.
 
 - Site: `src/core/browser/session.ts`
-- Site: `test/e2e/reforged-nav-pin-persist.spec.ts`
 
 ### T-session-persist-defaults-shared
 
@@ -6531,7 +6471,6 @@ chip says "Not available here." A chip the View took says where it went
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/unit/present-limits-each-field.test.mjs`
-- Site: `test/e2e/reforged-limit-options.spec.ts`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 
 ### T-a-later-answer-sets-an-earlier-pick-aside
@@ -6565,7 +6504,6 @@ on, it may be let go. A chip with a menu always opens it.
 - Site: `src/core/data/query.ts`
 - Site: `src/core/ui/shared-constants.ts`
 - Site: `test/unit/present-limits-each-field.test.mjs`
-- Site: `test/e2e/reforged-limit-options.spec.ts`
 
 ### T-unavailable-value-sorts-below-a-divider
 
@@ -6740,7 +6678,6 @@ A test that reads `data-icon-start` cannot catch this. The test reads the
 rendered `<path d>`.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `test/e2e/reforged-nav-favorites-recents.spec.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Test: `test/e2e/reforged-nav-favorites-recents.spec.ts`
 
@@ -6768,7 +6705,6 @@ Unlocked, the bar still flips its own attribute, so a page with no favourites
 list keeps working exactly as before.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `examples/index.html`
 - See also: `T-session-list-is-a-view-not-a-copy` — where the list itself lives
 
 ### T-an-expandable-row-is-not-a-destination
@@ -6821,7 +6757,6 @@ entry, which is plain JSON by definition, and wrong for anything holding a
 function or a Date.
 
 - Site: `src/core/browser/session.ts`
-- Site: `test/e2e/reforged-nav-favorites-recents.spec.ts`
 - Site: `test/unit/session-list.test.mjs`
 - Test: `test/unit/session-list.test.mjs`
 
@@ -7130,7 +7065,6 @@ and slicing it again would hide rows nobody folded.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
-- Site: `test/e2e/reforged-records-grid-pages.spec.ts`
 
 ### T-grouped-page-change-publishes-without-loading
 
@@ -8158,7 +8092,6 @@ A real user's click does retarget, so this is a synthetic-event problem only —
 Playwright's own `locator.click()` is fine.
 
 - Site: `test/e2e/reforged-data-grid.spec.ts`
-- Site: `test/e2e/reforged-view-chips.spec.ts`
 
 ### T-radios-in-shadow-roots-are-not-one-group
 
@@ -8206,44 +8139,6 @@ Ink on a surface that does NOT flip must not. Getting this wrong is invisible in
 light mode, which is where it gets reviewed.
 
 - Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.css`
-
-### T-a-chip-filters-the-values-the-data-has
-
-The app header's Region chip offered `emea` / `amer` / `apac`. Both demo
-datasets hold `EMEA` / `AMER` / `APAC` / `LATAM`.
-
-So picking EMEA built `['region', 'eq', 'emea']`, which matched no record. The
-chip lit up, the toolbar reported the pick, the source ran the query — and
-nothing moved. Every part worked; the two lists simply were not the same list.
-LATAM had no chip at all, so a quarter of the data was unreachable.
-
-`records-data.js` already states the rule, for plans: *"the list of plans that
-EXIST is a fact about the records, not about the form, and a form with its own
-copy would offer a plan no record could have."* The Region chip was that second
-copy. It now takes the values as an argument, from the module that owns them.
-
-**A chip's `value` is what the record holds; its `label` is only what a reader
-sees.** Those are allowed to differ — `AMER` shows as "Americas" — which is
-exactly why this hid: the labels looked right on screen the whole time.
-
-The `emea` saved view had the same split INSIDE one object, under a comment
-saying the chip and the filter were "ONE FACT said twice… so they cannot
-drift": its filter said `'EMEA'` and its chip said `'emea'`. A comment is not a
-mechanism.
-
-**A SAVED VIEW is the same trap**, and `records-views.js` was the one view file
-this list did not name. Its `mine` view filtered `['owner', 'eq', 'Priya
-Raman']` — "Priya" is a customer FIRST NAME in `records-data.js`, and no
-`owner` field has ever held it. The view matched zero rows on every load, so
-any filter applied on top of it also showed zero and read as a broken filter.
-
-- Site: `examples/contexts/records.js`
-- Site: `examples/contexts/records-data.js`
-- Site: `examples/definitions/records-views.js`
-- Site: `examples/templates/records.html`
-- Site: `test/e2e/reforged-view-chips.spec.ts`
-- Site: `examples/contexts/dashboard-data.js`
-- Site: `examples/definitions/dashboard-views.js`
 
 ### T-a-persistent-chip-reports-on-every-change
 
@@ -8363,71 +8258,6 @@ Redefining a shared token to mean something other than zero is a lie told to
 every descendant that reads it.
 
 - Site: `src/components/sherpa-dialog/sherpa-dialog.css`
-
-### T-two-urls-are-two-modules
-
-The examples server serves `examples/contexts/records-data.js` at BOTH
-`/contexts/records-data.js` and `/examples/contexts/records-data.js`. A browser keys
-its module registry on the URL, so importing the two gives **two separate module
-instances** — two `customerStore`s, two sets of records, no connection between
-them.
-
-A test that patched `store.remove` on `/examples/contexts/…` made a store nothing
-held refuse a delete, while the view's own store deleted the rows for real. The
-assertion then reported the rows as missing, which looked like the error
-handling failing when it was the test reaching the wrong object.
-
-**Import the URL the CONTEXT imports.** `/contexts/records.js` does
-`import … from './records-data.js'`, which resolves to `/contexts/records-data.js`.
-
-This is not specific to the examples: any server that maps one file to two paths
-does it, and nothing warns. The symptom is a patched or seeded module having no
-effect at all.
-
-- Site: `test/e2e/reforged-view-chips.spec.ts`
-- Site: `examples/index.html`
-
-### T-the-records-store-persists-between-runs
-
-The Records example uses an `IdbStore`, so its records live in IndexedDB and
-**survive a page load, a test run, and the next test run**. A test that hardcodes
-"Aisha Cohen" passes once and fails forever afterwards, because an earlier run
-really deleted her.
-
-Read the names under test at the start of the test and compare against what was
-read, never against a literal. The same applies to counts: assert a delta, not a
-total.
-
-- Site: `test/e2e/reforged-view-chips.spec.ts`
-
-### T-a-failed-mutation-must-reach-the-reader
-
-`void deleteRecords(records)` — a rejected promise reaching nothing.
-
-The store's `remove()` is a real mutation and can refuse: a network that is
-down, a record another session already deleted, a rule the store enforces. The
-only caller discarded the promise, so a refusal produced no toast, no console
-warning and no change on screen. The row simply stayed, which reads as a
-rendering bug rather than a failure.
-
-Three things a mutation flow owes the reader, and all three were missing:
-
-1. **Per-item failure, not all-or-nothing.** A bulk delete of five where two
-   refuse must say "could not delete 2 of 5", not throw on the first and leave
-   the other three in an unknown state. Each `remove` is awaited in its own
-   `try`.
-2. **The REASON.** "Something went wrong" is not actionable; the store's own
-   message is. It goes in the toast's value line.
-3. **Leave the screen honest.** Never update it by hand. The store announces
-   its own change and every bound view reloads, so a record that did not delete
-   is still there — and it stays SELECTED, so the reader can retry without
-   re-picking it.
-
-`DataSource` already treats a failed LOAD as a state rather than a throw. A
-mutation deserves the same care, and had none.
-
-- Site: `examples/contexts/records.js`
-- Site: `test/e2e/reforged-view-chips.spec.ts`
 
 ### T-a-row-holds-two-selection-boxes
 
@@ -8939,7 +8769,6 @@ the swap itself keeps every answer both ways — the bar is steered on Apply,
 and the panel is refilled when it comes back. The panel open was the hole.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `test/e2e/reforged-panel-apply.spec.ts`
 - Site: `src/core/data/data-source.ts`
 
 ### T-a-shut-scope-folds-like-a-bar
@@ -9374,7 +9203,6 @@ the flip gives it the rows the Query kept and the chips as they are ticked;
 a source's steer gives it its own reading.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `test/e2e/reforged-panel-keeps-both-answers.spec.ts`
 
 
 ### T-a-rebuilt-row-reads-empty-for-a-tick
@@ -9399,7 +9227,6 @@ rendered (`#reportSoon`).
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
-- Site: `test/e2e/reforged-panel-keeps-both-answers.spec.ts`
 
 ---
 
@@ -9751,9 +9578,7 @@ selector is not a filter, and Customer and Region are global.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
-- Site: `test/e2e/reforged-filter-panel-mode.spec.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
-- Site: `examples/index.html`
 
 ### T-a-panel-flush-between-surfaces-draws-two-edges
 
@@ -9849,7 +9674,6 @@ handle is in the area's own inset, so it is the AREA's edge, not the
 panel's. The shell REPORTS on release (`panel-area-resize`); the example app
 keeps the width in its session and hands it back.
 
-- Site: `examples/index.html`
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.html`
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.ts`
@@ -9895,10 +9719,7 @@ first build multiplied the width at every size, and Will sent it back.
 
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.html`
-- Site: `examples/contexts/records.js`
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.ts`
-- Site: `test/e2e/reforged-filter-panel-mode.spec.ts`
-- Site: `examples/index.html`
 
 ---
 
@@ -9991,7 +9812,7 @@ Such a column is answered by TYPING — `advanced: 'only'`, opening on
 three states and how they are configured.
 
 **The HOST decides**, never the grid: how many values is too many is a question
-about the data. `examples/contexts/records.js` has one rule, `PICKABLE_AT_MOST`,
+about the data. `../Sherpa Demos/app/contexts/records.js` has one rule, `PICKABLE_AT_MOST`,
 read by the bar's Add menu AND by the grid's headings, so the same column can
 never be a list in one place and a box in the other.
 
@@ -10131,7 +9952,6 @@ DOM-free, like the rest of `sherpa-ui/data`, so a node test reads it.
 
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/scope-registry.test.mjs`
-- Site: `examples/contexts/records.js`
 
 ### T-three-things-called-scope
 
@@ -10327,8 +10147,6 @@ replacement, all }`. The HOST moves the match: the grid's `findStep()`.
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.css`
 - Site: `src/core/data/data-source.ts`
-- Site: `examples/contexts/records.js`
-- Site: `examples/templates/records.html`
 - Site: `test/e2e/reforged-input-find.spec.ts`
 ### T-a-section-heading-is-not-a-field
 
@@ -10392,7 +10210,7 @@ a switch that did nothing.
 `kind: 'date'` and `kind: 'number'` were already exempt for the same reason:
 their content is not a list of values either. `advanced` joins them.
 
-This is what stopped `examples/contexts/records.js` offering every column. It
+This is what stopped `../Sherpa Demos/app/contexts/records.js` offering every column. It
 had hand-listed four of fourteen, with hand-written slider bounds that drifted
 from the rows; the list is now built from `columns`, minus whatever a scope
 already holds, with a value list where the set is small enough to read and a
@@ -10416,7 +10234,7 @@ Worse, both it and the grid's `filter-change` called **`setFilter()`**, which
 replaces the WHOLE query — so typing in one column heading wiped every chip's
 selection and every component contribution.
 
-The proof it was dead weight: `examples/contexts/records.js` had to switch it
+The proof it was dead weight: `../Sherpa Demos/app/contexts/records.js` had to switch it
 off, twice, with `ignore: ['quick-filter-change']` and `ignore: ['filter-change']`.
 An app working around the data layer is the data layer being wrong.
 
@@ -10501,7 +10319,7 @@ The data layer had no idea what KIND a field was. `OPS_FOR_TYPE` named three
 builder, but `DataSource` held none — so it could not know that two picks on
 `seats` mean a RANGE rather than two equalities.
 
-Every app then had to know it. `examples/contexts/records.js` carried a
+Every app then had to know it. `../Sherpa Demos/app/contexts/records.js` carried a
 `numberFields` set, a `dateFields` set, and 20 lines turning picks into
 `between` / `eq Number(x)`. That one gap grew **three** query builders:
 `stateClause`, the grid's `#columnClause`, and the app's `filterFromChips`.
@@ -10554,7 +10372,6 @@ component names the other.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/unit/parity-sweep.test.mjs`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
-- Site: `test/e2e/reforged-panel-apply.spec.ts`
 - Site: `src/core/data/data-source.ts`
 
 ### T-closest-stops-at-the-shadow-boundary
@@ -10955,7 +10772,6 @@ the panel under it.
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
-- Site: `test/e2e/reforged-filter-panel-mode.spec.ts`
 
 ### T-a-conditioned-chip-answers-with-its-clause
 
@@ -11394,7 +11210,7 @@ Four components open and close, and each wraps a different platform API:
 
 Left alone, that leaks into the public surface: an app author writes
 `dialog.close()` on one line and `notifications.hide()` on the next, for the
-same intent. `examples/` did exactly that.
+same intent. `../Sherpa Demos/app/` did exactly that.
 
 **Sherpa's pair is `show()` / `hide()`**, and every one of the four accepts
 both that and `close()`. The alias delegates — it never re-implements — so
@@ -11463,7 +11279,7 @@ call whenever the markup fetch REJECTED, so `rendered` stayed pending for the
 life of the page.
 
 There are **557** `await el.rendered` sites across `src/`, `test/` and
-`examples/`. Every one hung — no error, no timeout, no warning.
+`../Sherpa Demos/app/`. Every one hung — no error, no timeout, no warning.
 
 Measured, not argued. Two failure modes behave differently and only one was a
 hang:
@@ -11672,7 +11488,6 @@ tablet-wide Context. Outside the Context — a page with no shell, or the
 Settings overlay — the viewport rules are the only ones.
 
 - Site: `scripts/project-tokens.mjs`
-- Site: `test/e2e/reforged-filter-panel-mode.spec.ts`
 
 ### T-fit-is-a-desktop-mode
 
@@ -11711,7 +11526,6 @@ behaves like the default mode at that size, which is the honest answer.
 
 The DEFAULT is neither, so nothing that existed before changed.
 
-- Site: `examples/templates/records.html`
 - Site: `scripts/project-tokens.mjs`
 - Site: `test/e2e/reforged-layout-grid.spec.ts`
 
@@ -11780,9 +11594,7 @@ because every test page was taller than its frame. Will, TODO 153.
 
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
 - Site: `test/e2e/reforged-layout-grid.spec.ts`
-- Site: `examples/index.html`
 - Site: `test/e2e/reforged-app-shell.spec.ts`
-- Site: `test/e2e/reforged-records-grid-pages.spec.ts`
 
 ### T-a-band-label-names-what-it-counts
 
@@ -11830,7 +11642,6 @@ Two related choices in the same module:
   `T-number-of-null-is-zero`.
 
 - Site: `src/core/data/aggregate.ts`
-- Site: `examples/contexts/records.js`
 
 ### T-number-of-null-is-zero
 
@@ -11881,7 +11692,6 @@ countBy(rows, 'sev', { order: ['critical', 'warning', 'info'] })
 category nothing matched is noise, unless the categories are a fixed scale
 (severity levels, storage bands) where a missing one is itself the finding.
 
-- Site: `examples/contexts/dashboard-data.js`
 - Site: `src/core/data/aggregate.ts`
 - Site: `src/core/ui/chart-parts.ts`
 
@@ -12096,7 +11906,6 @@ belongs to whoever owns the surface, and the trigger has to be told.
 - Site: `src/components/sherpa-app-header/sherpa-app-header.ts`
 - Site: `src/components/sherpa-app-header/sherpa-app-header.html`
 - Site: `test/e2e/reforged-app-header.spec.ts`
-- Site: `examples/index.html`
 
 ### T-a-css-function-needs-its-longhand-first
 
@@ -12202,7 +12011,7 @@ stay per-component, because each picks a different inactive token — and never
 
 **`CLAUDE.md` told components not to write a `prefers-reduced-motion` block
 because "motion gating is owned globally". Nothing owned it.** Searched
-`src/`, `src/styles/` and `examples/`: zero matches. Every animation in the
+`src/`, `src/styles/` and `../Sherpa Demos/app/`: zero matches. Every animation in the
 library ignored the setting, and the rule that forbade a local fix was the
 reason nobody added one.
 
@@ -12509,14 +12318,13 @@ Three things make it safe:
   particular bind receives, not `#result.rows` — otherwise a summary would be
   skipped whenever the page array happened to be unchanged.
 
-`examples/contexts/dashboard.js` predated this and was correct only by accident:
+`../Sherpa Demos/app/contexts/dashboard.js` predated this and was correct only by accident:
 its source declares no `pageSize`, so nothing was ever sliced. It now says
 `scope: 'all'` outright, because that luck is one added pageSize from running
 out.
 
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/summary-scope.test.mjs`
-- Site: `examples/contexts/records.js`
 
 ### T-a-legend-row-goes-inactive-it-never-vanishes
 
@@ -12585,13 +12393,12 @@ Three things the rule gets right, each with a test:
   keeps its `off` set, its roll-up rows and its floor — see
   `T-a-legend-keeps-one-row-on`.
 
-`examples/contexts/dashboard.js` is converted too — clicking "Disk" takes its
+`../Sherpa Demos/app/contexts/dashboard.js` is converted too — clicking "Disk" takes its
 Alerts tile from 1284 to 881 and recounts the donut legend to sum to 881. Its
 LINE legend is the one that stays a per-chart hide: those labels name two
 SERIES ("Sessions" is every non-critical row), not values of one field, so
 there is nothing to filter on and inventing a field would be a lie.
 
-- Site: `examples/contexts/dashboard.js`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 
@@ -13014,18 +12821,6 @@ explicit ones, and `1 / -1` is not.
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.css`
 - Site: `test/e2e/reforged-chart-legend.spec.ts`
 
-### T-a-rolled-up-other-is-not-a-category
-
-The dashboard's OS data contained a category literally NAMED "Other", so the
-donut showed an Other slice that was a real value, not a roll-up — and the
-legend's own roll-up never fired, because five categories is under the cap.
-
-A reader cannot tell those apart, and only one of them has a breakdown. The
-demo data now names eight real systems with a long tail, so the legend folds
-its own and the "Other" on screen is the one with a menu behind it.
-
-- Site: `examples/contexts/dashboard-data.js`
-
 ### T-a-legend-keeps-one-row-on
 
 Will, same message: *"at least 1 must be active at all times so we need to
@@ -13421,9 +13216,7 @@ a CONDITION into a chip. The Add menu packs it with the rest.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
-- Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
-- Site: `examples/templates/records.html`
 
 ### T-the-panel-saves-a-whole-scope
 
@@ -13452,7 +13245,6 @@ not whether it was on; and the Records page's `asPanelField` did not pass
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
-- Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 
 ### T-edit-unpacks-a-saved-filter
@@ -13483,7 +13275,6 @@ tells the host to forget it.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
-- Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 
 ### T-saved-filters-are-the-custom-section
@@ -13587,7 +13378,6 @@ and never in content, and a bar handed `{ label: 3 }` would draw a chip with no
 answer.
 
 - Site: `src/core/browser/saved-filters.ts`
-- Site: `examples/contexts/records.js`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 
@@ -13677,7 +13467,6 @@ the one part of a slotted row the menu's sheet can reach, and read out through
 - Site: `src/core/data/data-source.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/up-is-open-down-is-closed.test.mjs`
-- Site: `test/e2e/reforged-raising-a-filter-carries-its-value.spec.ts`
 - Site: `test/e2e/reforged-menu-row-note.spec.ts`
 
 ### T-a-record-has-a-time-of-its-own
@@ -13719,7 +13508,6 @@ values is. `FILTER-REVIEW.md` §7 step 4c and §19 carry the rest.
 - Site: `src/core/data/store.ts`
 - Site: `src/core/data/base-store.ts`
 - Site: `src/core/data/data-source.ts`
-- Site: `examples/contexts/records-data.js`
 - Site: `test/unit/a-record-has-a-time-of-its-own.test.mjs`
 
 ### T-a-date-chip-names-its-field
@@ -14087,8 +13875,6 @@ nothing rather than `0`.
 
 - Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.ts`
 - Site: `test/e2e/reforged-radial-chart.spec.ts`
-- Site: `examples/templates/records.html`
-- Site: `examples/templates/dashboard.html`
 
 ### T-a-toggle-is-a-clause-not-a-value
 
@@ -14444,36 +14230,6 @@ a wrong token is pixels out, not hundredths. Verified by forcing `.icon-start`
 to 9px and watching the box assertions fail.
 
 - Site: `test/e2e/reforged-icon-sizes.spec.ts`
-
-### T-a-shadow-root-precedes-its-template
-
-`el.shadowRoot` is non-null as soon as the root is attached. The TEMPLATE lands
-in it later, and the component's own attributes — the ones a default is written
-into — later still.
-
-So `waitForFunction(() => !!document.querySelector('sherpa-nav')?.shadowRoot)`
-is not a readiness check. It waits for the container, not the contents.
-
-Traced in Firefox against the live app: at t=0 the rail has a shadowRoot, **no
-`.pin` and no `data-nav-state`**; by t=40ms both exist. Chromium has both on the
-same tick, which is why only one engine failed and it read as flakiness.
-`reforged-nav-pin-persist.spec.ts` then read a null state and clicked a `.pin`
-that was not there, three times over — the same weak condition copied into three
-`beforeEach`-style blocks.
-
-Wait for what the test actually USES:
-
-```ts
-await page.waitForFunction(() => {
-  const nav = document.querySelector('sherpa-nav');
-  return !!nav?.shadowRoot?.querySelector('.pin') && !!nav.getAttribute('data-nav-state');
-});
-```
-
-Inside the harness, `__settled()` already does this properly. This trap is for
-the specs that drive the real app on :4200, which have no harness.
-
-- Site: `test/e2e/reforged-nav-pin-persist.spec.ts`
 
 ### T-an-icon-is-known-by-the-set-not-its-spelling
 
@@ -14896,9 +14652,7 @@ one object — so nothing is ever pending. A scope that narrows one component
 - Site: `src/data.ts`
 - Site: `test/unit/query.test.mjs`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
-- Site: `test/e2e/reforged-remote-source.spec.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
-- Site: `examples/index.html`
 
 ### T-a-view-is-json
 
@@ -14933,8 +14687,6 @@ own axes (severity, storage) sit in a `page` scope no bar answers. A host must
 removes them. `saveViewAs` saves JSON for a source with a Query, and a
 content view's `after` now gets `rendered` — the Capacity view's charts had
 never been bound.
-- Site: `examples/definitions/dashboard-views.js`
-- Site: `examples/definitions/records-views.js`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/browser/persist-view.ts`
 - Site: `src/core/data/data-source.ts`
@@ -14961,7 +14713,6 @@ Since 2026-09-29 a page is a DEFINITION the router hands the provider
 
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/e2e/reforged-provider.spec.ts`
-- Site: `examples/index.html`
 
 ### T-the-mode-switch-is-the-pages-own
 
@@ -14982,7 +14733,6 @@ the bar's slot fold away at narrow widths, as the old switch did.
 - Site: `src/components/sherpa-provider/sherpa-provider.html`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-provider.spec.ts`
-- Site: `test/e2e/reforged-filter-panel-mode.spec.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 
 ### T-the-provider-owns-the-panel-mode
@@ -15008,7 +14758,6 @@ its View filters alone.
 
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/e2e/reforged-provider.spec.ts`
-- Site: `examples/index.html`
 
 ### T-a-page-goes-out-as-json
 
@@ -15079,7 +14828,6 @@ Narrowing one component needs a bound `rows: 'all'` component — a summary —
 or `write` reports `component-part-on-a-page`. Bad JSON reports
 `provider-bad-readings`, and the component filters nothing of its own.
 
-- Site: `examples/templates/dashboard.html`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-provider-summary.spec.ts`
@@ -15248,7 +14996,6 @@ generator reads `static config` for the component's properties.
 - Site: `scripts/lib/ts-facts.mjs`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/core/ui/sherpa-element.ts`
-- Site: `examples/definitions/dashboard-views.js`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/core/data/page-definition.ts`
 
@@ -15288,9 +15035,6 @@ reads the attributes into its JSON. Five things to know:
 A new declaration asks again: the base class leaves and re-asks when a
 `SUMMARY_PROPS` attribute, `data-source` or `data-scope` changes.
 
-- Site: `examples/contexts/dashboard.js`
-- Site: `examples/templates/dashboard.html`
-- Site: `examples/templates/records.html`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `test/e2e/reforged-provider-summary.spec.ts`
@@ -15505,7 +15249,6 @@ EXTENDS the default rather than replacing it.
 
 - Site: `src/core/ui/templater.ts`
 - Site: `src/core/ui/sherpa-element.ts`
-- Site: `examples/index.html`
 - Site: `test/e2e/reforged-templater.spec.ts`
 
 ### T-a-heading-opens-the-chips-menu
@@ -15632,7 +15375,6 @@ Which chips may SURVIVE a view change is a per-chip flag still to build —
 TODO 21b. This is its default.
 
 - Site: `src/core/browser/persist-view.ts`
-- Site: `test/e2e/reforged-view-chips.spec.ts`
 
 ### T-a-reload-replays-the-readers-answers
 
@@ -15668,30 +15410,7 @@ lives in memory and dies with the page.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/browser/persist-view.ts`
 - Site: `src/core/data/data-source.ts`
-- Site: `examples/contexts/records.js`
-- Site: `test/e2e/reforged-records-persist.spec.ts`
-- Site: `test/e2e/reforged-saved-filter.spec.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
-- Site: `examples/index.html`
-
-### T-an-empty-selection-never-wipes-a-condition
-
-**An empty field selection must not wipe a column condition it could not have
-made.** Records mirrors every `selection-change` onto the grid's heading, so
-one field reads the same in the chip, the panel and the column. Measured
-2026-09-26: At risk set `status ne churned` on the grid; the view change's own
-reset emptied Status 13ms later, and the mirror wrote `null` over the view's
-condition — 20 rows where 13 are at risk.
-
-So the mirror clears only what THE MIRROR WROTE — it keeps the set of
-headings it has written. A view's own condition, or one typed in the heading
-(owned by its `col:` chip), is never its to clear. A first try judged by the
-clause's SHAPE (picks may be wiped, a condition may not); that left a
-chip-made `contains Da` on the heading after the chip was cleared. And when a field chip answers a column
-again, a `col:` chip an earlier view put up is taken down, or its phrase
-stayed on the bar after going back to All.
-
-- Site: `test/e2e/reforged-view-chips.spec.ts`
 
 ### T-a-heading-menu-opens-on-what-it-holds
 
@@ -15773,7 +15492,6 @@ its snapshot again so Apply and Discard still read "unchanged".
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
-- Site: `test/e2e/reforged-panel-apply.spec.ts`
 - Site: `src/core/ui/filter-menu.ts`
 
 ### T-a-view-held-heading-shows-and-refuses
@@ -15869,7 +15587,6 @@ it knows, so declaring a part declares its field.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 - Site: `test/unit/chart-scope.test.mjs`
-- Site: `test/e2e/reforged-chart-scope.spec.ts`
 
 ### T-a-legend-follows-the-view-when-it-holds-the-field
 
@@ -15890,7 +15607,6 @@ writes plain picks; rows the View kept stay kept, in Simple mode.
 
 - Site: `src/core/data/bind-selection.ts`
 - Site: `test/unit/chart-scope.test.mjs`
-- Site: `test/e2e/reforged-chart-scope.spec.ts`
 
 
 ### T-one-query-one-owner
@@ -15941,7 +15657,6 @@ dropped reads "contains an" as nothing.
 - Site: `src/core/data/query.ts`
 - Site: `src/data.ts`
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
-- Site: `test/e2e/reforged-view-chips.spec.ts`
 - Site: `test/unit/query.test.mjs`
 
 ### T-the-data-says-what-a-field-may-hold
@@ -15967,9 +15682,7 @@ range — Seats — is a number's two ends.
 - Site: `src/core/data/store.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/core/data/page-definition.ts`
-- Site: `examples/contexts/dashboard-data.js`
 - Site: `test/unit/page-definition.test.mjs`
-- Site: `examples/contexts/records-data.js`
 
 ### T-a-page-is-its-definition
 
@@ -15986,17 +15699,14 @@ by the page's id, so `saveView(label)` needs nothing from the page.
   HAS, so a restore can draw a held field's chip.
 - **The bars are drawn BEFORE the Query**, so a kept one lands on its chips.
 - **A `provide()` without the opened source ends the page**: its listeners stop.
-- **The ROUTER opens it** (`examples/index.html`), after the markup is in and
+- **The ROUTER opens it** (`../Sherpa Demos/app/index.html`), after the markup is in and
   the store is seeded, and hands the source to the Context's `init`. A
   definition's `ui` configures its components by id BEFORE they are answered.
 
 - Site: `src/core/data/page-definition.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
-- Site: `examples/contexts/dashboard.js`
 - Site: `test/unit/page-definition.test.mjs`
 - Site: `src/data.ts`
-- Site: `examples/contexts/records.js`
-- Site: `examples/index.html`
 
 ### T-a-spec-reads-the-class-by-its-parser
 
@@ -16041,9 +15751,7 @@ group's (`T-radios-in-shadow-roots-are-not-one-group`).
 - Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
 - Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.ts`
 - Site: `src/components/sherpa-switch/sherpa-switch.ts`
-- Site: `test/e2e/reforged-add-customer-form.spec.ts`
 - Site: `test/e2e/reforged-form-controls.spec.ts`
-- Site: `examples/contexts/records.js`
 
 ### T-an-unanswered-row-survives-a-redraw
 
@@ -16062,4 +15770,3 @@ the reader has answered keeps every row, blank ones too, and row one's
 filter, a Clear from outside — still rebuilds.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `test/e2e/reforged-condition-rows-stay.spec.ts`

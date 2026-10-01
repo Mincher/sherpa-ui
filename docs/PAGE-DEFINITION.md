@@ -136,16 +136,16 @@ the panel as it does now (G1).
 
 | step | builds | proves |
 |---|---|---|
-| D1 ✅ | `provider.open(definition)`, `saveView()`, `openSource()`, `schemas/page.v1.json`; a field's values from the schema or the rows (§3) | the Dashboard opens from `examples/definitions/dashboard.json`; `dashboard.js` 183 → 116 lines |
+| D1 ✅ | `provider.open(definition)`, `saveView()`, `openSource()`, `schemas/page.v1.json`; a field's values from the schema or the rows (§3) | the Dashboard opens from `../Sherpa Demos/app/definitions/dashboard.json`; `dashboard.js` 183 → 116 lines |
 | D2 ✅ | Records from `records.json`; the reader's saved filters and each bar's Group and Sort come from the provider; the customer schema lists its values | the Records filter suite; `records.js` 601 → 359 lines, `global-filters.js` deleted |
-| D3 ✅ | the router opens each page from its definition, with the app's stores and the page's Views; a definition's `ui` configures its components by id; a Context's `init` gets its source | the full suite; `examples/index.html` is the one caller of `open()` |
+| D3 ✅ | the router opens each page from its definition, with the app's stores and the page's Views; a definition's `ui` configures its components by id; a Context's `init` gets its source | the full suite; `../Sherpa Demos/app/index.html` is the one caller of `open()` |
 | later | the Templater builds `template` from JSON (68, 70) | — |
 
 ---
 
 ## 7. Where definitions live
 
-Decided by Will, 2026-09-29: in **`examples/definitions/`** for now — a page's
+Decided by Will, 2026-09-29: in **`../Sherpa Demos/app/definitions/`** for now — a page's
 definition and its View library. They belong to the app built with Sherpa, not
 to a component. When the example app becomes its own project, the folder moves
 with it.

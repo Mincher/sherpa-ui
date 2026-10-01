@@ -115,23 +115,6 @@ test('data-heading forwards to the header and renders', async ({ page }) => {
 });
 
 /**
- * THE APP's Assistant panel names itself — TODO 100. It set `data-title`, which
- * a container does not read, so the panel had no heading. Runs against the
- * EXAMPLES server (:4200).
- */
-test('the Assistant panel in the example app shows its heading', async ({ page }) => {
-  await page.goto('http://localhost:4200/?context=records');
-  const heading = await page.evaluate(async () => {
-    const panel = document.querySelector('#assistant') as HTMLElement & { rendered?: Promise<void> };
-    await panel.rendered;
-    const header = panel.shadowRoot!.querySelector('.header') as HTMLElement;
-    await (header as HTMLElement & { rendered?: Promise<void> }).rendered;
-    return header.shadowRoot!.querySelector('.title')?.textContent?.trim() ?? '';
-  });
-  expect(heading).toBe('Assistant');
-});
-
-/**
  * WIDER, AND RESIZABLE FROM ITS LEFT EDGE — TODO 22. 40rem by default, never
  * under 20rem nor past 92vw; the edge drags, and ArrowLeft / ArrowRight move
  * it 16 px. Each resize is reported.

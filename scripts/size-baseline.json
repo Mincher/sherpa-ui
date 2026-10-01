@@ -248,14 +248,5 @@
   "src/components/sherpa-toast/sherpa-toast.html": 38,
   "src/components/sherpa-toolbar/sherpa-toolbar.html": 20,
   "src/components/sherpa-tooltip/sherpa-tooltip.html": 36,
-  "src/components/sherpa-transfer-list/sherpa-transfer-list.html": 41,
-  "examples/contexts/ask-name.js": 128,
-  "examples/contexts/chat.js": 91,
-  "examples/contexts/dashboard-data.js": 94,
-  "examples/contexts/dashboard.js": 102,
-  "examples/contexts/records-data.js": 187,
-  "examples/contexts/records.js": 384,
-  "examples/contexts/settings.js": 123,
-  "examples/definitions/dashboard-views.js": 90,
-  "examples/definitions/records-views.js": 70
+  "src/components/sherpa-transfer-list/sherpa-transfer-list.html": 41
 }

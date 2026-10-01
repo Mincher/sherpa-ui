@@ -371,26 +371,3 @@ test('a panel area resizes by its INNER edge — dragged or by the keys — with
   expect(r.edge).toEqual({ atAreaEdge: true, outsidePanel: true });
   expect(r.aria).toEqual({ role: 'separator', now: String(r.end), min: '464', max: String(Math.round(r.row * 0.33)) });
 });
-
-test('on Records, a dragged filter panel area keeps its width through a reload', async ({ page }) => {
-  await page.setViewportSize({ width: 1920, height: 1000 });
-  // The filter PANEL, as a reader who chose it last visit.
-  await page.addInitScript(() => localStorage.setItem('sherpa:session:/filters/mode', '"panel"'));
-  await page.goto('http://localhost:4200/?context=records');
-  await page.waitForFunction(() =>
-    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
-  const width = () => page.evaluate(() => Math.round(document.querySelector('sherpa-app-shell')!.shadowRoot!
-    .querySelector('.panel-start')!.getBoundingClientRect().width));
-  await expect.poll(width).toBeGreaterThan(0);
-  const before = await width();
-  // The keys, as a reader without a pointer does it.
-  await page.evaluate(() => {
-    const edge = document.querySelector('sherpa-app-shell')!.shadowRoot!.querySelector<HTMLElement>('.edge-start')!;
-    for (let i = 0; i < 3; i++) edge.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
-  });
-  await expect.poll(width).toBe(before + 48);
-  await page.reload();
-  await page.waitForFunction(() =>
-    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
-  await expect.poll(width).toBe(before + 48);
-});

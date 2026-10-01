@@ -36,8 +36,6 @@ export const SOURCES = [
   'scripts/lib/*/*.mjs',
   'mcp-server/*.js',
   'mcp-server/*/*.js',
-  'examples/contexts/*.js',
-  'examples/experiments/*.js',
 ];
 
 const BASELINE = 'scripts/code-map-baseline.json';
