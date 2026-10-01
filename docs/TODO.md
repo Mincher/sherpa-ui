@@ -1785,6 +1785,12 @@ a press. On the Dashboard, Customer = Fabrikam greys CPU in the bar chart's
 legend. Every place a value shows now follows the same rule: a toolbar chip's
 menu, a grid heading's menu, the panel's chips, and a legend.
 
+Will, 2026-10-01: *"Inactive legends and menu items need a tooltip explainer
+about limited filters."* Done the same day: a greyed value says, on hover,
+"Limited by your other filters: no matches." — a legend item, a menu row and
+a chip alike; a set-aside pick says "Limited by your other filters: not
+applied." (The words before were "No matches with your other filters.")
+
 ### `[ ]` 182 — The filter panel's search: more room above it, and full width
 
 Will, 2026-10-01, a todo: *"Gap above search input in filter panel is too

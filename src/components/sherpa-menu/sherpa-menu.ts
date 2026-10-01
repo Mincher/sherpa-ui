@@ -1216,8 +1216,15 @@ export class SherpaMenu extends SherpaElement {
       else if (row?.hasAttribute('data-unavailable')) box.disabled = false;
       row?.toggleAttribute('data-unavailable', out);
       const said = box.getAttribute('aria-description');
-      if (out) box.setAttribute('aria-description', box.checked ? SET_ASIDE : RULED_OUT);
-      else if (said === RULED_OUT || said === SET_ASIDE) box.removeAttribute('aria-description');
+      // Said on hover too: why it is greyed. Will, TODO 176.
+      if (out) {
+        const why = box.checked ? SET_ASIDE : RULED_OUT;
+        box.setAttribute('aria-description', why);
+        row?.setAttribute('title', why);
+      } else if (said === RULED_OUT || said === SET_ASIDE) {
+        box.removeAttribute('aria-description');
+        row?.removeAttribute('title');
+      }
     }
   }
 

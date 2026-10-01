@@ -31,11 +31,11 @@ export function movedTo(scope?: string | null): string {
 
 /** What a value the other filters rule out says, on its chip and its menu
  *  row. Will, TODO 176. TRAP T-a-ruled-out-value-is-greyed */
-export const RULED_OUT = 'No matches with your other filters.';
+export const RULED_OUT = 'Limited by your other filters: no matches.';
 
 /** What a PICKED value a later filter rules out says: kept, not applied.
  *  Will, TODO 180. TRAP T-a-later-answer-sets-an-earlier-pick-aside */
-export const SET_ASIDE = 'Not applied: no matches with your other filters.';
+export const SET_ASIDE = 'Limited by your other filters: not applied.';
 
 /** What a disabled chip says. Will, TODO 176. */
 export const NOT_AVAILABLE = 'Not available here.';

@@ -42,7 +42,7 @@ test('with "Limit filter options" on, a Customer pick greys the Regions it rules
   await pick(page, { customer: ['Adventure Works'], region: [] });
   await expect.poll(async () => (await regionRows(page))['LATAM']?.greyed).toBe(true);
   const rows = await regionRows(page);
-  expect(rows['LATAM']).toEqual({ greyed: true, refused: true, ticked: false, says: 'No matches with your other filters.' });
+  expect(rows['LATAM']).toEqual({ greyed: true, refused: true, ticked: false, says: 'Limited by your other filters: no matches.' });
   for (const region of ['EMEA', 'AMER', 'APAC']) expect(rows[region]).toMatchObject({ greyed: false, refused: false });
 
   // A pick the LATER answer rules out is set aside: still ticked, greyed, free to untick (180).
@@ -50,7 +50,7 @@ test('with "Limit filter options" on, a Customer pick greys the Regions it rules
   await pick(page, { customer: ['Adventure Works'], region: ['LATAM'] });
   await expect.poll(async () => (await regionRows(page))['LATAM']?.greyed).toBe(true);
   expect((await regionRows(page))['LATAM']).toEqual({
-    greyed: true, refused: false, ticked: true, says: 'Not applied: no matches with your other filters.' });
+    greyed: true, refused: false, ticked: true, says: 'Limited by your other filters: not applied.' });
 });
 
 test('in the filter panel, a ruled-out value chip is greyed, refused, and its tooltip says why', async ({ page }) => {
@@ -66,7 +66,7 @@ test('in the filter panel, a ruled-out value chip is greyed, refused, and its to
       tip: c.shadowRoot!.querySelector<HTMLElement>('.count-wrap')?.dataset['text'] ?? '' } : null;
   });
   await expect.poll(async () => (await chip())?.greyed).toBe(true);
-  expect(await chip()).toEqual({ greyed: true, on: false, tip: 'No matches with your other filters.' });
+  expect(await chip()).toEqual({ greyed: true, on: false, tip: 'Limited by your other filters: no matches.' });
   // Pressed, it does nothing.
   await page.evaluate(() => (document.querySelector('#filter-panel') as HTMLElement).shadowRoot!
     .querySelector('.scope[data-scope="view"] .field[data-field="region"] .value[data-value="LATAM"]')!
@@ -106,7 +106,7 @@ test('a later Region pick sets aside the Customer it rules out: ticked, greyed, 
   });
   await expect.poll(async () => (await customerRows(page))['Adventure Works']?.greyed).toBe(true);
   expect((await customerRows(page))['Adventure Works']).toEqual({
-    greyed: true, refused: false, ticked: true, says: 'Not applied: no matches with your other filters.' });
+    greyed: true, refused: false, ticked: true, says: 'Limited by your other filters: not applied.' });
   expect((await customerRows(page))['Contoso']).toMatchObject({ greyed: false, ticked: true });
 
   // The Alerts tile counts Contoso's Latin America alerts alone.
@@ -131,7 +131,7 @@ test('a chart legend greys the values the other filters rule out, and refuses th
     .querySelectorAll<HTMLElement>('.item')].map((i) => [i.querySelector('.label')!.textContent, {
     greyed: i.hasAttribute('data-unavailable'), on: i.getAttribute('aria-pressed'), says: i.getAttribute('title') }])));
   await expect.poll(async () => (await legend())['CPU']?.greyed).toBe(true);
-  expect((await legend())['CPU']).toEqual({ greyed: true, on: 'true', says: 'No matches with your other filters.' });
+  expect((await legend())['CPU']).toEqual({ greyed: true, on: 'true', says: 'Limited by your other filters: no matches.' });
   expect((await legend())['Disk']?.greyed).toBe(false);
   // Pressed, it does nothing.
   await page.evaluate(() => [...document.querySelector('#bar-legend')!.shadowRoot!.querySelectorAll<HTMLElement>('.item')]

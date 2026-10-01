@@ -6515,7 +6515,8 @@ its legend the field's list. A ruled-out legend row is inactive, says why in
 its `title`, and refuses a press, as its chip does in the panel.
 
 **It says why** — Will, TODO 176: a ruled-out chip's tooltip and a row's
-`aria-description` read "No matches with your other filters." A disabled
+`aria-description` — and a menu row's `title`, on hover — read "Limited by your
+other filters: no matches." A disabled
 chip says "Not available here." A chip the View took says where it went
 (`T-an-inactive-chip-says-where-its-filter-went`).
 
@@ -6556,8 +6557,8 @@ Only Simple list answers can be set aside; a range, a date or Advanced rows
 stay whole and limit the older fields as they are. Only while `limitOptions`
 is on.
 
-A chip whose every pick is set aside is greyed too, and says "Not applied: no
-matches with your other filters." Off and ruled out, a value chip is refused;
+A chip whose every pick is set aside is greyed too, and says "Limited by your other
+filters: not applied." Off and ruled out, a value chip is refused;
 on, it may be let go. A chip with a menu always opens it.
 
 - Site: `src/core/data/data-source.ts`
