@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**31 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**30 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -111,7 +111,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31q | 144 | A View's filters survive a swap to another View — a draft per View, for the session, and across sessions; two settings, on by default | feature |
 | ✅ | 31r | 171 | The filter panel's search matches FIELD labels as well as value labels | feature |
 | ✅ | 31s | 172 | In the filter panel, each chip of a multi-value filter shows its own count badge | feature |
-| ⬜ | 31t | 173 | BUG: a panel section header's count badge ADDS its values' counts; it should be the UNIQUE results of them all | bug |
+| ✅ | 31t | 173 | BUG: a panel section header's count badge ADDS its values' counts; it should be the UNIQUE results of them all | bug |
 | ⬜ | 31u | 174 | Two View fields that share no rows return NOTHING, though each badge has a count; a filterset's fields should limit each other's options | bug |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
@@ -1685,7 +1685,7 @@ it an app setting."*
 Builds on 99 (filtersets) and 110 (an AND row offers only what the rows
 before it leave).
 
-### `[ ]` 173 — BUG: a panel section header's count adds its values' counts
+### `[x]` ✅ 173 — BUG: a panel section header's count adds its values' counts
 
 Will, 2026-10-01: *"To investigate: The total count badge, in filter panel
 section headers, totals the count from each active filter value in that
@@ -1695,6 +1695,19 @@ all active filter values."*
 And, the same day: *"Active filter value counts should be showing the total
 number of matches for that filter value. I think this is the case but I want
 to validate in light of the section total investigation."*
+
+**✅ Done 2026-10-01 — no bug; both counts were right.** The header asks the
+store ONE question, "rows that match any of these values", so each row counts
+once. It looks like a sum because a row holds ONE value of a field: an EMEA
+row is never also an APAC row, so `27 EMEA` + `29 APAC` = `REGION 56`, and
+56 is the unique count too. Where rows CAN overlap — two Advanced conditions
+that match the same row — the header counts that row once: the new test has
+two rows that match both conditions, and the header says 2, not 4.
+
+Each value chip is the rows that ONE value matches, within what its scope can
+see (for a component scope, inside the View's filter). It is not narrowed by
+the field's other values, or by the scope's other fields — that is 174.
+`test/unit/a-field-counts-unique-rows.test.mjs`
 
 ### `[x]` ✅ 172 — In the filter panel, each value chip shows its own count
 
@@ -4509,6 +4522,7 @@ One line each. The detail is in git and in the trap named.
 - 28: `sherpa-grid-cell` folded — Figma's Grid Cell is the grid's own CSS
 - 36: preset-env is gone — the Safari 16 floor went, so nesting ships as written; no pixel moved
 - 86 (A7, the headings): a grid heading opens the chip's menu, from the source's own field — `T-a-heading-opens-the-chips-menu`
+- 173: no bug — a field's header is one count of its unique rows; a test pins it — `T-a-chip-counts-its-own-results`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

@@ -1265,6 +1265,12 @@ a range, a field that is off or held above have none. The one value is
 counted with NO list beside it — against a one-value field's whole list it
 reads as "everything", which is no filter (`T-everything-on-is-no-filter`).
 
+**The header is ONE count, never a sum** — TODO 173. It counts the rows ANY of
+the field's values match, once each. A row holds one value of a field, so for
+picked values it equals the sum of the chips; two conditions that match the
+same row count that row once.
+
+- Site: `test/unit/a-field-counts-unique-rows.test.mjs`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
