@@ -113,7 +113,7 @@ test('in the panel, a number field\'s f(x) carries its number into the rows, and
       setFieldReading(id: string, r: unknown, scope?: string): void }>('sherpa-filter-panel', [{
       scope: 'data', label: 'Customer records',
       filters: [{ id: 'seats', label: 'Seats', kind: 'number', min: 0, max: 500, advanced: true }],
-    }], { open: true, 'data-min-width': '0', style: 'inline-size: 480px' });
+    }], { open: true, style: 'inline-size: 480px' });
     await window.__settled();
     const sr = panel.shadowRoot!;
     const field = sr.querySelector<HTMLElement>('.field[data-field="seats"]')!;

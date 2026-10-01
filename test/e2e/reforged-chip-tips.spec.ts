@@ -89,7 +89,7 @@ test('a filter panel\'s date chip says its days, and follows a sort', async ({ p
       scope: 'data', label: 'Data',
       sort: [{ field: 'name', label: 'Name' }, { field: 'plan', label: 'Plan' }],
       filters: [{ id: 'created', label: 'Date', kind: 'date', range: true, asChip: true }],
-    }], { 'data-min-width': '0' });
+    }]);
     panel.show();
     await window.__settled();
     const chip = (id: string): Chip => panel.shadowRoot!.querySelector(`.value[data-value="${id}"]`)!;

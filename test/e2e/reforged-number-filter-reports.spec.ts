@@ -83,7 +83,7 @@ test('a panel number field reports a dragged handle and a typed number', async (
       readings: Record<string, Record<string, { picked?: string[]; text?: string }>>;
     }>('sherpa-filter-panel', [{ scope: 'data', label: 'Data', filters: [
       { id: 'seats', label: 'Seats', kind: 'number', min: 0, max: 100, range: true },
-    ] }], { 'data-min-width': '0' });
+    ] }]);
     panel.show();
     await window.__settled();
     const heard: unknown[] = [];
@@ -192,7 +192,7 @@ for (const host of ['toolbar', 'panel'] as const) {
       const el = where === 'toolbar'
         ? await window.__mount<HTMLElement>('sherpa-quick-filter-toolbar', [def], { style: 'inline-size: 1200px' })
         : await window.__mount<HTMLElement & { show(): void }>('sherpa-filter-panel',
-          [{ scope: 'data', label: 'Data', filters: [def] }], { 'data-min-width': '0' });
+          [{ scope: 'data', label: 'Data', filters: [def] }]);
       (el as unknown as { show?: () => void }).show?.();
       await window.__settled();
       const rows = [5, 10, 10, 20, 40, 80].map((seats, id) => ({ id, seats }));

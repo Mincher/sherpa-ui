@@ -159,6 +159,12 @@ events:
     detail:
       side: unknown
       width: unknown
+  - $type: event
+    name: panel-room-change
+    bubbles: true
+    composed: true
+    detail:
+      room: unknown
 tokens:
   header.background: "{sherpa.style-surface-base}"
   panel-start.--_cols: "{sherpa.layout-grid-columns}"

@@ -20,15 +20,13 @@
   Public API:
     data-heading    the panel's own title (default "Filters")
     open            the panel is showing. A host writes it; the panel reports
-                    `filter-panel-close` and never hides itself, except below
-                    its breakpoint. TRAP T-the-panel-is-desktop-only
+                    `filter-panel-close` and never hides itself. Where there is
+                    no room, the app shell says so. TRAP T-the-panel-is-desktop-only
     data-locked     the source owns the state — report, never set
     data-sort-field / data-sort-direction   the sort in force. Written by the
                     source; the Sort chip shows it.
     data-group-field  the group in force. Written by the source; the Group
                     chip shows it. TRAP T-a-panel-follows-the-query-open-or-shut
-    data-min-width  the width below which the panel refuses to show, in px
-                    (default 1280). Filtering goes back to the toolbars there.
     data-saveable   the host SAVES filters: a scope with an answered field
                     offers "Save filter", and a reader's own saved preset
                     opens Edit filter and Delete filter — each asked for.

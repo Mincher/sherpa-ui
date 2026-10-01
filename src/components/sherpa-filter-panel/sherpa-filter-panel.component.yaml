@@ -133,15 +133,6 @@ props:
     kind: style
     description: the source owns the state — report, never set
   - $type: prop
-    name: data-min-width
-    type: string
-    observed: false
-    kind: style
-    default: "1280"
-    description: >-
-      the width below which the panel refuses to show, in px . Filtering goes back to the toolbars
-      there.
-  - $type: prop
     name: data-pending
     type: string
     observed: false
@@ -181,11 +172,11 @@ props:
   - $type: prop
     name: open
     type: string
-    observed: true
+    observed: false
     native: true
     description: >-
       the panel is showing. A host writes it; the panel reports `filter-panel-close` and never hides
-      itself, except below its breakpoint. TRAP T-the-panel-is-desktop-only
+      itself. Where there is no room, the app shell says so. TRAP T-the-panel-is-desktop-only
 states:
   - $type: state
     name: remote
@@ -288,10 +279,6 @@ events:
       mode: unknown
       scope: unknown
   - $type: event
-    name: filter-panel-reopen
-    bubbles: true
-    composed: true
-  - $type: event
     name: menu-change
     bubbles: true
     composed: true
@@ -336,7 +323,7 @@ $extensions:
       - $type: method
         name: show
         args: ""
-        description: Show the panel, unless the window is too narrow.
+        description: Show the panel. Where there is no room for it is the shell's to say.
       - $type: method
         name: hide
         args: "reason: 'reader' | 'width' | 'page' = 'reader'"

@@ -25,7 +25,7 @@ test('the switch carries the chips over, the rows follow them until edited, and 
   const r = await page.evaluate(async (options) => {
     const panel = await window.__mount<Panel>('sherpa-filter-panel', [{
       scope: 'data', label: 'Data', filters: [{ id: 'owner', label: 'Owner', select: 'multiple', advanced: true, options }],
-    }], { style: 'inline-size: 400px', 'data-min-width': '0' });
+    }], { style: 'inline-size: 400px' });
     panel.show();
     await window.__settled();
     const sr = panel.shadowRoot!;

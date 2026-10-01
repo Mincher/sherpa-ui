@@ -209,7 +209,6 @@ export class SherpaFilterPanel extends SherpaElement {
        TRAP T-a-composed-child-takes-an-attribute-not-text */
     'data-heading': { type: 'string', kind: 'style' },
     'data-locked': { type: 'boolean', kind: 'style' },
-    'data-min-width': { type: 'string', kind: 'style' },
     /* Set by a bound source: a change waits for its field's Apply, and which
        FIELDS have one waiting. TRAP T-apply-and-discard-wait-for-a-change */
     'data-remote': { type: 'boolean', kind: 'style' },
@@ -217,7 +216,7 @@ export class SherpaFilterPanel extends SherpaElement {
   } as const;
 
   static override observed = [
-    'data-heading', 'open',
+    'data-heading',
     // The host saves filters. TRAP T-the-panel-saves-a-whole-scope
     'data-saveable',
     // The arrangement, as a bound source writes it on every control. TRAP T-a-panel-follows-the-query-open-or-shut
@@ -286,15 +285,9 @@ export class SherpaFilterPanel extends SherpaElement {
 
   override onChange(name: string): void {
     if (name === 'data-heading') this.#syncHeading();
-    else if (name === 'open') this.#enforceWidth();
     else if (name === 'data-saveable') this.#syncSaveable();
     else if (name.startsWith('data-sort-') || name === 'data-group-field') this.#syncArrangement();
     else if (name === 'data-pending' || name === 'data-remote') this.#syncPending();
-  }
-
-  override onConnect(): void {
-    this.#media()?.addEventListener('change', this.#enforceWidth);
-    this.#enforceWidth();
   }
 
   /** Follow the arrangement onto each Group and Sort chip: a toolbar, a grid
@@ -499,10 +492,9 @@ export class SherpaFilterPanel extends SherpaElement {
     else this.hide();
   }
 
-  /** Show the panel, unless the window is too narrow.
+  /** Show the panel. Where there is no room for it is the shell's to say.
    *  TRAP T-the-panel-is-desktop-only */
   show(): void {
-    if (!this.#wideEnough()) return;
     this.toggleAttribute('open', true);
   }
 
@@ -513,12 +505,7 @@ export class SherpaFilterPanel extends SherpaElement {
   hide(reason: 'reader' | 'width' | 'page' = 'reader'): void {
     if (!this.hasAttribute('open')) return;
     this.removeAttribute('open');
-    this.#lastClose = reason;
     this.emit('filter-panel-close', { reason });
-  }
-
-  override onDisconnect(): void {
-    this.#media()?.removeEventListener('change', this.#enforceWidth);
   }
 
   /** `hide()`, in the spelling every surface keeps. */
@@ -1819,39 +1806,6 @@ export class SherpaFilterPanel extends SherpaElement {
     this.#syncAllAnswered();
     this.#report();
   };
-
-  /** The header's switch back to the toolbars. */
-  /* ── The breakpoint ───────────────────────────────────────────────── */
-
-  /** The width query the panel needs, or null without matchMedia. */
-  #media(): MediaQueryList | null {
-    if (typeof matchMedia !== 'function') return null;
-    return matchMedia(`(min-width: ${this.dataset['minWidth'] ?? '1280'}px)`);
-  }
-
-  /** Is the window wide enough for the panel. */
-  #wideEnough(): boolean {
-    return this.#media()?.matches ?? true;
-  }
-
-  /** Below its width the panel closes itself: filtering goes back to the
-   *  toolbars, which is what they are for. TRAP T-the-panel-is-desktop-only */
-  #enforceWidth = (): void => {
-    if (!this.#wideEnough()) {
-      this.hide('width');
-      return;
-    }
-    /* WIDE AGAIN, and the window was what took it away. Nothing else tells the
-       host the panel is back. TRAP T-every-close-reports-or-the-toolbars-stay-hidden */
-    if (this.#closedByWidth) this.emit('filter-panel-reopen');
-  };
-
-  /** Closed by the window, not by the reader — so a widen may give it back. */
-  get #closedByWidth(): boolean {
-    return this.#lastClose === 'width' && !this.hasAttribute('open');
-  }
-  /** Why it last closed: the reader, a narrow window, or a page with no filters. */
-  #lastClose: 'reader' | 'width' | 'page' | null = null;
 }
 
 customElements.define('sherpa-filter-panel', SherpaFilterPanel);

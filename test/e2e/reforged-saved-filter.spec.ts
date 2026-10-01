@@ -574,7 +574,7 @@ test('the panel: saved presets are Advanced, and a scope asks to save, edit and 
   const r = await page.evaluate(async () => {
     const readings = { health: { op: 'lt', text: '60' } };
     const panel = await window.__mount<HTMLElement & { show(): void; populate(d: unknown): unknown }>(
-      'sherpa-filter-panel', undefined, { 'data-min-width': '0', style: 'inline-size: 400px' });
+      'sherpa-filter-panel', undefined, { style: 'inline-size: 400px' });
     await panel.populate([{
       scope: 'data', label: 'Data', filters: [
         { id: 'at-risk', label: 'At risk', preset: true, readings, active: true },

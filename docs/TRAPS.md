@@ -9975,7 +9975,7 @@ BROKEN ASSUMPTION reports.** Never the reverse — a warning a reader cannot act
 on is noise that hides the real one.
 
 ```ts
-if (!this.#wideEnough()) return;   // a DECISION. The panel is desktop-only.
+if (!this.#room) return;          // a DECISION. No room for the panel.
 if (i < 0) return;                 // a FAULT. The caller named a filter that
                                    //          is not on this bar.
 ```
@@ -10840,20 +10840,30 @@ use at all, because the panel draws value chips rather than the menu.
 
 ### T-the-panel-is-desktop-only
 
-Below 1280px the filter panel closes itself and refuses to open.
+**A panel area needs ROOM: the Context beside it keeps a tablet's width
+(768px).** So the shell's body must hold 768 plus the area's min (464) —
+1232px. Filtering goes back to the toolbars where it does not, which is what
+they are for.
 
-A 288px column on a 768px tablet leaves the content 480px — narrower than the
-phone layout it would get with no panel at all. Filtering goes back to the
-toolbars, which is what they are for.
+**The SHELL measures it, by its own body** — TODO 146, level 1. The panel used
+to measure the WINDOW (`matchMedia`, 1280). A pinned nav takes 320px of the
+window, so at 1280 the panel still showed and left the Context 496px. Now
+`sherpa-app-shell` watches `.body` (a `ResizeObserver`), hides both areas
+under `data-no-room`, and reports `panel-room-change`. The PROVIDER owns the
+mode, so it shuts the panel (`hide('width')` — not a choice) and gives it back
+when there is room and the reader still wants it. A panel with no shell
+around it has no width rule: that is its host's to say.
 
-A media QUERY, not a resize listener: the browser owns the measuring, and
-`matchMedia(...).addEventListener('change')` fires once per crossing rather
-than once per pixel.
+While Settings is open the nav is wide, but the overlay covers the Context:
+the shell ignores the room then, or leaving Settings would shut and reopen
+the panel under it.
 
----
+- Site: `src/components/sherpa-app-shell/sherpa-app-shell.ts`
+- Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
-- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+- Site: `test/e2e/reforged-filter-panel-mode.spec.ts`
 
 ### T-a-conditioned-chip-answers-with-its-clause
 
@@ -14709,7 +14719,7 @@ not.
 ### T-every-close-reports-or-the-toolbars-stay-hidden
 
 `sherpa-filter-panel` has **two ways to close**: the reader clicks the header
-`×`, or the window narrows past the panel's minimum and `#enforceWidth` closes
+`×`, or the window narrows past the panel's minimum and the width path closes
 it. Only the first one emitted `filter-panel-close`, because `close()` was
 written as the button handler's helper and the width path called it directly.
 
@@ -14720,8 +14730,9 @@ Measured at 900px — `{panelOpen:false, dataBar:"none", panelled:1}`.
 **Every close reports, and it says WHY.** `close(reason)` always emits, and the
 host branches on the reason: a `reader` close writes the mode to `toolbars`; a
 `width` close does not, so widening restores what the reader chose. The widen
-side needs its own event — `filter-panel-reopen` — because nothing else tells
-the host the panel is back.
+side needs its own event — now the shell's `panel-room-change`
+(`T-the-panel-is-desktop-only`) — because nothing else tells the host there is
+room again.
 
 The general shape: a component with two paths into the same state must emit from
 the state change, never from one path's handler. The second path is always the
@@ -14862,7 +14873,7 @@ the session key, and the close, reopen and restore listeners — and the
 Dashboard's Configure button did nothing.
 
 The provider hears its OWN mode buttons (`T-the-mode-switch-is-the-pages-own`)
-and the panel's `filter-panel-close` and `filter-panel-reopen`. It opens or shuts every panel
+the panel's `filter-panel-close`, and the shell's `panel-room-change`. It opens or shuts every panel
 that asked, and steps every bar that asked back (`data-panel-mode`) — a bar
 on a page loaded later takes the mode when it asks. The APP keeps the choice:
 it sets `provider.filterMode` from its session, and saves each

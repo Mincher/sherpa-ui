@@ -123,3 +123,49 @@ for (const width of [1280, 1600, 1920, 2400]) {
     expect(r.scrolls).toBe(false);
   });
 }
+
+/**
+ * NO ROOM, NO PANEL. The shell measures its OWN body: the Context beside a
+ * panel area keeps a tablet's width. A narrow window, or a pinned nav, shuts
+ * the panel and brings the toolbars back; room again gives it back.
+ * TODO 146, level 1. TRAP T-the-panel-is-desktop-only
+ */
+test('with no room in the shell the panel shuts and the toolbars come back; room gives it back', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('http://localhost:4200/?context=records');
+  await page.waitForFunction(() =>
+    !!document.querySelector('#context-root sherpa-data-grid')?.shadowRoot?.querySelector('.row, [role="row"]'));
+  type Provider = HTMLElement & { filterMode: string };
+  const ask = (): Promise<void> => page.evaluate(() => {
+    (document.querySelector('sherpa-provider') as Provider).filterMode = 'panel';
+  });
+  const look = (): Promise<{ open: boolean; stepped: boolean; room: boolean }> => page.evaluate(() => ({
+    open: document.querySelector('#filter-panel')!.hasAttribute('open'),
+    stepped: document.querySelector('#qft')!.hasAttribute('data-panel-mode'),
+    room: !document.querySelector('sherpa-app-shell')!.hasAttribute('data-no-room'),
+  }));
+  const pin = (): Promise<void> => page.evaluate(() => {
+    (document.querySelector('sherpa-nav')!.shadowRoot!.querySelector('.pin') as HTMLElement).click();
+  });
+  const SHOWN = { open: true, stepped: true, room: true };
+  const SHUT = { open: false, stepped: false, room: false };
+
+  await ask();
+  await expect.poll(look).toEqual(SHOWN);
+
+  // A tablet window: no room, so the toolbars are back — and asking again is refused.
+  await page.setViewportSize({ width: 1024, height: 900 });
+  await expect.poll(look).toEqual(SHUT);
+  await ask();
+  expect(await look()).toEqual(SHUT);
+
+  // Wide again: the reader still wants the panel.
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await expect.poll(look).toEqual(SHOWN);
+
+  // A pinned nav takes room too: 1280 less the open rail leaves no room.
+  await pin();
+  await expect.poll(look).toEqual(SHUT);
+  await pin();
+  await expect.poll(look).toEqual(SHOWN);
+});

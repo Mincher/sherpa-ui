@@ -170,7 +170,7 @@ test('the panel reports its mode in the menu\'s own words', async ({ page }) => 
         id: 'owner', label: 'Owner', select: 'multiple', advanced: true,
         options: [{ value: 'Dana', label: 'Dana' }, { value: 'Ravi', label: 'Ravi' }],
       }],
-    }], { style: 'inline-size: 400px', 'data-min-width': '0' });
+    }], { style: 'inline-size: 400px' });
     panel.show();
     await window.__settled();
     const heard: unknown[] = [];
@@ -235,7 +235,7 @@ test('a def says advanced — and the old custom and conditions keys still work'
         { id: 'owner', label: 'Owner', advanced: true, options: opts },
         { id: 'email', label: 'Email', advanced: 'only', op: 'contains' },
       ],
-    }], { 'data-min-width': '0' });
+    }]);
     (panel as HTMLElement & { show(): void }).show();
     await window.__settled();
     const psr = panel.shadowRoot!;

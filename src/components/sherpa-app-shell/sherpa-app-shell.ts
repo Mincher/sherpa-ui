@@ -7,6 +7,9 @@
 import { SherpaElement } from '../../core/ui/sherpa-element.js';
 import { resizeByEdge } from '../../core/ui/edge-resize.js';
 
+/** The narrowest Context a panel area may leave: the layout grid's tablet breakpoint. */
+const TABLET = 768;
+
 export class SherpaAppShell extends SherpaElement {
   static override css = new URL('./sherpa-app-shell.css', import.meta.url);
   static override html = new URL('./sherpa-app-shell.html', import.meta.url);
@@ -18,6 +21,8 @@ export class SherpaAppShell extends SherpaElement {
   static override props = {
     'data-panel-start-open': { type: 'boolean', kind: 'visibility' },
     'data-panel-end-open': { type: 'boolean', kind: 'visibility' },
+    // The body has no room for a panel area. TRAP T-the-panel-is-desktop-only
+    'data-no-room': { type: 'boolean', kind: 'visibility' },
   } as const;
 
   override onRender(): void {
@@ -41,7 +46,32 @@ export class SherpaAppShell extends SherpaElement {
       this.#resizable(side);
       this.#askWidth(side);
     }
+    this.#watchRoom();
   }
+
+  /**
+   * A panel area needs ROOM: the Context beside it keeps a tablet's width, so
+   * the body must hold that and the area's min. By the body's own width — a
+   * pinned nav takes room too. The shell hides the areas and REPORTS it; the
+   * host shuts and reopens the panel. TRAP T-the-panel-is-desktop-only
+   */
+  #watchRoom(): void {
+    const body = this.$<HTMLElement>('.body');
+    if (!body || typeof ResizeObserver !== 'function') return;
+    this.#roomWatch = new ResizeObserver(() => {
+      // Settings covers the Context, so the room under it does not change.
+      if (this.dataset['navState'] === 'settings') return;
+      const min = parseFloat(getComputedStyle(this.$('.panel-start') ?? this).minInlineSize) || 0;
+      const room = body.getBoundingClientRect().width >= min + TABLET;
+      if (room !== this.hasAttribute('data-no-room')) return;
+      this.set('data-no-room', !room);
+      this.emit('panel-room-change', { room });
+    });
+    this.#roomWatch.observe(body);
+  }
+
+  /** Watches the body's width for room. */
+  #roomWatch?: ResizeObserver;
 
   /**
    * An area's INNER edge resizes it: drag it, or the arrow keys, Home and End.
@@ -105,6 +135,7 @@ export class SherpaAppShell extends SherpaElement {
   override onDisconnect(): void {
     this.#panelWatch.start?.disconnect();
     this.#panelWatch.end?.disconnect();
+    this.#roomWatch?.disconnect();
   }
 
   /** The nav changed state: mirror it, so the content can make room. */

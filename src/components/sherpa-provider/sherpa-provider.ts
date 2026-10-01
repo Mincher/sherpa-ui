@@ -140,9 +140,9 @@ export class SherpaProvider extends SherpaElement {
     super();
     // From the START: a child can ask before this has rendered.
     this.addEventListener('context-request', this.#onRequest);
-    // Any bar's Configure, and the panel's own close and reopen.
+    // The panel's own close, and the shell's room for it.
     this.addEventListener('filter-panel-close', this.#onPanelClose);
-    this.addEventListener('filter-panel-reopen', this.#onPanelReopen);
+    this.addEventListener('panel-room-change', this.#onRoom);
     /* A container's Retry, and a bar's Refresh: load again. Its Clear filters:
        every bar resets. TRAP T-a-container-shows-its-datas-state */
     this.addEventListener('data-refresh', (event) => {
@@ -172,15 +172,17 @@ export class SherpaProvider extends SherpaElement {
   #mode: 'toolbars' | 'panel' = 'toolbars';
   /** What was ASKED for — a narrow window can refuse the panel for a while. */
   #wanted: 'toolbars' | 'panel' = 'toolbars';
+  /** The shell has room for a panel area. TRAP T-the-panel-is-desktop-only */
+  #room = true;
 
   /** Open or shut every panel, and step every bar back or forward to match. */
   #setMode(mode: 'toolbars' | 'panel'): void {
     const panels = this.#panels();
     for (const panel of panels) {
-      if (mode === 'panel') panel.show?.();
-      else panel.hide?.();
+      if (mode !== 'panel') panel.hide?.();
+      else if (this.#room) panel.show?.();
     }
-    // `open()` refuses below its breakpoint, so follow what it actually did.
+    // With no room the panel stays shut, so follow what it actually did.
     this.#mode = mode === 'panel' && panels.some((p) => p.hasAttribute('open')) ? 'panel' : 'toolbars';
     for (const bar of this.#bars()) this.#stepBack(bar);
     this.#giveToggles();
@@ -266,10 +268,12 @@ export class SherpaProvider extends SherpaElement {
     this.emit('filter-mode-change', { mode: 'toolbars' });
   };
 
-  /** WIDE AGAIN, and the window was what took the panel away: give it back. */
-  #onPanelReopen = (): void => {
-    if (this.#wanted !== 'panel') return;
-    requestAnimationFrame(() => requestAnimationFrame(() => this.#setMode('panel')));
+  /** The shell lost room for the panel: shut it, which is not a choice. Room
+   *  again, and the reader wanted it: give it back. TRAP T-the-panel-is-desktop-only */
+  #onRoom = (event: Event): void => {
+    this.#room = (event as CustomEvent<{ room?: boolean }>).detail?.room !== false;
+    if (!this.#room) for (const panel of this.#panels()) panel.hide?.('width');
+    else if (this.#wanted === 'panel') this.#setMode('panel');
   };
 
   /**

@@ -347,7 +347,7 @@ test('a field with a body of its own — a number — is found by its name, and 
         { id: 'seats', label: 'Seats', kind: 'number', min: 0, max: 500 },
         { id: 'plan', label: 'Plan', options: [{ value: 'Pro', label: 'Pro' }, { value: 'Free', label: 'Free' }] },
       ],
-    }], { open: true, 'data-min-width': '0', style: 'inline-size: 400px' });
+    }], { open: true, style: 'inline-size: 400px' });
     await window.__settled();
     const sr = panel.shadowRoot!;
     const search = sr.querySelector<HTMLElement & { value: string }>('.search')!;
@@ -411,35 +411,6 @@ test('the Add menu adds AND removes, and changes nothing by itself', async ({ pa
   /* The field is STILL THERE. A component that removed it would be deciding
      what the host's list holds. */
   expect(r.after).toEqual(['organise', 'presets', 'status', 'owner']);
-});
-
-/**
- * BELOW ITS WIDTH THE PANEL REFUSES TO SHOW.
- * TRAP T-the-panel-is-desktop-only
- */
-test('a narrow window refuses the panel, and shuts an open one', async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  const wide = await page.evaluate(`(async () => {
-    ${SETUP}
-    return el.hasAttribute('open');
-  })()`);
-  expect(wide).toBe(true);
-
-  await page.setViewportSize({ width: 1024, height: 900 });
-  await page.waitForTimeout(300);
-
-  const narrow = await page.evaluate(`(async () => {
-    const el = document.querySelector('sherpa-filter-panel');
-    const shut = el.hasAttribute('open');
-    el.show();
-    await new Promise((r) => setTimeout(r, 120));
-    return { shut, afterAsk: el.hasAttribute('open') };
-  })()`) as { shut: boolean; afterAsk: boolean };
-
-  // It closed ITSELF when the window narrowed…
-  expect(narrow.shut).toBe(false);
-  // …and refuses to open again while it stays narrow.
-  expect(narrow.afterAsk).toBe(false);
 });
 
 /**
@@ -720,7 +691,6 @@ test('a field populated with conditions opens in Advanced mode on its rows', asy
     const el = document.createElement('sherpa-filter-panel') as HTMLElement & {
       rendered: Promise<void>; populate(d: unknown): void; show(): void;
       readings: Record<string, Record<string, { conditions?: unknown[] }>> };
-    el.setAttribute('data-min-width', '0');
     document.getElementById('root')!.replaceChildren(el);
     await el.rendered;
     el.populate([{ scope: 'data', label: 'Data', filters: [

@@ -2816,6 +2816,17 @@ Not built: level 1 (the shell, not the filter panel, hides an area when it is
 too narrow) and level 2 (the Context's grid reflows by its own width). Level
 2 waits on the choice below.
 
+**✅ Level 1 done 2026-10-01 — the shell says when there is room.** A panel
+area shows only while the Context beside it keeps a tablet's width (768px):
+the shell's body must hold 768 plus the area's 464 min. The SHELL measures
+its own body now, not the window, so a pinned nav counts: at 1280 with the
+nav pinned there is no room, and the toolbars come back. Unpin, and the panel
+is back. Today's widths do not change: 1280 with the nav shut still has
+room. The panel lost its own window rule (`data-min-width`, 1280) — a panel
+with no shell is its host's to place. While Settings is open the shell
+ignores the room, as Settings covers the Context.
+`T-the-panel-is-desktop-only`
+
 **❓ One choice before level 2.** The grid's bands (768 / 1280 / 1920) are
 viewport widths. As container widths they are narrower by the nav and the
 panels.
@@ -4560,6 +4571,7 @@ One line each. The detail is in git and in the trap named.
 - 86 (A7, the headings): a grid heading opens the chip's menu, from the source's own field — `T-a-heading-opens-the-chips-menu`
 - 173: no bug — a field's header is one count of its unique rows; a test pins it — `T-a-chip-counts-its-own-results`
 - 174 (part): Adventure Works + AMER matched nothing because the Dashboard seed gave each customer one region — fixed; the symbiotic options wait on 110
+- 146 level 1: the shell, not the panel, says when there is room for a panel area — a pinned nav counts — `T-the-panel-is-desktop-only`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

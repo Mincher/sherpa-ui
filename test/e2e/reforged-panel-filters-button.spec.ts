@@ -283,7 +283,7 @@ test('ONE menu for every scope: each row says its scope, and a filter is added t
       { scope: 'data', label: 'Customer records',
         filters: [{ id: 'status', label: 'Status', removable: true, options: [{ value: 'active', label: 'active' }] }],
         available: [{ id: 'seats', label: 'Seats' }, { id: 'custom:mine', label: 'Mine', readings: { plan: { picked: ['gold'] } } }] },
-    ], { open: true, 'data-min-width': '0', style: 'inline-size: 480px' });
+    ], { open: true, style: 'inline-size: 480px' });
     await window.__settled();
     const sr = panel.shadowRoot!;
     const btn = sr.querySelector<HTMLElement>('.filters-btn')!;

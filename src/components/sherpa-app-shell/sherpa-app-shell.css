@@ -149,8 +149,9 @@
    TRAP T-the-shell-owns-the-panel-areas */
 .panel-start,
 .panel-end { display: none; }
-:host([data-has-panel-start][data-panel-start-open]) .panel-start,
-:host([data-has-panel-end][data-panel-end-open]) .panel-end { display: block; }
+/* …and none where the body has no room for one. TRAP T-the-panel-is-desktop-only */
+:host([data-has-panel-start][data-panel-start-open]:not([data-no-room])) .panel-start,
+:host([data-has-panel-end][data-panel-end-open]:not([data-no-room])) .panel-end { display: block; }
 
 .panel-start { --_asked: var(--_asked-start); }
 .panel-end { --_asked: var(--_asked-end); }
