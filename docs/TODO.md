@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**28 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**27 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -130,7 +130,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 35b | 161 | The app header's shadow FADES in, very quickly, as the Context scrolls under it | quick |
 | ✅ | 35c | 163 | The app shell's panel areas are 150% of their width today, at the least | quick |
 | ✅ | 35a | 146 | The app shell's FIXED panel areas resize by dragging their inner edge; the content reflows; two levels of container query | feature |
-| 🚧 | 35b | 177 | AFTER the example app moves (37) — an app setting: resize layout grid content by handles in its gutters, snapping to columns and rows | feature |
+| ✅ | 35b | 177 | AFTER the example app moves (37) — an app setting: resize layout grid content by handles in its gutters, snapping to columns and rows | feature |
 | ⬜ | 35c | 183 | REVIEW — how a consumer builds an app on Sherpa: use, configure, extend, scaffold, the data layer; and for AI agents | explore |
 | ⬜ | 35c2 | 185 | Sherpa Demos: `definitions/` becomes `views/` (JSON, templates in HTML by id), `view-schemas/`; rethink `contexts/` | refactor |
 | ⬜ | 35d | 184 | INVESTIGATE — does sherpa-ui need Node to ship? A CDN, a script or a small zip may suit it better | explore |
@@ -3019,7 +3019,7 @@ and doing some overdue cleanup, refactoring and optimisation of Sherpa."*
 The app moved on 2026-10-01 (37), so this may start; Sherpa Demos is the
 first consumer to learn from.
 
-### `[ ]` 177 — Resize layout grid content by dragging handles in its gutters
+### `[x]` ✅ 177 — Resize layout grid content by dragging handles in its gutters
 
 Will, 2026-10-01, *"Todo after we move the example app to it's own project:*
 
@@ -3064,6 +3064,18 @@ Seven library steps, then the Demos part.
 4. A layout is kept per page (Context), by card — not per View.
 5. Turning the setting off hides the handles and keeps the sizes; "Reset card
    sizes" forgets them.
+
+**✅ Done 2026-10-01.** Settings › Application › Layout › "Resize cards"
+turns it on. A handle sits in each gap between cards in a row, and under each
+row. Drag it, or focus it and use the arrow keys, Home and End; sizes snap to
+whole columns and rows. A card is never narrower than 3 columns; a row never
+shorter than its tallest `data-min-row-span` (1 on a metric, 2 on a chart);
+with no room left, a drag does nothing. The Dashboard and Records keep their
+sizes per card, across a reload and every View; "Reset card sizes" forgets
+them. Library: seven commits, ab30530c to b78de6e0. The Sherpa Demos half
+(the setting, the ids, the keeping, its tests) is not committed — Demos has no
+git yet. `T-a-gutter-moves-a-line` `T-a-dragged-layout-is-kept-per-column-count`
+`T-a-handle-is-never-restamped-mid-drag` `T-a-fit-grid-counts-its-resized-rows`
 
 ### `[x]` ✅ 146 — The app shell's FIXED panel areas resize by dragging their edge
 
@@ -5011,6 +5023,7 @@ One line each. The detail is in git and in the trap named.
 - 178: the filter panel's ⋮ — Reset folds into it when narrow; both ⋮ menus hold "Limit matching filters"
 - 110: an AND row greys the values the rows before it rule out — `T-an-and-row-offers-what-the-rows-before-it-leave`
 - 181: a saved filter's card shows each field's own menu, read-only; Edit filter edits it in place — `T-a-saved-filter-keeps-its-edit`
+- 177: cards resize from the layout grid's gutters, by drag or keys; each Context keeps its sizes — `T-a-gutter-moves-a-line`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on
