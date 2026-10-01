@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**27 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**37 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -131,7 +131,18 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 35c | 163 | The app shell's panel areas are 150% of their width today, at the least | quick |
 | ✅ | 35a | 146 | The app shell's FIXED panel areas resize by dragging their inner edge; the content reflows; two levels of container query | feature |
 | ✅ | 35b | 177 | AFTER the example app moves (37) — an app setting: resize layout grid content by handles in its gutters, snapping to columns and rows | feature |
-| ⬜ | 35c | 183 | REVIEW — how a consumer builds an app on Sherpa: use, configure, extend, scaffold, the data layer; and for AI agents | explore |
+| ✅ | 35c | 183 | REVIEW — how a consumer builds an app on Sherpa: use, configure, extend, scaffold, the data layer; and for AI agents | explore |
+| ⬜ | 35c3 | 187 | Make the docs and the MCP text TRUE: `rows:'all'`, the provider in PRINCIPLES, dead names, prompt and scaffold text | docs |
+| ⬜ | 35c4 | 188 | Fix the bugs 183 found, and run the gates we have: IdbStore update, Edit saves Plan, one badge writer, double `input`, provider reports and Fires; lint and node tests in the hook | bug |
+| ⬜ | 35c5 | 189 | Readiness and a smaller download: export `settled()`, shared sheets on single imports, minify, icons on demand | refactor |
+| ❓ | 35c6 | 190 | A Context contract and ONE `app.json`: the Contexts, the default, the Settings pages — the nav, router and server read it | foundation |
+| ❓ | 35c7 | 191 | Library parts that empty `contexts/`: dialog prompt/confirm, saved filters in the provider, `data-setting`, store seeds | foundation |
+| ❓ | 35c8 | 192 | Ship the agent path: the MCP with its real dependencies and files, a pack smoke test, registered in both projects | tooling |
+| ⬜ | 35c9 | 193 | ONE app guide, steps not history, served to agents as `sherpa://app-guide` — after 190 | docs |
+| ❓ | 35c10 | 194 | A Context loader beside `sherpa-router`: `<sherpa-outlet>` reads `app.json`; `index.html` becomes config | foundation |
+| ⬜ | 35c11 | 195 | The spec becomes the whole contract: props only, slots, `populate()` shape, typed events; a usage gate | tooling |
+| ❓ | 35c12 | 196 | ONE filter surface and a smaller DataSource: `bind()` out of the data layer; one helper for bar and panel | refactor |
+| ❓ | 35c13 | 197 | ONE way to write a filter condition in a definition or a View: readings, or a plain `{ field: { gt: 0 } }` | foundation |
 | ⬜ | 35c2 | 185 | Sherpa Demos: `definitions/` becomes `views/` (JSON, templates in HTML by id), `view-schemas/`; rethink `contexts/` | refactor |
 | ⬜ | 35d | 184 | INVESTIGATE — does sherpa-ui need Node to ship? A CDN, a script or a small zip may suit it better | explore |
 | | | | **F — Data states and charts** | |
@@ -2974,6 +2985,50 @@ CDN URL to `dist/index.js` (from an npm release, or a git tag), or npm for
 those who want the types. Smaller wins, if wanted: minify the JS, and ship
 `schemas/`.
 
+### `[ ]` 187 — Make the docs and the MCP text true
+
+Found by 183. `DATA-SOURCE-RULES.md` (served to agents) and a TRAPS entry say `scope: 'all'` where the option is `rows: 'all'`; a wrong call passes the type check and a chart counts one page. `PRINCIPLES.md:26` says the join is `bind()` and nothing else; the app joins through `sherpa-provider`. CLAUDE.md names a `ThemeManager` that does not exist; the README links a deleted doc; the MCP prompts use `data-variant` and read a missing file; `scaffold_def` suggests token names that do not exist. Fix each, and make `bind()` report `scope: 'all'`. `docs/CONSUMER-REVIEW.md` §3.1.
+
+### `[ ]` 188 — Fix the bugs 183 found, and run the gates we have
+
+Found by reading, to be proved by a test each: `IdbStore.update` with a changed key writes a second row; Edit never saves Plan; the notification badge has three writers; `sherpa-input-text` fires `input` twice; the provider drops the keys `applyState` skipped, and its Fires block says nothing. And `npm run lint` and the node tests run in no hook. `docs/CONSUMER-REVIEW.md` §3.2.
+
+### `[ ]` 189 — Readiness and a smaller download
+
+Export the harness's `__settled()` as `settled(root)`; put the eight shared sheets in SherpaElement's default so a single-component import draws right; minify the JS and strip template comments (keep a debug build); load icons on demand (314 KB today). Then the demo's 30 `whenDefined` and 32 `waitForTimeout` calls can go. `docs/CONSUMER-REVIEW.md` §3.3.
+
+### `[ ]` 190 — A Context contract and one `app.json`
+
+❓ Waits on choice 1 in 183. Export `ContextModule { init(root, ctx) → teardown }`; one `app.json` names the Contexts (template, definition, views, module, chrome), the default Context and the Settings pages, and the nav, the router, the session defaults and the server read it — about 12 hand-kept lists end. `docs/CONSUMER-REVIEW.md` §3.4.
+
+### `[ ]` 191 — Library parts that empty `contexts/`
+
+❓ Waits on choice 1 in 183. `SherpaDialog.prompt()` and `.confirm()`; saved filters owned by the provider, as saved Views are; `data-setting="/pointer"` binds a control to the session; stores take a seed, a version and a fallback; public APIs for the three shadow-root reaches. Then Sherpa Demos sorts by kind: `stores/`, `contexts/` (page behaviour only), `views/`, `view-schemas/`. `docs/CONSUMER-REVIEW.md` §3.5.
+
+### `[ ]` 192 — Ship the agent path
+
+❓ Waits on choice 2 in 183. The MCP imports `scripts/` and reads specs and schemas that the package does not ship, and its SDK is a devDependency. Publish it with its real dependencies and files, add an `npm pack` smoke test that calls every tool, resource and prompt, register it in both projects, and add `validate_page`. `docs/CONSUMER-REVIEW.md` §3.6.
+
+### `[ ]` 193 — One app guide, served to agents
+
+After 190, so it teaches the contract. `docs/APP-GUIDE.md`, about 300 lines of steps with no history: the page skeleton, the shell, stores, a page definition, a template that asks, a Context module, Views and the session, and the ten or so traps an app meets. Served as `sherpa://app-guide`; each TRAPS entry tagged by who meets it. `docs/CONSUMER-REVIEW.md` §3.7.
+
+### `[ ]` 194 — A Context loader beside `sherpa-router`
+
+❓ Waits on choice 1 in 183. `<sherpa-outlet>` reads `app.json` and, on each route change, fetches the template, opens the provider, runs the module and tears it down with the navigation's signal; it owns the Settings overlay, the header title from the nav row, the View in the URL, and favourites and recents. `index.html` drops from about 800 lines of script to config, and a `scaffold_app` tool can emit a starter. `docs/CONSUMER-REVIEW.md` §3.8.
+
+### `[ ]` 195 — The spec becomes the whole contract
+
+Every observed `data-*` moves into `static props` and `check:props` checks membership; the generator reads types from props, fills `slots` (0 of 65 list them today), records the `populate()` shape and types event details; emit `HTMLElementTagNameMap` and `custom-elements.json`; a `check:usage` gate checks the Demos markup against the specs. `docs/CONSUMER-REVIEW.md` §3.9.
+
+### `[ ]` 196 — One filter surface and a smaller DataSource
+
+❓ Waits on choice 3 in 183. Move `bind()` and `#steer` out of DataSource into a UI-side binder, so the data layer stops knowing component event names; one imported helper for the bar and the panel, one FilterDef type and one scope protocol; the filter editor out of `sherpa-menu`. Each parity bug is then fixed once. `docs/CONSUMER-REVIEW.md` §3.10.
+
+### `[ ]` 197 — One way to write a filter condition
+
+❓ Waits on choice 4 in 183. Today an agent learns two grammars: `[field, op, value]` (DATA-SOURCE-RULES §2) and readings with numbers as strings, `{"op":"gt","text":"0"}`. Keep readings, or store a plain form with numbers as numbers and migrate saved Views. Decide before 193.
+
 ### `[ ]` 185 — Sherpa Demos: views, view schemas, and what `contexts/` is for
 
 Will, 2026-10-01, in the example app, to do later:
@@ -2993,7 +3048,7 @@ how it should be leveraged.*
 *This is probably all part of the overall review of the architecture, and
 building with, Sherpa."* — so it goes with 183.
 
-### `[ ]` 183 — REVIEW: how a consumer builds an app on Sherpa — and an AI agent
+### `[x]` ✅ 183 — REVIEW: how a consumer builds an app on Sherpa — and an AI agent
 
 Will, 2026-10-01, a todo once the example app moved: *"We need to review how
 a consumer of Sherpa will use it to build an application frontend.*
@@ -3018,6 +3073,30 @@ and doing some overdue cleanup, refactoring and optimisation of Sherpa."*
 
 The app moved on 2026-10-01 (37), so this may start; Sherpa Demos is the
 first consumer to learn from.
+
+**✅ Reviewed 2026-10-01** — the full report is `docs/CONSUMER-REVIEW.md`.
+The base is good: a template asks for its data in markup alone, there is no
+bundler and no runtime dependency, and the gates are real. But Sherpa stops at
+the PAGE. The part between "I have components" and "I have an app" is written
+by hand in Sherpa Demos — `index.html` is 957 lines — which is why `contexts/`
+looks like hacks (185): about 60% of it is glue the library should own, 20%
+demo data, 20% the app's own business. The agent path breaks outside this
+repo; the rule docs still teach `bind()` as the only join; and some mistakes
+fail silently. Its plan is items 187–197. Four choices wait in 190, 192, 196
+and 197, each with the review's pick.
+
+**❓ The four choices** (the review's pick first):
+1. **Where the app layer lives (190, 191, 194)** — **A:** in sherpa-ui, beside
+   `sherpa-router` (its rules are already ratified in CLAUDE.md, but only the
+   demo's code does them). **B:** a separate starter package. Pick: A.
+2. **How the MCP ships (192)** — **A:** its own package, `sherpa-ui-mcp`, so
+   sherpa-ui keeps no runtime dependency (184). **B:** inside sherpa-ui, its
+   SDK an optional dependency. Pick: A.
+3. **After 187–189 (196)** — **A:** the app layer next, and filter fixes in
+   place meanwhile. **B:** merge the bar and the panel first (XL). Pick: A.
+4. **One filter grammar (197)** — **A:** keep `readings`. **B:** a plain form,
+   `{ "openTickets": { "gt": 0 } }`, numbers as numbers; saved Views migrate.
+   Pick: B, decided before the guide (193).
 
 ### `[x]` ✅ 177 — Resize layout grid content by dragging handles in its gutters
 
