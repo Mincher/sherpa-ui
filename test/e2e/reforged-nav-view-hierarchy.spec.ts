@@ -37,11 +37,11 @@ async function clickRow(page: Page, label: string): Promise<void> {
 const withHierarchy = (page: Page): Promise<void> => page.addInitScript(() =>
   localStorage.setItem('sherpa:session:/nav/hierarchy', 'true'));
 
-test('Application is one page: Notifications, Filtering, then the Navigation switch', async ({ page }) => {
+test('Application is one page: Notifications, Filtering, the Navigation switch, then Experiments', async ({ page }) => {
   await page.goto(`${APP}?context=records&settings=application`);
   const sections = () => page.evaluate(() =>
     [...document.querySelectorAll<HTMLElement>('#settings-root sherpa-section-header')].map((h) => h.dataset['heading']));
-  await expect.poll(sections).toEqual(['Notifications', 'Filtering', 'Navigation']);
+  await expect.poll(sections).toEqual(['Notifications', 'Filtering', 'Navigation', 'Experiments']);
   expect(await page.evaluate(() =>
     (document.getElementById('notify-email') as HTMLElement & { checked: boolean }).checked)).toBe(true);
   await expect(page.locator('#nav-hierarchy')).toBeAttached();
