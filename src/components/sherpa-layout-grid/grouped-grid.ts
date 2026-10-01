@@ -8,9 +8,26 @@
  * A fit grid needs no JS: its row count is authored. TRAP T-a-fit-grid-needs-its-row-count
  *
  * Map:
+ * - rowsByTop — a grid's children in laid-out rows, top first, each left to right
  * - measureGroupedGrid — Write each child's POSITION in the grid, for `data-grouped`.
+ * - watchGrid — call back once a frame after a grid or a child resizes, or its children change
  * - bindGroupedGrid — Keep a grid's positions measured: now, on resize, and whenever its children change.
  */
+
+/** A grid's children in laid-out rows: by top edge, top first, each row left to right.
+ *  TRAP T-a-wrapping-span-hides-its-own-row */
+export function rowsByTop(kids: readonly HTMLElement[]): HTMLElement[][] {
+  const rows = new Map<number, HTMLElement[]>();
+  for (const kid of kids) {
+    // Same top edge, within half a pixel of rounding.
+    const top = Math.round(kid.getBoundingClientRect().top);
+    const row = rows.get(top) ?? [];
+    row.push(kid);
+    rows.set(top, row);
+  }
+  return [...rows.keys()].sort((a, b) => a - b).map((top) => rows.get(top)!
+    .sort((a, b) => a.getBoundingClientRect().left - b.getBoundingClientRect().left));
+}
 
 /**
  * Write each child's POSITION in the grid, for `data-grouped`.
@@ -26,20 +43,11 @@ export function measureGroupedGrid(grid: HTMLElement): void {
     for (const kid of kids) kid.removeAttribute('data-group');
     return;
   }
-  // Group by row: same top edge, within half a pixel of rounding.
-  const rows = new Map<number, HTMLElement[]>();
-  for (const kid of kids) {
-    const top = Math.round(kid.getBoundingClientRect().top);
-    const row = rows.get(top) ?? [];
-    row.push(kid);
-    rows.set(top, row);
-  }
-  const tops = [...rows.keys()].sort((a, b) => a - b);
-  for (const [index, top] of tops.entries()) {
-    const row = rows.get(top)!;
-    const band = tops.length === 1 ? 'grid-top'
+  const rows = rowsByTop(kids);
+  for (const [index, row] of rows.entries()) {
+    const band = rows.length === 1 ? 'grid-top'
       : index === 0 ? 'grid-top'
-      : index === tops.length - 1 ? 'grid-bottom'
+      : index === rows.length - 1 ? 'grid-bottom'
       : 'grid-mid';
     for (const [place, kid] of row.entries()) {
       const across = row.length === 1 ? 'solo'
@@ -52,20 +60,20 @@ export function measureGroupedGrid(grid: HTMLElement): void {
 }
 
 /**
- * Keep a grid's positions measured: now, on resize, and whenever its children change.
- *
- * Returns a teardown. Pass a `signal` and it runs on abort.
- * TRAP T-signal-not-a-teardown-list
+ * Call `onLayout` once a frame after the grid or a child resizes, its children
+ * change, or one of its own layout attributes does. Returns a teardown; pass a
+ * `signal` and it runs on abort. TRAP T-signal-not-a-teardown-list
  */
-export function bindGroupedGrid(
+export function watchGrid(
   grid: HTMLElement,
+  onLayout: () => void,
   options: { signal?: AbortSignal } = {},
 ): () => void {
   let frame = 0;
   const schedule = (): void => {
     // COALESCED: a resize and a mutation in one tick are one measurement.
     cancelAnimationFrame(frame);
-    frame = requestAnimationFrame(() => measureGroupedGrid(grid));
+    frame = requestAnimationFrame(onLayout);
   };
 
   const resize = new ResizeObserver(schedule);
@@ -80,10 +88,8 @@ export function bindGroupedGrid(
   });
   mutations.observe(grid, {
     childList: true,
-    attributeFilter: ['data-col-span', 'data-row-span', 'data-grouped'],
+    attributeFilter: ['data-col-span', 'data-row-span', 'data-grouped', 'data-resizable', 'data-col-count', 'data-rows'],
   });
-
-  measureGroupedGrid(grid);
 
   const destroy = (): void => {
     cancelAnimationFrame(frame);
@@ -92,4 +98,18 @@ export function bindGroupedGrid(
   };
   options.signal?.addEventListener('abort', destroy, { once: true });
   return destroy;
+}
+
+/**
+ * Keep a grid's positions measured: now, on resize, and whenever its children change.
+ *
+ * Returns a teardown. Pass a `signal` and it runs on abort.
+ * TRAP T-signal-not-a-teardown-list
+ */
+export function bindGroupedGrid(
+  grid: HTMLElement,
+  options: { signal?: AbortSignal } = {},
+): () => void {
+  measureGroupedGrid(grid);
+  return watchGrid(grid, () => measureGroupedGrid(grid), options);
 }

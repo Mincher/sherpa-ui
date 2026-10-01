@@ -28,7 +28,7 @@
   "src/components/sherpa-key-value-list/sherpa-key-value-list.ts": 60,
   "src/components/sherpa-layout-canvas/sherpa-layout-canvas.ts": 332,
   "src/components/sherpa-layout-grid/grid-lines.ts": 64,
-  "src/components/sherpa-layout-grid/grouped-grid.ts": 96,
+  "src/components/sherpa-layout-grid/grouped-grid.ts": 116,
   "src/components/sherpa-layout-grid/sherpa-layout-grid.ts": 52,
   "src/components/sherpa-line-chart/sherpa-line-chart.ts": 169,
   "src/components/sherpa-list-item/sherpa-list-item.ts": 122,
