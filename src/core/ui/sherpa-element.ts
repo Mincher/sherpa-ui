@@ -287,8 +287,23 @@ export abstract class SherpaElement extends HTMLElement {
   /** Attribute names to observe. Subclasses override (merge with super if extending). */
   static observed: string[] = [];
 
-  /** Shared stylesheet URLs adopted into every shadow root (set once at app init). */
-  static sharedStyles: URL[] = [];
+  /**
+   * What every shadow root adopts, in cascade order — HERE, so a component
+   * imported on its own draws right too. One entry per file: `@import` is
+   * dropped from an adopted sheet without an error. Typography and the style
+   * modes are GENERATED. TRAP T-import-dies-in-an-adopted-sheet
+   * TRAP T-a-document-class-cannot-reach-a-shadow-root · TRAP T-tokens-css-never-reaches-shadow
+   */
+  static sharedStyles: URL[] = [
+    new URL('../sherpa-base.css', import.meta.url),
+    new URL('../sherpa-typography.css', import.meta.url),
+    new URL('../sherpa-grouping.css', import.meta.url),
+    new URL('../sherpa-icon.css', import.meta.url),
+    new URL('../sherpa-group-positions.css', import.meta.url),
+    new URL('../sherpa-style-modes.css', import.meta.url),
+    new URL('../sherpa-anchor.css', import.meta.url),
+    new URL('../sherpa-motion.css', import.meta.url),
+  ];
 
   /** Every element on the page now, so a reload can draw them again. */
   static #live = new Set<SherpaElement>();

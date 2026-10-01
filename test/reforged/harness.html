@@ -9,8 +9,8 @@
 <body>
   <div id="root"></div>
   <script type="module">
-    // The index wires SherpaElement.sharedStyles (base reset) and registers components.
-    import '/dist/index.js';
+    // The index registers the components; SherpaElement brings its shared sheets.
+    import { settled } from '/dist/index.js';
 
     await Promise.all([
       customElements.whenDefined('sherpa-button'),
@@ -111,43 +111,8 @@
      *
      * Usage in a test:  await page.evaluate(() => window.__settled());
      */
-    window.__settled = async function settled(passes = 3) {
-      const collect = (root, out) => {
-        for (const el of root.querySelectorAll('*')) {
-          if (el.localName.startsWith('sherpa-') && el.rendered) out.add(el.rendered);
-          if (el.shadowRoot) collect(el.shadowRoot, out);
-        }
-        return out;
-      };
-      for (let i = 0; i < passes; i++) {
-        const pending = collect(document, new Set());
-        await Promise.all(pending);
-        // DRAIN THE MICROTASK QUEUE between passes. populate() is
-        // `this.rendered.then(() => this.renderData(data))`, so renderData runs
-        // in a LATER microtask than the promise we just awaited — awaiting
-        // `rendered` alone returns before a single chip has been stamped. One
-        // extra turn lets that callback run, and the next pass then sees the
-        // children it created.
-        await Promise.resolve();
-        await Promise.resolve();
-      }
-      // Two frames: one for the last render to paint, one for style to apply.
-      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-      /* AND every running CSS transition. sherpa-nav animates its own
-         `inline-size` over 160ms as it settles to the collapsed 40px, so a
-         measurement taken after the frames above can still catch the host
-         mid-flight — 292px on the way to 40. Frames do not wait for a
-         transition; `Animation.finished` does.
-         A rejection means the animation was cancelled, which is settled too.
-         ON THE CLOCK only: a scroll-driven animation never finishes, and
-         waiting for one hangs every test on the page.
-         TRAP T-settled-waits-for-renders-not-transitions */
-      await Promise.all(
-        document.getAnimations()
-          .filter((a) => a.timeline === document.timeline)
-          .map((a) => a.finished.catch(() => {})),
-      );
-    };
+    // The library's own: one implementation for an app and its tests.
+    window.__settled = (passes = 3) => settled(document, passes);
 
     /**
      * MOUNT ONE COMPONENT, the way every spec was doing it by hand.

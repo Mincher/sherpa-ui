@@ -135,7 +135,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 35c | 183 | REVIEW — how a consumer builds an app on Sherpa: use, configure, extend, scaffold, the data layer; and for AI agents | explore |
 | ✅ | 35c3 | 187 | Make the docs and the MCP text TRUE: `rows:'all'`, the provider in PRINCIPLES, dead names, prompt and scaffold text | docs |
 | ✅ | 35c4 | 188 | Fix the bugs 183 found, and run the gates we have: IdbStore update, Edit saves Plan, one badge writer, double `input`, provider reports and Fires; lint and node tests in the hook | bug |
-| ⬜ | 35c5 | 189 | Readiness and a smaller download: export `settled()`, shared sheets on single imports, minify, icons on demand | refactor |
+| ✅ | 35c5 | 189 | Readiness and a smaller download: export `settled()`, shared sheets on single imports, minify, icons on demand | refactor |
+| ❓ | 35c5b | 199 | A smaller download: minify the JS (a new dev tool) and load icons on demand | refactor |
 | ❓ | 35c6 | 190 | A Context contract and ONE `app.json`: the Contexts, the default, the Settings pages — the nav, router and server read it | foundation |
 | ❓ | 35c7 | 191 | Library parts that empty `contexts/`: dialog prompt/confirm, saved filters in the provider, `data-setting`, store seeds | foundation |
 | ❓ | 35c8 | 192 | Ship the agent path: the MCP with its real dependencies and files, a pack smoke test, registered in both projects | tooling |
@@ -3016,9 +3017,35 @@ and `npm test` runs the node tests after Playwright; the Playwright comment
 says all three engines run. In Sherpa Demos: Edit opens on the record's Plan
 and saves a changed one, and the notification source is the badge's only
 writer, so read stays read.
-### `[ ]` 189 — Readiness and a smaller download
+### `[x]` ✅ 189 — Readiness and a smaller download
 
 Export the harness's `__settled()` as `settled(root)`; put the eight shared sheets in SherpaElement's default so a single-component import draws right; minify the JS and strip template comments (keep a debug build); load icons on demand (314 KB today). Then the demo's 30 `whenDefined` and 32 `waitForTimeout` calls can go. `docs/CONSUMER-REVIEW.md` §3.3.
+
+
+**✅ Done 2026-10-01 — the readiness half.** `settled(root?)` ships from
+`sherpa-ui`: an app, or a test, waits for a tree's components to draw, their
+data to stamp and their transitions to end — never a fixed timeout. The test
+harness now uses it, so there is one copy. The eight shared sheets are
+`SherpaElement`'s own default, so `sherpa-ui/components/sherpa-button/…` on
+its own draws as it does from the index (a test page imports one component
+alone). Guarding each `define` is left: it matters only with two copies of
+the library on a page. The smaller-download half waits in 199.
+
+### `[ ]` 199 — A smaller download: minify, and icons on demand
+
+From 189. `import 'sherpa-ui'` loads 1.5 MB of JS, not minified; the icons
+alone are 314 KB (102 KB gzipped), and every page loads them all.
+
+**❓ Two choices** (my pick first):
+1. **Minify** — **A:** add `esbuild` as a DEV dependency and minify each file
+   after `tsc`, and a new debug build script for the readable copy. **B:** no new
+   tool; strip only the comments at build. Pick: A — it is dev-only, so the
+   package still has no runtime dependency (184).
+2. **Icons** — **A:** one small module per icon, fetched the first time it is
+   drawn; an icon draws a moment later. **B:** keep the one file, and split
+   the names a page never uses into a second file. Pick: A.
+
+Then Sherpa Demos can drop its 32 `waitForTimeout` calls for `settled()`.
 
 ### `[ ]` 190 — A Context contract and one `app.json`
 

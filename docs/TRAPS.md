@@ -87,11 +87,11 @@ mode, so inside a status parent it would reset the status passed down. In the
 page, `tokens.css` still does exactly that — a known gap, not a model.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/index.ts`
 - Site: `src/core/sherpa-style-modes.css`
 - Site: `scripts/project-tokens.mjs`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `test/e2e/reforged-style-modes.spec.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-a-state-colour-binds-the-style-mode
 
@@ -12171,13 +12171,13 @@ the APP links, `src/core/` is what a COMPONENT adopts.** A class belongs in
 
 - Site: `scripts/project-tokens.mjs`
 - Site: `src/core/sherpa-typography.css`
-- Site: `src/index.ts`
 - Site: `src/core/sherpa-group-positions.css`
 - Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.ts`
 - Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.html`
 - Site: `test/e2e/reforged-layout-grid.spec.ts`
 - Site: `src/components/sherpa-group/sherpa-group.css`
 - Site: `test/e2e/reforged-group.spec.ts`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-import-dies-in-an-adopted-sheet
 
@@ -12203,8 +12203,8 @@ The base class already fetches a list and adopts them all — splitting a sheet
 costs one line there and nothing else. A new shared stylesheet must be added to
 that array or nothing adopts it.
 
-- Site: `src/index.ts`
 - Site: `src/core/sherpa-base.css`
+- Site: `src/core/ui/sherpa-element.ts`
 
 ### T-a-grid-group-computes-its-own-position
 
@@ -14309,7 +14309,7 @@ animation was cancelled, which is settled too, so each is caught.
 A test that measures a box on a component with a `transition` cannot rely on
 frames alone. `Animation.finished` is the only thing that waits for one.
 
-- Site: `test/reforged/harness.html`
+- Site: `src/core/ui/settled.ts`
 
 ### T-an-svg-path-box-rounds-by-a-hundredth
 

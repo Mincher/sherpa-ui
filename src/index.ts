@@ -1,35 +1,15 @@
 /**
  * index.ts — the reforged Sherpa entry point.
  *
- * Import this once to register components and establish the shared shadow-root
- * styles. The design-token layer (light DOM) is loaded separately via a
+ * Import this once to register components. The design-token layer (light DOM) is loaded separately via a
  * `<link>`/`@import` of tokens.css, or programmatically with `installTokens()`.
  *
  * Map:
  * - installIcons — DEPRECATED — a no-op since the icons became SVGs in icon-paths.ts
  * - installTokens — add tokens.css to the page once, so a component has its variables
  */
-import { SherpaElement } from './core/ui/sherpa-element.js';
-
-/**
- * What every shadow root adopts, in cascade order. Tokens themselves inherit
- * from the light DOM.
- *
- * One entry per file, because `@import` is DROPPED from an adopted stylesheet
- * without an error — TRAP T-import-dies-in-an-adopted-sheet.
- * `sherpa-typography.css` is GENERATED — TRAP T-a-document-class-cannot-reach-a-shadow-root.
- * `sherpa-style-modes.css` is GENERATED — TRAP T-tokens-css-never-reaches-shadow.
- */
-SherpaElement.sharedStyles = [
-  new URL('./core/sherpa-base.css', import.meta.url),
-  new URL('./core/sherpa-typography.css', import.meta.url),
-  new URL('./core/sherpa-grouping.css', import.meta.url),
-  new URL('./core/sherpa-icon.css', import.meta.url),
-  new URL('./core/sherpa-group-positions.css', import.meta.url),
-  new URL('./core/sherpa-style-modes.css', import.meta.url),
-  new URL('./core/sherpa-anchor.css', import.meta.url),
-  new URL('./core/sherpa-motion.css', import.meta.url),
-];
+// What every shadow root adopts is SherpaElement's own default, so a
+// single-component import draws right too (TODO 189).
 
 /**
  * @deprecated A NO-OP since the icons became Figma SVGs baked into
@@ -80,6 +60,8 @@ export {
 } from './core/browser/view-markup.js';
 // A page's views from JSON files, each view's markup in an HTML template.
 export { loadViewLibrary } from './core/browser/view-files.js';
+// Wait for a tree's components to draw — for an app that measures, or a test.
+export { settled } from './core/ui/settled.js';
 // ONE datum shape for every chart and the legend beside it — see chart-datum.ts.
 export type { ChartDatum, LegendDatum } from './core/data/chart-datum.js';
 
