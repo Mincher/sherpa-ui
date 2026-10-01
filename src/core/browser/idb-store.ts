@@ -178,7 +178,17 @@ export class IdbStore extends BaseStore {
     // MERGE, not replace, and the MERGED row is what gets checked.
     const row = await this.check({ ...existing, ...values });
     const db = await this.#db();
-    await promised(this.#tx(db, 'readwrite').put({ ...row }));
+    const was = readField(existing, this.key);
+    if (!sameKey(readField(row, this.key), was)) {
+      /* A changed KEY moves the row, as ArrayStore's does: the old one goes in
+         the same transaction, and a key another row holds is refused — the
+         delete rolls back with it. TRAP T-a-changed-key-moves-the-row */
+      const store = this.#tx(db, 'readwrite');
+      store.delete(was as IDBValidKey);
+      await promised(store.add({ ...row }));
+    } else {
+      await promised(this.#tx(db, 'readwrite').put({ ...row }));
+    }
     this.announce({ type: 'update', key, row: { ...row } });
     return { ...row };
   }

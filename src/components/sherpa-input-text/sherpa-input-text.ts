@@ -494,7 +494,11 @@ export class SherpaInputText extends SherpaElement {
     this.#control?.focus(options);
   }
 
-  #onInput = (): void => {
+  #onInput = (event: Event): void => {
+    /* The native `input` is COMPOSED, so it crossed the shadow root as well as
+       this one: two per keystroke. The host's own is the one that goes on.
+       TRAP T-a-composed-native-event-goes-out-twice */
+    event.stopPropagation();
     // The form's copy follows every keystroke; the check only once it has erred.
     this.#syncValue();
     this.#syncHasValue();

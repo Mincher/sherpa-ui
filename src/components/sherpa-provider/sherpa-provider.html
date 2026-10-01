@@ -19,7 +19,9 @@
   Slots:
     (default)   the subtree — every component in it can ask
 
-  Fires: nothing
+  Fires:
+    filter-mode-change — the filters moved between the toolbars and the panel. detail: { mode }
+    view-change — a View was picked, opened or saved. detail: { id, elements? }
 -->
 <template id="default">
   <slot data-accepts="any"></slot>

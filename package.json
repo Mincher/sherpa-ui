@@ -57,7 +57,7 @@
     "mcp": "node mcp-server/index.js",
     "preview": "npx --yes serve . --listen 4000 --no-clipboard",
     "prebuild": "npm run clean",
-    "test": "playwright test",
+    "test": "playwright test && npm run test:node",
     "test:node": "node --test 'test/unit/**/*.test.mjs'",
     "test:a11y": "playwright test test/e2e/a11y.spec.ts --project=chromium",
     "test:a11y:update": "UPDATE_A11Y_BASELINE=1 playwright test test/e2e/a11y.spec.ts --project=chromium",

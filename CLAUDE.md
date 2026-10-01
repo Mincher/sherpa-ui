@@ -72,9 +72,10 @@ npm run spec:validate      # the schema half alone
 npm run format
 npm run format:check
 
-# Tests — Playwright. The webServer runs `npm run build`, so `npm test` builds
-# for you; there is no separate build step to remember.
+# Tests — Playwright in three engines, then the node unit tests. The webServer
+# runs `npm run build`, so `npm test` builds for you.
 npm test
+npm run test:node         # the node unit tests alone — they import dist/, so build first
 npm run test:ui           # the Playwright UI runner
 npm run test:headed
 npm run test:report       # open the last HTML report

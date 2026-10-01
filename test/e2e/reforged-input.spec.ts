@@ -224,3 +224,18 @@ test('a typed field shows Clear by itself while it holds something; a text area,
   });
   expect(r.after).toEqual({ value: '', shown: false, heard: ['input', 'change'] });
 });
+
+/** One keystroke, ONE `input` beyond the host: the native one is composed too.
+ *  TRAP T-a-composed-native-event-goes-out-twice */
+test('a keystroke is heard once outside the field', async ({ page }) => {
+  await page.evaluate(async () => {
+    const el = document.createElement('sherpa-input-text') as HTMLElement & { rendered: Promise<void> };
+    document.getElementById('root')!.replaceChildren(el);
+    await el.rendered;
+    (window as unknown as { __n: number }).__n = 0;
+    document.addEventListener('input', () => { (window as unknown as { __n: number }).__n += 1; });
+    el.shadowRoot!.querySelector<HTMLInputElement>('input')!.focus();
+  });
+  await page.keyboard.type('a');
+  expect(await page.evaluate(() => (window as unknown as { __n: number }).__n)).toBe(1);
+});

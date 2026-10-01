@@ -9,6 +9,18 @@ if [ $TYPE_CHECK_RESULT -ne 0 ]; then
   exit 1
 fi
 
+# Rule 13: the data layer touches no DOM. eslint holds that boundary, and it
+# ran in no hook until TODO 188. About 2s.
+echo "🧹 Linting TypeScript (the DOM-free boundary)..."
+LINT_OUT=$(npm run lint --silent 2>&1)
+LINT_RESULT=$?
+
+if [ $LINT_RESULT -ne 0 ]; then
+  echo "$LINT_OUT"
+  echo "❌ Lint failed. Commit blocked."
+  exit 1
+fi
+
 # The component specs are the contract the MCP and every agent reads. Nothing
 # validated them until 2026-09-16, and they had rotted badly: 31 of 58 declared
 # events their component never emits, because the generator was scraping English

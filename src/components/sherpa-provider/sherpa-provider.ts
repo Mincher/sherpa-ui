@@ -504,7 +504,11 @@ export class SherpaProvider extends SherpaElement {
         return;
       }
       await customElements.whenDefined(el.localName);
-      applyState(el, { ...state });
+      // A key its API does not have is said: a typo in a definition did nothing, silently.
+      const skipped = applyState(el, { ...state });
+      if (skipped.length) {
+        report({ code: 'provider-unknown-setting', message: `sherpa-provider: #${id} has no ${skipped.join(', ')}.`, at: { id, keys: skipped.join(',') } });
+      }
     }));
   }
 

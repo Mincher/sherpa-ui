@@ -16046,3 +16046,32 @@ It is a BROWSER function — it parses HTML — so it ships from `sherpa-ui`, no
 - Site: `src/core/browser/view-files.ts`
 - Site: `src/core/browser/persist-view.ts`
 - Site: `test/e2e/reforged-view-files.spec.ts`
+
+### T-a-changed-key-moves-the-row
+
+**An update that changes a row's KEY moves the row, in every store.** TODO 188,
+found by the 183 review. `IdbStore.update` merged the change and `put` it: with
+a new email under `keyPath: 'email'`, that wrote a SECOND row and left the old
+one. `ArrayStore` changes the row in place, so the two stores Sherpa Demos
+switches between did different things with the same Edit.
+
+Now both: a changed key moves the row — `IdbStore` deletes the old key and
+`add`s the new one in ONE transaction — and a key another row already holds is
+refused (the delete rolls back with it). One test runs the same script over
+both stores.
+
+- Site: `src/core/browser/idb-store.ts`
+- Site: `src/core/data/stores.ts`
+- Site: `test/e2e/reforged-idb-store.spec.ts`
+
+### T-a-composed-native-event-goes-out-twice
+
+**A native `input` is composed, so it crosses the shadow root — and so does the
+host's own.** TODO 188. `sherpa-input-text` re-emits `input` from its host, as
+a component should; but the inner `<input>`'s native `input` is `composed`
+too, so a listener outside heard TWO per keystroke. (`change` is not composed,
+which is why only `input` doubled.) The native one now stops at the control;
+the host's goes on.
+
+- Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
+- Site: `test/e2e/reforged-input.spec.ts`

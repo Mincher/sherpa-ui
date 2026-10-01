@@ -327,3 +327,29 @@ test('syncViews keeps saved views in IndexedDB and pushes them onward', async ({
   // The durable tier held them after Web Storage was wiped.
   expect(r.fromIdbOnly).toEqual(['mine', 'theirs']);
 });
+
+/** ONE contract, every store: a changed key MOVES the row, and a key another
+ *  row holds is refused. TRAP T-a-changed-key-moves-the-row */
+test('every store: a changed key moves the row; a key another row holds is refused', async ({ page }) => {
+  const r = await page.evaluate(async (database) => {
+    const { IdbStore, ArrayStore } = await import('/dist/index.js');
+    const run = async (store: {
+      insert(r: unknown): Promise<unknown>; update(k: unknown, v: unknown): Promise<unknown>;
+      load(): Promise<{ rows: { email: string }[] }>; byKey(k: unknown): Promise<unknown>;
+    }) => {
+      await store.insert({ email: 'ada@x', name: 'Ada' });
+      await store.insert({ email: 'bo@x', name: 'Bo' });
+      await store.update('ada@x', { email: 'ada@y' });
+      let refused = false;
+      try { await store.update('bo@x', { email: 'ada@y' }); } catch { refused = true; }
+      const rows = (await store.load()).rows.map((row) => row.email).sort();
+      return { rows, old: !!(await store.byKey('ada@x')), refused };
+    };
+    const idb = new IdbStore({ name: 'people', key: 'email', database });
+    const out = { idb: await run(idb), array: await run(new ArrayStore([], { key: 'email' })) };
+    idb.close();
+    return out;
+  }, freshDb());
+  const want = { rows: ['ada@y', 'bo@x'], old: false, refused: true };
+  expect(r).toEqual({ idb: want, array: want });
+});

@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**36 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**35 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -134,7 +134,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 35b | 177 | AFTER the example app moves (37) — an app setting: resize layout grid content by handles in its gutters, snapping to columns and rows | feature |
 | ✅ | 35c | 183 | REVIEW — how a consumer builds an app on Sherpa: use, configure, extend, scaffold, the data layer; and for AI agents | explore |
 | ✅ | 35c3 | 187 | Make the docs and the MCP text TRUE: `rows:'all'`, the provider in PRINCIPLES, dead names, prompt and scaffold text | docs |
-| ⬜ | 35c4 | 188 | Fix the bugs 183 found, and run the gates we have: IdbStore update, Edit saves Plan, one badge writer, double `input`, provider reports and Fires; lint and node tests in the hook | bug |
+| ✅ | 35c4 | 188 | Fix the bugs 183 found, and run the gates we have: IdbStore update, Edit saves Plan, one badge writer, double `input`, provider reports and Fires; lint and node tests in the hook | bug |
 | ⬜ | 35c5 | 189 | Readiness and a smaller download: export `settled()`, shared sheets on single imports, minify, icons on demand | refactor |
 | ❓ | 35c6 | 190 | A Context contract and ONE `app.json`: the Contexts, the default, the Settings pages — the nav, router and server read it | foundation |
 | ❓ | 35c7 | 191 | Library parts that empty `contexts/`: dialog prompt/confirm, saved filters in the provider, `data-setting`, store seeds | foundation |
@@ -3001,10 +3001,21 @@ link), the MCP prompts (`Fires:` not `@fires`, a real enum, no missing file, no
 ontology), the server's resource list and `scaffold_def`'s token names (each
 one real now) are fixed. The `generate-sherpa-component` skill is marked out
 of date; its rewrite goes with the guide, 193.
-### `[ ]` 188 — Fix the bugs 183 found, and run the gates we have
+### `[x]` ✅ 188 — Fix the bugs 183 found, and run the gates we have
 
 Found by reading, to be proved by a test each: `IdbStore.update` with a changed key writes a second row; Edit never saves Plan; the notification badge has three writers; `sherpa-input-text` fires `input` twice; the provider drops the keys `applyState` skipped, and its Fires block says nothing. And `npm run lint` and the node tests run in no hook. `docs/CONSUMER-REVIEW.md` §3.2.
 
+
+**✅ Done 2026-10-01**, each with a test. A changed key moves the row in both
+`IdbStore` and `ArrayStore`, and one taken by another row is refused
+(`T-a-changed-key-moves-the-row`). `sherpa-input-text` sends one `input` per
+keystroke (`T-a-composed-native-event-goes-out-twice`). The provider reports a
+setting a component does not have (`provider-unknown-setting`), and its
+`Fires:` block names its two events. `npm run lint` runs in the commit hook,
+and `npm test` runs the node tests after Playwright; the Playwright comment
+says all three engines run. In Sherpa Demos: Edit opens on the record's Plan
+and saves a changed one, and the notification source is the badge's only
+writer, so read stays read.
 ### `[ ]` 189 — Readiness and a smaller download
 
 Export the harness's `__settled()` as `settled(root)`; put the eight shared sheets in SherpaElement's default so a single-component import draws right; minify the JS and strip template comments (keep a debug build); load icons on demand (314 KB today). Then the demo's 30 `whenDefined` and 32 `waitForTimeout` calls can go. `docs/CONSUMER-REVIEW.md` §3.3.

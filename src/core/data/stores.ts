@@ -94,6 +94,11 @@ export class ArrayStore extends BaseStore {
     // Merge, and the MERGED row is checked — TRAP T-array-store-copies-both-ways.
     const old = this.#rows[i]!;
     const row = this.keyed(await this.check({ ...old, ...values }), old);
+    // A changed key moves the row; one another row holds is refused. TRAP T-a-changed-key-moves-the-row
+    const now = readField(row, this.key);
+    if (!sameKey(now, readField(old, this.key)) && this.#at(now) >= 0) {
+      throw new Error(`ArrayStore: another row already has ${this.key} ${String(now)}`);
+    }
     this.#rows[i] = row;
     this.announce({ type: 'update', key, row: this.keyed({ ...row }, row) });
     return this.keyed({ ...row }, row);
