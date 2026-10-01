@@ -21,7 +21,8 @@ import { join } from 'node:path';
 const HARNESS = '/test/reforged/harness.html';
 
 const ROOT = join(import.meta.dirname, '../..');
-const SCAN = ['src', 'examples'];
+// The app's own names are checked in Sherpa Demos (test/e2e/app-icons.spec.ts).
+const SCAN = ['src'];
 const EXT = /\.(html|ts|js)$/;
 /** `data-icon="x"`, `data-icon-start="x"`, `data-icon-end="x"`, `icon: 'x'`. */
 const NAMED = /(?:data-icon(?:-start|-end)?=|icon:\s*)['"]([a-z0-9][a-z0-9-]*)['"]/g;
