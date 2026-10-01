@@ -2916,6 +2916,26 @@ Found while moving the app (37): the package ships `dist/`, but not
 `schemas/` — a consumer cannot check a page definition against the page
 schema without the repo.
 
+**Investigated 2026-10-01 — a consumer needs no Node at all.** Measured on
+`dist/`:
+- **No runtime dependency.** Every import in `dist/` is relative; the only
+  `'sherpa-ui'` strings are in comments. No external host either.
+- **It runs from any static host.** 66 components load their `.html` and
+  `.css` by `new URL('./x', import.meta.url)`, so `dist/` copied anywhere —
+  a CDN such as jsDelivr (which sends CORS headers), a web server, a zip
+  unpacked into a site — works as it is. Sherpa Demos already proves it:
+  its pages import `/dist/index.js` through an import map.
+- **Size:** 3.3 MB on disk, of which `.d.ts` types are part; the JS, CSS and
+  HTML are about 550 KB gzipped. The JS is not minified and carries its
+  comments; the CSS is minified.
+- **Node is only for MAKING it:** the TypeScript build, the CSS transform,
+  the gates, the tests, the MCP server, the token projector.
+
+So the ways to ship, none needing Node from the reader: a zip of `dist/`, a
+CDN URL to `dist/index.js` (from an npm release, or a git tag), or npm for
+those who want the types. Smaller wins, if wanted: minify the JS, and ship
+`schemas/`.
+
 ### `[ ]` 185 — Sherpa Demos: views, view schemas, and what `contexts/` is for
 
 Will, 2026-10-01, in the example app, to do later:
