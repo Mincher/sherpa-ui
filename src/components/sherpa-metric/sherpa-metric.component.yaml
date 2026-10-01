@@ -138,7 +138,7 @@ states:
 capabilities:
   - $type: capability
     api: js-property-mirror
-    description: read/write JS properties (value). See $extensions.sherpa.jsProps.
+    description: read/write JS properties (value, series). See $extensions.sherpa.jsProps.
 tokens:
   row.gap: "{sherpa.structure-space-gap}"
   row.border-radius: "{sherpa.display-mode-border-rounding-lg}"
@@ -163,3 +163,6 @@ $extensions:
       - name: value
         type: number | undefined
         access: read-write
+      - name: series
+        type: readonly number[]
+        access: read

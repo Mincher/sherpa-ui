@@ -10,25 +10,46 @@
 /** What a compact copy shows: the tile's words, never its data request. */
 const SHOWN = ['data-label', 'data-icon', 'data-value', 'data-delta', 'data-trend', 'data-status'];
 
+/* CSS DECIDES WHEN (TODO 175): the anchor is a scroll-state container, sticky
+   at minus the first row's bottom — grid padding plus one row — so it is
+   STUCK once that row has scrolled fully under the top. Chromium only: where
+   scroll-state queries are missing the row never shows. */
 const CSS = `
-[data-sticky-metrics] { position: sticky; inset-block-start: 0; z-index: 3; block-size: 0; }
-[data-sticky-metrics] > .row { display: none; position: absolute; inset-inline: 0; inset-block-start: 0; }
-[data-metrics-stuck] [data-sticky-metrics] > .row { display: flex; }
-[data-metrics-stuck] sherpa-metric[data-stuck] { visibility: hidden; }
-[data-sticky-metrics] sherpa-metric { flex: 1 1 0; min-inline-size: 0; border-radius: 0; }
-[data-sticky-metrics] sherpa-metric::part(value) { font-size: var(--sherpa-theme-content-size-small, 12px); }
-[data-sticky-metrics] sherpa-metric::part(spark) { display: none; }
+[data-sticky-metrics] {
+  --_under: calc(var(--sherpa-layout-grid-padding, 16px) + var(--sherpa-layout-grid-row-height, 88px));
+  container-type: scroll-state;
+  position: sticky;
+  inset-block-start: calc(-1 * var(--_under));
+  z-index: 3;
+  block-size: 0;
+}
+[data-sticky-metrics] > .row {
+  display: none;
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: var(--_under);
+}
+@container scroll-state(stuck: top) {
+  [data-sticky-metrics] > .row { display: flex; }
+}
+/* Smaller, through the tokens the tile is drawn with: a 14px value, 2px gaps. */
+[data-sticky-metrics] sherpa-metric {
+  flex: 1 1 0;
+  min-inline-size: 0;
+  border-radius: 0;
+  --sherpa-theme-content-size-h1: var(--sherpa-theme-content-size-base, 14px);
+  --sherpa-theme-content-line-height-h1: var(--sherpa-theme-content-line-height-base, 20px);
+  --sherpa-structure-space-gap: var(--sherpa-display-mode-space-3xs, 2px);
+  --sherpa-display-mode-space-2xs: var(--sherpa-display-mode-space-3xs, 2px);
+}
 `;
 
 let sheet;
 
-/**
- * Start the experiment on one Context's root. The first row is the metrics
- * with the smallest top; the content area's top is the sticky anchor's own.
- */
+/** Start the experiment on one Context's root: a copy of each first-row metric. */
 export function stickyMetrics(root) {
   const metrics = [...root.querySelectorAll('sherpa-metric')];
-  if (!metrics.length || typeof IntersectionObserver !== 'function') return () => {};
+  if (!metrics.length) return () => {};
   if (!sheet) {
     sheet = new CSSStyleSheet();
     sheet.replaceSync(CSS);
@@ -45,52 +66,32 @@ export function stickyMetrics(root) {
   root.prepend(anchor);
 
   const top = (el) => el.getBoundingClientRect().top;
-  const firstRow = () => {
-    const least = Math.min(...metrics.map(top));
-    return metrics.filter((m) => top(m) - least < 1);
+  const least = Math.min(...metrics.map(top));
+  const first = metrics.filter((m) => top(m) - least < 1);
+
+  /** The tile's series, then its words — the series would otherwise re-derive them. */
+  const refresh = (from, to) => {
+    const words = () => {
+      for (const name of SHOWN) {
+        const v = from.getAttribute(name);
+        if (v == null) to.removeAttribute(name);
+        else to.setAttribute(name, v);
+      }
+    };
+    words();
+    if (from.series?.length) void to.populate({ values: [...from.series] }).then(words);
   };
-  /** Copy each tile's words onto its compact copy. */
-  const copy = (from, to) => {
-    for (const name of SHOWN) {
-      const v = from.getAttribute(name);
-      if (v == null) to.removeAttribute(name);
-      else to.setAttribute(name, v);
-    }
-  };
-  const copies = new Map();
+  const copies = new Map(first.map((m) => [m, document.createElement('sherpa-metric')]));
+  row.replaceChildren(...copies.values());
+  for (const [m, c] of copies) refresh(m, c);
   const watch = new MutationObserver((records) => {
-    for (const { target } of records) if (copies.has(target)) copy(target, copies.get(target));
+    for (const target of new Set(records.map((r) => r.target))) refresh(target, copies.get(target));
   });
-
-  const stick = (on) => {
-    if (on === root.hasAttribute('data-metrics-stuck')) return;
-    if (on) {
-      const first = firstRow();
-      row.replaceChildren(...first.map((m) => {
-        const c = document.createElement('sherpa-metric');
-        copy(m, c);
-        copies.set(m, c);
-        m.dataset.stuck = '';
-        watch.observe(m, { attributes: true, attributeFilter: SHOWN });
-        return c;
-      }));
-    } else {
-      watch.disconnect();
-      copies.clear();
-      row.replaceChildren();
-      for (const m of metrics) delete m.dataset.stuck;
-    }
-    root.toggleAttribute('data-metrics-stuck', on);
-  };
-
-  // Past the top: any first-row tile above the anchor. Back: all of them below it.
-  const check = () => stick(firstRow().some((m) => top(m) < top(anchor) - 0.5));
-  const seen = new IntersectionObserver(check, { threshold: [0, 1] });
-  for (const m of metrics) seen.observe(m);
+  // A new series comes with a new value, or with the sparkline's first draw.
+  for (const m of first) watch.observe(m, { attributes: true, attributeFilter: [...SHOWN, 'data-has-values'] });
 
   return () => {
-    seen.disconnect();
-    stick(false);
+    watch.disconnect();
     anchor.remove();
   };
 }

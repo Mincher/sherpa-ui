@@ -41,6 +41,7 @@ const COMPONENTS = 'src/components';
 const KNOWN = {
   'sherpa-calendar-cell.value': 'ok: data-value attribute',
   'sherpa-code-block.code': 'ok: data-code attribute',
+  'sherpa-metric.series': 'ok: populate({ values }) — the series it was given',
   'sherpa-data-grid.selectedKeys': 'ok: select(keys) / clearSelection()',
   // The groups the DATA LAYER named. A grid draws them; it does not own them,
   // so populate() is the only door. TRAP T-a-group-is-a-data-layer-concept

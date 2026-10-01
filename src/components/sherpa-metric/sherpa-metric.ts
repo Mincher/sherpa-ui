@@ -150,6 +150,13 @@ export class SherpaMetric extends SherpaElement {
   /** The last number given. */
   #value: number | undefined;
 
+  /** The series its sparkline draws — read back, so a copy of the tile can draw it too. */
+  get series(): readonly number[] {
+    return this.#series;
+  }
+  /** The last series given. */
+  #series: readonly number[] = [];
+
   /* ── Private ─────────────────────────────────────────────────────────── */
 
   /** A number, as `data-format` declares — the platform's own
@@ -191,6 +198,7 @@ export class SherpaMetric extends SherpaElement {
   #fillSparkline(values: number[]): void {
     const spark = this.$<Sparkline>('sherpa-sparkline');
     if (!spark) return;
+    this.#series = [...values];
     this.setAttribute('data-has-values', '');
     spark.populate?.(values);
   }

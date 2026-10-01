@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**29 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**28 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -133,7 +133,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ❓ | 39b | 150 | EXPLORE — how the example gauge's risk score is worked out; THRESHOLDS in the central Query | explore |
 | ✅ | 40 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | ✅ | 40a | 143 | EXPERIMENT, later — scrolled-past metrics become a compact sticky header; a toggle in Settings › Experiments | explore |
-| ⬜ | 40b | 175 | LATER — the sticky metrics keep a small sparkline, tighter gaps, a larger value; a slow scroll must still gather them | feature |
+| ✅ | 40b | 175 | LATER — the sticky metrics keep a small sparkline, tighter gaps, a larger value; a slow scroll must still gather them | feature |
 | | | | **G — Overlay panels** | |
 | ✅ | 41 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
 | ✅ | 42 | 23 | A focused grid row opens a details panel | feature |
@@ -3094,7 +3094,7 @@ too much if possible."*
 So: one module of its own, switched by one setting, that a delete removes
 whole.
 
-**✅ Done 2026-10-01, as an experiment.** Settings › Application has a new
+**✅ Done 2026-10-01, as an experiment** (and tuned in 175 — read that for how it switches now). Settings › Application has a new
 **Experiments** section with one switch, "Compact metrics header" (off by
 default). On, the first row's metrics, once their top passes the top of the
 content area, show as one sticky row: no gaps, the full width of the content
@@ -3107,7 +3107,7 @@ To remove it: delete `examples/experiments/sticky-metrics.js`; in
 `syncExperiments` block and call; its wiring in `settings.js`; the section in
 `application.html`; and `test/e2e/reforged-sticky-metrics.spec.ts`.
 
-### `[ ]` 175 — LATER: the sticky metrics, tuned
+### `[x]` ✅ 175 — LATER: the sticky metrics, tuned
 
 Will, 2026-10-01, "Todo later": *"Sticky metric items should still show the
 sparkline. It will have reduced height and width but that's ok.*
@@ -3123,6 +3123,29 @@ under, the app header then the metrics don't switch to the sticky metrics
 group.*
 
 *We need to check the CSS logic here."*
+
+And: *"use this doc guidance to improve the mechanism for sticky metrics:
+https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Conditional_rules/Container_scroll-state_queries
+We can probably use CSS calc, with the layout-grid margin, gutter, and row
+height values to help determine when to switch between regular and sticky
+metrics."*
+
+**✅ Done 2026-10-01.** CSS decides when now, with no scroll code. The
+sticky row's anchor is a `scroll-state` container, sticky at minus (grid
+padding + one row height). So it is STUCK exactly when the first row has
+scrolled fully under the top, and `@container scroll-state(stuck: top)`
+shows the row. Back up past that point and it goes. A slow scroll works: the
+test moves 2 px at a time. The old way watched the tiles and missed a slow
+crossing by under half a pixel. The originals no longer need hiding: the row
+shows only once they are gone. The gutter is not in the sum — the row
+overlays it.
+
+The compact tiles keep their sparkline (`sherpa-metric` has a `series`
+read-back now, so a copy draws the same line), the gaps are 2 px, and the
+value is 14 px (it was 12). A tile is about 64 px tall, was 88.
+
+**One thing to know:** scroll-state queries are Chromium only. In Firefox and
+Safari the row never shows; the page is as it was.
 
 ---
 
@@ -4615,6 +4638,7 @@ One line each. The detail is in git and in the trap named.
 - 146 level 1: the shell, not the panel, says when there is room for a panel area — a pinned nav counts — `T-the-panel-is-desktop-only`
 - 143: EXPERIMENT — scrolled-past metrics become a compact sticky row; Settings › Experiments
 - 59: TRIAL — a card keeps its content: a loading bar under its header, a banner for a failure; Settings › Experiments — `T-a-container-shows-its-datas-state`
+- 175: the sticky metrics switch in CSS — a scroll-state query at grid padding + one row; sparkline kept, tighter, 14px value
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on
