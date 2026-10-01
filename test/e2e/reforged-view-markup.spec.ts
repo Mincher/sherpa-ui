@@ -195,3 +195,26 @@ test('a saved view applies its markup, then configures it by id', async ({ page 
      the grid holds what a person would have typed, not the JSON literal. */
   expect(r.clause).toEqual(['storage', 'gt', '70']);
 });
+
+/** A page OPENED on a View with content of its own draws it: no pick will.
+ *  And the page's own cards come back with the next View. TODO 198
+ *  TRAP T-content-first-original-once */
+test('a View already on screen when the listener starts draws its content; the next pick puts the page back', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const { onViewPicked } = await import('/dist/index.js');
+    const host = document.getElementById('root')!;
+    const chip = document.createElement('div');
+    const region = document.createElement('div');
+    region.innerHTML = '<p id="own">the page\'s own</p>';
+    host.replaceChildren(chip, region);
+    const views = {
+      fleet: { label: 'Fleet' },
+      capacity: { label: 'Capacity', content: '<sherpa-container id="c-hist" data-col-span="full"></sherpa-container>' },
+    };
+    onViewPicked(chip, views, {}, { into: region, applied: 'capacity' });
+    const opened = [...region.children].map((c) => c.id);
+    chip.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { scope: 'bar', values: { view: ['fleet'] } } }));
+    return { opened, back: [...region.children].map((c) => c.id) };
+  });
+  expect(r).toEqual({ opened: ['c-hist'], back: ['own'] });
+});

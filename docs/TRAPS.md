@@ -2475,7 +2475,14 @@ Elements a view just built are then addressable by the ids it used, so the
 snapshot can configure them: they did not exist when the listener was wired, so
 `targets.elements` could not have named them.
 
+The page's own children are kept PER REGION, for every listener on it — a page
+re-heard after `import()` still finds them. And a View already on screen when
+the listener starts (the page was opened on it, by a link or a reload) draws
+its own content then: its Query is on, so no pick ever would. Sherpa Demos
+showed the Fleet cards under a chip that said Capacity planning (TODO 198).
+
 - Site: `src/core/browser/persist-view.ts`
+- Site: `test/e2e/reforged-view-markup.spec.ts`
 
 ### T-derived-id-makes-resave-an-update
 

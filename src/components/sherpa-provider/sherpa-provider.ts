@@ -656,6 +656,8 @@ export class SherpaProvider extends SherpaElement {
     if (signal.aborted) return;
     this.#hear = () => this.#hearPicks(source, library, signal);
     this.#hear();
+    // Opened on a View with cards of its own: they are drawn now, and the page told. TODO 198
+    if (typeof start?.content === 'string') this.emit('view-change', { id: this.#view });
     if (!this.#drafts && !(key && session)) return;
     let frame = 0;
     const write = (): void => {

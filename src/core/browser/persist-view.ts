@@ -342,6 +342,10 @@ export interface ViewPick {
  * TRAP T-apply-degrades-never-throws — `onIncomplete` replaces the default warn.
  * TRAP T-on-view-picked-replaces-hand-wiring
  */
+/** Each content region's ORIGINAL children, kept the first time a view replaces
+ *  them — for every listener on it, so a re-heard page still finds them. */
+const originals = new WeakMap<HTMLElement, ChildNode[]>();
+
 export function onViewPicked(
   host: EventTarget | null | undefined,
   views: ViewLibrary | (() => ViewLibrary),
@@ -375,14 +379,49 @@ export function onViewPicked(
 ): () => void {
   if (!host) return () => {};
 
-  /* The content region's ORIGINAL children, null until a view first replaces
-     them. TRAP T-content-first-original-once */
-  let original: ChildNode[] | null = null;
-
   /* The view this bar is ALREADY showing. The View chip is `persistent`, so
      `values.view` rides on EVERY bar event — including a Region pick.
      TRAP T-a-persistent-chip-reports-on-every-change */
   let applied: string | null = options.applied ?? null;
+
+  /** Draw a view's own content into the region — the page's own put aside,
+   *  once — or put the page's own back. TRAP T-content-first-original-once */
+  const draw = (view: SavedView): ViewPick['rendered'] => {
+    const into = options.into;
+    if (typeof view.content !== 'string') {
+      const original = into && originals.get(into);
+      /* No content of its own, so it wants the page's — RE-ATTACHED, not
+         rebuilt, so every existing bind still points at them. */
+      if (into && original) into.replaceChildren(...original);
+      return undefined;
+    }
+    /* PARSED, never assigned: this string came out of storage or off a
+       server. TRAP T-saved-markup-is-untrusted-input */
+    const { fragment, report: dropped } = parseViewMarkup(view.content);
+    if (dropped.tags.length || dropped.attributes.length) {
+      // Said out loud — silently losing half a view reads as a render bug.
+      console.warn('view markup: dropped', dropped);
+    }
+    if (!into) return undefined;
+    if (!originals.has(into)) originals.set(into, [...into.childNodes]);
+    into.replaceChildren(fragment);
+    /* The snapshot addresses elements BY ID, so collect them — scoped to the
+       host, because an id is only addressable once it is in the page. */
+    const byId: Record<string, HTMLElement> = {};
+    for (const el of into.querySelectorAll<HTMLElement>('[id]')) byId[el.id] = el;
+    return { elements: byId };
+  };
+
+  /* A page OPENED on a View with content of its own — a link, a reload — draws
+     it now: its Query is on already, so no pick will. TODO 198 */
+  const opening = applied ? (typeof views === 'function' ? views() : views)[applied] : undefined;
+  if (opening && typeof opening.content === 'string' && options.into) {
+    const rendered = draw(opening);
+    if (rendered) {
+      const report: ApplyReport = { missingElements: [], skipped: {} };
+      void applyElements(opening.ui ?? {}, { ...targets.elements, ...rendered.elements }, report);
+    }
+  }
 
   const listener = (event: Event): void => {
     const detail = (event as CustomEvent).detail as
@@ -406,35 +445,8 @@ export function onViewPicked(
     options.before?.(id);
 
     /* TRAP T-content-first-original-once — content before snapshot. */
-    const host = options.into;
-    let rendered: ViewPick['rendered'];
-
-    if (typeof view.content === 'string') {
-      /* PARSED, never assigned: this string came out of storage or off a
-         server. TRAP T-saved-markup-is-untrusted-input */
-      const { fragment, report: dropped } = parseViewMarkup(view.content);
-      if (dropped.tags.length || dropped.attributes.length) {
-        // Said out loud — silently losing half a view reads as a render bug.
-        console.warn('view markup: dropped', dropped);
-      }
-      if (host) {
-        // TRAP T-content-first-original-once — FIRST swap only; replaceChildren.
-        if (!original) original = [...host.childNodes];
-        host.replaceChildren(fragment);
-      }
-      /* The snapshot addresses elements BY ID, so collect them — scoped to the
-         host, because an id is only addressable once it is in the page. */
-      if (host) {
-        const byId: Record<string, HTMLElement> = {};
-        for (const el of host.querySelectorAll<HTMLElement>('[id]')) byId[el.id] = el;
-        targets = { ...targets, elements: { ...targets.elements, ...byId } };
-        rendered = { elements: byId };
-      }
-    } else if (host && original) {
-      /* No content of its own, so it wants the page's — RE-ATTACHED, not
-         rebuilt, so every existing bind still points at them. */
-      host.replaceChildren(...original);
-    }
+    const rendered = draw(view);
+    if (rendered) targets = { ...targets, elements: { ...targets.elements, ...rendered.elements } };
 
     const done = (report: ApplyReport): void => {
       const pick: ViewPick = { id, view, report, ...(rendered ? { rendered } : {}) };

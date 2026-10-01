@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**35 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**34 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -130,7 +130,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 35b | 161 | The app header's shadow FADES in, very quickly, as the Context scrolls under it | quick |
 | ✅ | 35c | 163 | The app shell's panel areas are 150% of their width today, at the least | quick |
 | ✅ | 35a | 146 | The app shell's FIXED panel areas resize by dragging their inner edge; the content reflows; two levels of container query | feature |
-| ⬜ | 35b2 | 198 | A direct link to a View with cards of its own (`?view=capacity`) draws the default View's cards | bug |
+| ✅ | 35b3 | 200 | Sherpa Demos: "a record added on one Context changes the summary on another" flakes in WebKit — the summary reads 0 | bug |
+| ✅ | 35b2 | 198 | A direct link to a View with cards of its own (`?view=capacity`) draws the default View's cards | bug |
 | ✅ | 35b | 177 | AFTER the example app moves (37) — an app setting: resize layout grid content by handles in its gutters, snapping to columns and rows | feature |
 | ✅ | 35c | 183 | REVIEW — how a consumer builds an app on Sherpa: use, configure, extend, scaffold, the data layer; and for AI agents | explore |
 | ✅ | 35c3 | 187 | Make the docs and the MCP text TRUE: `rows:'all'`, the provider in PRINCIPLES, dead names, prompt and scaffold text | docs |
@@ -3160,7 +3161,18 @@ and 197, each with the review's pick.
    `{ "openTickets": { "gt": 0 } }`, numbers as numbers; saved Views migrate.
    Pick: B, decided before the guide (193).
 
-### `[ ]` 198 — A direct link to a View with cards of its own draws the default cards
+### `[x]` ✅ 200 — A WebKit flake: the summary on another Context reads 0
+
+Sherpa Demos' `reforged-view-chips.spec.ts:126` fails in WebKit in most full
+runs and passes on its retry: "the summary reads the store, not a constant"
+gets 0. Seen on 2026-10-01 in every Demos run. Find whether the test reads too
+early or the summary misses the store's announce.
+
+**✅ Done 2026-10-01 — the test read too early.** It waited for the word
+"Customers", which the summary draws at 0 before its rows load; WebKit was
+often there first. It now waits for a number above 0 (4 of 4 in WebKit).
+
+### `[x]` ✅ 198 — A direct link to a View with cards of its own draws the default cards
 
 Found by the review of 177. Open `/?context=dashboard&view=capacity`: the
 provider opens on that View, so the pick is ignored as already applied, and
@@ -3169,6 +3181,12 @@ Fleet cards under a chip that says Capacity planning. Picking it IN the page
 works. Fix in `sherpa-provider`'s open: when the start View has content, draw
 it as a pick does, then emit `view-change`.
 
+
+**✅ Done 2026-10-01.** `onViewPicked` draws the View already on screen when
+it has content of its own, and keeps the page's own children per region, so
+the next pick puts them back; the provider then reports `view-change`. A
+library test and a Sherpa Demos test (`reforged-view-link.spec.ts`) hold it.
+`T-content-first-original-once`
 ### `[x]` ✅ 177 — Resize layout grid content by dragging handles in its gutters
 
 Will, 2026-10-01, *"Todo after we move the example app to it's own project:*
