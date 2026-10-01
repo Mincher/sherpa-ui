@@ -54,6 +54,14 @@ const WIRING = [
     hierarchy.addEventListener('change', (e) => session.set('/nav/hierarchy', e.detail.checked));
   },
 
+  // EXPERIMENT, TODO 143.
+  (root, session) => {
+    const sticky = root.querySelector('#experiment-sticky-metrics');
+    if (!sticky) return;
+    sticky.checked = session.get('/experiments/stickyMetrics');
+    sticky.addEventListener('change', (e) => session.set('/experiments/stickyMetrics', e.detail.checked));
+  },
+
   /* A draft per View: for the tab, and across sessions. The second means
      nothing without the first. TRAP T-a-view-keeps-a-draft */
   (root, session) => {

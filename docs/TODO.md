@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**30 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**29 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -132,7 +132,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 39c | 162 | A chart and its legend go from side by side to stacked as their container narrows — container queries | feature |
 | ❓ | 39b | 150 | EXPLORE — how the example gauge's risk score is worked out; THRESHOLDS in the central Query | explore |
 | ⬜ | 40 | 59 | EXPLORE, later — Will's own loading pattern | explore |
-| ⬜ | 40a | 143 | EXPERIMENT, later — scrolled-past metrics become a compact sticky header; a toggle in Settings › Experiments | explore |
+| ✅ | 40a | 143 | EXPERIMENT, later — scrolled-past metrics become a compact sticky header; a toggle in Settings › Experiments | explore |
 | | | | **G — Overlay panels** | |
 | ✅ | 41 | 22 | The `Ask N-zo` panel — wider, and resizable | feature |
 | ✅ | 42 | 23 | A focused grid row opens a details panel | feature |
@@ -3060,7 +3060,7 @@ gauge fills its own legend with the same words, so a row reads `Low 0–20%`.
 The two example pages no longer fill the gauge legend by hand. Before, the
 tooltip said `Success` and the legend said `Low (0–20)`.
 
-### `[ ]` 143 — EXPERIMENT: scrolled-past metrics become a compact sticky header
+### `[x]` ✅ 143 — EXPERIMENT: scrolled-past metrics become a compact sticky header
 
 Will, 2026-09-30, a fun concept to explore later: *"When a content area
 scrolls, if there are metric items in the first row that have reached the
@@ -3082,6 +3082,19 @@ too much if possible."*
 
 So: one module of its own, switched by one setting, that a delete removes
 whole.
+
+**✅ Done 2026-10-01, as an experiment.** Settings › Application has a new
+**Experiments** section with one switch, "Compact metrics header" (off by
+default). On, the first row's metrics, once their top passes the top of the
+content area, show as one sticky row: no gaps, the full width of the content
+area, the value at 12px (half of 24), no sparkline. The tiles under it hide.
+Scroll back until they are in view, and the row goes. The row holds COPIES
+that follow each tile's label, value and change; they ask no provider.
+
+To remove it: delete `examples/experiments/sticky-metrics.js`; in
+`examples/index.html` its import, its `experiments` session key and the
+`syncExperiments` block and call; its wiring in `settings.js`; the section in
+`application.html`; and `test/e2e/reforged-sticky-metrics.spec.ts`.
 
 ---
 
@@ -4572,6 +4585,7 @@ One line each. The detail is in git and in the trap named.
 - 173: no bug — a field's header is one count of its unique rows; a test pins it — `T-a-chip-counts-its-own-results`
 - 174 (part): Adventure Works + AMER matched nothing because the Dashboard seed gave each customer one region — fixed; the symbiotic options wait on 110
 - 146 level 1: the shell, not the panel, says when there is room for a panel area — a pinned nav counts — `T-the-panel-is-desktop-only`
+- 143: EXPERIMENT — scrolled-past metrics become a compact sticky row; Settings › Experiments
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

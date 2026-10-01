@@ -147,6 +147,7 @@
     import { customerStore, customersReady } from './contexts/records-data.js';
     import { confirmPrompt, namePrompt, resetPrompt } from './contexts/ask-name.js';
     import { alertStore } from './contexts/dashboard-data.js';
+    import { stickyMetrics } from '/examples/experiments/sticky-metrics.js';
 
     // Font Awesome must be in the DOCUMENT too: sharedStyles carries the class
     // rules into shadow roots, but @font-face and light-DOM <i> need <head>.
@@ -192,6 +193,8 @@
          comes back, for the tab and across sessions. Settings › Application.
          TRAP T-a-view-keeps-a-draft */
       filters: { mode: 'toolbars', records: null, dashboard: null, drafts: true, draftsAcross: true },
+      // Settings › Experiments. Off until a reader turns one on.
+      experiments: { stickyMetrics: false },
     });
     session.persist('/theme/mode');
     session.persist('/theme/density', { guard: (v) => ['compact', 'default', 'comfortable'].includes(v) });
@@ -213,6 +216,7 @@
       guard: (v) => v === 'toolbars' || v === 'panel',
     });
     session.persist('/filters/drafts', { guard: (v) => typeof v === 'boolean' });
+    session.persist('/experiments/stickyMetrics', { guard: (v) => typeof v === 'boolean' });
     session.persist('/filters/draftsAcross', { guard: (v) => typeof v === 'boolean' });
     /* The PROVIDER switches toolbars and panel for every page; the app keeps
        the reader's choice. TRAP T-the-provider-owns-the-panel-mode */
@@ -476,6 +480,7 @@
          would reset what the session kept. TRAP T-a-reload-replays-the-readers-answers */
       cleanup = await mod.init(contextRoot, { session, view, source });
       if (token !== loadToken) return;
+      syncExperiments();
       if (view) pickView(header, name, view);
 
       /* Recorded LAST, so a Context that failed to load never enters Recents. The
@@ -544,6 +549,15 @@
     favorites.subscribe(() => void refreshNav());
     recents.subscribe(() => void refreshNav());
     session.subscribe('/nav/hierarchy', () => { syncNavCurrent(); void refreshNav(); });
+
+    /* EXPERIMENT, TODO 143: scrolled-past metrics become a compact sticky
+       header. On each Context, and when Settings › Experiments switches it. */
+    let stopExperiment = null;
+    function syncExperiments() {
+      stopExperiment?.();
+      stopExperiment = session.get('/experiments/stickyMetrics') ? stickyMetrics(contextRoot) : null;
+    }
+    session.subscribe('/experiments/stickyMetrics', syncExperiments);
 
     /* ── The ★ ────────────────────────────────────────────────────────
        The toolbar is `data-locked`, so its star is a REQUEST. The app owns the

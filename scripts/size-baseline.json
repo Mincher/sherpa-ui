@@ -255,7 +255,7 @@
   "examples/contexts/dashboard.js": 102,
   "examples/contexts/records-data.js": 187,
   "examples/contexts/records.js": 384,
-  "examples/contexts/settings.js": 105,
+  "examples/contexts/settings.js": 113,
   "examples/definitions/dashboard-views.js": 90,
   "examples/definitions/records-views.js": 70
 }
