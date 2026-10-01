@@ -3787,8 +3787,8 @@ Two things to know:
 
 - **There is no hand icon** in the icon set, so Pan wears
   `diverging-arrows`. Say which icon you want, or add a hand to Figma.
-- **It is on no example page yet** — it is in the sandbox
-  (`npm run sandbox`). 78, the workflow creator, is where it would live.
+- **It is on no example page yet** — the sandbox that showed it was
+  removed 2026-10-01. 78, the workflow creator, is where it would live.
 
 ### `[x]` ✅ 26 — A `Grouped` mode for the content area
 
@@ -4168,7 +4168,7 @@ hand-written YAML in `scripts/figma-data/` — the separate question above.
 It does not hold an index: it registers every component and installs the icons
 and tokens — it SCAFFOLDS a Sherpa app. Knock-on: `package.json` `main`
 (`./dist/index.js`) and `exports`, the build and `dist/` name, every
-`sherpa-ui` import in `examples/`, `sandbox/` and `test/`, and the MCP server if
+`sherpa-ui` import in `examples/` and `test/`, and the MCP server if
 it reads the entry by name. Keep `src/data.ts`. **Dead last** — cheapest when
 nothing else is in flight.
 

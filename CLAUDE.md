@@ -86,8 +86,7 @@ npm run test:a11y
 npm run test:a11y:update  # record a baseline that FELL
 
 # Serve
-npm run sandbox           # build, then serve the repo on :4000 (sandbox/)
-npm run preview           # serve WITHOUT building — :4000
+npm run preview           # serve the repo on :4000 — WITHOUT building
 # The example APP is its own project now: ../Sherpa Demos — its server and tests are there (:4200)
 
 # The code map — every file's purpose and exports, from its header

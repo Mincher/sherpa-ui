@@ -74,7 +74,7 @@ export async function getPage(url) {
     // The common case by far, and worth naming rather than surfacing raw:
     // nothing is listening on that port.
     const hint = /ERR_CONNECTION_REFUSED|net::/.test(e.message)
-      ? `\n\nNothing is serving ${url}. Start one: \`npm run preview\` (no build) or \`npm run sandbox\` (builds first), both on :4000.`
+      ? `\n\nNothing is serving ${url}. Start one: \`npm run build && npm run preview\`, on :4000.`
       : '';
     return { error: `could not open ${url}: ${e.message}${hint}` };
   }
