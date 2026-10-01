@@ -14,6 +14,40 @@
 }
 
 :host([open]) { display: block; }
+
+/* ── The ⋮ — Will, TODO 178. TRAP T-the-more-menu-holds-what-folded ── */
+.panel { container: sherpa-filter-panel / inline-size; }
+.more-btn { display: none; }
+/* Narrow, Reset folds into it; and it always holds the host's own option. */
+@container sherpa-filter-panel (max-width: 380px) {
+  /* `.head` too: the pair's own inline-flex comes later in this sheet. */
+  .head .reset-group { display: none; }
+  .more-btn { display: inline-flex; }
+}
+:host([data-limit-options]) .more-btn { display: inline-flex; }
+/* Its rows: real <button>s, so Enter, Space and focus come free. */
+.more-item {
+  display: flex;
+  align-items: center;
+  inline-size: 100%;
+  padding: var(--sherpa-display-mode-space-xs, 8px);
+  border: none;
+  background: transparent;
+  color: var(--sherpa-style-content-base, #35353d);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.more-item:hover { background: var(--sherpa-style-surface-base-1, #e8e8f64d); }
+.more-item:focus-visible {
+  outline: none;
+  box-shadow: var(--sherpa-focus-ring);
+}
+.more-divider {
+  margin: var(--sherpa-display-mode-space-3xs, 2px) 0;
+  border: none;
+  border-block-start: 1px solid var(--sherpa-style-border-base, #b3b3c3);
+}
 :host([hidden]) { display: none; }
 
 .panel {

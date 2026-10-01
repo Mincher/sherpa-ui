@@ -778,3 +778,36 @@ test('the search spans the header, less its padding, with room above', async ({ 
   expect(r.right).toBe(0);
   expect(r.above).toBeGreaterThanOrEqual(8);
 });
+
+/* Will, TODO 178: "Add an ellipsis overflow menu button to the top of the
+   filter panel header, after the toggle toolbar button. Other header buttons
+   reflow into the menu of this button." TRAP T-the-more-menu-holds-what-folded */
+test('the ⋮ holds the host\'s "Limit matching filters", and what folds away when narrow', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount('sherpa-filter-panel', undefined, { open: true, style: 'inline-size: 360px' }) as HTMLElement & {
+      populate(d: unknown): void };
+    el.populate([{ scope: 'view', label: 'View filters', filters: [] }]);
+    await window.__settled();
+    const sr = el.shadowRoot!;
+    const shown = (sel: string) => getComputedStyle(sr.querySelector(sel)!).display !== 'none';
+    const narrow = { more: shown('.more-btn'), reset: shown('.reset-group') };
+    const heard: unknown[] = [];
+    el.addEventListener('limit-options-change', (e) => heard.push((e as CustomEvent).detail));
+    el.setAttribute('data-limit-options', 'off');
+    sr.querySelector('.more-btn')!.shadowRoot!.querySelector<HTMLElement>('button')!.click();
+    await new Promise((res) => setTimeout(res, 150));
+    const rows = [...sr.querySelectorAll<HTMLElement>('.more-menu > *')].map((n) => n.textContent!.trim() || n.tagName);
+    sr.querySelector<HTMLInputElement>('.more-menu input[value="limit-options"]')!.click();
+    await new Promise((res) => setTimeout(res, 50));
+    el.style.inlineSize = '480px';
+    el.removeAttribute('data-limit-options');
+    await new Promise((res) => requestAnimationFrame(() => res(null)));
+    return { narrow, rows, heard, wide: { more: shown('.more-btn'), reset: shown('.reset-group') } };
+  });
+  // Narrow: Reset folds into the ⋮.
+  expect(r.narrow).toEqual({ more: true, reset: false });
+  expect(r.rows).toEqual(['Reset filters', 'Reset all to default', 'HR', 'Limit matching filters']);
+  expect(r.heard).toEqual([{ on: true }]);
+  // Wide, and no host option: no ⋮.
+  expect(r.wide).toEqual({ more: false, reset: true });
+});

@@ -18,6 +18,9 @@
 
   Public API:
     data-type      data (default) | view   (view adds the ★/Save/▾ group)
+    data-limit-options  on | off — the host offers "Limit matching filters": the
+                   ⋮ always shows, and its menu holds the switch. Written by the
+                   provider. Will, TODO 178.
     data-scope     ASKED of its provider: the Query scope it draws and answers
     data-panel-mode  a filter PANEL is answering for this bar: AI, Reset, the
                   panel toggle and Filters are hidden, and a `data` bar goes
@@ -60,6 +63,7 @@
     view-favorite        — the ★ toggled. detail: { favourite: boolean }
     view-save-as         — Save view as, from the Save group's ▾ (view type)
     view-delete          — Delete view, the reader's own View (view type)
+    limit-options-change — the ⋮ menu's "Limit matching filters". detail: { on }
 
   The trailing action cluster is BUILT IN (Figma "Filter Toolbar" 150:3688) and
   follows Figma's `Type` axis. Every control exists in the template from the
@@ -155,6 +159,10 @@
     <button class="more-item" type="button"><span class="more-label"></span></button>
   </template>
   <template class="more-divider-tpl"><hr class="more-divider" /></template>
+  <!-- A SWITCH row: a check row, as a filter's menu draws one. Will, TODO 178. -->
+  <template class="more-check-tpl">
+    <label class="menu-row more-check"><input type="checkbox" value="limit-options" /><span class="menu-row-label">Limit matching filters</span></label>
+  </template>
 
   <template class="qf-tpl">
     <sherpa-quick-filter class="chip"></sherpa-quick-filter>

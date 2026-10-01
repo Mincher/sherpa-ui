@@ -175,6 +175,8 @@
   .act[data-act="overflow"] { display: inline-flex; }
 }
 :host([data-collapse]) .act[data-act="overflow"] { display: inline-flex; }
+/* …and always while it holds the host's own option. Will, TODO 178. */
+:host([data-limit-options]) .act[data-act="overflow"] { display: inline-flex; }
 :host([data-no-actions]) .actions-zone { display: none; }
 
 

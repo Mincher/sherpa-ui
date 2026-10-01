@@ -272,6 +272,18 @@
     },
     {
       "$type": "prop",
+      "name": "data-limit-options",
+      "type": "enum",
+      "observed": false,
+      "kind": "style",
+      "values": [
+        "on",
+        "off"
+      ],
+      "description": "on | off — the host offers \"Limit matching filters\": the ⋮ always shows, and its menu holds the switch. Written by the provider. Will, TODO 178."
+    },
+    {
+      "$type": "prop",
       "name": "data-locked",
       "type": "string",
       "observed": false,
@@ -394,6 +406,11 @@
       "$type": "state",
       "name": "collapse",
       "selector": ":host([data-collapse])"
+    },
+    {
+      "$type": "state",
+      "name": "limit-options",
+      "selector": ":host([data-limit-options])"
     },
     {
       "$type": "state",
@@ -564,6 +581,15 @@
       "name": "view-delete",
       "bubbles": true,
       "composed": true
+    },
+    {
+      "$type": "event",
+      "name": "limit-options-change",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "on": "unknown"
+      }
     },
     {
       "$type": "event",

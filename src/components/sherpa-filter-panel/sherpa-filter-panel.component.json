@@ -104,6 +104,19 @@
                 }
               },
               {
+                "el": "sherpa-button",
+                "class": "more-btn",
+                "part": "more",
+                "attrs": {
+                  "slot": "actions",
+                  "data-type": "icon",
+                  "data-size": "sm",
+                  "data-icon-start": "ellipses-vertical",
+                  "aria-label": "More actions",
+                  "aria-haspopup": "dialog"
+                }
+              },
+              {
                 "el": "sherpa-input-text",
                 "class": "search",
                 "part": "search",
@@ -129,32 +142,26 @@
         ]
       },
       {
-        "el": "div",
-        "class": "editor"
+        "el": "sherpa-menu",
+        "class": "more-menu",
+        "attrs": {
+          "data-align": "end"
+        }
       },
       {
         "el": "template",
-        "class": "scope-tpl",
+        "class": "more-item-tpl",
         "children": [
           {
-            "el": "sherpa-accordion",
-            "class": "scope",
+            "el": "button",
+            "class": "more-item",
             "attrs": {
-              "open": ""
+              "type": "button"
             },
             "children": [
               {
-                "el": "div",
-                "class": "scope-acts",
-                "children": [
-                  {
-                    "el": "sherpa-button",
-                    "class": "scope-save",
-                    "attrs": {
-                      "data-size": "sm"
-                    }
-                  }
-                ]
+                "el": "span",
+                "class": "more-label"
               }
             ]
           }
@@ -179,6 +186,18 @@
       "kind": "style",
       "default": "\"Filters\"",
       "description": "the panel's own title"
+    },
+    {
+      "$type": "prop",
+      "name": "data-limit-options",
+      "type": "enum",
+      "observed": false,
+      "kind": "style",
+      "values": [
+        "on",
+        "off"
+      ],
+      "description": "on | off — the host offers \"Limit matching filters\": its ⋮ menu holds the switch. Written by the provider. TODO 178."
     },
     {
       "$type": "prop",
@@ -240,8 +259,18 @@
   "states": [
     {
       "$type": "state",
+      "name": "limit-options",
+      "selector": ":host([data-limit-options])"
+    },
+    {
+      "$type": "state",
       "name": "remote",
       "selector": ":host([data-remote])"
+    },
+    {
+      "$type": "state",
+      "name": "focus-visible",
+      "selector": ".more-item:focus-visible"
     }
   ],
   "capabilities": [
@@ -371,6 +400,15 @@
     },
     {
       "$type": "event",
+      "name": "limit-options-change",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "on": "unknown"
+      }
+    },
+    {
+      "$type": "event",
       "name": "filter-condition-change",
       "bubbles": true,
       "composed": true,
@@ -385,9 +423,19 @@
       "name": "menu-change",
       "bubbles": true,
       "composed": true
+    },
+    {
+      "$type": "event",
+      "name": "button-click",
+      "bubbles": true,
+      "composed": true
     }
   ],
   "tokens": {
+    "more-item.padding": "{sherpa.display-mode-space-xs}",
+    "more-item.color": "{sherpa.style-content-base}",
+    "more-divider.margin": "{sherpa.display-mode-space-3xs}",
+    "more-divider.border-block-start": "{sherpa.style-border-base}",
     "field.row-gap": "{sherpa.display-mode-space-xs}",
     "field-lead.gap": "{sherpa.display-mode-space-xs}",
     "field-title.color": "{sherpa.style-content-secondary}",

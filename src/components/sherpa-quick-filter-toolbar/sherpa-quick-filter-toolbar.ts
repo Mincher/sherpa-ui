@@ -168,6 +168,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   static override props = {
     'data-bounds': SHARED_PROPS['data-bounds'],
+    /* The host offers "Limit matching filters", on or off. Will, TODO 178.
+       TRAP T-the-more-menu-holds-what-folded */
+    'data-limit-options': { type: 'enum', kind: 'style', values: ['on', 'off'] },
     'data-no-actions': { type: 'boolean', kind: 'style' },
     /* A filter PANEL is answering for this bar, so it hides what the panel
        also carries. TRAP T-panel-mode-hides-what-the-panel-answers */
@@ -419,6 +422,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     // Delegated: every control fires the same button-click; data-act says which.
     this.$('.actions-zone')?.addEventListener('button-click', this.#onAction);
     this.$('.more-menu')?.addEventListener('menu-select', this.#onMore);
+    this.$('.more-menu')?.addEventListener('menu-change', this.#onMoreSwitch);
     // CAPTURE — see #onOrganiseChange.
     this.addEventListener('quick-filter-change', this.#onOrganiseChange, true);
     this.addEventListener('quick-filter-change', this.#onFoldedCountsChanged);
@@ -1788,12 +1792,26 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
     if (folded(act('refresh'))) view.push(row('refresh', 'Refresh view'));
 
-    const rows = first.length && view.length
-      ? [...first, divider.content.firstElementChild!.cloneNode(true) as HTMLElement, ...view]
-      : [...first, ...view];
+    // The host's own option, last: "Limit matching filters". Will, TODO 178.
+    const own: HTMLElement[] = [];
+    const check = this.$<HTMLTemplateElement>('template.more-check-tpl')?.content.firstElementChild;
+    if (this.dataset['limitOptions'] && check) {
+      const one = check.cloneNode(true) as HTMLElement;
+      one.querySelector('input')!.checked = this.dataset['limitOptions'] === 'on';
+      own.push(one);
+    }
+    const groups = [first, view, own].filter((g) => g.length);
+    const rows = groups.flatMap((g, i) => (i ? [divider.content.firstElementChild!.cloneNode(true) as HTMLElement, ...g] : g));
     menu.replaceChildren(...rows);
     menu.show?.(trigger);
   }
+
+  /** The ⋮ menu's switch: a REQUEST — the host owns whether filters limit each other. */
+  #onMoreSwitch = (event: Event): void => {
+    event.stopPropagation();
+    const values = ((event as CustomEvent).detail?.values ?? []) as string[];
+    this.emit('limit-options-change', { on: values.includes('limit-options') });
+  };
 
   /** A ⋮ row was chosen: do what its folded button does. */
   #onMore = (event: Event): void => {

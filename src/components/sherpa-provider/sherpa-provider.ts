@@ -146,6 +146,10 @@ export class SherpaProvider extends SherpaElement {
     this.addEventListener('context-request', this.#onRequest);
     // The panel's own close, and the shell's room for it.
     this.addEventListener('filter-panel-close', this.#onPanelClose);
+    // A bar's or the panel's ⋮ switch: this provider owns the setting. TODO 178.
+    this.addEventListener('limit-options-change', (event) => {
+      this.limitOptions = !!(event as CustomEvent<{ on?: boolean }>).detail?.on;
+    });
     this.addEventListener('panel-room-change', this.#onRoom);
     /* A container's Retry, and a bar's Refresh: load again. Its Clear filters:
        every bar resets. TRAP T-a-container-shows-its-datas-state */
@@ -183,6 +187,13 @@ export class SherpaProvider extends SherpaElement {
   set limitOptions(on: boolean) {
     this.#limit = on;
     for (const source of Object.values(this.#sources)) source.limitOptions = on;
+    // Every bar and panel offers the switch in its ⋮, showing where it stands. TODO 178.
+    for (const el of [...this.#bars(), ...this.#panels()]) this.#offerLimit(el);
+  }
+
+  /** One bar or panel, told the setting it offers in its ⋮ menu. */
+  #offerLimit(el: Element): void {
+    el.setAttribute('data-limit-options', this.#limit ? 'on' : 'off');
   }
   /** The app's choice, for every source. */
   #limit = false;
@@ -873,6 +884,7 @@ export class SherpaProvider extends SherpaElement {
       if ('drawScopes' in el && this.#wanted === 'panel' && this.#mode !== 'panel') this.#setMode('panel');
       else if (!('drawScopes' in el)) this.#stepBack(el);
       this.#giveToggles();
+      this.#offerLimit(el);
     }
   }
 

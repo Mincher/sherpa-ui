@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**30 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**29 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -116,7 +116,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31v | 176 | A greyed-out chip says WHY in its tooltip, in a few simple words | feature |
 | ✅ | 31w | 180 | A picked value a LATER filter rules out goes inactive and leaves the query; the latest filter wins | feature |
 | ✅ | 31x | 179 | Every place a ruled-out value shows is inactive — a chart legend's item too | bug |
-| ⬜ | 31y | 178 | The filter panel's header gets an overflow (⋯) menu; "Limit matching filters" is an item in it and in the toolbar's | feature |
+| ✅ | 31y | 178 | The filter panel's header gets an overflow (⋯) menu; "Limit matching filters" is an item in it and in the toolbar's | feature |
 | ⬜ | 31z | 181 | A saved filter's menu shows its condition rows, read-only — the Advanced menu, not a bespoke one | refactor |
 | ✅ | 31aa2 | 182 | The filter panel's search: more room above it, and the full width of the header less its padding | bug |
 | | | | **E — Views and navigation** | |
@@ -1824,7 +1824,7 @@ condition input rows, in read only mode, rather than just text labels.*
 *This means we can use the same advanced menu logic and styling for these
 menus rather than a bespoke menu solution."*
 
-### `[ ]` 178 — An overflow menu in the filter panel's header, with "Limit matching filters"
+### `[x]` ✅ 178 — An overflow menu in the filter panel's header, with "Limit matching filters"
 
 Will, 2026-10-01: *"Add an ellipsis overflow menu button to the top of the
 filter panel header, after the toggle toolbar button.*
@@ -1837,6 +1837,16 @@ matching filters' capability.*
 
 *This menu item should be in the filter toolbar overflow button's menu
 also."*
+
+**✅ Done 2026-10-01.** The filter panel's header has a ⋮ after the toggle
+toolbar button. When the panel is narrow (≤ 380px) Reset and Reset all to
+default fold into it, and so do the host's own buttons when they fold. Both
+the panel's ⋮ and the toolbar's ⋮ end in a check row, "Limit matching
+filters"; the bar's ⋮ now shows at any width while the provider offers it.
+Ticking it in either place turns the setting on or off for the whole page —
+the provider owns it, and the Demos app keeps it in its session, beside the
+Settings switch (renamed "Limit matching filters" to match).
+`T-the-more-menu-holds-what-folded`
 
 ### `[x]` ✅ 176 — A greyed-out chip says WHY in its tooltip
 
@@ -4871,6 +4881,7 @@ One line each. The detail is in git and in the trap named.
 - 179: a chart legend greys and refuses a ruled-out value, as its chip does — `T-a-ruled-out-value-is-greyed`
 - 37 step 4: the example app is its own project, `../Sherpa Demos`, taking sherpa-ui as a dependency by name
 - 182: the filter panel's search spans its header, with more room above
+- 178: the filter panel's ⋮ — Reset folds into it when narrow; both ⋮ menus hold "Limit matching filters"
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

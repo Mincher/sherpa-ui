@@ -1423,10 +1423,22 @@ Building it found a CSS bug: the view type's own `display: inline-flex` for
 the group NEVER folded. Its block sits before the steps now, and the width
 rule names the view type too.
 
+**The filter PANEL has one too** — Will, TODO 178: after the host's own
+toggle, holding Reset and Reset all to default once the panel is narrow
+(≤ 380px), and the host's own buttons when they fold. **Both ⋮ menus end in
+the host's own option**, "Limit matching filters", a check row, shown while
+the host says it offers one (`data-limit-options="on|off"`, written by the
+provider) — so the bar's ⋮ shows at any width then. Ticking it REPORTS
+`limit-options-change`; the provider owns the setting, and the app keeps it.
+
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
 ### T-a-number-is-reset-not-cleared
 
