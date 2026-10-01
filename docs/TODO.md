@@ -117,7 +117,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31w | 180 | A picked value a LATER filter rules out goes inactive and leaves the query; the latest filter wins | feature |
 | ✅ | 31x | 179 | Every place a ruled-out value shows is inactive — a chart legend's item too | bug |
 | ✅ | 31y | 178 | The filter panel's header gets an overflow (⋯) menu; "Limit matching filters" is an item in it and in the toolbar's | feature |
-| ⬜ | 31z | 181 | A saved filter's menu shows its condition rows, read-only — the Advanced menu, not a bespoke one | refactor |
+| ❓ | 31z | 181 | A saved filter's menu shows its condition rows, read-only — the Advanced menu, not a bespoke one | refactor |
 | ✅ | 31aa2 | 182 | The filter panel's search: more room above it, and the full width of the header less its padding | bug |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
@@ -1837,6 +1837,19 @@ condition input rows, in read only mode, rather than just text labels.*
 
 *This means we can use the same advanced menu logic and styling for these
 menus rather than a bespoke menu solution."*
+
+**Found, 2026-10-01.** The parts exist: `sherpa-menu` already draws IN THE
+FLOW (`data-inline`) and READ-ONLY (`data-readonly`). So a saved filter's menu
+can show one inline, read-only Advanced menu per field — its condition rows,
+under the field's name — built by `menuFor()` as every other filter menu is.
+A Simple answer shows as its rows ("is EMEA" OR "is APAC").
+
+**❓ One choice — how a reader's own saved filter is changed:**
+- **A (my pick): Edit filter makes those rows editable, in place,** with
+  Save filter and Discard changes below — today's per-line drill into a
+  second editor goes. One menu, the Advanced menu's own logic.
+- **B: keep today's editor:** a field's rows, pressed, open its editor, as a
+  line does now.
 
 ### `[x]` ✅ 178 — An overflow menu in the filter panel's header, with "Limit matching filters"
 
