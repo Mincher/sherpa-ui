@@ -192,7 +192,7 @@
       /* …and a DRAFT per View, on by default: what a reader left on a View
          comes back, for the tab and across sessions. Settings › Application.
          TRAP T-a-view-keeps-a-draft */
-      filters: { mode: 'toolbars', records: null, dashboard: null, drafts: true, draftsAcross: true },
+      filters: { mode: 'toolbars', records: null, dashboard: null, drafts: true, draftsAcross: true, limit: false },
       // Settings › Experiments. Off until a reader turns one on.
       experiments: { stickyMetrics: false, keepContent: false },
     });
@@ -216,6 +216,8 @@
       guard: (v) => v === 'toolbars' || v === 'panel',
     });
     session.persist('/filters/drafts', { guard: (v) => typeof v === 'boolean' });
+    // "Limit filter options": each filter offers only what the others leave. TODO 174.
+    session.persist('/filters/limit', { guard: (v) => typeof v === 'boolean' });
     session.persist('/experiments/stickyMetrics', { guard: (v) => typeof v === 'boolean' });
     session.persist('/experiments/keepContent', { guard: (v) => typeof v === 'boolean' });
     session.persist('/filters/draftsAcross', { guard: (v) => typeof v === 'boolean' });
@@ -224,6 +226,9 @@
     const provider = document.querySelector('sherpa-provider');
     provider.filterMode = session.get('/filters/mode');
     provider.addEventListener('filter-mode-change', (e) => session.set('/filters/mode', e.detail.mode));
+    // Settings › Application, "Limit filter options". TODO 174.
+    provider.limitOptions = session.get('/filters/limit') === true;
+    session.subscribe('/filters/limit', (on) => { provider.limitOptions = on === true; });
     /* A Context's FILTER ANSWERS, with the View they were made on. They survive
        a reload and a trip away and back, and die with the session.
        TRAP T-a-reload-replays-the-readers-answers */

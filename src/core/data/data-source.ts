@@ -82,6 +82,8 @@
  * - .load — Re-read and push to every bound component.
  * - .results — Each answered chip's results in a scope: the rows its own answer matches.
  * - .valueResults — Each PICKED value's own results in a scope: the rows that ONE value matches, within what the scope can see —…
+ * - .limitOptions — Does each list field offer only the values the other answers leave?
+ * - .present — Each list field's values the rows still HOLD under the OTHER answers in its scope — a component scope's withi…
  * - .bind — Point a component at this source.
  * - .unbind — Stop steering and stop populating this component.
  * - .boundElements — Every component currently bound.
@@ -233,6 +235,9 @@ export interface DataSourceOptions {
   searchFields?: string[];
   /** Load as soon as the first component binds. Default true. */
   autoLoad?: boolean;
+  /** Each list field offers only the values the other answers leave; the rest
+   *  are drawn greyed. Default false. TRAP T-a-ruled-out-value-is-greyed */
+  limitOptions?: boolean;
 }
 
 /** What a component may do with the source it is bound to. */
@@ -426,6 +431,7 @@ export class DataSource extends EventTarget {
     // REMOTE: the reader edits a copy, and Apply sends it.
     if (this.#remote) this.#draft = { v: 1, scopes: {} };
     this.#autoLoad = options.autoLoad ?? true;
+    this.#limitOptions = options.limitOptions ?? false;
     this.#searchFields = options.searchFields;
     this.#state = {
       sort: options.sort ?? [],
@@ -435,8 +441,11 @@ export class DataSource extends EventTarget {
       pageSize: options.pageSize ?? null,
     };
     this.#filter = options.filter;
-    // FORCED: the rows changed under an identical ViewState.
-    this.store.addEventListener('change', () => void this.load({ force: true }));
+    // FORCED: the rows changed under an identical ViewState — and so may the values they hold.
+    this.store.addEventListener('change', () => {
+      this.#presentFor = '';
+      void this.load({ force: true });
+    });
     /* A RECORD'S TIME IS A DATE, said once, by whoever knows it — the store.
        Nothing downstream has to know the dataset calls it `created`.
        TRAP T-a-record-has-a-time-of-its-own */
@@ -1692,6 +1701,7 @@ export class DataSource extends EventTarget {
        is OFF, or one chart's own, changed, and its badge wears a number.
        TRAP T-a-chip-counts-its-own-results */
     if (still && this.#loaded && this.#countedFor !== JSON.stringify(this.#applied)) void this.#drawResults();
+    if (still && this.#loaded) this.#presentSoon();
   }
 
   /* ── Draft and applied — a REMOTE source only ─────────────────────────
@@ -2005,6 +2015,7 @@ export class DataSource extends EventTarget {
         }),
       );
       void this.#drawResults();
+      this.#presentSoon();
       return result;
     } catch (error) {
       // TRAP T-error-is-a-state-not-a-throw — a stale failure raises nothing.
@@ -2120,6 +2131,112 @@ export class DataSource extends EventTarget {
     }
   }
 
+  /* ── What the other answers LEAVE — Will, TODO 174 (110 B) ─────────────
+   * TRAP T-a-ruled-out-value-is-greyed */
+
+  /** Does each list field offer only the values the other answers leave? */
+  get limitOptions(): boolean {
+    return this.#limitOptions;
+  }
+  set limitOptions(on: boolean) {
+    if (on === this.#limitOptions) return;
+    this.#limitOptions = on;
+    this.#presentFor = '';
+    this.#presentSoon();
+  }
+  /** The setting: does each list field offer only what the others leave? */
+  #limitOptions = false;
+
+  /**
+   * Each list field's values the rows still HOLD under the OTHER answers in its
+   * scope — a component scope's within the View's — as value keys. A field's
+   * own answer never limits it. Nothing while `limitOptions` is off.
+   */
+  async present(scope: string): Promise<Record<string, string[]>> {
+    if (!this.#limitOptions) return {};
+    const q = this.#applied.scopes[scope];
+    const above = new Set(scope === VIEW ? [] : this.#applied.scopes[VIEW]?.holds ?? []);
+    const fields = [...new Set([...(q?.holds ?? []), ...(scope === VIEW ? [] : this.fields(scope))])]
+      .filter((f) => !above.has(f) && this.#isListField(f));
+    // Fields limited by the same filter share one pass over the rows.
+    const passes = new Map<string, { filter: Filter | undefined; fields: string[] }>();
+    for (const f of fields) {
+      const filter = this.#limitFor(scope, f);
+      const key = JSON.stringify(filter ?? null);
+      if (!passes.has(key)) passes.set(key, { filter, fields: [] });
+      passes.get(key)!.fields.push(f);
+    }
+    const out: Record<string, string[]> = {};
+    for (const { filter, fields: some } of passes.values()) Object.assign(out, await this.#presentUnder(some, filter));
+    return out;
+  }
+
+  /** A field whose values are a list a control offers one by one. */
+  #isListField(field: string): boolean {
+    const facts = this.#fields.get(field) ?? {};
+    return this.#domains.has(field) && facts.type !== 'number' && facts.type !== 'date'
+      && (facts.advanced ?? facts.custom) !== 'only';
+  }
+
+  /** What limits one field: the applied Query compiled WITHOUT that field's own answer in its scope. */
+  #limitFor(scope: string, field: string): Filter | undefined {
+    const query = structuredClone(this.#applied);
+    const own = query.scopes[scope];
+    if (own) Reflect.deleteProperty(own.readings, field);
+    const { view, scoped } = compile(query, {
+      field: (f) => this.#facts(f), preset: (id) => this.#presets.get(id), components: this.#componentScopes(),
+    });
+    return andFilter([view, scope === VIEW ? undefined : scoped[scope]].filter((f): f is Filter => !!f));
+  }
+
+  /** Each field's distinct values, as value keys, among the rows a filter matches. */
+  async #presentUnder(fields: readonly string[], filter: Filter | undefined): Promise<Record<string, string[]>> {
+    const options = filter ? { filter } : {};
+    const keys = (values: readonly unknown[]): string[] => [...new Set(values
+      .filter((v) => v != null && v !== '').map(valueKey))];
+    if (this.store.distinct) {
+      const found = await this.store.distinct(fields, options);
+      return Object.fromEntries(fields.map((f) => [f, keys(found[f] ?? [])]));
+    }
+    const { rows } = await this.store.load(options);
+    return Object.fromEntries(fields.map((f) => [f, keys(rows.map((r) => readField(r, f)))]));
+  }
+
+  /** One pass this tick, however many asked. */
+  #presentSoon(): void {
+    if (this.#presentQueued) return;
+    this.#presentQueued = true;
+    queueMicrotask(() => {
+      this.#presentQueued = false;
+      void this.#drawPresent();
+    });
+  }
+  /** A pass is queued for the end of this tick. */
+  #presentQueued = false;
+
+  /** Each bound control is told what each field's other answers leave — once
+   *  per applied Query; a later pass wins. Off, each is told nothing is limited. */
+  async #drawPresent(): Promise<void> {
+    const drawn = [...this.#bound].flatMap(([el, b]) => (el.drawPresent && b.scope
+      ? [{ el, scopes: typeof b.scope === 'string' ? [b.scope] : [...b.scope, ...this.#narrowing.keys()] }] : []));
+    const key = `${this.#limitOptions}:${drawn.length}:${JSON.stringify(this.#applied)}`;
+    if (!drawn.length || key === this.#presentFor) return;
+    this.#presentFor = key;
+    const ticket = (this.#presenting = Symbol('present'));
+    const byScope = new Map<string, Record<string, string[]>>();
+    for (const scope of new Set(drawn.flatMap((d) => d.scopes))) {
+      byScope.set(scope, await this.present(scope));
+      if (this.#presenting !== ticket) return;
+    }
+    for (const { el, scopes } of drawn) {
+      for (const scope of scopes) el.drawPresent?.(byScope.get(scope) ?? {}, scope);
+    }
+  }
+  /** The latest pass; an older one lands on nothing. */
+  #presenting: symbol | null = null;
+  /** What the last pass was for: the setting, the controls and the applied Query. */
+  #presentFor = '';
+
   /** The latest results count; an older one lands on nothing. */
   #counting: symbol | null = null;
   /** The applied Query the chips' results were last counted for, as JSON. */
@@ -2193,6 +2310,8 @@ export class DataSource extends EventTarget {
     this.#push(el);
     if (Array.isArray(options.scope) && el.drawScopes) this.#drawScopesSoon();
     if (typeof options.scope === 'string' && el.supersedeColumns) this.#syncColumns();
+    // …and what each field's other answers leave. TRAP T-a-ruled-out-value-is-greyed
+    if (options.scope && el.drawPresent && this.#loaded) this.#presentSoon();
     /* A summary bound AFTER the first load would otherwise draw blank: the
        unpaged set is fetched by `load`, and nothing would ask for it again.
        TRAP T-a-summary-binds-to-all-the-rows */

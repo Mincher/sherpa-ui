@@ -253,7 +253,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (setFieldReading, drawReading, drawResults, drawValueResults, show, hide, close, toggle, drawScopes). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (setFieldReading, drawReading, drawResults, drawValueResults, drawPresent, show, hide, close, toggle, drawScopes). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -420,6 +420,12 @@
           "name": "drawValueResults",
           "args": "results: Readonly<Record<string, Readonly<Record<string, number>>>>, scope: string",
           "description": "drawValueResults(results, scope) — a bound source tells the panel the rows each PICKED value matches on its own, by field then value: each chip of a run wears its own count, and one that is not picked wears none. The header keeps the field's. SILENT. Will, TODO 172."
+        },
+        {
+          "$type": "method",
+          "name": "drawPresent",
+          "args": "present: Readonly<Record<string, readonly string[]>>, scope: string",
+          "description": "drawPresent(present, scope) — a bound source says what each field's other answers leave in a scope. A value chip they rule out is greyed and refused, unless it is on; a field's menu greys its rows. A field not named is not limited."
         },
         {
           "$type": "method",

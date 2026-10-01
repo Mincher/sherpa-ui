@@ -22,7 +22,7 @@ import {
 import {
   readingRows, rowAnswered, type ConditionType, type FieldCondition, type FieldReading, type KeptAnswer,
 } from '../../core/data/filter-state.js';
-import { NON_VALUE_ROWS } from '../../core/ui/shared-constants.js';
+import { NON_VALUE_ROWS, RULED_OUT } from '../../core/ui/shared-constants.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-breadcrumbs/sherpa-breadcrumbs.js';
 import '../sherpa-input-text/sherpa-input-text.js';
@@ -36,8 +36,8 @@ export interface MenuItem {
   /** What a reader sees. Defaults to `value`. */
   label?: string;
   selected?: boolean;
-  /** Whether a remaining row carries it. Recorded, never drawn: every item is
-   *  listed the same way and the checkbox is the only signal. */
+  /** `false`: the other answers rule it out — greyed and refused unless picked.
+   *  TRAP T-a-ruled-out-value-is-greyed */
   available?: boolean;
   /** A SECOND fact, drawn muted after the label — where a filter lives now. */
   note?: string;
@@ -1189,6 +1189,37 @@ export class SherpaMenu extends SherpaElement {
   #items: MenuItem[] = [];
 
   /**
+   * The values the other answers LEAVE, as value keys — its host's, from the
+   * source. A row they rule out is greyed and refused unless it is ticked: a
+   * reader's pick is never dropped. `null` limits nothing. Silent: no event.
+   * TRAP T-a-ruled-out-value-is-greyed
+   */
+  set present(values: readonly string[] | null) {
+    this.#present = values ? new Set(values) : null;
+    this.#markPresent();
+  }
+  get present(): readonly string[] | null {
+    return this.#present ? [...this.#present] : null;
+  }
+  /** What the other answers leave; `null` is everything. */
+  #present: Set<string> | null = null;
+
+  /** Grey and refuse each row the other answers rule out; a ticked one stays. */
+  #markPresent(): void {
+    const given = new Map(this.#items.map((i) => [i.value, i]));
+    for (const box of this.#inputs()) {
+      const row = box.closest<HTMLElement>('.menu-row');
+      const out = !box.checked && (given.get(box.value)?.available === false
+        || (this.#present !== null && !this.#present.has(box.value)));
+      if (out === row?.hasAttribute('data-unavailable')) continue;
+      box.disabled = out;
+      row?.toggleAttribute('data-unavailable', out);
+      if (out) box.setAttribute('aria-description', RULED_OUT);
+      else if (box.getAttribute('aria-description') === RULED_OUT) box.removeAttribute('aria-description');
+    }
+  }
+
+  /**
    * Stamp `#items` into the rows slot. Needs the shadow template, so it is
    * safe to call before this element has one — it simply waits for onRender.
    */
@@ -1234,11 +1265,8 @@ export class SherpaMenu extends SherpaElement {
     const all = !single && this.#items.length && !this.hasAttribute('data-no-select-all')
       ? this.clone('template.menu-all-tpl') : null;
 
-    /* ONE list, in the order the caller gave. A value no remaining row carries
-       is still listed and still ticks — that is what `available` is for. It
-       does not re-sort or dim: the checkbox already says what is picked, and a
-       divider plus a grey row said it a second, noisier way.
-       TRAP T-unavailable-value-sorts-below-a-divider */
+    /* ONE list, in the order the caller gave: a ruled-out value is still
+       listed, never re-sorted. TRAP T-unavailable-value-sorts-below-a-divider */
     const rows: Element[] = [];
     let section: string | undefined;
     for (const item of this.#items) {
@@ -1266,6 +1294,7 @@ export class SherpaMenu extends SherpaElement {
     /* FIRST, keeping whatever the caller put below — in practice a Remove
        action, which a chip appends after this. */
     this.prepend(...out);
+    this.#markPresent();
 
     /* SAY SO. A host reads its own face off the menu's values, and pre-ticked
        rows fire no native change — so a chip built before its items arrived
@@ -1583,7 +1612,8 @@ export class SherpaMenu extends SherpaElement {
    * draft still works. TRAP T-select-all-ticks-boxes-not-values */
   #onSelectAll(input: HTMLInputElement): void {
     // Read the SET, not the box. TRAP T-indeterminate-reports-false
-    const boxes = this.#inputs();
+    // A ruled-out box is never ticked by Select all. TRAP T-a-ruled-out-value-is-greyed
+    const boxes = this.#inputs().filter((b) => !b.disabled);
     const on = boxes.some((b) => !b.checked);
     for (const box of boxes) box.checked = on;
     input.indeterminate = false;
@@ -1595,9 +1625,11 @@ export class SherpaMenu extends SherpaElement {
   /** Point select-all at the set: all, some (indeterminate) or none. Rewritten
    * every time the set moves. TRAP T-indeterminate-is-a-property */
   #syncSelectAll(): void {
+    // A ticked value unticked may now be ruled out. TRAP T-a-ruled-out-value-is-greyed
+    this.#markPresent();
     const all = this.#allRow();
     if (!all) return;
-    const boxes = this.#inputs();
+    const boxes = this.#inputs().filter((b) => !b.disabled || b.checked);
     const on = boxes.filter((b) => b.checked).length;
     all.checked = boxes.length > 0 && on === boxes.length;
     all.indeterminate = on > 0 && on < boxes.length;

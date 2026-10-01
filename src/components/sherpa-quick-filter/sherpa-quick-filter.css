@@ -299,7 +299,8 @@
 }
 
 /* ── Disabled — the INACTIVE mode, pinned in state-pins.yaml; never opacity ── */
-:host([disabled]) :is(.body, .caret) {
+:host([disabled]) :is(.body, .caret),
+:host([data-unavailable]) :is(.body, .caret) {
   cursor: not-allowed;
   pointer-events: none;
 }

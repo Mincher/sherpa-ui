@@ -2667,6 +2667,34 @@
     --_status-icon: var(--sherpa-style-inactive-indicator-accent);
   }
 
+  sherpa-quick-filter[data-unavailable] {
+    --sherpa-style-border-base: var(--sherpa-style-inactive-border-base);
+    --sherpa-style-border-base-1: var(--sherpa-style-inactive-border-base-1);
+    --sherpa-style-border-width: var(--sherpa-style-inactive-border-width);
+    --sherpa-style-border-data-viz: var(--sherpa-style-inactive-border-data-viz);
+    --sherpa-style-content-base: var(--sherpa-style-inactive-content-base);
+    --sherpa-style-content-inverse: var(--sherpa-style-inactive-content-inverse);
+    --sherpa-style-content-secondary: var(--sherpa-style-inactive-content-secondary);
+    --sherpa-style-content-tertiary: var(--sherpa-style-inactive-content-tertiary);
+    --sherpa-style-indicator-accent: var(--sherpa-style-inactive-indicator-accent);
+    --sherpa-style-surface-base: var(--sherpa-style-inactive-surface-base);
+    --sherpa-style-surface-base-1: var(--sherpa-style-inactive-surface-base-1);
+    --sherpa-style-surface-base-2: var(--sherpa-style-inactive-surface-base-2);
+    --sherpa-style-surface-shadow: var(--sherpa-style-inactive-surface-shadow);
+    --sherpa-style-surface-data-viz: var(--sherpa-style-inactive-surface-data-viz);
+    --_status-surface: var(--sherpa-style-inactive-surface-base);
+    --_status-surface-subtle: var(--sherpa-style-inactive-surface-base-1);
+    --_status-surface-strong: var(--sherpa-style-inactive-surface-base-2);
+    --_status-shadow: var(--sherpa-style-inactive-surface-shadow);
+    --_status-border: var(--sherpa-style-inactive-border-base);
+    --_status-border-strong: var(--sherpa-style-inactive-border-base-1);
+    --_status-data-viz: var(--sherpa-style-inactive-surface-data-viz);
+    --_status-data-viz-border: var(--sherpa-style-inactive-border-data-viz);
+    --_status-text: var(--sherpa-style-inactive-content-base);
+    --_status-text-on-color: var(--sherpa-style-inactive-content-inverse);
+    --_status-icon: var(--sherpa-style-inactive-indicator-accent);
+  }
+
   sherpa-menu {
     --sherpa-style-border-base: var(--sherpa-style-default-border-base);
     --sherpa-style-border-base-1: var(--sherpa-style-default-border-base-1);

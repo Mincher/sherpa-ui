@@ -10,9 +10,8 @@ const APP = 'http://localhost:4200/?context=dashboard';
 
 async function open(page: Page, on: boolean): Promise<void> {
   await page.setViewportSize({ width: 1440, height: 600 });
+  await page.addInitScript((v) => localStorage.setItem('sherpa:session:/experiments/stickyMetrics', JSON.stringify(v)), on);
   await page.goto(APP);
-  await page.evaluate((v) => localStorage.setItem('sherpa:session:/experiments/stickyMetrics', JSON.stringify(v)), on);
-  await page.reload();
   await page.waitForFunction(() =>
     (document.querySelector('#m-endpoints')?.getAttribute('data-value') ?? '') !== '');
 }

@@ -413,7 +413,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (setColumnFilter, supersedeColumns, columnClause, columnReading, drawReading, columnLabel, suspendColumnFilter, openColumnFilter, clearColumnFilter, findStep, actionsFor, neighbour, stepCurrent, select, clearSelection). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (drawPresent, setColumnFilter, supersedeColumns, columnClause, columnReading, drawReading, columnLabel, suspendColumnFilter, openColumnFilter, clearColumnFilter, findStep, actionsFor, neighbour, stepCurrent, select, clearSelection). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -609,6 +609,12 @@
     "sherpa": {
       "figmaName": "Grid Cell",
       "methods": [
+        {
+          "$type": "method",
+          "name": "drawPresent",
+          "args": "present: Readonly<Record<string, readonly string[]>>",
+          "description": "drawPresent(present, scope) — a bound source says what each field's other answers leave; a heading's menu greys the rest. A field not named is not limited."
+        },
         {
           "$type": "method",
           "name": "setColumnFilter",

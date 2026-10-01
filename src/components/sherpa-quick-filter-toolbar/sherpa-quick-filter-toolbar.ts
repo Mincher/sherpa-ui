@@ -42,7 +42,7 @@ export interface QuickFilterOption {
   value: string;
   label: string;
   selected?: boolean;
-  /** Reachable now. TRAP T-unavailable-value-sorts-below-a-divider — `false` still selects. */
+  /** `false`: ruled out — listed, greyed and refused unless picked. TRAP T-a-ruled-out-value-is-greyed */
   available?: boolean;
   /** A second fact its menu row shows, muted. */
   note?: string;
@@ -611,6 +611,26 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
+   * drawPresent(present) — a bound source says what each field's other
+   * answers leave; a chip's menu greys the rest. SILENT. A field not named is
+   * not limited. TRAP T-a-ruled-out-value-is-greyed
+   */
+  drawPresent(present: Readonly<Record<string, readonly string[]>>): void {
+    this.#present = present;
+    for (const chip of this.#chips()) this.#markPresent(chip);
+  }
+  /** What each field's other answers leave, as the source last said. */
+  #present: Readonly<Record<string, readonly string[]>> = {};
+
+  /** One chip's menu, told what its field's other answers leave. */
+  #markPresent(chip: HTMLElement): void {
+    const id = chip.dataset['id'] ?? '';
+    const field = this.#filters.find((f) => f.id === id)?.field ?? id;
+    const menu = chip.querySelector<HTMLElement & { present?: readonly string[] | null }>('sherpa-menu');
+    if (menu && !this.superseded.includes(id)) menu.present = this.#present[field] ?? null;
+  }
+
+  /**
    * drawReading(field, reading) — a bound source tells this bar one field's
    * answer, whoever set it. SILENT, as every steer is. A SUPERSEDED chip keeps
    * the reader's own picks for when the view lets go.
@@ -825,7 +845,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const fallback = def.persistent && !hasPick ? options[0]?.value : undefined;
 
     /* THE MENU draws its own items, from the DATA handed to it: it picks the
-       control from `data-select` and sorts the unreachable below a divider.
+       control from `data-select`.
        `menuFor` MADE it, so it has upgraded and takes them now; it stamps
        them when it renders. TRAP T-custom-element-upgrade */
     if (items.length) {
@@ -849,6 +869,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
     chip.setAttribute('data-menu', '');
     chip.appendChild(menu);
+    this.#markPresent(chip);
   }
 
   /**

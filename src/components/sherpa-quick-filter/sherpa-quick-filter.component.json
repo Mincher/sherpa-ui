@@ -311,10 +311,27 @@
     },
     {
       "$type": "prop",
+      "name": "data-unavailable",
+      "type": "string",
+      "observed": false,
+      "kind": "style",
+      "description": "the other filters rule this value out: greyed, refused, and its tooltip says why. Written by the host. TRAP T-a-ruled-out-value-is-greyed"
+    },
+    {
+      "$type": "prop",
       "name": "desc",
       "type": "string",
       "observed": false,
       "description": "and report it themselves. \"Organise\" is not a kind; it is a heading a panel may draw above the two. TRAP T-a-chip-knows-what-kind-it-is"
+    },
+    {
+      "$type": "prop",
+      "name": "disabled",
+      "type": "boolean",
+      "observed": true,
+      "native": true,
+      "default": false,
+      "description": "greyed and refused; its tooltip says \"Not available here.\""
     }
   ],
   "states": [
@@ -392,6 +409,11 @@
       "$type": "state",
       "name": "superseded",
       "selector": ":host([data-superseded])"
+    },
+    {
+      "$type": "state",
+      "name": "unavailable",
+      "selector": ":host([data-unavailable])"
     },
     {
       "$type": "state",

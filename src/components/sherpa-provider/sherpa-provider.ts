@@ -174,6 +174,18 @@ export class SherpaProvider extends SherpaElement {
 
   /** What the panel and bars show now. */
   #mode: 'toolbars' | 'panel' = 'toolbars';
+
+  /** Each list filter offers only what the others leave — on every source it
+   *  gives. The app sets it, from its session. TRAP T-a-ruled-out-value-is-greyed */
+  get limitOptions(): boolean {
+    return this.#limit;
+  }
+  set limitOptions(on: boolean) {
+    this.#limit = on;
+    for (const source of Object.values(this.#sources)) source.limitOptions = on;
+  }
+  /** The app's choice, for every source. */
+  #limit = false;
   /** What was ASKED for — a narrow window can refuse the panel for a while. */
   #wanted: 'toolbars' | 'panel' = 'toolbars';
   /** The shell has room for a panel area. TRAP T-the-panel-is-desktop-only */
@@ -294,6 +306,7 @@ export class SherpaProvider extends SherpaElement {
       this.#opened = null;
     }
     this.#sources = { ...options.sources };
+    for (const source of Object.values(this.#sources)) source.limitOptions = this.#limit;
     // BEFORE answering: an answer binds, and a bind starts the first load.
     this.#states?.abort();
     this.#states = new AbortController();

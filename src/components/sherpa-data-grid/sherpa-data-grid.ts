@@ -109,7 +109,7 @@ interface GridConfig {
 }
 
 /** A heading's menu, as the grid reaches it. */
-type HeadMenu = HTMLElement & { reading: FieldReading; items(next: readonly FilterMenuItem[]): void };
+type HeadMenu = HTMLElement & { reading: FieldReading; present: readonly string[] | null; items(next: readonly FilterMenuItem[]): void };
 
 /** The column types a heading can filter. Every body is the menu's own.
     TRAP T-a-menu-owns-its-own-bodies */
@@ -451,7 +451,8 @@ export class SherpaDataGrid extends SherpaElement {
        TRAP T-custom-element-upgrade · TRAP T-both-answers-are-kept
        TRAP T-a-heading-menu-opens-on-what-it-holds */
     customElements.upgrade(menu);
-    if (items.length) (menu as HeadMenu).items(this.#columnItems(col.field, items, held));
+    if (items.length) (menu as HeadMenu).items(this.#columnItems(items, held));
+    if (!superseded) (menu as HeadMenu).present = this.#present[col.field] ?? null;
     if (!held) return;
     // Rows ARE the opt-in reaching the menu. TRAP T-many-conditions-are-one-reading
     if (readingRows(held).length) menu.setAttribute('data-advanced', '');
@@ -490,13 +491,28 @@ export class SherpaDataGrid extends SherpaElement {
     };
   }
 
-  /** A text heading's rows: ticked as it holds, and the values on no row now
-   *  below a divider. TRAP T-unavailable-value-sorts-below-a-divider */
-  #columnItems(field: string, items: readonly FilterMenuItem[], held: FieldReading | undefined): FilterMenuItem[] {
+  /** A text heading's rows, ticked as it holds. What is ruled out is the
+   *  SOURCE's to say — one page cannot. TRAP T-a-ruled-out-value-is-greyed */
+  #columnItems(items: readonly FilterMenuItem[], held: FieldReading | undefined): FilterMenuItem[] {
     const on = new Set((held?.picked ?? []).map(valueKey));
-    const present = new Set(this.#presentValues(field));
-    return items.map((item) => ({ ...item, selected: on.has(item.value), available: present.has(item.value) }));
+    return items.map((item) => ({ ...item, selected: on.has(item.value) }));
   }
+
+  /**
+   * drawPresent(present, scope) — a bound source says what each field's other
+   * answers leave; a heading's menu greys the rest. A field not named is not
+   * limited. TRAP T-a-ruled-out-value-is-greyed
+   */
+  drawPresent(present: Readonly<Record<string, readonly string[]>>): void {
+    this.#present = present;
+    for (const cell of this.$$<HTMLElement>('.head-cell[data-field]')) {
+      const field = cell.dataset['field']!;
+      const menu = cell.querySelector<HeadMenu>('.head-filter sherpa-menu');
+      if (menu && !this.#superseded.has(field)) menu.present = present[field] ?? null;
+    }
+  }
+  /** What each field's other answers leave, as the source last said. */
+  #present: Readonly<Record<string, readonly string[]>> = {};
 
   /** The values the ROWS on screen carry. */
   #presentValues(field: string): string[] {

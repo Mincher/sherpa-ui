@@ -46,7 +46,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (filterMode, customView, view). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (filterMode, limitOptions, customView, view). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -130,6 +130,11 @@
         {
           "name": "filterMode",
           "type": "'toolbars' | 'panel'",
+          "access": "read-write"
+        },
+        {
+          "name": "limitOptions",
+          "type": "boolean",
           "access": "read-write"
         },
         {

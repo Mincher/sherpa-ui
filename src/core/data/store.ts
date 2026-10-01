@@ -170,6 +170,9 @@ export interface Store extends EventTarget {
   /** What each field MAY hold — a set in order, a number's ends — as the data's
    *  own contract says it. TRAP T-the-data-says-what-a-field-may-hold */
   readonly domains?: Readonly<Record<string, FieldDomain>>;
+  /** OPTIONAL: each field's distinct values among the rows a filter matches. A
+   *  store without it is read row by row. TRAP T-a-ruled-out-value-is-greyed */
+  distinct?(fields: readonly string[], options?: LoadOptions): Promise<Record<string, unknown[]>>;
 }
 
 /** Fired after an insert, update or remove. A DataSource just RELOADS. */

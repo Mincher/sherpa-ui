@@ -6483,6 +6483,48 @@ went on filtering. Will, TODO 167.
 - Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 
+### T-a-ruled-out-value-is-greyed
+
+**A value the other filters rule out stays in its list, greyed out, and
+cannot be picked** — Will, TODO 174, choosing 110's B. A value already picked
+stays ticked and can be unticked: a reader's answer is never dropped. Only
+while the source's `limitOptions` is on (Settings › Application, off by
+default); off, nothing is limited.
+
+**The SOURCE says what is left** — `source.present(scope)`: each list field's
+values the rows still hold under the OTHER answers in its scope, and a
+component scope's within the View's (the trickle down). A field's own answer
+never limits it, so Customer limits Region and Region limits Customer. It
+compiles the applied Query without that field's reading, so suspended
+answers, presets and "the View wins" behave as they do for rows. One pass per
+distinct limiting filter, once per applied Query; a store with `distinct()`
+is asked instead of read row by row.
+
+**Each control is TOLD** — `drawPresent(present, scope)` on a bound bar, panel
+or grid — and passes it to `menu.present`, which greys and disables the rows
+(silently, no event); a panel's run of value chips gets `data-unavailable`.
+Select all never ticks a ruled-out row. A grid heading used to mark values
+"available" from the PAGE it was given; one page cannot say what the source
+holds, so that is gone.
+
+**It says why** — Will, TODO 176: a ruled-out chip's tooltip and a row's
+`aria-description` read "No matches with your other filters." A disabled
+chip says "Not available here." A chip the View took says where it went
+(`T-an-inactive-chip-says-where-its-filter-went`).
+
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/store.ts`
+- Site: `src/core/ui/shared-constants.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `test/unit/present-limits-each-field.test.mjs`
+- Site: `test/e2e/reforged-limit-options.spec.ts`
+
 ### T-unavailable-value-sorts-below-a-divider
 
 `QuickFilterOption.available: false` means still SELECTABLE, but no row carries
@@ -6495,12 +6537,13 @@ Such a value is still LISTED rather than DROPPED, for two reasons:
 - a user cannot broaden a filter back out through a list that hid the way —
   dropping the unreachable values makes the current filter a one-way door
 
-**It is not drawn differently.** Until 2026-09-22 an unavailable value was
-dimmed and re-sorted below a divider. Will's ruling: "Absolutely unnecessary.
-The checkboxes communicate all of that." One list, the caller's order, one
-appearance; `available` is recorded and never painted. The rule this trap
-exists for is DO NOT DROP — the divider was a second, noisier way of saying
-what the checkbox already said.
+**It is never re-sorted.** Until 2026-09-22 an unavailable value was dimmed
+and re-sorted below a divider. Will's ruling: "Absolutely unnecessary. The
+checkboxes communicate all of that." One list, the caller's order. The rule
+this trap exists for is DO NOT DROP. Since TODO 174 (Will chose 110's B), a
+value the other filters rule out IS drawn greyed and refused, in its place —
+only while "limit options" is on, and never one the reader picked:
+`T-a-ruled-out-value-is-greyed`.
 
 **A COLUMN heading's menu follows the same rule**, and could not at first: it
 built its list from `this.#rows`, which is the PAGE the grid was handed. Filter
@@ -6512,8 +6555,6 @@ filter (`DataAsk.filters`), whose options are the field's whole list
 (`T-a-heading-opens-the-chips-menu`). `data-column-values` stays for a host
 with no provider.
 
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-provider.spec.ts`

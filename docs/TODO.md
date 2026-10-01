@@ -112,8 +112,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31r | 171 | The filter panel's search matches FIELD labels as well as value labels | feature |
 | ✅ | 31s | 172 | In the filter panel, each chip of a multi-value filter shows its own count badge | feature |
 | ✅ | 31t | 173 | BUG: a panel section header's count badge ADDS its values' counts; it should be the UNIQUE results of them all | bug |
-| ⬜ | 31u | 174 | Two View fields that share no rows return NOTHING, though each badge has a count; a filterset's fields should limit each other's options | bug |
-| ⬜ | 31v | 176 | A greyed-out chip says WHY in its tooltip, in a few simple words | feature |
+| 🚧 | 31u | 174 | Two View fields that share no rows return NOTHING, though each badge has a count; a filterset's fields should limit each other's options | bug |
+| ✅ | 31v | 176 | A greyed-out chip says WHY in its tooltip, in a few simple words | feature |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
 | ✅ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
@@ -124,6 +124,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 35b | 161 | The app header's shadow FADES in, very quickly, as the Context scrolls under it | quick |
 | ✅ | 35c | 163 | The app shell's panel areas are 150% of their width today, at the least | quick |
 | ✅ | 35a | 146 | The app shell's FIXED panel areas resize by dragging their inner edge; the content reflows; two levels of container query | feature |
+| ⬜ | 35b | 177 | AFTER the example app moves (37) — an app setting: resize layout grid content by handles in its gutters, snapping to columns and rows | feature |
 | | | | **F — Data states and charts** | |
 | ✅ | 36 | 58 | Loading, empty and error states in a container | feature |
 | ✅ | 37 | 9b | A Data Viz header, for metrics and chart containers | component |
@@ -1730,13 +1731,30 @@ this.
 **✅ Will, 2026-10-01: B** (on 110) — a limited-out value is shown, greyed
 out, and cannot be picked. To build.
 
-### `[ ]` 176 — A greyed-out chip says WHY in its tooltip
+**✅ Built 2026-10-01 — "Limit filter options".** Settings › Application ›
+Filtering has a new switch, off by default. On, every list filter offers only
+the values the rows still hold under the OTHER filters in its scope: Customer
+limits Region and Region limits Customer, and the View limits a component's
+filters (the trickle down). A ruled-out value stays in its place, greyed, and
+cannot be picked — in a toolbar chip's menu, a grid heading's menu, and the
+panel's value chips. Its tooltip says "No matches with your other filters."
+(176). The data layer answers it: `source.present(scope)`, once per applied
+Query, told to each control as `drawPresent`. Probed on the Dashboard: with
+Customer = Adventure Works, Latin America is greyed.
+`T-a-ruled-out-value-is-greyed`
+
+### `[x]` ✅ 176 — A greyed-out chip says WHY in its tooltip
 
 Will, 2026-10-01: *"If a chip is greyed out (inactive) then it's tooltip
 should explain why in a few simple words."*
 
 Builds with 174 (a value the other answers rule out) and covers every greyed
 chip: one the View took (superseded), one that is disabled.
+
+**✅ Done 2026-10-01.** A ruled-out value says "No matches with your other
+filters." — on a chip's tooltip, and on a menu row for a screen reader. A
+disabled chip says "Not available here." A chip the View took already said
+where its filter went ("Filter moved to View scope."), so it is unchanged.
 
 ### `[x]` ✅ 173 — BUG: a panel section header's count adds its values' counts
 
@@ -2751,6 +2769,31 @@ and the area has a MIN width of 464px. That is 150% of the 310px it is at
 1280, which is its narrowest (on the 4px grid). So the panel card is 448px
 at 1280 and at 1600, and from about 1900 the three columns are wider and
 take over (454 at 1920).
+
+### `[ ]` 177 — Resize layout grid content by dragging handles in its gutters
+
+Will, 2026-10-01, *"Todo after we move the example app to it's own project:*
+
+*I really like the resizing of the panel areas in the app shell.*
+
+*As an app setting, let me enable the ability to resize layout grid content
+using handles in the gutters between containers/elements.*
+
+*Dragging to resize should snap to column and row increments.*
+
+*The minimum column span for any container is 3 columns. The minimum row span
+for a container/element should be set via an attribute.*
+
+*For example a metric item can have a min row span of 1 whereas a data viz
+should have a minimum of a 2 row span.*
+
+*If there's no space on the row to grow an element's column span (siblings
+already at their minimum span) then dragging won't increase the width.*
+
+*Dragging to resize height/row span can't force neighbouring rows of content
+to span lower than the highest min row span on elements in that row."*
+
+Starts after 37 step 4. Builds on 146's edge helper (`src/core/ui/edge-resize.ts`).
 
 ### `[x]` ✅ 146 — The app shell's FIXED panel areas resize by dragging their edge
 
@@ -4690,6 +4733,7 @@ One line each. The detail is in git and in the trap named.
 - 175: the sticky metrics switch in CSS — a scroll-state query at grid padding + one row; sparkline kept, tighter, 14px value
 - 81: the 65 component contracts are JSON — `sherpa-<name>.component.json`, generated, validated, round-tripped, fresh
 - 146 level 2: the Context's grid steps by its own width — a container twin of every layout band — `T-a-context-steps-by-its-own-width`
+- 174 (most) + 176: "Limit filter options" — a ruled-out value is greyed, refused, and says why — `T-a-ruled-out-value-is-greyed`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

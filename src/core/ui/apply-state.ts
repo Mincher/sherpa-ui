@@ -28,6 +28,8 @@ export interface Populatable extends HTMLElement {
   drawResults?: (results: Readonly<Record<string, number>>, scope?: string) => void;
   /** Each PICKED value's own results, by field then value — for a control that draws a chip per value. */
   drawValueResults?: (results: Readonly<Record<string, Readonly<Record<string, number>>>>, scope: string) => void;
+  /** Each field's values the other answers leave, as value keys; a field not named is not limited. */
+  drawPresent?: (present: Readonly<Record<string, readonly string[]>>, scope: string) => void;
   /** A control over SEVERAL scopes — the panel — drawn each one whole. */
   drawScopes?: (scopes: ScopeDescription[]) => void | Promise<void>;
   /** The fields its chips hold — what a scoped bar's scope holds. */

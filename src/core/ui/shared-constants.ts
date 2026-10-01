@@ -6,8 +6,10 @@
  * TRAP T-shared-values-two-components-must-agree-on
  *
  * Map:
- * - ORGANISE_ICONS — The ORGANISE glyphs — grouping and the three sort states.
  * - movedTo — What a filter another scope holds says: `Filter moved to View scope.`
+ * - RULED_OUT — What a value the other filters rule out says, on its chip and its menu row
+ * - NOT_AVAILABLE — What a disabled chip says
+ * - ORGANISE_ICONS — The ORGANISE glyphs — grouping and the three sort states.
  * - NON_VALUE_ROWS — Rows in a filter menu that are NOT values, as a selector.
  * - MIRRORED_CONTROL_ATTRS — Native attributes a select control mirrors onto its inner `<input>`.
  * - RADIAL_BOX — A radial chart's geometry, in viewBox units of a 100×100 box.
@@ -25,6 +27,13 @@ export function movedTo(scope?: string | null): string {
   const name = (scope ?? '').replace(/\s+filters$/i, '').trim();
   return `Filter moved to ${name || 'a higher'} scope.`;
 }
+
+/** What a value the other filters rule out says, on its chip and its menu
+ *  row. Will, TODO 176. TRAP T-a-ruled-out-value-is-greyed */
+export const RULED_OUT = 'No matches with your other filters.';
+
+/** What a disabled chip says. Will, TODO 176. */
+export const NOT_AVAILABLE = 'Not available here.';
 
 /**
  * The ORGANISE glyphs — grouping and the three sort states.

@@ -12,7 +12,7 @@ import {
   fieldState, readingRows, type FieldCondition, type FieldReading, type FilterState,
 } from '../../core/data/filter-state.js';
 import { filterFace } from '../../core/data/filter-face.js';
-import { NON_VALUE_ROWS, ORGANISE_ICONS, movedTo } from '../../core/ui/shared-constants.js';
+import { NON_VALUE_ROWS, NOT_AVAILABLE, ORGANISE_ICONS, RULED_OUT, movedTo } from '../../core/ui/shared-constants.js';
 import { arranges, FILTER_KINDS, type FilterKind } from '../../core/ui/filter-kind.js';
 import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
 // Floating, so the count tooltip escapes the toolbar's clipping chip run.
@@ -67,6 +67,9 @@ export class SherpaQuickFilter extends SherpaElement {
        it keeps its value and comes back when the view lets the field go.
        TRAP T-a-superseded-chip-suspends-it-is-never-removed */
     'data-superseded': { type: 'boolean', kind: 'style' },
+    /* The other filters rule this value out: greyed and refused, written by
+       its host. Will, TODO 174. TRAP T-a-ruled-out-value-is-greyed */
+    'data-unavailable': { type: 'boolean', kind: 'style' },
     /* Written BY the chip: which condition it holds — `state.condition`.
        TRAP T-a-conditioned-chip-reads-as-active */
     'data-condition': { type: 'enum', kind: 'style', values: ['simple', 'advanced'] },
@@ -110,7 +113,7 @@ export class SherpaQuickFilter extends SherpaElement {
 
   // data-label is hand-written: an absent attribute must leave the template's
   // own default label alone.
-  static override observed = ['data-label', 'data-icon-start', 'data-current', 'aria-label'];
+  static override observed = ['data-label', 'data-icon-start', 'data-current', 'aria-label', 'disabled'];
 
   override onRender(): void {
     this.#syncText();
@@ -183,6 +186,8 @@ export class SherpaQuickFilter extends SherpaElement {
   }
 
   override onChange(name: string): void {
+    // A greyed chip says why. Will, TODO 176.
+    if (name === 'data-unavailable' || name === 'disabled') return this.#writeTip();
     /* THE CHIP DRAWS ITSELF. A host says what the state IS — on, which way,
        which column — and never paints the caret or the glyph for it. Two hosts
        painting it is how Group came to forget its column when switched off
@@ -545,7 +550,7 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** The body was clicked: toggle, or let Group and Sort do their own thing. */
   #onClick = (event: Event): void => {
-    if (this.hasAttribute('disabled')) return;
+    if (this.hasAttribute('disabled') || this.hasAttribute('data-unavailable')) return;
 
     /* A GROUP or SORT chip owns its own gesture, because what it does is a
        property of WHAT IT IS, not of which container drew it.
@@ -605,7 +610,7 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** The caret opens the menu without toggling the chip. */
   #onCaret = (event: Event): void => {
-    if (this.hasAttribute('disabled')) return;
+    if (this.hasAttribute('disabled') || this.hasAttribute('data-unavailable')) return;
     event.stopPropagation(); // opening the menu must not toggle the chip
     this.#openMenu();
   };
@@ -652,6 +657,9 @@ export class SherpaQuickFilter extends SherpaElement {
    * TRAP T-an-inactive-chip-says-where-its-filter-went
    */
   #tipText(values: string): string {
+    // A greyed chip says WHY, in a few words. Will, TODO 176.
+    if (this.hasAttribute('data-unavailable')) return RULED_OUT;
+    if (this.hasAttribute('disabled')) return NOT_AVAILABLE;
     if (this.hasAttribute('data-superseded')) {
       // The VALUES too where there are any: they come back when the field is free.
       const moved = movedTo(this.dataset['appliedAt']);
@@ -760,7 +768,7 @@ export class SherpaQuickFilter extends SherpaElement {
     const n = this.current ? this.#shownResults() : null;
     const matches = n == null ? '' : `${RESULTS.format(n)} ${n === 1 ? 'match' : 'matches'}`;
     // OFF filters nothing, so it says nothing — but one held ABOVE says where it went.
-    const says = this.current || this.hasAttribute('data-superseded');
+    const says = this.current || ['data-superseded', 'data-unavailable', 'disabled'].some((a) => this.hasAttribute(a));
     const said = [says ? this.#tipText(this.#said) : '', matches].filter(Boolean).join(' - ');
     /* A chip with NO WORDS on it — a grid heading's sort button — says its
        name in the tip, as an icon button does: "Sorted by Name, descending". */

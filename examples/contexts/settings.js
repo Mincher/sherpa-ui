@@ -64,6 +64,14 @@ const WIRING = [
     }
   },
 
+  // "Limit filter options": what the other filters rule out is greyed. TODO 174.
+  (root, session) => {
+    const limit = root.querySelector('#filters-limit');
+    if (!limit) return;
+    limit.checked = session.get('/filters/limit');
+    limit.addEventListener('change', (e) => session.set('/filters/limit', e.detail.checked));
+  },
+
   /* A draft per View: for the tab, and across sessions. The second means
      nothing without the first. TRAP T-a-view-keeps-a-draft */
   (root, session) => {

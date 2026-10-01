@@ -494,7 +494,8 @@
   box-shadow: var(--sherpa-focus-ring);
 }
 ::slotted(:is(label, button)[disabled]),
-::slotted(:is(label, button):disabled) {
+::slotted(:is(label, button):disabled),
+::slotted([data-unavailable]) {
   cursor: not-allowed;
   color: var(--sherpa-theme-content-body-1, #35353d);
 }

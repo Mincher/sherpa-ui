@@ -430,7 +430,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (setChipValues, setChipReading, drawResults, drawReading, supersede, unpackFilter, deleteFilter, packFilter, report, available, addFilters, removeFilter, drawScope, allowFields, clearAll, organise). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (setChipValues, setChipReading, drawResults, drawPresent, drawReading, supersede, unpackFilter, deleteFilter, packFilter, report, available, addFilters, removeFilter, drawScope, allowFields, clearAll, organise). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -608,6 +608,12 @@
           "name": "drawResults",
           "args": "results: Readonly<Record<string, number>>",
           "description": "drawResults(results) — each answered chip's results, from its source: the rows its own answer matches, by field or saved-filter id. SILENT. A chip with none shows no number. Will, TODO 60."
+        },
+        {
+          "$type": "method",
+          "name": "drawPresent",
+          "args": "present: Readonly<Record<string, readonly string[]>>",
+          "description": "drawPresent(present) — a bound source says what each field's other answers leave; a chip's menu greys the rest. SILENT. A field not named is not limited."
         },
         {
           "$type": "method",

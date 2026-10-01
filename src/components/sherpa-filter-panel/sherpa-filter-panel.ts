@@ -468,6 +468,32 @@ export class SherpaFilterPanel extends SherpaElement {
   /** Each scope's per-value results as last drawn. */
   #valueCounted = new Map<string, Readonly<Record<string, Readonly<Record<string, number>>>>>();
 
+  /**
+   * drawPresent(present, scope) — a bound source says what each field's other
+   * answers leave in a scope. A value chip they rule out is greyed and refused,
+   * unless it is on; a field's menu greys its rows. A field not named is not
+   * limited. TRAP T-a-ruled-out-value-is-greyed
+   */
+  drawPresent(present: Readonly<Record<string, readonly string[]>>, scope: string): void {
+    this.#presentBy.set(scope, present);
+    for (const held of this.#held.values()) if (held.scope === scope) this.#markPresent(held);
+  }
+  /** What each field's other answers leave, by scope, as last drawn. */
+  #presentBy = new Map<string, Readonly<Record<string, readonly string[]>>>();
+
+  /** One field's chips and menu, told what its other answers leave. */
+  #markPresent(held: Held): void {
+    if (held.def.id === 'presets' || held.def.appliedAt) return;
+    const left = this.#presentBy.get(held.scope)?.[held.def.field ?? held.def.id] ?? null;
+    const keep = left ? new Set(left) : null;
+    for (const chip of held.values.querySelectorAll<HTMLElement>('.value')) {
+      if (this.#heldOfChip(chip) !== held) continue;
+      chip.toggleAttribute('data-unavailable',
+        !!keep && !chip.hasAttribute('data-current') && !keep.has(chip.dataset['value'] ?? ''));
+    }
+    if (held.menu) (held.menu as HTMLElement & { present?: readonly string[] | null }).present = left;
+  }
+
   /** A field's results, on its header's badge — or none. Will, TODO 133. */
   #headResults(held: Held, n: number | null): void {
     const badge = held.box.querySelector('.field-results');
@@ -652,6 +678,7 @@ export class SherpaFilterPanel extends SherpaElement {
     this.#syncPending();
     for (const [scope, results] of this.#counted) this.drawResults(results, scope);
     for (const [scope, results] of this.#valueCounted) this.drawValueResults(results, scope);
+    for (const [scope, present] of this.#presentBy) this.drawPresent(present, scope);
   }
 
   /** A field a HIGHER scope holds: its heading, and the line a chip's tooltip
@@ -1310,7 +1337,8 @@ export class SherpaFilterPanel extends SherpaElement {
   /** A single-select field unticks its siblings. */
   #onValueClick = (event: Event): void => {
     const one = this.pathFind(event, '.value');
-    if (!one) return;
+    // A ruled-out value is refused. TRAP T-a-ruled-out-value-is-greyed
+    if (!one || one.hasAttribute('data-unavailable')) return;
     const held = this.#heldOfChip(one);
     if (!held) return;
     /* ONE OF THIS FIELD'S VALUES, not one of the run. A section can hold two
@@ -1331,6 +1359,7 @@ export class SherpaFilterPanel extends SherpaElement {
        on WHAT THE CHIP IS, not on which container drew it.
        TRAP T-a-chip-knows-what-kind-it-is */
     this.#syncAnswered(held);
+    this.#markPresent(held);
     this.#report(held);
   };
 

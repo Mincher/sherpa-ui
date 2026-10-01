@@ -35,6 +35,9 @@ sherpa-quick-filter:
   # The view took this field; reads as inactive, keeps its value.
   '&[data-superseded]': inactive
   '&[disabled]': inactive
+  # Ruled out by the other filters: greyed and refused. Will, TODO 174.
+  # TRAP T-a-ruled-out-value-is-greyed
+  '&[data-unavailable]': inactive
   # The count is a Badge, which pins Style=default in Figma — never the on tint.
   '& .count': default
 

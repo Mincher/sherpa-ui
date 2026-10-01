@@ -717,7 +717,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (values, mode, reading, conditions, op, conditionValue, open, dirty). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (values, mode, reading, conditions, op, conditionValue, open, dirty, present). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -967,6 +967,11 @@
           "name": "dirty",
           "type": "boolean",
           "access": "read"
+        },
+        {
+          "name": "present",
+          "type": "readonly string[] | null",
+          "access": "read-write"
         }
       ]
     }
