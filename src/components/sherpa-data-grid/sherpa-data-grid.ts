@@ -452,11 +452,14 @@ export class SherpaDataGrid extends SherpaElement {
        TRAP T-a-heading-menu-opens-on-what-it-holds */
     customElements.upgrade(menu);
     if (items.length) (menu as HeadMenu).items(this.#columnItems(items, held));
-    if (!superseded) (menu as HeadMenu).present = this.#present[col.field] ?? null;
-    if (!held) return;
+    if (!held) {
+      this.#markPresent(th);
+      return;
+    }
     // Rows ARE the opt-in reaching the menu. TRAP T-many-conditions-are-one-reading
     if (readingRows(held).length) menu.setAttribute('data-advanced', '');
     (menu as HeadMenu).reading = held;
+    this.#markPresent(th);
   }
 
   /**
@@ -505,11 +508,20 @@ export class SherpaDataGrid extends SherpaElement {
    */
   drawPresent(present: Readonly<Record<string, readonly string[]>>): void {
     this.#present = present;
-    for (const cell of this.$$<HTMLElement>('.head-cell[data-field]')) {
-      const field = cell.dataset['field']!;
-      const menu = cell.querySelector<HeadMenu>('.head-filter sherpa-menu');
-      if (menu && !this.#superseded.has(field)) menu.present = present[field] ?? null;
-    }
+    for (const cell of this.$$<HTMLElement>('.head-cell[data-field]')) this.#markPresent(cell);
+  }
+
+  /** One heading's menu, told what its field's other answers leave — and its
+   *  chip greyed when every pick it holds is set aside (180). */
+  #markPresent(cell: HTMLElement): void {
+    const field = cell.dataset['field']!;
+    const chip = cell.querySelector<HTMLElement>('.head-filter');
+    const menu = chip?.querySelector<HeadMenu & { values?: string[] }>('sherpa-menu');
+    if (!chip || !menu || this.#superseded.has(field)) return;
+    const left = this.#present[field] ?? null;
+    menu.present = left;
+    const picks = menu.values ?? [];
+    chip.toggleAttribute('data-unavailable', !!left && picks.length > 0 && picks.every((v) => !left.includes(v)));
   }
   /** What each field's other answers leave, as the source last said. */
   #present: Readonly<Record<string, readonly string[]>> = {};

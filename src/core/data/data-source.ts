@@ -93,7 +93,7 @@ import {
 } from './store.js';
 import { fieldState, readingClause, stateClause } from './filter-state.js';
 import { sayReadings, type SaidField } from './filter-face.js';
-import { compile, VIEW, type Query, type QueryDefaults, type ScopeQuery } from './query.js';
+import { compile, VIEW, withoutDropped, type CompileFacts, type Query, type QueryDefaults, type ScopeQuery } from './query.js';
 import { report } from './report.js';
 import type { Populatable } from '../ui/apply-state.js';
 import type { FieldFacts, FieldReading, FieldType, FilterState } from './filter-state.js';
@@ -1678,11 +1678,8 @@ export class DataSource extends EventTarget {
   /** Compile the Query under every named part, and load. The ONE place the
    *  filter is made. TRAP T-one-query-one-owner */
   #recompose(): void {
-    const { filter, view, scoped, only } = compile(this.#applied, {
-      field: (f) => this.#facts(f),
-      preset: (id) => this.#presets.get(id),
-      components: this.#componentScopes(),
-    });
+    this.#noteRecency();
+    const { filter, view, scoped, only } = compile(this.#applied, this.#compileFacts());
     const parts = [...this.#parts.values()];
     const next = andFilter([...parts, ...(filter ? [filter] : [])]);
     const viewed = andFilter([...parts, ...(view ? [view] : [])]);
@@ -1702,6 +1699,17 @@ export class DataSource extends EventTarget {
        TRAP T-a-chip-counts-its-own-results */
     if (still && this.#loaded && this.#countedFor !== JSON.stringify(this.#applied)) void this.#drawResults();
     if (still && this.#loaded) this.#presentSoon();
+  }
+
+  /** What compiling needs: each field's facts, the saved filters, the
+   *  component scopes, and the picks a later answer set aside. */
+  #compileFacts(): CompileFacts {
+    return {
+      field: (f) => this.#facts(f),
+      preset: (id) => this.#presets.get(id),
+      components: this.#componentScopes(),
+      drop: (scope, field) => this.#setAside.get(scope)?.[field],
+    };
   }
 
   /* ── Draft and applied — a REMOTE source only ─────────────────────────
@@ -2045,9 +2053,7 @@ export class DataSource extends EventTarget {
     const q = this.#applied.scopes[scope];
     if (!q) return {};
     const field = (f: string): Omit<FieldFacts, 'field'> => this.#facts(f);
-    const { view } = compile(this.#applied, {
-      field, preset: (id) => this.#presets.get(id), components: this.#componentScopes(),
-    });
+    const { view } = compile(this.#applied, this.#compileFacts());
     const base = scope === VIEW || !view ? [] : [view];
     // One field, one scope: a field the View holds is the View's.
     const above = new Set(scope === VIEW ? [] : this.#applied.scopes[VIEW]?.holds ?? []);
@@ -2055,7 +2061,7 @@ export class DataSource extends EventTarget {
       ...Object.entries(q.readings)
         .filter(([f]) => !above.has(f))
         .map(([f, { suspended: _off, ...reading }]): [string, Filter | undefined] =>
-          [f, readingClause({ field: f, ...field(f) }, reading)]),
+          [f, readingClause({ field: f, ...field(f) }, withoutDropped(reading, this.#setAside.get(scope)?.[f]))]),
       ...Object.entries(q.presets ?? {}).filter(([, on]) => on)
         .map(([id]): [string, Filter | undefined] => [id, andFilter(Object.entries(q.edits?.[id] ?? this.#presets.get(id) ?? {})
           .map(([f, reading]) => readingClause({ field: f, ...field(f) }, reading))
@@ -2079,9 +2085,7 @@ export class DataSource extends EventTarget {
   async valueResults(scope: string): Promise<Record<string, Record<string, number>>> {
     const q = this.#applied.scopes[scope];
     if (!q) return {};
-    const { view } = compile(this.#applied, {
-      field: (f) => this.#facts(f), preset: (id) => this.#presets.get(id), components: this.#componentScopes(),
-    });
+    const { view } = compile(this.#applied, this.#compileFacts());
     const base = scope === VIEW || !view ? [] : [view];
     const above = new Set(scope === VIEW ? [] : this.#applied.scopes[VIEW]?.holds ?? []);
     const out: Record<string, Record<string, number>> = {};
@@ -2183,9 +2187,7 @@ export class DataSource extends EventTarget {
     const query = structuredClone(this.#applied);
     const own = query.scopes[scope];
     if (own) Reflect.deleteProperty(own.readings, field);
-    const { view, scoped } = compile(query, {
-      field: (f) => this.#facts(f), preset: (id) => this.#presets.get(id), components: this.#componentScopes(),
-    });
+    const { view, scoped } = compile(query, this.#compileFacts());
     return andFilter([view, scope === VIEW ? undefined : scoped[scope]].filter((f): f is Filter => !!f));
   }
 
@@ -2202,13 +2204,108 @@ export class DataSource extends EventTarget {
     return Object.fromEntries(fields.map((f) => [f, keys(rows.map((r) => readField(r, f)))]));
   }
 
+  /**
+   * A LATER answer wins (Will, TODO 180): newest first, each list field keeps
+   * the picks the rows still hold under the answers after it, and the rest are
+   * SET ASIDE — kept in the reading, left out of the filter, drawn inactive. The
+   * View first; a component scope's under the View's. Off, nothing is set aside.
+   * TRAP T-a-later-answer-sets-an-earlier-pick-aside
+   */
+  async #setAsideNow(): Promise<Map<string, Record<string, string[]>>> {
+    const out = new Map<string, Record<string, string[]>>();
+    if (!this.#limitOptions) return out;
+    const facts = (f: string): Omit<FieldFacts, 'field'> => this.#facts(f);
+    const viewHolds = new Set(this.#applied.scopes[VIEW]?.holds ?? []);
+    const run = async (scope: string, base: readonly Filter[]): Promise<Filter[]> => {
+      const q = this.#applied.scopes[scope];
+      const filters = [...base];
+      if (!q || q.narrows?.length) return filters;
+      for (const [id, on] of Object.entries(q.presets ?? {})) {
+        if (!on) continue;
+        for (const [f, reading] of Object.entries(q.edits?.[id] ?? this.#presets.get(id) ?? {})) {
+          const clause = readingClause({ field: f, ...facts(f) }, reading);
+          if (clause) filters.push(clause);
+        }
+      }
+      const newest = Object.keys(q.readings)
+        .sort((a, b) => this.#recency.indexOf(`${scope}:${b}`) - this.#recency.indexOf(`${scope}:${a}`));
+      for (const f of newest) {
+        const reading = q.readings[f]!;
+        if (reading.suspended || (scope !== VIEW && viewHolds.has(f))) continue;
+        const state = this.#stateFor(f, reading);
+        const picks = reading.picked ?? [];
+        if (!this.#isListField(f) || state.mode !== 'simple' || state.range || state.op !== DEFAULT_OP || !picks.length) {
+          const clause = readingClause({ field: f, ...facts(f) }, reading);
+          if (clause) filters.push(clause);
+          continue;
+        }
+        const held = new Set((await this.#presentUnder([f], andFilter(filters)))[f]);
+        const aside = picks.map(valueKey).filter((k) => !held.has(k));
+        if (aside.length) {
+          if (!out.has(scope)) out.set(scope, {});
+          out.get(scope)![f] = aside;
+        }
+        const clause = readingClause({ field: f, ...facts(f) }, withoutDropped(reading, aside));
+        if (clause) filters.push(clause);
+      }
+      return filters;
+    };
+    const parts = [...this.#parts.values()];
+    const viewed = await run(VIEW, parts);
+    for (const scope of Object.keys(this.#applied.scopes)) if (scope !== VIEW) await run(scope, viewed);
+    return out;
+  }
+
+  /** Work out what is set aside; if it MOVED, compile again — the load that
+   *  follows draws what is left. Says whether it moved. */
+  async #settleSetAside(): Promise<boolean> {
+    const ticket = (this.#settling = Symbol('aside'));
+    const next = await this.#setAsideNow();
+    if (this.#settling !== ticket) return true;
+    const key = (m: Map<string, Record<string, string[]>>): string => JSON.stringify([...m].sort());
+    if (key(next) === key(this.#setAside)) return false;
+    this.#setAside = next;
+    this.#presentFor = '';
+    this.#recompose();
+    return true;
+  }
+  /** The latest set-aside pass; an older one lands on nothing. */
+  #settling: symbol | null = null;
+  /** The picks set aside, by scope then field, as value keys. */
+  #setAside = new Map<string, Record<string, string[]>>();
+
+  /** Each answered field, oldest change first — `scope:field`. */
+  #recency: string[] = [];
+  /** Each reading as last seen, so a CHANGE moves its field to the end. */
+  #lastSeen = new Map<string, string>();
+
+  /** Move each field whose reading changed to the newest place. */
+  #noteRecency(): void {
+    const seen = new Set<string>();
+    for (const [scope, q] of Object.entries(this.#applied.scopes)) {
+      for (const [f, reading] of Object.entries(q.readings)) {
+        const id = `${scope}:${f}`;
+        seen.add(id);
+        const now = JSON.stringify(reading.picked ?? []) + JSON.stringify(reading.suspended ?? false);
+        if (this.#lastSeen.get(id) === now) continue;
+        this.#lastSeen.set(id, now);
+        this.#recency = [...this.#recency.filter((x) => x !== id), id];
+      }
+    }
+    for (const id of [...this.#lastSeen.keys()]) {
+      if (seen.has(id)) continue;
+      this.#lastSeen.delete(id);
+      this.#recency = this.#recency.filter((x) => x !== id);
+    }
+  }
+
   /** One pass this tick, however many asked. */
   #presentSoon(): void {
     if (this.#presentQueued) return;
     this.#presentQueued = true;
     queueMicrotask(() => {
       this.#presentQueued = false;
-      void this.#drawPresent();
+      void this.#settleSetAside().then((moved) => { if (!moved) void this.#drawPresent(); });
     });
   }
   /** A pass is queued for the end of this tick. */

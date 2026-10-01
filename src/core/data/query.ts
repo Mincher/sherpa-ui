@@ -13,11 +13,12 @@
  * - ScopeQuery — One scope: the fields it holds, each one's reading, and how it arranges rows.
  * - QueryDefaults — A Query as a DEFINITION states it — a saved View, in JSON.
  * - CompileFacts — What compiling needs to know that the Query does not say.
+ * - withoutDropped — A reading without the picks set aside.
  * - Compiled — A Query as the source runs it: one shared filter, and each one-component filter.
  * - VIEW — The id of the page's own scope, which every component scope sits under.
  * - compile — Turn a Query into what the source runs — the ONE place a Query becomes a filter.
  */
-import { andFilter, type Filter, type SortSpec } from './store.js';
+import { andFilter, valueKey, type Filter, type SortSpec } from './store.js';
 import { readingClause, type FieldFacts, type FieldReading } from './filter-state.js';
 import { report } from './report.js';
 
@@ -71,6 +72,16 @@ export interface CompileFacts {
    *  and trickles down with the View. Absent: every scope but the View is a
    *  component's. TRAP T-only-the-view-trickles-down */
   components?: ReadonlySet<string>;
+  /** The picked values a LATER answer rules out, as value keys: they stay in the
+   *  reading and leave the filter. TRAP T-a-later-answer-sets-an-earlier-pick-aside */
+  drop?: (scope: string, field: string) => readonly string[] | undefined;
+}
+
+/** A reading without the picks set aside. */
+export function withoutDropped(reading: FieldReading, dropped: readonly string[] | undefined): FieldReading {
+  if (!dropped?.length || !reading.picked) return reading;
+  const out = new Set(dropped);
+  return { ...reading, picked: reading.picked.filter((v) => !out.has(valueKey(v))) };
 }
 
 /** A Query as the source runs it: one shared filter, and each one-component filter. */
@@ -117,7 +128,7 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
       // One field, one scope: the View's answer wins. TRAP T-a-view-held-heading-shows-and-refuses
       if (id !== VIEW && viewHolds.has(field)) continue;
       if (reading.suspended) continue;
-      const clause = readingClause({ field, ...facts.field?.(field) }, reading);
+      const clause = readingClause({ field, ...facts.field?.(field) }, withoutDropped(reading, facts.drop?.(id, field)));
       if (clause) clauses.push(clause);
     }
     for (const [preset, on] of Object.entries(scope.presets ?? {})) {

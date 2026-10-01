@@ -425,7 +425,7 @@
           "$type": "method",
           "name": "drawPresent",
           "args": "present: Readonly<Record<string, readonly string[]>>, scope: string",
-          "description": "drawPresent(present, scope) — a bound source says what each field's other answers leave in a scope. A value chip they rule out is greyed and refused, unless it is on; a field's menu greys its rows. A field not named is not limited."
+          "description": "drawPresent(present, scope) — a bound source says what each field's other answers leave in a scope. A value chip they rule out is greyed — refused if off, set aside if on (180); a field's menu greys its rows. A field not named is not limited."
         },
         {
           "$type": "method",

@@ -12,7 +12,7 @@ import {
   fieldState, readingRows, type FieldCondition, type FieldReading, type FilterState,
 } from '../../core/data/filter-state.js';
 import { filterFace } from '../../core/data/filter-face.js';
-import { NON_VALUE_ROWS, NOT_AVAILABLE, ORGANISE_ICONS, RULED_OUT, movedTo } from '../../core/ui/shared-constants.js';
+import { NON_VALUE_ROWS, NOT_AVAILABLE, ORGANISE_ICONS, RULED_OUT, SET_ASIDE, movedTo } from '../../core/ui/shared-constants.js';
 import { arranges, FILTER_KINDS, type FilterKind } from '../../core/ui/filter-kind.js';
 import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
 // Floating, so the count tooltip escapes the toolbar's clipping chip run.
@@ -67,8 +67,9 @@ export class SherpaQuickFilter extends SherpaElement {
        it keeps its value and comes back when the view lets the field go.
        TRAP T-a-superseded-chip-suspends-it-is-never-removed */
     'data-superseded': { type: 'boolean', kind: 'style' },
-    /* The other filters rule this value out: greyed and refused, written by
-       its host. Will, TODO 174. TRAP T-a-ruled-out-value-is-greyed */
+    /* The other filters rule this value out: greyed, and refused while off — on,
+       it is set aside and may be let go. Written by its host. Will, TODO 174
+       and 180. TRAP T-a-ruled-out-value-is-greyed */
     'data-unavailable': { type: 'boolean', kind: 'style' },
     /* Written BY the chip: which condition it holds — `state.condition`.
        TRAP T-a-conditioned-chip-reads-as-active */
@@ -550,7 +551,7 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** The body was clicked: toggle, or let Group and Sort do their own thing. */
   #onClick = (event: Event): void => {
-    if (this.hasAttribute('disabled') || this.hasAttribute('data-unavailable')) return;
+    if (this.hasAttribute('disabled') || this.#refused()) return;
 
     /* A GROUP or SORT chip owns its own gesture, because what it does is a
        property of WHAT IT IS, not of which container drew it.
@@ -610,10 +611,16 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** The caret opens the menu without toggling the chip. */
   #onCaret = (event: Event): void => {
-    if (this.hasAttribute('disabled') || this.hasAttribute('data-unavailable')) return;
+    // A chip with a MENU always opens it: its rows say what is left.
+    if (this.hasAttribute('disabled') || (this.#refused() && !this.hasAttribute('data-menu'))) return;
     event.stopPropagation(); // opening the menu must not toggle the chip
     this.#openMenu();
   };
+
+  /** Ruled out and OFF: nothing to press. On, it is set aside and may be let go. */
+  #refused(): boolean {
+    return this.hasAttribute('data-unavailable') && !this.current;
+  }
 
   /**
    * Open or shut this chip's menu — what a HOST calls to drive the chip from
@@ -658,7 +665,7 @@ export class SherpaQuickFilter extends SherpaElement {
    */
   #tipText(values: string): string {
     // A greyed chip says WHY, in a few words. Will, TODO 176.
-    if (this.hasAttribute('data-unavailable')) return RULED_OUT;
+    if (this.hasAttribute('data-unavailable')) return this.current ? SET_ASIDE : RULED_OUT;
     if (this.hasAttribute('disabled')) return NOT_AVAILABLE;
     if (this.hasAttribute('data-superseded')) {
       // The VALUES too where there are any: they come back when the field is free.

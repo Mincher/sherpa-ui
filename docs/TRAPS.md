@@ -6487,9 +6487,10 @@ went on filtering. Will, TODO 167.
 
 **A value the other filters rule out stays in its list, greyed out, and
 cannot be picked** — Will, TODO 174, choosing 110's B. A value already picked
-stays ticked and can be unticked: a reader's answer is never dropped. Only
-while the source's `limitOptions` is on (Settings › Application, off by
-default); off, nothing is limited.
+stays ticked, greyed, and free to untick — set aside and not applied
+(`T-a-later-answer-sets-an-earlier-pick-aside`). Only while the source's
+`limitOptions` is on (Settings › Application, off by default); off, nothing
+is limited.
 
 **The SOURCE says what is left** — `source.present(scope)`: each list field's
 values the rows still hold under the OTHER answers in its scope, and a
@@ -6522,6 +6523,39 @@ chip says "Not available here." A chip the View took says where it went
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `test/unit/present-limits-each-field.test.mjs`
+- Site: `test/e2e/reforged-limit-options.spec.ts`
+
+### T-a-later-answer-sets-an-earlier-pick-aside
+
+**A later answer wins** — Will, TODO 180: *"Customer A is selected but made
+unviable by Region C being activated … possible if Customer B makes Region C
+viable again."* Customer A and B are picked; B makes Region C viable; the
+reader picks C; A has no C rows. A is SET ASIDE: it stays in the reading (a
+saved View, a draft and the URL keep it), it leaves the compiled filter, and
+it is drawn greyed — still ticked, free to untick. B stays in force. Let C go
+and A is back.
+
+**Newest first, so it settles.** The source keeps the order fields CHANGED in
+(`#recency`). Newest first, each list field keeps the picks the rows still
+hold under the answers after it; the rest are set aside, and the next older
+field is limited by what was kept. The View first, then each component scope
+under the View's kept answers. It depends only on the readings, that order and
+the rows — never on what was set aside before — so a second pass gives the
+same answer and nothing loops: when it MOVES, the source compiles again
+(`CompileFacts.drop`) and the load that follows draws the rest.
+
+Only Simple list answers can be set aside; a range, a date or Advanced rows
+stay whole and limit the older fields as they are. Only while `limitOptions`
+is on.
+
+A chip whose every pick is set aside is greyed too, and says "Not applied: no
+matches with your other filters." Off and ruled out, a value chip is refused;
+on, it may be let go. A chip with a menu always opens it.
+
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/query.ts`
+- Site: `src/core/ui/shared-constants.ts`
 - Site: `test/unit/present-limits-each-field.test.mjs`
 - Site: `test/e2e/reforged-limit-options.spec.ts`
 

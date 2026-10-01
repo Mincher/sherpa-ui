@@ -45,11 +45,12 @@ test('with "Limit filter options" on, a Customer pick greys the Regions it rules
   expect(rows['LATAM']).toEqual({ greyed: true, refused: true, ticked: false, says: 'No matches with your other filters.' });
   for (const region of ['EMEA', 'AMER', 'APAC']) expect(rows[region]).toMatchObject({ greyed: false, refused: false });
 
-  // A pick it would rule out STAYS: ticked, and free to untick.
+  // A pick the LATER answer rules out is set aside: still ticked, greyed, free to untick (180).
   await pick(page, { customer: [], region: ['LATAM'] });
   await pick(page, { customer: ['Adventure Works'], region: ['LATAM'] });
-  await expect.poll(async () => (await regionRows(page))['LATAM']?.ticked).toBe(true);
-  expect((await regionRows(page))['LATAM']).toMatchObject({ greyed: false, refused: false });
+  await expect.poll(async () => (await regionRows(page))['LATAM']?.greyed).toBe(true);
+  expect((await regionRows(page))['LATAM']).toEqual({
+    greyed: true, refused: false, ticked: true, says: 'Not applied: no matches with your other filters.' });
 });
 
 test('in the filter panel, a ruled-out value chip is greyed, refused, and its tooltip says why', async ({ page }) => {
@@ -79,4 +80,41 @@ test('off — the default — nothing is greyed', async ({ page }) => {
   await pick(page, { customer: ['Adventure Works'], region: [] });
   await page.waitForTimeout(600);
   expect((await regionRows(page))['LATAM']).toMatchObject({ greyed: false, refused: false });
+});
+
+/**
+ * A LATER ANSWER WINS — Will, TODO 180: "Customer A is selected but made
+ * unviable by Region C being activated … possible if Customer B makes Region C
+ * viable again." Contoso makes Latin America viable; picked, it sets Adventure
+ * Works aside: still ticked, greyed, free to untick, and not in the rows.
+ * TRAP T-a-later-answer-sets-an-earlier-pick-aside
+ */
+test('a later Region pick sets aside the Customer it rules out: ticked, greyed, and not applied', async ({ page }) => {
+  await open(page, true);
+  await pick(page, { customer: ['Adventure Works', 'Contoso'], region: [] });
+  await expect.poll(async () => (await regionRows(page))['LATAM']?.greyed).toBe(false);
+  await pick(page, { customer: ['Adventure Works', 'Contoso'], region: ['LATAM'] });
+
+  const customerRows = () => page.evaluate(() => {
+    const bar = document.querySelector('sherpa-app-shell > sherpa-app-header sherpa-quick-filter-toolbar')!;
+    const menu = bar.shadowRoot!.querySelector('.chip[data-id="customer"] sherpa-menu')!;
+    return Object.fromEntries([...menu.querySelectorAll<HTMLElement>('.menu-row')].map((row) => {
+      const box = row.querySelector('input')!;
+      return [box.value, { greyed: row.hasAttribute('data-unavailable'), refused: box.disabled, ticked: box.checked,
+        says: box.getAttribute('aria-description') }];
+    }));
+  });
+  await expect.poll(async () => (await customerRows(page))['Adventure Works']?.greyed).toBe(true);
+  expect((await customerRows(page))['Adventure Works']).toEqual({
+    greyed: true, refused: false, ticked: true, says: 'Not applied: no matches with your other filters.' });
+  expect((await customerRows(page))['Contoso']).toMatchObject({ greyed: false, ticked: true });
+
+  // The Alerts tile counts Contoso's Latin America alerts alone.
+  const want = await page.evaluate(async () => {
+    const { alerts } = await import('/contexts/dashboard-data.js');
+    return (alerts() as Array<{ customer: string; region: string }>)
+      .filter((a) => a.region === 'LATAM' && ['Adventure Works', 'Contoso'].includes(a.customer)).length;
+  });
+  await expect.poll(() => page.evaluate(() =>
+    document.querySelector('#m-endpoints')!.getAttribute('data-value'))).toBe(want.toLocaleString());
 });

@@ -622,12 +622,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** What each field's other answers leave, as the source last said. */
   #present: Readonly<Record<string, readonly string[]>> = {};
 
-  /** One chip's menu, told what its field's other answers leave. */
+  /** One chip's menu, told what its field's other answers leave — and the
+   *  chip itself greyed when every pick it holds is set aside (180). */
   #markPresent(chip: HTMLElement): void {
     const id = chip.dataset['id'] ?? '';
     const field = this.#filters.find((f) => f.id === id)?.field ?? id;
-    const menu = chip.querySelector<HTMLElement & { present?: readonly string[] | null }>('sherpa-menu');
-    if (menu && !this.superseded.includes(id)) menu.present = this.#present[field] ?? null;
+    const menu = chip.querySelector<HTMLElement & { present?: readonly string[] | null; values?: string[] }>('sherpa-menu');
+    if (!menu || this.superseded.includes(id)) return;
+    const left = this.#present[field] ?? null;
+    menu.present = left;
+    const picks = menu.values ?? [];
+    chip.toggleAttribute('data-unavailable', !!left && picks.length > 0 && picks.every((v) => !left.includes(v)));
   }
 
   /**

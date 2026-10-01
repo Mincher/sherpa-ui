@@ -470,9 +470,9 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /**
    * drawPresent(present, scope) — a bound source says what each field's other
-   * answers leave in a scope. A value chip they rule out is greyed and refused,
-   * unless it is on; a field's menu greys its rows. A field not named is not
-   * limited. TRAP T-a-ruled-out-value-is-greyed
+   * answers leave in a scope. A value chip they rule out is greyed — refused
+   * if off, set aside if on (180); a field's menu greys its rows. A field not
+   * named is not limited. TRAP T-a-ruled-out-value-is-greyed
    */
   drawPresent(present: Readonly<Record<string, readonly string[]>>, scope: string): void {
     this.#presentBy.set(scope, present);
@@ -488,8 +488,7 @@ export class SherpaFilterPanel extends SherpaElement {
     const keep = left ? new Set(left) : null;
     for (const chip of held.values.querySelectorAll<HTMLElement>('.value')) {
       if (this.#heldOfChip(chip) !== held) continue;
-      chip.toggleAttribute('data-unavailable',
-        !!keep && !chip.hasAttribute('data-current') && !keep.has(chip.dataset['value'] ?? ''));
+      chip.toggleAttribute('data-unavailable', !!keep && !keep.has(chip.dataset['value'] ?? ''));
     }
     if (held.menu) (held.menu as HTMLElement & { present?: readonly string[] | null }).present = left;
   }
@@ -1337,8 +1336,8 @@ export class SherpaFilterPanel extends SherpaElement {
   /** A single-select field unticks its siblings. */
   #onValueClick = (event: Event): void => {
     const one = this.pathFind(event, '.value');
-    // A ruled-out value is refused. TRAP T-a-ruled-out-value-is-greyed
-    if (!one || one.hasAttribute('data-unavailable')) return;
+    // A ruled-out value is refused — unless it is on, so it can be let go. TRAP T-a-ruled-out-value-is-greyed
+    if (!one || (one.hasAttribute('data-unavailable') && !one.hasAttribute('data-current'))) return;
     const held = this.#heldOfChip(one);
     if (!held) return;
     /* ONE OF THIS FIELD'S VALUES, not one of the run. A section can hold two

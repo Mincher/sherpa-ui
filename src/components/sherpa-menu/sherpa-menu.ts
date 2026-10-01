@@ -22,7 +22,7 @@ import {
 import {
   readingRows, rowAnswered, type ConditionType, type FieldCondition, type FieldReading, type KeptAnswer,
 } from '../../core/data/filter-state.js';
-import { NON_VALUE_ROWS, RULED_OUT } from '../../core/ui/shared-constants.js';
+import { NON_VALUE_ROWS, RULED_OUT, SET_ASIDE } from '../../core/ui/shared-constants.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
 import '../sherpa-breadcrumbs/sherpa-breadcrumbs.js';
 import '../sherpa-input-text/sherpa-input-text.js';
@@ -1190,9 +1190,9 @@ export class SherpaMenu extends SherpaElement {
 
   /**
    * The values the other answers LEAVE, as value keys — its host's, from the
-   * source. A row they rule out is greyed and refused unless it is ticked: a
-   * reader's pick is never dropped. `null` limits nothing. Silent: no event.
-   * TRAP T-a-ruled-out-value-is-greyed
+   * source. A row they rule out is greyed and refused; a TICKED one stays
+   * ticked, greyed, free to untick — set aside, not applied (180). `null`
+   * limits nothing. Silent: no event. TRAP T-a-ruled-out-value-is-greyed
    */
   set present(values: readonly string[] | null) {
     this.#present = values ? new Set(values) : null;
@@ -1204,18 +1204,20 @@ export class SherpaMenu extends SherpaElement {
   /** What the other answers leave; `null` is everything. */
   #present: Set<string> | null = null;
 
-  /** Grey and refuse each row the other answers rule out; a ticked one stays. */
+  /** Grey each row the other answers rule out; refuse it unless it is ticked. */
   #markPresent(): void {
     const given = new Map(this.#items.map((i) => [i.value, i]));
     for (const box of this.#inputs()) {
       const row = box.closest<HTMLElement>('.menu-row');
-      const out = !box.checked && (given.get(box.value)?.available === false
-        || (this.#present !== null && !this.#present.has(box.value)));
-      if (out === row?.hasAttribute('data-unavailable')) continue;
-      box.disabled = out;
+      const out = given.get(box.value)?.available === false
+        || (this.#present !== null && !this.#present.has(box.value));
+      // Only ever undo its OWN refusal.
+      if (out) box.disabled = !box.checked;
+      else if (row?.hasAttribute('data-unavailable')) box.disabled = false;
       row?.toggleAttribute('data-unavailable', out);
-      if (out) box.setAttribute('aria-description', RULED_OUT);
-      else if (box.getAttribute('aria-description') === RULED_OUT) box.removeAttribute('aria-description');
+      const said = box.getAttribute('aria-description');
+      if (out) box.setAttribute('aria-description', box.checked ? SET_ASIDE : RULED_OUT);
+      else if (said === RULED_OUT || said === SET_ASIDE) box.removeAttribute('aria-description');
     }
   }
 

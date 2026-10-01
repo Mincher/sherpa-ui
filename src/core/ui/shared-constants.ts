@@ -8,6 +8,7 @@
  * Map:
  * - movedTo — What a filter another scope holds says: `Filter moved to View scope.`
  * - RULED_OUT — What a value the other filters rule out says, on its chip and its menu row
+ * - SET_ASIDE — What a PICKED value a later filter rules out says
  * - NOT_AVAILABLE — What a disabled chip says
  * - ORGANISE_ICONS — The ORGANISE glyphs — grouping and the three sort states.
  * - NON_VALUE_ROWS — Rows in a filter menu that are NOT values, as a selector.
@@ -31,6 +32,10 @@ export function movedTo(scope?: string | null): string {
 /** What a value the other filters rule out says, on its chip and its menu
  *  row. Will, TODO 176. TRAP T-a-ruled-out-value-is-greyed */
 export const RULED_OUT = 'No matches with your other filters.';
+
+/** What a PICKED value a later filter rules out says: kept, not applied.
+ *  Will, TODO 180. TRAP T-a-later-answer-sets-an-earlier-pick-aside */
+export const SET_ASIDE = 'Not applied: no matches with your other filters.';
 
 /** What a disabled chip says. Will, TODO 176. */
 export const NOT_AVAILABLE = 'Not available here.';
