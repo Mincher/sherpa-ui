@@ -118,6 +118,7 @@ const pitch = (page: Page) => page.evaluate(() => {
 const drag = async (page: Page, key: string, dx: number, dy = 0) => {
   const c = await page.evaluate((key) => {
     const h = document.querySelector('#root sherpa-layout-grid')!.shadowRoot!.querySelector(`.handle[data-key="${key}"]`)!;
+    h.scrollIntoView({ block: 'center', inline: 'center' });
     const r = h.getBoundingClientRect();
     return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
   }, key);
@@ -294,8 +295,8 @@ test('keys move one track and report once; Home and End go to the ends; a drag r
   });
 
   expect(out).toEqual({
-    aria: '4 3 6 4 of 12 columns',
-    right: { spans: '5x1', heard: 1, aria: '5 3 6 5 of 12 columns' },
+    aria: '4 3 6 4 of 12 columns wide, line after column 4',
+    right: { spans: '5x1', heard: 1, aria: '5 3 6 5 of 12 columns wide, line after column 5' },
     end: '6x1', home: '3x1', keysHeard: 3,
   });
   expect(mid).toEqual({ same: true, heard: before });
@@ -332,4 +333,111 @@ test('a layout put back is drawn the same and reports nothing; an incomplete one
   expect(b).toEqual({ spans: a.spans, heard: 0 });
   expect([c['c1'], c['c2']]).toEqual(['4x3', '4x3']);
   expect(cleared).toEqual([]);
+});
+
+/* ── the review of 177 ─────────────────────────────────────────────────── */
+
+test('a row above a locked one can shrink back: the move passes through it to the page', async ({ page }) => {
+  // The Dashboard's shape: the Summary hugs its content, so its row is locked.
+  await build(page, card('c1', 'medium', 2, 2) + card('c2', 'medium', 2, 2) + card('c3', 'medium', 2, 2)
+    + card('line', 'full', 2, 2) + '<sherpa-container id="sum" data-col-span="full" data-heading="Summary"><div>kv</div></sherpa-container>');
+  const p = await pitch(page);
+  await drag(page, 'r:line', 0, 2 * p.y);
+  const grown = (await spans(page))['line'];
+  // Back up, and further: it gives down to its own floor, 2.
+  await drag(page, 'r:line', 0, -3 * p.y);
+  expect([grown, (await spans(page))['line']]).toEqual(['12x4', '12x2']);
+});
+
+test('a first card never shrinks enough to jump up beside the row above', async ({ page }) => {
+  await build(page, card('a', 'large', 2) + card('b', 'reading', 2) + card('c', 'medium', 2));
+  const p = await pitch(page);
+  await drag(page, 'c:b', -3 * p.x);
+  const s = await spans(page);
+  // b may give only to 7: at 6 it would fit beside a.
+  expect([s['a'], s['b'], s['c']]).toEqual(['6x1', '7x1', '5x1']);
+});
+
+test('a drag let go where it began reports nothing and leaves nothing behind', async ({ page }) => {
+  await build(page, ['c1', 'c2', 'c3'].map((id) => card(id, 'medium', 2)).join(''));
+  const p = await pitch(page);
+  const c = await page.evaluate(() => {
+    const r = document.querySelector('#root sherpa-layout-grid')!.shadowRoot!.querySelector('.handle[data-key="c:c1"]')!.getBoundingClientRect();
+    return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+  });
+  await page.mouse.move(c.x, c.y);
+  await page.mouse.down();
+  await page.mouse.move(c.x + p.x, c.y);
+  await page.mouse.move(c.x, c.y);
+  await page.mouse.up();
+  const r = await page.evaluate(async () => {
+    await window.__settled();
+    return { counted: [...document.querySelectorAll('#root sherpa-layout-grid > *')]
+      .flatMap((k) => k.getAttributeNames().filter((n) => /^data-(col|row)-span-\d+$/.test(n))) };
+  });
+  expect({ ...r, heard: await heard(page) }).toEqual({ counted: [], heard: 0 });
+});
+
+test('a row filled by a drag keeps its end handle, and focus stays on a handle', async ({ page }) => {
+  await build(page, card('a', 'medium', 2) + card('b', 'medium', 2) + card('wide', 'full', 2));
+  await page.evaluate(() => (document.querySelector('#root sherpa-layout-grid')!.shadowRoot!
+    .querySelector('.handle[data-key="c:end:b"]') as HTMLElement).focus());
+  await page.keyboard.press('End');
+  await page.evaluate(async () => {
+    await window.__settled();
+    for (let i = 0; i < 3; i++) await new Promise<void>((r) => requestAnimationFrame(() => r()));
+  });
+  const r = await page.evaluate(() => {
+    const sr = document.querySelector('#root sherpa-layout-grid')!.shadowRoot!;
+    return { focus: (sr.activeElement as HTMLElement | null)?.dataset['key'], end: !!sr.querySelector('.handle[data-key="c:end:b"]') };
+  });
+  await page.keyboard.press('Home');
+  const back = await spans(page);
+  expect(r).toEqual({ focus: 'c:end:b', end: true });
+  // Home goes as far as the line can: b to its floor, then a.
+  expect([back['a'], back['b']]).toEqual(['3x1', '3x1']);
+});
+
+test('handles still work after the grid is taken out and put back', async ({ page }) => {
+  await build(page, ['c1', 'c2', 'c3'].map((id) => card(id, 'medium', 2)).join(''));
+  await page.evaluate(async () => {
+    const grid = document.querySelector('#root sherpa-layout-grid')!;
+    const box = grid.parentElement!;
+    grid.remove();
+    box.append(grid);
+    await window.__settled();
+    for (let i = 0; i < 3; i++) await new Promise<void>((r) => requestAnimationFrame(() => r()));
+    (grid.shadowRoot!.querySelector('.handle[data-key="c:c1"]') as HTMLElement).focus();
+  });
+  await page.keyboard.press('ArrowRight');
+  expect((await spans(page))['c1']).toBe('5x1');
+});
+
+test('a hidden child does not undo the widths put back', async ({ page }) => {
+  await build(page, ['c1', 'c2', 'c3'].map((id) => card(id, 'medium', 2)).join('')
+    + '<div id="ghost" data-col-span="full" hidden>ghost</div>');
+  const p = await pitch(page);
+  await drag(page, 'c:c1', p.x);
+  await page.evaluate(async () => {
+    const grid = document.querySelector('#root sherpa-layout-grid') as HTMLElement & { layout: unknown };
+    grid.layout = structuredClone(grid.layout);
+    await window.__settled();
+  });
+  expect((await spans(page))['c1']).toBe('5x1');
+});
+
+test('a resizable grid inside a fit grid is not a fit grid itself', async ({ page }) => {
+  await build(page, '<div id="outer-card" data-col-span="full" data-grow style="block-size:100%">'
+    + '<sherpa-layout-grid id="inner" data-resizable>'
+    + ['x1', 'x2', 'x3'].map((id) => card(id, 'medium', 2)).join('') + '</sherpa-layout-grid></div>',
+  'data-rows="fit" data-row-count="1"', 'block-size: 700px');
+  const keys = await page.evaluate(async () => {
+    const inner = document.getElementById('inner') as HTMLElement & { rendered: Promise<void> };
+    await inner.rendered;
+    for (let i = 0; i < 3; i++) await new Promise<void>((r) => requestAnimationFrame(() => r()));
+    return [...inner.shadowRoot!.querySelectorAll<HTMLElement>('.handle')].map((h) => h.dataset['key']);
+  });
+  // Its last card is a card, not a filler: it keeps its width handle, and the page is below.
+  expect(keys).toContain('c:x2');
+  expect(keys).toContain('r:end');
 });

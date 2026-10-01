@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**37 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**38 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -130,6 +130,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 35b | 161 | The app header's shadow FADES in, very quickly, as the Context scrolls under it | quick |
 | ✅ | 35c | 163 | The app shell's panel areas are 150% of their width today, at the least | quick |
 | ✅ | 35a | 146 | The app shell's FIXED panel areas resize by dragging their inner edge; the content reflows; two levels of container query | feature |
+| ⬜ | 35b2 | 198 | A direct link to a View with cards of its own (`?view=capacity`) draws the default View's cards | bug |
 | ✅ | 35b | 177 | AFTER the example app moves (37) — an app setting: resize layout grid content by handles in its gutters, snapping to columns and rows | feature |
 | ✅ | 35c | 183 | REVIEW — how a consumer builds an app on Sherpa: use, configure, extend, scaffold, the data layer; and for AI agents | explore |
 | ⬜ | 35c3 | 187 | Make the docs and the MCP text TRUE: `rows:'all'`, the provider in PRINCIPLES, dead names, prompt and scaffold text | docs |
@@ -3098,6 +3099,15 @@ and 197, each with the review's pick.
    `{ "openTickets": { "gt": 0 } }`, numbers as numbers; saved Views migrate.
    Pick: B, decided before the guide (193).
 
+### `[ ]` 198 — A direct link to a View with cards of its own draws the default cards
+
+Found by the review of 177. Open `/?context=dashboard&view=capacity`: the
+provider opens on that View, so the pick is ignored as already applied, and
+its `content` is never drawn into `[data-view-content]`. The page shows the
+Fleet cards under a chip that says Capacity planning. Picking it IN the page
+works. Fix in `sherpa-provider`'s open: when the start View has content, draw
+it as a pick does, then emit `view-change`.
+
 ### `[x]` ✅ 177 — Resize layout grid content by dragging handles in its gutters
 
 Will, 2026-10-01, *"Todo after we move the example app to it's own project:*
@@ -3155,6 +3165,12 @@ them. Library: seven commits, ab30530c to b78de6e0. The Sherpa Demos half
 (the setting, the ids, the keeping, its tests) is not committed — Demos has no
 git yet. `T-a-gutter-moves-a-line` `T-a-dragged-layout-is-kept-per-column-count`
 `T-a-handle-is-never-restamped-mid-drag` `T-a-fit-grid-counts-its-resized-rows`
+
+**Reviewed 2026-10-01** — four lenses, each finding verified; 23 real, all
+fixed with a test each that could be tested. The worst two: on the Dashboard a
+row could grow but never shrink back (the locked Summary row blocked it), and
+the handles went dead after the grid was taken out and put back. One more is
+not the grid's: 198.
 
 ### `[x]` ✅ 146 — The app shell's FIXED panel areas resize by dragging their edge
 

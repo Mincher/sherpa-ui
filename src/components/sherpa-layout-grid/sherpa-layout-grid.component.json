@@ -4,18 +4,23 @@
   "$type": "component",
   "$name": "sherpa-layout-grid",
   "$description": "the layout grid a view places its content on.",
+  "element": {
+    "$type": "element",
+    "tag": "div",
+    "provides": []
+  },
   "templates": [
     "default"
   ],
   "anatomy": {
     "roots": [
       {
-        "slot": ""
-      },
-      {
         "el": "div",
         "class": "handles",
         "part": "handles"
+      },
+      {
+        "slot": ""
       },
       {
         "el": "template",

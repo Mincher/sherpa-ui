@@ -32,9 +32,10 @@
 <template id="default">
   <!-- The base class writes `data-has-content-slot` here. Nothing reads it on a
        layout element: a grid with no children is still a grid. -->
-  <slot></slot>
-  <!-- The gutter handles: positioned, so never a grid item. -->
+  <!-- The gutter handles: positioned, so never a grid item. BEFORE the slot, so
+       they come first in tab order, as one group, not after every card. -->
   <div class="handles" part="handles"></div>
+  <slot></slot>
   <!-- A SIBLING of .handles: a re-stamp empties that container. -->
   <template class="handle-tpl">
     <div class="handle" part="handle" role="separator" tabindex="0"

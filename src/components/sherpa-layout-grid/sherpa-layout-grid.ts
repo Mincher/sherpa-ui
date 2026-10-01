@@ -13,6 +13,7 @@ import {
   gridHandles, handleValues, moveHandle, readGrid, readLayout, writeLayout,
   type GridHandle, type GridLayout, type GridModel,
 } from './grid-resize.js';
+import { moveLine } from './grid-lines.js';
 
 export class SherpaLayoutGrid extends SherpaElement {
   static override css = new URL('./sherpa-layout-grid.css', import.meta.url);
@@ -55,6 +56,9 @@ export class SherpaLayoutGrid extends SherpaElement {
       measureGroupedGrid(this);
       this.#drawHandles();
     };
+    // Re-stamped, so the handles are wired to THIS connection. TRAP T-abort-controller-per-connect
+    this.#keys = '';
+    this.#gesture = null;
     layout();
     watchGrid(this, layout, { signal: this.signal });
   }
@@ -75,8 +79,14 @@ export class SherpaLayoutGrid extends SherpaElement {
   /** The handle keys last stamped. */
   #keys = '';
 
-  /** The gesture in hand, planned from the grid as it was when it began. */
-  #gesture: { model: GridModel; handle: GridHandle; start: number; pitch: number; before: string } | null = null;
+  /** The handles' own listeners: let go with each re-stamp, not held by the grid's. */
+  #stamp = new AbortController();
+
+  /** The gesture in hand, planned from the grid as it was when it began — and what it found. */
+  #gesture: {
+    model: GridModel; handle: GridHandle; start: number; pitch: number; before: string;
+    kept: Map<HTMLElement, [string, string][]>; rowCount: string;
+  } | null = null;
 
   /** A handle as the grid is drawn now. */
   #now(key: string): { model: GridModel; handle: GridHandle; pitch: number } | null {
@@ -90,13 +100,29 @@ export class SherpaLayoutGrid extends SherpaElement {
     if (this.#gesture?.handle.key !== key) {
       const at = this.#now(key);
       if (!at) return;
-      const span = at.handle.segs[at.handle.line]!.span;
-      this.#gesture = { ...at, start: span * at.pitch, before: JSON.stringify(readLayout(this)) };
+      const counted = (k: HTMLElement): [string, string][] => k.getAttributeNames()
+        .filter((n) => /^data-(col|row)-span-\d+$/.test(n)).map((n) => [n, k.getAttribute(n) ?? '']);
+      this.#gesture = {
+        ...at, start: handleValues(at.handle, at.model.count).now * at.pitch,
+        before: JSON.stringify(readLayout(this)),
+        kept: new Map(at.model.bands.flatMap((b) => b.kids).map((k) => [k, counted(k)])),
+        rowCount: this.style.getPropertyValue('--_row-count'),
+      };
     }
     const g = this.#gesture!;
-    moveHandle(g.model, g.handle, Math.round((px - g.start) / g.pitch));
+    const steps = Math.round((px - g.start) / g.pitch);
+    moveHandle(g.model, g.handle, steps);
     if (!done) return;
     this.#gesture = null;
+    // Let go where it began: what it found is put back, and nothing is reported.
+    if (moveLine(g.handle.segs, g.handle.line, steps).every((n, i) => n === g.handle.segs[i]!.span)) {
+      for (const [kid, attrs] of g.kept) {
+        for (const n of kid.getAttributeNames()) if (/^data-(col|row)-span-\d+$/.test(n)) kid.removeAttribute(n);
+        for (const [n, v] of attrs) kid.setAttribute(n, v);
+      }
+      if (g.rowCount) this.style.setProperty('--_row-count', g.rowCount);
+      else this.style.removeProperty('--_row-count');
+    }
     const layout = readLayout(this);
     if (JSON.stringify(layout) !== g.before) this.emit('layout-change', { layout });
     // Re-stamped once the handle is let go. TRAP T-a-handle-is-never-restamped-mid-drag
@@ -119,9 +145,10 @@ export class SherpaLayoutGrid extends SherpaElement {
       measure: () => { const s = span(); return s ? s.now * s.pitch : 0; },
       min: () => { const s = span(); return s ? s.min * s.pitch : 0; },
       max: () => { const s = span(); return s ? s.max * s.pitch : 0; },
-      describe: () => { const at = this.#now(key); return at ? handleValues(at.handle, at.model.count) : { now: 0 }; },
+      // Gone mid-gesture: it says what it last said.
+      describe: () => { const at = this.#now(key); return at ? handleValues(at.handle, at.model.count) : null; },
       apply: (px, done) => this.#move(key, px, done),
-      signal: this.signal,
+      signal: this.#stamp.signal,
     });
   }
   /** Children with no id are named once per grid. */
@@ -151,7 +178,11 @@ export class SherpaLayoutGrid extends SherpaElement {
       node.setAttribute('aria-valuetext', told.text);
     };
     if (keys !== this.#keys && !this.$('.handle[data-dragging]')) {
-      const focused = (this.shadowRoot?.activeElement as HTMLElement | null)?.dataset['key'];
+      const held = this.shadowRoot?.activeElement as HTMLElement | null;
+      const focused = held?.dataset['key'];
+      const was = held?.getBoundingClientRect();
+      this.#stamp.abort();
+      this.#stamp = new AbortController();
       this.renderItems('.handles', 'template.handle-tpl', handles, {
         after: (node, h) => {
           place(node, h);
@@ -159,7 +190,15 @@ export class SherpaLayoutGrid extends SherpaElement {
         },
       });
       this.#keys = keys;
-      if (focused) this.$<HTMLElement>(`.handle[data-key="${CSS.escape(focused)}"]`)?.focus();
+      if (!focused || !was) return;
+      // Its own handle, else the nearest one the same way: focus never falls to the page.
+      const nodes = this.$$<HTMLElement>(`.handle[aria-orientation="${held!.getAttribute('aria-orientation')}"]`);
+      const by = (n: HTMLElement): number => {
+        const r = n.getBoundingClientRect();
+        return Math.hypot(r.x - was.x, r.y - was.y);
+      };
+      (this.$<HTMLElement>(`.handle[data-key="${CSS.escape(focused)}"]`)
+        ?? nodes.sort((a, b) => by(a) - by(b))[0])?.focus();
       return;
     }
     for (const h of handles) {

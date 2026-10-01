@@ -88,3 +88,9 @@
 .handle:is(:hover, :focus-visible, [data-dragging])::before {
   border-color: var(--sherpa-style-indicator-accent, #3b4ccd);
 }
+
+/* Forced colours paint every border: hide the line at rest, show the active one. */
+@media (forced-colors: active) {
+  .handle::before { border-color: Canvas; }
+  .handle:is(:hover, :focus-visible, [data-dragging])::before { border-color: Highlight; }
+}

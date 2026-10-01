@@ -9717,6 +9717,11 @@ rows, with an `aria-valuetext`, rather than px. And every edge says its value
 when it is WIRED, not only once focused: a focusable separator with no
 `aria-valuenow` is announced with nothing.
 
+A cancelled drag replays the last size it reached, not a fresh measure (a
+grid's handle can be gone by then). One pointer drives a drag; a second one
+held on the same edge is ignored. A `describe` that returns null leaves the
+last values standing.
+
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.css`
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.html`
 - Site: `src/components/sherpa-app-shell/sherpa-app-shell.ts`
@@ -9975,6 +9980,7 @@ reported: an app should not crash because one chip lost its menu.
 - Site: `test/e2e/reforged-a-broken-assumption-reports.spec.ts`
 - Site: `src/core/ui/templater.ts`
 - Site: `src/core/ui/saved-filter-menu.ts`
+- Site: `src/core/browser/view-files.ts`
 
 ### T-a-bug-report-should-be-a-paste
 
@@ -11545,6 +11551,12 @@ the same window width. One seam: below 768 the shell hides the rail, so a
 tablet-wide Context. Outside the Context — a page with no shell, or the
 Settings overlay — the viewport rules are the only ones.
 
+A Context under the first band read its columns from the VIEWPORT — 8 in a
+700px Context, with the phone's names — because the narrowest mode lives on
+`:root`. Its twin is now emitted for the Context from 0px. And each band ends
+at `.98px`, not a whole px under the next: a fractional width fell between
+two bands and matched neither.
+
 - Site: `scripts/project-tokens.mjs`
 
 ### T-fit-is-a-desktop-mode
@@ -11561,6 +11573,7 @@ skips it. Applied, every `1fr` row would grow as tall as the tallest card.
 
 - Site: `scripts/project-tokens.mjs`
 - Site: `test/e2e/reforged-layout-grid.spec.ts`
+- Site: `src/components/sherpa-layout-grid/grid-resize.ts`
 
 ### T-a-content-grid-has-two-row-modes
 
@@ -12363,12 +12376,16 @@ separately as `total`. That is right for a grid and wrong for every summary: a
 chart bound the default way on a 25-row page of 100 records counts 25, draws a
 perfectly reasonable picture, and is silently wrong.
 
-`scope: 'all'` is the fix. The adapter is handed every row matching the filter,
+`rows: 'all'` is the fix. The adapter is handed every row matching the filter,
 unpaged:
 
 ```js
-source.bind(chart, { readonly: true, scope: 'all', as: (rows) => countBy(rows, 'status') });
+source.bind(chart, { readonly: true, rows: 'all', as: (rows) => countBy(rows, 'status') });
 ```
+
+NOT `scope: 'all'`, which this entry said until 2026-10-01: `scope` names a
+filter scope, so it type-checks, binds to a scope called "all", and counts one
+page — the very bug. `bind()` now reports it (`scope-all`).
 
 Three things make it safe:
 
@@ -12384,10 +12401,9 @@ Three things make it safe:
   particular bind receives, not `#result.rows` — otherwise a summary would be
   skipped whenever the page array happened to be unchanged.
 
-`../Sherpa Demos/app/contexts/dashboard.js` predated this and was correct only by accident:
-its source declares no `pageSize`, so nothing was ever sliced. It now says
-`scope: 'all'` outright, because that luck is one added pageSize from running
-out.
+A page that asks through the provider gets the whole set for its summaries on
+its own; a hand `bind()` says `rows: 'all'`, as Sherpa Demos' Records gauge
+does.
 
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/summary-scope.test.mjs`
@@ -14779,6 +14795,7 @@ never been bound.
 - Site: `src/core/data/query.ts`
 - Site: `test/unit/query.test.mjs`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/core/browser/view-files.ts`
 
 ### T-navigating-sets-up-the-page
 
@@ -15914,6 +15931,11 @@ the authored layout back is a plain removal.
 - The first width written at a count freezes EVERY child at that count, so
   one changed card cannot reflow the names around it.
 
+A drag let go where it began puts back what it found and reports nothing:
+the freeze alone was saved as a layout. A hidden child holds no width, so it
+never stops a layout being put back. A grid with a set `data-row-count` (and
+no fit) shares its height between rows, so it gets no row handles.
+
 - Site: `scripts/project-tokens.mjs`
 - Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.html`
 - Site: `test/e2e/reforged-layout-grid.spec.ts`
@@ -15940,6 +15962,16 @@ A locked segment (floor = ceil = span) passes a move through unchanged.
 `reach` says how far a line can go each way, for Home, End and the aria
 values.
 
+**Found by the review of 177**, each now held by a test:
+- A locked segment passes a move through on the GROWING side too. The Dashboard's
+  Summary hugs its content, so its row is locked, and the row above it could
+  grow but never shrink back: the page takes the rows through it.
+- A row's first card never shrinks enough to fit beside the row above, or it
+  jumps up a row. A taller card from an earlier row limits a row's free columns.
+- A band taller than 12 rows is locked: no rule reads 13 and up.
+- A handle states where its LINE sits — the column or row it follows — so its
+  value, its range and its words move together through a cascade.
+
 - Site: `src/components/sherpa-layout-grid/grid-lines.ts`
 - Site: `test/unit/a-gutter-moves-a-line.test.mjs`
 - Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.ts`
@@ -15962,6 +15994,13 @@ After a re-stamp, focus goes back to the handle with the same key. The
 `handle-tpl` is a SIBLING of `.handles`, never inside it: the first re-stamp
 would delete it.
 
+Each stamp has its OWN AbortController, let go at the next stamp: the
+handles' listeners were held by the grid's for as long as it lived. A grid
+taken out and put back re-stamps, so its handles are wired to the new
+connection, not the aborted one. A row a drag filled keeps its end handle, to
+give the columns back; and a focused handle that went is followed by the
+nearest one the same way, never by the page.
+
 - Site: `src/components/sherpa-layout-grid/sherpa-layout-grid.ts`
 - Site: `test/e2e/reforged-layout-grid-resize.spec.ts`
 
@@ -15979,5 +16018,31 @@ It is written only once a row has moved: an untouched grid keeps its authored
 count. The filler gives only whole rows, down to two (its floor), so it keeps
 the part-row left over and still ends at the grid's foot.
 
+The count is the rows before the filler, as laid out, plus what moved — not
+a sum of every band: a tall card beside two stacked ones is three bands and
+three rows, not five.
+
 - Site: `src/components/sherpa-layout-grid/grid-resize.ts`
 - Site: `test/e2e/reforged-layout-grid-resize.spec.ts`
+
+### T-a-views-markup-lives-in-a-template
+
+**A view is JSON; its markup is an HTML template, in a file beside it.**
+TODO 185, Will: *"'\*-views.json' files should not contain any HTML template
+literals. They should point to an HTML file, in the same folder, that contains
+the template. Target the template via ID."*
+
+A view that has content of its own names it: `"template": "file.html#id"`.
+`loadViewLibrary(url)` reads the JSON and fills each such view's `content`
+from that file's `<template id>`, fetched once through the Templater
+(`loadTemplates`). The markup is still parsed through the allow-list when the
+view is drawn (`T-saved-markup-is-untrusted-input`). A template the file does
+not hold is reported (`unknown-template`), and that view draws the page's own
+content rather than nothing.
+
+It is a BROWSER function — it parses HTML — so it ships from `sherpa-ui`, not
+`sherpa-ui/data`.
+
+- Site: `src/core/browser/view-files.ts`
+- Site: `src/core/browser/persist-view.ts`
+- Site: `test/e2e/reforged-view-files.spec.ts`

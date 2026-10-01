@@ -752,6 +752,18 @@
      shadow tree from a page rule. TRAP T-a-context-steps-by-its-own-width */
   sherpa-app-shell > :not([slot]) { container: sherpa-context / inline-size; }
 
+  /* The narrowest band, for a Context: its own width, never the viewport's. */
+  @container sherpa-context (min-width: 0px) {
+    .sherpa-grid {
+      --sherpa-layout-grid-columns: 4;
+      --sherpa-layout-grid-gap-horizontal: var(--sherpa-display-mode-space-base);
+      --sherpa-layout-grid-gap-vertical: var(--sherpa-display-mode-space-base);
+      --sherpa-layout-grid-max-width: 480px;
+      --sherpa-layout-grid-padding: var(--sherpa-display-mode-space-base);
+      --sherpa-layout-grid-row-height: var(--sherpa-display-mode-size-row);
+    }
+  }
+
   /* tablet — the Layout collection's own mode, as its breakpoint. */
   @media (min-width: 768px) {
     :root {
@@ -997,7 +1009,7 @@
     }
   }
 
-  @media (min-width: 0px) and (max-width: 767px) {
+  @media (min-width: 0px) and (max-width: 767.98px) {
     .sherpa-grid:where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *)) {
       & > [data-col-span='full'] { grid-column: span 4; }
       & > [data-col-span='reading'] { grid-column: span 4; }
@@ -1009,7 +1021,7 @@
     }
   }
 
-  @media (min-width: 768px) and (max-width: 1279px) {
+  @media (min-width: 768px) and (max-width: 1279.98px) {
     .sherpa-grid:where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *)) {
       & > [data-col-span='full'] { grid-column: span 8; }
       & > [data-col-span='reading'] { grid-column: span 8; }
@@ -1043,7 +1055,7 @@
     }
   }
 
-  @media (min-width: 1280px) and (max-width: 1919px) {
+  @media (min-width: 1280px) and (max-width: 1919.98px) {
     .sherpa-grid:where(:not(sherpa-app-shell > :not([slot]), sherpa-app-shell > :not([slot]) *)) {
       & > [data-col-span='full'] { grid-column: span 12; }
       & > [data-col-span='reading'] { grid-column: span 8; }
@@ -1121,7 +1133,7 @@
     }
   }
 
-  @container sherpa-context (min-width: 0px) and (max-width: 727px) {
+  @container sherpa-context (min-width: 0px) and (max-width: 727.98px) {
     .sherpa-grid {
       & > [data-col-span='full'] { grid-column: span 4; }
       & > [data-col-span='reading'] { grid-column: span 4; }
@@ -1133,7 +1145,7 @@
     }
   }
 
-  @container sherpa-context (min-width: 728px) and (max-width: 1239px) {
+  @container sherpa-context (min-width: 728px) and (max-width: 1239.98px) {
     .sherpa-grid {
       & > [data-col-span='full'] { grid-column: span 8; }
       & > [data-col-span='reading'] { grid-column: span 8; }
@@ -1167,7 +1179,7 @@
     }
   }
 
-  @container sherpa-context (min-width: 1240px) and (max-width: 1879px) {
+  @container sherpa-context (min-width: 1240px) and (max-width: 1879.98px) {
     .sherpa-grid {
       & > [data-col-span='full'] { grid-column: span 12; }
       & > [data-col-span='reading'] { grid-column: span 8; }

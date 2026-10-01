@@ -21,6 +21,8 @@ interface Band {
   spans: number[];
   /** Each card's right edge, in the handles' space. */
   rights: number[];
+  /** The column a taller card from an earlier row starts at, beside this row's end; else the count. */
+  limit: number;
   rows: number;
   top: number;
   bottom: number;
@@ -44,6 +46,8 @@ export interface GridModel {
   /** The content box, in the handles' own space (the grid's padding box, scrolled). */
   left: number;
   width: number;
+  /** The padding at the content's end: room for a row's last handle. */
+  endPad: number;
   bands: Band[];
   fit: boolean;
   /** Children with no id: a grid with any draws no handles. */
@@ -108,12 +112,18 @@ export function readGrid(grid: HTMLElement): GridModel | null {
   const ox = box.left + (parseFloat(cs.borderLeftWidth) || 0) - grid.scrollLeft;
   const oy = box.top + (parseFloat(cs.borderTopWidth) || 0) - grid.scrollTop;
   const left = parseFloat(cs.paddingLeft) || 0;
-  const width = grid.clientWidth - left - (parseFloat(cs.paddingRight) || 0);
-  const fit = cs.getPropertyValue('--_grid-fit').trim() === '1';
+  const endPad = parseFloat(cs.paddingRight) || 0;
+  const width = grid.clientWidth - left - endPad;
+  // Its OWN mode: the flag inherits into a grid nested in a fit grid. TRAP T-fit-is-a-desktop-mode
+  const fit = grid.dataset['rows'] === 'fit' && cs.getPropertyValue('--_grid-fit').trim() === '1';
   const kids = kidsOf(grid);
-  const filler = fit ? (kids.find((k) => k.hasAttribute('data-grow')) ?? kids.at(-1) ?? null) : null;
+  // As CSS picks it: the marked child, else the last child — if it is laid out.
+  const last = grid.lastElementChild;
+  const filler = fit ? (kids.find((k) => k.hasAttribute('data-grow'))
+    ?? (last instanceof HTMLElement && kids.includes(last) ? last : null)) : null;
 
   let deepest = -Infinity;
+  const earlier: DOMRect[] = [];
   const bands = rowsByTop(kids).map((row): Band => {
     const rects = row.map((k) => k.getBoundingClientRect());
     const top = rects[0]!.top - oy;
@@ -123,19 +133,25 @@ export function readGrid(grid: HTMLElement): GridModel | null {
     const cols = near(rects[0]!.left - ox, left)
       && rects.every((r, i) => i === 0 || near(r.left, rects[i - 1]!.right + colGap))
       && spans.reduce((t, s) => t + s, 0) <= count;
+    // A taller card from an earlier row may hold the cells after this row's end.
+    const end = rects.at(-1)!.right;
+    const limit = Math.min(count, ...earlier.filter((r) => r.bottom - oy > top + 1 && r.left >= end - 1)
+      .map((r) => Math.round((r.left - ox - left) / pitchX)));
     const mins = row.map(minRows);
-    const free = mins.every((m) => m != null)
+    // Taller than any rule reads: locked, so a move passes through it.
+    const free = rows <= MAX_ROW_SPAN && mins.every((m) => m != null)
       && rects.every((r) => near(r.bottom - oy, bottom))
       && deepest <= top + 1;
     deepest = Math.max(deepest, bottom);
+    earlier.push(...rects);
     const floor = free ? Math.min(rows, Math.max(...(mins as number[]))) : rows;
     return {
-      kids: row, spans, rights: rects.map((r) => r.right - ox), rows, top, bottom, cols, floor,
+      kids: row, spans, rights: rects.map((r) => r.right - ox), limit, rows, top, bottom, cols, floor,
       ceil: free ? MAX_ROW_SPAN : rows, filler: !!filler && row.includes(filler),
     };
   });
   return {
-    grid, count, pitchX, pitchY, colGap, rowGap, left, width, bands, fit,
+    grid, count, pitchX, pitchY, colGap, rowGap, left, width, endPad, bands, fit,
     missing: kids.filter((k) => !k.id),
   };
 }
@@ -147,17 +163,26 @@ const nameOf = (kid: HTMLElement): string => kid.dataset['label'] ?? kid.dataset
 /** A band's cards as segments, then the free columns at the row's end. */
 const colSegs = (m: GridModel, b: number): Segment[] => {
   const band = m.bands[b]!;
-  const used = band.spans.reduce((t, s) => t + s, 0);
+  const sum = (spans: readonly number[]): number => spans.reduce((t, s) => t + s, 0);
+  const used = sum(band.spans);
   const next = m.bands[b + 1]?.spans[0];
+  const prev = m.bands[b - 1];
+  // A first card never shrinks enough to jump up into the row above's free columns.
+  const above = prev ? prev.limit - sum(prev.spans) : -1;
   return [
-    ...band.spans.map((span) => ({ span, floor: Math.min(MIN_COL_SPAN, span), ceil: m.count })),
+    ...band.spans.map((span, i) => {
+      const floor = Math.min(MIN_COL_SPAN, span);
+      return { span, floor: i === 0 ? Math.min(span, Math.max(floor, above + 1)) : floor, ceil: m.count };
+    }),
     // Never so much room that the next row's first card jumps up.
-    { span: m.count - used, floor: 0, ceil: next != null ? next - 1 : m.count },
+    { span: band.limit - used, floor: 0, ceil: next != null ? Math.min(band.limit, next - 1) : band.limit },
   ];
 };
 
 /** The grid's bands as segments, then the page, or a fit grid's filler. */
 const rowSegs = (m: GridModel): Segment[] | null => {
+  // Set rows are shares of the height, not grid rows: no row handle can count them.
+  if (m.grid.hasAttribute('data-row-count') && m.grid.dataset['rows'] !== 'fit') return null;
   const bands = m.bands.filter((b) => !b.filler);
   const filler = m.bands.find((b) => b.filler);
   // A filler that is not the last band: no rows move.
@@ -180,11 +205,13 @@ export function gridHandles(m: GridModel): GridHandle[] {
     const h = band.bottom - band.top;
     for (const [i, kid] of band.kids.entries()) {
       const last = i === band.kids.length - 1;
-      if (last && segs.at(-1)!.span <= 0) continue;
+      // A row filled by a drag keeps its end handle, to give the columns back.
+      if (last && segs.at(-1)!.span <= 0 && !kid.hasAttribute(`data-col-span-${m.count}`)) continue;
       const right = band.rights[i]!;
       out.push({
         key: last ? `c:end:${kid.id}` : `c:${kid.id}`, orientation: 'vertical', label: `Width of ${nameOf(kid)}`,
-        x: right, y: band.top, w: m.colGap, h, axis: 'x', band: b, line: i, segs,
+        x: right, y: band.top, w: last ? Math.max(4, Math.min(m.colGap, m.endPad)) : m.colGap, h,
+        axis: 'x', band: b, line: i, segs,
       });
     }
   }
@@ -206,12 +233,18 @@ export function gridHandles(m: GridModel): GridHandle[] {
   return out;
 }
 
-/** The values a handle says: its near span, and how far it can go. */
+/**
+ * The values a handle says, in ONE unit: where its LINE sits — the column or
+ * row it follows — and how far it can go. The words say the card's size too.
+ */
 export function handleValues(h: GridHandle, count: number): { now: number; min: number; max: number; text: string } {
-  const now = h.segs[h.line]!.span;
+  const at = h.segs.slice(0, h.line + 1).reduce((t, s) => t + s.span, 0);
+  const span = h.segs[h.line]!.span;
   const { min, max } = reach(h.segs, h.line);
-  const text = h.axis === 'x' ? `${now} of ${count} columns` : `${now} ${now === 1 ? 'row' : 'rows'}`;
-  return { now, min: now - min, max: now + max, text };
+  const text = h.axis === 'x'
+    ? `${span} of ${count} columns wide, line after column ${at}`
+    : `${span} ${span === 1 ? 'row' : 'rows'} tall, line after row ${at}`;
+  return { now: at, min: at - min, max: at + max, text };
 }
 
 /** Write one counted attribute, only where it moved. */
@@ -247,7 +280,10 @@ export function moveHandle(m: GridModel, h: GridHandle, steps: number): boolean 
   // Counted only once a row has moved: an untouched fit grid keeps its authored count.
   // TRAP T-a-fit-grid-counts-its-resized-rows
   if (m.fit && (moved || m.grid.style.getPropertyValue('--_row-count'))) {
-    const total = String(rows.reduce((t, _, b) => t + spans[b]!, 0) + 1);
+    // The rows before the filler, as laid out, and what moved: bands side by side overlap.
+    const filler = m.bands.find((b) => b.filler);
+    const above = filler ? Math.round((filler.top - m.bands[0]!.top) / m.pitchY) : 0;
+    const total = String(above + rows.reduce((t, band, b) => t + spans[b]! - band.rows, 0) + 1);
     if (m.grid.style.getPropertyValue('--_row-count') !== total) {
       m.grid.style.setProperty('--_row-count', total);
       moved = true;
@@ -282,16 +318,18 @@ export function writeLayout(grid: HTMLElement, layout: GridLayout | null): void 
   for (const kid of kids) {
     for (const name of [...kid.getAttributeNames()]) if (COUNTED.test(name)) kid.removeAttribute(name);
   }
+  // The children a drag sees: a hidden one holds no width.
+  const shown = kidsOf(grid);
   grid.style.removeProperty('--_row-count');
   if (!layout || typeof layout !== 'object') return;
   for (const [count, ids] of Object.entries(layout.byCount ?? {})) {
     const c = Number(count);
     if (!Number.isInteger(c) || c < 1 || !ids || typeof ids !== 'object') continue;
     const whole = (n: unknown, top: number): n is number => Number.isInteger(n) && (n as number) >= 1 && (n as number) <= top;
-    const widths = kids.every((k) => whole(ids[k.id]?.cols, c));
+    const widths = (shown.length ? shown : kids).every((k) => whole(ids[k.id]?.cols, c));
     for (const kid of kids) {
       const at = ids[kid.id];
-      if (widths) kid.setAttribute(`data-col-span-${c}`, String(at!.cols));
+      if (widths && whole(at?.cols, c)) kid.setAttribute(`data-col-span-${c}`, String(at!.cols));
       if (whole(at?.rows, MAX_ROW_SPAN)) kid.setAttribute(`data-row-span-${c}`, String(at!.rows));
     }
   }

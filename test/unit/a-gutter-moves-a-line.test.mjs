@@ -63,6 +63,10 @@ test('a locked band passes a move through, unchanged', () => {
     { span: 2, floor: 1, ceil: 12 }, { span: 3, floor: 3, ceil: 3 }, { span: 4, floor: 2, ceil: 12 },
   ];
   assert.deepEqual(moveLine(bands, 0, 2), [4, 3, 2]);
+  // …on the GROWING side too: a row above a locked one can still shrink, and the page takes it.
+  const dashboard = [{ span: 4, floor: 2, ceil: 12 }, { span: 3, floor: 3, ceil: 3 }, { span: Infinity, floor: 0, ceil: Infinity }];
+  assert.deepEqual(moveLine(dashboard, 0, -2), [2, 3, Infinity]);
+  assert.deepEqual(reach(dashboard, 0), { min: 2, max: 8 });
 });
 
 test('a fit grid: its filler gives only down to its floor', () => {

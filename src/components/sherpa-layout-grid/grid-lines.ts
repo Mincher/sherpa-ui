@@ -26,6 +26,17 @@ const spare = (s: Segment): number => (s.span === Infinity ? Infinity : Math.max
 /** What a segment may take. */
 const room = (s: Segment): number => (s.ceil === Infinity ? Infinity : Math.max(0, s.ceil - s.span));
 
+/** A segment that can neither give nor take: a move passes through it. */
+const locked = (s: Segment): boolean => s.span !== Infinity && s.floor === s.ceil;
+
+/** The segment a move grows: the nearest on its side that is not locked. */
+const grower = (segs: readonly Segment[], line: number, up: boolean): number => {
+  const step = up ? -1 : 1;
+  let i = up ? line : line + 1;
+  while (segs[i] && locked(segs[i]!) && segs[i + step]) i += step;
+  return i;
+};
+
 /** The givers for a move, nearest first. */
 const givers = (segs: readonly Segment[], line: number, up: boolean): number[] =>
   (up ? segs.map((_, i) => i).slice(line + 1) : segs.map((_, i) => i).slice(0, line + 1).reverse());
@@ -39,7 +50,8 @@ export function moveLine(segs: readonly Segment[], line: number, steps: number):
   const out = segs.map((s) => s.span);
   if (!steps || line < 0 || line >= segs.length - 1) return out;
   const up = steps > 0;
-  const grows = up ? line : line + 1;
+  // A locked band on the growing side passes the move through too.
+  const grows = grower(segs, line, up);
   const want = Math.min(Math.abs(steps), room(segs[grows]!));
   let got = 0;
   for (const i of givers(segs, line, up)) {
@@ -57,7 +69,7 @@ export function reach(segs: readonly Segment[], line: number): { min: number; ma
   if (line < 0 || line >= segs.length - 1) return { min: 0, max: 0 };
   const total = (up: boolean): number => givers(segs, line, up).reduce((t, i) => t + spare(segs[i]!), 0);
   return {
-    max: Math.min(room(segs[line]!), total(true)),
-    min: Math.min(room(segs[line + 1]!), total(false)),
+    max: Math.min(room(segs[grower(segs, line, true)]!), total(true)),
+    min: Math.min(room(segs[grower(segs, line, false)]!), total(false)),
   };
 }

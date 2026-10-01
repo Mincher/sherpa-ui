@@ -26,8 +26,9 @@ export interface EdgeResizeOptions {
   /** The clamp, as drawn: the separator's range, and where Home and End go. */
   min?: () => number;
   max?: () => number;
-  /** The separator's values in the box's OWN units (columns, rows), not px. */
-  describe?: () => { now: number; min?: number; max?: number; text?: string };
+  /** The separator's values in the box's OWN units (columns, rows), not px.
+   *  Null: nothing to say now, so the last values stand. */
+  describe?: () => { now: number; min?: number; max?: number; text?: string } | null;
   signal?: AbortSignal;
 }
 
@@ -48,6 +49,7 @@ export function resizeByEdge(edge: HTMLElement, options: EdgeResizeOptions): voi
      replaced never did. */
   const say = (): void => {
     const told = options.describe?.();
+    if (told === null) return;
     const now = told ? told.now : options.measure();
     const min = told ? told.min : options.min?.();
     const max = told ? told.max : options.max?.();
@@ -62,7 +64,9 @@ export function resizeByEdge(edge: HTMLElement, options: EdgeResizeOptions): voi
   };
 
   edge.addEventListener('pointerdown', (event) => {
-    if (event.button !== 0) return;
+    // One pointer drives a drag: a second one, held at once, is ignored.
+    if (event.button !== 0 || edge.hasAttribute('data-dragging')) return;
+    const id = event.pointerId;
     const start = options.measure();
     const from = y ? event.clientY : event.clientX;
     /* Capture, so the drag follows a pointer that leaves the strip. Firefox
@@ -74,14 +78,20 @@ export function resizeByEdge(edge: HTMLElement, options: EdgeResizeOptions): voi
     edge.toggleAttribute('data-dragging', true);
     event.preventDefault();
     const at = (e: PointerEvent): number => start + options.grows * ((y ? e.clientY : e.clientX) - from);
-    const move = (e: PointerEvent): void => to(at(e), false);
+    let last = start;
+    const move = (e: PointerEvent): void => {
+      if (e.pointerId !== id) return;
+      last = at(e);
+      to(last, false);
+    };
     const end = (e: PointerEvent): void => {
+      if (e.pointerId !== id) return;
       edge.removeEventListener('pointermove', move);
       edge.removeEventListener('pointerup', end);
       edge.removeEventListener('pointercancel', end);
       edge.removeAttribute('data-dragging');
       // A cancelled drag keeps where it got to; its pointer says nothing.
-      to(e.type === 'pointercancel' ? options.measure() : at(e), true);
+      to(e.type === 'pointercancel' ? last : at(e), true);
     };
     edge.addEventListener('pointermove', move);
     edge.addEventListener('pointerup', end);

@@ -1405,7 +1405,8 @@ const GRID = { media: `.sherpa-grid:where(:not(${IN_CONTEXT}))`, container: '.sh
 const at = (kind, query) => (kind === 'media' ? '@media ' : `@container ${CONTEXT} `) + query;
 const ranged = (kind, min, max) => {
   const lo = kind === 'container' && min > 0 ? min - NAV_INSET : min;
-  const hi = max == null ? null : (kind === 'container' ? max - NAV_INSET : max) - 1;
+  // Just under the next band, not a whole px: a fractional width fell between two. TRAP T-a-context-steps-by-its-own-width
+  const hi = max == null ? null : Number(((kind === 'container' ? max - NAV_INSET : max) - 0.02).toFixed(2));
   return hi == null ? `(min-width: ${lo}px)` : `(min-width: ${lo}px) and (max-width: ${hi}px)`;
 };
 
@@ -1454,7 +1455,17 @@ const layoutBreakpointBlocks = (() => {
     .filter((m) => Number.isFinite(m.min))
     .sort((a, b) => a.min - b.min);
 
-  return modes.map(({ mode, min }) => {
+  /* The PRIMARY mode lives on :root, which a Context under the first band
+     would read from the VIEWPORT — 8 columns in a 700px Context. Its twin
+     here starts each Context at its own narrowest band. */
+  const primary = leaves.filter((l) => l.rawPath !== 'layout/breakpoint' && l.value !== undefined)
+    .map((l) => [l.name, toCss(l.value, l.type)]).filter(([, v]) => v != null)
+    .map(([name, v]) => `      ${name}: ${v};`);
+  const first = primary.length
+    ? [`  /* The narrowest band, for a Context: its own width, never the viewport's. */\n`
+      + `  ${at('container', '(min-width: 0px)')} {\n    .sherpa-grid {\n${primary.join('\n')}\n    }\n  }`]
+    : [];
+  return [...first, ...modes.map(({ mode, min }) => {
     const lines = [];
     for (const leaf of leaves) {
       // The breakpoint itself is the QUERY, not a value inside it.
@@ -1469,7 +1480,7 @@ const layoutBreakpointBlocks = (() => {
     return `  /* ${mode} — the Layout collection's own mode, as its breakpoint. */\n` +
       `  @media (min-width: ${min}px) {\n    :root {\n${lines.join('\n')}\n    }\n  }\n` +
       `  ${at('container', ranged('container', min))} {\n    .sherpa-grid {\n${lines.join('\n')}\n    }\n  }`;
-  }).filter(Boolean);
+  }).filter(Boolean)];
 })();
 
 /* The column rules, one RANGE-SCOPED block per breakpoint. Separate from the
