@@ -117,7 +117,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31w | 180 | A picked value a LATER filter rules out goes inactive and leaves the query; the latest filter wins | feature |
 | ✅ | 31x | 179 | Every place a ruled-out value shows is inactive — a chart legend's item too | bug |
 | ✅ | 31y | 178 | The filter panel's header gets an overflow (⋯) menu; "Limit matching filters" is an item in it and in the toolbar's | feature |
-| ❓ | 31z | 181 | A saved filter's menu shows its condition rows, read-only — the Advanced menu, not a bespoke one | refactor |
+| 🚧 | 31z | 181 | A saved filter's menu shows its condition rows, read-only — the Advanced menu, not a bespoke one | refactor |
 | ✅ | 31aa2 | 182 | The filter panel's search: more room above it, and the full width of the header less its padding | bug |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
@@ -1850,6 +1850,8 @@ A Simple answer shows as its rows ("is EMEA" OR "is APAC").
   second editor goes. One menu, the Advanced menu's own logic.
 - **B: keep today's editor:** a field's rows, pressed, open its editor, as a
   line does now.
+
+**✅ Will, 2026-10-01: A.**
 
 ### `[x]` ✅ 178 — An overflow menu in the filter panel's header, with "Limit matching filters"
 
