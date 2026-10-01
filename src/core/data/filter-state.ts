@@ -25,6 +25,7 @@
  * - FieldReading — What is true right now, which decides the STATES.
  * - KeptAnswer — One shape's answer, as `FieldReading.kept` holds it.
  * - FieldCondition — One row of a multi-condition filter.
+ * - rowOffer — What row `index` may offer: the values the rows before it in its AND chain leave.
  * - rowAnswered — Does this condition row have what its op needs to narrow anything?
  * - readingRows — a reading's Advanced answer as rows, old single-condition forms included
  * - fieldState — work out one field's whole state — the only place that decides it
@@ -35,7 +36,7 @@
  */
 import {
   DEFAULT_OP, OP_TAKES,
-  picksClause, valueSet, valueKey,
+  matchesFilter, picksClause, valueSet, valueKey,
   type Filter, type FilterClause, type FilterOp,
 } from './store.js';
 
@@ -195,6 +196,21 @@ export interface FieldCondition {
   text?: string;
   /** For an op that takes values — `eq` offers the field's own list. */
   picked?: readonly unknown[];
+}
+
+/**
+ * What row `index` may offer: the values the rows before it in its AND chain
+ * leave. AND is serial and OR starts again, and AND binds tighter, so a row
+ * looks back only as far as the last OR. Will, TODO 110 (B).
+ * TRAP T-an-and-row-offers-what-the-rows-before-it-leave
+ */
+export function rowOffer(rows: readonly FieldCondition[], index: number, values: readonly string[]): Set<string> {
+  let start = index;
+  while (start > 0 && rows[start]?.join === 'and') start--;
+  const before = rows.slice(start, index).filter(rowAnswered)
+    .map(({ join: _join, ...row }, i): FieldCondition => (i ? { ...row, join: 'and' } : row));
+  const clause = before.length ? readingClause({ field: 'v' }, { conditions: before, mode: 'advanced' }) : undefined;
+  return new Set(clause ? values.filter((v) => matchesFilter({ v }, clause)) : values);
 }
 
 /** Does this condition row have what its op needs to narrow anything? An

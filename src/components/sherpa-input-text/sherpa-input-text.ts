@@ -49,7 +49,7 @@ type Popover = HTMLElement & { open?: boolean; show(trigger?: HTMLElement): void
 type Control = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 
 /** One choice in a `data-type="select"` field. */
-export interface InputOption { value: string; label?: string }
+export interface InputOption { value: string; label?: string; disabled?: boolean; title?: string }
 
 export class SherpaInputText extends SherpaElement {
   static override css = new URL('./sherpa-input-text.css', import.meta.url);
@@ -277,6 +277,9 @@ export class SherpaInputText extends SherpaElement {
         const el = document.createElement('option');
         el.value = option.value;
         el.textContent = option.label ?? option.value;
+        // Listed, greyed and refused — with why, on hover. TRAP T-an-and-row-offers-what-the-rows-before-it-leave
+        el.disabled = !!option.disabled;
+        if (option.title) el.title = option.title;
         return el;
       }),
     );

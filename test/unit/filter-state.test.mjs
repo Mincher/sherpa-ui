@@ -223,3 +223,26 @@ test('clauseConditions reads picks as a list row, and refuses what rows cannot s
   // An `and` INSIDE an `or` inside an `and` is no chain of rows.
   assert.equal(clauseConditions(['and', ['or', ['a', 'eq', 1], ['a', 'eq', 2]], ['a', 'eq', 3]]), undefined);
 });
+
+/* Will, TODO 110: "AND is serial. OR is parallel. So AND row options should be
+   restricted by preceding conditional row conditions."
+   TRAP T-an-and-row-offers-what-the-rows-before-it-leave */
+test('an AND row offers what the rows before it leave; an OR row starts again', async () => {
+  const { rowOffer } = await import('../../dist/core/data/filter-state.js');
+  const values = ['Ravi Menon', 'Dana Whitlock', 'Unassigned', 'Ana Ruiz'];
+  const rows = [
+    { op: 'contains', text: 'an' },
+    { join: 'and', op: 'eq', picked: [] },
+    { join: 'or', op: 'eq', picked: [] },
+    { join: 'and', op: 'startswith', text: 'D' },
+    { join: 'and', op: 'eq', picked: [] },
+  ];
+  // Row one has nothing before it.
+  assert.deepEqual([...rowOffer(rows, 0, values)], values);
+  // AND: only the values containing "an".
+  assert.deepEqual([...rowOffer(rows, 1, values)].sort(), ['Ana Ruiz', 'Dana Whitlock'].sort());
+  // OR starts again.
+  assert.deepEqual([...rowOffer(rows, 2, values)], values);
+  // Back as far as the last OR only: "starts with D".
+  assert.deepEqual([...rowOffer(rows, 4, values)], ['Dana Whitlock']);
+});

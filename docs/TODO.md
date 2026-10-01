@@ -72,7 +72,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ❓ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ❓ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
 | 🚧 | 19 | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
-| ⬜ | 19a | 110 | In Advanced rows, AND is serial and OR is parallel: an AND row offers only what the rows before it leave | feature |
+| ✅ | 19a | 110 | In Advanced rows, AND is serial and OR is parallel: an AND row offers only what the rows before it leave | feature |
 | ❓ | 20 | 21d | EXPLORE — conditions for a DATE field | explore |
 | ❓ | 21 | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
 | ❓ | 21a | 105 | "Save filters" saves EVERY scope under one name; a "Saved" chip shows it, warns when edited, and undoes it | feature |
@@ -131,6 +131,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 35a | 146 | The app shell's FIXED panel areas resize by dragging their inner edge; the content reflows; two levels of container query | feature |
 | ⬜ | 35b | 177 | AFTER the example app moves (37) — an app setting: resize layout grid content by handles in its gutters, snapping to columns and rows | feature |
 | ⬜ | 35c | 183 | REVIEW — how a consumer builds an app on Sherpa: use, configure, extend, scaffold, the data layer; and for AI agents | explore |
+| ⬜ | 35c2 | 185 | Sherpa Demos: `definitions/` becomes `views/` (JSON, templates in HTML by id), `view-schemas/`; rethink `contexts/` | refactor |
 | ⬜ | 35d | 184 | INVESTIGATE — does sherpa-ui need Node to ship? A CDN, a script or a small zip may suit it better | explore |
 | | | | **F — Data states and charts** | |
 | ✅ | 36 | 58 | Loading, empty and error states in a container | feature |
@@ -1456,7 +1457,7 @@ their parameters maintained."*
   session's kept Query. Design it with 90, which builds Advanced on it, and
   with 75's rename (the mode is `simple` / `advanced`).
 
-### `[ ]` 110 — In Advanced rows, AND is serial and OR is parallel
+### `[x]` ✅ 110 — In Advanced rows, AND is serial and OR is parallel
 
 Will, 2026-09-29: *"Advanced filter conditions: AND is serial. OR is
 parallel. So AND row options should be restricted by preceding conditional row
@@ -1487,6 +1488,13 @@ async. Build with 99.
 
 **✅ Will, 2026-10-01: B.** A value the rows before it rule out stays in the
 list, greyed out, and cannot be picked. The same rule for 174.
+
+**✅ Done 2026-10-01.** An AND row's value list greys what the rows before it
+rule out — back to the last OR — and says "No matches with the rows above."
+on hover; an OR row offers every value. With Tier = Silver in row one, an AND
+row offers Silver alone and greys Gold. It needs no data: every row is on the
+same field, so the menu tests the field's own values against the rows above.
+`T-an-and-row-offers-what-the-rows-before-it-leave`
 
 ### `[~]` 90 — Any filter switches to ADVANCED: condition rows, with options per field type
 
@@ -2886,6 +2894,25 @@ sherpa-ui."*
 Found while moving the app (37): the package ships `dist/`, but not
 `schemas/` — a consumer cannot check a page definition against the page
 schema without the repo.
+
+### `[ ]` 185 — Sherpa Demos: views, view schemas, and what `contexts/` is for
+
+Will, 2026-10-01, in the example app, to do later:
+
+*"- The 'definitions' folder should be called 'views' and should only contain
+'\*-views.json' files.*
+*- '\*-views.json' files should not contain any HTML template literals. They
+should point to an HTML file, in the same folder, that contains the template.
+Target the template via ID.*
+*- Other files in 'definitions' should be moved to a sibling 'view-schemas'
+folder.*
+*- I don't understand the point of the 'contexts' folder's JS content. It
+seems to be a mix of data and business logic? These seem like hacks to make
+things work rather than sensible consideration of the whole Sherpa system and
+how it should be leveraged.*
+
+*This is probably all part of the overall review of the architecture, and
+building with, Sherpa."* — so it goes with 183.
 
 ### `[ ]` 183 — REVIEW: how a consumer builds an app on Sherpa — and an AI agent
 
@@ -4882,6 +4909,7 @@ One line each. The detail is in git and in the trap named.
 - 37 step 4: the example app is its own project, `../Sherpa Demos`, taking sherpa-ui as a dependency by name
 - 182: the filter panel's search spans its header, with more room above
 - 178: the filter panel's ⋮ — Reset folds into it when narrow; both ⋮ menus hold "Limit matching filters"
+- 110: an AND row greys the values the rows before it rule out — `T-an-and-row-offers-what-the-rows-before-it-leave`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

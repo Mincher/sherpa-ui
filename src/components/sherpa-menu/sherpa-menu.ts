@@ -20,7 +20,7 @@ import {
   DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type FilterOp, valueKey, valueSet,
 } from '../../core/data/store.js';
 import {
-  readingRows, rowAnswered, type ConditionType, type FieldCondition, type FieldReading, type KeptAnswer,
+  readingRows, rowAnswered, rowOffer, type ConditionType, type FieldCondition, type FieldReading, type KeptAnswer,
 } from '../../core/data/filter-state.js';
 import { NON_VALUE_ROWS, RULED_OUT, SET_ASIDE } from '../../core/ui/shared-constants.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
@@ -819,6 +819,8 @@ export class SherpaMenu extends SherpaElement {
 
     // A NUMBER's host attributes are its BODY's. TRAP T-a-number-has-advanced-rows
     if (this.#numeric()) return this.#emitConditions();
+    // A row changed, so what each later AND row offers may have too. TODO 110.
+    this.#refillPicks();
     // Row one still mirrors to the host attributes: the one-row view.
     const op = (this.#conditionField()?.value ?? DEFAULT_OP) as FilterOp;
     if (this.dataset['op'] !== op) this.dataset['op'] = op;
@@ -1661,16 +1663,27 @@ export class SherpaMenu extends SherpaElement {
   #refillPicks(): void {
     const options = this.#valueOptions();
     if (!options.length) return;
-    for (const row of this.#rowEls()) {
+    const rows = this.conditions;
+    const values = options.map((o) => o.value).filter(Boolean);
+    this.#rowEls().forEach((row, i) => {
       const pick = row.querySelector<FieldEl>('.condition-pick');
-      if (!pick) continue;
+      if (!pick) return;
       // What the row WANTS beats what the select happens to show.
       const held = row.dataset['want'] || pick.value;
-      void Promise.resolve(pick.populate?.(options)).then(() => {
+      /* AN AND ROW offers what the rows before it leave; the rest are listed,
+         greyed and refused — never the row's own pick. Will, TODO 110 (B).
+         TRAP T-an-and-row-offers-what-the-rows-before-it-leave */
+      const left = rowOffer(rows, i, values);
+      const offered = options.map((o) => (!o.value || left.has(o.value) || o.value === held
+        ? o : { ...o, disabled: true, title: SherpaMenu.NOT_AFTER }));
+      void Promise.resolve(pick.populate?.(offered)).then(() => {
         if (held && options.some((o) => o.value === held)) pick.value = held;
       });
-    }
+    });
   }
+
+  /** Why an AND row greys a value. TRAP T-an-and-row-offers-what-the-rows-before-it-leave */
+  static readonly NOT_AFTER = 'No matches with the rows above.';
 
   /** Report the back arrow; the menu cannot know what it drilled into.
    * TRAP T-menu-back-is-a-report */

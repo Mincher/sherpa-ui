@@ -884,3 +884,38 @@ test('a filter answers by values, by conditions, or by both', async ({ page }) =
   // The attribute is not a second door back either.
   expect(r.afterForcingDefault).toBe('advanced');
 });
+
+/**
+ * AN AND ROW OFFERS WHAT THE ROWS BEFORE IT LEAVE — Will, TODO 110 (B): the
+ * rest are listed, greyed and refused, and say why. An OR row offers all.
+ * TRAP T-an-and-row-offers-what-the-rows-before-it-leave
+ */
+test('an AND row greys the values the rows before it rule out; an OR row offers them all', async ({ page }) => {
+  await bar(page);
+  const r = await page.evaluate(async () => {
+    const el = document.querySelector('sherpa-quick-filter-toolbar')!;
+    const sr = (el.shadowRoot!.querySelector('sherpa-quick-filter[data-id="tier"] sherpa-menu') as HTMLElement).shadowRoot!;
+    const wait = (ms = 150): Promise<void> => new Promise((res) => { setTimeout(res, ms); });
+    const set = (field: Element, value: string): void => {
+      (field as HTMLElement & { value: string }).value = value;
+      field.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+    };
+    sr.querySelector<HTMLElement>('.use-condition sherpa-button')!.shadowRoot!.querySelector('button')!.click();
+    await wait();
+    set(sr.querySelector('.condition-row .condition-pick')!, 'silver');
+    await wait();
+    sr.querySelector<HTMLElement>('.add-condition')!.click();
+    await wait();
+    const second = (): Element => sr.querySelectorAll('.condition-row')[1]!;
+    const offer = () => [...(second().querySelector('.condition-pick') as HTMLElement).shadowRoot!.querySelectorAll('option')]
+      .filter((o) => o.value).map((o) => `${o.value}${o.disabled ? ` [off: ${o.title}]` : ''}`);
+    set(second().querySelector('.join')!, 'or');
+    await wait();
+    const or = offer();
+    set(second().querySelector('.join')!, 'and');
+    await wait();
+    return { or, and: offer() };
+  });
+  expect(r.or).toEqual(['gold', 'silver']);
+  expect(r.and).toEqual(['gold [off: No matches with the rows above.]', 'silver']);
+});

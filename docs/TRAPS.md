@@ -6485,6 +6485,26 @@ chip says "Not available here." A chip the View took says where it went
 - Site: `test/unit/present-limits-each-field.test.mjs`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 
+### T-an-and-row-offers-what-the-rows-before-it-leave
+
+**In Advanced rows, AND is serial and OR is parallel** — Will, TODO 110:
+*"AND row options should be restricted by preceding conditional row
+conditions."* He chose B: a value the rows before it rule out is listed,
+greyed and refused (a disabled `<option>`), saying "No matches with the rows
+above." — never the row's own pick. AND binds tighter than OR, so a row looks
+back only as far as the last OR; an OR row offers every value.
+
+**No data is asked for.** Every row is on the SAME field, so what the rows
+before leave is the field's own values that pass them — `rowOffer()`, DOM-free
+in `filter-state.ts`, run against a one-field row with the store's own
+`matchesFilter`. The menu re-offers on every row change.
+
+- Site: `src/core/data/filter-state.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
+- Site: `test/unit/filter-state.test.mjs`
+- Site: `test/e2e/reforged-filter-conditions.spec.ts`
+
 ### T-a-later-answer-sets-an-earlier-pick-aside
 
 **A later answer wins** — Will, TODO 180: *"Customer A is selected but made
