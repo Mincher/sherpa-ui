@@ -191,8 +191,11 @@ test('a toolbar, the header, the panel and a grid heading all show what the Quer
     // ── A GRID HEADING ─────────────────────────────────────────────────
     { const h = grid.shadowRoot.querySelector('.head-cell[data-field="seats"] .head-filter');
       const m = h.querySelector('sherpa-menu'); m.show(h); await wait(300);
-      const op = m.shadowRoot.querySelector('.body-op'); op.value = 'gte'; op.dispatchEvent(new Event('change', { bubbles: true }));
-      type(m.shadowRoot.querySelector('.body-number-one'), '100'); await wait(150); await apply(m); }
+      // "At least" is an Advanced row: a heading is the chip's own menu. TODO 86
+      m.mode = 'advanced'; await wait(200);
+      m.conditions = [{ op: 'gte', text: '100' }]; await wait(300);
+      m.dispatchEvent(new Event('input', { bubbles: true }));
+      await apply(m); }
     check('grid heading: Seats at least 100');
     const heading = JSON.stringify(grid.columnClause('seats'));
 
