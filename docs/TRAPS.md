@@ -67,6 +67,7 @@ template's content still lives in its inert document and does NOT upgrade —
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
+- Site: `src/core/ui/saved-filter-menu.ts`
 
 ### T-tokens-css-never-reaches-shadow
 
@@ -4260,6 +4261,7 @@ binding went from 194 lines to 152.
 - Site: `test/unit/field-selection.test.mjs`
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
+- Site: `src/core/ui/saved-filter-menu.ts`
 
 ### T-an-operator-decides-pick-or-type
 
@@ -9078,6 +9080,7 @@ Dates are not done: their questions wait on TODO 21d.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `test/e2e/reforged-number-advanced.spec.ts`
+- Site: `src/core/ui/saved-filter-menu.ts`
 
 ### T-conditions-are-opt-in-per-field
 
@@ -9962,6 +9965,7 @@ reported: an app should not crash because one chip lost its menu.
 - Site: `test/unit/a-broken-assumption-reports.test.mjs`
 - Site: `test/e2e/reforged-a-broken-assumption-reports.spec.ts`
 - Site: `src/core/ui/templater.ts`
+- Site: `src/core/ui/saved-filter-menu.ts`
 
 ### T-a-bug-report-should-be-a-paste
 
@@ -10102,10 +10106,13 @@ Measured: the same chip driven directly works end to end — open, type, apply,
 bugs.
 
 A menu with nothing to drill is SHOWN instead, anchored to the Filters button. The
-rows are not the answer, so moving them is the wrong gesture.
+rows are not the answer, so moving them is the wrong gesture. A saved filter's
+card is shown there too: its rows are field MENUS, and moved into the Filters
+menu their events were the Filters menu's.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `test/e2e/reforged-one-filters-button.spec.ts`
 
 ### T-a-filter-answers-by-values-conditions-or-both
 
@@ -10580,6 +10587,7 @@ element serves a chip and a panel.
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+- Site: `src/core/ui/saved-filter-menu.ts`
 
 ### T-a-percentage-floor-needs-a-definite-parent
 
@@ -13110,9 +13118,20 @@ actions and no words.
   it describes), because it knows a field's name, type and values. A bar
   knows only the fields it holds: left to it, `openTickets` has no name.
   Unbound, a control words the readings itself from its own defs.
-- **A LINE is not a row.** The menu's `inert` item is a `<p>`: no box, no
-  hover, nothing to press. The bare `<label>` row shades on hover and reads
-  as a control.
+- **Each field shows its OWN menu**, read-only. TODO 181, Will: *"The
+  preset/saved filter menus should show the condition input rows, in read
+  only mode, rather than just text labels."* `saved-filter-menu.ts` builds it
+  with `menuFor`: inline, `data-readonly`, on its Advanced rows. A Simple
+  answer is drawn as its picks, as OR'd rows; a date shows its calendar.
+- **The field name is a direct `p.menu-section`**, so the menu's own
+  `::slotted` look styles it. A field the control has no def for, or an
+  on/off or selector one, stays a `p.menu-line` of words: no box, nothing to
+  press.
+- **A `.saved-field` group stops every event its menu sends** — none is the
+  card's or the chip's — and carries the words as its `aria-description`,
+  because inert rows say nothing.
+- **A card drawn before its defs arrive** draws them in place when they do
+  (`available()`): a field that was words becomes its menu.
 - **The chip is still a TOGGLE.** A menu used to mean "a value chip": the
   bar's `active` list left such a chip out, and its `values` setter switched
   it off. Both ask the def now (`#isSaved`).
@@ -13130,6 +13149,8 @@ actions and no words.
 - Site: `src/data.ts`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 - Site: `test/unit/filter-face.test.mjs`
+- Site: `src/core/ui/saved-filter-menu.ts`
+- Site: `test/e2e/reforged-saved-filter-edit.spec.ts`
 
 ### T-a-saved-filter-is-its-readings
 
@@ -13186,12 +13207,25 @@ Save."* Called an EDIT in the code: the source's `#draft` and a View's drafts
 - **No change is no edit.** An edit equal to what was saved is dropped — by
   `editPreset`, and by `declarePreset` when the change is saved. It goes
   with its filter: taken off the bar, or deleted.
-- **A line OPENS its field**, in that field's own menu (`editorFor`, which is
-  `menuFor` waiting for Apply), holding what the filter applies now. The
-  menu's `reading` reads and writes every kind, so there is one path for a
-  list, a number and Advanced rows. The editor lives OUTSIDE the chips and
-  scopes, and its events stop there: a bar or panel hearing its `menu-change`
-  as a chip's reported a filter the reader never set.
+- **Edit filter edits IN PLACE** (TODO 181). It carries `data-stay-open`
+  (`T-an-action-row-can-keep-its-menu-open`) and lifts each field menu's
+  `data-readonly`; Save filter and Discard changes show, Edit and Delete step
+  aside. Its rows are the field's own menu (`T-a-saved-chip-lists-its-conditions`).
+- **The change is a DRAFT until editing ends**: the card closes, Save filter
+  is pressed, or the bar rebuilds under it (`#render`). Then ONE
+  `preset-edit`, folding in only the fields that moved, each read with its
+  type — a date read as text was dropped. Nothing moved, nothing is sent.
+  Discard puts the saved rows back.
+- **Its source draws it back IN PLACE** (`drawScope`'s `edits`): the card is
+  not rebuilt, so an open one stays open.
+- **Only a reader's OWN saved filter (`editable`) offers Edit filter and
+  Delete filter**; an app preset is the app's. **Delete is not Remove**:
+  Remove takes a chip off the bar to wait in the Add menu; Delete takes it out
+  of both, and `filter-delete` tells the host to forget it.
+- Unpack — the answer put back into its fields — is gone. Edit filter shows
+  the rows where they are, which is what TODO 49 asked for.
+- **Read the card OPEN in a test.** WebKit keeps a stale computed style for a
+  row inside a shut card: Edit filter read as hidden after editing ended.
 - **ON FIRST, then the edit.** A filter that is off comes on as its change
   is applied. The source draws the scope a moment later from a COPY; sent
   the other way round, the copy had it off and switched it off again.
@@ -13218,6 +13252,9 @@ scope's header holds nothing to press; Save is in the chip's own menu.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-saved-filter-edit.spec.ts`
 - Site: `test/unit/a-saved-filter-keeps-its-edit.test.mjs`
+- Site: `src/core/ui/saved-filter-menu.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
+- Site: `test/e2e/reforged-saved-filter.spec.ts`
 
 ### T-save-packs-the-fields-into-one-chip
 
@@ -13277,36 +13314,6 @@ not whether it was on; and the Records page's `asPanelField` did not pass
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
-- Site: `test/e2e/reforged-saved-filter.spec.ts`
-
-### T-edit-unpacks-a-saved-filter
-
-**Edit puts a saved filter's answer back into its fields — unpack — and Delete
-forgets it.** Will, 2026-09-25: a reader's own chip needs *"a menu button to
-expose an edit filter option. Editing should re-expose the conditional input
-UI"*. The UI already exists; unpack is the door back into it.
-
-Only a READER'S OWN saved chip (`editable`) opens "Edit filter" and "Delete
-filter" — `packFilter` marks one, and a host marks the ones it stored. An app
-preset opens nothing: it is the app's.
-
-`unpackFilter(id)` brings a field that is not on the bar onto it from the Add
-list, rebuilds, switches the saved chip OFF, and — once the rebuilt menus have
-DRAWN, because a menu that has not drops rows — clears each field and puts its
-part back through `setChipReading`. Then ONE event: the source sees the saved
-part go and the fields come back together, so the rows do not move.
-
-**The next Save offers the old name.** `filter-save` carries the `id` and
-`label` of the filter an Edit unpacked, so a host can offer the name back, and
-the same name saves over the old one (`T-derived-id-makes-resave-an-update`).
-Pack or Delete ends it.
-
-**Delete is not Remove.** Remove takes a chip off the bar and it waits in the
-Add menu's Custom section; Delete takes it out of both, and `filter-delete`
-tells the host to forget it.
-
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 
 ### T-saved-filters-are-the-custom-section
@@ -13795,7 +13802,8 @@ The close branch of `#onToggle` now restores the baseline, guarded by an
 values they just decided.
 
 One press is not a walk-away: the chip's own body APPLIES its open draft
-(`T-a-chip-press-applies-its-menus-draft`).
+(`T-a-chip-press-applies-its-menus-draft`). A saved filter's in-place edit
+has no Apply, so a close KEEPS it, as an edit (`T-a-saved-filter-keeps-its-edit`).
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-menu.spec.ts`
@@ -15820,6 +15828,7 @@ reads its menu's inputs the same way.
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `test/e2e/reforged-menu.spec.ts`
+- Site: `test/e2e/reforged-saved-filter-edit.spec.ts`
 
 ### T-an-action-row-can-keep-its-menu-open
 
@@ -15832,3 +15841,4 @@ action row closes it as before.
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `test/e2e/reforged-menu.spec.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`

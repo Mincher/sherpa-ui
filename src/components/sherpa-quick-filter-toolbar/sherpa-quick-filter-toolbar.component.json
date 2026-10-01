@@ -447,7 +447,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (setChipValues, setChipReading, drawResults, drawPresent, drawReading, supersede, unpackFilter, deleteFilter, packFilter, report, available, addFilters, removeFilter, drawScope, allowFields, clearAll, organise). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (setChipValues, setChipReading, drawResults, drawPresent, drawReading, supersede, deleteFilter, packFilter, report, available, addFilters, removeFilter, drawScope, allowFields, clearAll, organise). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -652,12 +652,6 @@
           "name": "supersede",
           "args": "ids: readonly string[], appliedAt?: string",
           "description": "supersede([...ids]) — the VIEW now owns these fields."
-        },
-        {
-          "$type": "method",
-          "name": "unpackFilter",
-          "args": "id: string",
-          "description": "Put a saved filter's answer back into its fields — UNPACK. A field not on the bar comes onto it from the Add list; each holds its part again, and the saved chip goes OFF. ONE event, and the promise settles after it."
         },
         {
           "$type": "method",

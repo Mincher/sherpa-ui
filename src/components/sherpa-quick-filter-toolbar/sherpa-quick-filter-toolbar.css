@@ -21,8 +21,10 @@
   container: qf-bar / inline-size;
 }
 
-/* A saved filter's field, opened to change it: no box of its own. */
-.qf-editor { display: contents; }
+/* A saved filter's Save and Discard: while it holds a change, or is being
+   edited — and then Edit and Delete step aside. TRAP T-a-saved-filter-keeps-its-edit */
+.chips > .chip:not([data-edited]) > sherpa-menu:not([data-editing]) > .qf-saved-edit { display: none; }
+.chips > .chip > sherpa-menu[data-editing] > button.qf-saved-own { display: none; }
 
 /* The view bar bottom-aligns to the nav's first quick row; data centres. */
 :host([data-type="view"]) .bar {

@@ -202,3 +202,67 @@ test('its badge is a sherpa-badge, drawn exactly as a chip draws its count', asy
   expect(r.badge).toEqual(r.chip);
   expect(r.badge.fill).not.toBe(r.tint);
 });
+
+/** A SAVED filter folded away: its row SHOWS its card at the Filters button,
+ *  never drills it — its rows are field menus. TRAP T-a-conditions-only-menu-cannot-be-drilled */
+test('a folded saved filter opens its own card at the button; its actions work there', async ({ page }) => {
+  const r = await page.evaluate(async ({ SIX }) => {
+    const box = document.createElement('div');
+    box.style.inlineSize = '560px';
+    const el = document.createElement('sherpa-quick-filter-toolbar') as unknown as Bar;
+    box.appendChild(el);
+    document.getElementById('root')!.replaceChildren(box);
+    await el.rendered;
+    const tier = { id: 'tier', label: 'Tier', options: [{ value: 'gold', label: 'Gold' }, { value: 'silver', label: 'Silver' }] };
+    el.populate([...SIX, tier, { id: 'custom:mine', label: 'Mine', editable: true, readings: { tier: { picked: ['gold'] } } }]);
+    await window.__settled();
+    await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+    const sr = el.shadowRoot!;
+    const btn = sr.querySelector<HTMLElement>('.add-btn')!;
+    const filters = btn.querySelector('sherpa-menu') as HTMLElement & { show(t: HTMLElement): void };
+    const chip = sr.querySelector<HTMLElement>('.chip[data-id="custom:mine"]')!;
+    const card = chip.querySelector<HTMLElement & { open: boolean }>(':scope > sherpa-menu')!;
+    const field = () => card.querySelector<HTMLElement & { conditions: unknown[] }>(':scope > .saved-field > sherpa-menu')!;
+    const heard: string[] = [];
+    for (const type of ['filter-save', 'filter-delete', 'preset-edit']) el.addEventListener(type, () => heard.push(type));
+    // An action row is the bar's to answer: none reaches the page raw.
+    document.addEventListener('menu-select', () => heard.push('menu-select'));
+    const open = async () => {
+      filters.show(btn);
+      await window.__settled();
+      filters.querySelector<HTMLElement>('.menu-row[data-value="custom:mine"] .menu-row-drill')!.click();
+      await window.__settled();
+    };
+    const press = async (value: string) => {
+      card.querySelector<HTMLElement>(`:scope > button[value="${value}"]`)!.click();
+      await window.__settled();
+    };
+
+    await open();
+    const shown = {
+      folded: chip.hasAttribute('data-folded-away'),
+      open: card.open, drilled: filters.hasAttribute('data-drill'),
+      kept: !!card.querySelector(':scope > .saved-field'),
+    };
+    await press('edit');
+    field().conditions = [{ op: 'eq', picked: ['gold'] }, { op: 'eq', join: 'or', picked: ['silver'] }];
+    await press('discard-edit');
+    const discarded = [...heard];
+    await open();
+    await press('edit');
+    field().conditions = [{ op: 'eq', picked: ['silver'] }];
+    await press('save-edit');
+    const saved = [...heard];
+    heard.length = 0;
+    await open();
+    await press('delete');
+    return { shown, discarded, saved, deleted: heard, gone: !sr.querySelector('.chip[data-id="custom:mine"]') };
+  }, { SIX });
+
+  expect(r.shown).toEqual({ folded: true, open: true, drilled: false, kept: true });
+  // Nothing held, nothing to put back: Discard is silent.
+  expect(r.discarded).toEqual([]);
+  expect(r.saved).toEqual(['preset-edit', 'filter-save']);
+  expect(r.deleted).toEqual(['filter-delete']);
+  expect(r.gone).toBe(true);
+});
