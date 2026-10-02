@@ -1,5 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
 
+/* A terminal in snap-packaged VS Code points GIO_MODULE_DIR at the snap's own
+   modules; WebKit's network process loads them and fails every page.goto.
+   TRAP T-snap-vscode-breaks-webkit */
+if (process.env.GIO_MODULE_DIR?.includes('/snap/')) delete process.env.GIO_MODULE_DIR;
+
 /**
  * Playwright config for Sherpa-UI component tests.
  *

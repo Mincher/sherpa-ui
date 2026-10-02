@@ -3403,6 +3403,29 @@ nothing, with no warning anywhere.
 
 - Site: `playwright.config.ts`
 
+### T-snap-vscode-breaks-webkit
+
+**Every WebKit test failed at `page.goto` with "WebKit encountered an internal
+error"** — on Ubuntu 26.04, run from a terminal inside VS Code installed as a
+snap (2026-10-02, 917 failures). Chromium and Firefox were fine. WebKit loaded
+`about:blank` and a `data:` URL, but no network URL at all.
+
+The browser's own stderr (`DEBUG=pw:browser`) names it:
+
+    WPENetworkProcess: symbol lookup error:
+    /snap/core20/current/lib/x86_64-linux-gnu/libpthread.so.0:
+    undefined symbol: __libc_pthread_init
+
+The snap sets `GIO_MODULE_DIR` to its own GIO modules
+(`~/snap/code/common/.cache/gio-modules`) for every process it starts, and a
+terminal inherits it. WebKit's network process loads GIO's TLS module from
+there, which drags in the snap's 20.04 libc pieces. Dropping that one variable
+fixes it; the config does so only when the value points into a snap.
+
+Sherpa Demos runs its own Playwright config and carries the same line.
+
+- Site: `playwright.config.ts`
+
 ### T-icon-box-is-not-the-glyph
 
 **An icon's BOX and its DRAWING are two sizes, not one.** A Figma icon is a
