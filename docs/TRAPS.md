@@ -3426,6 +3426,27 @@ Sherpa Demos runs its own Playwright config and carries the same line.
 
 - Site: `playwright.config.ts`
 
+### T-chromium-pointer-starts-on-the-page
+
+**Chromium can start a test with its mouse pointer at (0, 0)** — on the page,
+not off it — and whatever is drawn there gets a real, trusted `pointerenter`.
+A probe (2026-10-02, Chromium 153 on Linux) logged `pointerover`,
+`pointerenter`, `mouseover` and `mousemove` at (0, 0) on a freshly appended
+`sherpa-nav`, with no test touching the mouse.
+
+`#root` starts at (0, 0), so the first thing a spec draws sits under it. The
+nav rail opened to `hover`, and five closed-rail tests read 320px. The app
+shell MIRRORS its rail's state, so a test that set the shell to `pinned` was
+overwritten with `hover` — 31 failures in 40 under parallel load, a pass when
+run alone. On the Mac it showed as "the known nav flake": the same cause, seen
+less often.
+
+The components are right: a pointer really is on the rail. The fix is in the
+harness — `gotoHarness()` parks the pointer at (-1, -1) once the page is ready.
+A spec that loads the page with its own `page.goto` does not get that.
+
+- Site: `test/e2e/harness.ts`
+
 ### T-icon-box-is-not-the-glyph
 
 **An icon's BOX and its DRAWING are two sizes, not one.** A Figma icon is a

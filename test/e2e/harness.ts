@@ -30,6 +30,8 @@ export async function gotoHarness(page: Page): Promise<void> {
   await page.waitForFunction(
     () => (window as unknown as { __reforgedReady?: boolean }).__reforgedReady === true,
   );
+  // TRAP T-chromium-pointer-starts-on-the-page — park it off the page.
+  await page.mouse.move(-1, -1);
 }
 
 /**

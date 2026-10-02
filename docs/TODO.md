@@ -68,7 +68,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16q | 157 | Tooltips are clipped by other elements: they must sit in the top layer, above everything | bug |
 | ✅ | 16r | 158 | A data viz filter sent up to the View cannot be sent back down | bug |
 | ✅ | 16o | 153 | In a fixed-row layout grid, the data grid and its container change height with the row count; the container must keep its height and the grid fill it | bug |
-| ⬜ | 16s | 201 | In Chromium on Linux the nav rail opens to hover by itself, so 5 closed-rail tests fail every run | bug |
+| ✅ | 16s | 201 | In Chromium on Linux the nav rail opens to hover by itself, so 5 closed-rail tests fail every run | bug |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | ❓ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ❓ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
@@ -1282,7 +1282,7 @@ CSS only: the markup is the same, the scroller moved from `.content` to
 scrolled under it, from the scroller's timeline — in Chromium and WebKit;
 Firefox draws none. `T-only-the-context-scrolls`
 
-### `[ ]` 201 — BUG: in Chromium on Linux the nav rail opens to hover by itself
+### `[x]` ✅ 201 — BUG: in Chromium on Linux the nav rail opens to hover by itself
 
 Found 2026-10-02, on the first run on Will's Linux machine. These fail in
 Chromium on every run, and all pass in Firefox:
@@ -1300,6 +1300,15 @@ less often.
 
 First step: log which event opens the rail. If it is the pointer, the fix is in
 the tests (move the mouse off the rail first), not in the nav.
+
+**✅ Done 2026-10-02:** it is the pointer. A probe logged a trusted
+`pointerenter` at (0, 0) on a new rail, with no test touching the mouse. The
+nav is right; the tests were not. `gotoHarness()` now parks the pointer at
+(-1, -1). The layout-grid test was the same bug through the shell, which copies
+its rail's `hover` over a `pinned` set by the test: 31 failures in 40 under
+load before, 40 of 40 after, once that spec used `gotoHarness()`. 58 specs
+still load the page with their own `page.goto` and do not get the park.
+`T-chromium-pointer-starts-on-the-page`
 
 ---
 

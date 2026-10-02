@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { gotoHarness } from './harness';
 
 /**
  * THE CONTENT GRID — its row modes, and the ELEMENT that owns them.
@@ -18,7 +19,8 @@ import { expect, test } from '@playwright/test';
  * TRAP T-a-fit-grid-needs-a-sized-parent
  */
 test.beforeEach(async ({ page }) => {
-  await page.goto('/test/reforged/harness.html');
+  // The harness also parks the pointer, which an app-shell rail at (0, 0) needs.
+  await gotoHarness(page);
   // 1400 wide is TWELVE columns, so four data-col-span="small" items share one row.
   await page.setViewportSize({ width: 1400, height: 800 });
 });
