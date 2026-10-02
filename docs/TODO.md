@@ -68,6 +68,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16q | 157 | Tooltips are clipped by other elements: they must sit in the top layer, above everything | bug |
 | ✅ | 16r | 158 | A data viz filter sent up to the View cannot be sent back down | bug |
 | ✅ | 16o | 153 | In a fixed-row layout grid, the data grid and its container change height with the row count; the container must keep its height and the grid fill it | bug |
+| ⬜ | 16s | 201 | In Chromium on Linux the nav rail opens to hover by itself, so 5 closed-rail tests fail every run | bug |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | ❓ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ❓ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
@@ -1280,6 +1281,25 @@ CSS only: the markup is the same, the scroller moved from `.content` to
 `.context-frame`. The header still takes its shadow while something is
 scrolled under it, from the scroller's timeline — in Chromium and WebKit;
 Firefox draws none. `T-only-the-context-scrolls`
+
+### `[ ]` 201 — BUG: in Chromium on Linux the nav rail opens to hover by itself
+
+Found 2026-10-02, on the first run on Will's Linux machine. These fail in
+Chromium on every run, and all pass in Firefox:
+
+- `reforged-nav.spec.ts:125` — the rail starts collapsed (state reads `hover`)
+- `reforged-nav.spec.ts:912` — the collapsed rail is the density's `size/3xl`
+- `reforged-app-shell.spec.ts:257` ×3 — the closed rail is 36 / 40 / 48 (reads 320)
+- `reforged-layout-grid.spec.ts:616` failed once too, then passed on a re-run
+
+The nav opens on `pointerenter` or `focusin` (`#onEnter` in `sherpa-nav.ts`),
+and no test moves the mouse. Best guess, NOT measured: Chromium keeps its
+pointer at (0, 0), and a rail drawn under it gets a `pointerenter`. On the Mac,
+`:125` was "the known nav flake" (2026-09-21) — likely the same cause, seen
+less often.
+
+First step: log which event opens the rail. If it is the pointer, the fix is in
+the tests (move the mouse off the rail first), not in the nav.
 
 ---
 
