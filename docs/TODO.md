@@ -69,6 +69,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16r | 158 | A data viz filter sent up to the View cannot be sent back down | bug |
 | ✅ | 16o | 153 | In a fixed-row layout grid, the data grid and its container change height with the row count; the container must keep its height and the grid fill it | bug |
 | ✅ | 16s | 201 | In Chromium on Linux the nav rail opens to hover by itself, so 5 closed-rail tests fail every run | bug |
+| ❓ | 16t | 202 | Sherpa Demos: 7 Chromium tests time out — the rail opens under the pointer and covers the filter panel | bug |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | ❓ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ❓ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
@@ -1309,6 +1310,26 @@ its rail's `hover` over a `pinned` set by the test: 31 failures in 40 under
 load before, 40 of 40 after, once that spec used `gotoHarness()`. 58 specs
 still load the page with their own `page.goto` and do not get the park.
 `T-chromium-pointer-starts-on-the-page`
+
+### `[ ]` ❓ 202 — BUG: 7 Sherpa Demos tests time out in Chromium under an open rail
+
+Found 2026-10-02, first Demos run on Linux (`PORT=4300 npm test`): 384 passed,
+7 failed, all Chromium, all a click into the left filter panel. Each says
+`<sherpa-nav … data-nav-state="hover"> … intercepts pointer events` — the same
+cause as 201. The rail opens under a pointer at (0, 0) and covers the panel,
+and Playwright never moves the pointer while it waits for the target.
+
+Measured in `reforged-panel-apply.spec.ts`, 4 tests × 5 runs: 10 of 20 failed
+as is, 20 of 20 passed with `await page.mouse.move(-1, -1)` after the
+`page.goto`.
+
+Demos has no shared harness: 40 specs call `page.goto` themselves (~75 calls).
+
+**❓ Will:** (A) add `test/e2e/fixture.ts` to Demos, whose `page` parks the
+pointer after every `goto`, and change the import line in all 40 specs — it
+covers every test, now and later; or (B) park the pointer only in the 4
+failing specs — fewer files, but the next test that clicks near the rail
+fails the same way. A is a 40-file change, so it waits for your yes.
 
 ---
 
