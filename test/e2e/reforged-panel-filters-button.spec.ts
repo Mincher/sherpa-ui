@@ -103,7 +103,8 @@ test('the Filters button is in the panel header; a scope header holds no button,
   // Save filter: under the scope's header, above its first field, at the right.
   expect(r['save']!.top).toBeGreaterThanOrEqual(r['header']!.bottom);
   expect(r['save']!.bottom).toBeLessThanOrEqual(r['firstField']!.top);
-  expect(r['header']!.right - r['save']!.right).toBeLessThanOrEqual(16);
+  // Rounded: Firefox on Linux measured this 16.000015.
+  expect(Math.round(r['header']!.right - r['save']!.right)).toBeLessThanOrEqual(16);
 });
 
 test('open, it is the whole list; shut, it leads with what the scope hides', async ({ page }) => {
