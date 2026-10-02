@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**34 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**33 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -147,7 +147,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ❓ | 35c12 | 196 | ONE filter surface and a smaller DataSource: `bind()` out of the data layer; one helper for bar and panel | refactor |
 | ❓ | 35c13 | 197 | ONE way to write a filter condition in a definition or a View: readings, or a plain `{ field: { gt: 0 } }` | foundation |
 | ✅ | 35c2 | 185 | Sherpa Demos: `definitions/` becomes `views/` (JSON, templates in HTML by id), `view-schemas/`; rethink `contexts/` | refactor |
-| ⬜ | 35d | 184 | INVESTIGATE — does sherpa-ui need Node to ship? A CDN, a script or a small zip may suit it better | explore |
+| ✅ | 35d | 184 | INVESTIGATE — does sherpa-ui need Node to ship? A CDN, a script or a small zip may suit it better | explore |
 | | | | **F — Data states and charts** | |
 | ✅ | 36 | 58 | Loading, empty and error states in a container | feature |
 | ✅ | 37 | 9b | A Data Viz header, for metrics and chart containers | component |
@@ -2956,7 +2956,7 @@ and the area has a MIN width of 464px. That is 150% of the 310px it is at
 at 1280 and at 1600, and from about 1900 the three columns are wider and
 take over (454 at 1920).
 
-### `[ ]` 184 — Does sherpa-ui need Node to ship?
+### `[x]` ✅ 184 — Does sherpa-ui need Node to ship?
 
 Will, 2026-10-01, to investigate later: *"How much does sherpa actually need
 nodejs? Does it need nodejs to ship to consumers?*
@@ -2987,6 +2987,11 @@ So the ways to ship, none needing Node from the reader: a zip of `dist/`, a
 CDN URL to `dist/index.js` (from an npm release, or a git tag), or npm for
 those who want the types. Smaller wins, if wanted: minify the JS, and ship
 `schemas/`.
+
+**✅ Done 2026-10-02.** The answer is no: Node makes sherpa-ui, and a
+consumer needs none. The package now ships `schemas/`, and
+`sherpa-ui/schemas/page.v1.json` resolves by name; a node test packs it to
+prove it. Minifying the JS and icons on demand are 199's.
 
 ### `[x]` ✅ 187 — Make the docs and the MCP text true
 
@@ -5198,6 +5203,14 @@ One line each. The detail is in git and in the trap named.
 - 110: an AND row greys the values the rows before it rule out — `T-an-and-row-offers-what-the-rows-before-it-leave`
 - 181: a saved filter's card shows each field's own menu, read-only; Edit filter edits it in place — `T-a-saved-filter-keeps-its-edit`
 - 177: cards resize from the layout grid's gutters, by drag or keys; each Context keeps its sizes — `T-a-gutter-moves-a-line`
+- 183: how a consumer and an agent build on Sherpa — `docs/CONSUMER-REVIEW.md`; its plan is items 187 to 197
+- 185: Sherpa Demos `views/` holds only `*-views.json`; each View's markup is a template the JSON names — `T-a-views-markup-lives-in-a-template`
+- 187: the docs and the MCP text say what the code does; `bind()` reports `scope: 'all'`
+- 188: a changed key moves the row in every store; one `input` per keystroke; the provider reports skipped keys; lint and the node tests are gates — `T-a-changed-key-moves-the-row`
+- 189 (readiness): `settled()` ships for apps and tests; one component imported alone draws right
+- 198: a link to a View with cards of its own draws them — `T-content-first-original-once`
+- 200: a WebKit flake — the test waited for a word the summary draws before its rows load
+- 184: a consumer needs no Node; the package ships `schemas/`
 - 170: queued, LAST, on Will's word only — the data layer on the client, the server, or both
 - 167: a bar's Reset leaves a chip the View holds as it is
 - 166: a saved filter shows its count only while it is on

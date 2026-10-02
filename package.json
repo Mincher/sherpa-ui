@@ -19,10 +19,12 @@
       "types": "./dist/components/*.d.ts",
       "default": "./dist/components/*"
     },
-    "./css/*": "./dist/styles/*"
+    "./css/*": "./dist/styles/*",
+    "./schemas/*": "./schemas/*"
   },
   "files": [
     "dist/",
+    "schemas/",
     "src/**/*.ts",
     "src/**/*.html",
     "src/**/*.css",
