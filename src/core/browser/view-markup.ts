@@ -15,6 +15,7 @@
  * - parseViewMarkup — Parse saved view markup into a fragment, dropping anything outside the vocabulary.
  * - checkViewMarkup — Check saved markup WITHOUT building it — the markup twin of `checkView`.
  */
+import { viewHtml } from '../ui/trusted-html.js';
 
 /* ── The vocabulary ────────────────────────────────────────────────────── */
 
@@ -93,7 +94,7 @@ export function parseViewMarkup(markup: string): ParseResult {
   if (typeof markup !== 'string' || !markup.trim()) return { fragment, report };
 
   // INERT by specification — nothing in here executes or fetches.
-  const doc = new DOMParser().parseFromString(`<body>${markup}</body>`, 'text/html');
+  const doc = new DOMParser().parseFromString(viewHtml(`<body>${markup}</body>`), 'text/html');
 
   const clean = (source: Element): Element | null => {
     const tag = source.tagName.toLowerCase();

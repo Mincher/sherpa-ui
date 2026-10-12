@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**54 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
+**53 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -86,7 +86,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | c3 | 207 | Import anywhere: a base class that loads on a server, and a `define()` that checks first — two copies of the library no longer throw | foundation |
 | ❓ | c4 | 209 | The package surface for ONE component: `sideEffects`, `./package.json`, and the extensionless import TypeScript accepts but the page cannot load | tooling |
 | ❓ | c5 | 211 | Booleans and data the way frameworks bind them: `data-x="false"` is OFF; a `data` property beside `populate()`; the grid's `rowKey` | foundation |
-| ⬜ | c6 | 215 | Trusted Types and a strict CSP: one policy for the five HTML sinks; the calendar's inline styles into CSS | foundation |
+| ✅ | c6 | 215 | Trusted Types and a strict CSP: one policy for the five HTML sinks; the calendar's inline styles into CSS | foundation |
 | ⬜ | c7 | 220 | Weight per component, gated: JS and fetched CSS per entry may only fall, and no app module in a component's graph | tooling |
 | ✅ | c8 | 226 | Docs and agent text, round 2: CLAUDE.md on the shared sheets and the provider, three Fires blocks, the MCP's dead tokens and "Rule 9", the old def flow | docs |
 | 🚧 | c9 | 227 | Sherpa Demos, round 2: a refused save is silent; seed lists kept twice; "Items per page" does nothing; `settled()` for its 62 waits | bug |
@@ -1689,13 +1689,22 @@ keeps `"false"`. Only declared booleans — the ones still in `observed` follow
 when 195 declares them. `T-false-is-off`. Left: the `data` property (its name)
 and the grid's `rowKey`.
 
-### `[ ]` 215 — Trusted Types and a strict CSP
+### `[x]` ✅ 215 — Trusted Types and a strict CSP
 
 Under `require-trusted-types-for 'script'`, five HTML sinks throw
 (`sherpa-element.ts` stamping, `render-icon.ts`, two in `templater.ts`,
 `view-markup.ts`). One `sherpa-ui` policy for the first four; `view-markup`
 keeps its allow-list under its own. Three `style="…"` in `sherpa-calendar.html`
 move into CSS. A harness page with a meta CSP proves it.
+
+**✅ Done 2026-10-12.** The five sinks go through `trusted-html.ts`: the
+`sherpa-ui` policy for Sherpa's own files, `sherpa-ui-view` for a View's markup;
+a page that allows neither gets a report. The calendar's three styles are set
+through the CSSOM as its header lands — they could not be CSS, because the clone
+lives in its host's light DOM. `test/reforged/csp.html` (strict CSP, Trusted
+Types) draws a button with an icon, an embedded calendar and a View's markup
+with no refusal; it failed on the old code in Chromium and Firefox.
+`T-sherpa-runs-under-a-strict-csp`
 
 ### `[ ]` 220 — Weight per component, gated
 

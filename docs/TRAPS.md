@@ -15960,6 +15960,30 @@ by the page's id, so `saveView(label)` needs nothing from the page.
 - Site: `test/unit/page-definition.test.mjs`
 - Site: `src/data.ts`
 
+### T-sherpa-runs-under-a-strict-csp
+
+**Sherpa runs on a page with a strict CSP** — `default-src 'self'; style-src
+'self'; require-trusted-types-for 'script'` — as an enterprise or framework host
+may set (TODO 215). Two things broke it:
+
+- **Five HTML sinks** — the template stamp, the icon paths, two template
+  parses, the View markup parse — throw under Trusted Types. Each goes through
+  a policy (`trusted-html.ts`): `sherpa-ui` for Sherpa's OWN files, and
+  `sherpa-ui-view` for a View's markup, so a page can allow each by name
+  (`trusted-types sherpa-ui sherpa-ui-view`). A page that names neither gets a
+  `trusted-types-policy` report, not a silent blank.
+- **`style` attributes** are refused without `'unsafe-inline'`. The calendar's
+  header clone carried three, because it lands in its host's light DOM where
+  no rule of the calendar reaches; it sets them through the CSSOM
+  (`style.setProperty`), which a CSP allows. A template must carry no `style=""`.
+
+Constructed sheets (`replaceSync`) need no `'unsafe-inline'`. A test page with
+the strict CSP (`test/reforged/csp.html`) records every refusal.
+
+- Site: `src/core/ui/trusted-html.ts`
+- Site: `src/components/sherpa-calendar/sherpa-calendar.ts`
+- Site: `test/e2e/reforged-strict-csp.spec.ts`
+
 ### T-false-is-off
 
 **`data-x="false"` is OFF on a declared boolean prop.** Sherpa reads a boolean

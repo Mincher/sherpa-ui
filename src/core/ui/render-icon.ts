@@ -15,6 +15,7 @@
  * - upgradeIcons — turn every icon in a freshly stamped tree into a fitted SVG
  */
 import { ICON_PATHS } from './icon-paths.js';
+import { ownHtml } from './trusted-html.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -57,7 +58,7 @@ export function renderIcon(el: Element, value: string): void {
   // The body is markup with its own fills — a polychrome icon is several
   // shapes, and `status-ok` is a disc with a white tick knocked out of it.
   // innerHTML on an SVG element parses IN the SVG namespace.
-  svg.innerHTML = icon.body;
+  svg.innerHTML = ownHtml(icon.body);
   el.appendChild(svg);
 }
 

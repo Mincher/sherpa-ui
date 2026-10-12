@@ -26,6 +26,7 @@ import {
   cachedTemplates, checkOwnTemplate, filesFor, loadSheets, loadTemplates, onReload, reloadFiles, templateBody,
 } from './templater.js';
 import { report } from '../data/report.js';
+import { ownHtml } from './trusted-html.js';
 
 /** How `num()` narrows a parsed value. */
 export interface NumOptions {
@@ -867,7 +868,7 @@ export abstract class SherpaElement extends Base {
    * TRAP T-restamp-does-not-abort
    */
   #stamp(body: string, id: string | null): void {
-    this.root.innerHTML = body;
+    this.root.innerHTML = ownHtml(body);
     this.#stampedTemplate = id;
     this.#hasRendered = true;
     // Props and icons BEFORE onRender, so a component's setup reads a

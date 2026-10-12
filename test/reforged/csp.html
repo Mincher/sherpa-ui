@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- A STRICT page: no inline script or style, and Trusted Types enforced. TODO 215 -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self'; require-trusted-types-for 'script'; trusted-types sherpa-ui sherpa-ui-view">
+  <title>Strict CSP</title>
+  <link rel="stylesheet" href="/dist/styles/tokens/tokens.css">
+  <script src="./csp-watch.js"></script>
+  <script type="module" src="./csp.js"></script>
+</head>
+<body><div id="root"></div></body>
+</html>

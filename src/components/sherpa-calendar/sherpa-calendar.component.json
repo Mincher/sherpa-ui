@@ -228,7 +228,6 @@
                 "attrs": {
                   "data-type": "icon",
                   "data-group": "start",
-                  "style": "--sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px); --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);",
                   "data-icon-start": "chevron-left",
                   "aria-label": "Previous"
                 }
@@ -238,8 +237,7 @@
                 "class": "cal-label",
                 "attrs": {
                   "data-group": "mid",
-                  "aria-live": "polite",
-                  "style": "margin-inline-start: var(--sherpa-structure-space-snapped, 0px); flex: 1 1 auto;"
+                  "aria-live": "polite"
                 }
               },
               {
@@ -248,7 +246,6 @@
                 "attrs": {
                   "data-type": "icon",
                   "data-group": "end",
-                  "style": "margin-inline-start: var(--sherpa-structure-space-snapped, 0px); --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px); --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);",
                   "data-icon-start": "chevron-right",
                   "aria-label": "Next"
                 }

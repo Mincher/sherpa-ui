@@ -124,6 +124,21 @@ export class SherpaCalendar extends SherpaElement {
   #projectHeader(): void {
     const header = this.clone('template.cal-header-tpl');
     if (!header) return;
+    /* Its outer corners and spacing, through the CSSOM: it lands in the host's
+       LIGHT DOM, which no rule here reaches — ::slotted() cannot reach a slotted
+       element's children — and a strict CSP refuses a `style` attribute.
+       TRAP T-sherpa-runs-under-a-strict-csp */
+    const round = 'var(--sherpa-display-mode-border-rounding-base, 4px)';
+    const snapped = 'var(--sherpa-structure-space-snapped, 0px)';
+    const style: Array<[string, Record<string, string>]> = [
+      ['.cal-prev', { '--sherpa-border-rounding-top-left': round, '--sherpa-border-rounding-bottom-left': round }],
+      ['.cal-label', { 'margin-inline-start': snapped, flex: '1 1 auto' }],
+      ['.cal-next', { 'margin-inline-start': snapped, '--sherpa-border-rounding-top-right': round, '--sherpa-border-rounding-bottom-right': round }],
+    ];
+    for (const [sel, props] of style) {
+      const el = header.querySelector<HTMLElement>(sel);
+      for (const [name, value] of Object.entries(props)) el?.style.setProperty(name, value);
+    }
     const host = this.parentElement ?? this;
     if (host.querySelector(':scope > .cal-header-projected')) return;
     host.appendChild(header);

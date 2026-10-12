@@ -79,19 +79,12 @@
     shadow header, so one set of listeners and one label sync serve both.
   -->
   <template class="cal-header-tpl">
-    <!--
-      Outer corners are INLINE because this clone lands in the MENU's light DOM:
-      no rule here can reach it, and ::slotted() cannot reach a slotted element's
-      children. An inline custom property inherits across both boundaries.
-    -->
+    <!-- Its outer corners are set by the calendar as it lands: see #projectHeader. -->
     <div class="cal-header cal-header-projected" slot="header">
       <sherpa-button class="cal-nav cal-prev" data-type="icon" data-group="start"
-                     style="--sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px); --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);"
                      data-icon-start="chevron-left" aria-label="Previous"></sherpa-button>
-      <sherpa-button class="cal-label" data-group="mid" aria-live="polite"
-                     style="margin-inline-start: var(--sherpa-structure-space-snapped, 0px); flex: 1 1 auto;"></sherpa-button>
+      <sherpa-button class="cal-label" data-group="mid" aria-live="polite"></sherpa-button>
       <sherpa-button class="cal-nav cal-next" data-type="icon" data-group="end"
-                     style="margin-inline-start: var(--sherpa-structure-space-snapped, 0px); --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px); --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);"
                      data-icon-start="chevron-right" aria-label="Next"></sherpa-button>
     </div>
   </template>

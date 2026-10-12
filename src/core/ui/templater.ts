@@ -17,6 +17,7 @@
  * - checkOwnTemplate — report what a consumer's markup lacks that the component reaches for.
  */
 import { report } from '../data/report.js';
+import { ownHtml } from './trusted-html.js';
 
 /** `<template id>` → its markup; null for one flat template. */
 export type TemplateMap = Map<string, string> | null;
@@ -102,7 +103,7 @@ export function cachedTemplates(url: string): { html: string; map: TemplateMap }
 
 /** Split markup by `<template id>`. Null when there is none. */
 function parseTemplates(html: string): TemplateMap {
-  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const doc = new DOMParser().parseFromString(ownHtml(html), 'text/html');
   const templates = doc.querySelectorAll('template[id]');
   if (templates.length === 0) return null;
   const map = new Map<string, string>();
@@ -218,7 +219,7 @@ const checked = new Set<string>();
 
 /** Every part, slot name and class in a template. */
 function anatomy(markup: string): Set<string> {
-  const doc = new DOMParser().parseFromString(`<template>${markup}</template>`, 'text/html');
+  const doc = new DOMParser().parseFromString(ownHtml(`<template>${markup}</template>`), 'text/html');
   const root = doc.querySelector('template')!.content;
   const out = new Set<string>();
   for (const el of root.querySelectorAll('*')) {
