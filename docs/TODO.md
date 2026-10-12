@@ -92,7 +92,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | c8 | 226 | Docs and agent text, round 2: CLAUDE.md on the shared sheets and the provider, three Fires blocks, the MCP's dead tokens and "Rule 9", the old def flow | docs |
 | ✅ | c9 | 227 | Sherpa Demos, round 2: a refused save is silent; seed lists kept twice; "Items per page" does nothing; `settled()` for its 62 waits | bug |
 | ✅ | c10 | 218 | Framework fixtures — measure, never infer: Vite + React 19 and 18, Next, Vue, Angular, SvelteKit, webpack, a CDN page, a CSP page | tooling |
-| 🚧 | c11 | 195 | The spec becomes the whole contract: props only, slots, `populate()` shape, typed events; a usage gate | tooling |
+| ✅ | c11 | 195 | The spec becomes the whole contract: props only, slots, `populate()` shape, typed events; a usage gate | tooling |
 | ✅ | c12 | 210 | Framework typings from the manifest: the tag map, React 19 JSX, Vue and Svelte types, editor data — after 195 | tooling |
 | ⬜ | c13 | 213 | Only a component's OWN events leave it: an inner `button-click` stops at its host | foundation |
 | ⬜ | c14 | 212 | Markup paths for the list components — tabs, breadcrumbs, a select's options, key-value pairs — so plain HTML and React 18 can fill them | feature |
@@ -3899,7 +3899,7 @@ After 190, so it teaches the contract. `docs/APP-GUIDE.md`, about 300 lines of s
 
 **✅ Will, 2026-10-12 — all my picks:** A (183 choice 1) — in sherpa-ui, beside `sherpa-router`.
 
-### `[~]` 195 — The spec becomes the whole contract
+### `[x]` ✅ 195 — The spec becomes the whole contract
 
 Every observed `data-*` moves into `static props` and `check:props` checks membership; the generator reads types from props, fills `slots` (0 of 65 list them today), records the `populate()` shape and types event details; emit `HTMLElementTagNameMap` and `custom-elements.json`; a `check:usage` gate checks the Demos markup against the specs. `docs/CONSUMER-REVIEW.md` §3.9.
 
@@ -3945,7 +3945,14 @@ nothing. The MCP's `component_api` shows it and the slots.
 
 **🚧 Part 3b, typed event details, 2026-10-12.** TypeScript's checker types
 each detail field: 181 fields, none `unknown` (155 of 174 were).
-`T-a-detail-is-typed-by-the-checker`. **Left:** `check:usage`.
+`T-a-detail-is-typed-by-the-checker`.
+
+**✅ Done 2026-10-12 — part 4, `check:usage`.** The app's markup against the
+specs: every `sherpa-*` tag, `data-*` and enum value. sherpa-ui's hook runs it
+on `../Sherpa Demos`; Demos runs it in its node tests and lists its two own
+hooks in `sherpa-usage.json`. Its first run found a dead `data-label` on a bar
+chart, which meant the chart's name: the four charts now take a host
+`aria-label` (`labelTarget`), and Demos uses one. `T-markup-is-checked-against-the-spec`.
 
 ### `[ ]` 196 — One filter surface and a smaller DataSource
 

@@ -51,6 +51,8 @@ export class SherpaGaugeChart extends SherpaElement {
   /* DECLARED, not hand-synced: CSS-only, so the base class writes nothing. */
   static override asks: DataAsk = { shape: 'aggregate', shows: 'chart' };
 
+  // A host's aria-label names the chart. TRAP T-a-host-label-must-reach-its-control
+  static override labelTarget = '.gauge';
   static override props = {
     ...SUMMARY_PROPS,
     'data-has-caption': { type: 'boolean', kind: 'visibility' },

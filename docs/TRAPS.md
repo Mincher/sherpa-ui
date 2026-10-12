@@ -12726,6 +12726,7 @@ element's business, and counting it reported five phantom gaps.
 
 - Site: `scripts/check-props.mjs`
 - Site: `src/core/ui/sherpa-element.ts`
+- Site: `scripts/check-usage.mjs`
 
 ### T-a-bare-name-must-be-used-not-mentioned
 
@@ -15492,6 +15493,10 @@ attribute: an attribute check passes on exactly the bug.
 - Site: `src/components/sherpa-switch/sherpa-switch.ts`
 - Site: `test/e2e/reforged-host-label.spec.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
+- Site: `src/components/sherpa-barchart/sherpa-barchart.ts`
+- Site: `src/components/sherpa-line-chart/sherpa-line-chart.ts`
+- Site: `src/components/sherpa-radial-chart/sherpa-radial-chart.ts`
+- Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
 
 ### T-a-canvas-owns-its-view
 
@@ -15550,6 +15555,25 @@ EXTENDS the default rather than replacing it.
 - Site: `src/core/ui/templater.ts`
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `test/e2e/reforged-templater.spec.ts`
+
+### T-markup-is-checked-against-the-spec
+
+**A typo in an attribute does nothing and says nothing**, and neither does an
+attribute the library renamed. So the app's markup is checked against the
+specs (TODO 195): every `sherpa-*` tag is a component, every `data-*` on one
+is in its spec, and an enum takes the value written. Found on its first run in
+`../Sherpa Demos`: a `data-label` on a bar chart, which reads none — the page
+meant the chart's name, so it is an `aria-label` now and the charts take one.
+
+Allowed everywhere: the token cascades (`data-status`, `data-look`…), the
+attributes a PARENT reads from its children (`data-col-span`, `data-grow`…),
+and the base class's `data-source` and `data-scope`. A project's own hooks
+are listed in its `sherpa-usage.json` `"own"`, so each is a choice, never an
+accident. sherpa-ui's hook runs it on `../Sherpa Demos` when that folder is
+there, and Demos runs it in its node tests.
+
+- Site: `scripts/check-usage.mjs`
+- Site: `test/unit/check-usage.test.mjs`
 
 ### T-a-detail-is-typed-by-the-checker
 

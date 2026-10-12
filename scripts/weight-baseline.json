@@ -20,7 +20,7 @@
     "fetched": 186772
   },
   "components/sherpa-barchart/sherpa-barchart.js": {
-    "js": 403923,
+    "js": 404044,
     "files": 12,
     "fetched": 194367
   },
@@ -115,7 +115,7 @@
     "fetched": 334743
   },
   "components/sherpa-gauge-chart/sherpa-gauge-chart.js": {
-    "js": 413071,
+    "js": 413193,
     "files": 13,
     "fetched": 195497
   },
@@ -145,7 +145,7 @@
     "fetched": 189323
   },
   "components/sherpa-line-chart/sherpa-line-chart.js": {
-    "js": 405119,
+    "js": 405240,
     "files": 12,
     "fetched": 193533
   },
@@ -240,7 +240,7 @@
     "fetched": 203492
   },
   "components/sherpa-radial-chart/sherpa-radial-chart.js": {
-    "js": 409205,
+    "js": 409326,
     "files": 13,
     "fetched": 192437
   },
@@ -330,7 +330,7 @@
     "fetched": 0
   },
   "index.js": {
-    "js": 1575471,
+    "js": 1575956,
     "files": 119,
     "fetched": 822549
   }

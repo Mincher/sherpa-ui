@@ -148,6 +148,20 @@ if [ $DOCS_RESULT -ne 0 ]; then
   exit 1
 fi
 
+# THE APP'S MARKUP AGAINST THE SPECS. A renamed or mistyped attribute does
+# nothing and says nothing, so a library change that breaks ../Sherpa Demos
+# blocks the library commit. Skipped when that folder is not there.
+# TRAP T-markup-is-checked-against-the-spec
+echo "🧾 Checking the app's markup against the specs..."
+USAGE_OUT=$(npm run check:usage --silent 2>&1)
+USAGE_RESULT=$?
+
+if [ $USAGE_RESULT -ne 0 ]; then
+  echo "$USAGE_OUT"
+  echo "❌ The app's markup uses an attribute or value a component does not have. Commit blocked."
+  exit 1
+fi
+
 # EVERY FILE SAYS WHAT IT HOLDS. A file's header ends in a `Map:` of its
 # exports — the higher-plane map `npm run map` prints. `--staged`: a file this
 # commit touches must carry its map, so updating it is the last step of any

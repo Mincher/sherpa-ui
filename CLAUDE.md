@@ -90,6 +90,11 @@ npm run test:a11y:update  # record a baseline that FELL
 npm run preview           # serve the repo on :4000 — WITHOUT building
 # The example APP is its own project now: ../Sherpa Demos — its server and tests are there (:4200)
 
+# The APP's markup against the specs — every sherpa-* tag, data-* and enum
+# value in ../Sherpa Demos. The hook runs it; Demos lists its own hooks in
+# its sherpa-usage.json
+npm run check:usage
+
 # What ONE import costs — JS and fetched files per entry, may only fall; and no
 # display component reaches the app layer. Reads dist/; npm test runs it too.
 npm run check:weight

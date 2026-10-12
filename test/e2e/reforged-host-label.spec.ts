@@ -34,3 +34,18 @@ test('a host aria-label names the inner control, and follows it', async ({ page 
   await expect(page.getByRole('button', { name: 'Close', exact: true })).toHaveCount(1);
   await expect(page.getByRole('switch', { name: 'Advanced', exact: true })).toHaveCount(0);
 });
+
+/* A CHART is named the same way: its plot carried a fixed "Bar chart", and a
+   page's own name for it had nowhere to go. TODO 195 */
+test('a host aria-label names each chart, over its default name', async ({ page }) => {
+  await page.evaluate(async () => {
+    await window.__mount('sherpa-barchart', [{ label: 'a', value: 1 }], { 'aria-label': 'Devices per band' });
+    await window.__mount('sherpa-line-chart', { labels: ['a', 'b'], series: [1, 2] }, { 'aria-label': 'Alerts over time', keep: true });
+    await window.__mount('sherpa-radial-chart', [{ label: 'a', value: 1 }], { 'aria-label': 'Devices by status', keep: true });
+    await window.__mount('sherpa-gauge-chart', 40, { 'aria-label': 'Risk score', keep: true });
+  });
+  await expect(page.getByRole('group', { name: 'Devices per band', exact: true })).toHaveCount(1);
+  await expect(page.getByRole('group', { name: 'Alerts over time', exact: true })).toHaveCount(1);
+  await expect(page.getByRole('img', { name: 'Devices by status', exact: true })).toHaveCount(1);
+  await expect(page.getByRole('img', { name: 'Risk score', exact: true })).toHaveCount(1);
+});
