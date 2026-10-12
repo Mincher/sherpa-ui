@@ -74,7 +74,7 @@ export function validateDef(def, opts = {}) {
     }
   }
 
-  // ── Rule 9 / tokens: every token a def binds must be a REAL token name ──
+  // ── Rule 8 / tokens: every token a def binds must be a REAL token name ──
   for (const [key, tok] of Object.entries(def.tokens ?? {})) {
     const prop = key.split('.').pop();
     // token can be a string alias or {override, fallback}

@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**56 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
+**55 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -88,7 +88,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ❓ | c5 | 211 | Booleans and data the way frameworks bind them: `data-x="false"` is OFF; a `data` property beside `populate()`; the grid's `rowKey` | foundation |
 | ⬜ | c6 | 215 | Trusted Types and a strict CSP: one policy for the five HTML sinks; the calendar's inline styles into CSS | foundation |
 | ⬜ | c7 | 220 | Weight per component, gated: JS and fetched CSS per entry may only fall, and no app module in a component's graph | tooling |
-| ⬜ | c8 | 226 | Docs and agent text, round 2: CLAUDE.md on the shared sheets and the provider, three Fires blocks, the MCP's dead tokens and "Rule 9", the old def flow | docs |
+| ✅ | c8 | 226 | Docs and agent text, round 2: CLAUDE.md on the shared sheets and the provider, three Fires blocks, the MCP's dead tokens and "Rule 9", the old def flow | docs |
 | ⬜ | c9 | 227 | Sherpa Demos, round 2: a refused save is silent; seed lists kept twice; "Items per page" does nothing; `settled()` for its 62 waits | bug |
 | ❓ | c10 | 218 | Framework fixtures — measure, never infer: Vite + React 19 and 18, Next, Vue, Angular, SvelteKit, webpack, a CDN page, a CSP page | tooling |
 | ⬜ | c11 | 195 | The spec becomes the whole contract: props only, slots, `populate()` shape, typed events; a usage gate | tooling |
@@ -1702,7 +1702,7 @@ records JS and fetched CSS bytes, and lets them only fall — as `check:size`
 does for lines. It also fails when an app module (router, provider, session)
 enters a component's graph, which keeps 221's boundary honest.
 
-### `[ ]` 226 — Docs and agent text, round 2
+### `[x]` ✅ 226 — Docs and agent text, round 2
 
 - CLAUDE.md says `src/index.ts` puts the eight shared sheets in place; since
   189 `sherpa-element.ts` does. It names `sherpa-provider` 0 times.
@@ -1720,6 +1720,15 @@ enters a component's graph, which keeps 221's boundary honest.
 - README: `npm test` runs the node tests too; npm readers are sent to
   `../Sherpa Demos`, CLAUDE.md and docs/, which the package does not ship; no
   `repository` field.
+
+**✅ Done 2026-10-12.** Every line above: CLAUDE.md on the shared sheets and
+the provider; DATA-SOURCE-RULES names the provider; PRINCIPLES says the default
+`populate()` writes DECLARED props only; the stale trap explains the wait that
+is still needed; the three `Fires:` blocks list every event (the specs had
+them); the MCP says Rule 8, checks no roles, and claims no Rule 4 check; the
+dead `readDoc` is gone; the skill's description says it is out of date, and
+its four dead links and its `@fires` line are fixed; the README links what the
+package does not ship, and `package.json` has a `repository`.
 
 ### `[ ]` 227 — Sherpa Demos, round 2
 

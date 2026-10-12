@@ -38,7 +38,7 @@ export async function createServer() {
   );
 
   // Tools — thin wrappers over scripts/lib/generation/*. They load their own
-  // reference data (ontology, defs, name-map) via the shared cached loaders.
+  // reference data (defs, name-map) via the shared cached loaders.
   registerDiscoverTools(server);
   registerGenerateTools(server);
   registerVerifyTools(server);

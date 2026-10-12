@@ -78,7 +78,7 @@ source — does this name exist — from the generated `tokens.css`.
 | Tool | Arguments | Answers |
 |---|---|---|
 | `audit_component` | `name` | The def rules, plus every `element.property → token` binding |
-| `check_bindings` | `name` | Rule 9: does every geometry/colour property bind a token |
+| `check_bindings` | `name` | Rule 8: does every geometry/colour property bind a token |
 
 Both check token NAMES against the generated `tokens.css`. Neither checks role
 or scope: there is no ontology and no plan for one.

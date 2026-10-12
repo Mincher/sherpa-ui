@@ -1,8 +1,8 @@
 /**
  * Verify tools — check a built component against the design-system rules.
  *
- *   audit_component — bindings + ontology accuracy for a built component
- *   check_bindings  — the "every property binds a variable" audit (Rule 9)
+ *   audit_component — the def's rules, and each binding's token name, for a built component
+ *   check_bindings  — the "every property binds a variable" audit (Rule 8)
  *
  * There is no ontology and no plan to rebuild one, so token ROLE and SCOPE are
  * never checked — only that a bound token NAME exists in tokens.css.
@@ -56,7 +56,7 @@ export function register(server) {
     {
       title: "Audit a Built Component",
       description:
-        "Re-check a BUILT component against the design-system rules: runs validate_def on its def (reuse, token roles, the control-content vs status-content flip, status-container aliasing, event shape) AND reports each element.property→token binding with its ontology role. Note: the ROLE half of this audit needs the ontology, which was deleted 2026-09-16 for having rotted — token names are checked against the generated tokens.css instead, and role/scope are reported as unavailable rather than guessed.",
+        "Re-check a BUILT component against the design-system rules: runs validate_def on its def AND reports each element.property→token binding. Token names are checked against the generated tokens.css; token ROLE and scope are not checked — the ontology that carried them was deleted 2026-09-16.",
       inputSchema: {
         name: z.string().describe("Component element name (e.g. sherpa-tag)"),
       },
@@ -102,7 +102,7 @@ export function register(server) {
     {
       title: "Check Bindings (every property binds a variable)",
       description:
-        "Rule 9 — a component's geometry/colour properties must each bind the token that resolves to their value; never a raw number. Reports each element.property→token in the def with its ontology role + scope fit, and flags scope mismatches (a fill token bound to a stroke) and any raw values. The LIVE pass (scripts/audit-bindings.mjs shouldBind + value→token maps) runs over the built Figma nodes via the build-figma skill — this returns the def-side view + that rule.",
+        "Rule 8 — a component's geometry/colour properties must each bind the token that resolves to their value; never a raw number. Reports each element.property→token in the def and flags any raw values; token role and scope are not checked. The LIVE pass (scripts/audit-bindings.mjs shouldBind + value→token maps) runs over the built Figma nodes via the build-figma skill — this returns the def-side view + that rule.",
       inputSchema: {
         name: z.string().describe("Component element name (e.g. sherpa-tag)"),
       },

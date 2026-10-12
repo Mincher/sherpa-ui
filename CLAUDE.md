@@ -175,6 +175,11 @@ connections and saved views with no components and no DOM, for a server, a test
 or an MCP tool. `npm run lint` enforces the boundary; a node test proves the
 entry point stays clean.
 
+**A page joins its data through `<sherpa-provider>`.** It opens a page
+definition's source and answers each component's ask
+(`docs/PAGE-DEFINITION.md`, `docs/PROVIDER-DESIGN.md`); `DataSource.bind()` is
+the manual way, for a page with no provider.
+
 ### `SherpaElement` base class (`src/core/ui/sherpa-element.ts`)
 
 All components extend this. It handles shadow DOM setup via `adoptedStyleSheets`, slot-presence detection (`data-has-{slotName}` on host), and multi-template support. The FILES — fetched once per URL, a consumer's own by `useTemplate(tag, { html, css })`, and reloaded live by `SherpaElement.reload(tag)` — are `src/core/ui/templater.ts`'s (TRAP `T-a-templater-owns-the-files`).
@@ -442,8 +447,8 @@ hand-patch is exactly where one collection collapses onto its sibling.
 
 ### Shared CSS lives in EIGHT sheets
 
-`src/index.ts` puts eight stylesheets into `SherpaElement.sharedStyles`, and
-every one is adopted into every shadow root:
+`SherpaElement.sharedStyles` holds eight stylesheets by default, and every one
+is adopted into every shadow root — so a component imported alone is styled:
 
 | sheet | holds |
 |---|---|

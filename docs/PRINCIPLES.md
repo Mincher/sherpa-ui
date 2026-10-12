@@ -115,7 +115,7 @@ found in three or more components.
 | `this.onFrame(…)` | The same, coalesced to one call per frame. For a handler that READS LAYOUT — measured, an unthrottled scroll handler did 100 `getBoundingClientRect()` calls for 50 events |
 | `this.mirrorAttrs(control, attrs)` | Copy native attributes onto a wrapped `<input>`. `value` is skipped — it is a property on a live control |
 | `this.renderItems(container, tpl, items)` | Stamp a LIST declaratively. The prototype names its own fields |
-| `renderData(payload)` | Override to draw a payload. The DEFAULT writes a payload's keys onto the attributes the component declares, so a component with no override still shows data |
+| `renderData(payload)` | Override to draw a payload. The DEFAULT writes a payload's keys onto the attributes the component DECLARES in `static props` — a key it does not declare is skipped (TODO 195 declares the rest) |
 
 ---
 

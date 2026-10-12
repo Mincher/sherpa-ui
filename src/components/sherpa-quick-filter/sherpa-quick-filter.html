@@ -88,6 +88,8 @@
     quick-filter-click  — the chip body is toggled. detail: { active }
     quick-filter-change — the menu selection changed. detail: { values: string[] }
     jump-select — a jump row was picked, and its target scrolled into view. detail: { value, label }
+    group-change — a GROUP chip picked or cleared its column. detail: { field }
+    sort-change — a SORT chip picked its column or way. detail: { field, direction }
 -->
 <template id="default">
   <div class="chip" part="chip">

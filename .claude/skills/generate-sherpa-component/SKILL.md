@@ -1,6 +1,6 @@
 ---
 name: generate-sherpa-component
-description: Generate a Sherpa-UI component the def-driven way — scaffold a *.def.json, author it, validate it against the design-system rules, compile it to TS/HTML/CSS, and (optionally) build it in Figma. Use whenever creating a new sherpa-* component or substantially changing an existing one's structure, props, slots, events, or tokens. Cites the generation MCP tools at every step and hands the Figma leg to build-figma-component.
+description: OUT OF DATE — the *.def.json flow it describes is gone; no component has a def. To make a sherpa-* component, write its three files (.ts, .css, .html) by CLAUDE.md "Component anatomy" and docs/PRINCIPLES.md, then generate its contract with `node scripts/generate-component-spec.mjs <name>`. Kept only for its MCP tool notes until the rewrite (TODO 193).
 disable-model-invocation: false
 ---
 
@@ -31,9 +31,7 @@ component is right *by construction* — guessing a token, inventing a primitive
 the wrong role is exactly what these tools exist to stop.
 
 > Reference specs (read if a step is unclear):
-> - `docs/GENERATION-TOOLING.md` — the workflow + the full MCP tool surface.
-> - `docs/COMPONENT-DEFINITION-STANDARD.md` — every def field, naming rules, `kind`/`relationship` tables.
-> - `docs/DEF-TO-FIGMA-BUILD-RULES.md` — the 9 build rules (summarised below).
+> - `docs/DEF-TO-FIGMA-BUILD-RULES.md` — the 8 build rules (summarised below).
 > - `src/components/sherpa-tag/sherpa-tag.def.json` — a real, enriched def to copy the shape from.
 
 ---
@@ -127,7 +125,7 @@ Every prop declares a `kind` — the variant mechanism:
 
 ### slots
 `{ name, accepts[], description }`. Every content-bearing slot declares a `data-accepts`
-category allowlist (see `docs/SLOT-CONTRACTS.md`). Use a slot for app-supplied instances;
+category allowlist (read the `data-accepts` values in the component `.html` templates). Use a slot for app-supplied instances;
 use a text prop when a slot only ever holds a label.
 
 ### events — unprefixed `noun-verb`
@@ -140,7 +138,7 @@ use a text prop when a slot only ever holds a label.
 - `trigger` is what fires it: a native event (`{on, node}` — **native events are private**,
   recorded only as a trigger, never public API) or a child event
   (`{from:"child", component, event}`).
-- Every event needs a matching `@fires` in the TS JSDoc (the MCP parses these).
+- Every event is a line in the HTML `Fires:` block; the contract reads the events the TS really dispatches. An `@fires` tag does nothing.
 
 ### nested — `owned` vs `slotted`
 `{ component, relationship }`:

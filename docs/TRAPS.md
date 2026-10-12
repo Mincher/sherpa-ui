@@ -3717,16 +3717,16 @@ has to re-sync when `data-heading` is what changed.
 
 ### T-shared-sheets-settle-independently
 
-`#adoptStyles` **yields a microtask first**, so top-level module init —
-`index.ts` setting `SherpaElement.sharedStyles` — has run before the list is
-read. An element PRESENT IN THE INITIAL HTML can upgrade before that assignment
-executes, and would then adopt an empty shared list: no base sheet, no Font
-Awesome.
+`#adoptStyles` **yields a microtask first**, so top-level module init has run
+before the list is read. The eight shared sheets are `SherpaElement`'s own
+default now (189), but a page that ADDS one sets `SherpaElement.sharedStyles`
+at module init — and an element present in the initial HTML can upgrade before
+that line runs, and adopt the list without it.
 
 The sheets are then loaded with `Promise.allSettled`, not `Promise.all`. A
-failed or slow SHARED sheet — a cross-origin CDN like Font Awesome — must NOT
-drop the others. Each settles independently and whatever loaded is kept, so a
-CDN outage costs the icons and nothing else.
+failed or slow sheet must NOT drop the others: each settles on its own, and
+whatever loaded is kept. A failed one is reported (`sheet-failed`) and not
+cached, so the next element asks again (TODO 224).
 
 Styles are awaited BEFORE any DOM is written, which is what prevents a flash of
 unstyled content; the HTML fetch runs in parallel with them.

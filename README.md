@@ -25,15 +25,16 @@ alone is `import 'sherpa-ui/components/sherpa-button/sherpa-button.js'` — with
 the `.js`. Any import is safe on a server: there it defines nothing.
 `sherpa-ui/data` is the data layer alone, with no DOM, for a server or a test.
 
-The example app, `../Sherpa Demos`, is the working reference: a router, a
-provider, the app shell, page definitions and Views.
+The example app, [Sherpa Demos](https://github.com/Mincher/sherpa-demos), is
+the working reference: a router, a provider, the app shell, page definitions
+and Views.
 
 ## Develop
 
 ```bash
 npm run build        # compile src/ → dist/ (+ copy CSS/HTML assets)
 npm run type-check   # strict TypeScript, no emit
-npm test             # Playwright, in three browsers, against test/reforged/harness.html
+npm test             # Playwright in three browsers, then the node unit tests
 npm run lint         # eslint src/
 ```
 
@@ -45,11 +46,13 @@ npm run lint         # eslint src/
 - **Tokens** are projected from the Figma file by `scripts/project-tokens.mjs` into
   `src/styles/tokens/tokens.css`, layered by Figma's aliasing tiers
   (`@layer core, display-mode, theme, layout, structure, border, style, elevation,
-  components`). See [CLAUDE.md](CLAUDE.md#token-architecture) for what each owns.
+  components`). See [CLAUDE.md](https://github.com/Mincher/sherpa-ui/blob/main/CLAUDE.md#token-architecture) for what each owns.
 - **Two-way Figma ↔ code** is the direction of travel.
 
-The rules are in `docs/PRINCIPLES.md`; the commands, architecture and
-conventions in `CLAUDE.md`.
+The rules are in [docs/PRINCIPLES.md](https://github.com/Mincher/sherpa-ui/blob/main/docs/PRINCIPLES.md);
+the commands, architecture and conventions in
+[CLAUDE.md](https://github.com/Mincher/sherpa-ui/blob/main/CLAUDE.md). Neither
+ships in the package: they are the repository's.
 
 ## License
 

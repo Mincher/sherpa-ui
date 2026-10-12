@@ -20,12 +20,6 @@ import { loadDef } from "../../scripts/lib/generation/data.mjs";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..", "..");
 const COMPONENTS_DIR = path.join(ROOT, "src", "components");
-const DOCS_DIR = path.join(ROOT, "docs");
-
-const readDoc = (name) => {
-  const p = path.join(DOCS_DIR, name);
-  return fs.existsSync(p) ? fs.readFileSync(p, "utf8") : null;
-};
 const listComponents = () =>
   fs.existsSync(COMPONENTS_DIR)
     ? fs.readdirSync(COMPONENTS_DIR).filter((n) => n.startsWith("sherpa-")).sort()
@@ -71,7 +65,7 @@ export function register(server) {
 1. **Reuse check first (Rule 1).** For every leaf role this component needs (count, dot, dismiss, avatar, field…), call \`list_components\` and reuse an existing component — a count is a Badge, a dismiss is an icon Button. NEVER invent a look-alike primitive.
 2. **Scaffold.** Call \`scaffold_def({ name: "${name}", category: "${category ?? "…"}" })\` to get the right-shaped starter def.
 3. **Author.** Fill every TODO: anatomy (node tree + figma hints), props (data-* + shared vocabulary, one \`kind\` each), slots (with \`accepts\`), events (unprefixed noun-verb + trigger + default), and the \`tokens\` map (aliases without the --sherpa- prefix; status colours as { override, fallback }). Use \`find_token\` to find a token name that really exists, and \`token_for(property, value)\` for any geometry value.
-4. **Validate — loop until clean.** Call \`validate_def(def)\`. Fix every error (warnings too, where sensible). Re-run until it passes. Watch for: control labels must bind control-content NOT status-content (Rule 4); status containers bind container-* which alias through status (Rule 3).
+4. **Validate — loop until clean.** Call \`validate_def(def)\`. Fix every error (warnings too, where sensible). Re-run until it passes. Watch for: every token name must be a real token in tokens.css (Rule 8); a colour binds the Style tier (\`style-*\`), so a status pin re-points it.
 5. **Compile.** Call \`compile_def(def)\` → TS/HTML/CSS. Write the three files to \`src/components/${name}/\`, then hand-finish the CSS (hex fallbacks, edge-case rules, transitions).
 6. **Figma (optional).** To build the Figma component, invoke the \`build-figma-component\` skill — it binds Typography vars on text, keeps buttons on the Button size collection, and verifies icon swaps.
 7. **Audit.** Call \`audit_component("${name}")\` and \`check_bindings("${name}")\` to confirm the bindings.
@@ -79,7 +73,7 @@ export function register(server) {
 ## Rules to honour (read \`sherpa://rules\` for the full set)
 - data-* public API; reuse the shared vocabulary; native attrs stay bare.
 - Every text node binds all six Typography vars + a content colour (Rule 2).
-- Every geometry property binds the token that resolves to its value (Rule 9); skip off-scale values.
+- Every geometry property binds the token that resolves to its value (Rule 8); skip off-scale values.
 - Events: bubbles + composed, unprefixed noun-verb, each on its own line in the HTML \`Fires:\` block. The contract reads the events the TS really dispatches; an @fires JSDoc tag does nothing.
 
 ## Existing components (reuse these)

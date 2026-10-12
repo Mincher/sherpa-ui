@@ -178,7 +178,7 @@ export function register(server) {
     {
       title: "Scaffold a Component Def",
       description:
-        "Return a starter def matching schemas/component.v1.json — the right skeleton for the category (a control gets data-status + status token fallbacks; a container gets container-* tokens). Edit the TODOs, then validate_def → compile_def.",
+        "Return a starter def matching schemas/component.v1.json — the right skeleton for the category: a control or a container gets real Style-tier tokens for its surface, border and content, so a status pin re-points them. Edit the TODOs, then validate_def → compile_def.",
       inputSchema: {
         name: z.string().describe("Component element name (sherpa-<kebab>, e.g. sherpa-badge)"),
         category: z.enum(["control", "container", "content", "data", "nav", "chart"])
@@ -206,7 +206,7 @@ export function register(server) {
     {
       title: "Validate a Component Def",
       description:
-        "Check a def against every design-system rule (docs/DEF-TO-FIGMA-BUILD-RULES.md): reuse existing components, tokens resolve to real ontology entries with the right role, control labels bind control-content not status-content (the Button bug), status containers alias through status, events well-formed. Returns errors (must fix) + warnings.",
+        "Check a def against the design-system rules it can check (docs/DEF-TO-FIGMA-BUILD-RULES.md): its name and shape; nested components are real ones (Rule 1); every token name is a real token in tokens.css or the component's projected region (Rule 8); a status container's surface and border (Rule 3); owned buttons set a size (Rule 6); text nodes have a content role (Rule 2). Token ROLE and scope are not checked. Returns errors (must fix) + warnings.",
       inputSchema: {
         def: z.string().describe("The component def as a JSON string (the shape loadDef returns from <name>.component.json)"),
       },
@@ -265,7 +265,7 @@ export function register(server) {
     {
       title: "Which Token for This Value?",
       description:
-        "The meticulous rule (Rule 9): given a hardcoded Figma/CSS property and its resolved pixel value, return the Core token that resolves to it — never leave a raw number where a token exists. Off-scale values (radius 1, radius 5) return no token (a scale gap, not a violation). Properties: itemSpacing, paddingLeft/Right/Top/Bottom, top/bottomLeft/RightRadius, stroke*Weight.",
+        "The meticulous rule (Rule 8): given a hardcoded Figma/CSS property and its resolved pixel value, return the Core token that resolves to it — never leave a raw number where a token exists. Off-scale values (radius 1, radius 5) return no token (a scale gap, not a violation). Properties: itemSpacing, paddingLeft/Right/Top/Bottom, top/bottomLeft/RightRadius, stroke*Weight.",
       inputSchema: {
         property: z.string().describe("Figma property (e.g. paddingLeft, itemSpacing, topLeftRadius, strokeTopWeight)"),
         value: z.number().describe("The resolved pixel value (e.g. 12)"),

@@ -167,7 +167,10 @@ full regardless.
 
 ## 6. What the source adds
 
-A `DataSource` holds one query and pushes results to bound components:
+A `DataSource` holds one query and pushes results to bound components. In an
+app, `<sherpa-provider>` does the binding: it opens a page definition's source
+and answers each component's ask (`docs/PAGE-DEFINITION.md`). The binds below
+are the manual way, for a page with no provider:
 
 ```js
 const source = new DataSource({ store, pageSize: 25 });
