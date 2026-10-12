@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**52 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
+**53 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -27,7 +27,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | 🚧 | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
 | ✅ | 2a | 103 | Rows with no key get one from the data layer — Sherpa's own, never sent out | foundation |
-| ❓ | 3 | 38 | One model, one builder, one owner — what is left | refactor |
+| ⬜ | 3 | 38 | One model, one builder, one owner — what is left | refactor |
 | ✅ | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
 | ✅ | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | 🚧 | 5a | 113 | EXPLORE — state first, then render, in every component; a skeleton while the first render waits | explore |
@@ -40,9 +40,9 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 10 | 94 | A number (and range) filter menu needs Apply and Cancel buttons | bug |
 | ✅ | 11 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
 | ✅ | 12 | 16 | Favourite and Save apply to the Context, not the View | bug |
-| ❓ | 13 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
+| ⬜ | 13 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
 | ✅ | 14 | 95 | Firefox: a remote chip holding a draft is not marked pending | bug |
-| ❓ | 15 | 96 | A grid with few columns leaves an empty band on the right of its card | bug |
+| ⬜ | 15 | 96 | A grid with few columns leaves an empty band on the right of its card | bug |
 | ✅ | 16 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
 | ✅ | 16a | 100 | The Assistant panel shows no heading | quick |
 | ✅ | 16b | 106 | A click between a menu's items reaches what is behind it — an accordion toggles | bug |
@@ -70,7 +70,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16o | 153 | In a fixed-row layout grid, the data grid and its container change height with the row count; the container must keep its height and the grid fill it | bug |
 | ✅ | 16s | 201 | In Chromium on Linux the nav rail opens to hover by itself, so 5 closed-rail tests fail every run | bug |
 | ✅ | 16t | 202 | Sherpa Demos: 7 Chromium tests time out — the rail opens under the pointer and covers the filter panel | bug |
-| ❓ | 16t1 | 203 | sherpa-ui: 135 of 136 specs load the page without the pointer park — one fixture, as in Demos? | bug |
+| ⬜ | 16t1 | 203 | sherpa-ui: 135 of 136 specs load the page without the pointer park — one fixture, as in Demos? | bug |
 | ⬜ | 16t2 | 204 | WebKit: a `page.reload` in the Demos nav favourites spec never fires `load` — 1 run in 80 | bug |
 | ✅ | 16t3 | 206 | Firefox: "closing the dialog fires a composed close event" sees no event, 1 to 2 runs in 10 | bug |
 | ✅ | 16t4 | 228 | The donut chart's legend lets EVERY item be switched off; one must stay on — and a value filter limiting greyed out may not be counted | bug |
@@ -79,49 +79,50 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16t8 | 232 | The delete customer dialog is critical all over — borders and labels; only its footer's confirm button is | bug |
 | ✅ | 16t9 | 233 | In the filter panel, a filter section's header inside an accordion aligns to the TOP: label, count badge and the accordion button | quick |
 | ✅ | 16t10 | 234 | A filter moved up to the View: its menu's FIRST option is "Return to X", its own scope, apart from the other scopes | quick |
-| ❓ | 16t6 | 230 | Reset all filters dialog: "Save filters before reset" sits in a grey border; it is plain form content | quick |
+| ⬜ | 16t11 | 235 | "Return to X" survives a reload: the Query keeps where a View field came up from | feature |
+| ⬜ | 16t6 | 230 | Reset all filters dialog: "Save filters before reset" sits in a grey border; it is plain form content | quick |
 | | | | **C2 — Consumers: frameworks, apps and agents** (planned 2026-10-12) | |
 | ✅ | c1 | 225 | `settled()` hangs on an infinite animation — a loader, an indeterminate bar — and waits on the whole document when given a part | bug |
 | ✅ | c2 | 224 | Silent failures, round 2: a linked View drops its report; View gaps skip `onReport`; `open()` hangs on an undefined tag; a 200 that is not the file is stamped; and five more | bug |
 | ✅ | c3 | 207 | Import anywhere: a base class that loads on a server, and a `define()` that checks first — two copies of the library no longer throw | foundation |
-| ❓ | c4 | 209 | The package surface for ONE component: `sideEffects`, `./package.json`, and the extensionless import TypeScript accepts but the page cannot load | tooling |
-| ❓ | c5 | 211 | Booleans and data the way frameworks bind them: `data-x="false"` is OFF; a `data` property beside `populate()`; the grid's `rowKey` | foundation |
+| ⬜ | c4 | 209 | The package surface for ONE component: `sideEffects`, `./package.json`, and the extensionless import TypeScript accepts but the page cannot load | tooling |
+| ⬜ | c5 | 211 | Booleans and data the way frameworks bind them: `data-x="false"` is OFF; a `data` property beside `populate()`; the grid's `rowKey` | foundation |
 | ✅ | c6 | 215 | Trusted Types and a strict CSP: one policy for the five HTML sinks; the calendar's inline styles into CSS | foundation |
 | ✅ | c7 | 220 | Weight per component, gated: JS and fetched CSS per entry may only fall, and no app module in a component's graph | tooling |
 | ✅ | c8 | 226 | Docs and agent text, round 2: CLAUDE.md on the shared sheets and the provider, three Fires blocks, the MCP's dead tokens and "Rule 9", the old def flow | docs |
 | 🚧 | c9 | 227 | Sherpa Demos, round 2: a refused save is silent; seed lists kept twice; "Items per page" does nothing; `settled()` for its 62 waits | bug |
-| ❓ | c10 | 218 | Framework fixtures — measure, never infer: Vite + React 19 and 18, Next, Vue, Angular, SvelteKit, webpack, a CDN page, a CSP page | tooling |
+| ⬜ | c10 | 218 | Framework fixtures — measure, never infer: Vite + React 19 and 18, Next, Vue, Angular, SvelteKit, webpack, a CDN page, a CSP page | tooling |
 | ⬜ | c11 | 195 | The spec becomes the whole contract: props only, slots, `populate()` shape, typed events; a usage gate | tooling |
-| ❓ | c12 | 210 | Framework typings from the manifest: the tag map, React 19 JSX, Vue and Svelte types, editor data — after 195 | tooling |
-| ❓ | c13 | 213 | Only a component's OWN events leave it: an inner `button-click` stops at its host | foundation |
+| ⬜ | c12 | 210 | Framework typings from the manifest: the tag map, React 19 JSX, Vue and Svelte types, editor data — after 195 | tooling |
+| ⬜ | c13 | 213 | Only a component's OWN events leave it: an inner `button-click` stops at its host | foundation |
 | ⬜ | c14 | 212 | Markup paths for the list components — tabs, breadcrumbs, a select's options, key-value pairs — so plain HTML and React 18 can fill them | feature |
-| ❓ | c15 | 214 | Forms complete: `<fieldset disabled>`, reset on every control, and the five controls that submit nothing | foundation |
-| ❓ | c16 | 208 | The text in the JS, not fetched: templates and sheets inline at build, URLs only in a dev build — with 199 | refactor |
-| ❓ | c17 | 199 | A smaller download: minify the JS (a new dev tool) and load icons on demand | refactor |
-| ❓ | c18 | 216 | Tokens safe to embed: the page rules out of `tokens.css`, a default mode, the `[data-status]` reach documented | foundation |
+| ⬜ | c15 | 214 | Forms complete: `<fieldset disabled>`, reset on every control, and the five controls that submit nothing | foundation |
+| ⬜ | c16 | 208 | The text in the JS, not fetched: templates and sheets inline at build, URLs only in a dev build — with 199 | refactor |
+| ⬜ | c17 | 199 | A smaller download: minify the JS (a new dev tool) and load icons on demand | refactor |
+| ⬜ | c18 | 216 | Tokens safe to embed: the page rules out of `tokens.css`, a default mode, the `[data-status]` reach documented | foundation |
 | ⬜ | c19 | 219 | The framework guide, steps not history, served as `sherpa://frameworks`; an `AGENTS.md` in the package | docs |
-| ❓ | c20 | 217 | React 18 and Angular adapters, generated from the manifest — small, and dependency-free | tooling |
-| ❓ | c21 | 197 | ONE way to write a filter condition in a definition or a View: readings, or a plain `{ field: { gt: 0 } }` | foundation |
-| ❓ | c22 | 190 | A Context contract and ONE `app.json`: the Contexts, the default, the Settings pages — the nav, router and server read it | foundation |
-| ❓ | c23 | 191 | Library parts that empty `contexts/`: dialog prompt/confirm, saved filters in the provider, `data-setting`, store seeds | foundation |
-| ❓ | c25 | 221 | `sherpa-ui/app` and the app boundary: the app layer stays OPT-IN, so one button never pays for it | foundation |
-| ❓ | c26 | 194 | A Context loader beside `sherpa-router`: `<sherpa-outlet>` reads `app.json`; `index.html` becomes config | foundation |
+| ⬜ | c20 | 217 | React 18 and Angular adapters, generated from the manifest — small, and dependency-free | tooling |
+| ⬜ | c21 | 197 | ONE way to write a filter condition in a definition or a View: readings, or a plain `{ field: { gt: 0 } }` | foundation |
+| ⬜ | c22 | 190 | A Context contract and ONE `app.json`: the Contexts, the default, the Settings pages — the nav, router and server read it | foundation |
+| ⬜ | c23 | 191 | Library parts that empty `contexts/`: dialog prompt/confirm, saved filters in the provider, `data-setting`, store seeds | foundation |
+| ⬜ | c25 | 221 | `sherpa-ui/app` and the app boundary: the app layer stays OPT-IN, so one button never pays for it | foundation |
+| ⬜ | c26 | 194 | A Context loader beside `sherpa-router`: `<sherpa-outlet>` reads `app.json`; `index.html` becomes config | foundation |
 | ⬜ | c27 | 193 | ONE app guide, steps not history, served to agents as `sherpa://app-guide` — after 190 | docs |
-| ❓ | c28 | 192 | Ship the agent path: the MCP with its real dependencies and files, a pack smoke test, registered in both projects | tooling |
-| ❓ | c29 | 222 | The starter: `npx sherpa-ui init my-app` and a `scaffold_app` tool — one folder, about 8 files, no build step | tooling |
-| ❓ | c30 | 196 | ONE filter surface and a smaller DataSource: `bind()` out of the data layer; one helper for bar and panel | refactor |
+| ⬜ | c28 | 192 | Ship the agent path: the MCP with its real dependencies and files, a pack smoke test, registered in both projects | tooling |
+| ⬜ | c29 | 222 | The starter: `npx sherpa-ui init my-app` and a `scaffold_app` tool — one folder, about 8 files, no build step | tooling |
+| ⬜ | c30 | 196 | ONE filter surface and a smaller DataSource: `bind()` out of the data layer; one helper for bar and panel | refactor |
 | ⬜ | c31 | 223 | DEFERRED — server rendering with declarative shadow DOM, after 208 | explore |
 | | | | **D — Filters: Will's features, on the foundation** | |
-| ❓ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
-| ❓ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
+| ⬜ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
+| ⬜ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
 | 🚧 | 19 | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
 | ✅ | 19a | 110 | In Advanced rows, AND is serial and OR is parallel: an AND row offers only what the rows before it leave | feature |
-| ❓ | 20 | 21d | EXPLORE — conditions for a DATE field | explore |
-| ❓ | 21 | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
-| ❓ | 21a | 105 | "Save filters" saves EVERY scope under one name; a "Saved" chip shows it, warns when edited, and undoes it | feature |
+| ⬜ | 20 | 21d | EXPLORE — conditions for a DATE field | explore |
+| ⬜ | 21 | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
+| ⬜ | 21a | 105 | "Save filters" saves EVERY scope under one name; a "Saved" chip shows it, warns when edited, and undoes it | feature |
 | ✅ | 21b | 109 | Reset has a label, and a menu button: "Reset to default" puts back the View's own filters | feature |
 | ✅ | 22 | 97 | A filter panel section shows an icon for WHAT it filters: View, Chart, Grid, Form, List | quick |
-| ❓ | 22a | 115 | Figma: a chart glyph and a table glyph for the panel's section icons | figma |
+| ⬜ | 22a | 115 | Figma: a chart glyph and a table glyph for the panel's section icons | figma |
 | ✅ | 22b | 154 | A data viz section in the filter panel has a chart icon | quick |
 | ✅ | 23 | 60 | Once applied, a chip's badge shows the number of results | feature |
 | ✅ | 24 | 49 | A preset Advanced chip shows its conditions, read-only | feature |
@@ -133,8 +134,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 30 | 20b | The Date filter should be a view-scope date RANGE | feature |
 | ✅ | 31 | 52 | A data viz scope in the filter panel: one Simple filter, a chip per legend item, with its swatch | feature |
 | ✅ | 31ab | 159 | A data viz filter held by the View: a legend click changes the VIEW's values, and toggles the item | feature |
-| ❓ | 31aa | 149 | A chart legend's items ARE swatch chips: move `sherpa-chart-legend` onto `sherpa-quick-filter` | refactor |
-| ❓ | 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
+| ⬜ | 31aa | 149 | A chart legend's items ARE swatch chips: move `sherpa-chart-legend` onto `sherpa-quick-filter` | refactor |
+| ⬜ | 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
 | ✅ | 31b | 124 | The Filters button and menu move to the filter panel HEADER: one menu for every scope | feature |
 | ⬜ | 31c | 122 | Email starts SIMPLE, with a switch to Advanced; over 20 values it is one chip with a multi-select menu | feature |
 | ✅ | 31d | 120 | A view-scope filter gets "Send to `<scope name>`", the counterpart of "Send to view filters" | feature |
@@ -161,13 +162,13 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31x | 179 | Every place a ruled-out value shows is inactive — a chart legend's item too | bug |
 | ✅ | 31y | 178 | The filter panel's header gets an overflow (⋯) menu; "Limit matching filters" is an item in it and in the toolbar's | feature |
 | ✅ | 31z | 181 | A saved filter's menu shows its condition rows, read-only — the Advanced menu, not a bespoke one | refactor |
-| ❓ | 31z2 | 186 | Saved filter card: six small choices left from 181, each built one way | feature |
+| ⬜ | 31z2 | 186 | Saved filter card: six small choices left from 181, each built one way | feature |
 | ⬜ | 31z3 | 205 | With "Limit to matching filters" on, both ⋮ menus offer "Hide unmatching filters"; the old name is renamed | feature |
 | ✅ | 31aa2 | 182 | The filter panel's search: more room above it, and the full width of the header less its padding | bug |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
 | ✅ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
-| ❓ | 33a | 116 | `sherpa-nav` binds to a Store: its entries as data, drawn and redrawn | refactor |
+| ⬜ | 33a | 116 | `sherpa-nav` binds to a Store: its entries as data, drawn and redrawn | refactor |
 | ✅ | 34 | 34 | Figma: use the Navigation terms | figma |
 | ✅ | 35 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
 | ✅ | 35d | 164 | At the mobile breakpoint the app header shows no nav hamburger: it does not get narrow enough to trigger it | bug |
@@ -190,7 +191,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 39 | 14 | An example of real-time data | feature |
 | ✅ | 39a | 128 | A gauge's tooltip names the segment as the legend does | quick |
 | ✅ | 39c | 162 | A chart and its legend go from side by side to stacked as their container narrows — container queries | feature |
-| ❓ | 39b | 150 | EXPLORE — how the example gauge's risk score is worked out; THRESHOLDS in the central Query | explore |
+| ⬜ | 39b | 150 | EXPLORE — how the example gauge's risk score is worked out; THRESHOLDS in the central Query | explore |
 | ✅ | 40 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | ✅ | 40a | 143 | EXPERIMENT, later — scrolled-past metrics become a compact sticky header; a toggle in Settings › Experiments | explore |
 | ✅ | 40b | 175 | LATER — the sticky metrics keep a small sparkline, tighter gaps, a larger value; a slow scroll must still gather them | feature |
@@ -463,6 +464,8 @@ Rules for the work: MOVE code, never rewrite it; delete the replaced path in
 the same commit; no helper with one caller; state the budget up front and
 report the actual.
 
+**✅ Will, 2026-10-12 — all my picks:** Unblocked: 89 (16) and 99 (a `sherpa-filterset`) are ruled.
+
 ### `[~]` 113 — EXPLORE: state first, then render, in every component; a skeleton while the first render waits
 
 Will, 2026-09-29, asking why a menu dropped a reading set before it had drawn:
@@ -591,6 +594,8 @@ picks in the same task.
   waits after 300 ms, as a container's loading state does (58), B from the
   first frame — my pick A. First a measurement: how long a first render waits
   on a cold load. If it never reaches 300 ms, the skeleton may not be needed.
+
+**✅ Will, 2026-10-12 — all my picks:** A and A — one skeleton, a shimmer in the host's box, for every component; shown only if the first render still waits after 300 ms.
 
 ### `[x]` ✅ 37 — Components are AGNOSTIC of the data, and of the example app
 
@@ -886,6 +891,8 @@ row needs another way to take the filter off.
   holds a pick), and every row gets the ×. One meaning in the whole section;
   more change, and the multi-value tick no longer removes.
 
+**✅ Will, 2026-10-12 — all my picks:** A — a small × on one-value rows only; a multi-value row keeps its tick as held.
+
 ### `[x]` ✅ 95 — Firefox: a remote chip holding a draft is not marked pending
 
 Found 2026-09-27 by the full Firefox run: `test/e2e/reforged-pending-chip.spec.ts:10`
@@ -917,6 +924,8 @@ when the card is narrower, so nothing changes where it already scrolls.
   do.
 - **B:** the last unpinned column takes all the slack. Simplest; the other
   columns never move, but one column can grow very wide.
+
+**✅ Will, 2026-10-12 — all my picks:** A — every column the reader has not dragged grows in proportion; dragged and pinned ones keep their width.
 
 ### `[x]` ✅ 100 — The Assistant panel shows no heading
 
@@ -1436,6 +1445,8 @@ the reason you gave for 202. It is a 135-file change, so it waits for your yes.
 
 ---
 
+**✅ Will, 2026-10-12 — all my picks:** A — one fixture in sherpa-ui whose `page` parks the pointer after every `goto`, the import line in every spec, and a node test that keeps it so.
+
 ### `[ ]` 204 — BUG: WebKit — a `page.reload` in the nav favourites spec never fires `load`
 
 Found 2026-10-12, with 202. In Sherpa Demos,
@@ -1541,6 +1552,12 @@ badge and the accordion's button sit at the top of the header row.
 buttons align to the top (they shared the bottom line, Will 2026-09-26). A
 test measures each against the row's top; it failed on the old CSS.
 
+### `[ ]` 235 — "Return to X" survives a reload
+
+Will, 2026-10-12 (A): the scope a View field came up from is kept with the
+Query, so "Return to X" leads after a reload too. Today the source knows it for
+the session only (`#cameFrom`, `T-send-to-view-filters`).
+
 ### `[x]` ✅ 234 — A filter moved up to the View offers "Return to X" first
 
 Will, 2026-10-12: *"If a filter is moved up to the view scope then the first
@@ -1574,6 +1591,8 @@ only, a native `<label>` holding the text and the switch, laid out by a few
 inline styles. My pick: A.
 
 ---
+
+**✅ Will, 2026-10-12 — all my picks:** A — `sherpa-switch` takes `data-label` and `data-description`, drawn as `sherpa-select-checkbox` draws its own.
 
 ## C2 — Consumers: frameworks, apps and agents
 
@@ -1670,6 +1689,8 @@ component modules, `index.js`, the base class and the CSS. A node test
 resolves each in Node and in TypeScript (bundler and nodenext). Only the
 short name is left, for your ruling.
 
+**✅ Will, 2026-10-12 — all my picks:** A — `sherpa-ui/components/button`.
+
 ### `[ ]` 211 — Booleans and data the way frameworks bind them
 
 - Every framework writes `data-x={false}` as `data-x="false"`, and Sherpa
@@ -1688,6 +1709,8 @@ to `"false"` is removed, before the first render and after; a string prop
 keeps `"false"`. Only declared booleans — the ones still in `observed` follow
 when 195 declares them. `T-false-is-off`. Left: the `data` property (its name)
 and the grid's `rowKey`.
+
+**✅ Will, 2026-10-12 — all my picks:** A — the property is `data`.
 
 ### `[x]` ✅ 215 — Trusted Types and a strict CSP
 
@@ -1787,6 +1810,8 @@ gate for 207–216.
 `node_modules`. Until you rule, one throwaway fixture outside the repo
 checks the unverified rows.
 
+**✅ Will, 2026-10-12 — all my picks:** A — a sibling project, as Sherpa Demos is.
+
 ### `[ ]` 210 — Framework typings from the manifest
 
 Nothing declares `HTMLElementTagNameMap`, so `querySelector('sherpa-switch')`
@@ -1809,6 +1834,8 @@ leak.
 **❓ Will:** A stop each inner event at its host; B keep them, and document
 filtering by `event.target`. My pick: A.
 
+**✅ Will, 2026-10-12 — all my picks:** A — each inner event stops at its host.
+
 ### `[ ]` 212 — Markup paths for the list components
 
 React 18, server HTML and a plain page can set only attributes and children.
@@ -1830,6 +1857,8 @@ ControlValueAccessors for all but input-text (217).
 the property the current state; B keep reflecting, and remember the first
 value as the reset default. My pick: B, less change.
 
+**✅ Will, 2026-10-12 — all my picks:** B — `checked` keeps reflecting; the first value is the reset default.
+
 ### `[ ]` 208 — The text in the JS, not fetched
 
 Templates and sheets are fetched at run time from `new URL(…, import.meta.url)`.
@@ -1846,6 +1875,8 @@ inline as an opt-in subpath. My pick: A. NOTE: on 2026-09-29 you chose
 "state first" over "templates in the built JS" for 113 — this is not instead
 of that; 113's state work is done either way.
 
+**✅ Will, 2026-10-12 — all my picks:** A — inline by default, URLs only in a dev build.
+
 ### `[ ]` 216 — Tokens safe to embed
 
 `tokens.css` also styles the page — `html, body` margins, the body's font and
@@ -1859,6 +1890,8 @@ a generated `sherpa-ui/css/page` that the app layer and the starter link.
 
 **❓ Will — the default mode with no `data-mode`:** A light, with `auto` as an
 opt-in (the starter sets it); B follow the OS, as now. My pick: A.
+
+**✅ Will, 2026-10-12 — all my picks:** A — light when no `data-mode` is set; `auto` is an opt-in (the starter sets it).
 
 ### `[ ]` 219 — The framework guide
 
@@ -1880,6 +1913,8 @@ and 214.
 subpaths with optional peer dependencies. My pick: A, as for the MCP (183
 choice 2) and 184.
 
+**✅ Will, 2026-10-12 — all my picks:** A — their own packages, `sherpa-ui-react` and `sherpa-ui-angular`.
+
 ### `[ ]` 221 — `sherpa-ui/app` and the app boundary
 
 No display component imports app code today. Make it structural: a
@@ -1893,6 +1928,8 @@ React users too.
 **❓ Will:** A the root `sherpa-ui` still re-exports the app layer — one line
 on a CDN; B the root holds components and data only. My pick: A. Waits on 183
 choice 1.
+
+**✅ Will, 2026-10-12 — all my picks:** A — the root `sherpa-ui` still re-exports the app layer.
 
 ### `[ ]` 222 — The starter
 
@@ -1908,6 +1945,8 @@ dependencies), `scaffold_app` and `validate_app` in the MCP (192), later
 
 **❓ Will:** A the template inside sherpa-ui, with `npx sherpa-ui init`; B a
 separate `create-sherpa-app` package. My pick: A.
+
+**✅ Will, 2026-10-12 — all my picks:** A — a `starter/` folder in sherpa-ui, with `npx sherpa-ui init`.
 
 ### `[ ]` 223 — DEFERRED: server rendering with declarative shadow DOM
 
@@ -2018,6 +2057,8 @@ same helper.
   - **B: no new component** — a `.sherpa-group` wrapper with a label, drawn
     by each of the bar and the panel.
 
+**✅ Will, 2026-10-12 — all my picks:** Q5 A — a `sherpa-filterset` component. (Q3 was overtaken by 180.)
+
 ### `[ ]` 89 — Every filter added to the panel starts SIMPLE
 
 Will, 2026-09-27: *"Let's start all filters added to the panel in 'Simple'
@@ -2045,6 +2086,8 @@ chip menu's own, as the inline body is never built for it.
 "over 20 unique values".
 - **A (my pick): 16** — 89 calls it the one line for the bar and the panel.
 - **B: 20.**
+
+**✅ Will, 2026-10-12 — all my picks:** A — 16 values.
 
 ### `[x]` ✅ 102 — Simple AND Advanced answers are both kept, so a filter switches mode at any time
 
@@ -2174,6 +2217,8 @@ fields opt in (Seats, Spend, Tickets, Health). Advanced is still opt-in per
 field (`T-conditions-are-opt-in-per-field`): say if EVERY field should offer
 it.
 
+**✅ Will, 2026-10-12 — all my picks:** Unblocked: 21d is ruled — no weekday now, a time input only where the field holds a time.
+
 ### `[ ]` 98 — One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes
 
 Will, 2026-09-29: *"If there is at least 1 advanced (conditional) filter in
@@ -2234,6 +2279,8 @@ This gives us some more horizontal space for content."*
   word for word. The menu has a draft model, but only for an open popover,
   not an inline one.
 
+**✅ Will, 2026-10-12 — all my picks:** A — a local source keeps live-apply; Apply, Discard and the footer show only while a remote change waits.
+
 ### `[ ]` 105 — "Save filters" saves EVERY scope under one name; a "Saved" chip shows it
 
 Will, 2026-09-29: *"'Save filter', in the filter panel and filter toolbar,
@@ -2286,6 +2333,8 @@ the panel's sections; say if you meant nav Contexts).
   - **B: per DATA, as saved filters are today**
     (`T-a-saved-filter-lives-with-its-data`) — every page over the same data
     sees it, but a scope another page lacks is dropped on apply.
+
+**✅ Will, 2026-10-12 — all my picks:** A and A — an old preset chip is read as a one-scope set; a saved set is kept per page, beside its Views. "All contexts" means all filter scopes.
 
 ### `[x]` ✅ 109 — Reset has a label, and a menu button: "Reset to default" puts back the View's own filters
 
@@ -2537,6 +2586,8 @@ And: a field the control has no definition for stays words, read-only even
 while editing, and is reported (`unknown-filter`). The source could hand its
 definitions over in `describe()` if that should change.
 
+**✅ Will, 2026-10-12 — all my picks:** A for all six, as built.
+
 ### `[x]` ✅ 178 — An overflow menu in the filter panel's header, with "Limit matching filters"
 
 Will, 2026-10-01: *"Add an ellipsis overflow menu button to the top of the
@@ -2662,6 +2713,8 @@ and nothing else in the file does. **❓ Will:** add a chart glyph — and a
 table glyph, if `table-columns` is not the one you want for a grid — then
 `npm run icons`, and one line each in `SHOWS_ICON`
 (`sherpa-filter-panel.ts`).
+
+**✅ Will, 2026-10-12 — all my picks:** B — keep the stand-ins: `reports` for charts, `table-columns` for grids.
 
 ### `[x]` ✅ 60 — Once applied, a chip's badge shows the number of results
 
@@ -2911,6 +2964,8 @@ is needed: `sherpa-input-text` passes `type` to its `<input>`, so
     days (`2024-07-01`), so it shows none.
   - **B: always**, and a blank time means the day's start or end.
 
+**✅ Will, 2026-10-12 — all my picks:** A and A — no weekday condition now; a time input only where the field holds a time.
+
 ### `[ ]` 107 — A filter can apply LIVE, debounced — an opt-in; the default stays once per act
 
 Will, 2026-09-29, choosing A of "once per act" / "live while dragging, with a
@@ -2942,6 +2997,8 @@ the last report before it loads.
   - **A (my pick): stays on Apply** — live would send a request per pause,
     and remote already waits for Apply by design.
   - **B: may choose live too**, with the debounce.
+
+**✅ Will, 2026-10-12 — all my picks:** A and A — set per source; a remote source always stays on Apply.
 
 ### `[x]` ✅ 52 — A data viz scope in the filter panel
 
@@ -3090,6 +3147,8 @@ every one is off. The same value reads the two ways round.
 - **B:** the legend follows the panel — at rest no chip is on, and all read
   in full ink.
 
+**✅ Will, 2026-10-12 — all my picks:** A — leave each as it is: each is true where it is.
+
 ### `[x]` ✅ 124 — The Filters button and menu move to the filter panel HEADER
 
 Will, 2026-09-30: *"Let's move the 'Filters' button, and menu, to the filter
@@ -3128,6 +3187,8 @@ Advanced). Today `email` is declared `"advanced": "only"` in `records.json`.
 reads its values. Changing it to `"advanced": true` collects them; then 89's
 line draws it as one chip with a multi-select menu, and the chip menu's f(x)
 switches to Advanced. Waits on 89's number.
+
+**✅ Will, 2026-10-12 — all my picks:** Unblocked: 89 rules the line at 16 values.
 
 ### `[x]` ✅ 120 — A view-scope filter gets "Send to `<scope name>`"
 
@@ -3506,6 +3567,8 @@ second data source just for the nav, fed from the two session lists.
   the app writing rows, `bind()` redrawing. More code, and the lists are
   already the data layer's (`SessionList`).
 
+**✅ Will, 2026-10-12 — all my picks:** A — the nav keeps its own open Areas across a redraw.
+
 ### `[x]` ✅ 34 — Figma: use the Navigation terms
 
 The code moved to Section / Area / Context / View on 2026-09-24 (CLAUDE.md
@@ -3707,6 +3770,8 @@ Then Sherpa Demos can drop its 32 `waitForTimeout` calls for `settled()`.
 (225 of `sherpa-element.js`'s 975 lines), 276 template comments. Build it in
 the same step as 208 (the text in the JS). 220 gates the result.
 
+**✅ Will, 2026-10-12 — all my picks:** A and A — esbuild as a dev dependency with a readable debug build; one module per icon, fetched the first time it is drawn.
+
 ### `[ ]` 190 — A Context contract and one `app.json`
 
 ❓ Waits on choice 1 in 183. Export `ContextModule { init(root, ctx) → teardown }`; one `app.json` names the Contexts (template, definition, views, module, chrome), the default Context and the Settings pages, and the nav, the router, the session defaults and the server read it — about 12 hand-kept lists end. `docs/CONSUMER-REVIEW.md` §3.4.
@@ -3719,9 +3784,13 @@ by nothing, while a View's `template` IS read — one name, two meanings, one
 dead; the page schema says it holds Views, and has no `views`; and a Context,
 Settings and the Assistant get three different `init` shapes.
 
+**✅ Will, 2026-10-12 — all my picks:** A (183 choice 1) — the app layer lives in sherpa-ui, beside `sherpa-router`.
+
 ### `[ ]` 191 — Library parts that empty `contexts/`
 
 ❓ Waits on choice 1 in 183. `SherpaDialog.prompt()` and `.confirm()`; saved filters owned by the provider, as saved Views are; `data-setting="/pointer"` binds a control to the session; stores take a seed, a version and a fallback; public APIs for the three shadow-root reaches. Then Sherpa Demos sorts by kind: `stores/`, `contexts/` (page behaviour only), `views/`, `view-schemas/`. `docs/CONSUMER-REVIEW.md` §3.5.
+
+**✅ Will, 2026-10-12 — all my picks:** A (183 choice 1) — in sherpa-ui.
 
 ### `[ ]` 192 — Ship the agent path
 
@@ -3738,13 +3807,19 @@ project. **Before registering it:** `sherpa-ui/.mcp.json` holds a plain-text
 Figma access token. It is git-ignored, so it is not committed — but the token
 must move to an environment variable before that file is shared.
 
+**✅ Will, 2026-10-12 — all my picks:** A (183 choice 2) — its own package, `sherpa-ui-mcp`.
+
 ### `[ ]` 193 — One app guide, served to agents
 
 After 190, so it teaches the contract. `docs/APP-GUIDE.md`, about 300 lines of steps with no history: the page skeleton, the shell, stores, a page definition, a template that asks, a Context module, Views and the session, and the ten or so traps an app meets. Served as `sherpa://app-guide`; each TRAPS entry tagged by who meets it. `docs/CONSUMER-REVIEW.md` §3.7.
 
+**✅ Will, 2026-10-12 — all my picks:** A (183 choice 1) — it teaches the app layer in sherpa-ui.
+
 ### `[ ]` 194 — A Context loader beside `sherpa-router`
 
 ❓ Waits on choice 1 in 183. `<sherpa-outlet>` reads `app.json` and, on each route change, fetches the template, opens the provider, runs the module and tears it down with the navigation's signal; it owns the Settings overlay, the header title from the nav row, the View in the URL, and favourites and recents. `index.html` drops from about 800 lines of script to config, and a `scaffold_app` tool can emit a starter. `docs/CONSUMER-REVIEW.md` §3.8.
+
+**✅ Will, 2026-10-12 — all my picks:** A (183 choice 1) — in sherpa-ui, beside `sherpa-router`.
 
 ### `[ ]` 195 — The spec becomes the whole contract
 
@@ -3766,13 +3841,19 @@ four families, then `check:props` tightened and `check:usage`. Size L.
    when that folder is there, so a library rename that breaks the app blocks
    the library commit, and Demos runs it too; B Demos only. My pick: A.
 
+**✅ Will, 2026-10-12 — all my picks:** A and A — a new `kind: 'behaviour'`; sherpa-ui's hook runs `check:usage` on `../Sherpa Demos` when that folder is there.
+
 ### `[ ]` 196 — One filter surface and a smaller DataSource
 
 ❓ Waits on choice 3 in 183. Move `bind()` and `#steer` out of DataSource into a UI-side binder, so the data layer stops knowing component event names; one imported helper for the bar and the panel, one FilterDef type and one scope protocol; the filter editor out of `sherpa-menu`. Each parity bug is then fixed once. `docs/CONSUMER-REVIEW.md` §3.10.
 
+**✅ Will, 2026-10-12 — all my picks:** A (183 choice 3) — the app layer first; this after it, or beside it.
+
 ### `[ ]` 197 — One way to write a filter condition
 
 ❓ Waits on choice 4 in 183. Today an agent learns two grammars: `[field, op, value]` (DATA-SOURCE-RULES §2) and readings with numbers as strings, `{"op":"gt","text":"0"}`. Keep readings, or store a plain form with numbers as numbers and migrate saved Views. Decide before 193.
+
+**✅ Will, 2026-10-12 — all my picks:** B (183 choice 4) — the plain form, `{ "openTickets": { "gt": 0 } }`, numbers as numbers; saved Views are migrated.
 
 ### `[x]` ✅ 185 — Sherpa Demos: views, view schemas, and what `contexts/` is for
 
@@ -3842,7 +3923,7 @@ repo; the rule docs still teach `bind()` as the only join; and some mistakes
 fail silently. Its plan is items 187–197. Four choices wait in 190, 192, 196
 and 197, each with the review's pick.
 
-**❓ The four choices** (the review's pick first):
+**✅ Will, 2026-10-12 — the review's picks: A, A, A, B.** The four choices (the review's pick first):
 1. **Where the app layer lives (190, 191, 194)** — **A:** in sherpa-ui, beside
    `sherpa-router` (its rules are already ratified in CLAUDE.md, but only the
    demo's code does them). **B:** a separate starter package. Pick: A.
@@ -4271,6 +4352,8 @@ the page's definition.
 
 Either way the Query stays as it is: it filters and arranges, and never
 summarises.
+
+**✅ Will, 2026-10-12 — all my picks:** A — a threshold is a fact of the field, declared once beside `min` and `max`.
 
 ### `[x]` ✅ 162 — A chart and its legend stack as their container narrows
 
