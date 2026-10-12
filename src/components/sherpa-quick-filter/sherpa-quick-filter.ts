@@ -6,7 +6,7 @@
  */
 import { DATA_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
 import {
-  DEFAULT_OP, OP_TAKES, type FilterOp, type SortDirection, valueSet,
+  DEFAULT_OP, OP_TAKES, type FilterOp, type SortDirection,
 } from '../../core/data/store.js';
 import {
   fieldState, readingRows, type FieldCondition, type FieldReading, type FilterState,
@@ -118,6 +118,7 @@ export class SherpaQuickFilter extends SherpaElement {
 
   override onRender(): void {
     this.#syncText();
+    if (this.#heldLabel) this.valueLabel = this.#heldLabel;
     // A name given before the first render is said now.
     this.#writeTip();
     this.#paintSwatch();
@@ -232,10 +233,13 @@ export class SherpaQuickFilter extends SherpaElement {
   set valueLabel(text: string) {
     const caret = this.$('.caret-label');
     if (caret) caret.textContent = text;
+    else this.#heldLabel = text;
   }
   get valueLabel(): string {
-    return this.$('.caret-label')?.textContent ?? '';
+    return this.$('.caret-label')?.textContent ?? this.#heldLabel;
   }
+  /** A value label set before the first render. TRAP T-a-value-before-the-first-render-is-held */
+  #heldLabel = '';
 
   /** The chip's value menu, if it has one.
    *
@@ -265,22 +269,13 @@ export class SherpaQuickFilter extends SherpaElement {
   set values(next: readonly string[]) {
     const menu = this.menu;
     if (!menu) return;
-    /* The QUERY's comparison, not an exact one. A menu row's value may be
-       spelled differently from the data it filters — the Records example
-       lower-cases them — and the query has always matched loosely, so an exact
-       test here made a value set from elsewhere tick nothing.
-       TRAP T-one-comparison-rule-for-query-and-ui */
-    const want = valueSet(next);
-    // A DATE or NUMBER menu sets its own body. TRAP T-a-menu-owns-its-own-bodies
-    if (menu.dataset['body']) (menu as HTMLElement & { values: readonly string[] }).values = next;
-    else {
-      for (const input of this.querySelectorAll<HTMLInputElement>('[slot="menu"] input')) {
-        // The "All" row is a control, not a value; it derives from the rest.
-        // A menu nested in the chip's answers for itself. TRAP T-a-nested-menu-answers-for-itself
-        if (input.closest('sherpa-menu') !== menu || input.closest(NON_VALUE_ROWS)) continue;
-        input.checked = want.has(input.value);
-      }
-    }
+    /* THE MENU ticks its rows — a borrowed menu's, and rows not drawn yet,
+       which it holds. Upgraded first: a property set on a plain element hides
+       the setter for good. TRAP T-a-menu-owns-its-own-bodies
+       TRAP T-a-value-before-the-first-render-is-held · TRAP T-custom-element-upgrade */
+    customElements.upgrade(menu);
+    if (!((menu as Element) instanceof SherpaElement)) return;
+    (menu as HTMLElement & { values: readonly string[] }).values = next;
     // Read BACK, never trust the ask: a value naming no row never landed.
     this.#applySelection((menu.values ?? []) as string[]);
   }
@@ -905,6 +900,7 @@ export class SherpaQuickFilter extends SherpaElement {
        TRAP T-a-condition-badge-says-that-not-which · TRAP T-both-answers-are-kept */
     const body = menu?.dataset['body'];
     const list = body === 'number' || (isFilter && body !== 'date') ? menu?.reading : undefined;
+    // A menu nested in the chip's answers for itself. TRAP T-a-nested-menu-answers-for-itself
     const all = [...this.querySelectorAll<HTMLInputElement>('[slot="menu"] input')]
       .filter((i) => i.closest('sherpa-menu') === menu && !i.closest(NON_VALUE_ROWS))
       .map((i) => i.value);

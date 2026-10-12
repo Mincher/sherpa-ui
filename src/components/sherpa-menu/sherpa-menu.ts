@@ -249,7 +249,13 @@ export class SherpaMenu extends SherpaElement {
     this.$('.use-advanced')?.addEventListener('button-click', this.#onModeSwitch);
     this.$('.add-condition')?.addEventListener('click', this.#onAddCondition);
     region?.addEventListener('click', this.#onDropCondition);
-    // A reading set before this menu drew has rows and ticks to hold it now.
+    // Held writes, then a reading set before this menu drew — it has rows and ticks now.
+    const held = this.#heldValues;
+    this.#heldValues = null;
+    if (held) this.values = held;
+    const rows = this.#heldRows;
+    this.#heldRows = null;
+    if (rows) this.conditions = rows;
     const early = this.#early;
     this.#early = undefined;
     if (early) this.reading = early;
@@ -257,6 +263,10 @@ export class SherpaMenu extends SherpaElement {
 
   /** A reading set before this menu drew. TRAP T-custom-element-upgrade */
   #early: FieldReading | undefined;
+  /** Picks set before any row could show them. TRAP T-a-value-before-the-first-render-is-held */
+  #heldValues: string[] | null = null;
+  /** Condition rows set before the menu drew. */
+  #heldRows: FieldCondition[] | null = null;
 
   /* ── The two modes ──────────────────────────────────────────────── */
 
@@ -691,6 +701,7 @@ export class SherpaMenu extends SherpaElement {
 
   /** Every row, as data. TRAP T-many-conditions-are-one-reading */
   get conditions(): FieldCondition[] {
+    if (this.#heldRows) return this.#heldRows.map((row) => ({ ...row }));
     return this.#rowEls().map((row, i) => {
       const op = (row.querySelector<FieldEl>('.condition')?.value ?? DEFAULT_OP) as FilterOp;
       const takes = OP_TAKES[op] ?? 'list';
@@ -718,6 +729,10 @@ export class SherpaMenu extends SherpaElement {
 
   /** Replace every row from data — a host restoring a saved filter. */
   set conditions(rows: readonly FieldCondition[]) {
+    if (!this.#card()) {
+      this.#heldRows = rows.map((row) => ({ ...row }));
+      return;
+    }
     this.#setRows(rows);
     // A set is a change to the DRAFT too. TRAP T-the-footer-owns-nothing-to-save
     this.#syncDirty();
@@ -972,6 +987,8 @@ export class SherpaMenu extends SherpaElement {
 
   /** Write a child menu's pick count on its row. An empty badge draws nothing. */
   setCount(value: string, count: number): void {
+    // The DATA too, so rows stamped later draw it.
+    this.#items = this.#items.map((item) => (item.drill && item.value === value ? { ...item, count } : item));
     for (const row of this.#own<HTMLElement>('.menu-row[data-drill]')) {
       if (row.dataset['value'] !== value) continue;
       const badge = row.querySelector('.menu-row-count');
@@ -1064,6 +1081,7 @@ export class SherpaMenu extends SherpaElement {
     if (numeric) return numeric;
     const dates = this.#calendarValues();
     if (dates) return dates;
+    if (this.#heldValues) return [...this.#heldValues];
     return this.#inputs()
       .filter((i) => i.checked)
       .map((i) => i.value);
@@ -1156,10 +1174,20 @@ export class SherpaMenu extends SherpaElement {
   }
 
   set values(next: string[]) {
+    /* Nothing to show them yet: HELD until it is drawn — a date's calendar is
+       light DOM, so it takes them now. A drill moves the rows themselves, so
+       once drawn they stay the live answer.
+       TRAP T-a-value-before-the-first-render-is-held */
+    if (!this.#card() && this.dataset['body'] !== 'date') {
+      this.#heldValues = [...next];
+      return;
+    }
     if (!this.#setBodyValues(next)) {
+      const inputs = this.#inputs();
+      this.#heldValues = inputs.length ? null : [...next];
       // The query's comparison — TRAP T-one-comparison-rule-for-query-and-ui.
       const wanted = valueSet(next);
-      for (const input of this.#inputs()) input.checked = wanted.has(input.value);
+      for (const input of inputs) input.checked = wanted.has(input.value);
     }
     // A set is a change to the DRAFT too. TRAP T-the-footer-owns-nothing-to-save
     this.#syncDirty();
@@ -1174,8 +1202,7 @@ export class SherpaMenu extends SherpaElement {
    * field. TRAP T-one-field-one-filter-menu
    */
   protected override renderData(data: unknown): void {
-    this.#items = Array.isArray(data) ? (data as MenuItem[]) : [];
-    this.#stampItems();
+    this.items(Array.isArray(data) ? (data as MenuItem[]) : []);
   }
 
   /**
@@ -1188,6 +1215,8 @@ export class SherpaMenu extends SherpaElement {
    */
   items(next: readonly MenuItem[]): void {
     this.#items = [...next];
+    // Items that name their picks are newer than picks held for them.
+    if (next.some((item) => item.selected !== undefined)) this.#heldValues = null;
     this.#stampItems();
   }
 
@@ -1247,13 +1276,15 @@ export class SherpaMenu extends SherpaElement {
     if (!tpl?.content.firstElementChild) return;
 
     const name = this.#group;
+    const held = this.#heldValues ? valueSet(this.#heldValues) : null;
+    this.#heldValues = null;
     const stamp = (item: MenuItem): HTMLElement => {
       const bare = item.pickable === false ? this.clone('template.menu-bare-tpl') : null;
       const row = bare ?? tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
       const box = row.querySelector('input');
       if (box) {
         box.value = item.value;
-        box.checked = !!item.selected;
+        box.checked = held ? held.has(item.value) : !!item.selected;
         if (single) box.name = name;
       }
       const label = item.label ?? item.value;
@@ -1658,6 +1689,8 @@ export class SherpaMenu extends SherpaElement {
 
   /** Rows changed — re-read select-all, re-place next frame. */
   #onRowsChanged = (): void => {
+    const held = this.#heldValues;
+    if (held && this.#inputs().length) this.values = held;
     this.#syncSelectAll();
     /* A condition row's value select is BUILT from these rows, and row one is
        built before they arrive — so it opened empty while row two, added

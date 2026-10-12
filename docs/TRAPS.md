@@ -68,6 +68,7 @@ template's content still lives in its inert document and does NOT upgrade —
 - Site: `src/core/ui/filter-menu.ts`
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
 - Site: `src/core/ui/saved-filter-menu.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 
 ### T-tokens-css-never-reaches-shadow
 
@@ -1350,8 +1351,20 @@ the early one: the getter answers it until the control exists. Where the
 component's elements ARE its state, keep the state as data instead —
 `T-a-value-is-data-the-ticks-are-drawn`.
 
+`sherpa-menu` holds three: `values` until its rows exist (their stamp draws
+them over each item's `selected`), and `conditions` and `setCount` until it
+draws. Once drawn, its rows stay the live answer, because a drill MOVES them
+into another menu (`T-drill-moves-not-clones`). The last write wins: items
+that name their own picks drop a held one. `sherpa-quick-filter` sets its
+picks THROUGH the menu, so they are held there too, and holds its own
+`valueLabel` until it draws.
+
 - Site: `src/components/sherpa-prompt-composer/sherpa-prompt-composer.ts`
 - Site: `test/e2e/reforged-prompt-composer.spec.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `test/e2e/reforged-menu-state-first.spec.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `test/e2e/reforged-quick-filter-state-first.spec.ts`
 
 ### T-a-value-is-data-the-ticks-are-drawn
 
@@ -10518,6 +10531,7 @@ one while it is still connected. A menu that has genuinely gone still reads as
 `null`.
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `test/e2e/reforged-quick-filter-state-first.spec.ts`
 
 ### T-two-conditions-over-one-field-are-alternatives
 
@@ -12798,7 +12812,6 @@ a contract with no gate on it, and it only breaks on the return journey — the
 outbound path works, which is what makes it hard to see.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/core/data/store.ts`
 - Site: `test/unit/filter-state.test.mjs`

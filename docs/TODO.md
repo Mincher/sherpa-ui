@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**35 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
+**37 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -72,6 +72,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16t | 202 | Sherpa Demos: 7 Chromium tests time out — the rail opens under the pointer and covers the filter panel | bug |
 | ❓ | 16t1 | 203 | sherpa-ui: 135 of 136 specs load the page without the pointer park — one fixture, as in Demos? | bug |
 | ⬜ | 16t2 | 204 | WebKit: a `page.reload` in the Demos nav favourites spec never fires `load` — 1 run in 80 | bug |
+| ⬜ | 16t3 | 206 | Firefox: "closing the dialog fires a composed close event" sees no event, 1 to 2 runs in 10 | bug |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | ❓ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ❓ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
@@ -123,6 +124,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31y | 178 | The filter panel's header gets an overflow (⋯) menu; "Limit matching filters" is an item in it and in the toolbar's | feature |
 | ✅ | 31z | 181 | A saved filter's menu shows its condition rows, read-only — the Advanced menu, not a bespoke one | refactor |
 | ❓ | 31z2 | 186 | Saved filter card: six small choices left from 181, each built one way | feature |
+| ⬜ | 31z3 | 205 | With "Limit to matching filters" on, both ⋮ menus offer "Hide unmatching filters"; the old name is renamed | feature |
 | ✅ | 31aa2 | 182 | The filter panel's search: more room above it, and the full width of the header less its padding | bug |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
@@ -512,6 +514,30 @@ value set before its first render and writes it in at the end of `onRender`
 early value (probed); nothing to do. **Left of 113:** the filter family —
 menu, toolbar, panel, chip — built with A7 and 89; and the skeleton, with 58
 and 59.
+
+**Split 2026-10-12** (a read of the code): 89 redraws only the PANEL's fields,
+so the menu, the chip and the toolbar can be done now; the panel waits for 89.
+
+**✅ Menu and chip done 2026-10-12.** The menu HOLDS what it cannot draw yet:
+`values` until its rows exist (their stamp draws them over each item's
+`selected`), and `conditions` and `setCount` until it draws. Once drawn, its
+rows stay the live answer, because a drill moves them. Items that name their
+own picks are newer than held ones. The chip sets its picks THROUGH the menu
+— a borrowed menu's and an unstamped one's too — and holds its `valueLabel`.
+A hold, not a data copy (`T-a-value-before-the-first-render-is-held`).
+
+**Left:**
+- the toolbar — `values`, `setChipValues`, `setChipReading` and `supersede`
+  before `populate()` find no chips; hold them by id for `#render()`;
+- the panel — with 89;
+- nav, nav-item, notifications and file-upload — the 09-29 sweep named them
+  "mixed", and they were never probed; one probe each, or record them clean;
+- the skeleton. **❓ Will — two choices:** (1) its look: A one shimmer in the
+  host's box for every component, B one per component (grid rows, chart bars)
+  from Figma — my pick A; (2) when it shows: A only if the first render still
+  waits after 300 ms, as a container's loading state does (58), B from the
+  first frame — my pick A. First a measurement: how long a first render waits
+  on a cold load. If it never reaches 300 ms, the skeleton may not be needed.
 
 ### `[x]` ✅ 37 — Components are AGNOSTIC of the data, and of the example app
 
@@ -1372,6 +1398,17 @@ fetch that never ends would hold `load` back. If one is, the test can wait for
 
 ---
 
+### `[ ]` 206 — BUG: Firefox — a dialog's close event is sometimes not seen
+
+Found 2026-10-12, with 113. `reforged-dialog.spec.ts:52` ("closing the dialog
+fires a composed close event") counts 0 events in Firefox, 2 runs in 10 —
+and 1 in 10 on HEAD before 113, so it is not 113. It calls `show()` and
+`close()` at once, then waits for `__settled()`. The native close event comes
+on a task; in Firefox it may come after `__settled()` resolves, or it may be
+the late close that `T-a-reopened-dialog-hears-a-late-close` drops.
+
+---
+
 ## D — Filters: Will's features, on the foundation
 
 ### `[ ]` 99 — EXPLORE: a FILTERSET — filters in SERIAL, in PARALLEL, or both; and a group of chips
@@ -2017,6 +2054,24 @@ Ticking it in either place turns the setting on or off for the whole page —
 the provider owns it, and the Demos app keeps it in its session, beside the
 Settings switch (renamed "Limit matching filters" to match).
 `T-the-more-menu-holds-what-folded`
+
+### `[ ]` 205 — "Hide unmatching filters", and "Limit to matching filters"
+
+Will, 2026-10-12: *"In the filter panel and toolbar overflow menus, when
+'Limit matching filters' is enabled, show a menu item to toggle 'Hide
+unmatching filters'. Rename 'Limit matching filters' to 'Limit to matching
+filters'."*
+
+- The rename: the label is in the panel's and the toolbar's `.html` and
+  `.ts`, and in Sherpa Demos' Settings page, `index.html`, `settings.js` and
+  `reforged-limit-options.spec.ts`.
+- The new row shows in both ⋮ menus only while Limit is on. Like Limit, the
+  provider owns it, so ticking it in either menu changes the whole page, and
+  Demos keeps it in its session.
+- What it hides: the values the other answers rule out, which are greyed today
+  (`T-a-ruled-out-value-is-greyed`). A ruled-out value that is still PICKED
+  stays shown, greyed (180), so the reader can untick it. This also answers
+  174's old question, hidden or greyed: greyed by default, hidden on request.
 
 ### `[x]` ✅ 176 — A greyed-out chip says WHY in its tooltip
 
@@ -3165,6 +3220,22 @@ After 190, so it teaches the contract. `docs/APP-GUIDE.md`, about 300 lines of s
 ### `[ ]` 195 — The spec becomes the whole contract
 
 Every observed `data-*` moves into `static props` and `check:props` checks membership; the generator reads types from props, fills `slots` (0 of 65 list them today), records the `populate()` shape and types event details; emit `HTMLElementTagNameMap` and `custom-elements.json`; a `check:usage` gate checks the Demos markup against the specs. `docs/CONSUMER-REVIEW.md` §3.9.
+
+**Measured 2026-10-12** (a read of the code): 135 observed attributes in 37
+components are not in `static props` — 52 read by CSS, 83 by JS only — which
+is why `button.populate({ label })` draws nothing. 0 of 65 specs list slots;
+155 of 174 event detail fields are `unknown`. It waits on no ruling. Plan:
+the tooling first (spec `observed`, types from `static props`, slots,
+`populate` shape, typed details, `custom-elements.json`), then the moves in
+four families, then `check:props` tightened and `check:usage`. Size L.
+
+**❓ Will — two choices:**
+1. An attribute only JS reads (83 of the 135): A a new `kind: 'behaviour'`,
+   B `kind: 'style'` — but then the spec says CSS reads 83 it does not. My
+   pick: A.
+2. Where `check:usage` runs: A sherpa-ui's hook runs it on `../Sherpa Demos`
+   when that folder is there, so a library rename that breaks the app blocks
+   the library commit, and Demos runs it too; B Demos only. My pick: A.
 
 ### `[ ]` 196 — One filter surface and a smaller DataSource
 
