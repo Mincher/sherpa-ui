@@ -21,8 +21,8 @@ name, link the tokens, import it once:
 
 With npm and a bundler, `npm install sherpa-ui`, then `import 'sherpa-ui'` and
 load `sherpa-ui/css` as a stylesheet (or call `installTokens()`). One component
-alone is `import 'sherpa-ui/components/sherpa-button/sherpa-button.js'` — with
-the `.js`. Any import is safe on a server: there it defines nothing.
+alone is `import 'sherpa-ui/components/button'`. Any import is safe on a server:
+there it defines nothing.
 `sherpa-ui/data` is the data layer alone, with no DOM, for a server or a test.
 
 The example app, [Sherpa Demos](https://github.com/Mincher/sherpa-demos), is

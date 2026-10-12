@@ -36,3 +36,25 @@ test('a grid\'s rowKey is its key', async ({ page }) => {
   });
   expect(r).toEqual({ viaKey: 'email', viaRowKey: 'id' });
 });
+
+/** `populate()` as a PROPERTY, `data` — what React 19, Vue and Svelte can bind
+ *  (TODO 211). Set before the element upgrades, it is kept and drawn. */
+test('data is populate() as a property, before and after the element upgrades', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const crumbs = [{ label: 'Home' }, { label: 'Records' }];
+    type El = HTMLElement & { data: unknown; rendered: Promise<void> };
+    const live = document.createElement('sherpa-breadcrumbs') as El;
+    document.getElementById('root')!.replaceChildren(live);
+    live.data = crumbs;
+    // Not yet upgraded: a template's content belongs to an inert document.
+    const tpl = document.createElement('template');
+    tpl.innerHTML = '<sherpa-breadcrumbs></sherpa-breadcrumbs>';
+    const early = tpl.content.firstElementChild as El;
+    early.data = crumbs;
+    document.getElementById('root')!.append(early);
+    await window.__settled();
+    const count = (el: El) => el.shadowRoot!.querySelectorAll('[part~="crumb"], .crumb, li, a').length;
+    return { live: count(live) > 0, early: count(early) > 0, same: live.data === crumbs && early.data === crumbs };
+  });
+  expect(r).toEqual({ live: true, early: true, same: true });
+});

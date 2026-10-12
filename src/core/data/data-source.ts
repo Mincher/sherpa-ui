@@ -982,7 +982,7 @@ export class DataSource extends EventTarget {
     const fields: HeldFilter[] = q.holds.filter((f) => this.#fields.has(f)).map((f) => {
       const reading = this.#home(f) === scope ? this.#reading(f) : undefined;
       const down = scope === VIEW ? this.#lowerTo(f) : [];
-      const from = this.#cameFrom.get(f);
+      const from = this.#cameFrom(f);
       return {
         ...this.filterDef(f), removable: true,
         // The View's date slices the whole view, so it is a RANGE. Will, TODO 20b.
@@ -1115,8 +1115,23 @@ export class DataSource extends EventTarget {
     this.#drawBars(scope);
   }
 
-  /** Where each field the View holds came UP from, this session. */
-  #cameFrom = new Map<string, string>();
+  /** Where a field the View holds came UP from — kept IN the Query, so a reload
+   *  and a View's draft keep it. TODO 235 · TRAP T-send-to-view-filters */
+  #cameFrom(field: string): string | undefined {
+    return this.#draft.scopes[VIEW]?.from?.[field];
+  }
+
+  /** Remember, or forget, where a View field came up from. */
+  #setCameFrom(field: string, from: string | undefined): void {
+    for (const query of new Set([this.#draft, this.#applied])) {
+      const view = query.scopes[VIEW];
+      if (!view) continue;
+      const next = Object.entries({ ...view.from, ...(from ? { [field]: from } : {}) })
+        .filter(([id]) => from || id !== field);
+      if (next.length) view.from = Object.fromEntries(next);
+      else delete view.from;
+    }
+  }
 
   /** Each scope a View field may be sent down to — a component's that has it,
    *  or a chart's own — the one it came UP from first. The reader picks where
@@ -1126,7 +1141,7 @@ export class DataSource extends EventTarget {
     const has = (scope: string): boolean =>
       this.#narrowing.get(scope)?.field === field || this.canHold(scope, field);
     const all = [...this.#offers.keys(), ...this.#narrowing.keys()].filter((s) => s !== VIEW && has(s));
-    const from = this.#cameFrom.get(field);
+    const from = this.#cameFrom(field);
     return from && all.includes(from) ? [from, ...all.filter((s) => s !== from)] : all;
   }
 
@@ -1155,7 +1170,7 @@ export class DataSource extends EventTarget {
        freed as the View lets go, and reports the answer IT kept from before
        the field went up: an old one. TRAP T-send-to-view-filters */
     else if (answer) this.select(field, answer.picked ?? [], answer);
-    this.#cameFrom.delete(field);
+    this.#setCameFrom(field, undefined);
     this.commit();
     this.#drawBars(VIEW);
     if (!part) this.#drawBars(to);
@@ -2626,7 +2641,7 @@ export class DataSource extends EventTarget {
           for (const id of ids) this.#lower(String(id), scope);
           return;
         }
-        if (scope === VIEW && typeof from === 'string') for (const id of ids) this.#cameFrom.set(String(id), from);
+        if (scope === VIEW && typeof from === 'string') for (const id of ids) this.#setCameFrom(String(id), from);
         const part = typeof from === 'string' ? this.#narrowing.get(from) : undefined;
         const answer = part ? this.reading(from as string, part.field) : undefined;
         this.#take(scope, ids.map(String));

@@ -476,7 +476,8 @@ export abstract class SherpaElement extends Base {
     this.#reconfiguring = true;
     queueMicrotask(() => {
       this.#reconfiguring = false;
-      void this.populate(this.#data);
+      // Not populate(): what the caller last gave stays theirs.
+      void this.rendered.then(() => this.renderData(this.#withSettings(this.#data)));
     });
   }
 
@@ -702,8 +703,23 @@ export abstract class SherpaElement extends Base {
    * TRAP T-populate-settles-after-render-data — await THIS, not `rendered`.
    */
   populate(data: unknown): Promise<void> {
+    this.#given = data;
     return this.rendered.then(() => this.renderData(this.#withSettings(data)));
   }
+
+  /**
+   * `populate()` as a PROPERTY — the door a framework binds: React 19, Vue and
+   * Svelte set a property, and cannot call a method. Reads what was last given.
+   * TODO 211 · TRAP T-false-is-off
+   */
+  get data(): unknown {
+    return this.#given;
+  }
+  set data(value: unknown) {
+    void this.populate(value);
+  }
+  /** What `populate()` or `data` was last given. */
+  #given: unknown = undefined;
 
   /**
    * Render an icon value — an icon NAME becomes a Figma SVG, any other value

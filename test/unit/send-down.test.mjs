@@ -122,3 +122,25 @@ test('A to the View to B: the field is in B alone, and A does not get it back', 
   assert.equal(source.query.applied.scopes.data, undefined);
   assert.deepEqual(seen.get('grid'), [1, 3]);
 });
+
+/* Will, TODO 235: "Return to X" outlives a reload — where a field came up from
+   is kept IN the Query. */
+test('where a View field came up from is in the Query, so a reload still returns it there', async () => {
+  const first = await setup();
+  first.source.declarePart('picks:bar', { field: 'plan', only: first.chart, label: 'By plan' });
+  first.source.write('picks:bar', 'plan', { picked: ['Pro'] });
+  first.send('view', 'plan', 'picks:bar');
+  await tick();
+  const kept = JSON.parse(JSON.stringify(first.source.query.applied));
+  assert.deepEqual(kept.scopes.view.from, { plan: 'picks:bar' });
+
+  const again = await setup();
+  again.source.declarePart('picks:bar', { field: 'plan', only: again.chart, label: 'By plan' });
+  await again.source.setQuery(kept);
+  assert.deepEqual(again.sendTo('plan')[0], { scope: 'picks:bar', label: 'By plan', origin: true });
+
+  // Sent back down, it is forgotten.
+  again.send('picks:bar', 'plan', 'view');
+  await tick();
+  assert.equal(again.source.query.applied.scopes.view.from, undefined);
+});

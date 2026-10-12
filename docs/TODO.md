@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**50 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
+**47 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -79,14 +79,14 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16t8 | 232 | The delete customer dialog is critical all over — borders and labels; only its footer's confirm button is | bug |
 | ✅ | 16t9 | 233 | In the filter panel, a filter section's header inside an accordion aligns to the TOP: label, count badge and the accordion button | quick |
 | ✅ | 16t10 | 234 | A filter moved up to the View: its menu's FIRST option is "Return to X", its own scope, apart from the other scopes | quick |
-| ⬜ | 16t11 | 235 | "Return to X" survives a reload: the Query keeps where a View field came up from | feature |
+| ✅ | 16t11 | 235 | "Return to X" survives a reload: the Query keeps where a View field came up from | feature |
 | ✅ | 16t6 | 230 | Reset all filters dialog: "Save filters before reset" sits in a grey border; it is plain form content | quick |
 | | | | **C2 — Consumers: frameworks, apps and agents** (planned 2026-10-12) | |
 | ✅ | c1 | 225 | `settled()` hangs on an infinite animation — a loader, an indeterminate bar — and waits on the whole document when given a part | bug |
 | ✅ | c2 | 224 | Silent failures, round 2: a linked View drops its report; View gaps skip `onReport`; `open()` hangs on an undefined tag; a 200 that is not the file is stamped; and five more | bug |
 | ✅ | c3 | 207 | Import anywhere: a base class that loads on a server, and a `define()` that checks first — two copies of the library no longer throw | foundation |
-| ⬜ | c4 | 209 | The package surface for ONE component: `sideEffects`, `./package.json`, and the extensionless import TypeScript accepts but the page cannot load | tooling |
-| ⬜ | c5 | 211 | Booleans and data the way frameworks bind them: `data-x="false"` is OFF; a `data` property beside `populate()`; the grid's `rowKey` | foundation |
+| ✅ | c4 | 209 | The package surface for ONE component: `sideEffects`, `./package.json`, and the extensionless import TypeScript accepts but the page cannot load | tooling |
+| ✅ | c5 | 211 | Booleans and data the way frameworks bind them: `data-x="false"` is OFF; a `data` property beside `populate()`; the grid's `rowKey` | foundation |
 | ✅ | c6 | 215 | Trusted Types and a strict CSP: one policy for the five HTML sinks; the calendar's inline styles into CSS | foundation |
 | ✅ | c7 | 220 | Weight per component, gated: JS and fetched CSS per entry may only fall, and no app module in a component's graph | tooling |
 | ✅ | c8 | 226 | Docs and agent text, round 2: CLAUDE.md on the shared sheets and the provider, three Fires blocks, the MCP's dead tokens and "Rule 9", the old def flow | docs |
@@ -1563,11 +1563,16 @@ badge and the accordion's button sit at the top of the header row.
 buttons align to the top (they shared the bottom line, Will 2026-09-26). A
 test measures each against the row's top; it failed on the old CSS.
 
-### `[ ]` 235 — "Return to X" survives a reload
+### `[x]` ✅ 235 — "Return to X" survives a reload
 
 Will, 2026-10-12 (A): the scope a View field came up from is kept with the
 Query, so "Return to X" leads after a reload too. Today the source knows it for
 the session only (`#cameFrom`, `T-send-to-view-filters`).
+
+**✅ Done 2026-10-12.** The View scope of the Query carries `from` — each held
+field's origin — so the kept Query and a draft hold it; a send back down
+forgets it. A node test restores a kept Query in a fresh source and finds the
+return; the Demos test reads "Return to By status" after its reload.
 
 ### `[x]` ✅ 234 — A filter moved up to the View offers "Return to X" first
 
@@ -1686,7 +1691,7 @@ new line; all 65 specs stay fresh. A node test imports every `dist/` module
 with no DOM, and proves `define()` registers once and reports `tag-taken`.
 `T-a-component-imports-anywhere`
 
-### `[ ]` 209 — The package surface for one component
+### `[x]` ✅ 209 — The package surface for one component
 
 - `sherpa-ui/components/sherpa-button/sherpa-button` (no `.js`) passes
   TypeScript, which finds the `.d.ts`, and fails in the page;
@@ -1707,7 +1712,11 @@ short name is left, for your ruling.
 
 **✅ Will, 2026-10-12 — all my picks:** A — `sherpa-ui/components/button`.
 
-### `[ ]` 211 — Booleans and data the way frameworks bind them
+**✅ Done 2026-10-12.** `./components/*` maps the short name to
+`dist/components/sherpa-*/sherpa-*.js` and its `.d.ts`; the long `.js` form
+still works. The package test resolves both in Node and in TypeScript.
+
+### `[x]` ✅ 211 — Booleans and data the way frameworks bind them
 
 - Every framework writes `data-x={false}` as `data-x="false"`, and Sherpa
   reads PRESENCE, so false means on. A declared `type: 'boolean'` prop set to
@@ -1727,6 +1736,11 @@ when 195 declares them. `T-false-is-off`. Left: the `data` property (its name)
 and the grid's `rowKey`.
 
 **✅ Will, 2026-10-12 — all my picks:** A — the property is `data`.
+
+**✅ Done 2026-10-12.** Every component has `data`: setting it is `populate()`,
+reading it gives what was last given, and a value set before the element
+upgrades is kept and drawn. With the boolean half and `rowKey`, 211 is whole.
+`T-false-is-off`
 
 ### `[x]` ✅ 215 — Trusted Types and a strict CSP
 

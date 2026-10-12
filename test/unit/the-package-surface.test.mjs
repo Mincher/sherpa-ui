@@ -37,8 +37,19 @@ test('one component imported with .js: Node finds the file, TypeScript its types
 });
 
 test('without .js, Node and TypeScript BOTH refuse it — never types for a file the page cannot load', () => {
-  assert.equal(inNode(BUTTON), null);
+  // Node may map it to a path; there is no file there, so its import fails.
+  const at = inNode(BUTTON);
+  assert.ok(at === null || !existsSync(at), `${BUTTON} loads ${at}`);
   for (const mode of ['bundler', 'nodenext']) assert.equal(inTypes(BUTTON, mode), null, mode);
+});
+
+/* The SHORT name, by Will's ruling (TODO 209): `sherpa-ui/components/button`. */
+test('one component by its short name: Node finds the file, TypeScript its types', () => {
+  assert.equal(inNode('sherpa-ui/components/button'), `${ROOT}dist/components/sherpa-button/sherpa-button.js`);
+  assert.equal(inNode('sherpa-ui/components/data-grid'), `${ROOT}dist/components/sherpa-data-grid/sherpa-data-grid.js`);
+  for (const mode of ['bundler', 'nodenext']) {
+    assert.equal(inTypes('sherpa-ui/components/button', mode), `${ROOT}dist/components/sherpa-button/sherpa-button.d.ts`, mode);
+  }
 });
 
 test('tools can read the manifest', () => {

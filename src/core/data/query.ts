@@ -45,6 +45,9 @@ export interface ScopeQuery {
   /** The ONLY bound components this scope narrows — a legend's own chart.
    *  Absent, it narrows every one. TRAP T-a-component-part-narrows-one-component */
   narrows?: string[];
+  /** The View's only: the scope each field it holds came UP from, so "Return to"
+   *  outlives a reload. TODO 235 · TRAP T-send-to-view-filters */
+  from?: Record<string, string>;
   /** How this scope arranges its rows. One scope on a source says it. */
   sort?: SortSpec[];
   group?: string | null;

@@ -1188,13 +1188,16 @@ down: Will, TODO 158.
 
 **The scope it came UP from is a RETURN** (Will, 2026-10-12, TODO 234). The
 source marks that entry of `sendTo` with `origin`, and the panel words it
-"Return to X" and lists it first, apart from the other scopes. It is known
-for the session only; after a reload every row reads "Send to", as above.
+"Return to X" and lists it first, apart from the other scopes. The source
+keeps it IN the Query — the View scope's `from` — so the kept Query and a
+View's draft carry it through a reload (TODO 235); sent back down, it is
+forgotten.
 
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/send-down.test.mjs`
+- Site: `src/core/data/query.ts`
 
 ### T-a-condition-marks-every-match
 
@@ -16004,6 +16007,12 @@ Angular's `[attr.]` and Svelte all write `data-x={false}` as the string
 declared `type: 'boolean'` prop set to `"false"`, before the first render and
 after. Only DECLARED booleans: a string prop keeps `"false"` as its value, and
 an attribute still in `observed` is not covered until 195 declares it.
+
+The same item gives `populate()` a PROPERTY, `data`, on every component: React
+19, Vue and Svelte bind a property and cannot call a method. It reads what was
+last given; set before the element upgrades, the base class keeps it
+(`#upgradeProperties`) and draws it. And the grid's `key`, which React and Vue
+keep for themselves, is also `rowKey`.
 
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `test/e2e/reforged-framework-binding.spec.ts`
