@@ -1082,6 +1082,8 @@ export class SherpaMenu extends SherpaElement {
     const dates = this.#calendarValues();
     if (dates) return dates;
     if (this.#heldValues) return [...this.#heldValues];
+    // Not stamped yet: its items' own picks. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp
+    if (!this.#stamped && this.#items.length) return this.#items.filter((item) => item.selected).map((item) => item.value);
     return this.#inputs()
       .filter((i) => i.checked)
       .map((i) => i.value);
@@ -1222,6 +1224,8 @@ export class SherpaMenu extends SherpaElement {
 
   /** The items last given. Kept, so a late render can still stamp them. */
   #items: MenuItem[] = [];
+  /** Its items have been drawn as rows at least once. */
+  #stamped = false;
 
   /**
    * The values the other answers LEAVE, as value keys — its host's, from the
@@ -1335,6 +1339,7 @@ export class SherpaMenu extends SherpaElement {
     /* FIRST, keeping whatever the caller put below — in practice a Remove
        action, which a chip appends after this. */
     this.prepend(...out);
+    this.#stamped = true;
     this.#markPresent();
 
     /* SAY SO. A host reads its own face off the menu's values, and pre-ticked

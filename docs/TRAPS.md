@@ -1357,7 +1357,10 @@ draws. Once drawn, its rows stay the live answer, because a drill MOVES them
 into another menu (`T-drill-moves-not-clones`). The last write wins: items
 that name their own picks drop a held one. `sherpa-quick-filter` sets its
 picks THROUGH the menu, so they are held there too, and holds its own
-`valueLabel` until it draws.
+`valueLabel` until it draws. `sherpa-quick-filter-toolbar` holds `values`,
+`setChipValues`, `setChipReading` and `supersede` given before `populate()`
+drew a chip, and `#render()` replays them in order; it keeps the last
+`drawResults` for rebuilt chips.
 
 - Site: `src/components/sherpa-prompt-composer/sherpa-prompt-composer.ts`
 - Site: `test/e2e/reforged-prompt-composer.spec.ts`
@@ -1365,6 +1368,8 @@ picks THROUGH the menu, so they are held there too, and holds its own
 - Site: `test/e2e/reforged-menu-state-first.spec.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `test/e2e/reforged-quick-filter-state-first.spec.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar-state-first.spec.ts`
 
 ### T-a-value-is-data-the-ticks-are-drawn
 
@@ -11023,6 +11028,12 @@ await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
 
 After: `[["status",4,false],["plan",4,false],["tier",4,false],["owner",4,false]]`.
 
+**The root, fixed 2026-10-12 (TODO 113):** a menu that has not stamped yet
+answers `values` from its items' own `selected`, and the bar asks the MENU for
+a chip's picks instead of reading `input:checked` itself. So a rebuilt bar
+reads its picks in the same task. The waits above are older than this, and
+some may now be removable — each needs its own proof.
+
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
 ---
@@ -11036,6 +11047,8 @@ for the menu's own `rendered` and one frame after it, and a later check
 cancels an earlier one.
 
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
+- Site: `test/e2e/reforged-quick-filter-toolbar-state-first.spec.ts`
 
 ### T-equals-answers-with-the-fields-own-values
 

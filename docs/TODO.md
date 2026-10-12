@@ -526,9 +526,18 @@ own picks are newer than held ones. The chip sets its picks THROUGH the menu
 — a borrowed menu's and an unstamped one's too — and holds its `valueLabel`.
 A hold, not a data copy (`T-a-value-before-the-first-render-is-held`).
 
+**✅ Toolbar done 2026-10-12.** It holds `values`, `setChipValues`,
+`setChipReading` and `supersede` given before `populate()` drew a chip, and
+`#render()` replays them in order; `values` and `superseded` read the held
+steers back; the last `drawResults` reaches rebuilt chips. And the ROOT of
+`T-a-rebuilt-bar-reads-empty-until-its-menus-stamp`: a menu that has not
+stamped answers from its items' `selected`, and the bar asks the menu for a
+chip's picks rather than reading `input:checked`. A rebuilt bar now reads its
+picks in the same task.
+
 **Left:**
-- the toolbar — `values`, `setChipValues`, `setChipReading` and `supersede`
-  before `populate()` find no chips; hold them by id for `#render()`;
+- the waits that root made redundant — six `#settled()` sites in the toolbar
+  and `#pendingAnswers` in `readings`; each removal needs its own proof;
 - the panel — with 89;
 - nav, nav-item, notifications and file-upload — the 09-29 sweep named them
   "mixed", and they were never probed; one probe each, or record them clean;

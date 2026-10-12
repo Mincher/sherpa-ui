@@ -469,6 +469,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** ON chips' constraints by id. TRAP T-values-reports-on-chips-in-one-shape — always an array. */
   get values(): Record<string, string[]> {
+    if (!this.#chips().length) return this.#heldValues();
     const out: Record<string, string[]> = {};
     for (const chip of this.#chips()) {
       if (!chip.hasAttribute('data-menu')) continue;
@@ -489,6 +490,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** Set every chip from a view definition. REPLACES the whole set, and is SILENT. */
   set values(next: Record<string, readonly string[]>) {
+    // The WHOLE set, so it replaces every steer held before it.
+    if (!this.#chips().length) {
+      this.#held = { values: { ...next }, chips: new Map(), ...(this.#held.supersede ? { supersede: this.#held.supersede } : {}) };
+      return;
+    }
     for (const chip of this.#chips()) {
       const id = chip.dataset['id'];
       // A saved filter is a toggle: its menu holds no picks to set.
@@ -526,6 +532,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   setChipValues(id: string, picks: readonly string[] | undefined): void {
     if (picks === undefined) return;
+    if (!this.#chips().length) {
+      this.#held.chips.set(id, { picks: [...picks] });
+      return;
+    }
     for (const chip of this.#chips()) {
       if (chip.dataset['id'] !== id || !chip.hasAttribute('data-menu')) continue;
       /* `values = []` unticks every row and re-derives the face — the badge
@@ -559,6 +569,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * TRAP T-a-conditioned-chip-answers-with-its-clause
    */
   setChipReading(id: string, reading: FieldReading): void {
+    if (!this.#chips().length) {
+      this.#held.chips.set(id, { reading: { ...reading } });
+      return;
+    }
     // The CHIP draws it: it knows what answers it. TRAP T-a-chip-says-its-own-answer
     const chip = this.#chips().find((c) => c.dataset['id'] === id && c.hasAttribute('data-menu'));
     if (chip) chip.reading = reading;
@@ -591,6 +605,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * with none shows no number. Will, TODO 60. TRAP T-a-chip-counts-its-own-results
    */
   drawResults(results: Readonly<Record<string, number>>): void {
+    this.#results = results;
     for (const chip of this.#chips()) {
       const id = chip.dataset['id'] ?? '';
       const field = this.#filters.find((f) => f.id === id)?.field ?? id;
@@ -609,6 +624,27 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
   /** What each field's other answers leave, as the source last said. */
   #present: Readonly<Record<string, readonly string[]>> = {};
+  /** Each chip's results, as the source last said — a rebuilt chip is given them. */
+  #results: Readonly<Record<string, number>> = {};
+
+  /** Steers given before `populate()` drew a chip, for `#render()` to replay in
+   *  order. TRAP T-a-value-before-the-first-render-is-held */
+  #held: {
+    values?: Record<string, readonly string[]>;
+    chips: Map<string, { picks: readonly string[] } | { reading: FieldReading }>;
+    supersede?: { ids: readonly string[]; at?: string };
+  } = { chips: new Map() };
+
+  /** What `values` will report once the held steers land. */
+  #heldValues(): Record<string, string[]> {
+    const out = new Map(Object.entries(this.#held.values ?? {}).map(([id, picks]) => [id, picks.map(String)]));
+    for (const [id, steer] of this.#held.chips) {
+      const picks = 'picks' in steer ? steer.picks : steer.reading.suspended ? [] : steer.reading.picked ?? [];
+      out.set(id, picks.map(String));
+    }
+    for (const id of this.#held.supersede?.ids ?? []) out.delete(id);
+    return Object.fromEntries([...out].filter(([, picks]) => picks.length));
+  }
 
   /** One chip's menu, told what its field's other answers leave — and the
    *  chip itself greyed when every pick it holds is set aside (180). */
@@ -673,6 +709,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * TRAP T-a-superseded-chip-suspends-it-is-never-removed
    */
   supersede(ids: readonly string[], appliedAt?: string): void {
+    if (!this.#chips().length) {
+      this.#held.supersede = { ids: [...ids], ...(appliedAt ? { at: appliedAt } : {}) };
+      return;
+    }
     // By field or by id: a chip named for its question answers its def's field.
     const taken = new Set(ids.map((f) => this.#idOf(f)));
     for (const chip of this.#chips()) {
@@ -691,6 +731,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
   /** The ids this bar currently has suspended. */
   get superseded(): string[] {
+    if (!this.#chips().length) return [...this.#held.supersede?.ids ?? []];
     return this.#chips()
       .filter((c) => c.hasAttribute('data-superseded'))
       .map((c) => c.dataset['id'] ?? '')
@@ -713,12 +754,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const own = chip.querySelector<HTMLElement & { values: string[] }>('sherpa-menu[data-body]');
     if (own) return own.values;
 
-    // The MENU's rows, through the chip's own getter — never a DOM query here.
-    const held = (chip as ChipEl & { menu?: HTMLElement }).menu ?? chip;
-    // NON_VALUE_ROWS names the rows that are not picks.
-    return Array.from(held.querySelectorAll<HTMLInputElement>('input:checked'))
-      .filter((i) => !i.closest(NON_VALUE_ROWS))
-      .map((i) => i.value);
+    /* THE MENU answers, through the chip's own getter: its rows, or its items
+       before they stamp. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */
+    const menu = (chip as ChipEl & { menu?: (HTMLElement & { values?: string[] }) | null }).menu;
+    return [...menu?.values ?? []];
   }
 
   /** The filter chips in the run — not Group, Sort or More. */
@@ -795,6 +834,16 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
 
     for (const [id, reading] of Object.entries(kept)) this.#keepAnswer(id, reading);
+    // Then what was steered before there were chips, and the results last drawn.
+    const held = this.#held;
+    this.#held = { chips: new Map() };
+    if (held.values) this.values = held.values;
+    for (const [id, steer] of held.chips) {
+      if ('picks' in steer) this.setChipValues(id, steer.picks);
+      else this.setChipReading(id, steer.reading);
+    }
+    if (held.supersede) this.supersede(held.supersede.ids, held.supersede.at);
+    this.drawResults(this.#results);
 
     /* THE ADD MENU LISTS WHAT IS HELD, so it follows the run. `populate()` is
        deferred, so a host calling `available()` first had nothing to tick.
