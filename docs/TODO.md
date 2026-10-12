@@ -89,7 +89,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | c6 | 215 | Trusted Types and a strict CSP: one policy for the five HTML sinks; the calendar's inline styles into CSS | foundation |
 | ⬜ | c7 | 220 | Weight per component, gated: JS and fetched CSS per entry may only fall, and no app module in a component's graph | tooling |
 | ✅ | c8 | 226 | Docs and agent text, round 2: CLAUDE.md on the shared sheets and the provider, three Fires blocks, the MCP's dead tokens and "Rule 9", the old def flow | docs |
-| ⬜ | c9 | 227 | Sherpa Demos, round 2: a refused save is silent; seed lists kept twice; "Items per page" does nothing; `settled()` for its 62 waits | bug |
+| 🚧 | c9 | 227 | Sherpa Demos, round 2: a refused save is silent; seed lists kept twice; "Items per page" does nothing; `settled()` for its 62 waits | bug |
 | ❓ | c10 | 218 | Framework fixtures — measure, never infer: Vite + React 19 and 18, Next, Vue, Angular, SvelteKit, webpack, a CDN page, a CSP page | tooling |
 | ⬜ | c11 | 195 | The spec becomes the whole contract: props only, slots, `populate()` shape, typed events; a usage gate | tooling |
 | ❓ | c12 | 210 | Framework typings from the manifest: the tag map, React 19 JSX, Vue and Svelte types, editor data — after 195 | tooling |
@@ -1730,7 +1730,7 @@ dead `readDoc` is gone; the skill's description says it is out of date, and
 its four dead links and its `@fires` line are fixed; the README links what the
 package does not ship, and `package.json` has a `repository`.
 
-### `[ ]` 227 — Sherpa Demos, round 2
+### `[~]` 227 — Sherpa Demos, round 2
 
 - A refused or invalid save (a taken email, the schema) is an unhandled
   rejection: the dialog stays open, no toast. `T-a-failed-mutation-must-reach-the-reader`.
@@ -1740,6 +1740,13 @@ package does not ship, and `package.json` has a `repository`.
 - `dashboard.js` declares a `provider` it never uses.
 - 30 `whenDefined` calls in `app/` and 32 `waitForTimeout` in `test/`, and 0
   uses of the `settled()` that 189 shipped. After 225.
+
+**✅ The first four, done 2026-10-12** (Demos `66a7905`): a refused save shows
+a critical toast with its reason and keeps the dialog open; the two lists live
+once, in `seed-lists.js`; Items per page keeps `/grid/pageSize` and Records
+pages by it; the unused provider is gone. **Left:** the 62 waits — each needs
+reading, as a `whenDefined` may be there for a reason `settled()` does not
+cover.
 
 ### `[ ]` 218 — Framework fixtures: measure, never infer
 
