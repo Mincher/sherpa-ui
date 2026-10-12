@@ -218,6 +218,7 @@ export class SherpaMenu extends SherpaElement {
     this.$('.body-range-switch')?.addEventListener('change', this.#onRangeSwitch);
     this.$('.body-op')?.addEventListener('change', this.#onBodyOp);
     this.$('.body-number')?.addEventListener('change', this.#onBodyChange);
+    this.$('.body-number')?.addEventListener('input', this.#onBodyChange);
     this.addEventListener('click', this.#onClick);
     this.addEventListener('click', this.#onGapClick);
     // A row with a child menu opens it on a rest, or ArrowRight. TRAP T-a-row-opens-its-child-menu
@@ -246,6 +247,8 @@ export class SherpaMenu extends SherpaElement {
     const region = this.$('.condition-rows');
     region?.addEventListener('change', this.#onCondition);
     region?.addEventListener('input', this.#onCondition);
+    region?.addEventListener('change', this.#passOn);
+    region?.addEventListener('input', this.#passOn);
     this.$('.use-advanced')?.addEventListener('button-click', this.#onModeSwitch);
     this.$('.add-condition')?.addEventListener('click', this.#onAddCondition);
     region?.addEventListener('click', this.#onDropCondition);
@@ -1797,20 +1800,20 @@ export class SherpaMenu extends SherpaElement {
     this.#report();
   };
 
-  /** The number field or slider changed. It is in THIS shadow root, so the host
-   *  hears nothing unless the menu passes it on — as a row's change reaches it.
-   *  TRAP T-native-change-stops-at-the-host */
+  /** The number field or slider changed. */
   #onBodyChange = (event: Event): void => {
     const from = event.target as Element;
     if (!from.matches('.body-number-one, .body-number-range')) return;
-    /* The slider's own change is composed and already crosses. The FIELD's is
-       its own `{ value }`, which is not the menu's to pass on: it stops here,
-       and the menu sends a plain one, as a row's is. */
-    if (from.matches('.body-number-one')) {
-      event.stopPropagation();
-      this.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-    this.#report();
+    this.#passOn(event);
+    if (event.type === 'change') this.#report();
+  };
+
+  /** A PART's `input` or `change` stops at this host, so the menu passes a
+   *  plain one on — as a row's reaches it. A committing menu's host reads its
+   *  draft from it. TRAP T-native-change-stops-at-the-host */
+  #passOn = (event: Event): void => {
+    event.stopPropagation();
+    this.dispatchEvent(new Event(event.type, { bubbles: true }));
   };
 
   /** Report the values — or, in a COMMITTING menu, hold them as a DRAFT until Apply. */

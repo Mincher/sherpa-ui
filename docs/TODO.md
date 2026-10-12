@@ -94,7 +94,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | c10 | 218 | Framework fixtures — measure, never infer: Vite + React 19 and 18, Next, Vue, Angular, SvelteKit, webpack, a CDN page, a CSP page | tooling |
 | ✅ | c11 | 195 | The spec becomes the whole contract: props only, slots, `populate()` shape, typed events; a usage gate | tooling |
 | ✅ | c12 | 210 | Framework typings from the manifest: the tag map, React 19 JSX, Vue and Svelte types, editor data — after 195 | tooling |
-| ⬜ | c13 | 213 | Only a component's OWN events leave it: an inner `button-click` stops at its host | foundation |
+| ✅ | c13 | 213 | Only a component's OWN events leave it: an inner `button-click` stops at its host | foundation |
 | ⬜ | c14 | 212 | Markup paths for the list components — tabs, breadcrumbs, a select's options, key-value pairs — so plain HTML and React 18 can fill them | feature |
 | ⬜ | c15 | 214 | Forms complete: `<fieldset disabled>`, reset on every control, and the five controls that submit nothing | foundation |
 | ⬜ | c16 | 208 | The text in the JS, not fetched: templates and sheets inline at build, URLs only in a dev build — with 199 | refactor |
@@ -1895,7 +1895,7 @@ writes `dist/types/`: the tag map, per-element event maps, React 19 JSX
 (attributes, properties, `on<event>`), Vue `GlobalComponents`, Svelte
 elements, VS Code custom data and web-types. No runtime dependency.
 
-### `[ ]` 213 — Only a component's own events leave it
+### `[x]` ✅ 213 — Only a component's own events leave it
 
 An inner `<sherpa-button>`'s composed `button-click` leaves its composite with
 the composite as its target. `sherpa-chip` stops it; `sherpa-toast`,
@@ -1909,6 +1909,14 @@ leak.
 filtering by `event.target`. My pick: A.
 
 **✅ Will, 2026-10-12 — all my picks:** A — each inner event stops at its host.
+
+**✅ Done 2026-10-12.** `emit()` from a part inside a Sherpa composite's
+shadow root stops at the composite's host, after the composite's own
+listeners. No Demos listener relied on a leak; one component did — the menu,
+whose number field, slider and condition rows are parts, so it passes on a
+plain `input` and `change` for each now. The sweep `reforged-only-own-events.spec.ts` presses every
+button in every bare component: 24 leaks without the stopper, 0 with it.
+`T-an-inner-event-stops-at-its-host`
 
 ### `[ ]` 212 — Markup paths for the list components
 

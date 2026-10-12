@@ -644,7 +644,16 @@ export abstract class SherpaElement extends Base {
 
   /** Dispatch a bubbling, composed CustomEvent — its detail `{}` when none is given, never null. */
   protected emit<T = unknown>(name: string, detail?: T): void {
-    this.dispatchEvent(new CustomEvent(name, { detail: detail ?? {}, bubbles: true, composed: true }));
+    const event = new CustomEvent(name, { detail: detail ?? {}, bubbles: true, composed: true });
+    /* A PART's event is its composite's to hear, and stops at the composite's
+       host — the last listener there — so a page hears a component's own
+       events only. TRAP T-an-inner-event-stops-at-its-host */
+    const root = this.getRootNode();
+    const host = root instanceof ShadowRoot && root.host instanceof SherpaElement ? root.host : null;
+    const stop = (e: Event): void => { if (e === event) e.stopPropagation(); };
+    host?.addEventListener(name, stop);
+    this.dispatchEvent(event);
+    host?.removeEventListener(name, stop);
   }
 
   /**

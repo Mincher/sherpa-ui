@@ -630,6 +630,11 @@ Three more primitives exist for the same problem, all in use:
 
 ### Events
 
+**Only a component's OWN events leave it**: `emit()` from a part inside a
+composite's shadow DOM stops at the composite's host, after the composite's
+own listeners (TRAP `T-an-inner-event-stops-at-its-host`). To make a part's
+event public, the composite emits its own.
+
 Always `bubbles: true`. Add `composed: true` for events that must cross shadow DOM boundaries to application code:
 ```ts
 this.dispatchEvent(new CustomEvent('card-click', { bubbles: true, composed: true, detail: {} }));

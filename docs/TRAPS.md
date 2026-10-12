@@ -15556,6 +15556,32 @@ EXTENDS the default rather than replacing it.
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `test/e2e/reforged-templater.spec.ts`
 
+### T-an-inner-event-stops-at-its-host
+
+**A page hears a component's OWN events, never its parts'.** Every `emit()`
+is composed, so an inner `<sherpa-button>`'s `button-click` left its composite
+with the composite as its target: a page listening for `button-click` heard
+every app-header action and every container Retry. Will, TODO 213, A.
+
+So `emit()` from a part inside a Sherpa composite's shadow root adds a
+stopper on that composite's host just before it dispatches. The stopper is
+the LAST listener there, so the composite's own listeners — and any a page
+put on the host itself — still hear it; then it goes no further. A composite
+that wants a part's event to be its public API says so by emitting its own.
+
+A slotted child is the page's markup, not a part, so its events pass through
+as before. The menu was the one component that relied on the leak: its
+number field, slider and condition rows are parts, and a committing menu's
+host — the filter panel — reads its draft from their `change`. So the menu
+passes on a plain `input` and `change` for each (`#passOn`). Found by the
+Demos test that flips a panel field to "is not".
+
+Measured by `reforged-only-own-events.spec.ts`, which presses every button in
+every bare component: 24 leaks without the stopper, 0 with it.
+
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `test/e2e/reforged-only-own-events.spec.ts`
+
 ### T-markup-is-checked-against-the-spec
 
 **A typo in an attribute does nothing and says nothing**, and neither does an
