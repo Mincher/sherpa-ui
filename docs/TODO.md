@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**58 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
+**59 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -75,7 +75,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 16t3 | 206 | Firefox: "closing the dialog fires a composed close event" sees no event, 1 to 2 runs in 10 | bug |
 | ⬜ | 16t4 | 228 | The donut chart's legend lets EVERY item be switched off; one must stay on — and a value filter limiting greyed out may not be counted | bug |
 | ⬜ | 16t5 | 229 | The legend's switched-off items are lost on a page refresh | bug |
-| ⬜ | 16t6 | 230 | Reset all filters dialog: "Save filters before reset" sits in a grey border; it is plain form content | quick |
+| ⬜ | 16t7 | 231 | "Reset all to default" and "Reset" are inactive while the filters already ARE the View's default | bug |
+| ❓ | 16t6 | 230 | Reset all filters dialog: "Save filters before reset" sits in a grey border; it is plain form content | quick |
 | | | | **C2 — Consumers: frameworks, apps and agents** (planned 2026-10-12) | |
 | ✅ | c1 | 225 | `settled()` hangs on an infinite animation — a loader, an indeterminate bar — and waits on the whole document when given a part | bug |
 | ✅ | c2 | 224 | Silent failures, round 2: a linked View drops its report; View gaps skip `onReport`; `open()` hangs on an undefined tag; a 200 that is not the file is stamped; and five more | bug |
@@ -1476,12 +1477,30 @@ Will, 2026-10-12: *"They don't retain state on page refresh."* A legend's
 toggles are a filter, so they belong in the kept Query or the View's draft,
 as every other filter does (`T-a-view-keeps-a-draft`).
 
+### `[ ]` 231 — "Reset all to default" and "Reset" are inactive at the default
+
+Will, 2026-10-12: *"Reset all to default shouldn't be an active item if the
+filters are already at the view default. Same goes for Reset, too,
+actually."* The provider knows the View's own answer (`resetView()` puts it
+back), so it can say whether anything differs; the menu items and the Reset
+buttons follow it — in the panel and in the bar.
+
 ### `[ ]` 230 — The Reset all filters dialog: its switch is plain form content
 
 Will, 2026-10-12: *"The 'Save filters before reset' in the Reset All Filters
 dialog is contained within a grey border. The switch, label, and description
 should just be form content in the content area of the dialog. No need to
 encapsulate them in any custom way."*
+
+The border is the `sherpa-list` around one `sherpa-list-item` (Sherpa Demos
+`app/index.html`, `#reset-confirm`). `sherpa-switch` has no label of its own,
+and the app has no stylesheet — so plain form content needs one of:
+
+**❓ Will:** A `sherpa-switch` takes `data-label` and `data-description`, drawn
+as `sherpa-select-checkbox` draws its own — any form or dialog, in any
+framework, needs no CSS; it wants a matching Figma variant. B in this dialog
+only, a native `<label>` holding the text and the switch, laid out by a few
+inline styles. My pick: A.
 
 ---
 
