@@ -13024,6 +13024,14 @@ lie the rule exists to prevent.
 A roll-up row counts as the categories it FOLDED, never as its own "Other"
 label, which is a value of nothing.
 
+**"On" means it DRAWS, for a click (2026-10-12, TODO 228).** A row the other
+answers rule out ("Limit to matching filters") is greyed and cannot be
+pressed, and a row a filter emptied draws nothing — but both counted as on, so
+a reader could switch off every row that drew and leave an empty chart. The
+floor counts only rows that draw; when none does, nothing is held. A HOST's
+write keeps the old floor — only every row off is refused — because a chip
+over the same field may pick a value no row has now, and the legend follows it.
+
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `test/e2e/reforged-chart-legend.spec.ts`
 

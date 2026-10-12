@@ -67,6 +67,11 @@ export class SherpaChartLegend extends SherpaElement {
   }
   /** What the other filters leave; `null` is everything. */
   #present: Set<string> | null = null;
+  /** It draws something when on: a row the other answers rule out, or a
+   *  filter emptied, does not — so it does not keep the chart from going empty. */
+  #draws(label: string): boolean {
+    return (!this.#present || this.#present.has(label)) && Number(this.#seen.get(label)?.value ?? 1) !== 0;
+  }
   /**
    * The rows toggled OFF, by LABEL. By label and not by index because a
    * re-populate re-orders and re-counts: a filter that removed a category
@@ -144,8 +149,8 @@ export class SherpaChartLegend extends SherpaElement {
   set off(next: readonly string[]) {
     const every = this.#everyLabel();
     const want = new Set(next);
-    /* The same floor as a click, because a caller can reach the same state.
-       Every row off is refused; the legend keeps what it had.
+    /* Every row off is refused; the legend keeps what it had. A host's pick is
+       its own otherwise — a chip may pick a value no row has now.
        TRAP T-a-legend-keeps-one-row-on */
     if (every.length && every.every((l) => want.has(l))) return;
     this.#off = want;
@@ -335,8 +340,8 @@ export class SherpaChartLegend extends SherpaElement {
        TRAP T-a-legend-keeps-one-row-on */
     if (!active) {
       const going = new Set(labels.filter((l): l is string => l != null));
-      const left = this.#everyLabel().filter((l) => !this.#off.has(l) && !going.has(l));
-      if (!left.length) return;
+      const draws = this.#everyLabel().filter((l) => !this.#off.has(l) && this.#draws(l));
+      if (draws.length && draws.every((l) => going.has(l))) return;
     }
 
     // aria-pressed is both the accessible state and the CSS hook for dimming.

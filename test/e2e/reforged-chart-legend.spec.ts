@@ -647,6 +647,51 @@ test('the LAST active row cannot be switched off', async ({ page }) => {
   expect(r.set).toEqual(['A', 'B']);
 });
 
+/** A row the other answers rule out is OFF for that floor: it draws nothing and
+ *  cannot be pressed (TODO 228). TRAP T-a-legend-keeps-one-row-on */
+test('the last AVAILABLE row stays on — a ruled-out row does not count as on', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-chart-legend') as HTMLElement & {
+      rendered?: Promise<void>; populate?: (d: unknown) => void; off?: string[]; present?: string[] | null;
+    };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.populate!([{ label: 'A' }, { label: 'B' }, { label: 'C' }]);
+    el.present = ['A', 'B'];
+    await window.__settled();
+    const items = (): HTMLElement[] => [...el.shadowRoot!.querySelectorAll<HTMLElement>('.item')];
+    items()[0]!.click(); await window.__settled();
+    // B is the last row that is on AND available — refused.
+    items()[1]!.click(); await window.__settled();
+    const clicked = [...el.off!];
+    // A HOST's pick is its own: only every row off is refused.
+    el.off = ['A', 'B'];
+    await window.__settled();
+    return { clicked, set: [...el.off!] };
+  });
+  expect(r).toEqual({ clicked: ['A'], set: ['A', 'B'] });
+});
+
+test('an EMPTIED row does not count as on either; a legend of empties is not stuck', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-chart-legend') as HTMLElement & {
+      rendered?: Promise<void>; populate?: (d: unknown) => void; off?: string[];
+    };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const items = (): HTMLElement[] => [...el.shadowRoot!.querySelectorAll<HTMLElement>('.item')];
+    el.populate!([{ label: 'A', value: 4 }, { label: 'B', value: 0 }]);
+    await window.__settled();
+    items()[0]!.click(); await window.__settled();
+    const lastDrawn = [...el.off!];
+    el.populate!([{ label: 'A', value: 0 }, { label: 'B', value: 0 }]);
+    await window.__settled();
+    items()[0]!.click(); await window.__settled();
+    return { lastDrawn, empties: [...el.off!] };
+  });
+  expect(r).toEqual({ lastDrawn: [], empties: ['A'] });
+});
+
 /**
  * A HORIZONTAL LEGEND IS THREE BY TWO.
  *

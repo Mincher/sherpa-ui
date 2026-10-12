@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**59 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
+**58 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -73,7 +73,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ❓ | 16t1 | 203 | sherpa-ui: 135 of 136 specs load the page without the pointer park — one fixture, as in Demos? | bug |
 | ⬜ | 16t2 | 204 | WebKit: a `page.reload` in the Demos nav favourites spec never fires `load` — 1 run in 80 | bug |
 | ⬜ | 16t3 | 206 | Firefox: "closing the dialog fires a composed close event" sees no event, 1 to 2 runs in 10 | bug |
-| ⬜ | 16t4 | 228 | The donut chart's legend lets EVERY item be switched off; one must stay on — and a value filter limiting greyed out may not be counted | bug |
+| ✅ | 16t4 | 228 | The donut chart's legend lets EVERY item be switched off; one must stay on — and a value filter limiting greyed out may not be counted | bug |
 | ⬜ | 16t5 | 229 | The legend's switched-off items are lost on a page refresh | bug |
 | ⬜ | 16t7 | 231 | "Reset all to default" and "Reset" are inactive while the filters already ARE the View's default | bug |
 | ❓ | 16t6 | 230 | Reset all filters dialog: "Save filters before reset" sits in a grey border; it is plain form content | quick |
@@ -1462,7 +1462,7 @@ the late close that `T-a-reopened-dialog-hears-a-late-close` drops.
 
 ---
 
-### `[ ]` 228 — BUG: every item in the donut chart's legend can be switched off
+### `[x]` ✅ 228 — BUG: every item in the donut chart's legend can be switched off
 
 Will, 2026-10-12: *"The donut chart allows all legend items to be toggled
 off. There should always be at least 1 active legend item. Perhaps it isn't
@@ -1470,6 +1470,13 @@ taking into account items set to inactive by filter limiting?"* A legend
 toggle is a FILTER (`T-legend-toggle-is-a-filter`), so the last item on must
 refuse to go off — and an item greyed by "Limit to matching filters" (180) is
 already off for this count.
+
+**✅ Done 2026-10-12 — your guess was right.** The floor counted a greyed,
+ruled-out row as on, though it draws nothing and cannot be pressed. It counts
+only rows that DRAW now — not ruled out, not emptied to 0 by a filter — and
+holds nothing when none does. A host's write keeps the old floor (only every
+row off is refused): a chip over the same field may pick a value no row has
+now. `T-a-legend-keeps-one-row-on`
 
 ### `[ ]` 229 — BUG: the legend's switched-off items are lost on a refresh
 

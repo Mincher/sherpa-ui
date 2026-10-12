@@ -9,7 +9,7 @@
   "src/components/sherpa-calendar-cell/sherpa-calendar-cell.ts": 56,
   "src/components/sherpa-calendar/sherpa-calendar.ts": 530,
   "src/components/sherpa-callout/sherpa-callout.ts": 40,
-  "src/components/sherpa-chart-legend/sherpa-chart-legend.ts": 380,
+  "src/components/sherpa-chart-legend/sherpa-chart-legend.ts": 385,
   "src/components/sherpa-chat-message/sherpa-chat-message.ts": 48,
   "src/components/sherpa-chip/sherpa-chip.ts": 43,
   "src/components/sherpa-code-block/sherpa-code-block.ts": 84,
