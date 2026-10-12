@@ -237,9 +237,18 @@
     },
     {
       "$type": "prop",
-      "name": "data-column-filters",
+      "name": "data-bounds",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-column-filters",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "a filter button in each column heading"
     },
@@ -262,8 +271,9 @@
     {
       "$type": "prop",
       "name": "data-filterable",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "show a secondary header row of filter inputs"
     },
@@ -274,6 +284,14 @@
       "observed": true,
       "kind": "style",
       "description": "group rows by this column"
+    },
+    {
+      "$type": "prop",
+      "name": "data-locked",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
     },
     {
       "$type": "prop",
@@ -346,10 +364,21 @@
     {
       "$type": "prop",
       "name": "data-total-pages",
-      "type": "string",
-      "observed": false,
+      "type": "number",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "how many pages the host believes there are. READ ONLY, and only to avoid re-reporting a count that has not changed — the grid never writes it. Not observed: a change to it is the ECHO of the grid's own report, and re-rendering on it would be a loop. JS API — what a person can do by clicking, a caller can do by calling. This is what lets a SAVED VIEW, a preset or an agent configure a grid: setColumnFilter(field, clause)  set one column's filter from a store FilterClause columnClause(field)            read it back — the same clause, for saving suspendColumnFilter(field, on) keep the clause but stop applying it clearColumnFilter(field?)      delete one, or all openColumnFilter(field, anchor) open that column's menu, anchored anywhere select(keys) / clearSelection() set the selection BY KEY (needs `key` in populate) actionsFor(count)              the actions that apply to a selection of that size — all of them for 1, only the `multi` ones for 2+, none for 0. A bulk toolbar reads this so it cannot disagree with the row menu selectedKeys / selectedRecords read it back"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "empty"
+    },
+    {
+      "$type": "slot",
+      "name": "no-matches"
     }
   ],
   "states": [

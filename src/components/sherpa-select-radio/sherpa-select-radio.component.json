@@ -56,7 +56,8 @@
       "$type": "prop",
       "name": "data-description",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "helper line below the label"
     },
@@ -64,7 +65,8 @@
       "$type": "prop",
       "name": "data-label",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "label text to the right of the dot (or default slot)"
     },
@@ -110,6 +112,12 @@
       "observed": false,
       "native": true,
       "description": "submitted value when selected"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": ""
     }
   ],
   "states": [

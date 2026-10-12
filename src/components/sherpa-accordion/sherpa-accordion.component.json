@@ -103,7 +103,8 @@
       "$type": "prop",
       "name": "data-description",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "— optional secondary line under the title (fallback to slotted [slot=description])"
     },
@@ -111,7 +112,8 @@
       "$type": "prop",
       "name": "data-heading",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "— the summary title (fallback to slotted [slot=heading])"
     },
@@ -119,7 +121,8 @@
       "$type": "prop",
       "name": "data-icon",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "— a glyph before the title: what the section holds"
     },
@@ -139,6 +142,28 @@
       "native": true,
       "default": false,
       "description": "— native boolean (current disclosure state; drives [open] visuals)"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "heading",
+      "description": "rich summary title (overrides data-heading)"
+    },
+    {
+      "$type": "slot",
+      "name": "description",
+      "description": "rich secondary line under the title (overrides data-description)"
+    },
+    {
+      "$type": "slot",
+      "name": "actions",
+      "description": "trailing controls in the summary row, before the chevron."
+    },
+    {
+      "$type": "slot",
+      "name": "",
+      "description": "the disclosure body"
     }
   ],
   "states": [

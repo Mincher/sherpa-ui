@@ -33,8 +33,9 @@
     {
       "$type": "prop",
       "name": "data-collapsed",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "present on a collapsed rail — hides the label, keeps the rule"
     },
@@ -42,7 +43,8 @@
       "$type": "prop",
       "name": "data-label",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "the section label text (rendered verbatim — author its case)"
     }

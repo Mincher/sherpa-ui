@@ -82,6 +82,18 @@
       "description": "— id of the currently active tab / panel"
     }
   ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "detail",
+      "description": "trailing content beside the tab strip (badges, actions)"
+    },
+    {
+      "$type": "slot",
+      "name": "",
+      "description": "the tab panels; each child should have data-tab=\"<id>\""
+    }
+  ],
   "states": [
     {
       "$type": "state",

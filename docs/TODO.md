@@ -92,7 +92,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | c8 | 226 | Docs and agent text, round 2: CLAUDE.md on the shared sheets and the provider, three Fires blocks, the MCP's dead tokens and "Rule 9", the old def flow | docs |
 | ✅ | c9 | 227 | Sherpa Demos, round 2: a refused save is silent; seed lists kept twice; "Items per page" does nothing; `settled()` for its 62 waits | bug |
 | ✅ | c10 | 218 | Framework fixtures — measure, never infer: Vite + React 19 and 18, Next, Vue, Angular, SvelteKit, webpack, a CDN page, a CSP page | tooling |
-| ⬜ | c11 | 195 | The spec becomes the whole contract: props only, slots, `populate()` shape, typed events; a usage gate | tooling |
+| 🚧 | c11 | 195 | The spec becomes the whole contract: props only, slots, `populate()` shape, typed events; a usage gate | tooling |
 | ✅ | c12 | 210 | Framework typings from the manifest: the tag map, React 19 JSX, Vue and Svelte types, editor data — after 195 | tooling |
 | ⬜ | c13 | 213 | Only a component's OWN events leave it: an inner `button-click` stops at its host | foundation |
 | ⬜ | c14 | 212 | Markup paths for the list components — tabs, breadcrumbs, a select's options, key-value pairs — so plain HTML and React 18 can fill them | feature |
@@ -3899,7 +3899,7 @@ After 190, so it teaches the contract. `docs/APP-GUIDE.md`, about 300 lines of s
 
 **✅ Will, 2026-10-12 — all my picks:** A (183 choice 1) — in sherpa-ui, beside `sherpa-router`.
 
-### `[ ]` 195 — The spec becomes the whole contract
+### `[~]` 195 — The spec becomes the whole contract
 
 Every observed `data-*` moves into `static props` and `check:props` checks membership; the generator reads types from props, fills `slots` (0 of 65 list them today), records the `populate()` shape and types event details; emit `HTMLElementTagNameMap` and `custom-elements.json`; a `check:usage` gate checks the Demos markup against the specs. `docs/CONSUMER-REVIEW.md` §3.9.
 
@@ -3920,6 +3920,18 @@ four families, then `check:props` tightened and `check:usage`. Size L.
    the library commit, and Demos runs it too; B Demos only. My pick: A.
 
 **✅ Will, 2026-10-12 — all my picks:** A and A — a new `kind: 'behaviour'`; sherpa-ui's hook runs `check:usage` on `../Sherpa Demos` when that folder is there.
+
+**Out, by Will's ruling on 218 (2026-10-12):** `HTMLElementTagNameMap` and
+`custom-elements.json` — framework typings, closed with 210.
+
+**🚧 Part 1, the tooling, 2026-10-12.** `kind: 'behaviour'` exists. The
+generator reads `static props` by TypeScript's parser (spreads and lookups
+resolve), so every declared prop is in its spec with the code's type, values
+and default — 66 props added, 96 types corrected — and is marked `declared`.
+`slots` is filled from the real `<slot>` tags, described by each `Slots:`
+block: 111 slots in 51 specs. **Left:** move the 135 observed `data-*` into
+`static props` (four families); the `populate()` shape; typed event details;
+`check:props` tightened; `check:usage`.
 
 ### `[ ]` 196 — One filter surface and a smaller DataSource
 

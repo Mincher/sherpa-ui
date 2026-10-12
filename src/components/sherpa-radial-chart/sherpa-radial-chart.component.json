@@ -90,7 +90,8 @@
       "$type": "prop",
       "name": "data-aggregate",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "count",
@@ -104,9 +105,31 @@
     },
     {
       "$type": "prop",
+      "name": "data-bands",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-bucket",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "values": [
+        "day",
+        "month",
+        "year"
+      ]
+    },
+    {
+      "$type": "prop",
       "name": "data-field",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "the number that aggregate reads"
     },
@@ -128,9 +151,26 @@
     },
     {
       "$type": "prop",
+      "name": "data-over-field",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-readings",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
       "name": "data-segment-field",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "ASKED of its provider: one slice per value of this field"
     },
@@ -169,6 +209,12 @@
         "pie"
       ],
       "description": "donut  | pie   (pie fills to the centre, no hole)"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "legend"
     }
   ],
   "states": [

@@ -100,8 +100,9 @@
     {
       "$type": "prop",
       "name": "data-no-leading-actions",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "— hide the two default leading buttons (attach + lab)"
     },
@@ -121,6 +122,13 @@
       "native": true,
       "default": false,
       "description": "— disables the input, leading buttons + send button"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "extras",
+      "description": "extra controls after the default leading buttons (reflects data-has-extras)"
     }
   ],
   "states": [

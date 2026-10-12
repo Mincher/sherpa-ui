@@ -82,23 +82,29 @@
       "$type": "prop",
       "name": "data-description",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "helper line under the title"
     },
     {
       "$type": "prop",
       "name": "data-footer",
-      "type": "string",
-      "observed": false,
+      "type": "enum",
+      "observed": true,
+      "declared": true,
       "kind": "style",
+      "values": [
+        "none"
+      ],
       "description": "none → hide the footer region entirely (CSS-only)"
     },
     {
       "$type": "prop",
       "name": "data-label",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "header title (used when no header slot is given)"
     },
@@ -106,11 +112,12 @@
       "$type": "prop",
       "name": "data-orientation",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
-        "vertical",
-        "horizontal"
+        "horizontal",
+        "vertical"
       ],
       "default": "vertical",
       "description": "vertical | horizontal (footer beside the body vs below; default vertical)"
@@ -161,6 +168,23 @@
       "observed": true,
       "native": true,
       "description": "submitted / reported value when selected"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "header",
+      "description": "header region (falls back to data-label / data-description)"
+    },
+    {
+      "$type": "slot",
+      "name": "",
+      "description": "the card body / content"
+    },
+    {
+      "$type": "slot",
+      "name": "footer",
+      "description": "footer region (falls back to the select controls)"
     }
   ],
   "states": [

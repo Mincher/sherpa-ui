@@ -74,7 +74,8 @@
       "$type": "prop",
       "name": "data-description",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "a helper line under the label"
     },
@@ -82,7 +83,8 @@
       "$type": "prop",
       "name": "data-label",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "its words, beside the track — a click on them toggles it, as on a checkbox"
     },

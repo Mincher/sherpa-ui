@@ -72,6 +72,14 @@
   "props": [
     {
       "$type": "prop",
+      "name": "data-dragging",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
       "name": "data-max-zoom",
       "type": "string",
       "observed": true,
@@ -91,16 +99,18 @@
     {
       "$type": "prop",
       "name": "data-no-minimap",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "no minimap"
     },
     {
       "$type": "prop",
       "name": "data-panning",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "written BY the canvas: the Pan tool is on, so a drag anywhere pans"
     },
@@ -111,6 +121,13 @@
       "observed": true,
       "kind": "style",
       "description": "the zoom, 1 is 100%; written BY the canvas as it zooms, and read when a host sets it"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "",
+      "description": "the content, placed on the canvas at its `--x` and `--y` (px)"
     }
   ],
   "states": [

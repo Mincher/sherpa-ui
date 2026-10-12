@@ -96,7 +96,8 @@
       "$type": "prop",
       "name": "data-language",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "a short language label shown in the header (e.g. \"bash\")"
     },
@@ -107,6 +108,12 @@
       "observed": true,
       "kind": "style",
       "description": "boolean — render a line-number gutter beside the code. Numbers derive from the code's line count; CSS-gated."
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": ""
     }
   ],
   "states": [

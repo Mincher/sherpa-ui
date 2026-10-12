@@ -16,16 +16,28 @@
     {
       "$type": "prop",
       "name": "data-col-count",
-      "type": "string",
-      "observed": false,
+      "type": "enum",
+      "observed": true,
+      "declared": true,
       "kind": "style",
+      "values": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "8",
+        "10",
+        "12"
+      ],
       "description": "the grid's column count (2|3|4|5|6|8|10|12); grid only"
     },
     {
       "$type": "prop",
       "name": "data-direction",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "row",
@@ -33,6 +45,12 @@
         "grid"
       ],
       "description": "row  | column | grid"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": ""
     }
   ],
   "states": [

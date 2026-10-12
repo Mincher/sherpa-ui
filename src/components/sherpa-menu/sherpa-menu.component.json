@@ -393,16 +393,18 @@
     {
       "$type": "prop",
       "name": "data-advanced",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "FILTER type only: this field offers Advanced conditions, so the mode button shows. OPT-IN: most fields are answered by ticking values, and a `Contains` box over a closed set of three is noise. TRAP T-conditions-are-opt-in-per-field"
     },
     {
       "$type": "prop",
       "name": "data-advanced-only",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "FILTER type only: Advanced conditions and NOTHING else. Implies data-advanced, opens in advanced mode and cannot leave it, and hides the switch — there is no list behind it. For a field whose values are a wall nobody ticks: 240 emails. TRAP T-a-filter-answers-by-values-conditions-or-both"
     },
@@ -420,6 +422,34 @@
     },
     {
       "$type": "prop",
+      "name": "data-available",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-body",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "values": [
+        "number",
+        "date"
+      ]
+    },
+    {
+      "$type": "prop",
+      "name": "data-bounds",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
       "name": "data-clearable",
       "type": "string",
       "observed": true,
@@ -429,10 +459,19 @@
     {
       "$type": "prop",
       "name": "data-commit",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "show the Apply / Cancel footer and DEFER changes until Apply"
+    },
+    {
+      "$type": "prop",
+      "name": "data-commit-fixed",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
     },
     {
       "$type": "prop",
@@ -446,7 +485,8 @@
       "$type": "prop",
       "name": "data-conditions",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "FILTER type only: a comma-separated op list ('eq,ne,contains') in place of the default text set."
     },
@@ -477,8 +517,9 @@
     {
       "$type": "prop",
       "name": "data-drill",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "the list has been replaced by a SUB-LIST — shows a back arrow and a breadcrumb in the header. Drilling IN PLACE rather than opening a second card means one box to position, nothing to close on a pointer crossing a gap, and no way for two cards to disagree about what is ticked."
     },
@@ -489,6 +530,14 @@
       "observed": true,
       "kind": "style",
       "description": "names the list that was replaced — the breadcrumb's text"
+    },
+    {
+      "$type": "prop",
+      "name": "data-from",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
     },
     {
       "$type": "prop",
@@ -503,30 +552,54 @@
       "name": "data-heading",
       "type": "string",
       "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "optional heading (rendered upper-case at 10/16)"
     },
     {
       "$type": "prop",
       "name": "data-inline",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "draw in the FLOW rather than the top layer — the same menu, always open, for a filter PANEL. The popover attribute is dropped, so Escape and outside-click no longer apply, and show()/hide() become no-ops. TRAP T-an-inline-menu-is-the-same-menu"
     },
     {
       "$type": "prop",
-      "name": "data-mode",
+      "name": "data-max",
       "type": "string",
       "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-min",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-mode",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
       "kind": "style",
+      "values": [
+        "simple",
+        "advanced"
+      ],
       "description": "FILTER type only: simple | advanced (Will's words). `simple` is a ticked list with a search; `advanced` is the And/Or condition rows. An Advanced button in the header moves between them. The old values default | custom | select | condition are read, and rewritten to the new ones. TRAP T-a-filter-menu-has-two-modes"
     },
     {
       "$type": "prop",
       "name": "data-no-select-all",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "a multi-select list with no Select all row — the Filters menu, where adding every filter at once is never the answer. Read when the items stamp."
     },
@@ -537,6 +610,14 @@
       "observed": true,
       "kind": "style",
       "description": "FILTER type only: which condition is picked. Defaults to `eq`. The FIRST row's op — a menu in condition mode holds many."
+    },
+    {
+      "$type": "prop",
+      "name": "data-range",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
     },
     {
       "$type": "prop",
@@ -557,8 +638,9 @@
     {
       "$type": "prop",
       "name": "data-saveable",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "show a \"Save filter\" button in the footer; it emits menu-select with value=\"save\". TRAP T-save-packs-the-fields-into-one-chip"
     },
@@ -574,21 +656,43 @@
       "$type": "prop",
       "name": "data-select",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
-        "multiple",
-        "single"
+        "single",
+        "multiple"
       ],
       "description": "multiple  | single (radio rows)"
     },
     {
       "$type": "prop",
-      "name": "data-takes",
+      "name": "data-step",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-takes",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
       "kind": "style",
+      "values": [
+        "list",
+        "text"
+      ],
       "description": "written BY the menu from data-op: list | text. CSS reads it to reveal the rows or the text box."
+    },
+    {
+      "$type": "prop",
+      "name": "data-to",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
     },
     {
       "$type": "prop",
@@ -619,6 +723,23 @@
       "native": true,
       "default": false,
       "description": "native-ish boolean: reflects/controls the popover"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "header",
+      "description": "controls ABOVE the heading (a calendar's month stepper)."
+    },
+    {
+      "$type": "slot",
+      "name": "",
+      "description": "the rows (labels with inputs, or buttons)."
+    },
+    {
+      "$type": "slot",
+      "name": "footer",
+      "description": "the host's own footer buttons, leading the footer row; the row shows once it is filled (a Find's Replace, Previous and Next)"
     }
   ],
   "states": [

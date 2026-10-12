@@ -11,7 +11,7 @@ export class SherpaToolbar extends SherpaElement {
   /* DECLARED: CSS-only, so the base class writes nothing. A `:host([data-x])`
      rule is a public API and belongs in one place. */
   static override props = {
-    'data-type': { type: 'enum', kind: 'style', values: ['bordered'] },
+    'data-type': { type: 'enum', kind: 'style', values: ['plain', 'bordered'] },
   } as const;
 }
 

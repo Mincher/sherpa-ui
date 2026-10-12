@@ -148,10 +148,11 @@ function compileCss(def) {
 // ── TS: class, observed, templateId, nested-event reemit ───────────────
 function compileTs(def, name, cls) {
   // `observed` is its own field. A spec written before it existed carries the
-  // old signal, where any kind but 'style' implied observation.
+  // old signal, where any kind but 'style' implied observation. A DECLARED prop
+  // is observed by the base class, so it is not in the class's own list.
   // TRAP T-kind-says-how-not-whether
   const observed = (def.props ?? [])
-    .filter((p) => (typeof p.observed === 'boolean' ? p.observed : p.kind !== 'style'))
+    .filter((p) => !p.declared && (typeof p.observed === 'boolean' ? p.observed : p.kind !== 'style'))
     .map((p) => p.name);
   const tmplProp = (def.props ?? []).find((p) => p.kind === 'template');
   // find reemit wiring from anatomy children

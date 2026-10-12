@@ -393,10 +393,22 @@
   "props": [
     {
       "$type": "prop",
-      "name": "data-type",
+      "name": "data-len",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-type",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
       "kind": "style",
+      "values": [
+        "bar"
+      ],
       "description": "— line  | bar (flat-topped columns)"
     },
     {

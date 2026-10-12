@@ -67,17 +67,28 @@
       "name": "data-empty",
       "type": "string",
       "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "empty-state message No events of its own — child rows emit item-click, which the list uses to keep a single current row."
     },
     {
       "$type": "prop",
       "name": "data-type",
-      "type": "string",
-      "observed": false,
+      "type": "enum",
+      "observed": true,
+      "declared": true,
       "kind": "style",
+      "values": [
+        "plain"
+      ],
       "default": "— dividers between rows",
       "description": "| bordered | plain (no dividers)"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": ""
     }
   ],
   "states": [

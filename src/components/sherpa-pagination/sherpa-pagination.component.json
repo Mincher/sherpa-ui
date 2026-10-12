@@ -143,6 +143,14 @@
   "props": [
     {
       "$type": "prop",
+      "name": "data-locked",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
       "name": "data-page",
       "type": "string",
       "observed": true,

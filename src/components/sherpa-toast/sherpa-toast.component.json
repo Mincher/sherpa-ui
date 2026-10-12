@@ -120,7 +120,8 @@
       "$type": "prop",
       "name": "data-action",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "an action link label (shown when present; fires toast-action)"
     },
@@ -137,9 +138,18 @@
       "$type": "prop",
       "name": "data-heading",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "the primary line (or the default slot)"
+    },
+    {
+      "$type": "prop",
+      "name": "data-leaving",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
     },
     {
       "$type": "prop",
@@ -148,6 +158,14 @@
       "observed": false,
       "kind": "style",
       "description": "the message text (or slot content)"
+    },
+    {
+      "$type": "prop",
+      "name": "data-stacked",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
     },
     {
       "$type": "prop",
@@ -168,9 +186,17 @@
       "$type": "prop",
       "name": "data-value",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "the supporting detail line (shown when present)"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "",
+      "description": "the heading content (overrides data-heading)"
     }
   ],
   "states": [

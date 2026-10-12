@@ -57,8 +57,9 @@
     {
       "$type": "prop",
       "name": "data-outside",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "this day belongs to the neighbouring month"
     },
@@ -66,7 +67,8 @@
       "$type": "prop",
       "name": "data-state",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "default",
@@ -82,7 +84,8 @@
       "$type": "prop",
       "name": "data-value",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "the ISO date this cell STANDS FOR (2026-09-18), which is what cell-click carries. The label is a number in the month's own terms and cannot say which month; this can. Falls back to"
     },
@@ -94,6 +97,12 @@
       "native": true,
       "default": false,
       "description": "native — outside data-min / data-max"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": ""
     }
   ],
   "states": [

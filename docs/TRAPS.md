@@ -14223,12 +14223,21 @@ Three changes close it:
   statement about observation;
 - `compileDef` reads `observed` when a spec carries one, falling back to the old
   `kind !== 'style'` signal for a spec written before the field existed;
-- `parsePropKinds` reads `static override props`, which is the only honest
+- `parsePropDecls` reads `static override props`, which is the only honest
   source for `kind` — an entry with a `to:` selector IS content, because that is
   what `to` means to the base class. The TS beats a prior spec's inferred kind.
 
 Afterwards: 43 `kind: content` props remain, and every one is backed by a real
 declaration.
+
+**And `declared` says WHERE it is listed** (TODO 195, 2026-10-12). A prop in
+`static props` is `declared: true` and `observed: true` — the base class
+observes every one, and `populate({ label })` sets `data-label` only for a
+declared prop. So it is never in `static observed` too; `compileDef` leaves a
+declared prop out of the list it rebuilds. Its type, values and default come
+from the declaration first, read by TypeScript's parser so `...SUMMARY_PROPS`
+and `SHARED_PROPS['data-size']` resolve. A fifth kind, `behaviour`, is an
+attribute only the component's own JS reads.
 
 - Site: `scripts/lib/ts-facts.mjs`
 - Site: `scripts/lib/generation/compile-def.mjs`

@@ -66,21 +66,92 @@
   "props": [
     {
       "$type": "prop",
-      "name": "data-orientation",
+      "name": "data-aggregate",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
-        "vertical",
-        "horizontal"
+        "count",
+        "sum",
+        "mean",
+        "min",
+        "max",
+        "distinct"
+      ]
+    },
+    {
+      "$type": "prop",
+      "name": "data-bands",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-bucket",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "values": [
+        "day",
+        "month",
+        "year"
+      ]
+    },
+    {
+      "$type": "prop",
+      "name": "data-field",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-orientation",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "values": [
+        "horizontal",
+        "vertical"
       ],
       "description": "vertical  | horizontal"
     },
     {
       "$type": "prop",
+      "name": "data-over-field",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-readings",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-readonly",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
       "name": "data-segment-field",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "ASKED of its provider, or read off its chart: one row per value. A click narrows its chart alone"
     }

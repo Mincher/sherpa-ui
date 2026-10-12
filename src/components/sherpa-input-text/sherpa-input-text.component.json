@@ -616,16 +616,18 @@
     {
       "$type": "prop",
       "name": "data-borderless",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "drop the control border (minimal style)"
     },
     {
       "$type": "prop",
       "name": "data-clearable",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "a text area or a select shows Clear too (they do not by themselves)"
     },
@@ -633,7 +635,8 @@
       "$type": "prop",
       "name": "data-description",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "default": "style",
       "description": "helper text under the label"
@@ -642,10 +645,19 @@
       "$type": "prop",
       "name": "data-error",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "default": "style",
       "description": "validation message — shown as a filled critical bar"
+    },
+    {
+      "$type": "prop",
+      "name": "data-has-value",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
     },
     {
       "$type": "prop",
@@ -667,7 +679,8 @@
       "$type": "prop",
       "name": "data-label",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "field label (hidden when empty)"
     },
@@ -691,16 +704,18 @@
     {
       "$type": "prop",
       "name": "data-no-clear",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "no Clear button. A typed field shows one by itself while it holds something; a number has steppers and shows none"
     },
     {
       "$type": "prop",
       "name": "data-replace",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "a Find also offers Find & Replace (the pencil): Replace, Replace all (asked first), Previous and Next"
     },
@@ -714,10 +729,30 @@
     },
     {
       "$type": "prop",
-      "name": "data-type",
-      "type": "string",
-      "observed": false,
+      "name": "data-state",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
       "kind": "style",
+      "values": [
+        "error",
+        "success",
+        "warning"
+      ]
+    },
+    {
+      "$type": "prop",
+      "name": "data-type",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "values": [
+        "minimal",
+        "select",
+        "number",
+        "find"
+      ],
       "default": "is the full molecule",
       "description": "\"minimal\" for the bare inline field ; \"select\" for one of a known set; \"number\" for a number, right-aligned, with Sherpa's own up and down steppers — Figma \"Input Number\" (937:39395) \"find\" for a search that steps through what a host found: Previous and Next, and Enter / Shift+Enter"
     },
@@ -835,6 +870,13 @@
       "observed": true,
       "native": true,
       "description": "native value (also a JS property)"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "actions",
+      "description": "trailing controls in the field row (steppers, buttons); CSS-gated"
     }
   ],
   "states": [

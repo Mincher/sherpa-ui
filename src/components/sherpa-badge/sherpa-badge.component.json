@@ -27,6 +27,16 @@
       ]
     }
   },
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "",
+      "accepts": [
+        "text"
+      ],
+      "description": "the count — data-accepts: text"
+    }
+  ],
   "tokens": {
     "box.min-inline-size": "{sherpa.display-mode-size-sm}",
     "box.block-size": "{sherpa.display-mode-size-sm}",

@@ -56,13 +56,26 @@
       "$type": "prop",
       "name": "data-type",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "plain",
         "bordered"
       ],
       "description": "plain  | bordered (adds a bottom rule)"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "leading",
+      "description": "the primary action / actions cluster (hugs, sits at the start)"
+    },
+    {
+      "$type": "slot",
+      "name": "trailing",
+      "description": "item count, search, overflow (grows; content pushed to the end)"
     }
   ],
   "states": [

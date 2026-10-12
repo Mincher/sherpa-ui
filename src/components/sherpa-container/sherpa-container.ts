@@ -22,7 +22,7 @@ export class SherpaContainer extends SherpaElement {
   /* DECLARED, not hand-synced: CSS-only, so the base class writes nothing. */
   static override props = {
     'data-fill': { type: 'boolean', kind: 'style' },
-    'data-padding': { type: 'enum', kind: 'style', values: ['lg', 'none', 'sm'] },
+    'data-padding': { type: 'enum', kind: 'style', values: ['none', 'sm', 'base', 'lg'] },
     'data-row-span': { type: 'enum', kind: 'style', values: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'] },
     'data-padding-inline': { type: 'enum', kind: 'style', values: ['none', 'sm', 'md', 'lg'] },
     /* Its data's state — written by the provider. TRAP T-a-container-shows-its-datas-state */

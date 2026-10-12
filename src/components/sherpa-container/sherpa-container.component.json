@@ -262,23 +262,26 @@
       "$type": "prop",
       "name": "data-error-message",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "the error's own words, under its heading"
     },
     {
       "$type": "prop",
       "name": "data-fill",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "with data-row-span AND several body children: only the child marked data-grow takes the spare height; the rest keep their natural size. A records card is a toolbar, a filter bar, the GRID, then the pager — the grid grows, the pager stays put. Not needed for the common one-child card. Slotting empty / error shows that overlay too, via the base class reflecting data-has-{slot}; a slotted one replaces the default content."
     },
     {
       "$type": "prop",
       "name": "data-keep-content",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "a state never replaces the body: loading is a bar under the header and the body is locked; a state is a banner above it. Written by the provider. Will, TODO 59."
     },
@@ -295,7 +298,8 @@
       "$type": "prop",
       "name": "data-padding",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "none",
@@ -307,17 +311,47 @@
     },
     {
       "$type": "prop",
-      "name": "data-row-span",
-      "type": "string",
-      "observed": false,
+      "name": "data-padding-inline",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
       "kind": "style",
+      "values": [
+        "none",
+        "sm",
+        "md",
+        "lg"
+      ]
+    },
+    {
+      "$type": "prop",
+      "name": "data-row-span",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "values": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12"
+      ],
       "description": "1–12 — a FIXED height of N layout-grid rows. The body's content fills it, so a chart draws into the whole card and a data grid scrolls inside it instead of the card growing with the data."
     },
     {
       "$type": "prop",
       "name": "data-state",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "visibility",
       "values": [
         "empty",
@@ -325,6 +359,38 @@
         "error"
       ],
       "description": "empty | no-matches | error — its default content, IN PLACE of the body. Written by the provider. TRAP T-a-container-shows-its-datas-state"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "header",
+      "description": "header region (reflects data-has-header)"
+    },
+    {
+      "$type": "slot",
+      "name": "",
+      "description": "the card body"
+    },
+    {
+      "$type": "slot",
+      "name": "footer",
+      "description": "footer region (reflects data-has-footer)"
+    },
+    {
+      "$type": "slot",
+      "name": "loading",
+      "description": "loading content (has a default spinner); shown by data-loading"
+    },
+    {
+      "$type": "slot",
+      "name": "empty",
+      "description": "empty-state content; slotting it shows the empty overlay (data-has-empty)"
+    },
+    {
+      "$type": "slot",
+      "name": "error",
+      "description": "error-state content; slotting it shows the error overlay (data-has-error)"
     }
   ],
   "states": [

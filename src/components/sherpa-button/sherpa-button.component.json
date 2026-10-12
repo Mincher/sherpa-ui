@@ -191,16 +191,18 @@
     {
       "$type": "prop",
       "name": "data-no-tip",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "visibility",
       "description": "no tooltip — for a host that composes the button and says it itself"
     },
     {
       "$type": "prop",
       "name": "data-open",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "set by JS while its slotted menu is open — CSS only"
     },
@@ -208,7 +210,8 @@
       "$type": "prop",
       "name": "data-size",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "2xs",
@@ -259,6 +262,29 @@
       "native": true,
       "default": false,
       "description": "native disabled state"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "",
+      "description": "label content"
+    },
+    {
+      "$type": "slot",
+      "name": "badge",
+      "accepts": [
+        "badge"
+      ],
+      "description": "trailing badge — data-accepts: badge"
+    },
+    {
+      "$type": "slot",
+      "name": "menu",
+      "accepts": [
+        "menu"
+      ],
+      "description": "a sherpa-menu this button opens — data-accepts: menu"
     }
   ],
   "states": [

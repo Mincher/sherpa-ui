@@ -95,7 +95,8 @@
       "$type": "prop",
       "name": "data-label",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "— label text above the slider (shown when set)"
     },
@@ -103,7 +104,8 @@
       "$type": "prop",
       "name": "data-show-value",
       "type": "boolean",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "default": false,
       "description": "— show the editable value field under the track ; a range's two fields share that row, half each"

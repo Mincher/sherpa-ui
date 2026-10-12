@@ -135,8 +135,9 @@
     {
       "$type": "prop",
       "name": "data-collapsible",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "show the collapse toggle"
     },
@@ -144,23 +145,26 @@
       "$type": "prop",
       "name": "data-description",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "secondary text (rendered into .description)"
     },
     {
       "$type": "prop",
       "name": "data-dismissible",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "show the close button"
     },
     {
       "$type": "prop",
       "name": "data-draggable",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "show the drag handle"
     },
@@ -168,7 +172,8 @@
       "$type": "prop",
       "name": "data-heading",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "heading text (rendered into .title)"
     },
@@ -176,7 +181,8 @@
       "$type": "prop",
       "name": "data-icon",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "a glyph before the title (shows the icon slot)"
     },
@@ -184,7 +190,8 @@
       "$type": "prop",
       "name": "data-type",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "default",
@@ -192,6 +199,36 @@
       ],
       "default": "default",
       "description": "default | panel"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "icon",
+      "description": "custom icon element (else data-icon glyph)"
+    },
+    {
+      "$type": "slot",
+      "name": "heading",
+      "description": "custom heading element (replaces the default .title)"
+    },
+    {
+      "$type": "slot",
+      "name": "actions",
+      "accepts": [
+        "control",
+        "input"
+      ],
+      "description": "extra trailing action controls (before close)"
+    },
+    {
+      "$type": "slot",
+      "name": "metadata",
+      "accepts": [
+        "content",
+        "control"
+      ],
+      "description": "bottom metadata strip (Panel) / secondary content (Default)"
     }
   ],
   "states": [

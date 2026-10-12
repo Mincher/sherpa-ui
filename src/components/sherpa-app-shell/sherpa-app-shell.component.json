@@ -173,6 +173,22 @@
     },
     {
       "$type": "prop",
+      "name": "data-no-room",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "visibility"
+    },
+    {
+      "$type": "prop",
+      "name": "data-panel-end-open",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "visibility"
+    },
+    {
+      "$type": "prop",
       "name": "data-panel-end-width",
       "type": "string",
       "observed": true,
@@ -181,11 +197,59 @@
     },
     {
       "$type": "prop",
+      "name": "data-panel-start-open",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "visibility"
+    },
+    {
+      "$type": "prop",
       "name": "data-panel-start-width",
       "type": "string",
       "observed": true,
       "kind": "style",
       "description": "a panel area's width, in px — what a reader dragged it to, handed back by the host. The area never goes under its min or over 33% of its row."
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "nav",
+      "description": "replace the default <sherpa-nav>"
+    },
+    {
+      "$type": "slot",
+      "name": "header",
+      "description": "replace the default <sherpa-app-header>"
+    },
+    {
+      "$type": "slot",
+      "name": "panel-start",
+      "accepts": [
+        "filter-panel",
+        "panel"
+      ]
+    },
+    {
+      "$type": "slot",
+      "name": "",
+      "description": "the Context content"
+    },
+    {
+      "$type": "slot",
+      "name": "panel-end",
+      "accepts": [
+        "panel",
+        "overlay-panel"
+      ]
+    },
+    {
+      "$type": "slot",
+      "name": "overlay",
+      "accepts": [
+        "dialog"
+      ]
     }
   ],
   "states": [

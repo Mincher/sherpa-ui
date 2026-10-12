@@ -107,7 +107,8 @@
       "$type": "prop",
       "name": "data-description",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "message text (rendered into .message-text)"
     },
@@ -115,23 +116,34 @@
       "$type": "prop",
       "name": "data-heading",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "heading text (rendered into .title)"
     },
     {
       "$type": "prop",
       "name": "data-illustration",
-      "type": "string",
-      "observed": false,
+      "type": "enum",
+      "observed": true,
+      "declared": true,
       "kind": "style",
+      "values": [
+        "data",
+        "empty",
+        "error",
+        "folder",
+        "search",
+        "success"
+      ],
       "description": "built-in glyph: empty  | search | folder | data | error | success"
     },
     {
       "$type": "prop",
       "name": "data-size",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "sm",
@@ -144,9 +156,38 @@
       "$type": "prop",
       "name": "data-small-print",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "fine-print / help text (rendered into .small-print-text)"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "icon",
+      "description": "custom illustration (reflects data-has-icon; replaces the glyph)"
+    },
+    {
+      "$type": "slot",
+      "name": "",
+      "description": "custom message body (reflects data-has-content-slot; replaces data-description)"
+    },
+    {
+      "$type": "slot",
+      "name": "action",
+      "accepts": [
+        "control"
+      ],
+      "description": "call-to-action controls (reflects data-has-action)"
+    },
+    {
+      "$type": "slot",
+      "name": "small-print",
+      "accepts": [
+        "text"
+      ],
+      "description": "custom fine-print body (reflects data-has-small-print; replaces data-small-print text)"
     }
   ],
   "states": [

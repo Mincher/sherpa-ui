@@ -200,7 +200,8 @@
       "$type": "prop",
       "name": "data-helper",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "helper text under the list (hidden when empty)"
     },
@@ -208,15 +209,17 @@
       "$type": "prop",
       "name": "data-label",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "label above the drop zone (hidden when empty)"
     },
     {
       "$type": "prop",
       "name": "data-loading",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "in-flight state (disables the upload button)"
     },
@@ -244,6 +247,13 @@
       "native": true,
       "default": false,
       "description": "disabled state"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "actions",
+      "description": "extra controls in the actions row (before clear/upload)"
     }
   ],
   "states": [

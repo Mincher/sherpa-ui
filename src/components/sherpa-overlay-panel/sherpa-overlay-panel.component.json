@@ -169,16 +169,18 @@
     {
       "$type": "prop",
       "name": "data-expandable",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "show the expand button"
     },
     {
       "$type": "prop",
       "name": "data-external",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "show the external-link button"
     },
@@ -214,6 +216,44 @@
       "native": true,
       "default": false,
       "description": "native boolean (read reflects dialog.open; set → show()/close())"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "icon",
+      "description": "custom lead icon (else the data-icon glyph)"
+    },
+    {
+      "$type": "slot",
+      "name": "description",
+      "accepts": [
+        "content",
+        "control"
+      ],
+      "description": "the metadata / description row under the title (reflects data-has-description)"
+    },
+    {
+      "$type": "slot",
+      "name": "actions",
+      "accepts": [
+        "control"
+      ],
+      "description": "the host's own header controls, before the view-mode pair and close"
+    },
+    {
+      "$type": "slot",
+      "name": "",
+      "description": "the panel body"
+    },
+    {
+      "$type": "slot",
+      "name": "footer",
+      "accepts": [
+        "control",
+        "input"
+      ],
+      "description": "footer action controls (reflects data-has-footer)"
     }
   ],
   "states": [

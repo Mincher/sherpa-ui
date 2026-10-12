@@ -14,7 +14,7 @@ export class SherpaStack extends SherpaElement {
      rule is a public API and belongs in one place. */
   static override props = {
     'data-align': { type: 'enum', kind: 'style', values: ['between', 'center', 'end', 'start', 'stretch'] },
-    'data-direction': { type: 'enum', kind: 'style', values: ['inline'] },
+    'data-direction': { type: 'enum', kind: 'style', values: ['block', 'inline'] },
     'data-fill': { type: 'boolean', kind: 'style' },
     'data-gap': { type: 'enum', kind: 'style', values: ['2xl', 'lg', 'md', 'none', 'sm', 'xl'] },
     'data-measure': { type: 'boolean', kind: 'style' },

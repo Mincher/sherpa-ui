@@ -173,8 +173,9 @@
     {
       "$type": "prop",
       "name": "data-at-default",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "the filters already ARE the View's default: \"Reset all to default\" is inactive. Written by the provider. TODO 231."
     },
@@ -191,6 +192,7 @@
       "name": "data-heading",
       "type": "string",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "default": "\"Filters\"",
       "description": "the panel's own title"
@@ -199,7 +201,8 @@
       "$type": "prop",
       "name": "data-limit-options",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "on",
@@ -210,16 +213,18 @@
     {
       "$type": "prop",
       "name": "data-locked",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "the source owns the state — report, never set"
     },
     {
       "$type": "prop",
       "name": "data-nothing-to-reset",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "nothing is left to clear: Reset is inactive. Written by the provider. TODO 231."
     },
@@ -227,15 +232,17 @@
       "$type": "prop",
       "name": "data-pending",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "the FIELDS changed and not yet applied, space-separated. Set by a bound source; each shows Apply and Discard."
     },
     {
       "$type": "prop",
       "name": "data-remote",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "its source fetches from outside the data layer, so a change waits for its field's Apply. Set by a bound source."
     },
@@ -270,6 +277,17 @@
       "observed": false,
       "native": true,
       "description": "the panel is showing. A host writes it; the panel reports `filter-panel-close` and never hides itself. Where there is no room, the app shell says so. TRAP T-the-panel-is-desktop-only"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "actions"
+    },
+    {
+      "$type": "slot",
+      "name": "",
+      "description": "extra content under the scopes"
     }
   ],
   "states": [

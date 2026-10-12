@@ -151,8 +151,9 @@
     {
       "$type": "prop",
       "name": "data-current",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "default": false,
       "description": "current-row state"
@@ -161,23 +162,26 @@
       "$type": "prop",
       "name": "data-description",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "secondary text"
     },
     {
       "$type": "prop",
       "name": "data-draggable",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "show the drag handle"
     },
     {
       "$type": "prop",
       "name": "data-expandable",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "show the expand toggle"
     },
@@ -202,15 +206,17 @@
       "$type": "prop",
       "name": "data-icon",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "a leading icon glyph"
     },
     {
       "$type": "prop",
       "name": "data-interactive",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "default": false,
       "description": "hover + click behaviour"
@@ -219,15 +225,17 @@
       "$type": "prop",
       "name": "data-label",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "primary text (data-heading is a back-compat alias)"
     },
     {
       "$type": "prop",
       "name": "data-selectable",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "show a leading selection control (checkbox affordance)"
     },
@@ -248,6 +256,23 @@
       "native": true,
       "default": false,
       "description": "disabled state"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "control",
+      "description": "a custom selection control (else the built-in native checkbox)"
+    },
+    {
+      "$type": "slot",
+      "name": "leading",
+      "description": "a custom icon / avatar (in addition to the data-icon glyph)"
+    },
+    {
+      "$type": "slot",
+      "name": "trailing",
+      "description": "actions / badges"
     }
   ],
   "states": [

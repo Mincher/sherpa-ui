@@ -37,7 +37,8 @@
       "$type": "prop",
       "name": "data-orientation",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "horizontal",
@@ -49,7 +50,8 @@
       "$type": "prop",
       "name": "data-panel",
       "type": "boolean",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "default": false,
       "description": "render a solid surface background behind the loader"
@@ -58,7 +60,8 @@
       "$type": "prop",
       "name": "data-size",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "sm",
@@ -67,6 +70,13 @@
       ],
       "default": "md",
       "description": "sm | md | lg   (spinner diameter; default md)"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "label",
+      "description": "loading text shown beside (or below) the spinner"
     }
   ],
   "states": [

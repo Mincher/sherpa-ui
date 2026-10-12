@@ -32,14 +32,15 @@
       "$type": "prop",
       "name": "data-align",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
-        "start",
+        "between",
         "center",
         "end",
-        "stretch",
-        "between"
+        "start",
+        "stretch"
       ],
       "description": "start | center | end | stretch  | between — how items sit ACROSS the run (the cross axis), except `between`, which spreads them ALONG it"
     },
@@ -47,7 +48,8 @@
       "$type": "prop",
       "name": "data-direction",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "block",
@@ -58,8 +60,9 @@
     {
       "$type": "prop",
       "name": "data-fill",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "take the parent's height and hand the spare space to the child marked data-grow. Without it the stack is content-height and there is no spare space to give."
     },
@@ -67,14 +70,16 @@
       "$type": "prop",
       "name": "data-gap",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
-        "sm",
-        "md",
+        "2xl",
         "lg",
-        "xl",
-        "2xl"
+        "md",
+        "none",
+        "sm",
+        "xl"
       ],
       "description": "sm (4) | md (8) | lg (12, default) | xl (16) | 2xl (24)"
     },
@@ -89,35 +94,56 @@
     {
       "$type": "prop",
       "name": "data-measure",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "cap the run's width at a reading measure (90ch) and centre it On a CHILD (not on the stack):"
     },
     {
       "$type": "prop",
       "name": "data-min-item",
-      "type": "string",
-      "observed": false,
+      "type": "enum",
+      "observed": true,
+      "declared": true,
       "kind": "style",
+      "values": [
+        "hug",
+        "sm",
+        "md",
+        "lg",
+        "xl"
+      ],
       "default": "200px",
       "description": "with data-wrap: hug — each item at its OWN width (a run of chips); else the floor an item may shrink to while it STRETCHES to share the line — sm (120) | md (200, default) | lg (280) | xl (360)"
     },
     {
       "$type": "prop",
       "name": "data-scroll",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "the run scrolls when it is taller than its room, instead of pushing the page. It caps the stack at its parent's height, so the parent must have one."
     },
     {
       "$type": "prop",
       "name": "data-wrap",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "inline only: items wrap and share the line"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "",
+      "accepts": [
+        "any"
+      ],
+      "description": "the items"
     }
   ],
   "states": [

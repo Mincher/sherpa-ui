@@ -68,9 +68,13 @@
     {
       "$type": "prop",
       "name": "data-divider",
-      "type": "string",
-      "observed": false,
+      "type": "enum",
+      "observed": true,
+      "declared": true,
       "kind": "style",
+      "values": [
+        "none"
+      ],
       "default": false,
       "description": "bottom divider; shown by DEFAULT — set data-divider=\"none\" to hide it"
     },
@@ -78,7 +82,8 @@
       "$type": "prop",
       "name": "data-heading",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "heading text (rendered into .title)"
     },
@@ -86,7 +91,8 @@
       "$type": "prop",
       "name": "data-size",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "sm",
@@ -94,6 +100,26 @@
         "lg"
       ],
       "description": "sm | md  | lg"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "heading",
+      "description": "custom heading element (replaces the default .title)"
+    },
+    {
+      "$type": "slot",
+      "name": "description",
+      "description": "description text below the heading (reflects data-has-description)"
+    },
+    {
+      "$type": "slot",
+      "name": "actions",
+      "accepts": [
+        "control"
+      ],
+      "description": "trailing action controls (reflects data-has-actions)"
     }
   ],
   "states": [

@@ -154,25 +154,40 @@
     },
     {
       "$type": "prop",
+      "name": "data-applied-at",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
       "name": "data-column",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "which column a group or sort chip arranges by, for a host that draws the choice without a menu. A menu, where there is one, is the answer."
     },
     {
       "$type": "prop",
       "name": "data-condition",
-      "type": "string",
-      "observed": false,
+      "type": "enum",
+      "observed": true,
+      "declared": true,
       "kind": "style",
+      "values": [
+        "simple",
+        "advanced"
+      ],
       "description": "written BY the chip: simple | advanced — which condition it holds, absent when it holds none. No colour follows it: an Advanced chip is active, as a Simple one. TRAP T-a-conditioned-chip-reads-as-active"
     },
     {
       "$type": "prop",
       "name": "data-count",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "leading count chip (shown when present). A menu sets it only at TWO or more picked values — at one the label already names the value, so a \"1\" badge would be noise. Hovering the badge reveals .count-tip ABOVE it, listing the chosen values. The bubble is a local copy of the sherpa-tooltip look rather than a nested instance: the badge lives in this shadow root, so a light-DOM wrapper component cannot reach it. Reveal is pure CSS on .count-wrap:hover."
     },
@@ -189,7 +204,8 @@
       "$type": "prop",
       "name": "data-direction",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "asc",
@@ -200,10 +216,19 @@
     {
       "$type": "prop",
       "name": "data-edited",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "a saved filter changed and not saved: the pending look, still counted. TRAP T-a-saved-filter-keeps-its-edit"
+    },
+    {
+      "$type": "prop",
+      "name": "data-full-value",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
     },
     {
       "$type": "prop",
@@ -216,8 +241,9 @@
     {
       "$type": "prop",
       "name": "data-icon-only",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "the chip reduced to JUST its menu button — a 24 square with a funnel. Body, count, indicator and value label are all hidden in CSS. For a filter affordance whose field is named elsewhere (a data-grid column header)."
     },
@@ -231,18 +257,38 @@
     },
     {
       "$type": "prop",
-      "name": "data-indicator",
+      "name": "data-id",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-indicator",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "show the leading status dot (Figma \"Indicator (atom)\", opt-in)"
     },
     {
       "$type": "prop",
       "name": "data-kind",
-      "type": "string",
-      "observed": false,
+      "type": "enum",
+      "observed": true,
+      "declared": true,
       "kind": "style",
+      "values": [
+        "boolean",
+        "single",
+        "multi",
+        "advanced",
+        "number",
+        "date",
+        "group",
+        "sort"
+      ],
       "description": "WHAT THIS CHIP IS: group | sort | advanced. Group and sort ARRANGE rows rather than choosing them, so they have no values to be empty of, and both own their gesture — group toggles, sort cycles asc / desc / off — and report it themselves. \"Organise\" is not a kind; it is a heading a panel may draw above the two. TRAP T-a-chip-knows-what-kind-it-is `advanced` with no filter menu is a SAVED filter: its answer is given, so the chip is a toggle that reads as Advanced. TRAP T-a-saved-filter-is-its-readings"
     },
     {
@@ -255,42 +301,87 @@
     },
     {
       "$type": "prop",
+      "name": "data-locked",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
       "name": "data-menu",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "default": false,
       "description": "Figma State=menu — snap on the caret button"
     },
     {
       "$type": "prop",
+      "name": "data-no-value",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-open",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
       "name": "data-panelled",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "a FILTER PANEL is drawing this field instead, so the bar hides the chip — two controls over one field make a reader guess which is in force. Written by the host. TRAP T-the-view-chip-stays-on-the-header"
     },
     {
       "$type": "prop",
       "name": "data-pending",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "changed, not yet applied: the active edge, no fill. Written by the bar. TRAP T-a-pending-chip-has-no-fill"
     },
     {
       "$type": "prop",
       "name": "data-persistent",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "a SELECTOR rather than a toggle: always on, and never \"empty\". Set by sherpa-quick-filter-toolbar from a filter definition's `persistent` flag. The view chip is the case — you are always in SOME view, so the amber \"on but filtering by nothing\" state is one it cannot be in."
     },
     {
       "$type": "prop",
+      "name": "data-plain",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-superseded",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
       "name": "data-swatch",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "a data-viz series, from 1: the chip leads with that series' swatch, as a chart's legend does — one value of a chart's own filter. TRAP T-a-chart-scope-is-its-legend-field"
     },
@@ -298,24 +389,33 @@
       "$type": "prop",
       "name": "data-type",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "default",
         "ai",
-        "populated",
         "jump"
       ],
       "default": false,
-      "description": "default | ai | populated | jump `jump` is a JUMP TO chip, not a filter: never on. Its menu lists places on the page, filled by populate([{ value, label }]); a pick scrolls the element whose id is `value` into view."
+      "description": "default | ai | jump `jump` is a JUMP TO chip, not a filter: never on. Its menu lists places on the page, filled by populate([{ value, label }]); a pick scrolls the element whose id is `value` into view."
     },
     {
       "$type": "prop",
       "name": "data-unavailable",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "the other filters rule this value out: greyed, refused, and its tooltip says why. Written by the host. TRAP T-a-ruled-out-value-is-greyed"
+    },
+    {
+      "$type": "prop",
+      "name": "data-unsupported",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
     },
     {
       "$type": "prop",
@@ -332,6 +432,18 @@
       "native": true,
       "default": false,
       "description": "greyed and refused; its tooltip says \"Not available here.\""
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "",
+      "description": "the chip label"
+    },
+    {
+      "$type": "slot",
+      "name": "menu",
+      "description": "a <sherpa-menu> of values for this field"
     }
   ],
   "states": [

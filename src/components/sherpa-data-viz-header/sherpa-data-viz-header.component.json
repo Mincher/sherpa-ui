@@ -94,23 +94,29 @@
       "$type": "prop",
       "name": "data-description",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "a line under it (else the metadata slot)"
     },
     {
       "$type": "prop",
       "name": "data-divider",
-      "type": "string",
-      "observed": false,
+      "type": "enum",
+      "observed": true,
+      "declared": true,
       "kind": "style",
+      "values": [
+        "none"
+      ],
       "description": "the rule under it; shown by DEFAULT — \"none\" hides it (a metric's)"
     },
     {
       "$type": "prop",
       "name": "data-heading",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "the title — small, light, in CAPS"
     },
@@ -118,9 +124,36 @@
       "$type": "prop",
       "name": "data-icon",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "a glyph before the title (else the left slot)"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "left",
+      "accepts": [
+        "icon"
+      ],
+      "description": "a custom leading icon"
+    },
+    {
+      "$type": "slot",
+      "name": "metadata",
+      "accepts": [
+        "content"
+      ],
+      "description": "what sits under the title"
+    },
+    {
+      "$type": "slot",
+      "name": "actions",
+      "accepts": [
+        "control"
+      ],
+      "description": "icon-only controls at the end"
     }
   ],
   "states": [

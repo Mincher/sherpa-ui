@@ -48,7 +48,8 @@
       "$type": "prop",
       "name": "data-orientation",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "horizontal",

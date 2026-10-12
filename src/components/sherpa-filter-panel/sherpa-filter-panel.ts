@@ -220,7 +220,6 @@ export class SherpaFilterPanel extends SherpaElement {
   } as const;
 
   static override observed = [
-    'data-heading',
     // The host saves filters. TRAP T-the-panel-saves-a-whole-scope
     'data-saveable',
     // The arrangement, as a bound source writes it on every control. TRAP T-a-panel-follows-the-query-open-or-shut

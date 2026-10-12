@@ -32,7 +32,7 @@ import { specToDef } from './lib/component-to-def.mjs';
 import { compileDef } from './lib/generation/compile-def.mjs';
 import { authoredCss, extractBindings, parseStates } from './lib/css-reader.mjs';
 import { parseTemplates, htmlDiff } from './lib/html-structure.mjs';
-import { parseClassApi, parseObserved, parsePropKinds } from './lib/ts-facts.mjs';
+import { parseClassApi, parseObserved, parsePropDecls } from './lib/ts-facts.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const C = join(ROOT, 'src', 'components');
@@ -470,6 +470,67 @@ function parseTsJsProps(ts) {
   return [...props.values()];
 }
 
+/**
+ * The real `<slot>`s, in order: its name ('' is the default slot), what it
+ * accepts, and the `Slots:` block's first sentence for it. As with events, the
+ * MARKUP decides which exist; the comment only describes them.
+ */
+function parseSlots(html, comment, notes) {
+  if (!html) return [];
+  const said = slotLines(comment);
+  const out = new Map();
+  for (const m of html.replace(/<!--[\s\S]*?-->/g, '').matchAll(/<slot\b([^>]*)>/g)) {
+    const name = /\bname="([^"]*)"/.exec(m[1])?.[1] ?? '';
+    if (out.has(name)) continue;
+    const accepts = /\bdata-accepts="([^"]*)"/.exec(m[1])?.[1];
+    out.set(name, {
+      $type: 'slot', name,
+      ...(accepts ? { accepts: accepts.split(/[\s,]+/).filter(Boolean) } : {}),
+      ...(said.get(name) ? { description: said.get(name) } : {}),
+    });
+  }
+  for (const name of said.keys()) {
+    if (!out.has(name)) notes.push(`slot "${name || '(default)'}" is in the Slots: block, but the template has no such <slot>`);
+  }
+  return [...out.values()];
+}
+
+/** The `Slots:` block: each entry's name ('' for `(default)`) → its first sentence. */
+function slotLines(comment) {
+  const out = new Map();
+  const lines = (comment ?? '').split('\n');
+  const at = lines.findIndex((l) => /^\s*Slots:\s*$/.test(l));
+  if (at < 0) return out;
+  let indent = -1;
+  let entry = null;
+  const close = () => {
+    if (!entry) return;
+    const text = entry.text.join(' ')
+      .replace(/\(data-accepts:[^)]*\)/g, '').replace(/TRAP\s+T-[\w-]+/g, '')
+      .replace(/^[—–-]\s*/, '').replace(/\s+/g, ' ').trim();
+    const sentence = /^(.*?[.!?])(?:\s|$)/.exec(text)?.[1] ?? text;
+    if (sentence) out.set(entry.name, sentence.replace(/[\s·—–-]+$/, ''));
+    entry = null;
+  };
+  for (const line of lines.slice(at + 1)) {
+    if (!line.trim()) break;
+    const lead = line.length - line.trimStart().length;
+    if (indent < 0) indent = lead;
+    if (lead < indent || /^\s*[A-Z][\w ]*:\s*$/.test(line)) break;
+    const m = lead === indent ? /^\s*(\(default\)|[a-z][\w-]*)\s+(.*)$/.exec(line) : null;
+    if (m) {
+      close();
+      entry = { name: m[1] === '(default)' ? '' : m[1], text: [m[2]] };
+    } else if (lead > indent && entry) {
+      entry.text.push(line.trim());
+    } else {
+      close();
+    }
+  }
+  close();
+  return out;
+}
+
 /** Public methods — the vocabulary a saved view, a preset or an agent may use on this component. */
 function parseTsMethods(ts) {
   return parseClassApi(ts).methods;
@@ -495,9 +556,10 @@ function generateSpec(name) {
   // The TS `observed` list is the ground truth for which data-* props are
   // reactive; a prior spec's stale kind loses to it.
   const tsObserved = parseObserved(ts);
-  // `static props` is the only honest source for `kind`; a prior spec's kind was
-  // inferred from observation and is wrong on 39 components.
-  const tsKinds = parsePropKinds(ts);
+  // `static props` is the only honest source for `kind`, and the first for a
+  // prop's type, values and default. TRAP T-kind-says-how-not-whether
+  const tsDecls = parsePropDecls(ts, join(dir, `${name}.ts`));
+  const tsKinds = Object.fromEntries(Object.entries(tsDecls).filter(([, d]) => d.kind).map(([n, d]) => [n, d.kind]));
 
   const comment = html ? htmlComment(html) : '';
   const apiProps = comment ? parsePublicApi(comment) : {};
@@ -606,20 +668,23 @@ function generateSpec(name) {
     delete priorProps[nm];
     notes.push(`dropped stale prop "${nm}" — the prior spec carried it, the source does not mention it`);
   }
-  const propNames = new Set([...Object.keys(apiProps), ...Object.keys(priorProps)]);
+  // Every DECLARED prop is public, whether or not the comment names it.
+  const propNames = new Set([...Object.keys(apiProps), ...Object.keys(priorProps), ...Object.keys(tsDecls)]);
   const props = [];
   for (const nm of propNames) {
     const fromApi = apiProps[nm] || {};
     const fromPrior = priorProps[nm] || {};
+    const decl = tsDecls[nm] || {};
     const p = { $type: 'prop', name: nm };
-    // the comment carries the enum/boolean signal, so it wins
-    p.type = fromApi.type || fromPrior.type || 'string';
+    // The declaration wins; the comment carries the signal for what is undeclared.
+    p.type = decl.type || fromApi.type || fromPrior.type || 'string';
     let kind = fromPrior.kind;
     const native = fromApi.native === true || (!nm.startsWith('data-') && NATIVE_ATTRS.has(nm));
     // `kind` says HOW a prop is realised; `observed` says WHETHER the component
     // watches it. They are independent — a CSS-only attribute is routinely
     // observed. TRAP T-kind-says-how-not-whether
-    if (ts) p.observed = tsObserved.includes(nm);
+    if (ts) p.observed = tsObserved.includes(nm) || nm in tsDecls;
+    if (nm in tsDecls) p.declared = true;
     if (native) p.native = true;
     // The TS declaration wins. A prior spec's kind was inferred from the
     // observed list and cannot be trusted where the TS disagrees.
@@ -630,11 +695,12 @@ function generateSpec(name) {
     if (!kind && nm.startsWith('data-')) kind = 'style';
     if (kind) p.kind = kind;
     if (p.type === 'enum') {
-      if (fromApi.values && fromApi.values.length) p.values = fromApi.values;
+      if (decl.values && decl.values.length) p.values = decl.values;
+      else if (fromApi.values && fromApi.values.length) p.values = fromApi.values;
       else if (fromPrior.values && fromPrior.values.length) p.values = fromPrior.values;
       else { p.values = []; notes.push(`prop ${nm}: enum with NO parseable values (Public API comment lacks them) — NEEDS HAND-FINISHING`); }
     }
-    const def = fromApi.default !== undefined ? fromApi.default : fromPrior.default;
+    const def = decl.default !== undefined ? decl.default : fromApi.default !== undefined ? fromApi.default : fromPrior.default;
     if (def !== undefined && def !== null) p.default = def;
     else if (native && p.type === 'boolean') p.default = false;
     const desc = fromApi.description || fromPrior.description;
@@ -760,6 +826,8 @@ function generateSpec(name) {
   spec.templates = templateIds.length ? templateIds : ['default'];
   if (anatomy) spec.anatomy = anatomy;
   if (props.length) spec.props = props;
+  const slots = parseSlots(html, comment, notes);
+  if (slots.length) spec.slots = slots;
   if (states.length) spec.states = states;
   if (capabilities.length) spec.capabilities = capabilities;
   if (events.length) spec.events = events;

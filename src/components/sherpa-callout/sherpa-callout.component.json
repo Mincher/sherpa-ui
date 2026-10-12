@@ -105,8 +105,9 @@
     {
       "$type": "prop",
       "name": "data-dismissible",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "show the close button (fires callout-dismiss)"
     },
@@ -114,7 +115,8 @@
       "$type": "prop",
       "name": "data-heading",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "heading text (rendered into .title)"
     },
@@ -132,6 +134,13 @@
         "urgent"
       ],
       "description": "info | success | warning | critical | urgent"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "",
+      "description": "the message body"
     }
   ],
   "states": [

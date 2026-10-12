@@ -51,11 +51,28 @@
   "props": [
     {
       "$type": "prop",
-      "name": "data-floating",
+      "name": "data-anchor",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-floating",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "place the bubble in the TOP LAYER from measured coordinates rather than relative to the host. For a tooltip inside a box that clips — a toolbar's chip run, a scroller — where the ordinary absolute bubble is cut off."
+    },
+    {
+      "$type": "prop",
+      "name": "data-has-tip",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
     },
     {
       "$type": "prop",
@@ -75,9 +92,22 @@
       "$type": "prop",
       "name": "data-text",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "tip text (or use the `tip` slot)"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "",
+      "description": "the trigger element the tooltip describes"
+    },
+    {
+      "$type": "slot",
+      "name": "tip",
+      "description": "rich tip content (reflects data-has-tip; overrides data-text)"
     }
   ],
   "states": [

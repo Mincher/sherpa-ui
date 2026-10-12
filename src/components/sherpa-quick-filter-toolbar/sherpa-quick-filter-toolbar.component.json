@@ -257,10 +257,27 @@
     {
       "$type": "prop",
       "name": "data-at-default",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "the filters already ARE the View's default: \"Reset all to default\" is inactive. Written by the provider. TODO 231."
+    },
+    {
+      "$type": "prop",
+      "name": "data-bounds",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-custom-view",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "visibility"
     },
     {
       "$type": "prop",
@@ -282,7 +299,8 @@
       "$type": "prop",
       "name": "data-limit-options",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "on",
@@ -293,32 +311,36 @@
     {
       "$type": "prop",
       "name": "data-locked",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "the host owns the ★; report the click, never self-set"
     },
     {
       "$type": "prop",
       "name": "data-no-actions",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "hide the built-in cluster entirely (host owns the trailing end)"
     },
     {
       "$type": "prop",
       "name": "data-nothing-to-reset",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "nothing is left to clear: Reset is inactive. Written by the provider. TODO 231."
     },
     {
       "$type": "prop",
       "name": "data-panel-mode",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "a filter PANEL is answering for this bar: AI, Reset, the panel toggle and Filters are hidden, and a `data` bar goes entirely. TRAP T-panel-mode-hides-what-the-panel-answers"
     },
@@ -337,6 +359,14 @@
       "observed": true,
       "kind": "style",
       "description": "its source fetches from outside the data layer: a multi-select or range menu waits for Apply. Without it, every pick applies at once. Set by a bound source."
+    },
+    {
+      "$type": "prop",
+      "name": "data-reset-on-populate",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
     },
     {
       "$type": "prop",
@@ -378,13 +408,26 @@
       "$type": "prop",
       "name": "data-type",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
-        "data",
-        "view"
+        "view",
+        "data"
       ],
       "description": "data  | view   (view adds the ★/Save/▾ group)"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "view",
+      "description": "leading view chip (view type)"
+    },
+    {
+      "$type": "slot",
+      "name": "actions",
+      "description": "host extras, placed BEFORE the built-in cluster"
     }
   ],
   "states": [

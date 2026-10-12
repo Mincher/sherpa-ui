@@ -269,7 +269,8 @@
       "$type": "prop",
       "name": "data-embedded",
       "type": "boolean",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "default": false,
       "description": "the HOST owns the card's chrome — see the note below data-embedded: this component contributes only its GRID — the footer is hidden and the stepper is projected into the host's `header` slot, so a menu hosting a calendar has ONE header and ONE footer rather than two."

@@ -148,10 +148,40 @@
     {
       "$type": "prop",
       "name": "data-aggregate",
-      "type": "string",
-      "observed": false,
+      "type": "enum",
+      "observed": true,
+      "declared": true,
       "kind": "style",
+      "values": [
+        "count",
+        "sum",
+        "mean",
+        "min",
+        "max",
+        "distinct"
+      ],
       "description": "ASKED of its provider: count | sum | mean | min | max | distinct"
+    },
+    {
+      "$type": "prop",
+      "name": "data-bands",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-bucket",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "values": [
+        "day",
+        "month",
+        "year"
+      ]
     },
     {
       "$type": "prop",
@@ -165,9 +195,18 @@
       "$type": "prop",
       "name": "data-field",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "the number that aggregate reads"
+    },
+    {
+      "$type": "prop",
+      "name": "data-has-caption",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "visibility"
     },
     {
       "$type": "prop",
@@ -176,6 +215,18 @@
       "observed": true,
       "kind": "style",
       "description": "the MIDPOINT tick above the arc. Defaults to the middle of the"
+    },
+    {
+      "$type": "prop",
+      "name": "data-legend",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "values": [
+        "horizontal",
+        "vertical"
+      ]
     },
     {
       "$type": "prop",
@@ -194,6 +245,30 @@
       "kind": "style",
       "default": "0 / 100",
       "description": "scale bounds shown beneath"
+    },
+    {
+      "$type": "prop",
+      "name": "data-over-field",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-readings",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-segment-field",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
     },
     {
       "$type": "prop",
@@ -232,6 +307,23 @@
       "observed": true,
       "kind": "style",
       "description": "threshold bands — \"0-50:success,50-80:warning,80-100:critical\" (compact) OR a JSON array [{to,color}|{from,to,color}]. Colours are status names (success|warning|urgent|critical|info) or any CSS colour. Omit for the single-colour sweep. A band may be NAMED — \"0-50:success:Low\", or `label` in the JSON — and the name is its tooltip's and its legend row's."
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "title",
+      "description": "heading above the gauge"
+    },
+    {
+      "$type": "slot",
+      "name": "caption",
+      "description": "rich caption below the gauge; overrides data-caption"
+    },
+    {
+      "$type": "slot",
+      "name": "legend",
+      "description": "a <sherpa-chart-legend> naming the zones; the gauge fills it from zones that are named."
     }
   ],
   "states": [

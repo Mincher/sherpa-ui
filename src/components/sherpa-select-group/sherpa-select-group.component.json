@@ -77,7 +77,8 @@
       "$type": "prop",
       "name": "data-description",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "helper line under the heading"
     },
@@ -85,7 +86,8 @@
       "$type": "prop",
       "name": "data-error",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "validation message; present → validation row shown"
     },
@@ -93,7 +95,8 @@
       "$type": "prop",
       "name": "data-label",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "group heading (hidden when empty)"
     },
@@ -137,6 +140,16 @@
       "observed": false,
       "native": true,
       "description": "property: string[] when multiple, else string | null"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "options",
+      "accepts": [
+        "control"
+      ],
+      "description": "checkbox/radio option rows"
     }
   ],
   "states": [

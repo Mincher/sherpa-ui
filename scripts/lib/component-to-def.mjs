@@ -61,14 +61,15 @@ export function refToToken(ref) {
 }
 
 // ── props: strip $type, keep the fields compileDef reads ───────────────────────
-// compileDef reads: p.observed (falling back to kind!=='style' for a spec written
-// before the field existed), p.kind==='template' + p.template for the template prop,
+// compileDef reads: p.observed and p.declared (falling back to kind!=='style' for a
+// spec written before observed existed), p.kind==='template' + p.template for the template prop,
 // p.kind==='visibility' + p.name for CSS, and p.name.
 function specPropToDef(p) {
   const out = { name: p.name };
   if ('type' in p) out.type = p.type;
   if ('kind' in p) out.kind = p.kind;
   if ('observed' in p) out.observed = p.observed;
+  if ('declared' in p) out.declared = p.declared;
   if ('values' in p) out.values = p.values;
   if ('default' in p) out.default = p.default;
   if ('template' in p) out.template = p.template;

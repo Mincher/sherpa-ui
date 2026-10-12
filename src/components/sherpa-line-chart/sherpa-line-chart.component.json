@@ -124,7 +124,8 @@
       "$type": "prop",
       "name": "data-aggregate",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "count",
@@ -140,25 +141,53 @@
       "$type": "prop",
       "name": "data-axis-label",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "y-axis caption (shown when set)"
     },
     {
       "$type": "prop",
-      "name": "data-bucket",
+      "name": "data-bands",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
+      "name": "data-bucket",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
       "kind": "style",
+      "values": [
+        "day",
+        "month",
+        "year"
+      ],
       "description": "a date over-field, cut to day | month | year"
     },
     {
       "$type": "prop",
       "name": "data-field",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "the number that aggregate reads"
+    },
+    {
+      "$type": "prop",
+      "name": "data-legend",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "values": [
+        "horizontal",
+        "vertical"
+      ]
     },
     {
       "$type": "prop",
@@ -180,15 +209,25 @@
       "$type": "prop",
       "name": "data-over-field",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "ASKED of its provider: the x axis runs over this field"
     },
     {
       "$type": "prop",
+      "name": "data-readings",
+      "type": "string",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
+    },
+    {
+      "$type": "prop",
       "name": "data-segment-field",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "one line per value of this field"
     },
@@ -217,9 +256,22 @@
       "$type": "prop",
       "name": "data-x-axis-label",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "x-axis caption (shown when set)"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "title",
+      "description": "heading above the chart"
+    },
+    {
+      "$type": "slot",
+      "name": "legend",
+      "description": "a <sherpa-chart-legend> for the series."
     }
   ],
   "states": [

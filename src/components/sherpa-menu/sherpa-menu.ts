@@ -144,7 +144,6 @@ export class SherpaMenu extends SherpaElement {
   static override observed = [
     // Shows an answer held ELSEWHERE, unchangeable here. TRAP T-a-view-held-heading-shows-and-refuses
     'data-readonly',
-    'data-heading',
     'data-align',
     'data-search',
     'data-clearable',
@@ -156,8 +155,6 @@ export class SherpaMenu extends SherpaElement {
     'data-op',
     // The opt-ins' old names, heard and written in the new words.
     'data-custom', 'data-custom-only', 'data-conditional', 'data-conditions-only',
-    'data-mode',
-    'data-inline',
     // What was typed under it. An ATTRIBUTE, so a re-stamp cannot lose it.
     'data-value',
     'open',

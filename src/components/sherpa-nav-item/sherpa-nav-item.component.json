@@ -277,17 +277,23 @@
     {
       "$type": "prop",
       "name": "data-status-dot",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "render the trailing Indicator (atom) dot"
     },
     {
       "$type": "prop",
       "name": "data-tier",
-      "type": "string",
-      "observed": false,
+      "type": "enum",
+      "observed": true,
+      "declared": true,
       "kind": "style",
+      "values": [
+        "2",
+        "3"
+      ],
       "description": "nesting depth 2 | 3 — indents the row to the Figma indent tier (tier 1 is the default, no attribute needed)"
     },
     {
@@ -306,6 +312,12 @@
       "native": true,
       "default": false,
       "description": "disabled state"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "trailing"
     }
   ],
   "states": [

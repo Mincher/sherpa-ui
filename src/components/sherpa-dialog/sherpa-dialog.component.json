@@ -66,7 +66,8 @@
       "$type": "prop",
       "name": "data-heading",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "— convenience header label (a slotted [slot=header] overrides it)"
     },
@@ -81,9 +82,14 @@
     {
       "$type": "prop",
       "name": "data-type",
-      "type": "string",
-      "observed": false,
+      "type": "enum",
+      "observed": true,
+      "declared": true,
       "kind": "style",
+      "values": [
+        "modal",
+        "overlay"
+      ],
       "description": "— modal  | overlay — overlay fills its container and opens NON-modal, so the page beside it stays live"
     },
     {
@@ -94,6 +100,23 @@
       "native": true,
       "default": false,
       "description": "— native boolean (read reflects dialog.open; set → show()/close())"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "header",
+      "description": "header region (reflects data-has-header)."
+    },
+    {
+      "$type": "slot",
+      "name": "",
+      "description": "the dialog body"
+    },
+    {
+      "$type": "slot",
+      "name": "footer",
+      "description": "footer region (reflects data-has-footer)"
     }
   ],
   "states": [

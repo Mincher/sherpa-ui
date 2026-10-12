@@ -43,9 +43,10 @@ export interface NumOptions {
 
 /**
  * How a declared attribute is REALISED. Matches the generated `.component.json`.
+ * `behaviour`: only the component's own JS reads it.
  * TRAP T-declared-only-means-css-owns-it — only `content` does any work.
  */
-export type PropKind = 'content' | 'style' | 'visibility';
+export type PropKind = 'content' | 'style' | 'visibility' | 'behaviour';
 
 /** The declared type of an attribute's value. Mirrors schemas/component.v1.json. */
 export type PropType = 'string' | 'number' | 'boolean' | 'enum';

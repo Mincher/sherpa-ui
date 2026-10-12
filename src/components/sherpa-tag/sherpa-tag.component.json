@@ -72,7 +72,8 @@
       "$type": "prop",
       "name": "data-icon",
       "type": "string",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "content",
       "description": "leading icon glyph value (shown when present; or slot \"icon\")"
     },
@@ -94,10 +95,26 @@
     {
       "$type": "prop",
       "name": "data-type",
-      "type": "string",
-      "observed": false,
+      "type": "enum",
+      "observed": true,
+      "declared": true,
       "kind": "style",
+      "values": [
+        "dot"
+      ],
       "description": "dot   (render as a small circular indicator; default full)"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "icon",
+      "description": "a leading glyph (overrides data-icon; shown when data-icon is set)"
+    },
+    {
+      "$type": "slot",
+      "name": "",
+      "description": "the label"
     }
   ],
   "states": [

@@ -130,14 +130,27 @@
       "$type": "prop",
       "name": "data-type",
       "type": "enum",
-      "observed": false,
+      "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "assistant",
-        "user",
-        "system"
+        "system",
+        "user"
       ],
       "description": "assistant  | user (right, accent) | system (centred, muted)"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "avatar",
+      "description": "custom avatar content, replaces the default glyph (reflects data-has-avatar)"
+    },
+    {
+      "$type": "slot",
+      "name": "",
+      "description": "bubble body content, overrides data-content"
     }
   ],
   "states": [

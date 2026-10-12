@@ -1,7 +1,7 @@
 /**
  * ts-facts.mjs — read the facts a spec DETERMINES out of a component's TypeScript.
  *
- * Today that is the `observed` list and the declared `kind` of each prop. It lives here rather than in the spec
+ * Today that is the `observed` list and each declared prop. It lives here rather than in the spec
  * generator because two things need it and only one had the fixes: the generator
  * and `roundtrip-component.mjs` each had their own reader, and the fork's was the
  * naive `/static override observed = \[([^\]]*)\]/` regex. Both of the bugs
@@ -12,9 +12,12 @@
  * Map:
  * - parseObserved — The `static override observed` list, as names.
  * - expandArrayConst — Read a module-level `const NAME = ['a', 'b'] as const;` back into its strings.
- * - parsePropKinds — The declared `kind` of each prop, from `static override props`.
+ * - parsePropDecls — Each prop `static override props` declares: its kind, type, values and default.
  * - parseClassApi — The component class's public methods and properties, read by TypeScript's own parser.
  */
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 
 /**
@@ -82,33 +85,114 @@ export function expandArrayConst(src, name) {
 
 
 /**
- * The declared `kind` of each prop, from `static override props`.
+ * Each prop `static override props` declares: its kind, type, values and default.
  *
- * This is the only honest source for `kind`. Before it existed the generator
- * inferred one from the observed list, because compileDef derived `observed`
- * from `kind !== 'style'` and had no other channel — so a CSS-only attribute
- * that happened to be observed was written into 39 specs as `kind: content`,
- * claiming it wrote text it never wrote.
- * TRAP T-kind-says-how-not-whether
+ * The only honest source for `kind` — inferred from the observed list, a
+ * CSS-only attribute was written into 39 specs as `content`. TRAP T-kind-says-how-not-whether
+ * Read by TypeScript's parser, so a spread (`...SUMMARY_PROPS`) and a lookup
+ * (`SHARED_PROPS['data-size']`) resolve into `sherpa-element.ts`. An entry
+ * with a `to:` selector and no kind IS content: that is what `to` means.
  *
- * An entry with a `to:` selector and no explicit kind IS content — that is what
- * `to` means to the base class.
- *
- * @returns {Record<string, string>} attribute name → kind
+ * @returns {Record<string, { kind?: string, type?: string, values?: string[], default?: unknown }>}
  */
-export function parsePropKinds(ts) {
-  const src = ts ?? '';
-  const m = /static override props\s*=\s*\{([\s\S]*?)\n\s*\}\s*as const;/.exec(src);
-  if (!m) return {};
-  const body = m[1].replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+export function parsePropDecls(src, path) {
+  const sf = ts.createSourceFile('c.ts', src ?? '', ts.ScriptTarget.Latest, true);
+  const cls = registeredClass(sf, src);
+  const member = cls?.members.find((m) => ts.isPropertyDeclaration(m) && m.name?.getText(sf) === 'props'
+    && (ts.getCombinedModifierFlags(m) & ts.ModifierFlags.Static));
+  const init = unwrap(member?.initializer);
+  return init && ts.isObjectLiteralExpression(init) ? entriesOf(init, { sf, src, path }) : {};
+}
+
+/** A value list by name: in this file, else in the file a relative import names. */
+function valuesNamed(name, file) {
+  const here = expandArrayConst(file.src, name);
+  if (here.length || !file.path) return here;
+  const from = new RegExp(`import\\s*\\{[^}]*\\b${name}\\b[^}]*\\}\\s*from\\s*['"](\\.{1,2}/[^'"]+)['"]`).exec(file.src)?.[1];
+  const target = from && join(dirname(file.path), from.replace(/\.js$/, '.ts'));
+  return target && existsSync(target) ? expandArrayConst(readFileSync(target, 'utf8'), name) : [];
+}
+
+/** The shared prop lists, read once from the base class's file. */
+const SHARED_FILE = fileURLToPath(new URL('../../src/core/ui/sherpa-element.ts', import.meta.url));
+let shared;
+function sharedFile() {
+  if (!shared) {
+    const src = readFileSync(SHARED_FILE, 'utf8');
+    shared = { sf: ts.createSourceFile('s.ts', src, ts.ScriptTarget.Latest, true), src };
+  }
+  return shared;
+}
+
+/** A module-level object const, in this file or the base class's. */
+function listNamed(name, file) {
+  for (const at of [file, sharedFile()]) {
+    for (const st of at.sf.statements) {
+      if (!ts.isVariableStatement(st)) continue;
+      for (const d of st.declarationList.declarations) {
+        const init = unwrap(d.initializer);
+        if (ts.isIdentifier(d.name) && d.name.text === name && init && ts.isObjectLiteralExpression(init)) {
+          return { node: init, file: at };
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function unwrap(node) {
+  let n = node;
+  while (n && (ts.isAsExpression(n) || ts.isParenthesizedExpression(n) || ts.isSatisfiesExpression(n))) n = n.expression;
+  return n;
+}
+
+function entriesOf(obj, file) {
   const out = {};
-  for (const e of body.matchAll(/['"]([^'"]+)['"]\s*:\s*\{([^}]*)\}/g)) {
-    const [, name, fields] = e;
-    const kind = /\bkind\s*:\s*['"]([a-z]+)['"]/.exec(fields);
-    if (kind) out[name] = kind[1];
-    else if (/\bto\s*:/.test(fields)) out[name] = 'content';
+  for (const p of obj.properties) {
+    if (ts.isSpreadAssignment(p) && ts.isIdentifier(p.expression)) {
+      const list = listNamed(p.expression.text, file);
+      if (list) Object.assign(out, entriesOf(list.node, list.file));
+    } else if (ts.isPropertyAssignment(p) && (ts.isStringLiteralLike(p.name) || ts.isIdentifier(p.name))) {
+      const decl = declOf(p.initializer, file);
+      if (decl) out[p.name.text] = decl;
+    }
   }
   return out;
+}
+
+function declOf(node, file) {
+  const n = unwrap(node);
+  if (ts.isElementAccessExpression(n) && ts.isIdentifier(n.expression) && ts.isStringLiteralLike(n.argumentExpression)) {
+    const list = listNamed(n.expression.text, file);
+    return list ? entriesOf(list.node, list.file)[n.argumentExpression.text] : undefined;
+  }
+  if (!ts.isObjectLiteralExpression(n)) return undefined;
+  const out = {};
+  let to = false;
+  for (const p of n.properties) {
+    if (!ts.isPropertyAssignment(p) || !p.name) continue;
+    const key = p.name.getText(file.sf);
+    const v = unwrap(p.initializer);
+    if ((key === 'kind' || key === 'type') && ts.isStringLiteralLike(v)) out[key] = v.text;
+    else if (key === 'to') to = true;
+    else if (key === 'values' && ts.isArrayLiteralExpression(v)) {
+      out.values = v.elements.flatMap((e) => (ts.isStringLiteralLike(e) ? [e.text]
+        : ts.isSpreadElement(e) && ts.isIdentifier(e.expression) ? valuesNamed(e.expression.text, file) : []));
+    } else if (key === 'default') {
+      if (ts.isStringLiteralLike(v)) out.default = v.text;
+      else if (ts.isNumericLiteral(v)) out.default = Number(v.text);
+      else if (v.kind === ts.SyntaxKind.TrueKeyword || v.kind === ts.SyntaxKind.FalseKeyword) out.default = v.kind === ts.SyntaxKind.TrueKeyword;
+    }
+  }
+  if (!out.kind && to) out.kind = 'content';
+  return out;
+}
+
+/** The class `define()` registers, else the first. */
+function registeredClass(sf, src) {
+  const registered = /(?:customElements\.)?\bdefine\(\s*['"][^'"]+['"]\s*,\s*([A-Za-z_$][\w$]*)/.exec(src ?? '')?.[1];
+  const classes = sf.statements.filter(ts.isClassDeclaration);
+  return classes.find((c) => c.name?.text === registered) ?? classes[0];
 }
 
 
@@ -156,9 +240,7 @@ function isPublic(member) {
  */
 export function parseClassApi(src) {
   const sf = ts.createSourceFile('c.ts', src ?? '', ts.ScriptTarget.Latest, true);
-  const registered = /(?:customElements\.)?\bdefine\(\s*['"][^'"]+['"]\s*,\s*([A-Za-z_$][\w$]*)/.exec(src ?? '')?.[1];
-  const classes = sf.statements.filter(ts.isClassDeclaration);
-  const cls = classes.find((c) => c.name?.text === registered) ?? classes[0];
+  const cls = registeredClass(sf, src);
   const methods = [];
   const props = new Map();
   /* A TYPE as written, or `unknown`: a wrong type in a contract is worse than

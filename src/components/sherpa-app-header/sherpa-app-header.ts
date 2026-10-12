@@ -58,7 +58,6 @@ export class SherpaAppHeader extends SherpaElement {
   static override observed = [
     'data-icon',
     'data-notifications',
-    'data-notifications-open',
   ];
 
   override onRender(): void {

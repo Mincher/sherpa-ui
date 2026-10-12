@@ -58,7 +58,7 @@ export class SherpaQuickFilter extends SherpaElement {
     /* A data-viz series, from 1: the chip leads with its swatch. */
     'data-swatch': { type: 'string', kind: 'style' },
     'data-menu': { type: 'boolean', kind: 'style' },
-    'data-type': { type: 'enum', kind: 'style', values: ['ai', 'jump'] },
+    'data-type': { type: 'enum', kind: 'style', values: ['default', 'ai', 'jump'] },
     'data-plain': { type: 'boolean', kind: 'style' },
     'data-no-value': { type: 'boolean', kind: 'style' },
     'data-full-value': { type: 'boolean', kind: 'style' },

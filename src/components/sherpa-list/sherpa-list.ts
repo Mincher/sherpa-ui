@@ -25,7 +25,6 @@ export class SherpaList extends SherpaElement {
     'data-empty': { type: 'string', kind: 'content', to: '.empty' },
   } as const;
 
-  static override observed = ['data-empty'];
 
   /** The rows, as populated. */
   #rows: ListRow[] = [];

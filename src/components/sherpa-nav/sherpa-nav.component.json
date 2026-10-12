@@ -232,8 +232,9 @@
     {
       "$type": "prop",
       "name": "data-menu",
-      "type": "string",
-      "observed": false,
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
       "kind": "visibility",
       "description": "the PHONE's menu: the whole screen, no Pin, Settings at the bottom, and Cancel — openMenu() / closeMenu()"
     },
@@ -259,6 +260,27 @@
       "observed": false,
       "kind": "style",
       "description": "show the search field (auto-set when a product is given)"
+    }
+  ],
+  "slots": [
+    {
+      "$type": "slot",
+      "name": "brand-icon",
+      "description": "the product mark inside the 40×40 branding tile"
+    },
+    {
+      "$type": "slot",
+      "name": "actions",
+      "description": "more header buttons, after Settings and Pin"
+    },
+    {
+      "$type": "slot",
+      "name": ""
+    },
+    {
+      "$type": "slot",
+      "name": "footer",
+      "description": "pinned footer content (account / user)"
     }
   ],
   "states": [
