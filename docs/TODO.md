@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**58 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
+**57 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -76,7 +76,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16t4 | 228 | The donut chart's legend lets EVERY item be switched off; one must stay on — and a value filter limiting greyed out may not be counted | bug |
 | ✅ | 16t5 | 229 | The legend's switched-off items are lost on a page refresh | bug |
 | ✅ | 16t7 | 231 | "Reset all to default" and "Reset" are inactive while the filters already ARE the View's default | bug |
-| ⬜ | 16t8 | 232 | The delete customer dialog is critical all over — borders and labels; only its footer's confirm button is | bug |
+| ✅ | 16t8 | 232 | The delete customer dialog is critical all over — borders and labels; only its footer's confirm button is | bug |
 | ⬜ | 16t9 | 233 | In the filter panel, a filter section's header inside an accordion aligns to the TOP: label, count badge and the accordion button | quick |
 | ❓ | 16t6 | 230 | Reset all filters dialog: "Save filters before reset" sits in a grey border; it is plain form content | quick |
 | | | | **C2 — Consumers: frameworks, apps and agents** (planned 2026-10-12) | |
@@ -1511,13 +1511,18 @@ each bar and panel; their Reset buttons, the menu trigger and the ⋮ rows go
 inactive. The Query builder lost a side effect on the way: it no longer
 arranges the rows itself. `T-reset-to-default-is-the-views-own`
 
-### `[ ]` 232 — BUG: the delete customer dialog is critical all over
+### `[x]` ✅ 232 — BUG: the delete customer dialog is critical all over
 
 Will, 2026-10-12: *"The delete customer dialog has critical styling applied
 to it's borders and text labels but the only item that needs to have critical
 status styling is the footer's apply button."* Likely a `data-status` on the
 dialog that the status cascade carries to everything inside
 (`[data-status]` pins at any depth); it belongs on the one button.
+
+**✅ Done 2026-10-12** (Demos). It was: `data-status="critical"` on the dialog.
+It is on the Delete button now, and the generic confirm (deleting a saved
+View) puts it on its action. Two tests that read the dialog's status read the
+button's; a new one checks the dialog's text takes none.
 
 ### `[ ]` 233 — Filter section headers inside accordions align to the top
 
