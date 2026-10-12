@@ -885,7 +885,7 @@
   ],
   "populate": {
     "shape": "[{ value, label }]",
-    "description": "the choices a SELECT field offers."
+    "description": "the choices a SELECT field offers. Or its `<option>` children"
   },
   "states": [
     {

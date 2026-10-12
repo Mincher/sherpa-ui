@@ -63,7 +63,7 @@
   },
   "populate": {
     "shape": "[{ label, href? }]",
-    "description": "the crumb trail; the last becomes current."
+    "description": "the crumb trail; the last becomes current. Or its `<a href>` children"
   },
   "states": [
     {

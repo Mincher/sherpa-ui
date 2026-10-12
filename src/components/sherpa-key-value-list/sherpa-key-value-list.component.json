@@ -60,7 +60,7 @@
   ],
   "populate": {
     "shape": "[{ key, value }]",
-    "description": "the label/value pairs to render."
+    "description": "the label/value pairs to render. Or its `<dt>` and `<dd>` children"
   },
   "states": [
     {

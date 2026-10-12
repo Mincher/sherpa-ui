@@ -108,8 +108,16 @@ export class SherpaInputText extends SherpaElement {
     return this.hasAttribute('data-multiline') ? 'multiline' : 'default';
   }
 
+  /** Its `<option>` children, as a SELECT field's choices. */
+  protected override childData(): InputOption[] | undefined {
+    const options = [...this.querySelectorAll<HTMLOptionElement>(':scope > option')];
+    return options.length
+      ? options.map((o) => ({ value: o.value, label: o.textContent?.trim() ?? o.value, ...(o.disabled ? { disabled: true } : {}) }))
+      : undefined;
+  }
+
   /**
-   * populate([{ value, label }]) — the choices a SELECT field offers.
+   * populate([{ value, label }]) — the choices a SELECT field offers. Or its `<option>` children
    *
    * Kept, so a variant re-stamp can put them back: `data-type` replaces the
    * whole tree and the <option>s with it.

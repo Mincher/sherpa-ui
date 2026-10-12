@@ -37,7 +37,17 @@ export class SherpaKeyValueList extends SherpaElement {
     if (this.#pairs.length) this.#render();
   }
 
-  /** populate([{ key, value }]) — the label/value pairs to render. */
+  /** Its `<dt>` and `<dd>` children, as pairs: each `<dd>` answers the `<dt>` before it. */
+  protected override childData(): KeyValuePair[] | undefined {
+    const pairs: KeyValuePair[] = [];
+    for (const child of this.children) {
+      if (child.localName === 'dt') pairs.push({ key: child.textContent?.trim() ?? '', value: '' });
+      else if (child.localName === 'dd' && pairs.length) pairs.at(-1)!.value = child.textContent?.trim() ?? '';
+    }
+    return pairs.length ? pairs : undefined;
+  }
+
+  /** populate([{ key, value }]) — the label/value pairs to render. Or its `<dt>` and `<dd>` children */
   protected override renderData(data: unknown): void {
     const list = Array.isArray(data) ? (data as Record<string, unknown>[]) : [];
     this.#pairs = list

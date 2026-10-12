@@ -513,6 +513,7 @@ export abstract class SherpaElement extends Base {
       this.#connected = true;
       this.onConnect();
       this.#ask();
+      this.#watchChildren();
     }
   }
 
@@ -524,6 +525,7 @@ export abstract class SherpaElement extends Base {
     // Out of the tree, out of its provider's reach: stop being told.
     this.#leave?.();
     this.#leave = undefined;
+    this.#childWatch?.disconnect();
     this.onDisconnect();
   }
 
@@ -855,7 +857,34 @@ export abstract class SherpaElement extends Base {
       this.onConnect();
       this.#ask();
     }
+    this.#watchChildren();
   }
+
+  /** While no `populate()` gave it data, its children are its data — read
+   *  now, and again as they change. TRAP T-a-list-takes-its-children-as-data */
+  #watchChildren(): void {
+    if (this.childData === SherpaElement.prototype.childData || !this.isConnected) return;
+    const read = (): void => {
+      if (this.#given !== undefined) return;
+      const data = this.childData();
+      // Drawing may touch the children — a tab's panel — so only a CHANGE draws.
+      const said = JSON.stringify(data);
+      if (data === undefined || said === this.#childSaid) return;
+      this.#childSaid = said;
+      void this.renderData(this.#withSettings(data));
+    };
+    // Its own attributes are not its children.
+    this.#childWatch ??= new MutationObserver((records) => {
+      if (records.some((r) => r.target !== this || r.type !== 'attributes')) read();
+    });
+    this.#childWatch.observe(this, { childList: true, subtree: true, characterData: true, attributes: true });
+    read();
+  }
+
+  /** Watches the children while they are its data. */
+  #childWatch: MutationObserver | null = null;
+  /** What its children last said. */
+  #childSaid: string | undefined;
 
   /** The markup and sheets this element is drawn from now — its own, then a
    *  consumer's. TRAP T-a-templater-owns-the-files */
@@ -1120,6 +1149,15 @@ export abstract class SherpaElement extends Base {
    */
   protected renderData(data: unknown): Promise<void> | void {
     this.#renderDeclared(data);
+  }
+
+  /**
+   * Its data read from its own CHILDREN — the markup path, for a page that
+   * writes only HTML. Undefined: it has none. Used while no `populate()` gave
+   * data. TRAP T-a-list-takes-its-children-as-data
+   */
+  protected childData(): unknown {
+    return undefined;
   }
 
   /** Shadow DOM is ready. Cache refs, set defaults, wire host listeners. */

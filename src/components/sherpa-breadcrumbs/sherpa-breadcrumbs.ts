@@ -26,7 +26,15 @@ export class SherpaBreadcrumbs extends SherpaElement {
     if (this.#crumbs.length) this.#render();
   }
 
-  /** populate([{ label, href? }]) — the crumb trail; the last becomes current. */
+  /** Its `<a href>` children, as crumbs. */
+  protected override childData(): Crumb[] | undefined {
+    const links = [...this.querySelectorAll<HTMLAnchorElement>(':scope > a')];
+    return links.length
+      ? links.map((a) => ({ label: a.textContent?.trim() ?? '', ...(a.getAttribute('href') ? { href: a.getAttribute('href')! } : {}) }))
+      : undefined;
+  }
+
+  /** populate([{ label, href? }]) — the crumb trail; the last becomes current. Or its `<a href>` children */
   protected override renderData(data: unknown): void {
     const list = Array.isArray(data) ? (data as Crumb[]) : [];
     this.#crumbs = list

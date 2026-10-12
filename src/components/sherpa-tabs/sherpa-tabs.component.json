@@ -97,7 +97,7 @@
   ],
   "populate": {
     "shape": "[{ id, label }]",
-    "description": "the tabs; the first is current unless data-current-id names one"
+    "description": "the tabs; the first is current unless data-current-id names one. Or its panels' data-tab and data-label"
   },
   "states": [
     {

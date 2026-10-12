@@ -113,6 +113,8 @@ test('clicking a crumb fires breadcrumb-select with index/label/href', async ({ 
     el.addEventListener('breadcrumb-select', (e) => {
       captured = (e as CustomEvent).detail;
     });
+    // A real link would load the page under the test.
+    el.addEventListener('click', (e) => e.preventDefault());
     el.shadowRoot!.querySelectorAll<HTMLElement>('.link')[1]!.click();
     return captured;
   });
@@ -131,6 +133,8 @@ test('clicking the current crumb fires with empty href', async ({ page }) => {
     el.addEventListener('breadcrumb-select', (e) => {
       captured = (e as CustomEvent).detail;
     });
+    // A real link would load the page under the test.
+    el.addEventListener('click', (e) => e.preventDefault());
     el.shadowRoot!.querySelectorAll<HTMLElement>('.link')[1]!.click();
     return captured;
   });

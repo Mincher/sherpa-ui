@@ -62,7 +62,15 @@ export class SherpaTabs extends SherpaElement {
     this.emit('tab-select', { id, index, label: this.#tabs[index]?.label ?? '' });
   }
 
-  /** populate([{ id, label }]) — the tabs; the first is current unless data-current-id names one */
+  /** Its panels, as tabs: each `data-tab`, named by its `data-label`. */
+  protected override childData(): TabDef[] | undefined {
+    const panels = [...this.querySelectorAll<HTMLElement>(':scope > [data-tab]')];
+    return panels.length
+      ? panels.map((p) => ({ id: p.dataset['tab'] ?? '', label: p.dataset['label'] ?? p.dataset['tab'] ?? '' }))
+      : undefined;
+  }
+
+  /** populate([{ id, label }]) — the tabs; the first is current unless data-current-id names one. Or its panels' data-tab and data-label */
   protected override renderData(data: unknown): void {
     const list = Array.isArray(data) ? (data as TabDef[]) : [];
     this.#tabs = list

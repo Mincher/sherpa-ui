@@ -95,7 +95,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | c11 | 195 | The spec becomes the whole contract: props only, slots, `populate()` shape, typed events; a usage gate | tooling |
 | ✅ | c12 | 210 | Framework typings from the manifest: the tag map, React 19 JSX, Vue and Svelte types, editor data — after 195 | tooling |
 | ✅ | c13 | 213 | Only a component's OWN events leave it: an inner `button-click` stops at its host | foundation |
-| ⬜ | c14 | 212 | Markup paths for the list components — tabs, breadcrumbs, a select's options, key-value pairs — so plain HTML and React 18 can fill them | feature |
+| ✅ | c14 | 212 | Markup paths for the list components — tabs, breadcrumbs, a select's options, key-value pairs — so plain HTML and React 18 can fill them | feature |
 | ⬜ | c15 | 214 | Forms complete: `<fieldset disabled>`, reset on every control, and the five controls that submit nothing | foundation |
 | ⬜ | c16 | 208 | The text in the JS, not fetched: templates and sheets inline at build, URLs only in a dev build — with 199 | refactor |
 | ⬜ | c17 | 199 | A smaller download: minify the JS (a new dev tool) and load icons on demand | refactor |
@@ -1918,13 +1918,19 @@ plain `input` and `change` for each now. The sweep `reforged-only-own-events.spe
 button in every bare component: 24 leaks without the stopper, 0 with it.
 `T-an-inner-event-stops-at-its-host`
 
-### `[ ]` 212 — Markup paths for the list components
+### `[x]` ✅ 212 — Markup paths for the list components
 
 React 18, server HTML and a plain page can set only attributes and children.
 These take data only through `populate()`: the tab strip, breadcrumbs, an
 input-text select's options, key-value pairs. Each gets a children path (the
 panels' `data-tab`/`data-label`, `<a>` children, `<option>` children, slotted
 pairs). After 195 lists the slots.
+
+**✅ Done 2026-10-12.** Each reads its own children as its data while no
+`populate()` gave any: the tabs' panels (`data-tab`, `data-label`), `<a href>`
+crumbs, `<option>`s, and `<dt>`/`<dd>` pairs — one `childData()` hook in the
+base class, which follows the children as they change and draws only when
+what they say changed. `T-a-list-takes-its-children-as-data`
 
 ### `[ ]` 214 — Forms complete
 

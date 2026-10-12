@@ -15556,6 +15556,25 @@ EXTENDS the default rather than replacing it.
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `test/e2e/reforged-templater.spec.ts`
 
+### T-a-list-takes-its-children-as-data
+
+**A page that writes only HTML could not fill a list.** The tab strip, the
+breadcrumbs, a select's options and key-value pairs took data only through
+`populate()`, a method. So each now reads its own CHILDREN as its data
+(TODO 212): the tabs' panels (`data-tab`, `data-label`), `<a href>` crumbs,
+`<option>`s, and `<dt>`/`<dd>` pairs.
+
+A component overrides `childData()`; the base class reads it at the first
+render and again when the children change, while no `populate()` has given
+data — `populate()` wins once called. It draws only when what the children
+SAY changed: drawing can touch them (the tabs mark their panels), and a
+`MutationObserver` that drew on every record looped for ever. And a child
+added to the host is a record whose target is the host, so only the host's
+own ATTRIBUTE records are ignored.
+
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `test/e2e/reforged-children-are-data.spec.ts`
+
 ### T-an-inner-event-stops-at-its-host
 
 **A page hears a component's OWN events, never its parts'.** Every `emit()`
