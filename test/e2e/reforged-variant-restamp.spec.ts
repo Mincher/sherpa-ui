@@ -127,7 +127,7 @@ test('a re-stamped nav-item emits its click ONCE', async ({ page }) => {
 });
 
 test('a single-template component is never re-stamped', async ({ page }) => {
-  await page.goto('/test/reforged/harness.html');
+  // The fixture has loaded the harness and waited for it; a second goto did not wait.
   await settled(page);
   const stable = await page.evaluate(async () => {
     const settle = (): Promise<void> =>

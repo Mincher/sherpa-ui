@@ -1,4 +1,4 @@
-import { test, expect } from './harness';
+import { test, expect, gotoHarness } from './harness';
 
 /**
  * ANY COMPONENT CAN BE BOUND TO A DATA SOURCE.
@@ -25,7 +25,8 @@ const MAKE = `async function make(tag) {
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(`window.make = ${MAKE.slice(MAKE.indexOf('async'))}`);
-  await page.goto('/test/reforged/harness.html');
+  // Loaded AGAIN for the init script — and waited for, as the fixture's first load is.
+  await gotoHarness(page);
 });
 
 test('a component with NO renderData still shows bound data', async ({ page }) => {
