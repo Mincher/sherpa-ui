@@ -117,6 +117,7 @@
                   detail: { op, value, conditions }
                   `conditions` is EVERY row, in order. TRAP T-many-conditions-are-one-reading
     filter-mode-change — the mode button was pressed. detail: { mode } — simple | advanced
+    menu-row-remove — a row's × was pressed. detail: { value }
     menu-range-change — a number or date body's Range switch flipped. detail: { range }
     menu-items — its items were stamped, so a host can read its face. detail: { values }
     menu-back — a drilled menu's back arrow or crumb. detail: {}
@@ -223,6 +224,11 @@
     <template class="menu-drill-tpl">
       <sherpa-button class="menu-row-drill" data-type="icon" data-size="xs"
                      data-look="transparent" data-icon-start="chevron-right"></sherpa-button>
+    </template>
+    <!-- A ONE-value filter's REMOVE, at its row's end: its tick means On. TODO 54 -->
+    <template class="menu-remove-tpl">
+      <sherpa-button class="menu-row-remove" data-type="icon" data-size="xs"
+                     data-look="transparent" data-icon-start="cross"></sherpa-button>
     </template>
 
     <!--
@@ -385,6 +391,11 @@
     <template class="menu-drill-tpl">
       <sherpa-button class="menu-row-drill" data-type="icon" data-size="xs"
                      data-look="transparent" data-icon-start="chevron-right"></sherpa-button>
+    </template>
+    <!-- A ONE-value filter's REMOVE, at its row's end: its tick means On. TODO 54 -->
+    <template class="menu-remove-tpl">
+      <sherpa-button class="menu-row-remove" data-type="icon" data-size="xs"
+                     data-look="transparent" data-icon-start="cross"></sherpa-button>
     </template>
 
     <!--

@@ -350,7 +350,11 @@
       "$type": "event",
       "name": "filter-remove",
       "bubbles": true,
-      "composed": true
+      "composed": true,
+      "detail": {
+        "id": "unknown",
+        "scope": "unknown"
+      }
     },
     {
       "$type": "event",

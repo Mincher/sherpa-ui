@@ -24,7 +24,7 @@ import {
 } from '../../core/ui/saved-filter-menu.js';
 import type { SaidField } from '../../core/data/filter-face.js';
 import {
-  FILTERS_LABEL, MenuDrill, ON, filtersMenuItems, onOffMenu, type AddedFilter, type ListedFilter,
+  FILTERS_LABEL, MenuDrill, filtersMenuItems, type AddedFilter, type ListedFilter,
 } from '../../core/ui/filters-button.js';
 import { report } from '../../core/data/report.js';
 import {
@@ -189,6 +189,7 @@ type MenuApi = HTMLElement & {
   values?: string[];
   items?: (i: readonly FilterMenuItem[]) => void;
   hide?: () => void;
+  show?: (trigger?: HTMLElement) => void;
 };
 
 export class SherpaFilterPanel extends SherpaElement {
@@ -240,7 +241,11 @@ export class SherpaFilterPanel extends SherpaElement {
   /** A hidden filter's rows, moved into its scope's Filters menu. TRAP T-drill-moves-not-clones */
   #drill = new MenuDrill();
   /** The menu the panel built for a drill, and the field it answers. */
-  #built: { menu: HTMLElement; held: Held; chip?: HTMLElement } | null = null;
+  #built: { menu: HTMLElement; held: Held } | null = null;
+  /** A × asked its host to remove a filter: the rebuilt Filters menu opens again. */
+  #reopen = false;
+  /** What each PRESET row was told, by row value: on or off. TODO 54 */
+  #told = new Map<string, boolean>();
 
   override onRender(): void {
     this.#syncResets();
@@ -275,6 +280,7 @@ export class SherpaFilterPanel extends SherpaElement {
     const filters = this.$('.filters-btn');
     filters?.addEventListener('menu-change', this.#onAddCommit);
     filters?.addEventListener('menu-drill', this.#onMenuDrill);
+    filters?.addEventListener('menu-row-remove', this.#onRowRemove);
     filters?.addEventListener('menu-back', this.#onDrillBack);
     filters?.addEventListener('menu-close', this.#onDrillBack);
     /* THE CHIP says WHAT changed; only this panel knows WHICH SCOPE it belongs
@@ -984,6 +990,8 @@ export class SherpaFilterPanel extends SherpaElement {
     const btn = this.$<HTMLElement>('.filters-btn');
     if (!btn) return;
     if (this.#drill.menu && btn.contains(this.#drill.menu)) this.#drillOut();
+    const reopen = this.#reopen;
+    this.#reopen = false;
     this.#rows.clear();
     const row = (scope: string, id: string): string => {
       const value = `${scope}:${id}`;
@@ -1002,15 +1010,22 @@ export class SherpaFilterPanel extends SherpaElement {
       hides += hidden.length;
       const removable = new Set(list.held.map((f) => f.id));
       const listed = new Set(hidden.map((f) => f.id));
+      // A PRESET is one value: its tick is its chip's on/off. TODO 54
+      const on = (id: string): { on?: boolean } => {
+        const chip = this.#presetChip(scope.scope, id);
+        return chip ? { on: chip.hasAttribute('data-current') } : {};
+      };
       for (const f of hidden) {
         added.push({
           id: row(scope.scope, f.id), label: f.label, note: scope.label,
-          removable: removable.has(f.id), hidden: true, count: this.#countOf(scope.scope, f.id),
+          removable: removable.has(f.id), hidden: true, count: this.#countOf(scope.scope, f.id), ...on(f.id),
         });
       }
       for (const f of list.held) {
         if (listed.has(f.id)) continue;
-        added.push({ id: row(scope.scope, f.id), label: f.label, note: scope.label, removable: true, hidden: false });
+        added.push({
+          id: row(scope.scope, f.id), label: f.label, note: scope.label, removable: true, hidden: false, ...on(f.id),
+        });
       }
     }
 
@@ -1035,6 +1050,7 @@ export class SherpaFilterPanel extends SherpaElement {
       }
     }
 
+    this.#told = new Map(added.flatMap((f) => (f.on === undefined ? [] : [[f.id, f.on] as const])));
     const any = added.length + offer.length > 0;
     btn.toggleAttribute('disabled', !any);
     if (hides) btn.dataset['badge'] = String(hides);
@@ -1050,6 +1066,8 @@ export class SherpaFilterPanel extends SherpaElement {
     btn.append(menu);
     (menu as MenuApi).items?.(items);
     this.#syncFilters();
+    // Rebuilt for a ×, under the reader's pointer: open again. TODO 54
+    if (reopen) void (menu as MenuApi).rendered?.then(() => { if (menu.isConnected) (menu as MenuApi).show?.(btn); });
   }
 
   /** The Filters menu's rows: each value, and the scope and filter it stands
@@ -1118,6 +1136,12 @@ export class SherpaFilterPanel extends SherpaElement {
     return held.values.querySelector<HTMLElement>(`.value[data-value="${CSS.escape(value)}"]`);
   }
 
+  /** A scope's PRESET chip by id, or null for a field. */
+  #presetChip(scope: string, id: string): HTMLElement | null {
+    const presets = this.#held.has(`${scope}:${id}`) ? undefined : this.#held.get(`${scope}:presets`);
+    return presets ? this.#chipIn(presets, id) : null;
+  }
+
   /**
    * The Filters button is ON only while a filter a SHUT scope hides is, and
    * each door counts its field's picks. An open scope speaks for itself.
@@ -1137,6 +1161,23 @@ export class SherpaFilterPanel extends SherpaElement {
     }
     if (on) btn.dataset['status'] = 'active';
     else btn.removeAttribute('data-status');
+    this.#syncPresetRows(menu as MenuApi | null);
+  }
+
+  /** A preset pressed in its scope: its row is ticked as it is, while the menu is shut. */
+  #syncPresetRows(menu: MenuApi | null): void {
+    if (!menu || menu.open || !this.#told.size) return;
+    let moved = false;
+    for (const [value, was] of this.#told) {
+      const at = this.#rows.get(value);
+      const on = !!at && !!this.#presetChip(at.scope, at.id)?.hasAttribute('data-current');
+      if (on === was) continue;
+      this.#told.set(value, on);
+      moved = true;
+    }
+    if (!moved) return;
+    const told = this.#told;
+    menu.values = [...(menu.values ?? []).filter((v) => !told.has(v)), ...[...told].filter(([, on]) => on).map(([v]) => v)];
   }
 
   /** A scope opened or shut: the Filters menu is rebuilt for what is now hidden. */
@@ -1158,34 +1199,10 @@ export class SherpaFilterPanel extends SherpaElement {
     if (!box || !menu || !at) return;
     event.stopPropagation();
     const { scope, id } = at;
+    // A PRESET has no child menu: its row's tick answers it. TODO 54
     const held = this.#held.get(`${scope}:${id}`);
-    if (held) {
-      void this.#openDoor(held, box, menu, held.def.label);
-      return;
-    }
-    // A PRESET is an on/off chip: its child menu is one row, "On".
-    const presets = this.#held.get(`${scope}:presets`);
-    const chip = presets ? this.#chipIn(presets, id) : null;
-    if (presets && chip) void this.#openOnOff(presets, chip, menu);
+    if (held) void this.#openDoor(held, box, menu, held.def.label);
   };
-
-  /** Drill into an on/off chip's child menu: one row, "On", ticked as the chip is. */
-  async #openOnOff(held: Held, chip: HTMLElement, menu: HTMLElement): Promise<void> {
-    this.#drillOut();
-    const value = chip.dataset['value'] ?? '';
-    const label = (held.def.options ?? []).find((o) => o.value === value)?.label ?? value;
-    const built = onOffMenu(label, chip.hasAttribute('data-current'));
-    held.box.append(built.menu);
-    this.#built = { menu: built.menu, held, chip };
-    await (built.menu as MenuApi).rendered;
-    (built.menu as MenuApi).items?.(built.items);
-    // It may have shut, or another row taken the drill, while it drew.
-    if (!(menu as MenuApi).open || this.#built?.menu !== built.menu) {
-      if (this.#built?.menu === built.menu) this.#dropBuilt();
-      return;
-    }
-    this.#drill.into(menu, built.menu, label);
-  }
 
   /**
    * DRILL IN, as the toolbar does: into a single chip's own menu, or into one
@@ -1249,13 +1266,6 @@ export class SherpaFilterPanel extends SherpaElement {
     const home = this.#drill.home;
     const menu = this.#drill.menu as MenuApi | null;
     const built = this.#built;
-    /* AN ON/OFF chip's "On" row: it flips the chip, which waits for the
-       panel's Apply as a press on it would, and the drill stays open. */
-    if (built?.chip && home === built.menu) {
-      built.chip.toggleAttribute('data-current', values.includes(ON));
-      this.#syncAnswered(built.held);
-      return;
-    }
     this.#drill.out();
     if (built && home === built.menu) {
       const want = new Set(values);
@@ -1277,6 +1287,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** Back, or the Filters menu shut: put the drilled rows home. */
   #onDrillBack = (event: Event): void => {
+    if (event.type === 'menu-close') this.#reopen = false;
     if (event.target === this.#drill.menu) this.#drillOut();
   };
 
@@ -1720,18 +1731,41 @@ export class SherpaFilterPanel extends SherpaElement {
 
     /* TICKED IS HELD. The menu lists every scope, so what changed is the
        difference between what it now says and what the panel is drawing — a
-       row unticked is a REMOVE, and that is the only way to remove one. Each
-       row says its scope, so each ask goes to the scope it names.
-       TRAP T-the-add-menu-is-the-whole-list */
+       row unticked is a REMOVE. Each row says its scope, so each ask goes to
+       the scope it names. A PRESET's tick is its on/off, as a press on it is;
+       its × removes it. TRAP T-the-add-menu-is-the-whole-list */
     const adds = new Map<string, string[]>();
     const gone: { scope: string; id: string }[] = [];
     for (const [value, { scope, id }] of this.#rows) {
+      const preset = this.#presetChip(scope, id);
+      if (preset) {
+        // Only a row the reader CHANGED: a stale tick never undoes a preset. TODO 54
+        const on = want.has(value);
+        if (on === this.#told.get(value)) continue;
+        this.#told.set(value, on);
+        preset.toggleAttribute('data-current', on);
+        const presets = this.#heldOfChip(preset);
+        if (!presets) continue;
+        this.#syncAnswered(presets);
+        this.#markPresent(presets);
+        this.#report(presets);
+        continue;
+      }
       const held = (this.#lists.get(scope)?.held ?? []).some((f) => f.id === id);
       if (held && !want.has(value)) gone.push({ scope, id });
       if (!held && want.has(value)) adds.set(scope, [...(adds.get(scope) ?? []), id]);
     }
     for (const [scope, ids] of adds) this.emit('filter-add-request', { scope, ids });
     for (const detail of gone) this.emit('filter-remove', detail);
+  };
+
+  /** A PRESET row's × was pressed: ask its scope to take it off. TODO 54 */
+  #onRowRemove = (event: Event): void => {
+    const at = this.#rows.get(String((event as CustomEvent).detail?.value ?? ''));
+    if (!at) return;
+    event.stopPropagation();
+    this.#reopen = true;
+    this.emit('filter-remove', { scope: at.scope, id: at.id });
   };
 
   /**

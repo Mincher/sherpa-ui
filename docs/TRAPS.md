@@ -8886,10 +8886,10 @@ place, and a pass once drilled the list away. A touch never hovers.
 a label ticks its box; the menu calls `preventDefault` on it. The box is a
 different answer — added or not — from what the child menu holds.
 
-**An on/off chip has no menu to open**, so its child menu is BUILT for the
-drill: one row, "On" (Will's pick). In the bar it applies at once, as the
-chip's body does; in the panel it waits for Apply, as a press on the chip
-does. It is dropped on the way out.
+**A ONE-value filter has no child menu** — an on/off chip, a preset. Its row
+IS its value, so its box is its on/off, with no caret (Will, TODO 54: "a tick
+on a value means that value is ON — in every filter"). It drilled into a menu
+built for it, one row called "On", until 2026-10-12.
 
 **`::slotted` reaches the row, never its children**, so the row is a GRID —
 box, label, count, caret — and needs no rule on any child. An empty
@@ -8899,7 +8899,6 @@ box, label, count, caret — and needs no rule on any child. An empty
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-menu-child-rows.spec.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
@@ -8936,8 +8935,8 @@ as the toolbar version BUT shows More Filters when the accordion is
 collapsed."*
 
 Shut, every filter the scope draws is listed under **Added filters**, in its
-order, each with a caret into its child menu — a preset's is one row, "On"
-(`T-a-row-opens-its-child-menu`). The badge counts them and the button reads
+order, each with a caret into its child menu — but a preset, which is one
+value: its box is its on/off (`T-a-row-opens-its-child-menu`). The badge counts them and the button reads
 active while one of them is on. Open, there are no carets, no badge and no
 active state: an open scope speaks for itself.
 
@@ -10485,6 +10484,19 @@ Only a REMOVABLE field is listed. A scope's own fixed filters stay off the menu
 — a tick that cannot be cleared is a lie, and disabling it would say the same
 thing more quietly.
 
+**A ONE-value row's tick is its ON, not its held** — an on/off chip, a preset
+(Will, TODO 54, his pick A). So its untick cannot remove it: a small × at the
+row's end does, reported as `menu-row-remove`. A row with values keeps "ticked
+is held". Two rules keep the tick honest:
+
+- **Apply flips only a row the reader CHANGED.** The bar and the panel keep
+  what each row was told. A chip pressed elsewhere while the menu was shut
+  leaves a stale tick, and comparing the tick with the chip turned it back.
+- **A press elsewhere re-ticks the shut menu's row**, so the reader sees the
+  chip as it is. An open menu is left alone: it holds the reader's draft.
+
+A × rebuilds the menu under the pointer, so the rebuilt menu opens again.
+
 The TOOLBAR's chip menus keep their own Remove in the footer. A chip is the
 filter, so removing it from its own menu is where a reader looks; the panel is
 a list of them, so the list is where they are managed. Will's ruling
@@ -10496,6 +10508,7 @@ a list of them, so the list is where they are managed. Will's ruling
 - Site: `test/e2e/reforged-quick-filter-toolbar.spec.ts`
 - Site: `src/core/ui/filters-button.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
+- Site: `src/components/sherpa-menu/sherpa-menu.ts`
 
 ### T-the-field-type-decides-the-clause
 

@@ -3,32 +3,30 @@
  *
  * The filters a view holds, then what it may add, then the saved ones it may
  * add. A held filter the view HIDES — folded off a bar, or in a shut scope —
- * keeps its row, and a caret on it opens its child menu. TRAP T-one-filters-button
+ * keeps its row, and a caret on it opens its child menu. A ONE-value filter's
+ * tick is its on/off instead. TRAP T-one-filters-button
  *
  * Map:
  * - FILTERS_LABEL — The button's name, and its menu's heading.
  * - ADDED_SECTION — The heading over the filters the view holds.
  * - AVAILABLE_SECTION — The heading over the filters it may add.
  * - SAVED_SECTION — The heading over the saved filters it may add, at the bottom.
- * - ON — The one value an on/off filter's child menu offers.
  * - DRILL_FLAGS — Menu attributes owned by the FILTER, not by the Filters menu.
  * - ListedFilter — One filter the menu lists.
  * - AddedFilter — One filter the view holds.
  * - filtersMenuItems — The menu's list: added, available, then custom.
- * - onOffMenu — An on/off filter's child menu: one row, "On".
  * - MenuDrill — One filter's rows, moved into the Filters menu and back.
  * - .home — The menu drilled into, or null.
  * - .menu — The Filters menu it is drilled into, or null.
  * - .into — Move a menu's rows into the Filters menu.
  * - .out — Put the rows home and the Filters menu's own list back.
  */
-import { menuFor, type FilterMenuItem } from './filter-menu.js';
+import type { FilterMenuItem } from './filter-menu.js';
 
 export const FILTERS_LABEL = 'Filters';
 export const ADDED_SECTION = 'Added filters';
 export const AVAILABLE_SECTION = 'Available filters';
 export const SAVED_SECTION = 'Saved filters';
-export const ON = 'on';
 
 /** TRAP T-drill-flags-travel-and-replace — never merged. */
 export const DRILL_FLAGS = ['data-commit', 'data-range', 'data-select', 'data-search'] as const;
@@ -51,6 +49,9 @@ export interface AddedFilter extends ListedFilter {
   hidden: boolean;
   /** Picks its child menu holds. */
   count?: number;
+  /** A ONE-value filter — a preset, an on/off chip — and whether it is ON:
+   *  its tick means On, and a × removes it. Will, TODO 54. */
+  on?: boolean;
 }
 
 /**
@@ -65,7 +66,11 @@ export function filtersMenuItems(
 ): Array<FilterMenuItem & { label: string }> {
   return [
     // A held filter the reader cannot take off is listed only while hidden.
-    ...added.filter((f) => f.removable || f.hidden).map((f) => ({
+    ...added.filter((f) => f.removable || f.hidden).map((f) => (f.on !== undefined ? {
+      // ONE value: its tick turns it on, and its × takes it off. Will, TODO 54.
+      value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}), section: ADDED_SECTION,
+      selected: f.on, ...(f.removable ? { remove: true } : {}),
+    } : {
       value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}), section: ADDED_SECTION,
       ...(f.removable ? { selected: true } : { pickable: false }),
       ...(f.hidden ? { drill: true, count: f.count ?? 0 } : {}),
@@ -76,17 +81,6 @@ export function filtersMenuItems(
     ...offer.filter((f) => f.readings)
       .map((f) => ({ value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}), section: SAVED_SECTION })),
   ];
-}
-
-/** Its pick applies at once, as the chip's own body would. Will, 2026-09-25. */
-export function onOffMenu(label: string, on: boolean): { menu: HTMLElement; items: FilterMenuItem[] } {
-  const built = menuFor({
-    label, select: 'multiple', commit: false, selectAll: false,
-    options: [{ value: ON, label: 'On', selected: on }],
-  });
-  // One row: nothing to search.
-  built.menu.removeAttribute('data-search');
-  return built;
 }
 
 /** TRAP T-drill-moves-not-clones — the rows are moved, never copied. */

@@ -51,6 +51,9 @@ export interface MenuItem {
   pickable?: boolean;
   /** How many picks its child menu holds, as a badge. */
   count?: number;
+  /** A small × at its end that REMOVES it — a one-value filter, whose tick
+   *  means On. Reported as `menu-row-remove`. TODO 54 */
+  remove?: boolean;
 }
 
 /** The opt-ins' older names, still heard. TRAP T-a-renamed-attribute-keeps-its-old-name */
@@ -1301,6 +1304,13 @@ export class SherpaMenu extends SherpaElement {
         box?.setAttribute('aria-description', item.note);
       }
       if (item.drill) this.#addDrill(row, item.value, label, item.count ?? 0);
+      const remove = item.remove ? this.clone('template.menu-remove-tpl') : null;
+      if (remove) {
+        row.dataset['remove'] = '';
+        remove.dataset['value'] = item.value;
+        remove.setAttribute('aria-label', `Remove ${label}`);
+        row.append(remove);
+      }
       return row;
     };
 
@@ -1935,6 +1945,14 @@ export class SherpaMenu extends SherpaElement {
     const target = event.target as HTMLElement;
     // A nested menu's click is its own. TRAP T-a-nested-menu-answers-for-itself
     if (target.closest('sherpa-menu') !== this) return;
+    // A row's ×: reported, and the row does NOT tick. TRAP T-the-add-menu-is-the-whole-list
+    const remove = target.closest<HTMLElement>('.menu-row-remove');
+    if (remove) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.emit('menu-row-remove', { value: remove.dataset['value'] ?? '' });
+      return;
+    }
     const row = target.closest<HTMLElement>('.menu-row[data-drill]');
     if (row && !target.closest('input')) {
       event.preventDefault();

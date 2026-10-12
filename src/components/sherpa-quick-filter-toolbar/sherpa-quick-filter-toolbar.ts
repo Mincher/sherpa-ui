@@ -20,7 +20,7 @@ import {
 } from '../../core/ui/saved-filter-menu.js';
 import type { SaidField } from '../../core/data/filter-face.js';
 import {
-  FILTERS_LABEL, MenuDrill, ON, filtersMenuItems, onOffMenu, type AddedFilter,
+  FILTERS_LABEL, MenuDrill, filtersMenuItems, type AddedFilter,
 } from '../../core/ui/filters-button.js';
 import { report } from '../../core/data/report.js';
 import { DEFAULT_OP, type FilterOp } from '../../core/data/store.js';
@@ -294,15 +294,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   /** A folded chip's rows, moved into the Filters menu. TRAP T-drill-moves-not-clones */
   #drill = new MenuDrill();
 
-  /** The menu built for an on/off chip's drill, and that chip. */
-  #built: { menu: HTMLElement; chip: HTMLElement } | null = null;
 
-  /**
-   * A folded chip's row asked for its child menu: drill into it. An on/off
-   * chip has no menu of its own, so its child menu is one row, "On".
-   * TRAP T-a-row-opens-its-child-menu
-   */
-  #onMenuDrill = async (event: Event): Promise<void> => {
+  /** A folded chip's row asked for its child menu: drill into it. TRAP T-a-row-opens-its-child-menu */
+  #onMenuDrill = (event: Event): void => {
     const id = String((event as CustomEvent).detail?.value ?? '');
     const add = this.pathFind(event, '.add-btn');
     const into = add?.querySelector<HTMLElement & { open?: boolean }>('sherpa-menu');
@@ -313,20 +307,9 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (this.#drill.home) this.#drillOut();
     const label = this.#filters.find((f) => f.id === id)?.label ?? chip.dataset['label'] ?? id;
 
-    let from = chip.querySelector<HTMLElement>('sherpa-menu');
-    if (!from) {
-      const { menu, items } = onOffMenu(label, (chip as ChipEl).current);
-      this.$('.qf-built')?.append(menu);
-      this.#built = { menu, chip };
-      await (menu as HTMLElement & { rendered?: Promise<void> }).rendered;
-      (menu as HTMLElement & { items?: (i: unknown[]) => void }).items?.(items);
-      // It may have shut, or another row taken the drill, while it drew.
-      if (!into.open || this.#built?.menu !== menu) {
-        if (this.#built?.menu === menu) this.#dropBuilt();
-        return;
-      }
-      from = menu;
-    }
+    // An on/off chip has no menu: its row's tick answers it. TODO 54
+    const from = chip.querySelector<HTMLElement>('sherpa-menu');
+    if (!from) return;
 
     /* NOTHING TO DRILL. An advanced-only menu answers with its condition
        ROWS, which live in its own shadow DOM — moving its empty light DOM put
@@ -341,12 +324,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     }
     this.#drill.into(into, from, label);
   };
-
-  /** Remove the menu built for an on/off chip's drill. */
-  #dropBuilt(): void {
-    this.#built?.menu.remove();
-    this.#built = null;
-  }
 
   /** A calendar picked a day or range. The chip relabels itself. */
   #onDatePicked = (event: Event): void => {
@@ -380,7 +357,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #drillOut(): void {
     // Deferred: the badges are read once the rows are back in place.
     if (this.#drill.out()) queueMicrotask(() => this.#syncFoldedBadges());
-    this.#dropBuilt();
   }
 
   /** Does the chip run want more room than it has? TRAP T-overflowing-needs-1px-slack */
@@ -433,6 +409,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.addEventListener('condition-change', this.#onConditionChanged);
     // The Add menu hangs off a sherpa-BUTTON, which never relays quick-filter-change.
     this.addEventListener('menu-change', this.#onAddCommit as EventListener);
+    this.addEventListener('menu-row-remove', this.#onRowRemove);
     if (this.#filters.length) this.#render();
     if (this.#organise.group?.length || this.#organise.sort?.length) this.#renderOrganise();
     if (this.#available.length) this.#renderAvailable();
@@ -561,6 +538,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   #setChipActive(id: string, on: boolean): void {
     const chip = this.#chips().find((c) => c.dataset['id'] === id);
     if (chip) chip.current = on;
+    this.#syncOneRows();
   }
 
   /**
@@ -1212,6 +1190,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       values: this.values,
     });
     this.#syncSaveable();
+    this.#syncOneRows();
   }
 
   /**
@@ -1575,12 +1554,15 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
         return {
           id, label: this.#filters.find((f) => f.id === id)?.label ?? c.dataset['label'] ?? id,
           removable: heldIds.has(id), hidden: hidden.has(c),
+          // ONE value: the tick is the chip's on/off. TODO 54
+          ...(c.hasAttribute('data-menu') ? {} : { on: (c as ChipEl).current }),
           ...(hidden.has(c) ? { count: this.#chipPicks(c).length } : {}),
         };
       }),
       ...held.filter((f) => !inRun.has(f.id))
         .map((f) => ({ id: f.id, label: f.label, removable: true, hidden: false })),
     ];
+    this.#told = new Map(added.flatMap((f) => (f.on === undefined ? [] : [[f.id, f.on] as const])));
     this.toggleAttribute('data-can-add', any);
     add.toggleAttribute('disabled', !any);
     if (folded.length) add.dataset['badge'] = String(folded.length);
@@ -1792,26 +1774,73 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     event.stopImmediatePropagation();
     // A DRILLED chip's pick is that chip's — never an Add or a Remove.
     if (this.#drill.home) {
-      // An on/off chip's "On" row turns it on or off, at once.
-      if (this.#built && this.#drill.home === this.#built.menu) {
-        const values = ((event as CustomEvent).detail?.values ?? []) as string[];
-        (this.#built.chip as ChipEl).current = values.includes(ON);
-        this.#syncOverflowActive();
-      }
       this.#emitChange();
       return;
     }
     /* WHAT CHANGED is the difference between what the menu now says and what
-       the bar is holding — an unticked row is a REMOVE, and that is the only
-       way to take a chip off from here.
+       the bar is holding — an unticked row is a REMOVE. A ONE-value row's tick
+       is its chip's on/off instead, and its × removes it.
        TRAP T-the-add-menu-is-the-whole-list */
     const want = new Set(((event as CustomEvent).detail?.values ?? []) as string[]);
-    const held = new Set(this.#filters.filter((f) => f.removable).map((f) => f.id));
-    const added = [...want].filter((id) => !held.has(id));
+    // Only a row the reader CHANGED: a stale tick never undoes a chip. TODO 54
+    let flipped = false;
+    for (const [id, was] of this.#told) {
+      const on = want.has(id);
+      const chip = this.#chips().find((c) => c.dataset['id'] === id) as ChipEl | undefined;
+      if (on === was || !chip || chip.hasAttribute('data-persistent')) continue;
+      this.#told.set(id, on);
+      chip.current = on;
+      flipped = true;
+    }
+    const ones = this.#told;
+    const held = new Set(this.#filters.filter((f) => f.removable && !ones.has(f.id)).map((f) => f.id));
+    const added = [...want].filter((id) => !held.has(id) && !ones.has(id));
     const gone = [...held].filter((id) => !want.has(id));
     for (const id of gone) this.#removeFilter(id);
     if (added.length) this.#addFilters(added);
+    if (!flipped) return;
+    this.#syncOverflowActive();
+    // A remove or an add reports once it settles; a flip alone reports now.
+    if (!gone.length && !added.length) this.#emitChange();
   };
+
+  /** A ONE-value row's × was pressed: take that filter off. TODO 54 */
+  #onRowRemove = (event: Event): void => {
+    if (!this.pathFind(event, '.add-btn')) return;
+    event.stopPropagation();
+    const id = String((event as CustomEvent).detail?.value ?? '');
+    if (!id) return;
+    this.#removeFilter(id);
+    void this.#reopenAdd();
+  };
+
+  /** What each ONE-value row was told, by id: on or off. TODO 54 */
+  #told = new Map<string, boolean>();
+
+  /** A chip turned on or off elsewhere: its row is ticked as it is, while the menu is shut. */
+  #syncOneRows(): void {
+    const menu = this.$('.add-btn')?.querySelector<HTMLElement & { open?: boolean; values?: string[] }>('sherpa-menu');
+    if (!menu || menu.open || !this.#told.size) return;
+    let moved = false;
+    for (const [id, was] of this.#told) {
+      const on = !!(this.#chips().find((c) => c.dataset['id'] === id) as ChipEl | undefined)?.current;
+      if (on === was) continue;
+      this.#told.set(id, on);
+      moved = true;
+    }
+    if (!moved) return;
+    const told = this.#told;
+    menu.values = [...(menu.values ?? []).filter((v) => !told.has(v)), ...[...told].filter(([, on]) => on).map(([id]) => id)];
+  }
+
+  /** The Filters menu was rebuilt under the reader's pointer: open it again. */
+  async #reopenAdd(): Promise<void> {
+    const add = this.$<HTMLElement>('.add-btn');
+    const menu = add?.querySelector<HTMLElement & { rendered?: Promise<void>; show?(t: HTMLElement): void }>('sherpa-menu');
+    if (!add || !menu) return;
+    await menu.rendered;
+    if (menu.isConnected) menu.show?.(add);
+  }
 
   /**
    * The star REPORTS the intent; `data-favourite` is the answer, IN.

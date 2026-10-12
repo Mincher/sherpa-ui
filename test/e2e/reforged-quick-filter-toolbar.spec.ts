@@ -1881,13 +1881,11 @@ test('a sort from the organise chip never reaches the host as a filter change', 
 });
 
 /**
- * A chip with no `options` is on or off. Folded, its row's caret opens a child
- * menu of ONE row, "On" — the same door every folded filter has, Will's pick,
- * 2026-09-25. It once wore a chevron that did NOTHING, because the drill
- * needed a menu a boolean chip has not got: the bar builds one for the drill.
- * TRAP T-a-row-opens-its-child-menu
+ * A chip with no `options` is on or off. Folded, its row is ONE value: no
+ * caret, and its tick is the chip's on/off. Will, TODO 54. A chip with values
+ * keeps its caret. TRAP T-a-row-opens-its-child-menu
  */
-test('a folded BOOLEAN filter opens "On"; one with options opens its values', async ({ page }) => {
+test('a folded BOOLEAN filter\'s tick is its on/off; one with options opens its values', async ({ page }) => {
   const r = await page.evaluate(async () => {
     // Narrow, so everything but the first chip folds.
     const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { 'data-type': 'data', 'style': 'max-inline-size: 300px' });
@@ -1923,51 +1921,49 @@ test('a folded BOOLEAN filter opens "On"; one with options opens its values', as
     menu.show(add);
     await new Promise((res) => setTimeout(res, 100));
 
-    // EVERY folded chip has a row with a caret, in bar order.
-    const drills = [...menu.querySelectorAll<HTMLElement>('.menu-row[data-drill]')]
-      .map((d) => d.dataset['value']);
+    // A chip with values has a caret; an on/off chip is a box. In bar order.
+    const rows = [...menu.querySelectorAll<HTMLElement>('.menu-row:not(.menu-section):not(.qf-all)')];
+    const drills = rows.filter((d) => d.hasAttribute('data-drill')).map((d) => d.dataset['value']);
+    const ones = rows.filter((d) => !d.hasAttribute('data-drill')).map((d) => d.querySelector('input')?.value);
     const inputs = () => [...menu.querySelectorAll<HTMLInputElement>('input')]
       .filter((i) => !i.closest('.qf-all')).map((i) => i.value);
-    const drillInto = async (id: string) => {
-      menu.querySelector<HTMLElement>(`.menu-row[data-value="${id}"] .menu-row-drill`)!.click();
+    const apply = async () => {
+      (menu.shadowRoot!.querySelector('.apply') as HTMLElement).shadowRoot!.querySelector('button')!.click();
       await new Promise((res) => setTimeout(res, 200));
     };
-    const back = async () => {
-      (menu.shadowRoot!.querySelector('.drill-back') as HTMLElement).shadowRoot!.querySelector('button')!.click();
-      await new Promise((res) => setTimeout(res, 100));
-    };
 
-    // A boolean one opens "On", and "On" drives the CHIP, and reports.
+    // A boolean one's tick drives the CHIP once applied, and reports.
     const seen: unknown[] = [];
     el.addEventListener('quick-filter-change', (e) => seen.push((e as CustomEvent).detail));
-    const id = drills.find((d) => d !== 'plan')!;
+    const id = ones[0]!;
     const chip = sr.querySelector<HTMLElement>(`.chips > .chip[data-id="${id}"]`)!;
-    await drillInto(id);
-    const onRows = inputs();
-    const box = () => menu.querySelector<HTMLInputElement>('input[value="on"]')!;
+    const box = () => menu.querySelector<HTMLInputElement>(`input[value="${id}"]`)!;
     box().click();
-    await new Promise((res) => setTimeout(res, 200));
+    await apply();
     const on = { box: box().checked, chip: chip.hasAttribute('data-current') };
+    menu.show(add);
+    await new Promise((res) => setTimeout(res, 100));
     box().click();
-    await new Promise((res) => setTimeout(res, 200));
+    await apply();
     const off = { box: box().checked, chip: chip.hasAttribute('data-current') };
-    await back();
 
     // The one with options opens its VALUES.
-    await drillInto('plan');
+    menu.show(add);
+    await new Promise((res) => setTimeout(res, 100));
+    menu.querySelector<HTMLElement>('.menu-row[data-value="plan"] .menu-row-drill')!.click();
+    await new Promise((res) => setTimeout(res, 200));
     const planRows = inputs();
-    return { drills, id, onRows, on, off, planRows, seen };
+    return { drills, ones, id, on, off, planRows, seen };
   });
 
   // Which chips fold depends on the measured width, so the test does not name
-  // them — what matters is that EVERY folded one has a caret.
+  // them — what matters is that EVERY folded one has a row.
   expect(r.err).toBeUndefined();
-  expect(r.drills!.length).toBeGreaterThan(1);
-  expect(r.drills).toContain('plan');
-  expect(r.onRows).toEqual(['on']);
+  expect(r.drills).toEqual(['plan']);
+  expect(r.ones!.length).toBeGreaterThan(0);
   expect(r.planRows).toEqual(['pro']);
 
-  // "On" drives the CHIP, so the bar and the menu can never disagree.
+  // The tick drives the CHIP, so the bar and the menu can never disagree.
   expect(r.on).toEqual({ box: true, chip: true });
   expect(r.off).toEqual({ box: false, chip: false });
   // …and the bar reports it, as it reports a toggle on the bar.
@@ -2013,12 +2009,12 @@ test('the Filters button follows a folded chip on and off, and its badge never m
     const menu = more().querySelector('sherpa-menu') as HTMLElement & { show(t: HTMLElement): void };
     menu.show(more());
     await new Promise((res) => setTimeout(res, 100));
-    // A folded ON/OFF chip — its caret opens "On".
-    const id = [...menu.querySelectorAll<HTMLElement>('.menu-row[data-drill]')]
-      .map((d) => d.dataset['value']!).find((v) => v !== 'plan')!;
-    menu.querySelector<HTMLElement>(`.menu-row[data-value="${id}"] .menu-row-drill`)!.click();
-    await new Promise((res) => setTimeout(res, 200));
-    const box = (): HTMLInputElement => menu.querySelector<HTMLInputElement>('input[value="on"]')!;
+    // A folded ON/OFF chip — its row's tick is its on/off. TODO 54
+    const id = [...menu.querySelectorAll<HTMLElement>('.menu-row:not([data-drill]):not(.menu-section):not(.qf-all)')]
+      .map((d) => d.querySelector('input')!.value)[0]!;
+    const box = (): HTMLInputElement => menu.querySelector<HTMLInputElement>(`input[value="${id}"]`)!;
+    const apply = (): void =>
+      (menu.shadowRoot!.querySelector('.apply') as HTMLElement).shadowRoot!.querySelector('button')!.click();
     const chip = (): HTMLElement =>
       sr.querySelector<HTMLElement>(`.chips > .chip[data-id="${id}"]`)!;
     const snap = () => ({
@@ -2028,9 +2024,13 @@ test('the Filters button follows a folded chip on and off, and its badge never m
     });
     const start = snap();
     box().click();
+    apply();
     await new Promise((res) => setTimeout(res, 300));
     const ticked = snap();
+    menu.show(more());
+    await new Promise((res) => setTimeout(res, 100));
     box().click();
+    apply();
     await new Promise((res) => setTimeout(res, 300));
     return { start, ticked, unticked: snap() };
   });
@@ -2394,7 +2394,7 @@ test('the Filters button is active only when a folded filter is', async ({ page 
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const sr = el.shadowRoot!;
-    for (let i = 0; i < 25 && !sr.querySelector('.add-btn sherpa-menu .menu-row[data-drill]'); i++) {
+    for (let i = 0; i < 25 && !sr.querySelector('.add-btn[data-badge]'); i++) {
       await new Promise((res) => setTimeout(res, 100));
     }
     // Wait for the fold to SETTLE — the ResizeObserver fires more than once.
@@ -2424,21 +2424,25 @@ test('the Filters button is active only when a folded filter is', async ({ page 
 
     const closed = state();
 
-    // Turn ONE folded chip on — its caret opens "On".
+    // Turn ONE folded chip on — its row's tick is its on/off. TODO 54
+    const apply = (): void =>
+      (menu.shadowRoot!.querySelector('.apply') as HTMLElement).shadowRoot!.querySelector('button')!.click();
     menu.show(more);
     await settled();
-    menu.querySelector<HTMLElement>('.menu-row[data-drill] .menu-row-drill')?.click();
-    await settled();
-    const box = menu.querySelector<HTMLInputElement>('input[value="on"]');
-    if (!box) return { err: 'no On row' };
+    const box = menu.querySelector<HTMLInputElement>('.menu-row:not(.qf-all) input');
+    if (!box) return { err: 'no row' };
     box.checked = true;
     box.dispatchEvent(new Event('change', { bubbles: true }));
+    apply();
     await settled();
     const oneOn = state();
 
     // And back off again.
+    menu.show(more);
+    await settled();
     box.checked = false;
     box.dispatchEvent(new Event('change', { bubbles: true }));
+    apply();
     await settled();
     const backOff = state();
 
@@ -2612,7 +2616,8 @@ test('the Add menu lists held AND offered, and an untick removes', async ({ page
       // NOT removable — a tick that cannot be cleared is a lie, so it is not listed.
       { id: 'view', label: 'View', persistent: true },
     ]);
-    el.available([{ id: 'seats', label: 'Seats' }]);
+    // WITH values: a one-value row's tick is its on/off instead. TODO 54
+    el.available([{ id: 'seats', label: 'Seats', options: [{ value: '1', label: '1' }] }]);
     await settle();
 
     const menu = () => el.shadowRoot!.querySelector('.add-btn sherpa-menu')!;

@@ -40,7 +40,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 10 | 94 | A number (and range) filter menu needs Apply and Cancel buttons | bug |
 | ✅ | 11 | 43 | The toolbar ⋯ overflow menu shows nothing | bug |
 | ✅ | 12 | 16 | Favourite and Save apply to the Context, not the View | bug |
-| ⬜ | 13 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
+| ✅ | 13 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
 | ✅ | 14 | 95 | Firefox: a remote chip holding a draft is not marked pending | bug |
 | ✅ | 15 | 96 | A grid with few columns leaves an empty band on the right of its card | bug |
 | ✅ | 16 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
@@ -861,7 +861,7 @@ View is picked; a View favourite reads `Records › At risk` in the rail and
 opens that View. Favourites stored before keep meaning the first View. Save
 is 15's. `T-a-favourite-is-a-view`
 
-### `[ ]` 54 — BUG: a one-value filter's row in the Filters menu: its tick means On
+### `[x]` ✅ 54 — BUG: a one-value filter's row in the Filters menu: its tick means On
 
 Will: a row in the Filters menu's Added section gets a child menu only when
 its field has MULTIPLE values. A one-value filter (a preset, a toggle) has
@@ -892,6 +892,14 @@ row needs another way to take the filter off.
   more change, and the multi-value tick no longer removes.
 
 **✅ Will, 2026-10-12 — all my picks:** A — a small × on one-value rows only; a multi-value row keeps its tick as held.
+
+**✅ Done 2026-10-12.** An on/off chip's row and a preset's row have no caret
+now: the box is its on/off, and a removable one has a × (`menu-row-remove`).
+`onOffMenu()` and the built "On" menus are deleted. Apply flips only a row the
+reader changed, and a chip pressed elsewhere re-ticks the shut menu's row. A ×
+rebuilds the menu, so it opens again. One change you may notice: the tick now
+waits for the Filters menu's Apply, as every other row there does — the "On"
+row applied at once. `T-the-add-menu-is-the-whole-list`
 
 ### `[x]` ✅ 95 — Firefox: a remote chip holding a draft is not marked pending
 

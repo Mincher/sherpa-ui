@@ -35,6 +35,8 @@ export interface FilterMenuItem {
   pickable?: boolean;
   /** Picks its child menu holds. */
   count?: number;
+  /** A × at its end that removes it: a one-value filter, whose tick means On. */
+  remove?: boolean;
 }
 
 /** Enough of a filter definition to draw its menu. */

@@ -77,7 +77,8 @@ test('ONE button: "Filters", a plus; hidden chips first, then Added, Available, 
 
   /* HIDDEN chips are ADDED filters — ONE section, not a second one — and each
      row has a caret into its child menu. None here can be taken off, so none
-     has a box. Will, 2026-09-25. TRAP T-a-row-opens-its-child-menu */
+     has a box. Will, 2026-09-25. TRAP T-a-row-opens-its-child-menu
+     An ON/OFF chip is one value: no caret, and its box is its on/off. TODO 54 */
   expect(narrow.more).toBe(false);
   expect(narrow.selectAll).toBe(false);
   const hidden = narrow.rows.slice(1, narrow.rows.indexOf('§Available filters'));
@@ -85,8 +86,8 @@ test('ONE button: "Filters", a plus; hidden chips first, then Added, Available, 
   expect(narrow.rows).not.toContain('§More filters');
   expect(hidden.length).toBeGreaterThan(0);
   expect(Number(narrow.badge)).toBe(hidden.length);
-  expect(hidden.at(-1)).toBe('›at-risk');
-  expect(hidden.every((r) => r.startsWith('›'))).toBe(true);
+  expect(hidden.at(-1)).toBe('at-risk');
+  expect(hidden.slice(0, -1).every((r) => r.startsWith('›'))).toBe(true);
   expect(narrow.rows.slice(narrow.rows.indexOf('§Available filters'))).toEqual(
     ['§Available filters', 'tier', '§Saved filters', 'custom:mine']);
 });
@@ -102,22 +103,20 @@ test('the button is ON while a hidden chip is, and a drill inside it adds nothin
     const held = [...el.heldFields];
 
     const wait = () => new Promise((res) => setTimeout(res, 200));
-    const back = async () => {
-      (menu.shadowRoot.querySelector('.drill-back') as HTMLElement).shadowRoot!.querySelector('button')!.click();
-      await settle();
-    };
     menu.show(btn);
     await window.__settled();
 
-    // The hidden ON/OFF chip: its caret opens "On", and "On" turns it on.
-    menu.querySelector<HTMLElement>('.menu-row[data-value="at-risk"] .menu-row-drill')!.click();
-    await wait();
-    const toggle = menu.querySelector<HTMLInputElement>('input[value="on"]')!;
+    // The hidden ON/OFF chip: no caret, and its tick turns it on. TODO 54
+    const row = menu.querySelector<HTMLInputElement>('input[value="at-risk"]')!.closest<HTMLElement>('.menu-row')!;
+    const shape = { drill: row.hasAttribute('data-drill'), remove: !!row.querySelector('.menu-row-remove') };
+    const toggle = row.querySelector<HTMLInputElement>('input')!;
     toggle.checked = true;
     toggle.dispatchEvent(new Event('change', { bubbles: true }));
+    (menu.shadowRoot.querySelector('.apply') as HTMLElement).shadowRoot!.querySelector('button')!.click();
     await settle();
     const on = btn.getAttribute('data-status');
-    await back();
+    menu.show(btn);
+    await window.__settled();
 
     // DRILL into a hidden chip's own menu, and tick one of its values.
     const door = [...menu.querySelectorAll<HTMLElement>('.menu-row[data-drill]')]
@@ -137,7 +136,7 @@ test('the button is ON while a hidden chip is, and a drill inside it adds nothin
     menu.shadowRoot.querySelector<HTMLElement>('.drill-back')!.click();
     await settle();
     return {
-      on, drilled, ticked, target,
+      on, shape, drilled, ticked, target,
       back: { heading: menu.getAttribute('data-heading'), commit: menu.hasAttribute('data-commit'),
         first: menu.firstElementChild?.classList.contains('menu-section') ?? false },
       // A pick inside a drill is that chip's, never an Add or a Remove.
@@ -147,6 +146,8 @@ test('the button is ON while a hidden chip is, and a drill inside it adds nothin
   });
 
   expect(r.on).toBe('active');
+  // Not one the reader can take off, so no ×.
+  expect(r.shape).toEqual({ drill: false, remove: false });
   expect(r.drilled.drill).toBe(true);
   expect(r.drilled.heading).not.toBe('Filters');
   expect(r.ticked).toEqual(['a']);
@@ -164,12 +165,10 @@ test('its badge is a sherpa-badge, drawn exactly as a chip draws its count', asy
     const menu = btn.querySelector('sherpa-menu') as HTMLElement & { show(t: HTMLElement): void; hide(): void };
     menu.show(btn);
     await window.__settled();
-    menu.querySelector<HTMLElement>('.menu-row[data-value="at-risk"] .menu-row-drill')!.click();
-    await new Promise((res) => setTimeout(res, 200));
-    const toggle = menu.querySelector<HTMLInputElement>('input[value="on"]')!;
+    const toggle = menu.querySelector<HTMLInputElement>('input[value="at-risk"]')!;
     toggle.checked = true;
     toggle.dispatchEvent(new Event('change', { bubbles: true }));
-    menu.hide();
+    (menu.shadowRoot.querySelector('.apply') as HTMLElement).shadowRoot!.querySelector('button')!.click();
 
     const chip = document.createElement('sherpa-quick-filter');
     chip.setAttribute('data-label', 'Region');
@@ -265,4 +264,57 @@ test('a folded saved filter opens its own card at the button; its actions work t
   expect(r.saved).toEqual(['preset-edit', 'filter-save']);
   expect(r.deleted).toEqual(['filter-delete']);
   expect(r.gone).toBe(true);
+});
+
+/* An ADDED on/off filter is one value: its tick is its on/off, and its × takes
+   it off. The menu rebuilt under the pointer opens again. Will, TODO 54. */
+test('an added on/off filter: its tick is its on/off; its × takes it off and the menu stays open', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<Bar>('sherpa-quick-filter-toolbar', undefined, { style: 'inline-size: 1200px' });
+    el.populate([{ id: 'region', label: 'Region', options: [{ value: 'a', label: 'A' }] }]);
+    el.available([{ id: 'vip', label: 'VIP' }]);
+    await window.__settled();
+    const sr = el.shadowRoot!;
+    const add = sr.querySelector<HTMLElement>('.add-btn')!;
+    const menu = () => add.querySelector('sherpa-menu') as HTMLElement & { show(t: HTMLElement): void; open: boolean };
+    // The reader's ticks, then Apply.
+    const commit = async (values: string[]) => {
+      for (const box of menu().querySelectorAll<HTMLInputElement>('input')) box.checked = values.includes(box.value);
+      menu().dispatchEvent(new CustomEvent('menu-change', { bubbles: true, composed: true, detail: { values } }));
+      await window.__settled();
+    };
+    const row = () => menu().querySelector<HTMLInputElement>('input[value="vip"]')?.closest<HTMLElement>('.menu-row') ?? null;
+    const chip = () => sr.querySelector<HTMLElement>('.chips > .chip[data-id="vip"]');
+    const look = () => ({
+      on: !!chip()?.hasAttribute('data-current'), box: !!row()?.querySelector('input')?.checked,
+      remove: row()?.querySelector('.menu-row-remove')?.getAttribute('aria-label') ?? null,
+    });
+    await commit(['vip']);
+    const added = look();
+    await commit(['vip']);
+    const ticked = look();
+    // Pressed on the bar: the shut menu's row follows it.
+    chip()!.shadowRoot!.querySelector<HTMLElement>('.body')!.click();
+    await window.__settled();
+    const pressed = look();
+    // An Apply that leaves its row alone leaves the chip alone.
+    chip()!.shadowRoot!.querySelector<HTMLElement>('.body')!.click();
+    await window.__settled();
+    await commit(['vip']);
+    const kept = look();
+    menu().show(add);
+    await window.__settled();
+    row()!.querySelector('.menu-row-remove')!.shadowRoot!.querySelector('button')!.click();
+    await window.__settled();
+    return { added, ticked, pressed, kept, gone: !chip(), open: menu().open, offered: !!row() && !row()!.querySelector('.menu-row-remove') };
+  });
+
+  expect(r.added).toEqual({ on: false, box: false, remove: 'Remove VIP' });
+  expect(r.ticked).toEqual({ on: true, box: true, remove: 'Remove VIP' });
+  expect(r.pressed).toEqual({ on: false, box: false, remove: 'Remove VIP' });
+  expect(r.kept).toEqual({ on: true, box: true, remove: 'Remove VIP' });
+  expect(r.gone).toBe(true);
+  expect(r.open).toBe(true);
+  // Back in Available filters.
+  expect(r.offered).toBe(true);
 });

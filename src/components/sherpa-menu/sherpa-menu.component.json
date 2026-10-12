@@ -815,6 +815,15 @@
     },
     {
       "$type": "event",
+      "name": "menu-row-remove",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "value": "string"
+      }
+    },
+    {
+      "$type": "event",
       "name": "menu-range-change",
       "bubbles": true,
       "composed": true,

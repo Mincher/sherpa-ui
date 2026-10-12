@@ -357,6 +357,11 @@
 .rows ::slotted(.menu-row-bare[data-drill]) {
   grid-template-columns: minmax(0, 1fr) auto auto;
 }
+/* A ONE-value filter's row: box, label, then its × at the end. TODO 54 */
+.rows ::slotted(.menu-row[data-remove]) {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
 
 /* A line a host slots that only says something: a row's box and ink, and
    nothing to press. TRAP T-a-saved-chip-lists-its-conditions */
