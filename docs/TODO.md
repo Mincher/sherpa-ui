@@ -71,7 +71,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16s | 201 | In Chromium on Linux the nav rail opens to hover by itself, so 5 closed-rail tests fail every run | bug |
 | ✅ | 16t | 202 | Sherpa Demos: 7 Chromium tests time out — the rail opens under the pointer and covers the filter panel | bug |
 | ✅ | 16t1 | 203 | sherpa-ui: 135 of 136 specs load the page without the pointer park — one fixture, as in Demos? | bug |
-| ⬜ | 16t2 | 204 | WebKit: a `page.reload` in the Demos nav favourites spec never fires `load` — 1 run in 80 | bug |
+| ✅ | 16t2 | 204 | WebKit: a `page.reload` in the Demos nav favourites spec never fires `load` — 1 run in 80 | bug |
 | ✅ | 16t3 | 206 | Firefox: "closing the dialog fires a composed close event" sees no event, 1 to 2 runs in 10 | bug |
 | ✅ | 16t4 | 228 | The donut chart's legend lets EVERY item be switched off; one must stay on — and a value filter limiting greyed out may not be counted | bug |
 | ✅ | 16t5 | 229 | The legend's switched-off items are lost on a page refresh | bug |
@@ -1466,7 +1466,7 @@ the reason you gave for 202. It is a 135-file change, so it waits for your yes.
 on it, so its 87 specs park on every `goto` too; the other 58 import from it;
 `test/unit/e2e-fixture.test.mjs` keeps every spec on one of the two.
 
-### `[ ]` 204 — BUG: WebKit — a `page.reload` in the nav favourites spec never fires `load`
+### `[x]` ✅ 204 — BUG: WebKit — a `page.reload` in the nav favourites spec never fires `load`
 
 Found 2026-10-12, with 202. In Sherpa Demos,
 `reforged-nav-favorites-recents.spec.ts` reloads the page in its
@@ -1481,6 +1481,16 @@ Seen again 2026-10-12 in `reforged-nav-pin-persist.spec.ts`'s `beforeEach`
 First step: log which request is still open when it hangs — a live feed or a
 fetch that never ends would hold `load` back. If one is, the test can wait for
 `domcontentloaded` and the app's own ready signal instead.
+
+**✅ Done 2026-10-12** (Demos `fddb4dc`). Not Sherpa and not the server: a
+logged server answered every request, and the hung reload's document never
+loaded. WebKit stalls a reload sent while fetches are still open — every hang
+was a reload as the page booted — and the open `/live/files` stream made it
+about three times as likely. Demos' fixture now waits for quiet before a
+reload and gives test pages no stream; two `beforeEach` hooks no longer reload
+at all, as a test's context starts with empty storage. Measured in WebKit over
+1520 boot-time reloads: about 9 hangs before, 1 after. The one retry covers
+that last one. sherpa-ui's own fixture is unchanged: its pages saw no hang.
 
 ---
 
