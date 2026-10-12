@@ -202,6 +202,10 @@ export class SherpaFilterPanel extends SherpaElement {
   static override props = {
     /* The host offers "Limit matching filters", on or off. Will, TODO 178. */
     'data-limit-options': { type: 'enum', kind: 'style', values: ['on', 'off'] },
+    /* The host says a Reset to default would change nothing, so it is not
+       offered. TODO 231 · TRAP T-reset-to-default-is-the-views-own */
+    'data-at-default': { type: 'boolean', kind: 'style' },
+    'data-nothing-to-reset': { type: 'boolean', kind: 'style' },
     /* NOT `kind: content`. The header is a COMPOSED component with its own
        children — a slotted search among them — and writing text into it
        replaces every one. `#syncHeading` passes the attribute along instead.
@@ -239,6 +243,7 @@ export class SherpaFilterPanel extends SherpaElement {
   #built: { menu: HTMLElement; held: Held; chip?: HTMLElement } | null = null;
 
   override onRender(): void {
+    this.#syncResets();
     this.$('.reset-all')?.addEventListener('button-click', this.#onResetAll);
     // Only the provider knows the View's own filters. TRAP T-reset-to-default-is-the-views-own
     this.$('.reset-more')?.addEventListener('menu-select', (event) => {
@@ -283,7 +288,8 @@ export class SherpaFilterPanel extends SherpaElement {
   }
 
   override onChange(name: string): void {
-    if (name === 'data-heading') this.#syncHeading();
+    if (name === 'data-at-default' || name === 'data-nothing-to-reset') this.#syncResets();
+    else if (name === 'data-heading') this.#syncHeading();
     else if (name === 'data-saveable') this.#syncSaveable();
     else if (name.startsWith('data-sort-') || name === 'data-group-field') this.#syncArrangement();
     else if (name === 'data-pending' || name === 'data-remote') this.#syncPending();
@@ -1800,7 +1806,13 @@ export class SherpaFilterPanel extends SherpaElement {
       return one;
     };
     const first: HTMLElement[] = [];
-    if (folded(this.$('.reset-group'))) first.push(row('reset', 'Reset filters'), row('reset-default', 'Reset all to default'));
+    if (folded(this.$('.reset-group'))) {
+      const toDefault = row('reset-default', 'Reset all to default');
+      toDefault.toggleAttribute('disabled', this.hasAttribute('data-at-default'));
+      const reset = row('reset', 'Reset filters');
+      reset.toggleAttribute('disabled', this.hasAttribute('data-nothing-to-reset'));
+      first.push(reset, toDefault);
+    }
     [...this.querySelectorAll<HTMLElement>(':scope > [slot="actions"]')].forEach((extra, i) => {
       if (folded(extra)) first.push(row(`extra:${i}`, extra.getAttribute('aria-label') ?? extra.textContent?.trim() ?? ''));
     });
@@ -1835,6 +1847,13 @@ export class SherpaFilterPanel extends SherpaElement {
     const values = ((event as CustomEvent).detail?.values ?? []) as string[];
     this.emit('limit-options-change', { on: values.includes('limit-options') });
   };
+
+  /** Reset, and Reset all to default, are not offered where they would change
+   *  nothing — the host says. TODO 231 */
+  #syncResets(): void {
+    this.$('.reset-all')?.toggleAttribute('disabled', this.hasAttribute('data-nothing-to-reset'));
+    this.$('.reset-more')?.toggleAttribute('disabled', this.hasAttribute('data-at-default'));
+  }
 
   /** RESET ALL: every field in both scopes, Group and Sort too, then applied —
    *  as the toolbar's Reset is. Will, 2026-09-26. */

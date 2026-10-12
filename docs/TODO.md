@@ -75,7 +75,9 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 16t3 | 206 | Firefox: "closing the dialog fires a composed close event" sees no event, 1 to 2 runs in 10 | bug |
 | ✅ | 16t4 | 228 | The donut chart's legend lets EVERY item be switched off; one must stay on — and a value filter limiting greyed out may not be counted | bug |
 | ✅ | 16t5 | 229 | The legend's switched-off items are lost on a page refresh | bug |
-| ⬜ | 16t7 | 231 | "Reset all to default" and "Reset" are inactive while the filters already ARE the View's default | bug |
+| ✅ | 16t7 | 231 | "Reset all to default" and "Reset" are inactive while the filters already ARE the View's default | bug |
+| ⬜ | 16t8 | 232 | The delete customer dialog is critical all over — borders and labels; only its footer's confirm button is | bug |
+| ⬜ | 16t9 | 233 | In the filter panel, a filter section's header inside an accordion aligns to the TOP: label, count badge and the accordion button | quick |
 | ❓ | 16t6 | 230 | Reset all filters dialog: "Save filters before reset" sits in a grey border; it is plain form content | quick |
 | | | | **C2 — Consumers: frameworks, apps and agents** (planned 2026-10-12) | |
 | ✅ | c1 | 225 | `settled()` hangs on an infinite animation — a loader, an indeterminate bar — and waits on the whole document when given a part | bug |
@@ -1491,13 +1493,39 @@ The legend keeps a host's pick as data and redraws its off-set as rows arrive;
 a click or an `off` write replaces it. A Demos test switches a row off,
 reloads, and finds it off. `T-a-value-before-the-first-render-is-held`
 
-### `[ ]` 231 — "Reset all to default" and "Reset" are inactive at the default
+### `[x]` ✅ 231 — "Reset all to default" and "Reset" are inactive at the default
 
 Will, 2026-10-12: *"Reset all to default shouldn't be an active item if the
 filters are already at the view default. Same goes for Reset, too,
 actually."* The provider knows the View's own answer (`resetView()` puts it
 back), so it can say whether anything differs; the menu items and the Reset
 buttons follow it — in the panel and in the bar.
+
+**✅ Done 2026-10-12.** The source answers both, and asking applies nothing:
+`atDefault(initial, view)` compares what filters now (compiled, so the same
+filter reads the same), which filters each scope holds — Will, the same day:
+a filter taken off, or moved to another scope, is a change too — and the
+arrangement the View names with what a Reset to default gives; `answered(scope?)` says whether anything is left to clear. After
+every load the provider sets `data-at-default` and `data-nothing-to-reset` on
+each bar and panel; their Reset buttons, the menu trigger and the ⋮ rows go
+inactive. The Query builder lost a side effect on the way: it no longer
+arranges the rows itself. `T-reset-to-default-is-the-views-own`
+
+### `[ ]` 232 — BUG: the delete customer dialog is critical all over
+
+Will, 2026-10-12: *"The delete customer dialog has critical styling applied
+to it's borders and text labels but the only item that needs to have critical
+status styling is the footer's apply button."* Likely a `data-status` on the
+dialog that the status cascade carries to everything inside
+(`[data-status]` pins at any depth); it belongs on the one button.
+
+### `[ ]` 233 — Filter section headers inside accordions align to the top
+
+Will, 2026-10-12: *"Align accordion header labels & any count badges to the
+top of the header row container."* — *"Accordion button, too."* — *"I meant
+filter sections within accordions. Align their headers to top."* The filter
+panel's field sections, inside each scope's accordion: the label, any count
+badge and the accordion's button sit at the top of the header row.
 
 ### `[ ]` 230 — The Reset all filters dialog: its switch is plain form content
 

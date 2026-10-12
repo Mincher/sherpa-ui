@@ -24,6 +24,8 @@
  * - .query — The Query the rows are under. A copy.
  * - .export — This source's whole question as JSON, to send out.
  * - .import — Take a question back in, exactly: its saved filters, then its Query.
+ * - .atDefault — Would a Reset to default change nothing? Applies nothing.
+ * - .answered — Is there anything a Reset would clear, in one scope or any?
  * - .setQuery — Restore a whole Query — a reload, a trip away and back.
  * - .setState — Restore a whole view state — a saved view, a deep link, a reload.
  * - .loaded — Has any load completed?
@@ -206,6 +208,18 @@ export interface ScopeDescription {
 }
 
 /** The view state a source owns. */
+/** How a definition arranges the rows — only what it names. */
+type Arrange = { sort?: SortSpec[]; group?: string | null; search?: string };
+
+/** A filter as one string, its AND and OR children in one order: the same filter
+ *  always reads the same. */
+function canonical(filter: Filter | undefined): string {
+  const walk = (f: Filter): unknown => (Array.isArray(f) && (f[0] === 'and' || f[0] === 'or')
+    ? [f[0], ...(f.slice(1) as Filter[]).map((c) => JSON.stringify(walk(c))).sort()]
+    : f);
+  return filter ? JSON.stringify(walk(filter)) : '';
+}
+
 export interface ViewState {
   filter?: Filter;
   sort: SortSpec[];
@@ -518,12 +532,55 @@ export class DataSource extends EventTarget {
    * the chips it has, and every answer is a clean slate.
    * TRAP T-one-query-one-owner · TRAP T-a-reload-replays-the-readers-answers · TRAP T-a-view-is-json
    */
+  /**
+   * Would a Reset to default change nothing? What filters NOW, which filters
+   * each scope holds, and how the rows are arranged, against `base` as defined
+   * with a View's own Query over it. Applies nothing. TODO 231
+   * TRAP T-reset-to-default-is-the-views-own
+   */
+  atDefault(base: Query, view?: QueryDefaults): boolean {
+    const first = this.#definition(base, false);
+    const second = view ? this.#definition(view, true, first.query) : null;
+    const facts = this.#compileFacts();
+    const filters = (q: Query): string => {
+      const { filter, only } = compile(q, facts);
+      return JSON.stringify([canonical(filter), Object.entries(only).map(([el, f]) => [el, canonical(f)]).sort()]);
+    };
+    const at = second?.query ?? first.query;
+    if (filters(at) !== filters(this.#applied)) return false;
+    /* WHICH filters each scope holds: one taken off, or moved, is a change too
+       (Will, 2026-10-12). A component's own part is its, not the reader's. */
+    const holds = (q: Query): string => JSON.stringify(Object.entries(q.scopes)
+      .filter(([, scope]) => !scope.narrows && scope.holds.length)
+      .map(([id, scope]) => [id, [...scope.holds].sort()]).sort());
+    if (holds(at) !== holds(this.#applied)) return false;
+    const want = { ...first.arrange, ...second?.arrange };
+    const { sort, group, search, sortSuspended } = this.#state;
+    if (want.sort && JSON.stringify(sortSuspended ? [] : sort) !== JSON.stringify(want.sort)) return false;
+    if (want.group !== undefined && (group ?? null) !== want.group) return false;
+    return want.search === undefined || (search ?? '') === want.search;
+  }
+
+  /** Is there anything a Reset would clear — in one scope, or any: a reading
+   *  that filters, a saved filter on, or the rows arranged? TODO 231 */
+  answered(scope?: string): boolean {
+    const { sort, group, sortSuspended } = this.#state;
+    if ((sort.length && !sortSuspended) || group) return true;
+    const facts = this.#compileFacts();
+    return (scope ? [scope] : Object.keys(this.#applied.scopes)).some((id) => {
+      const at = this.#applied.scopes[id];
+      return !!at && (Object.values(at.presets ?? {}).some(Boolean)
+        || Object.entries(at.readings).some(([field, reading]) => !!readingClause({ field, ...facts.field?.(field) }, reading)));
+    });
+  }
+
   async setQuery(query: Query | QueryDefaults, options: { holds?: 'keep' } = {}): Promise<void> {
     if (query?.v !== 1 || typeof query.scopes !== 'object') {
       report({ code: 'unknown-query', message: 'setQuery: not a v1 Query, so nothing was restored.' });
       return;
     }
-    const next = this.#definition(query, options.holds === 'keep');
+    const { query: next, arrange } = this.#definition(query, options.holds === 'keep');
+    if (arrange) this.#arrange(arrange);
     const before = new Set(this.selectedFields);
     this.#applied = next;
     this.#draft = this.#remote ? structuredClone(next) : this.#applied;
@@ -1727,22 +1784,25 @@ export class DataSource extends EventTarget {
    * (`keep`) keeps the chips a scope it does not name holds, and a field it
    * answers is held, so its chip shows it.
    */
-  #definition(given: Query | QueryDefaults, keep: boolean): Query {
+  #definition(given: Query | QueryDefaults, keep: boolean, base: Query = this.#draft): { query: Query; arrange: Arrange | null } {
     const next: Query = { v: 1, scopes: {} };
+    let arrange: Arrange | null = null;
     for (const [id, scope] of Object.entries(structuredClone(given.scopes))) {
       const { sort, group, search, ...rest } = scope;
       next.scopes[id] = { ...rest, holds: rest.holds ?? [], readings: rest.readings ?? {} };
-      if (sort || group !== undefined || search !== undefined) this.#arrange({ sort, group, search });
+      if (sort) (arrange ??= {}).sort = sort;
+      if (group !== undefined) (arrange ??= {}).group = group;
+      if (search !== undefined) (arrange ??= {}).search = search;
     }
     /* A component's OWN default filter outlives a View that does not name it,
        and a restore from before it joined. A View may name it to change it.
        TRAP T-a-component-default-outlives-a-view */
     for (const [id, scope] of this.#defaults) next.scopes[id] ??= structuredClone(scope);
     // A RESTORE is exact; only a View keeps chips and shows its answers on them.
-    if (!keep) return next;
+    if (!keep) return { query: next, arrange };
     /* A carry-over field keeps its answer where the View gives none.
        TRAP T-a-field-can-carry-over-views */
-    for (const [id, scope] of Object.entries(this.#draft.scopes)) {
+    for (const [id, scope] of Object.entries(base.scopes)) {
       if (scope.narrows) continue;
       for (const [field, reading] of Object.entries(scope.readings)) {
         if (!this.#fields.get(field)?.carryOver) continue;
@@ -1750,14 +1810,14 @@ export class DataSource extends EventTarget {
         (next.scopes[id] ??= { holds: [], readings: {} }).readings[field] = structuredClone(reading);
       }
     }
-    for (const [id, scope] of Object.entries(this.#draft.scopes)) {
+    for (const [id, scope] of Object.entries(base.scopes)) {
       if (scope.narrows || given.scopes[id]?.holds) continue;
       (next.scopes[id] ??= { holds: [], readings: {} }).holds = [...scope.holds];
     }
     /* …and its SAVED filters, as chips: each stays on its bar, OFF unless the
        View turns it on. A View that named none took them all off the bar.
        TRAP T-a-view-keeps-the-saved-filter-chips */
-    for (const [id, scope] of Object.entries(this.#draft.scopes)) {
+    for (const [id, scope] of Object.entries(base.scopes)) {
       if (scope.narrows || !scope.presets) continue;
       const to = (next.scopes[id] ??= { holds: [], readings: {} });
       to.presets = { ...Object.fromEntries(Object.keys(scope.presets).map((p) => [p, false])), ...to.presets };
@@ -1768,11 +1828,11 @@ export class DataSource extends EventTarget {
         if (!scope.holds.includes(field)) scope.holds = [...scope.holds, field];
       }
     }
-    return next;
+    return { query: next, arrange };
   }
 
   /** A definition's arrangement onto the source's own. */
-  #arrange(by: { sort?: SortSpec[] | undefined; group?: string | null | undefined; search?: string | undefined }): void {
+  #arrange(by: Arrange): void {
     if (by.sort) {
       this.#state.sort = [...by.sort];
       delete this.#state.sortSuspended;

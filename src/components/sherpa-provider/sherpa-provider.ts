@@ -378,6 +378,15 @@ export class SherpaProvider extends SherpaElement {
     await Promise.all([this.#drawBars(view), this.#configure(definition.ui ?? {})]);
     if (page.signal.aborted) return undefined;
     source.addEventListener('scope-change', () => this.#offer(), { signal: page.signal });
+    /* After every load — a filter, a sort, a View — and every scope change,
+       which moves a filter and loads nothing; once a frame. TODO 231 */
+    let frame = 0;
+    for (const type of ['change', 'scope-change']) {
+      source.addEventListener(type, () => {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => this.#sayResets());
+      }, { signal: page.signal });
+    }
     /* A REQUEST. A host that asks the reader first — a confirm dialog —
        prevents it, and calls resetView() itself. TRAP T-reset-to-default-is-the-views-own */
     this.addEventListener('view-reset', (event) => {
@@ -485,6 +494,21 @@ export class SherpaProvider extends SherpaElement {
     // The View's own filters are on: nothing of the reader's is left to keep.
     if (this.#drafts && this.#view) clearDraft(this.#drafts.page, this.#view);
     this.#settle?.();
+  }
+
+  /** Tell each bar and panel whether its Resets would change nothing: then they
+   *  are not offered. TODO 231 · TRAP T-reset-to-default-is-the-views-own */
+  #sayResets(): void {
+    const opened = this.#opened;
+    if (!opened) return;
+    const view = this.#view ? opened.library?.()[this.#view] : undefined;
+    const at = opened.source.atDefault(opened.initial, view?.query);
+    for (const el of [...this.#bars(), ...this.#panels()]) el.toggleAttribute('data-at-default', at);
+    // And Reset, where nothing is left to clear: a bar's own scope, the panel's every one.
+    for (const bar of this.#bars()) {
+      bar.toggleAttribute('data-nothing-to-reset', !opened.source.answered(this.#inherited(bar, 'data-scope') ?? undefined));
+    }
+    for (const panel of this.#panels()) panel.toggleAttribute('data-nothing-to-reset', !opened.source.answered());
   }
 
   /** Stops the open page's listeners. */

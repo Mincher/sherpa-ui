@@ -172,6 +172,14 @@
   "props": [
     {
       "$type": "prop",
+      "name": "data-at-default",
+      "type": "string",
+      "observed": false,
+      "kind": "style",
+      "description": "the filters already ARE the View's default: \"Reset all to default\" is inactive. Written by the provider. TODO 231."
+    },
+    {
+      "$type": "prop",
       "name": "data-group-field",
       "type": "string",
       "observed": true,
@@ -206,6 +214,14 @@
       "observed": false,
       "kind": "style",
       "description": "the source owns the state — report, never set"
+    },
+    {
+      "$type": "prop",
+      "name": "data-nothing-to-reset",
+      "type": "string",
+      "observed": false,
+      "kind": "style",
+      "description": "nothing is left to clear: Reset is inactive. Written by the provider. TODO 231."
     },
     {
       "$type": "prop",

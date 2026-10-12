@@ -411,3 +411,56 @@ test('a View\'s JSON goes onto a clean slate: chips kept, answers shown, rows ar
   assert.deepEqual(src.state.sort, [{ field: 'health', direction: 'desc' }]);
   assert.equal(applied.scopes.grid.sort, undefined);
 });
+
+/** Would a Reset to default change nothing? Applies nothing itself. TODO 231
+ *  TRAP T-reset-to-default-is-the-views-own */
+test('atDefault: the answers and arrangement against the page as defined with a View over it', async () => {
+  const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
+  src.hold(VIEW, ['status', 'region']);
+  const base = src.query.applied;
+  const view = { v: 1, scopes: { [VIEW]: { readings: { status: { picked: ['active'] } }, sort: [{ field: 'name', dir: 'asc' }] } } };
+  // As a Reset to default leaves it.
+  await src.setQuery(structuredClone(base));
+  await src.setQuery(view, { holds: 'keep' });
+  assert.equal(src.atDefault(base, view), true);
+  assert.equal(src.atDefault(base), false, 'the page as defined has no filter');
+  const before = JSON.stringify(src.query.applied);
+  // A reader's change, in any answer…
+  src.select('region', ['EMEA']);
+  assert.equal(src.atDefault(base, view), false);
+  src.select('region', []);
+  assert.equal(src.atDefault(base, view), true);
+  // …or in the arrangement the View names.
+  src.setState({ sort: [{ field: 'name', dir: 'desc' }] });
+  assert.equal(src.atDefault(base, view), false);
+  src.setState({ sort: [{ field: 'name', dir: 'asc' }] });
+  assert.equal(src.atDefault(base, view), true);
+  // And asking changed nothing.
+  src.atDefault(base, view);
+  assert.equal(JSON.stringify(src.query.applied), before);
+  // A filter REMOVED from the default is a change too, and so is one MOVED to
+  // another scope. Will, 2026-10-12.
+  src.hold(VIEW, ['status']);
+  assert.equal(src.atDefault(base, view), false, 'region was taken off');
+  src.hold('grid', ['region']);
+  assert.equal(src.atDefault(base, view), false, 'region moved to the grid');
+  src.hold('grid', []);
+  src.hold(VIEW, ['status', 'region']);
+  assert.equal(src.atDefault(base, view), true);
+});
+
+/** Is there anything a Reset would clear? TODO 231 */
+test('answered: a reading that filters, a saved filter on, or the rows arranged', () => {
+  const src = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }) });
+  src.hold(VIEW, ['region']);
+  src.hold('grid', ['status']);
+  assert.equal(src.answered(), false);
+  src.select('status', ['active']);
+  assert.equal(src.answered('grid'), true);
+  assert.equal(src.answered(VIEW), false, 'one scope at a time');
+  assert.equal(src.answered(), true);
+  src.select('status', []);
+  assert.equal(src.answered(), false);
+  src.setState({ sort: [{ field: 'region', dir: 'asc' }] });
+  assert.equal(src.answered(VIEW), true, 'a Reset clears the arrangement too');
+});

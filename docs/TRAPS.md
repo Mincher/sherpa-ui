@@ -1333,12 +1333,27 @@ the saved one, and a reset after that would put back what was just saved.
 Not saved means not reset. When 105's saved filter sets are ruled, the save
 moves to them.
 
+**Neither Reset is offered where it would change nothing** (Will, 2026-10-12,
+TODO 231). After every load and every scope change, the provider asks its
+source — `atDefault(initial, view.query)`: what filters now, WHICH filters
+each scope holds (one taken off, or moved, is a change — Will), and the
+arrangement the View names, against
+the page as defined with the View's own Query over it, compiled so the same
+filter always reads the same; and `answered(scope)`: a reading that filters, a
+saved filter on, the rows arranged. It sets `data-at-default` and
+`data-nothing-to-reset` on each bar and panel, and their buttons and ⋮ rows
+follow. Asking applies nothing: the Query builder no longer arranges the rows
+as it goes — `setQuery` applies what it returns.
+
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `test/e2e/reforged-reset-to-default.spec.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `test/e2e/reforged-reset-at-default.spec.ts`
+- Site: `test/unit/query.test.mjs`
 
 ### T-a-value-before-the-first-render-is-held
 

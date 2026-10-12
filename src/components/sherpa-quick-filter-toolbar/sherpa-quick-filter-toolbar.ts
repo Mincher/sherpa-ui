@@ -163,6 +163,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     /* The host offers "Limit matching filters", on or off. Will, TODO 178.
        TRAP T-the-more-menu-holds-what-folded */
     'data-limit-options': { type: 'enum', kind: 'style', values: ['on', 'off'] },
+    /* The host says a Reset to default would change nothing, so it is not
+       offered. TODO 231 · TRAP T-reset-to-default-is-the-views-own */
+    'data-at-default': { type: 'boolean', kind: 'style' },
+    'data-nothing-to-reset': { type: 'boolean', kind: 'style' },
     'data-no-actions': { type: 'boolean', kind: 'style' },
     /* A filter PANEL is answering for this bar, so it hides what the panel
        also carries. TRAP T-panel-mode-hides-what-the-panel-answers */
@@ -434,6 +438,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     if (this.#available.length) this.#renderAvailable();
     // onChange never fires for an attribute set before the first render.
     this.#syncFavouriteFromAttr();
+    this.#syncResets();
 
     // CLICK, not hover: a passing pointer would drill the list out from under it.
     this.addEventListener('menu-drill', this.#onMenuDrill as EventListener);
@@ -1171,6 +1176,14 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#syncArrangement('sort');
     this.#syncFavouriteFromAttr();
     this.#syncSaveable();
+    this.#syncResets();
+  }
+
+  /** Reset, and Reset all to default, are not offered where they would change
+   *  nothing — the host says. TODO 231 */
+  #syncResets(): void {
+    this.$('.act[data-act="clear"]')?.toggleAttribute('disabled', this.hasAttribute('data-nothing-to-reset'));
+    this.$('.reset-more')?.toggleAttribute('disabled', this.hasAttribute('data-at-default'));
   }
 
   /**
@@ -1723,7 +1736,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
 
     const first: HTMLElement[] = [];
     if (folded(act('ai'))) first.push(row('ai', 'Suggest filters'));
-    if (folded(act('clear'))) first.push(row('clear', 'Reset filters'), row('reset-default', 'Reset all to default'));
+    if (folded(act('clear'))) {
+      const toDefault = row('reset-default', 'Reset all to default');
+      toDefault.toggleAttribute('disabled', this.hasAttribute('data-at-default'));
+      const reset = row('clear', 'Reset filters');
+      reset.toggleAttribute('disabled', this.hasAttribute('data-nothing-to-reset'));
+      first.push(reset, toDefault);
+    }
     // The PAGE's buttons in the `actions` slot — the panel switch is one.
     [...this.querySelectorAll<HTMLElement>(':scope > [slot="actions"]')].forEach((extra, i) => {
       if (folded(extra)) first.push(row(`extra:${i}`, extra.getAttribute('aria-label') ?? extra.textContent?.trim() ?? ''));
