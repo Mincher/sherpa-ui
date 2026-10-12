@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**53 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
+**52 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -87,7 +87,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ❓ | c4 | 209 | The package surface for ONE component: `sideEffects`, `./package.json`, and the extensionless import TypeScript accepts but the page cannot load | tooling |
 | ❓ | c5 | 211 | Booleans and data the way frameworks bind them: `data-x="false"` is OFF; a `data` property beside `populate()`; the grid's `rowKey` | foundation |
 | ✅ | c6 | 215 | Trusted Types and a strict CSP: one policy for the five HTML sinks; the calendar's inline styles into CSS | foundation |
-| ⬜ | c7 | 220 | Weight per component, gated: JS and fetched CSS per entry may only fall, and no app module in a component's graph | tooling |
+| ✅ | c7 | 220 | Weight per component, gated: JS and fetched CSS per entry may only fall, and no app module in a component's graph | tooling |
 | ✅ | c8 | 226 | Docs and agent text, round 2: CLAUDE.md on the shared sheets and the provider, three Fires blocks, the MCP's dead tokens and "Rule 9", the old def flow | docs |
 | 🚧 | c9 | 227 | Sherpa Demos, round 2: a refused save is silent; seed lists kept twice; "Items per page" does nothing; `settled()` for its 62 waits | bug |
 | ❓ | c10 | 218 | Framework fixtures — measure, never infer: Vite + React 19 and 18, Next, Vue, Angular, SvelteKit, webpack, a CDN page, a CSP page | tooling |
@@ -1706,7 +1706,7 @@ Types) draws a button with an icon, an embedded calendar and a View's markup
 with no refusal; it failed on the old code in Chromium and Firefox.
 `T-sherpa-runs-under-a-strict-csp`
 
-### `[ ]` 220 — Weight per component, gated
+### `[x]` ✅ 220 — Weight per component, gated
 
 One `<sherpa-button>` is 9 JS files (374 KB, 314 KB of them icons) and 12
 fetched files (191 KB, 161 KB of them `sherpa-style-modes.css`). input-text
@@ -1714,6 +1714,17 @@ pulls in 20 files and 7 elements. A gate walks each entry's import graph,
 records JS and fetched CSS bytes, and lets them only fall — as `check:size`
 does for lines. It also fails when an app module (router, provider, session)
 enters a component's graph, which keeps 221's boundary honest.
+
+**✅ Done 2026-10-12.** `npm run check:weight` (`scripts/check-weight.mjs`)
+walks each of 67 entries' import graph in `dist/` — the package, the data
+layer, every component alone — and records JS bytes, module count and fetched
+`.css`/`.html` bytes in `scripts/weight-baseline.json`; growth fails until it
+is recorded on purpose. It fails too when a display component reaches the app
+layer (provider, router, session, saved Views and drafts); none does today.
+`npm test` runs it as a node test after its build. One button: 10 files,
+378 KB of JS, 191 KB fetched. Not yet in the hook: it reads `dist/`, which the
+hook does not build. The bar's `saved-filters.js` is not counted as app layer
+until 191 moves it into the provider.
 
 ### `[x]` ✅ 226 — Docs and agent text, round 2
 
