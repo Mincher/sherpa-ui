@@ -189,3 +189,33 @@ test('each row shows its real file name', async ({ page }) => {
   });
   expect(names).toEqual(['invoice.pdf', 'photo.png']);
 });
+
+/** A status is the FILE's, kept as data: an add or a remove redraws every row.
+ *  TODO 113. TRAP T-a-value-is-data-the-ticks-are-drawn */
+test('a file keeps its status through an add and a remove', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-file-upload') as HTMLElement & {
+      rendered?: Promise<void>; setFileStatus(index: number, status: string): void;
+    };
+    el.setAttribute('data-multiple', '');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const drop = (...names: string[]): void => {
+      const dt = new DataTransfer();
+      for (const name of names) dt.items.add(new File([name], name, { type: 'text/plain' }));
+      el.shadowRoot!.querySelector('.drop-zone')!.dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true }));
+    };
+    const statuses = (): string[] => [...el.shadowRoot!.querySelectorAll('.file-status')].map((s) => s.textContent ?? '');
+    drop('a.txt', 'b.txt');
+    el.setFileStatus(1, 'Uploaded');
+    drop('c.txt');
+    const afterAdd = statuses();
+    // Remove a.txt: b.txt moves to row 0, and its status goes with it.
+    const remove = el.shadowRoot!.querySelector('.file-item .file-remove') as HTMLElement & { rendered?: Promise<void> };
+    await remove.rendered;
+    (remove.shadowRoot!.querySelector('button') as HTMLElement).click();
+    await window.__settled();
+    return { afterAdd, afterRemove: statuses() };
+  });
+  expect(r).toEqual({ afterAdd: ['', 'Uploaded', ''], afterRemove: ['Uploaded', ''] });
+});

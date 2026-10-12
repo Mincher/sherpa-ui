@@ -1381,8 +1381,14 @@ nothing said. The setter stores and draws; `#render` draws again; a reader's
 tick writes back. Until anything sets it, `#picked` is null and a SLOTTED
 child's own tick is the answer, as before.
 
+`sherpa-file-upload` does the same for each file's status line: kept by FILE,
+so it survives the redraw an add or a remove makes, and follows its file when
+a row above it goes.
+
 - Site: `src/components/sherpa-select-group/sherpa-select-group.ts`
 - Site: `test/e2e/reforged-select-group.spec.ts`
+- Site: `src/components/sherpa-file-upload/sherpa-file-upload.ts`
+- Site: `test/e2e/reforged-file-upload.spec.ts`
 
 ### T-a-reflow-that-moves-nothing-keeps-its-menus
 

@@ -539,8 +539,11 @@ picks in the same task.
 - the waits that root made redundant — six `#settled()` sites in the toolbar
   and `#pendingAnswers` in `readings`; each removal needs its own proof;
 - the panel — with 89;
-- nav, nav-item, notifications and file-upload — the 09-29 sweep named them
-  "mixed", and they were never probed; one probe each, or record them clean;
+- ✅ 2026-10-12, the four the 09-29 sweep called "mixed": nav (state in
+  attributes and fields), nav-item (attributes; `highlight()` is a search act
+  after render) and notifications (`#items`) are clean. file-upload kept each
+  file's status only in its row, so an add or a remove lost it — now data,
+  kept by file;
 - the skeleton. **❓ Will — two choices:** (1) its look: A one shimmer in the
   host's box for every component, B one per component (grid rows, chart bars)
   from Figma — my pick A; (2) when it shows: A only if the first render still

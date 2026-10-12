@@ -22,6 +22,9 @@ export class SherpaFileUpload extends SherpaElement {
   #input: HTMLInputElement | null = null;
   /** The files picked so far. */
   #files: File[] = [];
+  /** Each file's status line — DATA, since every add or remove redraws the rows.
+   *  TRAP T-a-value-is-data-the-ticks-are-drawn */
+  #status = new WeakMap<File, string>();
   /** Drag-enter counter — survives dragenter/leave on nested children. */
   #dragDepth = 0;
 
@@ -130,6 +133,7 @@ export class SherpaFileUpload extends SherpaElement {
     this.renderItems('.file-list', 'template.file-item-tpl', this.#files, {
       after: (row, file) => {
         row.querySelector('.file-size')!.textContent = this.#formatSize(file.size);
+        row.querySelector('.file-status')!.textContent = this.#status.get(file) ?? '';
       },
     });
     this.toggleAttribute('data-has-files', this.#files.length > 0);
@@ -168,6 +172,8 @@ export class SherpaFileUpload extends SherpaElement {
 
   /** Set a per-file status line (e.g. "Uploading…", "Uploaded", "Failed"). */
   setFileStatus(index: number, status: string): void {
+    const file = this.#files[index];
+    if (file) this.#status.set(file, status);
     const row = this.$$('.file-item').find(
       (r) => coerceNum((r as HTMLElement).dataset['index'], -1, { int: true }) === index,
     );
