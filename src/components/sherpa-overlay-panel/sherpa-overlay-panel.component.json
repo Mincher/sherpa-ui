@@ -306,7 +306,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "collapsed": "unknown"
+        "collapsed": "boolean"
       }
     },
     {
@@ -333,7 +333,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "width": "unknown"
+        "width": "number"
       }
     }
   ],

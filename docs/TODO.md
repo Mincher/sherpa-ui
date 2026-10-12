@@ -3941,8 +3941,11 @@ observed `data-*` that is not declared.
 what `populate()` takes: an override's own `populate(…) — …` line over its
 `renderData` (25; three were missing a line, one said no shape), or, with no
 override, the declared props by short name (38). 63 of 65; the badge takes
-nothing. The MCP's `component_api` shows it and the slots. **Left:** typed
-event details; `check:usage`.
+nothing. The MCP's `component_api` shows it and the slots.
+
+**🚧 Part 3b, typed event details, 2026-10-12.** TypeScript's checker types
+each detail field: 181 fields, none `unknown` (155 of 174 were).
+`T-a-detail-is-typed-by-the-checker`. **Left:** `check:usage`.
 
 ### `[ ]` 196 — One filter surface and a smaller DataSource
 

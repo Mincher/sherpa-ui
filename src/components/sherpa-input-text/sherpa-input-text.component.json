@@ -958,7 +958,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "value": "unknown"
+        "value": "string"
       }
     },
     {
@@ -967,7 +967,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "value": "unknown"
+        "value": "string"
       }
     },
     {
@@ -976,8 +976,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "direction": "unknown",
-        "value": "unknown"
+        "direction": "1 | -1",
+        "value": "string"
       }
     },
     {
@@ -986,9 +986,9 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "all": "unknown",
-        "replacement": "unknown",
-        "value": "unknown"
+        "all": "boolean",
+        "replacement": "string",
+        "value": "string"
       }
     }
   ],

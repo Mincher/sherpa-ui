@@ -155,8 +155,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "checked": "unknown",
-        "value": "unknown"
+        "checked": "boolean",
+        "value": "string"
       }
     }
   ],

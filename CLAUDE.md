@@ -131,10 +131,9 @@ A fourth file, `sherpa-<name>.component.json`, is **generated** — by
 the component's single contract (a DTCG-dialect spec), consumed by the MCP and the
 validate tooling. Never hand-edit it; regenerate it.
 
-**An event's DETAIL is read from its `emit()` call sites**, and its types are
-inferred only where they cannot be anything else — a literal, a `??` fallback.
-Anything needing the type checker is `unknown`, because a wrong type in a
-contract is worse than an honest gap.
+**An event's DETAIL is read from its `emit()` call sites**, and each field is
+typed by TypeScript's own checker — so a type in the contract is the type the
+code has (TRAP `T-a-detail-is-typed-by-the-checker`).
 
 **The EVENTS in a spec come from the code, not from the `Fires:` comment.** That
 comment is prose, and reading it for identifiers put phantom events into 31 of the

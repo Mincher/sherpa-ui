@@ -224,7 +224,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "page": "unknown"
+        "page": "number"
       },
       "trigger": {
         "on": "click",
@@ -237,7 +237,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "pageSize": "unknown"
+        "pageSize": "number"
       }
     }
   ],

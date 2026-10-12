@@ -132,8 +132,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "id": "unknown",
-        "notification": "unknown"
+        "id": "string | undefined",
+        "notification": "Notification"
       }
     },
     {
@@ -142,7 +142,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "ids": "unknown"
+        "ids": "string[]"
       }
     },
     {

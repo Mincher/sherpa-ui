@@ -200,9 +200,9 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "direction": "unknown",
-        "moved": "unknown",
-        "selected": "unknown"
+        "direction": "'remove' | 'add'",
+        "moved": "string[]",
+        "selected": "string[]"
       },
       "trigger": {
         "on": "click",

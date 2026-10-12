@@ -32,7 +32,7 @@ import { specToDef } from './lib/component-to-def.mjs';
 import { compileDef } from './lib/generation/compile-def.mjs';
 import { authoredCss, extractBindings, parseStates } from './lib/css-reader.mjs';
 import { parseTemplates, htmlDiff } from './lib/html-structure.mjs';
-import { parseClassApi, parseObserved, parsePopulate, parsePropDecls } from './lib/ts-facts.mjs';
+import { parseClassApi, parseEventDetails, parseObserved, parsePopulate, parsePropDecls } from './lib/ts-facts.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const C = join(ROOT, 'src', 'components');
@@ -239,91 +239,6 @@ function parseEnumValues(rest) {
   const m = /^([\w-]+(?:\s*\|\s*[\w-]+)+)/.exec(noParens.trim());
   if (!m) return null;
   return m[1].split('|').map((s) => s.trim()).filter(Boolean);
-}
-
-/**
- * A value expression → a type name, or `unknown`.
- *
- * Deliberately timid: only shapes that cannot be anything else are named.
- * Anything needing the type checker stays `unknown` — a wrong type in a
- * contract is worse than an honest gap.
- */
-function typeOfExpr(raw) {
-  const e = (raw ?? '').trim().replace(/\/\/.*$/gm, '').trim();
-  if (!e) return 'unknown';
-  if (/^(true|false)$/.test(e) || /^!/.test(e) || /[=!<>]==?|\b(?:&&|\|\|)\s*(?:true|false)\b/.test(e)) return 'boolean';
-  if (/^-?\d+(\.\d+)?$/.test(e)) return 'number';
-  if (/^['"`]/.test(e)) return 'string';
-  if (/^\[/.test(e)) return 'array';
-  // a `??` fallback states the only type the field can take
-  const fallback = /\?\?\s*(.+)$/.exec(e);
-  if (fallback) {
-    const t = typeOfExpr(fallback[1]);
-    if (t !== 'unknown') return t;
-  }
-  return 'unknown';
-}
-
-/**
- * What each event carries, read from its `emit()` call sites.
- *
- * TOP-LEVEL KEYS ONLY — hence the brace walk: `{ index, detail: { a, b } }`
- * declares `index` and `detail`, not `a` and `b`. An event emitted more than
- * once with different keys reports the union; the payload really does vary.
- */
-function emitDetails(ts) {
-  const out = new Map();
-  if (!ts) return out;
-
-  for (const m of ts.matchAll(/\bemit\(\s*['"`]([a-z][\w-]*)['"`]\s*,\s*\{/g)) {
-    const open = m.index + m[0].length - 1;
-    let depth = 0, close = -1;
-    for (let i = open; i < ts.length; i++) {
-      if (ts[i] === '{') depth++;
-      else if (ts[i] === '}') { depth--; if (depth === 0) { close = i; break; } }
-    }
-    if (close < 0) continue;
-
-    const keys = new Map();
-    let d = 0, token = '', pendingKey = '';
-    const shorthand = new Map();
-    const flush = () => {
-      if (pendingKey) keys.set(pendingKey, typeOfExpr(token));
-      else {
-        // No colon, so the whole token is the key — `{ values }`. Anything
-        // with an operator is an expression between two commas, not shorthand.
-        const t = token.replace(/\/\/.*$/gm, '').trim();
-        if (/^[A-Za-z_$][\w$]*$/.test(t)) shorthand.set(t, 'unknown');
-      }
-      pendingKey = '';
-      token = '';
-    };
-    for (const ch of ts.slice(open + 1, close)) {
-      if ('{[('.includes(ch)) d++;
-      else if ('}])'.includes(ch)) d--;
-      if (d === 0 && ch === ',') { flush(); continue; }
-      if (d === 0) token += ch;
-      if (d === 0 && ch === ':' && !pendingKey) {
-        // last line before the colon, so a comment above is not read as a key
-        const k = token.slice(0, -1).split('\n').pop().trim();
-        if (/^[A-Za-z_$][\w$]*$/.test(k)) pendingKey = k;
-        token = '';
-        continue;
-      }
-    }
-    flush();
-    /* Shorthand is collected by the WALK, never a comma split over the raw
-       body: a split reads `held` in `clause: held ? … : null` as a field. */
-    for (const [k, t] of shorthand) if (!keys.has(k)) keys.set(k, t);
-
-    const prev = out.get(m[1]) ?? new Map();
-    for (const [k, t] of keys) {
-      // two different inferences for one field → `unknown`, not a guess
-      prev.set(k, prev.has(k) && prev.get(k) !== t ? 'unknown' : t);
-    }
-    out.set(m[1], prev);
-  }
-  return out;
 }
 
 /** Parse the `Fires:` line(s) → [name, …]; single-line or multi-line lists. */
@@ -744,12 +659,12 @@ function generateSpec(name) {
   const eventNames = new Set(firesNames.filter((n) => emitted.has(n)));
   // an emitted event the comment forgot is still part of the contract
   for (const n of emitted) eventNames.add(n);
-  const details = emitDetails(ts);
+  // Typed by TypeScript's checker. TRAP T-a-detail-is-typed-by-the-checker
+  const details = ts ? parseEventDetails(join(dir, `${name}.ts`)) : new Map();
   const uncomposed = uncomposedEvents(ts);
   const events = [];
   for (const en of eventNames) {
     const ev = { $type: 'event', name: en, bubbles: true, composed: !uncomposed.has(en) };
-    // the emit site gives a NAME reliably and a type only by inference
     const keys = details.get(en);
     if (keys?.size) {
       ev.detail = Object.fromEntries([...keys].sort(([a], [b]) => a.localeCompare(b)));

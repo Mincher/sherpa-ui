@@ -80,8 +80,8 @@
       "composed": true,
       "detail": {
         "href": "string",
-        "index": "unknown",
-        "label": "unknown"
+        "index": "number",
+        "label": "string"
       },
       "trigger": {
         "on": "click",

@@ -339,10 +339,10 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "picked": "unknown",
-        "readings": "unknown",
-        "scope": "string",
-        "values": "unknown"
+        "picked": "Record<string, Record<string, string[]>>",
+        "readings": "Record<string, Record<string, FieldReading>>",
+        "scope": "'panel'",
+        "values": "Record<string, Record<string, string[]>>"
       }
     },
     {
@@ -363,7 +363,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "reason": "unknown"
+        "reason": "'width' | 'page' | 'reader'"
       }
     },
     {
@@ -372,9 +372,9 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "from": "unknown",
-        "ids": "unknown",
-        "scope": "unknown"
+        "from": "string",
+        "ids": "string[]",
+        "scope": "'view' | string"
       }
     },
     {
@@ -383,8 +383,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "id": "unknown",
-        "scope": "unknown"
+        "id": "string",
+        "scope": "string"
       }
     },
     {
@@ -393,8 +393,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "field": "unknown",
-        "scope": "unknown"
+        "field": "null",
+        "scope": "string"
       }
     },
     {
@@ -403,9 +403,9 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "direction": "string",
-        "field": "unknown",
-        "scope": "unknown"
+        "direction": "'asc'",
+        "field": "null",
+        "scope": "string"
       }
     },
     {
@@ -414,10 +414,10 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "id": "unknown",
-        "label": "unknown",
-        "readings": "unknown",
-        "scope": "unknown"
+        "id": "string",
+        "label": "string",
+        "readings": "Record<string, FieldReading>",
+        "scope": "string"
       }
     },
     {
@@ -426,8 +426,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "id": "unknown",
-        "scope": "unknown"
+        "id": "string",
+        "scope": "string"
       }
     },
     {
@@ -436,9 +436,9 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "id": "unknown",
-        "readings": "unknown",
-        "scope": "unknown"
+        "id": "string",
+        "readings": "Record<string, FieldReading> | null",
+        "scope": "string"
       }
     },
     {
@@ -453,7 +453,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "on": "unknown"
+        "on": "boolean"
       }
     },
     {
@@ -462,9 +462,9 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "id": "unknown",
-        "mode": "unknown",
-        "scope": "unknown"
+        "id": "string",
+        "mode": "'simple' | 'advanced'",
+        "scope": "string"
       }
     },
     {

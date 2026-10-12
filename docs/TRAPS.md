@@ -15551,6 +15551,24 @@ EXTENDS the default rather than replacing it.
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `test/e2e/reforged-templater.spec.ts`
 
+### T-a-detail-is-typed-by-the-checker
+
+**An event's detail fields are typed by TypeScript's checker**, not guessed
+from the text. The old reader named a type only where the text could be
+nothing else — a literal, a `??` fallback — so 155 of 174 fields read
+`unknown`. `parseEventDetails` builds ONE program over the source per run and
+types each field of every `this.emit('name', { … })`: a spread and a named
+object resolve too. Measured 2026-10-12 (TODO 195): 181 fields, none
+`unknown`. A field two call sites type differently is their union — the
+payload really varies. A long nameless object is written `object`; a name
+says more than its fields.
+
+The rule that held the old gap open still holds: a wrong type in a contract
+is worse than an honest gap. The checker's type is not a guess.
+
+- Site: `scripts/generate-component-spec.mjs`
+- Site: `scripts/lib/ts-facts.mjs`
+
 ### T-a-bundler-can-turn-a-file-into-a-module
 
 **A bundler can hand back JavaScript where Sherpa asked for a sheet.**

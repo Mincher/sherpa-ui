@@ -866,7 +866,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "values": "unknown"
+        "values": "string[]"
       }
     },
     {
@@ -881,7 +881,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "values": "unknown"
+        "values": "string[]"
       }
     },
     {
@@ -902,8 +902,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "label": "string",
-        "value": "unknown"
+        "label": "'Save filter' | 'Remove' | string",
+        "value": "'save' | 'remove' | string"
       }
     },
     {
@@ -933,9 +933,9 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "conditions": "unknown",
-        "op": "unknown",
-        "value": "unknown"
+        "conditions": "FieldCondition[]",
+        "op": "FilterOp",
+        "value": "string"
       }
     },
     {
@@ -944,7 +944,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "mode": "unknown"
+        "mode": "ConditionType"
       }
     },
     {
@@ -962,7 +962,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "range": "unknown"
+        "range": "boolean"
       }
     },
     {
@@ -971,7 +971,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "values": "unknown"
+        "values": "string[]"
       }
     },
     {

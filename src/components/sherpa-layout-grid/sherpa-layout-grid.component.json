@@ -206,7 +206,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "layout": "unknown"
+        "layout": "GridLayout"
       }
     }
   ],

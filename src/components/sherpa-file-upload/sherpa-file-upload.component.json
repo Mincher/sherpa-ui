@@ -304,8 +304,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "added": "unknown",
-        "files": "unknown"
+        "added": "File[]",
+        "files": "File[]"
       },
       "trigger": {
         "on": "drop",
@@ -318,8 +318,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "files": "unknown",
-        "removed": "unknown"
+        "files": "File[]",
+        "removed": "File"
       },
       "trigger": {
         "on": "click",
@@ -342,7 +342,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "files": "unknown"
+        "files": "File[]"
       },
       "trigger": {
         "on": "click",
@@ -355,7 +355,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "files": "unknown"
+        "files": "File[]"
       },
       "trigger": {
         "on": "change",

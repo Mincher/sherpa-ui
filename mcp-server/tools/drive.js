@@ -102,7 +102,7 @@ export function register(server) {
       if (events.length) {
         for (const e of events) {
           const detail = e.detail && Object.keys(e.detail).length
-            ? ` — detail: { ${Object.keys(e.detail).join(", ")} }` : "";
+            ? ` — detail: { ${Object.entries(e.detail).map(([k, t]) => `${k}: ${t}`).join(", ")} }` : "";
           lines.push(`- \`${e.name}\`${detail}`);
         }
       } else {

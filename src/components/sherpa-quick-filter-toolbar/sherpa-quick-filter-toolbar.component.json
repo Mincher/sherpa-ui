@@ -528,9 +528,9 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "active": "unknown",
-        "scope": "string",
-        "values": "unknown"
+        "active": "string[]",
+        "scope": "'bar'",
+        "values": "Record<string, string[]>"
       }
     },
     {
@@ -539,7 +539,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "field": "unknown"
+        "field": "null | string"
       }
     },
     {
@@ -548,8 +548,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "direction": "unknown",
-        "field": "unknown"
+        "direction": "'asc' | SortDirection",
+        "field": "null | string"
       }
     },
     {
@@ -558,8 +558,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "filter": "unknown",
-        "id": "unknown"
+        "filter": "object",
+        "id": "string"
       }
     },
     {
@@ -568,9 +568,9 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "id": "unknown",
-        "label": "unknown",
-        "readings": "unknown"
+        "id": "string",
+        "label": "string",
+        "readings": "Record<string, FieldReading>"
       }
     },
     {
@@ -579,7 +579,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "id": "unknown"
+        "id": "string"
       }
     },
     {
@@ -588,8 +588,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "id": "unknown",
-        "readings": "unknown"
+        "id": "string",
+        "readings": "Record<string, FieldReading> | null"
       }
     },
     {
@@ -598,8 +598,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "filters": "unknown",
-        "ids": "unknown"
+        "filters": "QuickFilterDef[]",
+        "ids": "string[]"
       }
     },
     {
@@ -638,7 +638,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "favourite": "unknown"
+        "favourite": "boolean"
       }
     },
     {
@@ -659,7 +659,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "on": "unknown"
+        "on": "boolean"
       }
     },
     {

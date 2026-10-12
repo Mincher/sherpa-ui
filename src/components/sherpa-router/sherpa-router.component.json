@@ -68,11 +68,11 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "changed": "unknown",
-        "previous": "unknown",
-        "route": "unknown",
-        "type": "unknown",
-        "waitUntil": "unknown"
+        "changed": "string[]",
+        "previous": "Route",
+        "route": "Route",
+        "type": "'push' | 'replace' | 'traverse'",
+        "waitUntil": "(work: Promise<unknown>) => undefined"
       }
     }
   ],

@@ -295,8 +295,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "side": "unknown",
-        "width": "unknown"
+        "side": "'start' | 'end'",
+        "width": "number"
       }
     },
     {
@@ -305,7 +305,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "room": "unknown"
+        "room": "boolean"
       }
     }
   ],

@@ -362,7 +362,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "label": "unknown"
+        "label": "string"
       },
       "trigger": {
         "on": "click",
@@ -375,7 +375,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "expanded": "unknown"
+        "expanded": "boolean"
       },
       "trigger": {
         "on": "click",
@@ -388,7 +388,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "selected": "unknown"
+        "selected": "boolean"
       }
     },
     {

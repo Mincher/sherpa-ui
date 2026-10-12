@@ -471,8 +471,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "field": "unknown",
-        "width": "unknown"
+        "field": "string",
+        "width": "number | undefined"
       }
     },
     {
@@ -481,8 +481,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "direction": "unknown",
-        "field": "boolean"
+        "direction": "SortDirection | null",
+        "field": "string | null"
       }
     },
     {
@@ -491,8 +491,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "index": "unknown",
-        "row": "unknown"
+        "index": "number",
+        "row": "GridRow | undefined"
       }
     },
     {
@@ -501,8 +501,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "records": "unknown",
-        "selected": "unknown"
+        "records": "GridRow[]",
+        "selected": "string[]"
       }
     },
     {
@@ -511,15 +511,15 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "clause": "unknown",
-        "field": "unknown",
-        "from": "unknown",
-        "header": "unknown",
-        "label": "unknown",
-        "op": "unknown",
-        "reading": "unknown",
-        "to": "unknown",
-        "value": "unknown"
+        "clause": "unknown[] | null",
+        "field": "string",
+        "from": "string | null",
+        "header": "string",
+        "label": "string | null",
+        "op": "string | null",
+        "reading": "object",
+        "to": "string | null",
+        "value": "string | null"
       }
     },
     {
@@ -528,10 +528,10 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "field": "unknown",
-        "filters": "unknown",
-        "value": "unknown",
-        "visible": "unknown"
+        "field": "string",
+        "filters": "{ [k: string]: string; }",
+        "value": "string",
+        "visible": "number"
       }
     },
     {
@@ -540,8 +540,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "collapsed": "unknown",
-        "value": "unknown"
+        "collapsed": "boolean",
+        "value": "string"
       }
     },
     {
@@ -550,8 +550,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "id": "unknown",
-        "records": "unknown"
+        "id": "string",
+        "records": "GridRow[]"
       }
     },
     {
@@ -560,7 +560,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "page": "unknown"
+        "page": "number"
       }
     },
     {
@@ -569,8 +569,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "page": "unknown",
-        "pages": "unknown"
+        "page": "number",
+        "pages": "number"
       }
     }
   ],

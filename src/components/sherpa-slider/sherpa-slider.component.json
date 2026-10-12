@@ -246,7 +246,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "value": "unknown"
+        "value": "number"
       }
     },
     {
@@ -255,7 +255,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "value": "unknown"
+        "value": "number"
       }
     }
   ],

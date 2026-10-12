@@ -177,7 +177,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "text": "unknown"
+        "text": "string"
       },
       "trigger": {
         "on": "submit",

@@ -263,9 +263,9 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "index": "unknown",
-        "label": "unknown",
-        "value": "unknown"
+        "index": "number",
+        "label": "string",
+        "value": "number"
       }
     }
   ],

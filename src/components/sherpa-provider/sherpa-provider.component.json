@@ -76,7 +76,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "mode": "unknown"
+        "mode": "'panel' | 'toolbars'"
       }
     },
     {
@@ -85,7 +85,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "id": "unknown"
+        "elements": "Record<string, HTMLElement> | undefined",
+        "id": "string | undefined"
       }
     }
   ],

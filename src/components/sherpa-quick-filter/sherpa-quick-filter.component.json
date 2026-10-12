@@ -564,7 +564,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "active": "unknown"
+        "active": "boolean"
       },
       "trigger": {
         "on": "click",
@@ -577,8 +577,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "scope": "string",
-        "values": "unknown"
+        "scope": "'chip'",
+        "values": "string[]"
       }
     },
     {
@@ -587,8 +587,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "label": "unknown",
-        "value": "unknown"
+        "label": "string",
+        "value": "string"
       }
     },
     {
@@ -597,7 +597,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "field": "unknown"
+        "field": "string | null"
       }
     },
     {
@@ -606,8 +606,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "direction": "string",
-        "field": "boolean"
+        "direction": "SortDirection",
+        "field": "string | null"
       }
     }
   ],

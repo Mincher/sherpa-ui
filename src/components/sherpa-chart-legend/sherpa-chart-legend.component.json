@@ -191,9 +191,9 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "active": "unknown",
-        "index": "unknown",
-        "indices": "unknown",
+        "active": "boolean",
+        "index": "number",
+        "indices": "number[]",
         "label": "string"
       },
       "trigger": {

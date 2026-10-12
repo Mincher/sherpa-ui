@@ -275,7 +275,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "index": "unknown",
+        "index": "number",
         "label": "string",
         "value": "number"
       },

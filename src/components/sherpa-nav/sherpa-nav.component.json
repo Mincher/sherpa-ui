@@ -340,7 +340,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "id": "unknown"
+        "id": "string"
       },
       "trigger": {
         "on": "item-click",
@@ -353,7 +353,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "query": "unknown"
+        "query": "string | ''"
       },
       "trigger": {
         "on": "input",
@@ -366,7 +366,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "state": "unknown"
+        "state": "NavState"
       }
     },
     {
@@ -375,7 +375,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "open": "boolean"
+        "open": "true | false"
       }
     }
   ],

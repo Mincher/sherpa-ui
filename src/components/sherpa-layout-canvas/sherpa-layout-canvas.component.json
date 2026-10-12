@@ -176,7 +176,12 @@
       "$type": "event",
       "name": "canvas-change",
       "bubbles": true,
-      "composed": true
+      "composed": true,
+      "detail": {
+        "x": "number",
+        "y": "number",
+        "zoom": "number"
+      }
     }
   ],
   "tokens": {

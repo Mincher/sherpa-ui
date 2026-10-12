@@ -130,8 +130,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "id": "unknown",
-        "index": "unknown",
+        "id": "string",
+        "index": "number",
         "label": "string"
       }
     }

@@ -15,6 +15,7 @@
  * - parsePropDecls — Each prop `static override props` declares: its kind, type, values and default.
  * - parseClassApi — The component class's public methods and properties, read by TypeScript's own parser.
  * - parsePopulate — What `populate()` takes, from the `populate(…) — …` line over its `renderData`; null with no override.
+ * - parseEventDetails — Each `this.emit()` event's detail fields, typed by TypeScript's checker.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -313,4 +314,64 @@ export function parsePopulate(src) {
   const shape = text.slice(at + 'populate('.length, end).trim();
   const description = text.slice(end + 1).replace(/^[\s—–-]+/, '').trim();
   return { ...(shape ? { shape } : {}), ...(description ? { description } : {}) };
+}
+
+/** One program over the source, made once per run: the checker types every file. */
+let program;
+function checked(path) {
+  if (!program?.getSourceFile(path)) {
+    const file = join(dirname(SHARED_FILE), '../../../tsconfig.reforged.json');
+    const parsed = ts.parseJsonConfigFileContent(ts.readConfigFile(file, ts.sys.readFile).config, ts.sys, dirname(file));
+    program = ts.createProgram(parsed.fileNames, { ...parsed.options, noEmit: true });
+  }
+  return program;
+}
+
+/**
+ * Each `this.emit()` event's detail fields, typed by TypeScript's checker. A
+ * field two call sites type differently is the union of both — the payload
+ * really does vary. An event emitted with no detail has no fields.
+ * TRAP T-a-detail-is-typed-by-the-checker
+ *
+ * @returns {Map<string, Map<string, string>>} event → field → type
+ */
+export function parseEventDetails(path) {
+  const prog = checked(path);
+  const sf = prog.getSourceFile(path);
+  const checker = prog.getTypeChecker();
+  const out = new Map();
+  if (!sf) return out;
+  const flags = ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseSingleQuotesForStringLiteralType;
+  // A long nameless object says nothing a name would not: it is an `object`.
+  const say = (type) => {
+    const text = checker.typeToString(type, undefined, flags);
+    return text.startsWith('{') && text.length > 60 ? 'object' : text;
+  };
+  const fieldsOf = (detail) => {
+    if (!ts.isObjectLiteralExpression(detail)) {
+      const type = checker.getTypeAtLocation(detail);
+      return checker.getPropertiesOfType(type).map((p) => [p.name, say(checker.getTypeOfSymbolAtLocation(p, detail))]);
+    }
+    return detail.properties.flatMap((p) => {
+      if (ts.isPropertyAssignment(p) && p.name) return [[p.name.getText(sf), say(checker.getTypeAtLocation(p.initializer))]];
+      if (ts.isShorthandPropertyAssignment(p)) return [[p.name.text, say(checker.getTypeAtLocation(p.name))]];
+      if (ts.isSpreadAssignment(p)) return fieldsOf(p.expression);
+      return [];
+    });
+  };
+  const visit = (node) => {
+    if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)
+      && node.expression.name.text === 'emit' && node.expression.expression.kind === ts.SyntaxKind.ThisKeyword
+      && node.arguments[0] && ts.isStringLiteralLike(node.arguments[0])) {
+      const fields = out.get(node.arguments[0].text) ?? new Map();
+      out.set(node.arguments[0].text, fields);
+      for (const [key, type] of node.arguments[1] ? fieldsOf(node.arguments[1]) : []) {
+        const was = fields.get(key);
+        fields.set(key, !was || was === type ? type : [...new Set([...was.split(' | '), ...type.split(' | ')])].join(' | '));
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sf);
+  return out;
 }

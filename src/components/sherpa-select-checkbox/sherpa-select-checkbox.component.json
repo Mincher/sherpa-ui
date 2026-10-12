@@ -207,9 +207,9 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "checked": "unknown",
-        "indeterminate": "boolean",
-        "value": "unknown"
+        "checked": "boolean",
+        "indeterminate": "false",
+        "value": "string"
       }
     },
     {
@@ -218,7 +218,7 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "value": "unknown"
+        "value": "string"
       }
     }
   ],
