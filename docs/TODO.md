@@ -90,7 +90,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | c6 | 215 | Trusted Types and a strict CSP: one policy for the five HTML sinks; the calendar's inline styles into CSS | foundation |
 | ✅ | c7 | 220 | Weight per component, gated: JS and fetched CSS per entry may only fall, and no app module in a component's graph | tooling |
 | ✅ | c8 | 226 | Docs and agent text, round 2: CLAUDE.md on the shared sheets and the provider, three Fires blocks, the MCP's dead tokens and "Rule 9", the old def flow | docs |
-| 🚧 | c9 | 227 | Sherpa Demos, round 2: a refused save is silent; seed lists kept twice; "Items per page" does nothing; `settled()` for its 62 waits | bug |
+| ✅ | c9 | 227 | Sherpa Demos, round 2: a refused save is silent; seed lists kept twice; "Items per page" does nothing; `settled()` for its 62 waits | bug |
 | ⬜ | c10 | 218 | Framework fixtures — measure, never infer: Vite + React 19 and 18, Next, Vue, Angular, SvelteKit, webpack, a CDN page, a CSP page | tooling |
 | ⬜ | c11 | 195 | The spec becomes the whole contract: props only, slots, `populate()` shape, typed events; a usage gate | tooling |
 | ⬜ | c12 | 210 | Framework typings from the manifest: the tag map, React 19 JSX, Vue and Svelte types, editor data — after 195 | tooling |
@@ -1825,7 +1825,7 @@ dead `readDoc` is gone; the skill's description says it is out of date, and
 its four dead links and its `@fires` line are fixed; the README links what the
 package does not ship, and `package.json` has a `repository`.
 
-### `[~]` 227 — Sherpa Demos, round 2
+### `[x]` ✅ 227 — Sherpa Demos, round 2
 
 - A refused or invalid save (a taken email, the schema) is an unhandled
   rejection: the dialog stays open, no toast. `T-a-failed-mutation-must-reach-the-reader`.
@@ -1842,6 +1842,14 @@ once, in `seed-lists.js`; Items per page keeps `/grid/pageSize` and Records
 pages by it; the unused provider is gone. **Left:** the 62 waits — each needs
 reading, as a `whenDefined` may be there for a reason `settled()` does not
 cover.
+
+**✅ The waits, done 2026-10-12** (Demos `245cdc2`). All 32 `waitForTimeout`
+are gone, and a node test fails a spec that adds one: 26 are `settle(page)`
+(sherpa-ui's `settled()`, in the page), 2 samplers are `expect.poll`, 2
+negatives are proved rather than waited out (the applied Query is unchanged;
+no alerts feed is asked for), and 2 wait for the real result. The 30
+`whenDefined` in `app/` stay — each waits for a class before its methods are
+called, which `settled()` does not do.
 
 ### `[ ]` 218 — Framework fixtures: measure, never infer
 
