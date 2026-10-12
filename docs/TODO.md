@@ -1541,6 +1541,13 @@ with no DOM, and proves `define()` registers once and reports `tag-taken`.
 `sherpa-ui/components/button` — the top level stays free for `data`, `app`,
 `css` and `types`; B `sherpa-ui/button`. My pick: A. The rest needs no ruling.
 
+**✅ The rest, done 2026-10-12.** The pattern is `./components/*.js`, so an
+import without `.js` is refused by Node AND by TypeScript, and the `.js` form
+gets its own `.d.ts`; `./package.json` is exported; `sideEffects` keeps the
+component modules, `index.js`, the base class and the CSS. A node test
+resolves each in Node and in TypeScript (bundler and nodenext). Only the
+short name is left, for your ruling.
+
 ### `[ ]` 211 — Booleans and data the way frameworks bind them
 
 - Every framework writes `data-x={false}` as `data-x="false"`, and Sherpa
