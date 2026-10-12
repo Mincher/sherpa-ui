@@ -32,6 +32,8 @@ export async function settled(root: Root = document, passes = 3): Promise<void> 
     await Promise.resolve();
   }
   await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+  // A popover's `toggle` comes a TASK later, and a menu writes `open` from it.
+  await new Promise<void>((r) => setTimeout(r, 0));
   /* ON THE CLOCK, RUNNING, and with an END: a scroll-driven, a paused or an
      infinite animation — a loader, an indeterminate bar — never finishes. */
   const doc = root instanceof Document ? root : root.ownerDocument ?? document;

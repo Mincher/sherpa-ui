@@ -14415,6 +14415,11 @@ frames alone. `Animation.finished` is the only thing that waits for one.
   awaited.
 - Given a part of the page, it waited on every animation in the document. It
   waits on the part now, shadow roots included.
+- **And one TASK.** `showPopover()` is at once, but its `toggle` event comes a
+  task later, and `sherpa-menu` writes `open` from it. Frames and microtasks do
+  not wait for a task, so when Firefox's frames came fast, `settled()` ended
+  before a menu said it was open — 1 run in 20, found by bisecting a flaky test
+  to the change above. It waits one `setTimeout(0)` after the frames.
 
 - Site: `src/core/ui/settled.ts`
 - Site: `test/e2e/reforged-settled.spec.ts`
@@ -15918,6 +15923,19 @@ by the page's id, so `saveView(label)` needs nothing from the page.
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/unit/page-definition.test.mjs`
 - Site: `src/data.ts`
+
+### T-false-is-off
+
+**`data-x="false"` is OFF on a declared boolean prop.** Sherpa reads a boolean
+by PRESENCE — `:host([data-x])`, `hasAttribute` — and React 18 and 19, Vue 3,
+Angular's `[attr.]` and Svelte all write `data-x={false}` as the string
+`"false"`, so a framework's off read as on (TODO 211). The base class removes a
+declared `type: 'boolean'` prop set to `"false"`, before the first render and
+after. Only DECLARED booleans: a string prop keeps `"false"` as its value, and
+an attribute still in `observed` is not covered until 195 declares it.
+
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `test/e2e/reforged-framework-binding.spec.ts`
 
 ### T-a-component-imports-anywhere
 

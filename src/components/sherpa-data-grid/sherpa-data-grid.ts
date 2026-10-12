@@ -149,6 +149,15 @@ export class SherpaDataGrid extends SherpaElement {
   declare key: string | null;
   declare actions: GridAction[];
 
+  /** `key` by the name a framework can bind: React and Vue keep `key` for
+   *  themselves. TODO 211 */
+  get rowKey(): string | null {
+    return this.key;
+  }
+  set rowKey(field: string | null) {
+    this.key = field;
+  }
+
   // data-selectable is observed though CSS owns its reveal: the pin offset is a
   // MEASURED width, so it must re-run #syncPinned().
   static override observed = [

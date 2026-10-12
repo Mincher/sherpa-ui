@@ -547,10 +547,16 @@ export abstract class SherpaElement extends Base {
   }
 
   attributeChangedCallback(name: string, oldVal: string | null, newVal: string | null): void {
+    const Ctor = this.constructor as typeof SherpaElement;
+    /* "false" is OFF: every framework writes `data-x={false}` as that string,
+       and a boolean is read by presence. TRAP T-false-is-off */
+    if (newVal === 'false' && Ctor.props[name]?.type === 'boolean') {
+      this.removeAttribute(name);
+      return;
+    }
     // Before the first render onRender reads the attribute state itself.
     if (oldVal === newVal || !this.#hasRendered) return;
     // A declared prop re-syncs itself; onChange still fires afterwards.
-    const Ctor = this.constructor as typeof SherpaElement;
     for (const [prop, def] of Object.entries(Ctor.props)) {
       // The prop itself, and any prop that FALLS BACK to it.
       if (prop === name || def.fallbackAttr === name) this.#syncProp(prop, def);

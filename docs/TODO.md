@@ -73,6 +73,9 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ❓ | 16t1 | 203 | sherpa-ui: 135 of 136 specs load the page without the pointer park — one fixture, as in Demos? | bug |
 | ⬜ | 16t2 | 204 | WebKit: a `page.reload` in the Demos nav favourites spec never fires `load` — 1 run in 80 | bug |
 | ⬜ | 16t3 | 206 | Firefox: "closing the dialog fires a composed close event" sees no event, 1 to 2 runs in 10 | bug |
+| ⬜ | 16t4 | 228 | The donut chart's legend lets EVERY item be switched off; one must stay on — and a value filter limiting greyed out may not be counted | bug |
+| ⬜ | 16t5 | 229 | The legend's switched-off items are lost on a page refresh | bug |
+| ⬜ | 16t6 | 230 | Reset all filters dialog: "Save filters before reset" sits in a grey border; it is plain form content | quick |
 | | | | **C2 — Consumers: frameworks, apps and agents** (planned 2026-10-12) | |
 | ✅ | c1 | 225 | `settled()` hangs on an infinite animation — a loader, an indeterminate bar — and waits on the whole document when given a part | bug |
 | ✅ | c2 | 224 | Silent failures, round 2: a linked View drops its report; View gaps skip `onReport`; `open()` hangs on an undefined tag; a 200 that is not the file is stamped; and five more | bug |
@@ -1458,6 +1461,30 @@ the late close that `T-a-reopened-dialog-hears-a-late-close` drops.
 
 ---
 
+### `[ ]` 228 — BUG: every item in the donut chart's legend can be switched off
+
+Will, 2026-10-12: *"The donut chart allows all legend items to be toggled
+off. There should always be at least 1 active legend item. Perhaps it isn't
+taking into account items set to inactive by filter limiting?"* A legend
+toggle is a FILTER (`T-legend-toggle-is-a-filter`), so the last item on must
+refuse to go off — and an item greyed by "Limit to matching filters" (180) is
+already off for this count.
+
+### `[ ]` 229 — BUG: the legend's switched-off items are lost on a refresh
+
+Will, 2026-10-12: *"They don't retain state on page refresh."* A legend's
+toggles are a filter, so they belong in the kept Query or the View's draft,
+as every other filter does (`T-a-view-keeps-a-draft`).
+
+### `[ ]` 230 — The Reset all filters dialog: its switch is plain form content
+
+Will, 2026-10-12: *"The 'Save filters before reset' in the Reset All Filters
+dialog is contained within a grey border. The switch, label, and description
+should just be form content in the content area of the dialog. No need to
+encapsulate them in any custom way."*
+
+---
+
 ## C2 — Consumers: frameworks, apps and agents
 
 Planned 2026-10-12 from three read-only reviews: 183's problems re-checked
@@ -1480,6 +1507,11 @@ transition INSIDE a component was never waited for — each shadow root is asked
 now; and Firefox never ticks an animation in a closed `<details>`, so a wait
 also ends when its element is no longer drawn (`checkVisibility()`).
 `T-settled-waits-for-renders-not-transitions`
+
+**Follow-up, same day:** it made `reforged-saved-filter.spec.ts:476` flaky in
+Firefox (1 in 20; 0 in 20 before — bisected). A popover's `toggle`, which a
+menu writes `open` from, comes a task later than the frames it waited for.
+It waits one task too now: 30 of 30.
 
 ### `[x]` ✅ 224 — Silent failures, round 2
 
@@ -1560,6 +1592,12 @@ short name is left, for your ruling.
 
 **❓ Will — the property's name:** A `data` — a metric and a line chart take
 an object, not a list; B `items`. My pick: A. The boolean half needs no ruling.
+
+**✅ The boolean half, done 2026-10-12.** A declared `type: 'boolean'` prop set
+to `"false"` is removed, before the first render and after; a string prop
+keeps `"false"`. Only declared booleans — the ones still in `observed` follow
+when 195 declares them. `T-false-is-off`. Left: the `data` property (its name)
+and the grid's `rowKey`.
 
 ### `[ ]` 215 — Trusted Types and a strict CSP
 
