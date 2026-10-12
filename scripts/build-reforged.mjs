@@ -3,10 +3,14 @@
  * --watch also re-transforms assets — `tsc --watch` alone emits nothing for a
  * CSS-only edit, so the change never reaches dist/.
  *
- *   node scripts/build-reforged.mjs [--watch]
+ * Each template and sheet a module hands the templater is put in the JS, so a
+ * component fetches nothing — except in a DEV build (--dev, --watch), which
+ * keeps the URLs for live reload. Will, TODO 208. TRAP T-the-text-is-in-the-js
+ *
+ *   node scripts/build-reforged.mjs [--watch | --dev]
  */
 import { execSync, spawn } from 'node:child_process';
-import { readdirSync, mkdirSync, copyFileSync, readFileSync, writeFileSync, statSync, watch } from 'node:fs';
+import { readdirSync, mkdirSync, copyFileSync, readFileSync, writeFileSync, statSync, watch, globSync, existsSync } from 'node:fs';
 import { join, dirname, relative } from 'node:path';
 import postcss from 'postcss';
 import autoprefixer from 'autoprefixer';
@@ -29,6 +33,7 @@ console.log('› project-tokens');
 execSync('node scripts/project-tokens.mjs', { stdio: 'inherit' });
 
 const WATCH = process.argv.includes('--watch');
+const DEV = WATCH || process.argv.includes('--dev');
 
 // Fatal one-shot; in --watch it only reports — an error there would kill the
 // watch and stop all updates silently.
@@ -80,6 +85,38 @@ async function copyOne(full) {
 console.log('› css transform (autoprefixer + cssnano)');
 const cssCount = await copyAssets(SRC);
 console.log(`✓ assets copied into dist/ (${cssCount} css transformed)`);
+
+/** A template's text with no comments and no indent — what the templater parses. */
+const lean = (html) => html.replace(/<!--[\s\S]*?-->/g, '').replace(/\n[ \t]+/g, '\n').trim();
+
+/** Wrap each `new URL('./x.css' | './x.html', import.meta.url)` in `inlined(…, text)`.
+ *  One ending in `.href` is a page's <link>, not the templater's, and stays a URL. */
+function inlineFiles(dir) {
+  let count = 0;
+  for (const file of globSync('**/*.js', { cwd: dir })) {
+    const path = join(dir, file);
+    const src = readFileSync(path, 'utf8');
+    let used = false;
+    const out = src.replace(/new URL\((['"])(\.{1,2}\/[^'"]+\.(css|html))\1,\s*import\.meta\.url\)(?!\.href)/g,
+      (call, _q, rel, kind) => {
+        const asset = join(dirname(path), rel);
+        if (!existsSync(asset)) return call;
+        const text = readFileSync(asset, 'utf8');
+        used = true;
+        count++;
+        return `inlined(${call}, ${JSON.stringify(kind === 'html' ? lean(text) : text)})`;
+      });
+    if (!used) continue;
+    const from = relative(dirname(path), join(dir, 'core/ui/templater.js')).split('\\').join('/');
+    writeFileSync(path, `import { inlined } from '${from.startsWith('.') ? from : `./${from}`}';\n${out}`);
+  }
+  return count;
+}
+
+if (!DEV) {
+  console.log('› inline the templates and sheets into the JS');
+  console.log(`✓ ${inlineFiles(OUT)} files inlined`);
+}
 
 if (WATCH) {
   const tsc = spawn('npx', ['tsc', '-p', 'tsconfig.reforged.json', '--watch', '--preserveWatchOutput'],

@@ -77,7 +77,8 @@ test('your own markup and sheets: yours drawn, yours last, and what it lacks is 
   expect(second).toEqual({ ...first, words: 'two', outline: 'rgb(4, 5, 6)', last: expect.stringContaining('4, 5, 6') });
 });
 
-test('a component with no files of yours is drawn as before, from one fetch per file', async ({ page }) => {
+/* The build carries each file in the JS: nothing is fetched. TODO 208 · TRAP T-the-text-is-in-the-js */
+test('a component with no files of yours is drawn from its JS, one shared sheet, nothing fetched', async ({ page }) => {
   const fetched: string[] = [];
   page.on('request', (req) => { if (/sherpa-badge\.(html|css)$/.test(req.url())) fetched.push(req.url().split('/').at(-1)!); });
   await page.goto(HARNESS);
@@ -96,5 +97,5 @@ test('a component with no files of yours is drawn as before, from one fetch per 
     return { same: sheets.every((s) => s.length === sheets[0]!.length && s.every((x, i) => x === sheets[0]![i])), drawn: els.every((el) => el.shadowRoot!.children.length > 0) };
   });
   expect(r).toEqual({ same: true, drawn: true });
-  expect(fetched.sort()).toEqual(['sherpa-badge.css', 'sherpa-badge.html']);
+  expect(fetched).toEqual([]);
 });

@@ -15,6 +15,7 @@
  * - reloadFiles — fetch files again; a sheet changes in place, and each listener hears what else changed.
  * - onReload — hear which files a reload changed, so their elements draw again.
  * - checkOwnTemplate — report what a consumer's markup lacks that the component reaches for.
+ * - inlined — a file's text, carried in the JS by the build, so it is never fetched.
  */
 import { report } from '../data/report.js';
 import { ownHtml } from './trusted-html.js';
@@ -35,6 +36,15 @@ const templateCache = new Map<string, { html: string; map: TemplateMap }>();
 const sheetCache = new Map<string, Promise<CSSStyleSheet>>();
 const own = new Map<string, { html?: string; css: string[] }>();
 const listeners = new Set<(changed: ReadonlySet<string>) => void>();
+/** Files whose text the build put in the JS, by URL. */
+const inline = new Map<string, string>();
+
+/** A file's text, carried in the JS by the build, so it is never fetched — a
+ *  reload still fetches it fresh. TRAP T-the-text-is-in-the-js */
+export function inlined(url: URL, text: string): URL {
+  inline.set(url.href, text);
+  return url;
+}
 
 const href = (u: URL | string): string => new URL(String(u), document.baseURI).href;
 
@@ -69,6 +79,8 @@ export function filesFor(
  *  error page — and a SPA fallback answers a missing file with its own page, as a 200.
  *  TRAP T-a-bundler-can-turn-a-file-into-a-module */
 function fetchText(url: string, fresh = false): Promise<string> {
+  const carried = fresh ? undefined : inline.get(url);
+  if (carried !== undefined) return Promise.resolve(carried);
   const css = /\.css(?:$|[?#])/.test(new URL(url, 'file:///').pathname);
   // Asked for AS CSS: Vite's dev server answers a plain fetch with JavaScript.
   const init: RequestInit = { ...(fresh ? { cache: 'reload' } : {}), ...(css ? { headers: { Accept: 'text/css' } } : {}) };

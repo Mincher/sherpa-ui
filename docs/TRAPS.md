@@ -15556,6 +15556,27 @@ EXTENDS the default rather than replacing it.
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `test/e2e/reforged-templater.spec.ts`
 
+### T-the-text-is-in-the-js
+
+**A component fetches nothing: the build puts each template and sheet in its
+JS** (Will, TODO 208, A). The source keeps `new URL('./x.css',
+import.meta.url)`, so the spec tooling reads it as before; after `tsc` the
+build wraps each one in `inlined(new URL(…), "<the file's text>")` and adds
+the import. `inlined()` keeps the text in the templater under that URL, so the
+first draw reads it — no request, no wait, and no bundler, CDN or CSP
+`connect-src` in the way. A template goes in without its comments and indent.
+
+A DEV build (`npm run build:watch`, `npm run build:dev`) skips the step and
+fetches, so a live reload sees each change. A reload fetches FRESH in any
+build — the files still ship in `dist/`. A URL that ends in `.href` is a page
+`<link>` (`tokens.css`), not the templater's, and stays a URL.
+`check:weight` counts an inlined file as JS, not as fetched.
+
+- Site: `src/core/ui/templater.ts`
+- Site: `scripts/build-reforged.mjs`
+- Site: `scripts/check-weight.mjs`
+- Site: `test/e2e/reforged-templater.spec.ts`
+
 ### T-a-form-control-follows-its-fieldset
 
 **A form control is disabled by its `<fieldset>` too, and a reset puts back
@@ -15687,7 +15708,8 @@ Measured 2026-10-12 (TODO 218):
   `/.vite/` says `optimizeDeps: { exclude: ['sherpa-ui'] }`. Vite 8 rewrites
   the URL itself.
 
-TODO 208 ends all three: the text in the JS, nothing fetched.
+Since TODO 208 the default build fetches none of these, so all three apply
+only to a DEV build (`T-the-text-is-in-the-js`).
 
 - Site: `src/core/ui/templater.ts`
 - Site: `test/e2e/reforged-reports-round-2.spec.ts`

@@ -32,7 +32,8 @@ export const APP = [
 const APP_ENTRIES = new Set(['index.js', 'data.js', 'components/sherpa-provider/sherpa-provider.js', 'components/sherpa-router/sherpa-router.js']);
 
 const IMPORT = /(?:^|[\s;])(?:import|export)\s*(?:[^'"`;]*?\sfrom\s*)?['"](\.{1,2}\/[^'"]+)['"]/g;
-const FETCH = /new URL\(\s*['"](\.{1,2}\/[^'"]+\.(?:css|html))['"]\s*,\s*import\.meta\.url\s*\)/g;
+// An inlined file is in the JS already: only a bare URL is fetched. TRAP T-the-text-is-in-the-js
+const FETCH = /(?<!inlined\()new URL\(\s*['"](\.{1,2}\/[^'"]+\.(?:css|html))['"]\s*,\s*import\.meta\.url\s*\)/g;
 
 /** Every module an entry's import graph loads, and every file they fetch. */
 export function graph(entry) {

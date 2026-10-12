@@ -97,7 +97,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | c13 | 213 | Only a component's OWN events leave it: an inner `button-click` stops at its host | foundation |
 | ✅ | c14 | 212 | Markup paths for the list components — tabs, breadcrumbs, a select's options, key-value pairs — so plain HTML and React 18 can fill them | feature |
 | ✅ | c15 | 214 | Forms complete: `<fieldset disabled>`, reset on every control, and the five controls that submit nothing | foundation |
-| ⬜ | c16 | 208 | The text in the JS, not fetched: templates and sheets inline at build, URLs only in a dev build — with 199 | refactor |
+| ✅ | c16 | 208 | The text in the JS, not fetched: templates and sheets inline at build, URLs only in a dev build — with 199 | refactor |
 | ⬜ | c17 | 199 | A smaller download: minify the JS (a new dev tool) and load icons on demand | refactor |
 | ⬜ | c18 | 216 | Tokens safe to embed: the page rules out of `tokens.css`, a default mode, the `[data-status]` reach documented | foundation |
 | ✅ | c19 | 219 | The framework guide, steps not history, served as `sherpa://frameworks`; an `AGENTS.md` in the package | docs |
@@ -1954,7 +1954,7 @@ join their form and submit their values — a range and a list as one entry
 each. Angular's ControlValueAccessors are out, with 217.
 `T-a-form-control-follows-its-fieldset`
 
-### `[ ]` 208 — The text in the JS, not fetched
+### `[x]` ✅ 208 — The text in the JS, not fetched
 
 Templates and sheets are fetched at run time from `new URL(…, import.meta.url)`.
 That works on a plain ESM page and a file-serving CDN, and breaks under Vite's
@@ -1971,6 +1971,12 @@ inline as an opt-in subpath. My pick: A. NOTE: on 2026-09-29 you chose
 of that; 113's state work is done either way.
 
 **✅ Will, 2026-10-12 — all my picks:** A — inline by default, URLs only in a dev build.
+
+**✅ Done 2026-10-12.** After `tsc`, the build wraps each `new URL('./x.css' |
+'./x.html', import.meta.url)` in `inlined(…, text)`: 142 files, and a button
+and a grid draw with no request. `npm run build:watch` and `build:dev` keep the
+URLs for live reload; a reload fetches fresh in any build. The package entry
+now fetches only `tokens.css`, its page sheet. `T-the-text-is-in-the-js`
 
 ### `[ ]` 216 — Tokens safe to embed
 

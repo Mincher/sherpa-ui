@@ -50,6 +50,7 @@
     "clean": "rm -rf dist",
     "build": "node scripts/build-reforged.mjs",
     "build:watch": "node scripts/build-reforged.mjs --watch",
+    "build:dev": "node scripts/build-reforged.mjs --dev",
     "build:watch:ts": "tsc -p tsconfig.reforged.json --watch",
     "type-check": "tsc -p tsconfig.reforged.json --noEmit",
     "icons": "node scripts/generate-icons.mjs",

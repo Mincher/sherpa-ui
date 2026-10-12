@@ -39,9 +39,11 @@ Will's call.
 ## Commands
 
 ```bash
-# Build (clean → compile TS → transform + copy CSS/HTML assets into dist/)
+# Build (clean → compile TS → transform + copy CSS/HTML assets into dist/ →
+# put each template and sheet INTO the JS, so nothing is fetched)
 npm run build
-npm run build:watch       # build-reforged.mjs --watch — TS *and* assets
+npm run build:dev         # the same, but components FETCH their files — for live reload
+npm run build:watch       # build-reforged.mjs --watch — TS *and* assets, fetched (a dev build)
 npm run build:watch:ts    # tsc --watch — TS only, no asset copy
 
 # Type check (no emit)
@@ -191,7 +193,7 @@ the manual way, for a page with no provider.
 
 ### `SherpaElement` base class (`src/core/ui/sherpa-element.ts`)
 
-All components extend this. It handles shadow DOM setup via `adoptedStyleSheets`, slot-presence detection (`data-has-{slotName}` on host), and multi-template support. The FILES — fetched once per URL, a consumer's own by `useTemplate(tag, { html, css })`, and reloaded live by `SherpaElement.reload(tag)` — are `src/core/ui/templater.ts`'s (TRAP `T-a-templater-owns-the-files`).
+All components extend this. It handles shadow DOM setup via `adoptedStyleSheets`, slot-presence detection (`data-has-{slotName}` on host), and multi-template support. The FILES — carried in the JS by the build (fetched in a dev build, TRAP `T-the-text-is-in-the-js`), a consumer's own by `useTemplate(tag, { html, css })`, and reloaded live by `SherpaElement.reload(tag)` — are `src/core/ui/templater.ts`'s (TRAP `T-a-templater-owns-the-files`).
 
 ```ts
 export class SherpaFoo extends SherpaElement {
