@@ -171,6 +171,10 @@
       "name": ""
     }
   ],
+  "populate": {
+    "shape": "{ colCount?, grouped?, resizable?, rowCount?, rows? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

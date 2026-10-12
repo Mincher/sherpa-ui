@@ -143,6 +143,10 @@
       "description": "the message body"
     }
   ],
+  "populate": {
+    "shape": "{ dismissible?, heading? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

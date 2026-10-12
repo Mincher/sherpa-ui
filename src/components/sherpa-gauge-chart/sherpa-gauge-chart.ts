@@ -55,9 +55,14 @@ export class SherpaGaugeChart extends SherpaElement {
     ...SUMMARY_PROPS,
     'data-has-caption': { type: 'boolean', kind: 'visibility' },
     'data-legend': SHARED_PROPS['data-legend'],
+    'data-value': { type: 'number', kind: 'behaviour' },
+    'data-label': { type: 'string', kind: 'content' },
+    'data-min': { type: 'number', kind: 'content' },
+    'data-max': { type: 'number', kind: 'content' },
+    'data-zones': { type: 'string', kind: 'behaviour' },
+    'data-caption': { type: 'string', kind: 'content' },
+    'data-unit': { type: 'string', kind: 'content' },
   } as const;
-
-  static override observed = ['data-value', 'data-label', 'data-min', 'data-max', 'data-zones', 'data-caption', 'data-unit'];
 
   override onRender(): void {
     this.#sync();

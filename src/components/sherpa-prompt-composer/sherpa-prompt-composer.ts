@@ -16,8 +16,9 @@ export class SherpaPromptComposer extends SherpaElement {
      rule is a public API and belongs in one place. */
   static override props = {
     'data-no-leading-actions': { type: 'boolean', kind: 'style' },
+    'data-placeholder': { type: 'string', kind: 'content' },
   } as const;
-  static override observed = ['data-placeholder', 'disabled'];
+  static override observed = ['disabled'];
 
   /** The text box. */
   #input: HTMLTextAreaElement | null = null;

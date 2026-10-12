@@ -17,9 +17,8 @@ export class SherpaTooltip extends SherpaElement {
     /* Written BY the tooltip: it is positioned, and it has a tip to show. */
     'data-floating': { type: 'boolean', kind: 'style' },
     'data-has-tip': { type: 'boolean', kind: 'style' },
+    'data-placement': { type: 'enum', kind: 'style', values: ['top', 'bottom', 'left', 'right'] },
   } as const;
-
-  static override observed = ['data-placement'];
 
   override onRender(): void {
     if (!this.dataset['placement']) this.dataset['placement'] = 'top';

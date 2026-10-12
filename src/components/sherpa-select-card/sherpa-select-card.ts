@@ -23,11 +23,11 @@ export class SherpaSelectCard extends SherpaElement {
     'data-orientation': SHARED_PROPS['data-orientation'],
     'data-label': { type: 'string', kind: 'content', to: '.label' },
     'data-description': { type: 'string', kind: 'content', to: '.description' },
+    'data-selected': { type: 'boolean', kind: 'style' },
+    'data-select-mode': { type: 'enum', kind: 'style', values: ['radio', 'checkbox'] },
   } as const;
 
   static override observed = [
-    'data-selected',
-    'data-select-mode',
     'name',
     'value',
     'disabled',

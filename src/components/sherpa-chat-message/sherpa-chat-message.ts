@@ -15,11 +15,13 @@ export class SherpaChatMessage extends SherpaElement {
      rule is a public API and belongs in one place. */
   static override props = {
     'data-type': { type: 'enum', kind: 'style', values: ['assistant', 'system', 'user'] },
+    'data-name': { type: 'string', kind: 'content' },
+    'data-timestamp': { type: 'string', kind: 'content' },
+    'data-message': { type: 'string', kind: 'content' },
+    'data-author': { type: 'string', kind: 'content' },
+    'data-time': { type: 'string', kind: 'content' },
+    'data-content': { type: 'string', kind: 'content' },
   } as const;
-  static override observed = [
-    'data-name', 'data-timestamp', 'data-message',
-    'data-author', 'data-time', 'data-content',
-  ];
 
   override onRender(): void {
     if (!this.dataset['type']) this.dataset['type'] = 'assistant';

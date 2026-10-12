@@ -156,6 +156,10 @@
       "description": "icon-only controls at the end"
     }
   ],
+  "populate": {
+    "shape": "{ description?, divider?, heading?, icon? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

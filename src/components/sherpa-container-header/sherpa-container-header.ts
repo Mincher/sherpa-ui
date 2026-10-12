@@ -21,9 +21,8 @@ export class SherpaContainerHeader extends SherpaElement {
     'data-description': { type: 'string', kind: 'content', to: '.description' },
     // A slotted icon wins over the data-icon glyph.
     'data-icon': { type: 'string', kind: 'content', to: '.icon', skipWhen: '[slot]', as: 'icon' },
+    'data-collapsed': { type: 'boolean', kind: 'style' },
   } as const;
-
-  static override observed = ['data-collapsed'];
 
   override onRender(): void {
     this.#syncCollapsed();

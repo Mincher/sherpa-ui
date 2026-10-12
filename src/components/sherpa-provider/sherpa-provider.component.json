@@ -53,6 +53,10 @@
       "description": "the subtree — every component in it can ask"
     }
   ],
+  "populate": {
+    "shape": "{ keepContent? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "capabilities": [
     {
       "$type": "capability",

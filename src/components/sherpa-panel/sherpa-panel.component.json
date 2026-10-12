@@ -92,6 +92,10 @@
       "description": "footer region (reflects data-has-footer)"
     }
   ],
+  "populate": {
+    "shape": "{ collapsed?, heading? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

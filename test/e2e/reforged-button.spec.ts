@@ -257,3 +257,24 @@ test('a button with no menu still just reports its click', async ({ page }) => {
   });
   expect(r).toEqual({ clicks: 1, active: false });
 });
+
+/* Every attribute a component reads is DECLARED, so populate() sets it: the
+   review's `button.populate({ label: 'Save' })` drew nothing. TODO 195 */
+test('populate({ label, iconStart, noTab }) sets the declared attributes; "false" turns a boolean off', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-button') as HTMLElement & { populate(d: unknown): Promise<void> };
+    document.getElementById('root')!.appendChild(el);
+    await el.populate({ label: 'Save', iconStart: 'plus', noTab: true });
+    const drawn = {
+      label: el.shadowRoot!.querySelector('.label')?.textContent?.trim(),
+      icon: el.getAttribute('data-icon-start'),
+      tab: el.shadowRoot!.querySelector('.trigger')!.getAttribute('tabindex'),
+    };
+    el.setAttribute('data-no-tab', 'false');
+    await (window as unknown as { __settled(): Promise<void> }).__settled();
+    return { drawn, off: el.hasAttribute('data-no-tab'), tab: el.shadowRoot!.querySelector('.trigger')!.getAttribute('tabindex') };
+  });
+  expect(r.drawn).toEqual({ label: 'Save', icon: 'plus', tab: '-1' });
+  expect(r.off).toBe(false);
+  expect(r.tab).not.toBe('-1');
+});

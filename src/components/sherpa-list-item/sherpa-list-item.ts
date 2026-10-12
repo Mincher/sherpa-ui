@@ -35,9 +35,9 @@ export class SherpaListItem extends SherpaElement {
     'data-icon': { type: 'string', kind: 'content', to: '.icon', as: 'icon' },
     /* Current-row state. Written by the row AND set by a host. */
     'data-current': { type: 'boolean', kind: 'style' },
+    'data-expanded': { type: 'boolean', kind: 'style' },
+    'data-selected': { type: 'boolean', kind: 'style' },
   } as const;
-
-  static override observed = ['data-expanded', 'data-selected'];
 
   /** The event label — the same data-label → data-heading chain the prop declares. */
   #labelText(): string { return this.dataset['label'] ?? this.dataset['heading'] ?? ''; }

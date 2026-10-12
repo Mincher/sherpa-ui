@@ -58,6 +58,10 @@
       "description": "horizontal | vertical  No events — display only."
     }
   ],
+  "populate": {
+    "shape": "[{ key, value }]",
+    "description": "the label/value pairs to render."
+  },
   "states": [
     {
       "$type": "state",

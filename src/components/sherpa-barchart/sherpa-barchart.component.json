@@ -188,9 +188,10 @@
     {
       "$type": "prop",
       "name": "data-max",
-      "type": "string",
+      "type": "number",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "explicit y-max (else derived from the data)"
     },
     {
@@ -221,9 +222,10 @@
     {
       "$type": "prop",
       "name": "data-ticks",
-      "type": "string",
+      "type": "number",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "default": "4",
       "description": "number of y gridlines/values"
     }
@@ -240,6 +242,10 @@
       "description": "a <sherpa-chart-legend> for the series."
     }
   ],
+  "populate": {
+    "shape": "[{ label, value, colorIndex? }]",
+    "description": "the bars."
+  },
   "states": [
     {
       "$type": "state",

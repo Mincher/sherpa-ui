@@ -34,8 +34,9 @@
     {
       "$type": "prop",
       "name": "data-indeterminate",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "default": false,
       "description": "animated sweep for unknown-duration work (boolean; renders a native indeterminate <progress> — no value)"
@@ -45,7 +46,8 @@
       "name": "data-label",
       "type": "string",
       "observed": true,
-      "kind": "visibility",
+      "declared": true,
+      "kind": "content",
       "description": "accessible task label (shown above the bar; drives aria-label)"
     },
     {
@@ -65,9 +67,10 @@
     {
       "$type": "prop",
       "name": "data-value",
-      "type": "string",
+      "type": "number",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "0–100 completion percentage (determinate)"
     },
     {
@@ -79,6 +82,10 @@
       "description": "0–100 completion (native <progress value>); read/write"
     }
   ],
+  "populate": {
+    "shape": "number | { value }",
+    "description": "sets the percentage — the single data path."
+  },
   "states": [
     {
       "$type": "state",

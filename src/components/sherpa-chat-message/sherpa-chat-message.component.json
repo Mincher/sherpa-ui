@@ -83,7 +83,8 @@
       "name": "data-author",
       "type": "string",
       "observed": true,
-      "kind": "visibility",
+      "declared": true,
+      "kind": "content",
       "description": "optional author name shown above the bubble"
     },
     {
@@ -91,7 +92,8 @@
       "name": "data-content",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "optional text body (the default slot overrides it when slotted)"
     },
     {
@@ -99,7 +101,8 @@
       "name": "data-message",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "optional text body (the default slot overrides it when slotted) (alias: data-content)"
     },
     {
@@ -107,7 +110,8 @@
       "name": "data-name",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "optional author name shown above the bubble (alias: data-author)"
     },
     {
@@ -115,7 +119,8 @@
       "name": "data-time",
       "type": "string",
       "observed": true,
-      "kind": "visibility",
+      "declared": true,
+      "kind": "content",
       "description": "optional timestamp shown beside the author"
     },
     {
@@ -123,7 +128,8 @@
       "name": "data-timestamp",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "optional timestamp shown beside the name (alias: data-time)"
     },
     {
@@ -153,6 +159,10 @@
       "description": "bubble body content, overrides data-content"
     }
   ],
+  "populate": {
+    "shape": "{ author?, content?, message?, name?, time?, timestamp?, type? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

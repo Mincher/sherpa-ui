@@ -156,6 +156,10 @@
       "description": "ASKED of its provider, or read off its chart: one row per value. A click narrows its chart alone"
     }
   ],
+  "populate": {
+    "shape": "[{ label, value?, colorIndex }]",
+    "description": ". Keeps the off-set."
+  },
   "states": [
     {
       "$type": "state",

@@ -45,6 +45,10 @@
       "description": "whatever it is wrapped round, drawn as if it were not there"
     }
   ],
+  "populate": {
+    "shape": "{ overlay?, params? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "capabilities": [
     {
       "$type": "capability",

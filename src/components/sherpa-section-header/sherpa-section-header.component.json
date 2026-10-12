@@ -122,6 +122,10 @@
       "description": "trailing action controls (reflects data-has-actions)"
     }
   ],
+  "populate": {
+    "shape": "{ divider?, heading?, size? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

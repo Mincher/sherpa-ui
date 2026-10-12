@@ -31,9 +31,9 @@ export class SherpaBarchart extends SherpaElement {
     ...SUMMARY_PROPS,
     'data-legend': SHARED_PROPS['data-legend'],
     'data-axis-label': { type: 'string', kind: 'content', to: '.axis-label-y' },
+    'data-max': { type: 'number', kind: 'behaviour' },
+    'data-ticks': { type: 'number', kind: 'behaviour' },
   } as const;
-
-  static override observed = ['data-max', 'data-ticks'];
 
   /** The bars, as populated. */
   #data: BarDatum[] = [];

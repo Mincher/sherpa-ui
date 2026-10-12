@@ -188,8 +188,9 @@
     {
       "$type": "prop",
       "name": "data-expanded",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "default": false,
       "description": "expanded state (the toggle reflects it)"
@@ -242,8 +243,9 @@
     {
       "$type": "prop",
       "name": "data-selected",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "default": false,
       "description": "selection state (for the leading control)"
@@ -275,6 +277,10 @@
       "description": "actions / badges"
     }
   ],
+  "populate": {
+    "shape": "{ current?, description?, draggable?, expandable?, expanded?, icon?, interactive?, label?, selectable?, selected? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

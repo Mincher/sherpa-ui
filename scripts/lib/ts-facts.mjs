@@ -14,6 +14,7 @@
  * - expandArrayConst — Read a module-level `const NAME = ['a', 'b'] as const;` back into its strings.
  * - parsePropDecls — Each prop `static override props` declares: its kind, type, values and default.
  * - parseClassApi — The component class's public methods and properties, read by TypeScript's own parser.
+ * - parsePopulate — What `populate()` takes, from the `populate(…) — …` line over its `renderData`; null with no override.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -287,4 +288,29 @@ export function parseClassApi(src) {
       ...p, access: get && set ? 'read-write' : get ? 'read' : 'write',
     })),
   };
+}
+
+/**
+ * What `populate()` takes, from the `populate(…) — …` line over its
+ * `renderData`. Null when the class has no override — the base class sets the
+ * declared props then — and `{}` when the override says nothing.
+ *
+ * @returns {{ shape?: string, description?: string } | null}
+ */
+export function parsePopulate(src) {
+  const sf = ts.createSourceFile('c.ts', src ?? '', ts.ScriptTarget.Latest, true);
+  const member = registeredClass(sf, src)?.members.find((m) => ts.isMethodDeclaration(m) && m.name?.getText(sf) === 'renderData');
+  if (!member) return null;
+  const text = summaryOf(member, sf);
+  const at = text.indexOf('populate(');
+  if (at < 0) return {};
+  let depth = 0;
+  let end = at + 'populate'.length;
+  for (; end < text.length; end++) {
+    if (text[end] === '(') depth++;
+    else if (text[end] === ')' && --depth === 0) break;
+  }
+  const shape = text.slice(at + 'populate('.length, end).trim();
+  const description = text.slice(end + 1).replace(/^[\s—–-]+/, '').trim();
+  return { ...(shape ? { shape } : {}), ...(description ? { description } : {}) };
 }

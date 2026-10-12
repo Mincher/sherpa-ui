@@ -96,11 +96,16 @@
       "name": "data-empty-text",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "default": "\"No notifications\"",
       "description": "what to say when there is nothing"
     }
   ],
+  "populate": {
+    "shape": "[{ id, title, … }]",
+    "description": "the notifications."
+  },
   "states": [
     {
       "$type": "state",

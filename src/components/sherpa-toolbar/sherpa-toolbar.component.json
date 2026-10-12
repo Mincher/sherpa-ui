@@ -78,6 +78,10 @@
       "description": "item count, search, overflow (grows; content pushed to the end)"
     }
   ],
+  "populate": {
+    "shape": "{ type? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

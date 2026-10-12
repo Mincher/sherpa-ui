@@ -17,8 +17,9 @@ export class SherpaCalendarCell extends SherpaElement {
     'data-value': { type: 'string', kind: 'style' },
     'data-outside': { type: 'boolean', kind: 'style' },
     'data-state': { type: 'enum', kind: 'style', values: ['default', 'today', 'selected', 'range-start', 'range-end', 'range-mid'] },
+    'data-label': { type: 'string', kind: 'content' },
   } as const;
-  static override observed = ['data-label', 'disabled'];
+  static override observed = ['disabled'];
 
   override onRender(): void {
     this.#sync();

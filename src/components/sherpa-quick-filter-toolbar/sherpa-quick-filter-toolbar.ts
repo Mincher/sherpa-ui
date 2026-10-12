@@ -183,20 +183,21 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     /* The View on screen is the READER's own, so it can be deleted. Written by
        the provider. TRAP T-a-saved-view-is-the-readers-own */
     'data-custom-view': { type: 'boolean', kind: 'visibility' },
+    'data-sort-field': DATA_PROPS['data-sort-field'],
+    'data-sort-direction': DATA_PROPS['data-sort-direction'],
+    'data-group-field': DATA_PROPS['data-group-field'],
+    'data-favourite': { type: 'boolean', kind: 'behaviour' },
+    // The host saves filters. TRAP T-save-packs-the-fields-into-one-chip
+    'data-saveable': { type: 'boolean', kind: 'behaviour' },
+    // Its source fetches from outside: menus wait for Apply. TRAP T-commit-follows-select-mode
+    'data-remote': { type: 'boolean', kind: 'behaviour' },
+    // The FIELDS its source says are changed and not applied. TRAP T-a-pending-chip-has-no-fill
+    'data-pending': { type: 'string', kind: 'behaviour' },
   } as const;
 
   /** Sort and group written from outside — unobserved, a grid header click says nothing here. */
   /** `data-favourite` is observed so a host that owns the favourites list can
    *  paint the star. TRAP T-the-star-reports-it-does-not-decide */
-  static override observed = [
-    'data-sort-field', 'data-sort-direction', 'data-group-field', 'data-favourite',
-    // The host saves filters. TRAP T-save-packs-the-fields-into-one-chip
-    'data-saveable',
-    // Its source fetches from outside: menus wait for Apply. TRAP T-commit-follows-select-mode
-    'data-remote',
-    // The FIELDS its source says are changed and not applied. TRAP T-a-pending-chip-has-no-fill
-    'data-pending',
-  ];
 
   /** The filter defs this bar holds, in order. */
   #filters: QuickFilterDef[] = [];

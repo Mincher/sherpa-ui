@@ -79,6 +79,7 @@
       "name": "data-placement",
       "type": "enum",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "top",
@@ -110,6 +111,10 @@
       "description": "rich tip content (reflects data-has-tip; overrides data-text)"
     }
   ],
+  "populate": {
+    "shape": "{ anchor?, floating?, hasTip?, placement?, text? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

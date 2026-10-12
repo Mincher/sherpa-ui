@@ -192,17 +192,19 @@
     {
       "$type": "prop",
       "name": "data-max",
-      "type": "string",
+      "type": "number",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "y-scale bounds (else derived)"
     },
     {
       "$type": "prop",
       "name": "data-min",
-      "type": "string",
+      "type": "number",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "y-scale bounds (else derived)"
     },
     {
@@ -234,9 +236,10 @@
     {
       "$type": "prop",
       "name": "data-ticks",
-      "type": "string",
+      "type": "number",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "default": "4",
       "description": "number of y gridlines/values"
     },
@@ -245,6 +248,7 @@
       "name": "data-type",
       "type": "enum",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "line",
@@ -274,6 +278,10 @@
       "description": "a <sherpa-chart-legend> for the series."
     }
   ],
+  "populate": {
+    "shape": "{ labels, series }",
+    "description": "series is number[] | {name?,values}[]."
+  },
   "states": [
     {
       "$type": "state",

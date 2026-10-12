@@ -16,7 +16,9 @@ export interface Step {
 export class SherpaProgressStepTracker extends SherpaElement {
   static override css = new URL('./sherpa-progress-step-tracker.css', import.meta.url);
   static override html = new URL('./sherpa-progress-step-tracker.html', import.meta.url);
-  static override observed = ['data-current-step'];
+  static override props = {
+    'data-current-step': { type: 'number', kind: 'behaviour' },
+  } as const;
 
   /** The steps, as populated. */
   #steps: Step[] = [];

@@ -44,7 +44,9 @@ export interface Notification {
 export class SherpaNotifications extends SherpaElement {
   static override css = new URL('./sherpa-notifications.css', import.meta.url);
   static override html = new URL('./sherpa-notifications.html', import.meta.url);
-  static override observed = ['data-empty-text'];
+  static override props = {
+    'data-empty-text': { type: 'string', kind: 'content' },
+  } as const;
 
   /** The notifications, as populated. */
   #items: Notification[] = [];

@@ -199,6 +199,10 @@
       "description": "the heading content (overrides data-heading)"
     }
   ],
+  "populate": {
+    "shape": "{ action?, heading?, leaving?, stacked?, value? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

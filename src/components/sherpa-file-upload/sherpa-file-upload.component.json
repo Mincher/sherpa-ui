@@ -185,7 +185,8 @@
       "name": "data-accept",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "comma-separated MIME types / extensions → native accept + hint"
     },
     {
@@ -228,15 +229,17 @@
       "name": "data-max-size",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "maximum file-size hint (e.g. \"4 MB\") shown in details"
     },
     {
       "$type": "prop",
       "name": "data-multiple",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "allow selecting more than one file → native multiple"
     },
     {
@@ -256,6 +259,10 @@
       "description": "extra controls in the actions row (before clear/upload)"
     }
   ],
+  "populate": {
+    "shape": "{ accept?, helper?, label?, loading?, maxSize?, multiple? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

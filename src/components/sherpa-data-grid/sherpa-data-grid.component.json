@@ -257,7 +257,8 @@
       "name": "data-column-values",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "the WHOLE column's values, so a filter menu offers them all even when the drawn rows carry only some: `field:a|b|c` per entry, NEWLINE separated. A value no drawn row carries sorts below a divider, dimmed but still selectable — that is how a reader broadens a filter back out. TRAP T-unavailable-value-sorts-below-a-divider"
     },
     {
@@ -265,6 +266,7 @@
       "name": "data-filter-fields",
       "type": "string",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "space-separated fields an EXTERNAL filter is narrowing; those columns' headings take data-status=\"active\". Written by SherpaDataSource — a host driving the grid by hand can write it too."
     },
@@ -282,6 +284,7 @@
       "name": "data-group-field",
       "type": "string",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "group rows by this column"
     },
@@ -298,22 +301,25 @@
       "name": "data-needles",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "what an EXTERNAL filter MATCHED on, so its hits mark in the cells: `field:op:value` per entry, NEWLINE separated. Written by SherpaDataSource beside data-filter-fields. Only substring ops appear — `eq` matched the whole value and `ne` matched by absence, so neither leaves a span to point at. TRAP T-a-needle-comes-from-either-direction"
     },
     {
       "$type": "prop",
       "name": "data-page",
-      "type": "string",
+      "type": "number",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "the visual page, WHILE GROUPED only — a page is data-page-size ROWS, and a shut group is one slot. Written by SherpaDataSource; the grid reports back the page count it arrives at and never writes data-page itself."
     },
     {
       "$type": "prop",
       "name": "data-page-size",
-      "type": "string",
+      "type": "number",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "the visual page, WHILE GROUPED only — a page is data-page-size ROWS, and a shut group is one slot. Written by SherpaDataSource; the grid reports back the page count it arrives at and never writes data-page itself."
     },
@@ -330,27 +336,35 @@
       "name": "data-select",
       "type": "enum",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
-        "multiple",
-        "single"
+        "single",
+        "multiple"
       ],
       "description": "multiple  | single — single draws RADIOS, holds one row, and shows no control in the header: \"select all\" is meaningless where only one can be chosen"
     },
     {
       "$type": "prop",
       "name": "data-selectable",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "show a leading selection column"
     },
     {
       "$type": "prop",
       "name": "data-sort-direction",
-      "type": "string",
+      "type": "enum",
       "observed": true,
+      "declared": true,
       "kind": "style",
+      "values": [
+        "asc",
+        "desc",
+        ""
+      ],
       "description": "current sort (asc | desc)"
     },
     {
@@ -358,6 +372,7 @@
       "name": "data-sort-field",
       "type": "string",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "current sort (asc | desc)"
     },
@@ -381,6 +396,10 @@
       "name": "no-matches"
     }
   ],
+  "populate": {
+    "shape": "{ columns, rows }",
+    "description": "the rows, over the configuration the page set."
+  },
   "states": [
     {
       "$type": "state",

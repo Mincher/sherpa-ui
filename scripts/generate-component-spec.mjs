@@ -32,7 +32,7 @@ import { specToDef } from './lib/component-to-def.mjs';
 import { compileDef } from './lib/generation/compile-def.mjs';
 import { authoredCss, extractBindings, parseStates } from './lib/css-reader.mjs';
 import { parseTemplates, htmlDiff } from './lib/html-structure.mjs';
-import { parseClassApi, parseObserved, parsePropDecls } from './lib/ts-facts.mjs';
+import { parseClassApi, parseObserved, parsePopulate, parsePropDecls } from './lib/ts-facts.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const C = join(ROOT, 'src', 'components');
@@ -471,6 +471,24 @@ function parseTsJsProps(ts) {
 }
 
 /**
+ * What `populate()` takes. An override says so over its `renderData`; with
+ * none, the base class sets each DECLARED prop by its short name.
+ */
+function populateOf(ts, props, notes) {
+  if (!ts) return null;
+  const own = parsePopulate(ts);
+  if (own === null) {
+    const keys = props.filter((p) => p.declared && p.name.startsWith('data-'))
+      .map((p) => `${p.name.slice(5).replace(/-([a-z])/g, (_, c) => c.toUpperCase())}?`);
+    return keys.length
+      ? { shape: `{ ${keys.join(', ')} }`, description: 'Its declared props by name: `label` sets data-label.' }
+      : null;
+  }
+  if (!own.shape) notes.push('renderData has no `populate(…) — …` line, so the spec cannot say what populate() takes');
+  return own.shape ? own : null;
+}
+
+/**
  * The real `<slot>`s, in order: its name ('' is the default slot), what it
  * accepts, and the `Slots:` block's first sentence for it. As with events, the
  * MARKUP decides which exist; the comment only describes them.
@@ -828,6 +846,8 @@ function generateSpec(name) {
   if (props.length) spec.props = props;
   const slots = parseSlots(html, comment, notes);
   if (slots.length) spec.slots = slots;
+  const populate = populateOf(ts, props, notes);
+  if (populate) spec.populate = populate;
   if (states.length) spec.states = states;
   if (capabilities.length) spec.capabilities = capabilities;
   if (events.length) spec.events = events;

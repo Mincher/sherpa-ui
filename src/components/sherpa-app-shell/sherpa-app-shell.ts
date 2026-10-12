@@ -13,9 +13,6 @@ const TABLET = 768;
 export class SherpaAppShell extends SherpaElement {
   static override css = new URL('./sherpa-app-shell.css', import.meta.url);
   static override html = new URL('./sherpa-app-shell.html', import.meta.url);
-  static override observed = [
-    'data-nav-state', 'data-no-nav', 'data-no-header', 'data-panel-start-width', 'data-panel-end-width',
-  ];
 
   /** The shell writes these itself, mirroring each panel's own `open`. */
   static override props = {
@@ -23,6 +20,11 @@ export class SherpaAppShell extends SherpaElement {
     'data-panel-end-open': { type: 'boolean', kind: 'visibility' },
     // The body has no room for a panel area. TRAP T-the-panel-is-desktop-only
     'data-no-room': { type: 'boolean', kind: 'visibility' },
+    'data-nav-state': { type: 'enum', kind: 'style', values: ['collapsed', 'hover', 'default', 'pinned', 'settings'] },
+    'data-no-nav': { type: 'boolean', kind: 'style' },
+    'data-no-header': { type: 'boolean', kind: 'style' },
+    'data-panel-start-width': { type: 'string', kind: 'behaviour' },
+    'data-panel-end-width': { type: 'string', kind: 'behaviour' },
   } as const;
 
   override onRender(): void {

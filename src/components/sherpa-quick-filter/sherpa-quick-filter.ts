@@ -110,11 +110,14 @@ export class SherpaQuickFilter extends SherpaElement {
        says whether it runs, so a suspended sort resumes the way it was.
        TRAP T-off-is-not-forgotten */
     'data-direction': { type: 'enum', kind: 'style', values: ['asc', 'desc'] },
+    'data-label': { type: 'string', kind: 'content' },
+    'data-icon-start': { type: 'string', kind: 'content' },
+    'data-current': { type: 'boolean', kind: 'style' },
   } as const;
 
   // data-label is hand-written: an absent attribute must leave the template's
   // own default label alone.
-  static override observed = ['data-label', 'data-icon-start', 'data-current', 'aria-label', 'disabled'];
+  static override observed = ['aria-label', 'disabled'];
 
   override onRender(): void {
     this.#syncText();

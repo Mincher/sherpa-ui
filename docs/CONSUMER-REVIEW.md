@@ -161,7 +161,7 @@ Plan items 1–3 were built as TODO 187, 188 and 189. What that left:
 | 1. No app layer | Still true. `index.html` is 968 lines (818 of script); Context names in about 25 places; `contexts/` 1,117 lines, about 65% glue | 190, 191, 194, 221, 222 |
 | 2. The agent path | The false text 183 named is fixed (187); 184 ships `schemas/`. The MCP still dies at load from a package: 6 of 7 modules import `scripts/`, and the SDK, zod and js-yaml are devDependencies. Registered nowhere | 192 |
 | 3. The docs teach the old model | Mostly fixed: PRINCIPLES names the provider, `rows: 'all'`, ThemeManager, the README link. CLAUDE.md and DATA-SOURCE-RULES (served to agents) still name the provider 0 times | 226, 193 |
-| 4. Silent failures | Mostly fixed: Fires, skipped `ui` keys, double `input`, IdbStore, Plan, the badge, lint in the hook. Still true: `populate({ label })`, 0 specs list slots, no `populate()` shape | 195 |
+| 4. Silent failures | Mostly fixed: Fires, skipped `ui` keys, double `input`, IdbStore, Plan, the badge, lint in the hook. `populate({ label })` and slots fixed (195). Still true: no `populate()` shape | 195 |
 | 5. The heavy core | Single imports styled (189). Still true: `data-source.ts` 2,796 lines, the bar and the panel share 17 private method names, 1.5 MB unminified, icons 314 KB on every page, 0 of 65 defines guarded | 196, 199, 207, 220 |
 
 **Found while re-checking**, each in a TODO item:

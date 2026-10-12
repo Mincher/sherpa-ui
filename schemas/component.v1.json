@@ -77,6 +77,16 @@
       "type": "array",
       "items": { "$ref": "#/$defs/slot" }
     },
+    "populate": {
+      "description": "What populate() — or the `data` property — takes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shape"],
+      "properties": {
+        "shape": { "description": "The argument, as written: `[{ label, value, colorIndex? }]`.", "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
     "states": {
       "description": "Each state = a CSS selector + the token {ref}s that selector applies. CSS-owned, JS-free.",
       "type": "array",

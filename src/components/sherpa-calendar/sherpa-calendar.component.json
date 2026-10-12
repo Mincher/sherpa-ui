@@ -262,7 +262,8 @@
       "name": "data-available",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "comma-separated ISO days that EXIST in the data; every other day is disabled. A SET, not a span — a column of dates is a scatter, and min/max would leave the empty days between them selectable. Omit it and every day is selectable, which is the override: a host that wants a picker unconstrained by its own data simply does not supply one."
     },
     {
@@ -280,6 +281,7 @@
       "name": "data-has-time",
       "type": "boolean",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "default": false,
       "description": "show a native <input type=time> in the footer"
@@ -289,7 +291,8 @@
       "name": "data-max",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "latest selectable day (ISO); later days are disabled"
     },
     {
@@ -297,7 +300,8 @@
       "name": "data-min",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "earliest selectable day (ISO); earlier days are disabled"
     },
     {
@@ -305,7 +309,8 @@
       "name": "data-type",
       "type": "enum",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "values": [
         "single",
         "range"
@@ -318,7 +323,8 @@
       "name": "data-value",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "selected day, ISO YYYY-MM-DD (single mode); YYYY-MM-DDThh:mm when data-has-time is set"
     },
     {
@@ -326,7 +332,8 @@
       "name": "data-value-end",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "range end, ISO YYYY-MM-DD (range mode)"
     },
     {
@@ -334,7 +341,8 @@
       "name": "data-value-start",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "range start, ISO YYYY-MM-DD (range mode)"
     },
     {
@@ -342,6 +350,7 @@
       "name": "data-view",
       "type": "enum",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "day",
@@ -352,6 +361,10 @@
       "description": "day | month | year  — the active picker (the Grid-collection swap)"
     }
   ],
+  "populate": {
+    "shape": "{ available?, embedded?, hasTime?, max?, min?, type?, value?, valueEnd?, valueStart?, view? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

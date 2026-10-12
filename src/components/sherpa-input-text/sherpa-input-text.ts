@@ -75,6 +75,11 @@ export class SherpaInputText extends SherpaElement {
     'data-label': { type: 'string', kind: 'content', to: '.label' },
     'data-description': { type: 'string', kind: 'content', to: '.description' },
     'data-error': { type: 'string', kind: 'content', to: '.message' },
+    'data-icon-start': { type: 'string', kind: 'content' },
+    'data-icon-end': { type: 'string', kind: 'content' },
+    'data-rules': { type: 'string', kind: 'behaviour' },
+    // How many matches a Find's host found: none, and there is nothing to step to.
+    'data-matches': { type: 'number', kind: 'behaviour' },
   } as const;
 
   /** A form cannot see an <input> through a shadow root. TRAP T-shadow-input-needs-element-internals */
@@ -83,11 +88,6 @@ export class SherpaInputText extends SherpaElement {
   // A host label names this. TRAP T-a-host-label-must-reach-its-control
   static override labelTarget = '.control';
   static override observed = [
-    'data-icon-start',
-    'data-icon-end',
-    'data-rules',
-    // How many matches a Find's host found: none, and there is nothing to step to.
-    'data-matches',
     ...MIRRORED,
   ];
 

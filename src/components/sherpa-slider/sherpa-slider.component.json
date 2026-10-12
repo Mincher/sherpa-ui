@@ -113,9 +113,14 @@
     {
       "$type": "prop",
       "name": "data-type",
-      "type": "string",
+      "type": "enum",
       "observed": true,
+      "declared": true,
       "kind": "style",
+      "values": [
+        "single",
+        "range"
+      ],
       "description": "— single  | range — two thumbs and two value fields"
     },
     {
@@ -129,8 +134,9 @@
     {
       "$type": "prop",
       "name": "data-value-readonly",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "— make the value display read-only (no typing)"
     },
@@ -190,6 +196,10 @@
       "description": "— current value (native)"
     }
   ],
+  "populate": {
+    "shape": "{ value }",
+    "description": "or populate({ start, end })."
+  },
   "states": [
     {
       "$type": "state",

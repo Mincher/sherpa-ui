@@ -120,6 +120,10 @@
       "name": ""
     }
   ],
+  "populate": {
+    "shape": "{ description?, label? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

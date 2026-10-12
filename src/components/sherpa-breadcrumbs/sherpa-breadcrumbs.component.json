@@ -61,6 +61,10 @@
       }
     ]
   },
+  "populate": {
+    "shape": "[{ label, href? }]",
+    "description": "the crumb trail; the last becomes current."
+  },
   "states": [
     {
       "$type": "state",

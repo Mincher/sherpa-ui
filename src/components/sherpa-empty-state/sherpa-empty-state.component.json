@@ -190,6 +190,10 @@
       "description": "custom fine-print body (reflects data-has-small-print; replaces data-small-print text)"
     }
   ],
+  "populate": {
+    "shape": "{ description?, heading?, illustration?, size?, smallPrint? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

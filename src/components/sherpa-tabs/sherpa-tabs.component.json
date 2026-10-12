@@ -78,7 +78,8 @@
       "name": "data-current-id",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "— id of the currently active tab / panel"
     }
   ],
@@ -94,6 +95,10 @@
       "description": "the tab panels; each child should have data-tab=\"<id>\""
     }
   ],
+  "populate": {
+    "shape": "[{ id, label }]",
+    "description": "the tabs; the first is current unless data-current-id names one"
+  },
   "states": [
     {
       "$type": "state",

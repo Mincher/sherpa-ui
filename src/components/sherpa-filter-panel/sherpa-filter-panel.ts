@@ -11,7 +11,7 @@
  * - PanelColumn — A column Group or Sort may arrange by.
  * - PanelScope — One scope: a named group of fields, plus what the Filters menu offers for it.
  */
-import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
+import { DATA_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { ORGANISE_ICONS, movedTo } from '../../core/ui/shared-constants.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import type { FieldFilter, HeldFilter, ScopeDescription, ScopeShows } from '../../core/data/data-source.js';
@@ -217,14 +217,13 @@ export class SherpaFilterPanel extends SherpaElement {
        FIELDS have one waiting. TRAP T-apply-and-discard-wait-for-a-change */
     'data-remote': { type: 'boolean', kind: 'style' },
     'data-pending': { type: 'string', kind: 'style' },
-  } as const;
-
-  static override observed = [
     // The host saves filters. TRAP T-the-panel-saves-a-whole-scope
-    'data-saveable',
+    'data-saveable': { type: 'boolean', kind: 'behaviour' },
     // The arrangement, as a bound source writes it on every control. TRAP T-a-panel-follows-the-query-open-or-shut
-    'data-sort-field', 'data-sort-direction', 'data-group-field',
-  ];
+    'data-sort-field': DATA_PROPS['data-sort-field'],
+    'data-sort-direction': DATA_PROPS['data-sort-direction'],
+    'data-group-field': DATA_PROPS['data-group-field'],
+  } as const;
 
   /** Every drawn field, by `${scope}:${id}`. */
   #held = new Map<string, Held>();

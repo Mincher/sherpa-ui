@@ -166,6 +166,10 @@
       "description": "the disclosure body"
     }
   ],
+  "populate": {
+    "shape": "{ description?, heading?, icon? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

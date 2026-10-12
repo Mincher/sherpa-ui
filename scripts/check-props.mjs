@@ -15,12 +15,16 @@
  *
  * Also: a component that READS its own `data-*` must declare it. That read is
  * the other half of the same contract — TRAP T-a-host-attribute-is-declared-once.
+ * And an OBSERVED `data-*` is declared in `static props`, so `populate()` can
+ * set it and the spec types it — but a renamed attribute's old name, the first
+ * of an `['data-old', 'data-new']` pair, is still heard and never declared.
  *
  *   node scripts/check-props.mjs
  */
 import { readFileSync, globSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, relative } from 'node:path';
+import { parseObserved, parsePropDecls } from './lib/ts-facts.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -61,24 +65,24 @@ for (const file of globSync('src/components/*/*.css', { cwd: ROOT })) {
 /* The READ half. `this.dataset['x']` is a public attribute arriving, and an
    undeclared one is invisible to the spec and to anything reading it. Only
    `this.dataset` — a local `cal.dataset[...]` is another element's business.
-   `observed` and `variantAttrs` count as declarations: both name the attribute
-   in the same file. */
+   `variantAttrs` counts as a declaration; `observed` does not, past an old name. */
 for (const file of globSync('src/components/*/*.ts', { cwd: ROOT })) {
   const comp = file.split('/')[2];
   const ts = readFileSync(join(ROOT, file), 'utf8');
 
-  const declared = new Set();
+  const declared = new Set(Object.keys(parsePropDecls(ts, join(ROOT, file))));
   const props = /static override props = \{([\s\S]*?)\n  \} as const;/.exec(ts);
-  if (props) {
-    for (const m of props[1].matchAll(/'(data-[\w-]+)':/g)) declared.add(m[1]);
-    /* A `fallbackAttr` names a back-compat ALIAS, and that is a declaration:
-       the owning entry reads it and writes the same target. A second entry for
-       the alias would fight the first. TRAP T-an-alias-is-declared-by-its-owner */
-    for (const m of props[1].matchAll(/fallbackAttr:\s*'(data-[\w-]+)'/g)) declared.add(m[1]);
-  }
-  for (const key of ['observed', 'variantAttrs']) {
-    const list = new RegExp(`static override ${key} = \\[([\\s\\S]*?)\\]`).exec(ts);
-    if (list) for (const m of list[1].matchAll(/'(data-[\w-]+)'/g)) declared.add(m[1]);
+  /* A `fallbackAttr` names a back-compat ALIAS, and that is a declaration:
+     the owning entry reads it and writes the same target. A second entry for
+     the alias would fight the first. TRAP T-an-alias-is-declared-by-its-owner */
+  if (props) for (const m of props[1].matchAll(/fallbackAttr:\s*'(data-[\w-]+)'/g)) declared.add(m[1]);
+  // A renamed attribute's OLD name. TRAP T-a-renamed-attribute-keeps-its-old-name
+  for (const m of ts.matchAll(/\[\s*'(data-[\w-]+)'\s*,\s*'data-[\w-]+'\s*\]/g)) declared.add(m[1]);
+  const variants = /static override variantAttrs = \[([\s\S]*?)\]/.exec(ts);
+  if (variants) for (const m of variants[1].matchAll(/'(data-[\w-]+)'/g)) declared.add(m[1]);
+
+  for (const attr of parseObserved(ts).filter((a) => a.startsWith('data-') && !declared.has(a))) {
+    problems.push(`${relative(ROOT, file)}  observes ${attr} but does not declare it in static props`);
   }
 
   const seen = new Set();

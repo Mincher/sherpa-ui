@@ -314,7 +314,8 @@
       "name": "data-icon",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "the Context icon — an icon name (\"gauge\")"
     },
     {
@@ -347,9 +348,10 @@
     {
       "$type": "prop",
       "name": "data-notifications",
-      "type": "string",
+      "type": "number",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "unread count — shows the bell + its badge"
     },
     {
@@ -401,6 +403,10 @@
       "description": "the quick-filter toolbar (row 2)"
     }
   ],
+  "populate": {
+    "shape": "{ breadcrumb, filters, available }",
+    "description": "feed the composed children."
+  },
   "states": [
     {
       "$type": "state",

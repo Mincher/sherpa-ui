@@ -89,8 +89,9 @@
     {
       "$type": "prop",
       "name": "data-advanced",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "show the caret + its slotted menu"
     },
@@ -166,6 +167,10 @@
       "name": "menu"
     }
   ],
+  "populate": {
+    "shape": "{ advanced?, description?, label? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

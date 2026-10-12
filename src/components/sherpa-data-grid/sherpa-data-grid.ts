@@ -128,6 +128,21 @@ export class SherpaDataGrid extends SherpaElement {
     'data-column-filters': { type: 'boolean', kind: 'style' },
     'data-filterable': { type: 'boolean', kind: 'style' },
     'data-locked': DATA_PROPS['data-locked'],
+    'data-sort-field': DATA_PROPS['data-sort-field'],
+    'data-sort-direction': DATA_PROPS['data-sort-direction'],
+    'data-group-field': DATA_PROPS['data-group-field'],
+    // Fields an EXTERNAL filter narrows — the only way a column filtered from
+    // outside can light its own header.
+    'data-filter-fields': DATA_PROPS['data-filter-fields'],
+    'data-page': DATA_PROPS['data-page'],
+    'data-page-size': DATA_PROPS['data-page-size'],
+    // What a toolbar chip is matching on, so its hits mark in the cells.
+    'data-needles': { type: 'string', kind: 'behaviour' },
+    // The WHOLE column's values, so a filter menu is never a one-way door.
+    'data-column-values': { type: 'string', kind: 'behaviour' },
+    'data-selectable': { type: 'boolean', kind: 'style' },
+    // Single vs multiple changes the CONTROL each row draws, so it re-renders.
+    'data-select': { type: 'enum', kind: 'style', values: ['single', 'multiple'] },
   } as const;
 
   /* A PAGE of rows, with its groups. Its own header filter row it answers
@@ -160,23 +175,6 @@ export class SherpaDataGrid extends SherpaElement {
 
   // data-selectable is observed though CSS owns its reveal: the pin offset is a
   // MEASURED width, so it must re-run #syncPinned().
-  static override observed = [
-    'data-sort-field',
-    'data-sort-direction',
-    'data-group-field',
-    // Fields an EXTERNAL filter narrows — the only way a column filtered from
-    // outside can light its own header.
-    'data-filter-fields',
-    // What a toolbar chip is matching on, so its hits mark in the cells.
-    'data-needles',
-    // The WHOLE column's values, so a filter menu is never a one-way door.
-    'data-column-values',
-    'data-selectable',
-    // Single vs multiple changes the CONTROL each row draws, so it re-renders.
-    'data-select',
-    'data-page',
-    'data-page-size',
-  ];
 
   /* TRAP T-grid-column-width-bounds — 96/480/160 are measured, not chosen. */
   static readonly MIN_COL_WIDTH = 96;

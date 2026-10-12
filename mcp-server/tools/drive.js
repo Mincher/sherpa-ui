@@ -42,7 +42,7 @@ export function register(server) {
     {
       title: "A Component's Callable Surface",
       description:
-        "Everything a caller can DO to a component without a pointer: its METHODS (with signatures), its JS PROPERTIES (and whether each is readable, writable or both), the EVENTS it fires back, and its `data-*` attribute surface. Read from the component's spec, so it needs no browser and cannot drift from the code. Ask this BEFORE call_component — it is how an agent finds out what is callable at all.",
+        "Everything a caller can DO to a component without a pointer: its METHODS (with signatures), its JS PROPERTIES (and whether each is readable, writable or both), what `populate()` takes, its SLOTS, the EVENTS it fires back, and its `data-*` attribute surface. Read from the component's spec, so it needs no browser and cannot drift from the code. Ask this BEFORE call_component — it is how an agent finds out what is callable at all.",
       inputSchema: {
         name: z.string().describe("Component element name, e.g. sherpa-data-grid"),
       },
@@ -82,6 +82,21 @@ export function register(server) {
         lines.push("_None recorded._");
       }
       lines.push("");
+
+      if (def.populate) {
+        lines.push("### Its data — `populate()`, or the `data` property\n");
+        lines.push(`\`populate(${def.populate.shape})\`${def.populate.description ? ` — ${def.populate.description}` : ""}`);
+        lines.push("");
+      }
+      const slots = def.slots ?? [];
+      if (slots.length) {
+        lines.push(`### Slots (${slots.length})\n`);
+        for (const sl of slots) {
+          const accepts = sl.accepts?.length ? ` — accepts ${sl.accepts.join(", ")}` : "";
+          lines.push(`- \`${sl.name || "(default)"}\`${accepts}${sl.description ? ` — ${sl.description}` : ""}`);
+        }
+        lines.push("");
+      }
 
       lines.push(`### Events it fires back (${events.length})\n`);
       if (events.length) {

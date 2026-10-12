@@ -14,9 +14,12 @@ export class SherpaFileUpload extends SherpaElement {
     'data-loading': { type: 'boolean', kind: 'style' },
     'data-label': { type: 'string', kind: 'content', to: '.label' },
     'data-helper': { type: 'string', kind: 'content', to: '.helper' },
+    'data-max-size': { type: 'string', kind: 'content' },
+    'data-accept': { type: 'string', kind: 'content' },
+    'data-multiple': { type: 'boolean', kind: 'behaviour' },
   } as const;
 
-  static override observed = ['data-max-size', 'data-accept', 'data-multiple', 'disabled'];
+  static override observed = ['disabled'];
 
   /** The hidden native file input. */
   #input: HTMLInputElement | null = null;

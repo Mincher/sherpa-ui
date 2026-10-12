@@ -68,6 +68,10 @@
       "description": "footer action controls (reflects data-has-content-slot)"
     }
   ],
+  "populate": {
+    "shape": "{ align?, dirty? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

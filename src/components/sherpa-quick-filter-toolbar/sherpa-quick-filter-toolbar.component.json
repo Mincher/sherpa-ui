@@ -282,9 +282,10 @@
     {
       "$type": "prop",
       "name": "data-favourite",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "the ★ is lit (view type) — the value, IN"
     },
     {
@@ -292,6 +293,7 @@
       "name": "data-group-field",
       "type": "string",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "the field the Group chip points at (the standard name)"
     },
@@ -349,15 +351,17 @@
       "name": "data-pending",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "the FIELDS changed and not yet applied, space-separated. Set by a bound source; each chip wears the pending look, as one with a draft in its open menu does."
     },
     {
       "$type": "prop",
       "name": "data-remote",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "its source fetches from outside the data layer: a multi-select or range menu waits for Apply. Without it, every pick applies at once. Set by a bound source."
     },
     {
@@ -371,9 +375,10 @@
     {
       "$type": "prop",
       "name": "data-saveable",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "the host SAVES filters: a chip holding an Advanced filter, and the Add menu once any field is on, offer \"Save filter\", which fires filter-save. The host stores it and calls packFilter(). TRAP T-save-packs-the-fields-into-one-chip"
     },
     {
@@ -389,10 +394,12 @@
       "name": "data-sort-direction",
       "type": "enum",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "asc",
-        "desc"
+        "desc",
+        ""
       ],
       "description": "asc  | desc"
     },
@@ -401,6 +408,7 @@
       "name": "data-sort-field",
       "type": "string",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "the field the Sort chip points at (the standard name)"
     },
@@ -430,6 +438,10 @@
       "description": "host extras, placed BEFORE the built-in cluster"
     }
   ],
+  "populate": {
+    "shape": "[{ id, label, type?, active?, icon?, options? }]",
+    "description": "."
+  },
   "states": [
     {
       "$type": "state",

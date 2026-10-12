@@ -16,6 +16,8 @@ export class SherpaSelectCheckbox extends SherpaElement {
   static override props = {
     'data-label': { type: 'string', kind: 'content', to: '.label' },
     'data-description': { type: 'string', kind: 'content', to: '.description' },
+    // CSS-only; declared for the typed door.
+    'data-advanced': { type: 'boolean', kind: 'style' },
   } as const;
 
   // A host label names this. TRAP T-a-host-label-must-reach-its-control
@@ -23,8 +25,6 @@ export class SherpaSelectCheckbox extends SherpaElement {
   static override observed = [
     'checked',
     'indeterminate',
-    // CSS-only; declared for the typed door.
-    'data-advanced',
     ...MIRRORED,
   ];
 

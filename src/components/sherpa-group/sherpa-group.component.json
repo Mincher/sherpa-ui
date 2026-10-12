@@ -53,6 +53,10 @@
       "name": ""
     }
   ],
+  "populate": {
+    "shape": "{ colCount?, direction? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

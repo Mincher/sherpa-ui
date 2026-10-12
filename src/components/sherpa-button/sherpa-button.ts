@@ -28,17 +28,17 @@ export class SherpaButton extends SherpaElement {
     'data-open': { type: 'boolean', kind: 'style' },
     /* A composing host says the action itself. TRAP T-every-button-says-its-action */
     'data-no-tip': { type: 'boolean', kind: 'visibility' },
+    'data-label': { type: 'string', kind: 'content' },
+    'data-tip': { type: 'string', kind: 'content' },
+    'data-icon-start': { type: 'string', kind: 'content' },
+    'data-icon-end': { type: 'string', kind: 'content' },
+    'data-badge': { type: 'string', kind: 'content' },
+    'data-no-tab': { type: 'boolean', kind: 'behaviour' },
   } as const;
 
   // A host label names this. TRAP T-a-host-label-must-reach-its-control
   static override labelTarget = '.trigger';
   static override observed = [
-    'data-label',
-    'data-tip',
-    'data-icon-start',
-    'data-icon-end',
-    'data-badge',
-    'data-no-tab',
     'disabled',
   ];
 

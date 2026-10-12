@@ -32,10 +32,12 @@ export class SherpaLayoutCanvas extends SherpaElement {
     /* Written BY the canvas, while a drag pans. */
     'data-dragging': { type: 'boolean', kind: 'style' },
     'data-no-minimap': { type: 'boolean', kind: 'style' },
+    'data-zoom': { type: 'number', kind: 'behaviour' },
+    'data-min-zoom': { type: 'number', kind: 'behaviour' },
+    'data-max-zoom': { type: 'number', kind: 'behaviour' },
   } as const;
 
   /** The zoom, and its bounds — read by the code, so observed, not CSS props. */
-  static override observed = ['data-zoom', 'data-min-zoom', 'data-max-zoom'];
 
   /** Where the plane's origin sits across the view, in screen px. */
   #x = 0;

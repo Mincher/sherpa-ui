@@ -139,24 +139,24 @@ export class SherpaMenu extends SherpaElement {
     'data-commit': { type: 'boolean', kind: 'style' },
     // A "Save filter" action. TRAP T-save-packs-the-fields-into-one-chip
     'data-saveable': { type: 'boolean', kind: 'style' },
+    // Shows an answer held ELSEWHERE, unchangeable here. TRAP T-a-view-held-heading-shows-and-refuses
+    'data-readonly': { type: 'boolean', kind: 'style' },
+    'data-align': { type: 'enum', kind: 'behaviour', values: ['start', 'end'] },
+    'data-search': { type: 'boolean', kind: 'style' },
+    'data-clearable': { type: 'boolean', kind: 'style' },
+    'data-removable': { type: 'boolean', kind: 'style' },
+    'data-type': { type: 'enum', kind: 'style', values: ['list', 'calendar', 'filter'] },
+    // The crumb text is written from this, so a change must reach #syncCrumb.
+    'data-drill-from': { type: 'string', kind: 'content' },
+    // Which condition is picked — a host may set it, and #sync follows.
+    'data-op': { type: 'string', kind: 'behaviour' },
+    // What was typed under it. An ATTRIBUTE, so a re-stamp cannot lose it.
+    'data-value': { type: 'string', kind: 'behaviour' },
   } as const;
 
   static override observed = [
-    // Shows an answer held ELSEWHERE, unchangeable here. TRAP T-a-view-held-heading-shows-and-refuses
-    'data-readonly',
-    'data-align',
-    'data-search',
-    'data-clearable',
-    'data-removable',
-    'data-type',
-    // The crumb text is written from this, so a change must reach #syncCrumb.
-    'data-drill-from',
-    // Which condition is picked — a host may set it, and #sync follows.
-    'data-op',
     // The opt-ins' old names, heard and written in the new words.
     'data-custom', 'data-custom-only', 'data-conditional', 'data-conditions-only',
-    // What was typed under it. An ATTRIBUTE, so a re-stamp cannot lose it.
-    'data-value',
     'open',
   ];
 

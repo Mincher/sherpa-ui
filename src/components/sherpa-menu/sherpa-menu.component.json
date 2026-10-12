@@ -413,7 +413,8 @@
       "name": "data-align",
       "type": "enum",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "values": [
         "start",
         "end"
@@ -451,8 +452,9 @@
     {
       "$type": "prop",
       "name": "data-clearable",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "show a Clear button in the footer that empties the selection (a CALENDAR menu shows Today there instead — see the footer)"
     },
@@ -528,7 +530,8 @@
       "name": "data-drill-from",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "names the list that was replaced — the breadcrumb's text"
     },
     {
@@ -608,7 +611,8 @@
       "name": "data-op",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "FILTER type only: which condition is picked. Defaults to `eq`. The FIRST row's op — a menu in condition mode holds many."
     },
     {
@@ -622,16 +626,18 @@
     {
       "$type": "prop",
       "name": "data-readonly",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "SHOW an answer held elsewhere — rows and conditions inert, no footer, no Add condition, no Advanced button"
     },
     {
       "$type": "prop",
       "name": "data-removable",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "show a \"Remove\" button in the footer (after Today); it emits menu-select with value=\"remove\""
     },
@@ -647,8 +653,9 @@
     {
       "$type": "prop",
       "name": "data-search",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "show a search input under the heading that filters the rows"
     },
@@ -699,6 +706,7 @@
       "name": "data-type",
       "type": "enum",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "list",
@@ -712,7 +720,8 @@
       "name": "data-value",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "FILTER type only: what was TYPED under a typing condition. An ATTRIBUTE because a variant re-stamp replaces the whole shadow tree, and a value living only in the box is lost."
     },
     {
@@ -742,6 +751,10 @@
       "description": "the host's own footer buttons, leading the footer row; the row shows once it is filled (a Find's Replace, Previous and Next)"
     }
   ],
+  "populate": {
+    "shape": "[{ value, label, selected?, available? }]",
+    "description": "the menu's items."
+  },
   "states": [
     {
       "$type": "state",

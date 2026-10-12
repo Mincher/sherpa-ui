@@ -81,18 +81,20 @@
     {
       "$type": "prop",
       "name": "data-max-zoom",
-      "type": "string",
+      "type": "number",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "default": "4",
       "description": "the largest zoom"
     },
     {
       "$type": "prop",
       "name": "data-min-zoom",
-      "type": "string",
+      "type": "number",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "default": "0.25",
       "description": "the smallest zoom"
     },
@@ -117,9 +119,10 @@
     {
       "$type": "prop",
       "name": "data-zoom",
-      "type": "string",
+      "type": "number",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "the zoom, 1 is 100%; written BY the canvas as it zooms, and read when a host sets it"
     }
   ],
@@ -130,6 +133,10 @@
       "description": "the content, placed on the canvas at its `--x` and `--y` (px)"
     }
   ],
+  "populate": {
+    "shape": "{ dragging?, maxZoom?, minZoom?, noMinimap?, panning?, zoom? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

@@ -89,7 +89,8 @@
       "name": "data-code",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "the code to show (also settable via the default slot)"
     },
     {
@@ -104,8 +105,9 @@
     {
       "$type": "prop",
       "name": "data-line-numbers",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "boolean — render a line-number gutter beside the code. Numbers derive from the code's line count; CSS-gated."
     }
@@ -116,6 +118,10 @@
       "name": ""
     }
   ],
+  "populate": {
+    "shape": "{ code?, language?, lineNumbers? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

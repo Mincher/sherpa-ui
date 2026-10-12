@@ -15,6 +15,8 @@ export class SherpaSwitch extends SherpaElement {
   static override props = {
     'data-label': { type: 'string', kind: 'content', to: '.title' },
     'data-description': { type: 'string', kind: 'content', to: '.description' },
+    // CSS-only; declared for the typed door.
+    'data-type': { type: 'enum', kind: 'style', values: ['default', 'simple'] },
   } as const;
 
   // A host label names this. TRAP T-a-host-label-must-reach-its-control
@@ -26,8 +28,6 @@ export class SherpaSwitch extends SherpaElement {
     'disabled',
     'required',
     'value',
-    // CSS-only; declared for the typed door.
-    'data-type',
   ];
 
   /** The native checkbox the switch wraps. */

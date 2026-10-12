@@ -141,7 +141,8 @@
       "name": "data-badge",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "the text of the trailing sherpa-badge (or slot a node into \"badge\")"
     },
     {
@@ -149,7 +150,8 @@
       "name": "data-icon-end",
       "type": "string",
       "observed": true,
-      "kind": "visibility",
+      "declared": true,
+      "kind": "content",
       "description": "icon glyph value"
     },
     {
@@ -157,7 +159,8 @@
       "name": "data-icon-start",
       "type": "string",
       "observed": true,
-      "kind": "visibility",
+      "declared": true,
+      "kind": "content",
       "description": "icon glyph value"
     },
     {
@@ -165,7 +168,8 @@
       "name": "data-label",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "label text (or use the default slot)"
     },
     {
@@ -183,9 +187,10 @@
     {
       "$type": "prop",
       "name": "data-no-tab",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "out of the tab order — for a host whose own keys do the same (a stepper)"
     },
     {
@@ -243,7 +248,8 @@
       "name": "data-tip",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "the tooltip's text. Unset: an unlabelled button's tip is its aria-label, and a labelled one has none"
     },
     {
@@ -287,6 +293,10 @@
       "description": "a sherpa-menu this button opens — data-accepts: menu"
     }
   ],
+  "populate": {
+    "shape": "{ badge?, iconEnd?, iconStart?, label?, noTab?, noTip?, open?, size?, tip? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

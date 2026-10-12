@@ -393,6 +393,10 @@
       "description": "error-state content; slotting it shows the error overlay (data-has-error)"
     }
   ],
+  "populate": {
+    "shape": "{ state, message }",
+    "description": "a host with no provider sets the state by hand."
+  },
   "states": [
     {
       "$type": "state",

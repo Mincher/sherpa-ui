@@ -138,7 +138,8 @@
       "name": "data-inner",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "hole size, a FRACTION of the outer radius (0–1). A pie ignores it — a pie has no hole by definition."
     },
     {
@@ -146,7 +147,8 @@
       "name": "data-label",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "centre big text"
     },
     {
@@ -179,23 +181,26 @@
       "name": "data-sublabel",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "centre small text"
     },
     {
       "$type": "prop",
       "name": "data-sweep",
-      "type": "string",
+      "type": "number",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "how far it runs, in degrees. 360  is a full ring; a gauge is this ring stopped short — start 270, sweep 180."
     },
     {
       "$type": "prop",
       "name": "data-sweep-start",
-      "type": "string",
+      "type": "number",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "where the arc begins, clockwise degrees from 12 o'clock"
     },
     {
@@ -203,6 +208,7 @@
       "name": "data-type",
       "type": "enum",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "donut",
@@ -217,6 +223,10 @@
       "name": "legend"
     }
   ],
+  "populate": {
+    "shape": "[{ label, value, colorIndex? }]",
+    "description": "the slices."
+  },
   "states": [
     {
       "$type": "state",

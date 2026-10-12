@@ -53,12 +53,9 @@ export class SherpaAppHeader extends SherpaElement {
        opens something and does not look open reads as broken.
        TRAP T-a-trigger-shows-what-it-opened */
     'data-notifications-open': { type: 'boolean', kind: 'style' },
+    'data-icon': { type: 'string', kind: 'content' },
+    'data-notifications': { type: 'number', kind: 'content' },
   } as const;
-
-  static override observed = [
-    'data-icon',
-    'data-notifications',
-  ];
 
   override onRender(): void {
     this.#sync();

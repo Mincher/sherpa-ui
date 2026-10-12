@@ -127,6 +127,7 @@
       "name": "data-select-mode",
       "type": "enum",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "radio",
@@ -138,8 +139,9 @@
     {
       "$type": "prop",
       "name": "data-selected",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "present → the card is selected (also a JS property)"
     },
@@ -187,6 +189,10 @@
       "description": "footer region (falls back to the select controls)"
     }
   ],
+  "populate": {
+    "shape": "{ description?, footer?, label?, orientation?, selectMode?, selected? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

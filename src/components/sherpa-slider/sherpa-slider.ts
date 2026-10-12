@@ -26,6 +26,8 @@ export class SherpaSlider extends SherpaElement {
   static override props = {
     'data-show-value': { type: 'boolean', kind: 'style' },
     'data-label': { type: 'string', kind: 'content', to: '.label' },
+    'data-type': { type: 'enum', kind: 'style', values: ['single', 'range'] },
+    'data-value-readonly': { type: 'boolean', kind: 'style' },
   } as const;
 
   static override observed = [
@@ -35,9 +37,7 @@ export class SherpaSlider extends SherpaElement {
     'value',
     'value-start',
     'value-end',
-    'data-type',
     'disabled',
-    'data-value-readonly',
   ];
 
   /** TRAP T-slider-second-thumb-is-revealed-not-built — the whole control in single mode, the LOW end in range. */

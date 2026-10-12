@@ -31,12 +31,16 @@ export class SherpaRadialChart extends SherpaElement {
   ];
   static override html = new URL('./sherpa-radial-chart.html', import.meta.url);
   static override asks: DataAsk = { shape: 'segments', shows: 'chart' };
-  static override props = { ...SUMMARY_PROPS } as const;
-  static override observed = [
-    'data-label', 'data-sublabel', 'data-type',
+  static override props = {
+    ...SUMMARY_PROPS,
+    'data-label': { type: 'string', kind: 'content' },
+    'data-sublabel': { type: 'string', kind: 'content' },
+    'data-type': { type: 'enum', kind: 'style', values: ['donut', 'pie'] },
     // The arc. A gauge is this ring stopped short — 270° for 180°.
-    'data-sweep-start', 'data-sweep', 'data-inner',
-  ];
+    'data-sweep-start': { type: 'number', kind: 'behaviour' },
+    'data-sweep': { type: 'number', kind: 'behaviour' },
+    'data-inner': { type: 'string', kind: 'behaviour' },
+  } as const;
 
   /** The slices, as populated. */
   #slices: RadialSlice[] = [];

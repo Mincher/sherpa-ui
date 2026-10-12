@@ -664,7 +664,8 @@
       "name": "data-icon-end",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "trailing icon glyph inside the control row (CSS-gated)"
     },
     {
@@ -672,7 +673,8 @@
       "name": "data-icon-start",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "leading icon glyph inside the control row (CSS-gated)"
     },
     {
@@ -687,9 +689,10 @@
     {
       "$type": "prop",
       "name": "data-matches",
-      "type": "string",
+      "type": "number",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "how many matches a Find's host found; \"0\" leaves nothing to step to or replace"
     },
     {
@@ -724,7 +727,8 @@
       "name": "data-rules",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "names a validation rule the platform has no idea about (e.g. \"email\") — see the TS for the rule set"
     },
     {
@@ -879,6 +883,10 @@
       "description": "trailing controls in the field row (steppers, buttons); CSS-gated"
     }
   ],
+  "populate": {
+    "shape": "[{ value, label }]",
+    "description": "the choices a SELECT field offers."
+  },
   "states": [
     {
       "$type": "state",

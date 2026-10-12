@@ -226,7 +226,8 @@
       "name": "data-current-id",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "id of the current Context"
     },
     {
@@ -243,6 +244,7 @@
       "name": "data-nav-state",
       "type": "enum",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "collapsed",
@@ -283,6 +285,10 @@
       "description": "pinned footer content (account / user)"
     }
   ],
+  "populate": {
+    "shape": "config",
+    "description": "the nav content. Accepts NavConfig or a legacy NavEntry[]."
+  },
   "states": [
     {
       "$type": "state",

@@ -49,6 +49,10 @@
       "description": "the section label text (rendered verbatim — author its case)"
     }
   ],
+  "populate": {
+    "shape": "{ collapsed?, label? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

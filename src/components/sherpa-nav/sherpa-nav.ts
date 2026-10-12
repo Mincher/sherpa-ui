@@ -76,10 +76,11 @@ const LATCHED: ReadonlySet<string> = new Set<NavState>(['pinned', 'settings']);
 export class SherpaNav extends SherpaElement {
   static override css = new URL('./sherpa-nav.css', import.meta.url);
   static override html = new URL('./sherpa-nav.html', import.meta.url);
-  static override observed = ['data-current-id', 'data-nav-state'];
   static override props = {
     /* The PHONE's menu — written by openMenu() / closeMenu(). TRAP T-the-nav-is-a-menu-on-a-phone */
     'data-menu': { type: 'boolean', kind: 'visibility' },
+    'data-current-id': { type: 'string', kind: 'behaviour' },
+    'data-nav-state': { type: 'enum', kind: 'style', values: ['collapsed', 'hover', 'default', 'pinned', 'settings'] },
   } as const;
 
   /** The nav as data, normalised. */

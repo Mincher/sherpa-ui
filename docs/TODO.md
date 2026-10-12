@@ -3929,9 +3929,20 @@ generator reads `static props` by TypeScript's parser (spreads and lookups
 resolve), so every declared prop is in its spec with the code's type, values
 and default — 66 props added, 96 types corrected — and is marked `declared`.
 `slots` is filled from the real `<slot>` tags, described by each `Slots:`
-block: 111 slots in 51 specs. **Left:** move the 135 observed `data-*` into
-`static props` (four families); the `populate()` shape; typed event details;
-`check:props` tightened; `check:usage`.
+block: 111 slots in 51 specs.
+
+**🚧 Part 2, the moves, and `check:props` tightened, 2026-10-12.** 131 of the
+135 moved into `static props`, in four families (controls, shell, data,
+charts); `populate({ label })` now sets `data-label`. The other 4 are the
+menu's old names, still heard and never public. `check:props` fails an
+observed `data-*` that is not declared.
+
+**🚧 Part 3a, the `populate()` shape, 2026-10-12.** A spec's `populate` says
+what `populate()` takes: an override's own `populate(…) — …` line over its
+`renderData` (25; three were missing a line, one said no shape), or, with no
+override, the declared props by short name (38). 63 of 65; the badge takes
+nothing. The MCP's `component_api` shows it and the slots. **Left:** typed
+event details; `check:usage`.
 
 ### `[ ]` 196 — One filter surface and a smaller DataSource
 

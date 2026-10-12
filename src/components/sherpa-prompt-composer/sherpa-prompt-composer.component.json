@@ -111,7 +111,8 @@
       "name": "data-placeholder",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "— textarea placeholder"
     },
     {
@@ -131,6 +132,10 @@
       "description": "extra controls after the default leading buttons (reflects data-has-extras)"
     }
   ],
+  "populate": {
+    "shape": "{ noLeadingActions?, placeholder? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

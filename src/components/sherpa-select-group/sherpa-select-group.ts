@@ -31,10 +31,10 @@ export class SherpaSelectGroup extends SherpaElement {
     'data-label': { type: 'string', kind: 'content', to: '.label' },
     'data-description': { type: 'string', kind: 'content', to: '.description' },
     'data-error': { type: 'string', kind: 'content', to: '.validation' },
+    'data-multiple': { type: 'boolean', kind: 'behaviour' },
   } as const;
 
   static override observed = [
-    'data-multiple',
     'disabled',
     'name',
   ];
@@ -76,7 +76,7 @@ export class SherpaSelectGroup extends SherpaElement {
     else if (name === 'name') this.#syncNames();
   }
 
-  /** populate() takes SelectGroupOption[]. */
+  /** populate([{ value, label?, description?, disabled? }]) — the options, one control each */
   protected override renderData(data: unknown): void {
     this.#options = Array.isArray(data) ? (data as SelectGroupOption[]) : [];
     this.#render();

@@ -103,9 +103,10 @@
     {
       "$type": "prop",
       "name": "data-multiple",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "present → checkboxes (multi-select); absent → radios"
     },
     {
@@ -152,6 +153,10 @@
       "description": "checkbox/radio option rows"
     }
   ],
+  "populate": {
+    "shape": "[{ value, label?, description?, disabled? }]",
+    "description": "the options, one control each"
+  },
   "states": [
     {
       "$type": "state",

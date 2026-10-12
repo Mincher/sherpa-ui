@@ -21,8 +21,8 @@ export class SherpaSparkline extends SherpaElement {
   static override props = {
     'data-type': { type: 'enum', kind: 'style', values: ['bar'] },
     'data-len': { type: 'string', kind: 'style' },
+    'data-values': { type: 'string', kind: 'behaviour' },
   } as const;
-  static override observed = ['data-values'];
 
   override onRender(): void {
     this.#apply();
@@ -32,7 +32,7 @@ export class SherpaSparkline extends SherpaElement {
     this.#apply();
   }
 
-  /** Serialises to data-values, which is the source of truth. */
+  /** populate(number[]) — the points, kept in data-values, which is the source of truth */
   protected override renderData(source: unknown): void {
     if (!Array.isArray(source)) return;
     this.dataset['values'] = JSON.stringify(source);

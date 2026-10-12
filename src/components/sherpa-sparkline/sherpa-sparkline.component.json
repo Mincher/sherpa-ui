@@ -416,10 +416,15 @@
       "name": "data-values",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "— comma-separated or JSON array (e.g. \"10,25,15,30\")"
     }
   ],
+  "populate": {
+    "shape": "number[]",
+    "description": "the points, kept in data-values, which is the source of truth"
+  },
   "states": [
     {
       "$type": "state",

@@ -196,6 +196,7 @@
       "name": "data-current",
       "type": "boolean",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "default": false,
       "description": "selected/on state"
@@ -252,7 +253,8 @@
       "name": "data-icon-start",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "leading icon — an icon name (Figma default is a funnel)"
     },
     {
@@ -296,7 +298,8 @@
       "name": "data-label",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "chip text (or use the default slot). Rewritten to \"Field: Value\" while exactly ONE menu value is picked; two or more revert to the field name plus the count badge."
     },
     {
@@ -446,6 +449,10 @@
       "description": "a <sherpa-menu> of values for this field"
     }
   ],
+  "populate": {
+    "shape": "[{ value, label }]",
+    "description": "a JUMP chip's places, as action rows in its menu. Any other chip keeps the default: payload keys onto its attributes."
+  },
   "states": [
     {
       "$type": "state",

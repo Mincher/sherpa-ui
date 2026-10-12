@@ -188,7 +188,8 @@
       "name": "data-caption",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "caption text shown below the arc (e.g. \"30GB of 60GB used\")"
     },
     {
@@ -213,7 +214,8 @@
       "name": "data-label",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "the MIDPOINT tick above the arc. Defaults to the middle of the"
     },
     {
@@ -231,18 +233,20 @@
     {
       "$type": "prop",
       "name": "data-max",
-      "type": "string",
+      "type": "number",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "default": "0 / 100",
       "description": "scale bounds shown beneath"
     },
     {
       "$type": "prop",
       "name": "data-min",
-      "type": "string",
+      "type": "number",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "default": "0 / 100",
       "description": "scale bounds shown beneath"
     },
@@ -289,15 +293,17 @@
       "name": "data-unit",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "suffix for all three scale ticks, e.g. \"%\" → 0% / 50% / 100%"
     },
     {
       "$type": "prop",
       "name": "data-value",
-      "type": "string",
+      "type": "number",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "number on the scale (drives the fill sweep + needle angle)"
     },
     {
@@ -305,7 +311,8 @@
       "name": "data-zones",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "threshold bands — \"0-50:success,50-80:warning,80-100:critical\" (compact) OR a JSON array [{to,color}|{from,to,color}]. Colours are status names (success|warning|urgent|critical|info) or any CSS colour. Omit for the single-colour sweep. A band may be NAMED — \"0-50:success:Low\", or `label` in the JSON — and the name is its tooltip's and its legend row's."
     }
   ],
@@ -326,6 +333,10 @@
       "description": "a <sherpa-chart-legend> naming the zones; the gauge fills it from zones that are named."
     }
   ],
+  "populate": {
+    "shape": "number | { value }",
+    "description": "set the value. A provider's aggregate over time is the object."
+  },
   "states": [
     {
       "$type": "state",

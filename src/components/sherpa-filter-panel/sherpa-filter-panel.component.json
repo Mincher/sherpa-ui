@@ -184,6 +184,7 @@
       "name": "data-group-field",
       "type": "string",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "the group in force. Written by the source; the Group chip shows it. TRAP T-a-panel-follows-the-query-open-or-shut"
     },
@@ -249,17 +250,24 @@
     {
       "$type": "prop",
       "name": "data-saveable",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "the host SAVES filters: a scope with an answered field offers \"Save filter\". A reader's own saved preset offers Edit filter and Delete filter whatever it says. TRAP T-the-panel-saves-a-whole-scope"
     },
     {
       "$type": "prop",
       "name": "data-sort-direction",
-      "type": "string",
+      "type": "enum",
       "observed": true,
+      "declared": true,
       "kind": "style",
+      "values": [
+        "asc",
+        "desc",
+        ""
+      ],
       "description": "the sort in force. Written by the source; the Sort chip shows it."
     },
     {
@@ -267,6 +275,7 @@
       "name": "data-sort-field",
       "type": "string",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "the sort in force. Written by the source; the Sort chip shows it."
     },
@@ -290,6 +299,10 @@
       "description": "extra content under the scopes"
     }
   ],
+  "populate": {
+    "shape": "[{ scope, label, filters, available }]",
+    "description": "."
+  },
   "states": [
     {
       "$type": "state",

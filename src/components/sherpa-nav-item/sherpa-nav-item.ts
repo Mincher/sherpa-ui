@@ -30,17 +30,15 @@ export class SherpaNavItem extends SherpaElement {
   static override props = {
     'data-status-dot': { type: 'boolean', kind: 'style' },
     'data-tier': { type: 'enum', kind: 'style', values: ['2', '3'] },
+    'data-icon': { type: 'string', kind: 'content' },
+    'data-label': { type: 'string', kind: 'content' },
+    'data-badge': { type: 'string', kind: 'content' },
+    'data-description': { type: 'string', kind: 'content' },
+    'data-href': { type: 'string', kind: 'style' },
+    'data-current': { type: 'boolean', kind: 'style' },
+    'data-expandable': { type: 'boolean', kind: 'style' },
+    'data-expanded': { type: 'boolean', kind: 'style' },
   } as const;
-  static override observed = [
-    'data-icon',
-    'data-label',
-    'data-badge',
-    'data-description',
-    'data-href',
-    'data-current',
-    'data-expandable',
-    'data-expanded',
-  ];
 
   /** `data-type` picks the tree, so a change to it must re-stamp. */
   static override variantAttrs = ['data-type'];

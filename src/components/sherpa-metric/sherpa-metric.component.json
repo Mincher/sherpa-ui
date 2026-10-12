@@ -227,6 +227,10 @@
       "description": "— the formatted value string (big number)"
     }
   ],
+  "populate": {
+    "shape": "number | { value?, label?, delta?, deltaPercent?, trend?, values?, show? }",
+    "description": "the tile's number"
+  },
   "states": [
     {
       "$type": "state",

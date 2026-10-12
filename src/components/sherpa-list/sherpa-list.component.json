@@ -91,6 +91,10 @@
       "name": ""
     }
   ],
+  "populate": {
+    "shape": "[{ title, description?, active?, interactive? }]",
+    "description": "data rows."
+  },
   "states": [
     {
       "$type": "state",

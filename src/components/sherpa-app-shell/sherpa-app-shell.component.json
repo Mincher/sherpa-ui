@@ -143,6 +143,7 @@
       "name": "data-nav-state",
       "type": "enum",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "values": [
         "collapsed",
@@ -158,6 +159,7 @@
       "name": "data-no-header",
       "type": "boolean",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "default": false,
       "description": "let the content span the full height (no header row)"
@@ -167,6 +169,7 @@
       "name": "data-no-nav",
       "type": "boolean",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "default": false,
       "description": "drop the nav rail; the content spans the full width"
@@ -192,7 +195,8 @@
       "name": "data-panel-end-width",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "a panel area's width, in px — what a reader dragged it to, handed back by the host. The area never goes under its min or over 33% of its row."
     },
     {
@@ -208,7 +212,8 @@
       "name": "data-panel-start-width",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "behaviour",
       "description": "a panel area's width, in px — what a reader dragged it to, handed back by the host. The area never goes under its min or over 33% of its row."
     }
   ],
@@ -252,6 +257,10 @@
       ]
     }
   ],
+  "populate": {
+    "shape": "{ navState?, noHeader?, noNav?, noRoom?, panelEndOpen?, panelEndWidth?, panelStartOpen?, panelStartWidth? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

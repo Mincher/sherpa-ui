@@ -104,6 +104,10 @@
       "description": "the label"
     }
   ],
+  "populate": {
+    "shape": "{ icon? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

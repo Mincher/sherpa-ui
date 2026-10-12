@@ -14,7 +14,12 @@ interface ProgressData {
 export class SherpaProgressBar extends SherpaElement {
   static override css = new URL('./sherpa-progress-bar.css', import.meta.url);
   static override html = new URL('./sherpa-progress-bar.html', import.meta.url);
-  static override observed = ['value', 'data-value', 'data-indeterminate', 'data-label'];
+  static override props = {
+    'data-value': { type: 'number', kind: 'behaviour' },
+    'data-indeterminate': { type: 'boolean', kind: 'style' },
+    'data-label': { type: 'string', kind: 'content' },
+  } as const;
+  static override observed = ['value'];
 
   override onRender(): void {
     this.#sync();

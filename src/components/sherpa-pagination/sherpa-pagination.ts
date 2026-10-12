@@ -18,9 +18,11 @@ export class SherpaPagination extends SherpaElement {
   static override props = {
     /* The HOST owns the page; report the intent, never write it. */
     'data-locked': DATA_PROPS['data-locked'],
+    'data-page': DATA_PROPS['data-page'],
+    'data-total-pages': DATA_PROPS['data-total-pages'],
+    'data-page-size': DATA_PROPS['data-page-size'],
+    'data-rows-options': { type: 'string', kind: 'behaviour' },
   } as const;
-
-  static override observed = ['data-page', 'data-total-pages', 'data-page-size', 'data-rows-options'];
 
   /* No rows — the view state only, as attributes. TRAP T-a-component-asks-its-provider */
   static override asks: DataAsk = { shape: 'state' };

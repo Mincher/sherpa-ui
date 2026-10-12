@@ -42,12 +42,16 @@ export class SherpaCalendar extends SherpaElement {
   static override props = {
     /* Drawn inline rather than in a popover — no card, no footer. */
     'data-embedded': { type: 'boolean', kind: 'style' },
+    'data-value': { type: 'string', kind: 'behaviour' },
+    'data-value-start': { type: 'string', kind: 'behaviour' },
+    'data-value-end': { type: 'string', kind: 'behaviour' },
+    'data-min': { type: 'string', kind: 'behaviour' },
+    'data-max': { type: 'string', kind: 'behaviour' },
+    'data-available': { type: 'string', kind: 'behaviour' },
+    'data-view': { type: 'enum', kind: 'style', values: ['day', 'month', 'year'] },
+    'data-type': { type: 'enum', kind: 'behaviour', values: ['single', 'range'] },
+    'data-has-time': { type: 'boolean', kind: 'style' },
   } as const;
-
-  static override observed = [
-    'data-value', 'data-value-start', 'data-value-end',
-    'data-min', 'data-max', 'data-available', 'data-view', 'data-type', 'data-has-time',
-  ];
 
   /** The month on view — its year is the month and year views' too. */
   #shown = today().toPlainYearMonth();

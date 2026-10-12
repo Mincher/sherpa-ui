@@ -175,6 +175,10 @@
       "description": "heading for the selected pane"
     }
   ],
+  "populate": {
+    "shape": "[{ value, label, selected? }]",
+    "description": "the full item pool."
+  },
   "states": [
     {
       "$type": "state",

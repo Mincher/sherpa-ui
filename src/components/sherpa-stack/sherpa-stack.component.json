@@ -146,6 +146,10 @@
       "description": "the items"
     }
   ],
+  "populate": {
+    "shape": "{ align?, direction?, fill?, gap?, measure?, minItem?, scroll?, wrap? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

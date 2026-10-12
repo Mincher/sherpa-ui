@@ -215,14 +215,16 @@
       "name": "data-badge",
       "type": "string",
       "observed": true,
-      "kind": "visibility",
+      "declared": true,
+      "kind": "content",
       "description": "the trailing Tag's text (Figma hasTag)"
     },
     {
       "$type": "prop",
       "name": "data-current",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "current item in the nav set"
     },
@@ -231,22 +233,25 @@
       "name": "data-description",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "promo description (promo variant only)"
     },
     {
       "$type": "prop",
       "name": "data-expandable",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "the item has children — shows the chevron (Figma hasChildren)"
     },
     {
       "$type": "prop",
       "name": "data-expanded",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "expanded state — rotates the chevron"
     },
@@ -255,6 +260,7 @@
       "name": "data-href",
       "type": "string",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "render the row as a link"
     },
@@ -263,7 +269,8 @@
       "name": "data-icon",
       "type": "string",
       "observed": true,
-      "kind": "visibility",
+      "declared": true,
+      "kind": "content",
       "description": "leading icon — an icon name (\"home\"); any other value renders as a literal text glyph"
     },
     {
@@ -271,7 +278,8 @@
       "name": "data-label",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "row label text"
     },
     {
@@ -320,6 +328,10 @@
       "name": "trailing"
     }
   ],
+  "populate": {
+    "shape": "{ badge?, current?, description?, expandable?, expanded?, href?, icon?, label?, statusDot?, tier? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

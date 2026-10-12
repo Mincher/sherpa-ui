@@ -12706,9 +12706,20 @@ is the declaration pass holding. Nine did not, and are now declared:
 | `data-total-pages` | already in `DATA_PROPS`; the grid now reads from there rather than growing a copy |
 | `data-select`, `data-anchor`, `data-value`, `data-heading`, `data-has-caption` | one component each |
 
-`observed` and `variantAttrs` count as declarations — both name the attribute
-in the same file, and three `data-type` reads that first looked like gaps were
-already declared as variant attributes.
+`variantAttrs` counts as a declaration, and three `data-type` reads that first
+looked like gaps were already declared there.
+
+**`observed` no longer counts** (TODO 195, 2026-10-12). 135 observed `data-*`
+in 37 components were in no `static props`, so `populate({ label })` skipped
+them and their specs could not type them — the review's
+`button.populate({ label: 'Save' })` drew nothing. 131 moved into props: 18
+`content`, 48 `style`, 65 `behaviour`; the sort, group, filter and page names
+point at `DATA_PROPS`. A boolean among them is typed `boolean` only where
+nothing writes it `"false"`, since a declared boolean set to `"false"` is
+removed (`T-false-is-off`). The gate now fails an observed `data-*` that is
+not declared — except a renamed attribute's old name, the first of an
+`['data-old', 'data-new']` pair (`T-a-renamed-attribute-keeps-its-old-name`),
+still heard but never public: the menu's four.
 
 The gate checks only `this.dataset`. A local `cal.dataset['value']` is another
 element's business, and counting it reported five phantom gaps.
@@ -13286,6 +13297,7 @@ def types each declared `conditions` for themselves.
 - Site: `test/e2e/reforged-advanced-condition-words.spec.ts`
 - Site: `test/unit/the-def-speaks-the-new-words.test.mjs`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `scripts/check-props.mjs`
 
 ### T-a-view-keeps-the-saved-filter-chips
 

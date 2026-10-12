@@ -145,24 +145,27 @@
     {
       "$type": "prop",
       "name": "data-collapsed",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "collapsed state (body/footer hidden; the collapse toggle reflects it)"
     },
     {
       "$type": "prop",
       "name": "data-collapsible",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "show the collapse toggle"
     },
     {
       "$type": "prop",
       "name": "data-dismissible",
-      "type": "string",
+      "type": "boolean",
       "observed": true,
+      "declared": true,
       "kind": "style",
       "description": "show the close button"
     },
@@ -189,7 +192,8 @@
       "name": "data-heading",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "header title text (rendered into .title)"
     },
     {
@@ -197,7 +201,8 @@
       "name": "data-icon",
       "type": "string",
       "observed": true,
-      "kind": "style",
+      "declared": true,
+      "kind": "content",
       "description": "a glyph before the title (shows the icon slot area)"
     },
     {
@@ -256,6 +261,10 @@
       "description": "footer action controls (reflects data-has-footer)"
     }
   ],
+  "populate": {
+    "shape": "{ collapsed?, collapsible?, dismissible?, expandable?, external?, heading?, icon? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

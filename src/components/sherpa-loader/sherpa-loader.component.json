@@ -79,6 +79,10 @@
       "description": "loading text shown beside (or below) the spinner"
     }
   ],
+  "populate": {
+    "shape": "{ orientation?, panel?, size? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

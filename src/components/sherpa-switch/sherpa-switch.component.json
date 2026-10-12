@@ -91,9 +91,14 @@
     {
       "$type": "prop",
       "name": "data-type",
-      "type": "string",
+      "type": "enum",
       "observed": true,
+      "declared": true,
       "kind": "style",
+      "values": [
+        "default",
+        "simple"
+      ],
       "description": "— default (rectangular, ON/OFF label, square thumb) | simple  (pill, no label, round thumb)"
     },
     {
@@ -132,6 +137,10 @@
       "description": "— native string        (what it stands for when on; default \"on\")"
     }
   ],
+  "populate": {
+    "shape": "{ description?, label?, type? }",
+    "description": "Its declared props by name: `label` sets data-label."
+  },
   "states": [
     {
       "$type": "state",

@@ -24,8 +24,13 @@ export class SherpaOverlayPanel extends SherpaElement {
   static override props = {
     'data-expandable': { type: 'boolean', kind: 'style' },
     'data-external': { type: 'boolean', kind: 'style' },
+    'data-heading': { type: 'string', kind: 'content' },
+    'data-icon': { type: 'string', kind: 'content' },
+    'data-collapsed': { type: 'boolean', kind: 'style' },
+    'data-collapsible': { type: 'boolean', kind: 'style' },
+    'data-dismissible': { type: 'boolean', kind: 'style' },
   } as const;
-  static override observed = ['data-heading', 'data-icon', 'data-collapsed', 'data-collapsible', 'data-dismissible', 'open'];
+  static override observed = ['open'];
 
   /** The panels open now. They share the right edge, so opening one shuts the
    *  rest. TRAP T-one-overlay-panel-at-a-time */

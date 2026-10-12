@@ -19,7 +19,9 @@ export interface TabDef {
 export class SherpaTabs extends SherpaElement {
   static override css = new URL('./sherpa-tabs.css', import.meta.url);
   static override html = new URL('./sherpa-tabs.html', import.meta.url);
-  static override observed = ['data-current-id'];
+  static override props = {
+    'data-current-id': { type: 'string', kind: 'behaviour' },
+  } as const;
 
   /** The tabs, as populated. */
   #tabs: TabDef[] = [];
@@ -60,6 +62,7 @@ export class SherpaTabs extends SherpaElement {
     this.emit('tab-select', { id, index, label: this.#tabs[index]?.label ?? '' });
   }
 
+  /** populate([{ id, label }]) — the tabs; the first is current unless data-current-id names one */
   protected override renderData(data: unknown): void {
     const list = Array.isArray(data) ? (data as TabDef[]) : [];
     this.#tabs = list

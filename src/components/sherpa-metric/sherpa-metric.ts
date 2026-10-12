@@ -100,7 +100,7 @@ export class SherpaMetric extends SherpaElement {
     }
   }
 
-  /** The data path. */
+  /** populate(number | { value?, label?, delta?, deltaPercent?, trend?, values?, show? }) — the tile's number */
   protected override renderData(source: unknown): void {
     // A provider's aggregate is a bare number when it runs over no field.
     const data = (typeof source === 'number' ? { value: source } : source ?? {}) as MetricData;
