@@ -182,7 +182,8 @@ export interface HeldFilter extends FieldFilter {
   edited?: Record<string, FieldReading>;
   /** Where a View field may be SENT DOWN: each scope that has it, the one it
    *  came up from first. TRAP T-send-to-view-filters */
-  sendTo?: { scope: string; label: string }[];
+  /** Where a View field may go down to — `origin` is the scope it came UP from. */
+  sendTo?: { scope: string; label: string; origin?: boolean }[];
 }
 
 /** What a scope's filters narrow: the View, or the content one component shows. */
@@ -981,13 +982,16 @@ export class DataSource extends EventTarget {
     const fields: HeldFilter[] = q.holds.filter((f) => this.#fields.has(f)).map((f) => {
       const reading = this.#home(f) === scope ? this.#reading(f) : undefined;
       const down = scope === VIEW ? this.#lowerTo(f) : [];
+      const from = this.#cameFrom.get(f);
       return {
         ...this.filterDef(f), removable: true,
         // The View's date slices the whole view, so it is a RANGE. Will, TODO 20b.
         ...(scope === VIEW && this.#fields.get(f)?.type === 'date' ? { range: true } : {}),
         ...(reading ? { state: structuredClone(reading) } : {}),
         ...(above.includes(f) ? { appliedAt: this.scopeLabel(VIEW) } : {}),
-        ...(down.length ? { sendTo: down.map((to) => ({ scope: to, label: this.#narrowing.get(to)?.label ?? this.scopeLabel(to) })) } : {}),
+        ...(down.length ? { sendTo: down.map((to) => ({
+          scope: to, label: this.#narrowing.get(to)?.label ?? this.scopeLabel(to), ...(to === from ? { origin: true } : {}),
+        })) } : {}),
       };
     });
     // Below the View, a saved filter it does not hold is offered too.

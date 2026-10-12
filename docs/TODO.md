@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**57 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
+**56 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -78,7 +78,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16t7 | 231 | "Reset all to default" and "Reset" are inactive while the filters already ARE the View's default | bug |
 | ✅ | 16t8 | 232 | The delete customer dialog is critical all over — borders and labels; only its footer's confirm button is | bug |
 | ✅ | 16t9 | 233 | In the filter panel, a filter section's header inside an accordion aligns to the TOP: label, count badge and the accordion button | quick |
-| ⬜ | 16t10 | 234 | A filter moved up to the View: its menu's FIRST option is "Return to X", its own scope, apart from the other scopes | quick |
+| ✅ | 16t10 | 234 | A filter moved up to the View: its menu's FIRST option is "Return to X", its own scope, apart from the other scopes | quick |
 | ❓ | 16t6 | 230 | Reset all filters dialog: "Save filters before reset" sits in a grey border; it is plain form content | quick |
 | | | | **C2 — Consumers: frameworks, apps and agents** (planned 2026-10-12) | |
 | ✅ | c1 | 225 | `settled()` hangs on an infinite animation — a loader, an indeterminate bar — and waits on the whole document when given a part | bug |
@@ -1537,7 +1537,7 @@ badge and the accordion's button sit at the top of the header row.
 buttons align to the top (they shared the bottom line, Will 2026-09-26). A
 test measures each against the row's top; it failed on the old CSS.
 
-### `[ ]` 234 — A filter moved up to the View offers "Return to X" first
+### `[x]` ✅ 234 — A filter moved up to the View offers "Return to X" first
 
 Will, 2026-10-12: *"If a filter is moved up to the view scope then the first
 menu option should be 'Return to X' to differentiate it from other available
@@ -1545,6 +1545,12 @@ component scopes that weren't the original scope before being elevated to the
 view scope."* The send-down menu (TODO 120, `T-send-to-view-filters`) lists
 the component scopes; the one the filter came from leads, worded "Return to
 <its scope>", and the others follow.
+
+**✅ Done 2026-10-12.** The source already listed the scope a field came up
+from first; it now marks it `origin`, and the panel words it "Return to X"
+(and the single button "Return Status to X"). The source knows it for the
+session only, by design (`T-send-to-view-filters`): after a reload both rows
+read "Send to". Say if it should outlive a reload — the Query would carry it.
 
 ### `[ ]` 230 — The Reset all filters dialog: its switch is plain form content
 

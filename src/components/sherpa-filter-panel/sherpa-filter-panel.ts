@@ -115,7 +115,7 @@ export interface PanelFilter extends OffersAdvanced {
   appliedAt?: string;
   /** Where a View field may be SENT DOWN. One: the button sends it. More: the
    *  button opens them. TRAP T-send-to-view-filters */
-  sendTo?: { scope: string; label: string }[];
+  sendTo?: { scope: string; label: string; origin?: boolean }[];
 }
 
 /** A column Group or Sort may arrange by. */
@@ -1642,10 +1642,13 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** The Send down button: one scope, and it says which; more, and it opens
    *  a menu of them. TRAP T-send-to-view-filters */
-  #drawLower(button: HTMLElement | null, name: string, targets: readonly { scope: string; label: string }[]): void {
+  #drawLower(button: HTMLElement | null, name: string, targets: readonly { scope: string; label: string; origin?: boolean }[]): void {
     if (!button || !targets.length) return;
+    /* The scope it came UP from is a RETURN, and leads — told apart from the
+       others. Will, TODO 234. TRAP T-send-to-view-filters */
     if (targets.length === 1) {
-      button.setAttribute('aria-label', `Send ${name} to ${targets[0]!.label}`);
+      const { label, origin } = targets[0]!;
+      button.setAttribute('aria-label', origin ? `Return ${name} to ${label}` : `Send ${name} to ${label}`);
       return;
     }
     button.setAttribute('aria-label', `Send ${name} to a scope`);
@@ -1653,10 +1656,10 @@ export class SherpaFilterPanel extends SherpaElement {
     const menu = this.clone('template.lower-menu-tpl');
     const row = this.$<HTMLTemplateElement>('template.lower-item-tpl')?.content.firstElementChild;
     if (!menu || !row) return;
-    for (const { scope, label } of targets) {
+    for (const { scope, label, origin } of targets) {
       const item = row.cloneNode(true) as HTMLButtonElement;
       item.value = scope;
-      item.textContent = `Send to ${label}`;
+      item.textContent = origin ? `Return to ${label}` : `Send to ${label}`;
       menu.append(item);
     }
     button.append(menu);

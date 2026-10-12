@@ -85,8 +85,8 @@ test('a field goes back down to where it CAME UP from — a chart\'s own scope �
   send('view', 'plan', 'picks:bar');
   await tick();
   assert.deepEqual(seen.get('grid'), [1, 3]);
-  // Where it came UP from leads.
-  assert.deepEqual(sendTo('plan'), [{ scope: 'picks:bar', label: 'By plan' }, { scope: 'data', label: 'Customer records' }]);
+  // Where it came UP from leads, and says so — a RETURN. Will, TODO 234.
+  assert.deepEqual(sendTo('plan'), [{ scope: 'picks:bar', label: 'By plan', origin: true }, { scope: 'data', label: 'Customer records' }]);
 
   send('picks:bar', 'plan', 'view');
   await tick();

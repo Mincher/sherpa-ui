@@ -1178,6 +1178,11 @@ from — which it remembers for a session. On Records a chart's field is the
 grid's too, so after a reload there were two scopes, no memory, and no way
 down: Will, TODO 158.
 
+**The scope it came UP from is a RETURN** (Will, 2026-10-12, TODO 234). The
+source marks that entry of `sendTo` with `origin`, and the panel words it
+"Return to X" and lists it first, apart from the other scopes. It is known
+for the session only; after a reload every row reads "Send to", as above.
+
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `src/core/data/data-source.ts`
