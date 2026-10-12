@@ -113,7 +113,7 @@
   "src/core/ui/settled.ts": 80,
   "src/core/ui/shared-constants.ts": 102,
   "src/core/ui/sherpa-element.ts": 1129,
-  "src/core/ui/templater.ts": 232,
+  "src/core/ui/templater.ts": 243,
   "src/core/ui/top-layer-tips.ts": 53,
   "src/core/ui/trusted-html.ts": 39,
   "src/data.ts": 305,

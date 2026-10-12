@@ -91,17 +91,17 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | c7 | 220 | Weight per component, gated: JS and fetched CSS per entry may only fall, and no app module in a component's graph | tooling |
 | ✅ | c8 | 226 | Docs and agent text, round 2: CLAUDE.md on the shared sheets and the provider, three Fires blocks, the MCP's dead tokens and "Rule 9", the old def flow | docs |
 | ✅ | c9 | 227 | Sherpa Demos, round 2: a refused save is silent; seed lists kept twice; "Items per page" does nothing; `settled()` for its 62 waits | bug |
-| ⬜ | c10 | 218 | Framework fixtures — measure, never infer: Vite + React 19 and 18, Next, Vue, Angular, SvelteKit, webpack, a CDN page, a CSP page | tooling |
+| ✅ | c10 | 218 | Framework fixtures — measure, never infer: Vite + React 19 and 18, Next, Vue, Angular, SvelteKit, webpack, a CDN page, a CSP page | tooling |
 | ⬜ | c11 | 195 | The spec becomes the whole contract: props only, slots, `populate()` shape, typed events; a usage gate | tooling |
-| ⬜ | c12 | 210 | Framework typings from the manifest: the tag map, React 19 JSX, Vue and Svelte types, editor data — after 195 | tooling |
+| ✅ | c12 | 210 | Framework typings from the manifest: the tag map, React 19 JSX, Vue and Svelte types, editor data — after 195 | tooling |
 | ⬜ | c13 | 213 | Only a component's OWN events leave it: an inner `button-click` stops at its host | foundation |
 | ⬜ | c14 | 212 | Markup paths for the list components — tabs, breadcrumbs, a select's options, key-value pairs — so plain HTML and React 18 can fill them | feature |
 | ⬜ | c15 | 214 | Forms complete: `<fieldset disabled>`, reset on every control, and the five controls that submit nothing | foundation |
 | ⬜ | c16 | 208 | The text in the JS, not fetched: templates and sheets inline at build, URLs only in a dev build — with 199 | refactor |
 | ⬜ | c17 | 199 | A smaller download: minify the JS (a new dev tool) and load icons on demand | refactor |
 | ⬜ | c18 | 216 | Tokens safe to embed: the page rules out of `tokens.css`, a default mode, the `[data-status]` reach documented | foundation |
-| ⬜ | c19 | 219 | The framework guide, steps not history, served as `sherpa://frameworks`; an `AGENTS.md` in the package | docs |
-| ⬜ | c20 | 217 | React 18 and Angular adapters, generated from the manifest — small, and dependency-free | tooling |
+| ✅ | c19 | 219 | The framework guide, steps not history, served as `sherpa://frameworks`; an `AGENTS.md` in the package | docs |
+| ✅ | c20 | 217 | React 18 and Angular adapters, generated from the manifest — small, and dependency-free | tooling |
 | ⬜ | c21 | 197 | ONE way to write a filter condition in a definition or a View: readings, or a plain `{ field: { gt: 0 } }` | foundation |
 | ⬜ | c22 | 190 | A Context contract and ONE `app.json`: the Contexts, the default, the Settings pages — the nav, router and server read it | foundation |
 | ⬜ | c23 | 191 | Library parts that empty `contexts/`: dialog prompt/confirm, saved filters in the provider, `data-setting`, store seeds | foundation |
@@ -1851,7 +1851,7 @@ no alerts feed is asked for), and 2 wait for the real result. The 30
 `whenDefined` in `app/` stay — each waits for a class before its methods are
 called, which `settled()` does not do.
 
-### `[ ]` 218 — Framework fixtures: measure, never infer
+### `[x]` ✅ 218 — Framework fixtures: measure, never infer — CLOSED
 
 Four rows of the review are reasoned, not run: Vite dev's pre-bundling (likely
 breaks the `new URL` fetch), webpack's CSS rule catching it, Next.js, and
@@ -1868,7 +1868,25 @@ checks the unverified rows.
 
 **✅ Will, 2026-10-12 — all my picks:** A — a sibling project, as Sherpa Demos is.
 
-### `[ ]` 210 — Framework typings from the manifest
+**✅ Closed by Will, 2026-10-12:** *"These framework tests are ridiculous. We just want to focus on the quality of Sherpa web components. Their nature of being web components means that I have no concerns about them working with other frameworks."*
+
+Before that, three fixtures (Vite 8 + React 19, Vite 6 + React 18, webpack 5)
+measured three of the four reasoned claims, and one fix for the components
+came of it and is kept — `T-a-bundler-can-turn-a-file-into-a-module`:
+
+- **Vite dev** — Vite 8 works; Vite 6 draws nothing (its pre-bundle breaks each
+  `new URL`; `optimizeDeps.exclude` fixes it). And EVERY Vite dev answered a
+  sheet fetch with JavaScript: sherpa-ui now asks with `Accept: text/css`.
+- **webpack's CSS rule** — true: it turns every sheet into a module, unstyled
+  and silent. The fix is `dependency: { not: ['url'] }` on the rule.
+- **React's `onChange`** — React 19 hears `change`; React 18 hears nothing from
+  JSX, so a ref.
+
+A sheet is asked for as CSS, and each failure says its fix.
+
+### `[x]` ✅ 210 — Framework typings from the manifest — CLOSED
+
+**✅ Closed by Will, 2026-10-12:** *"These framework tests are ridiculous. We just want to focus on the quality of Sherpa web components. Their nature of being web components means that I have no concerns about them working with other frameworks."*
 
 Nothing declares `HTMLElementTagNameMap`, so `querySelector('sherpa-switch')`
 is an `Element`; there are no JSX, Vue or Svelte types, and Angular has only
@@ -1949,7 +1967,9 @@ opt-in (the starter sets it); B follow the OS, as now. My pick: A.
 
 **✅ Will, 2026-10-12 — all my picks:** A — light when no `data-mode` is set; `auto` is an opt-in (the starter sets it).
 
-### `[ ]` 219 — The framework guide
+### `[x]` ✅ 219 — The framework guide — CLOSED
+
+**✅ Closed by Will, 2026-10-12:** *"These framework tests are ridiculous. We just want to focus on the quality of Sherpa web components. Their nature of being web components means that I have no concerns about them working with other frameworks."*
 
 `docs/FRAMEWORKS.md`, about 200 lines of steps: install, one import, tokens, a
 recipe per framework, attributes vs properties, events, forms, CSP, server
@@ -1957,7 +1977,9 @@ rendering, and the `:not(:defined)` rule for the time before the JS loads.
 Served as `sherpa://frameworks`, with a short `AGENTS.md` in the package.
 After 207–215. The app guide (193) is its sibling.
 
-### `[ ]` 217 — React 18 and Angular adapters
+### `[x]` ✅ 217 — React 18 and Angular adapters — CLOSED
+
+**✅ Closed by Will, 2026-10-12:** *"These framework tests are ridiculous. We just want to focus on the quality of Sherpa web components. Their nature of being web components means that I have no concerns about them working with other frameworks."*
 
 React 18 can set no property and hear no custom event without a ref; Angular
 needs ControlValueAccessors. Both generated from the manifest: a small

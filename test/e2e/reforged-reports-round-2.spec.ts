@@ -83,3 +83,60 @@ test('a fallback page served for a missing sheet is refused and said, and not ke
   // Asked twice — the failure was not cached — and said each time.
   expect(r.seen.filter((code) => code === 'sheet-failed')).toHaveLength(2);
 });
+
+/* A bundler's CSS rule can turn a sheet into a module (webpack's style-loader),
+   and Vite's dev server answers a plain fetch for a .css with JavaScript.
+   TODO 218. TRAP T-a-bundler-can-turn-a-file-into-a-module */
+test('a sheet is asked for AS CSS, and one that comes back as JavaScript is refused and says the fix', async ({ page }) => {
+  const accept: string[] = [];
+  await page.route('**/module-sheet.css', (route) => {
+    accept.push(route.request().headers()['accept'] ?? '');
+    return route.fulfill({ status: 200, contentType: 'text/css',
+      body: 'import API from "!../style-loader/dist/runtime/injectStylesIntoStyleTag.js";\nexport default {};' });
+  });
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const { SherpaElement } = lib;
+    const said = [];
+    // ONE sink: this one stands in for the setup's until stop().
+    const stop = onReport((x) => said.push(x.code + ': ' + x.message));
+    class Probe extends SherpaElement {
+      static css = new URL('/module-sheet.css', location.href);
+    }
+    customElements.define('sherpa-probe-module', Probe);
+    const a = document.createElement('sherpa-probe-module');
+    root.append(a);
+    await a.rendered;
+    stop();
+    undo();
+    return { said };
+  })()`) as { said: string[] };
+  expect(accept).toEqual(['text/css']);
+  expect(r.said).toHaveLength(1);
+  expect(r.said[0]).toMatch(/^sheet-failed: .*JavaScript came back, not CSS/);
+  expect(r.said[0]).toContain("dependency: { not: ['url'] }");
+});
+
+test('a file Vite before 8 left in .vite/ says the fix', async ({ page }) => {
+  await page.route('**/.vite/deps/probe-sheet.css', (route) => route.fulfill({ status: 404, body: '' }));
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const { SherpaElement } = lib;
+    const said = [];
+    // ONE sink: this one stands in for the setup's until stop().
+    const stop = onReport((x) => said.push(x.code + ': ' + x.message));
+    class Probe extends SherpaElement {
+      static css = new URL('/node_modules/.vite/deps/probe-sheet.css', location.href);
+    }
+    customElements.define('sherpa-probe-vite', Probe);
+    const a = document.createElement('sherpa-probe-vite');
+    root.append(a);
+    await a.rendered;
+    stop();
+    undo();
+    return { said };
+  })()`) as { said: string[] };
+  expect(r.said).toHaveLength(1);
+  expect(r.said[0]).toMatch(/^sheet-failed: .*404/);
+  expect(r.said[0]).toContain("optimizeDeps: { exclude: ['sherpa-ui'] }");
+});

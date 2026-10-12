@@ -15530,6 +15530,29 @@ EXTENDS the default rather than replacing it.
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `test/e2e/reforged-templater.spec.ts`
 
+### T-a-bundler-can-turn-a-file-into-a-module
+
+**A bundler can hand back JavaScript where Sherpa asked for a sheet.**
+Measured 2026-10-12 (TODO 218):
+
+- **Vite's dev server** answers a plain `fetch()` for a `.css` with its
+  hot-reload MODULE. Asked with `Accept: text/css`, it answers with the CSS —
+  so the templater asks that way, and Vite dev needs no setting.
+- **webpack's usual CSS rule** (`style-loader` + `css-loader`) also catches
+  `new URL('./x.css', import.meta.url)` and emits the sheet as a module. The
+  parts draw with no styles. The consumer's fix is one line on that rule:
+  `dependency: { not: ['url'] }`. CSS has no `import` or `export` statement,
+  so a sheet holding one is refused and the report names that line.
+- **Vite before 8** pre-bundles the package into `node_modules/.vite/deps/`
+  and leaves each `new URL` pointing there, at nothing. A failed file under
+  `/.vite/` says `optimizeDeps: { exclude: ['sherpa-ui'] }`. Vite 8 rewrites
+  the URL itself.
+
+TODO 208 ends all three: the text in the JS, nothing fetched.
+
+- Site: `src/core/ui/templater.ts`
+- Site: `test/e2e/reforged-reports-round-2.spec.ts`
+
 ### T-a-heading-opens-the-chips-menu
 
 **A grid heading opens the CHIP's menu — the one `menuFor()` builds from the

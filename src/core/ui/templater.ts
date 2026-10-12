@@ -66,17 +66,28 @@ export function filesFor(
 }
 
 /** Fetch a file's text. A 404 RESOLVES, so without the check the body is the server's
- *  error page — and a SPA fallback answers a missing file with its own page, as a 200. */
+ *  error page — and a SPA fallback answers a missing file with its own page, as a 200.
+ *  TRAP T-a-bundler-can-turn-a-file-into-a-module */
 function fetchText(url: string, fresh = false): Promise<string> {
-  return fetch(url, fresh ? { cache: 'reload' } : {}).then(async (r) => {
-    if (!r.ok) throw new Error(`${r.status} ${r.statusText} for ${url}`);
+  const css = /\.css(?:$|[?#])/.test(new URL(url, 'file:///').pathname);
+  // Asked for AS CSS: Vite's dev server answers a plain fetch with JavaScript.
+  const init: RequestInit = { ...(fresh ? { cache: 'reload' } : {}), ...(css ? { headers: { Accept: 'text/css' } } : {}) };
+  return fetch(url, init).then(async (r) => {
+    if (!r.ok) throw new Error(`${r.status} ${r.statusText} for ${url}${viteHint(url)}`);
     const text = await r.text();
-    const page = /\.css(?:$|[?#])/.test(new URL(url, 'file:///').pathname)
-      ? /html/i.test(r.headers.get('content-type') ?? '')
-      : /^\s*<!doctype html|<html[\s>]/i.test(text);
-    if (page) throw new Error(`a page came back, not the file, for ${url} — is a fallback route answering it?`);
+    const page = css ? /html/i.test(r.headers.get('content-type') ?? '') : /^\s*<!doctype html|<html[\s>]/i.test(text);
+    if (page) throw new Error(`a page came back, not the file, for ${url}${viteHint(url)} — is a fallback route answering it?`);
+    // CSS has no `import` or `export` statement; a bundler's CSS rule writes both.
+    if (css && /^\s*(?:import|export)\s/m.test(text)) {
+      throw new Error(`JavaScript came back, not CSS, for ${url} — a bundler's CSS rule made the file a module. In webpack, give that rule dependency: { not: ['url'] }`);
+    }
     return text;
   });
+}
+
+/** Vite before 8 copies the package into `.vite/` and leaves each `new URL` pointing there. */
+function viteHint(url: string): string {
+  return /\/\.vite\//.test(url) ? " (Vite before 8 pre-bundled sherpa-ui: add optimizeDeps: { exclude: ['sherpa-ui'] })" : '';
 }
 
 /**

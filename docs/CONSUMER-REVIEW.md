@@ -200,9 +200,14 @@ Also: `populate()` is a method no framework can bind (211); the list
 components take data only through it (212); inner events leak out of
 composites (213); forms lack disabled and reset, and five controls submit
 nothing (214); `tokens.css` restyles the page and follows the OS (216); one
-button costs 374 KB of JS, 314 KB of it icons (220). Four claims are reasoned,
-not run — Vite dev, webpack's CSS rule, Next.js, React's `onChange` — so 218
-measures them first.
+button costs 374 KB of JS, 314 KB of it icons (220).
+
+**Will, 2026-10-12: the framework track is closed** — fixtures, adapters,
+framework typings and a framework guide (218, 217, 210, 219). Web components
+work in any framework by their nature; the work is the components' own
+quality. One fix that a measurement found is kept: a sheet is asked for as
+CSS, and a bundler that hands back JavaScript is reported with its fix
+(`T-a-bundler-can-turn-a-file-into-a-module`).
 
 **The app layer stays opt-in.** No display component imports app code now. A
 `sherpa-ui/app` entry and a lint boundary keep it so (221). A pure-Sherpa
