@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**55 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
+**54 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -72,7 +72,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16t | 202 | Sherpa Demos: 7 Chromium tests time out — the rail opens under the pointer and covers the filter panel | bug |
 | ❓ | 16t1 | 203 | sherpa-ui: 135 of 136 specs load the page without the pointer park — one fixture, as in Demos? | bug |
 | ⬜ | 16t2 | 204 | WebKit: a `page.reload` in the Demos nav favourites spec never fires `load` — 1 run in 80 | bug |
-| ⬜ | 16t3 | 206 | Firefox: "closing the dialog fires a composed close event" sees no event, 1 to 2 runs in 10 | bug |
+| ✅ | 16t3 | 206 | Firefox: "closing the dialog fires a composed close event" sees no event, 1 to 2 runs in 10 | bug |
 | ✅ | 16t4 | 228 | The donut chart's legend lets EVERY item be switched off; one must stay on — and a value filter limiting greyed out may not be counted | bug |
 | ✅ | 16t5 | 229 | The legend's switched-off items are lost on a page refresh | bug |
 | ✅ | 16t7 | 231 | "Reset all to default" and "Reset" are inactive while the filters already ARE the View's default | bug |
@@ -1454,7 +1454,7 @@ fetch that never ends would hold `load` back. If one is, the test can wait for
 
 ---
 
-### `[ ]` 206 — BUG: Firefox — a dialog's close event is sometimes not seen
+### `[x]` ✅ 206 — BUG: Firefox — a dialog's close event is sometimes not seen
 
 Found 2026-10-12, with 113. `reforged-dialog.spec.ts:52` ("closing the dialog
 fires a composed close event") counts 0 events in Firefox, 2 runs in 10 —
@@ -1462,6 +1462,10 @@ and 1 in 10 on HEAD before 113, so it is not 113. It calls `show()` and
 `close()` at once, then waits for `__settled()`. The native close event comes
 on a task; in Firefox it may come after `__settled()` resolves, or it may be
 the late close that `T-a-reopened-dialog-hears-a-late-close` drops.
+
+**✅ Fixed by 225's follow-up, 2026-10-12.** It was the first: the native close
+is a TASK, and `settled()` waited for frames and microtasks only. It waits one
+task now — 30 of 30 in Firefox, and no failure in the full runs since.
 
 ---
 
