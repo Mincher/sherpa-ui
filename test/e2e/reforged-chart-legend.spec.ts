@@ -692,6 +692,25 @@ test('an EMPTIED row does not count as on either; a legend of empties is not stu
   expect(r).toEqual({ lastDrawn: [], empties: ['A'] });
 });
 
+/** A pick drawn before the rows arrive — a reload's kept Query — is held, and
+ *  drawn when they come (TODO 229). TRAP T-a-value-before-the-first-render-is-held */
+test('picked set before the rows arrive is the off-set once they do, and reads back before', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-chart-legend') as HTMLElement & {
+      rendered?: Promise<void>; populate?: (d: unknown) => void; off: string[]; picked: string[];
+    };
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    el.picked = ['B', 'C'];
+    const before = el.picked;
+    el.populate!([{ label: 'A', value: 1 }, { label: 'B', value: 2 }, { label: 'C', value: 3 }]);
+    await window.__settled();
+    return { before, off: el.off, picked: el.picked,
+      pressed: [...el.shadowRoot!.querySelectorAll('.item')].map((i) => i.getAttribute('aria-pressed')) };
+  });
+  expect(r).toEqual({ before: ['B', 'C'], off: ['A'], picked: ['B', 'C'], pressed: ['false', 'true', 'true'] });
+});
+
 /**
  * A HORIZONTAL LEGEND IS THREE BY TWO.
  *

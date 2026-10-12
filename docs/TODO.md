@@ -74,7 +74,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 16t2 | 204 | WebKit: a `page.reload` in the Demos nav favourites spec never fires `load` — 1 run in 80 | bug |
 | ⬜ | 16t3 | 206 | Firefox: "closing the dialog fires a composed close event" sees no event, 1 to 2 runs in 10 | bug |
 | ✅ | 16t4 | 228 | The donut chart's legend lets EVERY item be switched off; one must stay on — and a value filter limiting greyed out may not be counted | bug |
-| ⬜ | 16t5 | 229 | The legend's switched-off items are lost on a page refresh | bug |
+| ✅ | 16t5 | 229 | The legend's switched-off items are lost on a page refresh | bug |
 | ⬜ | 16t7 | 231 | "Reset all to default" and "Reset" are inactive while the filters already ARE the View's default | bug |
 | ❓ | 16t6 | 230 | Reset all filters dialog: "Save filters before reset" sits in a grey border; it is plain form content | quick |
 | | | | **C2 — Consumers: frameworks, apps and agents** (planned 2026-10-12) | |
@@ -1478,11 +1478,18 @@ holds nothing when none does. A host's write keeps the old floor (only every
 row off is refused): a chip over the same field may pick a value no row has
 now. `T-a-legend-keeps-one-row-on`
 
-### `[ ]` 229 — BUG: the legend's switched-off items are lost on a refresh
+### `[x]` ✅ 229 — BUG: the legend's switched-off items are lost on a refresh
 
 Will, 2026-10-12: *"They don't retain state on page refresh."* A legend's
 toggles are a filter, so they belong in the kept Query or the View's draft,
 as every other filter does (`T-a-view-keeps-a-draft`).
+
+**✅ Done 2026-10-12.** The kept Query DID hold the pick — the legend lost it.
+On a reload the provider draws `picked` before the legend has rows, and the
+rows come in parts, so the pick was read against the first rows as "all on".
+The legend keeps a host's pick as data and redraws its off-set as rows arrive;
+a click or an `off` write replaces it. A Demos test switches a row off,
+reloads, and finds it off. `T-a-value-before-the-first-render-is-held`
 
 ### `[ ]` 231 — "Reset all to default" and "Reset" are inactive at the default
 

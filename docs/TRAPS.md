@@ -1362,6 +1362,12 @@ picks THROUGH the menu, so they are held there too, and holds its own
 drew a chip, and `#render()` replays them in order; it keeps the last
 `drawResults` for rebuilt chips.
 
+`sherpa-chart-legend` keeps a host's `picked` as DATA and redraws its
+off-set each time rows arrive (TODO 229). A reload put the kept Query's pick
+on before any row, and the rows came in parts — so the pick was read against
+three labels as "all on", and the fourth, arriving later, was on. A reader's
+click, or an `off` write, replaces the kept pick.
+
 - Site: `src/components/sherpa-prompt-composer/sherpa-prompt-composer.ts`
 - Site: `test/e2e/reforged-prompt-composer.spec.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
@@ -1370,6 +1376,8 @@ drew a chip, and `#render()` replays them in order; it keeps the last
 - Site: `test/e2e/reforged-quick-filter-state-first.spec.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-quick-filter-toolbar-state-first.spec.ts`
+- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
+- Site: `test/e2e/reforged-chart-legend.spec.ts`
 
 ### T-a-value-is-data-the-ticks-are-drawn
 

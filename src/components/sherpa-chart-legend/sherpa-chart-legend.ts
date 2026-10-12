@@ -103,6 +103,11 @@ export class SherpaChartLegend extends SherpaElement {
     const incoming = Array.isArray(data) ? (data as LegendItem[]) : [];
     for (const item of incoming) this.#seen.set(item.label, item);
     this.#items = this.#cap(this.#withSuspended(incoming));
+    // A host's pick is redrawn over the rows that came — a reload's arrive in parts.
+    if (this.#hostPick) {
+      this.#offFrom(this.#hostPick);
+      this.#items = this.#cap(this.#withSuspended(incoming));
+    }
     this.#render();
   }
 
@@ -147,6 +152,7 @@ export class SherpaChartLegend extends SherpaElement {
 
   /** Set them from outside — a chip over the same field, or a saved view. */
   set off(next: readonly string[]) {
+    this.#hostPick = null;
     const every = this.#everyLabel();
     const want = new Set(next);
     /* Every row off is refused; the legend keeps what it had. A host's pick is
@@ -160,12 +166,28 @@ export class SherpaChartLegend extends SherpaElement {
   /** The labels ON — the door a provider reads and draws a pick through.
    *  Everything on is no pick. TRAP T-everything-on-is-no-filter */
   get picked(): string[] {
+    if (this.#hostPick && !this.#everyLabel().length) return [...this.#hostPick];
     const on = this.#everyLabel().filter((l) => !this.#off.has(l));
     return this.#off.size ? on : [];
   }
 
+  /* KEPT as data and redrawn as rows come: a reload's kept Query arrives
+     before the rows, and they arrive in parts — so a row that came later read
+     on. A click or an `off` write replaces it. TRAP T-a-value-before-the-first-render-is-held */
   set picked(next: readonly string[]) {
-    this.off = next.length ? this.#everyLabel().filter((l) => !next.includes(l)) : [];
+    this.#hostPick = [...next];
+    this.#offFrom(this.#hostPick);
+    if (this.#items.length) this.#render();
+  }
+  /** The host's last pick, until a click or an `off` write replaces it. */
+  #hostPick: string[] | null = null;
+
+  /** The off-set a pick leaves over the rows there are — every row off is refused. */
+  #offFrom(pick: readonly string[]): void {
+    const every = this.#everyLabel();
+    const off = pick.length ? every.filter((l) => !pick.includes(l)) : [];
+    if (every.length && off.length === every.length) return;
+    this.#off = new Set(off);
   }
 
   /** Cap at MAX_ITEMS, rolling the tail into one "Other" row. */
@@ -344,6 +366,7 @@ export class SherpaChartLegend extends SherpaElement {
       if (draws.length && draws.every((l) => going.has(l))) return;
     }
 
+    this.#hostPick = null;
     // aria-pressed is both the accessible state and the CSS hook for dimming.
     item.setAttribute('aria-pressed', String(active));
     for (const label of labels) {
