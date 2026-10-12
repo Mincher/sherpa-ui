@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**37 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
+**58 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -73,6 +73,37 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ❓ | 16t1 | 203 | sherpa-ui: 135 of 136 specs load the page without the pointer park — one fixture, as in Demos? | bug |
 | ⬜ | 16t2 | 204 | WebKit: a `page.reload` in the Demos nav favourites spec never fires `load` — 1 run in 80 | bug |
 | ⬜ | 16t3 | 206 | Firefox: "closing the dialog fires a composed close event" sees no event, 1 to 2 runs in 10 | bug |
+| | | | **C2 — Consumers: frameworks, apps and agents** (planned 2026-10-12) | |
+| ⬜ | c1 | 225 | `settled()` hangs on an infinite animation — a loader, an indeterminate bar — and waits on the whole document when given a part | bug |
+| ⬜ | c2 | 224 | Silent failures, round 2: a linked View drops its report; View gaps skip `onReport`; `open()` hangs on an undefined tag; a 200 that is not the file is stamped; and five more | bug |
+| ⬜ | c3 | 207 | Import anywhere: a base class that loads on a server, and a `define()` that checks first — two copies of the library no longer throw | foundation |
+| ❓ | c4 | 209 | The package surface for ONE component: `sideEffects`, `./package.json`, and the extensionless import TypeScript accepts but the page cannot load | tooling |
+| ❓ | c5 | 211 | Booleans and data the way frameworks bind them: `data-x="false"` is OFF; a `data` property beside `populate()`; the grid's `rowKey` | foundation |
+| ⬜ | c6 | 215 | Trusted Types and a strict CSP: one policy for the five HTML sinks; the calendar's inline styles into CSS | foundation |
+| ⬜ | c7 | 220 | Weight per component, gated: JS and fetched CSS per entry may only fall, and no app module in a component's graph | tooling |
+| ⬜ | c8 | 226 | Docs and agent text, round 2: CLAUDE.md on the shared sheets and the provider, three Fires blocks, the MCP's dead tokens and "Rule 9", the old def flow | docs |
+| ⬜ | c9 | 227 | Sherpa Demos, round 2: a refused save is silent; seed lists kept twice; "Items per page" does nothing; `settled()` for its 62 waits | bug |
+| ❓ | c10 | 218 | Framework fixtures — measure, never infer: Vite + React 19 and 18, Next, Vue, Angular, SvelteKit, webpack, a CDN page, a CSP page | tooling |
+| ⬜ | c11 | 195 | The spec becomes the whole contract: props only, slots, `populate()` shape, typed events; a usage gate | tooling |
+| ❓ | c12 | 210 | Framework typings from the manifest: the tag map, React 19 JSX, Vue and Svelte types, editor data — after 195 | tooling |
+| ❓ | c13 | 213 | Only a component's OWN events leave it: an inner `button-click` stops at its host | foundation |
+| ⬜ | c14 | 212 | Markup paths for the list components — tabs, breadcrumbs, a select's options, key-value pairs — so plain HTML and React 18 can fill them | feature |
+| ❓ | c15 | 214 | Forms complete: `<fieldset disabled>`, reset on every control, and the five controls that submit nothing | foundation |
+| ❓ | c16 | 208 | The text in the JS, not fetched: templates and sheets inline at build, URLs only in a dev build — with 199 | refactor |
+| ❓ | c17 | 199 | A smaller download: minify the JS (a new dev tool) and load icons on demand | refactor |
+| ❓ | c18 | 216 | Tokens safe to embed: the page rules out of `tokens.css`, a default mode, the `[data-status]` reach documented | foundation |
+| ⬜ | c19 | 219 | The framework guide, steps not history, served as `sherpa://frameworks`; an `AGENTS.md` in the package | docs |
+| ❓ | c20 | 217 | React 18 and Angular adapters, generated from the manifest — small, and dependency-free | tooling |
+| ❓ | c21 | 197 | ONE way to write a filter condition in a definition or a View: readings, or a plain `{ field: { gt: 0 } }` | foundation |
+| ❓ | c22 | 190 | A Context contract and ONE `app.json`: the Contexts, the default, the Settings pages — the nav, router and server read it | foundation |
+| ❓ | c23 | 191 | Library parts that empty `contexts/`: dialog prompt/confirm, saved filters in the provider, `data-setting`, store seeds | foundation |
+| ❓ | c25 | 221 | `sherpa-ui/app` and the app boundary: the app layer stays OPT-IN, so one button never pays for it | foundation |
+| ❓ | c26 | 194 | A Context loader beside `sherpa-router`: `<sherpa-outlet>` reads `app.json`; `index.html` becomes config | foundation |
+| ⬜ | c27 | 193 | ONE app guide, steps not history, served to agents as `sherpa://app-guide` — after 190 | docs |
+| ❓ | c28 | 192 | Ship the agent path: the MCP with its real dependencies and files, a pack smoke test, registered in both projects | tooling |
+| ❓ | c29 | 222 | The starter: `npx sherpa-ui init my-app` and a `scaffold_app` tool — one folder, about 8 files, no build step | tooling |
+| ❓ | c30 | 196 | ONE filter surface and a smaller DataSource: `bind()` out of the data layer; one helper for bar and panel | refactor |
+| ⬜ | c31 | 223 | DEFERRED — server rendering with declarative shadow DOM, after 208 | explore |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | ❓ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ❓ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
@@ -143,15 +174,6 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 35c3 | 187 | Make the docs and the MCP text TRUE: `rows:'all'`, the provider in PRINCIPLES, dead names, prompt and scaffold text | docs |
 | ✅ | 35c4 | 188 | Fix the bugs 183 found, and run the gates we have: IdbStore update, Edit saves Plan, one badge writer, double `input`, provider reports and Fires; lint and node tests in the hook | bug |
 | ✅ | 35c5 | 189 | Readiness and a smaller download: export `settled()`, shared sheets on single imports, minify, icons on demand | refactor |
-| ❓ | 35c5b | 199 | A smaller download: minify the JS (a new dev tool) and load icons on demand | refactor |
-| ❓ | 35c6 | 190 | A Context contract and ONE `app.json`: the Contexts, the default, the Settings pages — the nav, router and server read it | foundation |
-| ❓ | 35c7 | 191 | Library parts that empty `contexts/`: dialog prompt/confirm, saved filters in the provider, `data-setting`, store seeds | foundation |
-| ❓ | 35c8 | 192 | Ship the agent path: the MCP with its real dependencies and files, a pack smoke test, registered in both projects | tooling |
-| ⬜ | 35c9 | 193 | ONE app guide, steps not history, served to agents as `sherpa://app-guide` — after 190 | docs |
-| ❓ | 35c10 | 194 | A Context loader beside `sherpa-router`: `<sherpa-outlet>` reads `app.json`; `index.html` becomes config | foundation |
-| ⬜ | 35c11 | 195 | The spec becomes the whole contract: props only, slots, `populate()` shape, typed events; a usage gate | tooling |
-| ❓ | 35c12 | 196 | ONE filter surface and a smaller DataSource: `bind()` out of the data layer; one helper for bar and panel | refactor |
-| ❓ | 35c13 | 197 | ONE way to write a filter condition in a definition or a View: readings, or a plain `{ field: { gt: 0 } }` | foundation |
 | ✅ | 35c2 | 185 | Sherpa Demos: `definitions/` becomes `views/` (JSON, templates in HTML by id), `view-schemas/`; rethink `contexts/` | refactor |
 | ✅ | 35d | 184 | INVESTIGATE — does sherpa-ui need Node to ship? A CDN, a script or a small zip may suit it better | explore |
 | | | | **F — Data states and charts** | |
@@ -239,6 +261,18 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 - **C — Contained bugs.** Each is fixable in its own component or page. In
   pairs where one fix serves both: 45 and 82 (a chip's face after a silent
   set), 83 and 94 (a menu's footer).
+- **C2 — Consumers** (2026-10-12). Will: *"Sherpa needs to be easy for
+  consumers (developers and agents) to work with. Its components also need to
+  support individual components being used with other frameworks as well as
+  serving up its own app layer/boilerplate for pure sherpa app projects."*
+  Three runs, in order. FIRST the small items that wait on no ruling (c1–c9),
+  then the fixtures that prove them (218). THEN the framework track, on 195's
+  manifest: typings, events, markup, forms, inline text, tokens, the guide, the
+  adapters. LAST the app layer, which waits on 183's choices: one grammar (197),
+  `app.json` (190), the library parts (191), the opt-in entry (221), the outlet
+  (194), the app guide (193), the MCP (192), the starter (222). 196 is XL and
+  runs beside or after the app layer, as 183 chose. The re-check is
+  `docs/CONSUMER-REVIEW.md` §5–6.
 - **D — Filters.** The panel is rebuilt ONCE: 99 designs how filters group
   first, then 89 (Simple, with 38 step 4's one builder), 90 (Advanced, on
   102's two kept answers) and 21d (its date half), then 98 (the action
@@ -1420,6 +1454,269 @@ on a task; in Firefox it may come after `__settled()` resolves, or it may be
 the late close that `T-a-reopened-dialog-hears-a-late-close` drops.
 
 ---
+
+## C2 — Consumers: frameworks, apps and agents
+
+Planned 2026-10-12 from three read-only reviews: 183's problems re-checked
+against the code, and a new one for other frameworks. Findings and file:line
+evidence are `docs/CONSUMER-REVIEW.md` §5–6. Each item says what it fixes;
+the review holds the detail.
+
+### `[ ]` 225 — BUG: `settled()` can hang, and waits on the whole document
+
+`settled(root)` (189) awaits `.finished` on every document-timeline
+animation (`src/core/ui/settled.ts`). An infinite one never finishes, and
+Sherpa has three: `sherpa-loader`, an indeterminate `sherpa-progress-bar`, the
+app header's `data-loading`. And given a part of the page, it still waits on
+every animation in the document. Skip infinite animations; limit to `root`.
+
+### `[ ]` 224 — Silent failures, round 2
+
+Each is small, and each says nothing when it goes wrong:
+- a View opened by a LINK builds an `ApplyReport` and drops it
+  (`persist-view.ts`, the `void applyElements(…)` path, new in 198);
+- a View's gaps go to `console.warn`, not to `report()`, so an app's
+  `onReport()` never hears them; the provider passes no `onIncomplete`;
+- `provider.open()` waits on `customElements.whenDefined` for each `ui` id:
+  a tag never imported hangs it for ever, a plain `<div>` rejects it;
+- `provider.import()` skips a source name it does not have;
+- `LocalStore.update` neither moves nor refuses a changed key, and the
+  "every store" contract test covers 2 of 5 stores;
+- the templater keeps a FAILED sheet in its cache and drops it with no report;
+- a missing file served as `index.html` with status 200 (any SPA fallback) is
+  stamped into a shadow root: check the `content-type`;
+- `scope: ['all']` (the array form) is not caught by `bind()`;
+- a setter that threw is reported as "#id has no X" — refused, not missing.
+
+### `[ ]` 207 — Import anywhere: a server-safe base class, and a checked `define()`
+
+Any import in Node throws `HTMLElement is not defined`, so Next.js, Nuxt,
+Angular SSR and SvelteKit must defer every import. Measured: with only
+`HTMLElement` and `customElements` stubbed, all 65 modules load — so the base
+class extends `globalThis.HTMLElement ?? class {}`. And none of the 65
+`customElements.define` calls checks first: a second copy of the library
+(micro-frontends, Storybook beside the app, a CDN copy) throws at its first
+define and loses its whole import graph. One exported `define(tag, Class)`:
+nothing without `customElements`, nothing when the tag is held by this class,
+a report when another class holds it. The spec tooling finds a class by the
+`customElements.define(` text, so those regexes move with it. A node test
+imports every dist module in bare Node. 189 left the guard out on purpose;
+framework hosting is where two copies are common.
+
+### `[ ]` 209 — The package surface for one component
+
+- `sherpa-ui/components/sherpa-button/sherpa-button` (no `.js`) passes
+  TypeScript, which finds the `.d.ts`, and fails in the page;
+- no `sideEffects` field, so a bundler cannot tell what it may drop;
+- `sherpa-ui/package.json` is not exported, and tools that read it fail;
+- the pattern maps `….component.json`, which is not shipped.
+
+**❓ Will — the name of one component's import:** A
+`sherpa-ui/components/button` — the top level stays free for `data`, `app`,
+`css` and `types`; B `sherpa-ui/button`. My pick: A. The rest needs no ruling.
+
+### `[ ]` 211 — Booleans and data the way frameworks bind them
+
+- Every framework writes `data-x={false}` as `data-x="false"`, and Sherpa
+  reads PRESENCE, so false means on. A declared `type: 'boolean'` prop set to
+  `"false"` is removed. Checked: no host uses a literal `"false"` today.
+- `populate()` is a method, so React 19, Vue and Svelte cannot bind data to
+  it, and React 18 can set no property at all. A property beside it.
+- `key` is reserved by React and Vue, so the grid's row key cannot be bound:
+  a `rowKey` alias.
+
+**❓ Will — the property's name:** A `data` — a metric and a line chart take
+an object, not a list; B `items`. My pick: A. The boolean half needs no ruling.
+
+### `[ ]` 215 — Trusted Types and a strict CSP
+
+Under `require-trusted-types-for 'script'`, five HTML sinks throw
+(`sherpa-element.ts` stamping, `render-icon.ts`, two in `templater.ts`,
+`view-markup.ts`). One `sherpa-ui` policy for the first four; `view-markup`
+keeps its allow-list under its own. Three `style="…"` in `sherpa-calendar.html`
+move into CSS. A harness page with a meta CSP proves it.
+
+### `[ ]` 220 — Weight per component, gated
+
+One `<sherpa-button>` is 9 JS files (374 KB, 314 KB of them icons) and 12
+fetched files (191 KB, 161 KB of them `sherpa-style-modes.css`). input-text
+pulls in 20 files and 7 elements. A gate walks each entry's import graph,
+records JS and fetched CSS bytes, and lets them only fall — as `check:size`
+does for lines. It also fails when an app module (router, provider, session)
+enters a component's graph, which keeps 221's boundary honest.
+
+### `[ ]` 226 — Docs and agent text, round 2
+
+- CLAUDE.md says `src/index.ts` puts the eight shared sheets in place; since
+  189 `sherpa-element.ts` does. It names `sherpa-provider` 0 times.
+- `DATA-SOURCE-RULES.md`, served as `sherpa://data-rules`, names the provider
+  0 times and teaches only `bind()`.
+- `T-shared-sheets-settle-independently` explains a wait by code that is gone.
+- `Fires:` blocks miss events the code emits: `sherpa-menu` (`menu-range-change`,
+  `menu-items`, `menu-back`), `sherpa-quick-filter` (`group-change`,
+  `sort-change`), `sherpa-filter-panel` (`filter-condition-change`).
+- The MCP: `control-content` and `container-*` tokens (0 exist), a "Rule 9"
+  (the rules end at 8), ontology checks that no longer run, a dead `readDoc`.
+- The `generate_component` prompt and the skill's description still sell the
+  `*.def.json` flow; the skill links a missing `GENERATION-TOOLING.md`.
+- PRINCIPLES.md:118 says the default `populate()` "still shows data" (195).
+- README: `npm test` runs the node tests too; npm readers are sent to
+  `../Sherpa Demos`, CLAUDE.md and docs/, which the package does not ship; no
+  `repository` field.
+
+### `[ ]` 227 — Sherpa Demos, round 2
+
+- A refused or invalid save (a taken email, the schema) is an unhandled
+  rejection: the dialog stays open, no toast. `T-a-failed-mutation-must-reach-the-reader`.
+- `customerOrgs` and the regions are kept twice (`records-data.js`,
+  `dashboard-data.js`); the chips need them to agree.
+- Settings › "Items per page" writes and reads nothing; `records.json` says 25.
+- `dashboard.js` declares a `provider` it never uses.
+- 30 `whenDefined` calls in `app/` and 32 `waitForTimeout` in `test/`, and 0
+  uses of the `settled()` that 189 shipped. After 225.
+
+### `[ ]` 218 — Framework fixtures: measure, never infer
+
+Four rows of the review are reasoned, not run: Vite dev's pre-bundling (likely
+breaks the `new URL` fetch), webpack's CSS rule catching it, Next.js, and
+whether React fires `onChange` for a custom element. Fixtures: Vite + React 19
+and 18, the Next app router, Vue (Vite and Nuxt), Angular SSR, SvelteKit,
+webpack 5, a CDN page and a CSP page. Each draws a button, an input-text in a
+form, a dialog and a grid with rows, and asserts the events. It becomes the
+gate for 207–216.
+
+**❓ Will — where it lives:** A a sibling project, as Sherpa Demos is; B
+`test/frameworks/` inside sherpa-ui. My pick: A — each fixture has its own
+`node_modules`. Until you rule, one throwaway fixture outside the repo
+checks the unverified rows.
+
+### `[ ]` 210 — Framework typings from the manifest
+
+Nothing declares `HTMLElementTagNameMap`, so `querySelector('sherpa-switch')`
+is an `Element`; there are no JSX, Vue or Svelte types, and Angular has only
+`CUSTOM_ELEMENTS_SCHEMA`. After 195 emits `custom-elements.json`, one script
+writes `dist/types/`: the tag map, per-element event maps, React 19 JSX
+(attributes, properties, `on<event>`), Vue `GlobalComponents`, Svelte
+elements, VS Code custom data and web-types. No runtime dependency.
+
+### `[ ]` 213 — Only a component's own events leave it
+
+An inner `<sherpa-button>`'s composed `button-click` leaves its composite with
+the composite as its target. `sherpa-chip` stops it; `sherpa-toast`,
+`sherpa-container` and `sherpa-app-header` do not. So a page listening for
+`button-click` hears every app-header action and every container Retry. 23
+templates hold a `<sherpa-button>`. A sweep test: the events that leave a host
+are the ones its spec lists. First, find any Demos listener that relies on a
+leak.
+
+**❓ Will:** A stop each inner event at its host; B keep them, and document
+filtering by `event.target`. My pick: A.
+
+### `[ ]` 212 — Markup paths for the list components
+
+React 18, server HTML and a plain page can set only attributes and children.
+These take data only through `populate()`: the tab strip, breadcrumbs, an
+input-text select's options, key-value pairs. Each gets a children path (the
+panels' `data-tab`/`data-label`, `<a>` children, `<option>` children, slotted
+pairs). After 195 lists the slots.
+
+### `[ ]` 214 — Forms complete
+
+Four controls join a form (`FormValue`). Missing: `formDisabledCallback`
+everywhere, so inside `<fieldset disabled>` the inner control still works;
+reset on switch, checkbox and radio, which write their current state into
+`checked` and keep no default; and five controls that submit nothing — slider,
+select-card, calendar, file-upload, transfer-list. Angular needs
+ControlValueAccessors for all but input-text (217).
+
+**❓ Will — what `checked` means:** A native — the attribute is the default,
+the property the current state; B keep reflecting, and remember the first
+value as the reset default. My pick: B, less change.
+
+### `[ ]` 208 — The text in the JS, not fetched
+
+Templates and sheets are fetched at run time from `new URL(…, import.meta.url)`.
+That works on a plain ESM page and a file-serving CDN, and breaks under Vite's
+dev pre-bundling, a CDN that rebuilds modules, and a CSP `connect-src`; a
+button makes about 21 requests before it draws. The build turns each
+`new URL('./x', import.meta.url)` into an imported string; the source keeps its
+pattern, so the spec tooling is untouched; `reload()` keeps URL mode for the
+dev build. Built with 199 — the same build step. It also removes the first
+render's wait, which is what 113's skeleton is for.
+
+**❓ Will:** A inline by default, URLs only in a dev build; B fetch by default,
+inline as an opt-in subpath. My pick: A. NOTE: on 2026-09-29 you chose
+"state first" over "templates in the built JS" for 113 — this is not instead
+of that; 113's state work is done either way.
+
+### `[ ]` 216 — Tokens safe to embed
+
+`tokens.css` also styles the page — `html, body` margins, the body's font and
+colours, a `body > sherpa-app-shell` rule — so a host that links it changes.
+With no `data-mode` it follows the OS, so a light-only app on a dark machine
+shows dark controls; and mode is set on `:root` only. Bare `[data-status]`,
+`[data-look]` and `[data-density]` match anywhere: a host's own
+`<tr data-status="active">` re-tints every Sherpa control in it. 502
+`::part()`s, 0 `exportparts`. No `@font-face` for Inter. The page rules move to
+a generated `sherpa-ui/css/page` that the app layer and the starter link.
+
+**❓ Will — the default mode with no `data-mode`:** A light, with `auto` as an
+opt-in (the starter sets it); B follow the OS, as now. My pick: A.
+
+### `[ ]` 219 — The framework guide
+
+`docs/FRAMEWORKS.md`, about 200 lines of steps: install, one import, tokens, a
+recipe per framework, attributes vs properties, events, forms, CSP, server
+rendering, and the `:not(:defined)` rule for the time before the JS loads.
+Served as `sherpa://frameworks`, with a short `AGENTS.md` in the package.
+After 207–215. The app guide (193) is its sibling.
+
+### `[ ]` 217 — React 18 and Angular adapters
+
+React 18 can set no property and hear no custom event without a ref; Angular
+needs ControlValueAccessors. Both generated from the manifest: a small
+`createComponent` that takes React as an argument (no dependency), and CVA
+directives for switch, checkbox, radio, slider and select-group. After 210
+and 214.
+
+**❓ Will:** A their own packages (`sherpa-ui-react`, `sherpa-ui-angular`); B
+subpaths with optional peer dependencies. My pick: A, as for the MCP (183
+choice 2) and 184.
+
+### `[ ]` 221 — `sherpa-ui/app` and the app boundary
+
+No display component imports app code today. Make it structural: a
+`sherpa-ui/app` entry (router, provider, outlet, session, View files, saved
+Views and drafts, `app.json`, `ContextModule`) and a `sherpa-ui/components`
+entry; a lint boundary like rule 13 — `src/components/**`, except the
+provider, router and outlet, may not import app modules; 220's gate proves it.
+A component feature stays a component: `SherpaDialog.prompt()` (191) is for
+React users too.
+
+**❓ Will:** A the root `sherpa-ui` still re-exports the app layer — one line
+on a CDN; B the root holds components and data only. My pick: A. Waits on 183
+choice 1.
+
+### `[ ]` 222 — The starter
+
+One folder, about 8 files, on any static host with no build and no Express:
+`index.html` (import map, tokens, router, provider, shell, outlet — about 40
+lines), `app.json`, a Context template that asks, its page definition, seed
+rows, an optional Context module, `package.json`, and an `AGENTS.md` that says
+where each kind of file goes. Three ways in, one source — a `starter/` folder
+versioned with the library: `npx sherpa-ui init my-app` (a bin with no
+dependencies), `scaffold_app` and `validate_app` in the MCP (192), later
+`npm create sherpa-app`. Needs 197, 190, 194, 221, 193; 192 for the MCP way;
+207 so `check` runs in Node.
+
+**❓ Will:** A the template inside sherpa-ui, with `npx sherpa-ui init`; B a
+separate `create-sherpa-app` package. My pick: A.
+
+### `[ ]` 223 — DEFERRED: server rendering with declarative shadow DOM
+
+A `sherpa-ui/ssr` that renders `<template shadowrootmode>`, and a constructor
+that keeps a declarative root instead of re-stamping it. Needs 208. Until
+someone needs SEO or pages without JS.
 
 ## D — Filters: Will's features, on the foundation
 
@@ -3209,9 +3506,21 @@ alone are 314 KB (102 KB gzipped), and every page loads them all.
 
 Then Sherpa Demos can drop its 32 `waitForTimeout` calls for `settled()`.
 
+**Re-checked 2026-10-12:** still true — 118 files, 1.5 MB, comments kept
+(225 of `sherpa-element.js`'s 975 lines), 276 template comments. Build it in
+the same step as 208 (the text in the JS). 220 gates the result.
+
 ### `[ ]` 190 — A Context contract and one `app.json`
 
 ❓ Waits on choice 1 in 183. Export `ContextModule { init(root, ctx) → teardown }`; one `app.json` names the Contexts (template, definition, views, module, chrome), the default Context and the Settings pages, and the nav, the router, the session defaults and the server read it — about 12 hand-kept lists end. `docs/CONSUMER-REVIEW.md` §3.4.
+
+**Re-checked 2026-10-12:** still true. `index.html` is 968 lines, about 818
+of script; the Context names are hand-kept in about 25 places (17 in
+`index.html` alone, plus the server, two Contexts, the definitions and four
+folder conventions). Also for 190: a page definition's `template` key is read
+by nothing, while a View's `template` IS read — one name, two meanings, one
+dead; the page schema says it holds Views, and has no `views`; and a Context,
+Settings and the Assistant get three different `init` shapes.
 
 ### `[ ]` 191 — Library parts that empty `contexts/`
 
@@ -3220,6 +3529,17 @@ Then Sherpa Demos can drop its 32 `waitForTimeout` calls for `settled()`.
 ### `[ ]` 192 — Ship the agent path
 
 ❓ Waits on choice 2 in 183. The MCP imports `scripts/` and reads specs and schemas that the package does not ship, and its SDK is a devDependency. Publish it with its real dependencies and files, add an `npm pack` smoke test that calls every tool, resource and prompt, register it in both projects, and add `validate_page`. `docs/CONSUMER-REVIEW.md` §3.6.
+
+**Re-checked 2026-10-12:** 184 shipped `schemas/` only. Six of the seven MCP
+modules import `scripts/` statically, so `sherpa-mcp` dies at load from a
+published package. Not shipped either: the 65 specs and the two served docs.
+More runtime imports are devDependencies — `js-yaml`, `@playwright/test`
+(lazy), and zod's `^3.23.8` floor may lack the `zod/v3` path every module
+imports. The MCP README says "Node 18+, and this repository", and the drive
+tools default to the repo's own harness on :4000. Registered in neither
+project. **Before registering it:** `sherpa-ui/.mcp.json` holds a plain-text
+Figma access token. It is git-ignored, so it is not committed — but the token
+must move to an environment variable before that file is shared.
 
 ### `[ ]` 193 — One app guide, served to agents
 

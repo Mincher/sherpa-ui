@@ -3,6 +3,8 @@
   A review, 2026-10-01: five read-only lenses (components, scaffolding, the
   data layer, agents, architecture), then one synthesis. Its plan is items
   187–197 in docs/TODO.md. File:line cites are as of commit 07589cdd.
+  §5–6 were added 2026-10-12 (commit 0329aee0): a re-check, and other
+  frameworks. Their plan is TODO section C2, items 190–227.
 -->
 # TODO 183: how people and agents build an app on Sherpa
 
@@ -149,3 +151,63 @@ So the files are not bad habits. They mark the parts the library is missing.
 - **B:** Use a plain form, `{ "openTickets": { "gt": 0 }, "status": { "in": ["active"] } }`, with numbers as numbers. Readings stay internal.
 - **Context:** Today an agent must learn two grammars. One is `[field, op, value]` (DATA-SOURCE-RULES §2). The other is readings with numbers as strings, `{"op":"gt","text":"0"}` (`records.json:38`). B changes the stored format, so saved Views need a migration.
 - **My pick:** B, and decide it before item 7 so the guide teaches one grammar.
+
+## 5. Re-checked 2026-10-12
+
+Plan items 1–3 were built as TODO 187, 188 and 189. What that left:
+
+| Problem | Now | Where it is planned |
+|---|---|---|
+| 1. No app layer | Still true. `index.html` is 968 lines (818 of script); Context names in about 25 places; `contexts/` 1,117 lines, about 65% glue | 190, 191, 194, 221, 222 |
+| 2. The agent path | The false text 183 named is fixed (187); 184 ships `schemas/`. The MCP still dies at load from a package: 6 of 7 modules import `scripts/`, and the SDK, zod and js-yaml are devDependencies. Registered nowhere | 192 |
+| 3. The docs teach the old model | Mostly fixed: PRINCIPLES names the provider, `rows: 'all'`, ThemeManager, the README link. CLAUDE.md and DATA-SOURCE-RULES (served to agents) still name the provider 0 times | 226, 193 |
+| 4. Silent failures | Mostly fixed: Fires, skipped `ui` keys, double `input`, IdbStore, Plan, the badge, lint in the hook. Still true: `populate({ label })`, 0 specs list slots, no `populate()` shape | 195 |
+| 5. The heavy core | Single imports styled (189). Still true: `data-source.ts` 2,796 lines, the bar and the panel share 17 private method names, 1.5 MB unminified, icons 314 KB on every page, 0 of 65 defines guarded | 196, 199, 207, 220 |
+
+**Found while re-checking**, each in a TODO item:
+- Silent (224): a linked View drops its report; View gaps skip `onReport`;
+  `open()` hangs on an undefined tag; `import()` drops an unknown source;
+  `LocalStore` and a changed key; a failed sheet is cached; a SPA fallback's
+  `index.html` is stamped as a template; `scope: ['all']`.
+- `settled()` hangs on an infinite animation (225).
+- Docs and agent text (226): CLAUDE.md on the shared sheets; three Fires
+  blocks; the MCP's dead tokens, "Rule 9" and the old def flow.
+- The demo (227): a refused save is silent; seed lists twice; "Items per page"
+  does nothing; 62 waits that `settled()` replaces.
+- `sherpa-ui/.mcp.json` holds a plain-text Figma token (git-ignored). It moves
+  to an environment variable before the MCP is registered (192).
+
+## 6. Other frameworks
+
+Will, 2026-10-12: *"Its components also need to support individual
+components being used with other frameworks as well as serving up its own
+app layer/boilerplate for pure sherpa app projects."*
+
+One component can go into React, Vue, Angular or Svelte today, for someone who
+knows the traps. None is architectural:
+
+1. **Any import crashes server rendering** (`HTMLElement is not defined`).
+   With two globals stubbed, all 65 modules load — 207.
+2. **No define is guarded**, so two copies of the library throw — 207.
+3. **Templates and sheets are fetched at run time.** Vite dev, module-rebuilding
+   CDNs, SPA fallbacks and a strict CSP each break it — 208, 224, 215.
+4. **No typings** for any framework: no tag map, JSX, Vue or Svelte types, no
+   `custom-elements.json` — 195, 210.
+5. **`data-x={false}` is written as `"false"`**, and Sherpa reads presence —
+   211.
+
+Also: `populate()` is a method no framework can bind (211); the list
+components take data only through it (212); inner events leak out of
+composites (213); forms lack disabled and reset, and five controls submit
+nothing (214); `tokens.css` restyles the page and follows the OS (216); one
+button costs 374 KB of JS, 314 KB of it icons (220). Four claims are reasoned,
+not run — Vite dev, webpack's CSS rule, Next.js, React's `onChange` — so 218
+measures them first.
+
+**The app layer stays opt-in.** No display component imports app code now. A
+`sherpa-ui/app` entry and a lint boundary keep it so (221). A pure-Sherpa
+project starts from one folder of about 8 files, with no build step (222).
+
+**Order** (TODO C2): the small items that need no ruling; the fixtures that
+prove them; the framework track on 195's manifest; then the app layer, which
+waits on §4's choices.
