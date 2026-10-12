@@ -27,6 +27,7 @@
 import type { DataSource, ViewState } from '../data/data-source.js';
 import { VIEW, type Query, type QueryDefaults } from '../data/query.js';
 import { applyState } from '../ui/apply-state.js';
+import { report } from '../data/report.js';
 import { parseViewMarkup } from './view-markup.js';
 import {
   isPlainObject, labelId, readJson, removeKey, writeJson, type StorageKind,
@@ -412,14 +413,27 @@ export function onViewPicked(
     return { elements: byId };
   };
 
+  /** A View applied with gaps says so: to the host's hook, else the one channel.
+   *  TRAP T-apply-degrades-never-throws */
+  const sayGaps = (pick: ViewPick): void => {
+    const { missingElements, skipped } = pick.report;
+    if (!missingElements.length && !Object.keys(skipped).length) return;
+    if (options.onIncomplete) return options.onIncomplete(pick);
+    const keys = Object.entries(skipped).map(([id, list]) => `#${id} has no ${list.join(', ')}`);
+    const gaps = [...missingElements.map((id) => `no #${id}`), ...keys].join('; ');
+    report({ code: 'view-gaps', message: `View "${pick.id}" applied with gaps: ${gaps}.`, at: { view: pick.id } });
+  };
+
   /* A page OPENED on a View with content of its own — a link, a reload — draws
      it now: its Query is on already, so no pick will. TODO 198 */
   const opening = applied ? (typeof views === 'function' ? views() : views)[applied] : undefined;
-  if (opening && typeof opening.content === 'string' && options.into) {
+  if (applied && opening && typeof opening.content === 'string' && options.into) {
     const rendered = draw(opening);
     if (rendered) {
-      const report: ApplyReport = { missingElements: [], skipped: {} };
-      void applyElements(opening.ui ?? {}, { ...targets.elements, ...rendered.elements }, report);
+      const gaps: ApplyReport = { missingElements: [], skipped: {} };
+      const id = applied;
+      void Promise.resolve(applyElements(opening.ui ?? {}, { ...targets.elements, ...rendered.elements }, gaps))
+        .then(() => sayGaps({ id, view: opening, report: gaps, rendered }));
     }
   }
 
@@ -451,11 +465,7 @@ export function onViewPicked(
     const done = (report: ApplyReport): void => {
       const pick: ViewPick = { id, view, report, ...(rendered ? { rendered } : {}) };
       options.after?.(pick);
-      if (report.missingElements.length || Object.keys(report.skipped).length) {
-        if (options.onIncomplete) options.onIncomplete(pick);
-        // TRAP T-apply-degrades-never-throws — said out loud, not swallowed.
-        else console.warn('view applied with gaps', report);
-      }
+      sayGaps(pick);
     };
 
     /* A JSON VIEW: its Query onto a clean slate — every chip drawn from it,

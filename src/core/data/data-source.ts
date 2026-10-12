@@ -2363,7 +2363,7 @@ export class DataSource extends EventTarget {
     /* `scope` names a FILTER scope: "all" type-checks, binds to a scope of that
        name, and counts one page. The whole set is `rows: 'all'`.
        TRAP T-a-summary-binds-to-all-the-rows */
-    if (options.scope === 'all') {
+    if (options.scope === 'all' || (Array.isArray(options.scope) && options.scope.includes('all'))) {
       report({ code: 'scope-all', message: "bind: `scope: 'all'` names a filter scope; for every row, say `rows: 'all'`." });
     }
 

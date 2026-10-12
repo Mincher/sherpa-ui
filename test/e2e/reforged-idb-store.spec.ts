@@ -332,7 +332,7 @@ test('syncViews keeps saved views in IndexedDB and pushes them onward', async ({
  *  row holds is refused. TRAP T-a-changed-key-moves-the-row */
 test('every store: a changed key moves the row; a key another row holds is refused', async ({ page }) => {
   const r = await page.evaluate(async (database) => {
-    const { IdbStore, ArrayStore } = await import('/dist/index.js');
+    const { IdbStore, ArrayStore, LocalStore, JsonStore } = await import('/dist/index.js');
     const run = async (store: {
       insert(r: unknown): Promise<unknown>; update(k: unknown, v: unknown): Promise<unknown>;
       load(): Promise<{ rows: { email: string }[] }>; byKey(k: unknown): Promise<unknown>;
@@ -346,10 +346,18 @@ test('every store: a changed key moves the row; a key another row holds is refus
       return { rows, old: !!(await store.byKey('ada@x')), refused };
     };
     const idb = new IdbStore({ name: 'people', key: 'email', database });
-    const out = { idb: await run(idb), array: await run(new ArrayStore([], { key: 'email' })) };
+    localStorage.removeItem('contract-people');
+    const out = {
+      idb: await run(idb),
+      array: await run(new ArrayStore([], { key: 'email' })),
+      local: await run(new LocalStore({ name: 'contract-people', key: 'email' })),
+      json: await run(new JsonStore({ url: 'data:application/json,[]', key: 'email' })),
+    };
     idb.close();
+    localStorage.removeItem('contract-people');
     return out;
   }, freshDb());
+  // RestStore is not here: its server answers a changed key.
   const want = { rows: ['ada@y', 'bo@x'], old: false, refused: true };
-  expect(r).toEqual({ idb: want, array: want });
+  expect(r).toEqual({ idb: want, array: want, local: want, json: want });
 });

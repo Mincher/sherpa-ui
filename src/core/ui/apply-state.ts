@@ -55,7 +55,7 @@ function isCallList(value: unknown): boolean {
  * set degrades; it never throws.
  * TRAP T-state-is-the-saved-view-half
  */
-export function applyState(el: HTMLElement, state: Record<string, unknown>): string[] {
+export function applyState(el: HTMLElement, state: Record<string, unknown>, refused: string[] = []): string[] {
   const skipped: string[] = [];
   const target = el as unknown as Record<string, unknown>;
 
@@ -80,8 +80,9 @@ export function applyState(el: HTMLElement, state: Record<string, unknown>): str
         target[key] = value;
       }
     } catch {
-      // A setter that refused — counted, not thrown.
+      // A setter that refused — counted, not thrown; told apart from a key it lacks.
       skipped.push(key);
+      refused.push(key);
     }
   }
 

@@ -64,11 +64,17 @@ export function filesFor(
   };
 }
 
-/** Fetch a file's text. A 404 RESOLVES, so without the check the body is the server's error page. */
+/** Fetch a file's text. A 404 RESOLVES, so without the check the body is the server's
+ *  error page — and a SPA fallback answers a missing file with its own page, as a 200. */
 function fetchText(url: string, fresh = false): Promise<string> {
-  return fetch(url, fresh ? { cache: 'reload' } : {}).then((r) => {
+  return fetch(url, fresh ? { cache: 'reload' } : {}).then(async (r) => {
     if (!r.ok) throw new Error(`${r.status} ${r.statusText} for ${url}`);
-    return r.text();
+    const text = await r.text();
+    const page = /\.css(?:$|[?#])/.test(new URL(url, 'file:///').pathname)
+      ? /html/i.test(r.headers.get('content-type') ?? '')
+      : /^\s*<!doctype html|<html[\s>]/i.test(text);
+    if (page) throw new Error(`a page came back, not the file, for ${url} — is a fallback route answering it?`);
+    return text;
   });
 }
 
@@ -80,6 +86,8 @@ export async function loadTemplates(url: string): Promise<{ html: string; map: T
   let pending = htmlCache.get(url);
   if (!pending) {
     pending = fetchText(url);
+    // A failure is not kept: the next element asks again.
+    pending.catch(() => htmlCache.delete(url));
     htmlCache.set(url, pending);
   }
   const html = await pending;
@@ -121,6 +129,11 @@ function loadSheet(url: string): Promise<CSSStyleSheet> {
       const sheet = new CSSStyleSheet();
       sheet.replaceSync(css);
       return sheet;
+    }, (error: unknown) => {
+      // Said, and not kept: the next element asks again.
+      sheetCache.delete(url);
+      report({ code: 'sheet-failed', message: `A stylesheet did not load: ${String(error)}`, at: { url } });
+      throw error;
     });
     sheetCache.set(url, pending);
   }

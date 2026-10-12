@@ -503,12 +503,24 @@ export class SherpaProvider extends SherpaElement {
         report({ code: 'provider-unknown-element', message: `sherpa-provider: no #${id} to configure.`, at: { id } });
         return;
       }
-      await customElements.whenDefined(el.localName);
-      // A key its API does not have is said: a typo in a definition did nothing, silently.
-      const skipped = applyState(el, { ...state });
-      if (skipped.length) {
-        report({ code: 'provider-unknown-setting', message: `sherpa-provider: #${id} has no ${skipped.join(', ')}.`, at: { id, keys: skipped.join(',') } });
-      }
+      const apply = (): void => {
+        // A key its API does not have is said, and a value it refused: a typo did nothing, silently.
+        const refused: string[] = [];
+        const missing = applyState(el, { ...state }, refused).filter((key) => !refused.includes(key));
+        if (missing.length) {
+          report({ code: 'provider-unknown-setting', message: `sherpa-provider: #${id} has no ${missing.join(', ')}.`, at: { id, keys: missing.join(',') } });
+        }
+        if (refused.length) {
+          report({ code: 'provider-refused-setting', message: `sherpa-provider: #${id} refused ${refused.join(', ')}.`, at: { id, keys: refused.join(',') } });
+        }
+      };
+      const tag = el.localName;
+      // A plain element is configured now; whenDefined() rejects for it.
+      if (!tag.includes('-') || customElements.get(tag)) return apply();
+      /* A tag no one defined would hold open() for ever: it is said, and
+         configured if it is defined later. */
+      report({ code: 'provider-undefined-element', message: `sherpa-provider: #${id} is a <${tag}>, which is not defined yet — is it imported? It is configured once it is.`, at: { id, tag } });
+      void customElements.whenDefined(tag).then(apply);
     }));
   }
 
@@ -790,7 +802,11 @@ export class SherpaProvider extends SherpaElement {
       report({ code: 'unknown-state', message: 'sherpa-provider: not a v1 state, so nothing was taken in.' });
       return;
     }
-    for (const [name, given] of Object.entries(state.sources ?? {})) await this.#sources[name]?.import(given);
+    for (const [name, given] of Object.entries(state.sources ?? {})) {
+      const source = this.#sources[name];
+      if (source) await source.import(given);
+      else report({ code: 'provider-unknown-source', message: `sherpa-provider: no source "${name}" to take in.`, at: { source: name } });
+    }
     if (!state.view || state.view === this.#view) return;
     const was = this.#view;
     this.#view = state.view;

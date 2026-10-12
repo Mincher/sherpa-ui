@@ -24,6 +24,7 @@ import { liftTips } from './top-layer-tips.js';
 import {
   cachedTemplates, checkOwnTemplate, filesFor, loadSheets, loadTemplates, onReload, reloadFiles, templateBody,
 } from './templater.js';
+import { report } from '../data/report.js';
 
 /** How `num()` narrows a parsed value. */
 export interface NumOptions {
@@ -788,7 +789,7 @@ export abstract class SherpaElement extends HTMLElement {
     try {
       [, html] = await Promise.all([styling, markup]);
     } catch (error) {
-      console.error(`[${this.localName}] template failed to load`, error);
+      report({ code: 'template-failed', message: `<${this.localName}>'s template did not load: ${String(error)}`, at: { tag: this.localName } });
     }
 
     this.#stampedFrom = files.html;

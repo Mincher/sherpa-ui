@@ -10050,6 +10050,15 @@ A thrown error still means the CALLER made a mistake — `apply: a component
 reach needs a key` is right to throw. A fault in the data or the DOM is
 reported: an app should not crash because one chip lost its menu.
 
+**Round 2, 2026-10-12 (TODO 224)** — each was silent before:
+`provider-undefined-element` (and `open()` no longer waits for it for ever),
+`provider-refused-setting` (told apart from a key the API lacks),
+`provider-unknown-source`, `view-gaps` (a View opened by a link too, and to
+`onReport`, not only the console), `sheet-failed` and `template-failed` (a
+failed file is not cached, so the next element asks again), and a SPA
+fallback's own page refused in place of a missing file. `LocalStore` keeps the
+changed-key contract with the other stores.
+
 - Site: `src/core/data/report.ts`
 - Site: `src/data.ts`
 - Site: `src/core/data/data-source.ts`
@@ -10060,6 +10069,7 @@ reported: an app should not crash because one chip lost its menu.
 - Site: `src/core/ui/templater.ts`
 - Site: `src/core/ui/saved-filter-menu.ts`
 - Site: `src/core/browser/view-files.ts`
+- Site: `test/e2e/reforged-reports-round-2.spec.ts`
 
 ### T-a-bug-report-should-be-a-paste
 
@@ -14396,7 +14406,18 @@ animation was cancelled, which is settled too, so each is caught.
 A test that measures a box on a component with a `transition` cannot rely on
 frames alone. `Animation.finished` is the only thing that waits for one.
 
+**Three more facts, measured 2026-10-12 in all three engines (TODO 225):**
+- `document.getAnimations()` does NOT list animations inside shadow roots. The
+  nav above animates its HOST, which is why it was caught; a transition inside
+  a component never was. Each shadow root is asked too.
+- An infinite animation (a loader, an indeterminate bar) and a paused one never
+  finish, so `settled()` hung on them. Only running animations with an end are
+  awaited.
+- Given a part of the page, it waited on every animation in the document. It
+  waits on the part now, shadow roots included.
+
 - Site: `src/core/ui/settled.ts`
+- Site: `test/e2e/reforged-settled.spec.ts`
 
 ### T-an-svg-path-box-rounds-by-a-hundredth
 

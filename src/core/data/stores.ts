@@ -445,6 +445,11 @@ export class LocalStore extends BaseStore {
     // The MERGED row is checked, not the patch —
     // TRAP T-array-store-copies-both-ways
     const row = await this.check({ ...rows[i]!, ...values });
+    // A changed key moves the row; one another row holds is refused. TRAP T-a-changed-key-moves-the-row
+    const now = readField(row, this.key);
+    if (!sameKey(now, readField(rows[i]!, this.key)) && rows.some((r) => sameKey(readField(r, this.key), now))) {
+      throw new Error(`LocalStore: another row already has ${this.key} ${String(now)}`);
+    }
     rows[i] = row;
     this.#write(rows);
     this.announce({ type: 'update', key, row: { ...row } });

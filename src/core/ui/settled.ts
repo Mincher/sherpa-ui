@@ -32,9 +32,46 @@ export async function settled(root: Root = document, passes = 3): Promise<void> 
     await Promise.resolve();
   }
   await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
-  // ON THE CLOCK only: a scroll-driven animation never finishes.
+  /* ON THE CLOCK, RUNNING, and with an END: a scroll-driven, a paused or an
+     infinite animation — a loader, an indeterminate bar — never finishes. */
   const doc = root instanceof Document ? root : root.ownerDocument ?? document;
-  await Promise.all(doc.getAnimations()
-    .filter((a) => a.timeline === doc.timeline)
-    .map((a) => a.finished.catch(() => {})));
+  // A document does not list its shadow trees' animations, so each is asked.
+  const all = new Set([
+    ...doc.getAnimations().filter((a) => root === doc || within(root, (a.effect as KeyframeEffect | null)?.target ?? null)),
+    ...shadows(root, []).flatMap((sr) => sr.getAnimations()),
+  ]);
+  await Promise.all([...all]
+    .filter((a) => a.timeline === doc.timeline && a.playState === 'running'
+      && Number.isFinite(a.effect?.getComputedTiming().endTime ?? Infinity))
+    .map(ended));
+}
+
+/** Done when it finishes or is cancelled — or is no longer drawn: Firefox never
+ *  ticks an animation under a closed `<details>` or `content-visibility: hidden`. */
+function ended(a: Animation): Promise<void> {
+  return new Promise((done) => {
+    void a.finished.then(() => done(), () => done());
+    const look = (): void => {
+      const target = (a.effect as KeyframeEffect | null)?.target;
+      if (a.playState !== 'running' || (target && (!target.isConnected || !target.checkVisibility()))) done();
+      else requestAnimationFrame(look);
+    };
+    look();
+  });
+}
+
+/** Every shadow root at or under `root`. */
+function shadows(root: Root, out: ShadowRoot[]): ShadowRoot[] {
+  if (root instanceof ShadowRoot) out.push(root);
+  else if (root instanceof Element && root.shadowRoot) shadows(root.shadowRoot, out);
+  for (const el of root.querySelectorAll('*')) if (el.shadowRoot) shadows(el.shadowRoot, out);
+  return out;
+}
+
+/** `node` is `root` or inside it, across shadow roots. */
+function within(root: Root, node: Node | null): boolean {
+  for (let at = node; at; at = at.parentNode ?? (at instanceof ShadowRoot ? at.host : null)) {
+    if (at === root) return true;
+  }
+  return false;
 }

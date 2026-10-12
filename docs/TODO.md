@@ -74,8 +74,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 16t2 | 204 | WebKit: a `page.reload` in the Demos nav favourites spec never fires `load` — 1 run in 80 | bug |
 | ⬜ | 16t3 | 206 | Firefox: "closing the dialog fires a composed close event" sees no event, 1 to 2 runs in 10 | bug |
 | | | | **C2 — Consumers: frameworks, apps and agents** (planned 2026-10-12) | |
-| ⬜ | c1 | 225 | `settled()` hangs on an infinite animation — a loader, an indeterminate bar — and waits on the whole document when given a part | bug |
-| ⬜ | c2 | 224 | Silent failures, round 2: a linked View drops its report; View gaps skip `onReport`; `open()` hangs on an undefined tag; a 200 that is not the file is stamped; and five more | bug |
+| ✅ | c1 | 225 | `settled()` hangs on an infinite animation — a loader, an indeterminate bar — and waits on the whole document when given a part | bug |
+| ✅ | c2 | 224 | Silent failures, round 2: a linked View drops its report; View gaps skip `onReport`; `open()` hangs on an undefined tag; a 200 that is not the file is stamped; and five more | bug |
 | ⬜ | c3 | 207 | Import anywhere: a base class that loads on a server, and a `define()` that checks first — two copies of the library no longer throw | foundation |
 | ❓ | c4 | 209 | The package surface for ONE component: `sideEffects`, `./package.json`, and the extensionless import TypeScript accepts but the page cannot load | tooling |
 | ❓ | c5 | 211 | Booleans and data the way frameworks bind them: `data-x="false"` is OFF; a `data` property beside `populate()`; the grid's `rowKey` | foundation |
@@ -1438,6 +1438,9 @@ Found 2026-10-12, with 202. In Sherpa Demos,
 the page drawn. Measured on HEAD without 202 too: 1 failure in 80 both ways,
 so it is not the fixture. The retry hides it.
 
+Seen again 2026-10-12 in `reforged-nav-pin-persist.spec.ts`'s `beforeEach`
+— the same `page.reload` in WebKit, passing on its retry.
+
 First step: log which request is still open when it hangs — a live feed or a
 fetch that never ends would hold `load` back. If one is, the test can wait for
 `domcontentloaded` and the app's own ready signal instead.
@@ -1462,7 +1465,7 @@ against the code, and a new one for other frameworks. Findings and file:line
 evidence are `docs/CONSUMER-REVIEW.md` §5–6. Each item says what it fixes;
 the review holds the detail.
 
-### `[ ]` 225 — BUG: `settled()` can hang, and waits on the whole document
+### `[x]` ✅ 225 — BUG: `settled()` can hang, and waits on the whole document
 
 `settled(root)` (189) awaits `.finished` on every document-timeline
 animation (`src/core/ui/settled.ts`). An infinite one never finishes, and
@@ -1470,7 +1473,15 @@ Sherpa has three: `sherpa-loader`, an indeterminate `sherpa-progress-bar`, the
 app header's `data-loading`. And given a part of the page, it still waits on
 every animation in the document. Skip infinite animations; limit to `root`.
 
-### `[ ]` 224 — Silent failures, round 2
+**✅ Done 2026-10-12.** Only running animations with an end are awaited, and
+under `root` alone. Two more found on the way, both in all three engines:
+`document.getAnimations()` does not list a shadow root's animations, so a
+transition INSIDE a component was never waited for — each shadow root is asked
+now; and Firefox never ticks an animation in a closed `<details>`, so a wait
+also ends when its element is no longer drawn (`checkVisibility()`).
+`T-settled-waits-for-renders-not-transitions`
+
+### `[x]` ✅ 224 — Silent failures, round 2
 
 Each is small, and each says nothing when it goes wrong:
 - a View opened by a LINK builds an `ApplyReport` and drops it
@@ -1487,6 +1498,14 @@ Each is small, and each says nothing when it goes wrong:
   stamped into a shadow root: check the `content-type`;
 - `scope: ['all']` (the array form) is not caught by `bind()`;
 - a setter that threw is reported as "#id has no X" — refused, not missing.
+
+**✅ Done 2026-10-12** — all nine. New report codes: `provider-undefined-element`
+(`open()` no longer waits for it), `provider-refused-setting`,
+`provider-unknown-source`, `view-gaps`, `sheet-failed`, `template-failed`; a
+fallback page is refused in place of a missing file; `LocalStore` keeps the
+changed-key contract, and the contract test runs over 4 stores (`RestStore`'s
+server answers for itself). 6 tests, each failing before.
+`T-a-broken-assumption-reports`
 
 ### `[ ]` 207 — Import anywhere: a server-safe base class, and a checked `define()`
 

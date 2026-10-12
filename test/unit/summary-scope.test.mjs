@@ -87,7 +87,8 @@ test("`scope: 'all'` is a filter scope's name, so bind() says to use `rows: 'all
   const stop = onReport((issue) => heard.push(issue.code));
   const s = new DataSource({ store: new ArrayStore(ROWS, { key: 'id' }), pageSize: 25 });
   s.bind(el('wrong'), { readonly: true, scope: 'all', as: (r) => r.length });
+  s.bind(el('listed'), { readonly: true, scope: ['all'], as: (r) => r.length });
   s.bind(el('right'), { readonly: true, rows: 'all', as: (r) => r.length });
   stop();
-  assert.deepEqual(heard, ['scope-all']);
+  assert.deepEqual(heard, ['scope-all', 'scope-all']);
 });
