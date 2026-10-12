@@ -168,7 +168,8 @@ import { ArrayStore, DataSource } from 'sherpa-ui/data';  // the data layer — 
 ```
 
 `sherpa-ui` exports all 65 components, and importing a component DEFINES a
-custom element — so it throws `HTMLElement is not defined` in Node.
+custom element — in a browser. In Node it loads and defines nothing, so a
+server-rendering framework can import it (TRAP `T-a-component-imports-anywhere`).
 `sherpa-ui/data` (`src/data.ts`) is the same stores, query, validation, live
 connections and saved views with no components and no DOM, for a server, a test
 or an MCP tool. `npm run lint` enforces the boundary; a node test proves the
@@ -200,7 +201,7 @@ export class SherpaFoo extends SherpaElement {
 
   #onClick = (): void => { this.emit('foo-click'); };  // emit() sets bubbles + composed
 }
-customElements.define('sherpa-foo', SherpaFoo);
+define('sherpa-foo', SherpaFoo);  // from sherpa-element: once, and nothing on a server
 ```
 
 Shadow root queries: `this.$('.sel')` (querySelector) and `this.$$('.sel')` (querySelectorAll). Never use `this.shadowRoot.querySelector` directly.

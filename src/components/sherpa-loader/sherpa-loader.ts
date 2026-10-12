@@ -2,7 +2,7 @@
  * sherpa-loader — a spinning "please wait" indicator. CSS owns the whole look;
  * the only JS is the screen-reader role, so it announces itself when it appears.
  */
-import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 
 export class SherpaLoader extends SherpaElement {
   static override css = new URL('./sherpa-loader.css', import.meta.url);
@@ -22,4 +22,4 @@ export class SherpaLoader extends SherpaElement {
   }
 }
 
-customElements.define('sherpa-loader', SherpaLoader);
+define('sherpa-loader', SherpaLoader);

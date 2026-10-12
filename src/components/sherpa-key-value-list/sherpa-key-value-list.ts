@@ -13,7 +13,7 @@
  * Map:
  * - KeyValuePair — one row: a key and its value
  */
-import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 
 export interface KeyValuePair {
   key: string;
@@ -56,4 +56,4 @@ export class SherpaKeyValueList extends SherpaElement {
   }
 }
 
-customElements.define('sherpa-key-value-list', SherpaKeyValueList);
+define('sherpa-key-value-list', SherpaKeyValueList);

@@ -11,7 +11,7 @@
  * - PanelColumn — A column Group or Sort may arrange by.
  * - PanelScope — One scope: a named group of fields, plus what the Filters menu offers for it.
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { ORGANISE_ICONS, movedTo } from '../../core/ui/shared-constants.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import type { FieldFilter, HeldFilter, ScopeDescription, ScopeShows } from '../../core/data/data-source.js';
@@ -1851,4 +1851,4 @@ export class SherpaFilterPanel extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-filter-panel', SherpaFilterPanel);
+define('sherpa-filter-panel', SherpaFilterPanel);

@@ -76,7 +76,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | | | | **C2 — Consumers: frameworks, apps and agents** (planned 2026-10-12) | |
 | ✅ | c1 | 225 | `settled()` hangs on an infinite animation — a loader, an indeterminate bar — and waits on the whole document when given a part | bug |
 | ✅ | c2 | 224 | Silent failures, round 2: a linked View drops its report; View gaps skip `onReport`; `open()` hangs on an undefined tag; a 200 that is not the file is stamped; and five more | bug |
-| ⬜ | c3 | 207 | Import anywhere: a base class that loads on a server, and a `define()` that checks first — two copies of the library no longer throw | foundation |
+| ✅ | c3 | 207 | Import anywhere: a base class that loads on a server, and a `define()` that checks first — two copies of the library no longer throw | foundation |
 | ❓ | c4 | 209 | The package surface for ONE component: `sideEffects`, `./package.json`, and the extensionless import TypeScript accepts but the page cannot load | tooling |
 | ❓ | c5 | 211 | Booleans and data the way frameworks bind them: `data-x="false"` is OFF; a `data` property beside `populate()`; the grid's `rowKey` | foundation |
 | ⬜ | c6 | 215 | Trusted Types and a strict CSP: one policy for the five HTML sinks; the calendar's inline styles into CSS | foundation |
@@ -1507,7 +1507,7 @@ changed-key contract, and the contract test runs over 4 stores (`RestStore`'s
 server answers for itself). 6 tests, each failing before.
 `T-a-broken-assumption-reports`
 
-### `[ ]` 207 — Import anywhere: a server-safe base class, and a checked `define()`
+### `[x]` ✅ 207 — Import anywhere: a server-safe base class, and a checked `define()`
 
 Any import in Node throws `HTMLElement is not defined`, so Next.js, Nuxt,
 Angular SSR and SvelteKit must defer every import. Measured: with only
@@ -1521,6 +1521,13 @@ a report when another class holds it. The spec tooling finds a class by the
 `customElements.define(` text, so those regexes move with it. A node test
 imports every dist module in bare Node. 189 left the guard out on purpose;
 framework hosting is where two copies are common.
+
+**✅ Done 2026-10-12.** `SherpaElement` extends `globalThis.HTMLElement ??
+Object`; `define(tag, Class)` is exported, and all 65 components register
+through it. The three spec patterns and the def compiler read and write the
+new line; all 65 specs stay fresh. A node test imports every `dist/` module
+with no DOM, and proves `define()` registers once and reports `tag-taken`.
+`T-a-component-imports-anywhere`
 
 ### `[ ]` 209 — The package surface for one component
 

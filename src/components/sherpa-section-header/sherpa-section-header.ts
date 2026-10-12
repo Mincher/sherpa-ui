@@ -6,7 +6,7 @@
  * is; the bottom rule shows by default (set data-divider="none" to hide it). CSS handles the look; JS only
  * writes the heading text.
  */
-import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 
 export class SherpaSectionHeader extends SherpaElement {
   static override css = new URL('./sherpa-section-header.css', import.meta.url);
@@ -18,4 +18,4 @@ export class SherpaSectionHeader extends SherpaElement {
   } as const;
 }
 
-customElements.define('sherpa-section-header', SherpaSectionHeader);
+define('sherpa-section-header', SherpaSectionHeader);

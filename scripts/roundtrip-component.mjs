@@ -54,7 +54,7 @@ function tsFacts(ts) {
   // Must stay the SHARED reader: a bare regex here misses comment-stripping and
   // `...SPREAD` expansion, and silently disagrees with the spec generator.
   f.observed = parseObserved(ts);
-  f.define = (/customElements\.define\('([^']+)'/.exec(ts) || [])[1] ?? null;
+  f.define = (/(?:customElements\.)?\bdefine\('([^']+)'/.exec(ts) || [])[1] ?? null;
   return f;
 }
 function checkTs(genTs, realTs) {

@@ -4,7 +4,7 @@
  *
  * @method populate(values: number[]) — the single data path; serialises to data-values
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { formatValue } from '../../core/data/format-tick.js';
 import { chartScale } from '../../core/data/format-tick.js';
 
@@ -100,4 +100,4 @@ export class SherpaSparkline extends SherpaElement {
   }
 }
 
-customElements.define('sherpa-sparkline', SherpaSparkline);
+define('sherpa-sparkline', SherpaSparkline);

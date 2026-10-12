@@ -10,7 +10,7 @@
  * - OrganiseDef — The columns the leading Group / Sort chips offer.
  * - SortDirection — Matches the standard data-sort-direction values.
  */
-import { DATA_PROPS, SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import { DATA_PROPS, SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { NON_VALUE_ROWS, ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
 import { allow, type AllowList } from '../../core/data/allow.js';
 import { advancedOf, kindOf, type FilterKind, type OffersAdvanced } from '../../core/ui/filter-kind.js';
@@ -2044,4 +2044,4 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-quick-filter-toolbar', SherpaQuickFilterToolbar);
+define('sherpa-quick-filter-toolbar', SherpaQuickFilterToolbar);

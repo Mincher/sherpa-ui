@@ -15,7 +15,7 @@
  * Map:
  * - MenuItem — One item a menu draws for itself.
  */
-import { SHARED_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import {
   DEFAULT_OP, OPS_FOR_TYPE, OP_LABELS, OP_TAKES, type FilterOp, valueKey, valueSet,
 } from '../../core/data/store.js';
@@ -1962,4 +1962,4 @@ export class SherpaMenu extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-menu', SherpaMenu);
+define('sherpa-menu', SherpaMenu);

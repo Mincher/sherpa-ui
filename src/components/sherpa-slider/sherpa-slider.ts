@@ -7,7 +7,7 @@
  * @prop {number} value — the current value (read/write, clamped to min/max)
  * @prop {[number, number]} range — the two ends (read/write); low end first
  */
-import { SherpaElement, coerceNum, clampNum } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, coerceNum, clampNum, define } from '../../core/ui/sherpa-element.js';
 // The value fields. Defined before the template stamps them.
 import '../sherpa-input-text/sherpa-input-text.js';
 
@@ -304,4 +304,4 @@ export class SherpaSlider extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-slider', SherpaSlider);
+define('sherpa-slider', SherpaSlider);

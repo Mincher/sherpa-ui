@@ -7,7 +7,7 @@
  *
  * @tier sub-component
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 
 export class SherpaNavSection extends SherpaElement {
   static override css = new URL('./sherpa-nav-section.css', import.meta.url);
@@ -18,4 +18,4 @@ export class SherpaNavSection extends SherpaElement {
   } as const;
 }
 
-customElements.define('sherpa-nav-section', SherpaNavSection);
+define('sherpa-nav-section', SherpaNavSection);

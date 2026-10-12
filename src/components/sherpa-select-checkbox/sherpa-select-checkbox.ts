@@ -3,7 +3,7 @@
  *
  * JS mirrors attributes onto a real checkbox and re-fires change; CSS owns the look.
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { FormValue } from '../../core/ui/form-value.js';
 import { MIRRORED_CONTROL_ATTRS as MIRRORED } from '../../core/ui/shared-constants.js';
 // The template stamps these even when `data-advanced` is off — T-every-element-in-the-template.
@@ -166,4 +166,4 @@ export class SherpaSelectCheckbox extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-select-checkbox', SherpaSelectCheckbox);
+define('sherpa-select-checkbox', SherpaSelectCheckbox);

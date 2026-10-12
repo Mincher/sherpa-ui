@@ -5,7 +5,7 @@
  * Map:
  * - TransferItem — A transfer-list item.
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 
 /** A transfer-list item. */
 export interface TransferItem {
@@ -132,4 +132,4 @@ export class SherpaTransferList extends SherpaElement {
   }
 }
 
-customElements.define('sherpa-transfer-list', SherpaTransferList);
+define('sherpa-transfer-list', SherpaTransferList);

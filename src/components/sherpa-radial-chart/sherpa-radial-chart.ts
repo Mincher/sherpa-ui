@@ -12,7 +12,7 @@
  * - RadialSlice — One slice — an alias of the shared `ChartDatum`.
  */
 import { datumTotal, type ChartDatum } from '../../core/data/chart-datum.js';
-import { SUMMARY_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import { formatValue, radialArea, ringSegmentPath } from '../../core/data/format-tick.js';
 import { fillTip, pairAnchor, paintSeries } from '../../core/ui/chart-parts.js';
@@ -201,4 +201,4 @@ export class SherpaRadialChart extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-radial-chart', SherpaRadialChart);
+define('sherpa-radial-chart', SherpaRadialChart);

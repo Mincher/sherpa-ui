@@ -6,7 +6,7 @@
  * @prop {number} pageSize    — rows per page (read/write)
  * @method goToPage(n) — navigate to a page (clamped), emitting page-change
  */
-import { DATA_PROPS, SherpaElement, clampNum } from '../../core/ui/sherpa-element.js';
+import { DATA_PROPS, SherpaElement, clampNum, define } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-group/sherpa-group.js';
@@ -185,4 +185,4 @@ export class SherpaPagination extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-pagination', SherpaPagination);
+define('sherpa-pagination', SherpaPagination);

@@ -149,14 +149,14 @@ function isPublic(member) {
  * The component class's public methods and properties, read by TypeScript's
  * own parser — so a member of a TYPE or an object literal in the same file is
  * never mistaken for one of the class's, and a summary is its whole first
- * paragraph. The class is the one `customElements.define()` registers.
+ * paragraph. The class is the one `define()` registers.
  * TRAP T-a-spec-reads-the-class-by-its-parser
  *
  * @returns {{ methods: object[], props: object[] }}
  */
 export function parseClassApi(src) {
   const sf = ts.createSourceFile('c.ts', src ?? '', ts.ScriptTarget.Latest, true);
-  const registered = /customElements\.define\(\s*['"][^'"]+['"]\s*,\s*([A-Za-z_$][\w$]*)/.exec(src ?? '')?.[1];
+  const registered = /(?:customElements\.)?\bdefine\(\s*['"][^'"]+['"]\s*,\s*([A-Za-z_$][\w$]*)/.exec(src ?? '')?.[1];
   const classes = sf.statements.filter(ts.isClassDeclaration);
   const cls = classes.find((c) => c.name?.text === registered) ?? classes[0];
   const methods = [];

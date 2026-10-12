@@ -3,7 +3,7 @@
  *
  * Enter submits, Shift+Enter newlines. Empty text is never submitted.
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';
 
 const MAX_HEIGHT = 160;
@@ -119,4 +119,4 @@ export class SherpaPromptComposer extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-prompt-composer', SherpaPromptComposer);
+define('sherpa-prompt-composer', SherpaPromptComposer);

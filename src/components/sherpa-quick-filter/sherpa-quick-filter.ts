@@ -4,7 +4,7 @@
  * @see TRAP T-chip-menu-is-a-boolean-state, TRAP T-one-pick-reads-field-and-value,
  * TRAP T-scope-does-not-stop-inheritance, TRAP T-icon-only-is-purely-css
  */
-import { DATA_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import { DATA_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import {
   DEFAULT_OP, OP_TAKES, type FilterOp, type SortDirection,
 } from '../../core/data/store.js';
@@ -1008,4 +1008,4 @@ export class SherpaQuickFilter extends SherpaElement {
   }
 }
 
-customElements.define('sherpa-quick-filter', SherpaQuickFilter);
+define('sherpa-quick-filter', SherpaQuickFilter);

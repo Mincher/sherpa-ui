@@ -5,7 +5,7 @@
  *
  * @prop {boolean} open — whether the dialog is open (delegates to <dialog>)
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { DialogSurface } from '../../core/ui/disclosure.js';
 
 export class SherpaDialog extends SherpaElement {
@@ -86,4 +86,4 @@ export class SherpaDialog extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-dialog', SherpaDialog);
+define('sherpa-dialog', SherpaDialog);

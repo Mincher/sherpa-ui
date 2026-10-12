@@ -1,7 +1,7 @@
 /**
  * sherpa-select-radio — a labelled wrapper around a native radio input.
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { MIRRORED_CONTROL_ATTRS as MIRRORED } from '../../core/ui/shared-constants.js';
 import { FormValue } from '../../core/ui/form-value.js';
 
@@ -132,4 +132,4 @@ export class SherpaSelectRadio extends SherpaElement {
   }
 }
 
-customElements.define('sherpa-select-radio', SherpaSelectRadio);
+define('sherpa-select-radio', SherpaSelectRadio);

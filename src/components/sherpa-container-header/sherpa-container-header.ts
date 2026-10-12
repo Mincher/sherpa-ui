@@ -6,7 +6,7 @@
  *
  * @tier sub-component — renders inside sherpa-container; excluded from the public catalog.
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';
 
 export class SherpaContainerHeader extends SherpaElement {
@@ -59,4 +59,4 @@ export class SherpaContainerHeader extends SherpaElement {
   #onDrag = (): void => { this.emit('header-drag'); };
 }
 
-customElements.define('sherpa-container-header', SherpaContainerHeader);
+define('sherpa-container-header', SherpaContainerHeader);

@@ -15,6 +15,7 @@
  * - markNeedles — Mark every hit of every needle in `el`, or write plain text when there is nothing to point at.
  * - markMatch — Rebuild `el` as before + `<mark class="match">` + after, around one hit.
  * - clampNum — Apply the min/max bounds from `opts`, if any.
+ * - define — Register a tag once: nothing on a server, a report when another class holds it.
  * - SherpaElement — the base every component extends: template, props, slots, emit
  */
 
@@ -276,7 +277,25 @@ function fieldValue(item: unknown, expr: string): unknown {
 /** The classes whose `config` names are already properties. */
 const CONFIGURED = new WeakSet<typeof SherpaElement>();
 
-export abstract class SherpaElement extends HTMLElement {
+/** A server has no DOM: the class still loads there, and defines nothing.
+ *  TRAP T-a-component-imports-anywhere */
+const Base = (globalThis.HTMLElement ?? Object) as typeof HTMLElement;
+
+/**
+ * Register a tag ONCE. Nothing on a server; nothing when this class holds it
+ * already; and another class under the same tag — two copies of the library on
+ * one page — is said, not thrown. TRAP T-a-component-imports-anywhere
+ */
+export function define(tag: string, cls: CustomElementConstructor): void {
+  if (typeof customElements === 'undefined') return;
+  const held = customElements.get(tag);
+  if (!held) customElements.define(tag, cls);
+  else if (held !== cls) {
+    report({ code: 'tag-taken', message: `<${tag}> is defined by another class already — two copies of sherpa-ui on one page? This one is not used.`, at: { tag } });
+  }
+}
+
+export abstract class SherpaElement extends Base {
 
   /** URL of this component's CSS, scoped-token block inlined at its top — or a
    *  LIST: a family's shared sheet first, its own last, so its own wins. */

@@ -17,7 +17,7 @@ import { kindOf, type OffersAdvanced } from '../../core/ui/filter-kind.js';
 import { menuFor, type FilterMenuDef, type FilterMenuItem } from '../../core/ui/filter-menu.js';
 import type { FieldFilter } from '../../core/data/data-source.js';
 import {
-  DATA_PROPS, SHARED_PROPS, SherpaElement, coerceNum, clampNum, markNeedles,
+  DATA_PROPS, SHARED_PROPS, SherpaElement, coerceNum, clampNum, markNeedles, define,
 } from '../../core/ui/sherpa-element.js';
 import { ORGANISE_ICONS } from '../../core/ui/shared-constants.js';
 import { nextSort, sortDirectionAttr, sortDirectionFrom } from '../../core/data/cycle.js';
@@ -1909,7 +1909,7 @@ export class SherpaDataGrid extends SherpaElement {
   }
 }
 
-customElements.define('sherpa-data-grid', SherpaDataGrid);
+define('sherpa-data-grid', SherpaDataGrid);
 
 /** Does a reading hold ANY answer — a tick, typed text or a row — in either mode? */
 function answersAnything(reading: FieldReading): boolean {

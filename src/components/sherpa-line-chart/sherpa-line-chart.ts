@@ -2,7 +2,7 @@
  * sherpa-line-chart — a line or area chart for one or more sets of numbers.
  * CSS owns colour, fill and width.
  */
-import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import { chartScale, tickPercent, type ChartScale } from '../../core/data/format-tick.js';
 import { fillTip, pairAnchor, paintSeries, renderValueAxis } from '../../core/ui/chart-parts.js';
@@ -165,4 +165,4 @@ export class SherpaLineChart extends SherpaElement {
   }
 }
 
-customElements.define('sherpa-line-chart', SherpaLineChart);
+define('sherpa-line-chart', SherpaLineChart);

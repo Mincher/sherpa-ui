@@ -14,7 +14,7 @@
  *
  * @tier sub-component
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 
 export class SherpaListItem extends SherpaElement {
   static override css = new URL('./sherpa-list-item.css', import.meta.url);
@@ -118,4 +118,4 @@ export class SherpaListItem extends SherpaElement {
   #onDrag = (): void => { this.emit('item-drag'); };
 }
 
-customElements.define('sherpa-list-item', SherpaListItem);
+define('sherpa-list-item', SherpaListItem);

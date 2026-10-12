@@ -12,7 +12,7 @@
  * - NavConfig — the whole nav as data: product, quick items, sections, and the Settings sections
  * - NavState — The five Figma Navigation modes.
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { hasIcon, renderIcon } from '../../core/ui/render-icon.js';
 import '../sherpa-nav-item/sherpa-nav-item.js';
 import '../sherpa-button/sherpa-button.js';
@@ -506,4 +506,4 @@ export class SherpaNav extends SherpaElement {
 
 }
 
-customElements.define('sherpa-nav', SherpaNav);
+define('sherpa-nav', SherpaNav);

@@ -9,7 +9,7 @@
  * Map:
  * - TabDef — one tab: its id and label
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 
 export interface TabDef {
   id: string;
@@ -161,4 +161,4 @@ export class SherpaTabs extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-tabs', SherpaTabs);
+define('sherpa-tabs', SherpaTabs);

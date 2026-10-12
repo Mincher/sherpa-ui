@@ -6,7 +6,7 @@
  * Map:
  * - Crumb — one step in the trail: a label, and an href to go back to it
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 
 export interface Crumb {
   label: string;
@@ -63,4 +63,4 @@ export class SherpaBreadcrumbs extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-breadcrumbs', SherpaBreadcrumbs);
+define('sherpa-breadcrumbs', SherpaBreadcrumbs);

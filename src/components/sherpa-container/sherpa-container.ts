@@ -1,5 +1,5 @@
 /** sherpa-container — the base card. CSS owns style, padding and state. */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-loader/sherpa-loader.js';
 import '../sherpa-empty-state/sherpa-empty-state.js';
 import '../sherpa-button/sherpa-button.js';
@@ -56,4 +56,4 @@ export class SherpaContainer extends SherpaElement {
   }
 }
 
-customElements.define('sherpa-container', SherpaContainer);
+define('sherpa-container', SherpaContainer);

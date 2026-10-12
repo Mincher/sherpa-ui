@@ -182,7 +182,7 @@ function compileTs(def, name, cls) {
   } else {
     L.push(`/**`, ` * ${name} — ${def.description}`, ` *`, ...behaviourLines, ` * Generated from ${name}.component.json. @fires ${fires}`, ` */`);
   }
-  L.push(`import { SherpaElement } from '../../core/ui/sherpa-element.js';`, '');
+  L.push(`import { SherpaElement, define } from '../../core/ui/sherpa-element.js';`, '');
   L.push(`export class ${cls} extends SherpaElement {`);
   L.push(`  static override css = new URL('./${name}.css', import.meta.url);`);
   L.push(`  static override html = new URL('./${name}.html', import.meta.url);`);
@@ -213,7 +213,7 @@ function compileTs(def, name, cls) {
   }
   if ((def.behaviours ?? []).length) L.push('');
   L.push(`}`, '');
-  L.push(`customElements.define('${name}', ${cls});`, '');
+  L.push(`define('${name}', ${cls});`, '');
   return L.join('\n');
 }
 

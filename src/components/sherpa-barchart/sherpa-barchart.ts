@@ -9,7 +9,7 @@
  */
 import type { ChartDatum } from '../../core/data/chart-datum.js';
 import type { ChartScale } from '../../core/data/format-tick.js';
-import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import { chartScale } from '../../core/data/format-tick.js';
 import { fillTip, pairAnchor, paintSeries, renderValueAxis } from '../../core/ui/chart-parts.js';
@@ -135,4 +135,4 @@ export class SherpaBarchart extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-barchart', SherpaBarchart);
+define('sherpa-barchart', SherpaBarchart);

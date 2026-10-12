@@ -6,7 +6,7 @@
  * Map:
  * - Step — one step: a label and an optional description
  */
-import { SherpaElement, coerceNum } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, coerceNum, define } from '../../core/ui/sherpa-element.js';
 
 export interface Step {
   label: string;
@@ -97,4 +97,4 @@ export class SherpaProgressStepTracker extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-progress-step-tracker', SherpaProgressStepTracker);
+define('sherpa-progress-step-tracker', SherpaProgressStepTracker);

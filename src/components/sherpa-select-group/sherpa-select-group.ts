@@ -7,7 +7,7 @@
  * Map:
  * - SelectGroupOption — A single option in the group.
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-select-checkbox/sherpa-select-checkbox.js';
 import '../sherpa-select-radio/sherpa-select-radio.js';
 
@@ -166,4 +166,4 @@ export class SherpaSelectGroup extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-select-group', SherpaSelectGroup);
+define('sherpa-select-group', SherpaSelectGroup);

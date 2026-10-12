@@ -35,7 +35,7 @@ export function installTokens(): void {
   document.head.appendChild(link);
 }
 
-export { SherpaElement } from './core/ui/sherpa-element.js';
+export { SherpaElement, define } from './core/ui/sherpa-element.js';
 // A component drawn from YOUR markup, with your sheets after its own. TODO 27.
 export { useTemplate, type OwnFiles } from './core/ui/templater.js';
 // CONFIGURE a live element through its own API — the parity door a saved view,

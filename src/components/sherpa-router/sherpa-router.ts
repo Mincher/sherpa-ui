@@ -8,7 +8,7 @@
  * Map:
  * - RouteChange — what `route-change` carries: the route now, the one before, what differs, and `waitUntil`
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import {
   changedParams, readRoute, routeHref, routeShape, settleRoute, type Route, type RouteShape,
 } from '../../core/browser/route.js';
@@ -106,4 +106,4 @@ export class SherpaRouter extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-router', SherpaRouter);
+define('sherpa-router', SherpaRouter);

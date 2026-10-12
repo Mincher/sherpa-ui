@@ -1,5 +1,5 @@
 /** sherpa-tag — a small pill with a label. CSS owns the look; JS only fires tag-remove. */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';
 
 export class SherpaTag extends SherpaElement {
@@ -29,4 +29,4 @@ export class SherpaTag extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-tag', SherpaTag);
+define('sherpa-tag', SherpaTag);

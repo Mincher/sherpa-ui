@@ -6,7 +6,7 @@
  * Map:
  * - InputOption — One choice in a `data-type="select"` field.
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { renderIcon, hasIcon } from '../../core/ui/render-icon.js';
 import { validateField, type FieldRules } from '../../core/data/validate.js';
 import { FormValue } from '../../core/ui/form-value.js';
@@ -512,4 +512,4 @@ export class SherpaInputText extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-input-text', SherpaInputText);
+define('sherpa-input-text', SherpaInputText);

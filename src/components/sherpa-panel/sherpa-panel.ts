@@ -4,7 +4,7 @@
  * Not floating (that is overlay-panel) and not a disclosure (that is accordion).
  * No native behaviour to adopt — surface, regions and collapsed state are CSS.
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 
 export class SherpaPanel extends SherpaElement {
   static override css = new URL('./sherpa-panel.css', import.meta.url);
@@ -15,4 +15,4 @@ export class SherpaPanel extends SherpaElement {
   } as const;
 }
 
-customElements.define('sherpa-panel', SherpaPanel);
+define('sherpa-panel', SherpaPanel);

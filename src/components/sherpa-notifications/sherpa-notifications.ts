@@ -16,7 +16,7 @@
  * Map:
  * - Notification — one notification: id, label, description, icon, time, and whether it is unread
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-menu/sherpa-menu.js';
 import '../sherpa-list-item/sherpa-list-item.js';
 import '../sherpa-button/sherpa-button.js';
@@ -185,4 +185,4 @@ export class SherpaNotifications extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-notifications', SherpaNotifications);
+define('sherpa-notifications', SherpaNotifications);

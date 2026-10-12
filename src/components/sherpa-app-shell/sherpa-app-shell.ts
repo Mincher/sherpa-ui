@@ -4,7 +4,7 @@
  * CSS owns the inset past the overlaying nav rail; this file only mirrors the
  * rail's state onto the host.
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { resizeByEdge } from '../../core/ui/edge-resize.js';
 
 /** The narrowest Context a panel area may leave: the layout grid's tablet breakpoint. */
@@ -160,4 +160,4 @@ export class SherpaAppShell extends SherpaElement {
   }
 }
 
-customElements.define('sherpa-app-shell', SherpaAppShell);
+define('sherpa-app-shell', SherpaAppShell);

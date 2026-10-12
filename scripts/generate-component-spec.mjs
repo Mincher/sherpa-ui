@@ -822,7 +822,7 @@ function bindingsMap(list) { const o = {}; for (const b of list) o[`.${b.el} ${b
 function tsDiff(genTs, realTs, diffs) {
   const fact = (ts) => ({
     class: (/export class (\w+) extends SherpaElement/.exec(ts) || [])[1] ?? null,
-    define: (/customElements\.define\('([^']+)'/.exec(ts) || [])[1] ?? null,
+    define: (/(?:customElements\.)?\bdefine\('([^']+)'/.exec(ts) || [])[1] ?? null,
     observed: parseObserved(ts).sort(),
   });
   const g = fact(genTs), r = fact(realTs);

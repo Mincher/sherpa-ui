@@ -5,7 +5,7 @@
  * @prop {boolean} disabled — disabled state (reflects host attr + inner input)
  * @prop {string}  value    — what it stands for when on (default "on"), as a checkbox's
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { FormValue } from '../../core/ui/form-value.js';
 
 export class SherpaSwitch extends SherpaElement {
@@ -115,4 +115,4 @@ export class SherpaSwitch extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-switch', SherpaSwitch);
+define('sherpa-switch', SherpaSwitch);

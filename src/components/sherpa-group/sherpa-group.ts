@@ -7,7 +7,7 @@
  *
  * Fires: nothing — a group has no interactions of its own.
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 
 /** The column counts the layout grid offers, so the two agree. */
 const COL_COUNTS = ['2', '3', '4', '5', '6', '8', '10', '12'] as const;
@@ -39,4 +39,4 @@ export class SherpaGroup extends SherpaElement {
   }
 }
 
-customElements.define('sherpa-group', SherpaGroup);
+define('sherpa-group', SherpaGroup);

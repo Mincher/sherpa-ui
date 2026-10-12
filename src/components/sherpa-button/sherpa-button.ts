@@ -6,7 +6,7 @@
  *
  * @fires button-click — the button is activated. bubbles + composed.
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-badge/sherpa-badge.js';
 
 /** What the button needs of a slotted menu. */
@@ -187,4 +187,4 @@ export class SherpaButton extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-button', SherpaButton);
+define('sherpa-button', SherpaButton);

@@ -4,7 +4,7 @@
  * TRAP T-gauge-band-is-a-closed-path — the constants below are path geometry,
  * not style.
  */
-import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import { formatTick, radialArea, ringSegmentPath, statusBorderVar, statusVar } from '../../core/data/format-tick.js';
 import { isStatus } from '../../core/data/chart-datum.js';
@@ -329,4 +329,4 @@ export class SherpaGaugeChart extends SherpaElement {
   }
 }
 
-customElements.define('sherpa-gauge-chart', SherpaGaugeChart);
+define('sherpa-gauge-chart', SherpaGaugeChart);

@@ -8,7 +8,7 @@
  * a second element would be a second owner of one value.
  * TRAP T-a-canvas-owns-its-view
  */
-import { SherpaElement, coerceNum } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, coerceNum, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-menu/sherpa-menu.js';
 
@@ -328,4 +328,4 @@ export class SherpaLayoutCanvas extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-layout-canvas', SherpaLayoutCanvas);
+define('sherpa-layout-canvas', SherpaLayoutCanvas);

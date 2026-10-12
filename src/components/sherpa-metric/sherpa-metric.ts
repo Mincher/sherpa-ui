@@ -3,7 +3,7 @@
  *
  * @method populate(data: MetricData) — the single data path
  */
-import { SUMMARY_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { formatValue } from '../../core/data/format-tick.js';
 import { report } from '../../core/data/report.js';
 import type { DataAsk } from '../../core/ui/context.js';
@@ -204,4 +204,4 @@ export class SherpaMetric extends SherpaElement {
   }
 }
 
-customElements.define('sherpa-metric', SherpaMetric);
+define('sherpa-metric', SherpaMetric);

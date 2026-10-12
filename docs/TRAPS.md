@@ -15919,10 +15919,34 @@ by the page's id, so `saveView(label)` needs nothing from the page.
 - Site: `test/unit/page-definition.test.mjs`
 - Site: `src/data.ts`
 
+### T-a-component-imports-anywhere
+
+**A component imports in Node, and defines nothing there; in a browser it
+defines its tag ONCE.** Every import used to throw `HTMLElement is not defined`
+on a server, so Next.js, Nuxt, Angular SSR and SvelteKit had to defer every
+import — and none of the 65 `customElements.define` calls checked first, so a
+second copy of the library on one page (micro-frontends, Storybook beside the
+app, a CDN copy beside a bundle) threw at its first define and lost its whole
+import graph (TODO 207).
+
+Measured first: with `HTMLElement` and `customElements` stubbed, every module
+loaded — the base class and the defines were the only DOM at module level. So
+`SherpaElement` extends `globalThis.HTMLElement ?? class {}`, and every
+component registers through `define(tag, Class)`: nothing without
+`customElements`, nothing when this class holds the tag, and a `tag-taken`
+report — not a throw — when another class does. A node test imports every
+module in `dist/` with no DOM at all.
+
+The spec tooling finds a component's class by its define line; its patterns
+read both `define(` and `customElements.define(`.
+
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `test/unit/import-anywhere.test.mjs`
+
 ### T-a-spec-reads-the-class-by-its-parser
 
 **A spec's methods and properties are read by TypeScript's own parser**, from
-the class `customElements.define()` registers — never by a pattern over the
+the class `define()` registers — never by a pattern over the
 file. The API audit (TODO 86, 2026-09-29) found what the patterns did:
 
 - **False members.** A two-space `name(args):` line inside a `type` literal

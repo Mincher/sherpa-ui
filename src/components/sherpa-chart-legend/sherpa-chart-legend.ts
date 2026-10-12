@@ -13,7 +13,7 @@
  * - LegendItem — One legend row —
  */
 import { datumTotal, type LegendDatum } from '../../core/data/chart-datum.js';
-import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import { paintSeries } from '../../core/ui/chart-parts.js';
 import { statusBorderVar, statusVar } from '../../core/data/format-tick.js';
@@ -376,4 +376,4 @@ export class SherpaChartLegend extends SherpaElement {
 
 }
 
-customElements.define('sherpa-chart-legend', SherpaChartLegend);
+define('sherpa-chart-legend', SherpaChartLegend);

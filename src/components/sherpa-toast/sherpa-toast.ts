@@ -7,7 +7,7 @@
  * Map:
  * - ToastOptions — Options for the static factory helpers.
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';
 
 /** Options for the static factory helpers. */
@@ -143,4 +143,4 @@ export class SherpaToast extends SherpaElement {
   }
 }
 
-customElements.define('sherpa-toast', SherpaToast);
+define('sherpa-toast', SherpaToast);

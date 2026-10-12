@@ -5,7 +5,7 @@
  * job in JS: a host that reports `data-dirty` gets its commit and revert pair
  * turned off while nothing has changed. TRAP T-the-footer-owns-nothing-to-save
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 
 export class SherpaContainerFooter extends SherpaElement {
   static override css = new URL('./sherpa-container-footer.css', import.meta.url);
@@ -46,4 +46,4 @@ export class SherpaContainerFooter extends SherpaElement {
   #turnedOff = new Set<Element>();
 }
 
-customElements.define('sherpa-container-footer', SherpaContainerFooter);
+define('sherpa-container-footer', SherpaContainerFooter);

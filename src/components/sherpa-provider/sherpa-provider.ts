@@ -13,7 +13,7 @@
  * - OpenOptions — What `open()` is given beside a page's definition: the app's stores, and the page's Views.
  * - ProviderState — A subtree's whole state as JSON: each source's question, and the View on screen.
  */
-import { SUMMARY_PROPS, SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import {
   DATA_CONTEXT, SOURCE_CONTEXT, type ContextRequestEvent, type DataAsk,
 } from '../../core/ui/context.js';
@@ -1057,4 +1057,4 @@ export class SherpaProvider extends SherpaElement {
   }
 }
 
-customElements.define('sherpa-provider', SherpaProvider);
+define('sherpa-provider', SherpaProvider);

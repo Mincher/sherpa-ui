@@ -3,7 +3,7 @@
  *
  * CSS owns the drag highlight and the disabled look; JS holds the files.
  */
-import { SherpaElement, coerceNum } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, coerceNum, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';
 
 export class SherpaFileUpload extends SherpaElement {
@@ -195,4 +195,4 @@ export class SherpaFileUpload extends SherpaElement {
   }
 }
 
-customElements.define('sherpa-file-upload', SherpaFileUpload);
+define('sherpa-file-upload', SherpaFileUpload);

@@ -17,7 +17,7 @@
  *
  * @tier sub-component
  */
-import { SherpaElement, markMatch } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, markMatch, define } from '../../core/ui/sherpa-element.js';
 
 let uid = 0;
 
@@ -234,4 +234,4 @@ export class SherpaNavItem extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-nav-item', SherpaNavItem);
+define('sherpa-nav-item', SherpaNavItem);

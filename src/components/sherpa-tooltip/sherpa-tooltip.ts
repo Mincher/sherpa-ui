@@ -3,7 +3,7 @@
  *
  * Ordinary mode is pure CSS; JS runs only for floating (top-layer) mode.
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 
 let uid = 0;
 
@@ -145,4 +145,4 @@ export class SherpaTooltip extends SherpaElement {
   }
 }
 
-customElements.define('sherpa-tooltip', SherpaTooltip);
+define('sherpa-tooltip', SherpaTooltip);

@@ -6,7 +6,7 @@
  *
  * @prop {boolean} open — whether the panel is open (delegates to <dialog>)
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { DialogSurface } from '../../core/ui/disclosure.js';
 import { resizeByEdge } from '../../core/ui/edge-resize.js';
 // Defined before the template stamps them.
@@ -145,4 +145,4 @@ export class SherpaOverlayPanel extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-overlay-panel', SherpaOverlayPanel);
+define('sherpa-overlay-panel', SherpaOverlayPanel);

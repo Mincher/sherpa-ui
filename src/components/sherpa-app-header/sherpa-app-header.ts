@@ -4,7 +4,7 @@
  * CSS owns layout, badge and animation. This keeps title / icon / count in
  * sync and fires one event per action.
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { Populatable } from '../../core/ui/apply-state.js';
 // Every action is a composed sherpa-button. TRAP T-header-actions-are-composed-buttons
 import '../sherpa-button/sherpa-button.js';
@@ -169,4 +169,4 @@ export class SherpaAppHeader extends SherpaElement {
 
 }
 
-customElements.define('sherpa-app-header', SherpaAppHeader);
+define('sherpa-app-header', SherpaAppHeader);

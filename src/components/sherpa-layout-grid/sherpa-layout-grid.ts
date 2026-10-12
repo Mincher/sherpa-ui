@@ -6,7 +6,7 @@
  *
  * Fires: layout-change — a child was resized from a gutter. detail: { layout }
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { resizeByEdge } from '../../core/ui/edge-resize.js';
 import { measureGroupedGrid, watchGrid } from './grouped-grid.js';
 import {
@@ -208,4 +208,4 @@ export class SherpaLayoutGrid extends SherpaElement {
   }
 }
 
-customElements.define('sherpa-layout-grid', SherpaLayoutGrid);
+define('sherpa-layout-grid', SherpaLayoutGrid);

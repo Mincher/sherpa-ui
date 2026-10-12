@@ -4,7 +4,7 @@
  * TRAP T-calendar-view-is-not-the-figma-type — data-type is Figma's axis,
  * data-view is the code's own zoom.
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-container-footer/sherpa-container-footer.js';
 import '../sherpa-calendar-cell/sherpa-calendar-cell.js';
 import '../sherpa-button/sherpa-button.js';
@@ -526,4 +526,4 @@ export class SherpaCalendar extends SherpaElement {
   };
 }
 
-customElements.define('sherpa-calendar', SherpaCalendar);
+define('sherpa-calendar', SherpaCalendar);

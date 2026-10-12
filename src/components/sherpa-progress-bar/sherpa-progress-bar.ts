@@ -5,7 +5,7 @@
  *
  * @prop {number} value — the current percentage (read/write, clamped 0–100)
  */
-import { SherpaElement, clampNum } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, clampNum, define } from '../../core/ui/sherpa-element.js';
 
 interface ProgressData {
   value?: number;
@@ -75,4 +75,4 @@ export class SherpaProgressBar extends SherpaElement {
   }
 }
 
-customElements.define('sherpa-progress-bar', SherpaProgressBar);
+define('sherpa-progress-bar', SherpaProgressBar);

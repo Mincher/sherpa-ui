@@ -2,7 +2,7 @@
  * sherpa-data-viz-header — the header strip of a metric or a chart's card:
  * Figma's Data Viz Header (1456:30467). CSS owns every part's presence.
  */
-import { SherpaElement } from '../../core/ui/sherpa-element.js';
+import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 
 export class SherpaDataVizHeader extends SherpaElement {
   static override css = new URL('./sherpa-data-viz-header.css', import.meta.url);
@@ -16,4 +16,4 @@ export class SherpaDataVizHeader extends SherpaElement {
   } as const;
 }
 
-customElements.define('sherpa-data-viz-header', SherpaDataVizHeader);
+define('sherpa-data-viz-header', SherpaDataVizHeader);
