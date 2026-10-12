@@ -113,7 +113,7 @@
 }
 
 /* ── Hover ────────────────────────────────────────────────────────── */
-:host(:not([disabled]):hover) .card {
+:host(:not(:disabled):hover) .card {
   border-color: var(--sherpa-theme-border-default-1, #e8e8f6); /* theme-direct */
 }
 
@@ -133,7 +133,7 @@
 }
 
 /* ── Disabled — a PIN (inactive), never opacity ────────────────────── */
-:host([disabled]) .card {
+:host(:disabled) .card {
   cursor: not-allowed;
   pointer-events: none;
 }

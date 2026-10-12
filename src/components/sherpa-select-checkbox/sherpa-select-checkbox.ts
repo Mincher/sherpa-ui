@@ -37,6 +37,7 @@ export class SherpaSelectCheckbox extends SherpaElement {
   #form = new FormValue(this);
 
   override onRender(): void {
+    this.#resetTo = this.hasAttribute('checked');
     this.#control = this.$<HTMLInputElement>('.control');
     this.#syncState();
     this.#control?.addEventListener('change', this.#onChange);
@@ -56,6 +57,8 @@ export class SherpaSelectCheckbox extends SherpaElement {
     // The shared loop; `value` is a property, set below.
     // TRAP T-mirroring-skips-value
     this.mirrorAttrs(c, MIRRORED);
+    // The EFFECTIVE state: its own `disabled`, or a disabled fieldset's.
+    c.disabled = this.matches(':disabled');
     c.value = this.getAttribute('value') ?? 'on';
     c.checked = this.hasAttribute('checked');
     c.indeterminate = this.hasAttribute('indeterminate'); // property only — no CSS attr selector
@@ -70,6 +73,22 @@ export class SherpaSelectCheckbox extends SherpaElement {
     this.#form.value(c.checked ? c.value : null);
     this.#form.follow(c);
   }
+
+  /* Form lifecycle — called by the browser. */
+
+  /** Inside a disabled `<fieldset>`, as by its own `disabled`. TRAP T-a-form-control-follows-its-fieldset */
+  formDisabledCallback(): void {
+    this.#syncState();
+  }
+
+  /** A form reset puts back its FIRST `checked`. */
+  formResetCallback(): void {
+    this.checked = this.#resetTo;
+    this.#syncForm();
+  }
+
+  /** Its first `checked`: what a form reset puts back. Will, TODO 214, B. */
+  #resetTo = false;
 
   /* ── Public API ────────────────────────────────────────────────────── */
 

@@ -179,11 +179,6 @@
     },
     {
       "$type": "state",
-      "name": "disabled",
-      "selector": ":host([disabled])"
-    },
-    {
-      "$type": "state",
       "name": "focus-visible",
       "selector": ".control:focus-visible"
     }
@@ -197,7 +192,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (checkValidity, reportValidity, focus). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (formDisabledCallback, formResetCallback, checkValidity, reportValidity, focus). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -243,6 +238,18 @@
     "sherpa": {
       "figmaName": "Select Checkbox",
       "methods": [
+        {
+          "$type": "method",
+          "name": "formDisabledCallback",
+          "args": "",
+          "description": "Inside a disabled `<fieldset>`, as by its own `disabled`."
+        },
+        {
+          "$type": "method",
+          "name": "formResetCallback",
+          "args": "",
+          "description": "A form reset puts back its FIRST `checked`."
+        },
         {
           "$type": "method",
           "name": "checkValidity",

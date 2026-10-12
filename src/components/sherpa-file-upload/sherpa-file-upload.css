@@ -163,10 +163,10 @@
 
 /* ── Disabled — inactive tokens, never opacity ───────────────────────── */
 /* Not a pin: the zone binds Theme, as Figma does, so no mode reaches it. */
-:host([disabled]) :is(.drop-zone, .label) {
+:host(:disabled) :is(.drop-zone, .label) {
   color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */
 }
-:host([disabled]) .drop-zone {
+:host(:disabled) .drop-zone {
   cursor: not-allowed;
   pointer-events: none;
   background: var(--sherpa-theme-surface-default-2, #b3b3c3); /* theme-direct */

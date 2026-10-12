@@ -98,17 +98,17 @@
 .description:empty { display: none; }
 
 /* ── Disabled — a PIN (inactive) on the circle ─────────────────────── */
-:host([disabled]) .field {
+:host(:disabled) .field {
   cursor: not-allowed;
   pointer-events: none;
 }
-:host([disabled]) .control { cursor: not-allowed; }
+:host(:disabled) .control { cursor: not-allowed; }
 /* The inactive dot is the face's own grey, so it takes the inactive ink. */
-:host([disabled]) .control:checked::after {
+:host(:disabled) .control:checked::after {
   background-color: var(--sherpa-style-content-base, #35353d);
 }
 /* The label binds Theme, which a pin cannot reach. */
-:host([disabled]) .label {
+:host(:disabled) .label {
   color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
 }
 

@@ -96,7 +96,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | c12 | 210 | Framework typings from the manifest: the tag map, React 19 JSX, Vue and Svelte types, editor data — after 195 | tooling |
 | ✅ | c13 | 213 | Only a component's OWN events leave it: an inner `button-click` stops at its host | foundation |
 | ✅ | c14 | 212 | Markup paths for the list components — tabs, breadcrumbs, a select's options, key-value pairs — so plain HTML and React 18 can fill them | feature |
-| ⬜ | c15 | 214 | Forms complete: `<fieldset disabled>`, reset on every control, and the five controls that submit nothing | foundation |
+| ✅ | c15 | 214 | Forms complete: `<fieldset disabled>`, reset on every control, and the five controls that submit nothing | foundation |
 | ⬜ | c16 | 208 | The text in the JS, not fetched: templates and sheets inline at build, URLs only in a dev build — with 199 | refactor |
 | ⬜ | c17 | 199 | A smaller download: minify the JS (a new dev tool) and load icons on demand | refactor |
 | ⬜ | c18 | 216 | Tokens safe to embed: the page rules out of `tokens.css`, a default mode, the `[data-status]` reach documented | foundation |
@@ -1932,7 +1932,7 @@ crumbs, `<option>`s, and `<dt>`/`<dd>` pairs — one `childData()` hook in the
 base class, which follows the children as they change and draws only when
 what they say changed. `T-a-list-takes-its-children-as-data`
 
-### `[ ]` 214 — Forms complete
+### `[x]` ✅ 214 — Forms complete
 
 Four controls join a form (`FormValue`). Missing: `formDisabledCallback`
 everywhere, so inside `<fieldset disabled>` the inner control still works;
@@ -1946,6 +1946,13 @@ the property the current state; B keep reflecting, and remember the first
 value as the reset default. My pick: B, less change.
 
 **✅ Will, 2026-10-12 — all my picks:** B — `checked` keeps reflecting; the first value is the reset default.
+
+**✅ Done 2026-10-12.** Every form control reads `:disabled`, so a disabled
+`<fieldset>` disables it; a reset puts back its first state (the file upload
+empties). The slider, select card, calendar, file upload and transfer list
+join their form and submit their values — a range and a list as one entry
+each. Angular's ControlValueAccessors are out, with 217.
+`T-a-form-control-follows-its-fieldset`
 
 ### `[ ]` 208 — The text in the JS, not fetched
 

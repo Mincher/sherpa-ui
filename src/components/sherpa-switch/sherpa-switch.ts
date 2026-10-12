@@ -48,6 +48,7 @@ export class SherpaSwitch extends SherpaElement {
   }
 
   override onRender(): void {
+    this.#resetTo = this.hasAttribute('checked');
     this.#syncState();
     // The native change bubbles inside the shadow root but is not composed.
     this.#input()?.addEventListener('change', this.#onChange);
@@ -56,6 +57,22 @@ export class SherpaSwitch extends SherpaElement {
   override onChange(): void {
     this.#syncState();
   }
+
+  /* Form lifecycle — called by the browser. */
+
+  /** Inside a disabled `<fieldset>`, as by its own `disabled`. TRAP T-a-form-control-follows-its-fieldset */
+  formDisabledCallback(): void {
+    this.#syncState();
+  }
+
+  /** A form reset puts back its FIRST `checked`. */
+  formResetCallback(): void {
+    this.checked = this.#resetTo;
+    this.#syncForm();
+  }
+
+  /** Its first `checked`: what a form reset puts back. Will, TODO 214, B. */
+  #resetTo = false;
 
   /* ── Public API ──────────────────────────────────────────────────────── */
 
@@ -105,7 +122,8 @@ export class SherpaSwitch extends SherpaElement {
     const input = this.#input();
     if (!input) return;
     input.checked = this.hasAttribute('checked');
-    input.disabled = this.hasAttribute('disabled');
+    // The EFFECTIVE state: its own `disabled`, or a disabled fieldset's.
+    input.disabled = this.matches(':disabled');
     input.required = this.hasAttribute('required');
     input.value = this.value;
     this.#syncForm();

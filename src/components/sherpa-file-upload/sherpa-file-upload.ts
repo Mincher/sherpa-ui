@@ -5,6 +5,7 @@
  */
 import { SherpaElement, coerceNum, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-button/sherpa-button.js';
+import { FormValue } from '../../core/ui/form-value.js';
 
 export class SherpaFileUpload extends SherpaElement {
   static override css = new URL('./sherpa-file-upload.css', import.meta.url);
@@ -19,7 +20,12 @@ export class SherpaFileUpload extends SherpaElement {
     'data-multiple': { type: 'boolean', kind: 'behaviour' },
   } as const;
 
-  static override observed = ['disabled'];
+  static override observed = ['disabled', 'name'];
+
+  /** It submits its files in a form. TODO 214 */
+  static readonly formAssociated = true;
+  /** Its link to its form. */
+  #form = new FormValue(this);
 
   /** The hidden native file input. */
   #input: HTMLInputElement | null = null;
@@ -53,6 +59,7 @@ export class SherpaFileUpload extends SherpaElement {
   override onChange(name: string): void {
     if (name === 'data-max-size' || name === 'data-accept') this.#syncText();
     if (name === 'data-accept' || name === 'data-multiple') this.#syncInput();
+    if (name === 'name') this.#form.value(this.#files);
   }
 
   /** The two TEXT TEMPLATES; the label and helper are declared props. CSS
@@ -77,13 +84,13 @@ export class SherpaFileUpload extends SherpaElement {
 
   /** Open the native file picker. */
   #open = (): void => {
-    if (!this.hasAttribute('disabled')) this.#input?.click();
+    if (!this.matches(':disabled')) this.#input?.click();
   };
 
   /** A drag entered: show the drop state. */
   #onDragEnter = (event: Event): void => {
     event.preventDefault();
-    if (this.hasAttribute('disabled')) return;
+    if (this.matches(':disabled')) return;
     this.#dragDepth++;
     this.toggleAttribute('data-dragover', true);
   };
@@ -92,7 +99,7 @@ export class SherpaFileUpload extends SherpaElement {
   #onDragOver = (event: Event): void => {
     event.preventDefault();
     const e = event as DragEvent;
-    if (e.dataTransfer && !this.hasAttribute('disabled')) e.dataTransfer.dropEffect = 'copy';
+    if (e.dataTransfer && !this.matches(':disabled')) e.dataTransfer.dropEffect = 'copy';
   };
 
   /** A drag left: drop the state once it has left every child. */
@@ -109,7 +116,7 @@ export class SherpaFileUpload extends SherpaElement {
     event.preventDefault();
     this.#dragDepth = 0;
     this.removeAttribute('data-dragover');
-    if (this.hasAttribute('disabled')) return;
+    if (this.matches(':disabled')) return;
     this.#add(Array.from((event as DragEvent).dataTransfer?.files ?? []));
   };
 
@@ -140,6 +147,16 @@ export class SherpaFileUpload extends SherpaElement {
       },
     });
     this.toggleAttribute('data-has-files', this.#files.length > 0);
+    this.#form.value(this.#files);
+  }
+
+  /* Form lifecycle — called by the browser. Inside a disabled `<fieldset>` it
+     matches `:disabled`, which every press checks. TRAP T-a-form-control-follows-its-fieldset */
+
+  /** A form reset empties it, as a native file input. */
+  formResetCallback(): void {
+    this.#files = [];
+    this.#render();
   }
 
   /** A file's remove button. */
@@ -160,7 +177,7 @@ export class SherpaFileUpload extends SherpaElement {
 
   /** Remove every file. */
   #onClearAll = (): void => {
-    if (this.hasAttribute('disabled') || !this.#files.length) return;
+    if (this.matches(':disabled') || !this.#files.length) return;
     this.#files = [];
     this.#render();
     this.emit('file-clear');
@@ -169,7 +186,7 @@ export class SherpaFileUpload extends SherpaElement {
 
   /** Ask the host to upload the files. */
   #onUpload = (): void => {
-    if (this.hasAttribute('disabled') || this.hasAttribute('data-loading') || !this.#files.length) return;
+    if (this.matches(':disabled') || this.hasAttribute('data-loading') || !this.#files.length) return;
     this.emit('file-upload-start', { files: this.#files });
   };
 

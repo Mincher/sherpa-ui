@@ -8,6 +8,7 @@
 import { SHARED_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-select-radio/sherpa-select-radio.js';
 import '../sherpa-select-checkbox/sherpa-select-checkbox.js';
+import { FormValue } from '../../core/ui/form-value.js';
 
 /** The default footer control (a Sherpa select) — the parts JS reads/writes. */
 interface FooterControl extends HTMLElement {
@@ -33,10 +34,19 @@ export class SherpaSelectCard extends SherpaElement {
     'disabled',
   ];
 
+  /** Selected, it submits its value in a form: its footer controls are parts and
+   *  join none. TODO 214 */
+  static readonly formAssociated = true;
+  /** Its link to its form. */
+  #form = new FormValue(this);
+  /** Its first `data-selected`: what a form reset puts back. */
+  #resetTo = false;
+
   /** The card face a click on anywhere toggles. */
   #card: HTMLElement | null = null;
 
   override onRender(): void {
+    this.#resetTo = this.hasAttribute('data-selected');
     this.#card = this.$('.card');
     if (!this.hasAttribute('tabindex')) this.setAttribute('tabindex', '0');
     this.#syncRole();
@@ -77,9 +87,22 @@ export class SherpaSelectCard extends SherpaElement {
       else c.removeAttribute('name');
       c.value = this.getAttribute('value') ?? '';
       c.checked = this.hasAttribute('data-selected');
-      if (this.hasAttribute('disabled')) c.setAttribute('disabled', '');
-      else c.removeAttribute('disabled');
+      // The EFFECTIVE state: its own `disabled`, or a disabled fieldset's.
+      c.toggleAttribute('disabled', this.matches(':disabled'));
     }
+    this.#form.value(this.selected ? this.value || 'on' : null);
+  }
+
+  /* Form lifecycle — called by the browser. */
+
+  /** Inside a disabled `<fieldset>`, as by its own `disabled`. TRAP T-a-form-control-follows-its-fieldset */
+  formDisabledCallback(): void {
+    this.#syncControl();
+  }
+
+  /** A form reset puts back its first `data-selected`. */
+  formResetCallback(): void {
+    this.selected = this.#resetTo;
   }
 
   /** Keep aria-checked in step with the selected state. */
@@ -91,13 +114,13 @@ export class SherpaSelectCard extends SherpaElement {
 
   /** A click anywhere on the card toggles it. */
   #onCardClick = (): void => {
-    if (this.hasAttribute('disabled')) return;
+    if (this.matches(':disabled')) return;
     this.#toggle();
   };
 
   /** Space and Enter toggle it, as they would a checkbox. */
   #onKeydown = (event: KeyboardEvent): void => {
-    if (this.hasAttribute('disabled')) return;
+    if (this.matches(':disabled')) return;
     if (event.key === ' ' || event.key === 'Enter') {
       event.preventDefault();
       this.#toggle();

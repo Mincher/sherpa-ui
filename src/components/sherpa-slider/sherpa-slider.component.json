@@ -181,6 +181,14 @@
     },
     {
       "$type": "prop",
+      "name": "name",
+      "type": "string",
+      "observed": true,
+      "native": true,
+      "description": "— the form field its value, or a range's two ends, are submitted under"
+    },
+    {
+      "$type": "prop",
       "name": "step",
       "type": "string",
       "observed": true,
@@ -237,6 +245,11 @@
       "$type": "capability",
       "api": "js-property-mirror",
       "description": "read/write JS properties (value, range). See $extensions.sherpa.jsProps."
+    },
+    {
+      "$type": "capability",
+      "api": "js-methods",
+      "description": "callable from a view definition's state block (formDisabledCallback, formResetCallback). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -271,6 +284,20 @@
   "$extensions": {
     "sherpa": {
       "figmaName": "Slider",
+      "methods": [
+        {
+          "$type": "method",
+          "name": "formDisabledCallback",
+          "args": "",
+          "description": "Inside a disabled `<fieldset>`, as by its own `disabled`."
+        },
+        {
+          "$type": "method",
+          "name": "formResetCallback",
+          "args": "",
+          "description": "A form reset puts back its first values."
+        }
+      ],
       "category": "control",
       "jsProps": [
         {

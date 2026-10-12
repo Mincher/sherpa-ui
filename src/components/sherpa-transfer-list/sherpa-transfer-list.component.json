@@ -173,6 +173,23 @@
       "kind": "content",
       "default": "Selected",
       "description": "heading for the selected pane"
+    },
+    {
+      "$type": "prop",
+      "name": "disabled",
+      "type": "boolean",
+      "observed": true,
+      "native": true,
+      "default": false,
+      "description": "disabled state — no move is made"
+    },
+    {
+      "$type": "prop",
+      "name": "name",
+      "type": "string",
+      "observed": true,
+      "native": true,
+      "description": "the form field its selected values are submitted under"
     }
   ],
   "populate": {
@@ -191,6 +208,11 @@
       "$type": "capability",
       "api": "js-property-mirror",
       "description": "read/write JS properties (selected). See $extensions.sherpa.jsProps."
+    },
+    {
+      "$type": "capability",
+      "api": "js-methods",
+      "description": "callable from a view definition's state block (formResetCallback). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -229,6 +251,14 @@
   "$extensions": {
     "sherpa": {
       "figmaName": "Transfer List",
+      "methods": [
+        {
+          "$type": "method",
+          "name": "formResetCallback",
+          "args": "",
+          "description": "A form reset puts back its first selection."
+        }
+      ],
       "category": "container",
       "jsProps": [
         {

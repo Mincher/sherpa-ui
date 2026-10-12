@@ -6,6 +6,7 @@
  * - TransferItem — A transfer-list item.
  */
 import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
+import { FormValue } from '../../core/ui/form-value.js';
 
 /** A transfer-list item. */
 export interface TransferItem {
@@ -27,6 +28,15 @@ export class SherpaTransferList extends SherpaElement {
     'data-source-heading': { type: 'string', kind: 'content', to: '.source .pane-heading', default: 'Available' },
     'data-target-heading': { type: 'string', kind: 'content', to: '.target .pane-heading', default: 'Selected' },
   } as const;
+
+  static override observed = ['name', 'disabled'];
+
+  /** It submits the values in its selected pane in a form. TODO 214 */
+  static readonly formAssociated = true;
+  /** Its link to its form. */
+  #form = new FormValue(this);
+  /** Its first selection: what a form reset puts back. */
+  #resetTo: string[] | null = null;
 
   /** Every item, and which side it is on. */
   #items: Item[] = [];
@@ -50,7 +60,20 @@ export class SherpaTransferList extends SherpaElement {
       selected: !!o.selected,
     }));
     this.#staged.clear();
+    this.#resetTo ??= this.selected;
     this.#render();
+  }
+
+  override onChange(): void {
+    this.#form.value(this.selected);
+  }
+
+  /* Form lifecycle — called by the browser. Inside a disabled `<fieldset>` it
+     matches `:disabled`, which a move checks. TRAP T-a-form-control-follows-its-fieldset */
+
+  /** A form reset puts back its first selection. */
+  formResetCallback(): void {
+    this.selected = this.#resetTo ?? [];
   }
 
   /** Values currently in the selected (right) pane. */
@@ -86,6 +109,7 @@ export class SherpaTransferList extends SherpaElement {
     }
     this.$('.source')?.toggleAttribute('data-empty', !this.#items.some((i) => !i.selected));
     this.$('.target')?.toggleAttribute('data-empty', !this.#items.some((i) => i.selected));
+    this.#form.value(this.selected);
   }
 
   /** A row was ticked or unticked. */
@@ -102,7 +126,7 @@ export class SherpaTransferList extends SherpaElement {
   #onMoveClick = (event: Event): void => {
     const btn = (event.target as HTMLElement).closest<HTMLElement>('[data-move]');
     const move = btn?.dataset['move'];
-    if (!move) return;
+    if (!move || this.matches(':disabled')) return;
     switch (move) {
       case 'add': this.#move(true, false); break;
       case 'add-all': this.#move(true, true); break;

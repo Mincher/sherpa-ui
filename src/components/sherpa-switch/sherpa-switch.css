@@ -138,7 +138,7 @@
 }
 
 /* ── Disabled — a PIN (inactive), never opacity ────────────────────────── */
-:host([disabled]) {
+:host(:disabled) {
   pointer-events: none;
 }
 
@@ -173,5 +173,5 @@
 .description:empty { display: none; }
 /* No words: no text column to claim the gap. */
 .text:not(:has(*:not(:empty))) { display: none; }
-:host([disabled]) .text { color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */ }
-:host([disabled]) .text > * { color: inherit; }
+:host(:disabled) .text { color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */ }
+:host(:disabled) .text > * { color: inherit; }

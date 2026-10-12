@@ -6,7 +6,7 @@
  * Map:
  * - FormValue — A form-associated control's link to its form.
  * - .form — The form it is in, if any.
- * - .value — What it submits, under the host's `name`; null submits nothing.
+ * - .value — What it submits under the host's `name`: one value, several — a range, files — or null for nothing.
  * - .validity — Acceptable — or not, with the platform's flags and a message, pointed at `anchor`.
  * - .follow — Acceptable exactly when the wrapped control is.
  * - .checkValidity — Is it acceptable, as its form sees it?
@@ -27,17 +27,32 @@ export class FormValue {
   readonly #internals: ElementInternals;
 
   constructor(host: HTMLElement) {
+    this.#host = host;
     this.#internals = host.attachInternals();
   }
+
+  /** The control it speaks for. */
+  readonly #host: HTMLElement;
 
   /** The form it is in, if any. */
   get form(): HTMLFormElement | null {
     return this.#internals.form;
   }
 
-  /** What it submits, under the host's `name`; null submits nothing. */
-  value(value: string | null): void {
-    this.#internals.setFormValue(value);
+  /** What it submits under the host's `name`: one value, several — a range, files — or null for nothing. */
+  value(value: string | readonly (string | File)[] | null): void {
+    if (value === null || typeof value === 'string') {
+      this.#internals.setFormValue(value);
+      return;
+    }
+    const name = this.#host.getAttribute('name');
+    if (!name || !value.length) {
+      this.#internals.setFormValue(null);
+      return;
+    }
+    const data = new FormData();
+    for (const one of value) data.append(name, one);
+    this.#internals.setFormValue(data);
   }
 
   /** Acceptable — or not, with the platform's flags and a message, pointed at `anchor`. */

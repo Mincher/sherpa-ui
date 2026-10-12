@@ -194,11 +194,11 @@ slot[name="menu"] { display: contents; }
 .text:not(:has(*:not(:empty))) { display: none; }
 
 /* ── Disabled — a PIN (inactive): grey box and indicator, dark tick ── */
-:host([disabled]) .field {
+:host(:disabled) .field {
   cursor: not-allowed;
   pointer-events: none;
 }
-:host([disabled]) .control { cursor: not-allowed; }
+:host(:disabled) .control { cursor: not-allowed; }
 
 /* ── Validation — native :user-invalid, which the host does not reflect ── */
 .control:user-invalid:not(:checked):not(:indeterminate) {

@@ -402,6 +402,11 @@ export class SherpaInputText extends SherpaElement {
 
   /* Form lifecycle — called by the browser. */
 
+  /** Inside a disabled `<fieldset>`, as by its own `disabled`. TRAP T-a-form-control-follows-its-fieldset */
+  formDisabledCallback(): void {
+    this.#syncAttrs();
+  }
+
   formResetCallback(): void {
     if (this.#control) this.#control.value = this.getAttribute('value') ?? '';
     this.#syncHasValue();
@@ -451,6 +456,8 @@ export class SherpaInputText extends SherpaElement {
     // The shared loop; `value` is a property, set below.
     // TRAP T-mirroring-skips-value
     this.mirrorAttrs(c, MIRRORED);
+    // The EFFECTIVE state: its own `disabled`, or a disabled fieldset's.
+    c.disabled = this.matches(':disabled');
     /* A NUMBER keeps what the mirror would take away: its type, and words for
        an empty box. TRAP T-a-number-input-wears-sherpas-steppers */
     if (this.dataset['type'] === 'number') {

@@ -8,6 +8,7 @@ import { SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import '../sherpa-container-footer/sherpa-container-footer.js';
 import '../sherpa-calendar-cell/sherpa-calendar-cell.js';
 import '../sherpa-button/sherpa-button.js';
+import { FormValue } from '../../core/ui/form-value.js';
 
 /** A month's name in the reader's own words, as the platform says it. TODO 84. */
 const monthName = (month: number, width: 'long' | 'short' = 'long'): string =>
@@ -36,6 +37,9 @@ function parseIso(iso: string | null | undefined): Temporal.PlainDate | null {
 /** Today, where the reader is. */
 const today = (): Temporal.PlainDate => Temporal.Now.plainDateISO();
 
+/** What a form reset restores. */
+const CAL_RESETS = ['data-value', 'data-value-start', 'data-value-end'];
+
 export class SherpaCalendar extends SherpaElement {
   static override css = new URL('./sherpa-calendar.css', import.meta.url);
   static override html = new URL('./sherpa-calendar.html', import.meta.url);
@@ -58,7 +62,15 @@ export class SherpaCalendar extends SherpaElement {
   /** True while the USER's own click is writing a value. */
   #picking = false;
 
+  /** It submits its day — or a range's two ends — in a form. TODO 214 */
+  static readonly formAssociated = true;
+  /** Its link to its form. */
+  #form = new FormValue(this);
+  /** Its first value: what a form reset puts back. */
+  #resetTo: Record<string, string | null> = {};
+
   override onRender(): void {
+    this.#resetTo = Object.fromEntries(CAL_RESETS.map((a) => [a, this.getAttribute(a)]));
     const anchor = parseIso(this.dataset['value'] ?? this.dataset['valueStart'])
       ?? this.#availableAnchor();
     if (anchor) this.#shown = anchor.toPlainYearMonth();
@@ -77,6 +89,29 @@ export class SherpaCalendar extends SherpaElement {
     this.$('.cal-apply')?.addEventListener('button-click', this.#onApply);
     this.#syncTimeInput();
     this.#render();
+    this.#syncForm();
+  }
+
+  /** A day, a range's two ends once both are picked, or nothing. */
+  #syncForm(): void {
+    const start = this.dataset['valueStart'];
+    const end = this.dataset['valueEnd'];
+    this.#form.value(this.#type === 'range' ? (start && end ? [start, end] : null) : this.dataset['value'] || null);
+  }
+
+  /* Form lifecycle — called by the browser. */
+
+  /** Inside a disabled `<fieldset>`: nothing to pick. TRAP T-a-form-control-follows-its-fieldset */
+  formDisabledCallback(): void {
+    this.#render();
+  }
+
+  /** A form reset puts back its first value. */
+  formResetCallback(): void {
+    for (const [name, value] of Object.entries(this.#resetTo)) {
+      if (value === null) this.removeAttribute(name);
+      else this.setAttribute(name, value);
+    }
   }
 
   override onChange(name: string): void {
@@ -89,6 +124,7 @@ export class SherpaCalendar extends SherpaElement {
     }
     if (name === 'data-value') this.#syncTimeInput();
     this.#render();
+    this.#syncForm();
   }
 
   /* ── Public API ─────────────────────────────────────────────────────── */
@@ -453,7 +489,7 @@ export class SherpaCalendar extends SherpaElement {
   /** A day was picked: set the value, or one end of a range. */
   #onDayClick = (event: Event): void => {
     const cell = (event.target as HTMLElement).closest<HTMLElement>('.cal-cell');
-    if (!cell || cell.hasAttribute('disabled') || cell.hasAttribute('data-blank')) return;
+    if (!cell || cell.hasAttribute('disabled') || cell.hasAttribute('data-blank') || this.matches(':disabled')) return;
     const iso = cell.dataset['iso'];
     if (!iso) return;
     if (this.#type === 'range') this.#pickRange(iso);

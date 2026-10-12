@@ -10,6 +10,7 @@
 import { SherpaElement, coerceNum, clampNum, define } from '../../core/ui/sherpa-element.js';
 // The value fields. Defined before the template stamps them.
 import '../sherpa-input-text/sherpa-input-text.js';
+import { FormValue } from '../../core/ui/form-value.js';
 
 /** A composed value field — `sherpa-input-text data-type="number"`. */
 type Field = HTMLElement & { value: string };
@@ -19,6 +20,9 @@ interface SliderData {
   start?: number;
   end?: number;
 }
+
+/** What a form reset restores. */
+const RESETS = ['value', 'value-start', 'value-end', 'data-touched'];
 
 export class SherpaSlider extends SherpaElement {
   static override css = new URL('./sherpa-slider.css', import.meta.url);
@@ -38,7 +42,15 @@ export class SherpaSlider extends SherpaElement {
     'value-start',
     'value-end',
     'disabled',
+    'name',
   ];
+
+  /** It submits its value — or a range's two ends — in a form. TODO 214 */
+  static readonly formAssociated = true;
+  /** Its link to its form. */
+  #form = new FormValue(this);
+  /** Its first values: what a form reset puts back. */
+  #resetTo: Record<string, string | null> = {};
 
   /** TRAP T-slider-second-thumb-is-revealed-not-built — the whole control in single mode, the LOW end in range. */
   /** The range input — the only one, or the START of a range. */
@@ -65,8 +77,24 @@ export class SherpaSlider extends SherpaElement {
     this.#valueField?.addEventListener('change', this.#own(this.#onFieldChange), { signal });
     this.#startField?.addEventListener('input', this.#own(this.#onStartFieldInput), { signal });
     this.#startField?.addEventListener('change', this.#own(this.#onStartFieldChange), { signal });
+    this.#resetTo = Object.fromEntries(RESETS.map((a) => [a, this.getAttribute(a)]));
     this.#syncInputAttrs();
     this.#sync();
+  }
+
+  /* Form lifecycle — called by the browser. */
+
+  /** Inside a disabled `<fieldset>`, as by its own `disabled`. TRAP T-a-form-control-follows-its-fieldset */
+  formDisabledCallback(): void {
+    this.#syncInputAttrs();
+  }
+
+  /** A form reset puts back its first values. */
+  formResetCallback(): void {
+    for (const [name, value] of Object.entries(this.#resetTo)) {
+      if (value === null) this.removeAttribute(name);
+      else this.setAttribute(name, value);
+    }
   }
 
   /** A field's event is the slider's to answer, and goes no further: the
@@ -160,7 +188,8 @@ export class SherpaSlider extends SherpaElement {
   /** Mirror min/max/step/disabled onto every native input. */
   #syncInputAttrs(): void {
     const min = String(this.#min), max = String(this.#max), step = String(this.#step);
-    const disabled = this.hasAttribute('disabled');
+    // The EFFECTIVE state: its own `disabled`, or a disabled fieldset's.
+    const disabled = this.matches(':disabled');
     const readOnly = this.hasAttribute('data-value-readonly');
     for (const el of [this.#input, this.#endInput]) {
       if (!el) continue;
@@ -192,6 +221,7 @@ export class SherpaSlider extends SherpaElement {
 
   /** Mirror the value(s) onto every input and onto the --_pct fill bridge. */
   #sync(): void {
+    this.#form.value(this.#isRange ? this.range.map(String) : String(this.value));
     if (this.#isRange) {
       const [start, end] = this.range;
       // BOTH written even mid-drag — that is what stops a thumb passing its partner.

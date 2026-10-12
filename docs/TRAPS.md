@@ -15556,6 +15556,37 @@ EXTENDS the default rather than replacing it.
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `test/e2e/reforged-templater.spec.ts`
 
+### T-a-form-control-follows-its-fieldset
+
+**A form control is disabled by its `<fieldset>` too, and a reset puts back
+its first state** (TODO 214). A form-associated element matches `:disabled`
+for EITHER cause, so each control reads `this.matches(':disabled')` — never
+`hasAttribute('disabled')` — for its inner control and its presses, and its
+CSS selects `:host(:disabled)`. `formDisabledCallback` only re-syncs.
+
+Reset follows Will's ruling B: `checked` keeps reflecting the current state,
+so the FIRST value seen is the reset default — the switch, checkbox, radio,
+select card, slider, calendar and transfer list each keep theirs; the file
+upload empties, as a native one does.
+
+Five controls submitted nothing and join their form now: the slider (a value,
+or a range's two ends), the select card (its value while selected — its
+footer controls are parts and join no form), the calendar (a day, or two
+ends), the file upload (its files), the transfer list (its selected values).
+`FormValue.value()` takes a list for those: one entry each, under the host's
+`name`.
+
+- Site: `src/components/sherpa-switch/sherpa-switch.ts`
+- Site: `src/components/sherpa-select-checkbox/sherpa-select-checkbox.ts`
+- Site: `src/components/sherpa-select-radio/sherpa-select-radio.ts`
+- Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
+- Site: `src/components/sherpa-slider/sherpa-slider.ts`
+- Site: `src/components/sherpa-select-card/sherpa-select-card.ts`
+- Site: `src/components/sherpa-calendar/sherpa-calendar.ts`
+- Site: `src/components/sherpa-file-upload/sherpa-file-upload.ts`
+- Site: `src/components/sherpa-transfer-list/sherpa-transfer-list.ts`
+- Site: `test/e2e/reforged-forms-complete.spec.ts`
+
 ### T-a-list-takes-its-children-as-data
 
 **A page that writes only HTML could not fill a list.** The tab strip, the

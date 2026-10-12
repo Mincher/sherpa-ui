@@ -233,11 +233,6 @@
       "$type": "state",
       "name": "not-horizontal",
       "selector": ":host(:not([data-orientation=\"horizontal\"]))"
-    },
-    {
-      "$type": "state",
-      "name": "disabled",
-      "selector": ":host([disabled])"
     }
   ],
   "capabilities": [
@@ -249,7 +244,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (focus). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (formDisabledCallback, formResetCallback, focus). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -281,6 +276,18 @@
     "sherpa": {
       "figmaName": "Select Card",
       "methods": [
+        {
+          "$type": "method",
+          "name": "formDisabledCallback",
+          "args": "",
+          "description": "Inside a disabled `<fieldset>`, as by its own `disabled`."
+        },
+        {
+          "$type": "method",
+          "name": "formResetCallback",
+          "args": "",
+          "description": "A form reset puts back its first `data-selected`."
+        },
         {
           "$type": "method",
           "name": "focus",

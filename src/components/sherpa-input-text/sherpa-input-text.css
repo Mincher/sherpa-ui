@@ -164,8 +164,8 @@
   cursor: pointer;
 }
 
-:host([data-has-value]:not([data-multiline], [data-type="select"], [data-no-clear], [disabled], [readonly])) .clear,
-:host([data-clearable][data-has-value]:not([data-no-clear], [disabled], [readonly])) .clear {
+:host([data-has-value]:not([data-multiline], [data-type="select"], [data-no-clear], :disabled, [readonly])) .clear,
+:host([data-clearable][data-has-value]:not([data-no-clear], :disabled, [readonly])) .clear {
   display: inline-flex;
 }
 
@@ -279,12 +279,12 @@ textarea.control {
 }
 
 /* ── Disabled — a PIN (inactive), never opacity ─────────────────────── */
-:host([disabled]) :is(.control-row, .control) { cursor: not-allowed; }
+:host(:disabled) :is(.control-row, .control) { cursor: not-allowed; }
 /* Ink ON the greyed box takes the inactive ink; body-2 would vanish into it. */
-:host([disabled]) .control,
-:host([disabled]) .control::placeholder { color: var(--sherpa-style-content-base, #35353d); }
+:host(:disabled) .control,
+:host(:disabled) .control::placeholder { color: var(--sherpa-style-content-base, #35353d); }
 /* The label binds Theme, which a pin cannot reach. */
-:host([disabled]) .label { color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */ }
+:host(:disabled) .label { color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */ }
 
 /* ── Minimal style — label beside the control ─────────────────────────
    Layout only: the typography matches the default variant. The minimal
