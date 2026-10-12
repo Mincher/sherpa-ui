@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 /**
  * sherpa-dialog on the reforged base — a modal surface on native <dialog>.

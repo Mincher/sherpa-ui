@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 /**
  * Sherpa runs on a page with a STRICT CSP — no inline script or style, and

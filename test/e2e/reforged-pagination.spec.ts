@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 /**
  * sherpa-pagination on the reforged base — the Figma two-zone control (48:65826):

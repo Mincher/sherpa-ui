@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 /**
  * `rendered` MUST SETTLE, even when the template does not arrive.

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 /**
  * The CHART owns the split with its own legend — not the card around it.

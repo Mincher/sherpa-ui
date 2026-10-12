@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 /**
  * sherpa-nav-item on the reforged base — a standalone nav row. Label / icon /

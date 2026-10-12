@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 /**
  * sherpa-key-value-list on the reforged base — populate() renders dt/dd pairs

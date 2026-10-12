@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 /**
  * sherpa-chip on the reforged base — the Figma Chip (62:1732): a near-square

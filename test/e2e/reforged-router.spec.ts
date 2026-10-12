@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './fixture';
 
 /**
  * sherpa-router — the ONE owner of the URL, on the Navigation API. TODO 67.

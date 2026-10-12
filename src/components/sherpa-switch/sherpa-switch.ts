@@ -11,6 +11,11 @@ import { FormValue } from '../../core/ui/form-value.js';
 export class SherpaSwitch extends SherpaElement {
   static override css = new URL('./sherpa-switch.css', import.meta.url);
   static override html = new URL('./sherpa-switch.html', import.meta.url);
+  /* Its words beside the track, as a checkbox's. Will, TODO 230. */
+  static override props = {
+    'data-label': { type: 'string', kind: 'content', to: '.title' },
+    'data-description': { type: 'string', kind: 'content', to: '.description' },
+  } as const;
 
   // A host label names this. TRAP T-a-host-label-must-reach-its-control
   static override labelTarget = '.input';

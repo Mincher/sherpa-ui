@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 /** sherpa-data-grid — columns/rows from populate(); click-to-sort; row-click. */
 
@@ -949,6 +949,8 @@ test('the scroller FILLS a sized host, and still scrolls inside it', async ({ pa
 test('a long value truncates inside its column instead of widening it', async ({ page }) => {
   await installBuilder(page);
   const r = await page.evaluate(async () => {
+    // Narrower than the columns, so none grows to fill it. TODO 96
+    document.getElementById('root')!.style.width = '300px';
     const el = await window.__buildGrid({
       columns: [{ field: 'name', header: 'Name' }, { field: 'note', header: 'Note' }],
       rows: [
@@ -1001,6 +1003,8 @@ test('a long value truncates inside its column instead of widening it', async ({
 test('the header grip resizes a column, clamps it, and does not sort', async ({ page }) => {
   await installBuilder(page);
   await page.evaluate(async () => {
+    // Narrower than the columns, so none grows to fill it. TODO 96
+    document.getElementById('root')!.style.width = '300px';
     await window.__buildGrid({
       columns: [{ field: 'name', header: 'Name' }, { field: 'note', header: 'Note' }],
       rows: [{ name: 'Jo', note: 'x' }],
@@ -3071,4 +3075,47 @@ test('a group badge counts the rows SHOWN under the grid\'s own filter row', asy
   // "-1" keeps Gold-1, Gold-12, Silver-1, Silver-12.
   expect(r.filtered).toEqual(['2', '2']);
   expect(r.cleared).toEqual(['4', '4']);
+});
+
+/** A card WIDER than its columns: they fill it, in proportion; a dragged one
+ *  keeps its width. Narrower, they keep theirs and the box scrolls. Will, TODO 96. */
+test('few columns fill a wide card; a dragged one keeps its width; a narrow card scrolls', async ({ page }) => {
+  const mount = (width: number) => page.evaluate(async ({ config, width }) => {
+    const box = document.createElement('div');
+    box.style.width = `${width}px`;
+    const el = document.createElement('sherpa-data-grid') as HTMLElement & { rendered?: Promise<void>; populate?: (d: unknown) => void };
+    box.append(el);
+    document.getElementById('root')!.replaceChildren(box);
+    await el.rendered;
+    el.populate!(config);
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+  }, { config: CONFIG, width });
+  const read = () => page.evaluate(() => {
+    const sr = document.querySelector('sherpa-data-grid')!.shadowRoot!;
+    const w = (sel: string) => Math.round(sr.querySelector(sel)!.getBoundingClientRect().width);
+    const scroller = sr.querySelector('.scroller')!;
+    return { name: w('.head-cell[data-field="name"]'), score: w('.head-cell[data-field="score"]'),
+      box: scroller.clientWidth, scrolls: scroller.scrollWidth > scroller.clientWidth };
+  });
+
+  await mount(600);
+  const wide = await read();
+  expect(Math.abs(wide.name + wide.score - wide.box)).toBeLessThanOrEqual(2);
+  expect(Math.abs(wide.name - wide.score)).toBeLessThanOrEqual(1);
+
+  // Drag Name's grip 40px wider: it keeps that; Score takes what is left.
+  const grip = await page.evaluateHandle(() => document.querySelector('sherpa-data-grid')!.shadowRoot!
+    .querySelector('.head-cell[data-field="name"] .resize-grip')!);
+  const at = await (grip as unknown as import('@playwright/test').ElementHandle).boundingBox();
+  await page.mouse.move(at!.x + at!.width / 2, at!.y + at!.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(at!.x + at!.width / 2 + 40, at!.y + at!.height / 2, { steps: 4 });
+  await page.mouse.up();
+  const dragged = await read();
+  expect(Math.abs(dragged.name - (wide.name + 40))).toBeLessThanOrEqual(2);
+  expect(Math.abs(dragged.name + dragged.score - dragged.box)).toBeLessThanOrEqual(2);
+
+  await mount(300);
+  const narrow = await read();
+  expect(narrow).toMatchObject({ name: 160, score: 160, scrolls: true });
 });

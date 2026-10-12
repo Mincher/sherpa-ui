@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 /**
  * sherpa-sparkline on the reforged base — a compact CSS-only trend chart. Proves

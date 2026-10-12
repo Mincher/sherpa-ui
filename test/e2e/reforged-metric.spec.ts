@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 /**
  * sherpa-metric on the reforged base — a KPI tile. Proves the label/value/delta

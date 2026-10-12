@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 /**
  * THE TEMPLATER — Will, TODO 68 and 27. A component's markup and sheets come

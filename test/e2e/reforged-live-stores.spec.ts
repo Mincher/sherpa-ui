@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixture';
 
 /**
  * live-stores.ts — records the SERVER pushes.

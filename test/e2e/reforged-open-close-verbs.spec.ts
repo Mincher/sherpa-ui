@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 /**
  * ONE VOCABULARY OPENS AND CLOSES EVERY COMPONENT.

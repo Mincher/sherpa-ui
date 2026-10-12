@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixture';
 
 /**
  * sherpa-notifications — the bell's list, as a menu.

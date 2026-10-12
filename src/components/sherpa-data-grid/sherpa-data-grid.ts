@@ -193,6 +193,9 @@ export class SherpaDataGrid extends SherpaElement {
   #actionRow: GridRow | null = null;
   /** Widths the USER has dragged, keyed by field. Survive a re-populate. */
   #widths = new Map<string, number>();
+  /** Watches the scroll box, so a wider card re-shares its slack. Kept across a
+   *  move: onRender runs once, and a detached box simply reports nothing. */
+  #fillWatch: ResizeObserver | null = null;
   /** Filter-row text, keyed by field. Empty entries are removed. */
   #filters = new Map<string, string>();
 
@@ -234,6 +237,9 @@ export class SherpaDataGrid extends SherpaElement {
     this.$('.filter-row')?.addEventListener('input', this.#onFilterInput);
     this.$('.filter-row')?.addEventListener('click', this.#onFilterClick);
     this.$('.head-row')?.addEventListener('pointerdown', this.#onGripDown);
+    this.#fillWatch = new ResizeObserver(() => this.#fill());
+    const scroller = this.$('.scroller');
+    if (scroller) this.#fillWatch.observe(scroller);
     // Both footer buttons commit. Delegated — the header is rebuilt per sort.
     this.$('.head-row')?.addEventListener('menu-apply', this.#onColumnFilterCommit);
     this.$('.head-row')?.addEventListener('menu-clear', this.#onColumnFilterCommit);
@@ -297,6 +303,30 @@ export class SherpaDataGrid extends SherpaElement {
     this.#syncGroupSelects();
     this.#syncCurrent();
     this.#syncPinned();
+    this.#fill();
+  }
+
+  /**
+   * A card WIDER than its columns: the slack goes to the columns the reader has
+   * not dragged, in proportion; a dragged one and the pinned edges keep theirs.
+   * Narrower, each keeps its own width and the box scrolls, as before.
+   * Will, TODO 96 (A). TRAP T-col-width-not-inline-size
+   */
+  #fill(): void {
+    const box = this.$('.scroller');
+    if (!box) return;
+    const shown = this.#shownColumns();
+    const edges = this.$$('.head-row > .select-cell, .head-row > .actions-cell')
+      .reduce((sum, cell) => sum + cell.getBoundingClientRect().width, 0);
+    const base = shown.map((col) => this.#widthFor(col));
+    const free = shown.map((col) => !this.#widths.has(col.field));
+    const share = base.reduce((sum, w, i) => sum + (free[i] ? w : 0), 0);
+    const slack = box.clientWidth - edges - base.reduce((sum, w) => sum + w, 0);
+    shown.forEach((col, i) => {
+      const el = this.$<HTMLElement>(`.cols > .col[data-field="${CSS.escape(col.field)}"]`);
+      const grow = slack > 0 && free[i] && share > 0 ? Math.floor((slack * base[i]!) / share) : 0;
+      if (el) el.style.width = `${base[i]! + grow}px`;
+    });
   }
 
   /** Flag one cell as frozen. `data-pin-last` draws the scroll shadow. */
@@ -335,8 +365,9 @@ export class SherpaDataGrid extends SherpaElement {
   /** Drawn width: a dragged width wins, then the config, then the default. */
   #widthFor(col: GridColumn): number {
     const dragged = this.#widths.get(col.field);
-    const raw = dragged ?? col.width ?? SherpaDataGrid.DEFAULT_COL_WIDTH;
-    return this.#clampWidth(raw);
+    // A drag may END above the maximum: one that began on a column the card had filled.
+    if (dragged != null) return Math.max(SherpaDataGrid.MIN_COL_WIDTH, Math.round(dragged));
+    return this.#clampWidth(col.width ?? SherpaDataGrid.DEFAULT_COL_WIDTH);
   }
 
   /** A column width held between the minimum and the maximum. */
@@ -1535,12 +1566,15 @@ export class SherpaDataGrid extends SherpaElement {
   #onGripMove = (event: PointerEvent): void => {
     if (!this.#drag) return;
     const { field, startX, startWidth } = this.#drag;
-    const next = this.#clampWidth(startWidth + (event.clientX - startX));
+    /* A column the card FILLED past the maximum shrinks from where it is drawn,
+       and grows no wider — it does not jump down to the maximum. TODO 96 */
+    const next = clampNum(Math.round(startWidth + (event.clientX - startX)), {
+      min: SherpaDataGrid.MIN_COL_WIDTH, max: Math.max(SherpaDataGrid.MAX_COL_WIDTH, startWidth),
+    });
     this.#widths.set(field, next);
-    // Write the <col> DIRECTLY: a #render() per pointermove rebuilds the body
-    // 60x/s, and a width changes only the colgroup.
-    const col = this.$<HTMLElement>(`.cols > .col[data-field="${CSS.escape(field)}"]`);
-    if (col) col.style.width = `${next}px`;
+    /* The COLGROUP only: a #render() per pointermove rebuilds the body 60x/s.
+       The columns not dragged re-share what is left. */
+    this.#fill();
   };
 
   /** The grip was let go: keep the width and report it. */

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 /**
  * THE FORM CONTROLS TAKE PART IN A PLAIN <form>: what each submits, and when

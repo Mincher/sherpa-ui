@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 /**
  * A COMPONENT IMPORTED ON ITS OWN draws as it does from the index: the shared

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 /**
  * sherpa-nav-section on the reforged base — the Figma "Navigation Section" (32:43134):

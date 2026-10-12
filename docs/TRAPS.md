@@ -193,6 +193,14 @@ Chromium does not feed the logical property into fixed-table column sizing: a
 A modernisation sweep replacing physical properties with logical ones would
 silently destroy column sizing here.
 
+**A card wider than its columns is FILLED** (Will, 2026-10-12, TODO 96). The
+table stays a fixed table at its columns' sum; the grid shares the slack
+between the columns the reader has not dragged, in proportion, by writing
+their `<col>` widths — on each render, when its scroll box resizes, and while a
+column is dragged. A dragged column and the pinned edges keep theirs; narrower
+than the sum, nothing grows and the box scrolls. A filled column may pass the
+maximum width, so a drag that starts there shrinks it without a jump.
+
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 
 ### T-firefox-never-rereads-a-has-after-host
@@ -3497,11 +3505,14 @@ The components are right: a pointer really is on the rail. The fix is in the
 harness — `gotoHarness()` parks the pointer at (-1, -1) once the page is ready.
 A spec that loads the page with its own `page.goto` does not get that.
 
-Sherpa Demos does it for every spec: `test/e2e/fixture.ts` gives each test a
-`page` that parks the pointer after every `goto`, and a node test fails a spec
-that takes `test` from `@playwright/test` instead (TODO 202).
+Both projects do it for every spec now: `test/e2e/fixture.ts` gives each test a
+`page` that parks the pointer after every `goto` — sherpa-ui's `harness.ts`
+builds on it — and a node test fails a spec that takes `test` from
+`@playwright/test` (TODO 202, 203).
 
 - Site: `test/e2e/harness.ts`
+- Site: `test/e2e/fixture.ts`
+- Site: `test/unit/e2e-fixture.test.mjs`
 
 ### T-icon-box-is-not-the-glyph
 

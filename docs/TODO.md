@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**53 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
+**50 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -42,7 +42,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 12 | 16 | Favourite and Save apply to the Context, not the View | bug |
 | ⬜ | 13 | 54 | A one-value filter's row in the Filters menu: its tick means On | bug |
 | ✅ | 14 | 95 | Firefox: a remote chip holding a draft is not marked pending | bug |
-| ⬜ | 15 | 96 | A grid with few columns leaves an empty band on the right of its card | bug |
+| ✅ | 15 | 96 | A grid with few columns leaves an empty band on the right of its card | bug |
 | ✅ | 16 | 64 | A collapsed accordion section fills with the down (+2) surface | quick |
 | ✅ | 16a | 100 | The Assistant panel shows no heading | quick |
 | ✅ | 16b | 106 | A click between a menu's items reaches what is behind it — an accordion toggles | bug |
@@ -70,7 +70,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16o | 153 | In a fixed-row layout grid, the data grid and its container change height with the row count; the container must keep its height and the grid fill it | bug |
 | ✅ | 16s | 201 | In Chromium on Linux the nav rail opens to hover by itself, so 5 closed-rail tests fail every run | bug |
 | ✅ | 16t | 202 | Sherpa Demos: 7 Chromium tests time out — the rail opens under the pointer and covers the filter panel | bug |
-| ⬜ | 16t1 | 203 | sherpa-ui: 135 of 136 specs load the page without the pointer park — one fixture, as in Demos? | bug |
+| ✅ | 16t1 | 203 | sherpa-ui: 135 of 136 specs load the page without the pointer park — one fixture, as in Demos? | bug |
 | ⬜ | 16t2 | 204 | WebKit: a `page.reload` in the Demos nav favourites spec never fires `load` — 1 run in 80 | bug |
 | ✅ | 16t3 | 206 | Firefox: "closing the dialog fires a composed close event" sees no event, 1 to 2 runs in 10 | bug |
 | ✅ | 16t4 | 228 | The donut chart's legend lets EVERY item be switched off; one must stay on — and a value filter limiting greyed out may not be counted | bug |
@@ -80,7 +80,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16t9 | 233 | In the filter panel, a filter section's header inside an accordion aligns to the TOP: label, count badge and the accordion button | quick |
 | ✅ | 16t10 | 234 | A filter moved up to the View: its menu's FIRST option is "Return to X", its own scope, apart from the other scopes | quick |
 | ⬜ | 16t11 | 235 | "Return to X" survives a reload: the Query keeps where a View field came up from | feature |
-| ⬜ | 16t6 | 230 | Reset all filters dialog: "Save filters before reset" sits in a grey border; it is plain form content | quick |
+| ✅ | 16t6 | 230 | Reset all filters dialog: "Save filters before reset" sits in a grey border; it is plain form content | quick |
 | | | | **C2 — Consumers: frameworks, apps and agents** (planned 2026-10-12) | |
 | ✅ | c1 | 225 | `settled()` hangs on an infinite animation — a loader, an indeterminate bar — and waits on the whole document when given a part | bug |
 | ✅ | c2 | 224 | Silent failures, round 2: a linked View drops its report; View gaps skip `onReport`; `open()` hangs on an undefined tag; a 200 that is not the file is stamped; and five more | bug |
@@ -906,7 +906,7 @@ fires AFTER the tick — so the tick became the baseline, and was no draft. The
 baseline is taken in `show()` now. The test passes in all three browsers.
 `T-the-baseline-is-taken-at-show`
 
-### `[ ]` 96 — A grid with few columns leaves an empty band on the right of its card
+### `[x]` ✅ 96 — A grid with few columns leaves an empty band on the right of its card
 
 Seen 2026-09-27 in the Dashboard's Capacity planning View: five columns at the
 default 160px make an 800px table in a 1350px card. The grid is a FIXED table
@@ -926,6 +926,13 @@ when the card is narrower, so nothing changes where it already scrolls.
   columns never move, but one column can grow very wide.
 
 **✅ Will, 2026-10-12 — all my picks:** A — every column the reader has not dragged grows in proportion; dragged and pinned ones keep their width.
+
+**✅ Done 2026-10-12.** The grid writes the free columns' `<col>` widths to
+share the slack — on render, when its scroll box resizes, and while a column is
+dragged. Narrower than the sum, nothing grows and it scrolls. A filled column
+can pass the 480px maximum, so a drag starting there shrinks it without a jump.
+Two older tests now run in a box narrower than their columns.
+`T-col-width-not-inline-size`
 
 ### `[x]` ✅ 100 — The Assistant panel shows no heading
 
@@ -1431,7 +1438,7 @@ Mac: 390 passed, 1 WebKit flake that HEAD has too (204).
 
 ---
 
-### `[ ]` ❓ 203 — sherpa-ui: 135 of 136 specs load the page without the pointer park
+### `[x]` ✅ 203 — sherpa-ui: 135 of 136 specs load the page without the pointer park
 
 Found 2026-10-12, with 202. Only `reforged-layout-grid.spec.ts` uses
 `gotoHarness()`; the other 135 call `page.goto` themselves, so a spec that
@@ -1446,6 +1453,10 @@ the reason you gave for 202. It is a 135-file change, so it waits for your yes.
 ---
 
 **✅ Will, 2026-10-12 — all my picks:** A — one fixture in sherpa-ui whose `page` parks the pointer after every `goto`, the import line in every spec, and a node test that keeps it so.
+
+**✅ Done 2026-10-12.** `test/e2e/fixture.ts`, as in Demos; `harness.ts` builds
+on it, so its 87 specs park on every `goto` too; the other 58 import from it;
+`test/unit/e2e-fixture.test.mjs` keeps every spec on one of the two.
 
 ### `[ ]` 204 — BUG: WebKit — a `page.reload` in the nav favourites spec never fires `load`
 
@@ -1573,7 +1584,7 @@ from first; it now marks it `origin`, and the panel words it "Return to X"
 session only, by design (`T-send-to-view-filters`): after a reload both rows
 read "Send to". Say if it should outlive a reload — the Query would carry it.
 
-### `[ ]` 230 — The Reset all filters dialog: its switch is plain form content
+### `[x]` ✅ 230 — The Reset all filters dialog: its switch is plain form content
 
 Will, 2026-10-12: *"The 'Save filters before reset' in the Reset All Filters
 dialog is contained within a grey border. The switch, label, and description
@@ -1593,6 +1604,11 @@ inline styles. My pick: A.
 ---
 
 **✅ Will, 2026-10-12 — all my picks:** A — `sherpa-switch` takes `data-label` and `data-description`, drawn as `sherpa-select-checkbox` draws its own.
+
+**✅ Done 2026-10-12.** One `<label>` holds the track and the words, so a click
+on them toggles it; no words, no text column. The words take Theme ink, as the
+checkbox's: ON pins the host's Style mode to saturated/success. The Demos
+dialog drops its `sherpa-list` for the plain switch.
 
 ## C2 — Consumers: frameworks, apps and agents
 

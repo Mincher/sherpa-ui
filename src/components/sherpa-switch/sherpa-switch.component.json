@@ -17,35 +17,75 @@
   "anatomy": {
     "root": {
       "el": "label",
-      "class": "track sherpa-border-edges",
-      "part": "track",
+      "class": "field",
+      "part": "field",
       "children": [
         {
-          "el": "input",
-          "class": "input",
-          "attrs": {
-            "type": "checkbox",
-            "role": "switch"
-          }
+          "el": "span",
+          "class": "track sherpa-border-edges",
+          "part": "track",
+          "children": [
+            {
+              "el": "input",
+              "class": "input",
+              "attrs": {
+                "type": "checkbox",
+                "role": "switch"
+              }
+            },
+            {
+              "el": "span",
+              "class": "knob",
+              "attrs": {
+                "aria-hidden": "true"
+              }
+            },
+            {
+              "el": "span",
+              "class": "label",
+              "attrs": {
+                "aria-hidden": "true"
+              }
+            }
+          ]
         },
         {
           "el": "span",
-          "class": "knob",
-          "attrs": {
-            "aria-hidden": "true"
-          }
-        },
-        {
-          "el": "span",
-          "class": "label",
-          "attrs": {
-            "aria-hidden": "true"
-          }
+          "class": "text",
+          "part": "text",
+          "children": [
+            {
+              "el": "span",
+              "class": "title",
+              "part": "title"
+            },
+            {
+              "el": "span",
+              "class": "description",
+              "part": "description"
+            }
+          ]
         }
       ]
     }
   },
   "props": [
+    {
+      "$type": "prop",
+      "name": "data-description",
+      "type": "string",
+      "observed": false,
+      "kind": "content",
+      "description": "a helper line under the label"
+    },
+    {
+      "$type": "prop",
+      "name": "data-label",
+      "type": "string",
+      "observed": false,
+      "kind": "content",
+      "description": "its words, beside the track — a click on them toggles it, as on a checkbox"
+    },
     {
       "$type": "prop",
       "name": "data-type",
@@ -149,7 +189,16 @@
     "knob.background": "{sherpa.style-content-inverse}",
     "knob.transition": "{sherpa.motion-fast}",
     "label.transition": "{sherpa.motion-fast}",
-    "label.color": "{sherpa.style-content-base}"
+    "label.color": "{sherpa.style-content-base}",
+    "field.gap": "{sherpa.display-mode-space-xs}",
+    "text.gap": "{sherpa.display-mode-space-2xs}",
+    "title.color": "{sherpa.theme-content-body-1}",
+    "title.font-size": "{sherpa.font-size-body-base}",
+    "title.font-weight": "{sherpa.font-weight-medium}",
+    "title.line-height": "{sherpa.theme-content-line-height-base}",
+    "description.color": "{sherpa.theme-content-body-1}",
+    "description.font-size": "{sherpa.font-size-body-small}",
+    "description.line-height": "{sherpa.theme-content-line-height-small}"
   },
   "$extensions": {
     "sherpa": {

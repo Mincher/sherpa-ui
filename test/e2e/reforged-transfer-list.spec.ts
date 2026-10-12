@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 /**
  * sherpa-transfer-list on the reforged base — a two-pane shuttle. Exercises pane

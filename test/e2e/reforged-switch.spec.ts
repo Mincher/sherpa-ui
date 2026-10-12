@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 /**
  * sherpa-switch on the reforged base — a binary toggle backed by a native
@@ -198,4 +198,31 @@ test('the ON / OFF text stays inside the track in every density', async ({ page 
     return out;
   });
   expect(r, 'label outside the track, or its text clipped').toEqual([]);
+});
+
+/** Its own words, beside the track, as a checkbox's (TODO 230): a click on them
+ *  toggles it, none leaves no text column, and ON does not re-ink them. */
+test('data-label and data-description draw beside the track, and their click toggles it', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-switch') as HTMLElement & { rendered: Promise<void>; checked: boolean };
+    el.setAttribute('data-label', 'Save filters before reset');
+    el.setAttribute('data-description', 'Keep the filters on screen as a saved View.');
+    const bare = document.createElement('sherpa-switch') as HTMLElement & { rendered: Promise<void> };
+    document.getElementById('root')!.replaceChildren(el, bare);
+    await el.rendered;
+    await bare.rendered;
+    const title = el.shadowRoot!.querySelector<HTMLElement>('.title')!;
+    const ink = getComputedStyle(title).color;
+    title.click();
+    await window.__settled();
+    return {
+      title: title.textContent, description: el.shadowRoot!.querySelector('.description')!.textContent,
+      on: el.checked, sameInk: getComputedStyle(title).color === ink,
+      bareText: getComputedStyle(bare.shadowRoot!.querySelector('.text')!).display,
+    };
+  });
+  expect(r).toEqual({
+    title: 'Save filters before reset', description: 'Keep the filters on screen as a saved View.',
+    on: true, sameInk: true, bareText: 'none',
+  });
 });

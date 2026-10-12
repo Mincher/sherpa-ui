@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 /**
  * sherpa-layout-canvas — Will, TODO 25: an infinite canvas content area that

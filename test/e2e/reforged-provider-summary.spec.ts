@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 /**
  * A chart or tile DECLARES what it needs of the rows, and its provider answers

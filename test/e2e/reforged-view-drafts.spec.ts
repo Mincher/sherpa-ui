@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 test('a draft made over another definition of its View is dropped, not applied', async ({ page }) => {
   await page.goto('/test/reforged/harness.html');

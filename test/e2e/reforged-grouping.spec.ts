@@ -5,7 +5,7 @@
  * deliberately sub-pixel and `getComputedStyle` rounds each one up to "1px".
  * TRAP T-a-sub-pixel-border-reads-back-as-1px.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 const HARNESS = '/test/reforged/harness.html';
 

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixture';
 
 /**
  * sherpa-tabs on the reforged base — a tabbed content switcher. Proves the tab

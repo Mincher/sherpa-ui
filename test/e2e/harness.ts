@@ -12,7 +12,9 @@
  * NOT a `*.spec.ts` file, so Playwright's `testMatch: '**''/*.spec.ts'` ignores
  * it — it is imported, never collected.
  */
-import { test as base, type Page } from '@playwright/test';
+import { type Page } from '@playwright/test';
+// Its page parks the pointer after every goto. TRAP T-chromium-pointer-starts-on-the-page
+import { test as base } from './fixture';
 
 /** The page every component spec loads. */
 export const HARNESS = '/test/reforged/harness.html';

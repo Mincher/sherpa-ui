@@ -85,9 +85,9 @@
     "fetched": 219042
   },
   "components/sherpa-data-grid/sherpa-data-grid.js": {
-    "js": 788632,
+    "js": 790818,
     "files": 39,
-    "fetched": 335909
+    "fetched": 337189
   },
   "components/sherpa-data-viz-header/sherpa-data-viz-header.js": {
     "js": 379350,
@@ -230,9 +230,9 @@
     "fetched": 187148
   },
   "components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js": {
-    "js": 794294,
+    "js": 794551,
     "files": 38,
-    "fetched": 313431
+    "fetched": 314711
   },
   "components/sherpa-quick-filter/sherpa-quick-filter.js": {
     "js": 490195,
@@ -290,9 +290,9 @@
     "fetched": 189594
   },
   "components/sherpa-switch/sherpa-switch.js": {
-    "js": 384502,
+    "js": 384759,
     "files": 10,
-    "fetched": 190019
+    "fetched": 191299
   },
   "components/sherpa-tabs/sherpa-tabs.js": {
     "js": 384391,
@@ -330,8 +330,8 @@
     "fetched": 0
   },
   "index.js": {
-    "js": 1563124,
+    "js": 1565310,
     "files": 119,
-    "fetched": 820685
+    "fetched": 821965
   }
 }
