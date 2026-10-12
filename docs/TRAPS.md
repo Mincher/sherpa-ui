@@ -3445,6 +3445,10 @@ The components are right: a pointer really is on the rail. The fix is in the
 harness — `gotoHarness()` parks the pointer at (-1, -1) once the page is ready.
 A spec that loads the page with its own `page.goto` does not get that.
 
+Sherpa Demos does it for every spec: `test/e2e/fixture.ts` gives each test a
+`page` that parks the pointer after every `goto`, and a node test fails a spec
+that takes `test` from `@playwright/test` instead (TODO 202).
+
 - Site: `test/e2e/harness.ts`
 
 ### T-icon-box-is-not-the-glyph

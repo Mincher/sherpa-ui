@@ -12,7 +12,7 @@ immediate attention. Add it here, in its place in the order, and carry on.
 
 ## At a glance
 
-**33 open.** Reassessed 2026-09-29, after the Query (73), the provider (85)
+**35 open** (counted 2026-10-12). Reassessed 2026-09-29, after the Query (73), the provider (85)
 and the page definition (92) were built: what is left of the foundation first
 — the audit, the rename, the one builder — then the bugs, then the filter
 features, which now stand on it. Numbers are ids, not order; the table IS the
@@ -69,7 +69,9 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16r | 158 | A data viz filter sent up to the View cannot be sent back down | bug |
 | ✅ | 16o | 153 | In a fixed-row layout grid, the data grid and its container change height with the row count; the container must keep its height and the grid fill it | bug |
 | ✅ | 16s | 201 | In Chromium on Linux the nav rail opens to hover by itself, so 5 closed-rail tests fail every run | bug |
-| ❓ | 16t | 202 | Sherpa Demos: 7 Chromium tests time out — the rail opens under the pointer and covers the filter panel | bug |
+| ✅ | 16t | 202 | Sherpa Demos: 7 Chromium tests time out — the rail opens under the pointer and covers the filter panel | bug |
+| ❓ | 16t1 | 203 | sherpa-ui: 135 of 136 specs load the page without the pointer park — one fixture, as in Demos? | bug |
+| ⬜ | 16t2 | 204 | WebKit: a `page.reload` in the Demos nav favourites spec never fires `load` — 1 run in 80 | bug |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | ❓ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ❓ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
@@ -1311,7 +1313,7 @@ load before, 40 of 40 after, once that spec used `gotoHarness()`. 58 specs
 still load the page with their own `page.goto` and do not get the park.
 `T-chromium-pointer-starts-on-the-page`
 
-### `[ ]` ❓ 202 — BUG: 7 Sherpa Demos tests time out in Chromium under an open rail
+### `[x]` ✅ 202 — BUG: 7 Sherpa Demos tests time out in Chromium under an open rail
 
 Found 2026-10-02, first Demos run on Linux (`PORT=4300 npm test`): 384 passed,
 7 failed, all Chromium, all a click into the left filter panel. Each says
@@ -1330,6 +1332,43 @@ pointer after every `goto`, and change the import line in all 40 specs — it
 covers every test, now and later; or (B) park the pointer only in the 4
 failing specs — fewer files, but the next test that clicks near the rail
 fails the same way. A is a 40-file change, so it waits for your yes.
+
+**✅ Will, 2026-10-12: A — built** (Demos `c3997b1`). `test/e2e/fixture.ts`
+gives every test a `page` whose `goto` parks the pointer at (-1, -1);
+`parkThePointer()` does the same for a page a spec opens itself (two specs
+do). All 40 specs import `test` from `./fixture`, and
+`test/unit/e2e-fixture.test.mjs` fails a spec that does not. Full run on the
+Mac: 390 passed, 1 WebKit flake that HEAD has too (204).
+`T-chromium-pointer-starts-on-the-page`
+
+---
+
+### `[ ]` ❓ 203 — sherpa-ui: 135 of 136 specs load the page without the pointer park
+
+Found 2026-10-12, with 202. Only `reforged-layout-grid.spec.ts` uses
+`gotoHarness()`; the other 135 call `page.goto` themselves, so a spec that
+draws something hover-aware at (0, 0) can fail as 201 and 202 did.
+
+**❓ Will:** (A) the Demos fix here too — a `test/e2e/fixture.ts` whose `page`
+parks the pointer after every `goto`, and the import line changed in all 135
+specs, with a node test that keeps it so; or (B) leave it — only the specs
+that draw the nav or the shell at (0, 0) have failed so far. My pick: A, for
+the reason you gave for 202. It is a 135-file change, so it waits for your yes.
+
+---
+
+### `[ ]` 204 — BUG: WebKit — a `page.reload` in the nav favourites spec never fires `load`
+
+Found 2026-10-12, with 202. In Sherpa Demos,
+`reforged-nav-favorites-recents.spec.ts` reloads the page in its
+`beforeEach` and in two tests. In WebKit, about 1 run in 80 times out in
+`page.reload` "waiting for navigation until load", though the snapshot shows
+the page drawn. Measured on HEAD without 202 too: 1 failure in 80 both ways,
+so it is not the fixture. The retry hides it.
+
+First step: log which request is still open when it hangs — a live feed or a
+fetch that never ends would hold `load` back. If one is, the test can wait for
+`domcontentloaded` and the app's own ready signal instead.
 
 ---
 
