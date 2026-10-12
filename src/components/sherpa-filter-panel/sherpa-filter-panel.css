@@ -134,8 +134,8 @@
 .field + .field { margin-block-start: var(--sherpa-display-mode-space-md, 16px); }
 
 /* A FIELD: its header, then its chips or its body across the whole column —
-   a condition row needs it all. The header's label and buttons share its
-   BOTTOM line. Will, 2026-09-26. TRAP T-an-inline-condition-row-keeps-its-tracks */
+   a condition row needs it all. The header's label, count and buttons share its
+   TOP line. Will, 2026-10-12 (TODO 233). TRAP T-an-inline-condition-row-keeps-its-tracks */
 .field {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -144,13 +144,13 @@
 /* The row is ALWAYS one sm button tall, so it does not jump as its buttons
    come and go. */
 .field-head::part(row) {
-  align-items: flex-end;
+  align-items: flex-start;
   min-block-size: var(--sherpa-display-mode-space-xl, 24px);
 }
 /* The title and its results badge, on one line. */
 .field-lead {
   display: inline-flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 /* RESULTS: only a field the source counted has a number; a draft has none.
@@ -167,7 +167,7 @@
 }
 .field-acts {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--sherpa-display-mode-space-2xs, 4px);
 }
 /* CLEAR appears once there is something to clear (Will, 2026-09-24). Send to

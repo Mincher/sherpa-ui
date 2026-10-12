@@ -77,7 +77,8 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16t5 | 229 | The legend's switched-off items are lost on a page refresh | bug |
 | ✅ | 16t7 | 231 | "Reset all to default" and "Reset" are inactive while the filters already ARE the View's default | bug |
 | ✅ | 16t8 | 232 | The delete customer dialog is critical all over — borders and labels; only its footer's confirm button is | bug |
-| ⬜ | 16t9 | 233 | In the filter panel, a filter section's header inside an accordion aligns to the TOP: label, count badge and the accordion button | quick |
+| ✅ | 16t9 | 233 | In the filter panel, a filter section's header inside an accordion aligns to the TOP: label, count badge and the accordion button | quick |
+| ⬜ | 16t10 | 234 | A filter moved up to the View: its menu's FIRST option is "Return to X", its own scope, apart from the other scopes | quick |
 | ❓ | 16t6 | 230 | Reset all filters dialog: "Save filters before reset" sits in a grey border; it is plain form content | quick |
 | | | | **C2 — Consumers: frameworks, apps and agents** (planned 2026-10-12) | |
 | ✅ | c1 | 225 | `settled()` hangs on an infinite animation — a loader, an indeterminate bar — and waits on the whole document when given a part | bug |
@@ -1524,13 +1525,26 @@ It is on the Delete button now, and the generic confirm (deleting a saved
 View) puts it on its action. Two tests that read the dialog's status read the
 button's; a new one checks the dialog's text takes none.
 
-### `[ ]` 233 — Filter section headers inside accordions align to the top
+### `[x]` ✅ 233 — Filter section headers inside accordions align to the top
 
 Will, 2026-10-12: *"Align accordion header labels & any count badges to the
 top of the header row container."* — *"Accordion button, too."* — *"I meant
 filter sections within accordions. Align their headers to top."* The filter
 panel's field sections, inside each scope's accordion: the label, any count
 badge and the accordion's button sit at the top of the header row.
+
+**✅ Done 2026-10-12.** The field header row, its label and count, and its
+buttons align to the top (they shared the bottom line, Will 2026-09-26). A
+test measures each against the row's top; it failed on the old CSS.
+
+### `[ ]` 234 — A filter moved up to the View offers "Return to X" first
+
+Will, 2026-10-12: *"If a filter is moved up to the view scope then the first
+menu option should be 'Return to X' to differentiate it from other available
+component scopes that weren't the original scope before being elevated to the
+view scope."* The send-down menu (TODO 120, `T-send-to-view-filters`) lists
+the component scopes; the one the filter came from leads, worded "Return to
+<its scope>", and the others follow.
 
 ### `[ ]` 230 — The Reset all filters dialog: its switch is plain form content
 

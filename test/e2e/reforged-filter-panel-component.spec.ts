@@ -243,6 +243,22 @@ test('a field header keeps one height with or without its buttons, and Advanced 
     name: 'Advanced Owner', pressed: 'false', inHead: true, atEnd: true });
 });
 
+/** A field's header lines up at its TOP: the label, its count and its buttons.
+ *  Will, 2026-10-12 (TODO 233). */
+test('a field header\'s label, count and buttons start at the top of its row', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    const owner = sr.querySelector('.field[data-field="owner"]');
+    const row = owner.querySelector('.field-head').shadowRoot.querySelector('[part="row"]').getBoundingClientRect();
+    const top = (sel) => {
+      const el = owner.querySelector(sel);
+      return el && el.getClientRects().length ? Math.round(el.getBoundingClientRect().top - row.top) : null;
+    };
+    return { title: top('.field-title'), lead: top('.field-lead'), acts: top('.field-acts'), button: top('.field-advanced') };
+  })()`) as Record<string, number | null>;
+  expect(r).toEqual({ title: 0, lead: 0, acts: 0, button: 0 });
+});
+
 /**
  * RESET ALL clears BOTH scopes — picks, presets, Group and Sort — and applies
  * at once, as the toolbar's Reset does. Both header buttons wear the DEFAULT
