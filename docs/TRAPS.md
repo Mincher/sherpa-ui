@@ -13456,7 +13456,7 @@ Save."* Called an EDIT in the code: the source's `#draft` and a View's drafts
   So a reload, a View save and a second view all see it — once the provider
   hears `preset-edit` and keeps the Query, as it keeps a switch. A bar and the panel
   only REPORT one (`preset-edit`), and are drawn it back
-  (`drawScope`'s `edits`, `describe`'s `edited`).
+  (`describe`'s `edited`, which `drawScope` and `drawScopes` both draw).
 - **No change is no edit.** An edit equal to what was saved is dropped — by
   `editPreset`, and by `declarePreset` when the change is saved. It goes
   with its filter: taken off the bar, or deleted.
@@ -13486,7 +13486,7 @@ Save."* Called an EDIT in the code: the source's `#draft` and a View's drafts
 - **`says` is the words for what it applies NOW** — the source words an edit
   by its edit. When that answer goes (Discard, a new edit), the words go with
   it, and the card words the new answer itself.
-- **Its source draws it back IN PLACE** (`drawScope`'s `edits`): the card is
+- **Its source draws it back IN PLACE** (`drawScope`, from `edited`): the card is
   not rebuilt, so an open one stays open.
 - **Only a reader's OWN saved filter (`editable`) offers Edit filter and
   Delete filter**; an app preset is the app's. **Delete is not Remove**:
@@ -15233,8 +15233,8 @@ refilling two frames later because a rebuilt bar reads empty.
 A field a scope ABOVE holds keeps its place in the scope below — its heading,
 and the line a raised chip's tooltip says (`movedTo`), no values
 (Will, TODO 87 and 88). A request the panel makes of a scope is drawn onto
-that scope's bar from the Query (`drawScope`), so the bar and the panel are
-two views of one answer. The panel is redrawn once per moment, when what a
+that scope's bar from the same description (`drawScope`), so the bar and the
+panel are two views of one answer. The panel is redrawn once per moment, when what a
 scope holds or its presets change — never on an answer, which `drawReading`
 draws.
 

@@ -28,7 +28,7 @@ class Bar extends EventTarget {
   get readings() { return {}; }
   get presets() { return this.saved; }
   get heldFields() { return []; }
-  drawScope(slice) { this.drawn.push(slice); }
+  drawScope(scope) { this.drawn.push(scope); }
   setAttribute() {}
   removeAttribute() {}
   toggleAttribute() {}
@@ -65,7 +65,7 @@ test('an ON saved filter applies its EDIT, and the library keeps what was saved'
   assert.deepEqual(await source.results('grid'), { 'custom:risk': 1 });
   // The bar is drawn the scope with the edit in it.
   await tick();
-  assert.deepEqual(bar.drawn.at(-1).edits, { 'custom:risk': EDIT });
+  assert.deepEqual(bar.drawn.at(-1).filters.find((f) => f.id === 'custom:risk')?.edited, EDIT);
 });
 
 test('an edit back to what was saved is no edit, and none puts the saved one back', async () => {

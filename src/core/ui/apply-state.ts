@@ -13,7 +13,6 @@
  * - applyState — Apply a `state` block through an element's own public API.
  */
 import type { FieldReading } from '../data/filter-state.js';
-import type { ScopeQuery } from '../data/query.js';
 import type { ScopeDescription } from '../data/data-source.js';
 
 /** An element that takes a data payload. TRAP T-populatable-declared-four-times */
@@ -22,8 +21,8 @@ export interface Populatable extends HTMLElement {
   rendered?: Promise<void>;
   /** One field's answer, drawn SILENTLY — a bound bar told what its scope now holds. */
   drawReading?: (field: string, reading: FieldReading, scope: string) => void;
-  /** A whole scope, drawn SILENTLY — its chips, answers and presets, on a restore. */
-  drawScope?: (slice: ScopeQuery, scope: string) => void | Promise<void>;
+  /** A whole scope, drawn SILENTLY — its chips, answers and presets — as the panel draws each. */
+  drawScope?: (scope: ScopeDescription) => void | Promise<void>;
   /** Each answered chip's results — the rows its own answer matches. */
   drawResults?: (results: Readonly<Record<string, number>>, scope?: string) => void;
   /** Each PICKED value's own results, by field then value — for a control that draws a chip per value. */

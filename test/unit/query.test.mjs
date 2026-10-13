@@ -252,13 +252,13 @@ test('setQuery restores the WHOLE Query and draws each bound scope — nothing r
   const drawn = [];
   const bar = Object.assign(new EventTarget(), {
     setAttribute() {}, removeAttribute() {}, hasAttribute: () => false,
-    drawScope: async (slice, scope) => { drawn.push([scope, slice]); },
+    drawScope: async (scope) => { drawn.push([scope.scope, scope.filters.map((f) => [f.id, f.state])]); },
   });
   src.bind(bar, { steerOnly: true, scope: 'grid' });
   await src.setQuery(saved);
   assert.deepEqual(src.query.applied, saved);
   assert.deepEqual(ids(src.state.filter), [1, 4]);
-  assert.deepEqual(drawn, [['grid', saved.scopes.grid]]);
+  assert.deepEqual(drawn, [['grid', [['status', saved.scopes.grid.readings.status]]]]);
   // Not a v1 Query: refused, and nothing changes.
   await src.setQuery({ scopes: {} });
   assert.deepEqual(src.query.applied, saved);

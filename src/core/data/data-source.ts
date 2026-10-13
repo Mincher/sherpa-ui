@@ -193,7 +193,9 @@ export interface HeldFilter extends FieldFilter {
   /** A preset's on or off. */
   active?: boolean;
   removable?: boolean;
-  /** A scope ABOVE holds it now — that scope's name. It keeps its place here. */
+  /** A scope ABOVE holds it now — that scope's name. It keeps its place here,
+   *  and its `state` is this scope's own answer: kept, not in force.
+   *  TRAP T-a-superseded-chip-suspends-it-is-never-removed */
   appliedAt?: string;
   /** A saved filter's EDIT, not saved: what it applies now. TRAP T-a-saved-filter-keeps-its-edit */
   edited?: Record<string, FieldReading>;
@@ -592,8 +594,7 @@ export class DataSource extends EventTarget {
     }
     const drawn: Array<void | Promise<void>> = [];
     for (const [el, { scope }] of this.#bound) {
-      if (typeof scope !== 'string' || !el.drawScope) continue;
-      drawn.push(el.drawScope(structuredClone(this.#draft.scopes[scope] ?? { holds: [], readings: {} }), scope));
+      if (typeof scope === 'string' && el.drawScope) drawn.push(el.drawScope(this.describe(scope)));
     }
     await Promise.all(drawn);
     // Drawn, never reported: the Query is already the answer.
@@ -980,8 +981,9 @@ export class DataSource extends EventTarget {
         says: edit ? this.say(edit) : this.#says(id),
       };
     });
-    const fields: HeldFilter[] = q.holds.filter((f) => this.#fields.has(f)).map((f) => {
-      const reading = this.#home(f) === scope ? this.#reading(f) : undefined;
+    // EVERY field it holds, declared or not: one left out still filters. TRAP T-a-broken-assumption-reports
+    const fields: HeldFilter[] = q.holds.map((f) => {
+      const reading = q.readings[f];
       const down = scope === VIEW ? this.#lowerTo(f) : [];
       const from = this.#cameFrom(f);
       return {
@@ -1058,14 +1060,10 @@ export class DataSource extends EventTarget {
   /** A redraw of every scope control is queued. */
   #drawingScopes = false;
 
-  /** Draw every bar over one scope from the Query — after a request that came
-   *  from somewhere else (the panel) changed what it holds. */
+  /** Draw every bar over one scope, as the panel draws it — after a request
+   *  that came from somewhere else (the panel) changed what it holds. */
   #drawBars(scope: string): void {
-    for (const [el, { scope: s }] of this.#bound) {
-      if (s === scope && el.drawScope) {
-        void el.drawScope(structuredClone(this.#draft.scopes[scope] ?? { holds: [], readings: {} }), scope);
-      }
-    }
+    for (const [el, { scope: s }] of this.#bound) if (s === scope && el.drawScope) void el.drawScope(this.describe(scope));
   }
 
   /** Switch a scope's presets: the ids given are ON, the rest it holds OFF. */

@@ -63,7 +63,7 @@ listener outside tests: `calendar-apply`, `calendar-cancel`, `filter-clear`,
 - **The MENU owns the answer**: `menu.reading`, get and set, as a
   `FieldReading` (`T-a-menu-owns-its-own-bodies`). The bar, the panel and the
   grid ask the menu — three readers and three writers become one.
-- **Three members on every filter control**: `drawScope(slice)` (the whole
+- **Three members on every filter control**: `drawScope(scope)` (the whole
   scope, silent), `drawReading(field, reading)` (one field, silent — already
   the name on all three), and `readings` (keyed by FIELD everywhere).
 - **One event per act, one detail**: `quick-filter-change { scope, readings,
@@ -210,8 +210,8 @@ going away: `<noun>-remove` (a request) and `dismiss()` + `<noun>-dismiss`
   a collapsed overlay panel is still open.
 - `toggleMenu()` is not `toggle()`: on a chip, "toggle" means the filter on or
   off.
-- `drawScopes()` is not `drawScope()` many times: it takes descriptions with
-  labels and Add lists.
+- `drawScopes()` is `drawScope()` for several scopes: both take the same
+  description, with labels and Add lists (TODO 196).
 - The grid's three-state sort is deliberate (`T-one-cycle-for-one-value`).
 - `data-open` on a trigger (button, chip, bell) means "my menu is open" and is
   a state pin; on the panel it means "I am open".

@@ -79,7 +79,9 @@ test('Edit filter edits a saved filter in place; the change is sent once, as edi
     // Its SOURCE keeps the change and draws it back, IN PLACE.
     const before = menuOf('custom:mine');
     const edit = (closed.heard[0] as { readings: unknown }).readings;
-    await bar.drawScope({ holds: ['owner'], readings: {}, presets: { 'custom:mine': true }, edits: { 'custom:mine': edit } });
+    await bar.drawScope({ scope: 'data', label: 'Data', available: [], filters: [
+      { id: 'custom:mine', label: 'Mine', readings: saved, active: true, edited: edit }, { id: 'owner', label: 'Owner' },
+    ] });
     await window.__settled();
     const box = (id: string) => chip(id).shadowRoot!.querySelector<HTMLElement>('.body')!;
     const body = (id: string) => getComputedStyle(box(id));
@@ -410,8 +412,10 @@ test('Discard drops a field only the edit had; an answer drawn mid-edit shows wh
     await window.__settled();
     menu().querySelector<HTMLElement>(':scope > button[value="edit"]')!.click();
     await window.__settled();
-    await bar.drawScope({ holds: ['owner', 'plan'], readings: {}, presets: { 'custom:mine': true },
-      edits: { 'custom:mine': { owner: { picked: ['Ravi'] } } } });
+    await bar.drawScope({ scope: 'data', label: 'Data', available: [], filters: [
+      { id: 'custom:mine', label: 'Mine', readings, active: true, edited: { owner: { picked: ['Ravi'] } } },
+      { id: 'owner', label: 'Owner' }, { id: 'plan', label: 'Plan' },
+    ] });
     await window.__settled();
     const during = parts();
     menu().hide();

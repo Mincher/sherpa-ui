@@ -29,7 +29,7 @@ import {
   fieldState, readingRows, savedReading,
   type FieldReading, type FilterState,
 } from '../../core/data/filter-state.js';
-import type { ScopeQuery } from '../../core/data/query.js';
+import type { ScopeDescription } from '../../core/data/data-source.js';
 import type { DataAsk } from '../../core/ui/context.js';
 import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-menu/sherpa-menu.js';
@@ -1381,16 +1381,17 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
   }
 
   /**
-   * drawScope(slice) — draw what a scope holds, SILENTLY: its chips, each
-   * field's answer and each saved filter on or off. A reload, a trip away and
-   * back. Nothing is reported — the source already holds all of it. A
-   * PERSISTENT chip (the View) is the host's to set, so it is left alone.
+   * drawScope(scope) — draw what a scope holds, SILENTLY, from the description
+   * the panel is drawn each of: its chips, each field's answer and each saved
+   * filter on or off. Nothing is reported — the source already holds all of
+   * it. A PERSISTENT chip (the View) is the host's to set, so it is left alone.
    * TRAP T-one-query-one-owner · TRAP T-a-reload-replays-the-readers-answers
    */
-  async drawScope(slice: ScopeQuery): Promise<void> {
-    const presets = slice.presets ?? {};
-    // The slice speaks FIELDS; a chip may be named for its question.
-    const want = new Set([...slice.holds.map((f) => this.#idOf(f)), ...Object.keys(presets)]);
+  async drawScope(scope: ScopeDescription): Promise<void> {
+    const presets = scope.filters.filter((f) => f.readings);
+    const fields = scope.filters.filter((f) => !f.readings);
+    // The scope speaks FIELDS; a chip may be named for its question.
+    const want = new Set([...fields.map((f) => this.#idOf(f.id)), ...presets.map((f) => f.id)]);
     // A chip that answers no field here is no scope's to hold, so none takes it off.
     for (const def of [...this.#filters]) {
       if (!want.has(def.id) && def.removable && def.field !== null) this.#removeFilter(def.id, { silent: true });
@@ -1404,11 +1405,11 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     const persistent = new Set(this.#chips()
       .filter((c) => c.hasAttribute('data-persistent')).map((c) => c.dataset['id']));
     const answered = new Set<string>();
-    for (const [field, reading] of Object.entries(slice.readings)) {
+    for (const { id: field, state } of fields) {
+      if (!state) continue;
       const id = this.#idOf(field);
       answered.add(id);
-      if (persistent.has(id)) continue;
-      this.#drawChip(id, reading);
+      if (!persistent.has(id)) this.#drawChip(id, state);
     }
     /* THE WHOLE SCOPE: a chip it does not answer is EMPTY — a View is a clean
        slate. A superseded chip keeps the reader's own picks. TRAP T-a-view-is-json */
@@ -1418,10 +1419,12 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
       if (chip.hasAttribute('data-superseded')) continue;
       this.#emptyChip(chip);
     }
-    for (const def of this.#filters) if (def.readings) this.#setChipActive(def.id, !!presets[def.id]);
+    const on = new Set(presets.filter((f) => f.active).map((f) => f.id));
+    for (const def of this.#filters) if (def.readings) this.#setChipActive(def.id, on.has(def.id));
     // Each saved filter's CHANGE, drawn again only where it moved. TRAP T-a-saved-filter-keeps-its-edit
+    const edits = new Map(presets.map((f) => [f.id, f.edited]));
     for (const [i, def] of this.#filters.entries()) {
-      const edited = slice.edits?.[def.id];
+      const edited = edits.get(def.id);
       if (!def.readings || JSON.stringify(edited) === JSON.stringify(def.edited)) continue;
       // Its words were for the answer it had; the bar words the new one.
       const { edited: _was, says: _said, ...rest } = def;
