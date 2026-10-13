@@ -1,18 +1,150 @@
 /**
- * bind-source.ts — what a bound component's events ASK of its source: the
- * closed list of steering events, and the one function that turns each into a
- * call on the source. The data layer names no component event. TODO 196
+ * bind-source.ts — the join between a component and its source: the events it
+ * sends UP, and the rows and `data-*` that come DOWN. The data layer names no
+ * component event and writes no attribute. TODO 196
  * TRAP T-steering-events-are-a-closed-list
  *
  * Map:
+ * - BindOptions — What a component may do with the source it is bound to.
+ * - bindSource — Point a component at a source: rows and `data-*` down, steering events back.
  * - STEERING_EVENTS — The events a bound component may send UP.
  * - SteeringEvent — One of them.
  * - SteerBind — What steering needs of one binding: its scope, and what its bar answered last.
  * - steer — Turn one component's event into its source's call.
  */
-import type { DataSource } from '../data/data-source.js';
+import { report } from '../data/report.js';
+import type { AttachFacts, BoundView, DataSource } from '../data/data-source.js';
 import type { FieldReading } from '../data/filter-state.js';
+import type { Row } from '../data/store.js';
 import type { Populatable } from './apply-state.js';
+
+/** What a component may do with the source it is bound to. */
+export interface BindOptions extends AttachFacts {
+  /** One NAMED PART of the payload, not all of it. TRAP T-into-merges-on-the-element */
+  into?: string;
+  /** Unbind when this signal aborts. TRAP T-signal-not-a-teardown-list */
+  signal?: AbortSignal;
+  /** Events the source must NOT act on. TRAP T-ignore-is-the-scalpel */
+  ignore?: readonly string[];
+  /** Reshape the rows before they reach this component. TRAP T-adapter-lives-at-the-binding */
+  as?: (rows: Row[], source: DataSource) => unknown;
+  /** Where its data GOES, instead of `populate()` — a provider answering a
+   *  component's request through the callback it asked with.
+   *  TRAP T-a-component-asks-its-provider */
+  deliver?: (payload: unknown) => void;
+}
+
+/**
+ * Point a component at a source. Two-way by default: rows and `data-*` down,
+ * steering events back. Returns an unbind function.
+ */
+export function bindSource(source: DataSource, el: Populatable, options: BindOptions = {}): () => void {
+  if (source.boundElements.includes(el)) return () => source.unbind(el);
+  // TRAP T-signal-not-a-teardown-list — an aborted signal binds nothing.
+  if (options.signal?.aborted) return () => {};
+  /* `scope` names a FILTER scope: "all" type-checks, binds to a scope of that
+     name, and counts one page. The whole set is `rows: 'all'`.
+     TRAP T-a-summary-binds-to-all-the-rows */
+  if (options.scope === 'all' || (Array.isArray(options.scope) && options.scope.includes('all'))) {
+    report({ code: 'scope-all', message: "bind: `scope: 'all'` names a filter scope; for every row, say `rows: 'all'`." });
+  }
+
+  const { as: adapt, deliver, into } = options;
+  const readonly = options.readonly ?? false;
+  const steering: SteerBind = options.scope ? { scope: options.scope } : {};
+  const listeners: Array<[string, EventListener]> = [];
+  const ignored = new Set(options.ignore ?? []);
+  if (!readonly) {
+    for (const type of STEERING_EVENTS) {
+      // TRAP T-ignore-is-the-scalpel — no listener at all, not an early return.
+      if (ignored.has(type)) continue;
+      const handler = ((event: Event) => steer(source, el, steering, type, event as CustomEvent)) as EventListener;
+      el.addEventListener(type, handler);
+      listeners.push([type, handler]);
+    }
+  }
+
+  /* LOCKED: the source now owns this element's view state, so it reports its
+     interactions and stops writing them. Not for a readonly bind, which
+     steers nothing. A component with no source stays UNLOCKED and writes its
+     own state — that is what makes a standalone grid work.
+     TRAP T-bind-locks-what-it-owns */
+  if (!readonly) el.setAttribute('data-locked', '');
+  /* A control over a scope of a REMOTE source is told so: its menus wait for
+     Apply. TRAP T-apply-and-discard-wait-for-a-change */
+  if (options.scope && source.remote) el.setAttribute('data-remote', '');
+  // TRAP T-signal-not-a-teardown-list — drops the BINDING; `once` leaves nothing.
+  options.signal?.addEventListener('abort', () => source.unbind(el), { once: true });
+
+  source.attach(el, options, {
+    view: (view) => writeView(el, view),
+    rows: (rows) => {
+      // populate() waits for the first render itself, so a component bound
+      // before it upgraded still gets its rows.
+      const payload = adapt ? adapt(rows as Row[], source) : rows;
+      // Through the callback it ASKED with, when a provider bound it.
+      const give = deliver ?? ((p: unknown): void => { void el.populate?.(p); });
+      give(into ? mergeInto(el, into, payload) : payload);
+    },
+    pending: (fields, dirty) => {
+      setAttr(el, 'data-pending', fields.length ? fields.join(' ') : undefined);
+      setAttr(el, 'data-dirty', dirty ? '' : undefined);
+    },
+    off: () => {
+      for (const [type, handler] of listeners) el.removeEventListener(type, handler);
+      // UNLOCKED on the way out, or a component that outlives its source is mute.
+      el.removeAttribute('data-locked');
+      el.removeAttribute('data-remote');
+    },
+  });
+  return () => source.unbind(el);
+}
+
+/** The view as attributes, so CSS can select on it. TRAP T-push-writes-state-as-attributes */
+function writeView(el: Element, view: BoundView): void {
+  setAttr(el, 'data-sort-field', view.sortField);
+  setAttr(el, 'data-sort-direction', view.sortDirection);
+  setAttr(el, 'data-group-field', view.groupField);
+  setAttr(el, 'data-filter-fields', view.filterFields.length ? view.filterFields.join(' ') : undefined);
+  setAttr(el, 'data-needles', view.needles || undefined);
+  setAttr(el, 'data-page', view.paging ? String(view.paging.page) : undefined);
+  setAttr(el, 'data-total-pages', view.paging ? String(view.paging.totalPages) : undefined);
+  setAttr(el, 'data-page-size', view.paging ? String(view.paging.pageSize) : undefined);
+}
+
+/** Write or remove an attribute. `undefined` removes, so CSS stops matching. */
+function setAttr(el: Element, name: string, value: string | undefined): void {
+  if (value == null) el.removeAttribute(name);
+  else el.setAttribute(name, value);
+}
+
+/** The shared draft each `into` bind writes its own part of. TRAP T-into-merges-on-the-element */
+const DRAFT = Symbol('sherpa:into-draft');
+
+/**
+ * Write `value` at `path` in the element's shared draft, and return it.
+ * `series.0` → `{ series: [value] }`. MUTATED, not rebuilt.
+ * TRAP T-into-merges-on-the-element
+ */
+function mergeInto(el: Populatable, path: string, value: unknown): unknown {
+  const host = el as unknown as Record<symbol, unknown>;
+  const segments = path.split('.').filter(Boolean);
+  if (!segments.length) return value;
+
+  const first = segments[0]!;
+  // The ROOT follows the same rule: a numeric first segment means an array.
+  host[DRAFT] ??= /^\d+$/.test(first) ? [] : {};
+  let node = host[DRAFT] as Record<string | number, unknown>;
+
+  for (let i = 0; i < segments.length - 1; i++) {
+    const key = segments[i]!;
+    const nextIsIndex = /^\d+$/.test(segments[i + 1]!);
+    node[key] ??= nextIsIndex ? [] : {};
+    node = node[key] as Record<string | number, unknown>;
+  }
+  node[segments[segments.length - 1]!] = value;
+  return host[DRAFT];
+}
 
 /** The events a bound component may send UP. TRAP T-steering-events-are-a-closed-list */
 export const STEERING_EVENTS = [

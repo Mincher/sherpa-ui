@@ -1986,7 +1986,7 @@ handed back, not rebuilt, so a component holding the previous object still sees
 the update; the rows-identity guard upstream already decides whether a push is
 worth making at all.
 
-- Site: `src/core/data/data-source.ts`
+- Site: `src/core/ui/bind-source.ts`
 
 ### T-signal-not-a-teardown-list
 
@@ -2015,7 +2015,7 @@ The same token is reused by `persistView` and `onViewPicked`, so one controller
 tears down every binding, listener and persister a view made.
 
 - Site: `src/core/browser/persist-view.ts`
-- Site: `src/core/data/data-source.ts`
+- Site: `src/core/ui/bind-source.ts`
 - Site: `src/core/data/bind-selection.ts`
 - Site: `src/components/sherpa-layout-grid/grouped-grid.ts`
 
@@ -2060,7 +2060,7 @@ An ignored event gets **no listener at all**, rather than a listener that
 returns early — so a view that owns an event owns it outright, with no chance of
 the source having already acted by the time the view's own handler runs.
 
-- Site: `src/core/data/data-source.ts`
+- Site: `src/core/ui/bind-source.ts`
 
 ### T-adapter-lives-at-the-binding
 
@@ -2084,6 +2084,7 @@ payload: an `as` adapter builds a new object every call, so comparing its output
 would never match. See `T-no-op-load-guard`.
 
 - Site: `src/core/data/data-source.ts`
+- Site: `src/core/ui/bind-source.ts`
 
 ### T-steering-events-are-a-closed-list
 
@@ -2232,10 +2233,11 @@ layer's.
 
 ### T-push-writes-state-as-attributes
 
-`#push` writes the view state as ATTRIBUTES, which is what makes a shared sort
-visible without a JS branch anywhere: the grid's header arrow is drawn from
-`data-sort-field` / `data-sort-direction` in CSS, so writing them here makes the
-toolbar's Sort chip and the grid's own header two views of one value.
+`#push` hands the view state to the binder, which writes it as ATTRIBUTES.
+That is what makes a shared sort visible without a JS branch anywhere: the
+grid's header arrow is drawn from `data-sort-field` / `data-sort-direction` in
+CSS, so writing them makes the toolbar's Sort chip and the grid's own header
+two views of one value.
 
 `data-filter-fields` carries WHICH fields the filter touches, not the filter
 itself. A grid marks those columns' headers active, so a filter set from the
@@ -2248,6 +2250,7 @@ change silently shrank the table with nothing to say why. `filterFields()` in
 matching.
 
 - Site: `src/core/data/data-source.ts`
+- Site: `src/core/ui/bind-source.ts`
 
 ### T-error-is-a-state-not-a-throw
 
@@ -12095,7 +12098,7 @@ value it owns), and `sherpa-grid-cell`'s two-state sort toggle. Grouping and
 filtering were already clean: every component use of `data-group-field` and
 `data-filter-fields` is a READ.
 
-- Site: `src/core/data/data-source.ts`
+- Site: `src/core/ui/bind-source.ts`
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/components/sherpa-pagination/sherpa-pagination.ts`
 - Site: `scripts/check-ownership.mjs`
@@ -12577,6 +12580,7 @@ does.
 
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/summary-scope.test.mjs`
+- Site: `src/core/ui/bind-source.ts`
 
 ### T-a-legend-row-goes-inactive-it-never-vanishes
 
@@ -15432,7 +15436,7 @@ actions are CONFIGURATION, not data (`T-configuration-is-not-data`).
 - Site: `src/components/sherpa-pagination/sherpa-pagination.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.html`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
-- Site: `src/core/data/data-source.ts`
+- Site: `src/core/ui/bind-source.ts`
 - Site: `src/core/ui/context.ts`
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `src/components.ts`

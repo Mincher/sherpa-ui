@@ -34,6 +34,7 @@ import { VIEW, type Query, type QueryDefaults } from '../../core/data/query.js';
 import type { Where } from '../../core/data/where.js';
 import type { FieldReading } from '../../core/data/filter-state.js';
 import { applyState, type Populatable } from '../../core/ui/apply-state.js';
+import { bindSource } from '../../core/ui/bind-source.js';
 
 /** What a provider is given: its sources, by name — and, for a page with
  *  Views, the Views over them, the one on screen, and where its Query is kept. */
@@ -943,7 +944,7 @@ export class SherpaProvider extends SherpaElement {
     // One scope, or several — the panel's `data-scope="view data"`.
     const scopes = (this.#inherited(el, 'data-scope') ?? '').split(/\s+/).filter(Boolean);
     const scope = scopes.length > 1 ? scopes : scopes[0];
-    const unbind = source.bind(el as Populatable, {
+    const unbind = bindSource(source, el as Populatable, {
       rows: spec || asks.shape === 'all' ? 'all' : 'page',
       // A pager and a filter bar steer; the rows are not theirs to draw.
       steerOnly: asks.shape === 'state' || asks.shape === 'scope',

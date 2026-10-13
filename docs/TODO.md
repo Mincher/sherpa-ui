@@ -4149,7 +4149,7 @@ chart, which meant the chart's name: the four charts now take a host
 |---|---|---|
 | ✅ | 1. Name the verbs: each `#steer` branch that reaches private state becomes a public DataSource method named for what it does — `answerScope`, `answerScopes`, `release`, `answerColumn`, `request`, `reportPages`, `remote` | S |
 | ✅ | 2. Steering out: `src/core/ui/bind-source.ts` holds `STEERING_EVENTS` and `steer()`; `bind()` calls it | M |
-| ⬜ | 3. Bind and push out: `bindSource(source, el, options)` in the binder; DataSource keeps `attach(target, facts, sink)` and picks the rows | M |
+| ✅ | 3. Bind and push out: `bindSource(source, el, options)` in the binder; DataSource keeps `attach(target, facts, sink)` and picks the rows. The listeners, `data-locked`, `data-remote`, `as`, `into`, `deliver` and every `data-*` write are the binder's now | M |
 | ⬜ | 4. One helper for the bar and the panel, the ⋮ menu first (`src/core/ui/more-menu.ts`) — then the saved-filter menu, then the drill | M |
 | ⬜ | 5. One `FilterDef` type, then one scope protocol (the bar drawn as a panel scope is) | S + L |
 | ⬜ | 6. The filter editor out of `sherpa-menu` (`src/core/ui/filter-editor.ts`) | L |

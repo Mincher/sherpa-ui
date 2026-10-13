@@ -14,7 +14,9 @@
  * - ScopeDescription — One scope as a control draws it whole, as JSON.
  * - ViewState — The view state a source owns.
  * - DataSourceOptions — the store, and the view it opens on: sort, group, page size, search fields
- * - BindOptions — What a component may do with the source it is bound to.
+ * - AttachFacts — What the binder tells the source about one component.
+ * - BoundView — What a bound component is told of the view; `undefined` is none.
+ * - BindSink — Where the source sends one bound component's view, rows and pending fields.
  * - DataChangeDetail — What `change` carries, for a listener that wants the result without asking.
  * - VIEW_SCOPE — The scope ABOVE every component — the same word as `reach: 'view'`.
  * - DataSource — ONE owner of how records are viewed: the query, scopes, groups, and binds
@@ -46,17 +48,12 @@
  * - .contributions — Every named part currently applied — the component-scope filters.
  * - .apply — Apply a whole control's READING of several fields, at one scope.
  * - .answer — ONE SCOPE'S WHOLE ANSWER — a bar's report.
- * - .answerScope — A scoped bar's whole answer: what it holds, each reading, its saved filters on or off. It is its Apply.
- * - .answerScopes — The panel's answer: each field it changed, and each scope's presets.
- * - .answerColumn — A heading's answer, in its grid's scope; a field no scope holds gets its chip.
- * - .request — Move fields into a scope: down from the View, or up from a chart with its answer.
- * - .release — A scope lets ONE go — a field or a preset.
- * - .reportPages — The grid's own page count, when every row is in hand: publish, load nothing.
- * - .remote — Do this source's loads reach outside the data layer?
  * - .declarePreset — A saved filter's readings, by id — the library a preset that is ON compiles from.
  * - .editPreset — EDIT a saved filter: what it applies now, while the library keeps what was saved.
  * - .describe — One scope, whole: its filters and answers, what it may add, how it is arranged.
  * - .say — say(readings) — a saved filter in WORDS, field by field: the source knows each field's name, type and values.
+ * - .answerScopes — The panel's answer: each field it changed, and each scope's presets.
+ * - .release — A scope lets ONE go — a field or a preset.
  * - .declareValues — every value a field can take, so each control offers the same list
  * - .declareField — Declare a field's KIND and its reader-facing name.
  * - .declareFromRows — Each field here that its schema says nothing of takes it from the ROWS: a set, its unique values in order; a…
@@ -83,6 +80,7 @@
  * - .canHold — May this scope hold this field?
  * - .move — Move a filter between scopes — ONE call, because the removal is not optional.
  * - .debugState — EVERYTHING THIS SOURCE THINKS IS TRUE, in one object.
+ * - .remote — Do this source's loads reach outside the data layer?
  * - .commit — SEND the draft — Apply, on a remote source.
  * - .discard — Put the applied answers back over the draft — Discard, on a remote source.
  * - .pending — Has this field been changed and not yet applied?
@@ -95,9 +93,14 @@
  * - .valueResults — Each PICKED value's own results in a scope: the rows that ONE value matches, within what the scope can see —…
  * - .limitOptions — Does each list field offer only the values the other answers leave?
  * - .present — Each list field's values the rows still HOLD under the OTHER answers in its scope — a component scope's withi…
- * - .bind — Point a component at this source.
+ * - .bind — Point a component at this source — `bindSource()`, kept as a bridge.
+ * - .attach — Take a component its binder has wired, and send it what is already loaded.
  * - .unbind — Stop steering and stop populating this component.
  * - .boundElements — Every component currently bound.
+ * - .answerScope — A scoped bar's whole answer: what it holds, each reading, its saved filters on or off. It is its Apply.
+ * - .answerColumn — A heading's answer, in its grid's scope; a field no scope holds gets its chip.
+ * - .request — Move fields into a scope: down from the View, or up from a chart with its answer.
+ * - .reportPages — The grid's own page count, when every row is in hand: publish, load nothing.
  */
 import {
   DEFAULT_OP, andFilter, compareValues, filterFields, filterNeedles, filterRows, groupSummaries, readField, valueKey,
@@ -110,8 +113,8 @@ import {
 import { readingsOf, whereOf, type Condition, type Where } from './where.js';
 import { report } from './report.js';
 import type { Populatable } from '../ui/apply-state.js';
-// The steering is the UI's: this layer names no component event. TODO 196
-import { STEERING_EVENTS, steer } from '../ui/bind-source.js';
+// Binding is the UI's: this layer names no component event. TODO 196
+import { bindSource, type BindOptions } from '../ui/bind-source.js';
 import type { FieldFacts, FieldReading, FieldType, FilterState } from './filter-state.js';
 
 /** HOW FAR a control's reading reaches. TRAP T-a-filter-applies-down-its-scope
@@ -269,26 +272,16 @@ export interface DataSourceOptions {
   limitOptions?: boolean;
 }
 
-/** What a component may do with the source it is bound to. */
-export interface BindOptions {
-  /** One NAMED PART of the payload, not all of it. TRAP T-into-merges-on-the-element */
-  into?: string;
-  /** Unbind when this signal aborts. TRAP T-signal-not-a-teardown-list */
-  signal?: AbortSignal;
+export type { BindOptions };
+
+/** What the binder tells the source about one component. `bindSource()` says it. */
+export interface AttachFacts {
   /** Read the data, never steer it. A chart re-draws; clicking a bar re-sorts nothing. */
   readonly?: boolean;
   /** STEER ONLY — events reach the source, no rows come back. TRAP T-steer-only-populate-means-chips */
   steerOnly?: boolean;
-  /** Events the source must NOT act on. TRAP T-ignore-is-the-scalpel */
-  ignore?: readonly string[];
-  /** Reshape the rows before they reach this component. TRAP T-adapter-lives-at-the-binding */
-  as?: (rows: Row[], source: DataSource) => unknown;
   /** The id a scope's `narrows` names this component by. Default: its own id. */
   id?: string;
-  /** Where its data GOES, instead of `populate()` — a provider answering a
-   *  component's request through the callback it asked with.
-   *  TRAP T-a-component-asks-its-provider */
-  deliver?: (payload: unknown) => void;
   /** The SCOPE this control is a view of: it is DRAWN each answer in it. A bar's
    *  report is its scope's whole answer, so a field raised out is not its to
    *  clear. A LIST is for a control that draws several — the filter panel. */
@@ -302,6 +295,32 @@ export interface BindOptions {
    * TRAP T-a-summary-binds-to-all-the-rows
    */
   rows?: 'page' | 'all';
+}
+
+/** What a bound component is told of the view; `undefined` is none. The binder
+ *  writes it as `data-*`. TRAP T-push-writes-state-as-attributes */
+export interface BoundView {
+  /** The sort's field, kept while the sort is suspended. TRAP T-a-suspended-sort-is-one-owners-job */
+  sortField: string | undefined;
+  /** `''` while the sort is suspended. */
+  sortDirection: SortDirection | '' | undefined;
+  groupField: string | undefined;
+  /** WHICH fields the filter touches, not the filter. */
+  filterFields: readonly string[];
+  /** What it matched on, one a line. TRAP T-a-needle-comes-from-either-direction */
+  needles: string;
+  paging: { page: number; totalPages: number; pageSize: number } | undefined;
+}
+
+/** Where the source sends one bound component's view, rows and pending fields. */
+export interface BindSink {
+  view(view: BoundView): void;
+  /** A page, or every row — never to a steer-only bind. */
+  rows(rows: readonly Row[]): void;
+  /** Its scopes' pending fields, and whether one is dirty. TRAP T-apply-and-discard-wait-for-a-change */
+  pending(fields: readonly string[], dirty: boolean): void;
+  /** The source let it go. */
+  off(): void;
 }
 
 /** What `change` carries, for a listener that wants the result without asking. */
@@ -336,29 +355,18 @@ export class DataSource extends EventTarget {
     {
       readonly: boolean;
       steerOnly: boolean;
-      off: () => void;
-      as?: BindOptions['as'];
-      /** The named part of the payload this bind owns — see BindOptions.into. */
-      into?: string;
-      /** See BindOptions.rows. */
+      /** See AttachFacts.rows. */
       rows: 'page' | 'all';
       /** The rows array last handed to this component — see `#push`. */
       lastRows?: readonly Row[];
-      /** See BindOptions.id. */
+      /** See AttachFacts.id. */
       id: string;
-      /** See BindOptions.deliver. */
-      deliver?: (payload: unknown) => void;
       /** The filter narrowing ONLY this component it was last pushed with — see `#push`. */
       lastOwn?: string;
-      /** See BindOptions.scope. */
       scope?: string | readonly string[];
-      /** See BindOptions.shows. */
-      shows?: BindOptions['shows'];
-      /** The fields this component answered LAST time it reported.
-       *  TRAP T-a-filter-report-is-the-whole-answer */
-      answered?: Set<string>;
-      /** The saved-filter parts it applied last time. TRAP T-a-saved-filter-is-its-readings */
-      saved?: Set<string>;
+      shows?: AttachFacts['shows'];
+      /** Where its view, rows and pending fields go. */
+      sink: BindSink;
     }
   >();
   /** The last load's answer: the rows, and the total before paging. */
@@ -1947,7 +1955,7 @@ export class DataSource extends EventTarget {
    * TRAP T-push-writes-state-as-attributes
    */
   #syncPending(): void {
-    for (const [el, { scope }] of this.#bound) {
+    for (const { scope, sink } of this.#bound.values()) {
       if (!scope) continue;
       const scopes = typeof scope === 'string' ? [scope] : [...scope];
       const fields = this.#remote
@@ -1955,8 +1963,7 @@ export class DataSource extends EventTarget {
           ...this.#applied.scopes[id]?.readings, ...this.#draft.scopes[id]?.readings,
         })))].filter((f) => this.pending(f))
         : [];
-      setAttr(el, 'data-pending', fields.length ? fields.join(' ') : undefined);
-      setAttr(el, 'data-dirty', scopes.some((id) => this.dirty(id)) ? '' : undefined);
+      sink.pending(fields, scopes.some((id) => this.dirty(id)));
     }
   }
 
@@ -2446,90 +2453,45 @@ export class DataSource extends EventTarget {
 
   /* ── Binding ───────────────────────────────────────────────────────── */
 
-  /**
-   * Point a component at this source. Two-way by default: rows and `data-*`
-   * down, steering events back. Returns an unbind function.
-   */
+  /** Point a component at this source — `bindSource()`, kept here as a bridge. TODO 196 */
   bind(el: Populatable, options: BindOptions = {}): () => void {
-    if (this.#bound.has(el)) return () => this.unbind(el);
-    // TRAP T-signal-not-a-teardown-list — an aborted signal binds nothing.
-    if (options.signal?.aborted) return () => {};
-    /* `scope` names a FILTER scope: "all" type-checks, binds to a scope of that
-       name, and counts one page. The whole set is `rows: 'all'`.
-       TRAP T-a-summary-binds-to-all-the-rows */
-    if (options.scope === 'all' || (Array.isArray(options.scope) && options.scope.includes('all'))) {
-      report({ code: 'scope-all', message: "bind: `scope: 'all'` names a filter scope; for every row, say `rows: 'all'`." });
-    }
+    return bindSource(this, el, options);
+  }
 
-    const readonlyBind = options.readonly ?? false;
-    const listeners: Array<[string, EventListener]> = [];
-
-    const ignored = new Set(options.ignore ?? []);
-    if (!readonlyBind) {
-      for (const type of STEERING_EVENTS) {
-        // TRAP T-ignore-is-the-scalpel — no listener at all, not an early return.
-        if (ignored.has(type)) continue;
-        const handler = ((event: Event) => steer(this, el, this.#bound.get(el), type, event as CustomEvent)) as EventListener;
-        el.addEventListener(type, handler);
-        listeners.push([type, handler]);
-      }
-    }
-
-    /* LOCKED: the source now owns this element's view state, so it reports its
-       interactions and stops writing them. Not for a readonly bind, which
-       steers nothing. A component with no source stays UNLOCKED and writes its
-       own state — that is what makes a standalone grid work.
-       TRAP T-bind-locks-what-it-owns */
-    if (!readonlyBind) el.setAttribute('data-locked', '');
-    /* A control over a scope of a REMOTE source is told so: its menus wait for
-       Apply. TRAP T-apply-and-discard-wait-for-a-change */
-    if (options.scope && this.#remote) el.setAttribute('data-remote', '');
-
-    const off = (): void => {
-      for (const [type, handler] of listeners) el.removeEventListener(type, handler);
-      // UNLOCKED on the way out, or a component that outlives its source is mute.
-      el.removeAttribute('data-locked');
-      el.removeAttribute('data-remote');
-    };
+  /** Take a component its binder has wired, and send it what is already
+   *  loaded. `bindSource()` is the way in. TODO 196 */
+  attach(el: Populatable, facts: AttachFacts, sink: BindSink): void {
     const had = this.#componentScopes();
     this.#bound.set(el, {
-      id: options.id ?? (el.id || `bind-${++this.#binds}`),
-      readonly: readonlyBind,
-      steerOnly: options.steerOnly ?? false,
-      off,
-      rows: options.rows ?? 'page',
-      ...(options.as ? { as: options.as } : {}),
-      ...(options.into ? { into: options.into } : {}),
-      ...(options.scope ? { scope: options.scope } : {}),
-      ...(options.shows ? { shows: options.shows } : {}),
-      ...(options.deliver ? { deliver: options.deliver } : {}),
+      id: facts.id ?? (el.id || `bind-${++this.#binds}`),
+      readonly: facts.readonly ?? false,
+      steerOnly: facts.steerOnly ?? false,
+      rows: facts.rows ?? 'page',
+      sink,
+      ...(facts.scope ? { scope: facts.scope } : {}),
+      ...(facts.shows ? { shows: facts.shows } : {}),
     });
-
     this.#rescope(had);
-    // TRAP T-signal-not-a-teardown-list — drops the BINDING; `once` leaves nothing.
-    options.signal?.addEventListener('abort', () => this.unbind(el), { once: true });
 
     // Whatever is already loaded, so a component bound late is not blank.
     this.#push(el);
-    if (Array.isArray(options.scope) && el.drawScopes) this.#drawScopesSoon();
-    if (typeof options.scope === 'string' && el.supersedeColumns) this.#syncColumns();
+    if (Array.isArray(facts.scope) && el.drawScopes) this.#drawScopesSoon();
+    if (typeof facts.scope === 'string' && el.supersedeColumns) this.#syncColumns();
     // …and what each field's other answers leave. TRAP T-a-ruled-out-value-is-greyed
-    if (options.scope && el.drawPresent && this.#loaded) this.#presentSoon();
+    if (facts.scope && el.drawPresent && this.#loaded) this.#presentSoon();
     /* A summary bound AFTER the first load would otherwise draw blank: the
        unpaged set is fetched by `load`, and nothing would ask for it again.
        TRAP T-a-summary-binds-to-all-the-rows */
-    const needsAll = options.rows === 'all' && !this.#allRows.length;
+    const needsAll = facts.rows === 'all' && !this.#allRows.length;
     if (this.#autoLoad && (!this.#result.rows.length || needsAll)) {
       void this.load({ force: needsAll });
     }
-
-    return () => this.unbind(el);
   }
 
   /** Stop steering and stop populating this component. */
   unbind(el: Populatable): void {
     const had = this.#componentScopes();
-    this.#bound.get(el)?.off();
+    this.#bound.get(el)?.sink.off();
     this.#bound.delete(el);
     this.#rescope(had);
   }
@@ -2617,92 +2579,44 @@ export class DataSource extends EventTarget {
 
   /** Give one component the rows and the view state. TRAP T-push-writes-state-as-attributes */
   #push(el: Populatable): void {
+    const entry = this.#bound.get(el);
+    if (!entry) return;
     const { sort, group, page, pageSize, sortSuspended } = this.#state;
     const filter = this.#filter;
     const first = sort[0];
 
     /* The FIELD survives a suspend; the DIRECTION says whether it is applied.
-       Suspended = the remembered field with an EMPTY direction.
        TRAP T-a-suspended-sort-is-one-owners-job */
     const shown = first ?? sortSuspended;
-    setAttr(el, 'data-sort-field', shown?.field);
-    setAttr(el, 'data-sort-direction',
-      first ? (first.direction ?? 'asc') : (sortSuspended ? '' : undefined));
-    setAttr(el, 'data-group-field', group ?? undefined);
-    // WHICH fields the filter touches, not the filter itself.
-    // TRAP T-push-writes-state-as-attributes
-    const fields = filterFields(filter);
-    setAttr(el, 'data-filter-fields', fields.length ? fields.join(' ') : undefined);
-    /* …and WHAT it matched on, so a component can point at the hit. A view
-       highlights what it filtered by, whichever control set the filter.
-       TRAP T-a-needle-comes-from-either-direction */
-    const needles = [filterNeedles(filter), this.#searchNeedles()].filter(Boolean).join('\n');
-    setAttr(el, 'data-needles', needles || undefined);
-    setAttr(el, 'data-page', pageSize ? String(page) : undefined);
-    setAttr(el, 'data-total-pages', pageSize ? String(this.totalPages) : undefined);
-    setAttr(el, 'data-page-size', pageSize ? String(pageSize) : undefined);
+    entry.sink.view({
+      sortField: shown?.field,
+      sortDirection: first ? (first.direction ?? 'asc') : (sortSuspended ? '' : undefined),
+      groupField: group ?? undefined,
+      filterFields: filterFields(filter),
+      /* …and WHAT it matched on, so a component can point at the hit, whichever
+         control set the filter. TRAP T-a-needle-comes-from-either-direction */
+      needles: [filterNeedles(filter), this.#searchNeedles()].filter(Boolean).join('\n'),
+      paging: pageSize ? { page, totalPages: this.totalPages, pageSize } : undefined,
+    });
 
-    // …but the ROWS go only where they mean something — the attributes above
-    // still reach a steer-only bind.
-    // TRAP T-steer-only-populate-means-chips
-    const entry = this.#bound.get(el);
-    if (entry?.steerOnly) return;
+    // …but the ROWS go only where they mean something. TRAP T-steer-only-populate-means-chips
+    if (entry.steerOnly) return;
 
     // Skip a push that would hand over the same rows again.
     // TRAP T-no-op-load-guard
     // TRAP T-adapter-lives-at-the-binding — guard the ROWS ARRAY, not a payload.
-    const base = entry?.rows === 'all' ? this.#allRows : this.#result.rows;
+    const base = entry.rows === 'all' ? this.#allRows : this.#result.rows;
     /* What narrows THIS component alone, on top of the shared query — and, for
        a summary bound INTO a component scope, that scope's answer.
        TRAP T-a-component-part-narrows-one-component */
-    const into = entry?.rows === 'all' && typeof entry.scope === 'string' ? this.#scoped[entry.scope] : undefined;
-    const own = andFilter([entry ? this.#only[entry.id] : undefined, into].filter((f): f is Filter => !!f));
+    const into = entry.rows === 'all' && typeof entry.scope === 'string' ? this.#scoped[entry.scope] : undefined;
+    const own = andFilter([this.#only[entry.id], into].filter((f): f is Filter => !!f));
     const ownKey = JSON.stringify(own ?? null);
-    if (entry && entry.lastRows === base && entry.lastOwn === ownKey) return;
-    if (entry) {
-      entry.lastRows = base;
-      entry.lastOwn = ownKey;
-    }
-    const pushRows = own ? filterRows(base, own) : base;
-
-    // populate() waits for the first render itself, so a component bound
-    // before it upgraded still gets its rows.
-    const adapt = entry?.as;
-    const payload = adapt ? adapt(pushRows as Row[], this) : pushRows;
-
-    // Through the callback it ASKED with, when a provider bound it.
-    const give = entry?.deliver ?? ((p: unknown): void => { void el.populate?.(p); });
-    // ONE NAMED PART, when the bind asked for one — see BindOptions.into.
-    give(entry?.into ? mergeInto(el, entry.into, payload) : payload);
+    if (entry.lastRows === base && entry.lastOwn === ownKey) return;
+    entry.lastRows = base;
+    entry.lastOwn = ownKey;
+    entry.sink.rows(own ? filterRows(base, own) : base);
   }
-}
-
-/** The shared draft each `into` bind writes its own part of. TRAP T-into-merges-on-the-element */
-const DRAFT = Symbol('sherpa:into-draft');
-
-/**
- * Write `value` at `path` in the element's shared draft, and return it.
- * `series.0` → `{ series: [value] }`. MUTATED, not rebuilt.
- * TRAP T-into-merges-on-the-element
- */
-function mergeInto(el: Populatable, path: string, value: unknown): unknown {
-  const host = el as unknown as Record<symbol, unknown>;
-  const segments = path.split('.').filter(Boolean);
-  if (!segments.length) return value;
-
-  const first = segments[0]!;
-  // The ROOT follows the same rule: a numeric first segment means an array.
-  host[DRAFT] ??= /^\d+$/.test(first) ? [] : {};
-  let node = host[DRAFT] as Record<string | number, unknown>;
-
-  for (let i = 0; i < segments.length - 1; i++) {
-    const key = segments[i]!;
-    const nextIsIndex = /^\d+$/.test(segments[i + 1]!);
-    node[key] ??= nextIsIndex ? [] : {};
-    node = node[key] as Record<string | number, unknown>;
-  }
-  node[segments[segments.length - 1]!] = value;
-  return host[DRAFT];
 }
 
 /** One field's answer in one copy of the Query, wherever it lives, or null. */
@@ -2742,8 +2656,3 @@ function answerOf(reading: FieldReading): FieldReading {
 // A key left off this list is DROPPED, silently. TRAP T-both-answers-are-kept
 const READING_KEYS = ['picked', 'present', 'op', 'text', 'conditions', 'mode', 'mirror', 'range', 'kept', 'suspended'] as const;
 
-/** Write or remove an attribute. `undefined` removes, so CSS stops matching. */
-function setAttr(el: HTMLElement, name: string, value: string | undefined): void {
-  if (value == null) el.removeAttribute(name);
-  else el.setAttribute(name, value);
-}
