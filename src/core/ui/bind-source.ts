@@ -202,23 +202,19 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
       return;
     }
     case 'quick-filter-change': {
-      /* ASK THE BAR. `readings` is the control's own answer — which field,
+      /* THE EVENT IS THE ANSWER. `readings` is the control's own — which field,
          which values, which condition — and `apply()` is the ONE place a
-         reading becomes a query. Building a clause from the detail here was
-         a second builder that knew no field type, no range and no condition.
+         reading becomes a query; the control is never read.
          TRAP T-one-query-builder-in-the-data-layer */
-      const bar = el as EventTarget & {
-        readings?: Record<string, FieldReading>;
-        savedReadings?: Record<string, Record<string, FieldReading>>;
-        presets?: Record<string, { on: boolean; readings: Record<string, FieldReading> }>;
-      } | null;
+      const presets = (detail['presets'] ?? {}) as Record<string, { on: boolean; readings: Record<string, FieldReading> }>;
+      const holds = Array.isArray(detail['holds']) ? (detail['holds'] as string[]) : undefined;
       /* A control over SEVERAL scopes — the panel — reports the ONE field it
          changed, in its scope, and its presets. TRAP T-the-panel-reports-its-own-reading */
       if (Array.isArray(bind?.scope)) {
         source.answerScopes(detail['readings'] as Record<string, Record<string, FieldReading>> | undefined);
         return;
       }
-      const readings = bar?.readings ?? pickedReadings(detail['values']);
+      const readings = (detail['readings'] as Record<string, FieldReading> | undefined) ?? pickedReadings(detail['values']);
       /* A REPORT IS THE WHOLE ANSWER. A field this control answered before
          and does not name now is a field it has stopped filtering by, so it
          is cleared — its OWN fields only, never another control's.
@@ -226,7 +222,7 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
       /* A SCOPED bar answers in the Query: its saved filters are presets, on
          or off, and their readings go to the library. TRAP T-one-query-one-owner */
       if (typeof bind?.scope === 'string') {
-        source.answerScope(bind.scope, { ...(el.heldFields ? { holds: el.heldFields } : {}), readings, presets: bar?.presets ?? {} });
+        source.answerScope(bind.scope, { ...(holds ? { holds } : {}), readings, presets });
         return;
       }
       for (const field of bind?.answered ?? []) {
@@ -237,7 +233,7 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
       /* SAVED FILTERS: one named part each, over any fields — and one switched
          off or taken away takes its part with it.
          TRAP T-a-saved-filter-is-its-readings */
-      const saved = bar?.savedReadings ?? {};
+      const saved = Object.fromEntries(Object.entries(presets).filter(([, p]) => p.on).map(([id, p]) => [id, p.readings]));
       const parts = new Set(Object.keys(saved).map((id) => `saved:${id}`));
       for (const key of bind?.saved ?? []) if (!parts.has(key)) source.contribute(key, undefined);
       for (const [id, given] of Object.entries(saved)) {
@@ -249,8 +245,9 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
     case 'filter-add':
     case 'filter-remove': {
       const scope = bind?.scope;
-      // A scoped bar's chips ARE its scope's holds. TRAP T-a-bar-reports-its-holds
-      if (typeof scope === 'string' && el.heldFields) source.hold(scope, el.heldFields);
+      // A scoped bar's chips ARE its scope's holds, said in its event. TRAP T-a-bar-reports-its-holds
+      const holds = detail['holds'];
+      if (typeof scope === 'string' && Array.isArray(holds)) source.hold(scope, holds.map(String));
       // The panel ASKS a scope to let one go. TRAP T-a-panel-asks-for-its-scopes
       else if (Array.isArray(scope) && typeof detail['scope'] === 'string' && typeof detail['id'] === 'string') {
         source.release(detail['scope'], detail['id']);

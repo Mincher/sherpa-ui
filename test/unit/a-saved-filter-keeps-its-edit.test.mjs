@@ -33,7 +33,7 @@ class Bar extends EventTarget {
   removeAttribute() {}
   toggleAttribute() {}
   populate() {}
-  report() { this.dispatchEvent(new CustomEvent('quick-filter-change', { detail: {} })); }
+  report() { this.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: this.readings, presets: this.presets, holds: this.heldFields } })); }
   edit(readings) { this.dispatchEvent(new CustomEvent('preset-edit', { detail: { id: 'custom:risk', readings } })); }
 }
 

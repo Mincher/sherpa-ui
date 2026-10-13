@@ -225,16 +225,16 @@ test('a scoped bar\'s saved filters are PRESETS in the Query — on or off, read
   const presets = { 'at-risk': { on: true, readings: { health: { op: 'lt', text: '60' } } } };
   const bar = Object.assign(new EventTarget(), {
     setAttribute() {}, removeAttribute() {}, hasAttribute: () => false,
-    readings: {}, presets,
   });
   bindSource(src, bar, { steerOnly: true, scope: 'grid' });
-  bar.dispatchEvent(new CustomEvent('quick-filter-change', { detail: {} }));
+  const report = () => bar.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: {}, presets } }));
+  report();
   assert.deepEqual(src.query.applied.scopes.grid.presets, { 'at-risk': true });
   assert.deepEqual(ids(src.state.filter), [1, 4, 5]);
   assert.deepEqual(src.contributions, [], 'no compiled part');
   // OFF keeps it held, and filters nothing.
   presets['at-risk'].on = false;
-  bar.dispatchEvent(new CustomEvent('quick-filter-change', { detail: {} }));
+  report();
   assert.deepEqual(src.query.applied.scopes.grid.presets, { 'at-risk': false });
   assert.equal(src.state.filter, undefined);
 });

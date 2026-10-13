@@ -10883,6 +10883,12 @@ keeps the bare floor. Without it, that chart falls to a 3px plot.
 not a delta. A field it answered last time and does not name now has been
 turned off, and the source clears it.
 
+**The answer is IN the event.** A bar's detail is `{ scope, readings, presets,
+holds, active, values }`, and its `filter-add` / `filter-remove` carry `holds`
+too, so the binder reads the event and never the bar (A7, TODO 86). Read off
+the element, the answer was a duck-typed second door, and a control that
+named its getters differently filtered nothing.
+
 `apply()` alone cannot do this: it walks the readings it was given, so
 `apply({})` changed nothing. Two tests caught it —
 
@@ -10905,6 +10911,7 @@ longer the grid bar's to clear, and the bar's next report cannot wipe it.
 - Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-data-source.spec.ts`
 - Site: `src/core/ui/bind-source.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
 ### T-a-group-is-a-data-layer-concept
 
@@ -13482,8 +13489,8 @@ reads it back into readings; one stored before 197 still opens.
 `T-one-way-to-write-a-condition`
 
 **It applies as ONE named part.** A def with `readings` is a toggle of kind
-`advanced`. The bar reports every ON one in `savedReadings`, by chip id, and a
-bound source applies each with `apply(readings, { reach: 'component', key:
+`advanced`. The bar's report names each in `presets`, on or off, by chip id,
+and a bound source applies each ON one with `apply(readings, { reach: 'component', key:
 'saved:<id>' })` — so two saved filters AND, one over two fields is one part,
 and one switched off takes its part with it (`bind.saved`).
 

@@ -42,12 +42,12 @@ async function source() {
   return src;
 }
 
-test('a control with `readings` is ASKED, so its field TYPE is honoured', async () => {
+test('a report that carries `readings` is believed, so its field TYPE is honoured', async () => {
   const src = await source();
-  const el = bar({ readings: { seats: { picked: ['5', '50'], range: true } } });
+  const el = bar();
   bindSource(src, el, { steerOnly: true });
 
-  el.dispatchEvent(new CustomEvent('quick-filter-change', { detail: {} }));
+  el.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: { seats: { picked: ['5', '50'], range: true } } } }));
   await settle();
 
   // A RANGE, cast to numbers: 5..50 keeps two rows and drops the 500.
@@ -57,7 +57,7 @@ test('a control with `readings` is ASKED, so its field TYPE is honoured', async 
      holding numbers, so it matched nothing at all. */
 });
 
-test('a control WITHOUT `readings` has its values read as parameters, not a clause', async () => {
+test('a report WITHOUT `readings` has its values read as parameters, not a clause', async () => {
   const src = await source();
   const el = bar();
   bindSource(src, el, { steerOnly: true });

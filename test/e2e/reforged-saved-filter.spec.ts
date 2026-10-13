@@ -191,7 +191,7 @@ test('packFilter shows the saved chip ON and clears the fields it came from, in 
     ]) });
     const bar = await window.__mount<Bar & {
       packFilter(s: { id: string; label: string; readings: Record<string, unknown> }): void;
-      savedReadings: Record<string, unknown>;
+      presets: Record<string, { on: boolean; readings: unknown }>;
     }>('sherpa-quick-filter-toolbar', [
       { id: 'owner', label: 'Owner', select: 'multiple', custom: true, active: true,
         op: 'contains', text: 'Da', options: OPTS },
@@ -223,7 +223,8 @@ test('packFilter shows the saved chip ON and clears the fields it came from, in 
       owner: { on: chip('owner').hasAttribute('data-current'),
         rows: (fields.owner.conditions ?? []).length, picked: fields.owner.picked },
       plan: { on: chip('plan').hasAttribute('data-current'), picked: fields.plan.picked },
-      savedReadings: bar.savedReadings,
+      // The ON saved filters' readings — what a source applies, one part each.
+      savedReadings: Object.fromEntries(Object.entries(bar.presets).filter(([, p]) => p.on).map(([id, p]) => [id, p.readings])),
       total: source.debugState().total,
       parts: Object.keys(source.debugState().parts),
       reports,
@@ -346,7 +347,7 @@ test('Edit filter edits in place, and the fields are left as they were; Delete f
       { id: 3, owner: 'Ravi', tier: 'gold' },
     ]) });
     const readings = { owner: { conditions: [{ op: 'contains', text: 'Da' }] }, tier: { picked: ['gold'] } };
-    const bar = await window.__mount<Bar & { savedReadings: Record<string, unknown> }>('sherpa-quick-filter-toolbar', [
+    const bar = await window.__mount<Bar>('sherpa-quick-filter-toolbar', [
       { id: 'owner', label: 'Owner', select: 'multiple', custom: true, removable: true, options: OPTS },
       { id: 'custom:mine', label: 'Mine', readings, editable: true, removable: true, active: true },
     ], { style: 'inline-size: 1200px', 'data-saveable': true });

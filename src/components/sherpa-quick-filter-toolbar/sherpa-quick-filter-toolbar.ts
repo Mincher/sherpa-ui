@@ -1127,9 +1127,13 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.emit('quick-filter-change', {
       // TRAP T-values-carries-two-shapes — `scope` says WHICH shape this is.
       scope: 'bar',
+      // Its WHOLE answer, in the event: a source reads this, never the bar.
+      // TRAP T-a-filter-report-is-the-whole-answer
+      readings: this.readings,
+      presets: this.presets,
+      holds: this.heldFields,
       active: this.active,
-      // APPLIED: only ON chips. A source reads `readings` and `presets` off the
-      // bar; `values` is for a host that wants the ticks — the View chip's.
+      // APPLIED: only ON chips — for a host that wants the ticks, the View chip's.
       values: this.values,
     });
     this.#syncSaveable();
@@ -1336,16 +1340,6 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     return null;
   }
 
-  /**
-   * Every ON saved filter's readings, by chip id — what a bound source applies,
-   * one named part each. TRAP T-a-saved-filter-is-its-readings
-   */
-  get savedReadings(): Record<string, Record<string, FieldReading>> {
-    const on = new Set(this.#chips().filter((c) => c.current).map((c) => c.dataset['id']));
-    const out: Record<string, Record<string, FieldReading>> = {};
-    for (const f of this.#filters) if (f.readings && on.has(f.id)) out[f.id] = f.readings;
-    return out;
-  }
 
   /**
    * Every saved filter this bar holds, ON OR OFF, with its readings — what a
@@ -1606,7 +1600,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#renderAvailable();
     if (silent) return;
     // ONE event for the batch — a host re-queries once.
-    this.emit('filter-add', { ids: added.map((f) => f.id), filters: added });
+    this.emit('filter-add', { ids: added.map((f) => f.id), filters: added, holds: this.heldFields });
     // AFTER the rebuild. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp
     void this.#settled().then(() => this.#emitChange());
   }
@@ -1630,7 +1624,7 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
     this.#render();
     this.#renderAvailable();
     if (silent) return;
-    this.emit('filter-remove', { id, filter: clean });
+    this.emit('filter-remove', { id, filter: clean, holds: this.heldFields });
     /* AFTER the rebuild has settled. Emitting here read `values: {}` from a
        bar whose menus had not stamped, and the host answered by clearing every
        other chip. TRAP T-a-rebuilt-bar-reads-empty-until-its-menus-stamp */

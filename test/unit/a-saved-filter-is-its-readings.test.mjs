@@ -3,7 +3,7 @@
  *
  * Will, 2026-09-25: presets "are actually compound conditional filters that
  * (potentially) use more than 1 field". A def carries its answer field by
- * field; the bar reports the ON ones in `savedReadings`; the source applies
+ * field; the bar's report names them in `presets`, on or off; the source applies
  * each as a named part, and drops the part when the chip goes off.
  *
  *   node --test test/unit/a-saved-filter-is-its-readings.test.mjs
@@ -17,16 +17,17 @@ import assert from 'node:assert/strict';
 import { ArrayStore, DataSource, bindSource, fieldState, savedReading, stateClause } from '../../dist/data.js';
 import { kindOf } from '../../dist/core/ui/filter-kind.js';
 
-/** A bar with nothing but what a source asks of it. */
+/** A bar with nothing but what a source hears from it. */
 class Bar extends EventTarget {
   saved = {};
-  get readings() { return {}; }
-  get savedReadings() { return this.saved; }
   setAttribute() {}
   removeAttribute() {}
   toggleAttribute() {}
   populate() {}
-  report() { this.dispatchEvent(new CustomEvent('quick-filter-change', { detail: {} })); }
+  report() {
+    const presets = Object.fromEntries(Object.entries(this.saved).map(([id, readings]) => [id, { on: true, readings }]));
+    this.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: {}, presets } }));
+  }
 }
 
 const ROWS = [

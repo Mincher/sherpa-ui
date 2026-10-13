@@ -51,14 +51,14 @@
     actions  — host extras, placed BEFORE the built-in cluster
 
   Fires:
-    quick-filter-change  — detail: { active, values, picked }
+    quick-filter-change  — its whole answer. detail: { scope, readings, presets, holds, active, values }
     group-change         — detail: { field }
     sort-change          — detail: { field, direction }
-    filter-remove        — a chip was removed. detail: { id, filter }
+    filter-remove        — a chip was removed. detail: { id, filter, holds }
     filter-save          — "Save filter" was pressed. detail: { readings, id?, label? } — id and label name the saved filter whose change is saved
     filter-delete        — a saved filter's Delete: it is off the bar. detail: { id }
     preset-edit          — a saved filter's rows changed, sent once when its editing ends. detail: { id, readings } — null puts the saved one back
-    filter-add           — the Add chip's body was clicked
+    filter-add           — chips were added. detail: { ids, filters, holds }
     view-reset           — Reset all to default: put back the View's own filters, in every scope. Cancelable
     ai-filter-request    — the AI button
     data-refresh         — the refresh button

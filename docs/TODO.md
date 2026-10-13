@@ -368,7 +368,7 @@ behaviour unchanged.
 | | stage |
 |---|---|
 | ✅ | 1. Events: the menu's `filter-mode-change` becomes `condition-mode-change` (the provider's has the same name); `filter-clear` and `filter-condition-change` go — a field's mode is in its answer. **Kept:** `calendar-apply` and `calendar-cancel`, a lone calendar's only report of its own footer's buttons |
-| ⬜ | 2. The bar's `quick-filter-change` carries its whole answer — `{ scope, readings, presets, holds }` — so the binder reads the event, never `bar.readings`, `presets`, `savedReadings` or `heldFields`; then those four and `active` go |
+| ✅ | 2. The bar's `quick-filter-change` carries its whole answer — `{ scope, readings, presets, holds, active, values }` — and its `filter-add` / `filter-remove` carry `holds`, so the binder reads the event, never the bar. `savedReadings` goes (`presets` says it). **Kept, found while building:** `active` is a field-less toggle chip's only report; `presets` and `heldFields` are read-backs (State ownership), and the provider's Add list reads `heldFields` |
 | ⬜ | 3. `filter-add` / `filter-remove { scope, ids }`, always a REQUEST: the panel's `filter-add-request` folds in |
 | ⬜ | 4. The grid: its heading's answer is `quick-filter-change { scope, readings }`; `column-filter-change` and the six column members go; `supersedeColumns` is drawn as the bar is |
 | ⬜ | 5. The toolbar's `setChipValues`, `setChipReading`, `supersede`, `superseded`, the panel's `setFieldReading` and `values`, and the app-header's `values` and `available` go — `drawReading` and `drawScope` are the doors |

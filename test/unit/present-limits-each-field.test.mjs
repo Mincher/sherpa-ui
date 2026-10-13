@@ -38,7 +38,7 @@ class Bar extends EventTarget {
   removeAttribute() {}
   toggleAttribute() {}
   populate() {}
-  report() { this.dispatchEvent(new CustomEvent('quick-filter-change', { detail: {} })); }
+  report() { this.dispatchEvent(new CustomEvent('quick-filter-change', { detail: { readings: this.readings, presets: this.presets, holds: this.heldFields } })); }
 }
 
 async function setup({ view = {}, data = null, limit = true } = {}) {
