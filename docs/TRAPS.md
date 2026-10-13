@@ -2100,7 +2100,7 @@ reads them; it does not ask components to send anything new. So adding an event
 here is a decision about what steers a query, never about what a component
 emits.
 
-- Site: `src/core/data/data-source.ts`
+- Site: `src/core/ui/bind-source.ts`
 
 ### T-in-flight-ticket-discards-stale
 
@@ -2284,7 +2284,7 @@ act on them: `active` reaches the app through the event as it always did. A view
 that knows the column translates them itself, which is exactly what `ignore`
 exists for (`T-ignore-is-the-scalpel`).
 
-- Site: `src/core/data/data-source.ts`
+- Site: `src/core/ui/bind-source.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 
 ### T-persist-defaults-per-tab
@@ -7298,6 +7298,7 @@ browser. That is the price of letting the reader fold, and it is the same price
 the grid's own sort and column filters already pay.
 
 - Site: `src/core/data/data-source.ts`
+- Site: `src/core/ui/bind-source.ts`
 
 ### T-grid-untyped-column-gets-no-filter-button
 
@@ -10446,7 +10447,7 @@ clause. `picksClause` then had no callers left in `data-source.ts` at all.
 data back. Transforming never writes to the raw rows; only create, update and
 remove do. `test/unit/raw-data-is-untouched.test.mjs` holds that half.
 
-- Site: `src/core/data/data-source.ts`
+- Site: `src/core/ui/bind-source.ts`
 - Site: `test/unit/raw-data-is-untouched.test.mjs`
 - Site: `test/unit/one-query-builder.test.mjs`
 - Site: `test/reforged/harness.html`
@@ -10585,7 +10586,7 @@ component names the other.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/unit/parity-sweep.test.mjs`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
-- Site: `src/core/data/data-source.ts`
+- Site: `src/core/ui/bind-source.ts`
 
 ### T-closest-stops-at-the-shadow-boundary
 
@@ -10823,6 +10824,7 @@ longer the grid bar's to clear, and the bar's next report cannot wipe it.
 
 - Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-data-source.spec.ts`
+- Site: `src/core/ui/bind-source.ts`
 
 ### T-a-group-is-a-data-layer-concept
 
@@ -13421,6 +13423,7 @@ ON ones itself, so a preset was a chip in one file and a query in another.
 - Site: `src/data.ts`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 - Site: `test/unit/a-saved-filter-is-its-readings.test.mjs`
+- Site: `src/core/ui/bind-source.ts`
 
 ### T-a-saved-filter-keeps-its-edit
 
@@ -13505,6 +13508,7 @@ scope's header holds nothing to press; Save is in the chip's own menu.
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
+- Site: `src/core/ui/bind-source.ts`
 
 ### T-save-packs-the-fields-into-one-chip
 
@@ -14983,6 +14987,7 @@ one object — so nothing is ever pending. A scope that narrows one component
 - Site: `test/unit/query.test.mjs`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
+- Site: `src/core/ui/bind-source.ts`
 
 ### T-a-view-is-json
 
@@ -15194,6 +15199,7 @@ Only a SCOPED grid: an unscoped one is a page's to wire, as before.
 
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
+- Site: `src/core/ui/bind-source.ts`
 
 ### T-a-panel-asks-for-its-scopes
 
@@ -15221,6 +15227,7 @@ reaching into the bar's shadow root.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/unit/headless-data-layer.test.mjs`
+- Site: `src/core/ui/bind-source.ts`
 
 ### T-a-bar-reports-its-holds
 
@@ -15257,6 +15264,7 @@ empty hold forgets its scope.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/core/data/data-source.ts`
+- Site: `src/core/ui/bind-source.ts`
 
 ### T-only-the-view-trickles-down
 
@@ -16212,6 +16220,7 @@ dropped reads "contains an" as nothing.
 - Site: `src/data.ts`
 - Site: `test/e2e/reforged-filter-scope.spec.ts`
 - Site: `test/unit/query.test.mjs`
+- Site: `src/core/ui/bind-source.ts`
 
 ### T-the-data-says-what-a-field-may-hold
 

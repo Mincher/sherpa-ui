@@ -121,7 +121,8 @@
       // module the day someone remembered to add it; three DOM-free modules
       // had drifted outside it. A new file in src/core/data is covered the
       // moment it lands.
-      "files": ["src/core/data/**/*.ts"],
+      // …and the binder's steering, which the data layer still imports (TODO 196).
+      "files": ["src/core/data/**/*.ts", "src/core/ui/bind-source.ts"],
       "rules": {
         "no-restricted-globals": [
           "error",
