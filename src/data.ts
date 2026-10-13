@@ -30,8 +30,10 @@
  */
 
 export {
+  absoluteDates,
   applyOptions,
   compareValues,
+  durationSpan,
   filterRows,
   groupRows,
   groupSummaries,
@@ -47,6 +49,7 @@ export {
      TRAP T-a-value-can-be-an-object */
   valueKey,
   valueSet,
+  type Duration,
   type Filter,
   type FilterClause,
   type FilterGroup,

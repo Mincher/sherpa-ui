@@ -144,6 +144,8 @@ export interface FieldDeclaration {
   custom?: boolean | 'only';
   /** The condition its filter opens on. */
   op?: FilterOp;
+  /** A DATE that holds a time of day: its Advanced rows offer a time too. TODO 21d */
+  time?: boolean;
   /** A number filter's ends, and its step. */
   min?: number;
   max?: number;
@@ -1219,6 +1221,7 @@ export class DataSource extends EventTarget {
     return {
       ...(values ? { values } : {}),
       ...(facts.type ? { type: facts.type } : {}),
+      ...(facts.time ? { time: true } : {}),
       ...(named ? { label: named } : {}),
     };
   }

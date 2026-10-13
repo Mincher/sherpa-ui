@@ -83,6 +83,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16t12 | 236 | Read-only Advanced condition rows: the value text is too dark, and the row × shows though nothing can be removed | bug |
 | ✅ | 16t13 | 237 | A tile's own `data-where` on a field the View's bar holds narrows nothing, and says nothing | bug |
 | ✅ | 16t14 | 238 | The data grid's "Select all rows" does not select every row on every page | bug |
+| ⬜ | 16t15 | 239 | A chip given a typed Advanced answer in its def does not wear `data-condition` — since the templates went into the JS (199) | bug |
 | ✅ | 16t6 | 230 | Reset all filters dialog: "Save filters before reset" sits in a grey border; it is plain form content | quick |
 | | | | **C2 — Consumers: frameworks, apps and agents** (planned 2026-10-12) | |
 | ✅ | c1 | 225 | `settled()` hangs on an infinite animation — a loader, an indeterminate bar — and waits on the whole document when given a part | bug |
@@ -1621,6 +1622,17 @@ badge and the accordion's button sit at the top of the header row.
 buttons align to the top (they shared the bottom line, Will 2026-09-26). A
 test measures each against the row's top; it failed on the old CSS.
 
+### `[ ]` 239 — A chip with a typed Advanced answer in its def reads as Simple
+
+Found 2026-10-13 while testing 90: `reforged-one-condition-system.spec.ts`
+("a TYPED condition in list mode is Advanced") fails, every run, in Chromium.
+Measured by building old commits in a worktree: it passed on 2 October and
+first fails at `39dd3612` (199). It passes on a DEV build, where the files are
+fetched, and fails on a build with the templates in the JS, minified or not.
+So the chip now reads its menu BEFORE the menu holds its answer, and nothing
+asks it again: its menu reads Advanced (`contains Da`), the chip has no
+`data-condition`.
+
 ### `[x]` ✅ 238 — "Select all rows" in the data grid misses rows on other pages
 
 Will, 2026-10-13: *"Bug: 'Select all rows' in the data grid component doesn't
@@ -2457,6 +2469,14 @@ field (`T-conditions-are-opt-in-per-field`): say if EVERY field should offer
 it.
 
 **✅ Will, 2026-10-12 — all my picks:** Unblocked: 21d is ruled — no weekday now, a time input only where the field holds a time.
+
+**Dates, from 2026-10-13** (21d's design, as ruled):
+
+| | step |
+|---|---|
+| ✅ | 1. The data: On, Before, After and Between are `eq`, `lt`, `gt` and `between`; In the last and In the next are `last` / `next { n, unit }`, kept RELATIVE in the clause and in a saved View (`{ "last": 7 }`) and worked out when matched — a `RestStore` sends the `between`. A field with `time: true` takes a day alone as all of it. The words: `Before 03 Sep 2026`, `In the last 7 days` |
+| ⬜ | 2. The menu: a date filter's Advanced rows — a date box (and a time box where the field holds times), two for Between, a count and a unit for In the last and In the next; the f(x) switch beside the calendar |
+| ⬜ | 3. Sherpa Demos: Created opts in |
 
 ### `[ ]` 98 — One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes
 

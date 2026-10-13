@@ -10,9 +10,14 @@
  * - SortSpec — One sort instruction.
  * - FilterOp — one operator name — eq, contains, between, and the rest
  * - OP_LABELS — How each operator READS to a person.
+ * - DATE_OP_LABELS — How an operator reads on a DATE field: a day is on, before or after.
  * - OPS_FOR_TYPE — The operators each COLUMN TYPE can answer.
  * - OP_TAKES — WHAT a reader gives an operator: a value they PICK, or one they TYPE.
  * - DEFAULT_OP — The condition a filter menu opens on.
+ * - Duration — A span of time from today, for `last` and `next`.
+ * - durationSpan — The days a `last` or `next` clause spans, from today, as ISO days.
+ * - END_OF_DAY — The end of a day, so a value with a time still falls inside it.
+ * - absoluteDates — A filter with every `last` and `next` turned into the `between` it means today.
  * - FilterClause — [field, op, value] — one condition
  * - FilterGroup — ['and' | 'or', ...filters] — conditions joined
  * - Filter — a clause or a group; the one filter shape the whole layer speaks
@@ -58,7 +63,9 @@ export type FilterOp =
   | 'eq' | 'ne' | 'lt' | 'lte' | 'gt' | 'gte'
   | 'contains' | 'notcontains' | 'startswith' | 'endswith'
   | 'in' | 'notin'
-  | 'between';
+  | 'between'
+  // A DATE from today: `{ n: 7, unit: 'day' }`, worked out when it is matched.
+  | 'last' | 'next';
 
 /** How each operator READS to a person. A second copy is a second vocabulary. */
 export const OP_LABELS: Record<FilterOp, string> = {
@@ -75,7 +82,12 @@ export const OP_LABELS: Record<FilterOp, string> = {
   in: 'Is one of',
   notin: 'Is not one of',
   between: 'Between',
+  last: 'In the last',
+  next: 'In the next',
 };
+
+/** How an operator reads on a DATE field: a day is on, before or after. TODO 90 */
+export const DATE_OP_LABELS: Partial<Record<FilterOp, string>> = { eq: 'On', lt: 'Before', gt: 'After' };
 
 /**
  * The operators each COLUMN TYPE can answer.
@@ -86,8 +98,8 @@ export const OP_LABELS: Record<FilterOp, string> = {
 export const OPS_FOR_TYPE: Record<string, readonly FilterOp[]> = {
   text: ['eq', 'ne', 'contains', 'notcontains', 'startswith', 'endswith'],
   number: ['eq', 'ne', 'gt', 'gte', 'lt', 'lte'],
-  // A date is answered by clicking a calendar — no operator list.
-  date: [],
+  // A date's Advanced rows; its Simple answer is the calendar. TODO 21d
+  date: ['eq', 'lt', 'gt', 'between', 'last', 'next'],
 };
 
 /**
@@ -110,10 +122,45 @@ export const OP_TAKES: Record<FilterOp, 'list' | 'text' | 'range'> = {
   gt: 'text',
   gte: 'text',
   between: 'range',
+  // The COUNT is typed; its unit rides beside it.
+  last: 'text',
+  next: 'text',
 };
 
 /** The condition a filter menu opens on. A reader picks a value far more often than typing one. */
 export const DEFAULT_OP: FilterOp = 'eq';
+
+/** A span of time from today, for `last` and `next`. */
+export interface Duration {
+  n: number;
+  unit: 'day' | 'week' | 'month';
+}
+
+/** The days a `last` or `next` clause spans, from today, as ISO days — in UTC,
+ *  as a date reads (`T-a-date-reads-one-way`). TRAP T-a-relative-date-stays-relative */
+export function durationSpan(op: 'last' | 'next', { n, unit }: Duration, today = new Date()): [string, string] {
+  const day = (d: Date): string => d.toISOString().slice(0, 10);
+  const from = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+  const to = new Date(from);
+  const step = op === 'last' ? -n : n;
+  if (unit === 'month') to.setUTCMonth(to.getUTCMonth() + step);
+  else to.setUTCDate(to.getUTCDate() + step * (unit === 'week' ? 7 : 1));
+  return op === 'last' ? [day(to), day(from)] : [day(from), day(to)];
+}
+
+/** The end of a day, so a value with a time still falls inside it. */
+export const END_OF_DAY = 'T23:59:59.999';
+
+/** A filter with every `last` and `next` turned into the `between` it means
+ *  TODAY — for a store that cannot work one out. TRAP T-a-relative-date-stays-relative */
+export function absoluteDates(filter: Filter, today = new Date()): Filter {
+  const [head, ...rest] = filter;
+  if (head === 'and' || head === 'or') return [head, ...(rest as Filter[]).map((f) => absoluteDates(f, today))];
+  const [field, op, value] = filter as FilterClause;
+  if (op !== 'last' && op !== 'next') return filter;
+  const [from, to] = durationSpan(op, value as Duration, today);
+  return [field, 'between', [from, `${to}${END_OF_DAY}`]];
+}
 
 export type FilterClause = [field: string, op: FilterOp, value: unknown];
 export type FilterGroup = ['and' | 'or', ...Filter[]];
@@ -322,6 +369,9 @@ export function matchesFilter(row: Row, filter: Filter | undefined): boolean {
       return Array.isArray(value) && value.some((v) => looseEqual(actual, v));
     case 'notin':
       return !Array.isArray(value) || !value.some((v) => looseEqual(actual, v));
+    case 'last':
+    case 'next':
+      return matchesFilter(row, absoluteDates(filter));
     case 'between': {
       // A backwards pair is still a range — order the bounds, do not reject.
       if (!Array.isArray(value) || value.length !== 2 || actual == null) return false;

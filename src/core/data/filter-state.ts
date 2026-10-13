@@ -35,9 +35,9 @@
  * - clauseConditions — a one-field chained clause back as its rows — the inverse of the chain
  */
 import {
-  DEFAULT_OP, OP_TAKES,
+  DEFAULT_OP, END_OF_DAY, OP_TAKES,
   matchesFilter, picksClause, valueSet, valueKey,
-  type Filter, type FilterClause, type FilterOp,
+  type Duration, type Filter, type FilterClause, type FilterOp,
 } from './store.js';
 
 /** What a field's selection is doing. */
@@ -89,6 +89,8 @@ export interface FilterState {
   conditions: readonly FieldCondition[];
   /** Its KIND. `text` unless declared. TRAP T-the-field-type-decides-the-clause */
   type: FieldType;
+  /** A DATE that holds a time of day, so a day alone means all of it. TODO 21d */
+  time: boolean;
   /** Which answer is in force — the reading's, or Advanced where only rows answer. */
   mode: ConditionType;
   /** Its picks are the ENDS of a range. */
@@ -138,6 +140,8 @@ export interface FieldFacts {
   values?: readonly unknown[];
   /** A reader-facing name per value, where it differs. */
   labels?: Readonly<Record<string, string>>;
+  /** A DATE that holds a time of day. TODO 21d */
+  time?: boolean;
 }
 
 /** What is true right now, which decides the STATES. */
@@ -196,6 +200,8 @@ export interface FieldCondition {
   text?: string;
   /** For an op that takes values — `eq` offers the field's own list. */
   picked?: readonly unknown[];
+  /** `last` and `next`: what the typed count counts. Default `day`. TODO 21d */
+  unit?: Duration['unit'];
 }
 
 /**
@@ -317,6 +323,7 @@ export function fieldState(facts: FieldFacts, reading: FieldReading = {}): Filte
     text,
     conditions,
     type,
+    time: type === 'date' && !!facts.time,
     mode,
     range,
     values,
@@ -403,6 +410,20 @@ function rangeClause(
  * TRAP T-a-value-can-be-an-object
  */
 function rowClause(state: FilterState, row: FieldCondition): Filter | undefined {
+  // A DATE from today stays RELATIVE in the clause. TRAP T-a-relative-date-stays-relative
+  if (row.op === 'last' || row.op === 'next') {
+    const n = Number((row.text ?? '').trim());
+    return n > 0 ? [state.field, row.op, { n, unit: row.unit ?? 'day' }] : undefined;
+  }
+  // A day alone, on a field with times, is ALL of that day.
+  if (state.time) {
+    const day = (v: unknown): boolean => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
+    const one = row.op === 'gt' ? row.text : row.op === 'eq' && row.picked?.length === 1 ? row.picked[0] : undefined;
+    if (day(one)) {
+      return row.op === 'gt' ? [state.field, 'gt', `${one}${END_OF_DAY}`]
+        : [state.field, 'between', [one, `${one}${END_OF_DAY}`]];
+    }
+  }
   const takes = OP_TAKES[row.op] ?? 'list';
   if (takes === 'text') {
     const text = (row.text ?? '').trim();
@@ -422,6 +443,10 @@ function leafRow(leaf: Filter): FieldCondition | undefined {
     return undefined;
   }
   const [, clauseOp, value] = leaf as FilterClause;
+  if (clauseOp === 'last' || clauseOp === 'next') {
+    const { n, unit } = value as Duration;
+    return { op: clauseOp, text: String(n), unit };
+  }
   const op = ROW_OPS[clauseOp] ?? clauseOp;
   if ((OP_TAKES[op] ?? 'list') === 'text') return { op, text: String(value ?? '') };
   return { op, picked: Array.isArray(value) ? [...value] : [value] };

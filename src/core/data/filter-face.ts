@@ -18,7 +18,7 @@
  * - conditionLines — a state's answer in force, a line per condition
  * - sayReadings — a saved filter in words, field by field
  */
-import { DEFAULT_OP, OP_LABELS, OP_TAKES, valueKey } from './store.js';
+import { DATE_OP_LABELS, DEFAULT_OP, OP_LABELS, OP_TAKES, valueKey, type FilterOp } from './store.js';
 import { formatDate } from './format-date.js';
 import {
   fieldState, type FieldCondition, type FieldFacts, type FieldReading, type FilterState,
@@ -66,7 +66,7 @@ export function filterFace(state: FilterState): FilterFace {
     ? (lead.picked ?? []).map((v) => labelOf.get(valueKey(v)) ?? String(v))
     : state.values.filter((v) => v.state === 'picked').map((v) => v.label);
   const named = op !== DEFAULT_OP;
-  const condition = named ? OP_LABELS[op] : '';
+  const condition = named ? opName(op, state.type === 'date') : '';
   const typed = (OP_TAKES[op] ?? 'list') === 'text';
 
   /* TWO ENDS read as a range, and a DAY as a day — the one way every control
@@ -75,10 +75,11 @@ export function filterFace(state: FilterState): FilterFace {
   const dated = state.type === 'date' && !lead;
   const ends = !typed && state.range && picks.length === 2;
   const span = ends ? (dated ? formatDate(picks[0]!, picks[1]) : `${picks[0]} to ${picks[1]}`) : '';
-  const said = dated ? picks.map((day) => formatDate(day)) : picks;
+  const said = state.type === 'date' ? picks.map((day) => formatDate(day)) : picks;
 
-  const value = typed ? text : span || (said.length > 1 ? `${said[0]}…` : (said[0] ?? ''));
-  const spelled = typed ? text : span || said.join(', ');
+  const typedSaid = typed ? sayTyped(lead ?? { op, text }, state.type === 'date') : '';
+  const value = typed ? typedSaid : span || (said.length > 1 ? `${said[0]}…` : (said[0] ?? ''));
+  const spelled = typed ? typedSaid : span || said.join(', ');
 
   /* Many rows say their own story; one row falls back to the old wording. */
   const chained = state.conditions.length > 1 ? spellConditions(state) : '';
@@ -108,16 +109,33 @@ export function filterFace(state: FilterState): FilterFace {
 /** The ONE mark a control wears when conditions are applied. */
 export const CONDITION_BADGE = 'fx';
 
+/** An op's name in its field's words: a date is On, Before or After. TODO 21d */
+function opName(op: FilterOp, dated: boolean): string {
+  return (dated ? DATE_OP_LABELS[op] : undefined) ?? OP_LABELS[op] ?? op;
+}
+
+/** A TYPED answer as it reads: a day as a day, a count with what it counts. */
+function sayTyped(row: Pick<FieldCondition, 'op' | 'text' | 'unit'>, dated: boolean): string {
+  const text = (row.text ?? '').trim();
+  if (!text) return '';
+  if (row.op === 'last' || row.op === 'next') {
+    const unit = row.unit ?? 'day';
+    return `${text} ${unit}${Number(text) === 1 ? '' : 's'}`;
+  }
+  return dated ? formatDate(text) : text;
+}
+
 /**
  * Chained rows, in words: `Contains "ab" or Equals cd` — the chip's value and
  * its accessible name. TRAP T-a-condition-badge-says-that-not-which
  */
 export function spellConditions(state: FilterState): string {
+  const dated = state.type === 'date';
   const part = (row: FieldCondition): string => {
-    const name = OP_LABELS[row.op] ?? row.op;
+    const name = opName(row.op, dated);
     const said = (OP_TAKES[row.op] ?? 'list') === 'text'
-      ? (row.text ?? '')
-      : (row.picked ?? []).map(String).join(', ');
+      ? sayTyped(row, dated)
+      : (row.picked ?? []).map((v) => (dated ? formatDate(String(v)) : String(v))).join(', ');
     return said ? `${name}: ${said}` : name;
   };
   return state.conditions
@@ -150,9 +168,9 @@ export function conditionLines(state: FilterState): string[] {
     // Several picks under `=` are any of them; under `≠`, none of them.
     const op = picks.length > 1 && row.op === 'eq' ? 'in'
       : picks.length > 1 && row.op === 'ne' ? 'notin' : row.op;
-    const said = (OP_TAKES[row.op] ?? 'list') === 'text' ? (row.text ?? '')
+    const said = (OP_TAKES[row.op] ?? 'list') === 'text' ? sayTyped(row, dated)
       : row.op === 'between' ? picks.join(' and ') : picks.join(', ');
-    const line = `${OP_LABELS[op] ?? op} ${said}`.trim();
+    const line = `${opName(op, dated)} ${said}`.trim();
     return i ? `${row.join === 'or' ? 'or' : 'and'} ${line}` : line;
   });
 }

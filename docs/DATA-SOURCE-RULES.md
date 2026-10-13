@@ -69,6 +69,12 @@ The operators, in full:
 | text | `contains` `notcontains` `startswith` `endswith` |
 | set | `in` `notin` |
 | range | `between` (value is `[from, to]`) |
+| a date from today | `last` `next` (value is `{ n: 7, unit: "day" }` — `day`, `week` or `month`) |
+
+**A server never gets `last` or `next`.** They stay relative in a saved View,
+so "the last 7 days" does not freeze on the day it was saved; a `RestStore`
+sends each as the `between` it means today, in whole UTC days
+(`absoluteDates`). `T-a-relative-date-stays-relative`
 
 They are DevExtreme's names, deliberately: a vocabulary a backend author has
 probably met beats one Sherpa invented.
@@ -86,6 +92,7 @@ write a condition, with numbers as numbers:
 | several | `{ "in": ["Pro", "Free"] }` — `{ "notin": [...] }` |
 | a range | `{ "between": [10, 60] }` |
 | typed | `{ "gt": 0 }` — `{ "contains": "acme" }` |
+| a date from today | `{ "last": 7 }` — `{ "next": 2, "unit": "month" }` |
 | all hold | `{ "gte": 10, "lt": 60 }` — `{ "and": [{ "contains": "a" }, { "contains": "b" }] }` |
 | any holds | `{ "or": [{ "lt": 10 }, { "gt": 90 }] }` |
 | kept, not applied | `{ "eq": "trial", "off": true }` |

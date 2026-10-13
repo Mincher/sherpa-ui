@@ -13,7 +13,7 @@ import {
   clauseConditions, fieldState, isRanged, stateClause,
   type FieldCondition, type FieldFacts, type FieldReading, type FieldType,
 } from './filter-state.js';
-import { DEFAULT_OP, OP_TAKES, type Filter, type FilterOp } from './store.js';
+import { DEFAULT_OP, OP_TAKES, type Duration, type Filter, type FilterOp } from './store.js';
 import { report } from './report.js';
 
 /** One field's condition, as a definition or a View writes it. Several ops
@@ -21,6 +21,8 @@ import { report } from './report.js';
 export type Condition = { [op in FilterOp]?: unknown } & {
   and?: readonly Condition[];
   or?: readonly Condition[];
+  /** What `last` or `next` counts: `{ last: 7, unit: 'day' }`. Default `day`. */
+  unit?: Duration['unit'];
   /** Kept, not applied: off is not gone. */
   off?: boolean;
 };
@@ -77,6 +79,8 @@ function readingOf(field: string, given: Condition | FieldReading, type?: FieldT
 
 /** One row as the reading a Simple control would hold. */
 function rowReading(row: FieldCondition, type?: FieldType): FieldReading {
+  // A date from today has no Simple answer: it is a row. TRAP T-a-relative-date-stays-relative
+  if (row.op === 'last' || row.op === 'next') return { conditions: [row], mode: 'advanced' };
   if (row.op === 'between') return { picked: [...(row.picked ?? [])], range: true };
   if (OP_TAKES[row.op] === 'text') return { op: row.op, text: row.text ?? '' };
   const picked = [...(row.picked ?? [])];
@@ -104,6 +108,10 @@ function conditionOf(filter: Filter): Condition {
     return one as Condition;
   }
   const [, op, value] = filter as [string, FilterOp, unknown];
+  if (op === 'last' || op === 'next') {
+    const { n, unit } = value as Duration;
+    return { [op]: n, ...(unit === 'day' ? {} : { unit }) } as Condition;
+  }
   return { [op]: value } as Condition;
 }
 
@@ -116,6 +124,10 @@ function clauseOf(field: string, condition: Condition): Filter | undefined {
         .map((c) => clauseOf(field, c)).filter((c): c is Filter => !!c);
       const flat = each.flatMap((c) => (c[0] === key ? (c.slice(1) as Filter[]) : [c]));
       if (flat.length) parts.push(flat.length === 1 ? flat[0]! : ([key, ...flat] as Filter));
+    } else if (key === 'last' || key === 'next') {
+      parts.push([field, key, { n: Number(value), unit: condition.unit ?? 'day' }]);
+    } else if (key === 'unit') {
+      // Said with its `last` or `next`.
     } else if (key in OP_TAKES) {
       parts.push([field, key as FilterOp, value]);
     } else {

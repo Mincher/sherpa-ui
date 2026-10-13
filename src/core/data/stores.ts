@@ -15,6 +15,7 @@
  * - LocalStore — Records in Web Storage — saved views, column state, preferences.
  */
 import {
+  absoluteDates,
   readField,
   sameKey,
   type LoadOptions,
@@ -249,7 +250,9 @@ export class RestStore extends BaseStore {
   }
 
   async load(options: LoadOptions = {}): Promise<LoadResult> {
-    const query = (this.#options.buildQuery ?? defaultQuery)(options);
+    // A relative date reaches the server as the days it means today. TRAP T-a-relative-date-stays-relative
+    const sent = options.filter ? { ...options, filter: absoluteDates(options.filter) } : options;
+    const query = (this.#options.buildQuery ?? defaultQuery)(sent);
     const suffix = query.size ? `?${query}` : '';
     const body = await this.#request<unknown>(`${this.#options.url}${suffix}`, { method: 'GET' });
     const rows = rowsAt(body, this.#options.rowsPath);

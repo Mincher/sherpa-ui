@@ -1626,6 +1626,29 @@ open their menu first now, as a reader must — and a draft set from code
 - Site: `test/e2e/reforged-grid-keeps-both-answers.spec.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 
+### T-a-relative-date-stays-relative
+
+**"In the last 7 days" is kept RELATIVE** — TODO 21d, built in 90. A clause
+is `[field, 'last', { n: 7, unit: 'day' }]`, and `next` the same forward, so a
+saved View's `where` reads `{ "last": 7 }` and means the last seven days on
+the day it is OPENED. Compiled to dates at once, it would freeze on the day
+it was saved — and `whereOf` writes a View from the compiled clause, so the
+freeze would be silent.
+
+They are worked out when MATCHED: `matchesFilter` turns one into the
+`between` it means today (`absoluteDates`), in whole UTC days as a date
+reads, with the last day's end so a value with a time still falls inside.
+A `RestStore` sends the `between`, so a server never meets `last` or `next`.
+
+A field that holds TIMES (`time: true`) takes a day alone as all of it:
+On is that day's span, After is after its end.
+
+- Site: `src/core/data/store.ts`
+- Site: `src/core/data/stores.ts`
+- Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/where.ts`
+- Site: `test/unit/date-conditions.test.mjs`
+
 ### T-a-date-reads-one-way
 
 **A day, or a range of days, reads ONE way, from one DOM-free formatter.**
