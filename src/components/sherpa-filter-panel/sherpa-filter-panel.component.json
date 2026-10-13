@@ -138,6 +138,28 @@
           },
           {
             "slot": ""
+          },
+          {
+            "el": "sherpa-container-footer",
+            "class": "panel-footer",
+            "part": "footer",
+            "attrs": {
+              "slot": "footer",
+              "data-align": "end"
+            },
+            "children": [
+              {
+                "el": "sherpa-button",
+                "class": "discard-all"
+              },
+              {
+                "el": "sherpa-button",
+                "class": "apply-all",
+                "attrs": {
+                  "data-look": "saturated"
+                }
+              }
+            ]
           }
         ]
       },
@@ -178,6 +200,14 @@
       "declared": true,
       "kind": "style",
       "description": "the filters already ARE the View's default: \"Reset all to default\" is inactive. Written by the provider. TODO 231."
+    },
+    {
+      "$type": "prop",
+      "name": "data-dirty",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style"
     },
     {
       "$type": "prop",
@@ -478,7 +508,8 @@
     "field-lead.gap": "{sherpa.display-mode-space-xs}",
     "field-title.color": "{sherpa.style-content-secondary}",
     "field-title.font-weight": "{sherpa.font-weight-light}",
-    "field-acts.gap": "{sherpa.display-mode-space-2xs}"
+    "field-acts.gap": "{sherpa.display-mode-space-2xs}",
+    "field-row.gap": "{sherpa.display-mode-space-2xs}"
   },
   "$extensions": {
     "sherpa": {

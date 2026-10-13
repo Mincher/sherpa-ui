@@ -923,7 +923,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (setCount, show, hide, close, toggle, apply, items). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (addCondition, setCount, show, hide, close, toggle, apply, items). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -1074,6 +1074,12 @@
     "sherpa": {
       "figmaName": "Menu",
       "methods": [
+        {
+          "$type": "method",
+          "name": "addCondition",
+          "args": "",
+          "description": "addCondition() — a new row, as the menu's own Add condition does: for a host that draws that button itself, as the panel's action row does. TODO 98"
+        },
         {
           "$type": "method",
           "name": "setCount",

@@ -47,8 +47,8 @@
 
   Fires:
     quick-filter-change — one field changed, or Reset all. detail: { scope, readings, values, picked }
-    filter-apply — a changed field's Apply, remote only. detail: { scope, id, field }
-    filter-discard — a changed field's Discard, remote only. detail: { scope, id, field }
+    filter-apply — a changed field's Apply, remote only; with no field, Apply all. detail: { scope?, id?, field? }
+    filter-discard — a changed field's Discard, remote only; with no field, Discard all. detail: { scope?, id?, field? }
     filter-panel-close — it closed. detail: { reason: reader | width | page } — only a reader's is a choice
     filter-add — a REQUEST: the Filters menu committed, or a field sent up or down. detail: { scope, ids, from? }
     filter-remove — a field's Remove. detail: { scope, id }
@@ -111,6 +111,12 @@
     <div class="scopes" part="scopes"></div>
     <slot></slot>
 
+    <!-- REMOTE only, while a change waits: every field's Apply or Discard at once.
+         Will, TODO 98. TRAP T-apply-and-discard-wait-for-a-change -->
+    <sherpa-container-footer slot="footer" class="panel-footer" part="footer" data-align="end">
+      <sherpa-button class="discard-all">Discard all</sherpa-button>
+      <sherpa-button class="apply-all" data-look="saturated">Apply all</sherpa-button>
+    </sherpa-container-footer>
   </sherpa-container>
   <!-- THE ⋮ MENU: built on each open, as the toolbar's is. -->
   <sherpa-menu class="more-menu" data-align="end"></sherpa-menu>
@@ -155,10 +161,8 @@
         </span>
         <!-- DEFAULT look. No Remove: the scope's Add menu is the whole list. -->
         <span slot="actions" class="field-acts">
-          <!-- Clear and Send to, as ONE control. Will, TODO 121. -->
+          <!-- Send to, up or down. Reset is the action row's. Will, TODO 98. -->
           <span class="field-group sherpa-group">
-            <sherpa-button class="field-clear" data-type="icon" data-size="sm"
-                           data-icon-start="arrow-rotate-left"></sherpa-button>
             <!-- A component's field, SENT UP to the View's filters. TRAP T-send-to-view-filters -->
             <sherpa-button class="field-raise" data-type="icon" data-size="sm"
                            data-icon-start="arrow-up"></sherpa-button>
@@ -166,11 +170,6 @@
             <sherpa-button class="field-lower" data-type="icon" data-size="sm"
                            data-icon-start="arrow-down"></sherpa-button>
           </span>
-          <!-- REMOTE only, once changed. DISCARD goes back to the last Apply. -->
-          <sherpa-button class="field-discard" data-type="icon" data-size="sm"
-                         data-icon-start="cross" aria-label="Discard"></sherpa-button>
-          <sherpa-button class="field-apply" data-type="icon" data-size="sm"
-                         data-icon-start="tick" aria-label="Apply"></sherpa-button>
           <!-- ADVANCED: f(x), at the header's end, ON in Advanced. Will, TODO 141. -->
           <sherpa-button class="field-advanced" data-type="icon" data-size="sm"
                          data-icon-start="function" aria-pressed="false"></sherpa-button>
@@ -184,6 +183,16 @@
            the field's own menu body, drawn inline — not by a second copy of
            each control. TRAP T-an-inline-menu-is-the-same-menu -->
       <div class="field-body" part="field-body"></div>
+      <!-- ONE ACTION ROW, last in the field, Simple or Advanced: Add condition in
+           Advanced, Reset, and — REMOTE, once changed — Discard and Apply at the
+           right. Will, TODO 98. TRAP T-apply-and-discard-wait-for-a-change -->
+      <div class="field-row" part="field-row">
+        <sherpa-button class="field-add-condition" data-icon-start="plus">Add condition</sherpa-button>
+        <sherpa-button class="field-clear" data-type="icon" data-icon-start="arrow-rotate-left"></sherpa-button>
+        <span class="field-row-spacer"></span>
+        <sherpa-button class="field-discard" data-type="icon" data-icon-start="cross" aria-label="Discard"></sherpa-button>
+        <sherpa-button class="field-apply" data-type="icon" data-icon-start="tick" aria-label="Apply"></sherpa-button>
+      </div>
     </div>
   </template>
 

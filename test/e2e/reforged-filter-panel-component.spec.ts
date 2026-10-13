@@ -99,11 +99,12 @@ test('a scope draws its presets, its fields, and nothing it cannot', async ({ pa
 });
 
 /**
- * NO FOOTER: a change applies as it is made, and reports ITS field alone.
- * Every field at once would switch a field that is off back on. Will,
- * 2026-09-27 (TODO 62). TRAP T-the-panel-reports-its-own-reading
+ * A LOCAL panel has no footer: a change applies as it is made, and reports ITS
+ * field alone. Every field at once would switch a field that is off back on.
+ * Will, 2026-09-27 (TODO 62); a remote one is below (TODO 98).
+ * TRAP T-the-panel-reports-its-own-reading
  */
-test('a change reports its own field alone, as it is made — there is no footer', async ({ page }) => {
+test('a change reports its own field alone, as it is made — a local panel shows no footer', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     const heard = [];
@@ -113,7 +114,8 @@ test('a change reports its own field alone, as it is made — there is no footer
     await new Promise((r) => setTimeout(r, 150));
     chip('owner', 'Dana').shadowRoot.querySelector('.body').click();
     await new Promise((r) => setTimeout(r, 150));
-    return { heard, footer: !!sr.querySelector('sherpa-container-footer, .apply, .discard') };
+    const shown = (sel) => [...sr.querySelectorAll(sel)].some((n) => n.getClientRects().length > 0);
+    return { heard, footer: shown('.panel-footer') || shown('.field-apply') || shown('.field-discard') };
   })()`) as { heard: Record<string, Record<string, { picked: string[] }>>[]; footer: boolean };
 
   expect(r.footer).toBe(false);
@@ -725,12 +727,11 @@ test('a field populated with conditions opens in Advanced mode on its rows', asy
 });
 
 /**
- * CLEAR AND SEND TO ARE ONE CONTROL — a button group, joined by position, so
- * Clear alone (a View field has nowhere to send to) keeps both its corners.
- * Will, 2026-09-30 (TODO 121). SEND TO IS ALWAYS THERE, before the first edit
- * too (TODO 155); Clear comes once there is something to clear.
+ * SEND TO leads the header, alone (TODO 121 and 155); RESET is the field's
+ * ACTION ROW's, once there is something to reset — the row is drawn only while
+ * it holds a button. Will, TODO 98.
  */
-test('Clear and Send to are one button group; Send to shows before any answer, and leads the group alone', async ({ page }) => {
+test('Send to is alone in the header; Reset is in the action row, once there is something to reset', async ({ page }) => {
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     el.populate([
@@ -742,33 +743,75 @@ test('Clear and Send to are one button group; Send to shows before any answer, a
         { id: 'plan', label: 'Plan', options: [{ value: 'Pro', label: 'Pro' }] } ] },
     ]);
     await new Promise((r) => setTimeout(r, 300));
+    const seen = (box) => [...box.children].filter((b) => b.localName === 'sherpa-button' && b.getClientRects().length > 0);
     const read = (field) => {
-      const group = sr.querySelector('.field[data-field="' + field + '"] .field-group');
+      const f = sr.querySelector('.field[data-field="' + field + '"]');
+      const row = f.querySelector('.field-row');
       return {
-        grouped: group.classList.contains('sherpa-group'),
-        shown: group.getClientRects().length > 0,
-        // Only what a reader SEES: Clear is hidden until there is an answer.
-        buttons: [...group.children].filter((b) => b.getClientRects().length > 0).map((b) => {
-          const t = getComputedStyle(b.shadowRoot.querySelector('button'));
-          const box = b.getBoundingClientRect();
-          return { is: b.className, corners: [t.borderStartStartRadius, t.borderStartEndRadius], x: box.x, w: box.width };
-        }),
+        head: seen(f.querySelector('.field-group')).map((b) => [b.className,
+          [getComputedStyle(b.shadowRoot.querySelector('button')).borderStartStartRadius,
+            getComputedStyle(b.shadowRoot.querySelector('button')).borderStartEndRadius]]),
+        row: row.getClientRects().length ? seen(row).map((b) => b.className) : null,
+        last: f.lastElementChild === row,
       };
     };
     return { view: read('region'), data: read('status'), idle: read('plan'), nowhere: read('customer') };
-  })()`) as Record<string, { grouped: boolean; shown: boolean; buttons: { is: string; corners: string[]; x: number; w: number }[] }>;
+  })()`) as Record<string, { head: [string, string[]][]; row: string[] | null; last: boolean }>;
 
-  expect(r['view']!.buttons.map((b) => [b.is, b.corners])).toEqual([['field-clear', ['4px', '4px']]]);
-  const [clear, raise] = r['data']!.buttons;
-  expect(r['data']!.grouped).toBe(true);
-  expect([clear!.is, clear!.corners]).toEqual(['field-clear', ['4px', '0px']]);
-  expect([raise!.is, raise!.corners]).toEqual(['field-raise', ['0px', '4px']]);
-  // Joined: no gap between the two.
-  expect(raise!.x).toBe(clear!.x + clear!.w);
-  // NO ANSWER YET: Send to is there all the same, alone, with all its corners.
-  expect(r['idle']!.buttons.map((b) => [b.is, b.corners])).toEqual([['field-raise', ['4px', '4px']]]);
-  // Nothing to clear and nowhere to send: nothing drawn.
-  expect(r['nowhere']!.buttons).toEqual([]);
+  expect(r['view']).toEqual({ head: [], row: ['field-clear'], last: true });
+  expect(r['data']).toEqual({ head: [['field-raise', ['4px', '4px']]], row: ['field-clear'], last: true });
+  // NO ANSWER YET: Send to is there all the same; nothing to reset, so no row.
+  expect(r['idle']).toEqual({ head: [['field-raise', ['4px', '4px']]], row: null, last: true });
+  expect(r['nowhere']).toEqual({ head: [], row: null, last: true });
+});
+
+/** In ADVANCED the action row leads with Add condition — the inline menu's own
+ *  button goes, and the row's adds a row to that menu. Will, TODO 98. */
+test('in Advanced, the action row\'s Add condition adds a row to the field\'s menu', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    flip('.field[data-field="owner"] .field-advanced');
+    await new Promise((r) => setTimeout(r, 200));
+    const f = sr.querySelector('.field[data-field="owner"]');
+    const menu = f.querySelector('.field-body sherpa-menu');
+    const before = menu.conditions.length;
+    f.querySelector('.field-add-condition').shadowRoot.querySelector('button').click();
+    await new Promise((r) => setTimeout(r, 100));
+    return { before, after: menu.conditions.length,
+      own: getComputedStyle(menu.shadowRoot.querySelector('.add-condition')).display,
+      row: getComputedStyle(f.querySelector('.field-add-condition')).display };
+  })()`) as { before: number; after: number; own: string; row: string };
+  expect(r.after).toBe(r.before + 1);
+  expect(r.own).toBe('none');
+  expect(r.row).not.toBe('none');
+});
+
+/**
+ * REMOTE (TODO 98, Will's A): while a change waits, its field's action row
+ * shows Discard and Apply at the right, and the footer Apply all and Discard
+ * all — which name no field. TRAP T-apply-and-discard-wait-for-a-change
+ */
+test('a remote panel shows a waiting field\'s Apply and Discard, and Apply all in its footer', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    el.setAttribute('data-remote', '');
+    el.setAttribute('data-pending', 'status');
+    el.setAttribute('data-dirty', '');
+    await new Promise((r) => setTimeout(r, 100));
+    const row = sr.querySelector('.field[data-field="status"] .field-row');
+    const heard = [];
+    for (const n of ['filter-apply', 'filter-discard']) el.addEventListener(n, (e) => heard.push([n, e.detail]));
+    sr.querySelector('.apply-all').shadowRoot.querySelector('button').click();
+    sr.querySelector('.discard-all').shadowRoot.querySelector('button').click();
+    return {
+      row: [...row.children].filter((b) => b.localName === 'sherpa-button' && b.getClientRects().length > 0).map((b) => b.className),
+      footer: sr.querySelector('.panel-footer').getClientRects().length > 0,
+      heard,
+    };
+  })()`) as { row: string[]; footer: boolean; heard: [string, unknown][] };
+  expect(r.row).toEqual(['field-clear', 'field-discard', 'field-apply']);
+  expect(r.footer).toBe(true);
+  expect(r.heard).toEqual([['filter-apply', {}], ['filter-discard', {}]]);
 });
 
 /* Will, TODO 182: "Search input should span the width of the header,

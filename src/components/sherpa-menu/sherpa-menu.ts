@@ -572,6 +572,12 @@ export class SherpaMenu extends SherpaElement {
     if (select && select.value !== op) select.value = op;
   }
 
+  /** addCondition() — a new row, as the menu's own Add condition does: for a
+   *  host that draws that button itself, as the panel's action row does. TODO 98 */
+  addCondition(): void {
+    this.#onAddCondition();
+  }
+
   /** Add a condition row, and report the chain. Focus goes to its condition
    *  field once that has drawn — it renders on its own clock.
    *  TRAP T-add-condition-sits-below-the-rows */

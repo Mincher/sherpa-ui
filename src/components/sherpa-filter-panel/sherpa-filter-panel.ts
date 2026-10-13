@@ -147,6 +147,8 @@ export class SherpaFilterPanel extends SherpaElement {
        FIELDS have one waiting. TRAP T-apply-and-discard-wait-for-a-change */
     'data-remote': { type: 'boolean', kind: 'style' },
     'data-pending': { type: 'string', kind: 'style' },
+    // A change waits somewhere in its scopes: the footer's Apply all. TODO 98
+    'data-dirty': { type: 'boolean', kind: 'style' },
     // The host saves filters. TRAP T-the-panel-saves-a-whole-scope
     'data-saveable': { type: 'boolean', kind: 'behaviour' },
     // The arrangement, as a bound source writes it on every control. TRAP T-a-panel-follows-the-query-open-or-shut
@@ -186,6 +188,9 @@ export class SherpaFilterPanel extends SherpaElement {
       this.dispatchEvent(new CustomEvent('view-reset', { bubbles: true, composed: true, cancelable: true, detail: {} }));
     });
     this.$('.search')?.addEventListener('input', this.#onSearch);
+    // REMOTE: every field's Apply or Discard at once. Will, TODO 98.
+    this.$('.apply-all')?.addEventListener('button-click', () => this.emit('filter-apply', {}));
+    this.$('.discard-all')?.addEventListener('button-click', () => this.emit('filter-discard', {}));
     // ⋮ — what folded, and the host's own option. Will, TODO 178.
     this.$('.more-btn')?.addEventListener('button-click', this.#openMore);
     this.$('.more-menu')?.addEventListener('menu-select', this.#onMore);
@@ -720,6 +725,7 @@ export class SherpaFilterPanel extends SherpaElement {
        Group and Sort ARRANGE rows; they never filter. Will, 2026-09-26. */
     box.querySelector('.field-acts')?.remove();
     box.querySelector('.field-advanced')?.remove();
+    box.querySelector('.field-row')?.remove();
     return { box, values: box.querySelector('.field-values') as HTMLElement };
   }
 
@@ -833,7 +839,7 @@ export class SherpaFilterPanel extends SherpaElement {
     const title = box.querySelector('.field-title');
     if (title) title.textContent = def.label;
     const name = def.label;
-    head?.querySelector('.field-clear')?.setAttribute('aria-label', `Clear ${name}`);
+    box.querySelector('.field-clear')?.setAttribute('aria-label', `Reset ${name}`);
     head?.querySelector('.field-raise')?.setAttribute('aria-label', `Send ${name} to view filters`);
     this.#drawLower(head?.querySelector<HTMLElement>('.field-lower') ?? null, name, targets);
     box.querySelector('.field-advanced')?.setAttribute('aria-label', `Advanced ${name}`);
@@ -1380,6 +1386,12 @@ export class SherpaFilterPanel extends SherpaElement {
     if (save) return this.#requestSave(save);
     const clear = this.pathFind(event, '.field-clear');
     if (clear) return this.#clearField(clear);
+    // The action row's Add condition is the field's inline menu's. Will, TODO 98.
+    const add = this.pathFind(event, '.field-add-condition');
+    if (add) {
+      (this.#fieldOf(add)?.menu as { addCondition?: () => void } | undefined)?.addCondition?.();
+      return;
+    }
     // ADVANCED: the f(x) button flips the field's mode.
     const advanced = this.pathFind(event, '.field-advanced');
     if (advanced) {

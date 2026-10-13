@@ -286,11 +286,12 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
     }
     case 'filter-apply':
     case 'filter-discard': {
-      // One field's own Apply or Discard, on a remote source. TRAP T-apply-and-discard-wait-for-a-change
+      // One field's own Apply or Discard, on a remote source — or, naming none, all of them.
+      // TRAP T-apply-and-discard-wait-for-a-change
       const field = detail['field'];
-      if (typeof field !== 'string') return;
-      if (type === 'filter-apply') source.commit({ field });
-      else source.discard({ field });
+      const at = typeof field === 'string' ? { field } : {};
+      if (type === 'filter-apply') source.commit(at);
+      else source.discard(at);
       return;
     }
     case 'filter-change': {

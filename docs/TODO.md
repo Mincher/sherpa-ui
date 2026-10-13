@@ -122,7 +122,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 19 | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
 | ✅ | 19a | 110 | In Advanced rows, AND is serial and OR is parallel: an AND row offers only what the rows before it leave | feature |
 | ✅ | 20 | 21d | EXPLORE — conditions for a DATE field | explore |
-| ⬜ | 21 | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
+| ✅ | 21 | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
 | ⬜ | 21a | 105 | "Save filters" saves EVERY scope under one name; a "Saved" chip shows it, warns when edited, and undoes it | feature |
 | ✅ | 21b | 109 | Reset has a label, and a menu button: "Reset to default" puts back the View's own filters | feature |
 | ✅ | 22 | 97 | A filter panel section shows an icon for WHAT it filters: View, Chart, Grid, Form, List | quick |
@@ -2488,7 +2488,7 @@ it.
 | ✅ | 2. The menu: a date filter's Advanced rows — a date box (and a time box where the field holds times), two for Between, a count and a unit for In the last and In the next; the f(x) switch beside the calendar. A date that opts in is a FILTER menu, as a number is; the calendar keeps its card; the switch carries a day over as On, two as Between; the chip's face reads the rows |
 | ✅ | 3. Sherpa Demos: Created opts in — a Demos test answers "before 1 April 2024" and finds the header chip's rows and the records follow |
 
-### `[ ]` 98 — One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes
+### `[x]` ✅ 98 — One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes
 
 Will, 2026-09-29: *"If there is at least 1 advanced (conditional) filter in
 the filter panel then we should show Apply and Discard buttons in the same row
@@ -2549,6 +2549,14 @@ This gives us some more horizontal space for content."*
   not an inline one.
 
 **✅ Will, 2026-10-12 — all my picks:** A — a local source keeps live-apply; Apply, Discard and the footer show only while a remote change waits.
+
+**✅ Done 2026-10-13.** Each field ends with ONE action row: Add condition in
+Advanced (the inline menu's own goes; `menu.addCondition()` is the door),
+Reset at the row's button size, and — on a remote source, once changed —
+Discard and Apply at the right. The row is drawn only while it holds a
+button. Send to stays in the header, alone. While any change waits, the
+footer shows Apply all and Discard all, which name no field; the binder
+commits or discards everything. `T-apply-and-discard-wait-for-a-change`
 
 ### `[ ]` 105 — "Save filters" saves EVERY scope under one name; a "Saved" chip shows it
 

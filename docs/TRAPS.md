@@ -9742,8 +9742,10 @@ the menu rather than on the panel's own footer — and a reader who pressed Appl
 expects the same thing to happen wherever they pressed it. The panel relays:
 the chip's on/off follows the pick, an organise chip also reports its own
 `group-change` or `sort-change`, and the field is REPORTED as any change is.
-Since 2026-09-27 the panel has no footer (TODO 62): every change reports its
-own field as it is made, so a chip menu's Apply is simply that field's change.
+On a LOCAL source the panel shows no footer (TODO 62): every change reports
+its own field as it is made, so a chip menu's Apply is simply that field's
+change. A REMOTE one shows Apply all and Discard all while a change waits, and
+each waiting field its own Apply and Discard in its action row (TODO 98).
 
 ---
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
@@ -9892,6 +9894,7 @@ this repo that needs one. Any other property is fine — this is specific to
 
 ---
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 
 ### T-only-group-and-sort-stay-one-chip
 
@@ -15083,10 +15086,12 @@ one nobody tests.
 once it has changed.** Will, 2026-09-26 (off until a change) and 2026-09-27
 (TODO 62: only for a REMOTE fetch). The panel's footer, and the snapshot it
 kept of every field, are GONE: locally a change applies as it is made; over a
-remote source a changed field shows its OWN small Apply and Discard, beside
-Clear, from the source's `data-pending` field list. Its Apply commits that
-field alone (`commit({ field })`), its Discard puts back the applied answer
-— picks, rows and typed text (`discard({ field })`).
+remote source a changed field shows its OWN Apply and Discard, at the right of
+its ACTION ROW beside Reset (TODO 98), from the source's `data-pending` field
+list. Its Apply commits that field alone (`commit({ field })`), its Discard
+puts back the applied answer — picks, rows and typed text (`discard({ field
+})`). While any change waits (`data-dirty`), the panel's footer is back with
+Apply all and Discard all, which name no field: `commit()`, `discard()`.
 
 A field that only ARRANGES (group, sort) is left out of the snapshot; it acts
 at once and has nothing to apply.
@@ -15111,6 +15116,8 @@ one object — so nothing is ever pending. A scope that narrows one component
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 - Site: `src/core/ui/bind-source.ts`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
+- Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 
 ### T-a-view-is-json
 

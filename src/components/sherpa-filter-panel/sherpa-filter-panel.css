@@ -172,18 +172,31 @@ sherpa-filterset + .field { margin-block-start: var(--sherpa-display-mode-space-
   align-items: flex-start;
   gap: var(--sherpa-display-mode-space-2xs, 4px);
 }
-/* CLEAR appears once there is something to clear (Will, 2026-09-24). Send to
-   is ALWAYS there (Will, TODO 155) — so with Clear gone, the button after it
-   leads the group: its outer edge and corners, back. */
-.field:not([data-answered]) .field-clear { display: none; }
-.field:not([data-answered]) .field-clear + * {
-  --sherpa-border-left: var(--sherpa-display-mode-border-width-sm, 0.5px);
-  --sherpa-border-rounding-top-left: var(--sherpa-display-mode-border-rounding-base, 4px);
-  --sherpa-border-rounding-bottom-left: var(--sherpa-display-mode-border-rounding-base, 4px);
+/* THE ACTION ROW, last in the field (Will, TODO 98): Add condition in
+   Advanced; RESET once there is something to clear (Will, 2026-09-24); APPLY
+   and DISCARD, at the right, on a REMOTE field once changed. It is drawn only
+   while one of them is. TRAP T-apply-and-discard-wait-for-a-change */
+.field-row {
+  display: none;
+  align-items: center;
+  gap: var(--sherpa-display-mode-space-2xs, 4px);
 }
-/* APPLY and DISCARD: a REMOTE field, once changed. TRAP T-apply-and-discard-wait-for-a-change */
+.field:is([data-answered], [data-advanced]) .field-row,
+:host([data-remote]) .field[data-pending] .field-row { display: flex; }
+.field-row-spacer { flex: 1 1 auto; }
+.field-add-condition { display: none; }
+.field[data-advanced] .field-add-condition { display: inline-flex; }
+.field:not([data-answered]) .field-clear { display: none; }
 .field-apply, .field-discard { display: none; }
 :host([data-remote]) .field[data-pending] :is(.field-apply, .field-discard) { display: inline-flex; }
+/* The row's Add condition IS the inline menu's own, so the menu's goes. */
+.field-body sherpa-menu::part(add-condition) { display: none; }
+
+/* APPLY ALL and DISCARD ALL: REMOTE, while a change waits. `!important`: a
+   composed component's own `:host` display wins otherwise.
+   TRAP T-a-composed-child-hides-with-important */
+.panel-footer { display: none !important; }
+:host([data-remote][data-dirty]) .panel-footer { display: block !important; }
 
 /* The search hides a VALUE; JS writes the flag, CSS owns the hiding. */
 .value[data-filtered-out] { display: none; }
