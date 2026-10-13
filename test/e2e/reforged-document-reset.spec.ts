@@ -1,16 +1,17 @@
 import { test, expect } from './harness';
 
 /**
- * The DOCUMENT reset — tokens.css owns the page, so an app does not.
+ * The DOCUMENT reset — page.css owns the page, so an app does not.
  *
  * Every Sherpa app was hand-writing `html, body { margin: 0; height: 100% }` plus
  * the page font, colour and background in its own <style> block, because nothing
  * in the system owned the page itself. A component cannot: `html` and `body` are
- * outside every shadow root, so only a light-DOM sheet can reach them and
- * tokens.css is the only light-DOM sheet Sherpa ships.
+ * outside every shadow root, so only a light-DOM sheet can reach them.
  *
- * It is in the `core` layer (the first one) on purpose, so an app that wants a
- * different page background writes ONE unlayered rule and wins.
+ * It is page.css, not tokens.css, so a host that embeds Sherpa keeps its own
+ * page (TODO 216). TRAP T-tokens-are-safe-to-embed. It is in the `core` layer
+ * (the first one) on purpose, so an app that wants a different page background
+ * writes ONE unlayered rule and wins.
  */
 
 
@@ -67,31 +68,30 @@ test('an app can still override it with one unlayered rule', async ({ page }) =>
   expect(r).toBe('rgb(1, 2, 3)');
 });
 
-test('the reset lives in the core layer, before everything else', async ({ page }) => {
+test('the reset lives in page.css, in the core layer, before everything else; tokens.css styles no page', async ({ page }) => {
   // Read the PARSED sheet, not the text. The built file is minified and the
   // minifier is free to reorder a selector list (`html, body` came back as
   // `body, html`), so a text match would test the minifier rather than the CSS.
   const r = await page.evaluate(() => {
-    const sheet = [...document.styleSheets].find((s) => s.href?.includes('tokens.css'));
-    if (!sheet) return { order: [] as string[], resetLayers: [] as string[] };
-
-    const order = [...sheet.cssRules]
-      .filter((r) => r.constructor.name === 'CSSLayerStatementRule')
-      .flatMap((r) => (r as CSSLayerStatementRule).nameList as unknown as string[]);
-
+    const sheet = (name: string) => [...document.styleSheets].find((s) => s.href?.includes(name));
     // Which layers carry a rule that targets `body`?
-    const resetLayers: string[] = [];
-    for (const rule of sheet.cssRules) {
-      if (rule.constructor.name !== 'CSSLayerBlockRule') continue;
-      const block = rule as CSSLayerBlockRule;
-      for (const inner of block.cssRules) {
-        const sel = (inner as CSSStyleRule).selectorText;
-        if (sel && /(^|,\s*)body(\s*$|\s*,)/.test(sel)) {
-          if (!resetLayers.includes(block.name)) resetLayers.push(block.name);
+    const bodyLayers = (s: CSSStyleSheet | undefined): string[] => {
+      const out: string[] = [];
+      for (const rule of s?.cssRules ?? []) {
+        if (rule.constructor.name !== 'CSSLayerBlockRule') continue;
+        const block = rule as CSSLayerBlockRule;
+        for (const inner of block.cssRules) {
+          const sel = (inner as CSSStyleRule).selectorText;
+          if (sel && /(^|,\s*)body(\s*$|\s*,)/.test(sel) && !out.includes(block.name)) out.push(block.name);
         }
       }
-    }
-    return { order, resetLayers };
+      return out;
+    };
+    const tokens = sheet('tokens.css');
+    const order = [...tokens?.cssRules ?? []]
+      .filter((r) => r.constructor.name === 'CSSLayerStatementRule')
+      .flatMap((r) => (r as CSSLayerStatementRule).nameList as unknown as string[]);
+    return { order, resetLayers: bodyLayers(sheet('page.css')), tokensBody: bodyLayers(tokens) };
   });
 
   // core is the FIRST layer, so an app's own layer always wins over the reset.
@@ -99,4 +99,6 @@ test('the reset lives in the core layer, before everything else', async ({ page 
   // And the reset is in it — not in theme or components, where a later layer
   // could not be overridden as simply.
   expect(r.resetLayers).toContain('core');
+  // tokens.css styles no page: a host that embeds Sherpa keeps its own.
+  expect(r.tokensBody).toEqual([]);
 });

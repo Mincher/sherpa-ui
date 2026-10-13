@@ -441,7 +441,9 @@ core → display-mode → theme → layout → structure → border → style �
 
 Layers are re-projected from Figma by `scripts/project-tokens.mjs`; edit tokens in Figma,
 re-export, re-project — never hand-edit `tokens.css`. Activate a theme via
-`<html data-theme="sherpa">`. Mode via `<html data-mode="auto|light|dark|hc">`.
+`<html data-theme="sherpa">`. Mode via `<html data-mode="auto|light|dark|hc">`
+— none is LIGHT; `auto` follows the OS. `tokens.css` styles no page: an app
+links `page.css` (`sherpa-ui/css/page`) beside it (TRAP `T-tokens-are-safe-to-embed`).
 The APP keeps the reader's choice — Sherpa Demos keeps it in its `SessionStore`
 (`/theme/mode`). There is no `light-dark()` in component CSS — the
 display-mode layer owns mode handling.

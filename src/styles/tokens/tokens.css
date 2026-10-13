@@ -55,24 +55,6 @@
     --sherpa-grid-space-step: 4px;
     --sherpa-grid-text-step: 2px;
   }
-
-  /* The page itself — see the note above the layer. */
-  html,
-  body {
-    margin: 0;
-    block-size: 100%;
-  }
-  body {
-    font-family: var(--sherpa-font-family-body, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
-    color: var(--sherpa-theme-content-body-base, #0c0b11);
-    background: var(--sherpa-theme-surface-default-1, #e8e8f6);
-  }
-  /* The shell is the page's frame, so it inherits the full height rather than
-     each app re-declaring it. :is() keeps this at class specificity. */
-  body > sherpa-app-shell,
-  body > :is(div, main) > sherpa-app-shell {
-    block-size: 100%;
-  }
 }
 
 @layer display-mode {
@@ -247,9 +229,10 @@
   --sherpa-display-mode-color-warning-color-5: #FFD17B;
   }
 
-  /* Dark mode: follow the OS unless an explicit light choice overrides it. */
+  /* Dark mode: follow the OS only when asked — no data-mode is LIGHT.
+     Will, TODO 216. TRAP T-tokens-are-safe-to-embed */
   @media (prefers-color-scheme: dark) {
-    :root:not([data-mode="light"]) {
+    :root[data-mode="auto"] {
     --sherpa-display-mode-color-accent-color-1: #1E189C;
     --sherpa-display-mode-color-accent-color-2: #2B34B4;
     --sherpa-display-mode-color-accent-color-4: #4C63E5;

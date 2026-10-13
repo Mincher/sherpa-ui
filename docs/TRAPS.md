@@ -15564,6 +15564,28 @@ EXTENDS the default rather than replacing it.
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `test/e2e/reforged-templater.spec.ts`
 
+### T-tokens-are-safe-to-embed
+
+**`tokens.css` can go into someone else's page** (TODO 216). It styled the
+page itself — `html`/`body` margins, the body's font and colours, the app
+shell's height — so a host that linked it changed. Those rules are a sheet of
+their own now, `sherpa-ui/css/page` (`page.css`), which an app links beside
+`tokens.css`; a host embedding a component links `tokens.css` alone.
+
+**No `data-mode` is LIGHT** (Will, TODO 216, A). It followed the OS, so a
+light-only app on a dark machine drew dark controls. Dark follows the OS only
+under `data-mode="auto"`, the opt-in a starter sets.
+
+**What still reaches anywhere, on purpose:** `[data-status]`, `[data-look]`
+and `[data-density]` on ANY ancestor re-tint or re-size every Sherpa control
+inside it — that is the cascade (`T-a-state-colour-binds-the-style-mode`).
+So a host's own `<tr data-status="active">` tints the Sherpa controls in that
+row. Name a host's own state another way, or wrap the controls in an element
+that sets the value back.
+
+- Site: `scripts/project-tokens.mjs`
+- Site: `test/e2e/reforged-document-reset.spec.ts`
+
 ### T-an-icon-loads-when-first-drawn
 
 **Each icon is its own module, loaded the first time it is drawn** (Will,

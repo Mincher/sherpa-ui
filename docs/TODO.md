@@ -99,7 +99,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | c15 | 214 | Forms complete: `<fieldset disabled>`, reset on every control, and the five controls that submit nothing | foundation |
 | ✅ | c16 | 208 | The text in the JS, not fetched: templates and sheets inline at build, URLs only in a dev build — with 199 | refactor |
 | ✅ | c17 | 199 | A smaller download: minify the JS (a new dev tool) and load icons on demand | refactor |
-| ⬜ | c18 | 216 | Tokens safe to embed: the page rules out of `tokens.css`, a default mode, the `[data-status]` reach documented | foundation |
+| ✅ | c18 | 216 | Tokens safe to embed: the page rules out of `tokens.css`, a default mode, the `[data-status]` reach documented | foundation |
 | ✅ | c19 | 219 | The framework guide, steps not history, served as `sherpa://frameworks`; an `AGENTS.md` in the package | docs |
 | ✅ | c20 | 217 | React 18 and Angular adapters, generated from the manifest — small, and dependency-free | tooling |
 | ⬜ | c21 | 197 | ONE way to write a filter condition in a definition or a View: readings, or a plain `{ field: { gt: 0 } }` | foundation |
@@ -1978,7 +1978,7 @@ and a grid draw with no request. `npm run build:watch` and `build:dev` keep the
 URLs for live reload; a reload fetches fresh in any build. The package entry
 now fetches only `tokens.css`, its page sheet. `T-the-text-is-in-the-js`
 
-### `[ ]` 216 — Tokens safe to embed
+### `[x]` ✅ 216 — Tokens safe to embed
 
 `tokens.css` also styles the page — `html, body` margins, the body's font and
 colours, a `body > sherpa-app-shell` rule — so a host that links it changes.
@@ -1993,6 +1993,12 @@ a generated `sherpa-ui/css/page` that the app layer and the starter link.
 opt-in (the starter sets it); B follow the OS, as now. My pick: A.
 
 **✅ Will, 2026-10-12 — all my picks:** A — light when no `data-mode` is set; `auto` is an opt-in (the starter sets it).
+
+**✅ Done 2026-10-13.** The page rules are `page.css` (`sherpa-ui/css/page`),
+generated beside `tokens.css`, which styles no page now; Sherpa Demos and the
+test pages link both. No `data-mode` is light; dark follows the OS only under
+`data-mode="auto"`. The `[data-status]` reach is written down. Not done: an
+`@font-face` for Inter, and `exportparts`. `T-tokens-are-safe-to-embed`
 
 ### `[x]` ✅ 219 — The framework guide — CLOSED
 
