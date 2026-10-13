@@ -225,7 +225,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 55 | 84 | Use the platform: Intl for money, units and deltas; Temporal in the calendar | refactor |
 | ✅ | 56 | 81 | Component contracts move from YAML to JSON | refactor |
 | ✅ | 56a | 111 | A spec types every JS property as `string` — `reading`, `conditions`, `open` | tidy |
-| ⬜ | 57 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
+| ✅ | 57 | 29 | Rename `src/index.ts` to `src/app.ts` — dead last | rename |
 | | | | **K — Agentic UI: much later** | |
 | ⬜ | 58 | 76 | DEFERRED (Will, 2026-09-30) — WebMCP: agents do UI tasks through Sherpa's own contracts — a core system | explore |
 | ⬜ | 59 | 77 | CONTRACTED UX patterns, so a generated experience is consistent and useful | explore |
@@ -5726,7 +5726,7 @@ them: a `sherpa://def/` resource, `get_component` and `component_api` all
 answer. The docs say `.component.json` everywhere. `js-yaml` stays for the
 hand-written YAML in `scripts/figma-data/` — the separate question above.
 
-### `[ ]` 29 — Rename `src/index.ts` to `src/app.ts`
+### `[x]` ✅ 29 — Rename `src/index.ts` to `src/app.ts`
 
 It does not hold an index: it registers every component and installs the icons
 and tokens — it SCAFFOLDS a Sherpa app. Knock-on: `package.json` `main`
@@ -5734,6 +5734,11 @@ and tokens — it SCAFFOLDS a Sherpa app. Knock-on: `package.json` `main`
 `sherpa-ui` import in `examples/` and `test/`, and the MCP server if
 it reads the entry by name. Keep `src/data.ts`. **Dead last** — cheapest when
 nothing else is in flight.
+
+**✅ Closed 2026-10-13 — overtaken by 221.** `src/index.ts` IS an index now:
+it re-exports `components`, `app` and `data`, one line each. And `src/app.ts`
+is already the app layer (`sherpa-ui/app`), so the rename would collide with
+it. Nothing to do.
 
 ---
 
