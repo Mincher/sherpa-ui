@@ -87,6 +87,13 @@ const KNOWN = {
   // the saved set. TRAP T-a-saved-view-is-the-readers-own
   'sherpa-provider.customView': 'ok: saveView(name) / deleteView() / a View pick — derived',
   'sherpa-filter-panel.values': 'ok: populate(scopes) — a filter carries its picked options',
+  // Doors a host asks through, not values.
+  'sherpa-app-header.notificationsAnchor': 'ok: not a value — the bell element, to anchor a panel to',
+  'sherpa-nav.expandedIds': 'ok: populate() — an entry carries `expanded: true`',
+  // The router owns the URL; the outlet draws what it says.
+  'sherpa-outlet.context': 'ok: router.go({ context }) — the route is the value',
+  'sherpa-outlet.settingsPage': 'ok: router.go({ settings }) — the route is the value',
+  'sherpa-outlet.viewsReady': 'ok: not a value — a promise that start() makes',
 };
 
 /** Public getters (two-space indent = class body) and their setters. */
