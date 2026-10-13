@@ -2234,7 +2234,7 @@ same helper.
 | ✅ | 2. Serial narrowing: a field offers what the fields above it leave; a pick the chain rules out is set aside, as 180 does. `source.offered(scope)`; `drawOffered` on the bar and the panel, `offered` on the menu; a value not offered is removed, a pick kept greyed. A field is never ruled out by one below it, Limit on or off |
 | ⬜ | 3. The `sherpa-filterset` component, stamped by the bar and the panel |
 | ⬜ | 4. Sort and group per scope — the Organise set |
-| ⬜ | 5. Sherpa Demos: Customer then Region, serial |
+| ✅ | 5. Sherpa Demos: Customer then Region, serial — on Records. The Dashboard stays parallel: in a chain Region can never set Customer aside, and the Dashboard is where 180's "a later answer wins" shows |
 
 ### `[ ]` 89 — Every filter added to the panel starts SIMPLE
 
