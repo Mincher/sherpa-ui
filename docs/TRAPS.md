@@ -16628,3 +16628,25 @@ is its Context's, named here.
 - Site: `src/core/data/app-definition.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/an-app-is-its-definition.test.mjs`
+
+### T-a-dialog-answers-its-question
+
+**A dialog asks the question its own markup holds** (TODO 191). `prompt(value)`
+puts `value` in its first field and resolves what the field holds when its
+LAST footer button is pressed — an empty answer keeps it open — and null for
+any other button, Escape or a close. `confirm({ heading, words, action,
+critical })` resolves true for the last button, false for anything else.
+Sherpa Demos wired each of five dialogs by hand, in `ask-name.js`.
+
+The markup stays the app's — HTML first, and its ids are what its tests
+press. `confirm()` writes only what it is given: the Records delete dialog's
+critical button stays critical, so a dialog asked two ways passes `critical`
+both times.
+
+It listens for `click`, not `button-click`: a press on a `sherpa-button`'s host
+is a press too. It SHUTS before it resolves, so what the answer starts — a
+delete that reloads the grid — never runs under an open dialog. A second
+question answers the first with its "no".
+
+- Site: `src/components/sherpa-dialog/sherpa-dialog.ts`
+- Site: `test/e2e/reforged-dialog.spec.ts`

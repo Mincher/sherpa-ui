@@ -154,7 +154,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (show, hide, close). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (show, hide, close, prompt, confirm). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -194,6 +194,18 @@
           "name": "close",
           "args": "",
           "description": "`hide()`, in the native <dialog>'s spelling."
+        },
+        {
+          "$type": "method",
+          "name": "prompt",
+          "args": "value = ''",
+          "description": "Ask for ONE value. Its first field shows `value`; its LAST footer button answers with what the field holds, and any other button, or Escape, with null. An empty answer keeps it open."
+        },
+        {
+          "$type": "method",
+          "name": "confirm",
+          "args": "ask: { heading?: string; words?: string; action?: string; critical?: boolean } = {}",
+          "description": "Ask yes or no. `words` go in its first paragraph and `action` on its LAST footer button, critical when the ACTION is; what is not given stays as the markup wrote it. True for the action, false for anything else."
         }
       ],
       "category": "container",

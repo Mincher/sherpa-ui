@@ -172,3 +172,77 @@ test('data-type="overlay" opens NON-modal, fills its box, takes focus, and ESC c
   expect(r.afterEsc).toBe(false);
   expect(r.closeEvents).toBe(1);
 });
+
+/* A DIALOG ANSWERS ITS QUESTION: prompt() and confirm() ask what its own markup
+   holds — the last footer button commits, anything else is "no". TODO 191.
+   TRAP T-a-dialog-answers-its-question */
+test('prompt() resolves the field\'s value, keeps an empty one open, and null for anything else', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    type Asking = DialogEl & { prompt(v?: string): Promise<string | null> };
+    const el = document.createElement('sherpa-dialog') as Asking;
+    el.innerHTML = `<sherpa-input-text data-label="Name"></sherpa-input-text>
+      <sherpa-container-footer slot="footer"><sherpa-button>Cancel</sherpa-button><sherpa-button>Save</sherpa-button></sherpa-container-footer>`;
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const field = el.querySelector('sherpa-input-text') as HTMLElement & { value: string; rendered: Promise<void> };
+    await field.rendered;
+    const press = (i: number) => (el.querySelectorAll('sherpa-button')[i] as HTMLElement).shadowRoot!.querySelector('button')!.click();
+
+    const saved = el.prompt('Q3');
+    const offered = { value: field.value, open: el.open };
+    field.value = '  Mine  ';
+    press(1);
+    const out: Record<string, unknown> = { offered, saved: await saved, shut: !el.open };
+
+    const empty = el.prompt('');
+    press(1);
+    out['emptyStaysOpen'] = el.open;
+    press(0);
+    out['cancelled'] = await empty;
+
+    const escaped = el.prompt('x');
+    el.close!();
+    out['closed'] = await escaped;
+
+    const first = el.prompt('a');
+    const second = el.prompt('b');
+    out['firstAnsweredNo'] = await first;
+    field.value = 'b2';
+    press(1);
+    out['second'] = await second;
+    return out;
+  });
+  expect(r).toEqual({
+    offered: { value: 'Q3', open: true }, saved: 'Mine', shut: true,
+    emptyStaysOpen: true, cancelled: null, closed: null, firstAnsweredNo: null, second: 'b2',
+  });
+});
+
+test('confirm() writes what it is given, keeps what it is not, and resolves true only for the action', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    type Asking = DialogEl & { confirm(a?: Record<string, unknown>): Promise<boolean> };
+    const el = document.createElement('sherpa-dialog') as Asking;
+    el.innerHTML = `<p></p><sherpa-container-footer slot="footer"><button>Cancel</button><button>OK</button></sherpa-container-footer>`;
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const [cancel, ok] = el.querySelectorAll('button');
+
+    const yes = el.confirm({ heading: 'Delete it?', words: 'It goes.', action: 'Delete', critical: true });
+    const asked = {
+      heading: el.dataset['heading'], words: el.querySelector('p')!.textContent,
+      action: ok!.textContent, status: ok!.dataset['status'],
+    };
+    ok!.click();
+    const out: Record<string, unknown> = { asked, yes: await yes };
+
+    const no = el.confirm({ words: 'Again?' });
+    out['kept'] = { heading: el.dataset['heading'], action: ok!.textContent, status: ok!.dataset['status'] };
+    cancel!.click();
+    out['no'] = await no;
+    return out;
+  });
+  expect(r).toEqual({
+    asked: { heading: 'Delete it?', words: 'It goes.', action: 'Delete', status: 'critical' }, yes: true,
+    kept: { heading: 'Delete it?', action: 'Delete', status: 'critical' }, no: false,
+  });
+});
