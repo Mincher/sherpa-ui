@@ -80,6 +80,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16t9 | 233 | In the filter panel, a filter section's header inside an accordion aligns to the TOP: label, count badge and the accordion button | quick |
 | ✅ | 16t10 | 234 | A filter moved up to the View: its menu's FIRST option is "Return to X", its own scope, apart from the other scopes | quick |
 | ✅ | 16t11 | 235 | "Return to X" survives a reload: the Query keeps where a View field came up from | feature |
+| ❓ | 16t12 | 236 | Read-only Advanced condition rows: the value text is too dark, and the row × shows though nothing can be removed | bug |
 | ✅ | 16t6 | 230 | Reset all filters dialog: "Save filters before reset" sits in a grey border; it is plain form content | quick |
 | | | | **C2 — Consumers: frameworks, apps and agents** (planned 2026-10-12) | |
 | ✅ | c1 | 225 | `settled()` hangs on an infinite animation — a loader, an indeterminate bar — and waits on the whole document when given a part | bug |
@@ -108,7 +109,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | c25 | 221 | `sherpa-ui/app` and the app boundary: the app layer stays OPT-IN, so one button never pays for it | foundation |
 | ✅ | c26 | 194 | A Context loader beside `sherpa-router`: `<sherpa-outlet>` reads `app.json`; `index.html` becomes config | foundation |
 | ✅ | c27 | 193 | ONE app guide, steps not history, served to agents as `sherpa://app-guide` — after 190 | docs |
-| ❓ | c28 | 192 | Ship the agent path: the MCP with its real dependencies and files, a pack smoke test, registered in both projects | tooling |
+| 🚧 | c28 | 192 | Ship the agent path: the MCP with its real dependencies and files, a pack smoke test, registered in both projects | tooling |
 | ⬜ | c29 | 222 | The starter: `npx sherpa-ui init my-app` and a `scaffold_app` tool — one folder, about 8 files, no build step | tooling |
 | ⬜ | c30 | 196 | ONE filter surface and a smaller DataSource: `bind()` out of the data layer; one helper for bar and panel | refactor |
 | ⬜ | c31 | 223 | DEFERRED — server rendering with declarative shadow DOM, after 208 | explore |
@@ -1580,6 +1581,27 @@ badge and the accordion's button sit at the top of the header row.
 **✅ Done 2026-10-12.** The field header row, its label and count, and its
 buttons align to the top (they shared the bottom line, Will 2026-09-26). A
 test measures each against the row's top; it failed on the old CSS.
+
+### `[ ]` 236 — Read-only Advanced condition rows: value text too dark, a × not needed
+
+Will, 2026-10-13: *"Read only advanced filter conditional input rows have
+some issues: The value text is too dark. The delete button is shown but this
+is not required."* This turns 186 choice 4 to B for the row ×: it goes when a
+row is read-only — in the grid's held heading too.
+
+**✅ Part 1 done 2026-10-13 — the "delete" buttons.** A read-only row shows no
+row ×, and its fields are `readonly`, so the value's own clear button (⌫) goes
+too — that was the one on screen in a one-row card. The value takes the row's
+rounded end. The saved filter card and the grid's held heading both.
+
+**❓ Will — part 2, the value text.** Today the operator and the value both
+draw in near-black `#0C0B11`, the ink of an editable field. The ramp has no
+step between `#35353D` and the placeholder grey `#B3B3C3`.
+- **A:** the whole read-only row — operator and value — takes `#35353D`, the
+  ink a disabled field uses. A small lift; it passes contrast (about 12:1).
+- **B:** the placeholder grey `#B3B3C3`. Clearly lighter, but about 2:1 — below
+  the 4.5:1 that WCAG AA asks of text a reader must read.
+My pick: A. Figma was not connected, so I could not read a read-only input there.
 
 ### `[x]` ✅ 235 — "Return to X" survives a reload
 
@@ -3970,7 +3992,9 @@ must move to an environment variable before that file is shared.
 
 **✅ Will, 2026-10-12 — all my picks:** A (183 choice 2) — its own package, `sherpa-ui-mcp`.
 
-**❓ Will, 2026-10-13 — how the package is laid out.** Six of seven MCP modules
+**✅ Will, 2026-10-13: A** — `mcp-server/` becomes `sherpa-ui-mcp` in this repo.
+
+**The question was — how the package is laid out.** Six of seven MCP modules
 import `scripts/lib/generation/`, and it reads the specs, `schemas/` and three
 served docs.
 - **A:** `mcp-server/` becomes `sherpa-ui-mcp` in this repo, with its own

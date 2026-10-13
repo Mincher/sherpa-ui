@@ -621,3 +621,15 @@
    TRAP T-a-composed-child-hides-with-important
    TRAP T-a-view-held-heading-shows-and-refuses */
 :host([data-readonly]) :is(.footer, .add-condition, .use-condition) { display: none !important; }
+
+/* …and a read-only row removes nothing: no ×, and its value is the row's right
+   end, as on a lone row. Will, TODO 236 */
+:host([data-readonly]) .condition-row .drop-condition { display: none; }
+:host([data-readonly]) .condition-row { grid-template-columns: minmax(3.5rem, auto) minmax(6.5rem, 2fr) minmax(0, 3fr); }
+:host([data-readonly]) .condition-row[data-first] { grid-template-columns: minmax(6.5rem, 2fr) minmax(0, 3fr); }
+:host([data-readonly]) .condition-row[data-takes="list"] > .condition-pick,
+:host([data-readonly]) .condition-row[data-takes="text"] > .condition-value {
+  --sherpa-border-right: var(--sherpa-display-mode-border-width-sm, 0.5px);
+  --sherpa-border-rounding-top-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+  --sherpa-border-rounding-bottom-right: var(--sherpa-display-mode-border-rounding-base, 4px);
+}

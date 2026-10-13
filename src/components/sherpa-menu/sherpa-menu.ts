@@ -594,6 +594,7 @@ export class SherpaMenu extends SherpaElement {
     if (!row) return null;
     region.append(row);
     this.#fillRow(row, seed);
+    this.#readonlyRows([row]);
     this.#numberRows();
     return row;
   }
@@ -1501,6 +1502,15 @@ export class SherpaMenu extends SherpaElement {
     const readonly = this.hasAttribute('data-readonly');
     for (const region of this.$$('.rows, .condition-rows, .search, .body-range, .body-number')) {
       region.toggleAttribute('inert', readonly);
+    }
+    this.#readonlyRows(this.#rowEls());
+  }
+
+  /** A read-only row's fields are `readonly` too, so a value offers no clear button. */
+  #readonlyRows(rows: readonly HTMLElement[]): void {
+    const readonly = this.hasAttribute('data-readonly');
+    for (const row of rows) {
+      for (const field of row.querySelectorAll('sherpa-input-text')) field.toggleAttribute('readonly', readonly);
     }
   }
 

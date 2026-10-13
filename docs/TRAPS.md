@@ -16058,10 +16058,15 @@ lets the field go.
 
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `src/core/data/query.ts`
+**A read-only row removes nothing** (Will, TODO 236): no row ×, and its
+fields are `readonly`, so a value shows no clear button. The value then takes
+the row's rounded end, as on a lone row.
+
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/core/data/data-source.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
+- Site: `test/e2e/reforged-menu-readonly-rows.spec.ts`
 
 ### T-a-component-part-narrows-one-component
 
