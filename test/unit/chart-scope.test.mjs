@@ -94,7 +94,7 @@ test("a panel's answer to a part narrows its chart ALONE, and a legend's write i
 test('SENT UP, the answer goes to the View with its field, and the chart lets go of it', async () => {
   const { source, seen, panel } = await setup();
   source.write('picks:bar', 'sev', { picked: ['critical'] });
-  panel.dispatchEvent(new CustomEvent('filter-add-request', {
+  panel.dispatchEvent(new CustomEvent('filter-add', {
     detail: { scope: 'view', ids: ['sev'], from: 'picks:bar' },
   }));
   await tick();

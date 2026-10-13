@@ -300,7 +300,7 @@ test('ONE menu for every scope: each row says its scope, and a filter is added t
       return `${box?.value ?? (n as HTMLElement).dataset['value']}${box?.checked ? '+' : ''} · ${(n as HTMLElement).dataset['note'] ?? ''}`;
     });
     const heard: [string, unknown][] = [];
-    for (const type of ['filter-add-request', 'filter-remove']) {
+    for (const type of ['filter-add', 'filter-remove']) {
       panel.addEventListener(type, (e) => heard.push([type, (e as CustomEvent).detail]));
     }
     const listed = rows();
@@ -327,8 +327,8 @@ test('ONE menu for every scope: each row says its scope, and a filter is added t
   ]);
   // Each ask goes to the scope its row names.
   expect(r.heard).toEqual([
-    ['filter-add-request', { scope: 'data', ids: ['seats'] }],
-    ['filter-add-request', { scope: 'view', ids: ['owner'] }],
+    ['filter-add', { scope: 'data', ids: ['seats'] }],
+    ['filter-add', { scope: 'view', ids: ['owner'] }],
     ['filter-remove', { scope: 'view', id: 'region' }],
   ]);
 });

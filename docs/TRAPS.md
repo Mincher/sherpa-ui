@@ -1162,7 +1162,7 @@ Nothing on Records carries over yet — the default is Will's.
 
 **"Send to view filters" raises a component's field to the View** — Will, TODO
 21f: beside Clear in a component scope's field header in the panel (the View's
-own fields have none). It is the panel's ordinary `filter-add-request`, with
+own fields have none). It is the panel's ordinary `filter-add` request, with
 the View's scope: the View HOLDS the field, its answer goes with it
 (`#rehome`), and the chip below keeps its place, suspended, saying where its
 filter went (`T-up-is-open-down-is-closed`). So the rows do not move, and the
@@ -1204,6 +1204,7 @@ forgotten.
 - Site: `test/unit/send-down.test.mjs`
 - Site: `src/core/data/query.ts`
 - Site: `src/core/ui/filter-def.ts`
+- Site: `src/core/ui/bind-source.ts`
 
 ### T-a-condition-marks-every-match
 

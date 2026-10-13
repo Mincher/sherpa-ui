@@ -43,7 +43,7 @@ async function setup() {
   bindSource(source, chart, { rows: 'all', readonly: true });
   bindSource(source, panel, { steerOnly: true, scope: ['view', 'data'] });
   await source.load();
-  const send = (scope, id, from) => panel.dispatchEvent(new CustomEvent('filter-add-request', {
+  const send = (scope, id, from) => panel.dispatchEvent(new CustomEvent('filter-add', {
     detail: { scope, ids: [id], from },
   }));
   const sendTo = (field) => source.describe('view').filters.find((f) => f.id === field)?.sendTo;

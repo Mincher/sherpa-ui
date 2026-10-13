@@ -368,7 +368,7 @@
     },
     {
       "$type": "event",
-      "name": "filter-add-request",
+      "name": "filter-add",
       "bubbles": true,
       "composed": true,
       "detail": {

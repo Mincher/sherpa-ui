@@ -1392,7 +1392,7 @@ export class SherpaFilterPanel extends SherpaElement {
     const raise = this.pathFind(event, '.field-raise');
     if (raise) {
       const up = this.#fieldOf(raise);
-      if (up) this.emit('filter-add-request', { scope: VIEW, ids: [up.def.field ?? up.def.id], from: up.scope });
+      if (up) this.emit('filter-add', { scope: VIEW, ids: [up.def.field ?? up.def.id], from: up.scope });
       return;
     }
     // …and SENT DOWN, to the one scope the source named.
@@ -1622,7 +1622,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
   /** Ask the source to send a View field DOWN to one scope. */
   #sendDown(held: Held, scope: string): void {
-    this.emit('filter-add-request', { scope, ids: [held.def.field ?? held.def.id], from: held.scope });
+    this.emit('filter-add', { scope, ids: [held.def.field ?? held.def.id], from: held.scope });
   }
 
   /** The Send down button: one scope, and it says which; more, and it opens
@@ -1729,7 +1729,7 @@ export class SherpaFilterPanel extends SherpaElement {
       if (held && !want.has(value)) gone.push({ scope, id });
       if (!held && want.has(value)) adds.set(scope, [...(adds.get(scope) ?? []), id]);
     }
-    for (const [scope, ids] of adds) this.emit('filter-add-request', { scope, ids });
+    for (const [scope, ids] of adds) this.emit('filter-add', { scope, ids });
     for (const detail of gone) this.emit('filter-remove', detail);
   };
 

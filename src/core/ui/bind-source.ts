@@ -156,8 +156,7 @@ export const STEERING_EVENTS = [
   'filter-remove',
   // A heading's answer is its field's, in the grid's scope.
   'column-filter-change',
-  // The panel's requests: add to a scope, and one field's own Apply or Discard.
-  'filter-add-request',
+  // One field's own Apply or Discard.
   'filter-apply',
   'filter-discard',
   'filter-change',
@@ -245,6 +244,16 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
     case 'filter-add':
     case 'filter-remove': {
       const scope = bind?.scope;
+      /* The panel ASKS a scope to take fields — from the Filters menu, or sent up
+         or down. TRAP T-send-to-view-filters */
+      if (type === 'filter-add' && Array.isArray(scope)) {
+        const ids = detail['ids'];
+        const from = detail['from'];
+        if (typeof detail['scope'] === 'string' && Array.isArray(ids)) {
+          source.request(detail['scope'], ids.map(String), typeof from === 'string' ? from : undefined);
+        }
+        return;
+      }
       // A scoped bar's chips ARE its scope's holds, said in its event. TRAP T-a-bar-reports-its-holds
       const holds = detail['holds'];
       if (typeof scope === 'string' && Array.isArray(holds)) source.hold(scope, holds.map(String));
@@ -262,14 +271,6 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
       const field = detail['field'];
       if (typeof scope !== 'string' || typeof field !== 'string') return;
       source.answerColumn(scope, field, (detail['reading'] ?? null) as FieldReading | null);
-      return;
-    }
-    case 'filter-add-request': {
-      const scope = detail['scope'];
-      const ids = detail['ids'];
-      if (typeof scope !== 'string' || !Array.isArray(ids)) return;
-      const from = detail['from'];
-      source.request(scope, ids.map(String), typeof from === 'string' ? from : undefined);
       return;
     }
     case 'preset-edit': {

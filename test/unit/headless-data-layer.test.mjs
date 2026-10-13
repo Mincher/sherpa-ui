@@ -962,7 +962,7 @@ test('describe draws a scope whole; a panel over two scopes adds, raises and ans
   const ask = (type, detail) => panel.dispatchEvent(new CustomEvent(type, { detail }));
   const settle = () => new Promise((r) => setTimeout(r, 0));
 
-  ask('filter-add-request', { scope: 'grid', ids: ['plan', 'pro-only'] });
+  ask('filter-add', { scope: 'grid', ids: ['plan', 'pro-only'] });
   await settle();
   const grid = drawn.at(-1).find((d) => d.scope === 'grid');
   // A saved filter comes ON; the field is held, with its definition.
@@ -971,7 +971,7 @@ test('describe draws a scope whole; a panel over two scopes adds, raises and ans
   assert.deepEqual(grid.group.map((c) => c.field), ['plan']);
 
   // RAISED: the grid keeps it, and says where it went.
-  ask('filter-add-request', { scope: 'view', ids: ['plan'] });
+  ask('filter-add', { scope: 'view', ids: ['plan'] });
   await settle();
   const after = drawn.at(-1);
   assert.equal(after.find((d) => d.scope === 'grid').filters[1].appliedAt, 'View filters');

@@ -107,7 +107,7 @@
   "src/core/data/where.ts": 132,
   "src/core/ui/apply-state.ts": 92,
   "src/core/ui/bind-settings.ts": 36,
-  "src/core/ui/bind-source.ts": 355,
+  "src/core/ui/bind-source.ts": 356,
   "src/core/ui/chart-parts.ts": 58,
   "src/core/ui/context.ts": 71,
   "src/core/ui/disclosure.ts": 80,

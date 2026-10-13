@@ -391,7 +391,7 @@ test('the Add menu adds AND removes, and changes nothing by itself', async ({ pa
   const r = await page.evaluate(`(async () => {
     ${SETUP}
     const heard = [];
-    for (const n of ['filter-remove', 'filter-add-request']) {
+    for (const n of ['filter-remove', 'filter-add']) {
       el.addEventListener(n, (e) => heard.push([n, e.detail]));
     }
 
@@ -418,7 +418,7 @@ test('the Add menu adds AND removes, and changes nothing by itself', async ({ pa
   ]);
 
   expect(r.heard).toEqual([
-    ['filter-add-request', { scope: 'data', ids: ['seats'] }],
+    ['filter-add', { scope: 'data', ids: ['seats'] }],
     ['filter-remove', { scope: 'data', id: 'status' }],
   ]);
   /* The field is STILL THERE. A component that removed it would be deciding
