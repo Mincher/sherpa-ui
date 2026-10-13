@@ -1313,6 +1313,15 @@ Query, out of the rows, drawn inactive. A field is never ruled out by one
 BELOW it in its chain, so with Limit on the chain beats "the later answer
 wins". This runs whatever Limit says.
 
+**A set is DRAWN as one `sherpa-filterset`** (Will, 2026-10-13: built from
+these words, no Figma yet): its heading, its filters, and a link glyph when
+serial. The bar stamps one with `.sherpa-group`, so its chips join as one
+object, and finds a chip in the run or in a set by one selector (`CHIP`); a
+set whose chips all folded is PARKED off-screen as they are, never
+`display: none`, or their menus would open at the viewport's corner. The
+panel stamps one vertical, round the set's fields. The source hands each its
+sets in `describe()`; the provider gives the bar them before it fills it.
+
 A field is in ONE set of a scope: `declareSets` keeps the first and reports
 the second (`field-in-two-sets`). A set names fields the scope HOLDS;
 `openSource` reports one it does not (`set-field-not-held`), as the reader
@@ -1328,6 +1337,11 @@ may still add it.
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 - Site: `test/unit/a-serial-set-chains-its-fields.test.mjs`
 - Site: `test/e2e/reforged-serial-set.spec.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-filterset/sherpa-filterset.ts`
+- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
+- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
+- Site: `test/e2e/reforged-filterset.spec.ts`
 
 ### T-a-view-keeps-a-draft
 

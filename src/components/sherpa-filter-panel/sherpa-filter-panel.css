@@ -131,7 +131,9 @@
 
 /* ── Fields ──────────────────────────────────────────────────────────── */
 
-.field + .field { margin-block-start: var(--sherpa-display-mode-space-md, 16px); }
+.field + .field,
+:is(.field, sherpa-filterset) + sherpa-filterset,
+sherpa-filterset + .field { margin-block-start: var(--sherpa-display-mode-space-md, 16px); }
 
 /* A FIELD: its header, then its chips or its body across the whole column —
    a condition row needs it all. The header's label, count and buttons share its

@@ -12,7 +12,7 @@
 import { DATA_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import { ORGANISE_ICONS, movedTo } from '../../core/ui/shared-constants.js';
 import type { DataAsk } from '../../core/ui/context.js';
-import type { FieldFilter, HeldFilter, ScopeDescription, ScopeShows } from '../../core/data/data-source.js';
+import type { FieldFilter, FilterSet, HeldFilter, ScopeDescription, ScopeShows } from '../../core/data/data-source.js';
 import {
   arranges, advancedOf, hasOwnBody, kindOf, oneChipList, picksOne, type FilterKind,
 } from '../../core/ui/filter-kind.js';
@@ -35,6 +35,7 @@ import { VIEW } from '../../core/data/query.js';
 import '../sherpa-container/sherpa-container.js';
 import '../sherpa-container-header/sherpa-container-header.js';
 import '../sherpa-accordion/sherpa-accordion.js';
+import '../sherpa-filterset/sherpa-filterset.js';
 import '../sherpa-section-header/sherpa-section-header.js';
 import '../sherpa-stack/sherpa-stack.js';
 import '../sherpa-button/sherpa-button.js';
@@ -64,6 +65,8 @@ export interface PanelScope {
   filters?: FilterDef[];
   /** Fields this scope may still add. */
   available?: FilterDef[];
+  /** Fields drawn as one group. TRAP T-a-filter-set-groups-or-chains */
+  sets?: FilterSet[];
   /**
    * How this component ARRANGES its rows — not which rows it shows.
    *
@@ -608,6 +611,7 @@ export class SherpaFilterPanel extends SherpaElement {
         const drawn = def.appliedAt ? this.#drawApplied(def) : this.#drawField(def, scope.scope, false);
         if (drawn) box.append(drawn);
       }
+      this.#groupSets(box, scope.sets ?? []);
 
       /* THE ADD MENU IS THE LIST. Ticked means held, unticked means gone — so
          a reader adds and removes in one place instead of hunting a per-field
@@ -644,6 +648,24 @@ export class SherpaFilterPanel extends SherpaElement {
     for (const [scope, results] of this.#valueCounted) this.drawValueResults(results, scope);
     for (const [scope, present] of this.#presentBy) this.drawPresent(present, scope);
     for (const [scope, offered] of this.#offeredBy) this.drawOffered(offered, scope);
+  }
+
+  /** Each SET's fields in a scope, gathered where its first one stands, in
+   *  the set's order. TODO 99 · TRAP T-a-filter-set-groups-or-chains */
+  #groupSets(box: HTMLElement, sets: readonly FilterSet[]): void {
+    for (const set of sets) {
+      const fields = set.fields
+        .map((f) => box.querySelector<HTMLElement>(`:scope > .field[data-field="${CSS.escape(f)}"]`))
+        .filter((f): f is HTMLElement => !!f);
+      const group = fields.length ? this.clone<HTMLElement>('template.set-tpl') : null;
+      if (!group) continue;
+      group.dataset['set'] = set.id;
+      if (set.label) group.setAttribute('data-heading', set.label);
+      if (set.mode === 'serial') group.setAttribute('data-mode', 'serial');
+      // Where its first field stands in the scope, as the bar's set is.
+      [...box.children].find((c) => fields.includes(c as HTMLElement))!.before(group);
+      group.append(...fields);
+    }
   }
 
   /** A field a HIGHER scope holds: its heading, and the line a chip's tooltip

@@ -1,0 +1,22 @@
+<!--
+  sherpa-filterset — filters drawn as one group: a heading, the filters, and a
+  chain mark when serial.
+
+  Public API:
+    data-heading      the set's name, shown before its filters
+    data-mode         serial | parallel (default) — serial shows the chain mark
+    data-orientation  horizontal (default, a bar's chips) | vertical (the panel's fields)
+
+  Slots:
+    (default) — the set's filters, in order
+
+  Fires: nothing.
+-->
+<template id="default">
+  <span class="head" part="head">
+    <span class="heading" part="heading" id="heading"></span>
+    <i class="chain sherpa-icon-box" part="chain" data-icon="link-simple" aria-hidden="true"
+       title="Each filter offers what the ones before it leave"></i>
+  </span>
+  <span class="items" part="items" role="group" aria-labelledby="heading"><slot data-accepts="control,content"></slot></span>
+</template>

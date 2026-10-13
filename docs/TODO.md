@@ -2250,7 +2250,7 @@ same helper.
 |---|---|
 | ✅ | 1. The JSON: `sets` on a scope, `declareSets()` / `sets()`, `describe()` carries them; `openSource` reports a set field not held, `declareSets` a field in two sets |
 | ✅ | 2. Serial narrowing: a field offers what the fields above it leave; a pick the chain rules out is set aside, as 180 does. `source.offered(scope)`; `drawOffered` on the bar and the panel, `offered` on the menu; a value not offered is removed, a pick kept greyed. A field is never ruled out by one below it, Limit on or off |
-| ⬜ | 3. The `sherpa-filterset` component, stamped by the bar and the panel. No Figma design exists for it. **A:** I build it from the words above — a small heading, its chips joined as one group (`.sherpa-group`), a link glyph when serial — and you review it in the app; **B:** you draw it in Figma first, and I build from that. My pick: A. **✅ Will, 2026-10-13: A** |
+| ✅ | 3. The `sherpa-filterset` component, stamped by the bar and the panel — **✅ Will, 2026-10-13: A.** Built: a heading, its filters (joined with `.sherpa-group` in the bar, stacked in the panel), and a `link-simple` mark when serial. A set whose chips all fold is parked, as they are. Records in Sherpa Demos draws its Account set |
 | ⬜ | 4. Sort and group per scope — the Organise set |
 | ✅ | 5. Sherpa Demos: Customer then Region, serial — on Records. The Dashboard stays parallel: in a chain Region can never set Customer aside, and the Dashboard is where 180's "a later answer wins" shows |
 

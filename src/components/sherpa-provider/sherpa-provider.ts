@@ -72,6 +72,7 @@ type Bar = HTMLElement & {
   populate(defs: unknown[]): Promise<void> | void;
   available?(defs: unknown[]): void;
   organise?(def: { group?: unknown[]; sort?: unknown[] }): void;
+  groupSets?(sets: readonly unknown[]): void;
   heldFields?: string[];
   report?(): void;
   packFilter?(saved: { id: string; label: string; readings: Record<string, FieldReading> }): void;
@@ -615,6 +616,8 @@ export class SherpaProvider extends SherpaElement {
       }] : [];
       // The bar offers Delete only on the reader's own View. TRAP T-a-saved-view-is-the-readers-own
       if (scope === VIEW) bar.toggleAttribute('data-custom-view', !!view && custom.has(view));
+      // Its sets first, so one render draws them. TRAP T-a-filter-set-groups-or-chains
+      bar.groupSets?.(described.sets ?? []);
       await bar.populate([...picker, ...described.filters]);
       if (described.group) bar.organise?.({ group: described.group, sort: described.sort ?? [] });
     }));

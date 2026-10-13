@@ -23,8 +23,8 @@
 
 /* A saved filter's Save and Discard: while it holds a change, or is being
    edited — and then Edit and Delete step aside. TRAP T-a-saved-filter-keeps-its-edit */
-.chips > .chip:not([data-edited]) > sherpa-menu:not([data-editing]) > .qf-saved-edit { display: none; }
-.chips > .chip > sherpa-menu[data-editing] > button.qf-saved-own { display: none; }
+:is(.chips, .chips > sherpa-filterset) > .chip:not([data-edited]) > sherpa-menu:not([data-editing]) > .qf-saved-edit { display: none; }
+:is(.chips, .chips > sherpa-filterset) > .chip > sherpa-menu[data-editing] > button.qf-saved-own { display: none; }
 
 /* The view bar bottom-aligns to the nav's first quick row; data centres. */
 :host([data-type="view"]) .bar {
@@ -71,13 +71,13 @@
 /* A DIVIDER needs a neighbour on BOTH sides. Will, 2026-09-26. `.bar:has()`,
    as `:host(:has())` fails in Chromium. TRAP T-a-divider-needs-a-neighbour-on-both-sides */
 :host(:not([data-has-organise]))
-  .bar:not(:has(.chips > .chip:not([data-folded-away]))) .view-zone::after,
-.bar:not(:has(.chips > .chip:not([data-folded-away]))) .organise-zone::after {
+  .bar:not(:has(:is(.chips, .chips > sherpa-filterset) > .chip:not([data-folded-away]))) .view-zone::after,
+.bar:not(:has(:is(.chips, .chips > sherpa-filterset) > .chip:not([data-folded-away]))) .organise-zone::after {
   display: none;
 }
 /* …and in panel mode only a persistent chip is still shown. */
 :host([data-panel-mode]:not([data-has-organise]))
-  .bar:not(:has(.chips > .chip[data-persistent]:not([data-folded-away]))) .view-zone::after {
+  .bar:not(:has(:is(.chips, .chips > sherpa-filterset) > .chip[data-persistent]:not([data-folded-away]))) .view-zone::after {
   display: none;
 }
 /* Panel mode takes every action before it. */
@@ -186,7 +186,7 @@
    a menu in a display:none host measures 0x0 and lands in the viewport corner.
    `position: absolute` also takes it out of the run, so the next measure sees
    the width without it. */
-.chips > .chip[data-folded-away] {
+:is(.chips, .chips > sherpa-filterset) > .chip[data-folded-away] {
   position: absolute;
   /* The park-it-off-screen idiom, not a spacing value. */
   inset-inline-start: -9999px; /* off-grid-ok */
@@ -198,7 +198,7 @@
 
 /* …but not its MENU: `visibility` inherits, so the submenu would be invisible
    while perfectly placed. */
-.chips > .chip[data-folded-away] sherpa-menu {
+:is(.chips, .chips > sherpa-filterset) > .chip[data-folded-away] sherpa-menu {
   visibility: visible;
   pointer-events: auto;
 }
@@ -215,7 +215,17 @@
 /* The PANEL draws every filter of this scope instead, so the bar keeps only
    its selector — the View chip. Plain `display: none`, unlike a folded chip:
    nothing here is still in use. TRAP T-the-view-chip-stays-on-the-header */
-:host([data-panel-mode]) .chips > .chip:not([data-persistent]) { display: none; }
+:host([data-panel-mode]) :is(.chips, .chips > sherpa-filterset) > .chip:not([data-persistent]) { display: none; }
+/* A SET goes with its chips: in panel mode; and PARKED, as they are, once all
+   have folded away — their menus still open from the Filters menu. */
+:host([data-panel-mode]) .chips > sherpa-filterset { display: none; }
+.chips > sherpa-filterset:not(:has(> .chip:not([data-folded-away]))) {
+  position: absolute;
+  inset-inline-start: -9999px; /* off-grid-ok */
+  inset-block-start: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
 
 /* The ⋮ menu's rows: real <button>s, so Enter, Space and focus come free.
    TRAP T-the-more-menu-holds-what-folded */

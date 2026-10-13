@@ -518,7 +518,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (setChipValues, setChipReading, drawResults, drawPresent, drawOffered, drawReading, supersede, deleteFilter, packFilter, report, available, addFilters, removeFilter, drawScope, allowFields, clearAll, organise). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (setChipValues, setChipReading, drawResults, drawPresent, drawOffered, drawReading, supersede, deleteFilter, packFilter, report, available, addFilters, removeFilter, groupSets, drawScope, allowFields, clearAll, organise). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -765,6 +765,12 @@
           "name": "removeFilter",
           "args": "id: string",
           "description": "removeFilter(id) — take one filter off this bar, as its menu's Remove does. The other half of `addFilters`, for the same reason: a filter panel draws its own Remove and cannot reach this shadow root."
+        },
+        {
+          "$type": "method",
+          "name": "groupSets",
+          "args": "sets: readonly FilterSet[]",
+          "description": "groupSets([...]) — the scope's filter SETS: each set's chips are drawn together, in its order, as one `sherpa-filterset`. TODO 99"
         },
         {
           "$type": "method",
