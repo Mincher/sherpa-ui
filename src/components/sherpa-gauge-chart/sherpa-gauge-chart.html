@@ -13,9 +13,11 @@
     data-zones    threshold bands — "0-50:success,50-80:warning,80-100:critical"
                   (compact) OR a JSON array [{to,color}|{from,to,color}]. Colours
                   are status names (success|warning|urgent|critical|info) or any
-                  CSS colour. Omit for the single-colour sweep. A band may be
-                  NAMED — "0-50:success:Low", or `label` in the JSON — and the
-                  name is its tooltip's and its legend row's.
+                  CSS colour. Left out, its provider draws its field's
+                  thresholds (TODO 150); with none, the single-colour sweep.
+                  TRAP T-a-threshold-is-a-fact-of-the-field
+                  A band may be NAMED — "0-50:success:Low", or `label` in
+                  the JSON — and the name is its tooltip's and its legend row's.
     data-caption  caption text shown below the arc (e.g. "30GB of 60GB used")
     data-status   critical | warning | success | info  (single-colour fill)
     data-min / data-max   scale bounds shown beneath (default 0 / 100)

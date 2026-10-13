@@ -39,6 +39,7 @@ import {
   matchesFilter, picksClause, valueSet, valueKey,
   type Duration, type Filter, type FilterClause, type FilterOp,
 } from './store.js';
+import type { Threshold } from './threshold.js';
 
 /** What a field's selection is doing. */
 export type FieldState =
@@ -142,6 +143,8 @@ export interface FieldFacts {
   labels?: Readonly<Record<string, string>>;
   /** A DATE that holds a time of day. TODO 21d */
   time?: boolean;
+  /** A number's bands, for a condition that names one. TRAP T-a-threshold-is-a-fact-of-the-field */
+  thresholds?: readonly Threshold[];
 }
 
 /** What is true right now, which decides the STATES. */

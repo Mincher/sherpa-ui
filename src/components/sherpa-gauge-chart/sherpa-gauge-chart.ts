@@ -8,6 +8,7 @@ import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement, define } from '../../core/u
 import type { DataAsk } from '../../core/ui/context.js';
 import { formatTick, radialArea, ringSegmentPath, statusBorderVar, statusVar } from '../../core/data/format-tick.js';
 import { isStatus } from '../../core/data/chart-datum.js';
+import type { Threshold } from '../../core/data/threshold.js';
 import { fillTip, pairAnchor } from '../../core/ui/chart-parts.js';
 import { RADIAL_CENTRE as CENTRE, RADIAL_CORNER as CORNER,
   RADIAL_OUTLINE as OUTLINE, RADIAL_INNER_RATIO } from '../../core/ui/shared-constants.js';
@@ -49,7 +50,7 @@ export class SherpaGaugeChart extends SherpaElement {
   static override html = new URL('./sherpa-gauge-chart.html', import.meta.url);
   // ONE LINE, deliberately: the spec generator reads only the first line.
   /* DECLARED, not hand-synced: CSS-only, so the base class writes nothing. */
-  static override asks: DataAsk = { shape: 'aggregate', shows: 'chart' };
+  static override asks: DataAsk = { shape: 'aggregate', shows: 'chart', thresholds: true };
 
   // A host's aria-label names the chart. TRAP T-a-host-label-must-reach-its-control
   static override labelTarget = '.gauge';
@@ -74,11 +75,20 @@ export class SherpaGaugeChart extends SherpaElement {
     this.#sync();
   }
 
-  /** populate(number | { value }) — set the value. A provider's aggregate over time is the object. */
+  /** populate(number | { value, zones? }) — set the value. `zones` are its
+   *  field's thresholds, drawn where `data-zones` says none.
+   *  TRAP T-a-threshold-is-a-fact-of-the-field */
   protected override renderData(data: unknown): void {
-    const value = typeof data === 'number' ? data : (data as { value?: unknown } | null)?.value;
+    const given = data as { value?: unknown; zones?: readonly Threshold[] } | null;
+    const value = typeof data === 'number' ? data : given?.value;
+    if (Array.isArray(given?.zones)) this.#given = given.zones;
     if (typeof value === 'number' && Number.isFinite(value)) this.value = value;
+    // New zones with the same value change no attribute, so it draws here.
+    this.#sync();
   }
+
+  /** Its field's thresholds, as its provider handed them. */
+  #given: readonly Threshold[] = [];
 
   get value(): number {
     return this.num('data-value', 0);
@@ -128,14 +138,16 @@ export class SherpaGaugeChart extends SherpaElement {
    */
   #parseZones(min: number, max: number): Zone[] {
     const spec = this.dataset['zones'];
-    if (!spec) return [];
+    if (!spec && !this.#given.length) return [];
     const span = max > min ? max - min : 1;
     const clamp = (n: number): number => Math.min(1, Math.max(0, (n - min) / span));
 
     type Band = { from?: number; to: number; color: string; label?: string };
     let raw: Band[] = [];
-    const trimmed = spec.trim();
-    if (trimmed.startsWith('[')) {
+    const trimmed = spec?.trim() ?? '';
+    if (!trimmed) {
+      raw = this.#given.map((t) => ({ to: t.to, color: t.status ?? 'info', label: t.label }));
+    } else if (trimmed.startsWith('[')) {
       try {
         raw = JSON.parse(trimmed) as Band[];
       } catch {

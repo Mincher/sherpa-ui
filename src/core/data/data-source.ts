@@ -117,6 +117,7 @@ import {
 } from './query.js';
 import { readingsOf, whereOf, type Condition, type Where } from './where.js';
 import { report } from './report.js';
+import type { Threshold } from './threshold.js';
 import type { Populatable } from '../ui/apply-state.js';
 import type { FieldFacts, FieldReading, FieldType, FilterState } from './filter-state.js';
 
@@ -151,6 +152,9 @@ export interface FieldDeclaration {
   min?: number;
   max?: number;
   step?: number;
+  /** A number's BANDS, low to high — declared once, read by a gauge's zones, a
+   *  bar chart's bands and a saved filter's `band`. TRAP T-a-threshold-is-a-fact-of-the-field */
+  thresholds?: readonly Threshold[];
   /** Its chip's glyph. TRAP T-only-five-filter-chips-carry-an-icon */
   icon?: string;
   /** A value's name as a reader sees it, where it is not the value. */
@@ -1231,6 +1235,7 @@ export class DataSource extends EventTarget {
       ...(values ? { values } : {}),
       ...(facts.type ? { type: facts.type } : {}),
       ...(facts.time ? { time: true } : {}),
+      ...(facts.thresholds ? { thresholds: facts.thresholds } : {}),
       ...(named ? { label: named } : {}),
     };
   }

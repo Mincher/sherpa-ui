@@ -93,6 +93,7 @@ write a condition, with numbers as numbers:
 | a range | `{ "between": [10, 60] }` |
 | typed | `{ "gt": 0 }` — `{ "contains": "acme" }` |
 | a date from today | `{ "last": 7 }` — `{ "next": 2, "unit": "month" }` |
+| one of the field's bands | `{ "band": "At risk" }` — its `thresholds` say the ends (`T-a-threshold-is-a-fact-of-the-field`) |
 | all hold | `{ "gte": 10, "lt": 60 }` — `{ "and": [{ "contains": "a" }, { "contains": "b" }] }` |
 | any holds | `{ "or": [{ "lt": 10 }, { "gt": 90 }] }` |
 | kept, not applied | `{ "eq": "trial", "off": true }` |

@@ -184,3 +184,34 @@ test('data-where narrows its own tile, never a sibling, and outlives a View', as
   expect(r['after']).toEqual({ all: '2', pro: '1' });
   expect(r['reports']).toEqual([]);
 });
+
+/* A THRESHOLD IS A FACT OF THE FIELD — Will, TODO 150. Declared once, beside
+   min and max: a gauge with no `data-zones` draws it, and its legend names
+   each band; a bar chart over the field cuts at it.
+   TRAP T-a-threshold-is-a-fact-of-the-field */
+test('a gauge draws its field\'s thresholds, and a bar chart cuts at them', async ({ page }) => {
+  const r = await page.evaluate(`(async () => {
+    ${SETUP}
+    provider.innerHTML = \`
+      <sherpa-gauge-chart id="gauge" data-aggregate="mean" data-field="spend" data-min="0" data-max="6000">
+        <sherpa-chart-legend slot="legend" id="key" data-readonly></sherpa-chart-legend>
+      </sherpa-gauge-chart>
+      <sherpa-barchart id="bars" data-segment-field="spend"></sherpa-barchart>\`;
+    const source = make();
+    source.declareField('spend', { type: 'number', min: 0, max: 6000, thresholds: [
+      { to: 1000, label: 'Low', status: 'success' },
+      { to: 4000, label: 'Mid', status: 'warning' },
+      { to: 6000, label: 'High', status: 'critical' },
+    ] });
+    provider.provide({ sources: { sales: source } });
+    await source.load();
+    await settle();
+    const $ = (s) => provider.querySelector(s);
+    const key = [...$('#key').shadowRoot.querySelectorAll('.item')].map((i) => i.querySelector('.label').textContent);
+    return { value: $('#gauge').value, key, bars: $('#bars').data?.map?.((d) => [d.label, d.value]) ?? null, reports };
+  })()`) as Record<string, unknown>;
+  expect(r['value']).toBeCloseTo(1625.125);
+  expect(r['key']).toEqual(['Low', 'Mid', 'High']);
+  expect(r['reports']).toEqual([]);
+  expect(r['bars']).toEqual([['Low', 2], ['Mid', 1], ['High', 1]]);
+});

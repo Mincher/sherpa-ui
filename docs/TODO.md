@@ -195,7 +195,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 39 | 14 | An example of real-time data | feature |
 | ✅ | 39a | 128 | A gauge's tooltip names the segment as the legend does | quick |
 | ✅ | 39c | 162 | A chart and its legend go from side by side to stacked as their container narrows — container queries | feature |
-| ⬜ | 39b | 150 | EXPLORE — how the example gauge's risk score is worked out; THRESHOLDS in the central Query | explore |
+| ❓ | 39b | 150 | EXPLORE — how the example gauge's risk score is worked out; THRESHOLDS in the central Query | explore |
 | ✅ | 40 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | ✅ | 40a | 143 | EXPERIMENT, later — scrolled-past metrics become a compact sticky header; a toggle in Settings › Experiments | explore |
 | ✅ | 40b | 175 | LATER — the sticky metrics keep a small sparkline, tighter gaps, a larger value; a slow scroll must still gather them | feature |
@@ -4846,6 +4846,23 @@ Either way the Query stays as it is: it filters and arranges, and never
 summarises.
 
 **✅ Will, 2026-10-12 — all my picks:** A — a threshold is a fact of the field, declared once beside `min` and `max`.
+
+**🚧 Built 2026-10-13.** A number field declares `thresholds: [{ to, label,
+status }]` (schema too). A gauge asks for them and draws them where it has no
+`data-zones`; its legend names them. A bar chart over the field with no
+`data-bands` is cut at them. A saved filter names one:
+`{ "health": { "band": "At risk" } }` (half-open; an unknown name is reported).
+Demos: the Dashboard's storage gauge draws `storage`'s bands, and Records'
+"At risk" names `health`'s band. `T-a-threshold-is-a-fact-of-the-field`.
+
+**❓ Will — one choice left.** The Records gauge shows RISK, `100 − health`:
+`health`'s bands, the other way up. Until this is chosen it keeps its own
+`data-zones` and its hand-written bind in `records.js`.
+- **A (my pick): `data-invert` on the gauge.** It shows `max − value` and
+  turns its field's bands round. Small: only the gauge knows.
+- **B: a derived field** in the page JSON — `"risk": { "from": "health",
+  "invert": true }` — that any component can use. Larger: the data layer
+  gains derived fields.
 
 ### `[x]` ✅ 162 — A chart and its legend stack as their container narrows
 

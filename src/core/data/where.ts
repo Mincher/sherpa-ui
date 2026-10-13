@@ -15,6 +15,7 @@ import {
 } from './filter-state.js';
 import { DEFAULT_OP, OP_TAKES, type Duration, type Filter, type FilterOp } from './store.js';
 import { report } from './report.js';
+import { bandCondition } from './threshold.js';
 
 /** One field's condition, as a definition or a View writes it. Several ops
  *  all hold; `and` and `or` take a list. */
@@ -25,6 +26,9 @@ export type Condition = { [op in FilterOp]?: unknown } & {
   unit?: Duration['unit'];
   /** Kept, not applied: off is not gone. */
   off?: boolean;
+  /** One of the field's bands, by name: `{ health: { band: 'At risk' } }`.
+   *  TRAP T-a-threshold-is-a-fact-of-the-field */
+  band?: string;
 };
 
 /** Each field's condition, by field. */
@@ -54,15 +58,27 @@ export function readingsOf(
 ): Record<string, FieldReading> {
   const readings: Record<string, FieldReading> = {};
   for (const [field, given] of Object.entries(where)) {
-    const reading = readingOf(field, given, facts?.(field).type);
+    const reading = readingOf(field, given, facts?.(field));
     if (reading) readings[field] = reading;
   }
   return readings;
 }
 
-function readingOf(field: string, given: Condition | FieldReading, type?: FieldType): FieldReading | undefined {
+function readingOf(field: string, given: Condition | FieldReading, facts?: Omit<FieldFacts, 'field'>): FieldReading | undefined {
   if (Object.keys(given).some((key) => READING_KEYS.has(key))) return given as FieldReading;
-  const { off, ...condition } = given as Condition;
+  const { off, band, ...rest } = given as Condition;
+  // A band NAMES its ends; the field's thresholds say them. TRAP T-a-threshold-is-a-fact-of-the-field
+  const named = band == null ? {} : bandCondition(facts?.thresholds ?? [], band);
+  if (!named) {
+    report({
+      code: 'unknown-band',
+      message: `where: "${field}" has no band called "${band}", so it filters nothing. Declare it in the field's thresholds.`,
+      at: { field, band: String(band) },
+    });
+    return undefined;
+  }
+  const condition = { ...rest, ...named };
+  const type = facts?.type;
   const clause = clauseOf(field, condition);
   const rows = clause ? clauseConditions(clause) : [];
   if (!rows) {

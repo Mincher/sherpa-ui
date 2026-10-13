@@ -19,6 +19,7 @@ import {
 } from '../../core/ui/context.js';
 import { report } from '../../core/data/report.js';
 import { summarise, type SummarySpec } from '../../core/data/aggregate.js';
+import { bandEdges } from '../../core/data/threshold.js';
 import { bindSelection, type Selector } from '../../core/data/bind-selection.js';
 import { valueKey, type Store } from '../../core/data/store.js';
 import {
@@ -972,7 +973,7 @@ export class SherpaProvider extends SherpaElement {
       ...(scope ? { scope } : {}),
       ...(asks.shows ? { shows: asks.shows } : {}),
       /* A summary SHOWS the data and never steers it. TRAP T-aggregation-is-data */
-      ...(spec ? { readonly: true, as: (rows, src) => summarise(rows, spec, (f) => src.valuesFor(f)) } : {}),
+      ...(spec ? { readonly: true, as: (rows, src) => this.#summary(rows, spec, asks, src) } : {}),
       // A page of rows arrives WITH its groups: a group is the data layer's.
       // TRAP T-a-group-is-a-data-layer-concept
       ...(asks.shape === 'rows'
@@ -1049,6 +1050,19 @@ export class SherpaProvider extends SherpaElement {
       if (value !== null) return value;
     }
     return null;
+  }
+
+  /** A summary, with its field's BANDS where it has them: a histogram cut at
+   *  them, a gauge's zones drawn from them. TRAP T-a-threshold-is-a-fact-of-the-field */
+  #summary(rows: Parameters<typeof summarise>[0], spec: SummarySpec, asks: DataAsk, src: DataSource): unknown {
+    const segment = spec.segment ? src.fieldFacts(spec.segment) : {};
+    const cut = spec.shape === 'segments' && !spec.bands && segment.thresholds?.length && segment.min != null
+      ? { ...spec, bands: bandEdges(segment.thresholds, segment.min), bandLabels: segment.thresholds.map((t) => t.label) }
+      : spec;
+    const value = summarise(rows, cut, (f) => src.valuesFor(f));
+    const zones = asks.thresholds && spec.field ? src.fieldFacts(spec.field).thresholds : undefined;
+    if (!zones?.length) return value;
+    return { ...(typeof value === 'number' ? { value } : value), zones };
   }
 
   /** The summary a component declared, as JSON — or none, and it waits. */

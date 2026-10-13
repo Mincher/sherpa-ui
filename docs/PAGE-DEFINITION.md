@@ -69,6 +69,11 @@ One JSON document per page. The same rule as a View: **a definition is data**
   `"sets": [{ "id": "account", "label": "Account", "mode": "serial", "fields": ["customer", "region"] }]`.
   A `serial` set chains them — Region offers only the regions of the picked
   Customers. `parallel`, the default, only groups (`T-a-filter-set-groups-or-chains`).
+- **A number field's `thresholds`** are its bands, declared once:
+  `"health": { "type": "number", "thresholds": [{ "to": 60, "label": "At risk", "status": "critical" }, …] }`.
+  A gauge over the field draws them, a bar chart is cut at them, and a saved
+  filter names one: `{ "health": { "band": "At risk" } }`
+  (`T-a-threshold-is-a-fact-of-the-field`).
 - **`applyOn: "input"`** makes the source's filters apply LIVE: a number does
   not wait for Apply, and a value reports while it moves. The source loads
   `debounce` ms (default 300) after the last move. The default, `"change"`,

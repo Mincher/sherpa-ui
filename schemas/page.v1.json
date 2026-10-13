@@ -60,6 +60,20 @@
         "min": { "type": "number" },
         "max": { "type": "number" },
         "step": { "type": "number", "exclusiveMinimum": 0 },
+        "thresholds": {
+          "description": "A number's BANDS, low to high: each one's top, name and status. A gauge's zones, a bar chart's bands and a saved filter's band all read them.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["to", "label"],
+            "properties": {
+              "to": { "type": "number" },
+              "label": { "type": "string" },
+              "status": { "type": "string" }
+            }
+          }
+        },
         "icon": { "type": "string" },
         "labels": {
           "description": "A value's name as a reader sees it, where it is not the value.",
@@ -123,6 +137,10 @@
         "startswith": { "type": "string" }, "endswith": { "type": "string" },
         "in": { "type": "array" }, "notin": { "type": "array" },
         "between": { "type": "array", "minItems": 2, "maxItems": 2 },
+        "last": { "description": "A date in the last n units, from today.", "type": "number" },
+        "next": { "description": "A date in the next n units, from today.", "type": "number" },
+        "unit": { "enum": ["day", "week", "month"] },
+        "band": { "description": "One of the field's thresholds, by name.", "type": "string" },
         "and": { "type": "array", "items": { "$ref": "#/$defs/condition" } },
         "or": { "type": "array", "items": { "$ref": "#/$defs/condition" } },
         "off": { "description": "Kept, not applied.", "type": "boolean" }

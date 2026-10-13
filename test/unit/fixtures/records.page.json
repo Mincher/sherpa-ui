@@ -21,7 +21,14 @@
       "seats": { "label": "Seats", "type": "number", "advanced": true },
       "spend": { "label": "Spend", "type": "number", "advanced": true },
       "openTickets": { "label": "Tickets", "type": "number", "advanced": true },
-      "health": { "label": "Health", "type": "number", "advanced": true },
+      "health": {
+        "label": "Health", "type": "number", "advanced": true,
+        "thresholds": [
+          { "to": 60, "label": "At risk", "status": "critical" },
+          { "to": 80, "label": "Watch", "status": "warning" },
+          { "to": 100, "label": "Healthy", "status": "success" }
+        ]
+      },
       "created": { "label": "Date", "type": "date", "icon": "calendar" },
       "lastSeen": { "label": "Last seen", "type": "date" }
     },
@@ -35,7 +42,7 @@
     },
     "presets": {
       "has-tickets": { "label": "Has open tickets", "where": { "openTickets": { "gt": 0 } } },
-      "at-risk": { "label": "At risk", "where": { "health": { "lt": 60 } } },
+      "at-risk": { "label": "At risk", "where": { "health": { "band": "At risk" } } },
       "unassigned": { "label": "Unassigned", "where": { "owner": { "eq": "Unassigned" } } }
     }
   },

@@ -238,6 +238,8 @@ export interface SummarySpec {
   /** A NUMBER segment field cut at these ascending edges — a histogram.
    *  TRAP T-the-last-band-includes-its-top */
   bands?: number[];
+  /** Each band's name, where its field's thresholds give one. TODO 150 */
+  bandLabels?: string[];
   /** A series runs over this field's values. */
   over?: string;
   bucket?: Bucket;
@@ -306,7 +308,7 @@ export function summarise(
   const opts = spec.field ? { kind, valueField: spec.field } : { kind };
   if (spec.shape === 'segments') {
     if (!spec.segment) return [];
-    if (spec.bands?.length) return bandBy(rows, spec.segment, spec.bands);
+    if (spec.bands?.length) return bandBy(rows, spec.segment, spec.bands, spec.bandLabels ? { labels: spec.bandLabels } : {});
     const order = domain(spec.segment).map(valueKey);
     return aggregateBy(rows, spec.segment, kind, spec.field,
       order.length ? { order, includeEmpty: spec.keepEmpty ?? false } : {});

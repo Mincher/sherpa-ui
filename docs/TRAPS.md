@@ -1627,6 +1627,39 @@ open their menu first now, as a reader must — and a draft set from code
 - Site: `test/e2e/reforged-grid-keeps-both-answers.spec.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 
+### T-a-threshold-is-a-fact-of-the-field
+
+**A number's bands are declared ONCE, beside its `min` and `max`** — Will,
+TODO 150, choosing A. `thresholds: [{ to, label, status }]`, low to high: the
+first runs up from the bottom of the scale, each after it from the top below.
+Before this, one set of bands lived in three places — a gauge's `data-zones`,
+its legend's names, and a saved filter's `lt` — and nothing joined them.
+
+Three readers, one fact:
+
+- **A gauge** asks for them (`asks.thresholds`); its provider hands
+  `{ value, zones }`, and a gauge with no `data-zones` draws them. Its legend
+  names each band, as before. A gauge's own `data-zones` still wins.
+- **A bar chart** over the field, with no `data-bands`, is cut at them
+  (`bandEdges`), each band named by its label.
+- **A saved filter** names one: `where: { health: { band: 'At risk' } }`. It is
+  half-open, as a histogram's band is — the first has no floor and the last no
+  top. A name no band has filters nothing, and is reported (`unknown-band`).
+
+The Query still never summarises (`T-aggregation-is-data`): a band is a
+condition when a filter names it, and a cut when a chart asks.
+
+- Site: `src/core/data/threshold.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `src/core/data/filter-state.ts`
+- Site: `src/core/data/where.ts`
+- Site: `src/core/ui/context.ts`
+- Site: `src/components/sherpa-provider/sherpa-provider.ts`
+- Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.ts`
+- Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.html`
+- Site: `test/unit/a-threshold-is-a-fact-of-the-field.test.mjs`
+- Site: `test/e2e/reforged-provider-summary.spec.ts`
+
 ### T-a-relative-date-stays-relative
 
 **"In the last 7 days" is kept RELATIVE** — TODO 21d, built in 90. A clause
