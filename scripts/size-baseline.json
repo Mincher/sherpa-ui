@@ -54,7 +54,7 @@
   "src/components/sherpa-prompt-composer/sherpa-prompt-composer.ts": 124,
   "src/components/sherpa-provider/sherpa-provider.ts": 1139,
   "src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts": 2042,
-  "src/components/sherpa-quick-filter/sherpa-quick-filter.ts": 1015,
+  "src/components/sherpa-quick-filter/sherpa-quick-filter.ts": 1024,
   "src/components/sherpa-radial-chart/sherpa-radial-chart.ts": 211,
   "src/components/sherpa-router/sherpa-router.ts": 110,
   "src/components/sherpa-section-header/sherpa-section-header.ts": 22,

@@ -83,7 +83,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16t12 | 236 | Read-only Advanced condition rows: the value text is too dark, and the row × shows though nothing can be removed | bug |
 | ✅ | 16t13 | 237 | A tile's own `data-where` on a field the View's bar holds narrows nothing, and says nothing | bug |
 | ✅ | 16t14 | 238 | The data grid's "Select all rows" does not select every row on every page | bug |
-| ⬜ | 16t15 | 239 | A chip given a typed Advanced answer in its def does not wear `data-condition` — since the templates went into the JS (199) | bug |
+| ✅ | 16t15 | 239 | A chip given a typed Advanced answer in its def does not wear `data-condition` — since the templates went into the JS (199) | bug |
 | ✅ | 16t6 | 230 | Reset all filters dialog: "Save filters before reset" sits in a grey border; it is plain form content | quick |
 | | | | **C2 — Consumers: frameworks, apps and agents** (planned 2026-10-12) | |
 | ✅ | c1 | 225 | `settled()` hangs on an infinite animation — a loader, an indeterminate bar — and waits on the whole document when given a part | bug |
@@ -1622,7 +1622,7 @@ badge and the accordion's button sit at the top of the header row.
 buttons align to the top (they shared the bottom line, Will 2026-09-26). A
 test measures each against the row's top; it failed on the old CSS.
 
-### `[ ]` 239 — A chip with a typed Advanced answer in its def reads as Simple
+### `[x]` ✅ 239 — A chip with a typed Advanced answer in its def reads as Simple
 
 Found 2026-10-13 while testing 90: `reforged-one-condition-system.spec.ts`
 ("a TYPED condition in list mode is Advanced") fails, every run, in Chromium.
@@ -1632,6 +1632,16 @@ fetched, and fails on a build with the templates in the JS, minified or not.
 So the chip now reads its menu BEFORE the menu holds its answer, and nothing
 asks it again: its menu reads Advanced (`contains Da`), the chip has no
 `data-condition`.
+
+**✅ Fixed 2026-10-13.** With the templates in the JS the menu draws, and
+says `menu-items`, before the chip listens; and when the chip connects, the
+menu's condition rows have not filled yet (a composed field fills a frame
+later). The chip now asks again once its menu has drawn and a frame has
+passed — the empty check's own pattern — and `menu-items` redraws a typed
+answer as well as a ticked one. `T-a-rebuilt-row-reads-empty-for-a-tick`
+
+**Worth a full run.** This one hid because no focused run had this spec in
+it; other specs may have failed since 199 the same way.
 
 ### `[x]` ✅ 238 — "Select all rows" in the data grid misses rows on other pages
 

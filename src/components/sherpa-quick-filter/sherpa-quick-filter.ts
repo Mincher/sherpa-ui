@@ -187,6 +187,13 @@ export class SherpaQuickFilter extends SherpaElement {
       this.#syncLabelForSelection(initial);
       this.#syncCountTip(initial);
       if (initial.length > 1) this.dataset['count'] = String(initial.length);
+    } else {
+      /* …and a TYPED answer, which ticks nothing — asked once its menu has
+         drawn AND its rows have filled, a frame later, as the empty check is.
+         TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
+      void Promise.resolve((this.menu as { rendered?: Promise<void> } | null)?.rendered)
+        .then(() => new Promise<void>((r) => requestAnimationFrame(() => r())))
+        .then(() => { if (this.isConnected && this.#hasTypedAnswer()) this.#drawFace(); });
     }
   }
 
@@ -812,8 +819,10 @@ export class SherpaQuickFilter extends SherpaElement {
    * TRAP T-chip-empty-check-waits-for-onconnect
    */
   #onMenuItems = (): void => {
-    // A TICKED answer is only readable once the rows stamp.
-    if (!((this.menu?.values ?? []) as string[]).length) return;
+    /* A TICKED answer is only readable once the rows stamp — and a TYPED one
+       has none to tick, so it is asked too: the menu now draws before the
+       chip has looked. TRAP T-a-chip-says-its-own-answer */
+    if (!((this.menu?.values ?? []) as string[]).length && !this.#hasTypedAnswer()) return;
     this.#drawFace();
   };
 
