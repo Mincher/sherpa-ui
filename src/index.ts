@@ -95,6 +95,8 @@ export {
 export {
   getPointer, setPointer, pointersOverlap,
 } from './core/data/pointer.js';
+// A control that says `data-setting="/pointer"` is bound to that session value.
+export { bindSettings } from './core/ui/bind-settings.js';
 /* ── Data layer ──────────────────────────────────────────────────────── */
 /* ── Data layer ────────────────────────────────────────────────────────
    Re-exported WHOLESALE from the headless entry point rather than listed

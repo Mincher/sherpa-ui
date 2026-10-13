@@ -6386,8 +6386,11 @@ That took a `guard`. Until it existed this paragraph was a claim the code did
 not keep: `persist` caught a JSON PARSE error and nothing else, so a value that
 parsed into the WRONG SHAPE was restored in full. A boolean survives that gap.
 A list of `{view,label}` rows re-shaped between releases does not — it reaches
-the nav rail as rows with no label. `guard` is optional, and without one the old
-behaviour stands: any parsed value is restored.
+the nav rail as rows with no label. `guard` is optional. Without one, the
+DEFAULT's type is the guard (TODO 191) — a boolean, a number, a string or a
+list, or null, which is a real value — so ten hand-written
+`(v) => typeof v === 'boolean'` guards went. A null or an object default, or
+none, restores any parsed value, as before.
 
 This exists because the alternative is what every app was writing: a key constant, a
 try/catch to read, a try/catch to write, and a wrapper to keep the two in step. Four
@@ -16660,3 +16663,22 @@ question answers the first with its "no".
 
 - Site: `src/components/sherpa-dialog/sherpa-dialog.ts`
 - Site: `test/e2e/reforged-dialog.spec.ts`
+
+### T-a-setting-is-a-pointer
+
+**A control that says `data-setting="/pointer"` is bound to that session
+value** (TODO 191). `bindSettings(root, session, { signal })` draws each one
+from the session and writes its `change` back: a boolean is a switch's
+`checked`, anything else is its `value`, and a value that was a number is kept
+a number — Items per page writes `50`, not `"50"`. A session write from
+anywhere redraws it. Sherpa Demos' Settings wired eight such controls by hand,
+the same four lines each time.
+
+The app calls it AFTER a page's `init()`, so a select is given its choices
+first. A setting that is more than one value stays hand-wired: Drafts and
+"Keep them across sessions", where the second means nothing without the first.
+`check:usage` knows `data-setting` on any component, as it knows `data-scope`.
+
+- Site: `src/core/ui/bind-settings.ts`
+- Site: `scripts/check-usage.mjs`
+- Site: `test/e2e/reforged-bind-settings.spec.ts`

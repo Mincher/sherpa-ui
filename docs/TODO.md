@@ -3927,7 +3927,7 @@ Six parts, one commit each:
 |---|---|---|
 | ✅ | 1. `dialog.prompt(value)` and `dialog.confirm({ … })` — the dialog asks what its own markup holds; `ask-name.js` is `reset-prompt.js`, the Reset all dialog alone | `T-a-dialog-answers-its-question` |
 | ✅ | 2. the provider owns the reader's saved filters, as it owns saved Views: `provider.saveFilter(label, event)`; it forgets one a bar deletes, and routes the panel's delete to its bar | `T-save-packs-the-fields-into-one-chip` |
-| ⬜ | 3. `data-setting="/pointer"` binds a control to the session; `persist()` takes its guard from the default | |
+| ✅ | 3. `data-setting="/pointer"` binds a control to the session (`bindSettings`); `persist()` takes its guard from the default | `T-a-setting-is-a-pointer` |
 | ⬜ | 4. a store takes a seed, a seed version and a fallback | |
 | ⬜ | 5. public doors for the three shadow-root reaches in `index.html` | |
 | ⬜ | 6. Sherpa Demos sorted by kind: `stores/`, `contexts/`, `views/`, `view-schemas/` | |

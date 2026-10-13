@@ -43,11 +43,22 @@ export interface PersistOptions<T = unknown> {
   /** The storage key. Defaults to `sherpa:session:<pointer>`. */
   key?: string;
   /**
-   * The shape check a stored value must pass. Without one ANY parsed value is
-   * restored — fine for a scalar, wrong for a list this version has re-shaped.
-   * TRAP T-session-persist-defaults-shared
+   * The shape check a stored value must pass. Without one, the DEFAULT's type
+   * is the check — a boolean, a number, a string or a list, or null — and a
+   * null or an object default restores any parsed value. TRAP T-session-persist-defaults-shared
    */
   guard?: (value: unknown) => value is T;
+}
+
+/** A guard from a default's type: a boolean, a number, a string or a list —
+ *  or null, which is a real stored value. A null or an object default says
+ *  nothing of its shape, so it gives none. */
+function guardOf(value: unknown): ((v: unknown) => boolean) | undefined {
+  const of = (ok: (v: unknown) => boolean) => (v: unknown): boolean => v === null || ok(v);
+  if (typeof value === 'boolean') return of((v) => typeof v === 'boolean');
+  if (typeof value === 'number') return of((v) => typeof v === 'number' && Number.isFinite(v));
+  if (typeof value === 'string') return of((v) => typeof v === 'string');
+  return Array.isArray(value) ? of(Array.isArray) : undefined;
 }
 
 /** What an app knows about itself, addressed by pointer.
@@ -106,7 +117,8 @@ export class SessionStore {
     const kind = shared ? 'local' : 'session';
     if (readText(kind, key) == null) return false;
     // MISSING is a private symbol, so a stored `null` is still a real value.
-    const guard = options.guard as ((v: unknown) => v is unknown) | undefined;
+    // No guard given: the default's own type is the shape.
+    const guard = (options.guard ?? guardOf(this.get(pointer))) as ((v: unknown) => v is unknown) | undefined;
     const stored = readJson<unknown>(kind, key, MISSING, guard);
     if (stored === MISSING) return false;
 

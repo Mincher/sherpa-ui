@@ -11,7 +11,7 @@
  *   { "markup": ["app"], "own": { "sherpa-button": ["data-by"] } }
  *
  * Map:
- * - EVERYWHERE — attributes any component may carry: set by an ancestor or a parent, or read by the base class
+ * - EVERYWHERE — attributes any component may carry: set by an ancestor or a parent, or read by the base class or a helper
  * - usageProblems — every problem in one project's markup, and how many tags it checked
  */
 import { existsSync, globSync, readFileSync, realpathSync } from 'node:fs';
@@ -27,6 +27,8 @@ export const EVERYWHERE = [
   'data-col-span', 'data-row-span', 'data-min-row-span', 'data-grow',
   // Read by the base class, to ask its provider.
   'data-source', 'data-scope',
+  // Read by bindSettings, on any control. TRAP T-a-setting-is-a-pointer
+  'data-setting',
 ];
 
 /** Every problem in one project's markup, and how many tags it checked. */

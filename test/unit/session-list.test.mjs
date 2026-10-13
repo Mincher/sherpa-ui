@@ -211,3 +211,17 @@ test('persist: forget() stops the writing AND clears the key', () => {
   assert.equal(localStorage.getItem('sherpa:session:/nav/favorites'), null,
     'a forgotten pointer stops writing through');
 });
+
+test('persist: with no guard, the DEFAULT\'s type is the shape — TODO 191', () => {
+  localStorage.clear();
+  localStorage.setItem('sherpa:session:/nav/pinned', JSON.stringify('yes'));
+  localStorage.setItem('sherpa:session:/grid/pageSize', JSON.stringify(50));
+  localStorage.setItem('sherpa:session:/theme/mode', JSON.stringify(3));
+  const session = new SessionStore({ nav: { pinned: false }, grid: { pageSize: 25 }, theme: { mode: 'light' } });
+  assert.equal(session.persist('/nav/pinned'), false, 'a string where a boolean was is dropped');
+  assert.equal(session.get('/nav/pinned'), false);
+  assert.equal(session.persist('/grid/pageSize'), true, 'a number where a number was is restored');
+  assert.equal(session.get('/grid/pageSize'), 50);
+  assert.equal(session.persist('/theme/mode'), false, 'a number where a string was is dropped');
+  assert.equal(session.get('/theme/mode'), 'light');
+});
