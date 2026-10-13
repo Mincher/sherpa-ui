@@ -12,11 +12,10 @@
  * - dataLayerError — Why the data layer is unavailable, phrased for an agent that must act on it.
  */
 import { existsSync } from 'node:fs';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { pathToFileURL } from 'node:url';
+import { at } from './sherpa.js';
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const DATA_ENTRY = join(ROOT, 'dist', 'data.js');
+const DATA_ENTRY = at('dist', 'data.js');
 
 let _mod = null;
 let _error = null;
@@ -29,7 +28,7 @@ export async function loadDataLayer() {
     return null;
   }
   try {
-    _mod = await import(`file://${DATA_ENTRY}`);
+    _mod = await import(pathToFileURL(DATA_ENTRY).href);
   } catch (e) {
     _error = e.message;
   }

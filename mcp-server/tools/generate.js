@@ -10,9 +10,7 @@
  * - register — register scaffold_def, validate_def, compile_def and token_for
  */
 import { z } from "zod/v3";
-import { validateDef } from "../../scripts/lib/generation/validate-def.mjs";
-import { compileDef } from "../../scripts/lib/generation/compile-def.mjs";
-import { tokenForValue } from "../../scripts/lib/generation/resolve.mjs";
+import { validateDef, compileDef, tokenForValue } from "../lib/sherpa.js";
 
 function ok(text) { return { content: [{ type: "text", text }] }; }
 function err(text) { return { content: [{ type: "text", text: `Error: ${text}` }], isError: true }; }

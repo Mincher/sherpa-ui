@@ -13,7 +13,7 @@
  * - register — register the tools that call and read a component in a live page
  */
 import { z } from "zod/v3";
-import { loadDef, loadSpec, loadComponentNames } from "../../scripts/lib/generation/data.mjs";
+import { loadDef, loadSpec, loadComponentNames } from "../lib/sherpa.js";
 import { getPage, closeBrowser, browserState } from "../lib/browser.js";
 
 function ok(text) { return { content: [{ type: "text", text }] }; }

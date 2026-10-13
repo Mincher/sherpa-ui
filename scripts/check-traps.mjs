@@ -34,6 +34,9 @@ const SOURCES = [
   // The two ENTRY POINTS. Both carry citations and neither was scanned.
   'src/index.ts',
   'src/data.ts',
+  // The MCP: its own package, but its citations are this doc's.
+  'mcp-server/*.js',
+  'mcp-server/*/*.js',
 ];
 
 const HEADING = /^###\s+(T-[a-z0-9-]+)\s*$/;

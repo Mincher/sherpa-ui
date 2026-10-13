@@ -12,12 +12,10 @@
  */
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { loadDef } from "../../scripts/lib/generation/data.mjs";
+import { loadDef, SHERPA_ROOT } from "../lib/sherpa.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, "..", "..");
+const ROOT = SHERPA_ROOT;
 const COMPONENTS_DIR = path.join(ROOT, "src", "components");
 const RULES_PATH = path.join(ROOT, "docs", "DEF-TO-FIGMA-BUILD-RULES.md");
 /* The def's SHAPE. `docs/COMPONENT-DEFINITION-STANDARD.md` used to hold it and

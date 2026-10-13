@@ -109,8 +109,9 @@ npm run map:write <file>  # add missing names, drop stale ones — then edit the
 npm run check:map         # the gate; the hook runs it --staged
 node scripts/code-map.mjs --privates [path]  # the #private members still without a line
 
-# MCP server
+# MCP server — its own package, sherpa-ui-mcp
 npm run mcp               # stdio transport — connect from Claude Desktop / Cursor
+npm run check:mcp-pack    # pack both packages, install them, call every tool, resource and prompt
 ```
 
 ---
@@ -663,15 +664,18 @@ button → dialog → save → toast path.
 
 ### MCP server (`mcp-server/`)
 
-**17 tools** across five modules, **7 `sherpa://` resources**, and **3 guided
-prompts**. Run with `npm run mcp` (stdio).
+**18 tools** across five modules, **7 `sherpa://` resources**, and **3 guided
+prompts**. Run with `npm run mcp` (stdio). It ships as its own package,
+`sherpa-ui-mcp` (`mcp-server/package.json`), and reads the `sherpa-ui` beside it
+through `mcp-server/lib/sherpa.js`; `npm run check:mcp-pack` installs both and
+calls everything (TRAP `T-the-mcp-reads-sherpa-ui-through-one-door`).
 
 | Module | Tools |
 |---|---|
 | `tools/discover.js` | `list_components`, `get_component`, `find_token` |
 | `tools/generate.js` | `scaffold_def`, `validate_def`, `compile_def`, `token_for` |
 | `tools/verify.js` | `audit_component`, `check_bindings` |
-| `tools/data.js` | `run_query`, `import_schema`, `scaffold_schema`, `validate_schema` |
+| `tools/data.js` | `run_query`, `import_schema`, `scaffold_schema`, `validate_schema`, `validate_page` |
 | `tools/drive.js` | `component_api`, `call_component`, `read_component`, `browser_close` |
 
 The **data** tools wrap `sherpa-ui/data` (`dist/data.js`), so their answers are

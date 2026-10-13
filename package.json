@@ -54,7 +54,16 @@
     "src/**/*.ts",
     "src/**/*.html",
     "src/**/*.css",
-    "mcp-server/"
+    "src/components/*/*.component.json",
+    "scripts/lib/generation/",
+    "scripts/lib/component-to-def.mjs",
+    "scripts/lib/contract-io.mjs",
+    "scripts/lib/scope-rules.mjs",
+    "scripts/audit-bindings.mjs",
+    "scripts/figma-data/name-map.yaml",
+    "docs/APP-GUIDE.md",
+    "docs/DATA-SOURCE-RULES.md",
+    "docs/DEF-TO-FIGMA-BUILD-RULES.md"
   ],
   "scripts": {
     "prepare": "husky",
@@ -86,6 +95,7 @@
     "format": "prettier --write 'src/**/*.css'",
     "format:check": "prettier --check 'src/**/*.css'",
     "mcp": "node mcp-server/index.js",
+    "check:mcp-pack": "node scripts/check-mcp-pack.mjs",
     "preview": "npx --yes serve . --listen 4000 --no-clipboard",
     "prebuild": "npm run clean",
     "test": "playwright test && npm run test:node",
@@ -95,9 +105,6 @@
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:report": "playwright show-report"
-  },
-  "bin": {
-    "sherpa-mcp": "./mcp-server/index.js"
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "^1.27.1",

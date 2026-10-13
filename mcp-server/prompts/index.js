@@ -14,11 +14,9 @@
 import { z } from "zod/v3";
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
-import { loadDef } from "../../scripts/lib/generation/data.mjs";
+import { loadDef, SHERPA_ROOT } from "../lib/sherpa.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, "..", "..");
+const ROOT = SHERPA_ROOT;
 const COMPONENTS_DIR = path.join(ROOT, "src", "components");
 const listComponents = () =>
   fs.existsSync(COMPONENTS_DIR)

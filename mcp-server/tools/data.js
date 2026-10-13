@@ -5,15 +5,21 @@
  *   import_schema   — a backend's JSON Schema / OpenAPI → a Sherpa schema
  *   scaffold_schema — sample rows → a draft schema, every inference MARKED
  *   validate_schema — run a schema over sample rows: mapped / rejected / WHY
+ *   validate_page   — a page definition or an app.json: its schema, then every name it uses
  *
  * Thin wrappers only — the same `validate()` a Store runs. Never re-implement a
  * check here; a second implementation eventually disagrees.
  *
  * Map:
- * - register — register run_query and the schema tools, over sherpa-ui/data
+ * - register — register run_query, the schema tools and validate_page, over sherpa-ui/data
  */
+import fs from "fs";
 import { z } from "zod/v3";
+import Ajv2020Module from "ajv/dist/2020.js";
 import { loadDataLayer, dataLayerError } from "../lib/data-layer.js";
+import { at } from "../lib/sherpa.js";
+
+const Ajv2020 = Ajv2020Module.default ?? Ajv2020Module;
 
 function ok(text) { return { content: [{ type: "text", text }] }; }
 function err(text) { return { content: [{ type: "text", text: `Error: ${text}` }], isError: true }; }
@@ -765,4 +771,65 @@ export function register(server) {
       return ok(lines.join("\n"));
     }
   );
+
+  // ── validate_page — a definition, checked the way sherpa-ui reads it ──
+  server.registerTool(
+    "validate_page",
+    {
+      title: "Validate a Page Definition or an app.json",
+      description:
+        "Check a page definition (schemas/page.v1.json) or an app.json (schemas/app.v1.json) the way sherpa-ui reads it: the JSON schema first, then every name it uses — a scope that shows a saved filter the page does not define, a condition that does not parse, a default that is not a Context, a section naming a Context that is not there. Use it before a page or an app goes live: at run time a broken name is reported and never followed, so the page simply shows less.",
+      inputSchema: {
+        document: z.string().describe("The page definition or the app.json, as JSON. One with `contexts` is read as an app.json."),
+      },
+    },
+    async ({ document }) => {
+      let doc;
+      try { doc = JSON.parse(document); } catch (e) { return err(`document is not valid JSON: ${e.message}`); }
+      if (!doc || typeof doc !== "object" || Array.isArray(doc)) return err("document must be a JSON object.");
+      const isApp = "contexts" in doc;
+      const schema = JSON.parse(fs.readFileSync(at("schemas", isApp ? "app.v1.json" : "page.v1.json"), "utf8"));
+      const check = new Ajv2020({ allErrors: true, strict: false }).compile(schema);
+      const errors = check(doc) ? [] : check.errors.map((e) =>
+        `${e.instancePath || "(root)"} ${e.message}${e.params?.additionalProperty ? `: "${e.params.additionalProperty}"` : ""}`);
+      const warnings = [];
+      const dl = await loadDataLayer();
+      if (dl) {
+        // The data layer's own reports ARE the names it would refuse.
+        const undo = dl.onReport((r) => errors.push(r.message));
+        try {
+          if (isApp) dl.checkApp(doc);
+          else pageNames(dl, doc, errors, warnings);
+        } finally { undo(); }
+      } else {
+        warnings.push(`the names were not checked: ${dataLayerError()}`);
+      }
+      const what = isApp ? "app.json" : `page "${doc.id ?? "?"}"`;
+      let out = errors.length ? `## ${what}: ${errors.length} problem(s)\n\n` : `## ✓ ${what} is sound\n\n`;
+      if (errors.length) out += errors.map((e) => `- ${e}`).join("\n") + "\n\n";
+      if (warnings.length) out += `### Notes\n` + warnings.map((w) => `- ${w}`).join("\n") + "\n";
+      return errors.length ? { content: [{ type: "text", text: out }], isError: true } : ok(out);
+    }
+  );
+}
+
+/** A page's names: each scope's saved filters must be defined, each saved
+ *  filter's conditions must parse, and a held field not in `fields` is noted. */
+function pageNames(dl, page, errors, warnings) {
+  const source = page.source ?? {};
+  const fields = new Set(Object.keys(source.fields ?? {}));
+  const presets = source.presets ?? {};
+  for (const [scope, facts] of Object.entries(source.scopes ?? {})) {
+    for (const id of facts.presets ?? []) {
+      if (!(id in presets)) errors.push(`scope "${scope}" shows the saved filter "${id}", which source.presets does not define`);
+    }
+    const named = [...(facts.holds ?? []), ...(Array.isArray(facts.offers) ? facts.offers : [])];
+    for (const field of named) {
+      if (!fields.has(field)) warnings.push(`scope "${scope}" names "${field}", which source.fields does not declare — the rows must carry it`);
+    }
+  }
+  for (const [id, preset] of Object.entries(presets)) {
+    if (preset?.where) dl.readingsOf(preset.where);
+    else errors.push(`saved filter "${id}" has no where`);
+  }
 }

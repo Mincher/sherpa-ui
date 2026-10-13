@@ -4,7 +4,7 @@ Structured access to the Sherpa design system for an AI agent: what a component
 IS, what a caller can DO to it, whether your data will fit, and — against a
 local page — the live screen itself.
 
-**17 tools · 6 resources · 3 prompts.** Every name below is registered in the
+**18 tools · 7 resources · 3 prompts.** Every name below is registered in the
 code; if a tool is not listed here it does not exist.
 
 > This file replaced a 752-line version on 2026-09-17 that documented 20 tools,
@@ -16,15 +16,18 @@ code; if a tool is not listed here it does not exist.
 
 ## Setup
 
-Node 18+, and this repository.
+Node 20+. It is its own package, `sherpa-ui-mcp`, and reads the `sherpa-ui`
+it is installed beside — its specs, docs, schemas, tokens and `dist/`:
 
 ```bash
-npm run mcp      # stdio — no output; it is launched BY a client, not run by you
+npm install --save-dev sherpa-ui-mcp
+npx sherpa-mcp     # stdio — no output; it is launched BY a client, not run by you
 ```
 
-Some tools need the compiled data layer (`dist/`), which is gitignored and which
-`npm run mcp` does not build. Run `npm run build` once. A tool that needs it and
-cannot find it says so.
+From a checkout of sherpa-ui, `npm run mcp` runs it against that checkout; run
+`npm run build` once first, since the data tools read `dist/`. A tool that
+needs it and cannot find it says so. `npm run check:mcp-pack` packs both
+packages, installs them into an empty folder and calls every tool.
 
 ### Claude Desktop
 
@@ -35,8 +38,8 @@ cannot find it says so.
 {
   "mcpServers": {
     "sherpa-ui": {
-      "command": "node",
-      "args": ["/absolute/path/to/sherpa-ui/mcp-server/index.js"]
+      "command": "npx",
+      "args": ["sherpa-mcp"]
     }
   }
 }
@@ -44,8 +47,9 @@ cannot find it says so.
 
 ### VS Code / Cursor
 
-Same shape, in the client's MCP settings — `command: node`, `args:
-[<abs path>/mcp-server/index.js]`.
+Same shape, in the client's MCP settings — `command: npx`, `args: [sherpa-mcp]`.
+A project beside a sherpa-ui checkout can run it straight from there, as Sherpa
+Demos does: `command: node`, `args: [../sherpa-ui/mcp-server/index.js]`.
 
 ---
 
@@ -92,6 +96,7 @@ binds to.
 | Tool | Arguments | Answers |
 |---|---|---|
 | `validate_schema` | `schema`, `rows`, `key?` | Which rows map, which are REJECTED, and why |
+| `validate_page` | `document` | A page definition or an `app.json`: its schema, then every name it uses |
 | `scaffold_schema` | `rows`, `key?` | A draft schema, every inference marked with its evidence |
 | `import_schema` | `document`, `path?`, `key?` | A backend's JSON Schema / OpenAPI → a Sherpa schema |
 | `run_query` | `rows`, `filter?`, `sort?`, `search?`, `searchFields?`, `group?`, `pageSize?`, `page?`, `key?` | What a bound component actually receives |
@@ -134,6 +139,7 @@ with `npm run preview`.
 | URI | Is |
 |---|---|
 | `sherpa://data-rules` | What Sherpa expects of your data — the row shape, the filter grammar, where validation belongs |
+| `sherpa://app-guide` | How to build an app on Sherpa, step by step |
 | `sherpa://rules` | The def→Figma build rules, plus the component spec schema |
 | `sherpa://def/{name}` | One component's def, read from its `.component.json` |
 | `sherpa://component/{name}/ts` · `/html` · `/css` | The shipped source |

@@ -13,8 +13,8 @@
 import { z } from "zod/v3";
 import {
   loadComponentNames, loadDef, loadNameMap, loadCssTokenNames,
-} from "../../scripts/lib/generation/data.mjs";
-import { compileDef } from "../../scripts/lib/generation/compile-def.mjs";
+  compileDef,
+} from "../lib/sherpa.js";
 
 function ok(text) { return { content: [{ type: "text", text }] }; }
 function err(text) { return { content: [{ type: "text", text: `Error: ${text}` }], isError: true }; }

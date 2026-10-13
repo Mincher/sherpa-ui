@@ -63,7 +63,8 @@ test('sideEffects keeps every component module, the entry and the CSS', () => {
   const kept = (file) => sideEffects.some((glob) => new RegExp(`^${glob.replace(/^\.\//, '').replace(/[.]/g, '\\.')
     .replace(/\*\*\//g, '\0').replace(/\*/g, '[^/]*').replace(/\0/g, '(?:.*/)?')}$`).test(file));
   const components = globSync('dist/components/*/*.js', { cwd: ROOT });
-  assert.equal(components.filter((f) => /\/(sherpa-[a-z-]+)\/\1\.js$/.test(f)).length, 65, 'run npm run build');
+  const want = globSync('src/components/sherpa-*', { cwd: ROOT }).length;
+  assert.equal(components.filter((f) => /\/(sherpa-[a-z-]+)\/\1\.js$/.test(f)).length, want, 'run npm run build');
   for (const file of [...components, 'dist/index.js', 'dist/styles/tokens/tokens.css']) {
     assert.ok(existsSync(`${ROOT}${file}`), `${file} is not built`);
     assert.ok(kept(file), `${file} may be dropped`);
