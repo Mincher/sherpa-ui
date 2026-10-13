@@ -46,6 +46,13 @@
  * - .contributions — Every named part currently applied — the component-scope filters.
  * - .apply — Apply a whole control's READING of several fields, at one scope.
  * - .answer — ONE SCOPE'S WHOLE ANSWER — a bar's report.
+ * - .answerScope — A scoped bar's whole answer: what it holds, each reading, its saved filters on or off. It is its Apply.
+ * - .answerScopes — The panel's answer: each field it changed, and each scope's presets.
+ * - .answerColumn — A heading's answer, in its grid's scope; a field no scope holds gets its chip.
+ * - .request — Move fields into a scope: down from the View, or up from a chart with its answer.
+ * - .release — A scope lets ONE go — a field or a preset.
+ * - .reportPages — The grid's own page count, when every row is in hand: publish, load nothing.
+ * - .remote — Do this source's loads reach outside the data layer?
  * - .declarePreset — A saved filter's readings, by id — the library a preset that is ON compiles from.
  * - .editPreset — EDIT a saved filter: what it applies now, while the library keeps what was saved.
  * - .describe — One scope, whole: its filters and answers, what it may add, how it is arranged.
@@ -1084,7 +1091,7 @@ export class DataSource extends EventTarget {
 
   /** The panel's answer: each field it changed, and each scope's presets. A
    *  preset switch is an Apply, as a bar's report is. */
-  #answerScopes(readings: Record<string, Record<string, FieldReading>> | undefined): void {
+  answerScopes(readings: Record<string, Record<string, FieldReading>> | undefined): void {
     const switched: string[] = [];
     for (const [scope, fields] of Object.entries(readings ?? {})) {
       for (const [id, reading] of Object.entries(fields)) {
@@ -1185,7 +1192,7 @@ export class DataSource extends EventTarget {
   }
 
   /** A scope lets ONE go — a field or a preset. */
-  #release(scope: string, id: string): void {
+  release(scope: string, id: string): void {
     const entry = this.#draft.scopes[scope];
     if (entry?.presets && id in entry.presets) {
       Reflect.deleteProperty(entry.presets, id);
@@ -1813,6 +1820,11 @@ export class DataSource extends EventTarget {
    * TRAP T-apply-and-discard-wait-for-a-change */
 
   /** Do this source's loads reach outside the data layer? */
+  get remote(): boolean {
+    return this.#remote;
+  }
+
+  /** The same, for this class's own branches. */
   get #remote(): boolean {
     return !!this.store.remote;
   }
@@ -2557,6 +2569,67 @@ export class DataSource extends EventTarget {
     return [...this.#bound.keys()];
   }
 
+  /* ── What a control asks, by name — what the steering calls ─────────── */
+
+  /** A scoped bar's whole answer: what it holds, each field's reading, and its
+   *  saved filters on or off, whose readings go to the library. It is its Apply.
+   *  TRAP T-a-bar-reports-its-holds · TRAP T-one-query-one-owner */
+  answerScope(scope: string, answer: {
+    holds?: readonly string[];
+    readings: Record<string, FieldReading>;
+    presets?: Record<string, { on: boolean; readings: Record<string, FieldReading> }>;
+  }): void {
+    if (answer.holds) this.hold(scope, [...answer.holds]);
+    const presets = answer.presets ?? {};
+    for (const [id, p] of Object.entries(presets)) this.#presets.set(id, p.readings);
+    this.answer(scope, answer.readings, Object.fromEntries(Object.entries(presets).map(([id, p]) => [id, p.on])));
+    // A bar's report IS its Apply: its menus waited for it, remote.
+    this.commit();
+  }
+
+  /** A HEADING's answer is its field's, in its grid's scope — and a field no
+   *  scope holds yet gets its normal chip on that scope's bar.
+   *  TRAP T-a-heading-asks-through-the-source */
+  answerColumn(scope: string, field: string, reading: FieldReading | null): void {
+    const fresh = !!reading && !this.scopeOf(field) && this.canHold(scope, field);
+    if (fresh) this.hold(scope, [...this.scope(scope), field]);
+    this.select(field, reading?.picked ?? [], reading ?? {});
+    // A heading's Apply is an Apply. TRAP T-apply-and-discard-wait-for-a-change
+    this.commit();
+    if (fresh) this.#drawBars(scope);
+  }
+
+  /** Move fields into a scope — sent DOWN from the View to the one scope
+   *  named, or UP from a chart with its answer. TRAP T-send-to-view-filters */
+  request(scope: string, ids: readonly string[], from?: string): void {
+    if (from === VIEW && scope !== VIEW) {
+      for (const id of ids) this.#lower(id, scope);
+      return;
+    }
+    if (scope === VIEW && from) for (const id of ids) this.#setCameFrom(id, from);
+    const part = from ? this.#narrowing.get(from) : undefined;
+    const answer = part && from ? this.reading(from, part.field) : undefined;
+    this.#take(scope, [...ids]);
+    // The chart lets go of it: the View narrows every component now.
+    if (part && answer && from && ids.includes(part.field)) {
+      this.write(from, part.field, undefined);
+      this.select(part.field, answer.picked ?? [], answer);
+      this.commit();
+      this.#drawBars(scope);
+    }
+  }
+
+  /** The grid's own page count, when every matching row is already in hand:
+   *  the pager's numbers publish again, and nothing loads. */
+  reportPages(pages: number): void {
+    const next = Math.max(1, Math.trunc(pages));
+    const clamped = Math.min(this.#state.page, next);
+    if (next === this.#viewPages && clamped === this.#state.page) return;
+    this.#viewPages = next;
+    this.#state.page = clamped;
+    this.#publish();
+  }
+
   /** Turn one component's event into a state change. TRAP T-steering-events-are-a-closed-list */
   #steer(type: (typeof STEERING_EVENTS)[number], event: CustomEvent): void {
     const detail = (event.detail ?? {}) as Record<string, unknown>;
@@ -2588,7 +2661,7 @@ export class DataSource extends EventTarget {
         /* A control over SEVERAL scopes — the panel — reports the ONE field it
            changed, in its scope, and its presets. TRAP T-the-panel-reports-its-own-reading */
         if (Array.isArray(bind?.scope)) {
-          this.#answerScopes(detail['readings'] as Record<string, Record<string, FieldReading>> | undefined);
+          this.answerScopes(detail['readings'] as Record<string, Record<string, FieldReading>> | undefined);
           return;
         }
         const readings = bar?.readings ?? pickedReadings(detail['values']);
@@ -2599,15 +2672,8 @@ export class DataSource extends EventTarget {
         /* A SCOPED bar answers in the Query: its saved filters are presets, on
            or off, and their readings go to the library. TRAP T-one-query-one-owner */
         if (typeof bind?.scope === 'string') {
-          // What it holds, then what it answers. TRAP T-a-bar-reports-its-holds
           const el = event.currentTarget as Populatable;
-          if (el.heldFields) this.hold(bind.scope, el.heldFields);
-          const presets = bar?.presets ?? {};
-          for (const [id, p] of Object.entries(presets)) this.#presets.set(id, p.readings);
-          this.answer(bind.scope, readings,
-            Object.fromEntries(Object.entries(presets).map(([id, p]) => [id, p.on])));
-          /* A bar's report IS its Apply: its menus waited for it, remote. */
-          this.commit();
+          this.answerScope(bind.scope, { ...(el.heldFields ? { holds: el.heldFields } : {}), readings, presets: bar?.presets ?? {} });
           return;
         }
         for (const field of bind?.answered ?? []) {
@@ -2635,7 +2701,7 @@ export class DataSource extends EventTarget {
         if (typeof scope === 'string' && el.heldFields) this.hold(scope, el.heldFields);
         // The panel ASKS a scope to let one go. TRAP T-a-panel-asks-for-its-scopes
         else if (Array.isArray(scope) && typeof detail['scope'] === 'string' && typeof detail['id'] === 'string') {
-          this.#release(detail['scope'], detail['id']);
+          this.release(detail['scope'], detail['id']);
         }
         return;
       }
@@ -2643,17 +2709,10 @@ export class DataSource extends EventTarget {
         /* A HEADING's answer is its field's, in its grid's scope — and a field
            no scope holds yet gets its normal chip on that scope's bar.
            TRAP T-one-query-one-owner · TRAP T-a-heading-asks-through-the-source */
-        const el = event.currentTarget as Populatable;
-        const scope = this.#bound.get(el)?.scope;
+        const scope = this.#bound.get(event.currentTarget as Populatable)?.scope;
         const field = detail['field'];
         if (typeof scope !== 'string' || typeof field !== 'string') return;
-        const reading = (detail['reading'] ?? null) as FieldReading | null;
-        const fresh = !!reading && !this.scopeOf(field) && this.canHold(scope, field);
-        if (fresh) this.hold(scope, [...this.scope(scope), field]);
-        this.select(field, reading?.picked ?? [], reading ?? {});
-        // A heading's Apply is an Apply. TRAP T-apply-and-discard-wait-for-a-change
-        this.commit();
-        if (fresh) this.#drawBars(scope);
+        this.answerColumn(scope, field, (detail['reading'] ?? null) as FieldReading | null);
         return;
       }
       case 'filter-add-request': {
@@ -2661,23 +2720,7 @@ export class DataSource extends EventTarget {
         const ids = detail['ids'];
         if (typeof scope !== 'string' || !Array.isArray(ids)) return;
         const from = detail['from'];
-        // SENT DOWN from the View, to the one scope named.
-        if (from === VIEW && scope !== VIEW) {
-          for (const id of ids) this.#lower(String(id), scope);
-          return;
-        }
-        if (scope === VIEW && typeof from === 'string') for (const id of ids) this.#setCameFrom(String(id), from);
-        const part = typeof from === 'string' ? this.#narrowing.get(from) : undefined;
-        const answer = part ? this.reading(from as string, part.field) : undefined;
-        this.#take(scope, ids.map(String));
-        /* SENT UP from a chart: its answer goes with the field, and the chart
-           lets go of it — the View narrows every component now. TRAP T-send-to-view-filters */
-        if (part && answer && ids.includes(part.field)) {
-          this.write(from as string, part.field, undefined);
-          this.select(part.field, answer.picked ?? [], answer);
-          this.commit();
-          this.#drawBars(scope);
-        }
+        this.request(scope, ids.map(String), typeof from === 'string' ? from : undefined);
         return;
       }
       case 'preset-edit': {
@@ -2722,13 +2765,7 @@ export class DataSource extends EventTarget {
         // The rows in hand are already every matching row, so re-publish the
         // pager's numbers and load nothing.
         const pages = detail['pages'];
-        if (typeof pages !== 'number' || !Number.isFinite(pages)) return;
-        const next = Math.max(1, Math.trunc(pages));
-        const clamped = Math.min(this.#state.page, next);
-        if (next === this.#viewPages && clamped === this.#state.page) return;
-        this.#viewPages = next;
-        this.#state.page = clamped;
-        this.#publish();
+        if (typeof pages === 'number' && Number.isFinite(pages)) this.reportPages(pages);
         return;
       }
       case 'page-size-change': {

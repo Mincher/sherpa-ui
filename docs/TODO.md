@@ -112,7 +112,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | c27 | 193 | ONE app guide, steps not history, served to agents as `sherpa://app-guide` — after 190 | docs |
 | ✅ | c28 | 192 | Ship the agent path: the MCP with its real dependencies and files, a pack smoke test, registered in both projects | tooling |
 | ✅ | c29 | 222 | The starter: `npx sherpa-ui init my-app` and a `scaffold_app` tool — one folder, about 8 files, no build step | tooling |
-| ⬜ | c30 | 196 | ONE filter surface and a smaller DataSource: `bind()` out of the data layer; one helper for bar and panel | refactor |
+| 🚧 | c30 | 196 | ONE filter surface and a smaller DataSource: `bind()` out of the data layer; one helper for bar and panel | refactor |
 | ⬜ | c31 | 223 | DEFERRED — server rendering with declarative shadow DOM, after 208 | explore |
 | | | | **D — Filters: Will's features, on the foundation** | |
 | ⬜ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
@@ -4142,6 +4142,18 @@ chart, which meant the chart's name: the four charts now take a host
 ❓ Waits on choice 3 in 183. Move `bind()` and `#steer` out of DataSource into a UI-side binder, so the data layer stops knowing component event names; one imported helper for the bar and the panel, one FilterDef type and one scope protocol; the filter editor out of `sherpa-menu`. Each parity bug is then fixed once. `docs/CONSUMER-REVIEW.md` §3.10.
 
 **✅ Will, 2026-10-12 — all my picks:** A (183 choice 3) — the app layer first; this after it, or beside it.
+
+**Plan (2026-10-13), seven stages, each shippable with behaviour unchanged:**
+
+| | stage | size |
+|---|---|---|
+| ✅ | 1. Name the verbs: each `#steer` branch that reaches private state becomes a public DataSource method named for what it does — `answerScope`, `answerScopes`, `release`, `answerColumn`, `request`, `reportPages`, `remote` | S |
+| ⬜ | 2. Steering out: `src/core/ui/bind-source.ts` holds `STEERING_EVENTS` and `steer()`; `bind()` calls it | M |
+| ⬜ | 3. Bind and push out: `bindSource(source, el, options)` in the binder; DataSource keeps `attach(target, facts, sink)` and picks the rows | M |
+| ⬜ | 4. One helper for the bar and the panel, the ⋮ menu first (`src/core/ui/more-menu.ts`) — then the saved-filter menu, then the drill | M |
+| ⬜ | 5. One `FilterDef` type, then one scope protocol (the bar drawn as a panel scope is) | S + L |
+| ⬜ | 6. The filter editor out of `sherpa-menu` (`src/core/ui/filter-editor.ts`) | L |
+| ❓ | 7. Remove the bridge: delete `DataSource.bind`, rewrite ~90 calls in tests — **A:** remove it; **B:** keep a one-line forwarder. My pick: A | M |
 
 ### `[x]` ✅ 197 — One way to write a filter condition
 

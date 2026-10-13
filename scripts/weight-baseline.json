@@ -1,6 +1,6 @@
 {
   "app.js": {
-    "js": 332098,
+    "js": 332339,
     "files": 41,
     "fetched": 0
   },
@@ -240,7 +240,7 @@
     "fetched": 0
   },
   "components/sherpa-provider/sherpa-provider.js": {
-    "js": 294606,
+    "js": 294847,
     "files": 25,
     "fetched": 0
   },
@@ -340,12 +340,12 @@
     "fetched": 0
   },
   "data.js": {
-    "js": 98347,
+    "js": 98588,
     "files": 32,
     "fetched": 0
   },
   "index.js": {
-    "js": 937780,
+    "js": 938021,
     "files": 126,
     "fetched": 214150
   }
