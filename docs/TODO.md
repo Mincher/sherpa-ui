@@ -140,7 +140,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ⬜ | 31aa | 149 | A chart legend's items ARE swatch chips: move `sherpa-chart-legend` onto `sherpa-quick-filter` | refactor |
 | ⬜ | 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
 | ✅ | 31b | 124 | The Filters button and menu move to the filter panel HEADER: one menu for every scope | feature |
-| ⬜ | 31c | 122 | Email starts SIMPLE, with a switch to Advanced; over 20 values it is one chip with a multi-select menu | feature |
+| ✅ | 31c | 122 | Email starts SIMPLE, with a switch to Advanced; over 20 values it is one chip with a multi-select menu | feature |
 | ✅ | 31d | 120 | A view-scope filter gets "Send to `<scope name>`", the counterpart of "Send to view filters" | feature |
 | ✅ | 31e | 121 | Clear and Send to are ONE button group, with the grouping classes | quick |
 | ✅ | 31f | 123 | An inactive chip KEEPS its match count badge; it goes only when every value and condition is removed | feature |
@@ -3363,7 +3363,7 @@ definition (so Region, taken off, would come back in View filters).
 Found on the way: a long menu squeezed its rows until a row's description
 ran under the next row. A row keeps its height now, and the list scrolls.
 
-### `[ ]` 122 — Email starts SIMPLE; over 20 values it is one chip with a multi-select menu
+### `[x]` ✅ 122 — Email starts SIMPLE; over 20 values it is one chip with a multi-select menu
 
 Will, 2026-09-30: *"The 'Email' filter should be a simple filter, initially,
 with the option to switch to advanced. When in simple mode, as it over 20
@@ -3379,6 +3379,8 @@ line draws it as one chip with a multi-select menu, and the chip menu's f(x)
 switches to Advanced. Waits on 89's number.
 
 **✅ Will, 2026-10-12 — all my picks:** Unblocked: 89 rules the line at 16 values.
+
+**✅ Done 2026-10-13:** Sherpa Demos declares Email `"advanced": true`, so its addresses are read; over 16 of them, the panel draws one chip with a multi-select menu, and its f(x) is in that menu (89). A Demos test checks it.
 
 ### `[x]` ✅ 120 — A view-scope filter gets "Send to `<scope name>`"
 
