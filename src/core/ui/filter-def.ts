@@ -28,14 +28,9 @@ export interface FilterOption {
   swatch?: number;
   /** The panel's: what the value's own chip IS — a preset that carries its answer is `advanced`. */
   kind?: FilterKind;
-  /** The panel's: a reader's OWN saved filter — its chip opens Edit filter and Delete filter. */
-  editable?: boolean;
   /** The panel's: a saved filter's answer, as its chip's card draws it.
    *  TRAP T-a-saved-chip-lists-its-conditions */
   saved?: SavedAnswer;
-  /** The panel's: a saved filter CHANGED and not saved — its chip wears the
-   *  pending look. TRAP T-a-saved-filter-keeps-its-edit */
-  edited?: boolean;
 }
 
 /** One filter, as a bar or the panel draws it. */
@@ -82,14 +77,9 @@ export interface FilterDef extends OffersAdvanced {
   note?: string;
   /** A SAVED filter: its answer, given field by field. TRAP T-a-saved-filter-is-its-readings */
   readings?: Readonly<Record<string, FieldReading>>;
-  /** The reader's OWN saved filter: it offers Edit filter and Delete filter.
-   *  TRAP T-a-saved-filter-keeps-its-edit */
-  editable?: boolean;
   /** A saved filter's conditions in WORDS, as its source says them.
    *  TRAP T-a-saved-chip-lists-its-conditions */
   says?: SaidField[];
-  /** A saved filter's change, not saved: what it applies now. TRAP T-a-saved-filter-keeps-its-edit */
-  edited?: Record<string, FieldReading>;
   /** Its answer survives a View change. TRAP T-a-field-can-carry-over-views */
   carryOver?: boolean;
   /** The bar's: a chip that cannot be switched OFF. TRAP T-persistent-chip-is-a-selector */

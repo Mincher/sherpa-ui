@@ -431,11 +431,10 @@
    unmatched, one the other answers rule out. TRAP T-a-filter-set-groups-or-chains */
 .rows ::slotted([data-removed]) { display: none; }
 
-/* Clear, Reset, Save, Remove, Today — each opt-in, so a plain menu is unchanged. */
+/* Clear, Reset, Remove, Today — each opt-in, so a plain menu is unchanged. */
 .clear,
 .reset,
 .today,
-.save,
 .remove,
 .footer-spacer { display: none; }
 
@@ -446,7 +445,6 @@
 :host([data-clearable][data-body="number"]) .clear { display: none; }
 :host([data-clearable][data-body="number"]) .reset { display: inline-flex; }
 :host([data-removable]) .remove { display: inline-flex; }
-:host([data-saveable]) .save { display: inline-flex; }
 
 /* CRITICAL ink set here, not left to the status cascade: `[data-status]` in
    tokens.css is a bare document-sheet rule and never applies inside a shadow
@@ -463,7 +461,7 @@
 
 /* The spacer splits the row: filter actions lead, the commit pair trails. It
    earns its place whenever BOTH sides are occupied. */
-:host(:is([data-type="calendar"], [data-body="date"], [data-clearable], [data-removable], [data-saveable])) .footer-spacer {
+:host(:is([data-type="calendar"], [data-body="date"], [data-clearable], [data-removable])) .footer-spacer {
   display: block;
   flex: 1 1 auto;
 }
@@ -544,10 +542,10 @@
  *
  * Six things can raise the row and any ONE of them earns it — a filled
  * `footer` slot, data-commit
- * (Cancel·Apply), data-removable, data-clearable, data-saveable, Type=calendar
+ * (Cancel·Apply), data-removable, data-clearable, Type=calendar
  * (Today). Each control hides itself on its own flag, below. */
 .footer { display: none; }
-:host(:is([data-commit], [data-type="calendar"], [data-body="date"], [data-clearable], [data-removable], [data-saveable], [data-has-footer])) .footer {
+:host(:is([data-commit], [data-type="calendar"], [data-body="date"], [data-clearable], [data-removable], [data-has-footer])) .footer {
   display: block;
 }
 

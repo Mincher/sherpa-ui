@@ -123,7 +123,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 19a | 110 | In Advanced rows, AND is serial and OR is parallel: an AND row offers only what the rows before it leave | feature |
 | ✅ | 20 | 21d | EXPLORE — conditions for a DATE field | explore |
 | ✅ | 21 | 98 | One action row per panel filter — Reset, Apply, Discard; Apply all and Discard all in a footer; the actions column goes | feature |
-| ⬜ | 21a | 105 | "Save filters" saves EVERY scope under one name; a "Saved" chip shows it, warns when edited, and undoes it | feature |
+| ✅ | 21a | 105 | "Save filters" saves EVERY scope under one name; a "Saved" chip shows it, warns when edited, and undoes it | feature |
 | ✅ | 21b | 109 | Reset has a label, and a menu button: "Reset to default" puts back the View's own filters | feature |
 | ✅ | 22 | 97 | A filter panel section shows an icon for WHAT it filters: View, Chart, Grid, Form, List | quick |
 | ✅ | 22a | 115 | Figma: a chart glyph and a table glyph for the panel's section icons | figma |
@@ -2574,7 +2574,7 @@ button. Send to stays in the header, alone. While any change waits, the
 footer shows Apply all and Discard all, which name no field; the binder
 commits or discards everything. `T-apply-and-discard-wait-for-a-change`
 
-### `[ ]` 105 — "Save filters" saves EVERY scope under one name; a "Saved" chip shows it
+### `[x]` ✅ 105 — "Save filters" saves EVERY scope under one name; a "Saved" chip shows it
 
 Will, 2026-09-29: *"'Save filter', in the filter panel and filter toolbar,
 creates a Preset advance filter chip to reuse later. However this button should
@@ -2653,6 +2653,28 @@ presets from a definition stay preset chips.
 **✅ Will, 2026-10-13:** (1) neither — *"An option in the toolbars overflow
 menu"*: in toolbar mode, Save filters is a row in the filter toolbar's ⋮
 menu. (2) A — the set replaces the per-scope saved chip and its card.
+
+**✅ Done 2026-10-13.** A set is `{ label, query }` — each scope's filters in a
+View's JSON form, no arrangement — kept per page (`sherpa:filter-sets:<page>`).
+- **Save**: the panel header's Save filters split button (Save filters as,
+  Delete filters), folded into its ⋮ when narrow; in toolbar mode, rows in a
+  saving bar's ⋮. Each asks (`filters-save`, `filters-save-as`,
+  `filters-delete`); Demos names it, asks before it saves over a name, and
+  asks before Delete. The provider: `saveFilters(label?)`, `deleteFilters()`,
+  `savedFilters`, `savedFilterSets`.
+- **Apply**: a set's row in the Filters menu's Saved section
+  (`filters-apply`) — each scope it names takes its filters, the rest stay.
+  The Saved chip (`sherpa-quick-filter data-dismiss`) names it in the panel
+  header and on a saving bar; ` *` and the warning look once changed.
+- **Dismiss**: its cross (`filters-dismiss`) — back to the filters before the
+  first set applied, or, for one saved from the screen, the View's own. The
+  tab remembers the set on screen, so a reload keeps the chip.
+- **Old saved filters** move into the page's sets once, each over the first
+  scope below the View. **Gone**: the per-scope Save, `filter-save`,
+  `packFilter`, `filter-delete`, the saved chip's Edit filter / Save /
+  Discard / Delete rows, `preset-edit`, a Query's `edits`, `editPreset`,
+  `editable`, the chip's `data-edited` and the menu's Save filter button.
+  `T-saved-filters-are-every-scope`.
 
 ### `[x]` ✅ 109 — Reset has a label, and a menu button: "Reset to default" puts back the View's own filters
 

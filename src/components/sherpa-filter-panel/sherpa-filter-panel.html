@@ -34,10 +34,11 @@
                     source; the Sort chip shows it.
     data-group-field  the group in force. Written by the source; the Group
                     chip shows it. TRAP T-a-panel-follows-the-query-open-or-shut
-    data-saveable   the host SAVES filters: a scope with an answered field
-                    offers "Save filter". A reader's own saved preset offers
-                    Edit filter and Delete filter whatever it says.
-                    TRAP T-the-panel-saves-a-whole-scope
+    data-saveable   the host SAVES filters: the header's Save filters saves
+                    every scope under one name, and its `savedSets` fill the
+                    Filters menu's Saved section and the Saved chip.
+                    TRAP T-saved-filters-are-every-scope
+    data-saved      written BY the panel: a saved set is on, so its Saved chip shows
     data-remote     its source fetches from outside the data layer, so a
                     change waits for its field's Apply. Set by a bound source.
     data-apply-on   input: its source applies LIVE, so a value reports while
@@ -57,9 +58,11 @@
     filter-remove — a field's Remove. detail: { scope, id }
     group-change — a Group chip or Reset all, with its scope. detail: { field, scope }
     sort-change — a Sort chip or Reset all, with its scope. detail: { field, direction, scope }
-    filter-save — a scope's Save filter, or a saved filter's change saved. detail: { scope, readings, id?, label? }
-    filter-delete — a saved preset's Delete filter. detail: { scope, id }
-    preset-edit — a saved preset's rows changed, sent once when its editing ends. detail: { scope, id, readings } — null puts the saved one back
+    filters-apply — a saved set's row was ticked: apply it. detail: { id }
+    filters-dismiss — the Saved chip's cross, or its row unticked: put back the filters as they were. detail: { }
+    filters-save — Save filters: over the set on, else as a new one. detail: { }
+    filters-save-as — Save filters as: a new set, by name. detail: { }
+    filters-delete — Delete filters: forget the set on. detail: { id }
     view-reset — Reset all to default: put back the View's own filters, in every scope. Cancelable
     limit-options-change — the ⋮ menu's "Limit to matching filters". detail: { on }
     hide-unmatched-change — the ⋮ menu's "Hide unmatching filters", while Limit is on. detail: { on }
@@ -95,6 +98,21 @@
           </sherpa-menu>
         </sherpa-button>
       </span>
+      <!-- SAVE FILTERS — every scope under one name — and its menu, as a View's:
+           Save filters as, and Delete filters while a set is on. Will, TODO 105.
+           TRAP T-saved-filters-are-every-scope -->
+      <span slot="actions" class="save-group sherpa-group">
+        <sherpa-button class="save-filters" part="save-filters" data-size="sm" data-group="start"
+                       data-icon-start="upload">Save filters</sherpa-button>
+        <sherpa-button class="save-more" part="save-more" data-type="icon" data-size="sm"
+                       data-group="end" data-icon-start="triangle-down"
+                       aria-label="Save options" aria-haspopup="dialog">
+          <sherpa-menu slot="menu" class="save-menu" data-align="end">
+            <button type="button" value="filters-save-as">Save filters as</button>
+            <button type="button" value="filters-delete" class="save-delete">Delete filters</button>
+          </sherpa-menu>
+        </sherpa-button>
+      </span>
       <!-- The HOST's buttons — the page's switch back to the toolbars is one.
            TRAP T-the-mode-switch-is-the-pages-own -->
       <slot name="actions" slot="actions"></slot>
@@ -106,6 +124,9 @@
       <!-- ONE search, across every field's name and every value in the panel.
            The metadata row is the header's own bottom row, so it spans the
            full width. -->
+      <!-- The SAVED set on screen: its name, and a cross that dismisses it. TODO 105 -->
+      <sherpa-quick-filter slot="metadata" class="saved-chip" part="saved" data-label="Saved"
+                           data-dismiss data-locked data-current></sherpa-quick-filter>
       <sherpa-input-text slot="metadata" class="search" part="search"
                          data-icon-start="magnifying-glass" data-clearable
                          placeholder="Search filters" autocomplete="off"
@@ -135,15 +156,9 @@
   <!-- PROTOTYPES. Every element the panel will ever show exists here from the
        start; JS clones, it never createElement()s. -->
   <template class="scope-tpl">
-    <sherpa-accordion class="scope" open>
-      <!-- NOTHING in the header: a summary is a button, and a button may not
-           hold buttons. The scope's Save is the FIRST ROW of its body.
-           TRAP T-an-accordion-action-is-not-a-toggle -->
-      <div class="scope-acts">
-        <!-- The whole scope as ONE saved filter. TRAP T-the-panel-saves-a-whole-scope -->
-        <sherpa-button class="scope-save" data-size="sm">Save filter</sherpa-button>
-      </div>
-    </sherpa-accordion>
+    <!-- NOTHING in the header: a summary is a button, and a button may not
+         hold buttons. TRAP T-an-accordion-action-is-not-a-toggle -->
+    <sherpa-accordion class="scope" open></sherpa-accordion>
   </template>
 
   <!-- A filter SET: its fields, as one group. TRAP T-a-filter-set-groups-or-chains -->
@@ -213,19 +228,10 @@
     <button type="button" class="lower-item"></button>
   </template>
 
-  <!-- A saved preset's menu: each field's own menu, read-only, drawn above
-       these. The reader's OWN keeps its actions; Save and Discard show while
-       it holds a change or is being edited. TRAP T-a-saved-chip-lists-its-conditions
-       TRAP T-the-panel-saves-a-whole-scope · TRAP T-a-saved-filter-keeps-its-edit
-       TRAP T-an-action-row-can-keep-its-menu-open -->
+  <!-- A saved preset's menu: each field's own menu, read-only.
+       TRAP T-a-saved-chip-lists-its-conditions -->
   <template class="saved-menu-tpl">
-    <sherpa-menu slot="menu" data-no-select-all>
-      <hr class="saved-own" />
-      <button type="button" class="saved-edit" value="save-edit">Save filter</button>
-      <button type="button" class="saved-edit" value="discard-edit">Discard changes</button>
-      <button type="button" class="saved-own" value="edit" data-stay-open>Edit filter</button>
-      <button type="button" class="saved-own" value="delete">Delete filter</button>
-    </sherpa-menu>
+    <sherpa-menu slot="menu" data-no-select-all></sherpa-menu>
   </template>
   <!-- One field of a saved preset: its heading, then its menu or its words. -->
   <template class="saved-field-tpl">

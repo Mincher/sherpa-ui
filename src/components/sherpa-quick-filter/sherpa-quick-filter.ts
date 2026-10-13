@@ -64,6 +64,8 @@ export class SherpaQuickFilter extends SherpaElement {
     /* A KEY, not a control: no toggle, no button semantics.
        TRAP T-readonly-legend-is-a-key-not-a-filter */
     'data-readonly': { type: 'boolean', kind: 'style' },
+    /* Its right button DISMISSES, not a menu — the Saved chip. Will, TODO 105 */
+    'data-dismiss': { type: 'boolean', kind: 'style' },
     'data-plain': { type: 'boolean', kind: 'style' },
     'data-no-value': { type: 'boolean', kind: 'style' },
     'data-full-value': { type: 'boolean', kind: 'style' },
@@ -82,9 +84,6 @@ export class SherpaQuickFilter extends SherpaElement {
     /* Changed, not yet applied: the active edge, no fill. Written by the BAR —
        the one writer. TRAP T-a-pending-chip-has-no-fill */
     'data-pending': { type: 'boolean', kind: 'style' },
-    /* A saved filter CHANGED, not saved: the pending look, and it still
-       counts. Written by the bar or panel. TRAP T-a-saved-filter-keeps-its-edit */
-    'data-edited': { type: 'boolean', kind: 'style' },
     /* A filter PANEL is drawing this field instead, so the bar hides the chip.
        Written by the HOST. TRAP T-the-view-chip-stays-on-the-header */
     'data-panelled': { type: 'boolean', kind: 'style' },
@@ -131,6 +130,7 @@ export class SherpaQuickFilter extends SherpaElement {
     this.#writeTip();
     this.#paintSwatch();
     this.#syncPressed();
+    this.#syncDismiss();
     this.$('.body')?.addEventListener('click', this.#onClick);
     this.$('.caret')?.addEventListener('click', this.#onCaret);
     // The menu lives in the light DOM; its events bubble up through the host.
@@ -195,16 +195,21 @@ export class SherpaQuickFilter extends SherpaElement {
       if (initial.length > 1) this.dataset['count'] = String(initial.length);
     } else {
       /* …and a TYPED answer, which ticks nothing — asked once its menu has
-         drawn AND its rows have filled, a frame later, as the empty check is.
+         drawn AND its rows have filled: a frame later, or a few on a busy
+         page. It only ever draws an answer, never takes one off.
          TRAP T-a-rebuilt-row-reads-empty-for-a-tick */
-      void Promise.resolve((this.menu as { rendered?: Promise<void> } | null)?.rendered)
-        .then(() => new Promise<void>((r) => requestAnimationFrame(() => r())))
-        .then(() => { if (this.isConnected && this.#hasTypedAnswer()) this.#drawFace(); });
+      void Promise.resolve((this.menu as { rendered?: Promise<void> } | null)?.rendered).then(async () => {
+        for (let frame = 0; frame < 4 && this.isConnected; frame++) {
+          await new Promise<void>((r) => requestAnimationFrame(() => r()));
+          if (this.#hasTypedAnswer()) return this.#drawFace();
+        }
+      });
     }
   }
 
   override onChange(name: string): void {
     if (['data-current', 'data-readonly', 'data-type', 'data-persistent'].includes(name)) this.#syncPressed();
+    if (name === 'data-dismiss') this.#syncDismiss();
     // A greyed chip says why. Will, TODO 176.
     if (name === 'data-unavailable' || name === 'disabled') return this.#writeTip();
     /* THE CHIP DRAWS ITSELF. A host says what the state IS — on, which way,
@@ -235,6 +240,16 @@ export class SherpaQuickFilter extends SherpaElement {
     if (Number.isFinite(n)) return paintSeries(swatch, n - 1, n);
     swatch.style.setProperty('--_hue', statusVar(given));
     swatch.style.setProperty('--_border', statusBorderVar(given));
+  }
+
+  /** A dismissing chip's right button says what it does, and opens nothing. */
+  #syncDismiss(): void {
+    const caret = this.$('.caret');
+    if (!caret) return;
+    const dismiss = this.hasAttribute('data-dismiss');
+    caret.setAttribute('aria-label', dismiss ? 'Dismiss' : 'Choose values');
+    if (dismiss) caret.removeAttribute('aria-haspopup');
+    else caret.setAttribute('aria-haspopup', 'dialog');
   }
 
   /** A toggle says whether it is on. A jump, a selector and a key are no toggle.
@@ -648,6 +663,11 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** The caret opens the menu without toggling the chip. */
   #onCaret = (event: Event): void => {
+    if (this.hasAttribute('data-dismiss')) {
+      event.stopPropagation();
+      this.emit('quick-filter-dismiss', {});
+      return;
+    }
     // A chip with a MENU always opens it: its rows say what is left.
     if (this.hasAttribute('disabled') || (this.#refused() && !this.hasAttribute('data-menu'))) return;
     event.stopPropagation(); // opening the menu must not toggle the chip

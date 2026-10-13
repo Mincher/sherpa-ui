@@ -21,11 +21,6 @@
   container: qf-bar / inline-size;
 }
 
-/* A saved filter's Save and Discard: while it holds a change, or is being
-   edited — and then Edit and Delete step aside. TRAP T-a-saved-filter-keeps-its-edit */
-:is(.chips, .chips > sherpa-filterset) > .chip:not([data-edited]) > sherpa-menu:not([data-editing]) > .qf-saved-edit { display: none; }
-:is(.chips, .chips > sherpa-filterset) > .chip > sherpa-menu[data-editing] > button.qf-saved-own { display: none; }
-
 /* The view bar bottom-aligns to the nav's first quick row; data centres. */
 :host([data-type="view"]) .bar {
   align-items: flex-end;
@@ -179,6 +174,12 @@
 :host([data-collapse]) .act[data-act="overflow"] { display: inline-flex; }
 /* …and always while it holds the host's own option. Will, TODO 178. */
 :host([data-limit-options]) .act[data-act="overflow"] { display: inline-flex; }
+/* …and while it saves filters. TODO 105 */
+:host([data-saveable]) .act[data-act="overflow"] { display: inline-flex; }
+
+/* The Saved chip, while a set is on. TODO 105 */
+.saved-zone { display: none; }
+:host([data-saved]) .saved-zone { display: inline-flex; align-items: center; }
 :host([data-no-actions]) .actions-zone { display: none; }
 
 

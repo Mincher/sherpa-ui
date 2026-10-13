@@ -147,8 +147,6 @@ export class SherpaMenu extends SherpaElement {
     /* A RANGE body offers two ends; `data-commit` holds its Apply until asked. */
     'data-range': { type: 'boolean', kind: 'style' },
     'data-commit': { type: 'boolean', kind: 'style' },
-    // A "Save filter" action. TRAP T-save-packs-the-fields-into-one-chip
-    'data-saveable': { type: 'boolean', kind: 'style' },
     // Shows an answer held ELSEWHERE, unchangeable here. TRAP T-a-view-held-heading-shows-and-refuses
     'data-readonly': { type: 'boolean', kind: 'style' },
     'data-align': { type: 'enum', kind: 'behaviour', values: ['start', 'end'] },
@@ -249,7 +247,6 @@ export class SherpaMenu extends SherpaElement {
     this.$('.reset')?.addEventListener('click', this.#onClear);
     this.$('.today')?.addEventListener('click', this.#onToday);
     this.$('.remove')?.addEventListener('click', this.#onRemove);
-    this.$('.save')?.addEventListener('click', this.#onSave);
     this.$('.search')?.addEventListener('input', this.#onSearch);
     /* Composed sherpa-input-texts, which re-dispatch `change` and `input`
        from the HOST — so ONE listener on the region covers every stamped row.
@@ -2032,11 +2029,6 @@ export class SherpaMenu extends SherpaElement {
     }
   };
 
-  /** Save — asks for this filter to be kept, as `menu-select` with value="save". */
-  #onSave = (): void => {
-    this.emit('menu-select', { value: 'save', label: 'Save filter' });
-    this.hide();
-  };
 
   /** Remove — the footer-button form of a `<button value="remove">` row. */
   #onRemove = (): void => {

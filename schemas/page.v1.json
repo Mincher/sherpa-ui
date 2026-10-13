@@ -123,7 +123,6 @@
       "required": ["where"],
       "properties": {
         "label": { "type": "string" },
-        "editable": { "type": "boolean" },
         "where": {
           "description": "Its condition, field by field: { \"openTickets\": { \"gt\": 0 } }.",
           "type": "object", "additionalProperties": { "$ref": "#/$defs/condition" }

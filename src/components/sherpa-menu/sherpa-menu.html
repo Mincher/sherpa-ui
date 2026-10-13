@@ -29,9 +29,6 @@
     data-no-select-all  a multi-select list with no Select all row — the Filters
                     menu, where adding every filter at once is never the answer.
                     Read when the items stamp.
-    data-saveable   show a "Save filter" button in the footer; it emits
-                    menu-select with value="save".
-                    TRAP T-save-packs-the-fields-into-one-chip
     data-drill      the list has been replaced by a SUB-LIST — shows a back arrow
                     and a breadcrumb in the header. Drilling IN PLACE rather than
                     opening a second card means one box to position, nothing to
@@ -256,7 +253,6 @@
            they started. Will, TODO 134. -->
       <sherpa-button class="reset" part="reset"
                      data-icon-start="arrow-rotate-left">Reset</sherpa-button>
-      <sherpa-button class="save" part="save">Save filter</sherpa-button>
       <sherpa-button class="remove" part="remove" data-status="critical">Remove</sherpa-button>
       <span class="footer-spacer"></span>
       <sherpa-button class="cancel" part="cancel" data-footer="revert">Cancel</sherpa-button>
@@ -425,7 +421,6 @@
         never a shadow root.
       -->
       <sherpa-button class="clear" part="clear">Clear</sherpa-button>
-      <sherpa-button class="save" part="save">Save filter</sherpa-button>
       <sherpa-button class="remove" part="remove" data-status="critical">Remove</sherpa-button>
       <span class="footer-spacer"></span>
       <sherpa-button class="cancel" part="cancel" data-footer="revert">Cancel</sherpa-button>

@@ -50,7 +50,6 @@
  * - .apply — Apply a whole control's READING of several fields, at one scope.
  * - .answer — ONE SCOPE'S WHOLE ANSWER — a bar's report.
  * - .declarePreset — A saved filter's readings, by id — the library a preset that is ON compiles from.
- * - .editPreset — EDIT a saved filter: what it applies now, while the library keeps what was saved.
  * - .describe — One scope, whole: its filters and answers, what it may add, how it is arranged.
  * - .say — say(readings) — a saved filter in WORDS, field by field: the source knows each field's name, type and values.
  * - .answerScopes — The panel's answer: each field it changed, and each scope's presets.
@@ -179,9 +178,8 @@ export interface FieldFilter extends Omit<FieldDeclaration, 'type'> {
   range?: boolean;
   /** Where it lives now, when an Add list offers it from another scope. */
   note?: string;
-  /** A PRESET — a saved filter: its answer, field by field, and whether the reader may edit it. */
+  /** A PRESET — a saved filter: its answer, field by field. */
   readings?: Readonly<Record<string, FieldReading>>;
-  editable?: boolean;
   /** …and that answer in WORDS, field by field, as its chip's menu lists it.
    *  TRAP T-a-saved-chip-lists-its-conditions */
   says?: SaidField[];
@@ -193,7 +191,7 @@ export interface FieldFilter extends Omit<FieldDeclaration, 'type'> {
 export interface SourceState {
   v: 1;
   query: Query;
-  presets: Record<string, { label?: string; editable?: boolean; readings: Record<string, FieldReading> }>;
+  presets: Record<string, { label?: string; readings: Record<string, FieldReading> }>;
 }
 
 /** One filter a scope holds, as a control draws it. */
@@ -207,8 +205,6 @@ export interface HeldFilter extends FieldFilter {
    *  and its `state` is this scope's own answer: kept, not in force.
    *  TRAP T-a-superseded-chip-suspends-it-is-never-removed */
   appliedAt?: string;
-  /** A saved filter's EDIT, not saved: what it applies now. TRAP T-a-saved-filter-keeps-its-edit */
-  edited?: Record<string, FieldReading>;
   /** Where a View field may be SENT DOWN: each scope that has it, the one it
    *  came up from first. TRAP T-send-to-view-filters */
   /** Where a View field may go down to — `origin` is the scope it came UP from. */
@@ -457,7 +453,7 @@ export class DataSource extends EventTarget {
   /** A field's declared KIND and label. TRAP T-the-field-type-decides-the-clause */
   #fields = new Map<string, FieldDeclaration>();
   /** Each preset's name, and whether the reader may edit it. */
-  #presetFacts = new Map<string, { label?: string; editable?: boolean }>();
+  #presetFacts = new Map<string, { label?: string }>();
   /** Each component's OWN default filter, by its scope — put back under any
    *  Query that does not name that scope. TRAP T-a-component-default-outlives-a-view */
   #defaults = new Map<string, ScopeQuery>();
@@ -915,8 +911,6 @@ export class DataSource extends EventTarget {
     // The saved filters it holds, on or off — the whole set. TRAP T-a-saved-filter-is-its-readings
     if (Object.keys(presets).length) this.#scope(scope).presets = { ...presets };
     else if (this.#draft.scopes[scope]) delete this.#draft.scopes[scope]!.presets;
-    // A saved filter it no longer holds takes its edit with it.
-    for (const id of Object.keys(this.#draft.scopes[scope]?.edits ?? {})) if (!(id in presets)) this.#dropEdit(scope, id);
     this.#prune();
     this.#recompose();
     if (JSON.stringify(this.#draft.scopes[scope]?.presets ?? {}) !== before) this.#drawScopesSoon();
@@ -927,54 +921,17 @@ export class DataSource extends EventTarget {
   declarePreset(
     id: string,
     readings: Readonly<Record<string, FieldReading>> | undefined,
-    facts: { label?: string; editable?: boolean } = {},
+    facts: { label?: string } = {},
   ): void {
     if (readings) {
       this.#presets.set(id, readings);
       this.#presetFacts.set(id, { ...this.#presetFacts.get(id), ...facts });
-      // SAVED as it was changed: that change is no change now.
-      for (const [scope, entry] of Object.entries(this.#draft.scopes)) {
-        if (JSON.stringify(entry.edits?.[id]) === JSON.stringify(readings)) this.#dropEdit(scope, id);
-      }
     } else {
       this.#presets.delete(id);
       this.#presetFacts.delete(id);
-      for (const scope of Object.keys(this.#draft.scopes)) this.#dropEdit(scope, id);
     }
     this.#recompose();
     this.#drawScopesSoon();
-  }
-
-  /**
-   * EDIT a saved filter: the readings it applies now, while the library keeps
-   * what was saved. `undefined` puts the saved one back. Will, TODO 50.
-   * TRAP T-a-saved-filter-keeps-its-edit
-   */
-  editPreset(scope: string, id: string, readings: Readonly<Record<string, FieldReading>> | undefined): void {
-    if (!this.#presets.has(id)) {
-      // TRAP T-a-broken-assumption-reports
-      report({ code: 'unknown-preset', message: 'editPreset: no saved filter has that id.', at: { scope, id } });
-      return;
-    }
-    // An empty edit would compile to no clause: an ON filter matching every row.
-    if (readings && Object.keys(readings).length && JSON.stringify(readings) !== JSON.stringify(this.#presets.get(id))) {
-      const entry = this.#scope(scope);
-      entry.edits = { ...entry.edits, [id]: structuredClone(readings) as Record<string, FieldReading> };
-    } else {
-      this.#dropEdit(scope, id);
-    }
-    this.#recompose();
-    this.commit();
-    this.#drawScopesSoon();
-    this.#drawBars(scope);
-  }
-
-  /** Forget one scope's edit of a saved filter. */
-  #dropEdit(scope: string, id: string): void {
-    const entry = this.#draft.scopes[scope];
-    if (!entry?.edits || !(id in entry.edits)) return;
-    Reflect.deleteProperty(entry.edits, id);
-    if (!Object.keys(entry.edits).length) delete entry.edits;
   }
 
   /**
@@ -1004,13 +961,9 @@ export class DataSource extends EventTarget {
     }
     const presets: HeldFilter[] = Object.entries(q.presets ?? {}).map(([id, on]) => {
       const facts = this.#presetFacts.get(id) ?? {};
-      const edit = q.edits?.[id];
       return {
         id, label: facts.label ?? id, readings: this.#presets.get(id) ?? {}, active: on, removable: true,
-        ...(facts.editable ? { editable: true } : {}),
-        // An EDIT is what its menu says now. TRAP T-a-saved-filter-keeps-its-edit
-        ...(edit ? { edited: structuredClone(edit) } : {}),
-        says: edit ? this.say(edit) : this.#says(id),
+        says: this.#says(id),
       };
     });
     // EVERY field it holds, declared or not: one left out still filters. TRAP T-a-broken-assumption-reports
@@ -1033,8 +986,7 @@ export class DataSource extends EventTarget {
     const offered = scope === VIEW ? [] : [...this.#presetFacts.keys()]
       .filter((id) => !(id in (q.presets ?? {})))
       .map((id) => ({ id, label: this.#presetFacts.get(id)?.label ?? id,
-        readings: this.#presets.get(id) ?? {}, ...(this.#presetFacts.get(id)?.editable ? { editable: true } : {}),
-        says: this.#says(id) }));
+        readings: this.#presets.get(id) ?? {}, says: this.#says(id) }));
     const shows = scope === VIEW ? 'view'
       : [...this.#bound.values()].find((b) => b.scope === scope && b.shows)?.shows;
     const sets = this.sets(scope);
@@ -1214,7 +1166,6 @@ export class DataSource extends EventTarget {
     const entry = this.#draft.scopes[scope];
     if (entry?.presets && id in entry.presets) {
       Reflect.deleteProperty(entry.presets, id);
-      this.#dropEdit(scope, id);
       this.#prune();
       this.#recompose();
       this.#drawScopesSoon();
@@ -1919,10 +1870,12 @@ export class DataSource extends EventTarget {
     for (const [id, scope] of Object.entries(structuredClone(given.scopes))) {
       /* A View says `where`; a whole Query, and a View saved before TODO 197,
          `readings`. TRAP T-one-way-to-write-a-condition */
-      const { sort, group, search, where, edits, readings, ...rest } = scope as ViewScope & Partial<Pick<ScopeQuery, 'readings'>>;
+      /* A View saved before TODO 105 may carry a saved filter's `edits`: there is
+         no such change now, so it is dropped. */
+      const { sort, group, search, where, edits: _edits, readings, ...rest } = scope as ViewScope
+        & Partial<Pick<ScopeQuery, 'readings'>> & { edits?: unknown };
       next.scopes[id] = {
         ...rest, holds: rest.holds ?? [], readings: { ...readings, ...(where ? this.readingsOf(where) : {}) },
-        ...(edits ? { edits: Object.fromEntries(Object.entries(edits).map(([p, e]) => [p, this.readingsOf(e)])) } : {}),
       };
       if (sort) (arrange ??= {}).sort = sort;
       if (group !== undefined) (arrange ??= {}).group = group;
@@ -2269,7 +2222,7 @@ export class DataSource extends EventTarget {
         .map(([f, { suspended: _off, ...reading }]): [string, Filter | undefined] =>
           [f, readingClause({ field: f, ...field(f) }, withoutDropped(reading, this.#setAside.get(scope)?.[f]))]),
       ...Object.entries(q.presets ?? {}).filter(([, on]) => on)
-        .map(([id]): [string, Filter | undefined] => [id, andFilter(Object.entries(q.edits?.[id] ?? this.#presets.get(id) ?? {})
+        .map(([id]): [string, Filter | undefined] => [id, andFilter(Object.entries(this.#presets.get(id) ?? {})
           .map(([f, reading]) => readingClause({ field: f, ...field(f) }, reading))
           .filter((c): c is NonNullable<typeof c> => !!c))]),
     ];
@@ -2434,7 +2387,7 @@ export class DataSource extends EventTarget {
       if (!q || q.narrows?.length) return parts;
       for (const [id, on] of Object.entries(q.presets ?? {})) {
         if (!on) continue;
-        for (const [f, reading] of Object.entries(q.edits?.[id] ?? this.#presets.get(id) ?? {})) {
+        for (const [f, reading] of Object.entries(this.#presets.get(id) ?? {})) {
           const clause = readingClause({ field: f, ...facts(f) }, reading);
           if (clause) parts.push({ clause });
         }

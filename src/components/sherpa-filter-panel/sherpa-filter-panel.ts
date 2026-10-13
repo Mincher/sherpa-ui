@@ -19,16 +19,17 @@ import {
 import { menuFor, type FilterMenuDef, type FilterMenuItem } from '../../core/ui/filter-menu.js';
 import type { FilterDef, FilterOption } from '../../core/ui/filter-def.js';
 import {
-  drawSavedMenu, editSavedMenu, endSavedEdit, type SavedMenuHost,
+  drawSavedMenu, type SavedMenuHost,
 } from '../../core/ui/saved-filter-menu.js';
 import {
-  FILTERS_LABEL, MenuDrill, filtersMenuItems, type AddedFilter, type ListedFilter,
+  FILTERS_LABEL, MenuDrill, drawSavedChip, filtersMenuItems, setPick,
+  type AddedFilter, type ListedFilter, type SavedSet,
 } from '../../core/ui/filters-button.js';
-import { extraRows, folded, switchesOf, openMore, pickMore, resetRows } from '../../core/ui/more-menu.js';
-import { report } from '../../core/data/report.js';
 import {
-  fieldState, readingRows, savedReading, type FieldReading,
-} from '../../core/data/filter-state.js';
+  extraRows, folded, switchesOf, openMore, pickMore, resetRows, type MoreRow,
+} from '../../core/ui/more-menu.js';
+import { report } from '../../core/data/report.js';
+import { readingRows, type FieldReading } from '../../core/data/filter-state.js';
 import { valueKey } from '../../core/data/store.js';
 import { VIEW } from '../../core/data/query.js';
 // TRAP T-menu-composes-real-components — the page may not have imported these.
@@ -152,8 +153,10 @@ export class SherpaFilterPanel extends SherpaElement {
     'data-pending': { type: 'string', kind: 'style' },
     // A change waits somewhere in its scopes: the footer's Apply all. TODO 98
     'data-dirty': { type: 'boolean', kind: 'style' },
-    // The host saves filters. TRAP T-the-panel-saves-a-whole-scope
-    'data-saveable': { type: 'boolean', kind: 'behaviour' },
+    // The host saves filters: the header's Save filters. TRAP T-saved-filters-are-every-scope
+    'data-saveable': { type: 'boolean', kind: 'style' },
+    // Written BY the panel: a saved set is on. TRAP T-saved-filters-are-every-scope
+    'data-saved': { type: 'boolean', kind: 'style' },
     // The arrangement, as a bound source writes it on every control. TRAP T-a-panel-follows-the-query-open-or-shut
     'data-sort-field': DATA_PROPS['data-sort-field'],
     'data-sort-direction': DATA_PROPS['data-sort-direction'],
@@ -202,7 +205,7 @@ export class SherpaFilterPanel extends SherpaElement {
     this.$('.scopes')?.addEventListener('button-click', this.#onAction);
     this.$('.scopes')?.addEventListener('quick-filter-click', this.#onValueClick);
     this.$('.scopes')?.addEventListener('menu-change', this.#onAddCommit);
-    this.$('.scopes')?.addEventListener('menu-select', this.#onSavedAction);
+    this.$('.scopes')?.addEventListener('menu-select', this.#onSendTo);
     // Rows and bodies change their answer without a chip click.
     for (const type of ['condition-change', 'input', 'change', 'menu-change']) {
       this.$('.scopes')?.addEventListener(type, this.#onEdited);
@@ -219,6 +222,11 @@ export class SherpaFilterPanel extends SherpaElement {
     filters?.addEventListener('menu-row-remove', this.#onRowRemove);
     filters?.addEventListener('menu-back', this.#onDrillBack);
     filters?.addEventListener('menu-close', this.#onDrillBack);
+    // Save filters, and its menu; the Saved chip's cross. Will, TODO 105.
+    this.$('.save-filters')?.addEventListener('button-click', () => this.emit('filters-save'));
+    this.$('.save-menu')?.addEventListener('menu-select', this.#onSaveMenu as EventListener);
+    this.$('.saved-chip')?.addEventListener('quick-filter-dismiss', () => this.emit('filters-dismiss', {}));
+    this.#syncSavedChip();
     /* THE CHIP says WHAT changed; only this panel knows WHICH SCOPE it belongs
        to, so it annotates and passes it on rather than working the
        arrangement out again. TRAP T-a-chip-knows-what-kind-it-is */
@@ -232,7 +240,7 @@ export class SherpaFilterPanel extends SherpaElement {
   override onChange(name: string): void {
     if (name === 'data-at-default' || name === 'data-nothing-to-reset') this.#syncResets();
     else if (name === 'data-heading') this.#syncHeading();
-    else if (name === 'data-saveable') this.#syncSaveable();
+    else if (name === 'data-saveable') this.#syncSavedChip();
     else if (name.startsWith('data-sort-') || name === 'data-group-field') this.#syncArrangement();
     else if (name === 'data-pending' || name === 'data-remote') this.#syncPending();
     else if (name === 'data-hide-unmatched' || name === 'data-limit-options') for (const held of this.#held.values()) this.#markPresent(held);
@@ -537,8 +545,6 @@ export class SherpaFilterPanel extends SherpaElement {
   #draw(): void {
     const region = this.$('.scopes');
     if (!region) return;
-    // A saved filter's change, being made, is kept first. TRAP T-a-saved-filter-keeps-its-edit
-    for (const menu of region.querySelectorAll<HTMLElement>('sherpa-menu[data-editing]')) endSavedEdit(menu, 'keep');
     this.#held.clear();
     this.#lists.clear();
     region.replaceChildren();
@@ -616,11 +622,7 @@ export class SherpaFilterPanel extends SherpaElement {
             value: p.id, label: p.label, selected: !!p.active,
             // A preset that carries its answer wears fx. TRAP T-a-saved-filter-is-its-readings
             ...(kindOf(p) === 'advanced' ? { kind: 'advanced' as const } : {}),
-            ...(p.editable ? { editable: true } : {}),
-            ...(p.edited ? { edited: true } : {}),
-            ...(p.readings ? { saved: {
-              readings: p.readings as Record<string, FieldReading>, edited: p.edited, says: p.says,
-            } } : {}),
+            ...(p.readings ? { saved: { readings: p.readings as Record<string, FieldReading>, says: p.says } } : {}),
           })),
           select: 'multiple',
         }, scope.scope, true)!);
@@ -879,7 +881,7 @@ export class SherpaFilterPanel extends SherpaElement {
       const one = this.#valueChip(option.value, option.label ?? option.value,
         { current: !!option.selected, ...(option.kind ? { kind: option.kind } : {}),
           ...(option.swatch ? { swatch: option.swatch } : {}) });
-      if (one && (option.editable || option.saved)) this.#addSavedMenu(one, option, scope);
+      if (one && option.saved) this.#addSavedMenu(one, option, scope);
       if (one) values!.append(one);
     }
 
@@ -1055,7 +1057,8 @@ export class SherpaFilterPanel extends SherpaElement {
     }
 
     this.#told = new Map(added.flatMap((f) => (f.on === undefined ? [] : [[f.id, f.on] as const])));
-    const any = added.length + offer.length > 0;
+    const sets = this.hasAttribute('data-saveable') ? this.#savedSets : [];
+    const any = added.length + offer.length + sets.length > 0;
     btn.toggleAttribute('disabled', !any);
     if (hides) btn.dataset['badge'] = String(hides);
     else btn.removeAttribute('data-badge');
@@ -1064,7 +1067,7 @@ export class SherpaFilterPanel extends SherpaElement {
 
     const { menu, items } = menuFor({
       id: 'add', label: FILTERS_LABEL, select: 'multiple', commit: true, selectAll: false,
-      options: filtersMenuItems(added, offer),
+      options: filtersMenuItems(added, offer, sets),
     });
     menu.setAttribute('data-align', 'end');
     btn.append(menu);
@@ -1401,10 +1404,8 @@ export class SherpaFilterPanel extends SherpaElement {
     this.#syncAnswered(held);
   };
 
-  /** A field's own buttons, and its scope's Save. */
+  /** A field's own buttons. */
   #onAction = (event: Event): void => {
-    const save = this.pathFind(event, '.scope-save');
-    if (save) return this.#requestSave(save);
     const clear = this.pathFind(event, '.field-clear');
     if (clear) return this.#clearField(clear);
     // The action row's Add condition is the field's inline menu's. Will, TODO 98.
@@ -1526,7 +1527,6 @@ export class SherpaFilterPanel extends SherpaElement {
     const advanced = held.box.hasAttribute('data-advanced')
       && (menu?.conditions?.length ?? 0) > 0;
     held.box.toggleAttribute('data-answered', ticked || advanced);
-    this.#syncSaveable();
     this.#syncFilters();
   }
 
@@ -1535,62 +1535,22 @@ export class SherpaFilterPanel extends SherpaElement {
     for (const [, held] of this.#held) this.#syncAnswered(held);
   }
 
-  /** "Save filter" on a scope with something to save — and only if the host saves.
-   *  TRAP T-the-panel-saves-a-whole-scope */
-  #syncSaveable(): void {
-    const saves = this.hasAttribute('data-saveable');
-    for (const box of this.$$<HTMLElement>('.scope[data-scope]')) {
-      const scope = box.dataset['scope'] ?? '';
-      box.toggleAttribute('data-can-save', saves && !box.hasAttribute('data-part')
-        && Object.keys(this.#scopeReadings(scope)).length > 0);
-    }
-  }
-
-  /** A scope's ANSWERED fields, each as it can be saved — never its presets or arrangements. */
-  #scopeReadings(scope: string): Record<string, FieldReading> {
-    const readings = this.readings[scope] ?? {};
-    const out: Record<string, FieldReading> = {};
-    for (const [, held] of this.#held) {
-      if (held.scope !== scope || held.def.id === 'presets' || arranges(kindOf(held.def))) continue;
-      const reading = readings[held.def.id];
-      if (!reading) continue;
-      const values = held.def.options?.map((o) => o.value);
-      const saved = savedReading(fieldState({ field: held.def.id, ...(values ? { values } : {}) }, reading));
-      if (saved) out[held.def.id] = saved;
-    }
-    return out;
-  }
-
-  /** A scope's "Save filter": ASK the host, with every answered field in it. */
-  #requestSave(button: HTMLElement): void {
-    const scope = button.closest<HTMLElement>('.scope')?.dataset['scope'];
-    if (!scope) return;
-    const readings = this.#scopeReadings(scope);
-    if (Object.keys(readings).length) this.emit('filter-save', { scope, readings });
-  }
-
   /** A saved preset's menu: each field's own menu, read-only, a heading per
-   *  field — and, for a reader's own, Edit filter and Delete filter. Will,
-   *  TODO 181. TRAP T-a-saved-chip-lists-its-conditions */
+   *  field. Will, TODO 181. TRAP T-a-saved-chip-lists-its-conditions */
   #addSavedMenu(chip: HTMLElement, option: FilterOption, scope: string): void {
-    // Its change, not saved, wears the pending look. TRAP T-a-saved-filter-keeps-its-edit
-    chip.toggleAttribute('data-edited', !!option.edited);
     const menu = this.clone<MenuApi>('template.saved-menu-tpl');
     if (!menu) return;
-    // A shipped preset is never edited.
-    if (!option.editable) for (const own of menu.querySelectorAll('.saved-own, .saved-edit')) own.remove();
     menu.setAttribute('data-heading', option.label ?? option.value);
     chip.setAttribute('data-menu', '');
     chip.appendChild(menu);
-    drawSavedMenu(menu, option.saved ?? { readings: {} }, this.#savedHost(chip, scope, option.value));
+    drawSavedMenu(menu, option.saved ?? { readings: {} }, this.#savedHost(scope));
   }
 
   /** What a saved preset's card borrows from this panel. */
-  #savedHost(chip: HTMLElement, scope: string, id: string): SavedMenuHost {
+  #savedHost(scope: string): SavedMenuHost {
     return {
       unit: () => this.clone<HTMLElement>('template.saved-field-tpl'),
       defOf: (field) => this.#fieldDefIn(scope, field) as FilterMenuDef | undefined,
-      edit: (readings) => this.#onSavedEdit(chip, scope, id, readings),
     };
   }
 
@@ -1601,57 +1561,16 @@ export class SherpaFilterPanel extends SherpaElement {
       .find((f) => !f.preset && (f.field ?? f.id) === field);
   }
 
-  /** A saved preset's change, as editing ended: its EDIT, sent to its source.
-   *  TRAP T-a-saved-filter-keeps-its-edit */
-  #onSavedEdit(chip: HTMLElement, scope: string, id: string, readings: Record<string, FieldReading>): void {
-    /* ON FIRST, as a tap on it would: the panel is drawn the scope as the
-       edit leaves it, and one drawn with the filter off switched it off. */
-    const held = this.#heldOfChip(chip);
-    if (held && !chip.hasAttribute('data-current')) {
-      chip.setAttribute('data-current', '');
-      this.#syncAnswered(held);
-      this.#report(held);
-    }
-    this.emit('preset-edit', { scope, id, readings });
-  }
-
-  /** A saved preset's own rows: edited in place, saved, put back, or deleted.
-   *  Delete ASKS, as Add and Remove do: the bar owns the list. */
-  #onSavedAction = (event: Event): void => {
+  /** A Send to menu's pick: the scope the field goes down to. */
+  #onSendTo = (event: Event): void => {
     const value = (event as CustomEvent).detail?.value;
-    // A Send to menu's pick: the scope the field goes down to.
     const lower = this.pathFind(event, '.field-lower');
     const down = lower && this.#fieldOf(lower);
     if (down && typeof value === 'string' && down.def.sendTo?.some((t) => t.scope === value)) {
       event.stopPropagation();
-      return this.#sendDown(down, value);
+      this.#sendDown(down, value);
     }
-    const chip = this.pathFind(event, '.value');
-    const id = chip?.dataset['value'];
-    const scope = chip?.closest<HTMLElement>('.field')?.dataset['scope'];
-    const menu = chip?.querySelector<HTMLElement>(':scope > sherpa-menu');
-    if (!id || !scope || !menu) return;
-    if (!['edit', 'save-edit', 'discard-edit', 'delete'].includes(value)) return;
-    event.stopPropagation();
-    // TRAP T-a-saved-filter-keeps-its-edit
-    const preset = this.#presetOf(scope, id);
-    if (value === 'edit') {
-      editSavedMenu(menu);
-      // The pressed row hides.
-      menu.querySelector<HTMLElement>(':scope > [value="save-edit"]')?.focus();
-    } else if (value === 'save-edit') {
-      const readings = endSavedEdit(menu, 'keep') ?? preset?.edited;
-      if (readings) this.emit('filter-save', { scope, readings, id, label: preset?.label ?? id });
-    } else if (value === 'discard-edit') {
-      endSavedEdit(menu, 'discard');
-      if (preset?.edited) this.emit('preset-edit', { scope, id, readings: null });
-    } else this.emit('filter-delete', { scope, id });
   };
-
-  /** A saved filter one scope holds, as it was drawn. */
-  #presetOf(scope: string, id: string): FilterDef | undefined {
-    return this.#scopes.find((s) => s.scope === scope)?.filters?.find((f) => f.preset && f.id === id);
-  }
 
   /** Ask the source to send a View field DOWN to one scope. */
   #sendDown(held: Held, scope: string): void {
@@ -1735,6 +1654,10 @@ export class SherpaFilterPanel extends SherpaElement {
     // A DRILLED filter's pick is that filter's — never an Add or a Remove.
     if (this.#drill.home) return this.#onDrilled(event);
     const want = new Set(((event as CustomEvent).detail?.values ?? []) as string[]);
+    // A saved set's row applies it, or — unticked — dismisses it. TODO 105
+    const set = setPick(want, this.#savedSets);
+    if (set.apply) this.emit('filters-apply', { id: set.apply });
+    else if (set.dismiss) this.emit('filters-dismiss', {});
 
     /* TICKED IS HELD. The menu lists every scope, so what changed is the
        difference between what it now says and what the panel is drawing — a
@@ -1837,8 +1760,49 @@ export class SherpaFilterPanel extends SherpaElement {
    */
   #openMore = (event: Event): void => {
     const first = folded(this.$('.reset-group')) ? resetRows(this, 'reset') : [];
-    openMore(this, this.root, event.currentTarget as HTMLElement, [[...first, ...extraRows(this)]]);
+    // Save filters, folded away for want of room. TODO 105
+    const save: MoreRow[] = this.hasAttribute('data-saveable') && folded(this.$('.save-group'))
+      ? [['filters-save', 'Save filters'], ['filters-save-as', 'Save filters as'],
+        ...(this.#savedOn() ? [['filters-delete', 'Delete filters'] as MoreRow] : [])]
+      : [];
+    openMore(this, this.root, event.currentTarget as HTMLElement, [[...first, ...extraRows(this)], save]);
   };
+
+  /** Save filters' menu, or its folded ⋮ rows: Save as, or Delete. */
+  #onSaveMenu = (event: CustomEvent<{ value?: string }>): void => this.#saveAct(String(event.detail?.value ?? ''));
+
+  /** One save action, whichever button or row asked. */
+  #saveAct(act: string): void {
+    if (act === 'filters-save' || act === 'filters-save-as') this.emit(act);
+    else if (act === 'filters-delete') this.emit('filters-delete', { id: this.#savedOn()?.id });
+  }
+
+  /**
+   * savedSets — the reader's saved sets of filters. The Filters menu's Saved
+   * section lists them; the one ON is the Saved chip, in the warning look and
+   * with ` *` while `edited`. Drawn, never reported. Will, TODO 105.
+   * TRAP T-saved-filters-are-every-scope
+   */
+  set savedSets(sets: readonly SavedSet[]) {
+    this.#savedSets = sets.map((set) => ({ ...set }));
+    this.#syncSavedChip();
+    if (this.#scopes.length) this.#fillFilters();
+  }
+  get savedSets(): SavedSet[] {
+    return this.#savedSets.map((set) => ({ ...set }));
+  }
+  /** The reader's saved sets, as the host last drew them. */
+  #savedSets: SavedSet[] = [];
+
+  /** The saved set on screen, if any. */
+  #savedOn(): SavedSet | undefined {
+    return this.#savedSets.find((set) => set.on);
+  }
+
+  /** The Saved chip says the set on screen. */
+  #syncSavedChip(): void {
+    drawSavedChip(this, this.$('.saved-chip'), this.#savedSets);
+  }
 
   /** A ⋮ row was chosen: do what its folded button does. */
   #onMore = (event: Event): void => {
@@ -1849,7 +1813,7 @@ export class SherpaFilterPanel extends SherpaElement {
       this.#onResetAll();
     } else if (picked === 'reset-default') {
       this.dispatchEvent(new CustomEvent('view-reset', { bubbles: true, composed: true, cancelable: true, detail: {} }));
-    }
+    } else this.#saveAct(picked);
   };
 
   /** The ⋮ menu's switch: a REQUEST — the host owns whether filters limit each other. */

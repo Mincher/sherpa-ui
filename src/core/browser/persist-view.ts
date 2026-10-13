@@ -576,12 +576,9 @@ export function viewQueryOf(source: ViewSource): QueryDefaults {
   // In the plain form, by the source's field types. TRAP T-one-way-to-write-a-condition
   const plain = (readings: Record<string, FieldReading>): Where => source.whereOf?.(readings) ?? whereOf(readings);
   const scopes: QueryDefaults['scopes'] = {};
-  for (const [id, { readings, edits, ...rest }] of Object.entries(structuredClone(source.query.applied.scopes))) {
+  for (const [id, { readings, ...rest }] of Object.entries(structuredClone(source.query.applied.scopes))) {
     const where = plain(readings);
-    scopes[id] = {
-      ...rest, ...(Object.keys(where).length ? { where } : {}),
-      ...(edits ? { edits: Object.fromEntries(Object.entries(edits).map(([p, e]) => [p, plain(e)])) } : {}),
-    };
+    scopes[id] = { ...rest, ...(Object.keys(where).length ? { where } : {}) };
   }
   const { sort, group, search } = source.state;
   scopes[VIEW] = { ...(scopes[VIEW] ?? { holds: [] }), sort, group, search };

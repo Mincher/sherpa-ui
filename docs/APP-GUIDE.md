@@ -248,7 +248,7 @@ session.persist('/nav/pinned');
 ## 10. Questions and saved filters
 
 ```html
-<sherpa-dialog id="save-filter" data-heading="Save filter">
+<sherpa-dialog id="save-filters" data-heading="Save filters">
   <sherpa-input-text data-label="Name" required></sherpa-input-text>
   <sherpa-container-footer slot="footer">
     <sherpa-button>Cancel</sherpa-button>
@@ -258,17 +258,22 @@ session.persist('/nav/pinned');
 ```
 
 ```js
-const named = document.getElementById('save-filter');
-provider.addEventListener('filter-save', async (e) => {
-  const label = await named.prompt(e.detail.label ?? '');
-  if (label) provider.saveFilter(label, e);
-});
+const named = document.getElementById('save-filters');
+const saveAs = async () => {
+  const label = await named.prompt(provider.savedFilters?.label ?? '');
+  if (label) provider.saveFilters(label);
+};
+provider.addEventListener('filters-save', () => (provider.savedFilters ? provider.saveFilters() : saveAs()));
+provider.addEventListener('filters-save-as', saveAs);
+provider.addEventListener('filters-delete', () => provider.deleteFilters());
 ```
 
 - `dialog.prompt(value)` and `dialog.confirm({ heading, words, action })` ask
   the question the dialog's own markup holds. `T-a-dialog-answers-its-question`
-- A saved filter lives with its DATA, not the page.
-  `T-a-saved-filter-lives-with-its-data`
+- **Save filters** keeps EVERY scope's filters under one name, with the page
+  beside its Views. The Filters menu's Saved section applies one; the Saved
+  chip names it, and its cross puts the filters back. Ask before you save over
+  a name that exists. `T-saved-filters-are-every-scope`
 
 ## 11. Start
 

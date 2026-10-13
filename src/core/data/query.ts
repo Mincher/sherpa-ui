@@ -41,9 +41,6 @@ export interface ScopeQuery {
   readings: Record<string, FieldReading>;
   /** Saved filters on this scope, on or off. Their readings live in the library. */
   presets?: Record<string, boolean>;
-  /** A saved filter the reader CHANGED and has not saved, by id: an ON one
-   *  applies this, and the library keeps what was saved. TRAP T-a-saved-filter-keeps-its-edit */
-  edits?: Record<string, Record<string, FieldReading>>;
   /** The ONLY bound components this scope narrows — a legend's own chart.
    *  Absent, it narrows every one. TRAP T-a-component-part-narrows-one-component */
   narrows?: string[];
@@ -69,11 +66,9 @@ export interface QueryDefaults {
 
 /** One scope as a View writes it: each field's condition in the plain form.
  *  TRAP T-one-way-to-write-a-condition */
-export interface ViewScope extends Partial<Omit<ScopeQuery, 'readings' | 'edits'>> {
+export interface ViewScope extends Partial<Omit<ScopeQuery, 'readings'>> {
   /** `{ openTickets: { gt: 0 } }` — numbers as numbers. */
   where?: Where;
-  /** A changed saved filter's conditions, by its id. */
-  edits?: Record<string, Where>;
 }
 
 /** What compiling needs to know that the Query does not say. */
@@ -151,7 +146,7 @@ export function compile(query: Query, facts: CompileFacts = {}): Compiled {
     }
     for (const [preset, on] of Object.entries(scope.presets ?? {})) {
       if (!on) continue;
-      const given = scope.edits?.[preset] ?? facts.preset?.(preset);
+      const given = facts.preset?.(preset);
       if (!given) {
         report({
           code: 'unknown-preset',

@@ -712,15 +712,6 @@
     },
     {
       "$type": "prop",
-      "name": "data-saveable",
-      "type": "boolean",
-      "observed": true,
-      "declared": true,
-      "kind": "style",
-      "description": "show a \"Save filter\" button in the footer; it emits menu-select with value=\"save\". TRAP T-save-packs-the-fields-into-one-chip"
-    },
-    {
-      "$type": "prop",
       "name": "data-search",
       "type": "boolean",
       "observed": true,
@@ -890,11 +881,6 @@
     },
     {
       "$type": "state",
-      "name": "saveable",
-      "selector": ":host([data-saveable])"
-    },
-    {
-      "$type": "state",
       "name": "calendar",
       "selector": ":host([data-type=\"calendar\"])"
     },
@@ -989,8 +975,8 @@
       "bubbles": true,
       "composed": true,
       "detail": {
-        "label": "'Remove' | 'Save filter' | string",
-        "value": "'remove' | 'save' | string"
+        "label": "'Remove' | string",
+        "value": "'remove' | string"
       }
     },
     {

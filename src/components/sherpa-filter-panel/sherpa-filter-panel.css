@@ -21,10 +21,20 @@
 /* Narrow, Reset folds into it; and it always holds the host's own option. */
 @container sherpa-filter-panel (max-width: 380px) {
   /* `.head` too: the pair's own inline-flex comes later in this sheet. */
-  .head .reset-group { display: none; }
+  .head :is(.reset-group, .save-group) { display: none; }
   .more-btn { display: inline-flex; }
 }
 :host([data-limit-options]) .more-btn { display: inline-flex; }
+
+/* Save filters, and the Saved chip — a saving host's, the chip while a set is on. TODO 105 */
+.head .save-group { display: none; }
+:host([data-saveable]) .head .save-group { display: inline-flex; }
+@container sherpa-filter-panel (max-width: 380px) {
+  :host([data-saveable]) .head .save-group { display: none; }
+}
+:host(:not([data-saved])) .save-delete { display: none; }
+.saved-chip { display: none; }
+:host([data-saved]) .saved-chip { display: inline-flex; }
 /* Its rows: real <button>s, so Enter, Space and focus come free. */
 .more-item {
   display: flex;
@@ -56,11 +66,6 @@
   box-shadow: none;
 
 }
-
-/* A saved preset's Save and Discard: while it holds a change, or is being
-   edited — and then Edit and Delete step aside. TRAP T-a-saved-filter-keeps-its-edit */
-.value:not([data-edited]) > sherpa-menu:not([data-editing]) > .saved-edit { display: none; }
-.value > sherpa-menu[data-editing] > button.saved-own { display: none; }
 
 /* The BODY scrolls, not the panel: the search and the footer stay put. Without
    it the scopes push both out of the box and the panel overflows its own
@@ -117,7 +122,7 @@
   display: inline-flex;
   align-items: center;
 }
-:is(.reset-group, .field-group) > :not(:first-child) {
+:is(.reset-group, .field-group, .save-group) > :not(:first-child) {
   margin-inline-start: var(--sherpa-structure-space-snapped, 0px);
 }
 
@@ -245,15 +250,7 @@ sherpa-filterset + .field { margin-block-start: var(--sherpa-display-mode-space-
 .scope::part(icon),
 .scope::part(titles) { order: 1; }
 
-/* The scope's own row, FIRST in its body: only a scope with something to
-   save, in a host that saves. */
-.scope-acts { display: none; }
-.scope[data-can-save] .scope-acts {
-  display: flex;
-  justify-content: flex-end;
-}
-.scope-acts + .field { margin-block-start: var(--sherpa-display-mode-space-xs, 8px); }
-/* No wrap: "Save / filter" on two lines reads as two controls. */
-.scope-save,
+/* No wrap: "Save / filters" on two lines reads as two controls. */
+.save-filters,
 .filters-btn { white-space: nowrap; }
 

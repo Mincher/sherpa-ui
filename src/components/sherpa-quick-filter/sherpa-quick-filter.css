@@ -94,9 +94,8 @@
 }
 
 /* PENDING: changed, not yet applied — the active EDGE, and no fill (its pin
-   keeps it default). A saved filter's unsaved change wears it too.
-   TRAP T-a-pending-chip-has-no-fill · TRAP T-a-saved-filter-keeps-its-edit */
-:host(:is([data-pending], [data-edited])) :is(.body, .caret) {
+   keeps it default). TRAP T-a-pending-chip-has-no-fill */
+:host([data-pending]) :is(.body, .caret) {
   border-width: var(--sherpa-border-width-sm, 1px);
   border-color: var(--sherpa-style-active-border-base-1, #c046ff);
 }
@@ -263,6 +262,16 @@
 :host([data-icon-only]:not([data-icon-start])) .caret-funnel { display: inline-flex; }
 
 .caret-icon { display: none; }
+
+/* DISMISS — the right button is a cross, and always shown. TODO 105 */
+.caret-dismiss { display: none; }
+:host([data-dismiss]) .caret { display: inline-flex; margin-inline-start: var(--sherpa-structure-space-snapped, 0px); }
+:host([data-dismiss]) .body {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+:host([data-dismiss]) .caret-glyph { display: none; }
+:host([data-dismiss]) .caret-dismiss { display: inline-flex; }
 
 :host([data-icon-only][data-icon-start]) .caret-icon {
   display: inline-flex;

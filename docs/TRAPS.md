@@ -4487,7 +4487,6 @@ which cannot be chosen right now. `stateClause()` is the only part that speaks
 filters; the rest is selection. A transfer list is one state read twice — its
 picked values on the right, its unpicked on the left.
 
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `src/core/data/filter-face.ts`
 - Site: `src/data.ts`
@@ -10363,7 +10362,6 @@ changed-key contract with the other stores.
 - Site: `test/unit/a-broken-assumption-reports.test.mjs`
 - Site: `test/e2e/reforged-a-broken-assumption-reports.spec.ts`
 - Site: `src/core/ui/templater.ts`
-- Site: `src/core/ui/saved-filter-menu.ts`
 - Site: `src/core/browser/view-files.ts`
 - Site: `test/e2e/reforged-reports-round-2.spec.ts`
 
@@ -13626,7 +13624,6 @@ actions and no words.
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
 - Site: `test/unit/filter-face.test.mjs`
 - Site: `src/core/ui/saved-filter-menu.ts`
-- Site: `test/e2e/reforged-saved-filter-edit.spec.ts`
 - Site: `src/core/ui/filter-def.ts`
 
 ### T-a-saved-filter-is-its-readings
@@ -13636,9 +13633,9 @@ clause.** Will, 2026-09-25: presets *"are actually compound conditional filters
 that (potentially) use more than 1 field and those fields values"*, and a
 reader must be able to save and edit their own.
 
-Readings, because readings are what the fields HELD. Edit filter shows them
-again, each in its field's own menu, and edits them in place
-(`T-a-saved-filter-keeps-its-edit`); a clause cannot be re-opened in any UI. So
+Readings, because readings are what the fields HELD. Its chip's card shows
+them again, each in its field's own menu (`T-a-saved-chip-lists-its-conditions`);
+a clause cannot be re-opened in any UI. So
 `{ health: { op: 'lt', text: '60' } }`, not `['health', 'lt', 60]` — and the
 data layer compiles it, with the field's type, as it compiles every reading.
 
@@ -13666,7 +13663,6 @@ ON ones itself, so a preset was a chip in one file and a query in another.
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 - Site: `src/core/data/data-source.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `src/core/browser/saved-filters.ts`
 - Site: `src/core/data/filter-state.ts`
 - Site: `src/data.ts`
 - Site: `test/e2e/reforged-saved-filter.spec.ts`
@@ -13674,158 +13670,45 @@ ON ones itself, so a preset was a chip in one file and a query in another.
 - Site: `src/core/ui/bind-source.ts`
 - Site: `src/core/ui/filter-def.ts`
 
-### T-a-saved-filter-keeps-its-edit
+### T-saved-filters-are-every-scope
 
-**A reader's own saved filter can be CHANGED from its menu, and the change is
-an EDIT: applied now, not saved.** Will, TODO 50: *"rows that can be edited.
-On a filter the reader SAVED that is applied, an edit is a temporary DRAFT;
-the saved filter does not change. When the draft differs, the menu … offer[s]
-Save."* Called an EDIT in the code: the source's `#draft` and a View's drafts
-(144) already use the other word.
+**Save filters keeps EVERY scope's filters under one name** — Will, TODO
+105: *"this button should be a 'Save filters' (plural) button that saves a
+definition of the current state of the filter scopes."* A set is `{ label,
+query }`, the query in a View's own JSON form with no arrangement — the filter
+half of a View — kept with the PAGE beside its Views (`saveFilterAs`,
+`sherpa:filter-sets:<page>`).
 
-- **The QUERY owns it** — `scopes[id].edits[presetId]`, beside `presets`. An
-  ON saved filter compiles from its edit; the library keeps what was saved.
-  So a reload, a View save and a second view all see it — once the provider
-  hears `preset-edit` and keeps the Query, as it keeps a switch. A bar and the panel
-  only REPORT one (`preset-edit`), and are drawn it back
-  (`describe`'s `edited`, which `drawScope` and `drawScopes` both draw).
-- **No change is no edit.** An edit equal to what was saved is dropped — by
-  `editPreset`, and by `declarePreset` when the change is saved. It goes
-  with its filter: taken off the bar, or deleted.
-- **Edit filter edits IN PLACE** (TODO 181). It carries `data-stay-open`
-  (`T-an-action-row-can-keep-its-menu-open`) and lifts each field menu's
-  `data-readonly`; Save filter and Discard changes show, Edit and Delete step
-  aside. Its rows are the field's own menu (`T-a-saved-chip-lists-its-conditions`).
-- **The change is a DRAFT until editing ends**: the card closes, Save filter
-  is pressed, or the bar or the panel rebuilds under it (`#render`, `#draw`
-  — the panel redraws every scope on each source draw). Then ONE
-  `preset-edit`, folding in only the fields that moved, each read with its
-  type — a date read as text was dropped. Nothing moved, nothing is sent.
-  Discard puts the saved rows back. Either way the card is drawn again,
-  read-only.
-- **READ before any write.** Ending an edit reads every field menu first: the
-  `data-readonly` write re-syncs a menu, and a dropped FIRST row came back
-  (`T-row-one-is-data-op`).
-- **A change put back IS the saved answer.** Rows that only restate a saved
-  Simple answer — a list's OR'd picks, a number's two ends — are folded back
-  to it, so the edit compares equal and is dropped. Saved `{ picked }` came
-  back as `{ conditions }` and stayed "edited" with nothing changed.
-- **No field left is no edit.** An edit that empties every field compiled to
-  no clause: an ON filter matching every row. The card keeps its last answer,
-  and `editPreset` drops an empty edit too.
-- **Kept BEFORE the bar's list changes** — Add, Remove, a rebuild — so its
-  source draws back a bar that still holds what it reported.
-- **`says` is the words for what it applies NOW** — the source words an edit
-  by its edit. When that answer goes (Discard, a new edit), the words go with
-  it, and the card words the new answer itself.
-- **Its source draws it back IN PLACE** (`drawScope`, from `edited`): the card is
-  not rebuilt, so an open one stays open.
-- **Only a reader's OWN saved filter (`editable`) offers Edit filter and
-  Delete filter**; an app preset is the app's. **Delete is not Remove**:
-  Remove takes a chip off the bar to wait in the Add menu; Delete takes it out
-  of both, and `filter-delete` tells the host to forget it.
-- Unpack — the answer put back into its fields — is gone. Edit filter shows
-  the rows where they are, which is what TODO 49 asked for.
-- **Read the card OPEN in a test.** WebKit keeps a stale computed style for a
-  row inside a shut card: Edit filter read as hidden after editing ended.
-- **ON FIRST, then the edit.** A filter that is off comes on as its change
-  is applied. The source draws the scope a moment later from a COPY; sent
-  the other way round, the copy had it off and switched it off again.
-- **Saved under a NEW name**, the change is spent: its old filter goes back
-  to what it saved, and off (`packFilter`).
-- **It wears the pending look** (`data-edited`), not `data-pending`: a
-  pending chip draws no count, and an edited one is applied.
-- A number saved as rows has no `mode`, so its rows decide it, as a list's
-  do. It opened Simple, with its rows hidden.
+- **Saving**: the panel header's Save filters and its menu (Save filters as,
+  Delete filters), or — in toolbar mode — rows in the filter bar's ⋮. Each
+  asks with `filters-save`, `filters-save-as` or `filters-delete`; the HOST
+  names it, confirms an overwrite, and calls `saveFilters(label?)` or
+  `deleteFilters()`. With no name, it saves over the set on screen.
+- **Applying**: a set's row in the Filters menu's Saved section asks
+  `filters-apply`; each scope the set names takes its filters, and the rest
+  stay as they are. Its Saved chip then names it, in the panel header and on a
+  saving bar.
+- **Edited**: once the filters on screen no longer say what the set says —
+  each field's condition and each saved filter on, not a chip held empty — the
+  chip reads ` *` in the warning look. Save again, or Save as, clears it.
+- **Dismissing**: the chip's cross asks `filters-dismiss` and puts the Query
+  back as it was before the FIRST set was applied — the filters only, not the
+  sort. The tab remembers the set on screen, so a reload keeps the chip.
+- **Old saved filters** — one scope's, kept per DATA before TODO 105 — move
+  into the page's sets once, each a set of the page's first scope below the
+  View (Will, A). The per-scope card's Edit filter, Save and Delete went with
+  them: a set is changed by saving again (Will, A; 186 closed with it).
 
-Not built: Save in the panel section's header. Will ruled in 117 that a
-scope's header holds nothing to press; Save is in the chip's own menu.
+A page's own presets stay preset chips, applied one at a time.
 
-- Site: `src/core/data/query.ts`
-- Site: `src/core/data/data-source.ts`
+- Site: `src/core/browser/saved-filters.ts`
+- Site: `src/core/ui/filters-button.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
-- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
-- Site: `test/e2e/reforged-saved-filter-edit.spec.ts`
-- Site: `test/unit/a-saved-filter-keeps-its-edit.test.mjs`
-- Site: `src/core/ui/saved-filter-menu.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.css`
-- Site: `test/e2e/reforged-saved-filter.spec.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
-- Site: `src/core/ui/bind-source.ts`
-- Site: `src/core/ui/filter-def.ts`
-
-### T-save-packs-the-fields-into-one-chip
-
-**Save moves the answered fields into ONE chip, which comes on, and the fields
-clear — pack.** Will, 2026-09-25, choosing *"Pack / unpack"*. Nothing filters
-twice, and no second editor is needed: Edit filter edits the saved chip's own
-field menus in place (`T-a-saved-filter-keeps-its-edit`; unpack went in 181).
-
-**The bar ASKS; the app names it; the provider keeps it** (TODO 191). A host
-that saves filters sets `data-saveable` on the bar. "Save filter" then shows
-only where there is something to save — in the menu of a chip holding an
-Advanced filter, and in the Add menu once any field is on — and fires
-`filter-save { readings }`, each field as `savedReading()` gives it. The app
-asks for a name and calls `provider.saveFilter(label, event)`, which stores it
-(`saveFilterAs`), declares it on the source, and hands it back to the bar for
-that scope with `packFilter({ id, label, readings })`. The panel's save names
-its scope; a save from the View's scope packs into no bar, since a View's bar
-is offered no saved filter.
-
-`packFilter` clears the fields FIRST, then rebuilds — the rebuild carries every
-other chip's answer across (`T-a-rebuild-keeps-every-answer`) — switches the
-saved chip ON even where it was already on the bar and off, and fires ONE
-event, so the source sees the part arrive and the fields go in one report.
-
-**A saved chip cannot take a FIELD's id** — two chips with one id — so
-`packFilter` reports `id-taken`. The provider names it `custom:<id>`.
-
-A ticked, DEFAULT answer is not saveable from its own chip: the ask was to turn
-a CONDITION into a chip. The Add menu packs it with the rest.
-
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
-- Site: `src/components/sherpa-menu/sherpa-menu.ts`
-- Site: `src/components/sherpa-menu/sherpa-menu.html`
-- Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `test/e2e/reforged-provider-saves-filters.spec.ts`
-- Site: `test/e2e/reforged-saved-filter.spec.ts`
-
-### T-the-panel-saves-a-whole-scope
-
-**The panel answers for the bar in panel mode — the bar is hidden then — so it
-needs every door the bar has for saved filters.** Will, 2026-09-25: *"We can
-also allow creating multi-field conditional boolean chips from a whole filter
-scope."*
-
-- **A whole SCOPE saves as one chip.** With `data-saveable`, a scope that has
-  an answered field shows "Save filter", and pressing it fires `filter-save {
-  scope, readings }`: every answered field, as `savedReading()` gives it —
-  never the Presets, which are saved filters already, and never Group or Sort.
-- **A saved preset wears `fx`.** A preset carrying `readings` is drawn with
-  kind `advanced`, and a chip with no filter menu then reads as Advanced by itself
-  (`T-a-saved-filter-is-its-readings`).
-- **A reader's own preset offers Edit filter and Delete filter.** Edit filter
-  edits its rows in place, through the same helper the bar uses
-  (`T-a-saved-filter-keeps-its-edit`); nothing is asked. Delete the panel
-  ASKS for — `filter-delete` — as it asks for Add and Remove. The BAR owns the
-  list (`T-a-panel-adds-through-the-bar-that-owns-the-list`), so the host
-  answers through `packFilter` and `deleteFilter` and refills the panel.
-
-**Two holes this found in what the panel is told.** The bar's `held` gave a
-chip with no field reading — a toggle, a saved filter — the `active` of its def,
-not whether it was on; and the Records page's `asPanelField` did not pass
-`active` at all, so every preset in the panel read off, whatever the bar said.
-
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
-- Site: `test/e2e/reforged-saved-filter.spec.ts`
 
 ### T-saved-filters-are-the-custom-section
 
@@ -13847,15 +13730,17 @@ matched on its own name, so "Saved filters" over no rows cannot happen.
 no answer is the amber warning (`T-a-new-chip-opens-in-default-not-warning`);
 a saved filter IS its answer.
 
+**A reader's saved SETS are listed there too** (TODO 105): a row per set, its
+tick APPLIES it and the one on is ticked — unticked, it is dismissed. A set is
+no chip: picking one asks the host (`T-saved-filters-are-every-scope`).
+
 The heading row is a `.menu-row`, so a re-stamp removes it with the rows it
 heads.
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.css`
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
-- Site: `test/e2e/reforged-saved-filter.spec.ts`
 - Site: `src/core/ui/filters-button.ts`
-- Site: `src/components/sherpa-provider/sherpa-provider.ts`
 
 ### T-row-one-is-data-op
 
@@ -13907,36 +13792,6 @@ taken every OTHER chip's Advanced condition with it.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `test/e2e/reforged-a-rebuild-keeps-every-answer.spec.ts`
-
-### T-a-saved-filter-lives-with-its-data
-
-**A saved filter is kept per DATA, not per page.** Will, 2026-09-25:
-*"These saved custom filter configurations won't be able to transcend data
-sources/stores."* Its readings name fields, and other records may not have them.
-
-So `saveFilterAs(data, label, where)` takes the NAME of the records it
-filters — the store, not the page — and every page over those records sees the
-same set, while a page over other records sees none. Otherwise it is the
-saved-view door: localStorage by default so every tab shares it, a
-`sherpa:filters:` prefix, and the whole set handed back from every write.
-
-**The same name saves over the old one** (`T-derived-id-makes-resave-an-update`)
-— which is how Edit, then Save, updates a filter rather than making a second.
-The id rule is `labelId()` in `web-storage.ts`, shared with saved views; a
-second copy of it was the first step to two ids for one name.
-
-**A broken entry is DROPPED on read**, one at a time: a set is trusted in shape
-and never in content, and a bar handed `{ label: 3 }` would draw a chip with no
-answer.
-
-**The provider keeps them** (TODO 191), as it keeps saved Views: it reads them
-when it opens a page, saves one with `saveFilter()`, and forgets one a bar
-deletes. The panel's delete goes to its bar first, which lets it go.
-
-- Site: `src/core/browser/saved-filters.ts`
-- Site: `test/e2e/reforged-saved-filter.spec.ts`
-- Site: `src/components/sherpa-provider/sherpa-provider.ts`
-- Site: `test/e2e/reforged-provider-saves-filters.spec.ts`
 
 ### T-a-held-clause-op-is-not-a-reading-op
 
@@ -14320,8 +14175,7 @@ The close branch of `#onToggle` now restores the baseline, guarded by an
 values they just decided.
 
 One press is not a walk-away: the chip's own body APPLIES its open draft
-(`T-a-chip-press-applies-its-menus-draft`). A saved filter's in-place edit
-has no Apply, so a close KEEPS it, as an edit (`T-a-saved-filter-keeps-its-edit`).
+(`T-a-chip-press-applies-its-menus-draft`).
 
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `test/e2e/reforged-menu.spec.ts`
@@ -16673,7 +16527,6 @@ reads its menu's inputs the same way.
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 - Site: `test/e2e/reforged-menu.spec.ts`
-- Site: `test/e2e/reforged-saved-filter-edit.spec.ts`
 
 ### T-an-action-row-can-keep-its-menu-open
 
@@ -16686,8 +16539,6 @@ action row closes it as before.
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.html`
 - Site: `test/e2e/reforged-menu.spec.ts`
-- Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.html`
-- Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 
 ### T-a-dragged-layout-is-kept-per-column-count
 
@@ -16889,7 +16740,6 @@ condition rows, so it reports `unreadable-condition` and filters nothing.
 - Site: `src/core/data/query.ts`
 - Site: `src/core/data/page-definition.ts`
 - Site: `src/core/browser/persist-view.ts`
-- Site: `src/core/browser/saved-filters.ts`
 - Site: `src/components/sherpa-provider/sherpa-provider.ts`
 - Site: `src/data.ts`
 - Site: `test/unit/one-way-to-write-a-condition.test.mjs`

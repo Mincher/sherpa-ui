@@ -163,8 +163,6 @@ export const STEERING_EVENTS = [
   'filter-apply',
   'filter-discard',
   'filter-change',
-  // A saved filter's rows changed, or its change was put back. TRAP T-a-saved-filter-keeps-its-edit
-  'preset-edit',
   'page-change',
   'page-size-change',
   'search-change',
@@ -280,17 +278,6 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
       const field = detail['field'];
       if (typeof scope !== 'string' || typeof field !== 'string') return;
       source.answerColumn(scope, field, (detail['reading'] ?? null) as FieldReading | null);
-      return;
-    }
-    case 'preset-edit': {
-      // A bar edits in its own scope; the panel names one. TRAP T-a-saved-filter-keeps-its-edit
-      const own = bind?.scope;
-      const scope = typeof own === 'string' ? own : detail['scope'];
-      const id = detail['id'];
-      const readings = detail['readings'];
-      if (typeof scope !== 'string' || typeof id !== 'string') return;
-      source.editPreset(scope, id, readings && typeof readings === 'object'
-        ? readings as Record<string, FieldReading> : undefined);
       return;
     }
     case 'filter-apply':

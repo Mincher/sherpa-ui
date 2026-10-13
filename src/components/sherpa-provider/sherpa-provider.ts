@@ -28,12 +28,14 @@ import {
 } from '../../core/browser/persist-view.js';
 import { labelId } from '../../core/browser/web-storage.js';
 import { clearDraft, draftSig, loadDraft, saveDraft, type DraftMode } from '../../core/browser/view-drafts.js';
-import { deleteSavedFilter, loadSavedFilters, saveFilterAs } from '../../core/browser/saved-filters.js';
+import {
+  adoptOldFilters, deleteSavedFilter, filtersOf, keepApplied, loadApplied, loadSavedFilters, sameFilters, saveFilterAs,
+} from '../../core/browser/saved-filters.js';
+import type { SavedSet } from '../../core/ui/filters-button.js';
 import { openSource, type PageDefinition } from '../../core/data/page-definition.js';
 import type { DataSource, SourceState } from '../../core/data/data-source.js';
 import { VIEW, type Query, type QueryDefaults } from '../../core/data/query.js';
 import type { Where } from '../../core/data/where.js';
-import type { FieldReading } from '../../core/data/filter-state.js';
 import { applyState, type Populatable } from '../../core/ui/apply-state.js';
 import { bindSource } from '../../core/ui/bind-source.js';
 
@@ -76,8 +78,6 @@ type Bar = HTMLElement & {
   groupSets?(sets: readonly unknown[]): void;
   heldFields?: string[];
   report?(): void;
-  packFilter?(saved: { id: string; label: string; readings: Record<string, FieldReading> }): void;
-  deleteFilter?(id: string): void;
 };
 
 /** A subtree's whole state, as JSON — each source's question and the View on
@@ -385,16 +385,19 @@ export class SherpaProvider extends SherpaElement {
       await this.provide({ sources: {} });
       return undefined;
     }
-    /* A reader's own saved filters are kept with the DATA, not the page, and
-       offered in each bar's Add list. TRAP T-a-saved-filter-lives-with-its-data */
-    for (const [id, saved] of Object.entries(loadSavedFilters(def.store))) {
-      source.declarePreset(`custom:${id}`, source.readingsOf(saved.where), { label: saved.label, editable: true });
-    }
+    /* A reader's old saved filters — each one scope's, kept with the DATA —
+       become this page's sets, each over its first scope below the View.
+       Will, TODO 105 (A). TRAP T-saved-filters-are-every-scope */
+    adoptOldFilters(def.store, definition.id, Object.keys(def.scopes ?? {}).find((id) => id !== VIEW) ?? VIEW);
     const shipped = options.views;
     const library = shipped ? (): ViewLibrary => ({ ...shipped, ...loadSavedViews(definition.id) }) : null;
     // The page as DEFINED, before a kept Query: what Reset all to default starts from.
     const initial = structuredClone(source.query.applied);
     this.#opened = { id: definition.id, store: def.store, source, library, initial };
+    // The set on screen before a reload, while it is still saved.
+    const applied = loadApplied(definition.id);
+    const set = applied ? loadSavedFilters(definition.id)[applied.id] : undefined;
+    this.#savedSet = applied && set ? { id: applied.id, label: set.label, query: set.query, before: applied.before } : null;
     // A View this page does not have is the first.
     const view = options.view && library?.()[options.view] ? options.view : undefined;
     // BEFORE the Query: a kept one is drawn onto these chips.
@@ -407,7 +410,10 @@ export class SherpaProvider extends SherpaElement {
     for (const type of ['change', 'scope-change']) {
       source.addEventListener(type, () => {
         cancelAnimationFrame(frame);
-        frame = requestAnimationFrame(() => this.#sayResets());
+        frame = requestAnimationFrame(() => {
+          this.#sayResets();
+          this.#saySaved();
+        });
       }, { signal: page.signal });
     }
     /* A REQUEST. A host that asks the reader first — a confirm dialog —
@@ -415,7 +421,15 @@ export class SherpaProvider extends SherpaElement {
     this.addEventListener('view-reset', (event) => {
       if (!event.defaultPrevented) void this.resetView();
     }, { signal: page.signal });
-    this.addEventListener('filter-delete', this.#onFilterDelete, { signal: page.signal });
+    /* REQUESTS, as Reset to default is: a saved set's row applies it, and the
+       Saved chip's cross dismisses it. TRAP T-saved-filters-are-every-scope */
+    this.addEventListener('filters-apply', (event) => {
+      const id = (event as CustomEvent<{ id?: string }>).detail?.id;
+      if (!event.defaultPrevented && id) void this.applyFilters(id);
+    }, { signal: page.signal });
+    this.addEventListener('filters-dismiss', (event) => {
+      if (!event.defaultPrevented) void this.dismissFilters();
+    }, { signal: page.signal });
     await this.provide({
       sources: { [definition.id]: source },
       ...(library ? {
@@ -492,44 +506,112 @@ export class SherpaProvider extends SherpaElement {
   }
 
   /**
-   * Answer a bar's or the panel's `filter-save` with the reader's name: keep the
-   * filter over the page's DATA, and show it in its bar in place of the fields
-   * it was made from. The saved filter's id, else undefined.
-   * TRAP T-a-saved-filter-lives-with-its-data · TRAP T-save-packs-the-fields-into-one-chip
+   * SAVE FILTERS — every scope's filters under one name, kept with the page
+   * beside its Views. With a name, that set — a set of the same name is saved
+   * over, so a host asks first. With none, over the set on screen; none on
+   * answers undefined. The set's id. Will, TODO 105. TRAP T-saved-filters-are-every-scope
    */
-  saveFilter(label: string, request: Event): string | undefined {
+  saveFilters(label?: string): string | undefined {
     const opened = this.#opened;
-    const name = label.trim();
-    const { readings, scope } = (request as CustomEvent<{ readings?: Record<string, FieldReading>; scope?: string }>).detail ?? {};
-    if (!opened || !name || !readings) return undefined;
-    const id = `custom:${labelId(name)}`;
-    saveFilterAs(opened.store, name, opened.source.whereOf(readings));
-    opened.source.declarePreset(id, readings, { label: name, editable: true });
-    // A View's bar is offered no saved filter, so one saved from the View stays unpacked.
-    const from = request.target instanceof Element ? request.target : null;
-    const at = scope ?? (from && this.#inherited(from, 'data-scope'));
-    if (at !== VIEW) this.#barFor(at)?.packFilter?.({ id, label: name, readings });
-    this.#offer();
+    const name = label == null ? this.#savedSet?.label : label.trim();
+    if (!opened || !name) return undefined;
+    this.#flush?.();
+    const query = filtersOf(viewQueryOf(opened.source));
+    saveFilterAs(opened.id, name, query);
+    const id = labelId(name);
+    /* Saved, it is the set on screen. Dismiss puts back what was before the
+       set applied — or, saved from the screen, the View's own filters. */
+    this.#putOn({ id, label: name, query, before: this.#savedSet ? this.#savedSet.before : null });
     return id;
   }
 
-  /** A saved filter deleted from a bar is forgotten; one deleted from the
-   *  panel is its bar's to let go first. TRAP T-a-saved-filter-keeps-its-edit */
-  #onFilterDelete = (event: Event): void => {
+  /** APPLY a saved set: each scope it names takes its filters; Dismiss puts
+   *  back what was on screen before the first one. TRAP T-saved-filters-are-every-scope */
+  async applyFilters(id: string): Promise<boolean> {
     const opened = this.#opened;
-    const { id, scope } = (event as CustomEvent<{ id?: string; scope?: string }>).detail ?? {};
-    if (!opened || !id) return;
-    const from = event.target;
-    if (from instanceof Element && 'drawScopes' in from) {
-      this.#barFor(scope ?? null)?.deleteFilter?.(id);
-      return;
+    const set = opened ? loadSavedFilters(opened.id)[id] : undefined;
+    if (!opened || !set) return false;
+    this.#flush?.();
+    const before = this.#savedSet ? this.#savedSet.before : opened.source.query.applied;
+    const now = opened.source.query.applied;
+    /* Each scope it names, as saved; the rest as they are. A set that names no
+       chips — one moved from before TODO 105 — keeps the scope's own, and the
+       fields it answers. Both are a View's own forms. */
+    const scopes: Record<string, unknown> = { ...now.scopes };
+    for (const [id, scope] of Object.entries(structuredClone(set.query.scopes))) {
+      const named = Object.keys(scope.where ?? {});
+      scopes[id] = { ...scope, holds: scope.holds ?? [...new Set([...(now.scopes[id]?.holds ?? []), ...named])] };
     }
-    // Only the reader's own: a page's saved filter lives in its definition.
-    if (!id.startsWith('custom:')) return;
-    deleteSavedFilter(opened.store, id.slice('custom:'.length));
-    opened.source.declarePreset(id, undefined);
-    this.#offer();
-  };
+    await opened.source.setQuery({ v: 1, scopes: scopes as QueryDefaults['scopes'] });
+    this.#putOn({ id, label: set.label, query: set.query, before });
+    return true;
+  }
+
+  /** DISMISS the set on screen: the filters go back as they were before it —
+   *  or, for one saved from the screen, to the View's own. Never the sort. */
+  async dismissFilters(): Promise<void> {
+    const opened = this.#opened;
+    const on = this.#savedSet;
+    if (!opened || !on) return;
+    this.#putOn(null);
+    if (on.before) return opened.source.setQuery(on.before);
+    const view = this.#view ? opened.library?.()[this.#view] : undefined;
+    await opened.source.setQuery(structuredClone(opened.initial));
+    if (view?.query) await opened.source.setQuery(filtersOf(view.query), { holds: 'keep' });
+  }
+
+  /** DELETE a saved set — the one on screen unless named. Its filters stay. */
+  deleteFilters(id = this.#savedSet?.id): boolean {
+    const opened = this.#opened;
+    if (!opened || !id || !loadSavedFilters(opened.id)[id]) return false;
+    deleteSavedFilter(opened.id, id);
+    if (this.#savedSet?.id === id) this.#putOn(null);
+    else this.#saySaved();
+    return true;
+  }
+
+  /** The saved set on screen — its id, name, and whether its filters have changed since. */
+  get savedFilters(): { id: string; label: string; edited: boolean } | null {
+    const on = this.#savedSet;
+    return on ? { id: on.id, label: on.label, edited: this.#edited() } : null;
+  }
+
+  /** The page's saved sets — what a host asks before it saves over a name. */
+  get savedFilterSets(): { id: string; label: string }[] {
+    const opened = this.#opened;
+    return opened ? Object.entries(loadSavedFilters(opened.id)).map(([id, { label }]) => ({ id, label })) : [];
+  }
+
+  /** The set on screen, and what Dismiss puts back. */
+  #savedSet: { id: string; label: string; query: QueryDefaults; before: Query | null } | null = null;
+
+  /** Put a set on screen — or none — remember it in this tab, and draw it. */
+  #putOn(set: { id: string; label: string; query: QueryDefaults; before: Query | null } | null): void {
+    this.#savedSet = set;
+    if (this.#opened) keepApplied(this.#opened.id, set ? { id: set.id, before: set.before } : null);
+    this.#saySaved();
+  }
+
+  /** Have the filters changed since the set on screen was applied or saved? */
+  #edited(): boolean {
+    const opened = this.#opened;
+    const on = this.#savedSet;
+    return !!opened && !!on && !sameFilters(on.query, filtersOf(viewQueryOf(opened.source)));
+  }
+
+  /** Each saving control is told the page's sets, and which is on. TODO 105 */
+  #saySaved(): void {
+    const opened = this.#opened;
+    if (!opened) return;
+    const on = this.#savedSet;
+    const edited = this.#edited();
+    const sets: SavedSet[] = Object.entries(loadSavedFilters(opened.id)).map(([id, set]) => ({
+      id, label: set.label, ...(on?.id === id ? { on: true, edited } : {}),
+    }));
+    for (const el of [...this.#bars(), ...this.#panels()] as Array<Element & { savedSets?: SavedSet[] }>) {
+      if ('savedSets' in el) el.savedSets = sets;
+    }
+  }
 
   /** The bar over one scope. */
   #barFor(scope: string | null): Bar | undefined {
@@ -644,24 +726,16 @@ export class SherpaProvider extends SherpaElement {
 
   /** Each bar's Add list: what its scope may still add — by the chips it HAS,
    *  so a restore can draw a held field's chip — each noting where it lives.
-   *  Below the View, EVERY saved filter of the reader's, held or not, so a
-   *  restore can draw one. TRAP T-saved-filters-are-the-custom-section */
+   *  And the page's saved sets. TRAP T-saved-filters-are-every-scope */
   #offer(): void {
     const opened = this.#opened;
     if (!opened) return;
-    // In the source's words, so a field the bar does not hold still has its name.
-    const saved = Object.entries(loadSavedFilters(opened.store)).map(([id, { label, where }]) => {
-      const readings = opened.source.readingsOf(where);
-      return { id: `custom:${id}`, label, readings, editable: true, says: opened.source.say(readings) };
-    });
     for (const bar of this.#bars() as Bar[]) {
       const scope = this.#inherited(bar, 'data-scope');
       if (!scope) continue;
-      bar.available?.([
-        ...opened.source.addable(scope, bar.heldFields ?? []).map((d) => ({ ...d, removable: true })),
-        ...(scope === VIEW ? [] : saved),
-      ]);
+      bar.available?.(opened.source.addable(scope, bar.heldFields ?? []).map((d) => ({ ...d, removable: true })));
     }
+    this.#saySaved();
   }
 
   /** The View on screen. */
@@ -790,9 +864,8 @@ export class SherpaProvider extends SherpaElement {
     // After a pick or a reset, the page's kept Query is the one on screen.
     this.#settle = () => { if (key && session) session.set(key, { view: this.#view, query: source.query.applied }); };
     for (const type of ['selection-change', 'scope-change']) source.addEventListener(type, keep, { signal });
-    // A preset switched or edited is a report, and no selection changes.
-    // TRAP T-a-saved-filter-keeps-its-edit
-    for (const type of ['quick-filter-change', 'preset-edit']) this.addEventListener(type, keep, { signal });
+    // A preset switched is a report, and no selection changes.
+    this.addEventListener('quick-filter-change', keep, { signal });
     signal.addEventListener('abort', () => {
       cancelAnimationFrame(frame);
       this.#flush = this.#settle = null;

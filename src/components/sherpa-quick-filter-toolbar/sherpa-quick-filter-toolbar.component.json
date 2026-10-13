@@ -40,6 +40,23 @@
           },
           {
             "el": "div",
+            "class": "saved-zone",
+            "part": "saved",
+            "children": [
+              {
+                "el": "sherpa-quick-filter",
+                "class": "saved-chip",
+                "attrs": {
+                  "data-label": "Saved",
+                  "data-dismiss": "",
+                  "data-locked": "",
+                  "data-current": ""
+                }
+              }
+            ]
+          },
+          {
+            "el": "div",
             "class": "chips",
             "part": "chips"
           },
@@ -404,8 +421,17 @@
       "type": "boolean",
       "observed": true,
       "declared": true,
-      "kind": "behaviour",
-      "description": "the host SAVES filters: a chip holding an Advanced filter, and the Add menu once any field is on, offer \"Save filter\", which fires filter-save. The host stores it and calls packFilter(). TRAP T-save-packs-the-fields-into-one-chip"
+      "kind": "style",
+      "description": "the host SAVES filters: its ⋮ offers Save filters and Save filters as, and Delete filters while a set is on. Its `savedSets` fill the Filters menu's Saved section and the Saved chip. TRAP T-saved-filters-are-every-scope"
+    },
+    {
+      "$type": "prop",
+      "name": "data-saved",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "written BY the bar: a saved set is on, so its Saved chip shows"
     },
     {
       "$type": "prop",
@@ -511,6 +537,16 @@
     },
     {
       "$type": "state",
+      "name": "saveable",
+      "selector": ":host([data-saveable])"
+    },
+    {
+      "$type": "state",
+      "name": "saved",
+      "selector": ":host([data-saved])"
+    },
+    {
+      "$type": "state",
       "name": "no-actions",
       "selector": ":host([data-no-actions])"
     },
@@ -539,12 +575,12 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (active, values, superseded, readings, presets, heldFields, groupField, sortField, sortDirection, sortSuspended). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (active, values, savedSets, superseded, readings, presets, heldFields, groupField, sortField, sortDirection, sortSuspended). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (setChipValues, setChipReading, drawResults, drawPresent, drawOffered, drawReading, supersede, deleteFilter, packFilter, report, available, addFilters, removeFilter, groupSets, drawScope, allowFields, clearAll, organise). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (setChipValues, setChipReading, drawResults, drawPresent, drawOffered, drawReading, supersede, report, available, addFilters, removeFilter, groupSets, drawScope, allowFields, clearAll, organise). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -594,36 +630,6 @@
     },
     {
       "$type": "event",
-      "name": "filter-save",
-      "bubbles": true,
-      "composed": true,
-      "detail": {
-        "id": "string",
-        "label": "string",
-        "readings": "Record<string, FieldReading>"
-      }
-    },
-    {
-      "$type": "event",
-      "name": "filter-delete",
-      "bubbles": true,
-      "composed": true,
-      "detail": {
-        "id": "string"
-      }
-    },
-    {
-      "$type": "event",
-      "name": "preset-edit",
-      "bubbles": true,
-      "composed": true,
-      "detail": {
-        "id": "string",
-        "readings": "Record<string, FieldReading> | null"
-      }
-    },
-    {
-      "$type": "event",
       "name": "filter-add",
       "bubbles": true,
       "composed": true,
@@ -638,6 +644,30 @@
       "name": "view-reset",
       "bubbles": true,
       "composed": true
+    },
+    {
+      "$type": "event",
+      "name": "filters-apply",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "id": "string"
+      }
+    },
+    {
+      "$type": "event",
+      "name": "filters-dismiss",
+      "bubbles": true,
+      "composed": true
+    },
+    {
+      "$type": "event",
+      "name": "filters-delete",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "id": "string | undefined"
+      }
     },
     {
       "$type": "event",
@@ -766,18 +796,6 @@
         },
         {
           "$type": "method",
-          "name": "deleteFilter",
-          "args": "id: string",
-          "description": "Delete a saved filter: gone from the bar AND the Add list, and `filter-delete` tells the host to forget it."
-        },
-        {
-          "$type": "method",
-          "name": "packFilter",
-          "args": "saved: { id: string; label: string; readings: Record<string, FieldReading> }",
-          "description": "Show a SAVED filter in place of the fields it was made from — PACK. Its chip comes ON and those fields clear, in ONE event. The host calls it once it has stored the filter."
-        },
-        {
-          "$type": "method",
           "name": "report",
           "args": "",
           "description": "report() — re-announce the WHOLE bar, as a reader's own change would."
@@ -853,6 +871,11 @@
         {
           "name": "values",
           "type": "Record<string, string[]>",
+          "access": "read-write"
+        },
+        {
+          "name": "savedSets",
+          "type": "SavedSet[]",
           "access": "read-write"
         },
         {

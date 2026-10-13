@@ -1157,7 +1157,7 @@ test('the VIEW selector keeps its own icon, whatever the app passes', async ({ p
         { id: 'plan', label: 'Plan', icon: 'price-tag', options: [{ value: 'pro', label: 'Pro' }] },
       ]);
       await (window as unknown as { __settled: () => Promise<void> }).__settled();
-      const chips = [...bar.shadowRoot!.querySelectorAll('sherpa-quick-filter')];
+      const chips = [...bar.shadowRoot!.querySelectorAll('sherpa-quick-filter.chip')];
       return chips.map((c) => c.getAttribute('data-icon-start'));
     };
     return {
@@ -1188,7 +1188,7 @@ test('a PERSISTENT chip selects its first option on init; a plain filter chip do
       // NOTE: no `selected` on any option — the chip decides.
       bar.populate([{ ...def, options: [{ value: 'a', label: 'First' }, { value: 'b', label: 'Second' }] }]);
       await (window as unknown as { __settled: () => Promise<void> }).__settled();
-      const chip = bar.shadowRoot!.querySelector('sherpa-quick-filter')!;
+      const chip = bar.shadowRoot!.querySelector('sherpa-quick-filter.chip')!;
       return {
         caret: chip.shadowRoot!.querySelector('.caret-label')!.textContent,
         checked: [...chip.querySelectorAll('input')].filter((i) => (i as HTMLInputElement).checked)

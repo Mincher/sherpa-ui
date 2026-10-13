@@ -13,8 +13,12 @@
  * - SAVED_SECTION — The heading over the saved filters it may add, at the bottom.
  * - DRILL_FLAGS — Menu attributes owned by the FILTER, not by the Filters menu.
  * - ListedFilter — One filter the menu lists.
+ * - SavedSet — One saved set of filters, as the menu and the Saved chip draw it.
+ * - SET_ROW — A saved set's row value: this, then its id.
  * - AddedFilter — One filter the view holds.
- * - filtersMenuItems — The menu's list: added, available, then custom.
+ * - filtersMenuItems — The menu's list: added, available, then saved.
+ * - setPick — A Filters menu's ticks, as a saved-set request: apply one, or dismiss the one on.
+ * - drawSavedChip — The Saved chip says the set on screen: its name, and ` *` and the warning look once changed.
  * - MenuDrill — One filter's rows, moved into the Filters menu and back.
  * - .home — The menu drilled into, or null.
  * - .menu — The Filters menu it is drilled into, or null.
@@ -41,6 +45,18 @@ export interface ListedFilter {
   readings?: unknown;
 }
 
+/** One saved set of filters, as the menu and the Saved chip draw it: the one
+ *  ON is applied, and `edited` when its filters have changed since. TODO 105 */
+export interface SavedSet {
+  id: string;
+  label: string;
+  on?: boolean;
+  edited?: boolean;
+}
+
+/** A saved set's row value: this, then its id. Its tick APPLIES it. */
+export const SET_ROW = 'set:';
+
 /** One filter the view holds. */
 export interface AddedFilter extends ListedFilter {
   /** A tick takes it off. Without one its row has no box. */
@@ -62,7 +78,7 @@ export interface AddedFilter extends ListedFilter {
  * TRAP T-saved-filters-are-the-custom-section
  */
 export function filtersMenuItems(
-  added: readonly AddedFilter[], offer: readonly ListedFilter[],
+  added: readonly AddedFilter[], offer: readonly ListedFilter[], sets: readonly SavedSet[] = [],
 ): Array<FilterMenuItem & { label: string }> {
   return [
     // A held filter the reader cannot take off is listed only while hidden.
@@ -80,7 +96,34 @@ export function filtersMenuItems(
     })),
     ...offer.filter((f) => f.readings)
       .map((f) => ({ value: f.id, label: f.label, ...(f.note ? { note: f.note } : {}), section: SAVED_SECTION })),
+    // A reader's saved SETS: a tick applies one, and the one on is ticked. TODO 105
+    ...sets.map((s) => ({ value: `${SET_ROW}${s.id}`, label: s.label, section: SAVED_SECTION, selected: !!s.on })),
   ];
+}
+
+/**
+ * A Filters menu's ticks, as a saved-set request: the set newly ticked is
+ * applied; the one on, unticked, is dismissed. The set rows are taken out of
+ * `want`, so the rest is the held filters' answer. TODO 105
+ */
+export function setPick(want: Set<string>, sets: readonly SavedSet[]): { apply?: string; dismiss?: boolean } {
+  const on = sets.find((s) => s.on)?.id;
+  const picked = [...want].filter((v) => v.startsWith(SET_ROW)).map((v) => v.slice(SET_ROW.length));
+  for (const id of picked) want.delete(`${SET_ROW}${id}`);
+  const apply = picked.find((id) => id !== on);
+  if (apply) return { apply };
+  return on && !picked.includes(on) ? { dismiss: true } : {};
+}
+
+/** The Saved chip says the set on screen: its name, and ` *` and the warning
+ *  look once changed. `data-saved` on the host shows it. TRAP T-saved-filters-are-every-scope */
+export function drawSavedChip(host: HTMLElement, chip: HTMLElement | null, sets: readonly SavedSet[]): void {
+  const on = host.hasAttribute('data-saveable') ? sets.find((set) => set.on) : undefined;
+  host.toggleAttribute('data-saved', !!on);
+  if (!chip || !on) return;
+  (chip as HTMLElement & { valueLabel: string }).valueLabel = `${on.label}${on.edited ? ' *' : ''}`;
+  if (on.edited) chip.dataset['status'] = 'warning';
+  else chip.removeAttribute('data-status');
 }
 
 /** TRAP T-drill-moves-not-clones — the rows are moved, never copied. */

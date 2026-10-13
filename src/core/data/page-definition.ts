@@ -45,7 +45,7 @@ export interface SourceDefinition {
   scopes?: Readonly<Record<string, ScopeDefinition>>;
   /** Saved filters, each a whole clause flipped on or off — `where` in the
    *  plain form. TRAP T-a-toggle-is-a-clause-not-a-value · TRAP T-one-way-to-write-a-condition */
-  presets?: Readonly<Record<string, { label?: string; editable?: boolean; where: Where }>>;
+  presets?: Readonly<Record<string, { label?: string; where: Where }>>;
 }
 
 /** One page, as JSON — its source, and its components' configuration. Its
@@ -80,9 +80,7 @@ export async function openSource(def: SourceDefinition, store: Store): Promise<D
       });
       continue;
     }
-    source.declarePreset(id, source.readingsOf(preset.where), {
-      ...(preset.label ? { label: preset.label } : {}), editable: !!preset.editable,
-    });
+    source.declarePreset(id, source.readingsOf(preset.where), preset.label ? { label: preset.label } : {});
   }
   for (const [scope, facts] of Object.entries(def.scopes ?? {})) {
     if (facts.label || facts.arranges != null) {

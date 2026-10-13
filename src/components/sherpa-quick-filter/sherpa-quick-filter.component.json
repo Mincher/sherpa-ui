@@ -107,6 +107,14 @@
               }
             },
             {
+              "el": "i",
+              "class": "caret-dismiss sherpa-icon-box",
+              "attrs": {
+                "data-icon": "cross",
+                "aria-hidden": "true"
+              }
+            },
+            {
               "el": "span",
               "class": "caret-icon sherpa-icon-box",
               "part": "caret-icon",
@@ -216,12 +224,12 @@
     },
     {
       "$type": "prop",
-      "name": "data-edited",
+      "name": "data-dismiss",
       "type": "boolean",
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "a saved filter changed and not saved: the pending look, still counted. TRAP T-a-saved-filter-keeps-its-edit"
+      "description": "its right button DISMISSES — a cross, not a caret — and reports `quick-filter-dismiss`. The Saved chip. TODO 105"
     },
     {
       "$type": "prop",
@@ -486,11 +494,6 @@
     },
     {
       "$type": "state",
-      "name": "edited",
-      "selector": ":host([data-edited])"
-    },
-    {
-      "$type": "state",
       "name": "ai",
       "selector": ":host([data-type=\"ai\"])"
     },
@@ -528,6 +531,11 @@
       "$type": "state",
       "name": "icon-only",
       "selector": ":host([data-icon-only])"
+    },
+    {
+      "$type": "state",
+      "name": "dismiss",
+      "selector": ":host([data-dismiss])"
     },
     {
       "$type": "state",
@@ -600,6 +608,12 @@
         "scope": "'chip'",
         "values": "string[]"
       }
+    },
+    {
+      "$type": "event",
+      "name": "quick-filter-dismiss",
+      "bubbles": true,
+      "composed": true
     },
     {
       "$type": "event",

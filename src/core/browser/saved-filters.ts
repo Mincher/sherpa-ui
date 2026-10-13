@@ -1,93 +1,143 @@
 /**
- * saved-filters.ts — the saved custom filters over one set of data, kept across reloads.
- *
- * The saved-view door, keyed by the DATA a filter names instead of the page:
- * its conditions name fields, and other records may not have them.
- * TRAP T-a-saved-filter-lives-with-its-data
+ * saved-filters.ts — a reader's SAVED FILTERS: every scope's filters under one
+ * name, kept per PAGE beside its Views. Will, TODO 105. TRAP T-saved-filters-are-every-scope
  *
  * Map:
- * - SavedFilter — one saved custom filter: its name, and the conditions it applies
- * - SavedFilterSet — the saved filters over one set of data, keyed by id
- * - SavedFilterOptions — local (shared across tabs, the default) or session
- * - loadSavedFilters — read the saved filters over one set of data
- * - saveFilterAs — save conditions as a named filter, and hand back the whole set
- * - deleteSavedFilter — forget one saved filter, and hand back what is left
+ * - SavedFilter — One saved set: its name, and each scope's filters as a View writes them.
+ * - SavedFilterSet — A page's saved sets, by id.
+ * - SavedFilterOptions — local (shared across tabs, the default) or session.
+ * - loadSavedFilters — Read a page's saved sets. A broken entry is dropped.
+ * - saveFilterAs — Keep filters under a name — over a set of that name — and hand back the whole store.
+ * - deleteSavedFilter — Forget one set, and hand back what is left.
+ * - adoptOldFilters — Move a reader's old one-scope saved filters over `data` into this page's sets, once.
+ * - filtersOf — The filter half of a View's JSON: each scope's filters, and no arrangement.
+ * - sameFilters — Do the filters on screen still say what a set says, over the scopes it names?
+ * - AppliedFilters — The set on screen: which, and the filters it was applied over.
+ * - loadApplied — The set on screen in this tab, if one is.
+ * - keepApplied — Remember the set on screen in this tab, or that none is.
  */
+import type { Query, QueryDefaults, ViewScope } from '../data/query.js';
 import type { Where } from '../data/where.js';
 import {
-  isPlainObject, labelId, readJson, writeJson, type StorageKind,
+  isPlainObject, labelId, readJson, removeKey, writeJson, type StorageKind,
 } from './web-storage.js';
 
-/** One saved custom filter: its name, and the conditions it applies, in the
- *  plain form. TRAP T-a-saved-filter-is-its-readings · TRAP T-one-way-to-write-a-condition */
+/** One saved set: its name, and each scope's filters as a View writes them. */
 export interface SavedFilter {
   label: string;
-  where: Where;
+  query: QueryDefaults;
 }
 
-/** The saved filters over one set of data, keyed by id. */
+/** A page's saved sets, by id. */
 export type SavedFilterSet = Record<string, SavedFilter>;
 
-/** Where a set is kept. */
+/** Where the sets are kept. */
 export interface SavedFilterOptions {
   /** Share across TABS via localStorage — on by default, as for a saved view. */
   shared?: boolean;
 }
 
-/** Key prefix, so a host's own storage keys cannot collide with these. */
-const PREFIX = 'sherpa:filters:';
+/** Key prefixes, so a host's own storage keys cannot collide with these. */
+const PREFIX = 'sherpa:filter-sets:';
+/** Before TODO 105: one scope's filter, kept per DATA. */
+const OLD_PREFIX = 'sherpa:filters:';
+/** The set on screen, per tab, so a reload keeps its chip. */
+const ON_PREFIX = 'sherpa:filter-set-on:';
 
 const kindOf = (shared: boolean): StorageKind => (shared ? 'local' : 'session');
 
-/** One stored entry, as far as it can be trusted: a name and its conditions —
- *  `readings` in one saved before TODO 197, which `readingsOf` still reads. */
 const isSaved = (v: unknown): v is SavedFilter =>
-  isPlainObject(v) && typeof v['label'] === 'string' && (isPlainObject(v['where']) || isPlainObject(v['readings']));
+  isPlainObject(v) && typeof v['label'] === 'string' && isPlainObject(v['query'])
+  && (v['query'] as { v?: unknown }).v === 1 && isPlainObject((v['query'] as { scopes?: unknown }).scopes);
 
-const asSaved = ({ label, where, readings }: SavedFilter & { readings?: Where }): SavedFilter =>
-  ({ label, where: where ?? readings ?? {} });
-
-/**
- * Read the saved filters over `data` — the name of the records they filter.
- * A broken entry is dropped, never handed on. TRAP T-storage-access-throws
- */
-export function loadSavedFilters(data: string, options: SavedFilterOptions = {}): SavedFilterSet {
-  const stored = readJson<Record<string, unknown>>(
-    kindOf(options.shared ?? true), PREFIX + data, {}, isPlainObject,
-  );
-  return Object.fromEntries(
-    Object.entries(stored)
-      .filter((entry): entry is [string, SavedFilter] => isSaved(entry[1]))
-      .map(([id, saved]) => [id, asSaved(saved)]),
-  );
+/** Read a page's saved sets. A broken entry is dropped, never handed on. TRAP T-storage-access-throws */
+export function loadSavedFilters(page: string, options: SavedFilterOptions = {}): SavedFilterSet {
+  const stored = readJson<Record<string, unknown>>(kindOf(options.shared ?? true), PREFIX + page, {}, isPlainObject);
+  return Object.fromEntries(Object.entries(stored).filter((entry): entry is [string, SavedFilter] => isSaved(entry[1])));
 }
 
-/**
- * Save `where` as a named filter over `data`, and hand back the whole set.
- * The same name saves over the old one. TRAP T-derived-id-makes-resave-an-update
- */
+/** Keep filters under a name — over a set of that name — and hand back the
+ *  whole store. TRAP T-derived-id-makes-resave-an-update */
 export function saveFilterAs(
-  data: string,
-  label: string,
-  where: Where,
-  options: SavedFilterOptions = {},
+  page: string, label: string, query: QueryDefaults, options: SavedFilterOptions = {},
 ): SavedFilterSet {
   const trimmed = label.trim();
-  if (!trimmed) return loadSavedFilters(data, options);
-  const set = { ...loadSavedFilters(data, options), [labelId(trimmed)]: { label: trimmed, where } };
-  writeJson(kindOf(options.shared ?? true), PREFIX + data, set);
-  return set;
+  if (!trimmed) return loadSavedFilters(page, options);
+  const sets = { ...loadSavedFilters(page, options), [labelId(trimmed)]: { label: trimmed, query } };
+  writeJson(kindOf(options.shared ?? true), PREFIX + page, sets);
+  return sets;
 }
 
-/** Forget one saved filter, and hand back what is left. */
-export function deleteSavedFilter(
-  data: string,
-  id: string,
-  options: SavedFilterOptions = {},
-): SavedFilterSet {
-  const kept = Object.fromEntries(
-    Object.entries(loadSavedFilters(data, options)).filter(([key]) => key !== id),
-  );
-  writeJson(kindOf(options.shared ?? true), PREFIX + data, kept);
+/** Forget one set, and hand back what is left. */
+export function deleteSavedFilter(page: string, id: string, options: SavedFilterOptions = {}): SavedFilterSet {
+  const kept = Object.fromEntries(Object.entries(loadSavedFilters(page, options)).filter(([key]) => key !== id));
+  writeJson(kindOf(options.shared ?? true), PREFIX + page, kept);
   return kept;
+}
+
+/**
+ * Move a reader's old saved filters over `data` — each ONE scope's, kept with
+ * the data — into this page's sets, each as a set of `scope` alone. Once: the
+ * old ones go, so a set deleted later stays deleted. Will, TODO 105 (A).
+ */
+export function adoptOldFilters(data: string, page: string, scope: string, options: SavedFilterOptions = {}): void {
+  const kind = kindOf(options.shared ?? true);
+  const old = readJson<Record<string, unknown>>(kind, OLD_PREFIX + data, {}, isPlainObject);
+  const entries = Object.entries(old).filter(([, v]) => isPlainObject(v) && typeof v['label'] === 'string');
+  if (!entries.length) return;
+  const sets = loadSavedFilters(page, options);
+  for (const [id, saved] of entries) {
+    const { label, where, readings } = saved as { label: string; where?: Where; readings?: Where };
+    sets[id] ??= { label, query: { v: 1, scopes: { [scope]: { where: where ?? readings ?? {} } } } };
+  }
+  writeJson(kind, PREFIX + page, sets);
+  removeKey(kind, OLD_PREFIX + data);
+}
+
+/** The filter half of a View's JSON: each scope's filters, and no arrangement. */
+export function filtersOf(view: QueryDefaults): QueryDefaults {
+  const scopes: Record<string, Partial<ViewScope>> = {};
+  for (const [id, scope] of Object.entries(view.scopes)) {
+    const { sort: _sort, group: _group, search: _search, ...filters } = scope as ViewScope;
+    scopes[id] = filters;
+  }
+  return { v: 1, scopes: scopes as QueryDefaults['scopes'] };
+}
+
+/** Do the filters on screen still say what a set says, over the scopes it
+ *  names? Only what FILTERS counts: each field's condition and the saved
+ *  filters on — not a chip held empty. */
+export function sameFilters(saved: QueryDefaults, now: QueryDefaults): boolean {
+  const meaning = (scope: Partial<ViewScope> | undefined): string => canonical({
+    where: scope?.where ?? {},
+    on: Object.entries(scope?.presets ?? {}).filter(([, on]) => on).map(([id]) => id).sort(),
+  });
+  return Object.keys(saved.scopes).every((id) => meaning(saved.scopes[id]) === meaning(now.scopes[id]));
+}
+
+/** JSON with every object's keys in order, so two equal answers read the same. */
+function canonical(value: unknown): string {
+  const walk = (v: unknown): unknown => (Array.isArray(v) ? v.map(walk)
+    : isPlainObject(v) ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, walk(v[k])])) : v);
+  return JSON.stringify(walk(value));
+}
+
+/** The set on screen: which, and the filters it was applied over — what
+ *  Dismiss puts back. `null`: it was saved, not applied — the View's own. */
+export interface AppliedFilters {
+  id: string;
+  before: Query | null;
+}
+
+/** The set on screen in this tab, if one is. */
+export function loadApplied(page: string): AppliedFilters | null {
+  return readJson<AppliedFilters | null>('session', ON_PREFIX + page, null,
+    (v): v is AppliedFilters => isPlainObject(v) && typeof v['id'] === 'string'
+      && (v['before'] === null || isPlainObject(v['before'])));
+}
+
+/** Remember the set on screen in this tab, or that none is. */
+export function keepApplied(page: string, applied: AppliedFilters | null): void {
+  if (applied) writeJson('session', ON_PREFIX + page, applied);
+  else removeKey('session', ON_PREFIX + page);
 }

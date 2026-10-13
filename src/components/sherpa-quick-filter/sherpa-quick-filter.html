@@ -29,6 +29,8 @@
     data-swatch     a data-viz series, from 1, or a status name: the chip
                     leads with that swatch, as a chart's legend does — one value
                     of a chart's own filter. TRAP T-a-chart-scope-is-its-legend-field
+    data-dismiss    its right button DISMISSES — a cross, not a caret — and
+                    reports `quick-filter-dismiss`. The Saved chip. TODO 105
     data-readonly   a KEY, not a control: no toggle, no button semantics.
                     TRAP T-readonly-legend-is-a-key-not-a-filter
     aria-label      the name of a chip that shows no label. Its tooltip says it.
@@ -48,8 +50,6 @@
                     TRAP T-a-conditioned-chip-reads-as-active
     data-pending    changed, not yet applied: the active edge, no fill.
                     Written by the bar. TRAP T-a-pending-chip-has-no-fill
-    data-edited     a saved filter changed and not saved: the pending look,
-                    still counted. TRAP T-a-saved-filter-keeps-its-edit
     data-unavailable  the other filters rule this value out: greyed, refused,
                     and its tooltip says why. Written by the host.
                     TRAP T-a-ruled-out-value-is-greyed
@@ -92,6 +92,7 @@
   Fires:
     quick-filter-click  — the chip body is toggled. detail: { active }
     quick-filter-change — the menu selection changed. detail: { values: string[] }
+    quick-filter-dismiss — a data-dismiss chip's right button was pressed. detail: { }
     jump-select — a jump row was picked, and its target scrolled into view. detail: { value, label }
     group-change — a GROUP chip picked or cleared its column. detail: { field }
     sort-change — a SORT chip picked its column or way. detail: { field, direction }
@@ -121,6 +122,8 @@
       <i class="caret-glyph sherpa-icon-box" data-icon="triangle-down" aria-hidden="true"></i>
       <!-- An icon-only chip shows a funnel instead; CSS picks, JS never swaps. -->
       <i class="caret-funnel sherpa-icon-box" data-icon="filter" aria-hidden="true"></i>
+      <!-- A dismissing chip shows a cross instead. -->
+      <i class="caret-dismiss sherpa-icon-box" data-icon="cross" aria-hidden="true"></i>
       <!-- An icon-only chip with data-icon-start shows that glyph here instead.
            JS writes the FA class (#syncText); CSS picks which <i> is visible. -->
       <span class="caret-icon sherpa-icon-box" part="caret-icon" aria-hidden="true"></span>

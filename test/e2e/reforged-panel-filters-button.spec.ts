@@ -81,8 +81,8 @@ test('the Filters button is in the panel header; a scope header holds no button,
       chevron: rect(box.shadowRoot.querySelector('.chevron')),
       filters: rect(btn()),
       reset: rect(sr.querySelector('.reset-all')),
-      save: rect(box.querySelector('.scope-save')),
-      firstField: rect(box.querySelector('.field')),
+      // Save filters is the header's, for every scope (TODO 105).
+      save: rect(el.shadowRoot.querySelector('.save-filters')),
       // A summary is a button: nothing a reader can press may sit in it. TODO 117.
       inSummary: box.querySelectorAll(':scope > [slot="actions"]').length,
       inPanelHead: !!btn().closest('.head'),
@@ -100,11 +100,9 @@ test('the Filters button is in the panel header; a scope header holds no button,
   expect(r.inPanelHead).toBe(true);
   expect(r['filters']!.right).toBeLessThanOrEqual(r['reset']!.left);
   expect(Math.abs(r['filters']!.mid - r['reset']!.mid)).toBeLessThanOrEqual(2);
-  // Save filter: under the scope's header, above its first field, at the right.
-  expect(r['save']!.top).toBeGreaterThanOrEqual(r['header']!.bottom);
-  expect(r['save']!.bottom).toBeLessThanOrEqual(r['firstField']!.top);
-  // Rounded: Firefox on Linux measured this 16.000015.
-  expect(Math.round(r['header']!.right - r['save']!.right)).toBeLessThanOrEqual(16);
+  // Save filters: in the header, on Filters' row, after Reset (TODO 105).
+  expect(Math.abs(r['save']!.mid - r['filters']!.mid)).toBeLessThanOrEqual(2);
+  expect(r['save']!.left).toBeGreaterThanOrEqual(r['reset']!.right);
 });
 
 test('open, it is the whole list; shut, it leads with what the scope hides', async ({ page }) => {
