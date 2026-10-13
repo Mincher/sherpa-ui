@@ -6,7 +6,7 @@
  * Map:
  * - NavHost — what the nav asks of its outlet: the Context, the Settings page, the Views
  * - OutletNav — The nav an outlet keeps, from app.json and the session's two lists.
- * - .refresh — Re-stamp every Area's children, keeping the reader's open Areas.
+ * - .refresh — Re-stamp every Area's children; the one holding the page opens.
  * - .syncCurrent — The lit row: the Context's, or its View's with the hierarchy on.
  * - .syncStar — The ★ says whether the View on screen is a favourite.
  * - .changed — A Context begins to load: its row lights, and a pinned rail stays pinned.
@@ -27,7 +27,7 @@ export interface NavHost {
   firstView(context: string): string | null;
 }
 
-type Nav = HTMLElement & { populate(config: NavConfig): Promise<void> | void; expandedIds?: string[]; state: NavState };
+type Nav = HTMLElement & { populate(config: NavConfig): Promise<void> | void; state: NavState };
 
 /** A stored Favourite or Recent: one Context — a Favourite, one View of it. */
 interface Kept { context: string; label: string; key?: string; view?: string }
@@ -97,10 +97,9 @@ export class OutletNav {
     document.addEventListener('view-favorite', this.#onStar, { signal });
   }
 
-  /** Re-stamp every Area's children. A populate rebuilds every row, so the
-   *  reader's open Areas are read back first; the one holding the page is open. */
+  /** Re-stamp every Area's children. The one holding the page opens; the nav
+   *  keeps the reader's own open Areas (TODO 116). */
   refresh(): Promise<void> | void {
-    const open = new Set(this.#nav.expandedIds ?? []);
     const here = this.#rowFor(this.#context())?.id;
     const hierarchy = this.#session.get('/nav/hierarchy') === true;
     for (const row of this.#rows()) {
@@ -111,7 +110,7 @@ export class OutletNav {
       // A parent with no children is a plain row, not an empty expander.
       if (children.length) {
         row.children = children;
-        row.expanded = open.has(row.id) || row.id === here;
+        row.expanded = row.id === here;
       } else {
         delete row.children;
         delete row.expanded;

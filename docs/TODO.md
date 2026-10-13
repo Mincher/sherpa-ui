@@ -166,13 +166,13 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 31x | 179 | Every place a ruled-out value shows is inactive — a chart legend's item too | bug |
 | ✅ | 31y | 178 | The filter panel's header gets an overflow (⋯) menu; "Limit matching filters" is an item in it and in the toolbar's | feature |
 | ✅ | 31z | 181 | A saved filter's menu shows its condition rows, read-only — the Advanced menu, not a bespoke one | refactor |
-| ⬜ | 31z2 | 186 | Saved filter card: six small choices left from 181, each built one way | feature |
+| ✅ | 31z2 | 186 | Saved filter card: six small choices left from 181, each built one way | feature |
 | ✅ | 31z3 | 205 | With "Limit to matching filters" on, both ⋮ menus offer "Hide unmatching filters"; the old name is renamed | feature |
 | ✅ | 31aa2 | 182 | The filter panel's search: more room above it, and the full width of the header less its padding | bug |
 | | | | **E — Views and navigation** | |
 | ✅ | 32 | 15 | Save a View, and the Save split-button menu | feature |
 | ✅ | 33 | 17b | At the mobile breakpoint the nav becomes a menu | feature |
-| ⬜ | 33a | 116 | `sherpa-nav` binds to a Store: its entries as data, drawn and redrawn | refactor |
+| ✅ | 33a | 116 | `sherpa-nav` binds to a Store: its entries as data, drawn and redrawn | refactor |
 | ✅ | 34 | 34 | Figma: use the Navigation terms | figma |
 | ✅ | 35 | 79 | Nav header: Settings and Pin are one Button group in an Actions slot | component |
 | ✅ | 35d | 164 | At the mobile breakpoint the app header shows no nav hamburger: it does not get narrow enough to trigger it | bug |
@@ -2859,7 +2859,7 @@ shows its card at the Filters button. `T-a-saved-chip-lists-its-conditions`
 `T-a-saved-filter-keeps-its-edit` `T-a-nested-menu-answers-for-itself`
 `T-an-action-row-can-keep-its-menu-open`
 
-### `[ ]` 186 — Saved filter card: six small choices left from 181
+### `[x]` ✅ 186 — Saved filter card: six small choices left from 181
 
 Each is built the first way. Say the word to change one.
 
@@ -2885,6 +2885,8 @@ while editing, and is reported (`unknown-filter`). The source could hand its
 definitions over in `describe()` if that should change.
 
 **✅ Will, 2026-10-12 — all my picks:** A for all six, as built.
+
+**✅ Closed 2026-10-13** by that ruling: nothing to change.
 
 ### `[x]` ✅ 178 — An overflow menu in the filter panel's header, with "Limit matching filters"
 
@@ -3877,7 +3879,7 @@ WebKit, so its 480 px rule never ran there — fixed
 (`T-a-second-container-type-drops-the-first`). No Figma design exists for
 the phone; the look follows the rail's. `T-the-nav-is-a-menu-on-a-phone`
 
-### `[ ]` 116 — `sherpa-nav` binds to a Store: its entries as data, drawn and redrawn
+### `[x]` ✅ 116 — `sherpa-nav` binds to a Store: its entries as data, drawn and redrawn
 
 Split from 17b, 2026-09-29. `sherpa-nav` has `renderData()` but is never
 bound — the app re-`populate()`s it by hand when Favorites or Recent change.
@@ -3899,6 +3901,11 @@ second data source just for the nav, fed from the two session lists.
   already the data layer's (`SessionList`).
 
 **✅ Will, 2026-10-12 — all my picks:** A — the nav keeps its own open Areas across a redraw.
+
+**✅ Done 2026-10-13.** The nav keeps each Area's open or shut by id: an
+open Area stays open across a populate, and an entry's `expanded: true` may
+open more. The outlet's read-back of `expandedIds` is gone; it only opens the
+Area that holds the page. `expandedIds` stays, as the read-back door.
 
 ### `[x]` ✅ 34 — Figma: use the Navigation terms
 

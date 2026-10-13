@@ -983,3 +983,39 @@ test('expandedIds says which Areas are open', async ({ page }) => {
   });
   expect(r).toEqual(['a']);
 });
+
+/* THE NAV KEEPS ITS OPEN AREAS across a populate — state it owns, as the grid
+   keeps its scroll — so a host need not read them back. Will, TODO 116.
+   TRAP T-a-shadow-reach-is-a-missing-door */
+test('a populate keeps the Areas a reader opened and shut; the config may open more', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const nav = document.createElement('sherpa-nav') as HTMLElement & {
+      rendered?: Promise<void>; populate(c: unknown): void; expandedIds: string[];
+    };
+    document.getElementById('root')!.appendChild(nav);
+    await nav.rendered;
+    const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const config = (open: string[]) => ({ sections: [{ label: 'S', items: ['a', 'b', 'c'].map((id) => ({
+      id, label: id.toUpperCase(), expanded: open.includes(id), children: [{ id: `${id}1`, label: `${id}1`, href: `?${id}1` }],
+    })) }] });
+    const press = (id: string) => nav.shadowRoot!.querySelector(`.nav-row[data-id="${id}"] sherpa-nav-item`)!
+      .shadowRoot!.querySelector<HTMLElement>('.row, button, [part="row"]')!.click();
+    nav.populate(config(['a']));
+    await settle();
+    press('b');           // the reader opens B
+    press('a');           // …and shuts A
+    await settle();
+    const pressed = nav.expandedIds;
+    nav.populate(config([]));
+    await settle();
+    const kept = nav.expandedIds;
+    nav.populate(config(['c']));
+    await settle();
+    return { pressed, kept, more: nav.expandedIds,
+      hidden: [...nav.shadowRoot!.querySelectorAll<HTMLElement>('.nav-row[data-hidden]')].map((row) => row.dataset['id']) };
+  });
+  expect(r.pressed).toEqual(['b']);
+  expect(r.kept).toEqual(['b']);
+  expect(r.more).toEqual(['b', 'c']);
+  expect(r.hidden).toEqual(['a1']);
+});

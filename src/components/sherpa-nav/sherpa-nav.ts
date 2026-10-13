@@ -342,8 +342,11 @@ export class SherpaNav extends SherpaElement {
     if (!kids.length) return rows;
 
     item.dataset['expandable'] = '';
-    if (entry.expanded) item.dataset['expanded'] = '';
-    row.dataset['expanded'] = entry.expanded ? 'true' : 'false';
+    // An OPEN Area stays open across a populate; the config may open more. Will, TODO 116
+    const open = this.#opened.get(entry.id) === true || !!entry.expanded;
+    this.#opened.set(entry.id, open);
+    if (open) item.dataset['expanded'] = '';
+    row.dataset['expanded'] = String(open);
 
     const childDepth = Math.min(depth + 1, 3) as 1 | 2 | 3;
     for (const kid of kids) rows.push(...this.#buildRows(kid, childDepth, entry.id));
@@ -420,19 +423,25 @@ export class SherpaNav extends SherpaElement {
     if (row?.querySelector('sherpa-nav-item')?.hasAttribute('data-href')) this.closeMenu();
   };
 
-  /** The Areas a reader has open, by id. A populate draws each row as its
-   *  config says, so a host reads these back first. TRAP T-a-shadow-reach-is-a-missing-door */
+  /** The Areas a reader has open, by id. A populate keeps them, so a host
+   *  need not read them back. TRAP T-a-shadow-reach-is-a-missing-door */
   get expandedIds(): string[] {
     return [...this.$$<HTMLElement>('.nav-row[data-expanded="true"]')].map((row) => row.dataset['id'] ?? '').filter(Boolean);
   }
 
-  /** An Area opened or closed: show or hide its children. */
+  /** An Area opened or closed: show or hide its children, and remember it. */
   #onItemExpand = (event: Event): void => {
     const row = (event.target as HTMLElement).closest<HTMLElement>('.nav-row');
     if (!row?.dataset['id']) return;
-    row.dataset['expanded'] = String(!!(event as CustomEvent).detail?.expanded);
+    const open = !!(event as CustomEvent).detail?.expanded;
+    row.dataset['expanded'] = String(open);
+    this.#opened.set(row.dataset['id'], open);
     this.#syncRowVisibility();
   };
+
+  /** Each Area's open or shut, by id — the nav's own state, kept across a
+   *  populate as the grid keeps its scroll. Will, TODO 116 */
+  #opened = new Map<string, boolean>();
 
   /**
    * Write `data-hidden` on rows under a closed parent, for CSS to act on.

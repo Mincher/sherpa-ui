@@ -16911,7 +16911,7 @@ times, and each one broke silently the day the markup inside changed:
 
 | it reached for | the door now |
 |---|---|
-| the nav's open Area rows, before a populate redraws them | `nav.expandedIds` — a read-back getter |
+| the nav's open Area rows, before a populate redraws them | none: the nav KEEPS them across a populate (TODO 116); `nav.expandedIds` reads them |
 | the header's bell, for the notifications panel to anchor to | `header.notificationsAnchor` |
 | the header's theme button, to set its glyph and words | `data-theme-mode="light\|dark"` — the header draws them |
 
@@ -17004,8 +17004,8 @@ Context alone. The ★ is a request
 (`view-favorite`); the outlet toggles the favourite and writes
 `data-favourite` back on the View chip's bar.
 
-A re-draw reads back the open Areas first (`nav.expandedIds`); the one holding
-the page is always open. The rail's pin is `/nav/pinned`; the settings button
+A re-draw keeps the open Areas — the nav's own state (TODO 116) — and opens
+the one holding the page. The rail's pin is `/nav/pinned`; the settings button
 is an INTENT to open or leave Settings; an Area's row names the header. An
 app declares `nav: { pinned, favorites, recent, hierarchy }` in its session's
 defaults, and calls `outlet.refreshNav()` after it saves or deletes a View.
