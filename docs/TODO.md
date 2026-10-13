@@ -82,7 +82,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16t11 | 235 | "Return to X" survives a reload: the Query keeps where a View field came up from | feature |
 | ❓ | 16t12 | 236 | Read-only Advanced condition rows: the value text is too dark, and the row × shows though nothing can be removed | bug |
 | ✅ | 16t13 | 237 | A tile's own `data-where` on a field the View's bar holds narrows nothing, and says nothing | bug |
-| ⬜ | 16t14 | 238 | The data grid's "Select all rows" does not select every row on every page | bug |
+| ✅ | 16t14 | 238 | The data grid's "Select all rows" does not select every row on every page | bug |
 | ✅ | 16t6 | 230 | Reset all filters dialog: "Save filters before reset" sits in a grey border; it is plain form content | quick |
 | | | | **C2 — Consumers: frameworks, apps and agents** (planned 2026-10-12) | |
 | ✅ | c1 | 225 | `settled()` hangs on an infinite animation — a loader, an indeterminate bar — and waits on the whole document when given a part | bug |
@@ -1584,10 +1584,17 @@ badge and the accordion's button sit at the top of the header row.
 buttons align to the top (they shared the bottom line, Will 2026-09-26). A
 test measures each against the row's top; it failed on the old CSS.
 
-### `[ ]` 238 — "Select all rows" in the data grid misses rows on other pages
+### `[x]` ✅ 238 — "Select all rows" in the data grid misses rows on other pages
 
 Will, 2026-10-13: *"Bug: 'Select all rows' in the data grid component doesn't
 select all rows, on all pages, as expected."*
+
+**✅ Done 2026-10-13:** a grid its source pages holds one page, so "Select all
+rows" ticked that page alone. It now ASKS: `select-all-request`, with an
+`answer(rows)` callback. The binder answers with `source.allRows(el)` — every
+row under that grid's filter, unpaged — and the grid ticks their keys, on
+other pages too. Unbound, it ticks what it holds, as before.
+`T-select-all-is-the-visible-rows`
 
 ### `[x]` ✅ 237 — A tile's own filter on a View-held field is lost, silently
 

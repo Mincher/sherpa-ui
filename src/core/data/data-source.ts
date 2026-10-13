@@ -99,6 +99,7 @@
  * - .offered — What each field below the top of a SERIAL set OFFERS: the values the rows hold under the answers above it, as…
  * - .bind — Point a component at this source — `bindSource()`, kept as a bridge.
  * - .attach — Take a component its binder has wired, and send it what is already loaded.
+ * - .allRows — Every row a bound component is under, UNPAGED — what "Select all rows" ticks on a grid that holds one page.
  * - .unbind — Stop steering and stop populating this component.
  * - .boundElements — Every component currently bound.
  * - .answerScope — A scoped bar's whole answer: what it holds, each reading, its saved filters on or off. It is its Apply.
@@ -2616,6 +2617,16 @@ export class DataSource extends EventTarget {
     if (this.#autoLoad && (!this.#result.rows.length || needsAll)) {
       void this.load({ force: needsAll });
     }
+  }
+
+  /** Every row a bound component is under, UNPAGED — what "Select all rows"
+   *  ticks on a grid that holds one page. TODO 238 · TRAP T-select-all-is-the-visible-rows */
+  async allRows(el?: Populatable): Promise<readonly Row[]> {
+    const { skip: _skip, take: _take, ...options } = this.#loadOptions();
+    const { rows } = await this.store.load(options);
+    const entry = el ? this.#bound.get(el) : undefined;
+    const own = entry ? this.#only[entry.id] : undefined;
+    return own ? filterRows(rows, own) : rows;
   }
 
   /** Stop steering and stop populating this component. */

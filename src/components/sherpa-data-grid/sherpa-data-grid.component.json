@@ -572,6 +572,12 @@
         "page": "number",
         "pages": "number"
       }
+    },
+    {
+      "$type": "event",
+      "name": "select-all-request",
+      "bubbles": true,
+      "composed": true
     }
   ],
   "tokens": {

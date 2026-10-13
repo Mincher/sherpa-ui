@@ -1718,6 +1718,8 @@ export class SherpaDataGrid extends SherpaElement {
       // in `#rememberSelection` hands every off-page key back.
       // TRAP T-selection-lives-in-the-keys-not-the-objects.
       this.#wantedKeys = null;
+    } else if (value === 'all' && this.#askEvery()) {
+      return;
     } else {
       const rows = value === 'page' ? this.#pageRecords() : this.#visibleRows();
       for (const record of rows) this.#selected.add(record);
@@ -1728,6 +1730,29 @@ export class SherpaDataGrid extends SherpaElement {
     this.#syncGroupSelects();
     this.#emitSelection();
   };
+
+  /**
+   * "Select all rows" on a grid its SOURCE pages: it holds one page, so it asks
+   * for the rest. True when a host took the ask. TODO 238 · TRAP T-select-all-is-the-visible-rows
+   */
+  #askEvery(): boolean {
+    if (this.#paginates || Number(this.dataset['totalPages'] ?? 1) <= 1) return false;
+    return !this.dispatchEvent(new CustomEvent('select-all-request', {
+      bubbles: true, composed: true, cancelable: true,
+      detail: { answer: (rows: readonly GridRow[]): void => this.#selectEvery(rows) },
+    }));
+  }
+
+  /** Tick every row its source answered, the ones on other pages too. */
+  #selectEvery(rows: readonly GridRow[]): void {
+    const keys = rows.map((r) => this.#keyOf(r)).filter((k): k is string => !!k);
+    this.#wantedKeys = [...new Set([...(this.#wantedKeys ?? []), ...keys])];
+    this.#resolveSelection();
+    this.#renderBody();
+    this.#syncSelected();
+    this.#syncGroupSelects();
+    this.#emitSelection();
+  }
 
   /** The records the body actually drew — one page when the grid pages. */
   #pageRecords(): GridRow[] {

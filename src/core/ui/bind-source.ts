@@ -169,6 +169,8 @@ export const STEERING_EVENTS = [
   // A REPORT, not a request: changes what the pager draws, never the query.
   // TRAP T-grouped-paging-belongs-to-the-view
   'grid-pages-change',
+  // "Select all rows" on a paged grid: every matching row, answered back. TODO 238
+  'select-all-request',
 ] as const;
 
 /** One of them. */
@@ -326,6 +328,14 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
     case 'search-change': {
       const term = detail['value'] ?? detail['search'];
       source.setSearch(typeof term === 'string' ? term : '');
+      return;
+    }
+    case 'select-all-request': {
+      // The grid holds one page; its source holds the rest. TRAP T-select-all-is-the-visible-rows
+      const answer = detail['answer'];
+      if (typeof answer !== 'function') return;
+      event.preventDefault();
+      void source.allRows(el).then((rows) => (answer as (rows: readonly Row[]) => void)(rows));
       return;
     }
   }

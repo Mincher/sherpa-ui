@@ -7132,8 +7132,19 @@ The advanced checkbox REPORTS the scenario and the grid carries it out: the
 component knows about one checkbox, and "all rows" means nothing to it. The
 grid owns the rows, so the grid decides.
 
+**A grid its SOURCE pages holds one page** — ungrouped, the store's window IS
+the page — so "Select all rows" there ticked one page (Will, TODO 238). The
+grid ASKS instead: `select-all-request`, cancelable, with an `answer(rows)`
+callback. The binder takes it and answers with `source.allRows(el)` — every
+row under the filter that narrows that grid, unpaged — and the grid ticks
+their keys, the ones on other pages too. With no source, nobody prevents the
+ask, and the grid ticks what it holds, as before.
+
 - Site: `src/components/sherpa-data-grid/sherpa-data-grid.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
+- Site: `src/core/ui/bind-source.ts`
+- Site: `src/core/data/data-source.ts`
+- Site: `test/e2e/reforged-grid-select-all-pages.spec.ts`
 
 ### T-grid-actions-are-declared-once-used-twice
 

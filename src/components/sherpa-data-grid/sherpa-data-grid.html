@@ -91,6 +91,9 @@
     grid-pages-change — detail: { pages, page }   how many pages the CURRENT fold
                        state makes, while grouped. A REPORT, not a request: the
                        host owns data-page, and folding changes the count under it
+    select-all-request — detail: { answer }   "Select all rows" while its source
+                       pages: a REQUEST for every matching row, answered through
+                       answer(rows). Cancelable: the host that answers prevents it
 -->
 <template id="default">
   <!-- The wrapper owns the overflow: `display: block` on a <table> drops it out
