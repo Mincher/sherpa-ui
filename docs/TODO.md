@@ -27,7 +27,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | 🚧 | 1 | 86 | AUDIT — every component's functions and events: one request, one response, standardised in `SherpaElement` | explore |
 | ✅ | 1a | 102 | Simple AND Advanced answers are both kept, so a filter switches mode at any time | foundation |
 | ✅ | 2a | 103 | Rows with no key get one from the data layer — Sherpa's own, never sent out | foundation |
-| ⬜ | 3 | 38 | One model, one builder, one owner — what is left | refactor |
+| ✅ | 3 | 38 | One model, one builder, one owner — what is left | refactor |
 | ✅ | 4 | 74 | EXPLORE — the Query builds every group, sort and filter menu; a menu shows its sub-query | explore |
 | ✅ | 5 | 37 | Components are AGNOSTIC of the data and of the example app | refactor |
 | 🚧 | 5a | 113 | EXPLORE — state first, then render, in every component; a skeleton while the first render waits | explore |
@@ -431,7 +431,7 @@ page load: a stale one from a saved View is dropped and reported
 (`stale-made-up-key`), never matched to the wrong row.
 `T-a-made-up-key-never-leaves-the-data-layer`
 
-### `[~]` 38 — One model, one builder, one owner: what is left
+### `[x]` ✅ 38 — One model, one builder, one owner: what is left
 
 Will, 2026-09-25: *"I'm juggling bugs here between the filter panel and filter
 toolbar when the overlap is considerable so the code should be singular, and
@@ -468,6 +468,16 @@ the same commit; no helper with one caller; state the budget up front and
 report the actual.
 
 **✅ Will, 2026-10-12 — all my picks:** Unblocked: 89 (16) and 99 (a `sherpa-filterset`) are ruled.
+
+**✅ Closed 2026-10-13, measured.** 89 and 99 are built, and the shared half of
+"one builder" is in `src/core/ui/` already: `menuFor()` makes every filter
+menu, `kindOf()` and `oneChipList()` say what a filter is and whether it
+explodes, and `FilterDef`, the ⋮ menu, the saved-filter card, `MenuDrill` and
+`sherpa-filterset` are one each (196). The bar's `#addMenu` and the panel's
+`#giveMenu` both call `menuFor()`; what is left differs by host — the bar's
+chips against the panel's field boxes — not a copy. `docs/FILTER-REVIEW.md`
+§Step 4 measured the same: it landed at −21. Closed as Will closed 196 stage 6
+(2026-10-13: B); say so to reopen it.
 
 ### `[~]` 113 — EXPLORE: state first, then render, in every component; a skeleton while the first render waits
 
