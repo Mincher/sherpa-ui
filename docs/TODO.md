@@ -4150,7 +4150,7 @@ chart, which meant the chart's name: the four charts now take a host
 | ✅ | 1. Name the verbs: each `#steer` branch that reaches private state becomes a public DataSource method named for what it does — `answerScope`, `answerScopes`, `release`, `answerColumn`, `request`, `reportPages`, `remote` | S |
 | ✅ | 2. Steering out: `src/core/ui/bind-source.ts` holds `STEERING_EVENTS` and `steer()`; `bind()` calls it | M |
 | ✅ | 3. Bind and push out: `bindSource(source, el, options)` in the binder; DataSource keeps `attach(target, facts, sink)` and picks the rows. The listeners, `data-locked`, `data-remote`, `as`, `into`, `deliver` and every `data-*` write are the binder's now | M |
-| ⬜ | 4. One helper for the bar and the panel, the ⋮ menu first (`src/core/ui/more-menu.ts`) — then the saved-filter menu, then the drill | M |
+| ✅ | 4. One helper for the bar and the panel, the ⋮ menu first (`src/core/ui/more-menu.ts`) — then the saved-filter menu, then the drill. The ⋮ menu is shared now. The saved-filter menu (`saved-filter-menu.ts`) and the drill (`MenuDrill`) were shared already; what is left of them is each host's chips or scope boxes, which is stage 5 | M |
 | ⬜ | 5. One `FilterDef` type, then one scope protocol (the bar drawn as a panel scope is) | S + L |
 | ⬜ | 6. The filter editor out of `sherpa-menu` (`src/core/ui/filter-editor.ts`) | L |
 | ❓ | 7. Remove the bridge: delete `DataSource.bind`, rewrite ~90 calls in tests — **A:** remove it; **B:** keep a one-line forwarder. My pick: A | M |

@@ -26,6 +26,7 @@ import type { SaidField } from '../../core/data/filter-face.js';
 import {
   FILTERS_LABEL, MenuDrill, filtersMenuItems, type AddedFilter, type ListedFilter,
 } from '../../core/ui/filters-button.js';
+import { extraRows, folded, limitOn, openMore, pickMore, resetRows } from '../../core/ui/more-menu.js';
 import { report } from '../../core/data/report.js';
 import {
   fieldState, readingRows, savedReading, type FieldReading,
@@ -1827,60 +1828,25 @@ export class SherpaFilterPanel extends SherpaElement {
    * TRAP T-the-more-menu-holds-what-folded
    */
   #openMore = (event: Event): void => {
-    const trigger = event.currentTarget as HTMLElement;
-    const menu = this.$<HTMLElement & { show?: (t?: HTMLElement) => void }>('.more-menu');
-    const item = this.$<HTMLTemplateElement>('template.more-item-tpl')?.content.firstElementChild;
-    const divider = this.$<HTMLTemplateElement>('template.more-divider-tpl')?.content.firstElementChild;
-    const check = this.$<HTMLTemplateElement>('template.more-check-tpl')?.content.firstElementChild;
-    if (!menu || !item || !divider || !check) return;
-    const folded = (el: Element | null): boolean => !!el && getComputedStyle(el).display === 'none';
-    const row = (value: string, label: string): HTMLElement => {
-      const one = item.cloneNode(true) as HTMLElement;
-      one.setAttribute('value', value);
-      one.querySelector('.more-label')!.textContent = label;
-      return one;
-    };
-    const first: HTMLElement[] = [];
-    if (folded(this.$('.reset-group'))) {
-      const toDefault = row('reset-default', 'Reset all to default');
-      toDefault.toggleAttribute('disabled', this.hasAttribute('data-at-default'));
-      const reset = row('reset', 'Reset filters');
-      reset.toggleAttribute('disabled', this.hasAttribute('data-nothing-to-reset'));
-      first.push(reset, toDefault);
-    }
-    [...this.querySelectorAll<HTMLElement>(':scope > [slot="actions"]')].forEach((extra, i) => {
-      if (folded(extra)) first.push(row(`extra:${i}`, extra.getAttribute('aria-label') ?? extra.textContent?.trim() ?? ''));
-    });
-    const own: HTMLElement[] = [];
-    if (this.dataset['limitOptions']) {
-      const one = check.cloneNode(true) as HTMLElement;
-      one.querySelector('input')!.checked = this.dataset['limitOptions'] === 'on';
-      own.push(one);
-    }
-    const groups = [first, own].filter((g) => g.length);
-    menu.replaceChildren(...groups.flatMap((g, i) => (i ? [divider.cloneNode(true) as HTMLElement, ...g] : g)));
-    menu.show?.(trigger);
+    const first = folded(this.$('.reset-group')) ? resetRows(this, 'reset') : [];
+    openMore(this, this.root, event.currentTarget as HTMLElement, [[...first, ...extraRows(this)]]);
   };
 
   /** A ⋮ row was chosen: do what its folded button does. */
   #onMore = (event: Event): void => {
-    const value = String((event as CustomEvent).detail?.value ?? '');
-    this.$<HTMLElement & { hide?: () => void }>('.more-menu')?.hide?.();
-    if (value === 'reset') return this.#onResetAll();
-    if (value === 'reset-default') {
+    const picked = pickMore(this, this.root, event);
+    if (typeof picked !== 'string') {
+      picked?.dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
+    } else if (picked === 'reset') {
+      this.#onResetAll();
+    } else if (picked === 'reset-default') {
       this.dispatchEvent(new CustomEvent('view-reset', { bubbles: true, composed: true, cancelable: true, detail: {} }));
-      return;
     }
-    if (!value.startsWith('extra:')) return;
-    const extra = [...this.querySelectorAll<HTMLElement>(':scope > [slot="actions"]')][Number(value.slice(6))];
-    extra?.dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
   };
 
   /** The ⋮ menu's switch: a REQUEST — the host owns whether filters limit each other. */
   #onMoreSwitch = (event: Event): void => {
-    event.stopPropagation();
-    const values = ((event as CustomEvent).detail?.values ?? []) as string[];
-    this.emit('limit-options-change', { on: values.includes('limit-options') });
+    this.emit('limit-options-change', { on: limitOn(event) });
   };
 
   /** Reset, and Reset all to default, are not offered where they would change

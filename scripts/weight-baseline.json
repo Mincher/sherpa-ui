@@ -5,8 +5,8 @@
     "fetched": 0
   },
   "components.js": {
-    "js": 824764,
-    "files": 98,
+    "js": 824036,
+    "files": 99,
     "fetched": 214150
   },
   "components/sherpa-accordion/sherpa-accordion.js": {
@@ -120,8 +120,8 @@
     "fetched": 0
   },
   "components/sherpa-filter-panel/sherpa-filter-panel.js": {
-    "js": 431366,
-    "files": 43,
+    "js": 431708,
+    "files": 44,
     "fetched": 0
   },
   "components/sherpa-gauge-chart/sherpa-gauge-chart.js": {
@@ -245,8 +245,8 @@
     "fetched": 0
   },
   "components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.js": {
-    "js": 427190,
-    "files": 38,
+    "js": 427568,
+    "files": 39,
     "fetched": 0
   },
   "components/sherpa-quick-filter/sherpa-quick-filter.js": {
@@ -345,8 +345,8 @@
     "fetched": 0
   },
   "index.js": {
-    "js": 938395,
-    "files": 127,
+    "js": 937667,
+    "files": 128,
     "fetched": 214150
   }
 }

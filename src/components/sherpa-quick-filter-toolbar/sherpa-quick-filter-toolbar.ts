@@ -22,6 +22,9 @@ import type { SaidField } from '../../core/data/filter-face.js';
 import {
   FILTERS_LABEL, MenuDrill, filtersMenuItems, type AddedFilter,
 } from '../../core/ui/filters-button.js';
+import {
+  extraRows, folded, limitOn, openMore, pickMore, resetRows, type MoreRow,
+} from '../../core/ui/more-menu.js';
 import { report } from '../../core/data/report.js';
 import { DEFAULT_OP, type FilterOp } from '../../core/data/store.js';
 import {
@@ -1703,68 +1706,31 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    * its button does. TRAP T-the-more-menu-holds-what-folded
    */
   #openMore(trigger: HTMLElement): void {
-    const menu = this.$<HTMLElement & { show?: (t?: HTMLElement) => void }>('.more-menu');
-    const item = this.$<HTMLTemplateElement>('template.more-item-tpl');
-    const divider = this.$<HTMLTemplateElement>('template.more-divider-tpl');
-    if (!menu || !item || !divider) return;
-    const folded = (el: Element | null): boolean => !!el && getComputedStyle(el).display === 'none';
     const act = (name: string): HTMLElement | null => this.$(`.act[data-act="${name}"]`);
-    const row = (value: string, label: string): HTMLElement => {
-      const one = item.content.firstElementChild!.cloneNode(true) as HTMLElement;
-      one.setAttribute('value', value);
-      one.querySelector('.more-label')!.textContent = label;
-      return one;
-    };
-
-    const first: HTMLElement[] = [];
-    if (folded(act('ai'))) first.push(row('ai', 'Suggest filters'));
-    if (folded(act('clear'))) {
-      const toDefault = row('reset-default', 'Reset all to default');
-      toDefault.toggleAttribute('disabled', this.hasAttribute('data-at-default'));
-      const reset = row('clear', 'Reset filters');
-      reset.toggleAttribute('disabled', this.hasAttribute('data-nothing-to-reset'));
-      first.push(reset, toDefault);
-    }
-    // The PAGE's buttons in the `actions` slot — the panel switch is one.
-    [...this.querySelectorAll<HTMLElement>(':scope > [slot="actions"]')].forEach((extra, i) => {
-      if (folded(extra)) first.push(row(`extra:${i}`, extra.getAttribute('aria-label') ?? extra.textContent?.trim() ?? ''));
-    });
-    const view: HTMLElement[] = [];
+    const first: MoreRow[] = [];
+    if (folded(act('ai'))) first.push(['ai', 'Suggest filters']);
+    if (folded(act('clear'))) first.push(...resetRows(this, 'clear'));
+    first.push(...extraRows(this));
+    const view: MoreRow[] = [];
     if (this.dataset['type'] === 'view' && folded(this.$('.view-group'))) {
-      view.push(row('favourite', this.hasAttribute('data-favourite') ? 'Remove from Favorites' : 'Favorite'));
-      view.push(row('save', 'Save view'), row('save-as', 'Save view as'));
-      if (this.hasAttribute('data-custom-view')) view.push(row('delete-view', 'Delete view'));
+      view.push(['favourite', this.hasAttribute('data-favourite') ? 'Remove from Favorites' : 'Favorite']);
+      view.push(['save', 'Save view'], ['save-as', 'Save view as']);
+      if (this.hasAttribute('data-custom-view')) view.push(['delete-view', 'Delete view']);
     }
-    if (folded(act('refresh'))) view.push(row('refresh', 'Refresh view'));
-
-    // The host's own option, last: "Limit matching filters". Will, TODO 178.
-    const own: HTMLElement[] = [];
-    const check = this.$<HTMLTemplateElement>('template.more-check-tpl')?.content.firstElementChild;
-    if (this.dataset['limitOptions'] && check) {
-      const one = check.cloneNode(true) as HTMLElement;
-      one.querySelector('input')!.checked = this.dataset['limitOptions'] === 'on';
-      own.push(one);
-    }
-    const groups = [first, view, own].filter((g) => g.length);
-    const rows = groups.flatMap((g, i) => (i ? [divider.content.firstElementChild!.cloneNode(true) as HTMLElement, ...g] : g));
-    menu.replaceChildren(...rows);
-    menu.show?.(trigger);
+    if (folded(act('refresh'))) view.push(['refresh', 'Refresh view']);
+    openMore(this, this.root, trigger, [first, view]);
   }
 
   /** The ⋮ menu's switch: a REQUEST — the host owns whether filters limit each other. */
   #onMoreSwitch = (event: Event): void => {
-    event.stopPropagation();
-    const values = ((event as CustomEvent).detail?.values ?? []) as string[];
-    this.emit('limit-options-change', { on: values.includes('limit-options') });
+    this.emit('limit-options-change', { on: limitOn(event) });
   };
 
   /** A ⋮ row was chosen: do what its folded button does. */
   #onMore = (event: Event): void => {
-    const value = String((event as CustomEvent).detail?.value ?? '');
-    this.$<HTMLElement & { hide?: () => void }>('.more-menu')?.hide?.();
-    if (!value.startsWith('extra:')) return this.#act(value);
-    const extra = [...this.querySelectorAll<HTMLElement>(':scope > [slot="actions"]')][Number(value.slice(6))];
-    extra?.dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
+    const picked = pickMore(this, this.root, event);
+    if (typeof picked === 'string') this.#act(picked);
+    else picked?.dispatchEvent(new CustomEvent('button-click', { bubbles: true, composed: true }));
   };
 
   /** The Add menu committed. `menu-change`: only a CHIP re-emits as quick-filter-change. */

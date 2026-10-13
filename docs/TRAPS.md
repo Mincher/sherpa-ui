@@ -1513,6 +1513,7 @@ provider) — so the bar's ⋮ shows at any width then. Ticking it REPORTS
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.html`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.css`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
+- Site: `src/core/ui/more-menu.ts`
 
 ### T-a-number-is-reset-not-cleared
 
