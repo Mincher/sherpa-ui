@@ -63,6 +63,9 @@ export class SherpaGaugeChart extends SherpaElement {
     'data-min': { type: 'number', kind: 'content' },
     'data-max': { type: 'number', kind: 'content' },
     'data-zones': { type: 'string', kind: 'behaviour' },
+    /* It reads its value from the TOP — risk as 100 − health — and turns its
+       field's bands round with it. Will, TODO 150 */
+    'data-invert': { type: 'boolean', kind: 'behaviour' },
     'data-caption': { type: 'string', kind: 'content' },
     'data-unit': { type: 'string', kind: 'content' },
   } as const;
@@ -101,7 +104,8 @@ export class SherpaGaugeChart extends SherpaElement {
   #sync(): void {
     const min = this.num('data-min', 0);
     const max = this.num('data-max', 100);
-    const raw = this.num('data-value', 0);
+    const read = this.num('data-value', 0);
+    const raw = this.hasAttribute('data-invert') ? min + max - read : read;
     const frac = max > min ? Math.min(1, Math.max(0, (raw - min) / (max - min))) : 0;
 
     this.style.setProperty('--_angle', `${-90 + frac * 180}deg`);
@@ -146,7 +150,16 @@ export class SherpaGaugeChart extends SherpaElement {
     let raw: Band[] = [];
     const trimmed = spec?.trim() ?? '';
     if (!trimmed) {
-      raw = this.#given.map((t) => ({ to: t.to, color: t.status ?? 'info', label: t.label }));
+      let from = min;
+      const bands = this.#given.map((t) => {
+        const band = { from, to: t.to, color: t.status ?? 'info', label: t.label };
+        from = t.to;
+        return band;
+      });
+      // INVERTED, the field's bands turn round with its value. TODO 150
+      raw = this.hasAttribute('data-invert')
+        ? bands.map((b) => ({ ...b, from: min + max - b.to, to: min + max - b.from })).reverse()
+        : bands;
     } else if (trimmed.startsWith('[')) {
       try {
         raw = JSON.parse(trimmed) as Band[];

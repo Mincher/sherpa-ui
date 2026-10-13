@@ -187,6 +187,12 @@ export interface SteerBind {
   saved?: Set<string>;
 }
 
+/** Which scope a Group or Sort came from: the event's, else its one bound scope. TODO 99 */
+function arranger(detail: Record<string, unknown>, bind: SteerBind | undefined): string | undefined {
+  if (typeof detail['scope'] === 'string') return detail['scope'];
+  return typeof bind?.scope === 'string' ? bind.scope : undefined;
+}
+
 /** Turn one component's event into its source's call. TRAP T-steering-events-are-a-closed-list */
 export function steer(source: DataSource, el: Populatable, bind: SteerBind | undefined, type: SteeringEvent, event: CustomEvent): void {
   const detail = (event.detail ?? {}) as Record<string, unknown>;
@@ -195,12 +201,12 @@ export function steer(source: DataSource, el: Populatable, bind: SteerBind | und
     case 'sort-change': {
       const field = detail['field'];
       const direction = detail['direction'] === 'desc' ? 'desc' : 'asc';
-      source.setSort(typeof field === 'string' ? field : null, direction);
+      source.setSort(typeof field === 'string' ? field : null, direction, arranger(detail, bind));
       return;
     }
     case 'group-change': {
       const field = detail['field'];
-      source.setGroup(typeof field === 'string' && field ? field : null);
+      source.setGroup(typeof field === 'string' && field ? field : null, arranger(detail, bind));
       return;
     }
     case 'quick-filter-change': {

@@ -1675,6 +1675,11 @@ Three readers, one fact:
   half-open, as a histogram's band is — the first has no floor and the last no
   top. A name no band has filters nothing, and is reported (`unknown-band`).
 
+**A score that runs the other way** — risk as `100 − health` — is the gauge's
+`data-invert` (Will, A): it reads its value from the top and turns its field's
+bands round, so "At risk" (health below 60) is risk 40 to 100. The field and
+its saved filters keep health's own units.
+
 The Query still never summarises (`T-aggregation-is-data`): a band is a
 condition when a filter names it, and a cut when a chart asks.
 
@@ -1688,6 +1693,7 @@ condition when a filter names it, and a cut when a chart asks.
 - Site: `src/components/sherpa-gauge-chart/sherpa-gauge-chart.html`
 - Site: `test/unit/a-threshold-is-a-fact-of-the-field.test.mjs`
 - Site: `test/e2e/reforged-provider-summary.spec.ts`
+- Site: `test/e2e/reforged-gauge-chart.spec.ts`
 
 ### T-a-relative-date-stays-relative
 
@@ -6704,10 +6710,26 @@ organise set — which is not the same as being correct BY RULE. The guard makes
 future caller's mistake visible as nothing drawn, rather than as a chip that
 steers one arbitrary component.
 
+**Only SOME scopes arrange** — Will, TODO 99 step 4 (B): *"Only certain
+component scopes, and possibly view scope, will have group and sort."*
+`source.arranges(scope)` is what the scope declares (`arranges` in the page
+JSON, or `declareScope`); left out, a scope over a grid or a list arranges, and
+the View and a chart's scope do not. A scope that starts to arrange when its
+grid joins redraws its bars and panel, and a bar's `drawScope` draws its Group
+and Sort.
+
+**One arrangement, and its OWNER.** A source still has one sort, group and
+page, loaded once. It remembers which scope set them (`sort-change` and
+`group-change` say, or their binding does), so only that scope's Organise
+chips show it, `export()` writes it into that scope, and a View read back
+gives it to that scope again. Two arranged grids on one source would need a
+load each — not built until a page has two.
+
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - Site: `src/components/sherpa-filter-panel/sherpa-filter-panel.ts`
 - Site: `test/e2e/reforged-filter-panel-component.spec.ts`
 - Site: `src/core/data/data-source.ts`
+- Site: `test/unit/a-scope-arranges-its-own-rows.test.mjs`
 
 ### T-a-bar-offers-only-what-its-scope-holds
 

@@ -117,7 +117,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | c30 | 196 | ONE filter surface and a smaller DataSource: `bind()` out of the data layer; one helper for bar and panel | refactor |
 | ⬜ | c31 | 223 | DEFERRED — server rendering with declarative shadow DOM, after 208 | explore |
 | | | | **D — Filters: Will's features, on the foundation** | |
-| 🚧 | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
+| ✅ | 17 | 99 | EXPLORE — a FILTERSET: filters in serial, in parallel, or both; and a group of chips | explore |
 | ✅ | 18 | 89 | Every filter added to the panel starts SIMPLE: chips, one chip with a menu, or a number input or range | feature |
 | ✅ | 19 | 90 | Any filter switches to ADVANCED: condition rows, with options per field type | feature |
 | ✅ | 19a | 110 | In Advanced rows, AND is serial and OR is parallel: an AND row offers only what the rows before it leave | feature |
@@ -195,7 +195,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 39 | 14 | An example of real-time data | feature |
 | ✅ | 39a | 128 | A gauge's tooltip names the segment as the legend does | quick |
 | ✅ | 39c | 162 | A chart and its legend go from side by side to stacked as their container narrows — container queries | feature |
-| 🚧 | 39b | 150 | EXPLORE — how the example gauge's risk score is worked out; THRESHOLDS in the central Query | explore |
+| ✅ | 39b | 150 | EXPLORE — how the example gauge's risk score is worked out; THRESHOLDS in the central Query | explore |
 | ✅ | 40 | 59 | EXPLORE, later — Will's own loading pattern | explore |
 | ✅ | 40a | 143 | EXPERIMENT, later — scrolled-past metrics become a compact sticky header; a toggle in Settings › Experiments | explore |
 | ✅ | 40b | 175 | LATER — the sticky metrics keep a small sparkline, tighter gaps, a larger value; a slow scroll must still gather them | feature |
@@ -2216,7 +2216,7 @@ someone needs SEO or pages without JS.
 
 ## D — Filters: Will's features, on the foundation
 
-### `[ ]` 99 — EXPLORE: a FILTERSET — filters in SERIAL, in PARALLEL, or both; and a group of chips
+### `[x]` ✅ 99 — EXPLORE: a FILTERSET — filters in SERIAL, in PARALLEL, or both; and a group of chips
 
 Will, 2026-09-29: *"Customers and Regions are closely related. 1 customer can
 operate in many regions. A region can only contain a customers data for that
@@ -2326,7 +2326,7 @@ same helper.
 | ✅ | 1. The JSON: `sets` on a scope, `declareSets()` / `sets()`, `describe()` carries them; `openSource` reports a set field not held, `declareSets` a field in two sets |
 | ✅ | 2. Serial narrowing: a field offers what the fields above it leave; a pick the chain rules out is set aside, as 180 does. `source.offered(scope)`; `drawOffered` on the bar and the panel, `offered` on the menu; a value not offered is removed, a pick kept greyed. A field is never ruled out by one below it, Limit on or off |
 | ✅ | 3. The `sherpa-filterset` component, stamped by the bar and the panel — **✅ Will, 2026-10-13: A.** Built: a heading, its filters (joined with `.sherpa-group` in the bar, stacked in the panel), and a `link-simple` mark when serial. A set whose chips all fold is parked, as they are. Records in Sherpa Demos draws its Account set |
-| ⬜ | 4. Sort and group per scope — the Organise set. **✅ Will, 2026-10-13: B** — *"Only certain component scopes, and possibly view scope, will have group and sort. Not all component scopes."* **❓ Will, found while building:** a source has ONE arrangement today — one sort, group and page, loaded once — and `export()` writes it in the View scope. A real arrangement PER scope means each grid on a source gets its own sorted page: the source loads once per arranged scope. No page in Sherpa Demos has two arranged components on one source yet. **A:** build it now — one load per arranged scope, each grid its own sort, group and page. **B:** the source records WHICH scope arranged the rows (from `sort-change`'s `scope`): a scope's Organise chips show only its own sort, and a saved View keeps the arrangement in that scope — still one load, until a page has two arranged grids. My pick: B |
+| ✅ | 4. **Done 2026-10-13:** `arranges` per scope (page JSON or `declareScope`; left out, a grid's or a list's scope does, the View does not); the source remembers which scope arranged the rows — its chips alone show it, `export()` writes it there. Sort and group per scope — the Organise set. **✅ Will, 2026-10-13: B** — *"Only certain component scopes, and possibly view scope, will have group and sort. Not all component scopes."* **❓ Will, found while building:** a source has ONE arrangement today — one sort, group and page, loaded once — and `export()` writes it in the View scope. A real arrangement PER scope means each grid on a source gets its own sorted page: the source loads once per arranged scope. No page in Sherpa Demos has two arranged components on one source yet. **A:** build it now — one load per arranged scope, each grid its own sort, group and page. **B:** the source records WHICH scope arranged the rows (from `sort-change`'s `scope`): a scope's Organise chips show only its own sort, and a saved View keeps the arrangement in that scope — still one load, until a page has two arranged grids. My pick: B |
 | ✅ | 5. Sherpa Demos: Customer then Region, serial — on Records. The Dashboard stays parallel: in a chain Region can never set Customer aside, and the Dashboard is where 180's "a later answer wins" shows |
 
 ### `[x]` ✅ 89 — Every filter added to the panel starts SIMPLE
@@ -4797,7 +4797,7 @@ The overlay from 58 never shows. The provider carries it
 (`data-keep-content`), so no page sets it card by card.
 `T-a-container-shows-its-datas-state`
 
-### `[ ]` 150 — EXPLORE: the gauge's risk score, and thresholds in the central Query
+### `[x]` ✅ 150 — EXPLORE: the gauge's risk score, and thresholds in the central Query
 
 Will, 2026-09-30: *"We need to take a look at how the example gauge's risk
 score is being calculated.*
@@ -4885,6 +4885,11 @@ Demos: the Dashboard's storage gauge draws `storage`'s bands, and Records'
   gains derived fields.
 
 **✅ Will, 2026-10-13: A** — `data-invert` on the gauge.
+
+**✅ Done 2026-10-13.** `data-invert` reads the value from the top and turns
+the field's bands round. Records' gauge asks its provider for `mean` of
+`health`, inverted; its zones are health's thresholds, and the hand-written
+bind in `records.js` is gone.
 
 ### `[x]` ✅ 162 — A chart and its legend stack as their container narrows
 

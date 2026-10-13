@@ -211,6 +211,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-invert",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "description": "it reads its value from the TOP — max − value, as risk is 100 − health — and turns its field's thresholds round. TRAP T-a-threshold-is-a-fact-of-the-field"
+    },
+    {
+      "$type": "prop",
       "name": "data-label",
       "type": "string",
       "observed": true,

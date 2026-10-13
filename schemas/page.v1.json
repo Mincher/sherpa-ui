@@ -96,6 +96,10 @@
         },
         "holds": { "description": "The fields it holds at the start.", "type": "array", "items": { "type": "string" } },
         "presets": { "description": "The saved filters its bar shows, each off.", "type": "array", "items": { "type": "string" } },
+        "arranges": {
+          "description": "Group and Sort arrange its rows: its Organise chips. Left out, a scope over a grid or a list does, and the View does not.",
+          "type": "boolean"
+        },
         "sets": {
           "description": "Fields drawn as one group. A serial set chains them: each offers only what the answers of the fields above it leave.",
           "type": "array",

@@ -69,6 +69,9 @@ One JSON document per page. The same rule as a View: **a definition is data**
   `"sets": [{ "id": "account", "label": "Account", "mode": "serial", "fields": ["customer", "region"] }]`.
   A `serial` set chains them — Region offers only the regions of the picked
   Customers. `parallel`, the default, only groups (`T-a-filter-set-groups-or-chains`).
+- **A scope's `arranges`** says whether Group and Sort arrange its rows. Left
+  out, a scope over a grid or a list does, and the View does not
+  (`T-group-and-sort-are-component-scope`).
 - **A number field's `thresholds`** are its bands, declared once:
   `"health": { "type": "number", "thresholds": [{ "to": 60, "label": "At risk", "status": "critical" }, …] }`.
   A gauge over the field draws them, a bar chart is cut at them, and a saved

@@ -62,7 +62,8 @@
  * - .whereOf — Readings in the plain form a definition or a View writes, by this source's field types.
  * - .readingsOf — The plain form as readings, by this source's field types.
  * - .filterDef — A field's filter, as every bar, panel and heading draws it.
- * - .declareScope — Name a scope as a reader sees it — a panel's section, an Add list's note.
+ * - .declareScope — Name a scope as a reader sees it — a panel's section, an Add list's note — and say if it arranges.
+ * - .arranges — Does Group and Sort arrange this scope's rows?
  * - .declareSets — A scope's filter sets, in order.
  * - .sets — A scope's filter sets, as declared.
  * - .scopeLabel — A scope's name as a reader sees it, or its id.
@@ -251,7 +252,7 @@ export interface ScopeDescription {
 
 /** The view state a source owns. */
 /** How a definition arranges the rows — only what it names. */
-type Arrange = { sort?: SortSpec[]; group?: string | null; search?: string };
+type Arrange = { sort?: SortSpec[]; group?: string | null; search?: string; scope?: string };
 
 /** A filter as one string, its AND and OR children in one order: the same filter
  *  always reads the same. */
@@ -526,9 +527,10 @@ export class DataSource extends EventTarget {
   export(): SourceState {
     const query = structuredClone(this.#applied);
     const { sort, group, search } = this.#state;
-    query.scopes[VIEW] = {
-      ...(query.scopes[VIEW] ?? { holds: [], readings: {} }), sort: structuredClone(sort), group, search,
-    };
+    // The arrangement goes in the scope that arranged it. TRAP T-group-and-sort-are-component-scope
+    const by = this.#arrangedIn() ?? VIEW;
+    query.scopes[VIEW] = { ...(query.scopes[VIEW] ?? { holds: [], readings: {} }), search };
+    query.scopes[by] = { ...(query.scopes[by] ?? { holds: [], readings: {} }), sort: structuredClone(sort), group };
     const presets: SourceState['presets'] = {};
     for (const scope of Object.values(query.scopes)) {
       for (const id of Object.keys(scope.presets ?? {})) {
@@ -702,7 +704,8 @@ export class DataSource extends EventTarget {
    * click resumes it. `clearSort()` is how a caller forgets.
    * TRAP T-a-suspended-sort-is-one-owners-job
    */
-  setSort(field: string | null, direction: SortDirection = 'asc'): void {
+  setSort(field: string | null, direction: SortDirection = 'asc', scope?: string): void {
+    if (scope) this.#arrangedBy = scope;
     if (field) {
       this.#state.sort = [{ field, direction }];
       delete this.#state.sortSuspended;
@@ -729,7 +732,8 @@ export class DataSource extends EventTarget {
     this.#requery();
   }
 
-  setGroup(field: string | null): void {
+  setGroup(field: string | null, scope?: string): void {
+    if (scope) this.#arrangedBy = scope;
     this.#state.group = field;
     // The old count was measured against the OLD grouping. Drop it and wait for
     // the next draw. TRAP T-grouped-paging-belongs-to-the-view
@@ -1038,15 +1042,16 @@ export class DataSource extends EventTarget {
       scope, label: this.scopeLabel(scope), ...(shows ? { shows } : {}), filters: [...presets, ...fields],
       available: [...this.addable(scope), ...offered], ...(sets.length ? { sets } : {}),
     };
-    /* HOW its rows are arranged — a component's, never the View's.
-       TRAP T-group-and-sort-are-component-scope */
-    if (scope !== VIEW && this.fields(scope).length) {
+    /* HOW its rows are arranged — only in a scope that arranges, and its own
+       arrangement only. TRAP T-group-and-sort-are-component-scope */
+    if (this.arranges(scope) && this.fields(scope).length) {
       const cols = this.fields(scope).filter((f) => this.#fields.has(f))
         .map((f) => ({ field: f, label: this.#fields.get(f)?.label ?? f }));
       out.group = cols;
       out.sort = cols;
-      if (this.#state.group) out.groupField = this.#state.group;
-      const [first] = this.#state.sort;
+      const mine = (this.#arrangedIn() ?? scope) === scope;
+      if (mine && this.#state.group) out.groupField = this.#state.group;
+      const [first] = mine ? this.#state.sort : [];
       if (first) {
         out.sortField = first.field;
         out.sortDirection = first.direction ?? 'asc';
@@ -1343,10 +1348,29 @@ export class DataSource extends EventTarget {
     };
   }
 
-  /** Name a scope as a reader sees it — a panel's section, an Add list's note. */
-  declareScope(scope: string, facts: { label: string }): void {
-    this.#scopeLabels.set(scope, facts.label);
+  /** Name a scope as a reader sees it — a panel's section, an Add list's note — and say if it arranges. */
+  declareScope(scope: string, facts: { label?: string; arranges?: boolean }): void {
+    if (facts.label != null) this.#scopeLabels.set(scope, facts.label);
+    if (facts.arranges != null) this.#arranges.set(scope, facts.arranges);
   }
+
+  /** Does Group and Sort arrange this scope's rows? As declared — else a
+   *  component scope that shows a grid or a list does, and the View does not.
+   *  Will, TODO 99. TRAP T-group-and-sort-are-component-scope */
+  arranges(scope: string): boolean {
+    return this.#arranges.get(scope)
+      ?? (scope !== VIEW && [...this.#bound.values()].some((b) => b.scope === scope && (b.shows === 'grid' || b.shows === 'list')));
+  }
+  /** Each scope's own word on whether it arranges. */
+  #arranges = new Map<string, boolean>();
+
+  /** The scope whose Group or Sort set the rows' arrangement — while it still
+   *  arranges; else none, and every arranging scope shows it. */
+  #arrangedIn(): string | undefined {
+    return this.#arrangedBy && this.arranges(this.#arrangedBy) ? this.#arrangedBy : undefined;
+  }
+  /** The scope that last arranged the rows. */
+  #arrangedBy: string | undefined;
 
   /** A scope's filter sets, in order. A field is in one set at most; a second
    *  is left out, and said. TRAP T-a-filter-set-groups-or-chains */
@@ -1902,6 +1926,7 @@ export class DataSource extends EventTarget {
       };
       if (sort) (arrange ??= {}).sort = sort;
       if (group !== undefined) (arrange ??= {}).group = group;
+      if (sort || group !== undefined) arrange!.scope = id;
       if (search !== undefined) (arrange ??= {}).search = search;
     }
     /* A component's OWN default filter outlives a View that does not name it,
@@ -1943,6 +1968,7 @@ export class DataSource extends EventTarget {
 
   /** A definition's arrangement onto the source's own. */
   #arrange(by: Arrange): void {
+    if (by.scope) this.#arrangedBy = by.scope;
     if (by.sort) {
       this.#state.sort = [...by.sort];
       delete this.#state.sortSuspended;
@@ -2620,6 +2646,8 @@ export class DataSource extends EventTarget {
    *  loaded. `bindSource()` is the way in. TODO 196 */
   attach(el: Populatable, facts: AttachFacts, sink: BindSink): void {
     const had = this.#componentScopes();
+    const scope = typeof facts.scope === 'string' ? facts.scope : undefined;
+    const arranged = scope ? this.arranges(scope) : false;
     this.#bound.set(el, {
       id: facts.id ?? (el.id || `bind-${++this.#binds}`),
       readonly: facts.readonly ?? false,
@@ -2630,6 +2658,11 @@ export class DataSource extends EventTarget {
       ...(facts.shows ? { shows: facts.shows } : {}),
     });
     this.#rescope(had);
+    // A grid joined, so its scope arranges now: its bars and panel draw Group and Sort. TODO 99
+    if (scope && !arranged && this.arranges(scope)) {
+      this.#drawBars(scope);
+      this.#drawScopesSoon();
+    }
 
     // Whatever is already loaded, so a component bound late is not blank.
     this.#push(el);

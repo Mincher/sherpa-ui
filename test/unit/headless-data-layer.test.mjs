@@ -951,6 +951,8 @@ test('describe draws a scope whole; a panel over two scopes adds, raises and ans
   source.declareField('plan', { label: 'Plan', select: 'multiple' });
   source.declareValues('plan', ['Free', 'Pro']);
   source.declareScope('view', { label: 'View filters' });
+  // No grid is bound here, so it SAYS it arranges. TODO 99
+  source.declareScope('grid', { arranges: true });
   source.declarePreset('pro-only', { plan: { picked: ['Pro'] } }, { label: 'Pro only', editable: true });
   source.offer('grid', ['plan']);
   const drawn = [];

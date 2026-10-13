@@ -1450,6 +1450,10 @@ export class SherpaQuickFilterToolbar extends SherpaElement {
    */
   async drawScope(scope: ScopeDescription): Promise<void> {
     this.groupSets(scope.sets ?? []);
+    // Its Group and Sort, where the scope arranges — drawn again only when they change.
+    // TRAP T-group-and-sort-are-component-scope
+    const organise = { group: scope.group ?? [], sort: scope.sort ?? [] };
+    if (scope.group && JSON.stringify(organise) !== JSON.stringify(this.#organise)) this.organise(organise);
     const presets = scope.filters.filter((f) => f.readings);
     const fields = scope.filters.filter((f) => !f.readings);
     // The scope speaks FIELDS; a chip may be named for its question.

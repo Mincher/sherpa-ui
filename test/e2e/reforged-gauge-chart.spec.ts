@@ -265,3 +265,31 @@ test('a named zone is called the same in its tooltip and in the legend', async (
   expect(r.plain.tips).toEqual([['Success', '0–60'], ['Critical', '60–100']]);
   expect(r.plain.rows).toEqual([['Mine', '']]);
 });
+
+/* INVERTED — Will, TODO 150 (A). Risk is health read from the top: 100 − 30
+   is 70, and health's bands turn round, so "At risk" (health below 60) is
+   risk 40 to 100, on the right. TRAP T-a-threshold-is-a-fact-of-the-field */
+test('an inverted gauge reads its value from the top, and turns its field\'s bands round', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = await window.__mount<HTMLElement & { populate(d: unknown): Promise<void> }>(
+      'sherpa-gauge-chart', undefined, { 'data-invert': '', 'data-min': '0', 'data-max': '100' });
+    el.innerHTML = '<sherpa-chart-legend slot="legend" data-readonly></sherpa-chart-legend>';
+    await el.populate({ value: 30, zones: [
+      { to: 60, label: 'At risk', status: 'critical' },
+      { to: 80, label: 'Watch', status: 'warning' },
+      { to: 100, label: 'Healthy', status: 'success' },
+    ] });
+    await window.__settled();
+    const legend = el.querySelector('sherpa-chart-legend')!;
+    return {
+      angle: getComputedStyle(el).getPropertyValue('--_angle').trim(),
+      bands: [...el.shadowRoot!.querySelectorAll('[aria-label]')].map((a) => a.getAttribute('aria-label'))
+        .filter((l) => / to /.test(l ?? '')),
+      key: [...legend.shadowRoot!.querySelectorAll('.item .label')].map((l) => l.textContent),
+    };
+  });
+  // 70% of the half turn, from -90deg.
+  expect(parseFloat(r.angle)).toBeCloseTo(36);
+  expect(r.bands).toEqual(['Healthy 0 to 20', 'Watch 20 to 40', 'At risk 40 to 100']);
+  expect(r.key).toEqual(['Healthy', 'Watch', 'At risk']);
+});

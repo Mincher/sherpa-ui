@@ -25,6 +25,9 @@ export interface ScopeDefinition {
   presets?: readonly string[];
   /** Fields drawn as one group; a `serial` set chains them. TRAP T-a-filter-set-groups-or-chains */
   sets?: readonly FilterSet[];
+  /** Group and Sort arrange its rows: its Organise chips. Left out, a scope
+   *  over a grid or a list does, and the View does not. Will, TODO 99 */
+  arranges?: boolean;
 }
 
 /** A page's source: which store, how it pages and searches, its fields, scopes
@@ -82,7 +85,11 @@ export async function openSource(def: SourceDefinition, store: Store): Promise<D
     });
   }
   for (const [scope, facts] of Object.entries(def.scopes ?? {})) {
-    if (facts.label) source.declareScope(scope, { label: facts.label });
+    if (facts.label || facts.arranges != null) {
+      source.declareScope(scope, {
+        ...(facts.label ? { label: facts.label } : {}), ...(facts.arranges != null ? { arranges: facts.arranges } : {}),
+      });
+    }
     if (facts.offers) source.offer(scope, facts.offers === 'all' ? fields : facts.offers);
     if (facts.holds) source.hold(scope, facts.holds);
     for (const set of facts.sets ?? []) {
