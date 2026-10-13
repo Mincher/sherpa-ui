@@ -5,12 +5,37 @@
  *   validate_def  — run every design-system rule; returns errors + warnings
  *   compile_def   — def → { ts, html, css }
  *   token_for     — which Core token to bind for a hardcoded property=value (the meticulous rule)
+ *   scaffold_app  — the starter app, one folder with no build, as files
  *
  * Map:
- * - register — register scaffold_def, validate_def, compile_def and token_for
+ * - register — register scaffold_def, validate_def, compile_def, token_for and scaffold_app
  */
+import fs from "fs";
+import path from "path";
 import { z } from "zod/v3";
-import { validateDef, compileDef, tokenForValue } from "../lib/sherpa.js";
+import { validateDef, compileDef, tokenForValue, at } from "../lib/sherpa.js";
+
+/* npm drops a package's `.gitignore`: the starter keeps it, and `.mcp.json`,
+   without their dot. TRAP T-a-starter-is-one-folder */
+const DOTTED = new Set(["gitignore", "mcp.json"]);
+
+/** Every file in the starter, as the app gets it: its path and its text. */
+function starterFiles(name) {
+  const root = at("starter");
+  const files = [];
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) { walk(full); continue; }
+      const rel = path.relative(root, full).split(path.sep).join("/");
+      let text = fs.readFileSync(full, "utf8");
+      if (rel === "package.json") text = `${JSON.stringify({ ...JSON.parse(text), name }, null, 2)}\n`;
+      files.push({ path: DOTTED.has(rel) ? `.${rel}` : rel, text });
+    }
+  };
+  if (fs.existsSync(root)) walk(root);
+  return files;
+}
 
 function ok(text) { return { content: [{ type: "text", text }] }; }
 function err(text) { return { content: [{ type: "text", text: `Error: ${text}` }], isError: true }; }
@@ -279,6 +304,27 @@ export function register(server) {
       } catch (e) {
         return err(`token_for: ${e.message}`);
       }
+    }
+  );
+
+  // ── scaffold_app — the starter, as files ──
+  server.registerTool(
+    "scaffold_app",
+    {
+      title: "Scaffold a Sherpa App",
+      description:
+        "The starter app, as files: one folder with no build — index.html (the shell and outlet.start()), app.json, one Context's template, page definition and Views, its store with seed rows, an optional Context module, package.json, .mcp.json, and an AGENTS.md that says where each kind of file goes. Write them into an EMPTY folder, then `npm install && npm start`. They are the files `npx sherpa-ui init <folder>` writes. Read sherpa://app-guide before you change them, and check app.json and each page definition with validate_page.",
+      inputSchema: {
+        name: z.string().optional().describe("The app's package name, lower case with hyphens (default \"sherpa-app\")."),
+      },
+    },
+    async ({ name }) => {
+      const pkg = (name ?? "sherpa-app").toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "") || "sherpa-app";
+      const files = starterFiles(pkg);
+      if (!files.length) return err("the starter is not here — this sherpa-ui has no starter/ folder.");
+      let out = `## The starter — ${files.length} files\n\nWrite each into an empty folder, then \`npm install && npm start\`.\n\n`;
+      for (const f of files) out += `### \`${f.path}\`\n\n\`\`\`\`\n${f.text.replace(/\n$/, "")}\n\`\`\`\`\n\n`;
+      return ok(out);
     }
   );
 }

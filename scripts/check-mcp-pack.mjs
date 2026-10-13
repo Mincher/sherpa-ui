@@ -28,6 +28,7 @@ export const READS = [
   'src/styles/tokens/tokens.css',
   'src/components/sherpa-button/sherpa-button.component.json',
   'src/components/sherpa-button/sherpa-button.ts',
+  'starter/index.html', 'starter/app.json',
 ];
 
 const IMPORT = /(?:import|export)\s*(?:[^'"`;]*?\bfrom\s*)?['"]([^'"]+)['"]|import\(\s*['"]([^'"]+)['"]\s*\)/g;

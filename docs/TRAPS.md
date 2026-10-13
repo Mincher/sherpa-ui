@@ -16854,3 +16854,27 @@ npm cache, and the network for a file the cache lacks.
 - Site: `mcp-server/lib/sherpa.js`
 - Site: `scripts/check-mcp-pack.mjs`
 - Site: `test/unit/the-mcp-package.test.mjs`
+
+### T-a-starter-is-one-folder
+
+**A new app starts from `starter/`** (TODO 222; Will, A): one folder with no
+build and no server of its own — `index.html` (the shell and
+`outlet.start()`), `app.json`, one Context's template, page definition and
+Views, its store with seed rows, an optional module, `package.json`,
+`.mcp.json` and an `AGENTS.md` that says where each kind of file goes. Three
+doors, one source: `npx sherpa-ui init <folder>` (`bin/sherpa-ui.mjs`, no
+dependencies), the MCP's `scaffold_app`, and a copy by hand.
+
+npm drops a package's `.gitignore`, and this repo ignores `.mcp.json`, so the
+starter keeps both WITHOUT the dot and each door adds it. The app imports
+`sherpa-ui` from `./node_modules`, so it is served from its own folder: a
+server that rewrites `/starter/index.html` to `/starter` resolves every
+relative path against `/`.
+
+A node test makes an app and checks it against the app and page schemas,
+`checkApp` and the usage gate; an e2e test boots it in all three engines.
+
+- Site: `bin/sherpa-ui.mjs`
+- Site: `mcp-server/tools/generate.js`
+- Site: `test/unit/the-starter.test.mjs`
+- Site: `test/e2e/reforged-starter.spec.ts`

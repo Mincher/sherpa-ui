@@ -4,7 +4,7 @@ Structured access to the Sherpa design system for an AI agent: what a component
 IS, what a caller can DO to it, whether your data will fit, and — against a
 local page — the live screen itself.
 
-**18 tools · 7 resources · 3 prompts.** Every name below is registered in the
+**19 tools · 7 resources · 3 prompts.** Every name below is registered in the
 code; if a tool is not listed here it does not exist.
 
 > This file replaced a 752-line version on 2026-09-17 that documented 20 tools,
@@ -76,6 +76,7 @@ source — does this name exist — from the generated `tokens.css`.
 | `validate_def` | `def` | Every design-system rule, checked |
 | `compile_def` | `def` | Spec → TS + HTML + CSS |
 | `token_for` | `property`, `value` | Which token resolves to this pixel value |
+| `scaffold_app` | `name?` | The starter app as files — one folder, no build; what `npx sherpa-ui init` writes |
 
 ### Verify — check a built one · `tools/verify.js`
 

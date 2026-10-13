@@ -1,0 +1,7 @@
+{
+  "all": { "label": "All records", "query": { "v": 1, "scopes": { "data": {} } } },
+  "active": {
+    "label": "Active",
+    "query": { "v": 1, "scopes": { "view": { "where": { "status": { "eq": "active" } } } } }
+  }
+}

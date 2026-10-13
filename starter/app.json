@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/sherpa-ui/schemas/app.v1.json",
+  "v": 1,
+  "product": { "name": "My app", "icon": "group" },
+  "default": "records",
+  "contexts": {
+    "records": {
+      "label": "Records",
+      "icon": "table-columns",
+      "template": "templates/records.html",
+      "definition": "view-schemas/records.json",
+      "views": "views/records-views.json",
+      "module": "contexts/records.js"
+    }
+  }
+}

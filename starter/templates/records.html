@@ -1,0 +1,18 @@
+<!-- The Records Context. Each component ASKS the provider for its data. -->
+<sherpa-layout-grid data-rows="fit" data-row-count="2">
+  <sherpa-metric data-col-span="xsmall" data-min-row-span="1" data-label="Records"
+                 data-aggregate="count"></sherpa-metric>
+  <sherpa-metric data-col-span="xsmall" data-min-row-span="1" data-label="Big accounts"
+                 data-aggregate="count" data-where='{"seats":{"gte":50}}'></sherpa-metric>
+  <sherpa-metric data-col-span="xsmall" data-min-row-span="1" data-label="Seats"
+                 data-aggregate="sum" data-field="seats"></sherpa-metric>
+
+  <sherpa-container data-col-span="full" data-min-row-span="2" data-grow
+                    data-padding="none" data-padding-inline="md" data-fill>
+    <sherpa-stack data-gap="md" data-grow data-fill>
+      <sherpa-quick-filter-toolbar data-scope="data"></sherpa-quick-filter-toolbar>
+      <sherpa-data-grid id="grid" data-scope="data" data-grow></sherpa-data-grid>
+    </sherpa-stack>
+    <sherpa-pagination slot="footer"></sherpa-pagination>
+  </sherpa-container>
+</sherpa-layout-grid>

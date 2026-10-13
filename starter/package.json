@@ -1,0 +1,14 @@
+{
+  "name": "sherpa-starter",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "npx --yes serve ."
+  },
+  "dependencies": {
+    "sherpa-ui": "^2.1.0-beta.0"
+  },
+  "devDependencies": {
+    "sherpa-ui-mcp": "^2.1.0-beta.0"
+  }
+}

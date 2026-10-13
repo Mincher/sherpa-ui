@@ -22,7 +22,7 @@ test('sherpa-ui ships every file the MCP imports or reads, and no MCP of its own
   const { sherpa } = mcpGraph();
   for (const file of [...sherpa, ...READS]) assert.ok(files.has(file), `sherpa-ui does not pack ${file}`);
   assert.ok(![...files].some((f) => f.startsWith('mcp-server/')), 'sherpa-ui still packs mcp-server/');
-  assert.equal(JSON.parse(readFileSync(`${ROOT}package.json`, 'utf8')).bin, undefined);
+  assert.equal(JSON.parse(readFileSync(`${ROOT}package.json`, 'utf8')).bin?.['sherpa-mcp'], undefined);
 });
 
 test('sherpa-ui-mcp ships its own code, and depends on every package it imports', () => {

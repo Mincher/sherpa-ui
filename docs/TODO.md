@@ -81,6 +81,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16t10 | 234 | A filter moved up to the View: its menu's FIRST option is "Return to X", its own scope, apart from the other scopes | quick |
 | ✅ | 16t11 | 235 | "Return to X" survives a reload: the Query keeps where a View field came up from | feature |
 | ❓ | 16t12 | 236 | Read-only Advanced condition rows: the value text is too dark, and the row × shows though nothing can be removed | bug |
+| ⬜ | 16t13 | 237 | A tile's own `data-where` on a field the View's bar holds narrows nothing, and says nothing | bug |
 | ✅ | 16t6 | 230 | Reset all filters dialog: "Save filters before reset" sits in a grey border; it is plain form content | quick |
 | | | | **C2 — Consumers: frameworks, apps and agents** (planned 2026-10-12) | |
 | ✅ | c1 | 225 | `settled()` hangs on an infinite animation — a loader, an indeterminate bar — and waits on the whole document when given a part | bug |
@@ -110,7 +111,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | c26 | 194 | A Context loader beside `sherpa-router`: `<sherpa-outlet>` reads `app.json`; `index.html` becomes config | foundation |
 | ✅ | c27 | 193 | ONE app guide, steps not history, served to agents as `sherpa://app-guide` — after 190 | docs |
 | ✅ | c28 | 192 | Ship the agent path: the MCP with its real dependencies and files, a pack smoke test, registered in both projects | tooling |
-| ⬜ | c29 | 222 | The starter: `npx sherpa-ui init my-app` and a `scaffold_app` tool — one folder, about 8 files, no build step | tooling |
+| ✅ | c29 | 222 | The starter: `npx sherpa-ui init my-app` and a `scaffold_app` tool — one folder, about 8 files, no build step | tooling |
 | ⬜ | c30 | 196 | ONE filter surface and a smaller DataSource: `bind()` out of the data layer; one helper for bar and panel | refactor |
 | ⬜ | c31 | 223 | DEFERRED — server rendering with declarative shadow DOM, after 208 | explore |
 | | | | **D — Filters: Will's features, on the foundation** | |
@@ -1582,6 +1583,16 @@ badge and the accordion's button sit at the top of the header row.
 buttons align to the top (they shared the bottom line, Will 2026-09-26). A
 test measures each against the row's top; it failed on the old CSS.
 
+### `[ ]` 237 — A tile's own filter on a View-held field is lost, silently
+
+Found building the starter (222), 2026-10-13. A metric with
+`data-where='{"status":{"eq":"active"}}'`, on a page whose View scope holds
+`status`, counted every row: its own filter narrowed nothing, and nothing was
+reported. On a field no bar holds it narrows as it should (the Demos Critical
+tile). A field lives in ONE scope, so the View's chip likely supersedes the
+tile's own scope — but a tile's own filter is not a chip. Find which, then
+make it narrow, or report.
+
 ### `[ ]` 236 — Read-only Advanced condition rows: value text too dark, a × not needed
 
 Will, 2026-10-13: *"Read only advanced filter conditional input rows have
@@ -2071,7 +2082,7 @@ refuses an app import from a display component, and `check:weight` lists
 four more app modules and weighs both new entries. The outlet joins
 `sherpa-ui/app` with 194. `T-the-app-layer-is-opt-in`
 
-### `[ ]` 222 — The starter
+### `[x]` ✅ 222 — The starter
 
 One folder, about 8 files, on any static host with no build and no Express:
 `index.html` (import map, tokens, router, provider, shell, outlet — about 40
@@ -2087,6 +2098,15 @@ dependencies), `scaffold_app` and `validate_app` in the MCP (192), later
 separate `create-sherpa-app` package. My pick: A.
 
 **✅ Will, 2026-10-12 — all my picks:** A — a `starter/` folder in sherpa-ui, with `npx sherpa-ui init`.
+
+**✅ Done 2026-10-13.** `starter/` is 11 files — `index.html` (39 lines, 13
+of them script), `app.json`, the Records Context's template, page
+definition, Views, store and module, `package.json`, `.mcp.json`, `.gitignore`
+and `AGENTS.md`. `npx sherpa-ui init <folder>` (`bin/sherpa-ui.mjs`) copies it;
+the MCP's `scaffold_app` returns it (19 tools). An e2e test boots it in three
+engines; a node test checks what `init` makes against both schemas, `checkApp`
+and the usage gate. `validate_page` reads an `app.json` as well, so there is
+no separate `validate_app`. Found on the way: 237. `T-a-starter-is-one-folder`
 
 ### `[ ]` 223 — DEFERRED: server rendering with declarative shadow DOM
 

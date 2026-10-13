@@ -63,8 +63,13 @@
     "scripts/figma-data/name-map.yaml",
     "docs/APP-GUIDE.md",
     "docs/DATA-SOURCE-RULES.md",
-    "docs/DEF-TO-FIGMA-BUILD-RULES.md"
+    "docs/DEF-TO-FIGMA-BUILD-RULES.md",
+    "bin/",
+    "starter/"
   ],
+  "bin": {
+    "sherpa-ui": "./bin/sherpa-ui.mjs"
+  },
   "scripts": {
     "prepare": "husky",
     "clean": "rm -rf dist",

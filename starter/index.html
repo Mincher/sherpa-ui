@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en" data-theme="sherpa" data-mode="auto">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My app</title>
+  <script type="importmap">
+    { "imports": { "sherpa-ui": "./node_modules/sherpa-ui/dist/index.js" } }
+  </script>
+  <link rel="stylesheet" href="./node_modules/sherpa-ui/dist/styles/tokens/tokens.css" />
+  <link rel="stylesheet" href="./node_modules/sherpa-ui/dist/styles/tokens/page.css" />
+</head>
+<body>
+  <sherpa-router data-params="context view"></sherpa-router>
+  <sherpa-provider>
+    <sherpa-app-shell>
+      <sherpa-nav slot="nav"></sherpa-nav>
+      <sherpa-app-header slot="header">
+        <sherpa-quick-filter-toolbar slot="filters" data-type="view" data-scope="view"
+                                     data-locked data-reset-on-populate></sherpa-quick-filter-toolbar>
+      </sherpa-app-header>
+      <sherpa-outlet id="context-root"></sherpa-outlet>
+    </sherpa-app-shell>
+  </sherpa-provider>
+
+  <script type="module">
+    import { SessionStore } from 'sherpa-ui';
+    import app from './app.json' with { type: 'json' };
+    import { records, recordsReady } from './stores/records.js';
+
+    // What outlives a Context: the nav's pin, its Recents and Favorites.
+    const session = new SessionStore({ nav: { pinned: false, favorites: [], recent: [], hierarchy: false } });
+    session.persist('/nav/pinned');
+
+    // The outlet loads the Context the URL names, from app.json.
+    document.getElementById('context-root').start({
+      app, base: new URL('./app.json', location.href), session,
+      stores: () => ({ records }), ready: recordsReady,
+    });
+  </script>
+</body>
+</html>

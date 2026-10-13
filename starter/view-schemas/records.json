@@ -1,0 +1,33 @@
+{
+  "$schema": "../node_modules/sherpa-ui/schemas/page.v1.json",
+  "v": 1,
+  "id": "records",
+  "source": {
+    "store": "records",
+    "pageSize": 25,
+    "search": ["name", "owner"],
+    "fields": {
+      "status": { "label": "Status", "select": "multiple" },
+      "owner": { "label": "Owner", "select": "multiple" },
+      "seats": { "label": "Seats", "type": "number" }
+    },
+    "scopes": {
+      "view": { "label": "View filters", "holds": ["status"] },
+      "data": { "label": "Records", "offers": "all", "holds": ["owner"], "presets": ["big"] }
+    },
+    "presets": {
+      "big": { "label": "Big accounts", "where": { "seats": { "gte": 50 } } }
+    }
+  },
+  "ui": {
+    "grid": {
+      "key": "id",
+      "columns": [
+        { "field": "name", "header": "Name", "sortable": true },
+        { "field": "status", "header": "Status", "sortable": true },
+        { "field": "owner", "header": "Owner", "sortable": true },
+        { "field": "seats", "header": "Seats", "sortable": true, "type": "number" }
+      ]
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "mcpServers": {
+    "sherpa": { "command": "npx", "args": ["sherpa-mcp"] }
+  }
+}
