@@ -18,6 +18,7 @@ import { nextSort, sortDirectionFrom } from '../../core/data/cycle.js';
 // Floating, so the count tooltip escapes the toolbar's clipping chip run.
 import '../sherpa-tooltip/sherpa-tooltip.js';
 import { paintSeries } from '../../core/ui/chart-parts.js';
+import { statusBorderVar, statusVar } from '../../core/data/format-tick.js';
 
 /** A results count as the reader's locale writes it. */
 const RESULTS = new Intl.NumberFormat();
@@ -55,10 +56,14 @@ export class SherpaQuickFilter extends SherpaElement {
        TRAP T-a-trigger-click-follows-light-dismiss */
     'data-open': { type: 'boolean', kind: 'style' },
     'data-indicator': { type: 'boolean', kind: 'style' },
-    /* A data-viz series, from 1: the chip leads with its swatch. */
+    /* A data-viz series, from 1, or a status: the chip leads with its swatch. */
     'data-swatch': { type: 'string', kind: 'style' },
     'data-menu': { type: 'boolean', kind: 'style' },
-    'data-type': { type: 'enum', kind: 'style', values: ['default', 'ai', 'jump'] },
+    /* `key`: a chart legend's row. Its ON is SHOWN, not picked. TODO 149 */
+    'data-type': { type: 'enum', kind: 'style', values: ['default', 'ai', 'jump', 'key'] },
+    /* A KEY, not a control: no toggle, no button semantics.
+       TRAP T-readonly-legend-is-a-key-not-a-filter */
+    'data-readonly': { type: 'boolean', kind: 'style' },
     'data-plain': { type: 'boolean', kind: 'style' },
     'data-no-value': { type: 'boolean', kind: 'style' },
     'data-full-value': { type: 'boolean', kind: 'style' },
@@ -125,6 +130,7 @@ export class SherpaQuickFilter extends SherpaElement {
     // A name given before the first render is said now.
     this.#writeTip();
     this.#paintSwatch();
+    this.#syncPressed();
     this.$('.body')?.addEventListener('click', this.#onClick);
     this.$('.caret')?.addEventListener('click', this.#onCaret);
     // The menu lives in the light DOM; its events bubble up through the host.
@@ -198,6 +204,7 @@ export class SherpaQuickFilter extends SherpaElement {
   }
 
   override onChange(name: string): void {
+    if (['data-current', 'data-readonly', 'data-type', 'data-persistent'].includes(name)) this.#syncPressed();
     // A greyed chip says why. Will, TODO 176.
     if (name === 'data-unavailable' || name === 'disabled') return this.#writeTip();
     /* THE CHIP DRAWS ITSELF. A host says what the state IS — on, which way,
@@ -218,11 +225,34 @@ export class SherpaQuickFilter extends SherpaElement {
     } else this.#syncText();
   }
 
-  /** Give the swatch its series' hue and stroke — the legend's own paint. */
+  /** Give the swatch its series' hue and stroke — the legend's own paint. A
+   *  STATUS reads its band's pair. TRAP T-legend-status-swatch-shares-the-band-tokens */
   #paintSwatch(): void {
-    const n = Number(this.dataset['swatch']);
+    const given = this.dataset['swatch'] ?? '';
     const swatch = this.$<HTMLElement>('.swatch');
-    if (swatch && Number.isInteger(n) && n > 0) paintSeries(swatch, n - 1, n);
+    if (!swatch || !given) return;
+    const n = Number(given);
+    if (Number.isFinite(n)) return paintSeries(swatch, n - 1, n);
+    swatch.style.setProperty('--_hue', statusVar(given));
+    swatch.style.setProperty('--_border', statusBorderVar(given));
+  }
+
+  /** A toggle says whether it is on. A jump, a selector and a key are no toggle.
+   *  TRAP T-readonly-legend-is-a-key-not-a-filter */
+  #syncPressed(): void {
+    const body = this.$('.body');
+    if (!body) return;
+    const readonly = this.hasAttribute('data-readonly');
+    if (readonly || this.dataset['type'] === 'jump' || this.hasAttribute('data-persistent')) {
+      body.removeAttribute('aria-pressed');
+    } else body.setAttribute('aria-pressed', String(this.current));
+    if (readonly) {
+      body.setAttribute('role', 'presentation');
+      body.setAttribute('tabindex', '-1');
+    } else {
+      body.removeAttribute('role');
+      body.removeAttribute('tabindex');
+    }
   }
 
   get current(): boolean {
@@ -558,7 +588,7 @@ export class SherpaQuickFilter extends SherpaElement {
 
   /** The body was clicked: toggle, or let Group and Sort do their own thing. */
   #onClick = (event: Event): void => {
-    if (this.hasAttribute('disabled') || this.#refused()) return;
+    if (this.hasAttribute('disabled') || this.hasAttribute('data-readonly') || this.#refused()) return;
 
     /* A GROUP or SORT chip owns its own gesture, because what it does is a
        property of WHAT IT IS, not of which container drew it.
@@ -624,9 +654,15 @@ export class SherpaQuickFilter extends SherpaElement {
     this.#openMenu();
   };
 
-  /** Ruled out and OFF: nothing to press. On, it is set aside and may be let go. */
+  /** Ruled out and OFF: nothing to press. On, it is set aside and may be let go —
+   *  but a key's ON is SHOWN, not picked, so it has nothing to let go. */
   #refused(): boolean {
-    return this.hasAttribute('data-unavailable') && !this.current;
+    return this.hasAttribute('data-unavailable') && (!this.current || this.#isKey());
+  }
+
+  /** A chart legend's row. TRAP T-a-legend-row-is-a-key-chip */
+  #isKey(): boolean {
+    return this.dataset['type'] === 'key';
   }
 
   /**
@@ -672,7 +708,7 @@ export class SherpaQuickFilter extends SherpaElement {
    */
   #tipText(values: string): string {
     // A greyed chip says WHY, in a few words. Will, TODO 176.
-    if (this.hasAttribute('data-unavailable')) return this.current ? SET_ASIDE : RULED_OUT;
+    if (this.hasAttribute('data-unavailable')) return this.current && !this.#isKey() ? SET_ASIDE : RULED_OUT;
     if (this.hasAttribute('disabled')) return NOT_AVAILABLE;
     if (this.hasAttribute('data-superseded')) {
       // The VALUES too where there are any: they come back when the field is free.

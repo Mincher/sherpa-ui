@@ -5096,23 +5096,23 @@ A non-status item takes the categorical hue by 1-based index
 position, is also how the gauge resolves its own zone colours — see
 `T-gauge-status-is-named`.
 
+The key chip paints it: `data-swatch` takes a series number or a status name
+(TODO 149).
+
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `src/core/data/format-tick.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
 
 ### T-rollup-row-has-its-own-prototype
 
-The LAST row of a capped legend needs a second control beside its toggle, so it
-comes from its own prototype (`template.rollup-tpl`) rather than
-`template.item-tpl`. That prototype is a WRAPPER, not a bare button: a menu
-button nested inside a button is invalid HTML and the browser un-nests it.
+The LAST row of a capped legend needs a second control beside its key chip.
+A menu button nested inside the chip's button is invalid HTML, and the browser
+un-nests it. So `template.rollup-tpl` is a WRAPPER holding the menu button, and
+the row — an ordinary `template.item-tpl` clone, marked `.rollup-toggle` — goes
+in front of it (TODO 149).
 
-Because the prototype VARIES per row, this component clones each row itself
-rather than going through `renderList`. In a roll-up the toggle is a CHILD of
-the wrapper; otherwise it IS the wrapper, so the row resolves `entry` once and
-writes everything to that.
-
-The menu button's own click must `stopPropagation()`: it is a SIBLING of the
-toggle, so its click would otherwise also toggle the row it sits in.
+The legend hears only its chips' `quick-filter-click`, so a click on the menu
+button toggles nothing and needs no `stopPropagation()`.
 
 The breakdown is CHECKBOX rows plus `data-commit`, which is the point — the
 reader ticks several categories and the menu stays open until Apply rather than
@@ -5122,6 +5122,30 @@ restores them on Cancel, so nothing here manages that. Each checkbox's
 chart without a second lookup.
 
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
+
+### T-a-legend-row-is-a-key-chip
+
+**A legend's row IS a filter chip** — Will, TODO 149: *"legend items could
+just be a boolean filter chip variant."* Each row is a `sherpa-quick-filter
+data-type="key"` (swatch and label) and the legend's own `.value` beside it,
+in a shared column. A click on the number does nothing.
+
+**A key's ON is SHOWN, not picked.** At rest every key chip is on, where a
+panel chip at rest is off. Will chose to leave each so (TODO 149, A): the
+legend says what the chart shows; the panel says what you picked. So a
+ruled-out key chip that is ON is refused, and says "no matches" — it has no
+pick to set aside and let go.
+
+The chip is `data-locked`: it reports the press, and the legend decides — one
+row always stays on (`T-a-legend-keeps-one-row-on`). The chip says
+`aria-pressed` from its `data-current`. A row a filter EMPTIED is the legend's
+own state, so the legend dims it through the chip's `::part(body)` and
+`::part(swatch)`.
+
+- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
+- Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.css`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.css`
 
 ### T-legend-suspend-remembers-the-set
 
@@ -5142,9 +5166,8 @@ ticking anything in it means the reader wants it back, and Apply would
 otherwise record a set that nothing displays. An empty set leaves the row off,
 which is the same statement.
 
-`aria-pressed` is BOTH the accessible state and the CSS hook for the dimmed
-look, so the two cannot disagree; it replaced a `data-current` attribute that
-duplicated it.
+The key chip's `data-current` is the state; the chip says `aria-pressed` from
+it and dims itself, so the two cannot disagree.
 
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 
@@ -5153,15 +5176,17 @@ duplicated it.
 `data-readonly` makes a legend a pure KEY: no toggling, no button semantics. A
 gauge's rows name THRESHOLDS rather than a series, so there is nothing to hide.
 
-The row gets `role="presentation"` and `tabindex="-1"`, and its `aria-pressed`
-is removed — a keyboard user must not be handed a control that does nothing.
-`disabled` would be WRONG: the row is not unavailable, it was never
-interactive.
+Each row's key chip takes `data-readonly`: its BODY gets `role="presentation"`
+and `tabindex="-1"`, and no `aria-pressed` — a keyboard user must not be handed
+a control that does nothing. `disabled` would be WRONG: the row is not
+unavailable, it was never interactive.
 
-The click handler guards on the attribute too, not only CSS, so pointer and
-keyboard behave the same.
+The chip's click guards on the attribute, and the legend's does too, so pointer
+and keyboard behave the same.
 
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.ts`
+- Site: `src/components/sherpa-quick-filter/sherpa-quick-filter.html`
 
 ### T-shadow-input-needs-element-internals
 
@@ -6689,8 +6714,8 @@ holds, so that is gone.
 **A chart LEGEND too** — Will, TODO 179: a legend picks through
 `bindSelection`, not a bound scope, so the source ANNOUNCES each pass
 (`present`, by scope — a chart's own scope included) and the provider hands
-its legend the field's list. A ruled-out legend row is inactive, says why in
-its `title`, and refuses a press, as its chip does in the panel.
+its legend the field's list. A ruled-out legend row is inactive, its key chip
+says why, and it refuses a press, as its chip does in the panel.
 
 **It says why** — Will, TODO 176: a ruled-out chip's tooltip and a row's
 `aria-description` — and a menu row's `title`, on hover — read "Limited by your
@@ -12724,9 +12749,9 @@ So the legend and the chart take the same `order` but different `includeEmpty`:
 the legend keeps every declared category, the chart draws only what it has.
 They can still share identity per array, because each call returns its own.
 
-`data-empty` on a row is what a FILTER did; `aria-pressed="false"` is what the
-READER did. Both paint the same inactive ink, and they are not the same fact: a
-row can be pressed ON and hold nothing.
+`data-empty` on a row is what a FILTER did; a chip with no `data-current` is
+what the READER did. Both paint the same inactive ink, and they are not the
+same fact: a row can be pressed ON and hold nothing.
 
 See `T-a-legend-toggle-is-a-filter` for the other half — a legend click writes
 `notin` into the source rather than hiding a slice.
@@ -13201,17 +13226,16 @@ key. `max-inline-size: 40rem` — rem, so it follows the text size, as the tip's
 
 ### T-the-breakdown-button-shares-the-other-row
 
-The legend's grid had THREE tracks — swatch, label, value — and the roll-up
-needed a fourth for its menu button. With `grid-column: 1 / -1` the toggle
-spanned all three and the button wrapped to the line BELOW, which reads as a
-seventh row that is not there.
+The roll-up needs a track for its menu button. Without one, the toggle spanned
+every track and the button wrapped to the line BELOW, which reads as a seventh
+row that is not there.
 
-The legend declares four tracks. An ordinary entry takes the first three and
-leaves the button's empty; the roll-up takes all four.
+The legend declares a track for it: entry, value, button (two and a button
+since TODO 149 made the swatch and label one key chip). An ordinary entry takes
+the first two and leaves the button's empty; the roll-up takes all three.
 
-The comment claiming a "FOURTH implicit column" was describing something that
-never happened — an implicit track is only created by an item placed past the
-explicit ones, and `1 / -1` is not.
+An implicit track is only created by an item placed past the explicit ones, and
+`1 / -1` is not one — so the button's track must be declared.
 
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.css`
 - Site: `test/e2e/reforged-chart-legend.spec.ts`

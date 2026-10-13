@@ -1,6 +1,8 @@
 import { test, expect } from './harness';
 
-/** sherpa-chart-legend — rows from populate(); swatch colour by categorical index; click event. */
+/** sherpa-chart-legend — rows from populate(); swatch colour by categorical index; click event.
+ *  Each row is a KEY chip and its value: the chip's BODY is the button, and it
+ *  says `aria-pressed`. TODO 149 */
 
 
 test('renders a row per item with label + value and categorical swatches', async ({ page }) => {
@@ -17,17 +19,18 @@ test('renders a row per item with label + value and categorical swatches', async
     ]);
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     const rows = Array.from(el.shadowRoot!.querySelectorAll<HTMLElement>('.item'));
+    const sw = (row: Element): Element => row.querySelector('.entry')!.shadowRoot!.querySelector('.swatch')!;
     return {
       count: rows.length,
       firstLabel: rows[0]!.querySelector('.label')!.textContent,
       firstValue: rows[0]!.querySelector('.value')!.textContent,
       // Figma Legend Item swatch: a SOLID 1px ring in the series' BORDER token,
       // with a 60% tint of the series HUE as the fill.
-      hue1: getComputedStyle(rows[0]!.querySelector('.swatch')!).getPropertyValue('--_hue').trim(),
-      hue5: getComputedStyle(rows[1]!.querySelector('.swatch')!).getPropertyValue('--_hue').trim(),
-      ring1: getComputedStyle(rows[0]!.querySelector('.swatch')!).borderTopColor,
-      ring5: getComputedStyle(rows[1]!.querySelector('.swatch')!).borderTopColor,
-      fill1: getComputedStyle(rows[0]!.querySelector('.swatch')!).backgroundColor,
+      hue1: getComputedStyle(sw(rows[0]!)).getPropertyValue('--_hue').trim(),
+      hue5: getComputedStyle(sw(rows[1]!)).getPropertyValue('--_hue').trim(),
+      ring1: getComputedStyle(sw(rows[0]!)).borderTopColor,
+      ring5: getComputedStyle(sw(rows[1]!)).borderTopColor,
+      fill1: getComputedStyle(sw(rows[0]!)).backgroundColor,
     };
   });
   expect(r.count).toBe(2);
@@ -56,7 +59,7 @@ test('renders a row per item with label + value and categorical swatches', async
   expect(r.fill1).toContain('0.5');
 });
 
-test('clicking an entry fires legend-item-click and toggles aria-pressed', async ({ page }) => {
+test('clicking an entry fires legend-item-click and toggles its chip\'s aria-pressed', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-chart-legend') as HTMLElement & {
       rendered?: Promise<void>;
@@ -72,12 +75,12 @@ test('clicking an entry fires legend-item-click and toggles aria-pressed', async
       detail.push((e as CustomEvent).detail as { index: number; active: boolean }),
     );
 
-    // The entry IS the button now — the rebuilt Figma legend is a grid of
-    // three-track entries, not an <li> wrapping a row.
-    const entryB = el.shadowRoot!.querySelectorAll<HTMLElement>('.item')[1]!;
+    // The row's chip BODY is the button.
+    const chipB = el.shadowRoot!.querySelectorAll<HTMLElement>('.item .entry')[1]!;
+    const entryB = chipB.shadowRoot!.querySelector<HTMLElement>('.body')!;
     const before = entryB.getAttribute('aria-pressed');
     entryB.click();
-    // `.item` transitions colour over 100ms, so reading it in the same task
+    // `.body` transitions colour over 100ms, so reading it in the same task
     // catches the START of the animation, not the target. Wait for the
     // transition rather than sleeping an arbitrary amount.
     await new Promise<void>((resolve) => {
@@ -89,15 +92,14 @@ test('clicking an entry fires legend-item-click and toggles aria-pressed', async
       pressed: entryB.getAttribute('aria-pressed'),
       // Dimmed via the inactive content ink, never opacity.
       colour: getComputedStyle(entryB).color,
-      swatchBg: getComputedStyle(entryB.querySelector('.swatch')!).backgroundColor,
+      swatchBg: getComputedStyle(chipB.shadowRoot!.querySelector('.swatch')!).backgroundColor,
     };
     entryB.click();
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
     return { before, off, backOn: entryB.getAttribute('aria-pressed'), detail };
   });
 
-  // aria-pressed is BOTH the accessible state and the CSS hook, so they cannot
-  // disagree — it replaced a data-current attribute that duplicated it.
+  // The chip says aria-pressed FROM its data-current, so the two cannot disagree.
   expect(r.before).toBe('true');
   expect(r.off.pressed).toBe('false');
   expect(r.backOn).toBe('true');
@@ -149,7 +151,7 @@ test('a legend caps at six rows, rolling the tail into an Other total', async ({
     el.addEventListener('legend-item-click', (e) => {
       detail = (e as CustomEvent).detail;
     });
-    el.shadowRoot!.querySelectorAll<HTMLElement>('.item')[5]!.click();
+    el.shadowRoot!.querySelectorAll('.item .entry')[5]!.shadowRoot!.querySelector<HTMLElement>('.body')!.click();
 
     // No numeric values at all → an "Other" row with NO value, rather than a
     // meaningless 0.
@@ -179,7 +181,7 @@ test('a legend caps at six rows, rolling the tail into an Other total', async ({
   expect(r.noValues.values).toEqual(['', '', '', '', '', '']);
 });
 
-test('entries share three grid tracks, so labels and values align', async ({ page }) => {
+test('entries share grid tracks, so labels and values align', async ({ page }) => {
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-chart-legend') as HTMLElement & {
       rendered?: Promise<void>;
@@ -199,23 +201,26 @@ test('entries share three grid tracks, so labels and values align', async ({ pag
     const sr = el.shadowRoot!;
     const legend = getComputedStyle(sr.querySelector('.legend')!);
     const entries = Array.from(sr.querySelectorAll<HTMLElement>('.item'));
+    // The swatch is the chip's own; the label is slotted into it.
+    const find = (e: Element, sel: string): Element =>
+      e.querySelector(sel) ?? e.querySelector('.entry')!.shadowRoot!.querySelector(sel)!;
     const cells = (sel: string): number[] =>
-      entries.map((e) => Math.round(e.querySelector(sel)!.getBoundingClientRect().left));
+      entries.map((e) => Math.round(find(e, sel).getBoundingClientRect().left));
     return {
       display: legend.display,
       columnGap: legend.columnGap,
       rowGap: legend.rowGap,
       padding: legend.paddingTop,
       // Figma: content/size/xs 10 on line-height/xs 16.
-      fontSize: getComputedStyle(entries[0]!).fontSize,
-      lineHeight: getComputedStyle(entries[0]!).lineHeight,
+      fontSize: getComputedStyle(entries[0]!.querySelector('.label')!).fontSize,
+      lineHeight: getComputedStyle(entries[0]!.querySelector('.label')!).lineHeight,
       swatchLefts: cells('.swatch'),
       labelLefts: cells('.label'),
       valueRights: entries.map((e) =>
         Math.round(e.querySelector('.value')!.getBoundingClientRect().right),
       ),
       swatchBox: (() => {
-        const b = entries[0]!.querySelector('.swatch')!.getBoundingClientRect();
+        const b = find(entries[0]!, '.swatch').getBoundingClientRect();
         return `${Math.round(b.width)}x${Math.round(b.height)}`;
       })(),
     };
@@ -242,9 +247,8 @@ test('entries share three grid tracks, so labels and values align', async ({ pag
 });
 
 test('the Other row carries a breakdown menu that commits on Apply', async ({ page }) => {
-  // The roll-up row needs a SECOND control, so it cannot reuse the entry
-  // prototype — that is a <button>, and a menu button nested inside a button is
-  // invalid HTML. The row is a wrapper holding two siblings.
+  // The roll-up row needs a SECOND control, and a menu button nested inside the
+  // chip's button is invalid HTML. The row is a wrapper holding two siblings.
   const r = await page.evaluate(async () => {
     const el = document.createElement('sherpa-chart-legend') as HTMLElement & {
       rendered?: Promise<void>;
@@ -265,8 +269,8 @@ test('the Other row carries a breakdown menu that commits on Apply', async ({ pa
     )!;
 
     const structure = {
-      // The toggle is a real button; the menu control is its SIBLING, not a child.
-      toggleTag: toggle.tagName,
+      // The toggle is a key chip; the menu control is its SIBLING, not a child.
+      toggleTag: toggle.querySelector('.entry')!.tagName,
       buttonIsSibling: button.parentElement === rollup,
       buttonNotInToggle: !toggle.contains(button),
       /* The menu is the BUTTON's own, slotted — so sherpa-button drives it and
@@ -311,7 +315,7 @@ test('the Other row carries a breakdown menu that commits on Apply', async ({ pa
     return { structure, openedBy, stillOpen, detail };
   });
 
-  expect(r.structure.toggleTag).toBe('BUTTON');
+  expect(r.structure.toggleTag).toBe('SHERPA-QUICK-FILTER');
   expect(r.structure.buttonIsSibling).toBe(true);
   expect(r.structure.buttonNotInToggle).toBe(true);
   expect(r.structure.menuIsSlottedIntoButton).toBe(true);
@@ -350,12 +354,13 @@ test('label and value carry two inks, and BOTH grey when the entry is off', asyn
     await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const item = el.shadowRoot!.querySelector('.item') as HTMLElement;
+    const body = item.querySelector('.entry')!.shadowRoot!.querySelector<HTMLElement>('.body')!;
     const grab = () => ({
       label: getComputedStyle(item.querySelector('.label')!).color,
       value: getComputedStyle(item.querySelector('.value')!).color,
     });
     const on = grab();
-    item.click();
+    body.click();
     // The row fades its colour over 100ms, so a shorter wait samples the middle
     // of the transition and reads an in-between grey.
     await new Promise((res) => setTimeout(res, 250));
@@ -404,9 +409,10 @@ test('the off-set is kept BY LABEL, and survives a re-populate', async ({ page }
     await settle();
 
     const rows = () => Array.from(el.shadowRoot!.querySelectorAll<HTMLElement>('.item'));
-    const pressed = () => rows().map((x) => x.getAttribute('aria-pressed'));
+    const body = (x: Element) => x.querySelector('.entry')!.shadowRoot!.querySelector<HTMLElement>('.body')!;
+    const pressed = () => rows().map((x) => body(x).getAttribute('aria-pressed'));
 
-    rows()[2]!.click();                       // churned off
+    body(rows()[2]!).click();                 // churned off
     await settle();
     const afterClick = { off: [...el.off], pressed: pressed() };
 
@@ -462,7 +468,7 @@ test('a ROLL-UP row records the real labels it folded, not "Other"', async ({ pa
 
     const other = el.shadowRoot!.querySelector<HTMLElement>('.rollup-toggle');
     const label = other?.querySelector('.label')?.textContent;
-    other?.click();
+    other?.querySelector('.entry')!.shadowRoot!.querySelector<HTMLElement>('.body')!.click();
     await settle();
     return { label, off: [...el.off].sort() };
   });
@@ -489,9 +495,10 @@ test('a SUSPENDED row stays, at the value it last held', async ({ page }) => {
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
     const settle = (window as unknown as { __settled: () => Promise<void> }).__settled;
+    const body = (x: Element) => x.querySelector('.entry')!.shadowRoot!.querySelector<HTMLElement>('.body')!;
     const read = () => Array.from(el.shadowRoot!.querySelectorAll<HTMLElement>('.item')).map(
       (x) => `${x.querySelector('.label')!.textContent}=${x.querySelector('.value')!.textContent}` +
-             `[${x.getAttribute('aria-pressed')}]`);
+             `[${body(x).getAttribute('aria-pressed')}]`);
 
     el.populate!([
       { label: 'active', value: 24, colorIndex: 1 },
@@ -503,7 +510,7 @@ test('a SUSPENDED row stays, at the value it last held', async ({ page }) => {
 
     // Switch `churned` off, then push what the SOURCE would now send: the
     // category is filtered out, so it is simply absent.
-    el.shadowRoot!.querySelectorAll<HTMLElement>('.item')[2]!.click();
+    body(el.shadowRoot!.querySelectorAll<HTMLElement>('.item')[2]!).click();
     await settle();
     el.populate!([
       { label: 'active', value: 24, colorIndex: 1 },
@@ -513,7 +520,7 @@ test('a SUSPENDED row stays, at the value it last held', async ({ page }) => {
     const suspended = read();
 
     // Back ON, and the source sends it again.
-    el.shadowRoot!.querySelectorAll<HTMLElement>('.item')[2]!.click();
+    body(el.shadowRoot!.querySelectorAll<HTMLElement>('.item')[2]!).click();
     await settle();
     el.populate!([
       { label: 'active', value: 24, colorIndex: 1 },
@@ -557,8 +564,8 @@ test('an emptied category keeps its row, dimmed and still clickable', async ({ p
         value: i.querySelector('.value')?.textContent ?? '',
         empty: i.hasAttribute('data-empty'),
         // A filter emptied it; the READER did not switch it off.
-        pressed: i.getAttribute('aria-pressed'),
-        ink: getComputedStyle(i).color,
+        pressed: i.querySelector('.entry')!.shadowRoot!.querySelector('.body')!.getAttribute('aria-pressed'),
+        ink: getComputedStyle(i.querySelector('.label')!).color,
       }));
 
     el.populate([
@@ -615,8 +622,8 @@ test('the LAST active row cannot be switched off', async ({ page }) => {
     el.addEventListener('legend-item-click', (e) =>
       clicks.push((e as CustomEvent).detail.label as string));
 
-    const items = (): HTMLElement[] =>
-      [...el.shadowRoot!.querySelectorAll<HTMLElement>('.item')];
+    const items = (): HTMLElement[] => [...el.shadowRoot!.querySelectorAll('.item .entry')]
+      .map((c) => c.shadowRoot!.querySelector<HTMLElement>('.body')!);
 
     // Switch off two of three — allowed.
     items()[0]!.click(); await settled();
@@ -659,7 +666,8 @@ test('the last AVAILABLE row stays on — a ruled-out row does not count as on',
     el.populate!([{ label: 'A' }, { label: 'B' }, { label: 'C' }]);
     el.present = ['A', 'B'];
     await window.__settled();
-    const items = (): HTMLElement[] => [...el.shadowRoot!.querySelectorAll<HTMLElement>('.item')];
+    const items = (): HTMLElement[] => [...el.shadowRoot!.querySelectorAll('.item .entry')]
+      .map((c) => c.shadowRoot!.querySelector<HTMLElement>('.body')!);
     items()[0]!.click(); await window.__settled();
     // B is the last row that is on AND available — refused.
     items()[1]!.click(); await window.__settled();
@@ -679,7 +687,8 @@ test('an EMPTIED row does not count as on either; a legend of empties is not stu
     };
     document.getElementById('root')!.appendChild(el);
     await el.rendered;
-    const items = (): HTMLElement[] => [...el.shadowRoot!.querySelectorAll<HTMLElement>('.item')];
+    const items = (): HTMLElement[] => [...el.shadowRoot!.querySelectorAll('.item .entry')]
+      .map((c) => c.shadowRoot!.querySelector<HTMLElement>('.body')!);
     el.populate!([{ label: 'A', value: 4 }, { label: 'B', value: 0 }]);
     await window.__settled();
     items()[0]!.click(); await window.__settled();
@@ -706,7 +715,8 @@ test('picked set before the rows arrive is the off-set once they do, and reads b
     el.populate!([{ label: 'A', value: 1 }, { label: 'B', value: 2 }, { label: 'C', value: 3 }]);
     await window.__settled();
     return { before, off: el.off, picked: el.picked,
-      pressed: [...el.shadowRoot!.querySelectorAll('.item')].map((i) => i.getAttribute('aria-pressed')) };
+      pressed: [...el.shadowRoot!.querySelectorAll('.item .entry')]
+        .map((c) => c.shadowRoot!.querySelector('.body')!.getAttribute('aria-pressed')) };
   });
   expect(r).toEqual({ before: ['B', 'C'], off: ['A'], picked: ['B', 'C'], pressed: ['false', 'true', 'true'] });
 });
@@ -770,8 +780,8 @@ test('a HORIZONTAL legend is a 3x2 grid, roll-up in the last cell', async ({ pag
 /**
  * THE BREAKDOWN BUTTON SHARES THE OTHER ROW.
  *
- * The legend's grid had three tracks — swatch, label, value — so the button had
- * no cell and wrapped BELOW the row it belongs to. A fourth track is its own.
+ * Without a track of its own the button had no cell and wrapped BELOW the row
+ * it belongs to. The legend's third track — after entry and value — is its own.
  *
  * TRAP T-the-breakdown-button-shares-the-other-row
  */
@@ -802,7 +812,7 @@ test('the breakdown button sits ON the Other row, after its value', async ({ pag
     };
   });
 
-  expect(r.tracks, 'the fourth track is the button\'s own').toBe(4);
+  expect(r.tracks, 'the third track is the button\'s own').toBe(3);
   // Other is the SIXTH item, not a seventh row below the list.
   expect(r.rows.length).toBe(6);
   expect(r.rows.at(-1)).toContain('Other');

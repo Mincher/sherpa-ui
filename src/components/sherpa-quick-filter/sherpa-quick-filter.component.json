@@ -373,6 +373,15 @@
     },
     {
       "$type": "prop",
+      "name": "data-readonly",
+      "type": "boolean",
+      "observed": true,
+      "declared": true,
+      "kind": "style",
+      "description": "a KEY, not a control: no toggle, no button semantics. TRAP T-readonly-legend-is-a-key-not-a-filter"
+    },
+    {
+      "$type": "prop",
       "name": "data-superseded",
       "type": "boolean",
       "observed": true,
@@ -386,7 +395,7 @@
       "observed": true,
       "declared": true,
       "kind": "style",
-      "description": "a data-viz series, from 1: the chip leads with that series' swatch, as a chart's legend does — one value of a chart's own filter. TRAP T-a-chart-scope-is-its-legend-field"
+      "description": "a data-viz series, from 1, or a status name: the chip leads with that swatch, as a chart's legend does — one value of a chart's own filter. TRAP T-a-chart-scope-is-its-legend-field"
     },
     {
       "$type": "prop",
@@ -398,10 +407,11 @@
       "values": [
         "default",
         "ai",
-        "jump"
+        "jump",
+        "key"
       ],
       "default": false,
-      "description": "default | ai | jump `jump` is a JUMP TO chip, not a filter: never on. Its menu lists places on the page, filled by populate([{ value, label }]); a pick scrolls the element whose id is `value` into view."
+      "description": "default | ai | jump | key `jump` is a JUMP TO chip, not a filter: never on. Its menu lists places on the page, filled by populate([{ value, label }]); a pick scrolls the element whose id is `value` into view. `key` is a chart legend's row: no border, mono 12px, 16 tall. Its ON is SHOWN, so at rest every key is on. TODO 149"
     },
     {
       "$type": "prop",
@@ -533,6 +543,16 @@
       "$type": "state",
       "name": "unavailable",
       "selector": ":host([data-unavailable])"
+    },
+    {
+      "$type": "state",
+      "name": "key",
+      "selector": ":host([data-type=\"key\"])"
+    },
+    {
+      "$type": "state",
+      "name": "readonly",
+      "selector": ":host([data-readonly])"
     },
     {
       "$type": "state",

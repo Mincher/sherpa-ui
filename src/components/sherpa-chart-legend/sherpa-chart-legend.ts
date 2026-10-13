@@ -4,6 +4,7 @@
  * It hides nothing itself: the PAGE listens for legend-item-click and calls the
  * chart. Read `detail.indices`, not `detail.index` — "Other" stands for several.
  *
+ * TRAP T-a-legend-row-is-a-key-chip
  * TRAP T-readonly-legend-is-a-key-not-a-filter
  * TRAP T-legend-status-swatch-shares-the-band-tokens
  * TRAP T-legend-caps-at-six-and-rolls-up
@@ -15,12 +16,10 @@
 import { datumTotal, type LegendDatum } from '../../core/data/chart-datum.js';
 import { SHARED_PROPS, SUMMARY_PROPS, SherpaElement, define } from '../../core/ui/sherpa-element.js';
 import type { DataAsk } from '../../core/ui/context.js';
-import { paintSeries } from '../../core/ui/chart-parts.js';
-import { statusBorderVar, statusVar } from '../../core/data/format-tick.js';
-// The roll-up row composes a real button + menu; the page may not have imported them.
+// Each row is a key chip, and the roll-up a real button + menu; the page may not have imported them.
+import '../sherpa-quick-filter/sherpa-quick-filter.js';
 import '../sherpa-button/sherpa-button.js';
 import '../sherpa-menu/sherpa-menu.js';
-import { RULED_OUT } from '../../core/ui/shared-constants.js';
 
 const MAX_ITEMS = 6;
 
@@ -94,7 +93,8 @@ export class SherpaChartLegend extends SherpaElement {
   #rolledActive = new Set<number>();
 
   override onRender(): void {
-    this.$('.legend')?.addEventListener('click', this.#onClick);
+    // A key chip is LOCKED: it reports a press, and the legend decides.
+    this.$('.legend')?.addEventListener('quick-filter-click', this.#onClick);
     if (this.#items.length) this.#render();
   }
 
@@ -224,62 +224,46 @@ export class SherpaChartLegend extends SherpaElement {
     ];
   }
 
-  /** Draw a row per item — swatch, label and value. */
+  /** Draw a row per item — a key chip and its value. TODO 149 */
   #render(): void {
     const list = this.$('.legend');
-    const tpl = this.$<HTMLTemplateElement>('template.item-tpl');
-    if (!list || !tpl) return;
+    if (!list) return;
 
     const readonly = this.hasAttribute('data-readonly');
     list.replaceChildren();
     this.#items.forEach((item, i) => {
-      // "Other" is a different template, so clone per row, not via renderList.
       const isRollup = this.#rolledUp && !readonly && i === this.#items.length - 1;
-      const wrapper = isRollup ? this.clone('template.rollup-tpl') : this.clone('template.item-tpl');
-      if (!wrapper) return;
-      // In a roll-up the toggle is a CHILD of the wrapper; otherwise it IS one.
-      const entry = isRollup
-        ? wrapper.querySelector<HTMLElement>('.rollup-toggle')!
-        : wrapper;
-      entry.dataset['index'] = String(i);
-      const swatch = entry.querySelector<HTMLElement>('.swatch')!;
-      if (item.status) {
-        // The band's own pair, never the `--_status-*` cascade.
-        entry.dataset['status'] = item.status;
-        swatch.style.setProperty('--_hue', statusVar(item.status));
-        swatch.style.setProperty('--_border', statusBorderVar(item.status));
-      } else {
-        paintSeries(swatch, i, item.colorIndex);
-      }
-      entry.querySelector('.label')!.textContent = item.label;
+      const cell = this.clone('template.item-tpl');
+      if (!cell) return;
+      const entry = cell.querySelector<HTMLElement>('.entry')!;
+      cell.dataset['index'] = String(i);
+      if (item.status) cell.dataset['status'] = item.status;
+      // The band's own pair, never the `--_status-*` cascade.
+      entry.dataset['swatch'] = item.status ?? String(item.colorIndex ?? i + 1);
+      cell.querySelector('.label')!.textContent = item.label;
       /* Remembered across a re-populate, so a source push does not clear it.
          A roll-up row is ON while ANY of its folded categories is. */
-      if (!readonly) {
-        const on = isRollup
-          ? this.#rolled.some((r) => !this.#off.has(r.item.label))
-          : !this.#off.has(item.label);
-        entry.setAttribute('aria-pressed', String(on));
-      }
-      entry.querySelector('.value')!.textContent = item.value != null ? String(item.value) : '';
+      const on = readonly || (isRollup
+        ? this.#rolled.some((r) => !this.#off.has(r.item.label))
+        : !this.#off.has(item.label));
+      entry.toggleAttribute('data-current', on);
+      entry.toggleAttribute('data-readonly', readonly);
+      cell.querySelector('.value')!.textContent = item.value != null ? String(item.value) : '';
       /* A category a FILTER emptied: still there, still toggleable, but drawn
          inactive so a reader can see it is contributing nothing. Removing the
          row instead loses the way back — the legend IS how it comes on again.
          TRAP T-a-legend-row-goes-inactive-it-never-vanishes */
-      entry.toggleAttribute('data-empty', Number(item.value) === 0);
-      // Ruled out by the other filters: inactive, and it says why. TRAP T-a-ruled-out-value-is-greyed
+      cell.toggleAttribute('data-empty', Number(item.value) === 0);
+      // Ruled out by the other filters: inactive, and its chip says why. TRAP T-a-ruled-out-value-is-greyed
       const out = !isRollup && !!this.#present && !this.#present.has(item.label);
+      cell.toggleAttribute('data-unavailable', out);
       entry.toggleAttribute('data-unavailable', out);
-      if (out) {
-        entry.setAttribute('title', RULED_OUT);
-        entry.setAttribute('aria-disabled', 'true');
-      }
-      // Strip the button semantics; `disabled` would say the wrong thing.
-      if (readonly) {
-        entry.setAttribute('role', 'presentation');
-        entry.setAttribute('tabindex', '-1');
-        entry.removeAttribute('aria-pressed');
-      }
-      if (isRollup) this.#buildBreakdown(wrapper);
+      if (!isRollup) return void list.appendChild(cell);
+      const wrapper = this.clone('template.rollup-tpl');
+      if (!wrapper) return;
+      cell.classList.add('rollup-toggle');
+      wrapper.prepend(cell);
+      this.#buildBreakdown(wrapper);
       list.appendChild(wrapper);
     });
   }
@@ -289,9 +273,8 @@ export class SherpaChartLegend extends SherpaElement {
     const menu = wrapper.querySelector<HTMLElement & {
       toggle?: (t?: HTMLElement) => void;
     }>('.rollup-menu');
-    const button = wrapper.querySelector<HTMLElement>('.rollup-menu-btn');
     const rowTpl = this.$<HTMLTemplateElement>('template.rollup-row-tpl');
-    if (!menu || !button || !rowTpl) return;
+    if (!menu || !rowTpl) return;
 
     for (const { index, item } of this.#rolled) {
       const row = rowTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
@@ -303,19 +286,15 @@ export class SherpaChartLegend extends SherpaElement {
       menu.appendChild(row);
     }
 
-    /* sherpa-button OPENS its own slotted menu and keeps aria-expanded —
-       the click listener here only stops the press reaching the toggle beside
-       it. Hand-rolling the open lost the light-dismiss race: the menu opened
-       once and no later click could shut it.
-       TRAP T-a-trigger-click-follows-light-dismiss */
-    button.addEventListener('click', (event) => event.stopPropagation());
+    /* sherpa-button OPENS its own slotted menu and keeps aria-expanded.
+       Hand-rolling the open lost the light-dismiss race: the menu opened once
+       and no later click could shut it. TRAP T-a-trigger-click-follows-light-dismiss */
     menu.addEventListener('menu-apply', ((event: CustomEvent) => {
       const values = (event.detail?.values ?? []) as string[];
       const on = new Set(values.map(Number));
       this.#rolledActive = on;
       // Applying a suspended group's breakdown turns the row back on.
-      const row = wrapper.querySelector('.rollup-toggle');
-      row?.setAttribute('aria-pressed', String(on.size > 0));
+      wrapper.querySelector('.rollup-toggle .entry')?.toggleAttribute('data-current', on.size > 0);
 
       /* THE OFF-SET IS THE ONE ANSWER. Unticking a folded row used to emit and
          nothing else — `off` never learnt about it, so the binding reading it
@@ -337,14 +316,14 @@ export class SherpaChartLegend extends SherpaElement {
     }) as EventListener);
   }
 
-  /** A row was clicked: switch its series on or off. */
+  /** A row's chip was pressed: switch its series on or off. */
   #onClick = (event: Event): void => {
-    // Guarded here, not only in CSS, so pointer and keyboard agree.
+    // Guarded here, not only in the chip, so pointer and keyboard agree.
     if (this.hasAttribute('data-readonly')) return;
-    const item = (event.target as HTMLElement).closest<HTMLElement>('.item');
-    const raw = item?.dataset['index'];
-    if (raw == null || !item || item.hasAttribute('data-unavailable')) return;
-    const active = item.getAttribute('aria-pressed') !== 'true';
+    const entry = event.target as HTMLElement;
+    const raw = entry.closest<HTMLElement>('.item')?.dataset['index'];
+    if (raw == null || entry.hasAttribute('data-unavailable')) return;
+    const active = !entry.hasAttribute('data-current');
     const index = Number(raw);
     const isRollup = this.#rolledUp && index === this.#items.length - 1;
 
@@ -367,8 +346,8 @@ export class SherpaChartLegend extends SherpaElement {
     }
 
     this.#hostPick = null;
-    // aria-pressed is both the accessible state and the CSS hook for dimming.
-    item.setAttribute('aria-pressed', String(active));
+    // The chip says it to a screen reader, and dims itself.
+    entry.toggleAttribute('data-current', active);
     for (const label of labels) {
       if (label == null) continue;
       if (active) this.#off.delete(label);

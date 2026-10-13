@@ -304,3 +304,44 @@
   cursor: not-allowed;
   pointer-events: none;
 }
+
+/* ── KEY — a chart legend's row (Figma "Chart Legend", 1099:37879) ──────
+ * No border, no fill, mono 12 on 16: it reads as part of the chart's numeric
+ * run. Its ON is SHOWN; off, or ruled out, it takes the inactive ink and a
+ * hollow swatch — never opacity. Theme, as Figma binds the legend.
+ * TRAP T-a-legend-row-is-a-key-chip */
+:host([data-type="key"]) {
+  min-inline-size: 0;
+  max-inline-size: 100%;
+}
+:host([data-type="key"]) .chip {
+  block-size: var(--sherpa-display-mode-size-sm, 16px);
+  min-inline-size: 0;
+}
+:host([data-type="key"]) .body {
+  min-inline-size: 0;
+  gap: var(--sherpa-display-mode-space-xs, 8px);
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
+  font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
+  font-size: var(--sherpa-theme-content-size-small, 12px);
+  line-height: var(--sherpa-theme-content-line-height-xs, 16px);
+}
+/* The label shrinks, so a long name truncates rather than pushing its value. */
+:host([data-type="key"]) .label {
+  display: flex;
+  min-inline-size: 0;
+  overflow: hidden;
+}
+:host([data-type="key"]:not([data-current])) .body,
+:host([data-type="key"][data-unavailable]) .body {
+  color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */
+}
+:host([data-type="key"]:not([data-current])) .swatch,
+:host([data-type="key"][data-unavailable]) .swatch {
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3); /* theme-direct */
+  background: transparent;
+}
+:host([data-readonly]) .body { cursor: default; }

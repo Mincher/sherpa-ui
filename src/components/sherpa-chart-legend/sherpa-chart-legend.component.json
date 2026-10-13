@@ -32,25 +32,24 @@
         "class": "item-tpl",
         "children": [
           {
-            "el": "button",
+            "el": "div",
             "class": "item",
-            "attrs": {
-              "type": "button",
-              "aria-pressed": "true"
-            },
             "children": [
               {
-                "el": "span",
-                "class": "swatch sherpa-border-corners",
-                "part": "swatch",
+                "el": "sherpa-quick-filter",
+                "class": "entry",
                 "attrs": {
-                  "aria-hidden": "true"
-                }
-              },
-              {
-                "el": "span",
-                "class": "label sherpa-truncate",
-                "part": "label"
+                  "data-type": "key",
+                  "data-locked": "",
+                  "data-current": ""
+                },
+                "children": [
+                  {
+                    "el": "span",
+                    "class": "label sherpa-truncate",
+                    "part": "label"
+                  }
+                ]
               },
               {
                 "el": "span",
@@ -136,7 +135,8 @@
       "type": "boolean",
       "observed": true,
       "declared": true,
-      "kind": "style"
+      "kind": "style",
+      "description": "a KEY, not a filter: its rows do not toggle"
     },
     {
       "$type": "prop",
@@ -165,16 +165,6 @@
       "$type": "state",
       "name": "horizontal",
       "selector": ":host([data-orientation=\"horizontal\"])"
-    },
-    {
-      "$type": "state",
-      "name": "readonly",
-      "selector": ":host([data-readonly])"
-    },
-    {
-      "$type": "state",
-      "name": "focus-visible",
-      "selector": ".item:focus-visible"
     }
   ],
   "capabilities": [
@@ -206,17 +196,10 @@
     "legend.column-gap": "{sherpa.display-mode-space-xs}",
     "legend.row-gap": "{sherpa.display-mode-space-2xs}",
     "legend.padding": "{sherpa.display-mode-space-xs}",
-    "item.color": "{sherpa.theme-content-body-1}",
-    "item.font-family": "{sherpa.font-family-mono}",
-    "item.font-size": "{sherpa.theme-content-size-small}",
-    "item.font-weight": "{sherpa.font-weight-regular}",
-    "item.line-height": "{sherpa.theme-content-line-height-xs}",
-    "swatch.inline-size": "{sherpa.display-mode-size-xs}",
-    "swatch.block-size": "{sherpa.display-mode-size-xs}",
-    "swatch.border-width": "{sherpa.display-mode-border-width-base}",
-    "swatch.border-color": "{sherpa.data-viz-series-1}",
-    "swatch.background": "{sherpa.data-viz-series-1}",
     "value.color": "{sherpa.theme-content-body-base}",
+    "value.font-family": "{sherpa.font-family-mono}",
+    "value.font-size": "{sherpa.theme-content-size-small}",
+    "value.line-height": "{sherpa.theme-content-line-height-xs}",
     "rollup-menu-btn.margin-inline-start": "{sherpa.display-mode-space-2xs}"
   },
   "$extensions": {

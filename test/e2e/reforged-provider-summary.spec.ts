@@ -88,7 +88,8 @@ test('a legend reads its chart\'s field; its pick narrows that chart alone', asy
     const $ = (s) => provider.querySelector(s);
     const before = $('#donut').slices.map((s) => s.label);
     const items = $('#legend').shadowRoot.querySelectorAll('.item').length;
-    $('#legend').shadowRoot.querySelector('.item').click();
+    // The row's key chip: its BODY is the button. TODO 149
+    $('#legend').shadowRoot.querySelector('.item .entry').shadowRoot.querySelector('.body').click();
     await settle();
     return { before, items, after: $('#donut').slices.map((s) => s.label), count: $('#count').dataset.value, reports };
   })()`) as Record<string, unknown>;

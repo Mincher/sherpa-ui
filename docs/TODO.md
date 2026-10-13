@@ -138,7 +138,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 30 | 20b | The Date filter should be a view-scope date RANGE | feature |
 | ✅ | 31 | 52 | A data viz scope in the filter panel: one Simple filter, a chip per legend item, with its swatch | feature |
 | ✅ | 31ab | 159 | A data viz filter held by the View: a legend click changes the VIEW's values, and toggles the item | feature |
-| ⬜ | 31aa | 149 | A chart legend's items ARE swatch chips: move `sherpa-chart-legend` onto `sherpa-quick-filter` | refactor |
+| ✅ | 31aa | 149 | A chart legend's items ARE swatch chips: move `sherpa-chart-legend` onto `sherpa-quick-filter` | refactor |
 | ⬜ | 31a | 107 | A filter can apply LIVE, debounced — an opt-in; the default stays once per act | feature |
 | ✅ | 31b | 124 | The Filters button and menu move to the filter panel HEADER: one menu for every scope | feature |
 | ✅ | 31c | 122 | Email starts SIMPLE, with a switch to Advanced; over 20 values it is one chip with a multi-select menu | feature |
@@ -3416,7 +3416,7 @@ its own chart again. The chart keeps no answer of its own while the View
 holds the field: two answers to one field, one of them hidden, was the fault.
 `T-a-legend-follows-the-view-when-it-holds-the-field`
 
-### `[ ]` 149 — A chart legend's items ARE swatch chips
+### `[x]` ✅ 149 — A chart legend's items ARE swatch chips
 
 Will, 2026-09-30 (with 52): *"legend items could just be a boolean filter
 chip variant. It's just style differences and a swatch instead of an icon.
@@ -3458,6 +3458,15 @@ every one is off. The same value reads the two ways round.
   in full ink.
 
 **✅ Will, 2026-10-12 — all my picks:** A — leave each as it is: each is true where it is.
+
+**✅ Done 2026-10-13.** Each legend row is a `sherpa-quick-filter
+data-type="key"` (swatch and slotted label), `data-locked`, with the legend's
+`.value` beside it. The chip gained the `key` type (no border, mono 12 on 16,
+the label truncates), `data-readonly`, a STATUS swatch (`data-swatch` takes a
+status name), and `aria-pressed` on every toggle chip — the panel's too. The
+legend keeps its layout, roll-up, off-set and `legend-item-click`; the grid is
+three tracks now: entry, value, button. Charts, the provider and the gauge
+change nothing. `T-a-legend-row-is-a-key-chip`.
 
 ### `[x]` ✅ 124 — The Filters button and menu move to the filter panel HEADER
 

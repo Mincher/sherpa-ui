@@ -1,13 +1,9 @@
 /**
- * sherpa-chart-legend.css — a GRID of swatch · category · value entries.
- * Three shared tracks so values line up down the column. Figma: Chart Legend
- * 1098:37846.
+ * sherpa-chart-legend.css — a GRID of key chip · value entries. Shared tracks,
+ * so values line up down the column. Figma: Chart Legend 1098:37846.
  *
- * Each entry stays ONE button (one click target, one tab stop) that adopts the
- * parent's tracks via subgrid. Separate grid items would align too, but leave
- * three tab stops per series.
- *
- * The swatch colour is a --_hue custom property the JS sets per entry.
+ * Each row is a KEY chip (swatch and label, one tab stop) and its value; the
+ * chip draws its own on, off and ruled-out look. TRAP T-a-legend-row-is-a-key-chip
  */
 
 :host {
@@ -17,14 +13,14 @@
 
 .legend {
   display: grid;
-  /* All FOUR hug. `1fr` on the category swallowed the whole parent width, so
+  /* All THREE hug. `1fr` on the entry swallowed the whole parent width, so
      the legend could not sit beside a chart.
 
-     The FOURTH track is the roll-up's menu button. Without it the button had
+     The THIRD track is the roll-up's menu button. Without it the button had
      no cell of its own and wrapped BELOW the row it belongs to; an ordinary
      entry simply leaves it empty.
      TRAP T-the-breakdown-button-shares-the-other-row */
-  grid-template-columns: auto auto auto auto;
+  grid-template-columns: auto auto auto;
   justify-content: start;
   column-gap: var(--sherpa-display-mode-space-xs, 8px);
   row-gap: var(--sherpa-display-mode-space-2xs, 4px);
@@ -53,150 +49,73 @@
   margin-inline: auto;
 }
 
-/* The rows that adopt the parent legend's tracks. An ENTRY takes the first
-   three and stops, leaving the button's track empty; the ROLL-UP takes all
-   four, and its toggle takes the three inside that. */
+/* An ENTRY takes the first two tracks and leaves the button's empty; the
+   ROLL-UP takes all three, and its toggle the two inside that. */
 .item {
-  grid-column: 1 / 4;
+  grid-column: 1 / 3;
   display: grid;
   grid-template-columns: subgrid;
+  align-items: center;
 }
 .rollup {
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: subgrid;
-}
-.rollup-toggle {
-  grid-column: 1 / 4;
-  display: grid;
-  grid-template-columns: subgrid;
-}
-
-/* ── Entry ─────────────────────────────────────────────────────────────── */
-.item {
   align-items: center;
-  margin: 0;
-  padding: 0;
-  border: none;
-  background: transparent;
-  /* The row carries the CATEGORY's ink; .value overrides it below. */
-  color: var(--sherpa-theme-content-body-1, #35353d); /* theme-direct */
-  /* MONOSPACED by design — a legend reads as part of the chart's numeric run. */
-  font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
-  font-size: var(--sherpa-theme-content-size-small, 12px);
-  font-weight: var(--sherpa-font-weight-regular, 400);
-  line-height: var(--sherpa-theme-content-line-height-xs, 16px);
-  text-align: start;
-  cursor: pointer;
-  transition: color 100ms ease;
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: var(--sherpa-focus-ring);
-  }
 }
+.entry { justify-self: start; }
 
-/* A read-only legend is a key, not a filter. The JS drops the button semantics
-   too (see #render) — styling alone would leave a focusable control that does
-   nothing. */
-:host([data-readonly]) .item { cursor: default; }
-
-/* Each entry owns ONE cell and lays out its own swatch/label/value inside it.
-   `subgrid` is for the vertical legend, whose three tracks line up down the
-   whole list; here the cells are equal and independent.
-
-   CENTRED in the cell, because a two-row grid leaves a cell taller than its
-   entry wherever a label wraps. */
+/* Each entry owns ONE cell: the chip shrinks, so its label truncates before
+   its value moves. CENTRED in the cell, because a two-row grid leaves a cell
+   taller than its entry wherever a label wraps. */
 :host([data-orientation="horizontal"]) .item {
   grid-column: auto;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-content: center;
-  align-items: center;
   min-inline-size: 0;
   column-gap: var(--sherpa-display-mode-space-xs, 8px);
 }
 
-/* Toggled off, OR emptied by a filter — dims via the inactive CONTENT ink,
-   never opacity (which would wash out the swatch's translucency and compound in
-   dark mode). .value is named too: its own darker ink would otherwise keep a
-   switched-off number fully dark.
-   TRAP T-a-legend-row-goes-inactive-it-never-vanishes */
-.item[aria-pressed="false"],
-.item[aria-pressed="false"] .value,
-.item[data-empty],
-.item[data-empty] .value,
-.item[data-unavailable],
-.item[data-unavailable] .value {
-  color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */
-}
-.item[data-unavailable] { cursor: not-allowed; }
-.item[aria-pressed="false"] .swatch,
-.item[data-empty] .swatch,
-.item[data-unavailable] .swatch {
-  border-color: var(--sherpa-theme-border-default-2, #b3b3c3); /* theme-direct */
-  background: transparent;
-}
-
-/* Figma "Legend Swatch": 12×12, radius 4, hue at 60% + solid 1px hue stroke. */
-.swatch {
-  inline-size: var(--sherpa-display-mode-size-xs, 12px);
-  block-size: var(--sherpa-display-mode-size-xs, 12px);
-  border: var(--sherpa-display-mode-border-width-base, 1px) solid
-    var(--_border, var(--_hue, var(--sherpa-data-viz-series-1, #8364c880)));
-  /* Solid hue where color-mix is unavailable — the swatch must never vanish. */
-  background: var(--_hue, var(--sherpa-data-viz-series-1, #8364c880));
-  box-sizing: border-box;
-}
-/* A STATUS swatch re-points --_hue, so every rule above keeps working. The TS
-   sets it INLINE per status: the status cascade's `[data-status]` blocks live
-   in tokens.css, which is LIGHT-DOM ONLY — a custom property inherits across a
-   shadow boundary but a SELECTOR does not, so the rules that once lived here
-   never matched and every swatch fell back to grey. */
-
-/* .label truncates via `.sherpa-truncate` in the template. */
-
 /* Darker than its label by design: the number is the fact, the name its
-   caption. An entry with no value leaves the track empty rather than
-   collapsing it, so the other entries stay aligned. */
+   caption. MONOSPACED, as the key chip is. An entry with no value leaves the
+   track empty, so the other entries stay aligned. */
 .value {
   color: var(--sherpa-theme-content-body-base, #0c0b11); /* theme-direct */
+  font-family: var(--sherpa-font-family-mono, ui-monospace, "JetBrains Mono", monospace);
+  font-size: var(--sherpa-theme-content-size-small, 12px);
+  line-height: var(--sherpa-theme-content-line-height-xs, 16px);
   text-align: end;
   font-variant-numeric: tabular-nums;
 }
 
-/* ── The "Other" roll-up row ────────────────────────────────────────────────
- * A WRAPPER, not a button: a menu button nested inside a button is invalid
- * HTML — the browser un-nests it and the inner control stops working. So the
- * toggle and the menu button are siblings.
- *
- * It takes the parent's three tracks and adds a FOURTH implicit column for the
- * button, so swatch / label / value still line up with the rows above. */
-.rollup {
-  align-items: center;
+/* Toggled off, OR emptied by a filter, OR ruled out — the inactive CONTENT
+   ink, never opacity. The chip dims itself when off or ruled out; an emptied
+   row is the legend's own state, so it reaches the chip through its parts.
+   TRAP T-a-legend-row-goes-inactive-it-never-vanishes */
+.item:is([data-empty], [data-unavailable], :has(> .entry:not([data-current]))) .value,
+.item[data-empty] .entry::part(body) {
+  color: var(--sherpa-theme-content-body-2, #b3b3c3); /* theme-direct */
 }
-/* The toggle spans the three real tracks; the button lands in the implicit one
-   after them, rather than fighting the value for its cell. Its tracks come from
-   the shared subgrid rule above. */
+.item[data-empty] .entry::part(swatch) {
+  border-color: var(--sherpa-theme-border-default-2, #b3b3c3); /* theme-direct */
+  background: transparent;
+}
 
-/* THE LAST CELL of the 3x2 grid: the Other toggle and its breakdown button,
+/* ── The "Other" roll-up row ────────────────────────────────────────────────
+ * A WRAPPER: the menu button may not sit inside the chip's button, so the row
+ * and the button are siblings. */
+
+/* THE LAST CELL of the 3x2 grid: the Other row and its breakdown button,
    side by side, centred like every other entry.
    TRAP T-a-horizontal-legend-is-three-by-two */
 :host([data-orientation="horizontal"]) .rollup {
   grid-column: auto;
   display: flex;
-  align-items: center;
   align-self: center;
   min-inline-size: 0;
   column-gap: var(--sherpa-display-mode-space-2xs, 4px);
 }
-:host([data-orientation="horizontal"]) .rollup-toggle {
-  grid-column: auto;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  min-inline-size: 0;
-  flex: 1 1 auto;
-  column-gap: var(--sherpa-display-mode-space-xs, 8px);
-}
+:host([data-orientation="horizontal"]) .rollup-toggle { flex: 1 1 auto; }
 
 /* The breakdown button sits after the value, and hugs. */
 .rollup-menu-btn {
