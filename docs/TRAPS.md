@@ -16703,3 +16703,25 @@ Sherpa Demos chose the store, kept the version and seeded by hand in
 
 - Site: `src/core/browser/idb-store.ts`
 - Site: `test/unit/local-records.test.mjs`
+
+### T-a-shadow-reach-is-a-missing-door
+
+**A host that reaches into a component's shadow root is asking for a door
+the component does not have** (TODO 191). Sherpa Demos reached in three
+times, and each one broke silently the day the markup inside changed:
+
+| it reached for | the door now |
+|---|---|
+| the nav's open Area rows, before a populate redraws them | `nav.expandedIds` — a read-back getter |
+| the header's bell, for the notifications panel to anchor to | `header.notificationsAnchor` |
+| the header's theme button, to set its glyph and words | `data-theme-mode="light\|dark"` — the header draws them |
+
+`data-theme-mode`, not `data-mode`: `data-mode` on any element re-tints
+everything under it. With an attribute on the host there is nothing to write
+before the header renders, so the app's "set it again once rendered" step
+went too.
+
+- Site: `src/components/sherpa-nav/sherpa-nav.ts`
+- Site: `src/components/sherpa-app-header/sherpa-app-header.ts`
+- Site: `test/e2e/reforged-nav.spec.ts`
+- Site: `test/e2e/reforged-app-header.spec.ts`

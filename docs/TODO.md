@@ -3929,7 +3929,7 @@ Six parts, one commit each:
 | ✅ | 2. the provider owns the reader's saved filters, as it owns saved Views: `provider.saveFilter(label, event)`; it forgets one a bar deletes, and routes the panel's delete to its bar | `T-save-packs-the-fields-into-one-chip` |
 | ✅ | 3. `data-setting="/pointer"` binds a control to the session (`bindSettings`); `persist()` takes its guard from the default | `T-a-setting-is-a-pointer` |
 | ✅ | 4. a store takes a seed, a seed version and a fallback: `localRecords(options)` → `{ store, ready }` | `T-local-records-seed-themselves` |
-| ⬜ | 5. public doors for the three shadow-root reaches in `index.html` | |
+| ✅ | 5. public doors for the three shadow-root reaches in `index.html`: `nav.expandedIds`, `header.notificationsAnchor`, `data-theme-mode` | `T-a-shadow-reach-is-a-missing-door` |
 | ⬜ | 6. Sherpa Demos sorted by kind: `stores/`, `contexts/`, `views/`, `view-schemas/` | |
 
 Part 1 keeps the five dialogs' markup — HTML first, and their ids are what

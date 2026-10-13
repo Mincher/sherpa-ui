@@ -420,6 +420,12 @@ export class SherpaNav extends SherpaElement {
     if (row?.querySelector('sherpa-nav-item')?.hasAttribute('data-href')) this.closeMenu();
   };
 
+  /** The Areas a reader has open, by id. A populate draws each row as its
+   *  config says, so a host reads these back first. TRAP T-a-shadow-reach-is-a-missing-door */
+  get expandedIds(): string[] {
+    return [...this.$$<HTMLElement>('.nav-row[data-expanded="true"]')].map((row) => row.dataset['id'] ?? '').filter(Boolean);
+  }
+
   /** An Area opened or closed: show or hide its children. */
   #onItemExpand = (event: Event): void => {
     const row = (event.target as HTMLElement).closest<HTMLElement>('.nav-row');

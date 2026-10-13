@@ -365,6 +365,19 @@
     },
     {
       "$type": "prop",
+      "name": "data-theme-mode",
+      "type": "enum",
+      "observed": true,
+      "declared": true,
+      "kind": "behaviour",
+      "values": [
+        "light",
+        "dark"
+      ],
+      "description": "light | dark — the mode on screen; the button offers the other"
+    },
+    {
+      "$type": "prop",
       "name": "data-theme-toggle",
       "type": "boolean",
       "observed": true,
@@ -468,7 +481,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (values). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (notificationsAnchor, values). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -585,6 +598,11 @@
         "hasLoadingBar"
       ],
       "jsProps": [
+        {
+          "name": "notificationsAnchor",
+          "type": "HTMLElement",
+          "access": "read"
+        },
         {
           "name": "values",
           "type": "Record<string, readonly string[]>",

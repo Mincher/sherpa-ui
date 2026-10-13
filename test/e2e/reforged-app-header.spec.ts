@@ -353,3 +353,24 @@ test('the bell reports the panel state the host gives it', async ({ page }) => {
   // …and it goes away again. Off is not gone, but closed IS closed.
   expect(r.shut).toMatchObject({ open: false, ring: 'none' });
 });
+
+/* THE HOST TELLS THE HEADER, never reaches in: the mode on screen picks the
+   theme button's glyph and words, and the bell is handed out to anchor to.
+   TODO 191. TRAP T-a-shadow-reach-is-a-missing-door */
+test('data-theme-mode picks the theme button, and notificationsAnchor is the bell', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const el = document.createElement('sherpa-app-header') as WithRender & { notificationsAnchor: HTMLElement };
+    el.setAttribute('data-theme-toggle', '');
+    el.setAttribute('data-notifications', '2');
+    document.getElementById('root')!.appendChild(el);
+    await el.rendered;
+    const btn = el.shadowRoot!.querySelector('.theme-toggle')!;
+    const light = [btn.getAttribute('data-icon-start'), btn.getAttribute('aria-label')];
+    el.setAttribute('data-theme-mode', 'dark');
+    const dark = [btn.getAttribute('data-icon-start'), btn.getAttribute('aria-label')];
+    return { light, dark, bell: el.notificationsAnchor === el.shadowRoot!.querySelector('.notif-btn') };
+  });
+  expect(r).toEqual({
+    light: ['moon', 'Switch to dark mode'], dark: ['sun', 'Switch to light mode'], bell: true,
+  });
+});

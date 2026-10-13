@@ -46,6 +46,9 @@ export class SherpaAppHeader extends SherpaElement {
     'data-loading': { type: 'boolean', kind: 'style' },
     'data-menu': { type: 'boolean', kind: 'style' },
     'data-theme-toggle': { type: 'boolean', kind: 'style' },
+    /* The mode on screen, so the theme button offers the OTHER: a moon in
+       light, a sun in dark. Not `data-mode`, which would re-tint the header. */
+    'data-theme-mode': { type: 'enum', kind: 'behaviour', values: ['light', 'dark'] },
     'data-heading': { type: 'string', kind: 'content', to: '.title', fallbackAttr: 'data-title' },
     'data-ai-label': { type: 'string', kind: 'content', to: '.ai-label', default: 'Ask N-zo' },
     /* The notifications panel is OPEN. The header emits the intent and the
@@ -81,6 +84,12 @@ export class SherpaAppHeader extends SherpaElement {
     this.$('.notif-btn')?.toggleAttribute(
       'data-open', this.hasAttribute('data-notifications-open'),
     );
+  }
+
+  /** The bell, for a host's notifications panel to anchor to; the header itself
+   *  before it renders. TRAP T-a-shadow-reach-is-a-missing-door */
+  get notificationsAnchor(): HTMLElement {
+    return this.$<HTMLElement>('.notif-btn') ?? this;
   }
 
   /** populate({ breadcrumb, filters, available }) — feed the composed children. */
@@ -154,6 +163,10 @@ export class SherpaAppHeader extends SherpaElement {
     this.#syncOpen();
     const icon = this.$('.context-icon');
     if (icon) this.writeIcon(icon, this.dataset['icon'] ?? '');
+    const dark = this.dataset['themeMode'] === 'dark';
+    const theme = this.$('.theme-toggle');
+    theme?.setAttribute('data-icon-start', dark ? 'sun' : 'moon');
+    theme?.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
 
     // CSS shows/hides the badge via [data-notifications].
     const count = this.dataset['notifications'];

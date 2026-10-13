@@ -963,3 +963,23 @@ test('the header\'s Settings and Pin are one default group of composed buttons',
   // Pinned: Pin's own control says so.
   expect(r.pressed).toEqual(['false', 'true']);
 });
+
+/* A HOST READS BACK THE OPEN AREAS before a populate, which draws each row as
+   its config says — through a getter, not the shadow root. TODO 191.
+   TRAP T-a-shadow-reach-is-a-missing-door */
+test('expandedIds says which Areas are open', async ({ page }) => {
+  const r = await page.evaluate(async () => {
+    const nav = document.createElement('sherpa-nav') as HTMLElement & {
+      rendered?: Promise<void>; populate(c: unknown): void; expandedIds: string[];
+    };
+    document.getElementById('root')!.appendChild(nav);
+    await nav.rendered;
+    nav.populate({ sections: [{ label: 'S', items: [
+      { id: 'a', label: 'A', expanded: true, children: [{ id: 'a1', label: 'A1', href: '?a1' }] },
+      { id: 'b', label: 'B', children: [{ id: 'b1', label: 'B1', href: '?b1' }] },
+    ] }] });
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
+    return nav.expandedIds;
+  });
+  expect(r).toEqual(['a']);
+});
