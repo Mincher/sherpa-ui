@@ -3,8 +3,9 @@
  * TRAP T-settled-waits-for-renders-not-transitions
  *
  * Map:
- * - settled — resolve once a tree's components have rendered, their data stamped, and their transitions finished
+ * - settled — resolve once a tree's components have rendered, stamped their data, loaded their icons, and stopped moving
  */
+import { iconsLoading } from './render-icon.js';
 
 type Root = Document | DocumentFragment | Element;
 
@@ -27,6 +28,8 @@ function pending(root: Root, out: Set<Promise<void>>): Set<Promise<void>> {
 export async function settled(root: Root = document, passes = 3): Promise<void> {
   for (let i = 0; i < passes; i++) {
     await Promise.all(pending(root, new Set()));
+    // An icon draws once its module has loaded. TRAP T-an-icon-loads-when-first-drawn
+    await iconsLoading();
     // populate() runs in a LATER microtask than the `rendered` just awaited.
     await Promise.resolve();
     await Promise.resolve();

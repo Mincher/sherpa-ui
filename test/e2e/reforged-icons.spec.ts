@@ -11,7 +11,7 @@ import { join } from 'node:path';
  * in the free webfont gave `content: none`, zero width and no warning — and
  * `fa-bell-on` and `fa-sliders-up` both shipped that way before anyone noticed.
  *
- * The names are Figma's now (`src/icons/`, baked into `icon-paths.ts` with each
+ * The names are Figma's now (`src/icons/`, baked into `core/ui/icons/<name>.ts` with each
  * drawing's own ink box). The `fa-` spelling and its alias map are gone.
  *
  * The test scans the source itself rather than taking a hand-kept list, so a
@@ -58,18 +58,17 @@ test('every icon name in the repo draws a real glyph', async ({ page }) => {
 
   const broken = await page.evaluate(async (list: string[]) => {
     const mod = await import('/dist/core/ui/render-icon.js');
-    const box = document.createElement('span');
-    document.getElementById('root')!.appendChild(box);
-
-    const bad: string[] = [];
-    for (const name of list) {
-      box.replaceChildren();
+    // A box each: an icon loads the first time it is drawn, and draws once it
+    // has. TRAP T-an-icon-loads-when-first-drawn
+    const boxes = list.map((name) => {
+      const box = document.createElement('span');
+      document.getElementById('root')!.appendChild(box);
       mod.renderIcon(box, name);
-      // An unknown name leaves the wrapper EMPTY — that is the silent failure.
-      const path = box.querySelector('svg path, svg circle, svg rect');
-      if (!path) bad.push(name);
-    }
-    return bad;
+      return [name, box] as const;
+    });
+    await mod.iconsLoading();
+    // An unknown name leaves the wrapper EMPTY — that is the silent failure.
+    return boxes.filter(([, box]) => !box.querySelector('svg path, svg circle, svg rect')).map(([name]) => name);
   }, names);
 
   expect(broken, `icon names that draw NOTHING:\n${broken.map((b) => `  ${b}`).join('\n')}`)

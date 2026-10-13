@@ -6,6 +6,8 @@
  * Each template and sheet a module hands the templater is put in the JS, so a
  * component fetches nothing — except in a DEV build (--dev, --watch), which
  * keeps the URLs for live reload. Will, TODO 208. TRAP T-the-text-is-in-the-js
+ * Then each module is MINIFIED, one by one — never bundled, so every import
+ * path holds; a dev build stays readable. Will, TODO 199.
  *
  *   node scripts/build-reforged.mjs [--watch | --dev]
  */
@@ -15,6 +17,7 @@ import { join, dirname, relative } from 'node:path';
 import postcss from 'postcss';
 import autoprefixer from 'autoprefixer';
 import cssnano from 'cssnano';
+import { transform } from 'esbuild';
 
 const ROOT = process.cwd();
 const SRC = join(ROOT, 'src');
@@ -113,9 +116,26 @@ function inlineFiles(dir) {
   return count;
 }
 
+/** Minify each module on its own: no bundle, so every import path holds. */
+async function minifyFiles(dir) {
+  let before = 0;
+  let after = 0;
+  for (const file of globSync('**/*.js', { cwd: dir })) {
+    const path = join(dir, file);
+    const code = readFileSync(path, 'utf8');
+    const out = await transform(code, { minify: true, format: 'esm', target: 'es2022', legalComments: 'none' });
+    before += code.length;
+    after += out.code.length;
+    writeFileSync(path, out.code);
+  }
+  return `${Math.round(before / 1024)} KB → ${Math.round(after / 1024)} KB`;
+}
+
 if (!DEV) {
   console.log('› inline the templates and sheets into the JS');
   console.log(`✓ ${inlineFiles(OUT)} files inlined`);
+  console.log('› minify the JS (esbuild)');
+  console.log(`✓ ${await minifyFiles(OUT)}`);
 }
 
 if (WATCH) {

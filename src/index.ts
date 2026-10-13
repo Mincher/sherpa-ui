@@ -5,7 +5,7 @@
  * `<link>`/`@import` of tokens.css, or programmatically with `installTokens()`.
  *
  * Map:
- * - installIcons — DEPRECATED — a no-op since the icons became SVGs in icon-paths.ts
+ * - installIcons — DEPRECATED — a no-op since the icons became SVGs, one module each in core/ui/icons/
  * - installTokens — add tokens.css to the page once, so a component has its variables
  */
 // What every shadow root adopts is SherpaElement's own default, so a
@@ -13,7 +13,7 @@
 
 /**
  * @deprecated A NO-OP since the icons became Figma SVGs baked into
- * `icon-paths.ts`. It loaded a 103KB Font Awesome sheet whose 1,935 `.fa-*`
+ * `core/ui/icons/`. It loaded a 103KB Font Awesome sheet whose 1,935 `.fa-*`
  * rules were adopted into every shadow root and matched nothing.
  * Kept so an existing call does not throw; delete the call.
  */

@@ -98,7 +98,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | c14 | 212 | Markup paths for the list components — tabs, breadcrumbs, a select's options, key-value pairs — so plain HTML and React 18 can fill them | feature |
 | ✅ | c15 | 214 | Forms complete: `<fieldset disabled>`, reset on every control, and the five controls that submit nothing | foundation |
 | ✅ | c16 | 208 | The text in the JS, not fetched: templates and sheets inline at build, URLs only in a dev build — with 199 | refactor |
-| ⬜ | c17 | 199 | A smaller download: minify the JS (a new dev tool) and load icons on demand | refactor |
+| ✅ | c17 | 199 | A smaller download: minify the JS (a new dev tool) and load icons on demand | refactor |
 | ⬜ | c18 | 216 | Tokens safe to embed: the page rules out of `tokens.css`, a default mode, the `[data-status]` reach documented | foundation |
 | ✅ | c19 | 219 | The framework guide, steps not history, served as `sherpa://frameworks`; an `AGENTS.md` in the package | docs |
 | ✅ | c20 | 217 | React 18 and Angular adapters, generated from the manifest — small, and dependency-free | tooling |
@@ -3855,7 +3855,7 @@ its own draws as it does from the index (a test page imports one component
 alone). Guarding each `define` is left: it matters only with two copies of
 the library on a page. The smaller-download half waits in 199.
 
-### `[ ]` 199 — A smaller download: minify, and icons on demand
+### `[x]` ✅ 199 — A smaller download: minify, and icons on demand
 
 From 189. `import 'sherpa-ui'` loads 1.5 MB of JS, not minified; the icons
 alone are 314 KB (102 KB gzipped), and every page loads them all.
@@ -3876,6 +3876,12 @@ Then Sherpa Demos can drop its 32 `waitForTimeout` calls for `settled()`.
 the same step as 208 (the text in the JS). 220 gates the result.
 
 **✅ Will, 2026-10-12 — all my picks:** A and A — esbuild as a dev dependency with a readable debug build; one module per icon, fetched the first time it is drawn.
+
+**✅ Done 2026-10-12.** The build minifies each module with esbuild, one by
+one (no bundle, so every import holds): 2021 KB → 1201 KB. `npm run build:dev`
+is the readable copy. Each icon is its own module, loaded the first time it is
+drawn; `settled()` waits for them. One button: 570 KB (JS + fetched) before
+208, 214 KB now, nothing fetched. `T-an-icon-loads-when-first-drawn`
 
 ### `[ ]` 190 — A Context contract and one `app.json`
 

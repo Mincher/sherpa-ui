@@ -131,6 +131,9 @@ export class SherpaInputText extends SherpaElement {
   }
 
   #options: InputOption[] = [];
+  /** A SELECT value asked for before its option arrived: held, reported, then
+   *  applied. TRAP T-a-value-before-the-first-render-is-held */
+  #held: string | null = null;
 
   /** Empty the field and report it, as a keystroke would. */
   #onClear = (): void => {
@@ -279,7 +282,8 @@ export class SherpaInputText extends SherpaElement {
   #syncOptions(): void {
     const select = this.#control;
     if (!(select instanceof HTMLSelectElement)) return;
-    const wanted = this.getAttribute('value') ?? select.value;
+    const wanted = this.#held ?? this.getAttribute('value') ?? select.value;
+    this.#held = null;
     select.replaceChildren(
       ...this.#options.map((option) => {
         const el = document.createElement('option');
@@ -476,9 +480,12 @@ export class SherpaInputText extends SherpaElement {
   }
 
   get value(): string {
-    return this.#control?.value ?? this.getAttribute('value') ?? '';
+    return this.#held ?? this.#control?.value ?? this.getAttribute('value') ?? '';
   }
   set value(v: string) {
+    // A select whose option has not arrived would drop it, and show its FIRST.
+    const select = this.#control instanceof HTMLSelectElement ? this.#control : null;
+    this.#held = select && v && !this.#options.some((o) => o.value === v) ? v : null;
     if (this.#control) this.#control.value = v;
     else this.setAttribute('value', v);
     // A JS write fires no `input`, so the Clear flag and the form are told here.
@@ -510,6 +517,8 @@ export class SherpaInputText extends SherpaElement {
   }
 
   #onInput = (event: Event): void => {
+    // The reader's own answer wins over one still held.
+    this.#held = null;
     /* The native `input` is COMPOSED, so it crossed the shadow root as well as
        this one: two per keystroke. The host's own is the one that goes on.
        TRAP T-a-composed-native-event-goes-out-twice */
@@ -522,6 +531,7 @@ export class SherpaInputText extends SherpaElement {
   };
 
   #onChange = (): void => {
+    this.#held = null;
     this.#syncValue();
     this.emit('change', { value: this.value });
   };

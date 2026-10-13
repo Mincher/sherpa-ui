@@ -1399,6 +1399,13 @@ on before any row, and the rows came in parts — so the pick was read against
 three labels as "all on", and the fourth, arriving later, was on. A reader's
 click, or an `off` write, replaces the kept pick.
 
+**A select's value before its options** (2026-10-13): `sherpa-input-text`
+as a select wrote a value straight into its inner `<select>`, which dropped
+one it had no option for — and showed its FIRST once they came. Since an
+input's `rendered` waits for its icons, a menu's condition row lost its
+"contains" that way. It holds the value, reports it, and applies it when its
+options arrive; the reader's own pick drops it.
+
 - Site: `src/components/sherpa-prompt-composer/sherpa-prompt-composer.ts`
 - Site: `test/e2e/reforged-prompt-composer.spec.ts`
 - Site: `src/components/sherpa-menu/sherpa-menu.ts`
@@ -1409,6 +1416,7 @@ click, or an `off` write, replaces the kept pick.
 - Site: `test/e2e/reforged-quick-filter-toolbar-state-first.spec.ts`
 - Site: `src/components/sherpa-chart-legend/sherpa-chart-legend.ts`
 - Site: `test/e2e/reforged-chart-legend.spec.ts`
+- Site: `src/components/sherpa-input-text/sherpa-input-text.ts`
 
 ### T-a-value-is-data-the-ticks-are-drawn
 
@@ -3413,7 +3421,7 @@ not licence to add a JS status branch.
 ### T-harness-serves-font-awesome-locally
 
 > **HISTORY — 2026-09-23.** Font Awesome is GONE. The icons are Figma SVGs
-> baked into `icon-paths.ts`, so there is no webfont to serve, no `<link>` in
+> baked into `core/ui/icons/`, so there is no webfont to serve, no `<link>` in
 > the harness and no CDN entry in `sharedStyles`. Measured before removal: the
 > CDN sheet was adopted into every shadow root, putting **1,935 `.fa-*` rules**
 > into each of 59 roots that matched **nothing**, at 3 network requests per
@@ -3561,7 +3569,7 @@ It is invisible in the numbers a reviewer checks. Chip height, icon width and
 icon height were all exactly right; only the art inside was wrong.
 
 **The icons are Figma's**, exported to `src/icons/` and compiled by
-`scripts/generate-icons.mjs` (`npm run icons`) into `src/core/ui/icon-paths.ts`
+`scripts/generate-icons.mjs` (`npm run icons`) into `src/core/ui/icons/` (one module per icon, since TODO 199)
 with each ink bbox. Font Awesome NAMES still resolve, through `ICON_ALIASES`,
 to the Figma drawing that means the same thing — `house` is Figma's `home`,
 `xmark` its `cross` — so 88 call sites did not have to be rewritten.
@@ -3582,7 +3590,7 @@ measure the PATH: the wrapper is its full size either way.
 
 - Site: `src/core/sherpa-icon.css`
 - Site: `src/core/ui/render-icon.ts`
-- Site: `src/core/ui/icon-paths.ts`
+- Site: `src/core/ui/icon-names.ts`
 - Site: `scripts/generate-icons.mjs`
 - Site: `test/e2e/reforged-num-coercion.spec.ts`
 - Site: `src/core/ui/render-icon.ts`
@@ -15555,6 +15563,30 @@ EXTENDS the default rather than replacing it.
 - Site: `src/core/ui/templater.ts`
 - Site: `src/core/ui/sherpa-element.ts`
 - Site: `test/e2e/reforged-templater.spec.ts`
+
+### T-an-icon-loads-when-first-drawn
+
+**Each icon is its own module, loaded the first time it is drawn** (Will,
+TODO 199, A). The set was one 314 KB module, and every page paid for all 216.
+`scripts/generate-icons.mjs` writes `src/core/ui/icons/<name>.ts` per icon and
+the names alone in `icon-names.ts`, so `hasIcon()` still answers at once.
+
+`renderIcon()` draws at once when the icon is loaded already; otherwise it
+imports that one module and draws when it arrives — a moment later. Each
+element keeps the LAST icon it asked for, and only that one draws: an icon
+still loading must not land over the text or the other icon written since.
+
+`rendered` waits for the icons of the first draw — the component SHOWS at
+once, its promise resolves when its icons are in — because a reader who
+awaits `rendered` and reads an icon found none. An icon written later, from
+data, is `settled()`'s: it waits for every icon still loading.
+
+- Site: `src/core/ui/render-icon.ts`
+- Site: `src/core/ui/settled.ts`
+- Site: `src/core/ui/icon-names.ts`
+- Site: `src/core/ui/sherpa-element.ts`
+- Site: `scripts/generate-icons.mjs`
+- Site: `test/e2e/reforged-icons.spec.ts`
 
 ### T-the-text-is-in-the-js
 

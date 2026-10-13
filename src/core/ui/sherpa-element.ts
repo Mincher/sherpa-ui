@@ -19,7 +19,7 @@
  * - SherpaElement — the base every component extends: template, props, slots, emit
  */
 
-import { hasIcon, renderIcon, upgradeIcons } from './render-icon.js';
+import { hasIcon, iconsLoading, renderIcon, upgradeIcons } from './render-icon.js';
 import { ContextRequestEvent, DATA_CONTEXT, type DataAsk } from './context.js';
 import { liftTips } from './top-layer-tips.js';
 import {
@@ -745,6 +745,8 @@ export abstract class SherpaElement extends Base {
       el.classList.add('sherpa-icon-box');
       renderIcon(el, value);
     } else {
+      // An icon still loading for it must not draw over this text.
+      renderIcon(el, '');
       el.textContent = value === 'NaN' ? '' : value;
     }
   }
@@ -850,6 +852,8 @@ export abstract class SherpaElement extends Base {
     const [body, id] = files.html
       ? templateBody(cachedTemplates(files.html)?.map ?? null, html, this.templateId) : ['', null];
     this.#stamp(body, id);
+    // DRAWN means its icons too: the first draw's are loading now. TRAP T-an-icon-loads-when-first-drawn
+    await iconsLoading();
     this.#resolveRendered();
 
     if (!this.#connected && this.isConnected) {

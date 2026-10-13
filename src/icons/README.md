@@ -4,7 +4,7 @@ One `.svg` per icon, exported from the Figma **Icons** section
 (`UnBEepLWb6d7b9ykm33j2s`, node `17:3931`). Figma is the source of truth; these
 files are a build input, not a place to draw.
 
-`scripts/generate-icons.mjs` reads this folder and writes `src/core/icon-paths.ts`,
+`scripts/generate-icons.mjs` reads this folder and writes one module per icon into `src/core/ui/icons/` and the names into `src/core/ui/icon-names.ts`,
 which carries each path plus the INK bbox a fitted viewBox needs. Run it after
 changing anything here:
 

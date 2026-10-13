@@ -708,11 +708,9 @@ test('the collapsed rail centres its icons, and the header buttons are the Struc
     })();
 
     nav.setAttribute('data-nav-state', 'collapsed');
-    await new Promise<void>((resolve) => {
-      const done = (): void => resolve();
-      nav.addEventListener('transitionend', done, { once: true });
-      setTimeout(done, 400);
-    });
+    // EVERY transition, not the first `transitionend`: another one — an icon
+    // drawn a moment later — can end before the rail has begun to shrink.
+    await (window as unknown as { __settled: () => Promise<void> }).__settled();
 
     const iconEl = endpoints.shadowRoot!.querySelector<HTMLElement>(
       `${endpoints.getAttribute('data-href') ? '.nav-link' : '.nav-button'} .icon`,
