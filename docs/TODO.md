@@ -80,7 +80,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | 16t9 | 233 | In the filter panel, a filter section's header inside an accordion aligns to the TOP: label, count badge and the accordion button | quick |
 | ✅ | 16t10 | 234 | A filter moved up to the View: its menu's FIRST option is "Return to X", its own scope, apart from the other scopes | quick |
 | ✅ | 16t11 | 235 | "Return to X" survives a reload: the Query keeps where a View field came up from | feature |
-| ❓ | 16t12 | 236 | Read-only Advanced condition rows: the value text is too dark, and the row × shows though nothing can be removed | bug |
+| ✅ | 16t12 | 236 | Read-only Advanced condition rows: the value text is too dark, and the row × shows though nothing can be removed | bug |
 | ✅ | 16t13 | 237 | A tile's own `data-where` on a field the View's bar holds narrows nothing, and says nothing | bug |
 | ✅ | 16t14 | 238 | The data grid's "Select all rows" does not select every row on every page | bug |
 | ✅ | 16t6 | 230 | Reset all filters dialog: "Save filters before reset" sits in a grey border; it is plain form content | quick |
@@ -1613,7 +1613,7 @@ narrows the tile under it. `declareDefault` marks the scope before its first
 write compiles. The starter's Active tile is the case, in three engines.
 `T-a-component-default-outlives-a-view`
 
-### `[ ]` 236 — Read-only Advanced condition rows: value text too dark, a × not needed
+### `[x]` ✅ 236 — Read-only Advanced condition rows: value text too dark, a × not needed
 
 Will, 2026-10-13: *"Read only advanced filter conditional input rows have
 some issues: The value text is too dark. The delete button is shown but this
@@ -1633,6 +1633,11 @@ step between `#35353D` and the placeholder grey `#B3B3C3`.
 - **B:** the placeholder grey `#B3B3C3`. Clearly lighter, but about 2:1 — below
   the 4.5:1 that WCAG AA asks of text a reader must read.
 My pick: A. Figma was not connected, so I could not read a read-only input there.
+
+**✅ Will, 2026-10-13:** A — a lighter grey, an existing text colour token.
+**✅ Done 2026-10-13:** a read-only row's operator, join and value take
+`--sherpa-style-content-secondary` (`#35353D`), through each field's
+`::part(control)` — the Style name Figma binds, never Theme.
 
 ### `[x]` ✅ 235 — "Return to X" survives a reload
 
@@ -2245,7 +2250,7 @@ same helper.
 |---|---|
 | ✅ | 1. The JSON: `sets` on a scope, `declareSets()` / `sets()`, `describe()` carries them; `openSource` reports a set field not held, `declareSets` a field in two sets |
 | ✅ | 2. Serial narrowing: a field offers what the fields above it leave; a pick the chain rules out is set aside, as 180 does. `source.offered(scope)`; `drawOffered` on the bar and the panel, `offered` on the menu; a value not offered is removed, a pick kept greyed. A field is never ruled out by one below it, Limit on or off |
-| ❓ | 3. The `sherpa-filterset` component, stamped by the bar and the panel. No Figma design exists for it. **A:** I build it from the words above — a small heading, its chips joined as one group (`.sherpa-group`), a link glyph when serial — and you review it in the app; **B:** you draw it in Figma first, and I build from that. My pick: A. Until then a set chains, but is not drawn as a group |
+| ⬜ | 3. The `sherpa-filterset` component, stamped by the bar and the panel. No Figma design exists for it. **A:** I build it from the words above — a small heading, its chips joined as one group (`.sherpa-group`), a link glyph when serial — and you review it in the app; **B:** you draw it in Figma first, and I build from that. My pick: A. **✅ Will, 2026-10-13: A** |
 | ⬜ | 4. Sort and group per scope — the Organise set |
 | ✅ | 5. Sherpa Demos: Customer then Region, serial — on Records. The Dashboard stays parallel: in a chain Region can never set Customer aside, and the Dashboard is where 180's "a later answer wins" shows |
 
@@ -4184,8 +4189,8 @@ chart, which meant the chart's name: the four charts now take a host
 | ✅ | 3. Bind and push out: `bindSource(source, el, options)` in the binder; DataSource keeps `attach(target, facts, sink)` and picks the rows. The listeners, `data-locked`, `data-remote`, `as`, `into`, `deliver` and every `data-*` write are the binder's now | M |
 | ✅ | 4. One helper for the bar and the panel, the ⋮ menu first (`src/core/ui/more-menu.ts`) — then the saved-filter menu, then the drill. The ⋮ menu is shared now. The saved-filter menu (`saved-filter-menu.ts`) and the drill (`MenuDrill`) were shared already; what is left of them is each host's chips or scope boxes, which is stage 5 | M |
 | ✅ | 5. One `FilterDef` type, then one scope protocol (the bar drawn as a panel scope is). `FilterDef` and `FilterOption` in `src/core/ui/filter-def.ts`; `QuickFilterDef`, `QuickFilterOption`, `PanelFilter` and `PanelValue` are gone. A bar's `drawScope` takes `describe(scope)`, as the panel's `drawScopes` does; the raw slice is gone. `describe` now lists every held field, declared or not — one left out filtered with no chip | S + L |
-| ❓ | 6. The filter editor out of `sherpa-menu` (`src/core/ui/filter-editor.ts`). Found 2026-10-13: the editor is in ONE place already — the bar, the panel, the grid and the saved cards all open `sherpa-menu`, and the shared logic is `filter-state.ts`. So this only splits a 1993-line file, behind a host interface of about 15 calls. **A:** split it anyway; **B:** drop this stage. My pick: B | L |
-| ❓ | 7. Remove the bridge: delete `DataSource.bind`, rewrite ~90 calls in tests — **A:** remove it; **B:** keep a one-line forwarder. My pick: A | M |
+| ✅ | 6. ~~The filter editor out of `sherpa-menu` (`src/core/ui/filter-editor.ts`). Found 2026-10-13: the editor is in ONE place already — the bar, the panel, the grid and the saved cards all open `sherpa-menu`, and the shared logic is `filter-state.ts`. So this only splits a 1993-line file, behind a host interface of about 15 calls. **A:** split it anyway; **B:** drop this stage. My pick: B~~ — **✅ Will, 2026-10-13: B, dropped** | L |
+| ⬜ | 7. Remove the bridge: delete `DataSource.bind`, rewrite ~90 calls in tests — **✅ Will, 2026-10-13: A, remove it** | M |
 
 ### `[x]` ✅ 197 — One way to write a filter condition
 

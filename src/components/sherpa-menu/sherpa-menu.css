@@ -627,6 +627,8 @@
 /* …and a read-only row removes nothing: no ×, and its value is the row's right
    end, as on a lone row. Will, TODO 236 */
 :host([data-readonly]) .condition-row .drop-condition { display: none; }
+/* …and its text is the secondary ink: shown, not editable. Will, TODO 236 */
+:host([data-readonly]) .condition-row sherpa-input-text::part(control) { color: var(--sherpa-style-content-secondary, #35353d); }
 :host([data-readonly]) .condition-row { grid-template-columns: minmax(3.5rem, auto) minmax(6.5rem, 2fr) minmax(0, 3fr); }
 :host([data-readonly]) .condition-row[data-first] { grid-template-columns: minmax(6.5rem, 2fr) minmax(0, 3fr); }
 :host([data-readonly]) .condition-row[data-takes="list"] > .condition-pick,
