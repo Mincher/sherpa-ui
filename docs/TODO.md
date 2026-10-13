@@ -2325,7 +2325,7 @@ same helper.
 | ❓ | 4. Sort and group per scope — the Organise set. **❓ Will, found while building:** a source has ONE arrangement today — one sort, group and page, loaded once — and `export()` writes it in the View scope. A real arrangement PER scope means each grid on a source gets its own sorted page: the source loads once per arranged scope. No page in Sherpa Demos has two arranged components on one source yet. **A:** build it now — one load per arranged scope, each grid its own sort, group and page. **B:** the source records WHICH scope arranged the rows (from `sort-change`'s `scope`): a scope's Organise chips show only its own sort, and a saved View keeps the arrangement in that scope — still one load, until a page has two arranged grids. My pick: B |
 | ✅ | 5. Sherpa Demos: Customer then Region, serial — on Records. The Dashboard stays parallel: in a chain Region can never set Customer aside, and the Dashboard is where 180's "a later answer wins" shows |
 
-### `[ ]` 89 — Every filter added to the panel starts SIMPLE
+### `[x]` ✅ 89 — Every filter added to the panel starts SIMPLE
 
 Will, 2026-09-27: *"Let's start all filters added to the panel in 'Simple'
 mode."* Its content is one of three, by the field:
@@ -4185,7 +4185,7 @@ for it, and 183 named it beside the seed.
 the grid had rows but `records.js` had not set it yet; `reforged-records-persist.spec.ts:164`
 did the same. Both now wait for `window.sherpa.source` too (3 of 3 each).
 
-### `[ ]` 192 — Ship the agent path
+### `[x]` ✅ 192 — Ship the agent path
 
 ❓ Waits on choice 2 in 183. The MCP imports `scripts/` and reads specs and schemas that the package does not ship, and its SDK is a devDependency. Publish it with its real dependencies and files, add an `npm pack` smoke test that calls every tool, resource and prompt, register it in both projects, and add `validate_page`. `docs/CONSUMER-REVIEW.md` §3.6.
 
