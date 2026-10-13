@@ -16774,10 +16774,16 @@ A newer navigation abandons an older load at each step, and the router's
 View: a pick goes to the URL by `replace`. The outlet also sets the router's
 `context` default from `app.json`.
 
+**Settings open OVER the Context** (stage 2), which is never reloaded: given
+`settings: { dialog, header, root }`, the outlet opens the page `?settings=`
+names — its markup in `root`, the one Settings module, its settings bound —
+and shows the dialog LAST, so focus can move inside. The back arrow and ESC
+ask the router to close it. It reports `settings-open` at the start, so the
+rail moves at once, and `settings-close`.
+
 What stays the app's: its stores (a debug switch may swap one, so they are
 asked for at each load), the session, the nav's lit row and pin, kept card
-sizes, Recents, the ★ — each on an outlet event. Settings and favourites are
-stages 2 and 3 of 194.
+sizes, Recents, the ★ — each on an outlet event. Favourites are stage 3 of 194.
 
 - Site: `src/components/sherpa-outlet/sherpa-outlet.ts`
 - Site: `src/components/sherpa-outlet/sherpa-outlet.html`

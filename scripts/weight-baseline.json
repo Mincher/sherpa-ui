@@ -1,6 +1,6 @@
 {
   "app.js": {
-    "js": 325062,
+    "js": 326768,
     "files": 40,
     "fetched": 0
   },
@@ -205,7 +205,7 @@
     "fetched": 0
   },
   "components/sherpa-outlet/sherpa-outlet.js": {
-    "js": 234484,
+    "js": 236190,
     "files": 20,
     "fetched": 0
   },
@@ -345,7 +345,7 @@
     "fetched": 0
   },
   "index.js": {
-    "js": 929880,
+    "js": 931586,
     "files": 125,
     "fetched": 214150
   }

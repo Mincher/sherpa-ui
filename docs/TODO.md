@@ -3987,7 +3987,7 @@ After 190, so it teaches the contract. `docs/APP-GUIDE.md`, about 300 lines of s
 | | stage | |
 |---|---|---|
 | ✅ | 1. `<sherpa-outlet id="context-root">` in the shell's content: on each `route-change` it loads the Context `app.json` names — template, definition, module — opens the provider, runs `init(root, ctx)`, binds `data-setting`, writes the header's title, icon and `chrome`, picks the View, and tears down with a signal. It reports `context-load`, so the app's own extras follow. Its light DOM is the Context, so `#context-root …` selectors hold | |
-| ⬜ | 2. the Settings overlay: `?settings=` opens its page in the shell's overlay dialog, over the Context | |
+| ✅ | 2. the Settings overlay: `?settings=` opens its page in the shell's overlay dialog, over the Context — `settings: { dialog, header, root }` | |
 | ⬜ | 3. favourites and recents: the nav's Recent and Favorites Areas, the ★, and a Context's Views as rows | |
 
 The outlet is the app layer: `src/components/sherpa-outlet/`, in `sherpa-ui/app`, in check:weight's APP list and the lint override's exceptions.

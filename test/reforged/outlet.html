@@ -16,6 +16,10 @@
     <sherpa-app-shell>
       <sherpa-app-header slot="header"></sherpa-app-header>
       <sherpa-outlet id="context-root"></sherpa-outlet>
+      <sherpa-dialog slot="overlay" id="settings" data-type="overlay">
+        <sherpa-app-header slot="header" data-back></sherpa-app-header>
+        <div id="settings-root"></div>
+      </sherpa-dialog>
     </sherpa-app-shell>
   </sherpa-provider>
 </body>

@@ -29,7 +29,7 @@
     {
       "$type": "capability",
       "api": "js-property-mirror",
-      "description": "read/write JS properties (context, viewsReady). See $extensions.sherpa.jsProps."
+      "description": "read/write JS properties (context, settingsPage, viewsReady). See $extensions.sherpa.jsProps."
     },
     {
       "$type": "capability",
@@ -68,6 +68,21 @@
         "context": "string",
         "view": "null | string"
       }
+    },
+    {
+      "$type": "event",
+      "name": "settings-open",
+      "bubbles": true,
+      "composed": true,
+      "detail": {
+        "page": "string"
+      }
+    },
+    {
+      "$type": "event",
+      "name": "settings-close",
+      "bubbles": true,
+      "composed": true
     }
   ],
   "$extensions": {
@@ -95,6 +110,11 @@
       "jsProps": [
         {
           "name": "context",
+          "type": "string | null",
+          "access": "read"
+        },
+        {
+          "name": "settingsPage",
           "type": "string | null",
           "access": "read"
         },

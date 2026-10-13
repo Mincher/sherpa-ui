@@ -10,6 +10,7 @@
   JS API:
     start(options)      read app.json, load each Context's Views, then the route's Context
     context             the Context on screen
+    settingsPage        the Settings page open over it, or null — ?settings=<name>
     viewsOf(context)    a Context's Views: its own, then the reader's saved ones
     firstView(context)  its first View, which the URL leaves out
     viewsReady          settles once every Context's own Views are in
@@ -21,6 +22,8 @@
     context-change — detail: { context, view }
     context-markup — detail: { context, root, waitUntil }
     context-load — detail: { context, view }
+    settings-open — detail: { page }
+    settings-close — detail: { }
 -->
 <template id="default">
   <slot data-accepts="any"></slot>

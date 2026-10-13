@@ -3,7 +3,28 @@
   "v": 1,
   "default": "alpha",
   "contexts": {
-    "alpha": { "label": "Alpha", "icon": "home", "template": "templates/alpha.html", "module": "contexts/alpha.js" },
-    "beta": { "label": "Beta", "template": "templates/beta.html", "chrome": { "header": false } }
+    "alpha": {
+      "label": "Alpha",
+      "icon": "home",
+      "template": "templates/alpha.html",
+      "module": "contexts/alpha.js"
+    },
+    "beta": {
+      "label": "Beta",
+      "template": "templates/beta.html",
+      "chrome": {
+        "header": false
+      }
+    }
+  },
+  "settings": {
+    "module": "contexts/settings.js",
+    "pages": {
+      "prefs": {
+        "label": "Preferences",
+        "icon": "browser",
+        "template": "templates/prefs.html"
+      }
+    }
   }
 }

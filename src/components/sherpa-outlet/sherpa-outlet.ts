@@ -36,6 +36,9 @@ export interface OutletOptions {
   drafts?(): DraftMode;
   /** The app's panels by id, handed to every Context. */
   panels?: Readonly<Record<string, HTMLElement | undefined>>;
+  /** Where a Settings page opens, OVER the Context: the overlay dialog, its
+   *  header, and the box the page goes in. */
+  settings?: { dialog: HTMLElement & { show(): void; hide(): void }; header?: HTMLElement; root: HTMLElement };
 }
 
 /** The header's View chip. */
@@ -63,10 +66,19 @@ export class SherpaOutlet extends SherpaElement {
   #leaving: AbortController | null = null;
   /** What the Context's init handed back. */
   #teardown: (() => void) | null = null;
+  /** The Settings page open over it, its token, its signal and its teardown. */
+  #settings: { page: string | null; token: number; leaving: AbortController | null; teardown: (() => void) | null } = {
+    page: null, token: 0, leaving: null, teardown: null,
+  };
 
   /** The Context on screen. */
   get context(): string | null {
     return this.#context;
+  }
+
+  /** The Settings page open over it, or null. */
+  get settingsPage(): string | null {
+    return this.#settings.page;
   }
 
   /** Settles once every Context's own Views are in. */
@@ -97,15 +109,26 @@ export class SherpaOutlet extends SherpaElement {
     }
     const header = this.#header;
     if (header) this.on(header, 'quick-filter-change', this.#onViewPick);
+    /* Settings' back arrow and ESC are INTENTS: each asks the router, and the
+       screen follows its route-change. */
+    const settings = options.settings;
+    if (settings) {
+      if (settings.header) this.on(settings.header, 'back-click', () => void this.#router?.go({ settings: null }));
+      this.on(settings.dialog, 'dialog-close', (event) => {
+        if (event.target === settings.dialog && this.#settings.page) void this.#router?.go({ settings: null });
+      });
+    }
     // Without holding the load back: the nav draws again once they land.
     this.#viewsReady = Promise.all(Object.entries(options.app.contexts).map(async ([name, context]) => {
       if (context.views) this.#views[name] = await loadViewLibrary(this.#url(context.views));
     })).then(() => undefined);
     await this.#load(this.#contextOf(router?.route ?? {}));
+    this.#syncSettings(router?.route ?? {});
   }
 
   override onDisconnect(): void {
     this.#leave();
+    this.#closeSettings();
   }
 
   /** The document's router: the URL has one owner. */
@@ -138,6 +161,7 @@ export class SherpaOutlet extends SherpaElement {
   /** Another Context loads; a View of this one is picked through its chip. */
   #onRoute = (event: Event): void => {
     const { route, waitUntil } = (event as CustomEvent<RouteChange>).detail;
+    this.#syncSettings(route);
     const context = this.#contextOf(route);
     if (context !== this.#context) {
       waitUntil(this.#load(context));
@@ -146,6 +170,76 @@ export class SherpaOutlet extends SherpaElement {
     this.#syncHeader(context);
     this.#pickView(route['view'] ?? this.firstView(context));
   };
+
+  /** Make Settings match the URL: the page it names opens over the Context,
+   *  which is never reloaded; none closes it. */
+  #syncSettings(route: Route): void {
+    const name = route['settings'];
+    const page = name && this.#options?.app.settings?.pages[name] ? name : null;
+    if (page && page !== this.#settings.page) void this.#openSettings(page);
+    else if (!page && this.#settings.page) this.#closeSettings();
+  }
+
+  /** Open one Settings page over the Context: its markup, the one Settings
+   *  module, its settings bound. Shown LAST, so focus can move inside. */
+  async #openSettings(name: string): Promise<void> {
+    const options = this.#options;
+    const where = options?.settings;
+    const app = options?.app.settings;
+    const page = app?.pages[name];
+    if (!options || !where || !app || !page) return;
+    const token = ++this.#settings.token;
+    this.#dropSettings();
+    this.#settings.page = name;
+    this.emit('settings-open', { page: name });
+    where.header?.setAttribute('data-heading', page.label);
+    if (page.icon) where.header?.setAttribute('data-icon', page.icon);
+    else where.header?.removeAttribute('data-icon');
+    const markup = await this.#file(page.template, 'text');
+    if (token !== this.#settings.token) return;
+    where.root.innerHTML = String(markup ?? '');
+    const module = (await import(this.#url(app.module))) as Partial<ContextModule>;
+    if (token !== this.#settings.token) return;
+    const leaving = (this.#settings.leaving = new AbortController());
+    const teardown = await module.init?.(where.root, {
+      session: options.session, view: null, signal: leaving.signal, panels: options.panels ?? {}, label: page.label,
+      ...(where.header ? { header: where.header } : {}),
+    });
+    if (token !== this.#settings.token) {
+      teardown?.();
+      return;
+    }
+    if (typeof teardown === 'function') this.#settings.teardown = teardown;
+    bindSettings(where.root, options.session, { signal: leaving.signal });
+    where.dialog.show();
+  }
+
+  /** Close Settings: back to the Context underneath, which was never unloaded. */
+  #closeSettings(): void {
+    if (!this.#settings.page) return;
+    ++this.#settings.token;
+    this.#dropSettings();
+    this.#settings.page = null;
+    this.#options?.settings?.dialog.hide();
+    this.emit('settings-close');
+  }
+
+  /** The open Settings page's teardown and signal. */
+  #dropSettings(): void {
+    const teardown = this.#settings.teardown;
+    this.#settings.teardown = null;
+    try {
+      teardown?.();
+    } catch (error) {
+      report({
+        code: 'context-teardown-failed',
+        message: 'sherpa-outlet: a Settings page\'s teardown threw; the next one opens anyway.',
+        at: { page: this.#settings.page ?? '', error: error instanceof Error ? error.message : String(error) },
+      });
+    }
+    this.#settings.leaving?.abort();
+    this.#settings.leaving = null;
+  }
 
   /** The View chip owns the View; the URL follows it. */
   #onViewPick = (event: Event): void => {

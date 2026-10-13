@@ -47,3 +47,54 @@ test('the outlet loads the route\'s Context, hands it one ctx, and tears it down
   ]);
   expect(r['context']).toBe('beta');
 });
+
+/* SETTINGS OPEN OVER THE CONTEXT, which is never reloaded: ?settings=<page>
+   opens it in the overlay, and the back arrow asks the router to close it. */
+test('a Settings page opens over the Context and its back arrow closes it', async ({ page }) => {
+  await page.goto('/test/reforged/outlet.html');
+  await page.waitForFunction(() => (window as unknown as { __ready?: boolean }).__ready === true);
+  await page.evaluate(`(async () => {
+    const { SessionStore } = await import('/dist/index.js');
+    const outlet = document.querySelector('sherpa-outlet');
+    const router = document.querySelector('sherpa-router');
+    router.dataset.overlay = 'settings';
+    router.dataset.params = 'context view settings';
+    const dialog = document.getElementById('settings');
+    window.__events = [];
+    for (const type of ['settings-open', 'settings-close', 'context-load']) {
+      outlet.addEventListener(type, (e) => window.__events.push(type + (e.detail?.page ? ':' + e.detail.page : '')));
+    }
+    const base = new URL('/test/reforged/outlet/app.json', location.href);
+    const app = await (await fetch(base)).json();
+    await outlet.start({
+      app, base, session: new SessionStore({}), stores: () => ({}),
+      settings: { dialog, header: dialog.querySelector('sherpa-app-header'), root: document.getElementById('settings-root') },
+    });
+    await router.go({ settings: 'prefs' });
+  })()`);
+  // Shown LAST, once its module has run.
+  await page.waitForFunction(() => (document.getElementById('settings') as HTMLElement & { open: boolean }).open);
+  const open = await page.evaluate(`(() => {
+    const outlet = document.querySelector('sherpa-outlet');
+    const header = document.querySelector('#settings sherpa-app-header');
+    const shot = {
+      page: outlet.settingsPage, text: document.querySelector('#prefs')?.textContent,
+      heading: header.getAttribute('data-heading'), ctx: { ...window.__prefs }, context: outlet.querySelector('#alpha') !== null,
+    };
+    header.dispatchEvent(new CustomEvent('back-click', { bubbles: true, composed: true }));
+    return shot;
+  })()`);
+  await page.waitForFunction(() => (window as unknown as { __events: string[] }).__events.includes('settings-close'));
+  const closed = await page.evaluate(`(() => ({
+    page: document.querySelector('sherpa-outlet').settingsPage, shown: document.getElementById('settings').open,
+    gone: window.__prefs.gone, url: location.search, events: window.__events,
+  }))()`);
+  expect(open).toEqual({
+    page: 'prefs', text: 'Preferences', heading: 'Preferences',
+    ctx: { root: 'settings-root', label: 'Preferences', gone: false }, context: true,
+  });
+  expect(closed).toEqual({
+    page: null, shown: false, gone: true, url: '?context=alpha',
+    events: ['context-load', 'settings-open:prefs', 'settings-close'],
+  });
+});
