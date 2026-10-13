@@ -1,7 +1,7 @@
 {
   "app.js": {
-    "js": 326768,
-    "files": 40,
+    "js": 331959,
+    "files": 41,
     "fetched": 0
   },
   "components.js": {
@@ -205,8 +205,8 @@
     "fetched": 0
   },
   "components/sherpa-outlet/sherpa-outlet.js": {
-    "js": 236190,
-    "files": 20,
+    "js": 241381,
+    "files": 21,
     "fetched": 0
   },
   "components/sherpa-overlay-panel/sherpa-overlay-panel.js": {
@@ -345,8 +345,8 @@
     "fetched": 0
   },
   "index.js": {
-    "js": 931586,
-    "files": 125,
+    "js": 936777,
+    "files": 126,
     "fetched": 214150
   }
 }

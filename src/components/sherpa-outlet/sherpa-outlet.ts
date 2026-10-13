@@ -20,6 +20,7 @@ import type { Store } from '../../core/data/store.js';
 import type { Route } from '../../core/browser/route.js';
 import type { RouteChange, SherpaRouter } from '../sherpa-router/sherpa-router.js';
 import type { SherpaProvider } from '../sherpa-provider/sherpa-provider.js';
+import { OutletNav } from './outlet-nav.js';
 
 /** What an app hands its outlet: app.json, where it lives, the session and the stores. */
 export interface OutletOptions {
@@ -66,6 +67,8 @@ export class SherpaOutlet extends SherpaElement {
   #leaving: AbortController | null = null;
   /** What the Context's init handed back. */
   #teardown: (() => void) | null = null;
+  /** The nav it keeps, when its shell has one. */
+  #nav: OutletNav | null = null;
   /** The Settings page open over it, its token, its signal and its teardown. */
   #settings: { page: string | null; token: number; leaving: AbortController | null; teardown: (() => void) | null } = {
     page: null, token: 0, leaving: null, teardown: null,
@@ -96,6 +99,11 @@ export class SherpaOutlet extends SherpaElement {
     return Object.keys(this.viewsOf(context))[0] ?? null;
   }
 
+  /** Draw the nav again — after a View is saved or deleted, say. */
+  async refreshNav(): Promise<void> {
+    await this.#nav?.refresh();
+  }
+
   /** Read app.json, load each Context's Views, then open the route's Context.
    *  The router's `context` defaults to the app's own. */
   async start(options: OutletOptions): Promise<void> {
@@ -122,6 +130,16 @@ export class SherpaOutlet extends SherpaElement {
     this.#viewsReady = Promise.all(Object.entries(options.app.contexts).map(async ([name, context]) => {
       if (context.views) this.#views[name] = await loadViewLibrary(this.#url(context.views));
     })).then(() => undefined);
+    // The nav first, so a first click finds its rows. TRAP T-the-outlet-keeps-the-nav
+    const nav = this.#shell?.querySelector(':scope > sherpa-nav');
+    if (nav) {
+      await customElements.whenDefined('sherpa-nav');
+      this.#nav = new OutletNav(nav as ConstructorParameters<typeof OutletNav>[0], {
+        app: options.app, session: options.session, router, header, host: this, signal: this.signal,
+      });
+      await this.#nav.refresh();
+      void this.#viewsReady.then(() => this.#nav?.refresh());
+    }
     await this.#load(this.#contextOf(router?.route ?? {}));
     this.#syncSettings(router?.route ?? {});
   }
@@ -169,6 +187,8 @@ export class SherpaOutlet extends SherpaElement {
     }
     this.#syncHeader(context);
     this.#pickView(route['view'] ?? this.firstView(context));
+    this.#nav?.syncCurrent();
+    this.#nav?.syncStar();
   };
 
   /** Make Settings match the URL: the page it names opens over the Context,
@@ -192,6 +212,7 @@ export class SherpaOutlet extends SherpaElement {
     this.#dropSettings();
     this.#settings.page = name;
     this.emit('settings-open', { page: name });
+    this.#nav?.settingsOpened(name);
     where.header?.setAttribute('data-heading', page.label);
     if (page.icon) where.header?.setAttribute('data-icon', page.icon);
     else where.header?.removeAttribute('data-icon');
@@ -222,6 +243,7 @@ export class SherpaOutlet extends SherpaElement {
     this.#settings.page = null;
     this.#options?.settings?.dialog.hide();
     this.emit('settings-close');
+    this.#nav?.settingsClosed();
   }
 
   /** The open Settings page's teardown and signal. */
@@ -264,6 +286,7 @@ export class SherpaOutlet extends SherpaElement {
     this.#leave();
     this.#context = name;
     this.emit('context-change', { context: name, view });
+    this.#nav?.changed();
     await this.#viewsReady;
     const markup = await this.#file(context.template, 'text');
     if (token !== this.#token) return;
@@ -298,6 +321,7 @@ export class SherpaOutlet extends SherpaElement {
     bindSettings(this, options.session, { signal: leaving.signal });
     if (view) this.#pickView(view);
     this.emit('context-load', { context: name, view });
+    this.#nav?.loaded(name);
   }
 
   /** Tear the Context on screen down: its own teardown, its signal, its page. */

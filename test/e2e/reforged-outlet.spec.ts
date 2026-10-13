@@ -98,3 +98,35 @@ test('a Settings page opens over the Context and its back arrow closes it', asyn
     events: ['context-load', 'settings-open:prefs', 'settings-close'],
   });
 });
+
+/* THE OUTLET KEEPS THE NAV: its rows from app.json, a Context entering Recents
+   when it loads (Home never does), and the ★ starring the View on screen.
+   TRAP T-the-outlet-keeps-the-nav */
+test('the nav is drawn from app.json, Recents follow each load, and the star keeps a favourite', async ({ page }) => {
+  await page.goto('/test/reforged/outlet.html');
+  await page.waitForFunction(() => (window as unknown as { __ready?: boolean }).__ready === true);
+  const r = await page.evaluate(`(async () => {
+    const { SessionStore } = await import('/dist/index.js');
+    const outlet = document.querySelector('sherpa-outlet');
+    const nav = document.querySelector('sherpa-nav');
+    const router = document.querySelector('sherpa-router');
+    const base = new URL('/test/reforged/outlet/app.json', location.href);
+    const app = await (await fetch(base)).json();
+    const session = new SessionStore({ nav: { pinned: false, favorites: [], recent: [], hierarchy: false } });
+    localStorage.removeItem('sherpa:session:/nav/favorites');
+    localStorage.removeItem('sherpa:session:/nav/recent');
+    await outlet.start({ app, base, session, stores: () => ({}) });
+    const ids = () => [...nav.shadowRoot.querySelectorAll('.nav-row[data-id]')].map((r) => r.dataset.id);
+    const first = { ids: ids(), current: nav.dataset.currentId, recent: session.get('/nav/recent').length };
+    await router.go({ context: 'beta' });
+    await window.__settled?.();
+    document.dispatchEvent(new CustomEvent('view-favorite'));
+    await outlet.refreshNav();
+    return { first, recent: session.get('/nav/recent'), favorites: session.get('/nav/favorites'), current: nav.dataset.currentId, ids: ids() };
+  })()`) as Record<string, unknown>;
+  expect(r['first']).toEqual({ ids: ['home', 'recent', 'favorites'], current: 'home', recent: 0 });
+  expect(r['recent']).toEqual([{ context: 'beta', label: 'Beta' }]);
+  expect(r['favorites']).toEqual([{ context: 'beta', label: 'Beta', key: 'beta' }]);
+  expect(r['current']).toBe('context-beta');
+  expect(r['ids']).toEqual(expect.arrayContaining(['recent:beta', 'favorites:beta']));
+});

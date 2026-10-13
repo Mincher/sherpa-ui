@@ -5208,6 +5208,7 @@ them with their parent and hide them in the 40px rail — which a flat list of
 hand-tiered rows cannot express.
 
 - Site: `src/components/sherpa-nav/sherpa-nav.ts`
+- Site: `src/components/sherpa-outlet/outlet-nav.ts`
 
 ### T-nav-state-writes-only-the-attribute
 
@@ -6874,6 +6875,7 @@ list keeps working exactly as before.
 
 - Site: `src/components/sherpa-quick-filter-toolbar/sherpa-quick-filter-toolbar.ts`
 - See also: `T-session-list-is-a-view-not-a-copy` — where the list itself lives
+- Site: `src/components/sherpa-outlet/outlet-nav.ts`
 
 ### T-an-expandable-row-is-not-a-destination
 
@@ -16782,10 +16784,37 @@ ask the router to close it. It reports `settings-open` at the start, so the
 rail moves at once, and `settings-close`.
 
 What stays the app's: its stores (a debug switch may swap one, so they are
-asked for at each load), the session, the nav's lit row and pin, kept card
-sizes, Recents, the ★ — each on an outlet event. Favourites are stage 3 of 194.
+asked for at each load), the session's defaults, kept card sizes and its own
+experiments — each on an outlet event. The nav is the outlet's too:
+`T-the-outlet-keeps-the-nav`.
 
 - Site: `src/components/sherpa-outlet/sherpa-outlet.ts`
 - Site: `src/components/sherpa-outlet/sherpa-outlet.html`
 - Site: `src/app.ts`
+- Site: `test/e2e/reforged-outlet.spec.ts`
+
+### T-the-outlet-keeps-the-nav
+
+**When its shell has a `sherpa-nav`, the outlet keeps it** (TODO 194, stage
+3; `outlet-nav.ts`). It draws the rows from `app.json` — Home is the default
+Context, then Recent and Favorites as Areas, then each section's Contexts, and
+the Settings pages behind the settings button — BEFORE the first Context
+loads, so a first click finds its rows. It lights the row of the route, a
+View's own row when "Show full view hierarchy" (`/nav/hierarchy`) is on.
+
+**Recents and Favorites are the session's**: `/nav/recent` (five, newest
+first; Home never) and `/nav/favorites`, which it persists with a shape
+guard. A favourite is a VIEW, keyed `context:view`, the first View's by the
+Context alone. The ★ is a request
+(`view-favorite`); the outlet toggles the favourite and writes
+`data-favourite` back on the View chip's bar.
+
+A re-draw reads back the open Areas first (`nav.expandedIds`); the one holding
+the page is always open. The rail's pin is `/nav/pinned`; the settings button
+is an INTENT to open or leave Settings; an Area's row names the header. An
+app declares `nav: { pinned, favorites, recent, hierarchy }` in its session's
+defaults, and calls `outlet.refreshNav()` after it saves or deletes a View.
+
+- Site: `src/components/sherpa-outlet/outlet-nav.ts`
+- Site: `src/components/sherpa-outlet/sherpa-outlet.ts`
 - Site: `test/e2e/reforged-outlet.spec.ts`

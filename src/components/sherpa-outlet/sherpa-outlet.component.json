@@ -34,7 +34,7 @@
     {
       "$type": "capability",
       "api": "js-methods",
-      "description": "callable from a view definition's state block (viewsOf, firstView, start). See $extensions.sherpa.methods."
+      "description": "callable from a view definition's state block (viewsOf, firstView, refreshNav, start). See $extensions.sherpa.methods."
     }
   ],
   "events": [
@@ -99,6 +99,12 @@
           "name": "firstView",
           "args": "context: string",
           "description": "Its first View, which the URL leaves out."
+        },
+        {
+          "$type": "method",
+          "name": "refreshNav",
+          "args": "",
+          "description": "Draw the nav again — after a View is saved or deleted, say."
         },
         {
           "$type": "method",

@@ -106,7 +106,7 @@ A done item KEEPS its row and its section, marked ✅ — nothing is deleted.
 | ✅ | c22 | 190 | A Context contract and ONE `app.json`: the Contexts, the default, the Settings pages — the nav, router and server read it | foundation |
 | ✅ | c23 | 191 | Library parts that empty `contexts/`: dialog prompt/confirm, saved filters in the provider, `data-setting`, store seeds | foundation |
 | ✅ | c25 | 221 | `sherpa-ui/app` and the app boundary: the app layer stays OPT-IN, so one button never pays for it | foundation |
-| 🚧 | c26 | 194 | A Context loader beside `sherpa-router`: `<sherpa-outlet>` reads `app.json`; `index.html` becomes config | foundation |
+| ✅ | c26 | 194 | A Context loader beside `sherpa-router`: `<sherpa-outlet>` reads `app.json`; `index.html` becomes config | foundation |
 | ⬜ | c27 | 193 | ONE app guide, steps not history, served to agents as `sherpa://app-guide` — after 190 | docs |
 | ⬜ | c28 | 192 | Ship the agent path: the MCP with its real dependencies and files, a pack smoke test, registered in both projects | tooling |
 | ⬜ | c29 | 222 | The starter: `npx sherpa-ui init my-app` and a `scaffold_app` tool — one folder, about 8 files, no build step | tooling |
@@ -3976,7 +3976,7 @@ After 190, so it teaches the contract. `docs/APP-GUIDE.md`, about 300 lines of s
 
 **✅ Will, 2026-10-12 — all my picks:** A (183 choice 1) — it teaches the app layer in sherpa-ui.
 
-### `[ ]` 194 — A Context loader beside `sherpa-router`
+### `[x]` ✅ 194 — A Context loader beside `sherpa-router`
 
 ❓ Waits on choice 1 in 183. `<sherpa-outlet>` reads `app.json` and, on each route change, fetches the template, opens the provider, runs the module and tears it down with the navigation's signal; it owns the Settings overlay, the header title from the nav row, the View in the URL, and favourites and recents. `index.html` drops from about 800 lines of script to config, and a `scaffold_app` tool can emit a starter. `docs/CONSUMER-REVIEW.md` §3.8.
 
@@ -3988,9 +3988,15 @@ After 190, so it teaches the contract. `docs/APP-GUIDE.md`, about 300 lines of s
 |---|---|---|
 | ✅ | 1. `<sherpa-outlet id="context-root">` in the shell's content: on each `route-change` it loads the Context `app.json` names — template, definition, module — opens the provider, runs `init(root, ctx)`, binds `data-setting`, writes the header's title, icon and `chrome`, picks the View, and tears down with a signal. It reports `context-load`, so the app's own extras follow. Its light DOM is the Context, so `#context-root …` selectors hold | |
 | ✅ | 2. the Settings overlay: `?settings=` opens its page in the shell's overlay dialog, over the Context — `settings: { dialog, header, root }` | |
-| ⬜ | 3. favourites and recents: the nav's Recent and Favorites Areas, the ★, and a Context's Views as rows | |
+| ✅ | 3. favourites and recents: the nav's Recent and Favorites Areas, the ★, and a Context's Views as rows — `outlet-nav.ts` | `T-the-outlet-keeps-the-nav` |
 
 The outlet is the app layer: `src/components/sherpa-outlet/`, in `sherpa-ui/app`, in check:weight's APP list and the lint override's exceptions.
+
+**✅ Done 2026-10-13**, three stages. Sherpa Demos' `index.html` is 581 lines,
+from 994: what is left is its own — the session's defaults, its stores and
+debug switches, kept card sizes, experiments, notifications, the theme, the
+assistant, and the save and reset dialogs. The Demos suite passes in
+Chromium (137 of 137). `T-an-outlet-loads-the-context` · `T-the-outlet-keeps-the-nav`
 
 ### `[x]` ✅ 195 — The spec becomes the whole contract
 
