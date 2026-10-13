@@ -638,6 +638,14 @@ picks in the same task.
 
 **✅ Will, 2026-10-12 — all my picks:** A and A — one skeleton, a shimmer in the host's box, for every component; shown only if the first render still waits after 300 ms.
 
+**✅ Skeleton done 2026-10-13.** Measured first: on a cold load with a 4×
+slow CPU, 797 elements on Records, NOT ONE painted a frame between its
+upgrade and its first draw — the stamp follows in microtasks. So the skeleton
+is the PAGE's: `page.css` shimmers an element whose code has not loaded
+(`:not(:defined)`), after 300 ms, and hides its bare children.
+`T-a-skeleton-is-the-pages`. **Left of 113:** the toolbar's redundant waits,
+each with its own proof, and the panel (89 is done).
+
 ### `[x]` ✅ 37 — Components are AGNOSTIC of the data, and of the example app
 
 Will, 2026-09-25:

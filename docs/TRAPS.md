@@ -1627,6 +1627,28 @@ open their menu first now, as a reader must — and a draft set from code
 - Site: `test/e2e/reforged-grid-keeps-both-answers.spec.ts`
 - Site: `test/e2e/reforged-data-grid.spec.ts`
 
+### T-a-skeleton-is-the-pages
+
+**A component's first draw never waits a frame** — measured for TODO 113,
+2026-10-13: 797 elements on Records, on a cold load and a 4× slow CPU, and
+not one painted a frame between its upgrade and its stamp. Its sheets and
+markup are in the JS (`T-the-text-is-in-the-js`), so the stamp follows in
+microtasks, before any paint. A skeleton inside `SherpaElement` would never be
+seen.
+
+**The one wait a reader sees is before the code loads**: the page shows its
+elements undefined, with their bare children. So Will's skeleton (A and A —
+one shimmer in the host's box, only after 300 ms) is `page.css`'s, on
+`:not(:defined)`: a 300 ms `animation-delay`, then a pulse between two
+surfaces; its children are hidden. Defined, the element draws as itself.
+Reduced motion holds the end colour instead of pulsing.
+
+An element that is NEVER defined — a misspelt tag — shimmers for ever. That
+is a fault a person can see; `check:usage` catches it first.
+
+- Site: `scripts/project-tokens.mjs`
+- Site: `test/e2e/reforged-a-skeleton-is-the-pages.spec.ts`
+
 ### T-a-threshold-is-a-fact-of-the-field
 
 **A number's bands are declared ONCE, beside its `min` and `max`** — Will,

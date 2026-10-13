@@ -1237,6 +1237,26 @@ const documentResetBlock = `  /* The page itself. */
   body > sherpa-app-shell,
   body > :is(div, main) > sherpa-app-shell {
     block-size: 100%;
+  }
+  /* A component whose code has not loaded: after 300 ms, a shimmer in its box. TRAP T-a-skeleton-is-the-pages */
+  :not(:defined) {
+    color: transparent;
+    animation: sherpa-skeleton 1.2s ease-in-out 300ms infinite;
+  }
+  :not(:defined) > * {
+    visibility: hidden;
+  }
+  @keyframes sherpa-skeleton {
+    0%, 100% { background-color: var(--sherpa-theme-surface-default-2, #b3b3c3); }
+    50% { background-color: var(--sherpa-theme-surface-default-1, #e8e8f6); }
+  }
+  /* Still, not pulsing: it holds its end. */
+  @media (prefers-reduced-motion: reduce) {
+    :not(:defined) {
+      animation-duration: 1ms;
+      animation-iteration-count: 1;
+      animation-fill-mode: forwards;
+    }
   }`;
 
 /* The two grids the scales actually sit on, DERIVED from the emitted values
